@@ -1,0 +1,81 @@
+/* dialog: Native modal dialog styling */
+
+dialog {
+  max-inline-size: min(90vw, 32rem);
+  max-block-size: 85dvh;
+  padding: var(--space-l);
+  border: none;
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow:
+    0 0 0 1px oklch(0% 0 0 / 0.05),
+    0 4px 6px -1px oklch(0% 0 0 / 0.1),
+    0 10px 15px -3px oklch(0% 0 0 / 0.1),
+    0 20px 25px -5px oklch(0% 0 0 / 0.1);
+}
+
+dialog::backdrop {
+  background: oklch(0% 0 0 / 0.5);
+  backdrop-filter: blur(2px);
+}
+
+/* Remove default focus outline on dialog itself */
+dialog:focus {
+  outline: none;
+}
+
+/* Animation for opening */
+@media (prefers-reduced-motion: no-preference) {
+  dialog[open] {
+    animation: dialog-open var(--duration-normal) var(--ease-out);
+  }
+
+  dialog[open]::backdrop {
+    animation: backdrop-fade var(--duration-normal) var(--ease-out);
+  }
+}
+
+@keyframes dialog-open {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog header pattern */
+dialog > header {
+  margin-block-end: var(--space-m);
+}
+
+dialog > header > h2,
+dialog > header > h3 {
+  margin: 0;
+}
+
+/* Dialog footer pattern */
+dialog > footer {
+  margin-block-start: var(--space-l);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  justify-content: flex-end;
+}
+
+/* Close button in dialog header */
+dialog > header button[type="button"]:last-child {
+  margin-inline-start: auto;
+}

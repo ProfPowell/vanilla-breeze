@@ -1,0 +1,88 @@
+/* x-tabs: Details-based tabs with CSS Grid reordering */
+
+x-tabs {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-block-end: var(--border-thin) solid var(--color-border);
+}
+
+/* Details elements use display:contents to let children participate in grid */
+x-tabs > details {
+  display: contents;
+}
+
+/* Remove default details styling when inside x-tabs */
+x-tabs > details {
+  border: none;
+  border-radius: 0;
+}
+
+/* Summaries become horizontal tabs in row 1 */
+x-tabs > details > summary {
+  grid-row: 1;
+  padding: var(--space-s) var(--space-m);
+  border: none;
+  border-block-end: var(--border-medium) solid transparent;
+  margin-block-end: calc(var(--border-thin) * -1);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  min-block-size: var(--size-touch-min);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  transition:
+    color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
+
+  /* Hide the chevron indicator in tab mode */
+  &::after {
+    display: none;
+  }
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: var(--border-medium) solid var(--color-interactive);
+    outline-offset: calc(var(--border-medium) * -1);
+    border-radius: var(--radius-s);
+  }
+}
+
+/* Selected tab styling */
+x-tabs > details[open] > summary {
+  color: var(--color-interactive);
+  border-block-end-color: var(--color-interactive);
+}
+
+/* ARIA-enhanced selected state (when JS adds aria-selected) */
+x-tabs > details > summary[aria-selected="true"] {
+  color: var(--color-interactive);
+  border-block-end-color: var(--color-interactive);
+}
+
+/* Panel content goes to row 2, spanning all columns */
+x-tabs > details > :not(summary) {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  padding: var(--space-m);
+  display: none;
+}
+
+/* Show only the open panel */
+x-tabs > details[open] > :not(summary) {
+  display: block;
+}
+
+/* Ensure first tab aligns to start */
+x-tabs > details:first-of-type > summary {
+  grid-column-start: 1;
+}
