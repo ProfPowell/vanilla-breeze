@@ -55,7 +55,9 @@ Vanilla Breeze is a **platform-first component system** built on semantic HTML, 
 
 ---
 
-## External Components for Integration
+## External Components (Documentation Dependencies)
+
+These components enhance documentation but are **not part of the core library**. They remain standalone npm packages used as dev dependencies.
 
 ### code-block (github.com/ProfPowell/code-block)
 
@@ -66,14 +68,14 @@ Vanilla Breeze is a **platform-first component system** built on semantic HTML, 
 | Progressive Enhancement | Good - Falls back to semantic `<code>` |
 | Accessibility | ARIA labels, keyboard navigation |
 | Dependencies | Requires highlight.js |
-| Fit | Strong alignment with VB philosophy |
+| Fit | Documentation enhancement |
 
-**Recommendation**: **INCLUDE** as `code-block-wc`
+**Recommendation**: **USE AS DEPENDENCY** (not embedded)
 
 **Integration**:
-- Add to `src/web-components/code-block/`
-- Document at `/docs/web-components/code-block.html`
-- Use throughout docs for all code examples
+- Add as npm dev dependency for docs
+- Import in docs pages that need enhanced code display
+- Keep library core dependency-free
 
 ### browser-window (github.com/ProfPowell/browser-window)
 
@@ -84,14 +86,14 @@ Vanilla Breeze is a **platform-first component system** built on semantic HTML, 
 | Progressive Enhancement | Moderate - Visual wrapper without JS |
 | Accessibility | Theming via CSS custom properties |
 | Dependencies | None |
-| Fit | Good for documentation demos |
+| Fit | Documentation enhancement |
 
-**Recommendation**: **INCLUDE** as `browser-window-wc`
+**Recommendation**: **USE AS DEPENDENCY** (not embedded)
 
 **Integration**:
-- Add to `src/web-components/browser-window/`
-- Use for live component previews in docs
-- Document at `/docs/web-components/browser-window.html`
+- Add as npm dev dependency for docs
+- Wrap live component previews in docs
+- Keep library core dependency-free
 
 ---
 
