@@ -1,0 +1,119 @@
+/* progress: Progress bar styling */
+
+progress {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--space-s);
+  border: none;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-surface-raised);
+}
+
+/* WebKit/Blink progress bar track */
+progress::-webkit-progress-bar {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-full);
+}
+
+/* WebKit/Blink progress bar value */
+progress::-webkit-progress-value {
+  background: var(--color-interactive);
+  border-radius: var(--radius-full);
+  transition: inline-size var(--duration-normal) var(--ease-out);
+}
+
+/* Firefox progress bar value */
+progress::-moz-progress-bar {
+  background: var(--color-interactive);
+  border-radius: var(--radius-full);
+}
+
+/* --- Size Variants --- */
+
+.progress-xs {
+  block-size: var(--space-3xs);
+}
+
+.progress-s {
+  block-size: var(--space-2xs);
+}
+
+.progress-m {
+  block-size: var(--space-s);
+}
+
+.progress-l {
+  block-size: var(--space-m);
+}
+
+/* --- Color Variants --- */
+
+.progress-success::-webkit-progress-value {
+  background: oklch(60% 0.18 145);
+}
+
+.progress-success::-moz-progress-bar {
+  background: oklch(60% 0.18 145);
+}
+
+.progress-warning::-webkit-progress-value {
+  background: oklch(75% 0.18 75);
+}
+
+.progress-warning::-moz-progress-bar {
+  background: oklch(75% 0.18 75);
+}
+
+.progress-error::-webkit-progress-value {
+  background: oklch(55% 0.2 25);
+}
+
+.progress-error::-moz-progress-bar {
+  background: oklch(55% 0.2 25);
+}
+
+/* --- Indeterminate Progress --- */
+
+progress:indeterminate {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+progress:indeterminate::-webkit-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-raised) 0%,
+    var(--color-interactive) 50%,
+    var(--color-surface-raised) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* --- Labeled Progress --- */
+
+.progress-labeled {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+
+  & > label {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-s);
+  }
+
+  & > progress {
+    inline-size: 100%;
+  }
+}
