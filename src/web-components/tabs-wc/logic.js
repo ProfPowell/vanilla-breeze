@@ -1,4 +1,4 @@
-class XTabs extends HTMLElement {
+class TabsWc extends HTMLElement {
   #details;
   #summaries;
 
@@ -104,6 +104,6 @@ class XTabs extends HTMLElement {
   }
 }
 
-customElements.define('x-tabs', XTabs);
+customElements.define('tabs-wc', TabsWc);
 
-export { XTabs };
+export { TabsWc };

@@ -1,5 +1,5 @@
 /**
- * x-tooltip: Enhanced tooltip with positioning and arrow
+ * tooltip-wc: Enhanced tooltip with positioning and arrow
  *
  * Wraps a trigger element and provides a tooltip on hover/focus.
  * Uses CSS anchor positioning where available, with JS fallback.
@@ -8,12 +8,12 @@
  * @attr {number} data-delay - Show delay in ms (default: 200)
  *
  * @example
- * <x-tooltip data-position="top">
+ * <tooltip-wc data-position="top">
  *   <button>Hover me</button>
  *   <template data-tooltip>Tooltip content here</template>
- * </x-tooltip>
+ * </tooltip-wc>
  */
-class XTooltip extends HTMLElement {
+class TooltipWc extends HTMLElement {
   #trigger;
   #tooltip;
   #showTimer;
@@ -171,6 +171,6 @@ class XTooltip extends HTMLElement {
   }
 }
 
-customElements.define('x-tooltip', XTooltip);
+customElements.define('tooltip-wc', TooltipWc);
 
-export { XTooltip };
+export { TooltipWc };

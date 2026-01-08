@@ -1,5 +1,5 @@
 /**
- * x-accordion: Collapsible content panels with optional single-open mode
+ * accordion-wc: Collapsible content panels with optional single-open mode
  *
  * Built on native <details>/<summary> for progressive enhancement.
  * Uses shared name attribute for single-open mode in supporting browsers.
@@ -8,7 +8,7 @@
  * @attr {boolean} data-bordered - Add borders between items
  *
  * @example
- * <x-accordion data-single>
+ * <accordion-wc data-single>
  *   <details name="faq">
  *     <summary>Question 1</summary>
  *     <div>Answer 1</div>
@@ -17,9 +17,9 @@
  *     <summary>Question 2</summary>
  *     <div>Answer 2</div>
  *   </details>
- * </x-accordion>
+ * </accordion-wc>
  */
-class XAccordion extends HTMLElement {
+class AccordionWc extends HTMLElement {
   #details;
   #summaries;
 
@@ -153,6 +153,6 @@ class XAccordion extends HTMLElement {
   }
 }
 
-customElements.define('x-accordion', XAccordion);
+customElements.define('accordion-wc', AccordionWc);
 
-export { XAccordion };
+export { AccordionWc };

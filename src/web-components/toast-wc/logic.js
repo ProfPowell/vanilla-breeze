@@ -1,5 +1,5 @@
 /**
- * x-toast: Toast notification container
+ * toast-wc: Toast notification container
  *
  * A container for displaying non-modal notifications. Toasts appear in a
  * fixed position and auto-dismiss after a configurable duration.
@@ -9,16 +9,16 @@
  * @attr {number} data-max - Maximum number of visible toasts (default: 5)
  *
  * @example
- * <x-toast data-position="bottom-end"></x-toast>
+ * <toast-wc data-position="bottom-end"></toast-wc>
  *
  * // Show a toast programmatically:
- * document.querySelector('x-toast').show({
+ * document.querySelector('toast-wc').show({
  *   message: 'File saved successfully',
  *   variant: 'success',
  *   duration: 3000
  * });
  */
-class XToast extends HTMLElement {
+class ToastWc extends HTMLElement {
   #queue = [];
   #visible = [];
 
@@ -195,6 +195,6 @@ class XToast extends HTMLElement {
   }
 }
 
-customElements.define('x-toast', XToast);
+customElements.define('toast-wc', ToastWc);
 
-export { XToast };
+export { ToastWc };

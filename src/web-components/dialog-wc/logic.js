@@ -1,17 +1,17 @@
 /**
- * x-dialog: Modal dialog with focus trap, backdrop dismiss, and animations
+ * dialog-wc: Modal dialog with focus trap, backdrop dismiss, and animations
  *
  * Uses native <dialog> element for accessibility and focus management.
  *
  * @example
- * <x-dialog id="my-dialog" data-size="m">
+ * <dialog-wc id="my-dialog" data-size="m">
  *   <h2>Dialog Title</h2>
  *   <p>Dialog content goes here.</p>
  *   <menu>
  *     <button type="button" data-dialog-close>Cancel</button>
  *     <button type="submit">Confirm</button>
  *   </menu>
- * </x-dialog>
+ * </dialog-wc>
  *
  * <button data-dialog-open="my-dialog">Open Dialog</button>
  *
@@ -19,7 +19,7 @@
  * @attr {boolean} data-no-backdrop-close - Disable clicking backdrop to close
  * @attr {boolean} data-no-esc-close - Disable ESC key to close
  */
-class XDialog extends HTMLElement {
+class DialogWc extends HTMLElement {
   #dialog;
   #isOpen = false;
 
@@ -185,6 +185,6 @@ class XDialog extends HTMLElement {
   }
 }
 
-customElements.define('x-dialog', XDialog);
+customElements.define('dialog-wc', DialogWc);
 
-export { XDialog };
+export { DialogWc };

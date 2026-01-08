@@ -13,7 +13,7 @@ A layered HTML component system extending HTML's native model.
 | **Tokens** | 7 files | spacing, typography, colors, sizing, borders, motion |
 | **Native Elements** | ~36 | All major HTML elements styled with variants |
 | **Custom Elements** | 12 | layout-stack, layout-cluster, layout-grid, layout-card, layout-center, layout-sidebar, layout-cover, layout-switcher, layout-imposter, x-prose, x-frame, x-reel |
-| **Web Components** | 7 | x-tabs, x-footnotes, x-accordion, x-dialog, x-tooltip, x-toast, dropdown-wc |
+| **Web Components** | 7 | tabs-wc, accordion-wc, dialog-wc, tooltip-wc, toast-wc, dropdown-wc, x-footnotes |
 | **Documentation** | Complete | /docs/ site with element pages, tokens, kitchen sink |
 
 ### Architecture
@@ -98,12 +98,12 @@ Add remaining Every Layout patterns:
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| `x-tabs` | Tab panels | Done |
+| `tabs-wc` | Tab panels | Done |
 | `x-footnotes` | Footnote references | Done |
-| `x-accordion` | Collapsible panels | Done |
-| `x-dialog` | Modal with focus trap | Done |
-| `x-toast` | Notification system | Done |
-| `x-tooltip` | Contextual hints | Done |
+| `accordion-wc` | Collapsible panels | Done |
+| `dialog-wc` | Modal with focus trap | Done |
+| `toast-wc` | Notification system | Done |
+| `tooltip-wc` | Contextual hints | Done |
 | `dropdown-wc` | Accessible menus | Done |
 
 ### Phase 7: Token Alignment (Optional)
