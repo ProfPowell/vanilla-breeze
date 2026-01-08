@@ -1,11 +1,7 @@
 const inertElements = [
-  'x-stack',
-  'x-card',
-  'x-grid',
-  'x-cluster',
-  'x-prose',
-  'x-center',
-  'x-sidebar'
+  'layout-text',
+  'media-frame',
+  'layout-reel'
 ];
 
 inertElements.forEach(name => {

@@ -137,27 +137,47 @@ module.exports = {
     }
   },
 
-  "x-prose": {
+  "layout-text": {
     flow: true,
     permittedContent: ["@flow"]
   },
 
-  "x-frame": {
+  "media-frame": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-ratio": {}
+      "data-ratio": {},
+      "data-fit": {
+        enum: ["cover", "contain", "fill", "none"]
+      },
+      "data-position": {
+        enum: ["top", "bottom", "left", "right", "center"]
+      },
+      "data-radius": {
+        enum: ["s", "m", "l", "full"]
+      }
     }
   },
 
-  "x-reel": {
+  "layout-reel": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
       "data-gap": {
         enum: ["none", "xs", "s", "m", "l", "xl"]
       },
-      "data-item-width": {}
+      "data-padding": {
+        enum: ["none", "s", "m", "l"]
+      },
+      "data-item-width": {
+        enum: ["auto", "s", "m", "l", "xl", "full"]
+      },
+      "data-align": {
+        enum: ["start", "center", "end", "stretch"]
+      },
+      "data-scrollbar": {
+        boolean: true
+      }
     }
   },
 
