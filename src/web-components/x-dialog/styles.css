@@ -1,0 +1,154 @@
+/* x-dialog: Modal dialog with backdrop and animations */
+
+x-dialog {
+  display: contents;
+}
+
+/* Native dialog element inside x-dialog */
+x-dialog > dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  box-shadow:
+    0 8px 32px oklch(0% 0 0 / 0.15),
+    0 2px 8px oklch(0% 0 0 / 0.1);
+  max-block-size: calc(100dvh - var(--space-2xl));
+  max-inline-size: calc(100vw - var(--space-xl));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  /* Animation setup */
+  opacity: 0;
+  transform: translateY(var(--space-s)) scale(0.98);
+  transition:
+    opacity var(--duration-normal) var(--ease-default),
+    transform var(--duration-normal) var(--ease-default),
+    overlay var(--duration-normal) allow-discrete,
+    display var(--duration-normal) allow-discrete;
+
+  /* Prevent content overflow */
+  &::backdrop {
+    background: oklch(0% 0 0 / 0.5);
+    opacity: 0;
+    transition:
+      opacity var(--duration-normal) var(--ease-default),
+      overlay var(--duration-normal) allow-discrete,
+      display var(--duration-normal) allow-discrete;
+  }
+}
+
+/* Open state */
+x-dialog > dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+
+  &::backdrop {
+    opacity: 1;
+  }
+}
+
+/* Starting style for entry animation (CSS @starting-style) */
+@starting-style {
+  x-dialog > dialog[open] {
+    opacity: 0;
+    transform: translateY(var(--space-s)) scale(0.98);
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+/* --- Size Variants --- */
+
+x-dialog[data-size="s"] > dialog {
+  inline-size: min(24rem, 100%);
+}
+
+x-dialog > dialog,
+x-dialog[data-size="m"] > dialog {
+  inline-size: min(32rem, 100%);
+}
+
+x-dialog[data-size="l"] > dialog {
+  inline-size: min(48rem, 100%);
+}
+
+x-dialog[data-size="full"] > dialog {
+  inline-size: calc(100vw - var(--space-xl));
+  block-size: calc(100dvh - var(--space-xl));
+  max-block-size: none;
+  border-radius: var(--radius-m);
+}
+
+/* --- Dialog Content Structure --- */
+
+/* Dialog header */
+x-dialog > dialog > header,
+x-dialog > dialog > [data-dialog-header] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding: var(--space-m) var(--space-l);
+  border-block-end: var(--border-thin) solid var(--color-border);
+  flex-shrink: 0;
+
+  & > h1,
+  & > h2,
+  & > h3 {
+    margin: 0;
+    font-size: var(--text-l);
+    font-weight: 600;
+  }
+}
+
+/* Dialog body/content */
+x-dialog > dialog > section,
+x-dialog > dialog > article,
+x-dialog > dialog > [data-dialog-body] {
+  padding: var(--space-l);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Dialog footer/actions */
+x-dialog > dialog > footer,
+x-dialog > dialog > menu,
+x-dialog > dialog > [data-dialog-footer] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-s);
+  padding: var(--space-m) var(--space-l);
+  border-block-start: var(--border-thin) solid var(--color-border);
+  flex-shrink: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Close button in header */
+x-dialog > dialog [data-dialog-close] {
+  margin-inline-start: auto;
+}
+
+/* --- Focus Management --- */
+
+x-dialog > dialog:focus-visible {
+  outline: var(--border-medium) solid var(--color-interactive);
+  outline-offset: var(--border-medium);
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  x-dialog > dialog,
+  x-dialog > dialog::backdrop {
+    transition: none;
+  }
+}
