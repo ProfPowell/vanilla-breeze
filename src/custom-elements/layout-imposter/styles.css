@@ -1,0 +1,96 @@
+/* layout-imposter: Positioning helper for overlays and modals */
+
+layout-imposter {
+  position: var(--_position, absolute);
+  inset-block-start: var(--_inset-block, 50%);
+  inset-inline-start: var(--_inset-inline, 50%);
+  translate: var(--_translate, -50% -50%);
+}
+
+/* Position type */
+layout-imposter[data-fixed] {
+  --_position: fixed;
+}
+
+/* Margin from edges */
+layout-imposter[data-margin="s"] { --_margin: var(--size-s); }
+layout-imposter[data-margin="m"] { --_margin: var(--size-m); }
+layout-imposter[data-margin="l"] { --_margin: var(--size-l); }
+layout-imposter[data-margin="xl"] { --_margin: var(--size-xl); }
+
+/* Positioning presets */
+
+/* Center (default) */
+layout-imposter[data-position="center"] {
+  --_inset-block: 50%;
+  --_inset-inline: 50%;
+  --_translate: -50% -50%;
+}
+
+/* Top */
+layout-imposter[data-position="top"] {
+  --_inset-block: var(--_margin, 0);
+  --_inset-inline: 50%;
+  --_translate: -50% 0;
+}
+
+/* Bottom */
+layout-imposter[data-position="bottom"] {
+  --_inset-block: auto;
+  inset-block-end: var(--_margin, 0);
+  --_inset-inline: 50%;
+  --_translate: -50% 0;
+}
+
+/* Start (left in LTR) */
+layout-imposter[data-position="start"] {
+  --_inset-block: 50%;
+  --_inset-inline: var(--_margin, 0);
+  --_translate: 0 -50%;
+}
+
+/* End (right in LTR) */
+layout-imposter[data-position="end"] {
+  --_inset-block: 50%;
+  --_inset-inline: auto;
+  inset-inline-end: var(--_margin, 0);
+  --_translate: 0 -50%;
+}
+
+/* Corners */
+layout-imposter[data-position="top-start"] {
+  --_inset-block: var(--_margin, 0);
+  --_inset-inline: var(--_margin, 0);
+  --_translate: 0 0;
+}
+
+layout-imposter[data-position="top-end"] {
+  --_inset-block: var(--_margin, 0);
+  --_inset-inline: auto;
+  inset-inline-end: var(--_margin, 0);
+  --_translate: 0 0;
+}
+
+layout-imposter[data-position="bottom-start"] {
+  --_inset-block: auto;
+  inset-block-end: var(--_margin, 0);
+  --_inset-inline: var(--_margin, 0);
+  --_translate: 0 0;
+}
+
+layout-imposter[data-position="bottom-end"] {
+  --_inset-block: auto;
+  inset-block-end: var(--_margin, 0);
+  --_inset-inline: auto;
+  inset-inline-end: var(--_margin, 0);
+  --_translate: 0 0;
+}
+
+/* Contain within viewport when fixed */
+layout-imposter[data-contain] {
+  max-inline-size: calc(100vw - var(--_margin, 0) * 2);
+  max-inline-size: calc(100dvw - var(--_margin, 0) * 2);
+  max-block-size: calc(100vh - var(--_margin, 0) * 2);
+  max-block-size: calc(100dvh - var(--_margin, 0) * 2);
+  overflow: auto;
+}

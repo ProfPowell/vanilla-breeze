@@ -12,7 +12,7 @@ A layered HTML component system extending HTML's native model.
 |----------|-------|----------|
 | **Tokens** | 7 files | spacing, typography, colors, sizing, borders, motion |
 | **Native Elements** | ~36 | All major HTML elements styled with variants |
-| **Custom Elements** | 10 | layout-stack, layout-cluster, layout-grid, layout-card, layout-center, layout-sidebar, layout-cover, x-prose, x-frame, x-reel |
+| **Custom Elements** | 12 | layout-stack, layout-cluster, layout-grid, layout-card, layout-center, layout-sidebar, layout-cover, layout-switcher, layout-imposter, x-prose, x-frame, x-reel |
 | **Web Components** | 6 | x-tabs, x-footnotes, x-accordion, x-dialog, x-tooltip, x-toast |
 | **Documentation** | Complete | /docs/ site with element pages, tokens, kitchen sink |
 
@@ -91,8 +91,8 @@ Add remaining Every Layout patterns:
 | `layout-cover` | Hero/cover layout with centered content | Done |
 | `x-frame` | Aspect ratio container | Done |
 | `x-reel` | Horizontal scrolling container | Done |
-| `x-switcher` | Flex direction toggle at breakpoint | Not started |
-| `x-imposter` | Fixed/absolute positioning helper | Not started |
+| `layout-switcher` | Flex direction toggle at breakpoint | Done |
+| `layout-imposter` | Fixed/absolute positioning helper | Done |
 
 ### Phase 6: Interactive Web Components
 
