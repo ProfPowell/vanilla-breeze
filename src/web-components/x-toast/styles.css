@@ -1,0 +1,245 @@
+/* x-toast: Toast notification container */
+
+x-toast {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  pointer-events: none;
+  max-inline-size: min(24rem, calc(100vw - var(--space-l)));
+}
+
+/* Position variants */
+x-toast,
+x-toast[data-position="top-end"] {
+  inset-block-start: var(--space-m);
+  inset-inline-end: var(--space-m);
+  align-items: flex-end;
+}
+
+x-toast[data-position="top-start"] {
+  inset-block-start: var(--space-m);
+  inset-inline-start: var(--space-m);
+  inset-inline-end: auto;
+  align-items: flex-start;
+}
+
+x-toast[data-position="bottom-end"] {
+  inset-block-start: auto;
+  inset-block-end: var(--space-m);
+  inset-inline-end: var(--space-m);
+  align-items: flex-end;
+  flex-direction: column-reverse;
+}
+
+x-toast[data-position="bottom-start"] {
+  inset-block-start: auto;
+  inset-block-end: var(--space-m);
+  inset-inline-start: var(--space-m);
+  inset-inline-end: auto;
+  align-items: flex-start;
+  flex-direction: column-reverse;
+}
+
+x-toast[data-position="top-center"] {
+  inset-block-start: var(--space-m);
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  transform: translateX(-50%);
+  align-items: center;
+}
+
+x-toast[data-position="bottom-center"] {
+  inset-block-start: auto;
+  inset-block-end: var(--space-m);
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  transform: translateX(-50%);
+  align-items: center;
+  flex-direction: column-reverse;
+}
+
+/* Individual toast styling */
+x-toast > .toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+  padding: var(--space-s) var(--space-m);
+  background: var(--color-surface);
+  border-radius: var(--radius-m);
+  box-shadow:
+    0 4px 12px oklch(0% 0 0 / 0.15),
+    0 1px 3px oklch(0% 0 0 / 0.1);
+  pointer-events: auto;
+  min-inline-size: 12rem;
+  max-inline-size: 100%;
+
+  /* Entry animation */
+  animation: toast-enter var(--duration-normal) var(--ease-default) forwards;
+}
+
+/* Entry animations based on position */
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--space-m) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+x-toast[data-position="bottom-end"] > .toast,
+x-toast[data-position="bottom-start"] > .toast,
+x-toast[data-position="bottom-center"] > .toast {
+  animation-name: toast-enter-bottom;
+}
+
+@keyframes toast-enter-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-m));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Exit animation */
+x-toast > .toast[data-state="hiding"] {
+  animation: toast-exit var(--duration-fast) var(--ease-default) forwards;
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--space-s) * -1));
+  }
+}
+
+/* Toast icon */
+x-toast > .toast > .toast-icon {
+  flex-shrink: 0;
+  font-size: var(--text-l);
+  line-height: 1;
+}
+
+/* Toast message */
+x-toast > .toast > .toast-message {
+  flex: 1;
+  font-size: var(--text-s);
+  line-height: var(--leading-normal);
+  padding-block: 0.125em;
+}
+
+/* Toast action button */
+x-toast > .toast > .toast-action {
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-s);
+  font-size: var(--text-s);
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--color-interactive);
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  transition: background-color var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--border-medium) solid var(--color-interactive);
+    outline-offset: var(--border-thin);
+  }
+}
+
+/* Toast close button */
+x-toast > .toast > .toast-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding: 0;
+  font-size: var(--text-s);
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: var(--border-medium) solid var(--color-interactive);
+    outline-offset: var(--border-thin);
+  }
+}
+
+/* --- Variants --- */
+
+/* Info (default) */
+x-toast > .toast[data-variant="info"] {
+  border-inline-start: var(--border-thick) solid var(--color-interactive);
+
+  & > .toast-icon {
+    color: var(--color-interactive);
+  }
+}
+
+/* Success */
+x-toast > .toast[data-variant="success"] {
+  border-inline-start: var(--border-thick) solid var(--color-success);
+
+  & > .toast-icon {
+    color: var(--color-success);
+  }
+}
+
+/* Warning */
+x-toast > .toast[data-variant="warning"] {
+  border-inline-start: var(--border-thick) solid var(--color-warning);
+
+  & > .toast-icon {
+    color: var(--color-warning);
+  }
+}
+
+/* Error */
+x-toast > .toast[data-variant="error"] {
+  border-inline-start: var(--border-thick) solid var(--color-error);
+
+  & > .toast-icon {
+    color: var(--color-error);
+  }
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  x-toast > .toast {
+    animation: none;
+    opacity: 1;
+  }
+
+  x-toast > .toast[data-state="hiding"] {
+    animation: none;
+    opacity: 0;
+  }
+}

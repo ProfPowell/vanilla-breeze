@@ -1,0 +1,109 @@
+/* x-accordion: Collapsible content panels */
+
+x-accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Details elements within accordion */
+x-accordion > details {
+  border: none;
+  border-radius: 0;
+}
+
+/* Summary styling */
+x-accordion > details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding: var(--space-m);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+  min-block-size: var(--size-touch-min);
+  transition: background-color var(--duration-fast) var(--ease-default);
+
+  /* Hide default marker */
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    background-color: var(--color-surface-hover);
+  }
+
+  &:focus-visible {
+    outline: var(--border-medium) solid var(--color-interactive);
+    outline-offset: calc(var(--border-medium) * -1);
+    border-radius: var(--radius-s);
+  }
+}
+
+/* Chevron indicator */
+x-accordion > details > summary::after {
+  content: "";
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+/* Rotate chevron when open */
+x-accordion > details[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+/* Panel content */
+x-accordion > details > :not(summary) {
+  padding: 0 var(--space-m) var(--space-m);
+}
+
+/* --- Bordered Variant --- */
+
+x-accordion[data-bordered] {
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+x-accordion[data-bordered] > details {
+  border-block-end: var(--border-thin) solid var(--color-border);
+}
+
+x-accordion[data-bordered] > details:last-of-type {
+  border-block-end: none;
+}
+
+/* --- Flush Variant (no padding) --- */
+
+x-accordion[data-flush] > details > summary {
+  padding-inline: 0;
+}
+
+x-accordion[data-flush] > details > :not(summary) {
+  padding-inline: 0;
+}
+
+/* --- Compact Variant --- */
+
+x-accordion[data-compact] > details > summary {
+  padding: var(--space-s);
+  min-block-size: auto;
+}
+
+x-accordion[data-compact] > details > :not(summary) {
+  padding: 0 var(--space-s) var(--space-s);
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  x-accordion > details > summary::after {
+    transition: none;
+  }
+}
