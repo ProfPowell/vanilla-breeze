@@ -1,5 +1,5 @@
 /**
- * Styles for x-icon component
+ * Styles for icon-wc component
  */
 const styles = `
 :host {

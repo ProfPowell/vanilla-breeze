@@ -247,7 +247,7 @@ module.exports = {
     permittedContent: ["@phrasing"]
   },
 
-  "x-icon": {
+  "icon-wc": {
     phrasing: true,
     void: true,
     attributes: {
