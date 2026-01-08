@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order History - {{STORE_NAME}}</title>
+  <meta name="description" content="View your order history at {{STORE_NAME}}." />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/shop.css" />
+  <script type="module" src="/components/x-icon.js"></script>
+  <script type="module" src="/components/cart-button.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" class="nav__logo" aria-label="{{STORE_NAME}} - Home">
+        <x-icon name="store"></x-icon>
+        <span>{{STORE_NAME}}</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="/pages/products.html">Shop</a></li>
+        <li><a href="/pages/products.html?category=new">New Arrivals</a></li>
+        <li><a href="/pages/products.html?category=sale">Sale</a></li>
+      </ul>
+
+      <div class="nav__actions">
+        <cart-button></cart-button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="orders-page">
+      <header class="orders-page__header">
+        <h1 class="orders-page__title">Order History</h1>
+        <p class="orders-page__subtitle">Track and manage your orders</p>
+      </header>
+
+      <!-- Order Lookup (for guest orders) -->
+      <section class="order-lookup" id="order-lookup">
+        <h2 class="order-lookup__title">Look Up an Order</h2>
+        <form class="order-lookup__form" id="lookup-form">
+          <div class="form-field">
+            <label for="order-number">Order Number</label>
+            <input
+              type="text"
+              id="order-number"
+              name="orderNumber"
+              placeholder="e.g., ORD-12345"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="order-email">Email Address</label>
+            <input
+              type="email"
+              id="order-email"
+              name="email"
+              placeholder="Email used for order"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn--primary">
+            Find Order
+            <x-icon name="search"></x-icon>
+          </button>
+        </form>
+      </section>
+
+      <!-- Order Status Filter -->
+      <nav class="order-filters" aria-label="Filter orders by status">
+        <ul class="order-filters__list" role="tablist">
+          <li>
+            <button type="button" role="tab" aria-selected="true" data-status="all">
+              All Orders
+            </button>
+          </li>
+          <li>
+            <button type="button" role="tab" aria-selected="false" data-status="processing">
+              Processing
+            </button>
+          </li>
+          <li>
+            <button type="button" role="tab" aria-selected="false" data-status="shipped">
+              Shipped
+            </button>
+          </li>
+          <li>
+            <button type="button" role="tab" aria-selected="false" data-status="delivered">
+              Delivered
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Orders List -->
+      <div class="orders-list" id="orders-list" role="tabpanel" aria-label="Order list">
+        <!-- Orders rendered via JavaScript -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="empty-orders" hidden>
+        <x-icon name="package" class="empty-state__icon"></x-icon>
+        <h2 class="empty-state__title">No orders yet</h2>
+        <p class="empty-state__description">
+          When you place an order, it will appear here.
+        </p>
+        <a href="/pages/products.html" class="btn btn--primary">
+          Start Shopping
+        </a>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" id="loading-state" hidden>
+        <x-icon name="loader-2" class="loading-state__icon spin"></x-icon>
+        <span class="visually-hidden">Loading orders...</span>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="pagination" id="orders-pagination" aria-label="Order pages" hidden>
+        <!-- Pagination rendered via JavaScript -->
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer__bottom">
+      <p>&copy; {{CURRENT_YEAR}} {{STORE_NAME}}. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/lib/orders.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{{#IF_FRAMEWORK_ELEVENTY}}
+<nav class="docs-sidebar" id="sidebar" aria-label="Documentation navigation">
+  <ul class="nav-sections">
+    {% for section in navigation.docs %}
+    <li class="nav-section">
+{{#IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+      <details open>
+        <summary class="section-title">{{ section.title }}</summary>
+{{/IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+{{#IF_SIDEBAR_STYLE_FIXED}}
+      <span class="section-title">{{ section.title }}</span>
+{{/IF_SIDEBAR_STYLE_FIXED}}
+{{#IF_SIDEBAR_STYLE_MINIMAL}}
+      <span class="section-title">{{ section.title }}</span>
+{{/IF_SIDEBAR_STYLE_MINIMAL}}
+        <ul class="nav-items">
+          {% for item in section.items %}
+          <li>
+            <a
+              href="{{ item.url }}"
+              class="nav-link {% if page.url == item.url %}is-active{% endif %}"
+              {% if page.url == item.url %}aria-current="page"{% endif %}
+            >
+              {{ item.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+{{#IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+      </details>
+{{/IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{{/IF_FRAMEWORK_ELEVENTY}}

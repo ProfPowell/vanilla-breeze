@@ -1,0 +1,57 @@
+---
+const pathname = Astro.url.pathname;
+---
+
+<header>
+  <nav aria-label="Main navigation">
+    <a href="/">{{SITE_NAME}}</a>
+    <ul>
+      <li><a href="/" aria-current={pathname === '/' ? 'page' : undefined}>Home</a></li>
+      <li><a href="/about" aria-current={pathname === '/about' ? 'page' : undefined}>About</a></li>
+      <li><a href="/blog" aria-current={pathname.startsWith('/blog') ? 'page' : undefined}>Blog</a></li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-block-end: 1px solid var(--border);
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-inline-size: var(--content-width);
+    margin-inline: auto;
+    padding-block: var(--spacing-md);
+    padding-inline: var(--spacing-lg);
+  }
+
+  nav > a:first-child {
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  ul {
+    display: flex;
+    gap: var(--spacing-lg);
+    list-style: none;
+  }
+
+  ul a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+  }
+
+  ul a:hover,
+  ul a[aria-current="page"] {
+    color: var(--primary);
+  }
+</style>

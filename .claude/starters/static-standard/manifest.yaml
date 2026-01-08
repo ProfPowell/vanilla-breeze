@@ -1,0 +1,75 @@
+name: static-standard
+displayName: "Static Website"
+description: "Multi-page static website with semantic HTML, design tokens, and accessibility"
+version: "1.0.0"
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project folder name"
+    type: string
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "Lowercase letters, numbers, and hyphens only"
+
+  - key: SITE_NAME
+    label: "Site name"
+    type: string
+    required: true
+    description: "Display name for the website"
+
+  - key: SITE_URL
+    label: "Production URL"
+    type: string
+    required: true
+    validate: "^https?://"
+    description: "Full URL including https://"
+
+  - key: DESCRIPTION
+    label: "Site description"
+    type: string
+    required: true
+    maxLength: 160
+    description: "SEO description (max 160 characters)"
+
+  - key: AUTHOR
+    label: "Author/Organization"
+    type: string
+    default: ""
+
+  - key: THEME_COLOR
+    label: "Theme color"
+    type: string
+    default: "#1e40af"
+    validate: "^#[0-9a-fA-F]{6}$"
+    description: "Brand color in hex format"
+
+  - key: PAGES
+    label: "Initial pages"
+    type: string
+    default: "index,about,contact"
+    description: "Comma-separated list of pages to create"
+
+includes:
+  - from: _shared/styles/_reset.css
+    to: src/assets/css/_reset.css
+  - from: _shared/styles/_tokens.css
+    to: src/assets/css/_tokens.css
+  - from: _shared/components/x-icon/
+    to: src/assets/js/components/x-icon/
+  - from: _shared/templates/error-pages/404.html
+    to: src/errors/404.html
+  - from: _shared/templates/error-pages/500.html
+    to: src/errors/500.html
+
+skills:
+  - xhtml-author
+  - css-author
+  - metadata
+  - accessibility-checker
+  - i18n
+  - performance
+  - security
+
+postScaffold:
+  - echo "Static site scaffolded successfully!"
+  - echo "Run a local server: npx serve src"

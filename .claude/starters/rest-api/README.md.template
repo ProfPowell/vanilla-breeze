@@ -1,0 +1,159 @@
+# {{PROJECT_NAME}}
+
+{{DESCRIPTION}}
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+
+# Run migrations
+npm run db:migrate
+
+# Seed data (optional)
+npm run db:seed
+
+# Start development server
+npm run dev
+```
+
+Server runs at `http://localhost:{{PORT}}`
+
+## Project Structure
+
+```
+src/
+├── index.js              # Entry point, server setup
+├── config/
+│   └── index.js          # Configuration with validation
+├── api/
+│   ├── routes.js         # Route definitions
+│   ├── handlers/         # Request handlers
+│   │   ├── health.js     # Health checks
+│   │   ├── auth.js       # Authentication
+│   │   ├── users.js      # User profile
+│   │   └── items.js      # Items CRUD
+│   └── middleware/
+│       ├── auth.js       # JWT authentication
+│       ├── error.js      # Error handling
+│       └── method-override.js
+├── services/             # Business logic
+│   ├── auth.js           # Token generation
+│   ├── user.js           # User operations
+│   └── item.js           # Item operations
+├── db/
+│   ├── client.js         # PostgreSQL pool
+│   ├── migrate.js        # Migration runner
+│   ├── seed.js           # Seed runner
+│   ├── migrations/       # Database migrations
+│   ├── seeds/            # Seed data
+│   └── queries/          # SQL queries
+└── lib/
+    ├── logger.js         # Structured logging
+    └── errors.js         # Custom error classes
+```
+
+## API Endpoints
+
+### Health
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Liveness check |
+| GET | `/ready` | Readiness check (includes DB) |
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/auth/register` | Register new user |
+| POST | `/api/v1/auth/login` | Login and get tokens |
+| POST | `/api/v1/auth/refresh` | Refresh access token |
+| POST | `/api/v1/auth/logout` | Logout (requires auth) |
+| GET | `/api/v1/auth/me` | Get current user (requires auth) |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/users/me` | Get profile |
+| PATCH | `/api/v1/users/me` | Update profile |
+| PUT | `/api/v1/users/me/password` | Change password |
+
+### Items
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/items` | List items (supports pagination) |
+| POST | `/api/v1/items` | Create item |
+| GET | `/api/v1/items/:id` | Get item by ID |
+| PATCH | `/api/v1/items/:id` | Update item |
+| DELETE | `/api/v1/items/:id` | Delete item |
+
+## Database
+
+```bash
+# Run all pending migrations
+npm run db:migrate
+
+# Rollback last migration
+npm run db:migrate:down
+
+# Check migration status
+npm run db:migrate:status
+
+# Seed database
+npm run db:seed
+
+# Reset (drop all, migrate, seed)
+npm run db:reset
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `PORT` | Server port | No (default: {{PORT}}) |
+| `NODE_ENV` | Environment | No (default: development) |
+| `DATABASE_URL` | PostgreSQL connection URL | Yes (production) |
+| `JWT_SECRET` | Secret for signing tokens | Yes (production) |
+| `JWT_EXPIRES_IN` | Access token expiry | No (default: 15m) |
+| `REFRESH_TOKEN_EXPIRES_IN` | Refresh token expiry | No (default: 7d) |
+| `CORS_ORIGIN` | Allowed CORS origin | No |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window | No (default: 60000) |
+| `RATE_LIMIT_MAX` | Max requests per window | No (default: 100) |
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run API tests only
+npm run test:api
+
+# Run unit tests only
+npm run test:unit
+```
+
+## Validation
+
+```bash
+npm run lint:js         # JavaScript linting
+npm run lint:api        # API endpoint checks
+npm run validate:all    # Run all validations
+```
+
+## API Documentation
+
+OpenAPI spec available at `/openapi.yaml`
+
+## Built With
+
+- Express.js
+- PostgreSQL
+- JWT Authentication
+- Argon2 Password Hashing
+- [Project Template](https://github.com/ProfPowell/project-template)

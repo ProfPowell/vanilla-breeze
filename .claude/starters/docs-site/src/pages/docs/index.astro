@@ -1,0 +1,86 @@
+{{#IF_FRAMEWORK_ASTRO}}
+---
+import { getCollection } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+const docs = await getCollection('docs', ({ data }) => !data.draft);
+
+// Get root-level docs (no folder) for the index
+const rootDocs = docs
+  .filter(doc => !doc.slug.includes('/'))
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+
+// Get sections (first-level folders)
+const sections = [...new Set(
+  docs
+    .filter(doc => doc.slug.includes('/'))
+    .map(doc => doc.slug.split('/')[0])
+)];
+---
+
+<DocsLayout title="Documentation">
+  <p class="intro">
+    Welcome to the {{SITE_NAME}} documentation. Use the sidebar to navigate
+    or browse the sections below.
+  </p>
+
+  {sections.length > 0 && (
+    <section class="sections-grid">
+      {sections.map((section) => {
+        const sectionDocs = docs.filter(doc => doc.slug.startsWith(section + '/'));
+        const title = section
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+        return (
+          <a href={`/docs/${section}/`} class="section-card">
+            <h2>{title}</h2>
+            <p>{sectionDocs.length} articles</p>
+          </a>
+        );
+      })}
+    </section>
+  )}
+</DocsLayout>
+
+<style>
+  .intro {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-block-end: var(--space-8);
+  }
+
+  .sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .section-card {
+    display: block;
+    padding: var(--space-5);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .section-card:hover {
+    border-color: {{THEME_COLOR}};
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.1);
+  }
+
+  .section-card h2 {
+    font-size: var(--font-size-lg);
+    margin-block-end: var(--space-1);
+    color: var(--color-text);
+  }
+
+  .section-card p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+</style>
+{{/IF_FRAMEWORK_ASTRO}}

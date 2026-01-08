@@ -1,0 +1,52 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/scripts/skill-injector.js 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(html|xhtml|htm)$'; then (echo '=== html-validate ===' ; npx html-validate \"$file_path\" 2>&1 ; echo '=== htmlhint ===' ; npx htmlhint \"$file_path\" 2>&1 ; echo '=== pa11y (WCAG2AA) ===' ; npx pa11y \"$file_path\" 2>&1 ; node .claude/scripts/semantic-check.js \"$file_path\" 2>&1) | node .claude/scripts/fix-suggestions.js --type=html ; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.css$'; then (echo '=== stylelint ===' ; npx stylelint \"$file_path\" 2>&1) | node .claude/scripts/fix-suggestions.js --type=css ; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.js$'; then (echo '=== eslint ===' ; npx eslint \"$file_path\" 2>&1) | node .claude/scripts/fix-suggestions.js --type=js; if echo \"$file_path\" | grep -qE '^.claude/scripts/[^/]+\\.js$'; then base=$(basename \"$file_path\" .js); test_file=\".claude/test/validators/${base}.test.js\"; if [ ! -f \"$test_file\" ]; then echo ''; echo '=== test coverage ==='; echo \"Missing test file: $test_file\"; echo 'Create tests using: /skill unit-testing'; fi; fi; if echo \"$file_path\" | grep -qE '^src/(api|routes|server)/'; then echo ''; echo '=== api-check ===' ; node .claude/scripts/api-check.js \"$file_path\" 2>&1 ; fi; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.js$' && (echo \"$file_path\" | grep -qE '/src/' || echo \"$file_path\" | grep -qE '^\\.claude/scripts/'); then node .claude/scripts/type-check.js \"$file_path\" 2>&1 | head -20; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.md$' && ! echo \"$file_path\" | grep -qE '(\\.worklog|node_modules)/'; then (echo '=== markdownlint ===' ; npx markdownlint \"$file_path\" 2>&1 ; echo '=== cspell ===' ; npx cspell \"$file_path\" --no-progress 2>&1) | node .claude/scripts/fix-suggestions.js --type=md ; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(json|yaml|yml)$' && ! echo \"$file_path\" | grep -qE '(node_modules|package-lock\\.json)'; then node .claude/scripts/config-validator.js \"$file_path\" 2>&1 | node .claude/scripts/fix-suggestions.js --type=config ; fi"
+          },
+          {
+            "type": "command",
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qiE '\\.(jpe?g|png)$' && ! echo \"$file_path\" | grep -qE 'node_modules'; then node .claude/scripts/auto-optimize-image.js \"$file_path\" 2>&1 | head -10; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty' 2>/dev/null); if echo \"$cmd\" | grep -qE 'git commit'; then node .claude/scripts/uat-reminder.js 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

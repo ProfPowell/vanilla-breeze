@@ -1,0 +1,78 @@
+---
+/**
+ * Table of contents component
+ * Renders headings as a navigation list
+ */
+interface Props {
+  headings: { depth: number; slug: string; text: string }[];
+}
+
+const { headings } = Astro.props;
+
+// Filter to h2 and h3 only for cleaner TOC
+const filteredHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
+---
+
+{filteredHeadings.length > 0 && (
+  <nav class="toc-nav" aria-label="Table of contents">
+    <h2 class="toc-title">On this page</h2>
+    <ul class="toc-list">
+      {filteredHeadings.map((heading) => (
+        <li class={`toc-item toc-depth-${heading.depth}`}>
+          <a href={`#${heading.slug}`} class="toc-link">
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+  .toc-nav {
+    position: sticky;
+    top: var(--space-4);
+    max-height: calc(100vh - var(--space-8));
+    overflow-y: auto;
+    padding: var(--space-4);
+    font-size: var(--font-size-sm);
+  }
+
+  .toc-title {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-block-end: var(--space-3);
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item {
+    margin-block: var(--space-1);
+  }
+
+  .toc-depth-3 {
+    padding-inline-start: var(--space-3);
+  }
+
+  .toc-link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    display: block;
+    padding-block: var(--space-1);
+    border-inline-start: 2px solid transparent;
+    padding-inline-start: var(--space-2);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .toc-link:hover {
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+</style>

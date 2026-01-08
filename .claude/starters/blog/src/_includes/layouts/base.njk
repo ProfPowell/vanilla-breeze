@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="{{ site.language }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content="Eleventy" />
+
+  <title>{{ title }} | {{ site.name }}</title>
+  <meta name="description" content="{{ description or site.description }}" />
+
+  <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
+  <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS Feed" href="/feed.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="{{ 'article' if layout == 'layouts/post.njk' else 'website' }}" />
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
+  <meta property="og:title" content="{{ title }}" />
+  <meta property="og:description" content="{{ description or site.description }}" />
+  {% if image %}
+  <meta property="og:image" content="{{ site.url }}{{ image }}" />
+  {% endif %}
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="{{ 'summary_large_image' if image else 'summary' }}" />
+  <meta name="twitter:title" content="{{ title }}" />
+  <meta name="twitter:description" content="{{ description or site.description }}" />
+  {% if image %}
+  <meta name="twitter:image" content="{{ site.url }}{{ image }}" />
+  {% endif %}
+
+  {% if date %}
+  <meta property="article:published_time" content="{{ date | dateISO }}" />
+  {% endif %}
+
+  <meta name="theme-color" content="{{ site.themeColor }}" />
+
+  <link rel="stylesheet" href="/styles/blog.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="header-content">
+      <a href="/" class="site-title">{{ site.name }}</a>
+      <nav aria-label="Main navigation">
+        <ul class="nav-list">
+          <li><a href="/">Home</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/feed.xml">RSS</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    {{ content | safe }}
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; {{ "now" | date: "%Y" }} {{ site.author.name }}. All rights reserved.</p>
+  </footer>
+</body>
+</html>

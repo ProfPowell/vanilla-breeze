@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Feedback Patterns Demo</title>
+  <meta name="description" content="Demonstration of feedback UI patterns including alerts, toasts, modals, and loading states"/>
+  <link rel="stylesheet" href="feedback.css"/>
+</head>
+<body>
+  <page-shell>
+    <!-- Site Banner -->
+    <site-banner data-type="promo" data-position="top" data-sticky>
+      <div data-content>
+        <p>New Feature: Dark mode is now available! <a href="#settings">Try it out</a></p>
+      </div>
+      <button data-dismiss aria-label="Dismiss banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </site-banner>
+
+    <site-header data-sticky>
+      <a href="/" data-logo>FeedbackUI</a>
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="#alerts">Alerts</a></li>
+          <li><a href="#toasts">Toasts</a></li>
+          <li><a href="#modals">Modals</a></li>
+          <li><a href="#loading">Loading</a></li>
+        </ul>
+      </nav>
+    </site-header>
+
+    <main id="main">
+      <!-- Hero Section -->
+      <hero-section data-size="medium" data-align="center">
+        <div data-content>
+          <h1>Feedback Patterns</h1>
+          <p data-subhead>User feedback components for notifications, alerts, loading states, and interactive dialogs.</p>
+        </div>
+      </hero-section>
+
+      <!-- Alert Section -->
+      <section id="alerts" class="pattern-section">
+        <header class="section-header">
+          <h2>Alerts</h2>
+          <p>Inline messages for feedback and status information.</p>
+        </header>
+
+        <section class="pattern-grid">
+          <!-- Info Alert -->
+          <alert-message data-type="info" data-style="subtle">
+            <svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            <div data-content>
+              <strong data-title>Information</strong>
+              <p>Your session will expire in 5 minutes.</p>
+            </div>
+            <button data-dismiss aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </alert-message>
+
+          <!-- Success Alert -->
+          <alert-message data-type="success" data-style="subtle">
+            <svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <div data-content>
+              <strong data-title>Success!</strong>
+              <p>Your profile has been updated successfully.</p>
+            </div>
+          </alert-message>
+
+          <!-- Warning Alert -->
+          <alert-message data-type="warning" data-style="filled">
+            <svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div data-content>
+              <strong data-title>Warning</strong>
+              <p>Your storage is almost full. Consider upgrading your plan.</p>
+            </div>
+          </alert-message>
+
+          <!-- Error Alert -->
+          <alert-message data-type="error" data-style="filled">
+            <svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div data-content>
+              <strong data-title>Error</strong>
+              <p>Unable to save changes. Please try again.</p>
+            </div>
+            <button data-dismiss aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </alert-message>
+        </section>
+      </section>
+
+      <!-- Toast Section -->
+      <section id="toasts" class="pattern-section">
+        <header class="section-header">
+          <h2>Toast Notifications</h2>
+          <p>Temporary messages for action feedback.</p>
+        </header>
+
+        <div class="toast-demo">
+          <div class="toast-buttons">
+            <button data-button="primary" onclick="showToast('success')">Show Success</button>
+            <button data-button="secondary" onclick="showToast('error')">Show Error</button>
+            <button data-button="secondary" onclick="showToast('info')">Show Info</button>
+            <button data-button="secondary" onclick="showToast('warning')">Show Warning</button>
+          </div>
+        </div>
+
+        <!-- Toast Region -->
+        <toast-region data-position="bottom-right" aria-live="polite" aria-label="Notifications"></toast-region>
+      </section>
+
+      <!-- Modal Section -->
+      <section id="modals" class="pattern-section">
+        <header class="section-header">
+          <h2>Modals &amp; Popovers</h2>
+          <p>Dialogs and contextual overlays.</p>
+        </header>
+
+        <div class="modal-demos">
+          <button data-button="primary" onclick="document.querySelector('#demo-modal dialog').showModal()">
+            Open Modal
+          </button>
+
+          <popover-menu>
+            <button popovertarget="actions-menu" data-button="secondary">
+              Actions Menu
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="actions-menu" popover data-position="bottom">
+              <nav aria-label="Actions">
+                <a href="#edit">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </a>
+                <a href="#duplicate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Duplicate
+                </a>
+                <hr/>
+                <button type="button" data-danger>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Delete
+                </button>
+              </nav>
+            </div>
+          </popover-menu>
+
+          <button popovertarget="tooltip-demo" data-button="ghost">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Help
+          </button>
+          <div id="tooltip-demo" popover="manual" class="tooltip" data-position="top">
+            Click to see helpful information about this feature.
+          </div>
+        </div>
+
+        <!-- Demo Modal -->
+        <modal-dialog id="demo-modal" data-size="medium">
+          <dialog aria-labelledby="modal-title">
+            <header data-header>
+              <h2 id="modal-title">Edit Settings</h2>
+              <button data-close aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </header>
+            <div data-body>
+              <form id="settings-form">
+                <label>
+                  Display Name
+                  <input type="text" name="name" value="John Doe"/>
+                </label>
+                <label>
+                  Email
+                  <input type="email" name="email" value="john@example.com"/>
+                </label>
+                <label>
+                  <input type="checkbox" name="notifications" checked/>
+                  Enable email notifications
+                </label>
+              </form>
+            </div>
+            <footer data-footer>
+              <button data-action="cancel">Cancel</button>
+              <button data-action="confirm" data-button="primary">Save Changes</button>
+            </footer>
+          </dialog>
+        </modal-dialog>
+      </section>
+
+      <!-- Loading States Section -->
+      <section id="loading" class="pattern-section">
+        <header class="section-header">
+          <h2>Loading States</h2>
+          <p>Progress indicators and skeleton loaders.</p>
+        </header>
+
+        <!-- Progress Bars -->
+        <div class="loading-demos">
+          <h3>Progress Bars</h3>
+
+          <progress-bar data-size="small">
+            <label>Small progress</label>
+            <progress value="25" max="100">25%</progress>
+            <span data-value>25%</span>
+          </progress-bar>
+
+          <progress-bar data-size="medium" data-color="success">
+            <label>Upload complete</label>
+            <progress value="100" max="100">100%</progress>
+            <span data-value>100%</span>
+          </progress-bar>
+
+          <progress-bar data-size="large" data-striped data-animated>
+            <label>Processing files...</label>
+            <progress value="65" max="100">65%</progress>
+            <span data-value>65%</span>
+          </progress-bar>
+
+          <progress-bar data-size="medium">
+            <label>Loading...</label>
+            <progress>Loading...</progress>
+          </progress-bar>
+
+          <!-- Step Progress -->
+          <h3>Step Progress</h3>
+          <step-progress style="--progress-width: 66%">
+            <div data-step="complete">
+              <span data-step-indicator>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span data-step-label>Account</span>
+            </div>
+            <div data-step="complete">
+              <span data-step-indicator>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span data-step-label>Profile</span>
+            </div>
+            <div data-step="active">
+              <span data-step-indicator>3</span>
+              <span data-step-label>Preferences</span>
+            </div>
+            <div data-step>
+              <span data-step-indicator>4</span>
+              <span data-step-label>Complete</span>
+            </div>
+          </step-progress>
+        </div>
+
+        <!-- Skeleton Loaders -->
+        <div class="skeleton-demos">
+          <h3>Skeleton Loaders</h3>
+
+          <div class="skeleton-grid">
+            <skeleton-loader data-type="card" data-animation="shimmer">
+              <div data-skeleton="image"></div>
+              <div data-skeleton="heading"></div>
+              <div data-skeleton="text"></div>
+              <div data-skeleton="text" style="width: 80%"></div>
+            </skeleton-loader>
+
+            <skeleton-loader data-type="list-item" data-animation="shimmer">
+              <div data-skeleton="avatar"></div>
+              <div>
+                <div data-skeleton="heading" style="width: 50%"></div>
+                <div data-skeleton="text"></div>
+              </div>
+            </skeleton-loader>
+
+            <skeleton-loader data-type="profile" data-animation="pulse">
+              <div data-skeleton="avatar-lg"></div>
+              <div data-skeleton="heading" style="width: 40%"></div>
+              <div data-skeleton="text" style="width: 25%"></div>
+            </skeleton-loader>
+          </div>
+        </div>
+      </section>
+
+      <!-- Empty States Section -->
+      <section id="empty-states" class="pattern-section">
+        <header class="section-header">
+          <h2>Empty States</h2>
+          <p>Placeholders when there's no data.</p>
+        </header>
+
+        <div class="empty-state-demos">
+          <empty-state data-size="medium" data-type="default">
+            <svg data-illustration width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <h3 data-title>No projects yet</h3>
+            <p data-description>Create your first project to get started organizing your work.</p>
+            <div data-actions>
+              <a href="#create" data-button="primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Create Project
+              </a>
+            </div>
+          </empty-state>
+
+          <empty-state data-size="small" data-type="no-results">
+            <svg data-illustration width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <h3 data-title>No results found</h3>
+            <p data-description>Try adjusting your search or filters.</p>
+            <div data-actions>
+              <button data-button="secondary">Clear Filters</button>
+            </div>
+          </empty-state>
+
+          <empty-state data-size="small" data-type="success">
+            <svg data-illustration width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <h3 data-title>All caught up!</h3>
+            <p data-description>You've completed all your tasks.</p>
+          </empty-state>
+        </div>
+      </section>
+    </main>
+
+    <site-footer>
+      <div data-legal>
+        <p>&copy; 2025 Feedback Patterns Demo</p>
+      </div>
+    </site-footer>
+  </page-shell>
+
+  <script>
+    // Toast functionality
+    function showToast(type) {
+      const region = document.querySelector('toast-region');
+      const messages = {
+        success: { title: 'Success!', message: 'Your changes have been saved.' },
+        error: { title: 'Error', message: 'Something went wrong. Please try again.' },
+        info: { title: 'Info', message: 'Your session will expire soon.' },
+        warning: { title: 'Warning', message: 'This action cannot be undone.' }
+      };
+
+      const icons = {
+        success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+        warning: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      };
+
+      const toast = document.createElement('toast-notification');
+      toast.setAttribute('data-type', type);
+      toast.innerHTML = `
+        <span data-icon>${icons[type]}</span>
+        <div data-content>
+          <strong data-title>${messages[type].title}</strong>
+          <p>${messages[type].message}</p>
+        </div>
+        <button data-dismiss aria-label="Dismiss">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      `;
+
+      region.appendChild(toast);
+
+      // Auto dismiss after 5 seconds
+      setTimeout(() => {
+        toast.setAttribute('data-exiting', '');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+
+      // Manual dismiss
+      toast.querySelector('[data-dismiss]').addEventListener('click', () => {
+        toast.setAttribute('data-exiting', '');
+        setTimeout(() => toast.remove(), 300);
+      });
+    }
+
+    // Banner dismiss
+    document.querySelectorAll('site-banner [data-dismiss]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('site-banner').remove();
+      });
+    });
+
+    // Alert dismiss
+    document.querySelectorAll('alert-message [data-dismiss]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const alert = btn.closest('alert-message');
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateX(1rem)';
+        setTimeout(() => alert.remove(), 200);
+      });
+    });
+
+    // Modal functionality
+    class ModalDialog extends HTMLElement {
+      connectedCallback() {
+        this.dialog = this.querySelector('dialog');
+
+        this.querySelector('[data-close]')?.addEventListener('click', () => this.close());
+        this.querySelector('[data-action="cancel"]')?.addEventListener('click', () => this.close());
+        this.querySelector('[data-action="confirm"]')?.addEventListener('click', () => {
+          showToast('success');
+          this.close();
+        });
+
+        this.dialog.addEventListener('click', (e) => {
+          if (e.target === this.dialog) this.close();
+        });
+      }
+
+      close() {
+        this.dialog.close();
+      }
+    }
+    customElements.define('modal-dialog', ModalDialog);
+
+    // Popover menu
+    class PopoverMenu extends HTMLElement {
+      connectedCallback() {
+        const trigger = this.querySelector('[popovertarget]');
+        const popover = this.querySelector('[popover]');
+        if (!trigger || !popover) return;
+
+        popover.addEventListener('toggle', (e) => {
+          trigger.setAttribute('aria-expanded', e.newState === 'open');
+        });
+      }
+    }
+    customElements.define('popover-menu', PopoverMenu);
+
+    // Tooltip toggle on hover
+    document.querySelectorAll('[popovertarget][data-button="ghost"]').forEach(btn => {
+      const popoverId = btn.getAttribute('popovertarget');
+      const popover = document.getElementById(popoverId);
+
+      btn.addEventListener('mouseenter', () => popover.showPopover());
+      btn.addEventListener('mouseleave', () => popover.hidePopover());
+      btn.addEventListener('focus', () => popover.showPopover());
+      btn.addEventListener('blur', () => popover.hidePopover());
+    });
+  </script>
+</body>
+</html>

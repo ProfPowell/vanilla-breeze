@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{DISPLAY_NAME}} - Design System Documentation</title>
+  <meta name="description" content="{{DESCRIPTION}}"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>"/>
+
+  <script type="module" src="../src/index.js"></script>
+
+  <style>
+    @import '../src/tokens/index.css';
+
+    body {
+      font-family: var(--{{COMPONENT_PREFIX}}-font-sans);
+      line-height: var(--{{COMPONENT_PREFIX}}-line-height-normal);
+      color: var(--{{COMPONENT_PREFIX}}-color-text);
+      background-color: var(--{{COMPONENT_PREFIX}}-color-background);
+      margin: 0;
+      padding: 0;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 16rem 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-surface);
+      border-right: 1px solid var(--{{COMPONENT_PREFIX}}-color-border);
+      padding: var(--{{COMPONENT_PREFIX}}-space-6);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h1 {
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-lg);
+      margin: 0 0 var(--{{COMPONENT_PREFIX}}-space-6);
+    }
+
+    .nav-section {
+      margin-bottom: var(--{{COMPONENT_PREFIX}}-space-6);
+    }
+
+    .nav-section h2 {
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--{{COMPONENT_PREFIX}}-letter-spacing-wider);
+      color: var(--{{COMPONENT_PREFIX}}-color-text-muted);
+      margin: 0 0 var(--{{COMPONENT_PREFIX}}-space-2);
+    }
+
+    .nav-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-section a {
+      display: block;
+      padding: var(--{{COMPONENT_PREFIX}}-space-2);
+      color: var(--{{COMPONENT_PREFIX}}-color-text);
+      text-decoration: none;
+      border-radius: var(--{{COMPONENT_PREFIX}}-radius-md);
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-sm);
+    }
+
+    .nav-section a:hover {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-gray-100);
+    }
+
+    .nav-section a.active {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-primary-lighter);
+      color: var(--{{COMPONENT_PREFIX}}-color-primary-dark);
+    }
+
+    main {
+      padding: var(--{{COMPONENT_PREFIX}}-space-8);
+      max-width: 64rem;
+    }
+
+    h1 { font-size: var(--{{COMPONENT_PREFIX}}-font-size-4xl); margin: 0 0 var(--{{COMPONENT_PREFIX}}-space-4); }
+    h2 { font-size: var(--{{COMPONENT_PREFIX}}-font-size-2xl); margin: var(--{{COMPONENT_PREFIX}}-space-8) 0 var(--{{COMPONENT_PREFIX}}-space-4); }
+    h3 { font-size: var(--{{COMPONENT_PREFIX}}-font-size-xl); margin: var(--{{COMPONENT_PREFIX}}-space-6) 0 var(--{{COMPONENT_PREFIX}}-space-3); }
+
+    .lead {
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-lg);
+      color: var(--{{COMPONENT_PREFIX}}-color-text-muted);
+      margin-bottom: var(--{{COMPONENT_PREFIX}}-space-8);
+    }
+
+    .example {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-surface);
+      border: 1px solid var(--{{COMPONENT_PREFIX}}-color-border);
+      border-radius: var(--{{COMPONENT_PREFIX}}-radius-lg);
+      margin-bottom: var(--{{COMPONENT_PREFIX}}-space-6);
+    }
+
+    .example-preview {
+      padding: var(--{{COMPONENT_PREFIX}}-space-6);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--{{COMPONENT_PREFIX}}-space-4);
+      align-items: center;
+    }
+
+    .example-code {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-gray-900);
+      color: var(--{{COMPONENT_PREFIX}}-color-gray-100);
+      padding: var(--{{COMPONENT_PREFIX}}-space-4);
+      border-top: 1px solid var(--{{COMPONENT_PREFIX}}-color-border);
+      border-radius: 0 0 var(--{{COMPONENT_PREFIX}}-radius-lg) var(--{{COMPONENT_PREFIX}}-radius-lg);
+      overflow-x: auto;
+      font-family: var(--{{COMPONENT_PREFIX}}-font-mono);
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-sm);
+    }
+
+    .example-code pre {
+      margin: 0;
+    }
+
+    .props-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--{{COMPONENT_PREFIX}}-space-4) 0;
+    }
+
+    .props-table th,
+    .props-table td {
+      text-align: left;
+      padding: var(--{{COMPONENT_PREFIX}}-space-3);
+      border-bottom: 1px solid var(--{{COMPONENT_PREFIX}}-color-border);
+    }
+
+    .props-table th {
+      font-weight: var(--{{COMPONENT_PREFIX}}-font-weight-semibold);
+      background-color: var(--{{COMPONENT_PREFIX}}-color-gray-50);
+    }
+
+    .props-table code {
+      background-color: var(--{{COMPONENT_PREFIX}}-color-gray-100);
+      padding: var(--{{COMPONENT_PREFIX}}-space-1);
+      border-radius: var(--{{COMPONENT_PREFIX}}-radius-sm);
+      font-size: var(--{{COMPONENT_PREFIX}}-font-size-sm);
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--{{COMPONENT_PREFIX}}-color-border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>{{DISPLAY_NAME}}</h1>
+
+      <nav class="nav-section">
+        <h2>Getting Started</h2>
+        <ul>
+          <li><a href="index.html" class="active">Introduction</a></li>
+          <li><a href="tokens.html">Design Tokens</a></li>
+          <li><a href="installation.html">Installation</a></li>
+        </ul>
+      </nav>
+
+      <nav class="nav-section">
+        <h2>Components</h2>
+        <ul>
+          <li><a href="components/button.html">Button</a></li>
+          <li><a href="components/input.html">Input</a></li>
+          <li><a href="components/card.html">Card</a></li>
+          <li><a href="components/badge.html">Badge</a></li>
+          <li><a href="components/icon.html">Icon</a></li>
+          <li><a href="components/dialog.html">Dialog</a></li>
+          <li><a href="components/dropdown.html">Dropdown</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <h1>{{DISPLAY_NAME}}</h1>
+      <p class="lead">{{DESCRIPTION}}</p>
+
+      <h2>Quick Start</h2>
+      <p>Install the package and import components:</p>
+
+      <div class="example">
+        <div class="example-code">
+          <pre>npm install {{LIBRARY_NAME}}</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-code">
+          <pre>import '{{LIBRARY_NAME}}';</pre>
+        </div>
+      </div>
+
+      <h2>Components</h2>
+      <p>Explore the available components with live examples:</p>
+
+      <h3>Button</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-button>Default</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-button variant="primary">Primary</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-button variant="secondary">Secondary</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-button variant="outline">Outline</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-button variant="ghost">Ghost</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-button variant="danger">Danger</{{COMPONENT_PREFIX}}-button>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-button variant="primary"&gt;Primary&lt;/{{COMPONENT_PREFIX}}-button&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Input</h3>
+      <div class="example">
+        <div class="example-preview" style="flex-direction: column; align-items: stretch; max-width: 20rem;">
+          <{{COMPONENT_PREFIX}}-input label="Email" type="email" placeholder="you@example.com"></{{COMPONENT_PREFIX}}-input>
+          <{{COMPONENT_PREFIX}}-input label="Password" type="password" hint="At least 8 characters"></{{COMPONENT_PREFIX}}-input>
+          <{{COMPONENT_PREFIX}}-input label="Username" error="Username is already taken"></{{COMPONENT_PREFIX}}-input>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-input label="Email" type="email"&gt;&lt;/{{COMPONENT_PREFIX}}-input&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Card</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-card style="max-width: 20rem;">
+            <div slot="header"><strong>Card Title</strong></div>
+            <p>This is the card content. Cards can contain any content.</p>
+            <div slot="footer">
+              <{{COMPONENT_PREFIX}}-button size="sm">Action</{{COMPONENT_PREFIX}}-button>
+            </div>
+          </{{COMPONENT_PREFIX}}-card>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-card&gt;
+  &lt;div slot="header"&gt;Card Title&lt;/div&gt;
+  &lt;p&gt;Card content&lt;/p&gt;
+&lt;/{{COMPONENT_PREFIX}}-card&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Badge</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-badge>Default</{{COMPONENT_PREFIX}}-badge>
+          <{{COMPONENT_PREFIX}}-badge variant="primary">Primary</{{COMPONENT_PREFIX}}-badge>
+          <{{COMPONENT_PREFIX}}-badge variant="success">Success</{{COMPONENT_PREFIX}}-badge>
+          <{{COMPONENT_PREFIX}}-badge variant="warning">Warning</{{COMPONENT_PREFIX}}-badge>
+          <{{COMPONENT_PREFIX}}-badge variant="error">Error</{{COMPONENT_PREFIX}}-badge>
+          <{{COMPONENT_PREFIX}}-badge variant="success" dot></{{COMPONENT_PREFIX}}-badge>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-badge variant="success"&gt;Success&lt;/{{COMPONENT_PREFIX}}-badge&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Icon</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-icon name="check"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="x"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="menu"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="search"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="user"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="settings"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="star"></{{COMPONENT_PREFIX}}-icon>
+          <{{COMPONENT_PREFIX}}-icon name="heart"></{{COMPONENT_PREFIX}}-icon>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-icon name="check"&gt;&lt;/{{COMPONENT_PREFIX}}-icon&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Dialog</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-button id="open-dialog">Open Dialog</{{COMPONENT_PREFIX}}-button>
+          <{{COMPONENT_PREFIX}}-dialog id="demo-dialog" label="Example Dialog">
+            <div slot="header">Dialog Title</div>
+            <p>This is a modal dialog with focus trap and keyboard navigation.</p>
+            <div slot="footer">
+              <{{COMPONENT_PREFIX}}-button variant="secondary" id="cancel-dialog">Cancel</{{COMPONENT_PREFIX}}-button>
+              <{{COMPONENT_PREFIX}}-button variant="primary" id="confirm-dialog">Confirm</{{COMPONENT_PREFIX}}-button>
+            </div>
+          </{{COMPONENT_PREFIX}}-dialog>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-dialog label="Example"&gt;
+  &lt;div slot="header"&gt;Title&lt;/div&gt;
+  &lt;p&gt;Content&lt;/p&gt;
+&lt;/{{COMPONENT_PREFIX}}-dialog&gt;</pre>
+        </div>
+      </div>
+
+      <h3>Dropdown</h3>
+      <div class="example">
+        <div class="example-preview">
+          <{{COMPONENT_PREFIX}}-dropdown>
+            <{{COMPONENT_PREFIX}}-button slot="trigger">Open Menu</{{COMPONENT_PREFIX}}-button>
+            <button>Profile</button>
+            <button>Settings</button>
+            <hr/>
+            <button data-variant="danger">Logout</button>
+          </{{COMPONENT_PREFIX}}-dropdown>
+        </div>
+        <div class="example-code">
+          <pre>&lt;{{COMPONENT_PREFIX}}-dropdown&gt;
+  &lt;{{COMPONENT_PREFIX}}-button slot="trigger"&gt;Menu&lt;/{{COMPONENT_PREFIX}}-button&gt;
+  &lt;button&gt;Option 1&lt;/button&gt;
+  &lt;button&gt;Option 2&lt;/button&gt;
+&lt;/{{COMPONENT_PREFIX}}-dropdown&gt;</pre>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Dialog demo
+    const openBtn = document.getElementById('open-dialog');
+    const dialog = document.getElementById('demo-dialog');
+    const cancelBtn = document.getElementById('cancel-dialog');
+    const confirmBtn = document.getElementById('confirm-dialog');
+
+    openBtn.addEventListener('click', () => dialog.show());
+    cancelBtn.addEventListener('click', () => dialog.close());
+    confirmBtn.addEventListener('click', () => dialog.close());
+  </script>
+</body>
+</html>

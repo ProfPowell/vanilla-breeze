@@ -9,86 +9,89 @@ progress {
   border-radius: var(--radius-full);
   overflow: hidden;
   background: var(--color-surface-raised);
-}
 
-/* WebKit/Blink progress bar track */
-progress::-webkit-progress-bar {
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-full);
-}
+  /* WebKit/Blink progress bar track */
+  &::-webkit-progress-bar {
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-full);
+  }
 
-/* WebKit/Blink progress bar value */
-progress::-webkit-progress-value {
-  background: var(--color-interactive);
-  border-radius: var(--radius-full);
-  transition: inline-size var(--duration-normal) var(--ease-out);
-}
+  /* WebKit/Blink progress bar value */
+  &::-webkit-progress-value {
+    background: var(--color-interactive);
+    border-radius: var(--radius-full);
+    transition: inline-size var(--duration-normal) var(--ease-out);
+  }
 
-/* Firefox progress bar value */
-progress::-moz-progress-bar {
-  background: var(--color-interactive);
-  border-radius: var(--radius-full);
-}
+  /* Firefox progress bar value */
+  &::-moz-progress-bar {
+    background: var(--color-interactive);
+    border-radius: var(--radius-full);
+  }
 
-/* --- Size Variants --- */
+  /* --- Size Variants (use element.class scoping) --- */
 
-.progress-xs {
-  block-size: var(--space-3xs);
-}
+  &.xs {
+    block-size: var(--space-3xs);
+  }
 
-.progress-s {
-  block-size: var(--space-2xs);
-}
+  &.s {
+    block-size: var(--space-2xs);
+  }
 
-.progress-m {
-  block-size: var(--space-s);
-}
+  &.m {
+    block-size: var(--space-s);
+  }
 
-.progress-l {
-  block-size: var(--space-m);
-}
+  &.l {
+    block-size: var(--space-m);
+  }
 
-/* --- Color Variants --- */
+  /* --- Color Variants --- */
 
-.progress-success::-webkit-progress-value {
-  background: oklch(60% 0.18 145);
-}
+  &.success {
+    &::-webkit-progress-value {
+      background: oklch(60% 0.18 145);
+    }
+    &::-moz-progress-bar {
+      background: oklch(60% 0.18 145);
+    }
+  }
 
-.progress-success::-moz-progress-bar {
-  background: oklch(60% 0.18 145);
-}
+  &.warning {
+    &::-webkit-progress-value {
+      background: oklch(75% 0.18 75);
+    }
+    &::-moz-progress-bar {
+      background: oklch(75% 0.18 75);
+    }
+  }
 
-.progress-warning::-webkit-progress-value {
-  background: oklch(75% 0.18 75);
-}
+  &.error {
+    &::-webkit-progress-value {
+      background: oklch(55% 0.2 25);
+    }
+    &::-moz-progress-bar {
+      background: oklch(55% 0.2 25);
+    }
+  }
 
-.progress-warning::-moz-progress-bar {
-  background: oklch(75% 0.18 75);
-}
+  /* --- Indeterminate Progress --- */
 
-.progress-error::-webkit-progress-value {
-  background: oklch(55% 0.2 25);
-}
+  &:indeterminate {
+    animation: progress-indeterminate 1.5s ease-in-out infinite;
 
-.progress-error::-moz-progress-bar {
-  background: oklch(55% 0.2 25);
-}
-
-/* --- Indeterminate Progress --- */
-
-progress:indeterminate {
-  animation: progress-indeterminate 1.5s ease-in-out infinite;
-}
-
-progress:indeterminate::-webkit-progress-bar {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-raised) 0%,
-    var(--color-interactive) 50%,
-    var(--color-surface-raised) 100%
-  );
-  background-size: 200% 100%;
-  animation: progress-indeterminate 1.5s ease-in-out infinite;
+    &::-webkit-progress-bar {
+      background: linear-gradient(
+        90deg,
+        var(--color-surface-raised) 0%,
+        var(--color-interactive) 50%,
+        var(--color-surface-raised) 100%
+      );
+      background-size: 200% 100%;
+      animation: progress-indeterminate 1.5s ease-in-out infinite;
+    }
+  }
 }
 
 @keyframes progress-indeterminate {
@@ -100,9 +103,9 @@ progress:indeterminate::-webkit-progress-bar {
   }
 }
 
-/* --- Labeled Progress --- */
+/* --- Labeled Progress (wrapper pattern) --- */
 
-.progress-labeled {
+.labeled {
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs);

@@ -1,0 +1,76 @@
+---
+/**
+ * Documentation sidebar navigation
+ * Renders navigation from content collection structure
+ */
+import { getCollection } from 'astro:content';
+
+const docs = await getCollection('docs');
+
+// Group docs by section (first folder in path)
+const sections = docs.reduce((acc, doc) => {
+  const parts = doc.slug.split('/');
+  const section = parts.length > 1 ? parts[0] : 'root';
+  if (!acc[section]) acc[section] = [];
+  acc[section].push(doc);
+  return acc;
+}, {} as Record<string, typeof docs>);
+
+// Sort sections and docs within sections
+const sortedSections = Object.entries(sections).sort(([a], [b]) => {
+  const order = ['getting-started', 'guides', 'api-reference', 'examples'];
+  return order.indexOf(a) - order.indexOf(b);
+});
+
+const currentPath = Astro.url.pathname;
+
+function formatSectionTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+---
+
+<nav class="docs-sidebar" id="sidebar" aria-label="Documentation navigation">
+  <ul class="nav-sections">
+    {sortedSections.map(([section, items]) => (
+      <li class="nav-section">
+        {section !== 'root' && (
+{{#IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+          <details open>
+            <summary class="section-title">{formatSectionTitle(section)}</summary>
+{{/IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+{{#IF_SIDEBAR_STYLE_FIXED}}
+          <span class="section-title">{formatSectionTitle(section)}</span>
+{{/IF_SIDEBAR_STYLE_FIXED}}
+{{#IF_SIDEBAR_STYLE_MINIMAL}}
+          <span class="section-title">{formatSectionTitle(section)}</span>
+{{/IF_SIDEBAR_STYLE_MINIMAL}}
+        )}
+        <ul class="nav-items">
+          {items
+            .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99))
+            .map((doc) => {
+              const href = `/docs/${doc.slug}/`;
+              const isActive = currentPath === href;
+              return (
+                <li>
+                  <a
+                    href={href}
+                    class:list={['nav-link', { 'is-active': isActive }]}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {doc.data.title}
+                  </a>
+                </li>
+              );
+            })}
+        </ul>
+{{#IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+          </details>
+{{/IF_SIDEBAR_STYLE_COLLAPSIBLE}}
+      </li>
+    ))}
+  </ul>
+</nav>

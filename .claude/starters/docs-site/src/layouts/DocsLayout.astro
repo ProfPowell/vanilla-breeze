@@ -1,0 +1,70 @@
+---
+/**
+ * Documentation page layout with sidebar navigation
+ */
+import BaseLayout from './BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import TOC from '../components/TOC.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const { title, description, headings = [] } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="docs-layout" data-sidebar="{{SIDEBAR_STYLE}}">
+    <header class="docs-header">
+      <button
+        type="button"
+        class="sidebar-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >
+        <span class="hamburger"></span>
+      </button>
+      <a href="/" class="site-title">{{SITE_NAME}}</a>
+{{#IF_ENABLE_SEARCH}}
+      <div class="search-container">
+        <input
+          type="search"
+          placeholder="Search docs..."
+          aria-label="Search documentation"
+          id="docs-search"
+        />
+      </div>
+{{/IF_ENABLE_SEARCH}}
+    </header>
+
+    <Sidebar />
+
+    <main class="docs-content">
+      <article>
+        <h1>{title}</h1>
+        <slot />
+      </article>
+
+      {headings.length > 0 && (
+        <aside class="toc">
+          <TOC headings={headings} />
+        </aside>
+      )}
+    </main>
+  </div>
+</BaseLayout>
+
+<script>
+  // Mobile sidebar toggle
+  const toggle = document.querySelector('.sidebar-toggle');
+  const sidebar = document.querySelector('.docs-sidebar');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    sidebar?.classList.toggle('is-open');
+  });
+</script>

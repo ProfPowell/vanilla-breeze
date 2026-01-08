@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common/error-response",
+  "title": "Error Response",
+  "description": "Standard API error response format",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code",
+          "examples": ["VALIDATION_ERROR", "NOT_FOUND", "UNAUTHORIZED"]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "details": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ValidationError" }
+            },
+            { "type": "object" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "ValidationError": {
+      "type": "object",
+      "required": ["path", "message"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "JSON pointer to invalid field"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "AJV validation keyword that failed"
+        }
+      }
+    }
+  }
+}

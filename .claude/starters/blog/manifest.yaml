@@ -1,0 +1,132 @@
+name: blog
+displayName: "Blog"
+description: "Full-featured blog with markdown posts, RSS feed, categories, and tags"
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project name"
+    required: true
+    pattern: "^[a-z][a-z0-9-]*$"
+    description: "Lowercase with hyphens (e.g., my-tech-blog)"
+
+  - key: BLOG_NAME
+    label: "Blog name"
+    required: true
+    description: "Display name for the blog (e.g., My Tech Blog)"
+
+  - key: DESCRIPTION
+    label: "Blog description"
+    required: true
+    maxLength: 160
+    description: "Short description for SEO and RSS feed"
+
+  - key: AUTHOR_NAME
+    label: "Author name"
+    required: true
+    description: "Default author for posts"
+
+  - key: AUTHOR_EMAIL
+    label: "Author email"
+    required: false
+    description: "For RSS feed and contact"
+
+  - key: FRAMEWORK
+    label: "Site framework"
+    type: select
+    options:
+      - astro
+      - eleventy
+    default: astro
+    description: "astro=islands architecture with TypeScript, eleventy=zero-JS by default"
+
+  - key: THEME_COLOR
+    label: "Theme color"
+    default: "#1e40af"
+    description: "Primary brand color (hex)"
+
+  - key: SITE_URL
+    label: "Production URL"
+    required: false
+    default: "https://example.com"
+    description: "Used for RSS feed and canonical URLs"
+
+  - key: ENABLE_COMMENTS
+    label: "Enable comments placeholder"
+    type: boolean
+    default: false
+    description: "Add placeholder for comment system integration"
+
+includes:
+  - from: _shared/styles/_reset.css
+    to: src/styles/_reset.css
+  - from: _shared/styles/_tokens.css
+    to: src/styles/_tokens.css
+
+conditionalIncludes:
+  - condition: "{{FRAMEWORK}} === 'astro'"
+    includes:
+      - from: blog/astro.config.mjs
+        to: astro.config.mjs
+      - from: blog/src/layouts/BaseLayout.astro
+        to: src/layouts/BaseLayout.astro
+      - from: blog/src/layouts/PostLayout.astro
+        to: src/layouts/PostLayout.astro
+      - from: blog/src/components/PostCard.astro
+        to: src/components/PostCard.astro
+      - from: blog/src/components/TagList.astro
+        to: src/components/TagList.astro
+      - from: blog/src/components/Pagination.astro
+        to: src/components/Pagination.astro
+      - from: blog/src/pages/index.astro
+        to: src/pages/index.astro
+      - from: blog/src/pages/blog/[...slug].astro
+        to: src/pages/blog/[...slug].astro
+      - from: blog/src/pages/tags/[tag].astro
+        to: src/pages/tags/[tag].astro
+      - from: blog/src/pages/rss.xml.js
+        to: src/pages/rss.xml.js
+
+  - condition: "{{FRAMEWORK}} === 'eleventy'"
+    includes:
+      - from: blog/eleventy.config.js
+        to: eleventy.config.js
+      - from: blog/src/_includes/layouts/base.njk
+        to: src/_includes/layouts/base.njk
+      - from: blog/src/_includes/layouts/post.njk
+        to: src/_includes/layouts/post.njk
+      - from: blog/src/_includes/components/post-card.njk
+        to: src/_includes/components/post-card.njk
+      - from: blog/src/_data/site.json
+        to: src/_data/site.json
+      - from: blog/src/index.njk
+        to: src/index.njk
+      - from: blog/src/feed.njk
+        to: src/feed.njk
+      - from: blog/src/tags.njk
+        to: src/tags.njk
+
+skills:
+  - markdown-author
+  - metadata
+  - responsive-images
+  - i18n
+  - performance
+  - accessibility-checker
+
+postScaffold:
+  - message: |
+      Blog scaffolded successfully!
+
+      Next steps:
+      1. cd {{PROJECT_NAME}}
+      2. npm install
+      3. npm run dev
+
+      Writing posts:
+      - Add markdown files to src/content/posts/ (Astro) or src/posts/ (Eleventy)
+      - Use frontmatter for title, date, tags, description
+
+      Available commands:
+      - npm run dev      Start development server
+      - npm run build    Build for production
+      - npm run preview  Preview production build

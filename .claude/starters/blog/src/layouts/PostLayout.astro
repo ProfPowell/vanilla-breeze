@@ -1,0 +1,80 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import TagList from '../components/TagList.astro';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, description, date, updatedDate, tags, image, imageAlt, author } = post.data;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  type="article"
+  publishedDate={date}
+>
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">{title}</h1>
+
+      <div class="post-meta">
+        <span class="post-author">By {author}</span>
+        <time datetime={date.toISOString()} class="post-date">
+          {formattedDate}
+        </time>
+        {updatedDate && (
+          <span class="post-updated">
+            (Updated: <time datetime={updatedDate.toISOString()}>{formattedUpdatedDate}</time>)
+          </span>
+        )}
+      </div>
+
+      {tags.length > 0 && <TagList tags={tags} />}
+
+      {image && (
+        <figure class="post-hero">
+          <img src={image} alt={imageAlt || ''} loading="eager" />
+          {imageAlt && <figcaption>{imageAlt}</figcaption>}
+        </figure>
+      )}
+    </header>
+
+    <div class="post-content prose">
+      <slot />
+    </div>
+
+    <footer class="post-footer">
+      <a href="/" class="back-link">&larr; Back to all posts</a>
+    </footer>
+  </article>
+
+  {{#IF_ENABLE_COMMENTS}}
+  <section class="comments" aria-labelledby="comments-heading">
+    <h2 id="comments-heading">Comments</h2>
+    <!--
+      Comment system placeholder. Integrate with:
+      - Giscus (GitHub Discussions): https://giscus.app/
+      - Utterances (GitHub Issues): https://utteranc.es/
+      - Disqus: https://disqus.com/
+    -->
+    <p class="comments-placeholder">Comments coming soon.</p>
+  </section>
+  {{/IF_ENABLE_COMMENTS}}
+</BaseLayout>

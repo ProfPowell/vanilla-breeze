@@ -1,0 +1,98 @@
+# Documentation Site Starter
+# Static documentation/knowledge base with sidebar navigation, search, and code highlighting
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project folder name"
+    type: string
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "lowercase with hyphens only"
+
+  - key: SITE_NAME
+    label: "Documentation site name"
+    type: string
+    required: true
+    description: "e.g., 'My Project Docs'"
+
+  - key: DESCRIPTION
+    label: "Site description"
+    type: string
+    required: true
+    maxLength: 160
+    description: "Brief description for SEO"
+
+  - key: SITE_URL
+    label: "Production URL"
+    type: string
+    required: true
+    validate: "^https?://"
+    default: "https://docs.example.com"
+
+  - key: FRAMEWORK
+    label: "Site framework"
+    type: select
+    options:
+      - astro
+      - eleventy
+    default: astro
+    description: "astro=islands architecture with TypeScript, eleventy=zero-JS by default"
+
+  - key: ENABLE_SEARCH
+    label: "Include site search?"
+    type: boolean
+    default: true
+    description: "Client-side search using Pagefind or Lunr"
+
+  - key: SIDEBAR_STYLE
+    label: "Sidebar navigation style"
+    type: select
+    options:
+      - collapsible
+      - fixed
+      - minimal
+    default: collapsible
+    description: "collapsible=expandable sections, fixed=always visible, minimal=top nav only"
+
+  - key: CODE_HIGHLIGHTING
+    label: "Code syntax highlighting"
+    type: select
+    options:
+      - shiki
+      - highlight.js
+      - none
+    default: shiki
+    description: "shiki=VS Code themes, highlight.js=lightweight"
+
+  - key: THEME_COLOR
+    label: "Primary theme color"
+    type: string
+    default: "#1e40af"
+    description: "Brand color in hex format"
+
+includes:
+  - from: _shared/styles/_reset.css
+    to: src/styles/_reset.css
+  - from: _shared/styles/_tokens.css
+    to: src/styles/_tokens.css
+
+skills:
+  - markdown-author
+  - xhtml-author
+  - typography
+  - metadata
+  - accessibility-checker
+  - performance
+  - layout-grid
+  - custom-elements
+
+# Framework-specific skills added conditionally
+skills_if:
+  FRAMEWORK_ASTRO:
+    - astro
+  FRAMEWORK_ELEVENTY:
+    - eleventy
+
+postScaffold:
+  - "npm install"
+  - "echo 'Run npm run dev to start the development server'"

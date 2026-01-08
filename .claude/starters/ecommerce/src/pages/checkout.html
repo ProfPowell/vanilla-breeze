@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout - {{STORE_NAME}}</title>
+  <meta name="description" content="Complete your order at {{STORE_NAME}}." />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/shop.css" />
+  <script type="module" src="/components/x-icon.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header site-header--minimal">
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" class="nav__logo" aria-label="{{STORE_NAME}} - Home">
+        <x-icon name="store"></x-icon>
+        <span>{{STORE_NAME}}</span>
+      </a>
+
+      <span class="nav__checkout-label">Secure Checkout</span>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="checkout">
+      <!-- Checkout Steps -->
+      <nav class="checkout__steps" aria-label="Checkout progress">
+        <ol class="steps">
+          <li class="step step--active" data-step="shipping">
+            <span class="step__number">1</span>
+            <span class="step__label">Shipping</span>
+          </li>
+          <li class="step" data-step="payment">
+            <span class="step__number">2</span>
+            <span class="step__label">Payment</span>
+          </li>
+          <li class="step" data-step="review">
+            <span class="step__number">3</span>
+            <span class="step__label">Review</span>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="checkout__forms">
+        <!-- Shipping Form -->
+        <section class="checkout__section" id="shipping-section">
+          <h2 class="checkout__section-title">Shipping Address</h2>
+
+          <form id="shipping-form" class="form">
+            <div class="form__row form__row--2col">
+              <div class="form-field">
+                <label for="shipping-first-name">First Name</label>
+                <input
+                  type="text"
+                  id="shipping-first-name"
+                  name="firstName"
+                  required
+                  autocomplete="given-name"
+                />
+              </div>
+              <div class="form-field">
+                <label for="shipping-last-name">Last Name</label>
+                <input
+                  type="text"
+                  id="shipping-last-name"
+                  name="lastName"
+                  required
+                  autocomplete="family-name"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="shipping-email">Email</label>
+              <input
+                type="email"
+                id="shipping-email"
+                name="email"
+                required
+                autocomplete="email"
+              />
+              <p class="form-field__hint">Order confirmation will be sent here</p>
+            </div>
+
+            <div class="form-field">
+              <label for="shipping-phone">Phone</label>
+              <input
+                type="tel"
+                id="shipping-phone"
+                name="phone"
+                autocomplete="tel"
+              />
+              <p class="form-field__hint">For delivery updates (optional)</p>
+            </div>
+
+            <div class="form-field">
+              <label for="shipping-address">Street Address</label>
+              <input
+                type="text"
+                id="shipping-address"
+                name="address"
+                required
+                autocomplete="street-address"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="shipping-address2">Apartment, suite, etc.</label>
+              <input
+                type="text"
+                id="shipping-address2"
+                name="address2"
+                autocomplete="address-line2"
+              />
+            </div>
+
+            <div class="form__row form__row--3col">
+              <div class="form-field">
+                <label for="shipping-city">City</label>
+                <input
+                  type="text"
+                  id="shipping-city"
+                  name="city"
+                  required
+                  autocomplete="address-level2"
+                />
+              </div>
+              <div class="form-field">
+                <label for="shipping-state">State</label>
+                <input
+                  type="text"
+                  id="shipping-state"
+                  name="state"
+                  required
+                  autocomplete="address-level1"
+                />
+              </div>
+              <div class="form-field">
+                <label for="shipping-zip">ZIP Code</label>
+                <input
+                  type="text"
+                  id="shipping-zip"
+                  name="zip"
+                  required
+                  autocomplete="postal-code"
+                  pattern="[0-9]{5}(-[0-9]{4})?"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="shipping-country">Country</label>
+              <select id="shipping-country" name="country" required autocomplete="country">
+                <option value="">Select country</option>
+                <option value="US" selected>United States</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom</option>
+                <!-- Add more countries as needed -->
+              </select>
+            </div>
+
+            <div class="form__actions">
+              <button type="submit" class="btn btn--primary">
+                Continue to Payment
+                <x-icon name="arrow-right"></x-icon>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Shipping Method -->
+        <section class="checkout__section" id="shipping-method-section" hidden>
+          <h2 class="checkout__section-title">Shipping Method</h2>
+
+          <fieldset class="shipping-methods" id="shipping-methods">
+            <legend class="visually-hidden">Select shipping method</legend>
+
+            <label class="shipping-method">
+              <input type="radio" name="shippingMethod" value="standard" checked />
+              <span class="shipping-method__content">
+                <span class="shipping-method__name">Standard Shipping</span>
+                <span class="shipping-method__time">5-7 business days</span>
+              </span>
+              <span class="shipping-method__price">{{CURRENCY_SYMBOL}}5.99</span>
+            </label>
+
+            <label class="shipping-method">
+              <input type="radio" name="shippingMethod" value="express" />
+              <span class="shipping-method__content">
+                <span class="shipping-method__name">Express Shipping</span>
+                <span class="shipping-method__time">2-3 business days</span>
+              </span>
+              <span class="shipping-method__price">{{CURRENCY_SYMBOL}}14.99</span>
+            </label>
+
+            <label class="shipping-method">
+              <input type="radio" name="shippingMethod" value="overnight" />
+              <span class="shipping-method__content">
+                <span class="shipping-method__name">Overnight Shipping</span>
+                <span class="shipping-method__time">Next business day</span>
+              </span>
+              <span class="shipping-method__price">{{CURRENCY_SYMBOL}}24.99</span>
+            </label>
+          </fieldset>
+        </section>
+
+        <!-- Payment Form -->
+        <section class="checkout__section" id="payment-section" hidden>
+          <h2 class="checkout__section-title">Payment Method</h2>
+
+          <form id="payment-form" class="form">
+            <div class="form-field">
+              <label for="card-name">Name on Card</label>
+              <input
+                type="text"
+                id="card-name"
+                name="cardName"
+                required
+                autocomplete="cc-name"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="card-number">Card Number</label>
+              <input
+                type="text"
+                id="card-number"
+                name="cardNumber"
+                required
+                autocomplete="cc-number"
+                inputmode="numeric"
+                pattern="[0-9\s]{13,19}"
+                placeholder="1234 5678 9012 3456"
+              />
+            </div>
+
+            <div class="form__row form__row--2col">
+              <div class="form-field">
+                <label for="card-expiry">Expiration Date</label>
+                <input
+                  type="text"
+                  id="card-expiry"
+                  name="cardExpiry"
+                  required
+                  autocomplete="cc-exp"
+                  placeholder="MM/YY"
+                  pattern="(0[1-9]|1[0-2])\/[0-9]{2}"
+                />
+              </div>
+              <div class="form-field">
+                <label for="card-cvc">CVC</label>
+                <input
+                  type="text"
+                  id="card-cvc"
+                  name="cardCvc"
+                  required
+                  autocomplete="cc-csc"
+                  inputmode="numeric"
+                  pattern="[0-9]{3,4}"
+                  maxlength="4"
+                />
+              </div>
+            </div>
+
+            <label class="form-checkbox">
+              <input type="checkbox" name="sameBilling" checked />
+              <span>Billing address same as shipping</span>
+            </label>
+
+            <div class="form__actions">
+              <button type="button" class="btn btn--outline" id="back-to-shipping">
+                <x-icon name="arrow-left"></x-icon>
+                Back
+              </button>
+              <button type="submit" class="btn btn--primary">
+                Review Order
+                <x-icon name="arrow-right"></x-icon>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Order Review -->
+        <section class="checkout__section" id="review-section" hidden>
+          <h2 class="checkout__section-title">Review Your Order</h2>
+
+          <div class="order-review">
+            <div class="order-review__section">
+              <h3>Shipping Address</h3>
+              <address id="review-shipping-address">
+                <!-- Filled via JavaScript -->
+              </address>
+              <button type="button" class="btn btn--text" data-edit="shipping">Edit</button>
+            </div>
+
+            <div class="order-review__section">
+              <h3>Payment Method</h3>
+              <p id="review-payment-method">
+                <!-- Filled via JavaScript -->
+              </p>
+              <button type="button" class="btn btn--text" data-edit="payment">Edit</button>
+            </div>
+
+            <div class="order-review__section">
+              <h3>Order Items</h3>
+              <ul class="order-review__items" id="review-items">
+                <!-- Filled via JavaScript -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="form__actions">
+            <button type="button" class="btn btn--outline" id="back-to-payment">
+              <x-icon name="arrow-left"></x-icon>
+              Back
+            </button>
+            <button type="button" class="btn btn--primary btn--lg" id="place-order-btn">
+              <x-icon name="lock"></x-icon>
+              Place Order
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <aside class="checkout__order-summary">
+        <div class="order-summary">
+          <h2 class="order-summary__title">Order Summary</h2>
+
+          <ul class="order-summary__items" id="order-items">
+            <!-- Items rendered via JavaScript -->
+          </ul>
+
+          <div class="order-summary__totals">
+            <div class="order-summary__row">
+              <span>Subtotal</span>
+              <span id="summary-subtotal">{{CURRENCY_SYMBOL}}0.00</span>
+            </div>
+            <div class="order-summary__row">
+              <span>Shipping</span>
+              <span id="summary-shipping">-</span>
+            </div>
+            <div class="order-summary__row">
+              <span>Tax</span>
+              <span id="summary-tax">{{CURRENCY_SYMBOL}}0.00</span>
+            </div>
+            <div class="order-summary__row order-summary__row--total">
+              <span>Total</span>
+              <span id="summary-total">{{CURRENCY_SYMBOL}}0.00</span>
+            </div>
+          </div>
+
+          <!-- Promo Code -->
+          <form class="promo-code" id="promo-form">
+            <label for="promo-code" class="visually-hidden">Promo code</label>
+            <input
+              type="text"
+              id="promo-code"
+              name="promoCode"
+              placeholder="Enter promo code"
+            />
+            <button type="submit" class="btn btn--outline">Apply</button>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer site-footer--minimal">
+    <div class="footer__bottom">
+      <p>&copy; {{CURRENT_YEAR}} {{STORE_NAME}}. All rights reserved.</p>
+      <nav class="footer__legal">
+        <a href="/pages/privacy.html">Privacy Policy</a>
+        <a href="/pages/terms.html">Terms of Service</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script type="module" src="/lib/checkout.js"></script>
+</body>
+</html>

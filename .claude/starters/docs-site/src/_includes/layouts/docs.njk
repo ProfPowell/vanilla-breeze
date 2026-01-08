@@ -1,0 +1,55 @@
+{{#IF_FRAMEWORK_ELEVENTY}}
+---
+layout: layouts/base.njk
+---
+<div class="docs-layout" data-sidebar="{{SIDEBAR_STYLE}}">
+  <header class="docs-header">
+    <button
+      type="button"
+      class="sidebar-toggle"
+      aria-label="Toggle navigation"
+      aria-expanded="false"
+      aria-controls="sidebar"
+    >
+      <span class="hamburger"></span>
+    </button>
+    <a href="/" class="site-title">{{SITE_NAME}}</a>
+{{#IF_ENABLE_SEARCH}}
+    <div class="search-container">
+      <input
+        type="search"
+        placeholder="Search docs..."
+        aria-label="Search documentation"
+        id="docs-search"
+      />
+    </div>
+{{/IF_ENABLE_SEARCH}}
+  </header>
+
+  {% include "components/sidebar.njk" %}
+
+  <main class="docs-content">
+    <article>
+      <h1>{{ title }}</h1>
+      {{ content | safe }}
+    </article>
+
+    {% if toc | length %}
+    <aside class="toc">
+      {% include "components/toc.njk" %}
+    </aside>
+    {% endif %}
+  </main>
+</div>
+
+<script>
+  const toggle = document.querySelector('.sidebar-toggle');
+  const sidebar = document.querySelector('.docs-sidebar');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    sidebar?.classList.toggle('is-open');
+  });
+</script>
+{{/IF_FRAMEWORK_ELEVENTY}}

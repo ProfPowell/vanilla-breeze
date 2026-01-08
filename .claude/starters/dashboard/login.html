@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Login - {{DISPLAY_NAME}}</title>
+  <meta name="description" content="Login to {{DISPLAY_NAME}}"/>
+  <meta name="theme-color" content="{{THEME_COLOR}}"/>
+  <meta name="robots" content="noindex, nofollow"/>
+
+  <link rel="canonical" href="{{SITE_URL}}/login"/>
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml"/>
+
+  <link rel="stylesheet" href="/src/styles/main.css"/>
+  <style>
+    main[data-page="login"] {
+      display: grid;
+      place-items: center;
+      min-block-size: 100dvh;
+      padding: var(--space-4);
+      background: var(--background);
+    }
+
+    main[data-page="login"] > article {
+      inline-size: 100%;
+      max-inline-size: 24rem;
+      padding: var(--space-6);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    main[data-page="login"] header {
+      text-align: center;
+      margin-block-end: var(--space-6);
+    }
+
+    main[data-page="login"] header h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-bold);
+      color: var(--text);
+    }
+
+    main[data-page="login"] header p {
+      color: var(--text-muted);
+      margin-block-start: var(--space-2);
+    }
+
+    [data-field] {
+      margin-block-end: var(--space-4);
+    }
+
+    [data-field] label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      color: var(--text);
+      margin-block-end: var(--space-1);
+    }
+
+    [data-field] input {
+      inline-size: 100%;
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--background);
+      color: var(--text);
+    }
+
+    [data-field] input:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    button[data-variant="primary"] {
+      inline-size: 100%;
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-base);
+      font-weight: var(--font-medium);
+      color: var(--primary-foreground);
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+
+    button[data-variant="primary"]:hover {
+      background: var(--primary-hover);
+    }
+
+    button[data-variant="primary"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    output[data-type="error"] {
+      display: block;
+      padding: var(--space-3);
+      margin-block-end: var(--space-4);
+      color: var(--error);
+      background: var(--error-bg);
+      border: 1px solid var(--error);
+      border-radius: var(--radius-md);
+    }
+
+    output[data-type="error"]:empty {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <main data-page="login">
+    <article>
+      <form id="login-form">
+        <header>
+          <h1>{{DISPLAY_NAME}}</h1>
+          <p>Sign in to your account</p>
+        </header>
+
+        <output id="error-message" data-type="error" role="alert"></output>
+
+        <div data-field>
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required=""
+            autocomplete="email"
+            autofocus=""
+          />
+        </div>
+
+        <div data-field>
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required=""
+            autocomplete="current-password"
+            minlength="8"
+          />
+        </div>
+
+        <button type="submit" data-variant="primary">
+          Sign in
+        </button>
+      </form>
+    </article>
+  </main>
+
+  <script type="module">
+    import { auth } from '/src/app/auth.js';
+
+    const form = document.getElementById('login-form');
+    const errorMessage = document.getElementById('error-message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorMessage.textContent = '';
+
+      const formData = new FormData(form);
+      const email = formData.get('email');
+      const password = formData.get('password');
+
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Signing in...';
+
+      try {
+        await auth.login(email, password);
+        window.location.replace('/app.html');
+      } catch (error) {
+        errorMessage.textContent = error.message || 'Login failed';
+        button.disabled = false;
+        button.textContent = 'Sign in';
+      }
+    });
+  </script>
+</body>
+</html>

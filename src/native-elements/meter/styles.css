@@ -9,59 +9,71 @@ meter {
   border-radius: var(--radius-full);
   overflow: hidden;
   background: var(--color-surface-raised);
+
+  /* WebKit/Blink meter bar background */
+  &::-webkit-meter-bar {
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-full);
+    border: none;
+  }
+
+  /* Optimum value (green) */
+  &::-webkit-meter-optimum-value {
+    background: oklch(60% 0.18 145);
+    border-radius: var(--radius-full);
+  }
+
+  /* Sub-optimum value (yellow/orange) */
+  &::-webkit-meter-suboptimum-value {
+    background: oklch(75% 0.18 75);
+    border-radius: var(--radius-full);
+  }
+
+  /* Even less optimum value (red) */
+  &::-webkit-meter-even-less-good-value {
+    background: oklch(55% 0.2 25);
+    border-radius: var(--radius-full);
+  }
+
+  /* Firefox meter styling */
+  &::-moz-meter-bar {
+    border-radius: var(--radius-full);
+  }
+
+  /* --- Size Variants (use element.class scoping) --- */
+
+  &.xs {
+    block-size: var(--space-3xs);
+  }
+
+  &.s {
+    block-size: var(--space-2xs);
+  }
+
+  &.m {
+    block-size: var(--space-s);
+  }
+
+  &.l {
+    block-size: var(--space-m);
+  }
+
+  /* --- Segmented Meter (visual only) --- */
+
+  &.segmented {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-surface-raised),
+      var(--color-surface-raised) 9%,
+      var(--color-surface) 9%,
+      var(--color-surface) 10%
+    );
+  }
 }
 
-/* WebKit/Blink meter bar background */
-meter::-webkit-meter-bar {
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-full);
-  border: none;
-}
+/* --- Labeled Meter (wrapper pattern) --- */
 
-/* Optimum value (green) */
-meter::-webkit-meter-optimum-value {
-  background: oklch(60% 0.18 145);
-  border-radius: var(--radius-full);
-}
-
-/* Sub-optimum value (yellow/orange) */
-meter::-webkit-meter-suboptimum-value {
-  background: oklch(75% 0.18 75);
-  border-radius: var(--radius-full);
-}
-
-/* Even less optimum value (red) */
-meter::-webkit-meter-even-less-good-value {
-  background: oklch(55% 0.2 25);
-  border-radius: var(--radius-full);
-}
-
-/* Firefox meter styling */
-meter::-moz-meter-bar {
-  border-radius: var(--radius-full);
-}
-
-/* --- Size Variants --- */
-
-.meter-xs {
-  block-size: var(--space-3xs);
-}
-
-.meter-s {
-  block-size: var(--space-2xs);
-}
-
-.meter-m {
-  block-size: var(--space-s);
-}
-
-.meter-l {
-  block-size: var(--space-m);
-}
-
-/* --- Labeled Meter --- */
-
-.meter-labeled {
+.labeled {
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs);
@@ -75,16 +87,4 @@ meter::-moz-meter-bar {
   & > meter {
     inline-size: 100%;
   }
-}
-
-/* --- Meter with Segments (visual only) --- */
-
-.meter-segmented {
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-surface-raised),
-    var(--color-surface-raised) 9%,
-    var(--color-surface) 9%,
-    var(--color-surface) 10%
-  );
 }

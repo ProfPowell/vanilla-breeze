@@ -1,0 +1,58 @@
+---
+layout: layouts/base.njk
+---
+
+<article class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ title }}</h1>
+
+    <div class="post-meta">
+      <span class="post-author">By {{ author or site.author.name }}</span>
+      <time datetime="{{ date | dateISO }}" class="post-date">
+        {{ date | dateDisplay }}
+      </time>
+    </div>
+
+    {% if tags | length %}
+    <ul class="tag-list" aria-label="Tags">
+      {% for tag in tags %}
+        {% if tag != 'posts' %}
+        <li>
+          <a href="/tags/{{ tag }}/" class="tag">{{ tag }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if image %}
+    <figure class="post-hero">
+      <img src="{{ image }}" alt="{{ imageAlt or '' }}" loading="eager" />
+      {% if imageAlt %}
+      <figcaption>{{ imageAlt }}</figcaption>
+      {% endif %}
+    </figure>
+    {% endif %}
+  </header>
+
+  <div class="post-content prose">
+    {{ content | safe }}
+  </div>
+
+  <footer class="post-footer">
+    <a href="/" class="back-link">&larr; Back to all posts</a>
+  </footer>
+</article>
+
+{{#IF_ENABLE_COMMENTS}}
+<section class="comments" aria-labelledby="comments-heading">
+  <h2 id="comments-heading">Comments</h2>
+  <!--
+    Comment system placeholder. Integrate with:
+    - Giscus (GitHub Discussions): https://giscus.app/
+    - Utterances (GitHub Issues): https://utteranc.es/
+    - Disqus: https://disqus.com/
+  -->
+  <p class="comments-placeholder">Comments coming soon.</p>
+</section>
+{{/IF_ENABLE_COMMENTS}}

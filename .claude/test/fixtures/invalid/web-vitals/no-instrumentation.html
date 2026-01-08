@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Test page with JavaScript but no Web Vitals monitoring"/>
+  <title>Page without Web Vitals</title>
+  <style>
+    .card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Interactive App - No Performance Monitoring</h1>
+    <nav>
+      <button type="button" id="nav-home">Home</button>
+      <button type="button" id="nav-about">About</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home-section">
+      <h2>Welcome</h2>
+      <p>This page has substantial JavaScript but lacks Web Vitals monitoring.</p>
+
+      <div class="card">
+        <h3>Counter Demo</h3>
+        <p>Count: <output id="counter">0</output></p>
+        <button type="button" id="increment">+1</button>
+        <button type="button" id="decrement">-1</button>
+        <button type="button" id="reset">Reset</button>
+      </div>
+
+      <div class="card">
+        <h3>Form Demo</h3>
+        <form id="demo-form">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required="required"/>
+          <button type="submit">Submit</button>
+        </form>
+        <output id="form-result"></output>
+      </div>
+    </section>
+
+    <section id="about-section" class="hidden">
+      <h2>About</h2>
+      <p>This section demonstrates dynamic content switching.</p>
+    </section>
+  </main>
+
+  <script>
+    // This page has lots of JavaScript but NO web-vitals monitoring!
+
+    // Counter functionality
+    let count = 0;
+    const counterOutput = document.getElementById('counter');
+
+    document.getElementById('increment').addEventListener('click', () => {
+      count++;
+      counterOutput.textContent = count;
+    });
+
+    document.getElementById('decrement').addEventListener('click', () => {
+      count--;
+      counterOutput.textContent = count;
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      count = 0;
+      counterOutput.textContent = count;
+    });
+
+    // Form handling
+    document.getElementById('demo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      document.getElementById('form-result').textContent = 'Hello, ' + name + '!';
+    });
+
+    // Navigation
+    const homeSection = document.getElementById('home-section');
+    const aboutSection = document.getElementById('about-section');
+
+    document.getElementById('nav-home').addEventListener('click', () => {
+      homeSection.classList.remove('hidden');
+      aboutSection.classList.add('hidden');
+    });
+
+    document.getElementById('nav-about').addEventListener('click', () => {
+      homeSection.classList.add('hidden');
+      aboutSection.classList.remove('hidden');
+    });
+
+    // Some async operations that could affect performance
+    setTimeout(() => {
+      console.log('Delayed operation complete');
+    }, 1000);
+
+    // NOTE: This page SHOULD have web-vitals monitoring but doesn't!
+    // It has no performance instrumentation at all.
+  </script>
+</body>
+</html>

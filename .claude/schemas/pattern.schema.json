@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/pattern.schema.json",
+  "title": "Pattern Definition",
+  "description": "Schema for defining UI patterns in the pattern library",
+  "type": "object",
+  "required": ["name", "category", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Pattern name in kebab-case",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "category": {
+      "type": "string",
+      "description": "Pattern category",
+      "enum": ["form", "navigation", "content", "feedback", "layout", "data"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the pattern's purpose"
+    },
+    "status": {
+      "type": "string",
+      "description": "Pattern maturity status",
+      "enum": ["draft", "review", "stable", "deprecated"],
+      "default": "draft"
+    },
+    "element": {
+      "type": "string",
+      "description": "Custom element tag name if applicable",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "anatomy": {
+      "type": "array",
+      "description": "Structural parts of the pattern",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean",
+            "default": true
+          },
+          "element": {
+            "type": "string",
+            "description": "Suggested HTML element"
+          }
+        }
+      }
+    },
+    "states": {
+      "type": "array",
+      "description": "Interactive states the pattern supports",
+      "items": {
+        "type": "string",
+        "enum": ["default", "hover", "focus", "active", "disabled", "loading", "error", "success", "expanded", "collapsed", "selected", "empty"]
+      }
+    },
+    "variants": {
+      "type": "array",
+      "description": "Pattern variations",
+      "items": {
+        "type": "object",
+        "required": ["name", "attribute"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variant name"
+          },
+          "attribute": {
+            "type": "string",
+            "description": "Data attribute name (e.g., 'size', 'variant')"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Allowed values for this variant"
+          },
+          "default": {
+            "type": "string",
+            "description": "Default value"
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Accessibility requirements",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "ARIA role if needed"
+        },
+        "aria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required ARIA attributes"
+        },
+        "keyboard": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Keyboard interactions"
+        }
+      }
+    },
+    "slots": {
+      "type": "array",
+      "description": "Named slots for Web Component",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "cssProperties": {
+      "type": "array",
+      "description": "CSS custom properties the pattern exposes",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^--[a-z][a-z0-9-]*$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "default": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "Custom events the pattern emits",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "object",
+            "description": "Event detail schema"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Other patterns this pattern depends on",
+      "items": {
+        "type": "string"
+      }
+    },
+    "related": {
+      "type": "array",
+      "description": "Related patterns for reference",
+      "items": {
+        "type": "string"
+      }
+    },
+    "examples": {
+      "type": "array",
+      "description": "Usage examples",
+      "items": {
+        "type": "object",
+        "required": ["name", "html"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

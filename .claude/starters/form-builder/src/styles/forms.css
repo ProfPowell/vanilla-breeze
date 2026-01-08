@@ -1,0 +1,701 @@
+/* Form Builder Styles */
+
+/* ========================================
+   CSS Custom Properties
+   ======================================== */
+
+:root {
+  /* Colors */
+  --color-primary: {{THEME_COLOR}};
+  --color-primary-light: color-mix(in oklch, var(--color-primary) 80%, white);
+  --color-primary-dark: color-mix(in oklch, var(--color-primary) 80%, black);
+
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-border: #d1d5db;
+  --color-border-focus: var(--color-primary);
+
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Layout */
+  --max-width: 80rem;
+  --max-width-narrow: 40rem;
+
+  /* Effects */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  --transition: 150ms ease;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #f9fafb;
+    --color-text-muted: #9ca3af;
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-border: #374151;
+    --color-error-bg: #450a0a;
+    --color-success-bg: #052e16;
+  }
+}
+
+/* ========================================
+   Reset & Base
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  z-index: 100;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ========================================
+   Layout
+   ======================================== */
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.container--narrow {
+  max-width: var(--max-width-narrow);
+}
+
+main {
+  flex: 1;
+  padding: var(--space-8) 0;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+
+.site-header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4);
+}
+
+.header-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.nav-list {
+  display: flex;
+  gap: var(--space-6);
+  list-style: none;
+  padding: 0;
+}
+
+.nav-list a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.nav-list a:hover {
+  color: var(--color-primary);
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+
+.site-footer {
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ========================================
+   Page Header
+   ======================================== */
+
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.page-header h1 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-2);
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+}
+
+/* ========================================
+   Form List
+   ======================================== */
+
+.form-list {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.form-card h2 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-2);
+}
+
+.form-card h2 a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.form-card h2 a:hover {
+  color: var(--color-primary);
+}
+
+.form-card p {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.form-card-meta {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ========================================
+   Form Wrapper
+   ======================================== */
+
+.form-wrapper {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+}
+
+.form-header {
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.form-header h1 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+}
+
+.form-header p {
+  color: var(--color-text-muted);
+}
+
+/* ========================================
+   Form Progress (Multi-step)
+   ======================================== */
+
+.form-progress {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  opacity: 0.5;
+}
+
+.progress-step--active {
+  opacity: 1;
+}
+
+.progress-step--completed {
+  opacity: 0.8;
+}
+
+.progress-step-number {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.progress-step--active .progress-step-number {
+  background: var(--color-primary);
+  color: white;
+}
+
+.progress-step--completed .progress-step-number {
+  background: var(--color-success);
+  color: white;
+}
+
+.progress-step-title {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ========================================
+   Form Step
+   ======================================== */
+
+.form-step {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-step legend {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+}
+
+/* ========================================
+   Form Fields
+   ======================================== */
+
+.form-field {
+  margin-bottom: var(--space-6);
+}
+
+.form-field[hidden] {
+  display: none;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field-label {
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+.required-marker {
+  color: var(--color-error);
+}
+
+/* Text inputs */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  padding: var(--space-3);
+  font-family: inherit;
+  font-size: var(--text-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 20%, transparent);
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Select */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: var(--space-8);
+}
+
+/* File input */
+input[type="file"] {
+  padding: var(--space-2);
+}
+
+/* Range input */
+.range-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+input[type="range"] {
+  flex: 1;
+  height: 0.5rem;
+  background: var(--color-border);
+  border-radius: 9999px;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.range-wrapper output {
+  min-width: 3rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ========================================
+   Radio & Checkbox Groups
+   ======================================== */
+
+.field-group {
+  border: none;
+  padding: 0;
+  margin-bottom: var(--space-6);
+}
+
+.field-group legend {
+  font-weight: 500;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.radio-option,
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.radio-option:hover,
+.checkbox-option:hover {
+  background: var(--color-surface);
+}
+
+.radio-option input,
+.checkbox-option input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+}
+
+/* Single checkbox */
+.checkbox-single {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.checkbox-single input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+}
+
+/* ========================================
+   Field Hints & Errors
+   ======================================== */
+
+.field-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.field-error {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  margin-top: var(--space-1);
+}
+
+.form-field--error .field-label {
+  color: var(--color-error);
+}
+
+/* ========================================
+   Form Actions
+   ======================================== */
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ========================================
+   Buttons
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 500;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+
+/* ========================================
+   States
+   ======================================== */
+
+.loading-state,
+.empty-state,
+.error-state,
+.success-state {
+  text-align: center;
+  padding: var(--space-12);
+}
+
+.success-state {
+  background: var(--color-success-bg);
+  border-radius: var(--radius-lg);
+}
+
+.success-state h2 {
+  color: var(--color-success);
+  margin-bottom: var(--space-4);
+}
+
+.error-state {
+  background: var(--color-error-bg);
+  border-radius: var(--radius-lg);
+}
+
+.error-state h2 {
+  color: var(--color-error);
+  margin-bottom: var(--space-4);
+}
+
+.error-banner {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+}
+
+/* ========================================
+   Form Summary
+   ======================================== */
+
+.form-summary {
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.summary-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.summary-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-4);
+}
+
+.summary-item dt {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.summary-item dd {
+  margin: 0;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 640px) {
+  .form-wrapper {
+    padding: var(--space-4);
+  }
+
+  .form-progress {
+    flex-wrap: wrap;
+  }
+
+  .progress-step-title {
+    display: none;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .summary-item {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

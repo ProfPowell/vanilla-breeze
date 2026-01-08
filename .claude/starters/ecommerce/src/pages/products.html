@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop - {{STORE_NAME}}</title>
+  <meta name="description" content="Browse our collection of products at {{STORE_NAME}}." />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/shop.css" />
+  <script type="module" src="/components/x-icon.js"></script>
+  <script type="module" src="/components/cart-button.js"></script>
+  <script type="module" src="/components/cart-drawer.js"></script>
+  <script type="module" src="/components/product-card.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" class="nav__logo" aria-label="{{STORE_NAME}} - Home">
+        <x-icon name="store"></x-icon>
+        <span>{{STORE_NAME}}</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="/pages/products.html" aria-current="page">Shop</a></li>
+        <li><a href="/pages/products.html?category=new">New Arrivals</a></li>
+        <li><a href="/pages/products.html?category=sale">Sale</a></li>
+      </ul>
+
+      <div class="nav__actions">
+        {{#IF_ENABLE_SEARCH}}
+        <button type="button" class="nav__search-btn" aria-label="Search products">
+          <x-icon name="search"></x-icon>
+        </button>
+        {{/IF_ENABLE_SEARCH}}
+        <cart-button></cart-button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="shop-layout shop-layout--with-sidebar">
+      <!-- Sidebar Filters -->
+      <aside class="shop-sidebar">
+        <div class="filters">
+          <h2 class="visually-hidden">Filter products</h2>
+
+          <!-- Categories -->
+          <div class="filter-group">
+            <h3 class="filter-group__title">Category</h3>
+            <ul class="filter-group__options" id="category-filters" role="list">
+              <!-- Categories loaded via JavaScript -->
+            </ul>
+          </div>
+
+          <!-- Price Range -->
+          <div class="filter-group">
+            <h3 class="filter-group__title">Price</h3>
+            <div class="filter-group__options">
+              <label class="filter-option">
+                <input type="checkbox" name="price" value="0-50" />
+                <span>Under {{CURRENCY_SYMBOL}}50</span>
+              </label>
+              <label class="filter-option">
+                <input type="checkbox" name="price" value="50-100" />
+                <span>{{CURRENCY_SYMBOL}}50 - {{CURRENCY_SYMBOL}}100</span>
+              </label>
+              <label class="filter-option">
+                <input type="checkbox" name="price" value="100-200" />
+                <span>{{CURRENCY_SYMBOL}}100 - {{CURRENCY_SYMBOL}}200</span>
+              </label>
+              <label class="filter-option">
+                <input type="checkbox" name="price" value="200+" />
+                <span>{{CURRENCY_SYMBOL}}200+</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Availability -->
+          <div class="filter-group">
+            <h3 class="filter-group__title">Availability</h3>
+            <div class="filter-group__options">
+              <label class="filter-option">
+                <input type="checkbox" name="availability" value="in-stock" checked />
+                <span>In Stock</span>
+              </label>
+              <label class="filter-option">
+                <input type="checkbox" name="availability" value="out-of-stock" />
+                <span>Out of Stock</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn--outline" id="clear-filters">
+            Clear Filters
+          </button>
+        </div>
+      </aside>
+
+      <!-- Product Grid -->
+      <div class="shop-main">
+        <header class="shop-header">
+          <h1 class="shop-header__title" id="products-title">All Products</h1>
+
+          <div class="shop-header__controls">
+            <span class="shop-header__count" id="products-count">0 products</span>
+
+            <label class="shop-header__sort">
+              <span class="visually-hidden">Sort by</span>
+              <select id="sort-select">
+                <option value="newest">Newest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name">Name</option>
+                {{#IF_ENABLE_REVIEWS}}
+                <option value="rating">Top Rated</option>
+                {{/IF_ENABLE_REVIEWS}}
+              </select>
+            </label>
+          </div>
+        </header>
+
+        <ul class="product-grid" id="products-grid" aria-labelledby="products-title">
+          <!-- Products loaded via JavaScript -->
+        </ul>
+
+        <!-- Pagination -->
+        <nav class="pagination" aria-label="Product pages" id="pagination">
+          <!-- Pagination loaded via JavaScript -->
+        </nav>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" hidden>
+          <x-icon name="package-x" class="empty-state__icon"></x-icon>
+          <h2 class="empty-state__title">No products found</h2>
+          <p class="empty-state__description">
+            Try adjusting your filters or search to find what you're looking for.
+          </p>
+          <button type="button" class="btn btn--primary" id="reset-filters">
+            Reset Filters
+          </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state" aria-live="polite">
+          <x-icon name="loader-2" class="loading-state__icon spin"></x-icon>
+          <span class="visually-hidden">Loading products...</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer__bottom">
+      <p>&copy; {{CURRENT_YEAR}} {{STORE_NAME}}. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <cart-drawer></cart-drawer>
+
+  <script type="module" src="/lib/products.js"></script>
+</body>
+</html>

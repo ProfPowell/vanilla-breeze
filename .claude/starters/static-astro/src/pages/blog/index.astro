@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="Blog">
+  <main class="blog-listing">
+    <h1>Blog</h1>
+    <p class="lead">Latest posts and articles</p>
+
+    <ul class="posts-grid">
+      {sortedPosts.map((post) => (
+        <li>
+          <article class="post-card">
+            <a href={`/blog/${post.slug}`}>
+              <h2>{post.data.title}</h2>
+              <p>{post.data.description}</p>
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+            </a>
+          </article>
+        </li>
+      ))}
+    </ul>
+
+    {sortedPosts.length === 0 && (
+      <p class="no-posts">No posts yet. Add your first post to src/content/blog/</p>
+    )}
+  </main>
+</BaseLayout>
+
+<style>
+  .blog-listing {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+  }
+
+  h1 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .lead {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .posts-grid {
+    list-style: none;
+    display: grid;
+    gap: var(--spacing-lg);
+  }
+
+  .post-card a {
+    display: block;
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+  }
+
+  .post-card a:hover {
+    border-color: var(--primary);
+    background: var(--surface-alt);
+  }
+
+  .post-card h2 {
+    font-size: var(--font-size-xl);
+    color: var(--text);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .post-card p {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .post-card time {
+    font-size: var(--font-size-sm);
+    color: var(--text-subtle);
+  }
+
+  .no-posts {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--spacing-2xl);
+  }
+</style>

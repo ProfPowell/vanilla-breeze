@@ -1,0 +1,35 @@
+---
+layout: layouts/base.njk
+title: Tags
+description: "Browse all tags on {{ site.name }}"
+pagination:
+  data: collections.tagList
+  size: 1
+  alias: tag
+  addAllPagesToCollections: true
+permalink: /tags/{{ tag }}/
+---
+
+<div class="tag-page">
+  <header class="page-header">
+    <h1>
+      <span class="tag-label">Tag:</span>
+      {{ tag }}
+    </h1>
+    {% set tagPosts = collections.posts | postsByTag(tag) %}
+    <p>{{ tagPosts | length }} post{{ 's' if tagPosts | length != 1 }}</p>
+    <a href="/tags/" class="back-link">&larr; All tags</a>
+  </header>
+
+  <div class="post-grid">
+    {% for post in tagPosts %}
+      {% set title = post.data.title %}
+      {% set description = post.data.description %}
+      {% set date = post.date %}
+      {% set url = post.url %}
+      {% set image = post.data.image %}
+      {% set tags = post.data.tags %}
+      {% include "components/post-card.njk" %}
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Navigation Patterns Example</title>
+  <meta name="description" content="Demonstration of navigation and layout patterns including site-header, site-footer, breadcrumbs, skip-link, page-shell, and sidebar-layout."/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <page-shell data-layout="standard">
+    <!-- Skip Link - First focusable element -->
+    <skip-link href="#main">Skip to main content</skip-link>
+
+    <!-- Site Header -->
+    <site-header data-sticky>
+      <a href="/" aria-label="Home">
+        <img src="/logo.svg" alt="Company" width="120" height="40"/>
+      </a>
+
+      <button commandfor="main-nav" command="toggle-popover" aria-label="Menu" data-mobile-toggle>
+        <x-icon name="menu" size="md"></x-icon>
+      </button>
+
+      <nav id="main-nav" popover aria-label="Main">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/products">Products</a></li>
+          <li><a href="/docs" aria-current="page">Documentation</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div data-actions>
+        <a href="/search" aria-label="Search">
+          <x-icon name="search"></x-icon>
+        </a>
+        <a href="/login">Login</a>
+        <a href="/signup" data-button="primary">Get Started</a>
+      </div>
+    </site-header>
+
+    <!-- Main Content with Sidebar -->
+    <sidebar-layout data-sidebar="start" data-sticky-sidebar>
+      <button commandfor="docs-sidebar" command="toggle-popover" aria-label="Toggle sidebar" data-sidebar-toggle>
+        <x-icon name="menu"></x-icon>
+      </button>
+
+      <aside id="docs-sidebar" popover>
+        <nav aria-label="Documentation">
+          <h2>Getting Started</h2>
+          <ul>
+            <li><a href="#introduction" aria-current="true">Introduction</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#quick-start">Quick Start</a></li>
+          </ul>
+
+          <h2>Patterns</h2>
+          <ul>
+            <li><a href="#site-header">Site Header</a></li>
+            <li><a href="#site-footer">Site Footer</a></li>
+            <li><a href="#breadcrumbs">Breadcrumbs</a></li>
+            <li><a href="#skip-link">Skip Link</a></li>
+          </ul>
+
+          <h2>Layout</h2>
+          <ul>
+            <li><a href="#page-shell">Page Shell</a></li>
+            <li><a href="#sidebar-layout">Sidebar Layout</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main id="main" tabindex="-1">
+        <!-- Breadcrumbs -->
+        <breadcrumbs data-separator="chevron">
+          <nav aria-label="Breadcrumb">
+            <ol>
+              <li><a href="/">Home</a></li>
+              <li><a href="/docs">Documentation</a></li>
+              <li><a href="/docs/patterns">Patterns</a></li>
+              <li aria-current="page">Navigation</li>
+            </ol>
+          </nav>
+        </breadcrumbs>
+
+        <article>
+          <h1>Navigation Patterns</h1>
+          <p class="lead">This page demonstrates the navigation and layout patterns from Phase 2 of the pattern system. All patterns work together to create a complete, accessible page structure.</p>
+
+          <section id="introduction">
+            <h2>Introduction</h2>
+            <p>The navigation patterns provide consistent structure and wayfinding across your site or application. They follow progressive enhancement principles—working with basic HTML and enhanced with CSS and optional JavaScript.</p>
+
+            <h3>Patterns on This Page</h3>
+            <ul>
+              <li><strong>skip-link</strong> — Press Tab to see it appear</li>
+              <li><strong>site-header</strong> — Sticky navigation at the top</li>
+              <li><strong>breadcrumbs</strong> — Location trail below the header</li>
+              <li><strong>sidebar-layout</strong> — Two-column layout with navigation</li>
+              <li><strong>page-shell</strong> — Overall page structure</li>
+              <li><strong>site-footer</strong> — Footer with links at the bottom</li>
+            </ul>
+          </section>
+
+          <section id="site-header">
+            <h2>Site Header</h2>
+            <p>The site header provides primary navigation with logo, main links, and optional actions. It supports sticky positioning and responsive mobile menu.</p>
+
+            <h3>Features</h3>
+            <ul>
+              <li>Sticky positioning with <code>data-sticky</code></li>
+              <li>Mobile menu using popover API</li>
+              <li>Current page indication with <code>aria-current</code></li>
+              <li>Size variants: compact, default, large</li>
+              <li>Style variants: transparent, solid, blur</li>
+            </ul>
+          </section>
+
+          <section id="breadcrumbs">
+            <h2>Breadcrumbs</h2>
+            <p>Breadcrumbs show the user's location in the site hierarchy and provide quick navigation to parent pages.</p>
+
+            <h3>Features</h3>
+            <ul>
+              <li>Semantic <code>&lt;ol&gt;</code> structure</li>
+              <li>Separator variants: slash, chevron, arrow</li>
+              <li>Schema.org structured data support</li>
+              <li>Truncation for long paths</li>
+            </ul>
+          </section>
+
+          <section id="skip-link">
+            <h2>Skip Link</h2>
+            <p>The skip link is hidden until focused, allowing keyboard users to bypass navigation and jump to main content. Press Tab on this page to see it.</p>
+
+            <h3>Features</h3>
+            <ul>
+              <li>Hidden until keyboard focus</li>
+              <li>First focusable element on page</li>
+              <li>Targets main content area</li>
+              <li>Essential for accessibility compliance</li>
+            </ul>
+          </section>
+
+          <section id="page-shell">
+            <h2>Page Shell</h2>
+            <p>The page shell provides the overall page structure with header, main content, and footer. It ensures consistent layout and proper landmark structure.</p>
+
+            <h3>Features</h3>
+            <ul>
+              <li>Full viewport height layout</li>
+              <li>Layout variants: standard, full-width, centered</li>
+              <li>Proper landmark structure for accessibility</li>
+              <li>Skip link integration</li>
+            </ul>
+          </section>
+
+          <section id="sidebar-layout">
+            <h2>Sidebar Layout</h2>
+            <p>The sidebar layout creates a two-column structure with primary content and a sidebar for navigation, filters, or supplementary content.</p>
+
+            <h3>Features</h3>
+            <ul>
+              <li>Position variants: start (left) or end (right)</li>
+              <li>Sticky sidebar option</li>
+              <li>Responsive with collapsible mobile sidebar</li>
+              <li>Works with documentation, e-commerce filters, TOC</li>
+            </ul>
+          </section>
+        </article>
+      </main>
+    </sidebar-layout>
+
+    <!-- Site Footer -->
+    <site-footer>
+      <nav aria-label="Footer">
+        <section>
+          <h2>Company</h2>
+          <ul>
+            <li><a href="/about">About Us</a></li>
+            <li><a href="/careers">Careers</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Products</h2>
+          <ul>
+            <li><a href="/products/features">Features</a></li>
+            <li><a href="/products/pricing">Pricing</a></li>
+            <li><a href="/products/enterprise">Enterprise</a></li>
+            <li><a href="/products/changelog">Changelog</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Resources</h2>
+          <ul>
+            <li><a href="/docs">Documentation</a></li>
+            <li><a href="/guides">Guides</a></li>
+            <li><a href="/api">API Reference</a></li>
+            <li><a href="/support">Support</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/cookies">Cookie Policy</a></li>
+            <li><a href="/security">Security</a></li>
+          </ul>
+        </section>
+      </nav>
+
+      <div data-social>
+        <a href="https://twitter.com/company" aria-label="Twitter">
+          <x-icon name="twitter"></x-icon>
+        </a>
+        <a href="https://github.com/company" aria-label="GitHub">
+          <x-icon name="github"></x-icon>
+        </a>
+        <a href="https://linkedin.com/company/company" aria-label="LinkedIn">
+          <x-icon name="linkedin"></x-icon>
+        </a>
+      </div>
+
+      <div data-legal>
+        <p>&copy; 2025 Company Name. All rights reserved.</p>
+      </div>
+    </site-footer>
+  </page-shell>
+</body>
+</html>

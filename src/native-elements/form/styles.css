@@ -2,51 +2,51 @@
 
 form {
   display: block;
+
+  /* --- Form Layout Variants (use element.class scoping) --- */
+
+  /* Stacked form (default vertical layout) */
+  &.stacked {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+  }
+
+  /* Inline form */
+  &.inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-s);
+  }
+
+  /* Grid form (two columns) */
+  &.grid {
+    display: grid;
+    grid-template-columns: minmax(100px, auto) 1fr;
+    gap: var(--space-s) var(--space-m);
+    align-items: center;
+  }
 }
 
-/* --- Form Layout Variants --- */
+/* --- Form Group (wrapper pattern) --- */
 
-/* Stacked form (default vertical layout) */
-.form-stacked {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-m);
-}
-
-/* Inline form */
-.form-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-s);
-}
-
-/* Grid form (two columns) */
-.form-grid {
-  display: grid;
-  grid-template-columns: minmax(100px, auto) 1fr;
-  gap: var(--space-s) var(--space-m);
-  align-items: center;
-}
-
-/* --- Form Group --- */
-
-.form-group {
+.group {
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs);
-}
 
-.form-group > label {
-  font-weight: 500;
-  font-size: var(--text-s);
-}
+  & > label {
+    font-weight: 500;
+    font-size: var(--text-s);
+  }
 
-/* Horizontal form group */
-.form-group-horizontal {
-  display: flex;
-  align-items: center;
-  gap: var(--space-s);
+  /* Horizontal form group */
+  &.horizontal {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-s);
+  }
 }
 
 /* --- Fieldset and Legend --- */
@@ -56,6 +56,18 @@ fieldset {
   border-radius: var(--radius-m);
   padding: var(--space-m);
   margin: 0;
+
+  /* Minimal fieldset */
+  &.minimal {
+    border: none;
+    padding: 0;
+
+    & > legend {
+      padding: 0;
+      margin-block-end: var(--space-s);
+      font-size: var(--text-m);
+    }
+  }
 }
 
 legend {
@@ -64,42 +76,30 @@ legend {
   font-size: var(--text-s);
 }
 
-/* Minimal fieldset */
-fieldset.fieldset-minimal {
-  border: none;
-  padding: 0;
+/* --- Form Actions (wrapper pattern) --- */
 
-  & > legend {
-    padding: 0;
-    margin-block-end: var(--space-s);
-    font-size: var(--text-m);
-  }
-}
-
-/* --- Form Actions --- */
-
-.form-actions {
+.actions {
   display: flex;
   gap: var(--space-s);
   margin-block-start: var(--space-m);
-}
 
-.form-actions-end {
-  justify-content: flex-end;
-}
+  &.end {
+    justify-content: flex-end;
+  }
 
-.form-actions-between {
-  justify-content: space-between;
+  &.between {
+    justify-content: space-between;
+  }
 }
 
 /* --- Form Help Text --- */
 
-.form-help {
+.help {
   font-size: var(--text-s);
   color: var(--color-text-muted);
 }
 
-.form-error {
+.error {
   font-size: var(--text-s);
   color: oklch(55% 0.2 25);
 }

@@ -1,0 +1,29 @@
+---
+layout: layouts/base.njk
+title: Tags
+description: "Browse all tags on {{ site.name }}"
+permalink: /tags/
+---
+
+<div class="tags-page">
+  <header class="page-header">
+    <h1>Tags</h1>
+    <p>Browse posts by topic</p>
+  </header>
+
+  {% if collections.tagList | length == 0 %}
+    <p class="no-tags">No tags yet.</p>
+  {% else %}
+    <ul class="tags-cloud" aria-label="All tags">
+      {% for tag in collections.tagList %}
+        {% set tagPosts = collections.posts | postsByTag(tag) %}
+        <li>
+          <a href="/tags/{{ tag }}/" class="tag-cloud-item">
+            {{ tag }}
+            <span class="tag-count">({{ tagPosts | length }})</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>

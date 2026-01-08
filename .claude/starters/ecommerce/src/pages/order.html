@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Details - {{STORE_NAME}}</title>
+  <meta name="description" content="View your order details at {{STORE_NAME}}." />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/shop.css" />
+  <script type="module" src="/components/x-icon.js"></script>
+  <script type="module" src="/components/cart-button.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" class="nav__logo" aria-label="{{STORE_NAME}} - Home">
+        <x-icon name="store"></x-icon>
+        <span>{{STORE_NAME}}</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="/pages/products.html">Shop</a></li>
+        <li><a href="/pages/products.html?category=new">New Arrivals</a></li>
+        <li><a href="/pages/products.html?category=sale">Sale</a></li>
+      </ul>
+
+      <div class="nav__actions">
+        <cart-button></cart-button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="order-detail">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol class="breadcrumb__list">
+          <li><a href="/">Home</a></li>
+          <li><a href="/pages/orders.html">Orders</a></li>
+          <li><span id="order-number" aria-current="page">Order</span></li>
+        </ol>
+      </nav>
+
+      <!-- Order Header -->
+      <header class="order-detail__header">
+        <div class="order-detail__title-group">
+          <h1 class="order-detail__title">Order <span id="order-id"></span></h1>
+          <p class="order-detail__date">Placed on <time id="order-date"></time></p>
+        </div>
+        <span class="order-status" id="order-status" data-status="processing">
+          Processing
+        </span>
+      </header>
+
+      <!-- Order Timeline -->
+      <section class="order-timeline" aria-labelledby="timeline-title">
+        <h2 id="timeline-title" class="visually-hidden">Order Progress</h2>
+        <ol class="timeline" id="order-timeline">
+          <li class="timeline__step timeline__step--complete" data-step="placed">
+            <span class="timeline__icon">
+              <x-icon name="check"></x-icon>
+            </span>
+            <span class="timeline__label">Order Placed</span>
+            <time class="timeline__time" id="timeline-placed"></time>
+          </li>
+          <li class="timeline__step" data-step="processing">
+            <span class="timeline__icon">
+              <x-icon name="package"></x-icon>
+            </span>
+            <span class="timeline__label">Processing</span>
+            <time class="timeline__time" id="timeline-processing"></time>
+          </li>
+          <li class="timeline__step" data-step="shipped">
+            <span class="timeline__icon">
+              <x-icon name="truck"></x-icon>
+            </span>
+            <span class="timeline__label">Shipped</span>
+            <time class="timeline__time" id="timeline-shipped"></time>
+          </li>
+          <li class="timeline__step" data-step="delivered">
+            <span class="timeline__icon">
+              <x-icon name="home"></x-icon>
+            </span>
+            <span class="timeline__label">Delivered</span>
+            <time class="timeline__time" id="timeline-delivered"></time>
+          </li>
+        </ol>
+      </section>
+
+      <div class="order-detail__content">
+        <!-- Order Items -->
+        <section class="order-detail__section" aria-labelledby="items-title">
+          <h2 id="items-title" class="order-detail__section-title">Order Items</h2>
+          <ul class="order-items" id="order-items" role="list">
+            <!-- Items rendered via JavaScript -->
+          </ul>
+        </section>
+
+        <!-- Shipping & Payment Info -->
+        <aside class="order-detail__sidebar">
+          <section class="order-info-card" aria-labelledby="shipping-title">
+            <h2 id="shipping-title" class="order-info-card__title">
+              <x-icon name="map-pin"></x-icon>
+              Shipping Address
+            </h2>
+            <address id="shipping-address">
+              <!-- Address rendered via JavaScript -->
+            </address>
+          </section>
+
+          <section class="order-info-card" aria-labelledby="payment-title">
+            <h2 id="payment-title" class="order-info-card__title">
+              <x-icon name="credit-card"></x-icon>
+              Payment Method
+            </h2>
+            <p id="payment-method">
+              <!-- Payment info rendered via JavaScript -->
+            </p>
+          </section>
+
+          <section class="order-info-card" aria-labelledby="summary-title">
+            <h2 id="summary-title" class="order-info-card__title">
+              <x-icon name="receipt"></x-icon>
+              Order Summary
+            </h2>
+            <dl class="order-summary-list">
+              <div class="order-summary-list__row">
+                <dt>Subtotal</dt>
+                <dd id="order-subtotal"></dd>
+              </div>
+              <div class="order-summary-list__row">
+                <dt>Shipping</dt>
+                <dd id="order-shipping"></dd>
+              </div>
+              <div class="order-summary-list__row">
+                <dt>Tax</dt>
+                <dd id="order-tax"></dd>
+              </div>
+              <div class="order-summary-list__row order-summary-list__row--total">
+                <dt>Total</dt>
+                <dd id="order-total"></dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- Tracking Info (if shipped) -->
+          <section class="order-info-card" id="tracking-section" hidden aria-labelledby="tracking-title">
+            <h2 id="tracking-title" class="order-info-card__title">
+              <x-icon name="package-search"></x-icon>
+              Tracking Information
+            </h2>
+            <p>
+              <strong>Carrier:</strong> <span id="tracking-carrier"></span>
+            </p>
+            <p>
+              <strong>Tracking #:</strong>
+              <a href="#" id="tracking-link" target="_blank" rel="noopener">
+                <span id="tracking-number"></span>
+              </a>
+            </p>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Order Actions -->
+      <footer class="order-detail__actions">
+        <a href="/pages/orders.html" class="btn btn--outline">
+          <x-icon name="arrow-left"></x-icon>
+          Back to Orders
+        </a>
+
+        <div class="order-detail__actions-right">
+          <button type="button" class="btn btn--outline" id="contact-support-btn">
+            <x-icon name="message-circle"></x-icon>
+            Contact Support
+          </button>
+
+          <button type="button" class="btn btn--outline btn--danger" id="cancel-order-btn" hidden>
+            <x-icon name="x-circle"></x-icon>
+            Cancel Order
+          </button>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer__bottom">
+      <p>&copy; {{CURRENT_YEAR}} {{STORE_NAME}}. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/lib/order.js"></script>
+</body>
+</html>

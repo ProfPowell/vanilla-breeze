@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Theme Toggle Component - Component Library</title>
+  <link rel="stylesheet" href="../components.css"/>
+</head>
+<body>
+  <main class="demo-page">
+    <h1>Theme Toggle Component</h1>
+    <p>Theme selector for switching between color modes and brand themes.</p>
+
+    <section class="demo-section">
+      <h2>Basic Theme Toggle</h2>
+      <p>Two-part theme selection: color mode (light/dark) and brand theme.</p>
+
+      <article class="demo-card" data-max-width="sm">
+        <theme-selector>
+          <fieldset>
+            <legend>Appearance</legend>
+
+            <div data-group="mode">
+              <span>Color Mode</span>
+              <div data-options>
+                <label>
+                  <input type="radio" name="demo-mode" value="auto" checked/>
+                  <span>Auto</span>
+                </label>
+                <label>
+                  <input type="radio" name="demo-mode" value="light"/>
+                  <span>Light</span>
+                </label>
+                <label>
+                  <input type="radio" name="demo-mode" value="dark"/>
+                  <span>Dark</span>
+                </label>
+              </div>
+            </div>
+
+            <div data-group="theme">
+              <span>Brand Theme</span>
+              <div data-options>
+                <label>
+                  <input type="radio" name="demo-theme" value="default" checked/>
+                  <span data-color-preview style="background: oklch(0.55 0.2 250);"></span>
+                  <span>Default</span>
+                </label>
+                <label>
+                  <input type="radio" name="demo-theme" value="ocean"/>
+                  <span data-color-preview style="background: oklch(0.50 0.15 200);"></span>
+                  <span>Ocean</span>
+                </label>
+                <label>
+                  <input type="radio" name="demo-theme" value="forest"/>
+                  <span data-color-preview style="background: oklch(0.45 0.15 145);"></span>
+                  <span>Forest</span>
+                </label>
+                <label>
+                  <input type="radio" name="demo-theme" value="sunset"/>
+                  <span data-color-preview style="background: oklch(0.60 0.20 25);"></span>
+                  <span>Sunset</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </theme-selector>
+      </article>
+    </section>
+
+    <section class="demo-section">
+      <h2>Mode Only</h2>
+      <p>Simple light/dark toggle without brand themes.</p>
+
+      <article class="demo-card" data-max-width="xs">
+        <theme-selector>
+          <fieldset>
+            <div data-group="mode">
+              <span>Color Mode</span>
+              <div data-options>
+                <label>
+                  <input type="radio" name="mode-only" value="auto" checked/>
+                  <x-icon name="sun" size="sm"></x-icon>
+                  <span>Auto</span>
+                </label>
+                <label>
+                  <input type="radio" name="mode-only" value="light"/>
+                  <x-icon name="sun" size="sm"></x-icon>
+                  <span>Light</span>
+                </label>
+                <label>
+                  <input type="radio" name="mode-only" value="dark"/>
+                  <x-icon name="moon" size="sm"></x-icon>
+                  <span>Dark</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </theme-selector>
+      </article>
+    </section>
+
+    <section class="demo-section">
+      <h2>Compact Variant</h2>
+
+      <article class="demo-card" data-max-width="xs">
+        <theme-selector data-style="compact">
+          <fieldset>
+            <div data-group="mode">
+              <span>Mode</span>
+              <div data-options>
+                <label>
+                  <input type="radio" name="compact-mode" value="auto" checked/>
+                  <span>Auto</span>
+                </label>
+                <label>
+                  <input type="radio" name="compact-mode" value="light"/>
+                  <span>Light</span>
+                </label>
+                <label>
+                  <input type="radio" name="compact-mode" value="dark"/>
+                  <span>Dark</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </theme-selector>
+      </article>
+    </section>
+
+    <section class="demo-section">
+      <h2>CSS-Only Theme Switching</h2>
+      <p>Using <code>:has()</code> selector to apply themes without JavaScript.</p>
+
+      <pre><code>/* CSS-Only Theme Switching */
+
+/* Color mode */
+:root:has([name="color-mode"][value="light"]:checked) {
+  color-scheme: light;
+}
+
+:root:has([name="color-mode"][value="dark"]:checked) {
+  color-scheme: dark;
+}
+
+/* Brand themes */
+:root:has([name="brand-theme"][value="ocean"]:checked) {
+  --hue-primary: 200;
+  --hue-secondary: 180;
+  --hue-accent: 45;
+  --primary: oklch(0.50 0.15 var(--hue-primary));
+}
+
+:root:has([name="brand-theme"][value="forest"]:checked) {
+  --hue-primary: 145;
+  --primary: oklch(0.45 0.15 var(--hue-primary));
+}</code></pre>
+    </section>
+
+    <section class="demo-section">
+      <h2>JavaScript Enhancement</h2>
+      <p>Add localStorage persistence for user preferences.</p>
+
+      <pre><code>const ThemeManager = {
+  STORAGE_KEY: 'user-theme',
+
+  init() {
+    const saved = this.load();
+    if (saved) this.apply(saved);
+    this.bindEvents();
+  },
+
+  load() {
+    try {
+      return JSON.parse(localStorage.getItem(this.STORAGE_KEY));
+    } catch { return null; }
+  },
+
+  save(pref) {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pref));
+  },
+
+  apply({ mode, theme }) {
+    const root = document.documentElement;
+
+    if (mode &amp;&amp; mode !== 'auto') {
+      root.dataset.mode = mode;
+    } else {
+      delete root.dataset.mode;
+    }
+
+    if (theme &amp;&amp; theme !== 'default') {
+      root.dataset.theme = theme;
+    } else {
+      delete root.dataset.theme;
+    }
+  },
+
+  bindEvents() {
+    document.querySelectorAll('[name="color-mode"]').forEach(input =&gt; {
+      input.addEventListener('change', () =&gt; {
+        const pref = this.load() || {};
+        pref.mode = input.value;
+        this.apply(pref);
+        this.save(pref);
+      });
+    });
+
+    document.querySelectorAll('[name="brand-theme"]').forEach(input =&gt; {
+      input.addEventListener('change', () =&gt; {
+        const pref = this.load() || {};
+        pref.theme = input.value;
+        this.apply(pref);
+        this.save(pref);
+      });
+    });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () =&gt; ThemeManager.init());</code></pre>
+    </section>
+
+    <section class="demo-section">
+      <h2>Data Attributes</h2>
+      <p>Themes are applied via data attributes on the document root.</p>
+
+      <pre><code>&lt;!-- Default (system preference) --&gt;
+&lt;html&gt;
+
+&lt;!-- Force light mode --&gt;
+&lt;html data-mode="light"&gt;
+
+&lt;!-- Force dark mode --&gt;
+&lt;html data-mode="dark"&gt;
+
+&lt;!-- Brand theme --&gt;
+&lt;html data-theme="ocean"&gt;
+
+&lt;!-- Brand + mode --&gt;
+&lt;html data-theme="ocean" data-mode="dark"&gt;</code></pre>
+    </section>
+
+    <section class="demo-section">
+      <h2>Usage</h2>
+      <pre><code>&lt;theme-selector&gt;
+  &lt;fieldset&gt;
+    &lt;legend&gt;Appearance&lt;/legend&gt;
+
+    &lt;div data-group="mode"&gt;
+      &lt;span&gt;Color Mode&lt;/span&gt;
+      &lt;div data-options&gt;
+        &lt;label&gt;
+          &lt;input type="radio" name="color-mode" value="auto" checked/&gt;
+          &lt;span&gt;Auto&lt;/span&gt;
+        &lt;/label&gt;
+        &lt;label&gt;
+          &lt;input type="radio" name="color-mode" value="light"/&gt;
+          &lt;span&gt;Light&lt;/span&gt;
+        &lt;/label&gt;
+        &lt;label&gt;
+          &lt;input type="radio" name="color-mode" value="dark"/&gt;
+          &lt;span&gt;Dark&lt;/span&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div data-group="theme"&gt;
+      &lt;span&gt;Brand Theme&lt;/span&gt;
+      &lt;div data-options&gt;
+        &lt;label&gt;
+          &lt;input type="radio" name="brand-theme" value="default" checked/&gt;
+          &lt;span&gt;Default&lt;/span&gt;
+        &lt;/label&gt;
+        &lt;label&gt;
+          &lt;input type="radio" name="brand-theme" value="ocean"/&gt;
+          &lt;span&gt;Ocean&lt;/span&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/fieldset&gt;
+&lt;/theme-selector&gt;</code></pre>
+    </section>
+  </main>
+
+  <script>
+    // Demo: Apply theme changes to this page
+    document.querySelectorAll('theme-selector input[type="radio"]').forEach(input => {
+      input.addEventListener('change', () => {
+        const name = input.name;
+        const value = input.value;
+
+        if (name.includes('mode')) {
+          if (value === 'auto') {
+            delete document.documentElement.dataset.mode;
+          } else {
+            document.documentElement.dataset.mode = value;
+          }
+        }
+
+        if (name.includes('theme')) {
+          if (value === 'default') {
+            delete document.documentElement.dataset.theme;
+          } else {
+            document.documentElement.dataset.theme = value;
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

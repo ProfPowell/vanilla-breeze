@@ -1,0 +1,78 @@
+/**
+ * Main Stylesheet
+ * Global styles for the SPA
+ */
+
+@layer reset, tokens, base;
+
+@import "_reset.css" layer(reset);
+@import "_tokens.css" layer(tokens);
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--background);
+  }
+
+  /* Skip link */
+  a[href="#main"] {
+    position: absolute;
+    inset-block-start: -100%;
+    inset-inline-start: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--primary);
+    color: var(--text-on-primary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    z-index: 1000;
+  }
+
+  a[href="#main"]:focus {
+    inset-block-start: var(--spacing-md);
+  }
+
+  /* Loading state */
+  [data-state="loading"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 100dvh;
+  }
+
+  [data-role="spinner"] {
+    display: block;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border: 3px solid var(--border);
+    border-block-start-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* No JavaScript fallback */
+  [data-section="noscript"] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 100dvh;
+    text-align: center;
+    padding: var(--spacing-lg);
+  }
+
+  [data-section="noscript"] h1 {
+    margin-block-end: var(--spacing-md);
+  }
+
+  [data-section="noscript"] p {
+    color: var(--text-muted);
+    max-inline-size: 32rem;
+  }
+}

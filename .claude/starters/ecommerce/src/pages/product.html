@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product - {{STORE_NAME}}</title>
+  <meta name="description" content="View product details at {{STORE_NAME}}." />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/shop.css" />
+  <script type="module" src="/components/x-icon.js"></script>
+  <script type="module" src="/components/cart-button.js"></script>
+  <script type="module" src="/components/cart-drawer.js"></script>
+  <script type="module" src="/components/quantity-input.js"></script>
+  <script type="module" src="/components/product-card.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" class="nav__logo" aria-label="{{STORE_NAME}} - Home">
+        <x-icon name="store"></x-icon>
+        <span>{{STORE_NAME}}</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="/pages/products.html">Shop</a></li>
+        <li><a href="/pages/products.html?category=new">New Arrivals</a></li>
+        <li><a href="/pages/products.html?category=sale">Sale</a></li>
+      </ul>
+
+      <div class="nav__actions">
+        <cart-button></cart-button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol class="breadcrumb__list">
+        <li><a href="/">Home</a></li>
+        <li><a href="/pages/products.html">Shop</a></li>
+        <li><a href="#" id="breadcrumb-category">Category</a></li>
+        <li><span id="breadcrumb-product" aria-current="page">Product</span></li>
+      </ol>
+    </nav>
+
+    <!-- Product Detail -->
+    <article class="product-detail" id="product-detail">
+      <!-- Gallery -->
+      <div class="product-gallery">
+        <figure class="product-gallery__main">
+          <img id="main-image" src="" alt="" />
+        </figure>
+        <div class="product-gallery__thumbs" id="image-thumbs" role="list">
+          <!-- Thumbnails loaded via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <p class="product-info__category" id="product-category"></p>
+        <h1 class="product-info__name" id="product-name"></h1>
+
+        {{#IF_ENABLE_REVIEWS}}
+        <div class="product-info__rating" id="product-rating">
+          <div class="product-card__stars" aria-label="Rating">
+            <!-- Stars rendered via JavaScript -->
+          </div>
+          <a href="#reviews" class="product-info__review-count">
+            <span id="review-count">0</span> reviews
+          </a>
+        </div>
+        {{/IF_ENABLE_REVIEWS}}
+
+        <div class="product-info__price">
+          <span class="product-info__price-current" id="product-price"></span>
+          <span class="product-info__price-original" id="product-original-price" hidden></span>
+        </div>
+
+        <p class="product-info__description" id="product-description"></p>
+
+        <!-- Variants -->
+        <div class="product-variants" id="product-variants" hidden>
+          <!-- Variant selectors loaded via JavaScript -->
+        </div>
+
+        <!-- Add to Cart -->
+        <form class="product-actions" id="add-to-cart-form">
+          <div class="product-actions__quantity">
+            <label for="quantity" class="visually-hidden">Quantity</label>
+            <quantity-input id="quantity" name="quantity" value="1" min="1" max="10"></quantity-input>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--lg product-actions__add" id="add-to-cart-btn">
+            <x-icon name="shopping-cart"></x-icon>
+            Add to Cart
+          </button>
+
+          {{#IF_ENABLE_WISHLIST}}
+          <button type="button" class="btn btn--outline product-actions__wishlist" id="wishlist-btn" aria-label="Add to wishlist">
+            <x-icon name="heart"></x-icon>
+          </button>
+          {{/IF_ENABLE_WISHLIST}}
+        </form>
+
+        <!-- Stock Status -->
+        <p class="product-info__stock" id="product-stock">
+          <x-icon name="check-circle"></x-icon>
+          <span>In Stock</span>
+        </p>
+
+        <!-- Product Details -->
+        <details class="product-details">
+          <summary>Product Details</summary>
+          <div class="product-details__content" id="product-details">
+            <!-- Details loaded via JavaScript -->
+          </div>
+        </details>
+
+        <!-- Shipping Info -->
+        <details class="product-details">
+          <summary>Shipping & Returns</summary>
+          <div class="product-details__content">
+            <ul>
+              <li>Free shipping on orders over {{CURRENCY_SYMBOL}}50</li>
+              <li>Standard shipping: 5-7 business days</li>
+              <li>Express shipping: 2-3 business days</li>
+              <li>30-day return policy</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </article>
+
+    {{#IF_ENABLE_REVIEWS}}
+    <!-- Reviews Section -->
+    <section class="section" id="reviews" aria-labelledby="reviews-title">
+      <h2 id="reviews-title" class="section__title">Customer Reviews</h2>
+
+      <div class="reviews-summary" id="reviews-summary">
+        <!-- Summary loaded via JavaScript -->
+      </div>
+
+      <div class="reviews-list" id="reviews-list">
+        <!-- Reviews loaded via JavaScript -->
+      </div>
+
+      <button type="button" class="btn btn--outline" id="load-more-reviews" hidden>
+        Load More Reviews
+      </button>
+    </section>
+    {{/IF_ENABLE_REVIEWS}}
+
+    <!-- Related Products -->
+    <section class="section" aria-labelledby="related-title">
+      <h2 id="related-title" class="section__title">You May Also Like</h2>
+      <ul class="product-grid product-grid--compact" id="related-products">
+        <!-- Related products loaded via JavaScript -->
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer__bottom">
+      <p>&copy; {{CURRENT_YEAR}} {{STORE_NAME}}. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <cart-drawer></cart-drawer>
+
+  <script type="module" src="/lib/product.js"></script>
+</body>
+</html>

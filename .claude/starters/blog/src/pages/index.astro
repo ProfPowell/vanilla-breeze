@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout
+  title="Home"
+  description="{{DESCRIPTION}}"
+>
+  <div class="home">
+    <header class="home-header">
+      <h1>{{BLOG_NAME}}</h1>
+      <p class="home-description">{{DESCRIPTION}}</p>
+    </header>
+
+    <section class="posts-section" aria-labelledby="posts-heading">
+      <h2 id="posts-heading" class="visually-hidden">Recent Posts</h2>
+
+      {posts.length === 0 ? (
+        <p class="no-posts">No posts yet. Check back soon!</p>
+      ) : (
+        <div class="post-grid">
+          {posts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      )}
+    </section>
+  </div>
+</BaseLayout>

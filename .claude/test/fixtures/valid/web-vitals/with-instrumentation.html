@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Test page with complete Web Vitals instrumentation"/>
+  <title>Page with Web Vitals</title>
+</head>
+<body>
+  <header>
+    <h1>Web Vitals Test Page</h1>
+    <nav>
+      <a href="#main">Skip to main content</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article>
+      <h2>Performance Monitoring Demo</h2>
+      <p>This page demonstrates complete Core Web Vitals instrumentation using the local web-vitals npm package.</p>
+
+      <section>
+        <h3>Metrics Being Tracked</h3>
+        <ul id="metrics-list">
+          <li>LCP - Largest Contentful Paint</li>
+          <li>INP - Interaction to Next Paint</li>
+          <li>CLS - Cumulative Layout Shift</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Interactive Element</h3>
+        <button type="button" id="test-btn">Click to Test INP</button>
+        <output id="result"></output>
+      </section>
+    </article>
+  </main>
+
+  <script type="module">
+    // Import from local npm package (requires bundler or importmap)
+    import { onLCP, onINP, onCLS } from 'web-vitals';
+
+    // Analytics reporting function
+    function sendToAnalytics(metric) {
+      const entry = {
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating,
+        delta: metric.delta,
+        id: metric.id,
+        timestamp: Date.now()
+      };
+
+      // Log to console for debugging
+      console.log('[Web Vitals]', entry);
+
+      // In production, send to analytics endpoint:
+      // navigator.sendBeacon('/analytics', JSON.stringify(entry));
+    }
+
+    // Initialize Core Web Vitals monitoring
+    onLCP(sendToAnalytics);   // Largest Contentful Paint (target: < 2.5s)
+    onINP(sendToAnalytics);   // Interaction to Next Paint (target: < 200ms)
+    onCLS(sendToAnalytics);   // Cumulative Layout Shift (target: < 0.1)
+
+    // Demo interaction handler
+    document.getElementById('test-btn').addEventListener('click', () => {
+      const result = document.getElementById('result');
+      result.textContent = 'Button clicked at ' + new Date().toLocaleTimeString();
+    });
+  </script>
+</body>
+</html>

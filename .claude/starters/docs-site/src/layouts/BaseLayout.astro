@@ -1,0 +1,40 @@
+---
+/**
+ * Base HTML layout for all pages
+ */
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '{{DESCRIPTION}}' } = Astro.props;
+const siteTitle = '{{SITE_NAME}}';
+const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
+
+  <title>{fullTitle}</title>
+
+  <link rel="stylesheet" href="/styles/_reset.css" />
+  <link rel="stylesheet" href="/styles/_tokens.css" />
+  <link rel="stylesheet" href="/styles/docs.css" />
+
+{{#IF_CODE_HIGHLIGHTING_HIGHLIGHT_JS}}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+{{/IF_CODE_HIGHLIGHTING_HIGHLIGHT_JS}}
+</head>
+<body>
+  <slot />
+{{#IF_CODE_HIGHLIGHTING_HIGHLIGHT_JS}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+{{/IF_CODE_HIGHLIGHTING_HIGHLIGHT_JS}}
+</body>
+</html>

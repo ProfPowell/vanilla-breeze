@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const recentPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+---
+
+<BaseLayout title="Home">
+  <section data-section="hero">
+    <h1>Welcome to {{SITE_NAME}}</h1>
+    <p>{{DESCRIPTION}}</p>
+    <nav aria-label="Get started">
+      <a href="/about" data-variant="primary">Learn More</a>
+      <a href="/blog" data-variant="secondary">Read Blog</a>
+    </nav>
+  </section>
+
+  <section data-section="features">
+    <h2>Features</h2>
+    <ul role="list">
+      <li>
+        <Card title="Content Collections">
+          <p>Organize your content with type-safe collections.</p>
+        </Card>
+      </li>
+      <li>
+        <Card title="Component Islands">
+          <p>Add interactivity only where you need it.</p>
+        </Card>
+      </li>
+      <li>
+        <Card title="Zero JavaScript">
+          <p>Ship zero JavaScript by default for maximum speed.</p>
+        </Card>
+      </li>
+    </ul>
+  </section>
+
+  {recentPosts.length > 0 && (
+    <section data-section="posts">
+      <h2>Recent Posts</h2>
+      <ul role="list">
+        {recentPosts.map((post) => (
+          <li>
+            <a href={`/blog/${post.slug}`}>
+              <h3>{post.data.title}</h3>
+              <p>{post.data.description}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href="/blog" data-role="view-all">View all posts →</a>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  [data-section="hero"] {
+    padding-block: var(--spacing-3xl);
+    padding-inline: var(--spacing-lg);
+    text-align: center;
+    background: var(--surface-alt);
+  }
+
+  [data-section="hero"] h1 {
+    font-size: var(--font-size-3xl);
+    margin-block-end: var(--spacing-md);
+  }
+
+  [data-section="hero"] > p {
+    font-size: var(--font-size-lg);
+    color: var(--text-muted);
+    margin-block-end: var(--spacing-xl);
+  }
+
+  [data-section="hero"] nav {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+  }
+
+  [data-section="features"] {
+    padding-block: var(--spacing-3xl);
+    padding-inline: var(--spacing-lg);
+    max-inline-size: var(--content-width);
+    margin-inline: auto;
+  }
+
+  [data-section="features"] h2 {
+    text-align: center;
+    margin-block-end: var(--spacing-2xl);
+  }
+
+  [data-section="features"] ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-xl);
+    list-style: none;
+  }
+
+  [data-section="posts"] {
+    padding-block: var(--spacing-3xl);
+    padding-inline: var(--spacing-lg);
+    max-inline-size: var(--content-width);
+    margin-inline: auto;
+  }
+
+  [data-section="posts"] h2 {
+    margin-block-end: var(--spacing-xl);
+  }
+
+  [data-section="posts"] ul {
+    list-style: none;
+    display: grid;
+    gap: var(--spacing-lg);
+    margin-block-end: var(--spacing-xl);
+  }
+
+  [data-section="posts"] ul a {
+    display: block;
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+  }
+
+  [data-section="posts"] ul a:hover {
+    border-color: var(--primary);
+    background: var(--surface-alt);
+  }
+
+  [data-section="posts"] ul h3 {
+    color: var(--text);
+    margin-block-end: var(--spacing-xs);
+  }
+
+  [data-section="posts"] ul p {
+    color: var(--text-muted);
+  }
+
+  [data-role="view-all"] {
+    display: inline-block;
+    color: var(--primary);
+  }
+</style>

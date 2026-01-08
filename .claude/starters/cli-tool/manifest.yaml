@@ -1,0 +1,80 @@
+name: cli-tool
+displayName: "CLI Tool"
+description: "Node.js command-line tool with zero dependencies"
+version: "1.0.0"
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project folder name"
+    type: string
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "Lowercase letters, numbers, and hyphens only"
+
+  - key: COMMAND_NAME
+    label: "CLI command name"
+    type: string
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "The command users will type (e.g., 'mytool')"
+
+  - key: DESCRIPTION
+    label: "Tool description"
+    type: string
+    required: true
+    maxLength: 80
+    description: "Short description for package.json and --help"
+
+  - key: CLI_STYLE
+    label: "CLI style"
+    type: select
+    options:
+      - simple
+      - multi-command
+      - interactive
+    default: simple
+    description: "simple=single action, multi-command=git-style, interactive=wizard"
+
+  - key: ENABLE_CONFIG
+    label: "Support config files?"
+    type: boolean
+    default: true
+    description: "Load settings from .toolrc or package.json"
+
+  - key: ENABLE_COLOR
+    label: "Colored output?"
+    type: boolean
+    default: true
+
+  - key: ENABLE_SPINNER
+    label: "Progress indicators?"
+    type: boolean
+    default: false
+    description: "Spinners and progress bars for async operations"
+
+  - key: AUTHOR
+    label: "Author name"
+    type: string
+    default: ""
+
+  - key: LICENSE
+    label: "License"
+    type: select
+    options:
+      - MIT
+      - ISC
+      - Apache-2.0
+      - GPL-3.0
+      - UNLICENSED
+    default: MIT
+
+skills:
+  - cli-author
+  - javascript-author
+  - unit-testing
+  - error-handling
+
+postScaffold:
+  - npm install
+  - npm link
+  - echo "CLI tool scaffolded! Test with: {{COMMAND_NAME}} --help"

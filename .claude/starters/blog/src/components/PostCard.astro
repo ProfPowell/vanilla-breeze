@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TagList from './TagList.astro';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, description, date, tags, image } = post.data;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+});
+---
+
+<article class="post-card">
+  {image && (
+    <a href={`/blog/${post.slug}`} class="post-card-image">
+      <img src={image} alt="" loading="lazy" />
+    </a>
+  )}
+
+  <div class="post-card-content">
+    <header>
+      <time datetime={date.toISOString()} class="post-card-date">
+        {formattedDate}
+      </time>
+      <h2 class="post-card-title">
+        <a href={`/blog/${post.slug}`}>{title}</a>
+      </h2>
+    </header>
+
+    <p class="post-card-description">{description}</p>
+
+    {tags.length > 0 && <TagList tags={tags} small />}
+  </div>
+</article>

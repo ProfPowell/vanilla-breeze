@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Test page with partial Web Vitals instrumentation"/>
+  <title>Page with Partial Web Vitals</title>
+</head>
+<body>
+  <header>
+    <h1>Partial Web Vitals Demo</h1>
+  </header>
+
+  <main>
+    <article>
+      <h2>Limited Monitoring</h2>
+      <p>This page only monitors LCP and CLS, missing INP tracking.</p>
+
+      <section>
+        <h3>Image Gallery</h3>
+        <figure>
+          <img src="/images/placeholder.jpg" alt="Sample image for LCP measurement" width="800" height="600" loading="eager"/>
+          <figcaption>Main content image (affects LCP)</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h3>Dynamic Content Area</h3>
+        <div id="dynamic-content">
+          <p>This area may shift during load (affects CLS).</p>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <script type="module">
+    // Import from local npm package - missing INP!
+    import { onLCP, onCLS } from 'web-vitals';
+
+    // Performance data collector
+    const perfData = {
+      metrics: [],
+      sessionId: crypto.randomUUID()
+    };
+
+    function collectMetric(metric) {
+      perfData.metrics.push({
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating,
+        navigationType: metric.navigationType
+      });
+
+      console.log('[Perf]', metric.name, metric.value, metric.rating);
+    }
+
+    // Only monitoring LCP and CLS - INP is missing!
+    onLCP(collectMetric);   // Largest Contentful Paint
+    onCLS(collectMetric);   // Cumulative Layout Shift
+    // onINP is NOT initialized - this is the gap
+
+    // Simulate dynamic content that could cause CLS
+    setTimeout(() => {
+      const content = document.getElementById('dynamic-content');
+      const newParagraph = document.createElement('p');
+      newParagraph.textContent = 'Additional content loaded after initial render.';
+      content.appendChild(newParagraph);
+    }, 100);
+  </script>
+</body>
+</html>
