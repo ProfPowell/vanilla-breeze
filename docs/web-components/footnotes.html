@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-footnotes - Web Components - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+  <div class="docs-layout">
+    <header class="docs-header">
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/native/">Native</a></li>
+          <li><a href="/docs/custom-elements/">Custom</a></li>
+          <li><a href="/docs/web-components/" aria-current="page">Components</a></li>
+          <li><a href="/docs/kitchen-sink.html">Kitchen Sink</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="docs-main">
+      <nav class="subnav" aria-label="Web components">
+        <ul>
+          <li><a href="/docs/web-components/icons.html">x-icon</a></li>
+          <li><a href="/docs/web-components/tabs.html">x-tabs</a></li>
+          <li><a href="/docs/web-components/accordion.html">x-accordion</a></li>
+          <li><a href="/docs/web-components/dialog.html">x-dialog</a></li>
+          <li><a href="/docs/web-components/tooltip.html">x-tooltip</a></li>
+          <li><a href="/docs/web-components/toast.html">x-toast</a></li>
+          <li><a href="/docs/web-components/footnotes.html" aria-current="page">x-footnotes</a></li>
+        </ul>
+      </nav>
+
+      <h1>x-footnotes</h1>
+      <p class="lead">Progressive enhancement for footnotes with inline references and automatic collection.</p>
+
+      <section class="docs-section">
+        <h2>Overview</h2>
+        <p>The <code>&lt;x-footnotes&gt;</code> component works with <code>&lt;x-fnref&gt;</code> elements to create accessible footnotes. Without JavaScript, footnotes appear inline. With JavaScript, they become superscript links with a collected list at the bottom.</p>
+
+        <div class="example">
+          <x-prose>
+            <p>The Vanilla Breeze framework<x-fnref>Vanilla Breeze is an experimental component library exploring progressive enhancement patterns.</x-fnref> provides a layered approach to building web interfaces. It uses native browser features<x-fnref>Including CSS custom properties, @layer, :has(), and the details element.</x-fnref> rather than requiring heavy JavaScript frameworks.</p>
+          </x-prose>
+          <x-footnotes></x-footnotes>
+        </div>
+
+        <pre class="code-block"><code>&lt;p&gt;
+  The Vanilla Breeze framework&lt;x-fnref&gt;Vanilla Breeze is an experimental
+  component library.&lt;/x-fnref&gt; provides a layered approach.
+&lt;/p&gt;
+
+&lt;x-footnotes&gt;&lt;/x-footnotes&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Components</h2>
+
+        <h3>&lt;x-fnref&gt;</h3>
+        <p>The footnote reference element. Place inline within your content where you want a footnote marker.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Element</th>
+              <th>Content</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt;x-fnref&gt;</code></td>
+              <td>Text</td>
+              <td>Contains the footnote text. Becomes a superscript link when enhanced.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>&lt;x-footnotes&gt;</h3>
+        <p>The footnotes container. Place at the end of your content where you want footnotes collected.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-back-label</code></td>
+              <td>string</td>
+              <td><code>"Back to content"</code></td>
+              <td>Accessible label for back-reference links.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Progressive Enhancement</h2>
+        <p>The footnotes component demonstrates progressive enhancement principles.</p>
+
+        <h3>Without JavaScript</h3>
+        <p>When JavaScript is disabled or fails to load, footnotes remain inline within parentheses, keeping the content readable:</p>
+
+        <pre class="code-block"><code>&lt;!-- Renders as: --&gt;
+The framework (Vanilla Breeze is an experimental component library)
+provides a layered approach.</code></pre>
+
+        <h3>With JavaScript</h3>
+        <p>When JavaScript loads, the component:</p>
+        <ul>
+          <li>Finds all <code>&lt;x-fnref&gt;</code> elements before the <code>&lt;x-footnotes&gt;</code></li>
+          <li>Converts them to superscript numbered links</li>
+          <li>Collects footnote content into an ordered list</li>
+          <li>Adds back-reference links from each footnote</li>
+        </ul>
+      </section>
+
+      <section class="docs-section">
+        <h2>Basic Usage</h2>
+        <p>Place <code>&lt;x-fnref&gt;</code> elements inline where footnotes should appear, then add a single <code>&lt;x-footnotes&gt;</code> element where the footnote list should be rendered.</p>
+
+        <div class="example">
+          <x-prose>
+            <p>This is the first paragraph with a footnote<x-fnref>This is the first footnote explaining something important.</x-fnref> in the middle of the text.</p>
+            <p>Here's another paragraph with multiple footnotes<x-fnref>Second footnote with more information.</x-fnref> demonstrating how they<x-fnref>Third footnote showing sequential numbering.</x-fnref> are numbered automatically.</p>
+          </x-prose>
+          <x-footnotes></x-footnotes>
+        </div>
+
+        <pre class="code-block"><code>&lt;p&gt;This is the first paragraph with a footnote&lt;x-fnref&gt;This is
+the first footnote explaining something important.&lt;/x-fnref&gt; in
+the middle of the text.&lt;/p&gt;
+
+&lt;p&gt;Here's another paragraph with multiple footnotes&lt;x-fnref&gt;Second
+footnote.&lt;/x-fnref&gt; demonstrating how they&lt;x-fnref&gt;Third
+footnote.&lt;/x-fnref&gt; are numbered automatically.&lt;/p&gt;
+
+&lt;x-footnotes&gt;&lt;/x-footnotes&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Custom Back Label</h2>
+        <p>Use <code>data-back-label</code> to customize the accessible label for back-reference links.</p>
+
+        <div class="example">
+          <x-prose>
+            <p>Content with a footnote<x-fnref>This footnote has a custom back-reference label.</x-fnref> demonstrating custom labeling.</p>
+          </x-prose>
+          <x-footnotes data-back-label="Return to text"></x-footnotes>
+        </div>
+
+        <pre class="code-block"><code>&lt;x-footnotes data-back-label="Return to text"&gt;&lt;/x-footnotes&gt;</code></pre>
+
+        <p>The default label is "Back to content". Customize it for internationalization or to match your site's terminology.</p>
+      </section>
+
+      <section class="docs-section">
+        <h2>Long Form Content</h2>
+        <p>Footnotes work well with longer articles and prose content.</p>
+
+        <div class="example">
+          <x-prose>
+            <h3>Understanding Progressive Enhancement</h3>
+            <p>Progressive enhancement<x-fnref>A strategy for web design that emphasizes core webpage content first, then adds more nuanced and technologically rigorous layers of presentation and features on top.</x-fnref> is a design philosophy that centers on providing a baseline experience for all users while enhancing the experience for those with more capable browsers or devices.</p>
+
+            <p>The approach was first articulated by Steven Champeon<x-fnref>Steven Champeon is a web developer and author who coined the term "progressive enhancement" in 2003.</x-fnref> in 2003 as a counter to the "graceful degradation" philosophy that was prevalent at the time.</p>
+
+            <p>Modern frameworks<x-fnref>Including React, Vue, and Angular, which often require JavaScript for basic rendering.</x-fnref> have moved away from this approach, but there's renewed interest in building resilient web experiences that work without JavaScript.</p>
+          </x-prose>
+          <x-footnotes></x-footnotes>
+        </div>
+      </section>
+
+      <section class="docs-section">
+        <h2>How It Works</h2>
+        <p>The component processes footnotes in the following steps:</p>
+
+        <ol>
+          <li><strong>Collection:</strong> Finds all <code>&lt;x-fnref&gt;</code> elements that appear before the <code>&lt;x-footnotes&gt;</code> element in document order.</li>
+          <li><strong>Enhancement:</strong> Each <code>&lt;x-fnref&gt;</code> gets:
+            <ul>
+              <li>A unique ID (e.g., <code>fnref-1</code>)</li>
+              <li>A <code>data-enhanced</code> attribute</li>
+              <li>The original content wrapped in a span</li>
+              <li>A superscript link to the footnote</li>
+            </ul>
+          </li>
+          <li><strong>List Generation:</strong> An ordered list is created inside <code>&lt;x-footnotes&gt;</code> with:
+            <ul>
+              <li>Each footnote's content</li>
+              <li>A back-reference link to the original location</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Generated HTML</h3>
+        <pre class="code-block"><code>&lt;!-- Original --&gt;
+&lt;x-fnref&gt;Footnote content&lt;/x-fnref&gt;
+
+&lt;!-- Enhanced --&gt;
+&lt;x-fnref id="fnref-1" data-enhanced&gt;
+  &lt;span&gt;Footnote content&lt;/span&gt;
+  &lt;a href="#fn-1" aria-describedby="fn-1"&gt;[1]&lt;/a&gt;
+&lt;/x-fnref&gt;
+
+&lt;!-- Footnotes list --&gt;
+&lt;x-footnotes&gt;
+  &lt;ol&gt;
+    &lt;li id="fn-1"&gt;
+      Footnote content
+      &lt;a href="#fnref-1" class="fn-backref" aria-label="Back to content"&gt;↩&lt;/a&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/x-footnotes&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Accessibility</h2>
+
+        <h3>ARIA Attributes</h3>
+        <ul>
+          <li>Footnote links have <code>aria-describedby</code> pointing to the footnote content</li>
+          <li>Back-reference links have <code>aria-label</code> for screen reader context</li>
+        </ul>
+
+        <h3>Navigation</h3>
+        <ul>
+          <li>Clicking a footnote number jumps to the footnote in the list</li>
+          <li>Clicking the back-reference (↩) returns to the original location</li>
+          <li>All links are keyboard accessible</li>
+        </ul>
+
+        <h3>Screen Reader Experience</h3>
+        <p>Screen readers will:</p>
+        <ul>
+          <li>Announce the footnote number as a link</li>
+          <li>Read the footnote content when navigating to it</li>
+          <li>Allow users to return to their reading position</li>
+        </ul>
+
+        <h3>Best Practices</h3>
+        <ul>
+          <li>Keep footnote content concise</li>
+          <li>Don't put essential information only in footnotes</li>
+          <li>Use footnotes for supplementary information, citations, or clarifications</li>
+          <li>Place <code>&lt;x-footnotes&gt;</code> at the end of the content section</li>
+        </ul>
+      </section>
+
+      <section class="docs-section">
+        <h2>Styling</h2>
+        <p>The component can be styled using CSS selectors.</p>
+
+        <pre class="code-block"><code>/* Style the footnote reference links */
+x-fnref a {
+  font-size: var(--font-size-sm);
+  vertical-align: super;
+  text-decoration: none;
+  color: var(--color-interactive);
+}
+
+x-fnref a:hover {
+  text-decoration: underline;
+}
+
+/* Hide the inline content when enhanced */
+x-fnref[data-enhanced] > span {
+  display: none;
+}
+
+/* Style the footnotes list */
+x-footnotes ol {
+  font-size: var(--font-size-sm);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+  padding-block-start: var(--size-m);
+  margin-block-start: var(--size-xl);
+}
+
+/* Style the back-reference link */
+x-footnotes .fn-backref {
+  margin-inline-start: var(--size-2xs);
+  text-decoration: none;
+}</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Multiple Footnote Sections</h2>
+        <p>You can have multiple <code>&lt;x-footnotes&gt;</code> elements in a document. Each will collect only the footnotes that appear before it.</p>
+
+        <div class="example">
+          <x-prose>
+            <h4>Section One</h4>
+            <p>Content in section one<x-fnref>Footnote for section one.</x-fnref> with its own footnotes.</p>
+          </x-prose>
+          <x-footnotes></x-footnotes>
+
+          <x-prose>
+            <h4>Section Two</h4>
+            <p>Content in section two<x-fnref>Footnote for section two.</x-fnref> with separate footnotes.</p>
+          </x-prose>
+          <x-footnotes></x-footnotes>
+        </div>
+
+        <aside class="note">
+          <strong>Note:</strong> Each <code>&lt;x-footnotes&gt;</code> element only collects <code>&lt;x-fnref&gt;</code> elements that appear before it in the document. This allows for multiple independent footnote sections.
+        </aside>
+      </section>
+
+      <section class="docs-section">
+        <h2>Use Cases</h2>
+
+        <h3>Academic Writing</h3>
+        <p>Citations and references in scholarly articles:</p>
+        <pre class="code-block"><code>&lt;p&gt;Research shows significant improvements&lt;x-fnref&gt;Smith et al.,
+"Progressive Enhancement Study," Journal of Web Development,
+2024.&lt;/x-fnref&gt; in user experience.&lt;/p&gt;</code></pre>
+
+        <h3>Legal Documents</h3>
+        <p>Definitions and clarifications in terms of service:</p>
+        <pre class="code-block"><code>&lt;p&gt;The Service&lt;x-fnref&gt;"Service" refers to the web application
+provided at example.com.&lt;/x-fnref&gt; may be modified at any
+time.&lt;/p&gt;</code></pre>
+
+        <h3>Technical Documentation</h3>
+        <p>Additional context or caveats:</p>
+        <pre class="code-block"><code>&lt;p&gt;This feature requires ES2022&lt;x-fnref&gt;Specifically, private
+class fields and top-level await.&lt;/x-fnref&gt; support.&lt;/p&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Limitations</h2>
+        <ul>
+          <li>Footnote numbering is determined by document order, not insertion order</li>
+          <li>The component doesn't support dynamically added footnotes after initial render</li>
+          <li>Rich HTML content in footnotes (links, formatting) is supported but may require additional styling</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="docs-footer">
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-tabs - Web Components - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+  <div class="docs-layout">
+    <header class="docs-header">
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/native/">Native</a></li>
+          <li><a href="/docs/custom-elements/">Custom</a></li>
+          <li><a href="/docs/web-components/" aria-current="page">Components</a></li>
+          <li><a href="/docs/kitchen-sink.html">Kitchen Sink</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="docs-main">
+      <nav class="subnav" aria-label="Web components">
+        <ul>
+          <li><a href="/docs/web-components/icons.html">x-icon</a></li>
+          <li><a href="/docs/web-components/tabs.html" aria-current="page">x-tabs</a></li>
+          <li><a href="/docs/web-components/accordion.html">x-accordion</a></li>
+          <li><a href="/docs/web-components/dialog.html">x-dialog</a></li>
+          <li><a href="/docs/web-components/tooltip.html">x-tooltip</a></li>
+          <li><a href="/docs/web-components/toast.html">x-toast</a></li>
+          <li><a href="/docs/web-components/footnotes.html">x-footnotes</a></li>
+        </ul>
+      </nav>
+
+      <h1>x-tabs</h1>
+      <p class="lead">Accessible tab interface built on native <code>&lt;details&gt;</code> elements with progressive enhancement.</p>
+
+      <section class="docs-section">
+        <h2>Overview</h2>
+        <p>The <code>&lt;x-tabs&gt;</code> component transforms a group of <code>&lt;details&gt;</code> elements into a tab interface. Without JavaScript, it works as an accordion. With JavaScript, it adds keyboard navigation and ARIA tab semantics.</p>
+
+        <div class="example">
+          <x-tabs aria-label="Feature tabs">
+            <details name="feature-tabs" open>
+              <summary>Overview</summary>
+              <div>
+                <x-stack data-gap="m">
+                  <p>The x-tabs component provides a fully accessible tab interface using native HTML elements as its foundation.</p>
+                </x-stack>
+              </div>
+            </details>
+            <details name="feature-tabs">
+              <summary>Features</summary>
+              <div>
+                <x-stack data-gap="m">
+                  <ul>
+                    <li>Progressive enhancement - works without JS</li>
+                    <li>Keyboard navigation with arrow keys</li>
+                    <li>Automatic ARIA role assignment</li>
+                    <li>Custom event on tab change</li>
+                  </ul>
+                </x-stack>
+              </div>
+            </details>
+            <details name="feature-tabs">
+              <summary>Usage</summary>
+              <div>
+                <x-stack data-gap="m">
+                  <p>Wrap your details elements in an <code>&lt;x-tabs&gt;</code> element and give them a shared <code>name</code> attribute.</p>
+                </x-stack>
+              </div>
+            </details>
+          </x-tabs>
+        </div>
+
+        <pre class="code-block"><code>&lt;x-tabs aria-label="Feature tabs"&gt;
+  &lt;details name="feature-tabs" open&gt;
+    &lt;summary&gt;Overview&lt;/summary&gt;
+    &lt;div&gt;Content for Overview tab&lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details name="feature-tabs"&gt;
+    &lt;summary&gt;Features&lt;/summary&gt;
+    &lt;div&gt;Content for Features tab&lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details name="feature-tabs"&gt;
+    &lt;summary&gt;Usage&lt;/summary&gt;
+    &lt;div&gt;Content for Usage tab&lt;/div&gt;
+  &lt;/details&gt;
+&lt;/x-tabs&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Attributes</h2>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>aria-label</code></td>
+              <td>string</td>
+              <td>-</td>
+              <td>Accessible label for the tab list (required for accessibility).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Child Details Attributes</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td>string</td>
+              <td>Shared name for exclusive behavior. All tabs should have the same name.</td>
+            </tr>
+            <tr>
+              <td><code>open</code></td>
+              <td>boolean</td>
+              <td>Initially selected tab. If none specified, first tab is selected.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Progressive Enhancement</h2>
+        <p>The component is built on the native <code>&lt;details&gt;</code> element, which provides built-in expand/collapse functionality. The shared <code>name</code> attribute (supported in modern browsers) ensures only one panel is open at a time.</p>
+
+        <h3>Without JavaScript</h3>
+        <p>When JavaScript is disabled or fails to load, the tabs degrade gracefully to an accordion-style interface where each panel can be expanded independently.</p>
+
+        <h3>With JavaScript</h3>
+        <ul>
+          <li>ARIA <code>role="tablist"</code>, <code>role="tab"</code>, and <code>role="tabpanel"</code> are applied</li>
+          <li>Keyboard navigation is enabled</li>
+          <li><code>aria-selected</code> state is managed</li>
+          <li>Focus management is handled</li>
+        </ul>
+      </section>
+
+      <section class="docs-section">
+        <h2>Keyboard Navigation</h2>
+        <p>When focused on a tab, the following keyboard shortcuts are available:</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>ArrowRight</kbd></td>
+              <td>Move to and activate the next tab</td>
+            </tr>
+            <tr>
+              <td><kbd>ArrowLeft</kbd></td>
+              <td>Move to and activate the previous tab</td>
+            </tr>
+            <tr>
+              <td><kbd>Home</kbd></td>
+              <td>Move to and activate the first tab</td>
+            </tr>
+            <tr>
+              <td><kbd>End</kbd></td>
+              <td>Move to and activate the last tab</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="example">
+          <p>Try using arrow keys to navigate between tabs:</p>
+          <x-tabs aria-label="Keyboard demo tabs">
+            <details name="keyboard-demo" open>
+              <summary>First</summary>
+              <div>
+                <p>Press <kbd>ArrowRight</kbd> to move to the next tab.</p>
+              </div>
+            </details>
+            <details name="keyboard-demo">
+              <summary>Second</summary>
+              <div>
+                <p>Press <kbd>ArrowLeft</kbd> to move to the previous tab, or <kbd>End</kbd> to jump to the last.</p>
+              </div>
+            </details>
+            <details name="keyboard-demo">
+              <summary>Third</summary>
+              <div>
+                <p>Press <kbd>Home</kbd> to jump back to the first tab.</p>
+              </div>
+            </details>
+          </x-tabs>
+        </div>
+      </section>
+
+      <section class="docs-section">
+        <h2>Rich Tab Content</h2>
+        <p>Tabs can contain any HTML content, including forms, images, and other components.</p>
+
+        <div class="example">
+          <x-tabs aria-label="Content types">
+            <details name="content-types" open>
+              <summary>Text Content</summary>
+              <div>
+                <x-prose>
+                  <p>Tabs can contain rich text content with proper typography.</p>
+                  <blockquote>Including blockquotes, lists, and other typographic elements.</blockquote>
+                </x-prose>
+              </div>
+            </details>
+            <details name="content-types">
+              <summary>Form Content</summary>
+              <div>
+                <form class="stacked" style="max-inline-size: 20rem;">
+                  <div class="group">
+                    <label for="tab-name">Name</label>
+                    <input type="text" id="tab-name" placeholder="Your name" />
+                  </div>
+                  <div class="group">
+                    <label for="tab-email">Email</label>
+                    <input type="email" id="tab-email" placeholder="you@example.com" />
+                  </div>
+                  <div class="actions">
+                    <button type="submit">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </details>
+            <details name="content-types">
+              <summary>Card Grid</summary>
+              <div>
+                <x-grid data-min="150px" data-gap="m">
+                  <x-card data-variant="outlined" data-padding="s">
+                    <strong>Card 1</strong>
+                  </x-card>
+                  <x-card data-variant="outlined" data-padding="s">
+                    <strong>Card 2</strong>
+                  </x-card>
+                  <x-card data-variant="outlined" data-padding="s">
+                    <strong>Card 3</strong>
+                  </x-card>
+                </x-grid>
+              </div>
+            </details>
+          </x-tabs>
+        </div>
+      </section>
+
+      <section class="docs-section">
+        <h2>Events</h2>
+        <p>The component dispatches a custom event when a tab is changed.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Detail</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tab-change</code></td>
+              <td><code>{ index: number }</code></td>
+              <td>Fired when a tab is activated. <code>index</code> is the 0-based tab index.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre class="code-block"><code>const tabs = document.querySelector('x-tabs');
+
+tabs.addEventListener('tab-change', (event) => {
+  console.log('Tab changed to:', event.detail.index);
+});</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Accessibility</h2>
+
+        <h3>ARIA Roles</h3>
+        <p>The component automatically applies the following ARIA roles:</p>
+        <ul>
+          <li><code>role="tablist"</code> on the <code>&lt;x-tabs&gt;</code> element</li>
+          <li><code>role="tab"</code> on each <code>&lt;summary&gt;</code> element</li>
+          <li><code>role="tabpanel"</code> on each panel content element</li>
+        </ul>
+
+        <h3>ARIA States</h3>
+        <ul>
+          <li><code>aria-selected</code> indicates the active tab</li>
+          <li><code>aria-controls</code> links tabs to their panels</li>
+          <li><code>aria-labelledby</code> links panels back to their tabs</li>
+          <li><code>tabindex</code> is managed for proper focus order</li>
+        </ul>
+
+        <h3>Screen Reader Behavior</h3>
+        <p>Screen readers will announce the tab interface and allow users to navigate between tabs using the roving tabindex pattern.</p>
+
+        <pre class="code-block"><code>&lt;!-- Always include an aria-label on x-tabs --&gt;
+&lt;x-tabs aria-label="Product information"&gt;
+  ...
+&lt;/x-tabs&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>JavaScript API</h2>
+        <p>The component manages its state internally but you can programmatically control tabs by manipulating the underlying <code>&lt;details&gt;</code> elements.</p>
+
+        <pre class="code-block"><code>const tabs = document.querySelector('x-tabs');
+
+// Get all tab panels
+const panels = tabs.querySelectorAll('details');
+
+// Programmatically open a tab
+panels[1].open = true;  // Opens the second tab
+
+// Check which tab is open
+const openIndex = [...panels].findIndex(p => p.open);
+console.log('Open tab index:', openIndex);
+
+// Listen for changes
+tabs.addEventListener('tab-change', (e) => {
+  console.log('New tab:', e.detail.index);
+});</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Styling</h2>
+        <p>The tabs component can be styled using CSS. The component adds ARIA attributes that can be used for styling.</p>
+
+        <pre class="code-block"><code>/* Style the tab list */
+x-tabs {
+  display: block;
+}
+
+/* Style individual tabs */
+x-tabs summary {
+  /* Tab styling */
+}
+
+/* Active tab */
+x-tabs summary[aria-selected="true"] {
+  border-color: var(--color-interactive);
+}
+
+/* Tab panels */
+x-tabs details > div {
+  padding: var(--size-m);
+}</code></pre>
+      </section>
+    </main>
+
+    <footer class="docs-footer">
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

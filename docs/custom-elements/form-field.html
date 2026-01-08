@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>form-field - Custom Elements - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+  <div class="docs-layout">
+    <header class="docs-header">
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/native/">Native</a></li>
+          <li><a href="/docs/custom-elements/" aria-current="page">Custom</a></li>
+          <li><a href="/docs/web-components/">Components</a></li>
+          <li><a href="/docs/kitchen-sink.html">Kitchen Sink</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="docs-main">
+      <nav class="subnav" aria-label="Custom elements">
+        <ul>
+          <li><a href="/docs/custom-elements/stack.html">x-stack</a></li>
+          <li><a href="/docs/custom-elements/cluster.html">x-cluster</a></li>
+          <li><a href="/docs/custom-elements/grid.html">x-grid</a></li>
+          <li><a href="/docs/custom-elements/sidebar.html">x-sidebar</a></li>
+          <li><a href="/docs/custom-elements/card.html">x-card</a></li>
+          <li><a href="/docs/custom-elements/center.html">x-center</a></li>
+          <li><a href="/docs/custom-elements/cover.html">x-cover</a></li>
+          <li><a href="/docs/custom-elements/frame.html">x-frame</a></li>
+          <li><a href="/docs/custom-elements/reel.html">x-reel</a></li>
+          <li><a href="/docs/custom-elements/prose.html">x-prose</a></li>
+          <li><a href="/docs/custom-elements/form-field.html" aria-current="page">form-field</a></li>
+        </ul>
+      </nav>
+
+      <h1>form-field</h1>
+      <p class="lead">Accessible form field wrapper with label, input, and validation message. Enables CSS-only validation feedback using native HTML5 validation and the <code>&lt;output&gt;</code> element.</p>
+
+      <section class="docs-section">
+        <h2>Attributes</h2>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Values</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-type</code></td>
+              <td><code>checkbox</code>, <code>radio</code>, <code>file</code></td>
+              <td>-</td>
+              <td>Special styling for non-text inputs</td>
+            </tr>
+            <tr>
+              <td><code>data-required</code></td>
+              <td>boolean</td>
+              <td>-</td>
+              <td>Visual indicator (auto-detected from input)</td>
+            </tr>
+            <tr>
+              <td><code>data-valid</code></td>
+              <td>boolean</td>
+              <td>-</td>
+              <td>Force valid state styling</td>
+            </tr>
+            <tr>
+              <td><code>data-invalid</code></td>
+              <td>boolean</td>
+              <td>-</td>
+              <td>Force invalid state styling</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Element Structure</h2>
+        <p>The form-field element groups a label, input control, and optional validation message.</p>
+
+        <pre class="code-block"><code>form-field
++-- label          (required, with for attribute)
++-- input/textarea/select (required, with id matching label)
++-- output         (optional, for validation/help messages)</code></pre>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Child Element</th>
+              <th>Purpose</th>
+              <th>Key Attributes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt;label&gt;</code></td>
+              <td>Accessible field label</td>
+              <td><code>for</code> (matches input <code>id</code>)</td>
+            </tr>
+            <tr>
+              <td><code>&lt;input&gt;</code> / <code>&lt;textarea&gt;</code> / <code>&lt;select&gt;</code></td>
+              <td>Form control</td>
+              <td><code>id</code>, <code>name</code>, validation attrs, <code>aria-describedby</code></td>
+            </tr>
+            <tr>
+              <td><code>&lt;output&gt;</code></td>
+              <td>Validation/help message</td>
+              <td><code>id</code>, <code>for</code>, <code>aria-live="polite"</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Basic Text Input</h2>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="basic-name">Full Name</label>
+              <input type="text"
+                     id="basic-name"
+                     name="name"
+                     required
+                     minlength="2"
+                     autocomplete="name"
+                     aria-describedby="basic-name-msg" />
+              <output id="basic-name-msg" for="basic-name" aria-live="polite">
+                At least 2 characters required
+              </output>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Code</h3>
+        <pre class="code-block"><code>&lt;form-field&gt;
+  &lt;label for="name"&gt;Full Name&lt;/label&gt;
+  &lt;input type="text"
+         id="name"
+         name="name"
+         required
+         minlength="2"
+         autocomplete="name"
+         aria-describedby="name-msg" /&gt;
+  &lt;output id="name-msg" for="name" aria-live="polite"&gt;
+    At least 2 characters required
+  &lt;/output&gt;
+&lt;/form-field&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Input Types</h2>
+
+        <h3>Email Input</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="email-demo">Email Address</label>
+              <input type="email"
+                     id="email-demo"
+                     name="email"
+                     required
+                     autocomplete="email"
+                     aria-describedby="email-demo-msg" />
+              <output id="email-demo-msg" for="email-demo" aria-live="polite">
+                Please enter a valid email address
+              </output>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Password Input</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="password-demo">Password</label>
+              <input type="password"
+                     id="password-demo"
+                     name="password"
+                     required
+                     minlength="8"
+                     autocomplete="new-password"
+                     aria-describedby="password-demo-msg" />
+              <output id="password-demo-msg" for="password-demo" aria-live="polite">
+                At least 8 characters required
+              </output>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Phone Number</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="phone-demo">Phone Number</label>
+              <input type="tel"
+                     id="phone-demo"
+                     name="phone"
+                     autocomplete="tel"
+                     pattern="[0-9\-\+\s\(\)]+"
+                     aria-describedby="phone-demo-msg" />
+              <output id="phone-demo-msg" for="phone-demo" aria-live="polite">
+                Optional - include country code for international
+              </output>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Textarea</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="message-demo">Message</label>
+              <textarea id="message-demo"
+                        name="message"
+                        required
+                        minlength="10"
+                        rows="4"
+                        aria-describedby="message-demo-msg"></textarea>
+              <output id="message-demo-msg" for="message-demo" aria-live="polite">
+                At least 10 characters required
+              </output>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Select Dropdown</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field>
+              <label for="category-demo">Category</label>
+              <select id="category-demo" name="category" required>
+                <option value="" disabled selected>Select a category...</option>
+                <option value="general">General Inquiry</option>
+                <option value="support">Technical Support</option>
+                <option value="sales">Sales Question</option>
+              </select>
+            </form-field>
+          </form>
+        </div>
+      </section>
+
+      <section class="docs-section">
+        <h2>Checkbox and Radio</h2>
+
+        <h3>Single Checkbox</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <form-field data-type="checkbox">
+              <label>
+                <input type="checkbox"
+                       id="terms-demo"
+                       name="terms"
+                       required />
+                I agree to the <a href="#">Terms of Service</a>
+              </label>
+            </form-field>
+          </form>
+        </div>
+
+        <h3>Radio Group</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <fieldset>
+              <legend>Preferred Contact Method</legend>
+              <x-stack data-gap="xs">
+                <form-field data-type="radio">
+                  <label>
+                    <input type="radio" name="contact" value="email" required />
+                    Email
+                  </label>
+                </form-field>
+                <form-field data-type="radio">
+                  <label>
+                    <input type="radio" name="contact" value="phone" />
+                    Phone
+                  </label>
+                </form-field>
+                <form-field data-type="radio">
+                  <label>
+                    <input type="radio" name="contact" value="mail" />
+                    Mail
+                  </label>
+                </form-field>
+              </x-stack>
+            </fieldset>
+          </form>
+        </div>
+
+        <h3>Code</h3>
+        <pre class="code-block"><code>&lt;!-- Single Checkbox --&gt;
+&lt;form-field data-type="checkbox"&gt;
+  &lt;label&gt;
+    &lt;input type="checkbox" id="terms" name="terms" required /&gt;
+    I agree to the Terms of Service
+  &lt;/label&gt;
+&lt;/form-field&gt;
+
+&lt;!-- Radio Group --&gt;
+&lt;fieldset&gt;
+  &lt;legend&gt;Preferred Contact Method&lt;/legend&gt;
+  &lt;x-stack data-gap="xs"&gt;
+    &lt;form-field data-type="radio"&gt;
+      &lt;label&gt;
+        &lt;input type="radio" name="contact" value="email" required /&gt;
+        Email
+      &lt;/label&gt;
+    &lt;/form-field&gt;
+    &lt;form-field data-type="radio"&gt;
+      &lt;label&gt;
+        &lt;input type="radio" name="contact" value="phone" /&gt;
+        Phone
+      &lt;/label&gt;
+    &lt;/form-field&gt;
+  &lt;/x-stack&gt;
+&lt;/fieldset&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>CSS-Only Validation</h2>
+        <p>The form-field element uses the <code>:user-valid</code> and <code>:user-invalid</code> pseudo-classes to show validation states only after user interaction. This prevents premature error states on page load.</p>
+
+        <h3>Try It - Type and then clear each field</h3>
+        <div class="example" style="max-inline-size: 25rem;">
+          <form>
+            <x-stack data-gap="m">
+              <form-field>
+                <label for="validation-email">Email (required)</label>
+                <input type="email"
+                       id="validation-email"
+                       name="email"
+                       required
+                       placeholder="you@example.com"
+                       aria-describedby="validation-email-msg" />
+                <output id="validation-email-msg" for="validation-email" aria-live="polite">
+                  Enter a valid email address
+                </output>
+              </form-field>
+
+              <form-field>
+                <label for="validation-url">Website (optional)</label>
+                <input type="url"
+                       id="validation-url"
+                       name="website"
+                       placeholder="https://example.com"
+                       aria-describedby="validation-url-msg" />
+                <output id="validation-url-msg" for="validation-url" aria-live="polite">
+                  Include https://
+                </output>
+              </form-field>
+            </x-stack>
+          </form>
+        </div>
+
+        <h3>How It Works</h3>
+        <pre class="code-block"><code>/* Valid state - green border after user interacts */
+form-field:has(input:user-valid) {
+  & input {
+    border-color: var(--color-success);
+  }
+  & output {
+    color: var(--color-success);
+  }
+}
+
+/* Invalid state - red border after user interacts */
+form-field:has(input:user-invalid) {
+  & input {
+    border-color: var(--color-error);
+  }
+  & output {
+    color: var(--color-error);
+  }
+}</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Why Use <code>&lt;output&gt;</code> for Messages?</h2>
+        <p>The <code>&lt;output&gt;</code> element is semantically ideal for validation messages:</p>
+
+        <ul>
+          <li><strong>Purpose-built:</strong> Represents the result of a calculation or user action</li>
+          <li><strong>Native association:</strong> Has <code>for</code> attribute to link to input(s)</li>
+          <li><strong>Accessible:</strong> Works naturally with <code>aria-live</code> for screen readers</li>
+          <li><strong>Semantic distinction:</strong> Clearly different from static help text</li>
+          <li><strong>No JavaScript required:</strong> Can show different states via CSS</li>
+        </ul>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Approach</th>
+              <th>Semantics</th>
+              <th>Accessibility</th>
+              <th>Recommendation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt;output&gt;</code></td>
+              <td>Result of action</td>
+              <td>Native support</td>
+              <td>Recommended</td>
+            </tr>
+            <tr>
+              <td><code>&lt;span class="error"&gt;</code></td>
+              <td>None</td>
+              <td>Manual ARIA needed</td>
+              <td>Avoid</td>
+            </tr>
+            <tr>
+              <td><code>&lt;div class="message"&gt;</code></td>
+              <td>None</td>
+              <td>Manual ARIA needed</td>
+              <td>Avoid</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Complete Contact Form</h2>
+        <div class="example" style="max-inline-size: 30rem;">
+          <form>
+            <x-stack data-gap="m">
+              <form-field>
+                <label for="contact-name">Name</label>
+                <input type="text"
+                       id="contact-name"
+                       name="name"
+                       required
+                       minlength="2"
+                       autofocus
+                       autocomplete="name"
+                       aria-describedby="contact-name-msg" />
+                <output id="contact-name-msg" for="contact-name" aria-live="polite">
+                  Please enter your name (at least 2 characters)
+                </output>
+              </form-field>
+
+              <form-field>
+                <label for="contact-email">Email</label>
+                <input type="email"
+                       id="contact-email"
+                       name="email"
+                       required
+                       autocomplete="email"
+                       aria-describedby="contact-email-msg" />
+                <output id="contact-email-msg" for="contact-email" aria-live="polite">
+                  Please enter a valid email address
+                </output>
+              </form-field>
+
+              <form-field>
+                <label for="contact-subject">Subject</label>
+                <select id="contact-subject" name="subject" required>
+                  <option value="" disabled selected>Select a subject...</option>
+                  <option value="general">General Inquiry</option>
+                  <option value="support">Technical Support</option>
+                  <option value="feedback">Feedback</option>
+                </select>
+              </form-field>
+
+              <form-field>
+                <label for="contact-message">Message</label>
+                <textarea id="contact-message"
+                          name="message"
+                          required
+                          minlength="10"
+                          rows="5"
+                          aria-describedby="contact-message-msg"></textarea>
+                <output id="contact-message-msg" for="contact-message" aria-live="polite">
+                  Please enter your message (at least 10 characters)
+                </output>
+              </form-field>
+
+              <button type="submit">Send Message</button>
+            </x-stack>
+          </form>
+        </div>
+
+        <h3>Code</h3>
+        <pre class="code-block"><code>&lt;form action="/api/contact" method="POST"&gt;
+  &lt;x-stack data-gap="m"&gt;
+    &lt;form-field&gt;
+      &lt;label for="name"&gt;Name&lt;/label&gt;
+      &lt;input type="text"
+             id="name"
+             name="name"
+             required
+             minlength="2"
+             autofocus
+             autocomplete="name"
+             aria-describedby="name-msg" /&gt;
+      &lt;output id="name-msg" for="name" aria-live="polite"&gt;
+        Please enter your name
+      &lt;/output&gt;
+    &lt;/form-field&gt;
+
+    &lt;form-field&gt;
+      &lt;label for="email"&gt;Email&lt;/label&gt;
+      &lt;input type="email"
+             id="email"
+             name="email"
+             required
+             autocomplete="email"
+             aria-describedby="email-msg" /&gt;
+      &lt;output id="email-msg" for="email" aria-live="polite"&gt;
+        Please enter a valid email
+      &lt;/output&gt;
+    &lt;/form-field&gt;
+
+    &lt;form-field&gt;
+      &lt;label for="message"&gt;Message&lt;/label&gt;
+      &lt;textarea id="message"
+                name="message"
+                required
+                minlength="10"
+                rows="5"
+                aria-describedby="message-msg"&gt;&lt;/textarea&gt;
+      &lt;output id="message-msg" for="message" aria-live="polite"&gt;
+        At least 10 characters
+      &lt;/output&gt;
+    &lt;/form-field&gt;
+
+    &lt;button type="submit"&gt;Send Message&lt;/button&gt;
+  &lt;/x-stack&gt;
+&lt;/form&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Accessibility Checklist</h2>
+        <p>When building forms with form-field, ensure:</p>
+
+        <ul>
+          <li>Every <code>&lt;input&gt;</code> has a <code>&lt;label&gt;</code> with matching <code>for</code>/<code>id</code></li>
+          <li>Required fields use the <code>required</code> attribute</li>
+          <li>Validation messages use <code>&lt;output&gt;</code> with <code>aria-live="polite"</code></li>
+          <li>Inputs link to messages via <code>aria-describedby</code></li>
+          <li>Form controls have appropriate <code>autocomplete</code> values</li>
+          <li>Focus states are clearly visible</li>
+          <li>Error states don't rely on color alone (include text)</li>
+          <li>First input has <code>autofocus</code> for immediate interaction</li>
+        </ul>
+      </section>
+
+      <section class="docs-section">
+        <h2>HTML5 Validation Attributes</h2>
+        <p>Use native validation attributes for client-side validation:</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Purpose</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>required</code></td>
+              <td>Field must have value</td>
+              <td><code>&lt;input required /&gt;</code></td>
+            </tr>
+            <tr>
+              <td><code>minlength</code></td>
+              <td>Minimum character count</td>
+              <td><code>&lt;input minlength="2" /&gt;</code></td>
+            </tr>
+            <tr>
+              <td><code>maxlength</code></td>
+              <td>Maximum character count</td>
+              <td><code>&lt;input maxlength="100" /&gt;</code></td>
+            </tr>
+            <tr>
+              <td><code>pattern</code></td>
+              <td>Regex pattern</td>
+              <td><code>&lt;input pattern="[A-Za-z]+" /&gt;</code></td>
+            </tr>
+            <tr>
+              <td><code>type</code></td>
+              <td>Input type validation</td>
+              <td><code>type="email"</code>, <code>type="url"</code></td>
+            </tr>
+            <tr>
+              <td><code>min</code>/<code>max</code></td>
+              <td>Number/date range</td>
+              <td><code>&lt;input type="number" min="0" max="100" /&gt;</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>CSS Implementation</h2>
+        <pre class="code-block"><code>form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-xs);
+}
+
+form-field label:first-child {
+  font-weight: var(--font-weight-medium);
+}
+
+form-field input:not([type="checkbox"]):not([type="radio"]),
+form-field select,
+form-field textarea {
+  width: 100%;
+  padding: var(--size-s) var(--size-m);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+form-field input:focus,
+form-field select:focus,
+form-field textarea:focus {
+  outline: none;
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+form-field output {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Validation states (CSS-only) */
+form-field input:user-valid:not(:placeholder-shown),
+form-field select:user-valid,
+form-field textarea:user-valid:not(:placeholder-shown) {
+  border-color: var(--color-success);
+}
+
+form-field input:user-invalid:not(:placeholder-shown),
+form-field select:user-invalid,
+form-field textarea:user-invalid:not(:placeholder-shown) {
+  border-color: var(--color-error);
+}
+
+form-field input:user-invalid:not(:placeholder-shown) ~ output,
+form-field select:user-invalid ~ output,
+form-field textarea:user-invalid:not(:placeholder-shown) ~ output {
+  color: var(--color-error);
+}
+
+/* Checkbox/Radio styling */
+form-field[data-type="checkbox"] label,
+form-field[data-type="radio"] label {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  cursor: pointer;
+}</code></pre>
+      </section>
+    </main>
+
+    <footer class="docs-footer">
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

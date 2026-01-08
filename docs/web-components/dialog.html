@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-dialog - Web Components - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+  <div class="docs-layout">
+    <header class="docs-header">
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/native/">Native</a></li>
+          <li><a href="/docs/custom-elements/">Custom</a></li>
+          <li><a href="/docs/web-components/" aria-current="page">Components</a></li>
+          <li><a href="/docs/kitchen-sink.html">Kitchen Sink</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="docs-main">
+      <nav class="subnav" aria-label="Web components">
+        <ul>
+          <li><a href="/docs/web-components/icons.html">x-icon</a></li>
+          <li><a href="/docs/web-components/tabs.html">x-tabs</a></li>
+          <li><a href="/docs/web-components/accordion.html">x-accordion</a></li>
+          <li><a href="/docs/web-components/dialog.html" aria-current="page">x-dialog</a></li>
+          <li><a href="/docs/web-components/tooltip.html">x-tooltip</a></li>
+          <li><a href="/docs/web-components/toast.html">x-toast</a></li>
+          <li><a href="/docs/web-components/footnotes.html">x-footnotes</a></li>
+        </ul>
+      </nav>
+
+      <h1>x-dialog</h1>
+      <p class="lead">Modal dialog with focus trap, backdrop dismiss, ESC to close, and smooth animations.</p>
+
+      <section class="docs-section">
+        <h2>Overview</h2>
+        <p>The <code>&lt;x-dialog&gt;</code> component provides an accessible modal dialog built on the native <code>&lt;dialog&gt;</code> element. It handles focus trapping, keyboard interactions, and backdrop behavior automatically.</p>
+
+        <div class="example">
+          <x-cluster data-gap="m">
+            <button type="button" data-dialog-open="demo-basic">Open Dialog</button>
+          </x-cluster>
+        </div>
+
+        <x-dialog id="demo-basic">
+          <header>
+            <h3>Dialog Title</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>This is a basic dialog with a title, content, and action buttons.</p>
+          </section>
+          <footer>
+            <button type="button" class="secondary" data-dialog-close>Cancel</button>
+            <button type="button" data-dialog-close>Confirm</button>
+          </footer>
+        </x-dialog>
+
+        <pre class="code-block"><code>&lt;!-- Trigger button --&gt;
+&lt;button type="button" data-dialog-open="my-dialog"&gt;Open Dialog&lt;/button&gt;
+
+&lt;!-- Dialog component --&gt;
+&lt;x-dialog id="my-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Dialog Title&lt;/h3&gt;
+    &lt;button type="button" class="ghost" data-dialog-close aria-label="Close"&gt;&amp;#x2715;&lt;/button&gt;
+  &lt;/header&gt;
+  &lt;section&gt;
+    &lt;p&gt;Dialog content goes here.&lt;/p&gt;
+  &lt;/section&gt;
+  &lt;footer&gt;
+    &lt;button type="button" class="secondary" data-dialog-close&gt;Cancel&lt;/button&gt;
+    &lt;button type="button" data-dialog-close&gt;Confirm&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/x-dialog&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Attributes</h2>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>string</td>
+              <td>-</td>
+              <td>Unique identifier used by trigger buttons (required).</td>
+            </tr>
+            <tr>
+              <td><code>data-size</code></td>
+              <td>string</td>
+              <td><code>"m"</code></td>
+              <td>Dialog size: <code>s</code>, <code>m</code>, <code>l</code>, or <code>full</code>.</td>
+            </tr>
+            <tr>
+              <td><code>data-no-backdrop-close</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>Disable closing the dialog by clicking the backdrop.</td>
+            </tr>
+            <tr>
+              <td><code>data-no-esc-close</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>Disable closing the dialog with the ESC key.</td>
+            </tr>
+            <tr>
+              <td><code>open</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>When present, dialog opens on page load.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Related Attributes</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Used On</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-dialog-open</code></td>
+              <td>Button</td>
+              <td>Opens the dialog with the specified ID.</td>
+            </tr>
+            <tr>
+              <td><code>data-dialog-close</code></td>
+              <td>Button</td>
+              <td>Closes the parent dialog when clicked.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="docs-section">
+        <h2>Sizes</h2>
+        <p>Use <code>data-size</code> to control the dialog width.</p>
+
+        <div class="example">
+          <x-cluster data-gap="m">
+            <button type="button" data-dialog-open="demo-size-s">Small</button>
+            <button type="button" data-dialog-open="demo-size-m">Medium</button>
+            <button type="button" data-dialog-open="demo-size-l">Large</button>
+            <button type="button" data-dialog-open="demo-size-full">Full</button>
+          </x-cluster>
+        </div>
+
+        <x-dialog id="demo-size-s" data-size="s">
+          <header>
+            <h3>Small Dialog</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>A compact dialog for quick confirmations or alerts.</p>
+          </section>
+          <footer>
+            <button type="button" class="secondary" data-dialog-close>Cancel</button>
+            <button type="button" data-dialog-close>OK</button>
+          </footer>
+        </x-dialog>
+
+        <x-dialog id="demo-size-m" data-size="m">
+          <header>
+            <h3>Medium Dialog</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>The default dialog size, suitable for most content.</p>
+          </section>
+          <footer>
+            <button type="button" class="secondary" data-dialog-close>Cancel</button>
+            <button type="button" data-dialog-close>Confirm</button>
+          </footer>
+        </x-dialog>
+
+        <x-dialog id="demo-size-l" data-size="l">
+          <header>
+            <h3>Large Dialog</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <x-stack data-gap="m">
+              <p>A larger dialog for content that needs more space, like tables or detailed forms.</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Focus Trap</td>
+                    <td>Native dialog provides automatic focus trapping</td>
+                  </tr>
+                  <tr>
+                    <td>Backdrop</td>
+                    <td>Semi-transparent overlay with click-to-close</td>
+                  </tr>
+                  <tr>
+                    <td>Animations</td>
+                    <td>Smooth fade and scale transitions</td>
+                  </tr>
+                </tbody>
+              </table>
+            </x-stack>
+          </section>
+          <footer>
+            <button type="button" data-dialog-close>Close</button>
+          </footer>
+        </x-dialog>
+
+        <x-dialog id="demo-size-full" data-size="full">
+          <header>
+            <h3>Full Screen Dialog</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>A full-screen dialog for immersive experiences or complex workflows.</p>
+          </section>
+          <footer>
+            <button type="button" data-dialog-close>Close</button>
+          </footer>
+        </x-dialog>
+
+        <pre class="code-block"><code>&lt;x-dialog id="small-dialog" data-size="s"&gt;...&lt;/x-dialog&gt;
+&lt;x-dialog id="medium-dialog" data-size="m"&gt;...&lt;/x-dialog&gt;
+&lt;x-dialog id="large-dialog" data-size="l"&gt;...&lt;/x-dialog&gt;
+&lt;x-dialog id="full-dialog" data-size="full"&gt;...&lt;/x-dialog&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Backdrop Close Control</h2>
+        <p>By default, clicking the backdrop closes the dialog. Use <code>data-no-backdrop-close</code> to prevent this behavior, useful for forms that shouldn't be accidentally dismissed.</p>
+
+        <div class="example">
+          <x-cluster data-gap="m">
+            <button type="button" data-dialog-open="demo-backdrop">Open (backdrop closes)</button>
+            <button type="button" data-dialog-open="demo-no-backdrop">Open (backdrop doesn't close)</button>
+          </x-cluster>
+        </div>
+
+        <x-dialog id="demo-backdrop">
+          <header>
+            <h3>Backdrop Closes</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>Click outside this dialog (on the backdrop) to close it.</p>
+          </section>
+          <footer>
+            <button type="button" data-dialog-close>Close</button>
+          </footer>
+        </x-dialog>
+
+        <x-dialog id="demo-no-backdrop" data-no-backdrop-close>
+          <header>
+            <h3>Backdrop Doesn't Close</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <p>Clicking the backdrop won't close this dialog. You must use a close button or press ESC.</p>
+          </section>
+          <footer>
+            <button type="button" data-dialog-close>Close</button>
+          </footer>
+        </x-dialog>
+
+        <pre class="code-block"><code>&lt;!-- Backdrop click won't close the dialog --&gt;
+&lt;x-dialog id="form-dialog" data-no-backdrop-close&gt;
+  ...
+&lt;/x-dialog&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Focus Trap</h2>
+        <p>The native <code>&lt;dialog&gt;</code> element automatically traps focus within the dialog. When opened, focus moves to the first focusable element. When closed, focus returns to the element that triggered the dialog.</p>
+
+        <div class="example">
+          <button type="button" data-dialog-open="demo-focus">Open Focus Demo</button>
+        </div>
+
+        <x-dialog id="demo-focus">
+          <header>
+            <h3>Focus Trap Demo</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <x-stack data-gap="m">
+              <p>Try pressing Tab to move between these elements. Focus is trapped within the dialog.</p>
+              <form class="stacked">
+                <div class="group">
+                  <label for="focus-input">Text Input</label>
+                  <input type="text" id="focus-input" placeholder="Focus starts here" />
+                </div>
+                <div class="group">
+                  <label for="focus-select">Select</label>
+                  <select id="focus-select">
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                  </select>
+                </div>
+              </form>
+            </x-stack>
+          </section>
+          <footer>
+            <button type="button" class="secondary" data-dialog-close>Cancel</button>
+            <button type="button" data-dialog-close>Submit</button>
+          </footer>
+        </x-dialog>
+      </section>
+
+      <section class="docs-section">
+        <h2>Form Dialog</h2>
+        <p>Dialogs can contain forms. Use <code>data-no-backdrop-close</code> to prevent accidental dismissal.</p>
+
+        <div class="example">
+          <button type="button" data-dialog-open="demo-form">Open Form Dialog</button>
+        </div>
+
+        <x-dialog id="demo-form" data-no-backdrop-close>
+          <header>
+            <h3>Contact Form</h3>
+            <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+          </header>
+          <section>
+            <form class="stacked" id="demo-contact-form">
+              <div class="group">
+                <label for="form-name">Name</label>
+                <input type="text" id="form-name" placeholder="Your name" required />
+              </div>
+              <div class="group">
+                <label for="form-email">Email</label>
+                <input type="email" id="form-email" placeholder="you@example.com" required />
+              </div>
+              <div class="group">
+                <label for="form-message">Message</label>
+                <textarea id="form-message" placeholder="Your message..." rows="3"></textarea>
+              </div>
+            </form>
+          </section>
+          <footer>
+            <button type="button" class="secondary" data-dialog-close>Cancel</button>
+            <button type="submit" form="demo-contact-form">Submit</button>
+          </footer>
+        </x-dialog>
+
+        <pre class="code-block"><code>&lt;x-dialog id="form-dialog" data-no-backdrop-close&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Contact Form&lt;/h3&gt;
+    &lt;button type="button" class="ghost" data-dialog-close aria-label="Close"&gt;&amp;#x2715;&lt;/button&gt;
+  &lt;/header&gt;
+  &lt;section&gt;
+    &lt;form class="stacked" id="contact-form"&gt;
+      &lt;!-- Form fields --&gt;
+    &lt;/form&gt;
+  &lt;/section&gt;
+  &lt;footer&gt;
+    &lt;button type="button" class="secondary" data-dialog-close&gt;Cancel&lt;/button&gt;
+    &lt;button type="submit" form="contact-form"&gt;Submit&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/x-dialog&gt;</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Events</h2>
+        <p>The component dispatches events when opened and closed.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Detail</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>dialog-open</code></td>
+              <td>-</td>
+              <td>Fired when the dialog is opened.</td>
+            </tr>
+            <tr>
+              <td><code>dialog-close</code></td>
+              <td><code>{ returnValue: string }</code></td>
+              <td>Fired when the dialog is closed. <code>returnValue</code> contains any value passed to <code>close()</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre class="code-block"><code>const dialog = document.querySelector('x-dialog');
+
+dialog.addEventListener('dialog-open', () => {
+  console.log('Dialog opened');
+});
+
+dialog.addEventListener('dialog-close', (event) => {
+  console.log('Dialog closed with:', event.detail.returnValue);
+});</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>JavaScript API</h2>
+        <p>The component exposes methods for programmatic control.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Parameters</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>open()</code></td>
+              <td>-</td>
+              <td>Open the dialog.</td>
+            </tr>
+            <tr>
+              <td><code>close(returnValue?)</code></td>
+              <td><code>returnValue?: string</code></td>
+              <td>Close the dialog with an optional return value.</td>
+            </tr>
+            <tr>
+              <td><code>toggle()</code></td>
+              <td>-</td>
+              <td>Toggle the dialog open/closed.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Properties</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>isOpen</code></td>
+              <td><code>boolean</code></td>
+              <td>Read-only. Returns whether the dialog is currently open.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre class="code-block"><code>const dialog = document.querySelector('x-dialog');
+
+// Open the dialog
+dialog.open();
+
+// Check if open
+console.log(dialog.isOpen); // true
+
+// Close with a return value
+dialog.close('confirmed');
+
+// Toggle
+dialog.toggle();</code></pre>
+      </section>
+
+      <section class="docs-section">
+        <h2>Accessibility</h2>
+
+        <h3>Native Dialog Features</h3>
+        <p>The component uses the native <code>&lt;dialog&gt;</code> element which provides:</p>
+        <ul>
+          <li>Automatic focus trapping within the dialog</li>
+          <li><code>aria-modal="true"</code> to indicate modal state</li>
+          <li>ESC key to close (unless disabled)</li>
+          <li>Backdrop that dims content behind the dialog</li>
+          <li>Focus restoration when closed</li>
+        </ul>
+
+        <h3>Keyboard Support</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>Tab</kbd></td>
+              <td>Move focus between focusable elements (trapped within dialog)</td>
+            </tr>
+            <tr>
+              <td><kbd>Shift + Tab</kbd></td>
+              <td>Move focus backwards (trapped within dialog)</td>
+            </tr>
+            <tr>
+              <td><kbd>Escape</kbd></td>
+              <td>Close the dialog (unless <code>data-no-esc-close</code> is set)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Best Practices</h3>
+        <ul>
+          <li>Always include a visible close button</li>
+          <li>Use descriptive headings in the dialog header</li>
+          <li>Keep dialog content focused and concise</li>
+          <li>Ensure sufficient color contrast for the backdrop</li>
+        </ul>
+      </section>
+
+      <section class="docs-section">
+        <h2>Dialog Structure</h2>
+        <p>For consistent styling, use this recommended structure:</p>
+
+        <pre class="code-block"><code>&lt;x-dialog id="my-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Dialog Title&lt;/h3&gt;
+    &lt;button type="button" class="ghost" data-dialog-close aria-label="Close"&gt;
+      &amp;#x2715;
+    &lt;/button&gt;
+  &lt;/header&gt;
+  &lt;section&gt;
+    &lt;!-- Main content --&gt;
+  &lt;/section&gt;
+  &lt;footer&gt;
+    &lt;button type="button" class="secondary" data-dialog-close&gt;Cancel&lt;/button&gt;
+    &lt;button type="button"&gt;Primary Action&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/x-dialog&gt;</code></pre>
+      </section>
+    </main>
+
+    <footer class="docs-footer">
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
