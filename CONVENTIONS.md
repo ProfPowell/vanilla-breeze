@@ -67,19 +67,19 @@ Custom elements use data-attributes for all configuration. This provides a clear
 
 ```html
 <!-- Correct -->
-<x-card data-variant="elevated" data-padding="l">
-<x-stack data-gap="m" data-align="center">
-<x-tabs data-orientation="vertical">
+<layout-card data-variant="elevated" data-padding="l">
+<layout-stack data-gap="m" data-align="center">
+<tabs-wc data-orientation="vertical">
 
 <!-- Wrong -->
-<x-card class="elevated" class="padding-large">
+<layout-card class="elevated" class="padding-large">
 ```
 
 ### CSS Pattern
 
 ```css
 /* Custom elements use data-attribute selectors */
-x-card {
+layout-card {
   display: block;
 
   &[data-variant="elevated"] {
@@ -100,7 +100,7 @@ State is **always** expressed via data-attributes, never classes.
 <!-- Correct -->
 <button data-state="loading">
 <dialog data-state="open">
-<x-accordion data-expanded>
+<accordion-wc data-expanded>
 
 <!-- Wrong -->
 <button class="is-loading">
@@ -223,7 +223,7 @@ background: rgb(240, 240, 240);
 | Element Type | Configuration | State | Example |
 |-------------|---------------|-------|---------|
 | Native (`<nav>`, `<table>`) | Short classes | data-* | `<nav class="horizontal pills">` |
-| Custom (`<x-card>`) | data-* | data-* | `<x-card data-variant="elevated">` |
+| Custom (`<layout-card>`) | data-* | data-* | `<layout-card data-variant="elevated">` |
 | Any element | - | data-* | `<button data-state="loading">` |
 
 ## Invariants (Never Break These)

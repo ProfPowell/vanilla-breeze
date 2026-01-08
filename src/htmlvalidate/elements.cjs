@@ -1,5 +1,5 @@
 module.exports = {
-  "x-stack": {
+  "layout-stack": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -12,7 +12,7 @@ module.exports = {
     }
   },
 
-  "x-card": {
+  "layout-card": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -25,7 +25,7 @@ module.exports = {
     }
   },
 
-  "x-grid": {
+  "layout-grid": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -36,7 +36,7 @@ module.exports = {
     }
   },
 
-  "x-cluster": {
+  "layout-cluster": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -55,12 +55,7 @@ module.exports = {
     }
   },
 
-  "x-prose": {
-    flow: true,
-    permittedContent: ["@flow"]
-  },
-
-  "x-center": {
+  "layout-center": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -79,7 +74,7 @@ module.exports = {
     }
   },
 
-  "x-sidebar": {
+  "layout-sidebar": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -101,7 +96,72 @@ module.exports = {
     }
   },
 
-  "x-tabs": {
+  "layout-cover": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-min-block": {},
+      "data-gap": {
+        enum: ["none", "xs", "s", "m", "l", "xl"]
+      },
+      "data-npad": {
+        boolean: true
+      }
+    }
+  },
+
+  "layout-switcher": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-threshold": {},
+      "data-gap": {
+        enum: ["none", "xs", "s", "m", "l", "xl"]
+      },
+      "data-limit": {
+        enum: ["2", "3", "4", "5"]
+      }
+    }
+  },
+
+  "layout-imposter": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-fixed": {
+        boolean: true
+      },
+      "data-contain": {
+        boolean: true
+      }
+    }
+  },
+
+  "x-prose": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "x-frame": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-ratio": {}
+    }
+  },
+
+  "x-reel": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-gap": {
+        enum: ["none", "xs", "s", "m", "l", "xl"]
+      },
+      "data-item-width": {}
+    }
+  },
+
+  "tabs-wc": {
     flow: true,
     permittedContent: ["details"],
     attributes: {
@@ -109,7 +169,72 @@ module.exports = {
     }
   },
 
-  "x-footnotes": {
+  "accordion-wc": {
+    flow: true,
+    permittedContent: ["details"],
+    attributes: {
+      "data-single": {
+        boolean: true
+      },
+      "data-bordered": {
+        boolean: true
+      },
+      "data-compact": {
+        boolean: true
+      }
+    }
+  },
+
+  "dialog-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-size": {
+        enum: ["s", "m", "l", "full"]
+      },
+      "data-no-backdrop-close": {
+        boolean: true
+      },
+      "data-no-esc-close": {
+        boolean: true
+      }
+    }
+  },
+
+  "tooltip-wc": {
+    flow: true,
+    permittedContent: ["@flow", "template"],
+    attributes: {
+      "data-position": {
+        enum: ["top", "bottom", "left", "right"]
+      },
+      "data-delay": {}
+    }
+  },
+
+  "toast-wc": {
+    flow: true,
+    permittedContent: [],
+    attributes: {
+      "data-position": {
+        enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"]
+      },
+      "data-duration": {},
+      "data-max": {}
+    }
+  },
+
+  "dropdown-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-position": {
+        enum: ["bottom-start", "bottom-end", "top-start", "top-end"]
+      }
+    }
+  },
+
+  "footnotes-wc": {
     flow: true,
     permittedContent: ["ol"],
     attributes: {
@@ -117,7 +242,7 @@ module.exports = {
     }
   },
 
-  "x-fnref": {
+  "foot-note": {
     phrasing: true,
     permittedContent: ["@phrasing"]
   }
