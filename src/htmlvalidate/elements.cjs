@@ -245,5 +245,23 @@ module.exports = {
   "foot-note": {
     phrasing: true,
     permittedContent: ["@phrasing"]
+  },
+
+  "x-icon": {
+    phrasing: true,
+    void: true,
+    attributes: {
+      "name": {
+        required: true
+      },
+      "set": {
+        enum: ["lucide", "custom"]
+      },
+      "size": {
+        enum: ["xs", "sm", "md", "lg", "xl", "2xl"]
+      },
+      "label": {},
+      "base-path": {}
+    }
   }
 };
