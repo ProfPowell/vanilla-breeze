@@ -4,3 +4,4 @@ import './x-dialog/logic.js';
 import './x-accordion/logic.js';
 import './x-toast/logic.js';
 import './x-tooltip/logic.js';
+import './dropdown-wc/logic.js';

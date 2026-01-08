@@ -13,7 +13,7 @@ A layered HTML component system extending HTML's native model.
 | **Tokens** | 7 files | spacing, typography, colors, sizing, borders, motion |
 | **Native Elements** | ~36 | All major HTML elements styled with variants |
 | **Custom Elements** | 12 | layout-stack, layout-cluster, layout-grid, layout-card, layout-center, layout-sidebar, layout-cover, layout-switcher, layout-imposter, x-prose, x-frame, x-reel |
-| **Web Components** | 6 | x-tabs, x-footnotes, x-accordion, x-dialog, x-tooltip, x-toast |
+| **Web Components** | 7 | x-tabs, x-footnotes, x-accordion, x-dialog, x-tooltip, x-toast, dropdown-wc |
 | **Documentation** | Complete | /docs/ site with element pages, tokens, kitchen sink |
 
 ### Architecture
@@ -104,7 +104,7 @@ Add remaining Every Layout patterns:
 | `x-dialog` | Modal with focus trap | Done |
 | `x-toast` | Notification system | Done |
 | `x-tooltip` | Contextual hints | Done |
-| `x-dropdown` | Accessible menus | Not started |
+| `dropdown-wc` | Accessible menus | Done |
 
 ### Phase 7: Token Alignment (Optional)
 

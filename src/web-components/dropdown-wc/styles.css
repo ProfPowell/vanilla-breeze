@@ -1,0 +1,142 @@
+/* dropdown-wc: Accessible dropdown menu component */
+
+dropdown-wc {
+  display: inline-block;
+  position: relative;
+}
+
+/* Menu container */
+dropdown-wc > menu,
+dropdown-wc > ul[role="menu"] {
+  position: absolute;
+  top: var(--dropdown-top, 100%);
+  left: var(--dropdown-left, 0);
+  z-index: 100;
+
+  /* Reset list styles */
+  margin: 0;
+  padding: var(--size-2xs) 0;
+  list-style: none;
+
+  /* Appearance */
+  min-inline-size: 10rem;
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-m);
+
+  /* Hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    visibility var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default);
+}
+
+/* Open state */
+dropdown-wc[data-open] > menu,
+dropdown-wc[data-open] > ul[role="menu"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Menu items */
+dropdown-wc > menu > li,
+dropdown-wc > ul[role="menu"] > li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Buttons and links in menu */
+dropdown-wc > menu button,
+dropdown-wc > menu a,
+dropdown-wc > ul[role="menu"] button,
+dropdown-wc > ul[role="menu"] a,
+dropdown-wc [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  inline-size: 100%;
+  padding: var(--size-xs) var(--size-m);
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+/* Hover/focus state */
+dropdown-wc > menu button:hover,
+dropdown-wc > menu button:focus,
+dropdown-wc > menu a:hover,
+dropdown-wc > menu a:focus,
+dropdown-wc > ul[role="menu"] button:hover,
+dropdown-wc > ul[role="menu"] button:focus,
+dropdown-wc > ul[role="menu"] a:hover,
+dropdown-wc > ul[role="menu"] a:focus,
+dropdown-wc [role="menuitem"]:hover,
+dropdown-wc [role="menuitem"]:focus {
+  background: var(--color-surface-alt);
+  outline: none;
+}
+
+/* Disabled items */
+dropdown-wc > menu button:disabled,
+dropdown-wc > ul[role="menu"] button:disabled,
+dropdown-wc [role="menuitem"][aria-disabled="true"] {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+dropdown-wc > menu button:disabled:hover,
+dropdown-wc > ul[role="menu"] button:disabled:hover {
+  background: transparent;
+}
+
+/* Separator */
+dropdown-wc [role="separator"] {
+  block-size: 1px;
+  margin: var(--size-2xs) 0;
+  background: var(--color-border);
+}
+
+/* Destructive action variant */
+dropdown-wc > menu button.danger,
+dropdown-wc > ul[role="menu"] button.danger,
+dropdown-wc [role="menuitem"].danger {
+  color: var(--color-danger);
+}
+
+dropdown-wc > menu button.danger:hover,
+dropdown-wc > menu button.danger:focus,
+dropdown-wc > ul[role="menu"] button.danger:hover,
+dropdown-wc > ul[role="menu"] button.danger:focus,
+dropdown-wc [role="menuitem"].danger:hover,
+dropdown-wc [role="menuitem"].danger:focus {
+  background: oklch(from var(--color-danger) l c h / 0.1);
+}
+
+/* Icon support in items */
+dropdown-wc [role="menuitem"] > svg,
+dropdown-wc [role="menuitem"] > x-icon {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  dropdown-wc > menu,
+  dropdown-wc > ul[role="menu"] {
+    transition: none;
+    transform: none;
+  }
+}
