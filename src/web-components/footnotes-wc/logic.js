@@ -1,15 +1,19 @@
 /**
- * x-footnotes: Progressive enhancement for footnotes
+ * footnotes-wc: Progressive enhancement for footnotes
+ *
+ * Two elements work together:
+ * - <foot-note>: Inline reference that degrades to parenthetical text
+ * - <footnotes-wc>: Container that collects and displays footnotes
  *
  * Usage:
- *   <p>Some text<x-fnref>This is a footnote</x-fnref> continues.</p>
- *   <x-footnotes></x-footnotes>
+ *   <p>Some text<foot-note>This is a footnote</foot-note> continues.</p>
+ *   <footnotes-wc></footnotes-wc>
  *
  * Without JS: footnotes appear inline in parentheses
- * With JS: footnotes become superscript links, collected at x-footnotes
+ * With JS: footnotes become superscript links, collected at footnotes-wc
  */
 
-class XFootnotes extends HTMLElement {
+class FootnotesWc extends HTMLElement {
   #refs = [];
   #backLabel = 'Back to content';
 
@@ -19,14 +23,14 @@ class XFootnotes extends HTMLElement {
       this.#backLabel = this.getAttribute('data-back-label');
     }
 
-    // Find all x-fnref elements in the document before this element
+    // Find all foot-note elements in the document before this element
     this.#collectRefs();
     this.#render();
   }
 
   #collectRefs() {
-    // Get all x-fnref elements that come before this x-footnotes
-    const allRefs = [...document.querySelectorAll('x-fnref')];
+    // Get all foot-note elements that come before this footnotes-wc
+    const allRefs = [...document.querySelectorAll('foot-note')];
 
     // Filter to only those that come before this element in document order
     this.#refs = allRefs.filter(ref => {
@@ -44,7 +48,7 @@ class XFootnotes extends HTMLElement {
       const refId = `fnref-${num}`;
       const noteId = `fn-${num}`;
 
-      // Enhance the x-fnref element
+      // Enhance the foot-note element
       this.#enhanceRef(ref, num, refId, noteId);
 
       // Create the footnote list item
@@ -79,7 +83,7 @@ class XFootnotes extends HTMLElement {
     const li = document.createElement('li');
     li.id = noteId;
 
-    // Get the footnote content from the original x-fnref
+    // Get the footnote content from the original foot-note
     const contentSpan = ref.querySelector('span');
     const content = contentSpan ? contentSpan.innerHTML : '';
 
@@ -97,11 +101,12 @@ class XFootnotes extends HTMLElement {
   }
 }
 
-class XFnref extends HTMLElement {
-  // No-op, enhanced by XFootnotes
+class FootNote extends HTMLElement {
+  // No-op class - enhanced by FootnotesWc
+  // Degrades gracefully to show content in parentheses via CSS
 }
 
-customElements.define('x-footnotes', XFootnotes);
-customElements.define('x-fnref', XFnref);
+customElements.define('footnotes-wc', FootnotesWc);
+customElements.define('foot-note', FootNote);
 
-export { XFootnotes, XFnref };
+export { FootnotesWc, FootNote };

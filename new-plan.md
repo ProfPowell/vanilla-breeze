@@ -13,7 +13,7 @@ A layered HTML component system extending HTML's native model.
 | **Tokens** | 7 files | spacing, typography, colors, sizing, borders, motion |
 | **Native Elements** | ~36 | All major HTML elements styled with variants |
 | **Custom Elements** | 12 | layout-stack, layout-cluster, layout-grid, layout-card, layout-center, layout-sidebar, layout-cover, layout-switcher, layout-imposter, x-prose, x-frame, x-reel |
-| **Web Components** | 7 | tabs-wc, accordion-wc, dialog-wc, tooltip-wc, toast-wc, dropdown-wc, x-footnotes |
+| **Web Components** | 7 | tabs-wc, accordion-wc, dialog-wc, tooltip-wc, toast-wc, dropdown-wc, footnotes-wc (foot-note) |
 | **Documentation** | Complete | /docs/ site with element pages, tokens, kitchen sink |
 
 ### Architecture
@@ -99,7 +99,7 @@ Add remaining Every Layout patterns:
 | Component | Purpose | Status |
 |-----------|---------|--------|
 | `tabs-wc` | Tab panels | Done |
-| `x-footnotes` | Footnote references | Done |
+| `footnotes-wc` / `foot-note` | Footnote references | Done |
 | `accordion-wc` | Collapsible panels | Done |
 | `dialog-wc` | Modal with focus trap | Done |
 | `toast-wc` | Notification system | Done |
