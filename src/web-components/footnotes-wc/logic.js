@@ -14,10 +14,15 @@
  */
 
 class FootnotesWc extends HTMLElement {
+  static #instanceCount = 0;
+  #instanceId;
   #refs = [];
   #backLabel = 'Back to content';
 
   connectedCallback() {
+    // Generate unique instance ID for scoped element IDs
+    this.#instanceId = ++FootnotesWc.#instanceCount;
+
     // Allow customization via attribute
     if (this.hasAttribute('data-back-label')) {
       this.#backLabel = this.getAttribute('data-back-label');
@@ -29,10 +34,11 @@ class FootnotesWc extends HTMLElement {
   }
 
   #collectRefs() {
-    // Get all foot-note elements that come before this footnotes-wc
-    const allRefs = [...document.querySelectorAll('foot-note')];
+    // Get all foot-note elements that:
+    // 1. Haven't been enhanced by another footnotes-wc instance
+    // 2. Come before this element in document order
+    const allRefs = [...document.querySelectorAll('foot-note:not([data-enhanced])')];
 
-    // Filter to only those that come before this element in document order
     this.#refs = allRefs.filter(ref => {
       return this.compareDocumentPosition(ref) & Node.DOCUMENT_POSITION_PRECEDING;
     });
@@ -45,8 +51,9 @@ class FootnotesWc extends HTMLElement {
 
     this.#refs.forEach((ref, index) => {
       const num = index + 1;
-      const refId = `fnref-${num}`;
-      const noteId = `fn-${num}`;
+      // Scope IDs by instance to avoid conflicts with multiple footnotes-wc
+      const refId = `fnref-${this.#instanceId}-${num}`;
+      const noteId = `fn-${this.#instanceId}-${num}`;
 
       // Enhance the foot-note element
       this.#enhanceRef(ref, num, refId, noteId);
