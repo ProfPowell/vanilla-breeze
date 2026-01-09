@@ -40,22 +40,24 @@ accordion-wc > details > summary {
   }
 }
 
-/* Chevron indicator */
+/* Chevron indicator - use border-based approach for reliability */
 accordion-wc > details > summary::after {
   content: "";
-  inline-size: 1.25em;
-  block-size: 1.25em;
+  inline-size: 0.5em;
+  block-size: 0.5em;
   flex-shrink: 0;
-  background-color: currentColor;
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  mask-repeat: no-repeat;
-  mask-position: center;
+  border-inline-end: var(--border-width-medium) solid currentColor;
+  border-block-end: var(--border-width-medium) solid currentColor;
+  transform: rotate(45deg);
   transition: transform var(--duration-fast) var(--ease-default);
+  /* Reset mask properties if any were inherited */
+  background-color: transparent;
+  mask-image: none;
 }
 
 /* Rotate chevron when open */
 accordion-wc > details[open] > summary::after {
-  transform: rotate(180deg);
+  transform: rotate(-135deg);
 }
 
 /* Panel content */
