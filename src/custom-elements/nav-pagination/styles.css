@@ -1,0 +1,117 @@
+nav-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-2xs);
+
+  /* Page links and buttons */
+  & a,
+  & button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding-inline: var(--size-xs);
+    font-size: var(--font-size-s);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    background: transparent;
+    border: var(--border-width-thin) solid transparent;
+    border-radius: var(--radius-m);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not([disabled]):not([aria-current]) {
+      background: var(--color-gray-100);
+      color: var(--color-text);
+    }
+
+    &[aria-current="page"] {
+      background: var(--color-interactive);
+      color: white;
+      border-color: var(--color-interactive);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  /* Prev/Next buttons */
+  & [data-prev],
+  & [data-next] {
+    gap: var(--size-2xs);
+  }
+
+  /* Ellipsis */
+  & [data-ellipsis] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  /* Info text (e.g., "Page 1 of 10") */
+  & [data-info] {
+    font-size: var(--font-size-s);
+    color: var(--color-text-muted);
+    margin-inline: var(--size-s);
+  }
+
+  /* Variants */
+  &[data-variant="simple"] {
+    /* Only prev/next, no page numbers */
+    & a:not([data-prev]):not([data-next]),
+    & button:not([data-prev]):not([data-next]):not([data-ellipsis]) {
+      display: none;
+    }
+  }
+
+  &[data-variant="compact"] {
+    gap: 0;
+
+    & a,
+    & button {
+      border-radius: 0;
+      border-inline-start-width: 0;
+
+      &:first-child {
+        border-radius: var(--radius-m) 0 0 var(--radius-m);
+        border-inline-start-width: var(--border-width-thin);
+      }
+
+      &:last-child {
+        border-radius: 0 var(--radius-m) var(--radius-m) 0;
+      }
+    }
+
+    & a:not([aria-current]),
+    & button:not([aria-current]) {
+      border-color: var(--color-border);
+    }
+  }
+
+  /* Sizes */
+  &[data-size="sm"] {
+    & a,
+    & button {
+      min-width: 1.75rem;
+      height: 1.75rem;
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  &[data-size="lg"] {
+    & a,
+    & button {
+      min-width: 2.75rem;
+      height: 2.75rem;
+      font-size: var(--font-size-m);
+    }
+  }
+}
