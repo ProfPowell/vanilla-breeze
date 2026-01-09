@@ -40,7 +40,9 @@ accordion-wc > details > summary {
   }
 }
 
-/* Chevron indicator - use border-based approach for reliability */
+/* --- Indicator Styles --- */
+
+/* Default: Chevron indicator (right when closed, down when open) */
 accordion-wc > details > summary::after {
   content: "";
   inline-size: 0.5em;
@@ -50,14 +52,52 @@ accordion-wc > details > summary::after {
   border-block-end: var(--border-width-medium) solid currentColor;
   transform: rotate(-45deg);
   transition: transform var(--duration-fast) var(--ease-default);
-  /* Reset mask properties if any were inherited */
   background-color: transparent;
   mask-image: none;
 }
 
-/* Rotate chevron when open - points down */
 accordion-wc > details[open] > summary::after {
   transform: rotate(45deg);
+}
+
+/* Plus-Minus indicator variant */
+accordion-wc[data-indicator="plus-minus"] > details > summary {
+  /* Position context for plus-minus icon */
+  position: relative;
+}
+
+accordion-wc[data-indicator="plus-minus"] > details > summary::before,
+accordion-wc[data-indicator="plus-minus"] > details > summary::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: var(--size-m);
+  background-color: currentColor;
+  transition: transform var(--duration-fast) var(--ease-default);
+  border: none;
+  transform: none;
+}
+
+/* Horizontal bar (always visible, forms the minus) */
+accordion-wc[data-indicator="plus-minus"] > details > summary::before {
+  inline-size: 0.75em;
+  block-size: var(--border-width-medium);
+}
+
+/* Vertical bar (visible when closed, hidden when open, forms the plus) */
+accordion-wc[data-indicator="plus-minus"] > details > summary::after {
+  inline-size: var(--border-width-medium);
+  block-size: 0.75em;
+}
+
+/* Hide vertical bar when open (minus only) */
+accordion-wc[data-indicator="plus-minus"] > details[open] > summary::after {
+  transform: rotate(90deg);
+  opacity: 0;
+}
+
+/* No indicator variant */
+accordion-wc[data-indicator="none"] > details > summary::after {
+  display: none;
 }
 
 /* Panel content */
@@ -105,7 +145,8 @@ accordion-wc[data-compact] > details > :not(summary) {
 /* --- Reduced Motion --- */
 
 @media (prefers-reduced-motion: reduce) {
-  accordion-wc > details > summary::after {
+  accordion-wc > details > summary::after,
+  accordion-wc > details > summary::before {
     transition: none;
   }
 }
