@@ -60,44 +60,48 @@ accordion-wc > details[open] > summary::after {
   transform: rotate(45deg);
 }
 
-/* Plus-Minus indicator variant */
-accordion-wc[data-indicator="plus-minus"] > details > summary {
-  /* Position context for plus-minus icon */
-  position: relative;
-}
-
-accordion-wc[data-indicator="plus-minus"] > details > summary::before,
+/* Plus-Minus indicator variant - uses text content instead of borders */
 accordion-wc[data-indicator="plus-minus"] > details > summary::after {
-  content: "";
-  position: absolute;
-  inset-inline-end: var(--size-m);
-  background-color: currentColor;
-  transition: transform var(--duration-fast) var(--ease-default);
+  content: "+";
+  font-size: 1.25em;
+  font-weight: 300;
+  line-height: 1;
   border: none;
   transform: none;
+  inline-size: auto;
+  block-size: auto;
+  background-color: transparent;
 }
 
-/* Horizontal bar (always visible, forms the minus) */
-accordion-wc[data-indicator="plus-minus"] > details > summary::before {
-  inline-size: 0.75em;
-  block-size: var(--border-width-medium);
-}
-
-/* Vertical bar (visible when closed, hidden when open, forms the plus) */
-accordion-wc[data-indicator="plus-minus"] > details > summary::after {
-  inline-size: var(--border-width-medium);
-  block-size: 0.75em;
-}
-
-/* Hide vertical bar when open (minus only) */
 accordion-wc[data-indicator="plus-minus"] > details[open] > summary::after {
-  transform: rotate(90deg);
-  opacity: 0;
+  content: "\2212"; /* proper minus sign (−), not hyphen */
+  transform: none;
 }
 
 /* No indicator variant */
 accordion-wc[data-indicator="none"] > details > summary::after {
   display: none;
+}
+
+/* Custom indicator variant - uses CSS custom properties */
+accordion-wc[data-indicator="custom"] {
+  --indicator-closed: "\25B8"; /* ▸ right-pointing triangle */
+  --indicator-open: "\25BE";   /* ▾ down-pointing triangle */
+}
+
+accordion-wc[data-indicator="custom"] > details > summary::after {
+  content: var(--indicator-closed);
+  font-size: 1em;
+  line-height: 1;
+  border: none;
+  transform: none;
+  inline-size: auto;
+  block-size: auto;
+  background-color: transparent;
+}
+
+accordion-wc[data-indicator="custom"] > details[open] > summary::after {
+  content: var(--indicator-open);
 }
 
 /* Panel content */
