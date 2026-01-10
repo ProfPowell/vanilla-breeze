@@ -32,6 +32,9 @@ function initTooltips(root = document) {
     // Only init if it's a popover tooltip
     if (!tip?.hasAttribute('popover') || !tip.matches('[role="tooltip"]')) return;
 
+    // Skip triggers inside tooltip-wc (they have their own event handling)
+    if (trigger.closest('tooltip-wc')) return;
+
     // Skip if already initialized
     if (trigger.hasAttribute('data-tooltip-init')) return;
     trigger.setAttribute('data-tooltip-init', '');
