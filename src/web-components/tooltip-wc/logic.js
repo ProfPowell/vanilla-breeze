@@ -118,7 +118,7 @@ class TooltipWc extends HTMLElement {
     if (!this.#tooltip || this.isVisible) return;
 
     this.#tooltip.showPopover();
-    this.#positionFallback();
+    this.#updatePosition();
 
     this.dispatchEvent(new CustomEvent('tooltip-show', { bubbles: true }));
   }
@@ -132,11 +132,10 @@ class TooltipWc extends HTMLElement {
   }
 
   /**
-   * Fallback positioning for browsers without CSS Anchor Positioning
+   * Position the tooltip relative to the trigger using JavaScript.
+   * Uses fixed positioning to work correctly with top-layer popovers.
    */
-  #positionFallback() {
-    // Skip if browser supports anchor positioning
-    if (CSS.supports('anchor-name', '--x')) return;
+  #updatePosition() {
     if (!this.#trigger || !this.#tooltip) return;
 
     const triggerRect = this.#trigger.getBoundingClientRect();
@@ -171,8 +170,8 @@ class TooltipWc extends HTMLElement {
     left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
     top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
 
-    this.#tooltip.style.setProperty('--fallback-top', `${top}px`);
-    this.#tooltip.style.setProperty('--fallback-left', `${left}px`);
+    this.#tooltip.style.top = `${top}px`;
+    this.#tooltip.style.left = `${left}px`;
   }
 
   get isVisible() {

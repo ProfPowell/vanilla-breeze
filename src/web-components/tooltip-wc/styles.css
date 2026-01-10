@@ -10,26 +10,14 @@ tooltip-wc {
  * Core tooltip styling comes from native-elements/tooltip/styles.css
  * via the [role="tooltip"][popover] selector.
  *
- * This file only handles tooltip-wc specific adjustments.
+ * Positioning is handled via JavaScript (top/left set directly)
+ * to avoid CSS Anchor Positioning conflicts when multiple
+ * tooltip-wc instances exist on the same page.
  */
 
-/* Anchor positioning for tooltip-wc pattern */
-@supports (anchor-name: --x) {
-  tooltip-wc {
-    anchor-name: --tooltip-wc-trigger;
-  }
-
-  /* Higher specificity to override native tooltip CSS */
-  tooltip-wc > .tooltip[role="tooltip"][popover] {
-    position-anchor: --tooltip-wc-trigger;
-  }
-}
-
-/* Fallback positioning when anchor not supported */
-@supports not (anchor-name: --x) {
-  tooltip-wc > .tooltip[popover] {
-    position: fixed;
-    top: var(--fallback-top, 0);
-    left: var(--fallback-left, 0);
-  }
+/* Override native tooltip anchor positioning for tooltip-wc pattern */
+tooltip-wc > .tooltip[popover] {
+  position: fixed;
+  /* top and left are set by JavaScript */
+  inset: auto;
 }
