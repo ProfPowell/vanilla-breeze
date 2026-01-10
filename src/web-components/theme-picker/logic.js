@@ -217,11 +217,56 @@ class ThemePicker extends HTMLElement {
     this.setAttribute('data-open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
 
-    // Focus first option
-    const firstInput = this.#panel.querySelector('input[type="radio"]:checked');
-    firstInput?.focus();
+    // Position panel after browser renders it (needs accurate dimensions)
+    requestAnimationFrame(() => {
+      this.#positionPanel();
+
+      // Focus first option after positioning
+      const firstInput = this.#panel.querySelector('input[type="radio"]:checked');
+      firstInput?.focus();
+    });
 
     this.dispatchEvent(new CustomEvent('theme-picker-open', { bubbles: true }));
+  }
+
+  #positionPanel() {
+    if (!this.#trigger || !this.#panel) return;
+
+    const triggerRect = this.#trigger.getBoundingClientRect();
+    const panelRect = this.#panel.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const gap = 4; // Small gap between trigger and panel
+
+    // Vertical position - flip if not enough space below
+    let top = triggerRect.height + gap;
+    const spaceBelow = viewportHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+
+    if (spaceBelow < panelRect.height + gap && spaceAbove > spaceBelow) {
+      // Flip to above
+      top = -panelRect.height - gap;
+      this.#panel.dataset.position = 'top';
+    } else {
+      delete this.#panel.dataset.position;
+    }
+
+    // Horizontal position - shift if overflows right edge
+    let left = 0;
+    const panelRightEdge = triggerRect.left + panelRect.width;
+
+    if (panelRightEdge > viewportWidth) {
+      // Shift left to stay in viewport
+      left = Math.min(0, viewportWidth - panelRightEdge - gap);
+    }
+
+    // Also check if it overflows left edge
+    if (triggerRect.left + left < 0) {
+      left = -triggerRect.left + gap;
+    }
+
+    this.#panel.style.setProperty('--theme-picker-top', `${top}px`);
+    this.#panel.style.setProperty('--theme-picker-left', `${left}px`);
   }
 
   close() {
