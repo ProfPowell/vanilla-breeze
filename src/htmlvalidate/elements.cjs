@@ -205,22 +205,6 @@ module.exports = {
     }
   },
 
-  "dialog-wc": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-size": {
-        enum: ["s", "m", "l", "full"]
-      },
-      "data-no-backdrop-close": {
-        boolean: true
-      },
-      "data-no-esc-close": {
-        boolean: true
-      }
-    }
-  },
-
   "tooltip-wc": {
     flow: true,
     permittedContent: ["@flow", "template"],

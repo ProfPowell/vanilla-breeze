@@ -137,7 +137,7 @@
           <li><a href="#accordion">accordion-wc</a></li>
           <li><a href="#table">Table</a></li>
           <li><a href="#navigation">Navigation</a></li>
-          <li><a href="#dialog">dialog-wc</a></li>
+          <li><a href="#dialog">dialog</a></li>
           <li><a href="#tooltip">tooltip-wc</a></li>
           <li><a href="#toast">toast-wc</a></li>
           <li><a href="#footnotes">footnotes-wc</a></li>
@@ -1081,60 +1081,60 @@ console.log(greeting);</code></pre>
 
       <section id="dialog" class="demo-section">
         <layout-stack data-gap="xl">
-          <h2>Web Component: dialog-wc</h2>
-          <p>Modal dialog with focus trap, backdrop dismiss, ESC to close, and animations.</p>
+          <h2>Native Element: dialog</h2>
+          <p>Modal dialog with focus trap, ESC to close, and animations. Uses Invokers API for declarative open/close.</p>
 
           <layout-cluster data-gap="m">
-            <button type="button" data-dialog-open="demo-dialog-s">Small Dialog</button>
-            <button type="button" data-dialog-open="demo-dialog-m">Medium Dialog</button>
-            <button type="button" data-dialog-open="demo-dialog-l">Large Dialog</button>
-            <button type="button" data-dialog-open="demo-dialog-form">Form Dialog</button>
+            <button commandfor="demo-dialog-s" command="show-modal">Small Dialog</button>
+            <button commandfor="demo-dialog-m" command="show-modal">Medium Dialog</button>
+            <button commandfor="demo-dialog-l" command="show-modal">Large Dialog</button>
+            <button commandfor="demo-dialog-form" command="show-modal">Form Dialog</button>
           </layout-cluster>
 
           <!-- Small Dialog -->
-          <dialog-wc id="demo-dialog-s" data-size="s">
+          <dialog id="demo-dialog-s" data-size="s">
             <header>
               <h3>Small Dialog</h3>
-              <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+              <button type="button" class="ghost" commandfor="demo-dialog-s" command="close" aria-label="Close">&#x2715;</button>
             </header>
             <section>
               <p>A compact dialog for quick confirmations or alerts.</p>
             </section>
             <footer>
-              <button type="button" class="secondary" data-dialog-close>Cancel</button>
-              <button type="button" data-dialog-close>OK</button>
+              <button type="button" class="secondary" commandfor="demo-dialog-s" command="close">Cancel</button>
+              <button type="button" commandfor="demo-dialog-s" command="close">OK</button>
             </footer>
-          </dialog-wc>
+          </dialog>
 
           <!-- Medium Dialog (default) -->
-          <dialog-wc id="demo-dialog-m">
+          <dialog id="demo-dialog-m">
             <header>
               <h3>Medium Dialog</h3>
-              <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+              <button type="button" class="ghost" commandfor="demo-dialog-m" command="close" aria-label="Close">&#x2715;</button>
             </header>
             <section>
               <layout-stack data-gap="m">
                 <p>The default dialog size, suitable for most content.</p>
                 <p>Features include:</p>
                 <ul>
-                  <li>Click backdrop to close</li>
                   <li>Press ESC to close</li>
                   <li>Animated open/close transitions</li>
                   <li>Automatic focus management</li>
+                  <li>Native accessibility built-in</li>
                 </ul>
               </layout-stack>
             </section>
             <footer>
-              <button type="button" class="secondary" data-dialog-close>Cancel</button>
-              <button type="button" data-dialog-close>Confirm</button>
+              <button type="button" class="secondary" commandfor="demo-dialog-m" command="close">Cancel</button>
+              <button type="button" commandfor="demo-dialog-m" command="close">Confirm</button>
             </footer>
-          </dialog-wc>
+          </dialog>
 
           <!-- Large Dialog -->
-          <dialog-wc id="demo-dialog-l" data-size="l">
+          <dialog id="demo-dialog-l" data-size="l">
             <header>
               <h3>Large Dialog</h3>
-              <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+              <button type="button" class="ghost" commandfor="demo-dialog-l" command="close" aria-label="Close">&#x2715;</button>
             </header>
             <section>
               <layout-stack data-gap="m">
@@ -1152,8 +1152,8 @@ console.log(greeting);</code></pre>
                       <td>Native dialog provides automatic focus trapping</td>
                     </tr>
                     <tr>
-                      <td>Backdrop</td>
-                      <td>Semi-transparent overlay with click-to-close</td>
+                      <td>Invokers API</td>
+                      <td>Declarative open/close with commandfor/command</td>
                     </tr>
                     <tr>
                       <td>Animations</td>
@@ -1168,18 +1168,18 @@ console.log(greeting);</code></pre>
               </layout-stack>
             </section>
             <footer>
-              <button type="button" data-dialog-close>Close</button>
+              <button type="button" commandfor="demo-dialog-l" command="close">Close</button>
             </footer>
-          </dialog-wc>
+          </dialog>
 
           <!-- Form Dialog -->
-          <dialog-wc id="demo-dialog-form" data-size="m" data-no-backdrop-close>
+          <dialog id="demo-dialog-form" data-no-backdrop-close>
             <header>
               <h3>Form Dialog</h3>
-              <button type="button" class="ghost" data-dialog-close aria-label="Close">&#x2715;</button>
+              <button type="button" class="ghost" commandfor="demo-dialog-form" command="close" aria-label="Close">&#x2715;</button>
             </header>
             <section>
-              <form class="stacked" id="dialog-form">
+              <form class="stacked" id="dialog-form" method="dialog">
                 <div class="group">
                   <label for="dialog-name">Name</label>
                   <input type="text" id="dialog-name" placeholder="Your name" required />
@@ -1195,10 +1195,10 @@ console.log(greeting);</code></pre>
               </form>
             </section>
             <footer>
-              <button type="button" class="secondary" data-dialog-close>Cancel</button>
+              <button type="button" class="secondary" commandfor="demo-dialog-form" command="close">Cancel</button>
               <button type="submit" form="dialog-form">Submit</button>
             </footer>
-          </dialog-wc>
+          </dialog>
         </layout-stack>
       </section>
 
@@ -2007,6 +2007,7 @@ console.log(greeting);</code></pre>
     </footer>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/invokers-polyfill"></script>
   <script type="module">
     import '@profpowell/code-block';
     import '@profpowell/browser-window';

@@ -43,9 +43,71 @@
 
         <p>There are two ways to open a dialog:</p>
         <ul>
-          <li><code>showModal()</code> - Opens as a modal with backdrop and focus trap</li>
-          <li><code>show()</code> - Opens as a non-modal (no backdrop, no focus trap)</li>
+          <li><strong>HTML Invokers API</strong> (recommended) - <code>command="show-modal"</code> / <code>command="close"</code></li>
+          <li><code>showModal()</code> / <code>show()</code> - JavaScript methods</li>
         </ul>
+      </section>
+
+      <section>
+        <h2>Invokers API (Declarative)</h2>
+        <p>The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API">Invokers API</a> lets you open and close dialogs declaratively with HTML attributes - no JavaScript required.</p>
+
+        <div class="example">
+          <button commandfor="invoker-dialog" command="show-modal">Open Dialog</button>
+
+          <dialog id="invoker-dialog">
+            <header>
+              <h3>Invokers API Demo</h3>
+            </header>
+            <p>This dialog opens and closes using only HTML attributes - no JavaScript!</p>
+            <footer>
+              <button commandfor="invoker-dialog" command="close">Close</button>
+            </footer>
+          </dialog>
+        </div>
+
+        <code-block language="html" show-lines label="Invokers API markup">&lt;!-- Trigger button --&gt;
+&lt;button commandfor="my-dialog" command="show-modal"&gt;Open Dialog&lt;/button&gt;
+
+&lt;!-- Dialog --&gt;
+&lt;dialog id="my-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Dialog Title&lt;/h3&gt;
+  &lt;/header&gt;
+  &lt;p&gt;Content goes here.&lt;/p&gt;
+  &lt;footer&gt;
+    &lt;button commandfor="my-dialog" command="close"&gt;Close&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/dialog&gt;</code-block>
+
+        <h3>Available Commands</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>show-modal</code></td>
+              <td>Opens dialog as modal (equivalent to <code>showModal()</code>)</td>
+            </tr>
+            <tr>
+              <td><code>close</code></td>
+              <td>Closes the dialog (equivalent to <code>close()</code>)</td>
+            </tr>
+            <tr>
+              <td><code>request-close</code></td>
+              <td>Requests closure (can be cancelled with <code>cancel</code> event)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Browser Support</h3>
+        <p>Invokers API is supported in Chrome 135+, Edge 135+, Safari TP, and Firefox Nightly. Include the polyfill for broader support:</p>
+
+        <code-block language="html" show-lines label="Including polyfill">&lt;script type="module" src="https://unpkg.com/invokers-polyfill"&gt;&lt;/script&gt;</code-block>
       </section>
 
       <section>
@@ -489,9 +551,97 @@ dialog.addEventListener('cancel', (event) => {
       </section>
 
       <section>
+        <h2>Size Variants</h2>
+        <p>Use <code>data-size</code> to control dialog width:</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Width</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-size="s"</code></td>
+              <td>24rem (384px)</td>
+              <td>Simple confirmations, alerts</td>
+            </tr>
+            <tr>
+              <td>default</td>
+              <td>32rem (512px)</td>
+              <td>Standard dialogs, forms</td>
+            </tr>
+            <tr>
+              <td><code>data-size="l"</code></td>
+              <td>48rem (768px)</td>
+              <td>Complex content, tables</td>
+            </tr>
+            <tr>
+              <td><code>data-size="full"</code></td>
+              <td>95vw / 95dvh</td>
+              <td>Full-screen experiences</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <layout-stack data-gap="m">
+          <div class="example">
+            <button commandfor="small-dialog" command="show-modal">Small Dialog</button>
+            <button commandfor="large-dialog" command="show-modal">Large Dialog</button>
+            <button commandfor="full-dialog" command="show-modal">Full Screen</button>
+
+            <dialog id="small-dialog" data-size="s">
+              <header><h3>Small Dialog</h3></header>
+              <p>Compact size for simple confirmations.</p>
+              <footer>
+                <button commandfor="small-dialog" command="close">Close</button>
+              </footer>
+            </dialog>
+
+            <dialog id="large-dialog" data-size="l">
+              <header><h3>Large Dialog</h3></header>
+              <p>More space for complex content, tables, or multi-step forms.</p>
+              <footer>
+                <button commandfor="large-dialog" command="close">Close</button>
+              </footer>
+            </dialog>
+
+            <dialog id="full-dialog" data-size="full">
+              <header><h3>Full Screen Dialog</h3></header>
+              <p>Full-screen experience for immersive content or complex workflows.</p>
+              <footer>
+                <button commandfor="full-dialog" command="close">Close</button>
+              </footer>
+            </dialog>
+          </div>
+        </layout-stack>
+      </section>
+
+      <section>
+        <h2>Backdrop Click to Close (Optional)</h2>
+        <p>Native dialogs do <strong>not</strong> close when clicking the backdrop. If you want this behavior, add this small script:</p>
+
+        <code-block language="javascript" show-lines label="Optional backdrop close">// Add backdrop click to close for all dialogs
+document.querySelectorAll('dialog').forEach(dialog => {
+  dialog.addEventListener('click', e => {
+    if (e.target === dialog && !dialog.hasAttribute('data-no-backdrop-close')) {
+      dialog.close();
+    }
+  });
+});</code-block>
+
+        <p>To prevent backdrop close for specific dialogs (e.g., forms with unsaved data), add <code>data-no-backdrop-close</code>:</p>
+
+        <code-block language="html" show-lines label="Prevent backdrop close">&lt;dialog id="form-dialog" data-no-backdrop-close&gt;
+  &lt;!-- User must explicitly click Cancel or Save --&gt;
+&lt;/dialog&gt;</code-block>
+      </section>
+
+      <section>
         <h2>Related Elements</h2>
         <ul>
-          <li><a href="/docs/web-components/dialog.html"><code>&lt;dialog-wc&gt;</code></a> - Enhanced dialog component with declarative triggers, size variants, and additional options</li>
           <li><a href="/docs/elements/details.html"><code>&lt;details&gt;</code></a> - For inline expandable content (not overlays)</li>
           <li><a href="/docs/native/forms.html"><code>&lt;form&gt;</code></a> - Forms inside dialogs with <code>method="dialog"</code></li>
           <li><a href="/docs/elements/menu.html"><code>&lt;button&gt;</code></a> - Trigger buttons for opening dialogs</li>
@@ -500,7 +650,8 @@ dialog.addEventListener('cancel', (event) => {
 
       <section>
         <h2>Browser Support</h2>
-        <p>The <code>&lt;dialog&gt;</code> element is supported in all modern browsers. For older browsers, consider the <code>&lt;dialog-wc&gt;</code> web component which includes polyfill behavior.</p>
+        <p>The <code>&lt;dialog&gt;</code> element is supported in all modern browsers.</p>
+        <p><strong>Invokers API:</strong> Chrome 135+, Edge 135+, Safari TP, Firefox Nightly. Use the <a href="https://github.com/keithamus/invokers-polyfill">invokers-polyfill</a> for broader support.</p>
       </section>
     </main>
 
@@ -509,6 +660,7 @@ dialog.addEventListener('cancel', (event) => {
     </footer>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/invokers-polyfill"></script>
   <script type="module">
     import '@profpowell/code-block';
     import '@profpowell/browser-window';
