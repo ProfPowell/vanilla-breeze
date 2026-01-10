@@ -198,3 +198,136 @@ code-block {
 browser-window + code-block {
   margin-block-start: var(--size-s);
 }
+
+/* ========================================
+   Mobile Navigation
+   ======================================== */
+
+/* Mobile menu toggle button - hidden on desktop */
+.mobile-menu-toggle {
+  display: none;
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+/* Hamburger icon using CSS */
+.mobile-menu-toggle svg {
+  display: block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+}
+
+/* Mobile menu popover */
+.mobile-menu {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  margin: 0;
+  padding: var(--size-l);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  box-shadow: 0 4px 24px oklch(0% 0 0 / 0.15);
+  min-inline-size: 200px;
+  max-inline-size: 280px;
+}
+
+/* Ensure popover is hidden when not open */
+.mobile-menu:not(:popover-open) {
+  display: none;
+}
+
+.mobile-menu::backdrop {
+  background: oklch(0% 0 0 / 0.3);
+}
+
+/* Nav within mobile menu - vertical layout */
+.mobile-menu nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-menu nav a {
+  display: block;
+  padding: var(--size-s) var(--size-m);
+  border-radius: var(--radius-s);
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.mobile-menu nav a:hover {
+  background: var(--color-surface-raised);
+}
+
+.mobile-menu nav a[aria-current="page"] {
+  background: var(--color-interactive);
+  color: white;
+}
+
+/* Theme picker in mobile menu */
+.mobile-menu .mobile-menu-theme {
+  margin-block-start: var(--size-m);
+  padding-block-start: var(--size-m);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Close button at top of mobile menu */
+.mobile-menu-close {
+  position: absolute;
+  inset-block-start: var(--size-s);
+  inset-inline-end: var(--size-s);
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-s);
+}
+
+.mobile-menu-close:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.mobile-menu-close svg {
+  display: block;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  /* Show hamburger button */
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  /* Hide desktop nav and header actions */
+  [data-page="docs"] > body > header > nav.horizontal,
+  [data-page="docs"] > body > header > .header-actions {
+    display: none;
+  }
+
+  /* Adjust header to not wrap */
+  [data-page="docs"] > body > header {
+    flex-wrap: nowrap;
+  }
+
+  /* Reduce main padding on mobile */
+  [data-page="docs"] > body > main {
+    padding: var(--size-l) var(--size-m);
+  }
+
+  /* Reduce header padding on mobile */
+  [data-page="docs"] > body > header {
+    padding: var(--size-s) var(--size-m);
+  }
+}
