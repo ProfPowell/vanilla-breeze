@@ -1,5 +1,5 @@
 /**
- * theme-picker-wc: Theme selection component
+ * theme-picker: Theme selection component
  *
  * Provides controls for selecting color mode (auto/light/dark) and
  * brand theme (default/ocean/forest/sunset). Integrates with ThemeManager
@@ -9,27 +9,27 @@
  * @attr {boolean} data-open - Whether popover is open (reflected, popover variant only)
  *
  * @example Popover variant (default)
- * <theme-picker-wc>
+ * <theme-picker>
  *   <button data-trigger>
  *     <x-icon name="palette"></x-icon>
  *     Theme
  *   </button>
- * </theme-picker-wc>
+ * </theme-picker>
  *
  * @example Inline variant (for settings pages)
- * <theme-picker-wc data-variant="inline"></theme-picker-wc>
+ * <theme-picker data-variant="inline"></theme-picker>
  *
  * @example Icon-only trigger
- * <theme-picker-wc>
+ * <theme-picker>
  *   <button data-trigger aria-label="Change theme">
  *     <x-icon name="sun" label="Theme"></x-icon>
  *   </button>
- * </theme-picker-wc>
+ * </theme-picker>
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
 
-class ThemePickerWc extends HTMLElement {
+class ThemePicker extends HTMLElement {
   static #MODES = [
     { id: 'auto', name: 'Auto', icon: 'monitor' },
     { id: 'light', name: 'Light', icon: 'sun' },
@@ -109,7 +109,7 @@ class ThemePickerWc extends HTMLElement {
       <fieldset class="theme-picker-section">
         <legend>Color Mode</legend>
         <div class="theme-picker-options" role="radiogroup" aria-label="Color mode">
-          ${ThemePickerWc.#MODES.map(m => `
+          ${ThemePicker.#MODES.map(m => `
             <label class="theme-picker-option">
               <input
                 type="radio"
@@ -129,7 +129,7 @@ class ThemePickerWc extends HTMLElement {
       <fieldset class="theme-picker-section">
         <legend>Brand Theme</legend>
         <div class="theme-picker-options theme-picker-options--themes" role="radiogroup" aria-label="Brand theme">
-          ${ThemePickerWc.#THEMES.map(t => `
+          ${ThemePicker.#THEMES.map(t => `
             <label class="theme-picker-option theme-picker-option--theme">
               <input
                 type="radio"
@@ -247,6 +247,6 @@ class ThemePickerWc extends HTMLElement {
   }
 }
 
-customElements.define('theme-picker-wc', ThemePickerWc);
+customElements.define('theme-picker', ThemePicker);
 
-export { ThemePickerWc };
+export { ThemePicker };
