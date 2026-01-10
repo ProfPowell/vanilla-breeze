@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>track - Media Elements - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+    <header>
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/elements/">Elements</a></li>
+          <li><a href="/docs/examples/">Examples</a></li>
+          <li><a href="/docs/integrations/">Integrations</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <h1>track</h1>
+      <p class="lead">The track element provides timed text tracks for video and audio elements, enabling captions, subtitles, descriptions, and chapter markers.</p>
+
+      <nav class="subnav" aria-label="Media elements navigation">
+        <ul>
+          <li><a href="/docs/elements/native/img.html">img</a></li>
+          <li><a href="/docs/elements/native/picture.html">picture</a></li>
+          <li><a href="/docs/elements/native/video.html">video</a></li>
+          <li><a href="/docs/elements/native/audio.html">audio</a></li>
+          <li><a href="/docs/elements/native/figure.html">figure</a></li>
+          <li><a href="/docs/elements/native/svg.html">svg</a></li>
+          <li><a href="/docs/elements/native/canvas.html">canvas</a></li>
+          <li><a href="/docs/elements/native/iframe.html">iframe</a></li>
+        </ul>
+      </nav>
+
+      <!-- Description Section -->
+      <section>
+        <h2>Description</h2>
+        <p>The <code>&lt;track&gt;</code> element specifies timed text tracks (in WebVTT format) for <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code> elements. These tracks provide captions for deaf users, subtitles for foreign languages, audio descriptions for blind users, and chapter navigation.</p>
+
+        <p>Tracks are essential for accessibility and are required by many accessibility standards (WCAG) for video content with audio.</p>
+      </section>
+
+      <!-- When to Use Section -->
+      <section>
+        <h2>When to Use</h2>
+        <ul>
+          <li><strong>Captions</strong> - Transcription of dialogue plus descriptions of important sounds</li>
+          <li><strong>Subtitles</strong> - Translation of dialogue into another language</li>
+          <li><strong>Descriptions</strong> - Audio descriptions of visual content for blind users</li>
+          <li><strong>Chapters</strong> - Navigation markers for longer videos</li>
+          <li><strong>Metadata</strong> - Machine-readable data synchronized with media</li>
+        </ul>
+      </section>
+
+      <!-- Track Kinds Section -->
+      <section>
+        <h2>Track Kinds</h2>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Kind</th>
+              <th>Purpose</th>
+              <th>Display</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>captions</code></td>
+              <td>Dialogue + sound effects for deaf/hard-of-hearing</td>
+              <td>Shown over video</td>
+            </tr>
+            <tr>
+              <td><code>subtitles</code></td>
+              <td>Translation of spoken dialogue</td>
+              <td>Shown over video</td>
+            </tr>
+            <tr>
+              <td><code>descriptions</code></td>
+              <td>Audio descriptions of visual content</td>
+              <td>Synthesized speech or separate audio</td>
+            </tr>
+            <tr>
+              <td><code>chapters</code></td>
+              <td>Chapter titles for navigation</td>
+              <td>In browser UI/controls</td>
+            </tr>
+            <tr>
+              <td><code>metadata</code></td>
+              <td>Machine-readable data</td>
+              <td>Not displayed (JavaScript access)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Captions vs Subtitles Section -->
+      <section>
+        <h2>Captions vs Subtitles</h2>
+
+        <h3>Captions</h3>
+        <p>Designed for deaf and hard-of-hearing users. Include:</p>
+        <ul>
+          <li>All spoken dialogue</li>
+          <li>Speaker identification when not obvious</li>
+          <li>Sound effects: [door slams], [phone rings]</li>
+          <li>Music descriptions: [upbeat jazz music]</li>
+          <li>Non-verbal sounds: [sighs], [laughs]</li>
+        </ul>
+
+        <h3>Subtitles</h3>
+        <p>Designed for users who can hear but don't understand the spoken language. Include:</p>
+        <ul>
+          <li>Translation of spoken dialogue</li>
+          <li>Assume user can hear non-speech audio</li>
+        </ul>
+
+        <code-block language="html" show-lines label="Captions vs subtitles">&lt;video controls&gt;
+  &lt;source src="movie.mp4" type="video/mp4" /&gt;
+
+  &lt;!-- Captions for deaf/hard-of-hearing --&gt;
+  &lt;track
+    kind="captions"
+    src="captions-en.vtt"
+    srclang="en"
+    label="English captions"
+    default /&gt;
+
+  &lt;!-- Subtitles for non-English speakers --&gt;
+  &lt;track
+    kind="subtitles"
+    src="subtitles-es.vtt"
+    srclang="es"
+    label="Spanish" /&gt;
+
+  &lt;track
+    kind="subtitles"
+    src="subtitles-fr.vtt"
+    srclang="fr"
+    label="French" /&gt;
+&lt;/video&gt;</code-block>
+      </section>
+
+      <!-- WebVTT Format Section -->
+      <section>
+        <h2>WebVTT Format</h2>
+        <p>Track files use the WebVTT (Web Video Text Tracks) format.</p>
+
+        <h3>Basic Structure</h3>
+        <code-block language="html" show-lines label="WebVTT basic format">WEBVTT
+
+00:00:01.000 --&gt; 00:00:04.000
+Hello, and welcome to this tutorial.
+
+00:00:05.000 --&gt; 00:00:08.500
+Today we'll learn about HTML video captions.
+
+00:00:09.000 --&gt; 00:00:12.000
+Let's get started!</code-block>
+
+        <h3>With Speaker Identification</h3>
+        <code-block language="html" show-lines label="WebVTT with speaker identification">WEBVTT
+
+00:00:01.000 --&gt; 00:00:03.500
+&lt;v Host&gt;Welcome to the show!&lt;/v&gt;
+
+00:00:04.000 --&gt; 00:00:06.500
+&lt;v Guest&gt;Thanks for having me.&lt;/v&gt;</code-block>
+
+        <h3>With Sound Effects</h3>
+        <code-block language="html" show-lines label="WebVTT with sound effects">WEBVTT
+
+00:00:01.000 --&gt; 00:00:03.000
+[suspenseful music]
+
+00:00:03.500 --&gt; 00:00:05.000
+[door creaks open]
+
+00:00:05.500 --&gt; 00:00:08.000
+Who's there?</code-block>
+
+        <h3>Positioning and Styling</h3>
+        <code-block language="html" show-lines label="WebVTT with positioning">WEBVTT
+
+00:00:01.000 --&gt; 00:00:04.000 line:90% position:50% align:center
+Centered at bottom
+
+00:00:05.000 --&gt; 00:00:08.000 line:10% position:10% align:left
+Top left corner</code-block>
+
+        <h3>Chapter Markers</h3>
+        <code-block language="html" show-lines label="WebVTT chapter markers">WEBVTT
+
+chapter-1
+00:00:00.000 --&gt; 00:02:30.000
+Introduction
+
+chapter-2
+00:02:30.000 --&gt; 00:08:15.000
+Getting Started
+
+chapter-3
+00:08:15.000 --&gt; 00:15:00.000
+Advanced Topics
+
+chapter-4
+00:15:00.000 --&gt; 00:20:00.000
+Conclusion</code-block>
+      </section>
+
+      <!-- Attributes Section -->
+      <section>
+        <h2>Attributes</h2>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>src</code></td>
+              <td>URL of the track file (.vtt)</td>
+            </tr>
+            <tr>
+              <td><code>kind</code></td>
+              <td><code>captions</code>, <code>subtitles</code>, <code>descriptions</code>, <code>chapters</code>, or <code>metadata</code></td>
+            </tr>
+            <tr>
+              <td><code>srclang</code></td>
+              <td>Language of the track (BCP 47 language tag)</td>
+            </tr>
+            <tr>
+              <td><code>label</code></td>
+              <td>User-readable title shown in track selection</td>
+            </tr>
+            <tr>
+              <td><code>default</code></td>
+              <td>Enable this track by default</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <code-block language="html" show-lines label="Track element attributes">&lt;track
+  kind="captions"
+  src="captions.vtt"
+  srclang="en"
+  label="English"
+  default /&gt;</code-block>
+      </section>
+
+      <!-- Live Examples Section -->
+      <section>
+        <h2>Live Examples</h2>
+
+        <h3>Video with Multiple Tracks</h3>
+        <code-block language="html" show-lines label="Video with multiple track types">&lt;video controls&gt;
+  &lt;source src="presentation.mp4" type="video/mp4" /&gt;
+
+  &lt;!-- Captions --&gt;
+  &lt;track
+    kind="captions"
+    src="captions-en.vtt"
+    srclang="en"
+    label="English captions"
+    default /&gt;
+
+  &lt;!-- Subtitles in other languages --&gt;
+  &lt;track
+    kind="subtitles"
+    src="subtitles-es.vtt"
+    srclang="es"
+    label="Espanol" /&gt;
+
+  &lt;track
+    kind="subtitles"
+    src="subtitles-zh.vtt"
+    srclang="zh"
+    label="Chinese" /&gt;
+
+  &lt;!-- Audio descriptions for blind users --&gt;
+  &lt;track
+    kind="descriptions"
+    src="descriptions-en.vtt"
+    srclang="en"
+    label="Audio descriptions" /&gt;
+
+  &lt;!-- Chapter markers --&gt;
+  &lt;track
+    kind="chapters"
+    src="chapters-en.vtt"
+    srclang="en"
+    label="Chapters" /&gt;
+&lt;/video&gt;</code-block>
+
+        <h3>Audio with Captions</h3>
+        <p>Tracks can also be used with audio elements, though browser support varies.</p>
+        <code-block language="html" show-lines label="Audio with captions">&lt;audio controls&gt;
+  &lt;source src="podcast.mp3" type="audio/mpeg" /&gt;
+
+  &lt;track
+    kind="captions"
+    src="podcast-captions.vtt"
+    srclang="en"
+    label="Transcript"
+    default /&gt;
+&lt;/audio&gt;</code-block>
+      </section>
+
+      <!-- JavaScript API Section -->
+      <section>
+        <h2>JavaScript API</h2>
+        <p>Access track data programmatically for custom displays or metadata processing.</p>
+
+        <code-block language="javascript" show-lines label="Track API basics">const video = document.querySelector('video');
+const track = video.textTracks[0];
+
+// Listen for cue changes
+track.oncuechange = function() {
+  const activeCues = track.activeCues;
+  if (activeCues.length &gt; 0) {
+    console.log('Current caption:', activeCues[0].text);
+  }
+};
+
+// Show/hide tracks programmatically
+track.mode = 'showing';  // Show captions
+track.mode = 'hidden';   // Load but don't display
+track.mode = 'disabled'; // Don't load</code-block>
+
+        <h3>Custom Caption Display</h3>
+        <code-block language="html" show-lines label="Custom caption display">&lt;video id="myVideo" controls&gt;
+  &lt;source src="video.mp4" type="video/mp4" /&gt;
+  &lt;track kind="captions" src="captions.vtt" srclang="en" default /&gt;
+&lt;/video&gt;
+&lt;div id="custom-captions"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+const video = document.getElementById('myVideo');
+const captionDisplay = document.getElementById('custom-captions');
+
+video.textTracks[0].mode = 'hidden';
+
+video.textTracks[0].oncuechange = function() {
+  const cue = this.activeCues[0];
+  captionDisplay.textContent = cue ? cue.text : '';
+};
+&lt;/script&gt;</code-block>
+      </section>
+
+      <!-- Accessibility Section -->
+      <section>
+        <h2>Accessibility</h2>
+
+        <h3>WCAG Requirements</h3>
+        <p>Web Content Accessibility Guidelines require captions and audio descriptions:</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>Level</th>
+              <th>Requirement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1.2.2 Captions (Prerecorded)</td>
+              <td>A</td>
+              <td>Captions for all prerecorded audio in video</td>
+            </tr>
+            <tr>
+              <td>1.2.3 Audio Description or Media Alternative</td>
+              <td>A</td>
+              <td>Audio description or text alternative for video</td>
+            </tr>
+            <tr>
+              <td>1.2.4 Captions (Live)</td>
+              <td>AA</td>
+              <td>Captions for live audio in video</td>
+            </tr>
+            <tr>
+              <td>1.2.5 Audio Description (Prerecorded)</td>
+              <td>AA</td>
+              <td>Audio description for prerecorded video</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Best Practices</h3>
+        <ul>
+          <li>Always provide captions for videos with speech</li>
+          <li>Use <code>kind="captions"</code> for deaf/hard-of-hearing users</li>
+          <li>Use <code>kind="subtitles"</code> for translations only</li>
+          <li>Include sound effects and speaker identification in captions</li>
+          <li>Ensure caption timing matches audio accurately</li>
+          <li>Provide a text transcript as an additional option</li>
+          <li>Test captions with actual users</li>
+        </ul>
+
+        <h3>Caption Quality</h3>
+        <ul>
+          <li>Synchronize captions to within 1 second of audio</li>
+          <li>Don't exceed 2 lines per caption</li>
+          <li>Keep captions on screen long enough to read (minimum 1 second)</li>
+          <li>Use standard punctuation and grammar</li>
+          <li>Indicate speaker changes clearly</li>
+        </ul>
+      </section>
+
+      <!-- Related Elements Section -->
+      <section>
+        <h2>Related Elements</h2>
+        <ul>
+          <li><a href="/docs/elements/native/video.html"><code>&lt;video&gt;</code></a> - Video player that accepts track elements</li>
+          <li><a href="/docs/elements/native/audio.html"><code>&lt;audio&gt;</code></a> - Audio player that accepts track elements</li>
+          <li><a href="/docs/elements/native/source.html"><code>&lt;source&gt;</code></a> - Media sources for video/audio</li>
+        </ul>
+      </section>
+
+      <!-- CSS Reference Section -->
+      <section>
+        <h2>CSS Reference</h2>
+        <p>The <code>&lt;track&gt;</code> element is not rendered directly. Caption styling is controlled via the <code>::cue</code> pseudo-element.</p>
+
+        <code-block language="css" show-lines label="Caption styling with ::cue">/* Style video captions */
+video::cue {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+}
+
+/* Style specific voices */
+video::cue(v[voice="Host"]) {
+  color: yellow;
+}
+
+/* Hide track element (precautionary) */
+track {
+  display: none;
+}</code-block>
+      </section>
+
+    </main>
+
+    <footer>
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>

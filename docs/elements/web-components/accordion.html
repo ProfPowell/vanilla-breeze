@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>accordion-wc - Web Components - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+    <header>
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/elements/">Elements</a></li>
+          <li><a href="/docs/examples/">Examples</a></li>
+          <li><a href="/docs/integrations/">Integrations</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="subnav" aria-label="Web components">
+        <ul>
+          <li><a href="/docs/elements/web-components/accordion.html" aria-current="page">accordion-wc</a></li>
+          <li><a href="/docs/elements/web-components/dropdown.html">dropdown-wc</a></li>
+          <li><a href="/docs/elements/web-components/footnotes.html">footnotes-wc</a></li>
+          <li><a href="/docs/elements/web-components/icons.html">icon-wc</a></li>
+          <li><a href="/docs/elements/web-components/tabs.html">tabs-wc</a></li>
+          <li><a href="/docs/elements/web-components/toast.html">toast-wc</a></li>
+          <li><a href="/docs/elements/web-components/tooltip.html">tooltip-wc</a></li>
+        </ul>
+      </nav>
+
+      <h1>accordion-wc</h1>
+      <p class="lead">Collapsible content panels with optional single-open mode, built on native <code>&lt;details&gt;</code> elements.</p>
+
+      <section>
+        <h2>Overview</h2>
+        <p>The <code>&lt;accordion-wc&gt;</code> component wraps a group of <code>&lt;details&gt;</code> elements to provide an accessible accordion interface with keyboard navigation and optional visual variants.</p>
+
+        <browser-window
+          src="/docs/demos/accordion-basic.html"
+          url="https://vanilla-breeze.dev/accordion"
+          title="Accordion FAQ"
+          shadow>
+        </browser-window>
+
+        <code-block language="html" show-lines label="Basic accordion usage">&lt;accordion-wc&gt;
+  &lt;details&gt;
+    &lt;summary&gt;What is Vanilla Breeze?&lt;/summary&gt;
+    &lt;div&gt;
+      &lt;p&gt;Vanilla Breeze is a layered HTML component system...&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details&gt;
+    &lt;summary&gt;How does progressive enhancement work?&lt;/summary&gt;
+    &lt;div&gt;
+      &lt;p&gt;Components work without JavaScript first...&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+&lt;/accordion-wc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Attributes</h2>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-single</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>Only allow one panel to be open at a time.</td>
+            </tr>
+            <tr>
+              <td><code>data-bordered</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>Add borders around the accordion and between items.</td>
+            </tr>
+            <tr>
+              <td><code>data-compact</code></td>
+              <td>boolean</td>
+              <td><code>false</code></td>
+              <td>Use smaller padding for denser layouts.</td>
+            </tr>
+            <tr>
+              <td><code>data-indicator</code></td>
+              <td>string</td>
+              <td><code>chevron</code></td>
+              <td>Indicator style: <code>chevron</code>, <code>plus-minus</code>, <code>custom</code>, or <code>none</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Single-Open Mode</h2>
+        <p>Add <code>data-single</code> to allow only one panel to be open at a time. When a panel opens, any other open panel will close automatically.</p>
+
+        <div class="example">
+          <accordion-wc data-single>
+            <details name="single-demo" open>
+              <summary>First Panel (open by default)</summary>
+              <div>
+                <p>This panel is open by default. Click another panel to see it close.</p>
+              </div>
+            </details>
+            <details name="single-demo">
+              <summary>Second Panel</summary>
+              <div>
+                <p>Opening this panel will automatically close the first one.</p>
+              </div>
+            </details>
+            <details name="single-demo">
+              <summary>Third Panel</summary>
+              <div>
+                <p>Only one panel can be open at a time in single mode.</p>
+              </div>
+            </details>
+          </accordion-wc>
+        </div>
+
+        <code-block language="html" show-lines label="Single-open mode accordion">&lt;accordion-wc data-single&gt;
+  &lt;details name="faq" open&gt;
+    &lt;summary&gt;First Panel&lt;/summary&gt;
+    &lt;div&gt;&lt;p&gt;Content...&lt;/p&gt;&lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details name="faq"&gt;
+    &lt;summary&gt;Second Panel&lt;/summary&gt;
+    &lt;div&gt;&lt;p&gt;Content...&lt;/p&gt;&lt;/div&gt;
+  &lt;/details&gt;
+&lt;/accordion-wc&gt;</code-block>
+
+        <aside class="note">
+          <strong>Note:</strong> For browsers that support the <code>name</code> attribute on <code>&lt;details&gt;</code>, exclusive behavior is handled natively. The component provides a JavaScript polyfill for older browsers.
+        </aside>
+      </section>
+
+      <section>
+        <h2>Bordered Variant</h2>
+        <p>Add <code>data-bordered</code> to wrap the accordion in a border with dividers between items.</p>
+
+        <div class="example">
+          <accordion-wc data-bordered>
+            <details>
+              <summary>Bordered Style</summary>
+              <div>
+                <p>The bordered variant adds a container border and dividers between items.</p>
+              </div>
+            </details>
+            <details>
+              <summary>Clean Appearance</summary>
+              <div>
+                <p>Useful for forms, FAQs, and settings panels.</p>
+              </div>
+            </details>
+            <details>
+              <summary>Visual Separation</summary>
+              <div>
+                <p>Borders help visually separate accordion items from surrounding content.</p>
+              </div>
+            </details>
+          </accordion-wc>
+        </div>
+
+        <code-block language="html" show-lines label="Bordered accordion variant">&lt;accordion-wc data-bordered&gt;
+  &lt;details&gt;
+    &lt;summary&gt;Bordered Style&lt;/summary&gt;
+    &lt;div&gt;&lt;p&gt;Content...&lt;/p&gt;&lt;/div&gt;
+  &lt;/details&gt;
+  ...
+&lt;/accordion-wc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Compact Variant</h2>
+        <p>Add <code>data-compact</code> for tighter spacing, useful in sidebars or when displaying many items.</p>
+
+        <div class="example">
+          <accordion-wc data-compact>
+            <details>
+              <summary>Compact Item 1</summary>
+              <div><p>Smaller padding for dense layouts.</p></div>
+            </details>
+            <details>
+              <summary>Compact Item 2</summary>
+              <div><p>Still fully accessible.</p></div>
+            </details>
+            <details>
+              <summary>Compact Item 3</summary>
+              <div><p>Great for navigation menus.</p></div>
+            </details>
+          </accordion-wc>
+        </div>
+
+        <code-block language="html" show-lines label="Compact accordion variant">&lt;accordion-wc data-compact&gt;
+  &lt;details&gt;
+    &lt;summary&gt;Compact Item 1&lt;/summary&gt;
+    &lt;div&gt;&lt;p&gt;Smaller padding...&lt;/p&gt;&lt;/div&gt;
+  &lt;/details&gt;
+  ...
+&lt;/accordion-wc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Combined Variants</h2>
+        <p>Variants can be combined for different visual styles.</p>
+
+        <div class="example">
+          <layout-stack data-gap="xl">
+            <layout-stack data-gap="s">
+              <strong>Bordered + Single</strong>
+              <accordion-wc data-bordered data-single>
+                <details name="bordered-single" open>
+                  <summary>First Question</summary>
+                  <div><p>This is the answer to the first question.</p></div>
+                </details>
+                <details name="bordered-single">
+                  <summary>Second Question</summary>
+                  <div><p>This is the answer to the second question.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>Bordered + Compact</strong>
+              <accordion-wc data-bordered data-compact>
+                <details>
+                  <summary>Navigation Item 1</summary>
+                  <div><p>Content for item 1.</p></div>
+                </details>
+                <details>
+                  <summary>Navigation Item 2</summary>
+                  <div><p>Content for item 2.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>All Three</strong>
+              <accordion-wc data-bordered data-compact data-single>
+                <details name="all-three" open>
+                  <summary>Settings Group 1</summary>
+                  <div><p>Settings options here.</p></div>
+                </details>
+                <details name="all-three">
+                  <summary>Settings Group 2</summary>
+                  <div><p>More settings options.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+          </layout-stack>
+        </div>
+      </section>
+
+      <section>
+        <h2>Indicator Styles</h2>
+        <p>Use <code>data-indicator</code> to change the open/close indicator. Four styles are available: <code>chevron</code> (default), <code>plus-minus</code>, <code>custom</code>, and <code>none</code>.</p>
+
+        <div class="example">
+          <layout-stack data-gap="xl">
+            <layout-stack data-gap="s">
+              <strong>Chevron (default)</strong>
+              <accordion-wc data-bordered>
+                <details>
+                  <summary>Chevron points right when closed</summary>
+                  <div><p>And rotates down when open. This is the default indicator style.</p></div>
+                </details>
+                <details>
+                  <summary>Standard accordion behavior</summary>
+                  <div><p>Most users expect this chevron pattern from accordions.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>Plus-Minus</strong>
+              <accordion-wc data-bordered data-indicator="plus-minus">
+                <details>
+                  <summary>Shows + when closed</summary>
+                  <div><p>The plus sign transforms to a minus when open.</p></div>
+                </details>
+                <details>
+                  <summary>Common in FAQ sections</summary>
+                  <div><p>Plus-minus indicators are often used for expandable content.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>Custom (arrows)</strong>
+              <accordion-wc data-bordered data-indicator="custom" style="--indicator-closed: '\2192'; --indicator-open: '\2193';">
+                <details>
+                  <summary>Uses arrow symbols</summary>
+                  <div><p>Override <code>--indicator-closed</code> and <code>--indicator-open</code> CSS custom properties.</p></div>
+                </details>
+                <details>
+                  <summary>Any Unicode character works</summary>
+                  <div><p>Use Unicode escape sequences or literal characters.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>Custom (emoji)</strong>
+              <accordion-wc data-bordered data-indicator="custom" style="--indicator-closed: '🔴'; --indicator-open: '🟢';">
+                <details>
+                  <summary>Emoji indicators work too</summary>
+                  <div><p>Red circle when closed, green circle when open.</p></div>
+                </details>
+                <details>
+                  <summary>Get creative with symbols</summary>
+                  <div><p>Try 🔥/❄️, ➕/➖, or any emoji you like!</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+
+            <layout-stack data-gap="s">
+              <strong>None</strong>
+              <accordion-wc data-bordered data-indicator="none">
+                <details>
+                  <summary>No indicator shown</summary>
+                  <div><p>Useful when you want a cleaner look or have custom indicators.</p></div>
+                </details>
+                <details>
+                  <summary>Still fully functional</summary>
+                  <div><p>Click to expand and collapse as normal.</p></div>
+                </details>
+              </accordion-wc>
+            </layout-stack>
+          </layout-stack>
+        </div>
+
+        <code-block language="html" show-lines label="Indicator style variants">&lt;!-- Default chevron (right/down) --&gt;
+&lt;accordion-wc&gt;...&lt;/accordion-wc&gt;
+
+&lt;!-- Plus-minus indicator --&gt;
+&lt;accordion-wc data-indicator="plus-minus"&gt;...&lt;/accordion-wc&gt;
+
+&lt;!-- Custom indicators with arrows --&gt;
+&lt;accordion-wc
+  data-indicator="custom"
+  style="--indicator-closed: '\2192'; --indicator-open: '\2193';"&gt;
+  ...
+&lt;/accordion-wc&gt;
+
+&lt;!-- Custom indicators with emoji --&gt;
+&lt;accordion-wc
+  data-indicator="custom"
+  style="--indicator-closed: '🔴'; --indicator-open: '🟢';"&gt;
+  ...
+&lt;/accordion-wc&gt;
+
+&lt;!-- No indicator --&gt;
+&lt;accordion-wc data-indicator="none"&gt;...&lt;/accordion-wc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Keyboard Navigation</h2>
+        <p>When focused on a panel header, the following keyboard shortcuts are available:</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>ArrowDown</kbd></td>
+              <td>Move focus to the next panel header</td>
+            </tr>
+            <tr>
+              <td><kbd>ArrowUp</kbd></td>
+              <td>Move focus to the previous panel header</td>
+            </tr>
+            <tr>
+              <td><kbd>Home</kbd></td>
+              <td>Move focus to the first panel header</td>
+            </tr>
+            <tr>
+              <td><kbd>End</kbd></td>
+              <td>Move focus to the last panel header</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+              <td>Toggle the focused panel (native behavior)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Events</h2>
+        <p>The component dispatches events when panels are toggled.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Detail</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>accordion-toggle</code></td>
+              <td><code>{ index: number, open: boolean }</code></td>
+              <td>Fired when a panel is opened or closed.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <code-block language="javascript" show-lines label="Listening to accordion events">const accordion = document.querySelector('accordion-wc');
+
+accordion.addEventListener('accordion-toggle', (event) => {
+  const { index, open } = event.detail;
+  console.log(`Panel ${index} is now ${open ? 'open' : 'closed'}`);
+});</code-block>
+      </section>
+
+      <section>
+        <h2>JavaScript API</h2>
+        <p>The component exposes methods for programmatic control.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Parameters</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>open(index)</code></td>
+              <td><code>index: number</code></td>
+              <td>Open a specific panel by its 0-based index.</td>
+            </tr>
+            <tr>
+              <td><code>close(index)</code></td>
+              <td><code>index: number</code></td>
+              <td>Close a specific panel by its 0-based index.</td>
+            </tr>
+            <tr>
+              <td><code>toggle(index)</code></td>
+              <td><code>index: number</code></td>
+              <td>Toggle a specific panel open/closed.</td>
+            </tr>
+            <tr>
+              <td><code>openAll()</code></td>
+              <td>-</td>
+              <td>Open all panels (only works when not in single mode).</td>
+            </tr>
+            <tr>
+              <td><code>closeAll()</code></td>
+              <td>-</td>
+              <td>Close all panels.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <code-block language="javascript" show-lines label="Programmatic accordion control">const accordion = document.querySelector('accordion-wc');
+
+// Open the second panel
+accordion.open(1);
+
+// Close the first panel
+accordion.close(0);
+
+// Toggle the third panel
+accordion.toggle(2);
+
+// Open all panels (not in single mode)
+accordion.openAll();
+
+// Close all panels
+accordion.closeAll();</code-block>
+      </section>
+
+      <section>
+        <h2>Accessibility</h2>
+
+        <h3>ARIA Attributes</h3>
+        <p>The component automatically applies ARIA attributes for accessibility:</p>
+        <ul>
+          <li><code>aria-expanded</code> on each summary indicates open/closed state</li>
+          <li><code>aria-controls</code> links summaries to their panels</li>
+          <li><code>aria-labelledby</code> links panels back to their summaries</li>
+          <li><code>role="region"</code> on panels for landmark navigation</li>
+        </ul>
+
+        <h3>Screen Reader Announcements</h3>
+        <p>Screen readers will announce the expanded/collapsed state when panels are toggled. The keyboard navigation allows users to move between headers without expanding panels.</p>
+
+        <h3>Focus Management</h3>
+        <p>Focus remains on the summary element when toggling, and arrow key navigation moves focus between summaries without changing the open state.</p>
+      </section>
+
+      <section>
+        <h2>FAQ Example</h2>
+        <p>A common use case for accordions is FAQ sections.</p>
+
+        <div class="example">
+          <accordion-wc data-bordered data-single>
+            <details name="faq-example">
+              <summary>How do I get started?</summary>
+              <div>
+                <p>Install Vanilla Breeze via npm or include the CSS and JS files directly. Then start using the components in your HTML.</p>
+              </div>
+            </details>
+            <details name="faq-example">
+              <summary>Is JavaScript required?</summary>
+              <div>
+                <p>No! All components work without JavaScript using native HTML features. JavaScript enhances the experience with better keyboard navigation and ARIA support.</p>
+              </div>
+            </details>
+            <details name="faq-example">
+              <summary>Can I customize the styles?</summary>
+              <div>
+                <p>Yes, all components use CSS custom properties for easy theming. Override the variables in your stylesheet to match your brand.</p>
+              </div>
+            </details>
+            <details name="faq-example">
+              <summary>What about browser support?</summary>
+              <div>
+                <p>Vanilla Breeze supports all modern browsers including Chrome, Firefox, Safari, and Edge. The progressive enhancement approach means older browsers still get a functional experience.</p>
+              </div>
+            </details>
+          </accordion-wc>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>

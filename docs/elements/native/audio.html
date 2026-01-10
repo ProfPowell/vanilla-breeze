@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>audio - Media Elements - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+    <header>
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/elements/">Elements</a></li>
+          <li><a href="/docs/examples/">Examples</a></li>
+          <li><a href="/docs/integrations/">Integrations</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <h1>audio</h1>
+      <p class="lead">The audio element embeds sound content with native playback controls and variants for different layout contexts.</p>
+
+      <nav class="subnav" aria-label="Media elements navigation">
+        <ul>
+          <li><a href="/docs/elements/native/img.html">img</a></li>
+          <li><a href="/docs/elements/native/picture.html">picture</a></li>
+          <li><a href="/docs/elements/native/video.html">video</a></li>
+          <li><a href="/docs/elements/native/audio.html" aria-current="page">audio</a></li>
+          <li><a href="/docs/elements/native/figure.html">figure</a></li>
+          <li><a href="/docs/elements/native/svg.html">svg</a></li>
+          <li><a href="/docs/elements/native/canvas.html">canvas</a></li>
+          <li><a href="/docs/elements/native/iframe.html">iframe</a></li>
+        </ul>
+      </nav>
+
+      <!-- Description Section -->
+      <section>
+        <h2>Description</h2>
+        <p>The <code>&lt;audio&gt;</code> element embeds audio content with native browser playback controls. Vanilla Breeze styles audio players to be block-level and full-width by default, with variants for compact and minimal layouts.</p>
+
+        <p>Like video, audio supports multiple <code>&lt;source&gt;</code> elements for format fallbacks and <code>&lt;track&gt;</code> elements for synchronized text content.</p>
+      </section>
+
+      <!-- When to Use Section -->
+      <section>
+        <h2>When to Use</h2>
+        <ul>
+          <li><strong>Podcasts</strong> - Episode players with playback controls</li>
+          <li><strong>Music players</strong> - Song or album playback</li>
+          <li><strong>Sound effects</strong> - UI feedback or game audio</li>
+          <li><strong>Voice recordings</strong> - Interviews, voicemail, audio messages</li>
+          <li><strong>Audiobooks</strong> - Narrated content</li>
+        </ul>
+
+        <h3>When to Use Video Instead</h3>
+        <ul>
+          <li>Audio content with accompanying visuals</li>
+          <li>Content where a static image adds context (use video with poster)</li>
+          <li>Streaming services that provide video embeds</li>
+        </ul>
+      </section>
+
+      <!-- Variants Section -->
+      <section>
+        <h2>Variants</h2>
+
+        <h3>Default</h3>
+        <p>Full-width audio player with native controls.</p>
+        <div class="example">
+          <audio controls>
+            <source src="#" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        <code-block language="html" label="Basic audio element with multiple sources">&lt;audio controls&gt;
+  &lt;source src="podcast.mp3" type="audio/mpeg" /&gt;
+  &lt;source src="podcast.ogg" type="audio/ogg" /&gt;
+  Your browser does not support the audio element.
+&lt;/audio&gt;</code-block>
+
+        <h3>.compact</h3>
+        <p>Reduced max-width for inline usage or sidebars.</p>
+        <div class="example">
+          <audio class="compact" controls>
+            <source src="#" type="audio/mpeg" />
+          </audio>
+        </div>
+        <code-block language="html" label="Compact audio player">&lt;audio class="compact" controls&gt;...&lt;/audio&gt;</code-block>
+
+        <h3>.minimal</h3>
+        <p>Reduced height for tight layouts.</p>
+        <div class="example">
+          <audio class="minimal" controls>
+            <source src="#" type="audio/mpeg" />
+          </audio>
+        </div>
+        <code-block language="html" label="Minimal audio player">&lt;audio class="minimal" controls&gt;...&lt;/audio&gt;</code-block>
+
+        <h3>Compact + Minimal</h3>
+        <p>Combine variants for the most compact player.</p>
+        <div class="example">
+          <audio class="compact minimal" controls>
+            <source src="#" type="audio/mpeg" />
+          </audio>
+        </div>
+      </section>
+
+      <!-- Audio Attributes Section -->
+      <section>
+        <h2>Audio Attributes</h2>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>controls</code></td>
+              <td>Show native playback controls (required for user interaction)</td>
+            </tr>
+            <tr>
+              <td><code>autoplay</code></td>
+              <td>Start playing automatically (discouraged - poor UX)</td>
+            </tr>
+            <tr>
+              <td><code>muted</code></td>
+              <td>Start with audio muted</td>
+            </tr>
+            <tr>
+              <td><code>loop</code></td>
+              <td>Restart audio when it ends</td>
+            </tr>
+            <tr>
+              <td><code>preload</code></td>
+              <td><code>none</code>, <code>metadata</code>, or <code>auto</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Preload Options</h3>
+        <code-block language="html" label="Audio preload attribute options">&lt;!-- Don't preload - best for long content or many players --&gt;
+&lt;audio controls preload="none"&gt;...&lt;/audio&gt;
+
+&lt;!-- Preload metadata only - duration, dimensions --&gt;
+&lt;audio controls preload="metadata"&gt;...&lt;/audio&gt;
+
+&lt;!-- Preload entire file - small files, likely to play --&gt;
+&lt;audio controls preload="auto"&gt;...&lt;/audio&gt;</code-block>
+      </section>
+
+      <!-- Format Support Section -->
+      <section>
+        <h2>Audio Formats</h2>
+        <p>Provide multiple sources for maximum browser compatibility.</p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Format</th>
+              <th>MIME Type</th>
+              <th>Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MP3</td>
+              <td><code>audio/mpeg</code></td>
+              <td>Universal - best for compatibility</td>
+            </tr>
+            <tr>
+              <td>AAC</td>
+              <td><code>audio/aac</code></td>
+              <td>Good quality, wide support</td>
+            </tr>
+            <tr>
+              <td>Ogg Vorbis</td>
+              <td><code>audio/ogg</code></td>
+              <td>Open format, Firefox/Chrome</td>
+            </tr>
+            <tr>
+              <td>Opus</td>
+              <td><code>audio/opus</code></td>
+              <td>Best quality/size ratio, modern browsers</td>
+            </tr>
+            <tr>
+              <td>WAV</td>
+              <td><code>audio/wav</code></td>
+              <td>Uncompressed, large files</td>
+            </tr>
+            <tr>
+              <td>FLAC</td>
+              <td><code>audio/flac</code></td>
+              <td>Lossless, growing support</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <code-block language="html" label="Audio with format fallbacks">&lt;audio controls&gt;
+  &lt;!-- Best quality, modern browsers --&gt;
+  &lt;source src="audio.opus" type="audio/opus" /&gt;
+
+  &lt;!-- Good quality, open format --&gt;
+  &lt;source src="audio.ogg" type="audio/ogg" /&gt;
+
+  &lt;!-- Universal fallback --&gt;
+  &lt;source src="audio.mp3" type="audio/mpeg" /&gt;
+
+  &lt;p&gt;Your browser doesn't support audio. &lt;a href="audio.mp3"&gt;Download&lt;/a&gt;&lt;/p&gt;
+&lt;/audio&gt;</code-block>
+      </section>
+
+      <!-- Live Examples Section -->
+      <section>
+        <h2>Live Examples</h2>
+
+        <h3>Podcast Player</h3>
+        <div class="example">
+          <layout-stack data-gap="s">
+            <strong>Episode 42: Web Audio Fundamentals</strong>
+            <audio controls preload="metadata">
+              <source src="#" type="audio/mpeg" />
+            </audio>
+            <small>Duration: 45:32 | Published: January 8, 2026</small>
+          </layout-stack>
+        </div>
+
+        <h3>Inline Audio</h3>
+        <div class="example">
+          <p>Listen to the pronunciation: <audio class="compact minimal" controls style="vertical-align: middle; display: inline-block;"><source src="#" type="audio/mpeg" /></audio></p>
+        </div>
+
+        <h3>Audio in Figure</h3>
+        <div class="example">
+          <figure>
+            <audio controls>
+              <source src="#" type="audio/mpeg" />
+            </audio>
+            <figcaption>Interview with Jane Doe - Recorded December 2025</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Fallback Content Section -->
+      <section>
+        <h2>Fallback Content</h2>
+        <p>Provide fallback for browsers that don't support audio.</p>
+
+        <code-block language="html" label="Audio with fallback download link">&lt;audio controls&gt;
+  &lt;source src="podcast.mp3" type="audio/mpeg" /&gt;
+  &lt;p&gt;
+    Your browser doesn't support HTML audio.
+    &lt;a href="podcast.mp3"&gt;Download the episode&lt;/a&gt; (45 MB).
+  &lt;/p&gt;
+&lt;/audio&gt;</code-block>
+      </section>
+
+      <!-- Accessibility Section -->
+      <section>
+        <h2>Accessibility</h2>
+
+        <h3>Transcripts</h3>
+        <p>Provide text transcripts for audio content so deaf users and those who can't play audio can access the information.</p>
+
+        <code-block language="html" label="Audio with transcript link for accessibility">&lt;figure&gt;
+  &lt;audio controls&gt;
+    &lt;source src="interview.mp3" type="audio/mpeg" /&gt;
+  &lt;/audio&gt;
+  &lt;figcaption&gt;
+    Interview with Dr. Smith about climate change.
+    &lt;a href="transcript.html"&gt;Read the transcript&lt;/a&gt;
+  &lt;/figcaption&gt;
+&lt;/figure&gt;</code-block>
+
+        <h3>Synchronized Text</h3>
+        <p>Use <a href="/docs/elements/native/track.html"><code>&lt;track&gt;</code></a> for synchronized captions (though browser support varies for audio).</p>
+
+        <code-block language="html" label="Audio with captions track">&lt;audio controls&gt;
+  &lt;source src="podcast.mp3" type="audio/mpeg" /&gt;
+  &lt;track kind="captions" src="captions.vtt" srclang="en" label="English" /&gt;
+&lt;/audio&gt;</code-block>
+
+        <h3>Best Practices</h3>
+        <ul>
+          <li>Always provide a text transcript for important audio</li>
+          <li>Never autoplay audio - it's disruptive and inaccessible</li>
+          <li>Ensure controls are visible and keyboard accessible</li>
+          <li>Provide context about what the audio contains</li>
+          <li>Include duration information when available</li>
+        </ul>
+      </section>
+
+      <!-- Related Elements Section -->
+      <section>
+        <h2>Related Elements</h2>
+        <ul>
+          <li><a href="/docs/elements/native/video.html"><code>&lt;video&gt;</code></a> - Video content with similar API</li>
+          <li><a href="/docs/elements/native/source.html"><code>&lt;source&gt;</code></a> - Define multiple audio sources for format fallback</li>
+          <li><a href="/docs/elements/native/track.html"><code>&lt;track&gt;</code></a> - Synchronized text tracks (captions, descriptions)</li>
+          <li><a href="/docs/elements/native/figure.html"><code>&lt;figure&gt;</code></a> - Wrap audio with caption information</li>
+        </ul>
+      </section>
+
+      <!-- CSS Reference Section -->
+      <section>
+        <h2>CSS Reference</h2>
+        <p>Styles defined in <code>/src/native-elements/video/styles.css</code></p>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Selector</th>
+              <th>Properties</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>audio</code></td>
+              <td><code>display: block; inline-size: 100%; max-inline-size: 100%;</code></td>
+            </tr>
+            <tr>
+              <td><code>audio.minimal</code></td>
+              <td><code>block-size: 2.5rem;</code></td>
+            </tr>
+            <tr>
+              <td><code>audio.compact</code></td>
+              <td><code>max-inline-size: 300px;</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+
+    <footer>
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>

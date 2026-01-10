@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive - Native Elements - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <link rel="stylesheet" href="/docs/docs.css" />
+</head>
+<body>
+    <header>
+      <a href="/docs/" class="logo">Vanilla Breeze</a>
+      <nav class="horizontal pills" aria-label="Main navigation">
+        <ul>
+          <li><a href="/docs/">Home</a></li>
+          <li><a href="/docs/tokens/">Tokens</a></li>
+          <li><a href="/docs/elements/">Elements</a></li>
+          <li><a href="/docs/examples/">Examples</a></li>
+          <li><a href="/docs/integrations/">Integrations</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Interactive Elements</h1>
+      <p class="lead">Native interactive elements: details/summary, dialog, menu, and search. No JavaScript required for basic functionality.</p>
+
+      <nav class="subnav" aria-label="Native elements navigation">
+        <ul>
+          <li><a href="/docs/elements/native/text.html">Text</a></li>
+          <li><a href="/docs/elements/native/lists.html">Lists</a></li>
+          <li><a href="/docs/elements/native/tables.html">Tables</a></li>
+          <li><a href="/docs/elements/native/forms.html">Forms</a></li>
+          <li><a href="/docs/elements/native/media.html">Media</a></li>
+          <li><a href="/docs/elements/native/interactive.html" aria-current="page">Interactive</a></li>
+          <li><a href="/docs/elements/native/sectioning.html">Sectioning</a></li>
+          <li><a href="/docs/elements/native/states.html">States</a></li>
+        </ul>
+      </nav>
+
+      <!-- Details/Summary Section -->
+      <section>
+        <h2>Details / Summary</h2>
+        <p>Native disclosure widget for expandable content. No JavaScript required.</p>
+
+        <h3>Single Details</h3>
+        <div class="example">
+          <details>
+            <summary>Click to expand</summary>
+            <p>This content is revealed when the details element is opened. The summary acts as a clickable header that toggles the visibility of the content inside.</p>
+          </details>
+        </div>
+
+        <code-block language="html" show-lines label="Details disclosure">
+&lt;details&gt;
+  &lt;summary&gt;Click to expand&lt;/summary&gt;
+  &lt;p&gt;Hidden content revealed when opened.&lt;/p&gt;
+&lt;/details&gt;
+        </code-block>
+
+        <h3>Open by Default</h3>
+        <p>Use the <code>open</code> attribute to show content initially.</p>
+        <div class="example">
+          <details open>
+            <summary>Already expanded</summary>
+            <p>This details element starts in the open state. Users can click to collapse it.</p>
+          </details>
+        </div>
+
+        <code-block language="html" show-lines label="Details open by default">
+&lt;details open&gt;
+  &lt;summary&gt;Already expanded&lt;/summary&gt;
+  &lt;p&gt;Starts in the open state.&lt;/p&gt;
+&lt;/details&gt;
+        </code-block>
+
+        <h3>Accordion Pattern</h3>
+        <p>Adjacent details elements stack with connected borders.</p>
+        <div class="example">
+          <details>
+            <summary>What is Vanilla Breeze?</summary>
+            <p>Vanilla Breeze is a layered HTML component system that extends HTML's native model with CSS custom properties, custom elements, and web components.</p>
+          </details>
+          <details>
+            <summary>How does progressive enhancement work?</summary>
+            <p>Components are built to work without JavaScript first. CSS provides visual styling and layout. JavaScript then enhances with interactivity and accessibility features.</p>
+          </details>
+          <details>
+            <summary>What browsers are supported?</summary>
+            <p>All modern browsers are supported. The library uses native CSS features like @layer, custom properties, and :has() which have broad support.</p>
+          </details>
+        </div>
+
+        <code-block language="html" show-lines label="Accordion pattern">
+&lt;details&gt;
+  &lt;summary&gt;First item&lt;/summary&gt;
+  &lt;p&gt;Content for first item.&lt;/p&gt;
+&lt;/details&gt;
+&lt;details&gt;
+  &lt;summary&gt;Second item&lt;/summary&gt;
+  &lt;p&gt;Content for second item.&lt;/p&gt;
+&lt;/details&gt;
+        </code-block>
+
+        <h3>Exclusive Accordion (name attribute)</h3>
+        <p>Use the <code>name</code> attribute for exclusive open behavior (only one open at a time).</p>
+        <div class="example">
+          <details name="faq-exclusive" open>
+            <summary>First Question</summary>
+            <p>Only one panel can be open at a time when details elements share the same name attribute.</p>
+          </details>
+          <details name="faq-exclusive">
+            <summary>Second Question</summary>
+            <p>Opening this will automatically close the other panels.</p>
+          </details>
+          <details name="faq-exclusive">
+            <summary>Third Question</summary>
+            <p>This is a native browser feature requiring no JavaScript.</p>
+          </details>
+        </div>
+
+        <code-block language="html" show-lines label="Exclusive accordion with name">
+&lt;details name="faq" open&gt;
+  &lt;summary&gt;First Question&lt;/summary&gt;
+  &lt;p&gt;Only one open at a time.&lt;/p&gt;
+&lt;/details&gt;
+&lt;details name="faq"&gt;
+  &lt;summary&gt;Second Question&lt;/summary&gt;
+  &lt;p&gt;Opens and closes others.&lt;/p&gt;
+&lt;/details&gt;
+        </code-block>
+
+        <h3>With Rich Content</h3>
+        <div class="example">
+          <details>
+            <summary>View Product Details</summary>
+            <layout-stack data-gap="m">
+              <p>This product includes the following features:</p>
+              <ul>
+                <li>Feature one with detailed description</li>
+                <li>Feature two with benefits</li>
+                <li>Feature three with specifications</li>
+              </ul>
+              <table class="compact">
+                <tr>
+                  <th scope="row">Weight</th>
+                  <td>2.5 kg</td>
+                </tr>
+                <tr>
+                  <th scope="row">Dimensions</th>
+                  <td>30 x 20 x 10 cm</td>
+                </tr>
+              </table>
+            </layout-stack>
+          </details>
+        </div>
+
+        <code-block language="html" show-lines label="Details with rich content">
+&lt;details&gt;
+  &lt;summary&gt;View Product Details&lt;/summary&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Feature one&lt;/li&gt;
+    &lt;li&gt;Feature two&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;table class="compact"&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Weight&lt;/th&gt;
+      &lt;td&gt;2.5 kg&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/details&gt;
+        </code-block>
+      </section>
+
+      <!-- Tooltip Section -->
+      <section>
+        <h2>Tooltip</h2>
+        <p>Native tooltips using the Popover API and CSS Anchor Positioning. Minimal JavaScript for hover events.</p>
+
+        <h3>Basic Tooltip</h3>
+        <p>Connect a trigger to a tooltip with <code>aria-describedby</code>. The tooltip uses <code>popover="hint"</code> for top-layer rendering.</p>
+        <div class="example">
+          <button type="button" aria-describedby="tip-basic">Hover me</button>
+          <div id="tip-basic" popover="hint" role="tooltip">This is a tooltip!</div>
+        </div>
+
+        <code-block language="html" show-lines label="Native tooltip with Popover API">
+&lt;button aria-describedby="tip1"&gt;Hover me&lt;/button&gt;
+&lt;div id="tip1" popover="hint" role="tooltip"&gt;
+  This is a tooltip!
+&lt;/div&gt;
+        </code-block>
+
+        <h3>Position Variants</h3>
+        <p>Use <code>data-position</code> to control tooltip placement. CSS Anchor Positioning handles the positioning automatically.</p>
+        <div class="example" style="display: flex; gap: var(--size-l); flex-wrap: wrap;">
+          <span>
+            <button type="button" aria-describedby="tip-top">Top</button>
+            <div id="tip-top" popover="hint" role="tooltip" data-position="top">Above the trigger</div>
+          </span>
+          <span>
+            <button type="button" aria-describedby="tip-bottom">Bottom</button>
+            <div id="tip-bottom" popover="hint" role="tooltip" data-position="bottom">Below the trigger</div>
+          </span>
+          <span>
+            <button type="button" aria-describedby="tip-left">Left</button>
+            <div id="tip-left" popover="hint" role="tooltip" data-position="left">Left of trigger</div>
+          </span>
+          <span>
+            <button type="button" aria-describedby="tip-right">Right</button>
+            <div id="tip-right" popover="hint" role="tooltip" data-position="right">Right of trigger</div>
+          </span>
+        </div>
+
+        <code-block language="html" show-lines label="Tooltip positions">
+&lt;button aria-describedby="tip-bottom"&gt;Bottom&lt;/button&gt;
+&lt;div id="tip-bottom" popover="hint" role="tooltip" data-position="bottom"&gt;
+  Below the trigger
+&lt;/div&gt;
+        </code-block>
+
+        <h3>Click-Triggered (No JS)</h3>
+        <p>Use <code>popovertarget</code> for click-triggered tooltips. No JavaScript required.</p>
+        <div class="example">
+          <button type="button" popovertarget="tip-click">Click me</button>
+          <div id="tip-click" popover="auto" role="tooltip">Click tooltip - click outside to dismiss</div>
+        </div>
+
+        <code-block language="html" show-lines label="Click-triggered tooltip (no JS)">
+&lt;button popovertarget="tip-click"&gt;Click me&lt;/button&gt;
+&lt;div id="tip-click" popover="auto" role="tooltip"&gt;
+  Click to dismiss or click outside
+&lt;/div&gt;
+        </code-block>
+
+        <h3>With Arrow</h3>
+        <p>Add a <code>.tooltip-arrow</code> element for a pointing arrow.</p>
+        <div class="example">
+          <button type="button" aria-describedby="tip-arrow">With arrow</button>
+          <div id="tip-arrow" popover="hint" role="tooltip">
+            Tooltip with arrow
+            <span class="tooltip-arrow" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <code-block language="html" show-lines label="Tooltip with arrow">
+&lt;button aria-describedby="tip-arrow"&gt;With arrow&lt;/button&gt;
+&lt;div id="tip-arrow" popover="hint" role="tooltip"&gt;
+  Tooltip with arrow
+  &lt;span class="tooltip-arrow" aria-hidden="true"&gt;&lt;/span&gt;
+&lt;/div&gt;
+        </code-block>
+
+        <h3>Initialization</h3>
+        <p>Import <code>tooltip-init.js</code> to enable hover/focus behavior for native tooltips.</p>
+
+        <code-block language="js" show-lines label="Initialize native tooltips">
+// Auto-init on import
+import '/src/utils/tooltip-init.js';
+
+// Or manual init for dynamic content
+import { initTooltips } from '/src/utils/tooltip-init.js';
+initTooltips(document.querySelector('.dynamic-content'));
+        </code-block>
+
+        <h3>Browser Support</h3>
+        <p>Uses CSS Anchor Positioning in supporting browsers with JavaScript fallback positioning for others.</p>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Popover API</td>
+              <td>Chrome 114+, Safari 17+, Firefox 125+</td>
+            </tr>
+            <tr>
+              <td>CSS Anchor Positioning</td>
+              <td>Chrome 125+, Safari 18+</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Native vs tooltip-wc</h3>
+        <p>Choose based on your needs:</p>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Use Case</th>
+              <th>Pattern</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Simple hover tooltips</td>
+              <td>Native (this pattern)</td>
+            </tr>
+            <tr>
+              <td>Generated from template</td>
+              <td><a href="/docs/elements/web-components/tooltip.html">tooltip-wc</a></td>
+            </tr>
+            <tr>
+              <td>Minimal markup</td>
+              <td><a href="/docs/elements/web-components/tooltip.html">tooltip-wc</a></td>
+            </tr>
+            <tr>
+              <td>Click-triggered (no JS)</td>
+              <td>Native (this pattern)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Dialog Section -->
+      <section>
+        <h2>Dialog</h2>
+        <p>Native modal dialog with backdrop, animation, and focus management.</p>
+
+        <h3>Basic Dialog</h3>
+        <p>Open dialogs declaratively with the Invokers API (<code>commandfor</code> + <code>command="show-modal"</code>). No JavaScript required.</p>
+        <div class="example">
+          <button type="button" commandfor="basic-dialog" command="show-modal">Open Basic Dialog</button>
+
+          <dialog id="basic-dialog">
+            <header>
+              <h3>Basic Dialog</h3>
+            </header>
+            <p>This is a native HTML dialog element. It has a backdrop and can be closed with ESC.</p>
+            <footer>
+              <button type="button" commandfor="basic-dialog" command="close">Close</button>
+            </footer>
+          </dialog>
+        </div>
+
+        <code-block language="html" show-lines label="Basic dialog element">
+&lt;button type="button" commandfor="my-dialog" command="show-modal"&gt;
+  Open Dialog
+&lt;/button&gt;
+
+&lt;dialog id="my-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Dialog Title&lt;/h3&gt;
+  &lt;/header&gt;
+  &lt;p&gt;Dialog content here.&lt;/p&gt;
+  &lt;footer&gt;
+    &lt;button type="button" commandfor="my-dialog" command="close"&gt;Close&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/dialog&gt;
+        </code-block>
+
+        <h3>Dialog with Form</h3>
+        <div class="example">
+          <button type="button" commandfor="form-dialog" command="show-modal">Open Form Dialog</button>
+
+          <dialog id="form-dialog">
+            <header>
+              <h3>Subscribe to Newsletter</h3>
+            </header>
+            <form method="dialog" class="stacked">
+              <div class="group">
+                <label for="dialog-email">Email Address</label>
+                <input type="email" id="dialog-email" placeholder="you@example.com" />
+              </div>
+              <div class="group">
+                <label>
+                  <input type="checkbox" /> Send me weekly updates
+                </label>
+              </div>
+              <footer>
+                <button type="button" class="secondary" commandfor="form-dialog" command="close">Cancel</button>
+                <button type="submit">Subscribe</button>
+              </footer>
+            </form>
+          </dialog>
+        </div>
+
+        <code-block language="html" show-lines label="Dialog with form">
+&lt;button commandfor="form-dialog" command="show-modal"&gt;Open&lt;/button&gt;
+
+&lt;dialog id="form-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Subscribe&lt;/h3&gt;
+  &lt;/header&gt;
+  &lt;form method="dialog"&gt;
+    &lt;label for="email"&gt;Email&lt;/label&gt;
+    &lt;input type="email" id="email" /&gt;
+    &lt;footer&gt;
+      &lt;button type="button" class="secondary" commandfor="form-dialog" command="close"&gt;Cancel&lt;/button&gt;
+      &lt;button type="submit"&gt;Subscribe&lt;/button&gt;
+    &lt;/footer&gt;
+  &lt;/form&gt;
+&lt;/dialog&gt;
+        </code-block>
+
+        <h3>Confirmation Dialog</h3>
+        <div class="example">
+          <button type="button" class="secondary" commandfor="confirm-dialog" command="show-modal">Delete Item</button>
+
+          <dialog id="confirm-dialog">
+            <header>
+              <h3>Confirm Deletion</h3>
+            </header>
+            <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+            <footer>
+              <button type="button" class="secondary" commandfor="confirm-dialog" command="close">Cancel</button>
+              <button type="button" commandfor="confirm-dialog" command="close">Delete</button>
+            </footer>
+          </dialog>
+        </div>
+
+        <code-block language="html" show-lines label="Confirmation dialog">
+&lt;button commandfor="confirm-dialog" command="show-modal"&gt;Delete Item&lt;/button&gt;
+
+&lt;dialog id="confirm-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Confirm Deletion&lt;/h3&gt;
+  &lt;/header&gt;
+  &lt;p&gt;Are you sure? This cannot be undone.&lt;/p&gt;
+  &lt;footer&gt;
+    &lt;button type="button" class="secondary" commandfor="confirm-dialog" command="close"&gt;Cancel&lt;/button&gt;
+    &lt;button type="button" commandfor="confirm-dialog" command="close"&gt;Delete&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/dialog&gt;
+        </code-block>
+
+        <h3>Dialog Anatomy</h3>
+        <p>Dialogs support <code>header</code>, <code>section</code> (or direct content), and <code>footer</code> for structured layouts.</p>
+        <div class="example">
+          <button type="button" commandfor="anatomy-dialog" command="show-modal">Open Structured Dialog</button>
+
+          <dialog id="anatomy-dialog">
+            <header>
+              <h3>Dialog Header</h3>
+            </header>
+            <section>
+              <layout-stack data-gap="m">
+                <p>The dialog body contains the main content. It can include any HTML elements.</p>
+                <p>Long content will scroll within the dialog while header and footer remain fixed.</p>
+              </layout-stack>
+            </section>
+            <footer>
+              <button type="button" class="secondary" commandfor="anatomy-dialog" command="close">Cancel</button>
+              <button type="button" commandfor="anatomy-dialog" command="close">Confirm</button>
+            </footer>
+          </dialog>
+        </div>
+
+        <code-block language="html" show-lines label="Dialog anatomy">
+&lt;button commandfor="my-dialog" command="show-modal"&gt;Open&lt;/button&gt;
+
+&lt;dialog id="my-dialog"&gt;
+  &lt;header&gt;
+    &lt;h3&gt;Dialog Header&lt;/h3&gt;
+  &lt;/header&gt;
+  &lt;section&gt;
+    &lt;p&gt;Main dialog content.&lt;/p&gt;
+  &lt;/section&gt;
+  &lt;footer&gt;
+    &lt;button type="button" class="secondary" commandfor="my-dialog" command="close"&gt;Cancel&lt;/button&gt;
+    &lt;button type="button" commandfor="my-dialog" command="close"&gt;Confirm&lt;/button&gt;
+  &lt;/footer&gt;
+&lt;/dialog&gt;
+        </code-block>
+      </section>
+
+      <!-- Menu Section -->
+      <section>
+        <h2>Menu</h2>
+        <p>Menu patterns for toolbars, context menus, and button groups.</p>
+
+        <h3>.toolbar</h3>
+        <p>Horizontal toolbar with icon or text buttons.</p>
+        <div class="example">
+          <menu class="toolbar">
+            <li><button type="button" class="ghost">Bold</button></li>
+            <li><button type="button" class="ghost">Italic</button></li>
+            <li><button type="button" class="ghost">Underline</button></li>
+            <li><button type="button" class="ghost">Link</button></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Menu toolbar">
+&lt;menu class="toolbar"&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Bold&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Italic&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Underline&lt;/button&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.context</h3>
+        <p>Dropdown-style context menu with separators.</p>
+        <div class="example">
+          <menu class="context">
+            <li><button type="button">Cut</button></li>
+            <li><button type="button">Copy</button></li>
+            <li><button type="button">Paste</button></li>
+            <li role="separator"></li>
+            <li><button type="button">Select All</button></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Context menu with separator">
+&lt;menu class="context"&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Cut&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Copy&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Paste&lt;/button&gt;&lt;/li&gt;
+  &lt;li role="separator"&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Select All&lt;/button&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.context with Links</h3>
+        <div class="example">
+          <menu class="context">
+            <li><a href="#">View Profile</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Help</a></li>
+            <li role="separator"></li>
+            <li><a href="#">Sign Out</a></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Context menu with links">
+&lt;menu class="context"&gt;
+  &lt;li&gt;&lt;a href="#"&gt;View Profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Settings&lt;/a&gt;&lt;/li&gt;
+  &lt;li role="separator"&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#"&gt;Sign Out&lt;/a&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.vertical</h3>
+        <p>Vertical menu layout.</p>
+        <div class="example" style="max-inline-size: 200px;">
+          <menu class="vertical">
+            <li><button type="button" class="ghost">Dashboard</button></li>
+            <li><button type="button" class="ghost">Projects</button></li>
+            <li><button type="button" class="ghost">Tasks</button></li>
+            <li><button type="button" class="ghost">Settings</button></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Vertical menu">
+&lt;menu class="vertical"&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Dashboard&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Projects&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Settings&lt;/button&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.icons</h3>
+        <p>Icon-only toolbar.</p>
+        <div class="example">
+          <menu class="toolbar icons">
+            <li>
+              <button type="button" class="ghost" aria-label="Bold">
+                <svg class="s currentcolor" viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="ghost" aria-label="Italic">
+                <svg class="s currentcolor" viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4" stroke="currentColor" stroke-width="2" /><line x1="14" y1="20" x2="5" y2="20" stroke="currentColor" stroke-width="2" /><line x1="15" y1="4" x2="9" y2="20" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="ghost" aria-label="Underline">
+                <svg class="s currentcolor" viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4" fill="none" stroke="currentColor" stroke-width="2" /><line x1="4" y1="20" x2="20" y2="20" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Icon-only toolbar">
+&lt;menu class="toolbar icons"&gt;
+  &lt;li&gt;
+    &lt;button type="button" class="ghost" aria-label="Bold"&gt;
+      &lt;svg&gt;...&lt;/svg&gt;
+    &lt;/button&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;button type="button" class="ghost" aria-label="Italic"&gt;
+      &lt;svg&gt;...&lt;/svg&gt;
+    &lt;/button&gt;
+  &lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.pills</h3>
+        <p>Pill-shaped menu items.</p>
+        <div class="example">
+          <menu class="toolbar pills">
+            <li><button type="button" class="ghost">All</button></li>
+            <li><button type="button">Active</button></li>
+            <li><button type="button" class="ghost">Completed</button></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Pill-shaped menu">
+&lt;menu class="toolbar pills"&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;All&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Active&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button" class="ghost"&gt;Completed&lt;/button&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+
+        <h3>.compact</h3>
+        <p>Reduced spacing for dense interfaces.</p>
+        <div class="example">
+          <menu class="context compact">
+            <li><button type="button">Item 1</button></li>
+            <li><button type="button">Item 2</button></li>
+            <li><button type="button">Item 3</button></li>
+            <li><button type="button">Item 4</button></li>
+          </menu>
+        </div>
+
+        <code-block language="html" show-lines label="Compact menu">
+&lt;menu class="context compact"&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Item 1&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Item 2&lt;/button&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Item 3&lt;/button&gt;&lt;/li&gt;
+&lt;/menu&gt;
+        </code-block>
+      </section>
+
+      <!-- Search Section -->
+      <section>
+        <h2>Search</h2>
+        <p>Semantic search landmark with styling variants.</p>
+
+        <h3>Default</h3>
+        <div class="example" style="max-inline-size: 300px;">
+          <search>
+            <input type="search" placeholder="Search..." />
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Search element">
+&lt;search&gt;
+  &lt;input type="search" placeholder="Search..." /&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>.inline</h3>
+        <p>Search input with button.</p>
+        <div class="example" style="max-inline-size: 400px;">
+          <search class="inline">
+            <input type="search" placeholder="Search..." />
+            <button type="submit">Search</button>
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Inline search with button">
+&lt;search class="inline"&gt;
+  &lt;input type="search" placeholder="Search..." /&gt;
+  &lt;button type="submit"&gt;Search&lt;/button&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>.compact</h3>
+        <p>Smaller search for headers or sidebars.</p>
+        <div class="example" style="max-inline-size: 300px;">
+          <search class="compact">
+            <input type="search" placeholder="Quick search..." />
+            <button type="submit">Find</button>
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Compact search">
+&lt;search class="compact"&gt;
+  &lt;input type="search" placeholder="Quick search..." /&gt;
+  &lt;button type="submit"&gt;Find&lt;/button&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>.rounded</h3>
+        <p>Pill-shaped search input.</p>
+        <div class="example" style="max-inline-size: 400px;">
+          <search class="inline rounded">
+            <input type="search" placeholder="Search..." />
+            <button type="submit">Go</button>
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Rounded search">
+&lt;search class="inline rounded"&gt;
+  &lt;input type="search" placeholder="Search..." /&gt;
+  &lt;button type="submit"&gt;Go&lt;/button&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>.expanded</h3>
+        <p>Full-width search.</p>
+        <div class="example">
+          <search class="expanded">
+            <input type="search" placeholder="Search the entire site..." />
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Expanded full-width search">
+&lt;search class="expanded"&gt;
+  &lt;input type="search" placeholder="Search the entire site..." /&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>.header</h3>
+        <p>Constrained width for header placement.</p>
+        <div class="example">
+          <layout-cluster data-justify="between" data-align="center">
+            <span>Site Logo</span>
+            <search class="header inline">
+              <input type="search" placeholder="Search..." />
+              <button type="submit" class="small">Go</button>
+            </search>
+            <span>Nav Items</span>
+          </layout-cluster>
+        </div>
+
+        <code-block language="html" show-lines label="Header search">
+&lt;search class="header inline"&gt;
+  &lt;input type="search" placeholder="Search..." /&gt;
+  &lt;button type="submit" class="small"&gt;Go&lt;/button&gt;
+&lt;/search&gt;
+        </code-block>
+
+        <h3>With Form</h3>
+        <p>Search can wrap a form for enhanced functionality.</p>
+        <div class="example" style="max-inline-size: 400px;">
+          <search>
+            <form action="/search" method="get" class="inline">
+              <div class="group">
+                <label for="search-query" class="visually-hidden">Search</label>
+                <input type="search" id="search-query" name="q" placeholder="Search products..." />
+              </div>
+              <button type="submit">Search</button>
+            </form>
+          </search>
+        </div>
+
+        <code-block language="html" show-lines label="Search with form">
+&lt;search&gt;
+  &lt;form action="/search" method="get" class="inline"&gt;
+    &lt;label for="search-q" class="visually-hidden"&gt;Search&lt;/label&gt;
+    &lt;input type="search" id="search-q" name="q" placeholder="Search..." /&gt;
+    &lt;button type="submit"&gt;Search&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/search&gt;
+        </code-block>
+      </section>
+
+      <!-- Variants Summary -->
+      <section>
+        <h2>Variants Summary</h2>
+
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Class/Attribute</th>
+              <th>Applies to</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code> attribute</td>
+              <td><code>details</code></td>
+              <td>Exclusive accordion (one open at a time)</td>
+            </tr>
+            <tr>
+              <td><code>open</code> attribute</td>
+              <td><code>details</code></td>
+              <td>Initially expanded state</td>
+            </tr>
+            <tr>
+              <td><code>.toolbar</code></td>
+              <td><code>menu</code></td>
+              <td>Horizontal toolbar style</td>
+            </tr>
+            <tr>
+              <td><code>.context</code></td>
+              <td><code>menu</code></td>
+              <td>Dropdown/context menu style</td>
+            </tr>
+            <tr>
+              <td><code>.vertical</code></td>
+              <td><code>menu</code></td>
+              <td>Vertical menu layout</td>
+            </tr>
+            <tr>
+              <td><code>.icons</code></td>
+              <td><code>menu</code></td>
+              <td>Icon-only buttons</td>
+            </tr>
+            <tr>
+              <td><code>.pills</code></td>
+              <td><code>menu</code></td>
+              <td>Pill-shaped items</td>
+            </tr>
+            <tr>
+              <td><code>.compact</code></td>
+              <td><code>menu</code>, <code>search</code></td>
+              <td>Reduced spacing</td>
+            </tr>
+            <tr>
+              <td><code>.inline</code></td>
+              <td><code>search</code></td>
+              <td>Input with button</td>
+            </tr>
+            <tr>
+              <td><code>.rounded</code></td>
+              <td><code>search</code></td>
+              <td>Pill-shaped input</td>
+            </tr>
+            <tr>
+              <td><code>.expanded</code></td>
+              <td><code>search</code></td>
+              <td>Full-width search</td>
+            </tr>
+            <tr>
+              <td><code>.header</code></td>
+              <td><code>search</code></td>
+              <td>Constrained width for headers</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+
+    <footer>
+      <p>Vanilla Breeze - A layered HTML component system</p>
+    </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/invokers-polyfill"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>
