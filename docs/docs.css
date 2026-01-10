@@ -1,10 +1,21 @@
 /* Shared documentation site styles */
 
 /* Page layout using data-page attribute */
+[data-page="docs"] {
+  overflow-x: hidden;
+}
+
 [data-page="docs"] > body {
   min-block-size: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  overflow-x: hidden;
+}
+
+/* Ensure grid children can shrink and don't overflow */
+[data-page="docs"] > body > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 [data-page="docs"] > body > header {
@@ -15,6 +26,7 @@
   justify-content: space-between;
   gap: var(--size-m);
   flex-wrap: wrap;
+  overflow-x: hidden;
 }
 
 [data-page="docs"] > body > header .logo {
@@ -38,9 +50,11 @@
 
 [data-page="docs"] > body > main {
   padding: var(--size-xl) var(--size-l);
-  max-inline-size: var(--content-wide);
+  max-inline-size: min(var(--content-wide), 100%);
   margin-inline: auto;
   inline-size: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 [data-page="docs"] > body > main > h1 {
@@ -135,6 +149,12 @@
   font-size: var(--font-size-sm);
 }
 
+/* Native pre/code elements - ensure they don't overflow on mobile */
+[data-page="docs"] pre {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
 /* Property tables */
 .props-table {
   inline-size: 100%;
@@ -224,6 +244,8 @@ browser-window + code-block {
 .mobile-menu {
   position: fixed;
   inset-block-start: 0;
+  inset-block-end: auto;
+  inset-inline-start: auto;
   inset-inline-end: 0;
   margin: 0;
   padding: var(--size-l);
