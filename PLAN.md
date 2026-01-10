@@ -1,6 +1,6 @@
 # Vanilla Breeze Strategic Plan
 
-> Last updated: 2026-01-08
+> Last updated: 2026-01-09
 
 ## Overview
 
@@ -16,7 +16,7 @@ Vanilla Breeze is a **platform-first component system** built on semantic HTML, 
 |-------|-------------|--------|
 | 1-3 | Core token system (spacing, typography, colors, borders, shadows, motion) | Complete |
 | 4 | Native element coverage (~36 HTML elements with variants) | Complete |
-| 5 | Extended layout components (layout-cover, layout-switcher, layout-imposter, media-frame, layout-reel) | Complete |
+| 5 | Extended layout components (layout-cover, layout-switcher, layout-imposter, layout-reel) + utility attributes ([data-loading], [data-media]) | Complete |
 | 6 | Interactive web components (tabs-wc, accordion-wc, dialog-wc, tooltip-wc, toast-wc, dropdown-wc, footnotes-wc) | Complete |
 | 7 | Token alignment with Open Props (numeric aliases) | Complete |
 
@@ -30,15 +30,17 @@ Vanilla Breeze is a **platform-first component system** built on semantic HTML, 
 |----------|-------|-------------------|---------|
 | Design Tokens | 7 files | `--size-*`, `--color-*`, `--font-*` | `--size-m`, `--color-text` |
 | Native Elements | ~36 | Short classes + element scoping | `button.secondary` |
-| Custom Elements | 12 | `layout-*` for layout, `media-*` for media | `<layout-stack>` |
-| Web Components | 8 | `*-wc` suffix for JS-enhanced | `<tabs-wc>` |
+| Custom Elements | 14 | `layout-*` for layout primitives | `<layout-stack>` |
+| Web Components | 7 | `*-wc` suffix for JS-enhanced | `<tabs-wc>` |
+| Utility Attributes | 2 | `[data-*]` on any element | `[data-loading]`, `[data-media]` |
 
 ### Design Principles
 
 1. **HTML-first**: Semantic markup works without CSS/JS
 2. **CSS-second**: Styling via layers, no build step required
 3. **JS-third**: Enhancement only, never required for core functionality
-4. **Zero dependencies**: Works in any environment
+4. **Less is more**: Prefer native elements + data-attributes over custom elements
+5. **Zero dependencies**: Works in any environment
 
 ---
 

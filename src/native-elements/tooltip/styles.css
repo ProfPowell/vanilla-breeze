@@ -1,0 +1,165 @@
+/* tooltip: Native tooltip using Popover API + CSS Anchor Positioning */
+
+/*
+ * Usage:
+ * <button aria-describedby="tip1">Hover me</button>
+ * <div id="tip1" popover="hint" role="tooltip">Tooltip content</div>
+ *
+ * For click-triggered (no JS needed):
+ * <button popovertarget="tip2">Click me</button>
+ * <div id="tip2" popover="auto" role="tooltip">Click tooltip</div>
+ */
+
+[role="tooltip"][popover] {
+  /* Reset popover defaults */
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+
+  /* Tooltip styling */
+  background: var(--color-gray-900);
+  color: var(--color-gray-50);
+  padding: var(--size-xs) var(--size-s);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  border-radius: var(--radius-s);
+  max-inline-size: 20rem;
+  white-space: normal;
+  word-wrap: break-word;
+
+  /* Animation - exit state */
+  opacity: 0;
+  transform: translateY(4px);
+
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    display var(--duration-fast) allow-discrete,
+    overlay var(--duration-fast) allow-discrete;
+}
+
+[role="tooltip"][popover]:popover-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Entry animation starting point */
+@starting-style {
+  [role="tooltip"][popover]:popover-open {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* --- Anchor Positioning (when supported) --- */
+
+@supports (anchor-name: --x) {
+  /* Trigger establishes anchor */
+  [aria-describedby]:has(+ [role="tooltip"][popover]),
+  [popovertarget]:has(+ [role="tooltip"][popover]) {
+    anchor-name: --tooltip-trigger;
+  }
+
+  /* Tooltip positions relative to anchor */
+  [role="tooltip"][popover] {
+    position: fixed;
+    position-anchor: --tooltip-trigger;
+
+    /* Default: above trigger, centered */
+    inset-block-end: anchor(top);
+    justify-self: anchor-center;
+    margin-block-end: var(--size-xs);
+
+    /* Auto-flip when viewport constrained */
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+
+  /* Position variants */
+  [role="tooltip"][popover][data-position="bottom"] {
+    inset-block-end: auto;
+    inset-block-start: anchor(bottom);
+    margin-block-end: 0;
+    margin-block-start: var(--size-xs);
+  }
+
+  [role="tooltip"][popover][data-position="left"] {
+    inset-block-end: auto;
+    inset-block-start: anchor(center);
+    inset-inline-end: anchor(left);
+    justify-self: auto;
+    margin-block-end: 0;
+    margin-inline-end: var(--size-xs);
+  }
+
+  [role="tooltip"][popover][data-position="right"] {
+    inset-block-end: auto;
+    inset-block-start: anchor(center);
+    inset-inline-start: anchor(right);
+    justify-self: auto;
+    margin-block-end: 0;
+    margin-inline-start: var(--size-xs);
+  }
+}
+
+/* --- Fallback Positioning (JS sets these custom properties) --- */
+
+@supports not (anchor-name: --x) {
+  [role="tooltip"][popover] {
+    position: fixed;
+    top: var(--fallback-top, 50%);
+    left: var(--fallback-left, 50%);
+  }
+}
+
+/* --- Arrow (optional) --- */
+
+[role="tooltip"][popover] > .tooltip-arrow {
+  position: absolute;
+  inline-size: 8px;
+  block-size: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+/* Arrow positions */
+[role="tooltip"][popover]:not([data-position]),
+[role="tooltip"][popover][data-position="top"] {
+  & > .tooltip-arrow {
+    inset-block-end: -4px;
+    inset-inline-start: calc(50% - 4px);
+  }
+}
+
+[role="tooltip"][popover][data-position="bottom"] > .tooltip-arrow {
+  inset-block-start: -4px;
+  inset-inline-start: calc(50% - 4px);
+}
+
+[role="tooltip"][popover][data-position="left"] > .tooltip-arrow {
+  inset-inline-end: -4px;
+  inset-block-start: calc(50% - 4px);
+}
+
+[role="tooltip"][popover][data-position="right"] > .tooltip-arrow {
+  inset-inline-start: -4px;
+  inset-block-start: calc(50% - 4px);
+}
+
+/* --- Dark Mode --- */
+
+@media (prefers-color-scheme: dark) {
+  [role="tooltip"][popover] {
+    background: var(--color-gray-100);
+    color: var(--color-gray-900);
+  }
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  [role="tooltip"][popover] {
+    transition: none;
+  }
+}

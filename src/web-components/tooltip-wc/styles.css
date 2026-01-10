@@ -1,87 +1,34 @@
-/* tooltip-wc: Enhanced tooltip with positioning and arrow */
+/* tooltip-wc: Web component wrapper for tooltips */
 
 tooltip-wc {
   display: inline-block;
   position: relative;
 }
 
-/* Tooltip element */
-tooltip-wc > .tooltip {
-  position: fixed;
-  top: var(--tooltip-top, 0);
-  left: var(--tooltip-left, 0);
-  z-index: 1000;
-  padding: var(--size-xs) var(--size-s);
-  background: var(--color-gray-900);
-  color: var(--color-gray-50);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
-  border-radius: var(--radius-s);
-  max-inline-size: 20rem;
-  white-space: normal;
-  word-wrap: break-word;
-  pointer-events: none;
+/*
+ * The tooltip-wc creates a .tooltip element with popover="hint".
+ * Core tooltip styling comes from native-elements/tooltip/styles.css
+ * via the [role="tooltip"][popover] selector.
+ *
+ * This file only handles tooltip-wc specific adjustments.
+ */
 
-  /* Hidden by default */
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity var(--duration-fast) var(--ease-default),
-    visibility var(--duration-fast) var(--ease-default);
-}
-
-/* Visible state */
-tooltip-wc > .tooltip[data-state="visible"] {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Tooltip arrow */
-tooltip-wc > .tooltip > .tooltip-arrow {
-  position: absolute;
-  inline-size: 8px;
-  block-size: 8px;
-  background: var(--color-gray-900);
-  transform: rotate(45deg);
-}
-
-/* Arrow positions */
-tooltip-wc > .tooltip[data-position="top"] > .tooltip-arrow {
-  inset-block-end: -4px;
-  inset-inline-start: calc(50% - 4px);
-}
-
-tooltip-wc > .tooltip[data-position="bottom"] > .tooltip-arrow {
-  inset-block-start: -4px;
-  inset-inline-start: calc(50% - 4px);
-}
-
-tooltip-wc > .tooltip[data-position="left"] > .tooltip-arrow {
-  inset-inline-end: -4px;
-  inset-block-start: calc(50% - 4px);
-}
-
-tooltip-wc > .tooltip[data-position="right"] > .tooltip-arrow {
-  inset-inline-start: -4px;
-  inset-block-start: calc(50% - 4px);
-}
-
-/* --- Dark theme compatibility --- */
-@media (prefers-color-scheme: dark) {
-  tooltip-wc > .tooltip {
-    background: var(--color-gray-100);
-    color: var(--color-gray-900);
+/* Anchor positioning for tooltip-wc pattern */
+@supports (anchor-name: --x) {
+  tooltip-wc {
+    anchor-name: --tooltip-wc-trigger;
   }
 
-  tooltip-wc > .tooltip > .tooltip-arrow {
-    background: var(--color-gray-100);
+  tooltip-wc > .tooltip[popover] {
+    position-anchor: --tooltip-wc-trigger;
   }
 }
 
-/* --- Reduced Motion --- */
-
-@media (prefers-reduced-motion: reduce) {
-  tooltip-wc > .tooltip {
-    transition: none;
+/* Fallback positioning when anchor not supported */
+@supports not (anchor-name: --x) {
+  tooltip-wc > .tooltip[popover] {
+    position: fixed;
+    top: var(--fallback-top, 0);
+    left: var(--fallback-left, 0);
   }
 }
