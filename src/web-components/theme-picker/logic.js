@@ -234,16 +234,24 @@ class ThemePicker extends HTMLElement {
 
     const triggerRect = this.#trigger.getBoundingClientRect();
     const panelRect = this.#panel.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const gap = 4; // Small gap between trigger and panel
 
-    // Vertical position - flip if not enough space below
+    // Use visual viewport for accurate dimensions (accounts for on-screen keyboards, etc.)
+    const viewport = window.visualViewport || { width: window.innerWidth, height: window.innerHeight };
+    const viewportHeight = viewport.height;
+    const viewportWidth = viewport.width;
+
+    // Tolerance values for better spacing
+    const gap = 8; // Gap between trigger and panel
+    const edgeMargin = 16; // Minimum margin from viewport edges
+
+    // Calculate available space (accounting for edge margin)
+    const spaceBelow = viewportHeight - triggerRect.bottom - edgeMargin;
+    const spaceAbove = triggerRect.top - edgeMargin;
+
+    // Vertical position - flip if not enough space below and more space above
     let top = triggerRect.height + gap;
-    const spaceBelow = viewportHeight - triggerRect.bottom;
-    const spaceAbove = triggerRect.top;
 
-    if (spaceBelow < panelRect.height + gap && spaceAbove > spaceBelow) {
+    if (spaceBelow < panelRect.height && spaceAbove > spaceBelow) {
       // Flip to above
       top = -panelRect.height - gap;
       this.#panel.dataset.position = 'top';
@@ -251,18 +259,19 @@ class ThemePicker extends HTMLElement {
       delete this.#panel.dataset.position;
     }
 
-    // Horizontal position - shift if overflows right edge
+    // Horizontal position - shift to stay within viewport with margin
     let left = 0;
-    const panelRightEdge = triggerRect.left + panelRect.width;
+    const panelRightEdge = triggerRect.left + panelRect.width + edgeMargin;
+    const panelLeftEdge = triggerRect.left + left;
 
     if (panelRightEdge > viewportWidth) {
-      // Shift left to stay in viewport
-      left = Math.min(0, viewportWidth - panelRightEdge - gap);
+      // Shift left to stay in viewport with margin
+      left = viewportWidth - panelRightEdge;
     }
 
     // Also check if it overflows left edge
-    if (triggerRect.left + left < 0) {
-      left = -triggerRect.left + gap;
+    if (panelLeftEdge + left < edgeMargin) {
+      left = edgeMargin - triggerRect.left;
     }
 
     this.#panel.style.setProperty('--theme-picker-top', `${top}px`);
