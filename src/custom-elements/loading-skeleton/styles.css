@@ -1,12 +1,29 @@
-layout-skeleton {
+loading-skeleton {
   display: block;
-  background: var(--color-gray-200);
+  background: var(--_bg, var(--color-gray-200));
   border-radius: var(--radius-s);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 
   /* Default dimensions */
   height: var(--_height, 1em);
   width: var(--_width, 100%);
+
+  /* Shimmer overlay */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(100% 0 0 / 0.4) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-shimmer-sweep 1.5s ease-in-out infinite;
+  }
 
   /* Text variant (default) */
   &[data-variant="text"] {
@@ -47,20 +64,62 @@ layout-skeleton {
   &[data-width="50"] { --_width: 50%; }
   &[data-width="75"] { --_width: 75%; }
   &[data-width="100"] { --_width: 100%; }
+
+  /* Border style variants (outline only, no fill) */
+  &[data-border="solid"] {
+    --_bg: transparent;
+    border: var(--border-width-thin) solid var(--color-gray-300);
+
+    &::after {
+      display: none;
+    }
+  }
+
+  &[data-border="dashed"] {
+    --_bg: transparent;
+    border: var(--border-width-thin) dashed var(--color-gray-300);
+
+    &::after {
+      display: none;
+    }
+  }
+
+  &[data-border="dotted"] {
+    --_bg: transparent;
+    border: var(--border-width-thin) dotted var(--color-gray-300);
+
+    &::after {
+      display: none;
+    }
+  }
 }
 
-@keyframes skeleton-pulse {
+@keyframes skeleton-shimmer {
   0%, 100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.7;
+  }
+}
+
+@keyframes skeleton-shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  layout-skeleton {
+  loading-skeleton {
     animation: none;
+
+    &::after {
+      animation: none;
+      display: none;
+    }
   }
 }
