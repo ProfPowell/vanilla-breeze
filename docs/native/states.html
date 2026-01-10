@@ -69,6 +69,11 @@
               <td><code>minimal</code></td>
               <td>Subtle pulse effect without sweep animation</td>
             </tr>
+            <tr>
+              <td><code>data-loading="skeleton"</code></td>
+              <td><code>skeleton</code></td>
+              <td>Shows content shapes - each child becomes a gray placeholder</td>
+            </tr>
           </tbody>
         </table>
       </section>
@@ -171,6 +176,40 @@
         <code-block language="html" show-lines label="Minimal animation">&lt;layout-card data-loading="minimal"&gt;
   &lt;!-- Subtle pulse effect --&gt;
 &lt;/layout-card&gt;</code-block>
+
+        <h3>Skeleton (Content Shapes)</h3>
+        <p>Use <code>data-loading="skeleton"</code> to show the shape of content. Each child element becomes a gray placeholder, with headings darker than body text to preserve visual hierarchy.</p>
+
+        <div class="example">
+          <layout-grid data-min="250px" data-gap="m">
+            <layout-card data-loading="skeleton">
+              <h3>Card Title Here</h3>
+              <p>This paragraph text becomes a gray bar showing the approximate shape of the content.</p>
+              <p>Second paragraph is also visible as a shape.</p>
+            </layout-card>
+            <layout-card>
+              <h3>Card Title Here</h3>
+              <p>This paragraph text becomes a gray bar showing the approximate shape of the content.</p>
+              <p>Second paragraph is also visible as a shape.</p>
+            </layout-card>
+          </layout-grid>
+        </div>
+
+        <code-block language="html" show-lines label="Skeleton variant">&lt;layout-card data-loading="skeleton"&gt;
+  &lt;h3&gt;Card Title&lt;/h3&gt;
+  &lt;p&gt;Content shapes are visible...&lt;/p&gt;
+&lt;/layout-card&gt;</code-block>
+
+        <h4>User Profile Skeleton</h4>
+        <div class="example">
+          <layout-cluster data-gap="m" data-align="center" data-loading="skeleton" style="max-width: 20rem;">
+            <user-avatar data-size="lg">JD</user-avatar>
+            <layout-stack data-gap="xs" style="flex: 1;">
+              <h4>Jane Doe</h4>
+              <p>Product Designer</p>
+            </layout-stack>
+          </layout-cluster>
+        </div>
       </section>
 
       <section>
@@ -203,15 +242,17 @@ delete card.dataset.loading;</code-block>
       </section>
 
       <section>
-        <h2>Comparison to Placeholder Elements</h2>
-        <p>The <code>data-loading</code> approach differs from placeholder skeleton elements:</p>
+        <h2>Choosing a Variant</h2>
+        <p>Each variant serves a different purpose:</p>
 
         <layout-text>
           <ul>
-            <li><strong>data-loading</strong> - State modifier for existing content. Content stays in DOM, shown as loading.</li>
-            <li><strong>Placeholder elements</strong> - Empty shapes that mimic content structure before data loads.</li>
+            <li><strong>Default</strong> - Overlay shimmer. Best when refreshing existing data.</li>
+            <li><strong>hide</strong> - Hides content. Use when content shouldn't be visible during load.</li>
+            <li><strong>minimal</strong> - Subtle pulse. Less distracting for quick operations.</li>
+            <li><strong>skeleton</strong> - Shows content shapes. Best for initial page load to indicate structure.</li>
           </ul>
-          <p>Use <code>data-loading</code> when content structure exists but is refreshing or processing. The content-in-place approach eliminates layout shift when loading completes.</p>
+          <p>All variants keep content in the DOM, eliminating layout shift when loading completes.</p>
         </layout-text>
       </section>
     </main>

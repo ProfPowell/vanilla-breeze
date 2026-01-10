@@ -5,6 +5,7 @@
   position: relative;
   pointer-events: none;
   cursor: wait;
+  overflow: hidden;
 }
 
 /* Shimmer overlay */
@@ -48,6 +49,48 @@
 /* Variant: minimal (no sweep, just pulse) */
 [data-loading="minimal"]::after {
   display: none;
+}
+
+/* --- Skeleton variant: shows content shapes --- */
+/* Shows children as gray placeholder shapes instead of overlay */
+
+[data-loading="skeleton"] {
+  overflow: visible;
+}
+
+[data-loading="skeleton"]::before,
+[data-loading="skeleton"]::after {
+  display: none;
+}
+
+[data-loading="skeleton"] > * {
+  opacity: 1;
+  color: transparent !important;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-s);
+  animation: loading-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Headings get slightly darker to show hierarchy */
+[data-loading="skeleton"] > :is(h1, h2, h3, h4, h5, h6) {
+  background: var(--color-gray-300);
+}
+
+/* Images and media get aspect-ratio preserved */
+[data-loading="skeleton"] > :is(img, picture, video, canvas, svg) {
+  background: var(--color-gray-200);
+  object-fit: none;
+}
+
+/* Nested content also becomes skeleton */
+[data-loading="skeleton"] * {
+  color: transparent !important;
+  border-color: transparent !important;
+}
+
+/* Interactive elements */
+[data-loading="skeleton"] > :is(button, a, input) {
+  background: var(--color-gray-250, var(--color-gray-200));
 }
 
 @keyframes loading-shimmer {
