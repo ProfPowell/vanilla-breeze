@@ -588,6 +588,189 @@ console.log(greeting);</code-block>
         </code-block>
       </section>
 
+      <!-- Media Container Section -->
+      <section>
+        <h2>data-media (Container)</h2>
+        <p>Apply <code>data-media</code> to any container to create an aspect ratio frame for media. Child media elements fill the container with configurable fit and position.</p>
+
+        <h3>Attributes</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Values</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-media</code></td>
+              <td>(presence)</td>
+              <td>Enables media container mode</td>
+            </tr>
+            <tr>
+              <td><code>data-ratio</code></td>
+              <td><code>1:1</code>, <code>4:3</code>, <code>3:2</code>, <code>16:9</code>, <code>21:9</code>, <code>2:3</code>, <code>3:4</code>, <code>9:16</code></td>
+              <td>Aspect ratio (default: 16:9)</td>
+            </tr>
+            <tr>
+              <td><code>data-fit</code></td>
+              <td><code>cover</code>, <code>contain</code>, <code>fill</code>, <code>none</code></td>
+              <td>How media fills container (default: cover)</td>
+            </tr>
+            <tr>
+              <td><code>data-position</code></td>
+              <td><code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>center</code></td>
+              <td>Focal point when cropping</td>
+            </tr>
+            <tr>
+              <td><code>data-radius</code></td>
+              <td><code>s</code>, <code>m</code>, <code>l</code>, <code>full</code></td>
+              <td>Border radius</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Basic Usage</h3>
+        <p>Add <code>data-media</code> to a container like <code>&lt;figure&gt;</code> or <code>&lt;div&gt;</code>.</p>
+        <div class="example">
+          <layout-grid data-min="200px" data-gap="m">
+            <figure data-media data-ratio="16:9">
+              <img src="https://picsum.photos/400/300" alt="16:9 aspect ratio" loading="lazy" />
+            </figure>
+            <figure data-media data-ratio="1:1">
+              <img src="https://picsum.photos/400/301" alt="Square aspect ratio" loading="lazy" />
+            </figure>
+            <figure data-media data-ratio="4:3">
+              <img src="https://picsum.photos/400/302" alt="4:3 aspect ratio" loading="lazy" />
+            </figure>
+          </layout-grid>
+        </div>
+
+        <code-block language="html" show-lines label="Basic data-media usage">&lt;figure data-media data-ratio="16:9"&gt;
+  &lt;img src="image.jpg" alt="Description" /&gt;
+&lt;/figure&gt;
+
+&lt;figure data-media data-ratio="1:1"&gt;
+  &lt;img src="image.jpg" alt="Square" /&gt;
+&lt;/figure&gt;</code-block>
+
+        <h3>Object Fit</h3>
+        <p>Control how media fills the container with <code>data-fit</code>.</p>
+        <div class="example">
+          <layout-grid data-min="200px" data-gap="m">
+            <layout-stack data-gap="xs">
+              <strong>cover (default)</strong>
+              <figure data-media data-ratio="1:1" data-fit="cover">
+                <img src="https://picsum.photos/300/400" alt="Cover fit" loading="lazy" />
+              </figure>
+            </layout-stack>
+            <layout-stack data-gap="xs">
+              <strong>contain</strong>
+              <figure data-media data-ratio="1:1" data-fit="contain" style="background: var(--color-surface-raised);">
+                <img src="https://picsum.photos/300/401" alt="Contain fit" loading="lazy" />
+              </figure>
+            </layout-stack>
+          </layout-grid>
+        </div>
+
+        <code-block language="html" show-lines label="Object fit variants">&lt;figure data-media data-ratio="1:1" data-fit="cover"&gt;
+  &lt;img src="portrait.jpg" alt="..." /&gt;
+&lt;/figure&gt;
+
+&lt;figure data-media data-ratio="1:1" data-fit="contain"&gt;
+  &lt;img src="portrait.jpg" alt="..." /&gt;
+&lt;/figure&gt;</code-block>
+
+        <h3>Object Position (Focal Point)</h3>
+        <p>Control where the image crops from with <code>data-position</code>. Useful for portraits cropped to square.</p>
+        <div class="example">
+          <layout-grid data-min="150px" data-gap="m">
+            <layout-stack data-gap="xs">
+              <strong>top</strong>
+              <figure data-media data-ratio="1:1" data-position="top">
+                <img src="https://picsum.photos/200/300" alt="Position top" loading="lazy" />
+              </figure>
+            </layout-stack>
+            <layout-stack data-gap="xs">
+              <strong>center</strong>
+              <figure data-media data-ratio="1:1" data-position="center">
+                <img src="https://picsum.photos/200/301" alt="Position center" loading="lazy" />
+              </figure>
+            </layout-stack>
+            <layout-stack data-gap="xs">
+              <strong>bottom</strong>
+              <figure data-media data-ratio="1:1" data-position="bottom">
+                <img src="https://picsum.photos/200/302" alt="Position bottom" loading="lazy" />
+              </figure>
+            </layout-stack>
+          </layout-grid>
+        </div>
+
+        <code-block language="html" show-lines label="Object position for focal point">&lt;!-- Keep faces visible when cropping portraits --&gt;
+&lt;figure data-media data-ratio="1:1" data-position="top"&gt;
+  &lt;img src="portrait.jpg" alt="Person" /&gt;
+&lt;/figure&gt;</code-block>
+
+        <h3>Border Radius</h3>
+        <div class="example">
+          <layout-grid data-min="150px" data-gap="m">
+            <figure data-media data-ratio="1:1" data-radius="s">
+              <img src="https://picsum.photos/200/200" alt="Small radius" loading="lazy" />
+            </figure>
+            <figure data-media data-ratio="1:1" data-radius="m">
+              <img src="https://picsum.photos/200/201" alt="Medium radius" loading="lazy" />
+            </figure>
+            <figure data-media data-ratio="1:1" data-radius="l">
+              <img src="https://picsum.photos/200/202" alt="Large radius" loading="lazy" />
+            </figure>
+            <figure data-media data-ratio="1:1" data-radius="full">
+              <img src="https://picsum.photos/200/203" alt="Full radius (circle)" loading="lazy" />
+            </figure>
+          </layout-grid>
+        </div>
+
+        <code-block language="html" show-lines label="Border radius variants">&lt;figure data-media data-ratio="1:1" data-radius="m"&gt;
+  &lt;img src="avatar.jpg" alt="..." /&gt;
+&lt;/figure&gt;
+
+&lt;figure data-media data-ratio="1:1" data-radius="full"&gt;
+  &lt;img src="avatar.jpg" alt="Circular avatar" /&gt;
+&lt;/figure&gt;</code-block>
+
+        <h3>Video Embeds</h3>
+        <p>Works with video elements and iframes.</p>
+        <div class="example" style="max-inline-size: 500px;">
+          <div data-media data-ratio="16:9">
+            <iframe src="about:blank" title="Video embed placeholder"></iframe>
+          </div>
+        </div>
+
+        <code-block language="html" show-lines label="Video embed with data-media">&lt;div data-media data-ratio="16:9"&gt;
+  &lt;iframe src="https://youtube.com/embed/..." title="Video"&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;div data-media data-ratio="21:9"&gt;
+  &lt;video src="movie.mp4" controls&gt;&lt;/video&gt;
+&lt;/div&gt;</code-block>
+
+        <h3>With Captions</h3>
+        <p>Use <code>&lt;figure&gt;</code> to add captions below the media container.</p>
+        <div class="example" style="max-inline-size: 400px;">
+          <figure data-media data-ratio="16:9" data-radius="m">
+            <img src="https://picsum.photos/400/225" alt="Landscape photo" loading="lazy" />
+          </figure>
+          <figcaption>A beautiful landscape captured at golden hour.</figcaption>
+        </div>
+
+        <code-block language="html" show-lines label="Media container with caption">&lt;figure&gt;
+  &lt;div data-media data-ratio="16:9" data-radius="m"&gt;
+    &lt;img src="photo.jpg" alt="..." /&gt;
+  &lt;/div&gt;
+  &lt;figcaption&gt;Caption text here.&lt;/figcaption&gt;
+&lt;/figure&gt;</code-block>
+      </section>
+
       <!-- Variants Summary -->
       <section>
         <h2>Variants Summary</h2>
@@ -654,7 +837,12 @@ console.log(greeting);</code-block>
             <tr>
               <td><code>.embed-responsive</code></td>
               <td><code>div</code> wrapper</td>
-              <td>Responsive iframe container</td>
+              <td>Responsive iframe container (deprecated, use <code>data-media</code>)</td>
+            </tr>
+            <tr>
+              <td><code>data-media</code></td>
+              <td><code>figure</code>, <code>div</code></td>
+              <td>Aspect ratio container for any media</td>
             </tr>
           </tbody>
         </table>

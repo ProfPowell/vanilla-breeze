@@ -142,23 +142,6 @@ module.exports = {
     permittedContent: ["@flow"]
   },
 
-  "media-frame": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-ratio": {},
-      "data-fit": {
-        enum: ["cover", "contain", "fill", "none"]
-      },
-      "data-position": {
-        enum: ["top", "bottom", "left", "right", "center"]
-      },
-      "data-radius": {
-        enum: ["s", "m", "l", "full"]
-      }
-    }
-  },
-
   "layout-reel": {
     flow: true,
     permittedContent: ["@flow"],

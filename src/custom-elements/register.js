@@ -1,6 +1,5 @@
 const inertElements = [
   'layout-text',
-  'media-frame',
   'layout-reel'
 ];
 
