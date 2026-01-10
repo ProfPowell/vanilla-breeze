@@ -52,52 +52,60 @@
         <h2>Overview</h2>
         <p>The <code>&lt;theme-picker&gt;</code> component provides a UI for users to select their preferred color mode and brand theme. It integrates with <code>ThemeManager</code> for persistence and system preference detection.</p>
 
-        <h3>Live Demo</h3>
-        <p>Try it out - changes persist across page reloads:</p>
+        <browser-window
+          src="/docs/demos/theme-picker-popover.html"
+          url="https://vanilla-breeze.dev/theme-picker"
+          title="Theme Picker"
+          shadow>
+        </browser-window>
 
-        <layout-stack data-gap="l">
-          <layout-card data-variant="outlined" data-padding="l">
-            <layout-cluster data-justify="space-between" data-align="center">
-              <div>
-                <strong>Popover Variant</strong>
-                <p style="margin: 0; color: var(--color-text-muted);">Click to open theme picker</p>
-              </div>
-              <theme-picker>
-                <button data-trigger class="secondary">
-                  <icon-wc name="palette" size="sm"></icon-wc>
-                  Theme
-                </button>
-              </theme-picker>
-            </layout-cluster>
-          </layout-card>
-
-          <layout-card data-variant="outlined" data-padding="l">
-            <strong>Inline Variant</strong>
-            <p style="color: var(--color-text-muted);">Always visible, ideal for settings pages</p>
-            <theme-picker data-variant="inline"></theme-picker>
-          </layout-card>
-        </layout-stack>
+        <code-block language="html" show-lines label="Basic theme picker with trigger button">&lt;theme-picker&gt;
+  &lt;button data-trigger&gt;
+    &lt;icon-wc name="palette"&gt;&lt;/icon-wc&gt;
+    Theme
+  &lt;/button&gt;
+&lt;/theme-picker&gt;</code-block>
       </section>
 
       <section>
-        <h2>Usage</h2>
+        <h2>Inline Variant</h2>
+        <p>For settings pages, use the inline variant which is always visible:</p>
 
-        <h3>Popover (default)</h3>
-        <p>Displays a trigger button that opens a popover panel:</p>
-        <code-block language="html" show-lines>&lt;theme-picker&gt;
+        <browser-window
+          src="/docs/demos/theme-picker-inline.html"
+          url="https://vanilla-breeze.dev/settings"
+          title="Settings Page"
+          shadow>
+        </browser-window>
+
+        <code-block language="html" show-lines label="Inline variant for settings pages">&lt;theme-picker data-variant="inline"&gt;&lt;/theme-picker&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Trigger Variants</h2>
+
+        <h3>Text Button</h3>
+        <p>Simple text trigger:</p>
+        <code-block language="html" show-lines label="Text-only trigger">&lt;theme-picker&gt;
   &lt;button data-trigger&gt;Theme&lt;/button&gt;
 &lt;/theme-picker&gt;</code-block>
 
-        <h3>With Icon</h3>
-        <code-block language="html" show-lines>&lt;theme-picker&gt;
+        <h3>Icon-Only Button</h3>
+        <p>For compact layouts, use an icon-only trigger with an accessible label:</p>
+        <code-block language="html" show-lines label="Icon-only trigger with aria-label">&lt;theme-picker&gt;
   &lt;button data-trigger aria-label="Theme settings"&gt;
     &lt;icon-wc name="palette"&gt;&lt;/icon-wc&gt;
   &lt;/button&gt;
 &lt;/theme-picker&gt;</code-block>
 
-        <h3>Inline Variant</h3>
-        <p>Always visible, suitable for settings pages:</p>
-        <code-block language="html" show-lines>&lt;theme-picker data-variant="inline"&gt;&lt;/theme-picker&gt;</code-block>
+        <h3>Custom Styling</h3>
+        <p>Apply button variant classes to match your design:</p>
+        <code-block language="html" show-lines label="Ghost button variant">&lt;theme-picker&gt;
+  &lt;button data-trigger class="ghost"&gt;
+    &lt;icon-wc name="palette" size="sm"&gt;&lt;/icon-wc&gt;
+    Theme
+  &lt;/button&gt;
+&lt;/theme-picker&gt;</code-block>
       </section>
 
       <section>
@@ -132,7 +140,7 @@
         <h2>ThemeManager API</h2>
         <p>For programmatic theme control, use the <code>ThemeManager</code> module:</p>
 
-        <code-block language="javascript" show-lines>import { ThemeManager } from './lib/theme-manager.js';
+        <code-block language="javascript" show-lines label="ThemeManager API usage">import { ThemeManager } from './lib/theme-manager.js';
 
 // Initialize (called automatically in main.js)
 ThemeManager.init();
@@ -223,11 +231,11 @@ window.addEventListener('theme-change', (e) => {
         <h2>Creating Custom Themes</h2>
         <p>Create new brand themes by copying the template:</p>
 
-        <code-block language="bash" show-lines># Copy the template
+        <code-block language="bash" show-lines label="Copy the theme template"># Copy the template
 cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</code-block>
 
         <p>Edit the hue values (0-360):</p>
-        <code-block language="css" show-lines>:root[data-theme="coral"],
+        <code-block language="css" show-lines label="Define custom hue values">:root[data-theme="coral"],
 [data-theme="coral"] {
   --hue-primary: 15;    /* coral orange */
   --hue-secondary: 350; /* pink */
@@ -239,7 +247,7 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
 }</code-block>
 
         <p>Register in <code>src/tokens/themes/index.css</code>:</p>
-        <code-block language="css" show-lines>@import "./_brand-coral.css";</code-block>
+        <code-block language="css" show-lines label="Register in themes/index.css">@import "./_brand-coral.css";</code-block>
 
         <h3>Hue Reference</h3>
         <table class="props-table">
@@ -265,7 +273,7 @@ cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</cod
         <h2>Preventing FOUC</h2>
         <p>To prevent a flash of unstyled content, add this inline script to your HTML <code>&lt;head&gt;</code>:</p>
 
-        <code-block language="html" show-lines>&lt;script&gt;
+        <code-block language="html" show-lines label="Inline script for FOUC prevention">&lt;script&gt;
   try {
     const t = JSON.parse(localStorage.getItem('vb-theme') || '{}');
     if (t.mode && t.mode !== 'auto') document.documentElement.dataset.mode = t.mode;
