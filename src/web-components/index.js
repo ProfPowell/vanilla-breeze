@@ -5,3 +5,4 @@ import './toast-wc/logic.js';
 import './tooltip-wc/logic.js';
 import './dropdown-wc/logic.js';
 import './icon-wc/icon-wc.js';
+import './theme-picker-wc/logic.js';

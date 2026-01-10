@@ -1,0 +1,191 @@
+/* theme-picker-wc: Theme selection component */
+
+theme-picker-wc {
+  display: inline-block;
+  position: relative;
+}
+
+/* Inline variant */
+theme-picker-wc[data-variant="inline"] {
+  display: block;
+}
+
+/* --- Panel --- */
+
+.theme-picker-panel {
+  /* Positioning for popover mode */
+  position: absolute;
+  top: calc(100% + var(--size-xs));
+  left: 0;
+  z-index: 100;
+
+  /* Appearance */
+  min-inline-size: 14rem;
+  padding: var(--size-m);
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-m);
+
+  /* Hidden by default in popover mode */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    visibility var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default);
+}
+
+/* Open state */
+theme-picker-wc[data-open] .theme-picker-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Inline variant - always visible, no positioning */
+theme-picker-wc[data-variant="inline"] .theme-picker-panel {
+  position: static;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+/* --- Sections --- */
+
+.theme-picker-section {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.theme-picker-section + .theme-picker-section {
+  margin-block-start: var(--size-m);
+  padding-block-start: var(--size-m);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}
+
+.theme-picker-section > legend {
+  padding: 0;
+  margin-block-end: var(--size-s);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+/* --- Options --- */
+
+.theme-picker-options {
+  display: flex;
+  gap: var(--size-xs);
+}
+
+.theme-picker-options--themes {
+  flex-wrap: wrap;
+}
+
+/* --- Option (radio button wrapper) --- */
+
+.theme-picker-option {
+  display: block;
+  flex: 1;
+  min-inline-size: 0;
+  cursor: pointer;
+}
+
+.theme-picker-option--theme {
+  flex: 0 0 calc(50% - var(--size-xs) / 2);
+}
+
+/* Hide native radio */
+.theme-picker-option input[type="radio"] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Option content (visual) */
+.theme-picker-option-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-2xs);
+  padding: var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    background-color var(--duration-fast) var(--ease-default);
+}
+
+/* Hover state */
+.theme-picker-option:hover .theme-picker-option-content {
+  background: var(--color-surface-alt);
+}
+
+/* Focus state */
+.theme-picker-option input:focus-visible + .theme-picker-option-content {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Selected state */
+.theme-picker-option input:checked + .theme-picker-option-content {
+  border-color: var(--color-primary);
+  background: var(--color-primary-subtle);
+}
+
+/* Icon in option */
+.theme-picker-option-content x-icon {
+  font-size: 1.25em;
+  color: var(--color-text-muted);
+}
+
+.theme-picker-option input:checked + .theme-picker-option-content x-icon {
+  color: var(--color-primary);
+}
+
+/* --- Color Swatch --- */
+
+.theme-picker-swatch {
+  display: block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-round);
+  background: oklch(50% 0.15 var(--swatch-hue));
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.1);
+}
+
+/* Dark mode swatch adjustment */
+:root[data-mode="dark"] .theme-picker-swatch,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) .theme-picker-swatch {
+    background: oklch(60% 0.12 var(--swatch-hue));
+  }
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-picker-panel {
+    transition: none;
+    transform: none;
+  }
+
+  .theme-picker-option-content {
+    transition: none;
+  }
+}

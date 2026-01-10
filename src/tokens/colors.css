@@ -1,5 +1,17 @@
+/**
+ * Color Design Tokens
+ * OKLCH-based hue system with light-dark() for automatic mode switching
+ *
+ * Themes override --hue-* variables to change the brand palette.
+ * Use data-mode="light|dark" to force a specific mode.
+ */
+
 :root {
-  /* Gray scale - Tailwind-style naming (50-900) */
+  /* Enable light-dark() function */
+  color-scheme: light dark;
+
+  /* ==================== GRAY SCALE ==================== */
+  /* Neutral grays (achromatic - zero chroma) */
   --color-gray-50: oklch(98% 0 0);
   --color-gray-100: oklch(96% 0 0);
   --color-gray-200: oklch(90% 0 0);
@@ -10,8 +22,13 @@
   --color-gray-700: oklch(35% 0 0);
   --color-gray-800: oklch(25% 0 0);
   --color-gray-900: oklch(15% 0 0);
+  --color-gray-950: oklch(10% 0 0);
 
-  /* Numeric aliases for Open Props compatibility (0-9, light to dark) */
+  /* Pure values */
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(0% 0 0);
+
+  /* Open Props compatible aliases (0-9, light to dark) */
   --gray-0: var(--color-gray-50);
   --gray-1: var(--color-gray-100);
   --gray-2: var(--color-gray-200);
@@ -23,44 +40,127 @@
   --gray-8: var(--color-gray-800);
   --gray-9: var(--color-gray-900);
 
-  /* Semantic color tokens */
-  --color-text: var(--color-gray-900);
-  --color-text-muted: var(--color-gray-600);
-  --color-surface: white;
-  --color-surface-raised: var(--color-gray-50);
-  --color-border: var(--color-gray-200);
-  --color-interactive: oklch(50% 0.2 260);
-  --color-interactive-hover: oklch(40% 0.2 260);
+  /* ==================== BRAND HUES ==================== */
+  /* Default hues (neutral blue) - themes override these */
+  --hue-primary: 260;
+  --hue-secondary: 200;
+  --hue-accent: 30;
 
-  /* Status colors */
+  /* ==================== BRAND COLORS ==================== */
+  /* Primary with relative color variations */
+  --color-primary: oklch(50% 0.2 var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  /* Secondary */
+  --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+
+  /* Accent */
+  --color-accent: oklch(65% 0.18 var(--hue-accent));
+  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+
+  /* ==================== STATUS COLORS ==================== */
   --color-success: oklch(55% 0.2 145);
-  --color-success-subtle: oklch(95% 0.05 145);
+  --color-success-subtle: light-dark(
+    oklch(95% 0.05 145),
+    oklch(25% 0.08 145)
+  );
+  --color-success-text: light-dark(
+    oklch(35% 0.12 145),
+    oklch(75% 0.15 145)
+  );
+
   --color-warning: oklch(70% 0.18 70);
-  --color-warning-subtle: oklch(95% 0.08 70);
+  --color-warning-subtle: light-dark(
+    oklch(95% 0.08 70),
+    oklch(25% 0.1 70)
+  );
+  --color-warning-text: light-dark(
+    oklch(40% 0.12 70),
+    oklch(80% 0.12 70)
+  );
+
   --color-error: oklch(55% 0.22 25);
-  --color-error-subtle: oklch(95% 0.05 25);
+  --color-error-subtle: light-dark(
+    oklch(95% 0.05 25),
+    oklch(25% 0.08 25)
+  );
+  --color-error-text: light-dark(
+    oklch(40% 0.15 25),
+    oklch(75% 0.18 25)
+  );
+
   --color-info: oklch(55% 0.15 240);
-  --color-info-subtle: oklch(95% 0.05 240);
+  --color-info-subtle: light-dark(
+    oklch(95% 0.05 240),
+    oklch(25% 0.08 240)
+  );
+  --color-info-text: light-dark(
+    oklch(35% 0.12 240),
+    oklch(75% 0.12 240)
+  );
+
+  /* ==================== SEMANTIC COLORS ==================== */
+  /* Surface colors (backgrounds) */
+  --color-background: light-dark(var(--color-white), var(--color-gray-950));
+  --color-surface: light-dark(var(--color-white), var(--color-gray-900));
+  --color-surface-raised: light-dark(var(--color-gray-50), var(--color-gray-800));
+  --color-surface-sunken: light-dark(var(--color-gray-100), var(--color-gray-950));
+
+  /* Text colors */
+  --color-text: light-dark(var(--color-gray-900), var(--color-gray-100));
+  --color-text-muted: light-dark(var(--color-gray-600), var(--color-gray-400));
+  --color-text-subtle: light-dark(var(--color-gray-500), var(--color-gray-500));
+  --color-text-inverted: light-dark(var(--color-white), var(--color-gray-900));
+  --color-text-on-primary: var(--color-white);
+
+  /* Border colors */
+  --color-border: light-dark(var(--color-gray-200), var(--color-gray-700));
+  --color-border-strong: light-dark(var(--color-gray-300), var(--color-gray-600));
+  --color-border-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --color-border-focus: var(--color-primary);
+
+  /* Interactive colors (buttons, links) */
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  /* Overlay colors */
+  --color-overlay-subtle: light-dark(
+    oklch(0% 0 0 / 0.05),
+    oklch(100% 0 0 / 0.05)
+  );
+  --color-overlay-medium: light-dark(
+    oklch(0% 0 0 / 0.15),
+    oklch(100% 0 0 / 0.10)
+  );
+  --color-overlay-strong: light-dark(
+    oklch(0% 0 0 / 0.50),
+    oklch(0% 0 0 / 0.70)
+  );
+
+  /* Focus ring */
+  --color-focus-ring: var(--color-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text: var(--color-gray-100);
-    --color-text-muted: var(--color-gray-400);
-    --color-surface: var(--color-gray-900);
-    --color-surface-raised: var(--color-gray-800);
-    --color-border: var(--color-gray-700);
-    --color-interactive: oklch(70% 0.15 260);
-    --color-interactive-hover: oklch(80% 0.15 260);
+/* ==================== EXPLICIT MODE OVERRIDES ==================== */
+/* Force light mode */
+:root[data-mode="light"] {
+  color-scheme: light;
+}
 
-    /* Status colors - dark mode */
-    --color-success: oklch(70% 0.18 145);
-    --color-success-subtle: oklch(25% 0.08 145);
-    --color-warning: oklch(80% 0.15 70);
-    --color-warning-subtle: oklch(25% 0.1 70);
-    --color-error: oklch(70% 0.2 25);
-    --color-error-subtle: oklch(25% 0.08 25);
-    --color-info: oklch(70% 0.12 240);
-    --color-info-subtle: oklch(25% 0.08 240);
-  }
+/* Force dark mode */
+:root[data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Adjust primary for better dark mode contrast */
+  --color-primary: oklch(65% 0.18 var(--hue-primary));
+
+  /* Darker shadows for dark mode */
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
 }

@@ -1,0 +1,64 @@
+/**
+ * Brand Theme: [THEME_NAME]
+ * [Description of the theme's character]
+ *
+ * Primary: [Color name] (hue [N])
+ * Secondary: [Color name] (hue [N])
+ * Accent: [Color name] (hue [N])
+ *
+ * HOW TO CREATE A NEW THEME:
+ * 1. Copy this file to _brand-[name].css
+ * 2. Replace THEME_SLUG with your theme name (e.g., "coral")
+ * 3. Set the hue values (0-360):
+ *    - 0-30: Red/Orange
+ *    - 30-60: Orange/Yellow
+ *    - 60-120: Yellow/Green
+ *    - 120-180: Green/Cyan
+ *    - 180-240: Cyan/Blue
+ *    - 240-300: Blue/Purple
+ *    - 300-360: Purple/Red
+ * 4. Adjust lightness (l) and chroma (c) values as needed
+ * 5. Add import to themes/index.css
+ * 6. Register in theme-picker-wc (optional)
+ */
+
+:root[data-theme="THEME_SLUG"],
+[data-theme="THEME_SLUG"] {
+  /* Set your hue values (0-360) */
+  --hue-primary: 200;
+  --hue-secondary: 180;
+  --hue-accent: 45;
+
+  /* Recalculate brand colors with new hues */
+  /* Adjust lightness (first number) for visibility */
+  /* Adjust chroma (second number) for saturation */
+  --color-primary: oklch(50% 0.15 var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  --color-secondary: oklch(50% 0.10 var(--hue-secondary));
+  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+
+  --color-accent: oklch(65% 0.15 var(--hue-accent));
+  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+
+  /* Update interactive to use new primary */
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+}
+
+/* Theme + Dark mode combination */
+:root[data-theme="THEME_SLUG"][data-mode="dark"],
+[data-theme="THEME_SLUG"][data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Brighter primary for dark mode contrast */
+  --color-primary: oklch(60% 0.12 var(--hue-primary));
+
+  /* Tinted surfaces for brand cohesion (optional) */
+  /* Remove these lines for neutral dark surfaces */
+  --color-background: oklch(12% 0.02 var(--hue-primary));
+  --color-surface: oklch(16% 0.02 var(--hue-primary));
+  --color-surface-raised: oklch(20% 0.02 var(--hue-primary));
+}
