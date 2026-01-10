@@ -179,9 +179,9 @@
         <p>Native modal dialog with backdrop, animation, and focus management.</p>
 
         <h3>Basic Dialog</h3>
-        <p>Open dialogs declaratively with the Invokers API (<code>commandfor</code> + <code>command="show-modal"</code>) or the <code>.showModal()</code> JavaScript method.</p>
+        <p>Open dialogs declaratively with the Invokers API (<code>commandfor</code> + <code>command="show-modal"</code>). No JavaScript required.</p>
         <div class="example">
-          <button type="button" onclick="document.getElementById('basic-dialog').showModal()">Open Basic Dialog</button>
+          <button type="button" commandfor="basic-dialog" command="show-modal">Open Basic Dialog</button>
 
           <dialog id="basic-dialog">
             <header>
@@ -189,13 +189,13 @@
             </header>
             <p>This is a native HTML dialog element. It has a backdrop and can be closed with ESC.</p>
             <footer>
-              <button type="button" onclick="this.closest('dialog').close()">Close</button>
+              <button type="button" commandfor="basic-dialog" command="close">Close</button>
             </footer>
           </dialog>
         </div>
 
         <code-block language="html" show-lines label="Basic dialog element">
-&lt;button type="button" onclick="document.getElementById('my-dialog').showModal()"&gt;
+&lt;button type="button" commandfor="my-dialog" command="show-modal"&gt;
   Open Dialog
 &lt;/button&gt;
 
@@ -205,14 +205,14 @@
   &lt;/header&gt;
   &lt;p&gt;Dialog content here.&lt;/p&gt;
   &lt;footer&gt;
-    &lt;button type="button" onclick="this.closest('dialog').close()"&gt;Close&lt;/button&gt;
+    &lt;button type="button" commandfor="my-dialog" command="close"&gt;Close&lt;/button&gt;
   &lt;/footer&gt;
 &lt;/dialog&gt;
         </code-block>
 
         <h3>Dialog with Form</h3>
         <div class="example">
-          <button type="button" onclick="document.getElementById('form-dialog').showModal()">Open Form Dialog</button>
+          <button type="button" commandfor="form-dialog" command="show-modal">Open Form Dialog</button>
 
           <dialog id="form-dialog">
             <header>
@@ -228,15 +228,17 @@
                   <input type="checkbox" /> Send me weekly updates
                 </label>
               </div>
+              <footer>
+                <button type="button" class="secondary" commandfor="form-dialog" command="close">Cancel</button>
+                <button type="submit">Subscribe</button>
+              </footer>
             </form>
-            <footer>
-              <button type="button" class="secondary" onclick="this.closest('dialog').close()">Cancel</button>
-              <button type="submit" form="dialog-form" onclick="this.closest('dialog').close()">Subscribe</button>
-            </footer>
           </dialog>
         </div>
 
         <code-block language="html" show-lines label="Dialog with form">
+&lt;button commandfor="form-dialog" command="show-modal"&gt;Open&lt;/button&gt;
+
 &lt;dialog id="form-dialog"&gt;
   &lt;header&gt;
     &lt;h3&gt;Subscribe&lt;/h3&gt;
@@ -244,17 +246,17 @@
   &lt;form method="dialog"&gt;
     &lt;label for="email"&gt;Email&lt;/label&gt;
     &lt;input type="email" id="email" /&gt;
+    &lt;footer&gt;
+      &lt;button type="button" class="secondary" commandfor="form-dialog" command="close"&gt;Cancel&lt;/button&gt;
+      &lt;button type="submit"&gt;Subscribe&lt;/button&gt;
+    &lt;/footer&gt;
   &lt;/form&gt;
-  &lt;footer&gt;
-    &lt;button type="button" class="secondary"&gt;Cancel&lt;/button&gt;
-    &lt;button type="submit"&gt;Subscribe&lt;/button&gt;
-  &lt;/footer&gt;
 &lt;/dialog&gt;
         </code-block>
 
         <h3>Confirmation Dialog</h3>
         <div class="example">
-          <button type="button" class="secondary" onclick="document.getElementById('confirm-dialog').showModal()">Delete Item</button>
+          <button type="button" class="secondary" commandfor="confirm-dialog" command="show-modal">Delete Item</button>
 
           <dialog id="confirm-dialog">
             <header>
@@ -262,21 +264,23 @@
             </header>
             <p>Are you sure you want to delete this item? This action cannot be undone.</p>
             <footer>
-              <button type="button" class="secondary" onclick="this.closest('dialog').close()">Cancel</button>
-              <button type="button" onclick="this.closest('dialog').close()">Delete</button>
+              <button type="button" class="secondary" commandfor="confirm-dialog" command="close">Cancel</button>
+              <button type="button" commandfor="confirm-dialog" command="close">Delete</button>
             </footer>
           </dialog>
         </div>
 
         <code-block language="html" show-lines label="Confirmation dialog">
+&lt;button commandfor="confirm-dialog" command="show-modal"&gt;Delete Item&lt;/button&gt;
+
 &lt;dialog id="confirm-dialog"&gt;
   &lt;header&gt;
     &lt;h3&gt;Confirm Deletion&lt;/h3&gt;
   &lt;/header&gt;
   &lt;p&gt;Are you sure? This cannot be undone.&lt;/p&gt;
   &lt;footer&gt;
-    &lt;button type="button" class="secondary"&gt;Cancel&lt;/button&gt;
-    &lt;button type="button"&gt;Delete&lt;/button&gt;
+    &lt;button type="button" class="secondary" commandfor="confirm-dialog" command="close"&gt;Cancel&lt;/button&gt;
+    &lt;button type="button" commandfor="confirm-dialog" command="close"&gt;Delete&lt;/button&gt;
   &lt;/footer&gt;
 &lt;/dialog&gt;
         </code-block>
@@ -284,7 +288,7 @@
         <h3>Dialog Anatomy</h3>
         <p>Dialogs support <code>header</code>, <code>section</code> (or direct content), and <code>footer</code> for structured layouts.</p>
         <div class="example">
-          <button type="button" onclick="document.getElementById('anatomy-dialog').showModal()">Open Structured Dialog</button>
+          <button type="button" commandfor="anatomy-dialog" command="show-modal">Open Structured Dialog</button>
 
           <dialog id="anatomy-dialog">
             <header>
@@ -297,14 +301,16 @@
               </layout-stack>
             </section>
             <footer>
-              <button type="button" class="secondary" onclick="this.closest('dialog').close()">Cancel</button>
-              <button type="button" onclick="this.closest('dialog').close()">Confirm</button>
+              <button type="button" class="secondary" commandfor="anatomy-dialog" command="close">Cancel</button>
+              <button type="button" commandfor="anatomy-dialog" command="close">Confirm</button>
             </footer>
           </dialog>
         </div>
 
         <code-block language="html" show-lines label="Dialog anatomy">
-&lt;dialog&gt;
+&lt;button commandfor="my-dialog" command="show-modal"&gt;Open&lt;/button&gt;
+
+&lt;dialog id="my-dialog"&gt;
   &lt;header&gt;
     &lt;h3&gt;Dialog Header&lt;/h3&gt;
   &lt;/header&gt;
@@ -312,8 +318,8 @@
     &lt;p&gt;Main dialog content.&lt;/p&gt;
   &lt;/section&gt;
   &lt;footer&gt;
-    &lt;button type="button" class="secondary"&gt;Cancel&lt;/button&gt;
-    &lt;button type="button"&gt;Confirm&lt;/button&gt;
+    &lt;button type="button" class="secondary" commandfor="my-dialog" command="close"&gt;Cancel&lt;/button&gt;
+    &lt;button type="button" commandfor="my-dialog" command="close"&gt;Confirm&lt;/button&gt;
   &lt;/footer&gt;
 &lt;/dialog&gt;
         </code-block>
@@ -688,6 +694,7 @@
     </footer>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/invokers-polyfill"></script>
   <script type="module">
     import '@profpowell/code-block';
     import '@profpowell/browser-window';
