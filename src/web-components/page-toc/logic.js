@@ -1,15 +1,31 @@
 /**
- * page-toc: Auto-generated table of contents with scroll-spy
+ * page-toc: Table of contents with scroll-spy
  *
- * Scans the document for headings and builds a navigable ToC.
+ * Supports two modes:
+ * 1. Auto-generated: Scans document for headings and builds ToC (when empty)
+ * 2. Manual markup: Enhances existing nav with scroll-spy (progressive enhancement)
+ *
  * Uses IntersectionObserver for scroll-spy highlighting.
  *
  * @attr {string} data-levels - Heading levels to include (default: 'h2,h3')
  * @attr {string} data-scope - CSS selector for content scope (default: 'main')
  * @attr {string} data-title - ToC title (default: 'On this page')
  *
- * @example
+ * @example Auto-generated
  * <page-toc data-levels="h2,h3" data-title="Contents"></page-toc>
+ *
+ * @example Manual markup (progressive enhancement)
+ * <page-toc>
+ *   <details class="page-toc-details" open>
+ *     <summary class="page-toc-summary">On this page</summary>
+ *     <nav class="page-toc-nav" aria-label="On this page">
+ *       <ul class="page-toc-list">
+ *         <li class="page-toc-item"><a href="#usage" class="page-toc-link">Usage</a></li>
+ *         <li class="page-toc-item"><a href="#examples" class="page-toc-link">Examples</a></li>
+ *       </ul>
+ *     </nav>
+ *   </details>
+ * </page-toc>
  */
 class PageToc extends HTMLElement {
   #observer;
@@ -18,6 +34,7 @@ class PageToc extends HTMLElement {
   #mediaQuery;
   #details;
   #resizeTimer;
+  #isManualMode = false;
 
   connectedCallback() {
     // Delay to ensure headings are processed by heading-links
@@ -29,10 +46,64 @@ class PageToc extends HTMLElement {
   }
 
   #setup() {
-    this.#buildToc();
+    // Check for existing manual markup (progressive enhancement mode)
+    this.#isManualMode = this.#detectManualMarkup();
+
+    if (this.#isManualMode) {
+      this.#enhanceExisting();
+    } else {
+      this.#buildToc();
+    }
+
     this.#setupScrollSpy();
     this.#setupResponsive();
     this.#setupHashSync();
+  }
+
+  /**
+   * Detect if component has manual markup (progressive enhancement mode)
+   * @returns {boolean} True if manual content exists
+   */
+  #detectManualMarkup() {
+    // Check for existing nav or details element
+    return this.querySelector('nav, details') !== null;
+  }
+
+  /**
+   * Enhance existing manual markup with scroll-spy
+   * Finds existing links and maps them to headings
+   */
+  #enhanceExisting() {
+    // Find existing details element for responsive handling
+    this.#details = this.querySelector('details');
+
+    // Find all links with hash hrefs
+    const links = this.querySelectorAll('a[href^="#"]');
+
+    for (const link of links) {
+      const href = link.getAttribute('href');
+      const id = href.slice(1); // Remove leading #
+
+      if (id) {
+        // Find corresponding heading
+        const heading = document.getElementById(id);
+        if (heading) {
+          this.#headings.push(heading);
+          this.#links.set(id, link);
+
+          // Add page-toc-link class if not present (for styling)
+          if (!link.classList.contains('page-toc-link')) {
+            link.classList.add('page-toc-link');
+          }
+
+          // Add smooth scroll behavior
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.#scrollToHeading(heading);
+          });
+        }
+      }
+    }
   }
 
   #cleanup() {
@@ -241,9 +312,14 @@ class PageToc extends HTMLElement {
 
   /**
    * Refresh ToC (e.g., after dynamic content changes)
+   * In auto-generated mode, rebuilds the entire ToC.
+   * In manual mode, re-scans existing links.
    */
   refresh() {
-    this.innerHTML = '';
+    // Only clear innerHTML in auto-generated mode
+    if (!this.#isManualMode) {
+      this.innerHTML = '';
+    }
     this.#links.clear();
     this.#headings = [];
     this.#observer?.disconnect();
