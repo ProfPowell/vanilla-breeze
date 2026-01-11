@@ -6,3 +6,5 @@ import './tooltip-wc/logic.js';
 import './dropdown-wc/logic.js';
 import './icon-wc/icon-wc.js';
 import './theme-picker/logic.js';
+import './heading-links/logic.js';
+import './page-toc/logic.js';
