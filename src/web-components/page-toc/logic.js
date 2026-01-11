@@ -52,6 +52,7 @@ class PageToc extends HTMLElement {
     // Build ToC structure with details/summary for mobile disclosure
     const details = document.createElement('details');
     details.className = 'page-toc-details';
+    details.open = true; // Start open; CSS controls visibility on narrow screens
 
     const summary = document.createElement('summary');
     summary.className = 'page-toc-summary';
