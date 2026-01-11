@@ -325,6 +325,48 @@ browser-window + code-block {
   block-size: 1.25rem;
 }
 
+/* ========================================
+   Nav Drawer - Single Source Checkbox Pattern
+   For pages with sidebar tree navigation
+   ======================================== */
+
+/* Hidden checkbox (visually hidden but accessible) */
+.nav-drawer-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Toggle button (label) - hidden on desktop */
+.nav-drawer-toggle {
+  display: none;
+  align-items: center;
+  gap: var(--size-xs);
+  padding: var(--size-xs) var(--size-s);
+  margin-block-end: var(--size-m);
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.nav-drawer-toggle:hover {
+  background: var(--color-surface-raised);
+  border-color: var(--color-interactive);
+}
+
+/* Close button inside drawer - hidden on desktop */
+.nav-drawer-close {
+  display: none;
+}
+
+/* Backdrop overlay - hidden by default */
+.nav-drawer-backdrop {
+  display: none;
+}
+
 /* Mobile breakpoint */
 @media (max-width: 768px) {
   /* Show hamburger button */
@@ -351,5 +393,89 @@ browser-window + code-block {
   /* Reduce header padding on mobile */
   [data-page="docs"] > body > header {
     padding: var(--size-s) var(--size-m);
+  }
+
+  /* ========================================
+     Nav Drawer - Mobile Behavior
+     ======================================== */
+
+  /* Show toggle button */
+  .nav-drawer-toggle {
+    display: inline-flex;
+  }
+
+  /* Tree nav becomes fixed drawer */
+  #nav-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+    inline-size: min(80vw, 300px);
+    background: var(--color-surface);
+    border-inline-end: var(--border-width-thin) solid var(--color-border);
+    box-shadow: 4px 0 24px oklch(0% 0 0 / 0.15);
+    overflow-y: auto;
+    padding: var(--size-m);
+    padding-block-start: var(--size-3xl);
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+
+  /* Show close button in drawer */
+  .nav-drawer-close {
+    display: flex;
+    position: absolute;
+    inset-block-start: var(--size-s);
+    inset-inline-end: var(--size-s);
+    padding: var(--size-xs);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    color: var(--color-text-muted);
+  }
+
+  .nav-drawer-close:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+
+  /* Backdrop - covers screen when drawer open */
+  .nav-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: oklch(0% 0 0 / 0.4);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-out);
+  }
+
+  /* === When checkbox is checked === */
+
+  /* Slide drawer in */
+  .nav-drawer-checkbox:checked ~ layout-sidebar #nav-drawer {
+    transform: translateX(0);
+  }
+
+  /* Show backdrop */
+  .nav-drawer-checkbox:checked ~ .nav-drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Dim toggle button when drawer open */
+  .nav-drawer-checkbox:checked ~ .nav-drawer-toggle {
+    opacity: 0.5;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  #nav-drawer,
+  .nav-drawer-backdrop {
+    transition: none;
   }
 }
