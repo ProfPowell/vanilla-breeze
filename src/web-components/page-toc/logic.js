@@ -17,6 +17,7 @@ class PageToc extends HTMLElement {
   #links = new Map();
   #mediaQuery;
   #details;
+  #resizeTimer;
 
   connectedCallback() {
     // Delay to ensure headings are processed by heading-links
@@ -31,28 +32,75 @@ class PageToc extends HTMLElement {
     this.#buildToc();
     this.#setupScrollSpy();
     this.#setupResponsive();
+    this.#setupHashSync();
   }
 
   #cleanup() {
     this.#observer?.disconnect();
-    this.#mediaQuery?.removeEventListener('change', this.#handleResize);
+    this.#mediaQuery?.removeEventListener('change', this.#handleMediaChange);
+    window.removeEventListener('resize', this.#handleResize);
+    window.removeEventListener('hashchange', this.#handleHashChange);
+    clearTimeout(this.#resizeTimer);
   }
 
   /**
-   * Force details open on wide screens to prevent collapsed state after resize
+   * Handle responsive behavior: details open on wide screens, hash sync on resize
    */
   #setupResponsive() {
     this.#mediaQuery = window.matchMedia('(min-width: 1024px)');
+    this.#handleMediaChange = this.#handleMediaChange.bind(this);
     this.#handleResize = this.#handleResize.bind(this);
-    this.#mediaQuery.addEventListener('change', this.#handleResize);
+    this.#mediaQuery.addEventListener('change', this.#handleMediaChange);
+    window.addEventListener('resize', this.#handleResize);
   }
 
-  #handleResize = (e) => {
+  #handleMediaChange = (e) => {
     // On wide screens, always ensure details is open
     if (e.matches && this.#details) {
       this.#details.open = true;
     }
   };
+
+  #handleResize = () => {
+    // Debounce: restore hash-based active state after resize settles
+    clearTimeout(this.#resizeTimer);
+    this.#resizeTimer = setTimeout(() => this.#syncFromHash(), 150);
+  };
+
+  /**
+   * Sync active state with URL hash for reliable state across resizes
+   */
+  #setupHashSync() {
+    this.#handleHashChange = this.#handleHashChange.bind(this);
+    window.addEventListener('hashchange', this.#handleHashChange);
+    // Initial sync
+    this.#syncFromHash();
+  }
+
+  #handleHashChange = () => {
+    this.#syncFromHash();
+  };
+
+  #syncFromHash() {
+    const hash = window.location.hash.slice(1);
+    if (hash && this.#links.has(hash)) {
+      this.#setActiveLink(hash);
+    }
+  }
+
+  #setActiveLink(id) {
+    // Remove all active states
+    for (const link of this.#links.values()) {
+      link.classList.remove('active');
+      link.removeAttribute('aria-current');
+    }
+    // Set new active
+    const link = this.#links.get(id);
+    if (link) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'true');
+    }
+  }
 
   #buildToc() {
     const levels = this.dataset.levels || 'h2,h3';
@@ -180,23 +228,15 @@ class PageToc extends HTMLElement {
   }
 
   #updateActiveLink(visibleHeadings) {
-    // Remove all active states
-    for (const link of this.#links.values()) {
-      link.classList.remove('active');
-      link.removeAttribute('aria-current');
-    }
-
     // Find first visible heading in document order
     for (const heading of this.#headings) {
       if (visibleHeadings.has(heading.id)) {
-        const link = this.#links.get(heading.id);
-        if (link) {
-          link.classList.add('active');
-          link.setAttribute('aria-current', 'true');
-        }
-        break;
+        this.#setActiveLink(heading.id);
+        return;
       }
     }
+    // No visible headings - fall back to URL hash
+    this.#syncFromHash();
   }
 
   /**
