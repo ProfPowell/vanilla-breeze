@@ -1,7 +1,8 @@
 /**
  * heading-links: Add anchor links to headings
  *
- * Scans child headings and adds link/copy icons that appear on hover.
+ * Scans child headings and adds a link icon that appears on hover.
+ * Click navigates to the section and copies the URL to clipboard.
  * Uses existing IDs or auto-generates from heading text.
  *
  * @attr {string} data-levels - Heading levels to process (default: 'h2,h3')
@@ -66,37 +67,17 @@ class HeadingLinks extends HTMLElement {
     // Check if already has anchor links
     if (heading.querySelector('.heading-anchor')) return;
 
-    // Create anchor container
-    const anchor = document.createElement('span');
+    // Create anchor link
+    const anchor = document.createElement('a');
     anchor.className = 'heading-anchor';
-    anchor.setAttribute('aria-hidden', 'true');
-
-    // Link icon - navigates to section
-    const linkBtn = document.createElement('button');
-    linkBtn.type = 'button';
-    linkBtn.className = 'heading-anchor-link';
-    linkBtn.setAttribute('tabindex', '-1');
-    linkBtn.title = 'Link to this section';
-    linkBtn.innerHTML = '<icon-wc name="link" size="sm"></icon-wc>';
-    linkBtn.addEventListener('click', (e) => {
+    anchor.href = `#${heading.id}`;
+    anchor.setAttribute('aria-label', `Link to ${heading.textContent.trim()}`);
+    anchor.innerHTML = '<icon-wc name="link" size="sm"></icon-wc>';
+    anchor.addEventListener('click', (e) => {
       e.preventDefault();
-      this.#navigateToHeading(heading);
+      this.#activateLink(heading, anchor);
     });
 
-    // Copy icon - copies URL to clipboard
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = 'heading-anchor-copy';
-    copyBtn.setAttribute('tabindex', '-1');
-    copyBtn.title = 'Copy link to clipboard';
-    copyBtn.innerHTML = '<icon-wc name="copy" size="sm"></icon-wc>';
-    copyBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.#copyHeadingLink(heading, copyBtn);
-    });
-
-    anchor.appendChild(linkBtn);
-    anchor.appendChild(copyBtn);
     heading.appendChild(anchor);
 
     // Make heading focusable for keyboard navigation
@@ -115,47 +96,38 @@ class HeadingLinks extends HTMLElement {
       .substring(0, 50);         // Limit length
   }
 
-  #navigateToHeading(heading) {
+  async #activateLink(heading, anchor) {
     const url = new URL(window.location.href);
     url.hash = heading.id;
+
+    // Update URL and scroll
     window.history.pushState(null, '', url);
     heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
     heading.focus();
 
-    this.dispatchEvent(new CustomEvent('heading-navigate', {
-      bubbles: true,
-      detail: { id: heading.id, heading }
-    }));
-  }
-
-  async #copyHeadingLink(heading, button) {
-    const url = new URL(window.location.href);
-    url.hash = heading.id;
-
+    // Copy to clipboard silently
     try {
       await navigator.clipboard.writeText(url.href);
 
-      // Visual feedback
-      const originalIcon = button.innerHTML;
-      button.innerHTML = '<icon-wc name="check" size="sm"></icon-wc>';
-      button.classList.add('copied');
-
-      // Announce to screen readers
-      this.#announce('Link copied to clipboard');
+      // Brief visual feedback
+      const originalIcon = anchor.innerHTML;
+      anchor.innerHTML = '<icon-wc name="check" size="sm"></icon-wc>';
+      anchor.classList.add('copied');
 
       setTimeout(() => {
-        button.innerHTML = originalIcon;
-        button.classList.remove('copied');
-      }, 2000);
+        anchor.innerHTML = originalIcon;
+        anchor.classList.remove('copied');
+      }, 1500);
 
-      this.dispatchEvent(new CustomEvent('heading-copy', {
-        bubbles: true,
-        detail: { id: heading.id, url: url.href }
-      }));
+      this.#announce('Link copied to clipboard');
     } catch {
-      // Fallback for older browsers
-      this.#announce('Failed to copy link');
+      // Clipboard failed, but navigation still works
     }
+
+    this.dispatchEvent(new CustomEvent('heading-navigate', {
+      bubbles: true,
+      detail: { id: heading.id, url: url.href }
+    }));
   }
 
   #announce(message) {
