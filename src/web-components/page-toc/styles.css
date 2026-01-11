@@ -7,6 +7,7 @@ page-toc {
 /* Details disclosure container */
 .page-toc-details {
   font-size: var(--font-size-sm);
+  padding: var(--size-s);
 }
 
 .page-toc-summary {
@@ -32,16 +33,31 @@ page-toc {
   display: none;
 }
 
+/* +/- disclosure indicator - matches tree nav pattern */
 .page-toc-summary::before {
-  content: '▶';
-  display: inline-block;
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25em;
+  block-size: 1.25em;
   margin-inline-end: var(--size-xs);
-  font-size: 0.7em;
-  transition: transform var(--duration-fast) var(--ease-default);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-s);
+  transition: background-color var(--duration-fast) var(--ease-default);
 }
 
 .page-toc-details[open] > .page-toc-summary::before {
-  transform: rotate(90deg);
+  content: "\2212"; /* minus sign */
+}
+
+.page-toc-summary:hover::before {
+  background: var(--color-gray-300);
 }
 
 .page-toc-nav {
@@ -111,15 +127,16 @@ page-toc {
   /* Hide disclosure controls on wide screens - always show content */
   .page-toc-summary {
     display: block;
-    margin-block-end: var(--size-2xs);
+    margin-block-end: var(--size-m);
     padding: 0;
     min-block-size: auto;
     background: transparent;
     cursor: default;
   }
 
+  /* Show minus indicator (always expanded on wide screens) */
   .page-toc-summary::before {
-    display: none;
+    content: "\2212"; /* minus sign - always "open" on wide screens */
   }
 
   /* Left spacing for links */
