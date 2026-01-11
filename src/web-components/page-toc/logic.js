@@ -15,6 +15,8 @@ class PageToc extends HTMLElement {
   #observer;
   #headings = [];
   #links = new Map();
+  #mediaQuery;
+  #details;
 
   connectedCallback() {
     // Delay to ensure headings are processed by heading-links
@@ -28,11 +30,29 @@ class PageToc extends HTMLElement {
   #setup() {
     this.#buildToc();
     this.#setupScrollSpy();
+    this.#setupResponsive();
   }
 
   #cleanup() {
     this.#observer?.disconnect();
+    this.#mediaQuery?.removeEventListener('change', this.#handleResize);
   }
+
+  /**
+   * Force details open on wide screens to prevent collapsed state after resize
+   */
+  #setupResponsive() {
+    this.#mediaQuery = window.matchMedia('(min-width: 1024px)');
+    this.#handleResize = this.#handleResize.bind(this);
+    this.#mediaQuery.addEventListener('change', this.#handleResize);
+  }
+
+  #handleResize = (e) => {
+    // On wide screens, always ensure details is open
+    if (e.matches && this.#details) {
+      this.#details.open = true;
+    }
+  };
 
   #buildToc() {
     const levels = this.dataset.levels || 'h2,h3';
@@ -50,9 +70,10 @@ class PageToc extends HTMLElement {
     if (this.#headings.length === 0) return;
 
     // Build ToC structure with details/summary for mobile disclosure
-    const details = document.createElement('details');
-    details.className = 'page-toc-details';
-    details.open = true; // Start open; CSS controls visibility on narrow screens
+    this.#details = document.createElement('details');
+    this.#details.className = 'page-toc-details';
+    this.#details.open = true; // Start open; CSS controls visibility on narrow screens
+    const details = this.#details;
 
     const summary = document.createElement('summary');
     summary.className = 'page-toc-summary';
