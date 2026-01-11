@@ -1,8 +1,17 @@
 /* nav: Navigation patterns with composition variants */
 
-/* Base nav */
+/* Base nav with CSS custom properties for variant overrides */
 nav {
   display: block;
+
+  /* Private CSS variables for variant customization */
+  --_link-padding: var(--size-s) var(--size-m);
+  --_link-color: var(--color-text);
+  --_hover-bg: transparent;
+  --_hover-color: var(--color-interactive);
+  --_active-bg: transparent;
+  --_active-color: var(--color-interactive);
+  --_gap: var(--size-xs);
 }
 
 /* Reset list styling within nav */
@@ -17,11 +26,11 @@ nav li {
   margin: 0;
 }
 
-/* Base link styling within nav */
+/* Base link styling within nav - uses CSS variables for customization */
 nav a {
   display: block;
-  padding: var(--size-s) var(--size-m);
-  color: var(--color-text);
+  padding: var(--_link-padding);
+  color: var(--_link-color);
   text-decoration: none;
   transition:
     color var(--duration-fast) var(--ease-default),
@@ -29,7 +38,8 @@ nav a {
 }
 
 nav a:hover {
-  color: var(--color-interactive);
+  background: var(--_hover-bg);
+  color: var(--_hover-color);
 }
 
 nav a:focus-visible {
@@ -41,7 +51,8 @@ nav a:focus-visible {
 /* Current page indicator */
 nav a[aria-current="page"],
 nav [aria-current="page"] > a {
-  color: var(--color-interactive);
+  background: var(--_active-bg);
+  color: var(--_active-color);
   font-weight: 500;
 }
 
@@ -53,7 +64,7 @@ nav {
   &.horizontal > ol {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--size-xs);
+    gap: var(--_gap);
   }
 
   /* Vertical navigation (explicit) */
@@ -65,23 +76,21 @@ nav {
 
   /* --- Style Variants --- */
 
-  /* Pill navigation */
+  /* Pill navigation - override variables for pill styling */
+  &.pills {
+    --_hover-bg: var(--color-surface-raised);
+    --_active-bg: var(--color-interactive);
+    --_active-color: white;
+  }
+
   &.pills a {
     border-radius: var(--radius-full);
   }
 
-  &.pills a:hover {
-    background: var(--color-surface-raised);
-  }
-
-  &.pills a[aria-current="page"],
-  &.pills [aria-current="page"] > a {
-    background: var(--color-interactive);
-    color: white;
-  }
-
-  /* Tab navigation */
+  /* Tab navigation - uses border indicator instead of background */
   &.tabs {
+    --_hover-bg: transparent;
+    --_active-bg: transparent;
     border-block-end: var(--border-width-thin) solid var(--color-border);
   }
 
@@ -177,14 +186,14 @@ nav {
     color: var(--color-gray-400);
   }
 
-  /* Minimal navigation */
-  &.minimal a {
-    padding: var(--size-xs) 0;
-    color: var(--color-text-muted);
-  }
-
-  &.minimal a:hover {
-    color: var(--color-text);
+  /* Minimal navigation - no background, text color only */
+  &.minimal {
+    --_link-padding: var(--size-xs) 0;
+    --_link-color: var(--color-text-muted);
+    --_hover-bg: transparent;
+    --_hover-color: var(--color-text);
+    --_active-bg: transparent;
+    --_active-color: var(--color-text);
   }
 
   /* Pagination navigation */
@@ -315,6 +324,11 @@ nav {
   /* Hierarchical navigation using details/summary for collapsible sections */
 
   &.tree {
+    --_link-color: var(--color-text-muted);
+    --_hover-bg: var(--color-surface-raised);
+    --_hover-color: var(--color-text);
+    --_active-bg: var(--color-interactive);
+    --_active-color: white;
     font-size: var(--font-size-sm);
   }
 
@@ -325,7 +339,7 @@ nav {
     border-radius: 0;
   }
 
-  /* Override base summary styles */
+  /* Override base summary styles - consolidated marker hiding */
   &.tree summary {
     cursor: pointer;
     padding: var(--size-xs) var(--size-s);
@@ -333,30 +347,15 @@ nav {
     border-radius: var(--radius-s);
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Override space-between from base */
+    justify-content: flex-start;
     gap: var(--size-xs);
-    min-block-size: auto; /* Override touch-min from base */
-  }
-
-  /* Hide ALL default markers and base ::after chevron */
-  &.tree summary {
+    min-block-size: auto;
+    /* Hide all native markers/chevrons */
     list-style: none;
-    list-style-type: none;
-  }
 
-  &.tree summary::-webkit-details-marker {
-    display: none;
-  }
-
-  &.tree summary::marker {
-    content: none;
-    display: none;
-  }
-
-  /* Remove base details ::after chevron */
-  &.tree summary::after {
-    content: none;
-    display: none;
+    &::-webkit-details-marker { display: none; }
+    &::marker { content: none; }
+    &::after { content: none; display: none; }
   }
 
   /* +/- disclosure indicator */
@@ -407,24 +406,11 @@ nav {
     margin: 0;
   }
 
+  /* Tree links use base hover/active styles via CSS variables */
   &.tree a {
-    display: block;
     padding: var(--size-2xs) var(--size-s);
-    color: var(--color-text-muted);
-    text-decoration: none;
     border-radius: var(--radius-s);
     margin-inline-start: calc(1.25em + var(--size-xs));
-  }
-
-  &.tree a:hover {
-    background: var(--color-surface-raised);
-    color: var(--color-text);
-  }
-
-  &.tree a[aria-current="page"] {
-    background: var(--color-interactive);
-    color: white;
-    font-weight: 500;
   }
 
   /* Nested details indentation */
