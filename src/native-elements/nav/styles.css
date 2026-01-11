@@ -310,4 +310,143 @@ nav {
     height: 2.75rem;
     font-size: var(--font-size-m);
   }
+
+  /* --- Tree Navigation --- */
+  /* Hierarchical navigation using details/summary for collapsible sections */
+
+  &.tree {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Override base details styles - remove borders */
+  &.tree details {
+    margin-block-start: var(--size-2xs);
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Override base summary styles */
+  &.tree summary {
+    cursor: pointer;
+    padding: var(--size-xs) var(--size-s);
+    font-weight: 600;
+    border-radius: var(--radius-s);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Override space-between from base */
+    gap: var(--size-xs);
+    min-block-size: auto; /* Override touch-min from base */
+  }
+
+  /* Hide ALL default markers and base ::after chevron */
+  &.tree summary {
+    list-style: none;
+    list-style-type: none;
+  }
+
+  &.tree summary::-webkit-details-marker {
+    display: none;
+  }
+
+  &.tree summary::marker {
+    content: none;
+    display: none;
+  }
+
+  /* Remove base details ::after chevron */
+  &.tree summary::after {
+    content: none;
+    display: none;
+  }
+
+  /* +/- disclosure indicator */
+  &.tree summary::before {
+    content: "+";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.25em;
+    block-size: 1.25em;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-muted);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-s);
+    transition: background-color var(--duration-fast) var(--ease-default);
+  }
+
+  &.tree details[open] > summary::before {
+    content: "\2212"; /* minus sign */
+  }
+
+  &.tree summary:hover::before {
+    background: var(--color-gray-300);
+  }
+
+  &.tree summary:hover {
+    background: var(--color-surface-raised);
+  }
+
+  &.tree summary:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: calc(var(--border-width-medium) * -1);
+  }
+
+  /* Override base details content padding */
+  &.tree details > :not(summary) {
+    padding-inline: 0;
+    padding-block-end: 0;
+  }
+
+  /* Nested content */
+  &.tree ul {
+    padding-inline-start: var(--size-m);
+    margin: 0;
+  }
+
+  &.tree a {
+    display: block;
+    padding: var(--size-2xs) var(--size-s);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-radius: var(--radius-s);
+    margin-inline-start: calc(1.25em + var(--size-xs));
+  }
+
+  &.tree a:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+
+  &.tree a[aria-current="page"] {
+    background: var(--color-interactive);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* Nested details indentation */
+  &.tree details details {
+    margin-inline-start: var(--size-s);
+  }
+
+  &.tree details details summary {
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Compact variant - less spacing */
+  &.tree[data-density="compact"] summary {
+    padding: var(--size-2xs) var(--size-xs);
+  }
+
+  &.tree[data-density="compact"] a {
+    padding: var(--size-3xs) var(--size-xs);
+  }
+
+  &.tree[data-density="compact"] ul {
+    padding-inline-start: var(--size-s);
+  }
 }
