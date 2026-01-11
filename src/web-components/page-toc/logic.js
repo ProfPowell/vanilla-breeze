@@ -49,23 +49,24 @@ class PageToc extends HTMLElement {
 
     if (this.#headings.length === 0) return;
 
-    // Build ToC structure
+    // Build ToC structure with details/summary for mobile disclosure
+    const details = document.createElement('details');
+    details.className = 'page-toc-details';
+
+    const summary = document.createElement('summary');
+    summary.className = 'page-toc-summary';
+    summary.textContent = title;
+    details.appendChild(summary);
+
     const nav = document.createElement('nav');
     nav.className = 'page-toc-nav';
     nav.setAttribute('aria-label', title);
-
-    const titleEl = document.createElement('strong');
-    titleEl.className = 'page-toc-title';
-    titleEl.textContent = title;
-    nav.appendChild(titleEl);
 
     const list = document.createElement('ul');
     list.className = 'page-toc-list';
 
     // Group headings by level for nesting
     const levelOrder = levels.split(',').map(l => l.trim().toLowerCase());
-    let currentList = list;
-    let lastLevel = 0;
 
     for (const heading of this.#headings) {
       const tagName = heading.tagName.toLowerCase();
@@ -93,11 +94,11 @@ class PageToc extends HTMLElement {
 
       // Track for scroll-spy
       this.#links.set(heading.id, link);
-      lastLevel = level;
     }
 
     nav.appendChild(list);
-    this.appendChild(nav);
+    details.appendChild(nav);
+    this.appendChild(details);
   }
 
   #getHeadingText(heading) {
