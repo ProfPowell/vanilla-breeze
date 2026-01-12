@@ -196,15 +196,15 @@ class SearchWc extends HTMLElement {
     if (this.#pagefind) return;
 
     try {
-      // Load pagefind dynamically at runtime (not bundled by Vite)
-      // The @vite-ignore comment prevents Rollup from trying to resolve this
-      const pagefindPath = '/pagefind/pagefind.js';
-      this.#pagefind = await import(/* @vite-ignore */ pagefindPath);
+      // Use Function constructor to create a dynamic import that bypasses Vite
+      // This is necessary because Vite blocks imports from public/ during dev
+      const importPagefind = new Function('return import("/pagefind/pagefind.js")');
+      this.#pagefind = await importPagefind();
       await this.#pagefind.options({
         excerptLength: 20
       });
     } catch (error) {
-      console.warn('Pagefind not available. Run `npx pagefind` to build the search index.');
+      console.warn('Pagefind not available. Run `npm run search:dev` to build the search index.');
       this.#pagefind = null;
     }
   }
