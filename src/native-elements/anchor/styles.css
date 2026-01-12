@@ -1,4 +1,4 @@
-/* anchor: Link styling with variants */
+/* anchor: Link styling with variants and auto-detection */
 
 a {
   color: var(--color-interactive);
@@ -21,14 +21,36 @@ a {
 
   /* Remove underline for links wrapping block elements */
   &:has(> img),
-  &:has(> x-card) {
+  &:has(> picture),
+  &:has(> figure),
+  &:has(> layout-card) {
     text-decoration: none;
   }
 }
 
-/* --- Link Variants --- */
+/* ===========================================
+   Link Variants (data-variant API)
+   =========================================== */
 
-/* Muted link - less prominent */
+/* Muted link - less prominent, for secondary navigation */
+a[data-variant="muted"] {
+  color: var(--color-text-muted);
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+/* Plain link - no underline by default, appears on hover */
+a[data-variant="plain"] {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Legacy class support (backwards compatibility) */
 a.muted {
   color: var(--color-text-muted);
 
@@ -37,7 +59,6 @@ a.muted {
   }
 }
 
-/* Plain link - no underline by default */
 a.plain {
   text-decoration: none;
 
@@ -46,8 +67,63 @@ a.plain {
   }
 }
 
-/* External link indicator */
+/* ===========================================
+   Auto-Detect Link Types
+   Use data-no-icon to suppress auto-icons
+   =========================================== */
+
+/* External links - auto-detect http(s) links */
+a[href^="http"]:not([data-no-icon])::after,
+a[href^="//"]:not([data-no-icon])::after {
+  content: " ↗";
+  font-size: 0.75em;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+/* Legacy .external class support */
 a.external::after {
   content: " ↗";
-  font-size: 0.8em;
+  font-size: 0.75em;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+/* Download links */
+a[download]:not([data-no-icon])::after {
+  content: " ↓";
+  font-size: 0.75em;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+/* Email links */
+a[href^="mailto:"]:not([data-no-icon])::before {
+  content: "✉ ";
+  font-size: 0.85em;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+/* Phone links */
+a[href^="tel:"]:not([data-no-icon])::before {
+  content: "☏ ";
+  font-size: 0.85em;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+/* ===========================================
+   Context Overrides
+   Links in navigation contexts don't show icons
+   =========================================== */
+
+nav a[href^="http"]::after,
+nav a[href^="//"]::after,
+nav a[download]::after,
+nav a[href^="mailto:"]::before,
+nav a[href^="tel:"]::before,
+header a[href^="http"]::after,
+header a[href^="//"]::after {
+  content: none;
 }
