@@ -196,8 +196,10 @@ class SearchWc extends HTMLElement {
     if (this.#pagefind) return;
 
     try {
-      // Try to load pagefind from the expected location
-      this.#pagefind = await import('/pagefind/pagefind.js');
+      // Load pagefind dynamically at runtime (not bundled by Vite)
+      // The @vite-ignore comment prevents Rollup from trying to resolve this
+      const pagefindPath = '/pagefind/pagefind.js';
+      this.#pagefind = await import(/* @vite-ignore */ pagefindPath);
       await this.#pagefind.options({
         excerptLength: 20
       });
