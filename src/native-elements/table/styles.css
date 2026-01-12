@@ -53,7 +53,79 @@ th[data-numeric] {
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Table Variants (use element.class scoping) --- */
+/* --- Table Data Attributes --- */
+
+/* Sticky headers */
+table[data-sticky="header"] thead th,
+table[data-sticky="both"] thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--color-surface);
+}
+
+/* Sticky first column */
+table[data-sticky="column"] td:first-child,
+table[data-sticky="column"] th:first-child,
+table[data-sticky="both"] td:first-child,
+table[data-sticky="both"] th:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background: var(--color-surface);
+}
+
+/* Sticky both - corner cell needs higher z-index */
+table[data-sticky="both"] thead th:first-child {
+  z-index: 2;
+}
+
+/* Density variants */
+table[data-density="compact"] th,
+table[data-density="compact"] td {
+  padding: var(--size-2xs) var(--size-xs);
+}
+
+table[data-density="comfortable"] th,
+table[data-density="comfortable"] td {
+  padding: var(--size-m) var(--size-l);
+}
+
+/* Cell alignment (works on th, td, or col) */
+[data-align="start"] { text-align: start; }
+[data-align="center"] { text-align: center; }
+[data-align="end"] { text-align: end; }
+
+/* Row states */
+tr[data-selected] {
+  background: oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+tr[data-selected]:hover {
+  background: oklch(from var(--color-interactive) l c h / 0.25);
+}
+
+tr[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+tr[data-highlight] {
+  background: oklch(from var(--color-warning) l c h / 0.15);
+}
+
+tr[data-highlight]:hover {
+  background: oklch(from var(--color-warning) l c h / 0.25);
+}
+
+/* Responsive horizontal scroll */
+table[data-responsive="scroll"] {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Table Variants (class-based, kept for backward compatibility) --- */
 
 table {
   /* Striped variant */
@@ -75,5 +147,168 @@ table {
   &.bordered th,
   &.bordered td {
     border: var(--border-width-thin) solid var(--color-border);
+  }
+}
+
+/* --- Sortable Column Indicators --- */
+
+th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+
+  &::after {
+    content: ' ⇅';
+    opacity: 0.3;
+  }
+
+  &[data-state-sorted="asc"]::after {
+    content: ' ↑';
+    opacity: 1;
+  }
+
+  &[data-state-sorted="desc"]::after {
+    content: ' ↓';
+    opacity: 1;
+  }
+}
+
+/* --- Hidden Row State --- */
+
+tr[data-state-hidden] {
+  display: none;
+}
+
+/* --- Expanded Row Content --- */
+
+tr[data-expand-content] {
+  background: var(--color-surface-raised);
+
+  & td {
+    padding: 0;
+  }
+
+  /* Inner wrapper for content with padding */
+  & > td > div {
+    padding: var(--size-m);
+  }
+}
+
+/* Highlight the expandable row when expanded */
+tr[data-state-expanded] {
+  background: var(--color-surface-raised);
+}
+
+/* --- Toggle Button Styling --- */
+
+[data-action="toggle-expand"] {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--size-2xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition: transform var(--duration-fast, 0.15s) var(--ease-default, ease),
+              color var(--duration-fast, 0.15s) var(--ease-default, ease);
+}
+
+[data-action="toggle-expand"]:hover {
+  color: var(--color-text);
+}
+
+tr[data-state-expanded] [data-action="toggle-expand"] {
+  transform: rotate(90deg);
+  color: var(--color-primary);
+}
+
+/* --- Reduced Motion Support --- */
+
+@media (prefers-reduced-motion: reduce) {
+  tr[data-expand-content] {
+    transition: none;
+  }
+
+  [data-action="toggle-expand"] {
+    transition: none;
+  }
+}
+
+/* --- Sticky Column for 2 Columns --- */
+
+table[data-sticky-column="2"] {
+  border-collapse: separate;
+  border-spacing: 0;
+
+  td:nth-child(-n+2),
+  th:nth-child(-n+2) {
+    position: sticky;
+    background: var(--color-surface);
+    z-index: 1;
+  }
+
+  td:first-child,
+  th:first-child {
+    inset-inline-start: 0;
+  }
+
+  td:nth-child(2),
+  th:nth-child(2) {
+    inset-inline-start: var(--_sticky-col-1-width, 150px);
+  }
+
+  /* Corner cells need higher z-index when combined with sticky header */
+  thead th:nth-child(-n+2) {
+    z-index: 2;
+  }
+}
+
+/* --- Container Query Setup --- */
+
+table-wc {
+  container-type: inline-size;
+  display: block;
+}
+
+/* --- Responsive Card Mode --- */
+
+@container (max-width: 500px) {
+  table[data-responsive="card"] {
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    tr {
+      padding: var(--size-m);
+      margin-block-end: var(--size-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+
+      &[data-state-selected] {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-s);
+      }
+    }
+
+    td {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-s);
+      border: none;
+      padding: var(--size-xs) 0;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+    }
   }
 }

@@ -8,27 +8,60 @@
   <link rel="stylesheet" href="/docs/docs.css" />
   <style>
     .hero {
-      text-align: center;
-      padding-block: var(--size-3xl);
+      padding-block: var(--size-xl) var(--size-2xl);
+      border-block-end: 1px solid var(--color-border);
+      margin-block-end: var(--size-xl);
     }
 
     .hero h1 {
-      font-size: var(--font-size-4xl);
-      margin-block-end: var(--size-m);
+      font-size: var(--font-size-3xl);
+      margin-block-end: var(--size-s);
     }
 
     .hero .lead {
       font-size: var(--font-size-lg);
       color: var(--color-text-muted);
-      max-inline-size: 50ch;
-      margin-inline: auto;
+      max-inline-size: 60ch;
+      margin-block-end: var(--size-l);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-s);
+    }
+
+    .stats-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+      margin-block-end: var(--size-xl);
+    }
+
+    .stat {
+      display: flex;
+      align-items: baseline;
+      gap: var(--size-2xs);
+    }
+
+    .stat-number {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-interactive);
+    }
+
+    .stat-label {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
     }
 
     .section-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: var(--size-l);
-      margin-block-start: var(--size-2xl);
     }
 
     .section-card .count {
@@ -36,22 +69,74 @@
       color: var(--color-text-muted);
     }
 
-    .progressive-ladder {
-      display: flex;
-      gap: var(--size-2xs);
-      margin-block-start: var(--size-m);
+    .live-examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--size-l);
+      margin-block-start: var(--size-l);
     }
 
-    .progressive-ladder span {
-      padding: var(--size-2xs) var(--size-xs);
+    .example-box {
+      padding: var(--size-m);
       background: var(--color-surface-raised);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-xs);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--color-border);
     }
 
-    .progressive-ladder span.active {
-      background: var(--color-interactive);
-      color: white;
+    .example-box h4 {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .quick-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--size-m);
+    }
+
+    .quick-nav a {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      text-decoration: none;
+      color: var(--color-text);
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .quick-nav a:hover {
+      border-color: var(--color-interactive);
+      background: var(--color-surface-raised);
+    }
+
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--size-m);
+      margin-block-start: var(--size-l);
+    }
+
+    .philosophy-item {
+      padding: var(--size-m);
+      border-inline-start: 3px solid var(--color-interactive);
+      background: var(--color-surface-raised);
+    }
+
+    .philosophy-item h3 {
+      font-size: var(--font-size-base);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .philosophy-item p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
     }
   </style>
 </head>
@@ -68,14 +153,14 @@
         </ul>
       </nav>
       <div class="header-actions">
-        <theme-picker>
+        <theme-wc>
           <button data-trigger class="ghost">
             <icon-wc name="palette" size="sm"></icon-wc>
             Theme
           </button>
-        </theme-picker>
+        </theme-wc>
       </div>
-          <button class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+      <button class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
         <icon-wc name="menu"></icon-wc>
       </button>
       <nav popover id="mobile-menu" class="mobile-menu">
@@ -90,12 +175,12 @@
           <li><a href="/docs/integrations/">Integrations</a></li>
         </ul>
         <div class="mobile-menu-theme">
-          <theme-picker>
+          <theme-wc>
             <button data-trigger class="ghost">
               <icon-wc name="palette" size="sm"></icon-wc>
               Theme
             </button>
-          </theme-picker>
+          </theme-wc>
         </div>
       </nav>
     </header>
@@ -103,97 +188,190 @@
     <main>
       <section class="hero">
         <h1>Vanilla Breeze</h1>
-        <p class="lead">A layered HTML component system extending HTML's native model with progressive enhancement.</p>
-      </section>
-
-      <section>
-        <h2>Documentation</h2>
-        <p>Explore components organized by progressive enhancement level:</p>
-
-        <div class="section-grid">
-          <a href="/docs/tokens/" class="section-card">
-            <h2>Design Tokens</h2>
-            <p>CSS custom properties for colors, spacing, typography, and more.</p>
-            <div class="progressive-ladder">
-              <span class="active">CSS</span>
-              <span>HTML</span>
-              <span>JS</span>
-            </div>
-          </a>
-
-          <a href="/docs/elements/native/" class="section-card">
-            <h2>Native Elements</h2>
-            <p>Styled HTML5 semantic elements with variant classes.</p>
-            <span class="count">36 elements</span>
-            <div class="progressive-ladder">
-              <span class="active">CSS</span>
-              <span class="active">HTML</span>
-              <span>JS</span>
-            </div>
-          </a>
-
-          <a href="/docs/elements/custom-elements/" class="section-card">
-            <h2>Custom Elements</h2>
-            <p>CSS-only layout primitives using custom element names.</p>
-            <span class="count">11 elements</span>
-            <div class="progressive-ladder">
-              <span class="active">CSS</span>
-              <span class="active">HTML</span>
-              <span>JS</span>
-            </div>
-          </a>
-
-          <a href="/docs/elements/web-components/" class="section-card">
-            <h2>Web Components</h2>
-            <p>JavaScript-enhanced interactive components.</p>
-            <span class="count">7 components</span>
-            <div class="progressive-ladder">
-              <span class="active">CSS</span>
-              <span class="active">HTML</span>
-              <span class="active">JS</span>
-            </div>
+        <p class="lead">A layered HTML component system. Build with native HTML elements, enhance progressively with CSS custom elements and JavaScript web components.</p>
+        <div class="hero-actions">
+          <a href="/docs/elements/" class="button">Browse Elements</a>
+          <a href="/docs/examples/kitchen-sink.html" class="button outline">Kitchen Sink</a>
+          <a href="https://github.com/profpowell/vanilla-breeze" class="button ghost">
+            <icon-wc name="github" size="sm"></icon-wc>
+            GitHub
           </a>
         </div>
       </section>
 
-      <section style="margin-block-start: var(--size-3xl);">
-        <h2>Progressive Enhancement</h2>
-        <layout-text>
-          <p>Vanilla Breeze follows a progressive enhancement philosophy:</p>
-          <ol>
-            <li><strong>Tokens</strong> - CSS custom properties form the foundation</li>
-            <li><strong>Native Elements</strong> - Styled HTML5 elements work without JavaScript</li>
-            <li><strong>Custom Elements</strong> - Layout primitives use CSS-only styling</li>
-            <li><strong>Web Components</strong> - JavaScript adds interactivity on top</li>
-          </ol>
-          <p>Each layer builds on the previous, ensuring content is accessible even when JavaScript fails.</p>
-        </layout-text>
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-number">84</span>
+          <span class="stat-label">Native Elements</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">15</span>
+          <span class="stat-label">Custom Elements</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">9</span>
+          <span class="stat-label">Web Components</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">0</span>
+          <span class="stat-label">Build Steps</span>
+        </div>
+      </div>
+
+      <section>
+        <h2>Quick Navigation</h2>
+        <nav class="quick-nav" aria-label="Quick navigation">
+          <a href="/docs/elements/native/button.html">
+            <icon-wc name="mouse-pointer-click" size="sm"></icon-wc>
+            Buttons
+          </a>
+          <a href="/docs/elements/native/forms.html">
+            <icon-wc name="text-cursor-input" size="sm"></icon-wc>
+            Forms
+          </a>
+          <a href="/docs/elements/native/nav.html">
+            <icon-wc name="menu" size="sm"></icon-wc>
+            Navigation
+          </a>
+          <a href="/docs/elements/native/table.html">
+            <icon-wc name="table" size="sm"></icon-wc>
+            Tables
+          </a>
+          <a href="/docs/elements/native/dialog.html">
+            <icon-wc name="square" size="sm"></icon-wc>
+            Dialogs
+          </a>
+          <a href="/docs/elements/custom-elements/stack.html">
+            <icon-wc name="layers" size="sm"></icon-wc>
+            Layout Stack
+          </a>
+          <a href="/docs/elements/custom-elements/grid.html">
+            <icon-wc name="grid-3x3" size="sm"></icon-wc>
+            Layout Grid
+          </a>
+          <a href="/docs/elements/web-components/accordion.html">
+            <icon-wc name="chevrons-down-up" size="sm"></icon-wc>
+            Accordion
+          </a>
+        </nav>
       </section>
 
-      <section style="margin-block-start: var(--size-3xl);">
-        <h2>Quick Links</h2>
-        <layout-grid data-min="200px" data-gap="m">
-          <a href="/docs/elements/native/forms.html" class="section-card">
-            <h3>Forms</h3>
-            <p>Input patterns and validation</p>
+      <section style="margin-block-start: var(--size-2xl);">
+        <h2>Live Examples</h2>
+        <p>Components render with native HTML - no JavaScript required for basic functionality.</p>
+
+        <div class="live-examples">
+          <div class="example-box">
+            <h4>Buttons</h4>
+            <layout-cluster data-gap="s">
+              <button>Default</button>
+              <button class="primary">Primary</button>
+              <button class="outline">Outline</button>
+              <button class="ghost">Ghost</button>
+            </layout-cluster>
+          </div>
+
+          <div class="example-box">
+            <h4>Navigation Pills</h4>
+            <nav class="horizontal pills" aria-label="Example navigation">
+              <ul>
+                <li><a href="#" aria-current="page">Active</a></li>
+                <li><a href="#">Link</a></li>
+                <li><a href="#">Link</a></li>
+              </ul>
+            </nav>
+          </div>
+
+          <div class="example-box">
+            <h4>Form Inputs</h4>
+            <layout-stack data-gap="s">
+              <input type="text" placeholder="Text input" />
+              <select>
+                <option>Select option</option>
+                <option>Option 2</option>
+              </select>
+            </layout-stack>
+          </div>
+
+          <div class="example-box">
+            <h4>Badges</h4>
+            <layout-cluster data-gap="s">
+              <x-badge>Default</x-badge>
+              <x-badge data-variant="success">Success</x-badge>
+              <x-badge data-variant="warning">Warning</x-badge>
+              <x-badge data-variant="error">Error</x-badge>
+            </layout-cluster>
+          </div>
+
+          <div class="example-box">
+            <h4>Details/Summary</h4>
+            <details>
+              <summary>Click to expand</summary>
+              <p>This is native HTML disclosure with CSS styling. No JavaScript needed.</p>
+            </details>
+          </div>
+
+          <div class="example-box">
+            <h4>Progress</h4>
+            <layout-stack data-gap="s">
+              <progress value="70" max="100">70%</progress>
+              <meter value="0.6" min="0" max="1">60%</meter>
+            </layout-stack>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-block-start: var(--size-2xl);">
+        <h2>Three Layers of Enhancement</h2>
+        <div class="philosophy-grid">
+          <div class="philosophy-item">
+            <h3>1. Native Elements</h3>
+            <p>Standard HTML5 elements with CSS styling. Works everywhere, no dependencies.</p>
+          </div>
+          <div class="philosophy-item">
+            <h3>2. Custom Elements</h3>
+            <p>CSS-only layout primitives like layout-stack and layout-grid. Semantic names, zero JavaScript.</p>
+          </div>
+          <div class="philosophy-item">
+            <h3>3. Web Components</h3>
+            <p>JavaScript-enhanced interactivity for accordions, tabs, tooltips, and more.</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-block-start: var(--size-2xl);">
+        <h2>Documentation Sections</h2>
+        <div class="section-grid">
+          <a href="/docs/tokens/" class="section-card">
+            <h3>Design Tokens</h3>
+            <p>CSS custom properties for colors, spacing, typography, shadows, and animations.</p>
           </a>
-          <a href="/docs/elements/custom-elements/stack.html" class="section-card">
-            <h3>layout-stack</h3>
-            <p>Vertical layout primitive</p>
+
+          <a href="/docs/elements/native/" class="section-card">
+            <h3>Native Elements</h3>
+            <p>84 styled HTML5 semantic elements with variant classes and accessibility built-in.</p>
           </a>
-          <a href="/docs/elements/native/dialog.html" class="section-card">
-            <h3>dialog</h3>
-            <p>Native modal dialogs</p>
+
+          <a href="/docs/elements/custom-elements/" class="section-card">
+            <h3>Custom Elements</h3>
+            <p>15 CSS-only layout primitives: stack, grid, sidebar, cluster, center, and more.</p>
           </a>
-          <a href="/docs/elements/" class="section-card">
-            <h3>Element Index</h3>
-            <p>Alphabetical element reference</p>
+
+          <a href="/docs/elements/web-components/" class="section-card">
+            <h3>Web Components</h3>
+            <p>9 JavaScript-enhanced interactive components with progressive enhancement.</p>
           </a>
-          <a href="/docs/examples/kitchen-sink.html" class="section-card">
-            <h3>Kitchen Sink</h3>
-            <p>All components in one page</p>
+
+          <a href="/docs/examples/" class="section-card">
+            <h3>Examples</h3>
+            <p>Full-page demos, patterns, and real-world usage examples.</p>
           </a>
-        </layout-grid>
+
+          <a href="/docs/integrations/" class="section-card">
+            <h3>Integrations</h3>
+            <p>Use Vanilla Breeze with Astro, Eleventy, and other frameworks.</p>
+          </a>
+        </div>
       </section>
     </main>
 

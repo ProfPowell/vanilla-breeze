@@ -26,7 +26,8 @@
   justify-content: space-between;
   gap: var(--size-m);
   flex-wrap: wrap;
-  overflow-x: hidden;
+  position: relative;
+  z-index: 100;
 }
 
 [data-page="docs"] > body > header .logo {
@@ -132,6 +133,7 @@
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-m);
   margin-block: var(--size-m);
+  overflow-x: auto;
 }
 
 .example + .example {
@@ -477,5 +479,51 @@ browser-window + code-block {
   #nav-drawer,
   .nav-drawer-backdrop {
     transition: none;
+  }
+}
+
+/* ========================================
+   Article Content Styling
+   For pages with nested layout (nav drawer + page-toc)
+   ======================================== */
+
+/* Article within layout-sidebar gets the same content styling */
+[data-page="docs"] article {
+  & > h1 {
+    margin-block-end: var(--size-s);
+  }
+
+  & > .lead {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-xl);
+  }
+
+  /* Sections within heading-links or directly in article */
+  & section {
+    margin-block-start: var(--size-2xl);
+    padding-block-start: var(--size-xl);
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+
+    &:first-of-type {
+      margin-block-start: 0;
+      padding-block-start: 0;
+      border-block-start: none;
+    }
+
+    & > h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    & > h3 {
+      margin-block-start: var(--size-xl);
+      margin-block-end: var(--size-s);
+    }
+
+    & > p,
+    & > ul,
+    & > ol {
+      margin-block-end: var(--size-m);
+    }
   }
 }

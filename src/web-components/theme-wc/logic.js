@@ -1,5 +1,5 @@
 /**
- * theme-picker: Theme selection component
+ * theme-wc: Theme selection component
  *
  * Provides controls for selecting color mode (auto/light/dark) and
  * brand theme (default/ocean/forest/sunset). Integrates with ThemeManager
@@ -9,22 +9,22 @@
  * @attr {boolean} data-open - Whether popover is open (reflected, popover variant only)
  *
  * @example Popover variant (default)
- * <theme-picker>
+ * <theme-wc>
  *   <button data-trigger>
  *     <x-icon name="palette"></x-icon>
  *     Theme
  *   </button>
- * </theme-picker>
+ * </theme-wc>
  *
  * @example Inline variant (for settings pages)
- * <theme-picker data-variant="inline"></theme-picker>
+ * <theme-wc data-variant="inline"></theme-wc>
  *
  * @example Icon-only trigger
- * <theme-picker>
+ * <theme-wc>
  *   <button data-trigger aria-label="Change theme">
  *     <x-icon name="sun" label="Theme"></x-icon>
  *   </button>
- * </theme-picker>
+ * </theme-wc>
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
@@ -43,10 +43,14 @@ class ThemePicker extends HTMLElement {
     { id: 'sunset', name: 'Sunset', hue: 25 }
   ];
 
+  // Delay before auto-dismissing after selection (ms)
+  static #AUTO_DISMISS_DELAY = 200;
+
   #trigger;
   #panel;
   #isOpen = false;
   #isInline = false;
+  #autoDismissTimer = null;
 
   connectedCallback() {
     this.#isInline = this.getAttribute('data-variant') === 'inline';
@@ -62,6 +66,7 @@ class ThemePicker extends HTMLElement {
     window.removeEventListener('theme-change', this.#handleThemeChange);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);
+    this.#clearAutoDismiss();
   }
 
   #render() {
@@ -89,7 +94,7 @@ class ThemePicker extends HTMLElement {
 
     // Create panel
     this.#panel = document.createElement('div');
-    this.#panel.className = 'theme-picker-panel';
+    this.#panel.className = 'theme-wc-panel';
     this.#panel.setAttribute('role', 'dialog');
     this.#panel.setAttribute('aria-label', 'Theme settings');
 
@@ -106,18 +111,18 @@ class ThemePicker extends HTMLElement {
     const { mode, brand } = ThemeManager.getState();
 
     return `
-      <fieldset class="theme-picker-section">
+      <fieldset class="theme-wc-section">
         <legend>Color Mode</legend>
-        <div class="theme-picker-options" role="radiogroup" aria-label="Color mode">
+        <div class="theme-wc-options" role="radiogroup" aria-label="Color mode">
           ${ThemePicker.#MODES.map(m => `
-            <label class="theme-picker-option">
+            <label class="theme-wc-option">
               <input
                 type="radio"
                 name="theme-mode"
                 value="${m.id}"
                 ${mode === m.id ? 'checked' : ''}
               />
-              <span class="theme-picker-option-content">
+              <span class="theme-wc-option-content">
                 <x-icon name="${m.icon}"></x-icon>
                 <span>${m.name}</span>
               </span>
@@ -126,19 +131,19 @@ class ThemePicker extends HTMLElement {
         </div>
       </fieldset>
 
-      <fieldset class="theme-picker-section">
+      <fieldset class="theme-wc-section">
         <legend>Brand Theme</legend>
-        <div class="theme-picker-options theme-picker-options--themes" role="radiogroup" aria-label="Brand theme">
+        <div class="theme-wc-options theme-wc-options--themes" role="radiogroup" aria-label="Brand theme">
           ${ThemePicker.#THEMES.map(t => `
-            <label class="theme-picker-option theme-picker-option--theme">
+            <label class="theme-wc-option theme-wc-option--theme">
               <input
                 type="radio"
                 name="theme-brand"
                 value="${t.id}"
                 ${brand === t.id ? 'checked' : ''}
               />
-              <span class="theme-picker-option-content">
-                <span class="theme-picker-swatch" style="--swatch-hue: ${t.hue}"></span>
+              <span class="theme-wc-option-content">
+                <span class="theme-wc-swatch" style="--swatch-hue: ${t.hue}"></span>
                 <span>${t.name}</span>
               </span>
             </label>
@@ -188,11 +193,34 @@ class ThemePicker extends HTMLElement {
 
   #handleModeChange = (e) => {
     ThemeManager.setMode(e.target.value);
+    this.#autoDismiss();
   };
 
   #handleBrandChange = (e) => {
     ThemeManager.setBrand(e.target.value);
+    this.#autoDismiss();
   };
+
+  #autoDismiss() {
+    // Only auto-dismiss in popover mode
+    if (this.#isInline) return;
+
+    // Clear any pending timer
+    this.#clearAutoDismiss();
+
+    // Close after brief delay so user sees selection
+    this.#autoDismissTimer = setTimeout(() => {
+      this.close();
+      this.#trigger?.focus();
+    }, ThemePicker.#AUTO_DISMISS_DELAY);
+  }
+
+  #clearAutoDismiss() {
+    if (this.#autoDismissTimer) {
+      clearTimeout(this.#autoDismissTimer);
+      this.#autoDismissTimer = null;
+    }
+  }
 
   #handleThemeChange = () => {
     this.#syncState();
@@ -226,7 +254,7 @@ class ThemePicker extends HTMLElement {
       firstInput?.focus();
     });
 
-    this.dispatchEvent(new CustomEvent('theme-picker-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('theme-wc-open', { bubbles: true }));
   }
 
   #positionPanel() {
@@ -274,18 +302,19 @@ class ThemePicker extends HTMLElement {
       left = edgeMargin - triggerRect.left;
     }
 
-    this.#panel.style.setProperty('--theme-picker-top', `${top}px`);
-    this.#panel.style.setProperty('--theme-picker-left', `${left}px`);
+    this.#panel.style.setProperty('--theme-wc-top', `${top}px`);
+    this.#panel.style.setProperty('--theme-wc-left', `${left}px`);
   }
 
   close() {
     if (this.#isInline || !this.#isOpen) return;
 
+    this.#clearAutoDismiss();
     this.#isOpen = false;
     this.removeAttribute('data-open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
 
-    this.dispatchEvent(new CustomEvent('theme-picker-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('theme-wc-close', { bubbles: true }));
   }
 
   toggle() {
@@ -301,6 +330,6 @@ class ThemePicker extends HTMLElement {
   }
 }
 
-customElements.define('theme-picker', ThemePicker);
+customElements.define('theme-wc', ThemePicker);
 
 export { ThemePicker };

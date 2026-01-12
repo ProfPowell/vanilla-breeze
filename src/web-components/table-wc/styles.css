@@ -1,0 +1,158 @@
+/* table-wc: Enhanced table component styles */
+
+/* Filter input container */
+table-wc [data-table-filter] {
+  margin-block-end: var(--size-m);
+}
+
+/* Filter input styling */
+table-wc [data-filter-input] {
+  inline-size: 100%;
+  max-inline-size: 20rem;
+  padding: var(--size-xs) var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  transition: border-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-interactive);
+    box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+  }
+
+  /* Clear button styling for search input */
+  &::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
+}
+
+/* Pagination nav container */
+table-wc [data-pagination] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-2xs);
+  margin-block-start: var(--size-m);
+  padding-block-start: var(--size-m);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Pagination buttons base styles */
+table-wc [data-pagination] button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--size-touch-min);
+  min-block-size: var(--size-touch-min);
+  padding: var(--size-2xs) var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-raised);
+    border-color: var(--color-border-strong);
+  }
+
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: 2px;
+  }
+
+  /* Current page button */
+  &[data-current],
+  &[aria-current="page"] {
+    background: var(--color-interactive);
+    border-color: var(--color-interactive);
+    color: var(--color-text-on-primary);
+    font-weight: 600;
+
+    &:hover {
+      background: var(--color-interactive-hover);
+      border-color: var(--color-interactive-hover);
+    }
+  }
+
+  /* Disabled state (prev/next at boundaries) */
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Prev/Next buttons with slightly different styling */
+table-wc [data-pagination-prev],
+table-wc [data-pagination-next] {
+  padding-inline: var(--size-m);
+}
+
+/* Ellipsis styling */
+table-wc [data-pagination-ellipsis] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--size-touch-min);
+  min-block-size: var(--size-touch-min);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* --- Empty state when filter returns no results --- */
+
+table-wc:has([data-filter-input]:not(:placeholder-shown)) tbody:not(:has(tr:not([data-state-hidden])))::after {
+  content: 'No matching rows found';
+  display: block;
+  padding: var(--size-l);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* --- Bulk Actions Bar --- */
+
+/* Bulk actions bar - shows when rows selected */
+[data-bulk-actions] {
+  display: none;
+}
+
+body:has(tr[data-state-selected]) [data-bulk-actions] {
+  display: flex;
+  gap: var(--size-m);
+  align-items: center;
+  padding: var(--size-s) var(--size-m);
+  margin-block-end: var(--size-m);
+  background: var(--color-surface-raised);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+}
+
+[data-bulk-actions] [data-selected-count] {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  table-wc [data-filter-input],
+  table-wc [data-pagination] button {
+    transition: none;
+  }
+}
