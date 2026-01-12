@@ -9,3 +9,4 @@ import './theme-wc/logic.js';
 import './heading-links/logic.js';
 import './page-toc/logic.js';
 import './table-wc/logic.js';
+import './search-wc/logic.js';
