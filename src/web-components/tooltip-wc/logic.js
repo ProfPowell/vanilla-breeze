@@ -14,11 +14,16 @@
  *   <template data-tooltip>Tooltip content here</template>
  * </tooltip-wc>
  */
+
+// Check CSS Anchor Positioning support once
+const supportsAnchor = CSS.supports('anchor-name', '--test');
+
 class TooltipWc extends HTMLElement {
   #trigger;
   #tooltip;
   #showTimer;
   #hideTimer;
+  #useJsPositioning = !supportsAnchor;
 
   connectedCallback() {
     this.#setup();
@@ -57,6 +62,14 @@ class TooltipWc extends HTMLElement {
 
     // Append tooltip to this element
     this.appendChild(this.#tooltip);
+
+    // Set up CSS Anchor Positioning if supported
+    if (supportsAnchor) {
+      const anchorName = `--tooltip-anchor-${this.#tooltip.id}`;
+      this.#trigger.style.anchorName = anchorName;
+      this.#tooltip.style.positionAnchor = anchorName;
+      this.#tooltip.setAttribute('data-anchor', '');
+    }
 
     // Set ARIA relationship on trigger
     this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
@@ -118,7 +131,11 @@ class TooltipWc extends HTMLElement {
     if (!this.#tooltip || this.isVisible) return;
 
     this.#tooltip.showPopover();
-    this.#updatePosition();
+
+    // Only use JS positioning if CSS Anchor not supported
+    if (this.#useJsPositioning) {
+      this.#updatePosition();
+    }
 
     this.dispatchEvent(new CustomEvent('tooltip-show', { bubbles: true }));
   }

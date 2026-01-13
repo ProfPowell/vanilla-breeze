@@ -9,17 +9,55 @@ tooltip-wc {
    * Core tooltip styling comes from native-elements/tooltip/styles.css
    * via the [role="tooltip"][popover] selector.
    *
-   * Positioning is handled via JavaScript (top/left set directly)
-   * to avoid CSS Anchor Positioning conflicts when multiple
-   * tooltip-wc instances exist on the same page.
+   * Positioning strategy:
+   * - CSS Anchor Positioning for modern browsers (Chrome 125+, Safari 18+)
+   * - JavaScript fallback for older browsers
    */
+}
 
-  /* Override native tooltip anchor positioning for tooltip-wc pattern */
-  & > .tooltip[popover] {
-    position: fixed;
-    /* top and left are set by JavaScript */
-    inset: auto;
-    /* Reset anchor-center from native tooltip CSS */
-    justify-self: auto;
-  }
+/* --- CSS Anchor Positioning (modern browsers) --- */
+
+tooltip-wc > .tooltip[data-anchor] {
+  /* Use anchor positioning instead of JS */
+  position: fixed;
+  inset: auto;
+}
+
+/* Top position (default) */
+tooltip-wc > .tooltip[data-anchor]:not([data-position]),
+tooltip-wc > .tooltip[data-anchor][data-position="top"] {
+  bottom: anchor(top);
+  left: anchor(center);
+  translate: -50% calc(-1 * var(--size-xs));
+}
+
+/* Bottom position */
+tooltip-wc > .tooltip[data-anchor][data-position="bottom"] {
+  top: anchor(bottom);
+  left: anchor(center);
+  translate: -50% var(--size-xs);
+}
+
+/* Left position */
+tooltip-wc > .tooltip[data-anchor][data-position="left"] {
+  right: anchor(left);
+  top: anchor(center);
+  translate: calc(-1 * var(--size-xs)) -50%;
+}
+
+/* Right position */
+tooltip-wc > .tooltip[data-anchor][data-position="right"] {
+  left: anchor(right);
+  top: anchor(center);
+  translate: var(--size-xs) -50%;
+}
+
+/* --- JavaScript Positioning Fallback (older browsers) --- */
+
+tooltip-wc > .tooltip[popover]:not([data-anchor]) {
+  position: fixed;
+  /* top and left are set by JavaScript */
+  inset: auto;
+  /* Reset anchor-center from native tooltip CSS */
+  justify-self: auto;
 }

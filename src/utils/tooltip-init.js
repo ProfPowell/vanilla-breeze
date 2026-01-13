@@ -25,6 +25,7 @@ const HIDE_DELAY = 100;
  * @param {Element|Document} root - Root element to search within
  */
 function initTooltips(root = document) {
+  // Initialize hover tooltips (aria-describedby)
   root.querySelectorAll('[aria-describedby]').forEach(trigger => {
     const tipId = trigger.getAttribute('aria-describedby');
     const tip = document.getElementById(tipId);
@@ -46,7 +47,7 @@ function initTooltips(root = document) {
       clearTimeout(hideTimer);
       showTimer = setTimeout(() => {
         tip.showPopover();
-        positionFallback(trigger, tip);
+        positionTooltip(trigger, tip);
       }, SHOW_DELAY);
     };
 
@@ -60,7 +61,7 @@ function initTooltips(root = document) {
     const showImmediate = () => {
       clearTimeout(hideTimer);
       tip.showPopover();
-      positionFallback(trigger, tip);
+      positionTooltip(trigger, tip);
     };
 
     const hideImmediate = () => {
@@ -80,17 +81,34 @@ function initTooltips(root = document) {
     tip.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     tip.addEventListener('mouseleave', scheduleHide);
   });
+
+  // Initialize click tooltips (popovertarget)
+  root.querySelectorAll('[popovertarget]').forEach(trigger => {
+    const tipId = trigger.getAttribute('popovertarget');
+    const tip = document.getElementById(tipId);
+
+    // Only init if it's a popover tooltip
+    if (!tip?.hasAttribute('popover') || !tip.matches('[role="tooltip"]')) return;
+
+    // Skip if already initialized
+    if (tip.hasAttribute('data-tooltip-click-init')) return;
+    tip.setAttribute('data-tooltip-click-init', '');
+
+    // Position tooltip when it opens via toggle event
+    tip.addEventListener('toggle', (event) => {
+      if (event.newState === 'open') {
+        positionTooltip(trigger, tip);
+      }
+    });
+  });
 }
 
 /**
- * Fallback positioning for browsers without CSS Anchor Positioning
+ * Position tooltip relative to trigger using JavaScript
  * @param {Element} trigger - The trigger element
  * @param {Element} tooltip - The tooltip element
  */
-function positionFallback(trigger, tooltip) {
-  // Skip if browser supports anchor positioning
-  if (CSS.supports('anchor-name', '--x')) return;
-
+function positionTooltip(trigger, tooltip) {
   const triggerRect = trigger.getBoundingClientRect();
   const position = tooltip.dataset.position || 'top';
   const gap = 8;
@@ -125,8 +143,8 @@ function positionFallback(trigger, tooltip) {
   left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
   top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
 
-  tooltip.style.setProperty('--fallback-top', `${top}px`);
-  tooltip.style.setProperty('--fallback-left', `${left}px`);
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
 }
 
 // Auto-init on DOMContentLoaded
@@ -136,4 +154,4 @@ if (document.readyState === 'loading') {
   initTooltips();
 }
 
-export { initTooltips, positionFallback };
+export { initTooltips, positionTooltip };

@@ -59,6 +59,9 @@ class HeadingLinks extends HTMLElement {
   }
 
   #enhanceHeading(heading) {
+    // Skip headings inside dialogs - they shouldn't have anchor links
+    if (heading.closest('dialog')) return;
+
     // Ensure heading has an ID
     if (!heading.id) {
       heading.id = this.#generateId(heading.textContent);
@@ -87,13 +90,22 @@ class HeadingLinks extends HTMLElement {
   }
 
   #generateId(text) {
-    return text
+    const baseId = text
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '') // Remove special chars
       .replace(/\s+/g, '-')      // Spaces to hyphens
       .replace(/-+/g, '-')       // Collapse multiple hyphens
       .substring(0, 50);         // Limit length
+
+    // Ensure unique ID - check if already exists in document
+    let id = baseId;
+    let counter = 1;
+    while (document.getElementById(id)) {
+      id = `${baseId}-${counter}`;
+      counter++;
+    }
+    return id;
   }
 
   async #activateLink(heading, anchor) {
