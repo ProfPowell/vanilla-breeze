@@ -6,6 +6,7 @@
  *
  * @attr {string} data-position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
  * @attr {boolean} data-open - Whether menu is open (reflected)
+ * @attr {boolean} data-no-flip - Disable automatic flip when menu doesn't fit
  *
  * @example
  * <dropdown-wc>
@@ -222,6 +223,7 @@ class DropdownWc extends HTMLElement {
     if (!this.#trigger || !this.#menu) return;
 
     const position = this.getAttribute('data-position') || 'bottom-start';
+    const noFlip = this.hasAttribute('data-no-flip');
     const triggerRect = this.#trigger.getBoundingClientRect();
     const menuRect = this.#menu.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
@@ -233,14 +235,14 @@ class DropdownWc extends HTMLElement {
     // Vertical position
     if (position.startsWith('top')) {
       top = -menuRect.height - gap;
-      // Flip to bottom if not enough space above
-      if (triggerRect.top + top < 0) {
+      // Flip to bottom if not enough space above (unless noFlip)
+      if (!noFlip && triggerRect.top + top < 0) {
         top = triggerRect.height + gap;
       }
     } else {
       top = triggerRect.height + gap;
-      // Flip to top if not enough space below
-      if (triggerRect.bottom + menuRect.height + gap > viewportHeight) {
+      // Flip to top if not enough space below (unless noFlip)
+      if (!noFlip && triggerRect.bottom + menuRect.height + gap > viewportHeight) {
         top = -menuRect.height - gap;
       }
     }
