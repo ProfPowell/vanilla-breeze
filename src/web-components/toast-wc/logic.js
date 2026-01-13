@@ -82,21 +82,21 @@ class ToastWc extends HTMLElement {
     };
 
     toast.innerHTML = `
-      <span class="toast-icon" aria-hidden="true">${iconMap[variant] || iconMap.info}</span>
-      <span class="toast-message">${this.#escapeHtml(message)}</span>
-      ${action ? `<button type="button" class="toast-action">${this.#escapeHtml(action)}</button>` : ''}
-      ${dismissible ? '<button type="button" class="toast-close" aria-label="Dismiss">&#x2715;</button>' : ''}
+      <span class="icon" aria-hidden="true">${iconMap[variant] || iconMap.info}</span>
+      <span class="message">${this.#escapeHtml(message)}</span>
+      ${action ? `<button type="button" class="action">${this.#escapeHtml(action)}</button>` : ''}
+      ${dismissible ? '<button type="button" class="close" aria-label="Dismiss">&#x2715;</button>' : ''}
     `;
 
     // Event listeners
     if (dismissible) {
-      toast.querySelector('.toast-close').addEventListener('click', () => {
+      toast.querySelector('.close').addEventListener('click', () => {
         this.#dismissToast(toast);
       });
     }
 
     if (action && onAction) {
-      toast.querySelector('.toast-action').addEventListener('click', () => {
+      toast.querySelector('.action').addEventListener('click', () => {
         onAction();
         this.#dismissToast(toast);
       });

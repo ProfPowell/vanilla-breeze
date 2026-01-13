@@ -94,7 +94,7 @@ class ThemePicker extends HTMLElement {
 
     // Create panel
     this.#panel = document.createElement('div');
-    this.#panel.className = 'theme-wc-panel';
+    this.#panel.className = 'panel';
     this.#panel.setAttribute('role', 'dialog');
     this.#panel.setAttribute('aria-label', 'Theme settings');
 
@@ -111,18 +111,18 @@ class ThemePicker extends HTMLElement {
     const { mode, brand } = ThemeManager.getState();
 
     return `
-      <fieldset class="theme-wc-section">
+      <fieldset class="section">
         <legend>Color Mode</legend>
-        <div class="theme-wc-options" role="radiogroup" aria-label="Color mode">
+        <div class="options" role="radiogroup" aria-label="Color mode">
           ${ThemePicker.#MODES.map(m => `
-            <label class="theme-wc-option">
+            <label class="option">
               <input
                 type="radio"
                 name="theme-mode"
                 value="${m.id}"
                 ${mode === m.id ? 'checked' : ''}
               />
-              <span class="theme-wc-option-content">
+              <span class="option-content">
                 <x-icon name="${m.icon}"></x-icon>
                 <span>${m.name}</span>
               </span>
@@ -131,19 +131,19 @@ class ThemePicker extends HTMLElement {
         </div>
       </fieldset>
 
-      <fieldset class="theme-wc-section">
+      <fieldset class="section">
         <legend>Brand Theme</legend>
-        <div class="theme-wc-options theme-wc-options--themes" role="radiogroup" aria-label="Brand theme">
+        <div class="options options--themes" role="radiogroup" aria-label="Brand theme">
           ${ThemePicker.#THEMES.map(t => `
-            <label class="theme-wc-option theme-wc-option--theme">
+            <label class="option option--theme">
               <input
                 type="radio"
                 name="theme-brand"
                 value="${t.id}"
                 ${brand === t.id ? 'checked' : ''}
               />
-              <span class="theme-wc-option-content">
-                <span class="theme-wc-swatch" style="--swatch-hue: ${t.hue}"></span>
+              <span class="option-content">
+                <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
                 <span>${t.name}</span>
               </span>
             </label>
@@ -302,8 +302,8 @@ class ThemePicker extends HTMLElement {
       left = edgeMargin - triggerRect.left;
     }
 
-    this.#panel.style.setProperty('--theme-wc-top', `${top}px`);
-    this.#panel.style.setProperty('--theme-wc-left', `${left}px`);
+    this.#panel.style.setProperty('--panel-top', `${top}px`);
+    this.#panel.style.setProperty('--panel-left', `${left}px`);
   }
 
   close() {

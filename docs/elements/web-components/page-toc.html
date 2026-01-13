@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>icon-wc - Web Components - Vanilla Breeze</title>
+  <title>page-toc - Web Components - Vanilla Breeze</title>
   <link rel="stylesheet" href="/src/main.css" />
   <link rel="stylesheet" href="/docs/docs.css" />
 </head>
@@ -291,7 +291,7 @@
               <li><a href="/docs/elements/custom-elements/form-field.html">form-field</a></li>
             </ul>
           </details>
-                    <details open>
+          <details open>
             <summary>Web Components</summary>
             <ul>
               <li><a href="/docs/elements/web-components/accordion.html">accordion-wc</a></li>
@@ -301,11 +301,11 @@
               <li><a href="/docs/elements/web-components/toast.html">toast-wc</a></li>
               <li><a href="/docs/elements/web-components/theme-wc.html">theme-wc</a></li>
               <li><a href="/docs/elements/web-components/search-wc.html">search-wc</a></li>
-              <li><a href="/docs/elements/web-components/icons.html" aria-current="page">icon-wc</a></li>
+              <li><a href="/docs/elements/web-components/icons.html">icon-wc</a></li>
               <li><a href="/docs/elements/web-components/footnotes.html">footnotes-wc</a></li>
               <li><a href="/docs/elements/web-components/table-wc.html">table-wc</a></li>
               <li><a href="/docs/elements/web-components/heading-links.html">heading-links</a></li>
-              <li><a href="/docs/elements/web-components/page-toc.html">page-toc</a></li>
+              <li><a href="/docs/elements/web-components/page-toc.html" aria-current="page">page-toc</a></li>
             </ul>
           </details>
         </nav>
@@ -315,29 +315,18 @@
           <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
         </aside>
         <article>
-          <h1>icon-wc</h1>
-          <p class="lead">SVG icons with Lucide integration, consistent sizing, and automatic accessibility.</p>
+          <h1>page-toc</h1>
+          <p class="lead">Table of contents with scroll-spy highlighting for documentation and long-form content.</p>
 
           <heading-links data-levels="h2,h3">
 <section>
         <h2>Overview</h2>
-        <p>The <code>&lt;icon-wc&gt;</code> component provides a simple way to use SVG icons from the Lucide library or custom icon sets. Icons inherit the current text color and can be sized using preset values.</p>
+        <p>The <code>&lt;page-toc&gt;</code> component generates a table of contents from page headings or enhances existing markup with scroll-spy functionality. As users scroll, the current section is highlighted in the ToC.</p>
 
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="center">
-            <icon-wc name="home"></icon-wc>
-            <icon-wc name="settings"></icon-wc>
-            <icon-wc name="user"></icon-wc>
-            <icon-wc name="search"></icon-wc>
-            <icon-wc name="mail"></icon-wc>
-          </layout-cluster>
-        </div>
+        <p>Look to the right side of this page to see it in action. The "On this page" panel highlights the current section as you scroll.</p>
 
-        <code-block language="html" show-lines label="Basic icon usage">&lt;icon-wc name="home"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="settings"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="user"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="search"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="mail"&gt;&lt;/icon-wc&gt;</code-block>
+        <code-block language="html" show-lines label="Basic page-toc usage">&lt;!-- Auto-generated ToC --&gt;
+&lt;page-toc data-levels="h2,h3" data-scope="main"&gt;&lt;/page-toc&gt;</code-block>
       </section>
 
       <section>
@@ -353,397 +342,331 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>name</code></td>
+              <td><code>data-levels</code></td>
               <td>string</td>
-              <td>-</td>
-              <td>Icon name (required). Matches filename without <code>.svg</code> extension.</td>
+              <td><code>"h2,h3"</code></td>
+              <td>Comma-separated list of heading levels to include.</td>
             </tr>
             <tr>
-              <td><code>set</code></td>
+              <td><code>data-scope</code></td>
               <td>string</td>
-              <td><code>"lucide"</code></td>
-              <td>Icon set directory. Use <code>"custom"</code> for project-specific icons.</td>
+              <td><code>"main"</code></td>
+              <td>CSS selector for the content scope to scan for headings.</td>
             </tr>
             <tr>
-              <td><code>size</code></td>
+              <td><code>data-title</code></td>
               <td>string</td>
-              <td><code>"md"</code></td>
-              <td>Size preset: <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, <code>2xl</code></td>
-            </tr>
-            <tr>
-              <td><code>label</code></td>
-              <td>string</td>
-              <td>-</td>
-              <td>Accessible label for functional icons. When set, icon is announced to screen readers.</td>
-            </tr>
-            <tr>
-              <td><code>base-path</code></td>
-              <td>string</td>
-              <td><code>"/.assets/icons"</code></td>
-              <td>Override the default icon path.</td>
+              <td><code>"On this page"</code></td>
+              <td>Title shown at the top of the ToC.</td>
             </tr>
           </tbody>
         </table>
       </section>
 
       <section>
-        <h2>Sizes</h2>
-        <p>Use the <code>size</code> attribute to control icon dimensions. Sizes are relative to the current font size.</p>
+        <h2>Two Modes</h2>
+        <p>The component supports two usage modes:</p>
 
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="end">
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="xs"></icon-wc>
-              <small>xs</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="sm"></icon-wc>
-              <small>sm</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="md"></icon-wc>
-              <small>md</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="lg"></icon-wc>
-              <small>lg</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="xl"></icon-wc>
-              <small>xl</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="2xl"></icon-wc>
-              <small>2xl</small>
-            </layout-stack>
-          </layout-cluster>
-        </div>
+        <h3>Auto-Generated Mode</h3>
+        <p>When the component is empty, it automatically scans the page for headings and builds the ToC:</p>
 
-        <code-block language="html" show-lines label="Icon size variants">&lt;icon-wc name="star" size="xs"&gt;&lt;/icon-wc&gt;  &lt;!-- 1em (16px at base) --&gt;
-&lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;  &lt;!-- 1.25em (20px) --&gt;
-&lt;icon-wc name="star" size="md"&gt;&lt;/icon-wc&gt;  &lt;!-- 1.5em (24px) --&gt;
-&lt;icon-wc name="star" size="lg"&gt;&lt;/icon-wc&gt;  &lt;!-- 2em (32px) --&gt;
-&lt;icon-wc name="star" size="xl"&gt;&lt;/icon-wc&gt;  &lt;!-- 2.5em (40px) --&gt;
-&lt;icon-wc name="star" size="2xl"&gt;&lt;/icon-wc&gt; &lt;!-- 3em (48px) --&gt;</code-block>
+        <code-block language="html" show-lines label="Auto-generated mode">&lt;page-toc
+  data-levels="h2,h3"
+  data-scope="article"
+  data-title="Contents"&gt;
+&lt;/page-toc&gt;</code-block>
 
-        <h3>Size Reference</h3>
+        <h3>Manual Markup Mode</h3>
+        <p>Provide your own markup for progressive enhancement. The component adds scroll-spy to existing links:</p>
+
+        <code-block language="html" show-lines label="Manual markup mode">&lt;page-toc&gt;
+  &lt;details class="details" open&gt;
+    &lt;summary class="summary"&gt;On this page&lt;/summary&gt;
+    &lt;nav class="nav" aria-label="On this page"&gt;
+      &lt;ul class="list"&gt;
+        &lt;li class="item"&gt;&lt;a href="#overview" class="link"&gt;Overview&lt;/a&gt;&lt;/li&gt;
+        &lt;li class="item"&gt;&lt;a href="#usage" class="link"&gt;Usage&lt;/a&gt;&lt;/li&gt;
+        &lt;li class="item"&gt;&lt;a href="#api" class="link"&gt;API&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  &lt;/details&gt;
+&lt;/page-toc&gt;</code-block>
+
+        <p>Manual mode is useful when you need custom ordering or want to include only specific headings.</p>
+      </section>
+
+      <section>
+        <h2>How It Works</h2>
+
+        <h3>Initialization</h3>
+        <ol>
+          <li>Detects mode (auto vs manual) by checking for existing markup</li>
+          <li>In auto mode, scans for headings within the specified scope</li>
+          <li>Builds or enhances the ToC structure</li>
+          <li>Sets up scroll-spy using IntersectionObserver</li>
+        </ol>
+
+        <h3>Scroll-Spy</h3>
+        <p>The component uses IntersectionObserver to track which headings are visible:</p>
+        <ul>
+          <li>Observes all headings in the ToC</li>
+          <li>Highlights the first visible heading</li>
+          <li>Updates as user scrolls</li>
+          <li>Syncs with URL hash changes</li>
+        </ul>
+
+        <h3>Responsive Behavior</h3>
+        <ul>
+          <li><strong>Wide screens (1024px+):</strong> ToC is always visible, sticky positioned</li>
+          <li><strong>Narrow screens:</strong> ToC is collapsible via details/summary</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Customizing Levels</h2>
+        <p>Use <code>data-levels</code> to control which headings appear in the ToC:</p>
+
+        <code-block language="html" show-lines label="Customizing heading levels">&lt;!-- Just h2 headings --&gt;
+&lt;page-toc data-levels="h2"&gt;&lt;/page-toc&gt;
+
+&lt;!-- h2, h3, and h4 --&gt;
+&lt;page-toc data-levels="h2,h3,h4"&gt;&lt;/page-toc&gt;
+
+&lt;!-- Only h3 within a specific section --&gt;
+&lt;page-toc data-levels="h3" data-scope=".api-docs"&gt;&lt;/page-toc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Customizing Scope</h2>
+        <p>Use <code>data-scope</code> to limit which part of the page is scanned for headings:</p>
+
+        <code-block language="html" show-lines label="Custom scope selectors">&lt;!-- Default: scan main element --&gt;
+&lt;page-toc data-scope="main"&gt;&lt;/page-toc&gt;
+
+&lt;!-- Scan a specific article --&gt;
+&lt;page-toc data-scope="article"&gt;&lt;/page-toc&gt;
+
+&lt;!-- Scan by class --&gt;
+&lt;page-toc data-scope=".content-area"&gt;&lt;/page-toc&gt;
+
+&lt;!-- Scan by ID --&gt;
+&lt;page-toc data-scope="#main-content"&gt;&lt;/page-toc&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Events</h2>
+        <p>The component dispatches events when navigation occurs.</p>
+
         <table class="props-table">
           <thead>
             <tr>
-              <th>Size</th>
-              <th>Dimensions</th>
+              <th>Event</th>
+              <th>Detail</th>
+              <th>Description</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><code>xs</code></td>
-              <td>1em (16px at base)</td>
-            </tr>
-            <tr>
-              <td><code>sm</code></td>
-              <td>1.25em (20px)</td>
-            </tr>
-            <tr>
-              <td><code>md</code></td>
-              <td>1.5em (24px)</td>
-            </tr>
-            <tr>
-              <td><code>lg</code></td>
-              <td>2em (32px)</td>
-            </tr>
-            <tr>
-              <td><code>xl</code></td>
-              <td>2.5em (40px)</td>
-            </tr>
-            <tr>
-              <td><code>2xl</code></td>
-              <td>3em (48px)</td>
+              <td><code>toc-navigate</code></td>
+              <td><code>{ id }</code></td>
+              <td>Fired when a ToC link is clicked.</td>
             </tr>
           </tbody>
         </table>
+
+        <code-block language="javascript" show-lines label="Listening for navigation events">const toc = document.querySelector('page-toc');
+
+toc.addEventListener('toc-navigate', (e) => {
+  console.log('Navigated to section:', e.detail.id);
+});</code-block>
       </section>
 
       <section>
-        <h2>Colors</h2>
-        <p>Icons inherit <code>currentColor</code> from their parent element. Change the parent's <code>color</code> property to change the icon color.</p>
+        <h2>JavaScript API</h2>
 
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="center">
-            <span style="color: var(--color-text);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-interactive);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-success);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-warning);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-error);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-          </layout-cluster>
-        </div>
-
-        <code-block language="html" show-lines label="Icon color inheritance">&lt;span style="color: var(--color-text);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;
-&lt;span style="color: var(--color-interactive);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;
-&lt;span style="color: var(--color-success);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;</code-block>
-      </section>
-
-      <section>
-        <h2>With Buttons</h2>
-        <p>Icons work naturally inside buttons. For icon-only buttons, always include an accessible label.</p>
-
-        <div class="example">
-          <layout-cluster data-gap="m">
-            <button type="button">
-              <icon-wc name="plus"></icon-wc>
-              Add Item
-            </button>
-            <button type="button" class="secondary">
-              <icon-wc name="download"></icon-wc>
-              Download
-            </button>
-            <button type="button" class="ghost" aria-label="Settings">
-              <icon-wc name="settings" label="Settings"></icon-wc>
-            </button>
-            <button type="button" class="ghost" aria-label="Close">
-              <icon-wc name="x" label="Close"></icon-wc>
-            </button>
-          </layout-cluster>
-        </div>
-
-        <code-block language="html" show-lines label="Icons in buttons">&lt;!-- Icon with text label --&gt;
-&lt;button type="button"&gt;
-  &lt;icon-wc name="plus"&gt;&lt;/icon-wc&gt;
-  Add Item
-&lt;/button&gt;
-
-&lt;!-- Icon-only button (needs label for accessibility) --&gt;
-&lt;button type="button" class="ghost" aria-label="Settings"&gt;
-  &lt;icon-wc name="settings" label="Settings"&gt;&lt;/icon-wc&gt;
-&lt;/button&gt;</code-block>
-      </section>
-
-      <section>
-        <h2>Lucide Integration</h2>
-        <p>The component uses the <a href="https://lucide.dev/icons" target="_blank" rel="noopener">Lucide</a> icon library by default. Lucide provides over 1,900 beautifully crafted open-source icons.</p>
-
-        <h3>Common Icons</h3>
-        <div class="example">
-          <layout-grid data-min="120px" data-gap="m">
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="menu" size="lg"></icon-wc>
-              <small>menu</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="x" size="lg"></icon-wc>
-              <small>x</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="check" size="lg"></icon-wc>
-              <small>check</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="alert-circle" size="lg"></icon-wc>
-              <small>alert-circle</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="info" size="lg"></icon-wc>
-              <small>info</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="arrow-left" size="lg"></icon-wc>
-              <small>arrow-left</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="arrow-right" size="lg"></icon-wc>
-              <small>arrow-right</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="chevron-down" size="lg"></icon-wc>
-              <small>chevron-down</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="edit" size="lg"></icon-wc>
-              <small>edit</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="trash" size="lg"></icon-wc>
-              <small>trash</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="save" size="lg"></icon-wc>
-              <small>save</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="heart" size="lg"></icon-wc>
-              <small>heart</small>
-            </layout-stack>
-          </layout-grid>
-        </div>
-
-        <h3>Icon Categories</h3>
         <table class="props-table">
           <thead>
             <tr>
-              <th>Purpose</th>
-              <th>Icon Names</th>
+              <th>Method</th>
+              <th>Description</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Navigation</td>
-              <td><code>menu</code>, <code>x</code>, <code>arrow-left</code>, <code>arrow-right</code></td>
-            </tr>
-            <tr>
-              <td>Actions</td>
-              <td><code>plus</code>, <code>minus</code>, <code>edit</code>, <code>trash</code>, <code>save</code></td>
-            </tr>
-            <tr>
-              <td>Status</td>
-              <td><code>check</code>, <code>x</code>, <code>alert-circle</code>, <code>info</code></td>
-            </tr>
-            <tr>
-              <td>Media</td>
-              <td><code>play</code>, <code>pause</code>, <code>volume-2</code>, <code>image</code></td>
-            </tr>
-            <tr>
-              <td>User</td>
-              <td><code>user</code>, <code>users</code>, <code>settings</code>, <code>log-out</code></td>
-            </tr>
-            <tr>
-              <td>Files</td>
-              <td><code>file</code>, <code>folder</code>, <code>download</code>, <code>upload</code></td>
-            </tr>
-            <tr>
-              <td>Social</td>
-              <td><code>share</code>, <code>heart</code>, <code>star</code>, <code>message-circle</code></td>
+              <td><code>refresh()</code></td>
+              <td>Rebuild the ToC (useful after dynamic content changes).</td>
             </tr>
           </tbody>
         </table>
+
+        <code-block language="javascript" show-lines label="Refreshing the ToC">const toc = document.querySelector('page-toc');
+
+// After adding new content
+toc.refresh();</code-block>
       </section>
 
       <section>
-        <h2>Custom Icons</h2>
-        <p>Add custom icons to the <code>.assets/icons/custom/</code> directory and reference them with <code>set="custom"</code>.</p>
+        <h2>Styling</h2>
+        <p>The component uses scoped class names that can be styled with CSS:</p>
 
-        <code-block language="html" show-lines label="Custom icon set usage">&lt;!-- Using a custom icon --&gt;
-&lt;icon-wc name="logo" set="custom"&gt;&lt;/icon-wc&gt;
+        <code-block language="css" show-lines label="ToC component styles">@scope (page-toc) {
+  /* Collapsible container */
+  .details {
+    font-size: var(--font-size-sm);
+  }
 
-&lt;!-- Custom icon requirements:
-     - SVG format with viewBox attribute
-     - No fixed width/height (component handles sizing)
-     - Use currentColor for strokes/fills
---&gt;</code-block>
+  /* Toggle header */
+  .summary {
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Navigation container */
+  .nav {
+    padding: var(--size-s);
+  }
+
+  /* List of links */
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Individual list items */
+  .item {
+    margin: 0;
+  }
+
+  /* Indent nested levels */
+  .item[data-level="1"] {
+    padding-inline-start: var(--size-m);
+  }
+
+  /* ToC links */
+  .link {
+    display: block;
+    padding: var(--size-2xs) var(--size-xs);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-inline-start: 2px solid transparent;
+  }
+
+  /* Active link (current section) */
+  .link.active {
+    color: var(--color-interactive);
+    border-inline-start-color: var(--color-interactive);
+    font-weight: 500;
+  }
+}</code-block>
+      </section>
+
+      <section>
+        <h2>Layout Patterns</h2>
+        <p>Common layouts for positioning the ToC:</p>
+
+        <h3>Sidebar Layout</h3>
+        <p>Place the ToC in a sidebar using <code>layout-sidebar</code>:</p>
+
+        <code-block language="html" show-lines label="Sidebar layout pattern">&lt;layout-sidebar data-side="end" data-sidebar-width="narrow"&gt;
+  &lt;aside&gt;
+    &lt;page-toc data-levels="h2,h3" data-scope="article"&gt;&lt;/page-toc&gt;
+  &lt;/aside&gt;
+  &lt;article&gt;
+    &lt;heading-links&gt;
+      &lt;h2 id="intro"&gt;Introduction&lt;/h2&gt;
+      &lt;p&gt;...&lt;/p&gt;
+      &lt;h2 id="features"&gt;Features&lt;/h2&gt;
+      &lt;p&gt;...&lt;/p&gt;
+    &lt;/heading-links&gt;
+  &lt;/article&gt;
+&lt;/layout-sidebar&gt;</code-block>
+
+        <h3>Sticky Positioning</h3>
+        <p>The component includes sticky positioning styles for wide screens:</p>
+
+        <code-block language="css" show-lines label="Sticky positioning">@media (min-width: 1024px) {
+  page-toc {
+    position: sticky;
+    top: var(--size-xl);
+  }
+}</code-block>
+      </section>
+
+      <section>
+        <h2>With heading-links</h2>
+        <p>The <code>page-toc</code> component works seamlessly with <code>&lt;heading-links&gt;</code>. The page-toc waits for heading-links to add IDs before scanning:</p>
+
+        <code-block language="html" show-lines label="Combined usage">&lt;layout-sidebar data-side="end"&gt;
+  &lt;aside&gt;
+    &lt;page-toc data-levels="h2,h3" data-scope="article"&gt;&lt;/page-toc&gt;
+  &lt;/aside&gt;
+  &lt;article&gt;
+    &lt;heading-links data-levels="h2,h3"&gt;
+      &lt;!-- Headings here will get IDs from heading-links --&gt;
+      &lt;!-- page-toc will pick them up for the ToC --&gt;
+      &lt;h2&gt;Section One&lt;/h2&gt;
+      &lt;p&gt;Content...&lt;/p&gt;
+    &lt;/heading-links&gt;
+  &lt;/article&gt;
+&lt;/layout-sidebar&gt;</code-block>
       </section>
 
       <section>
         <h2>Accessibility</h2>
 
-        <h3>Decorative vs Functional Icons</h3>
-        <p>Icons can be either decorative (hidden from screen readers) or functional (announced to screen readers).</p>
+        <h3>ARIA Attributes</h3>
+        <ul>
+          <li>The nav element has <code>aria-label</code> matching the ToC title</li>
+          <li>Active links have <code>aria-current="true"</code></li>
+        </ul>
 
-        <table class="props-table">
-          <thead>
-            <tr>
-              <th>Context</th>
-              <th>Pattern</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Icon + visible text</td>
-              <td>No <code>label</code> needed (decorative)</td>
-            </tr>
-            <tr>
-              <td>Icon-only button</td>
-              <td>Add <code>label</code> attribute</td>
-            </tr>
-            <tr>
-              <td>Status indicator</td>
-              <td>Add <code>label</code> describing status</td>
-            </tr>
-            <tr>
-              <td>Purely decorative</td>
-              <td>No <code>label</code> needed</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3>Keyboard Navigation</h3>
+        <ul>
+          <li>All ToC links are keyboard accessible</li>
+          <li>On narrow screens, the details/summary provides keyboard-accessible expand/collapse</li>
+        </ul>
 
-        <div class="example">
-          <layout-stack data-gap="m">
-            <p><strong>Decorative icon</strong> (with visible text):</p>
-            <button type="button">
-              <icon-wc name="save"></icon-wc>
-              Save Document
-            </button>
-
-            <p><strong>Functional icon</strong> (icon only):</p>
-            <button type="button" class="ghost" aria-label="Close dialog">
-              <icon-wc name="x" label="Close"></icon-wc>
-            </button>
-          </layout-stack>
-        </div>
-
-        <code-block language="html" show-lines label="Decorative vs functional icons">&lt;!-- Decorative - icon is hidden from screen readers --&gt;
-&lt;button&gt;
-  &lt;icon-wc name="save"&gt;&lt;/icon-wc&gt;
-  Save Document
-&lt;/button&gt;
-
-&lt;!-- Functional - icon is announced to screen readers --&gt;
-&lt;button aria-label="Close dialog"&gt;
-  &lt;icon-wc name="x" label="Close"&gt;&lt;/icon-wc&gt;
-&lt;/button&gt;</code-block>
+        <h3>Focus Management</h3>
+        <p>When clicking a ToC link:</p>
+        <ul>
+          <li>The page smoothly scrolls to the heading</li>
+          <li>Focus moves to the heading for screen reader announcement</li>
+        </ul>
       </section>
 
       <section>
-        <h2>Styling</h2>
-        <p>Icons can be styled using CSS. The component uses Shadow DOM but allows color inheritance.</p>
+        <h2>Use Cases</h2>
 
-        <code-block language="css" show-lines label="Icon styling with CSS">/* Change icon color */
-.danger icon-wc {
-  color: var(--color-error);
-}
+        <h3>Documentation</h3>
+        <code-block language="html" show-lines label="Documentation use case">&lt;page-toc
+  data-levels="h2,h3,h4"
+  data-scope="article"
+  data-title="API Reference"&gt;
+&lt;/page-toc&gt;</code-block>
 
-/* Custom sizing via CSS */
-icon-wc.hero-icon {
-  width: 4rem;
-  height: 4rem;
-}
+        <h3>Blog Posts</h3>
+        <code-block language="html" show-lines label="Blog post use case">&lt;page-toc
+  data-levels="h2"
+  data-scope=".blog-content"
+  data-title="Jump to"&gt;
+&lt;/page-toc&gt;</code-block>
 
-/* Hover effects */
-button:hover icon-wc {
-  color: var(--color-interactive-hover);
-}</code-block>
+        <h3>Long Forms</h3>
+        <code-block language="html" show-lines label="Long form use case">&lt;page-toc
+  data-levels="h2"
+  data-scope="form"
+  data-title="Sections"&gt;
+&lt;/page-toc&gt;</code-block>
       </section>
 
       <section>
-        <h2>JavaScript API</h2>
-        <p>The component exposes properties that mirror its attributes.</p>
-
-        <code-block language="javascript" show-lines label="JavaScript API usage">const icon = document.querySelector('icon-wc');
-
-// Read-only properties
-console.log(icon.name);     // "menu"
-console.log(icon.set);      // "lucide"
-console.log(icon.size);     // "md"
-console.log(icon.label);    // null or "Close"
-console.log(icon.basePath); // "/.assets/icons"
-console.log(icon.iconPath); // "/.assets/icons/lucide/menu.svg"
-
-// Change icon dynamically
-icon.setAttribute('name', 'settings');
-icon.setAttribute('size', 'lg');</code-block>
+        <h2>Limitations</h2>
+        <ul>
+          <li>Headings must have IDs for the ToC to link to them (use <code>heading-links</code> to auto-generate)</li>
+          <li>In auto mode, only headings within the specified scope are included</li>
+          <li>Dynamic content changes require calling <code>refresh()</code> to update the ToC</li>
+        </ul>
       </section>
           </heading-links>
         </article>

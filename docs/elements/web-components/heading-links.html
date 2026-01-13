@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>icon-wc - Web Components - Vanilla Breeze</title>
+  <title>heading-links - Web Components - Vanilla Breeze</title>
   <link rel="stylesheet" href="/src/main.css" />
   <link rel="stylesheet" href="/docs/docs.css" />
 </head>
@@ -291,7 +291,7 @@
               <li><a href="/docs/elements/custom-elements/form-field.html">form-field</a></li>
             </ul>
           </details>
-                    <details open>
+          <details open>
             <summary>Web Components</summary>
             <ul>
               <li><a href="/docs/elements/web-components/accordion.html">accordion-wc</a></li>
@@ -301,10 +301,10 @@
               <li><a href="/docs/elements/web-components/toast.html">toast-wc</a></li>
               <li><a href="/docs/elements/web-components/theme-wc.html">theme-wc</a></li>
               <li><a href="/docs/elements/web-components/search-wc.html">search-wc</a></li>
-              <li><a href="/docs/elements/web-components/icons.html" aria-current="page">icon-wc</a></li>
+              <li><a href="/docs/elements/web-components/icons.html">icon-wc</a></li>
               <li><a href="/docs/elements/web-components/footnotes.html">footnotes-wc</a></li>
               <li><a href="/docs/elements/web-components/table-wc.html">table-wc</a></li>
-              <li><a href="/docs/elements/web-components/heading-links.html">heading-links</a></li>
+              <li><a href="/docs/elements/web-components/heading-links.html" aria-current="page">heading-links</a></li>
               <li><a href="/docs/elements/web-components/page-toc.html">page-toc</a></li>
             </ul>
           </details>
@@ -315,29 +315,22 @@
           <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
         </aside>
         <article>
-          <h1>icon-wc</h1>
-          <p class="lead">SVG icons with Lucide integration, consistent sizing, and automatic accessibility.</p>
+          <h1>heading-links</h1>
+          <p class="lead">Add anchor links to headings for easy navigation and URL sharing.</p>
 
           <heading-links data-levels="h2,h3">
 <section>
         <h2>Overview</h2>
-        <p>The <code>&lt;icon-wc&gt;</code> component provides a simple way to use SVG icons from the Lucide library or custom icon sets. Icons inherit the current text color and can be sized using preset values.</p>
+        <p>The <code>&lt;heading-links&gt;</code> component wraps content and automatically adds clickable anchor links to headings. Clicking a link updates the URL hash, scrolls to the heading, and copies the link to the clipboard.</p>
 
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="center">
-            <icon-wc name="home"></icon-wc>
-            <icon-wc name="settings"></icon-wc>
-            <icon-wc name="user"></icon-wc>
-            <icon-wc name="search"></icon-wc>
-            <icon-wc name="mail"></icon-wc>
-          </layout-cluster>
-        </div>
+        <p>This component is used throughout this documentation site. Hover over any heading on this page to see the link icon appear.</p>
 
-        <code-block language="html" show-lines label="Basic icon usage">&lt;icon-wc name="home"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="settings"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="user"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="search"&gt;&lt;/icon-wc&gt;
-&lt;icon-wc name="mail"&gt;&lt;/icon-wc&gt;</code-block>
+        <code-block language="html" show-lines label="Basic heading-links usage">&lt;heading-links&gt;
+  &lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+  &lt;p&gt;Content here...&lt;/p&gt;
+  &lt;h3&gt;Example&lt;/h3&gt;
+  &lt;p&gt;More content...&lt;/p&gt;
+&lt;/heading-links&gt;</code-block>
       </section>
 
       <section>
@@ -353,397 +346,246 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>name</code></td>
+              <td><code>data-levels</code></td>
               <td>string</td>
-              <td>-</td>
-              <td>Icon name (required). Matches filename without <code>.svg</code> extension.</td>
-            </tr>
-            <tr>
-              <td><code>set</code></td>
-              <td>string</td>
-              <td><code>"lucide"</code></td>
-              <td>Icon set directory. Use <code>"custom"</code> for project-specific icons.</td>
-            </tr>
-            <tr>
-              <td><code>size</code></td>
-              <td>string</td>
-              <td><code>"md"</code></td>
-              <td>Size preset: <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, <code>2xl</code></td>
-            </tr>
-            <tr>
-              <td><code>label</code></td>
-              <td>string</td>
-              <td>-</td>
-              <td>Accessible label for functional icons. When set, icon is announced to screen readers.</td>
-            </tr>
-            <tr>
-              <td><code>base-path</code></td>
-              <td>string</td>
-              <td><code>"/.assets/icons"</code></td>
-              <td>Override the default icon path.</td>
+              <td><code>"h2,h3"</code></td>
+              <td>Comma-separated list of heading levels to process.</td>
             </tr>
           </tbody>
         </table>
       </section>
 
       <section>
-        <h2>Sizes</h2>
-        <p>Use the <code>size</code> attribute to control icon dimensions. Sizes are relative to the current font size.</p>
+        <h2>How It Works</h2>
+        <p>When the component connects:</p>
+        <ol>
+          <li><strong>Scans for headings</strong> matching the specified levels within its content.</li>
+          <li><strong>Generates IDs</strong> for headings that don't have one (based on heading text).</li>
+          <li><strong>Adds anchor links</strong> with a link icon that appear on hover.</li>
+          <li><strong>Watches for changes</strong> using MutationObserver to handle dynamic content.</li>
+        </ol>
 
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="end">
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="xs"></icon-wc>
-              <small>xs</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="sm"></icon-wc>
-              <small>sm</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="md"></icon-wc>
-              <small>md</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="lg"></icon-wc>
-              <small>lg</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="xl"></icon-wc>
-              <small>xl</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="star" size="2xl"></icon-wc>
-              <small>2xl</small>
-            </layout-stack>
-          </layout-cluster>
-        </div>
+        <h3>On Click</h3>
+        <p>When a heading link is clicked:</p>
+        <ol>
+          <li>Updates the URL hash</li>
+          <li>Smoothly scrolls to the heading</li>
+          <li>Focuses the heading for accessibility</li>
+          <li>Copies the full URL to clipboard</li>
+          <li>Shows brief visual feedback (checkmark icon)</li>
+          <li>Announces "Link copied" to screen readers</li>
+        </ol>
+      </section>
 
-        <code-block language="html" show-lines label="Icon size variants">&lt;icon-wc name="star" size="xs"&gt;&lt;/icon-wc&gt;  &lt;!-- 1em (16px at base) --&gt;
-&lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;  &lt;!-- 1.25em (20px) --&gt;
-&lt;icon-wc name="star" size="md"&gt;&lt;/icon-wc&gt;  &lt;!-- 1.5em (24px) --&gt;
-&lt;icon-wc name="star" size="lg"&gt;&lt;/icon-wc&gt;  &lt;!-- 2em (32px) --&gt;
-&lt;icon-wc name="star" size="xl"&gt;&lt;/icon-wc&gt;  &lt;!-- 2.5em (40px) --&gt;
-&lt;icon-wc name="star" size="2xl"&gt;&lt;/icon-wc&gt; &lt;!-- 3em (48px) --&gt;</code-block>
+      <section>
+        <h2>Heading Levels</h2>
+        <p>Use <code>data-levels</code> to control which headings get anchor links.</p>
 
-        <h3>Size Reference</h3>
+        <code-block language="html" show-lines label="Custom heading levels">&lt;!-- Default: h2 and h3 --&gt;
+&lt;heading-links&gt;...&lt;/heading-links&gt;
+
+&lt;!-- All headings h2 through h4 --&gt;
+&lt;heading-links data-levels="h2,h3,h4"&gt;...&lt;/heading-links&gt;
+
+&lt;!-- Only h2 headings --&gt;
+&lt;heading-links data-levels="h2"&gt;...&lt;/heading-links&gt;</code-block>
+      </section>
+
+      <section>
+        <h2>Auto-Generated IDs</h2>
+        <p>Headings without an <code>id</code> attribute get one automatically generated from their text content:</p>
+
+        <code-block language="html" show-lines label="ID generation example">&lt;!-- Input --&gt;
+&lt;h2&gt;Getting Started&lt;/h2&gt;
+
+&lt;!-- Becomes --&gt;
+&lt;h2 id="getting-started"&gt;Getting Started&lt;/h2&gt;</code-block>
+
+        <p>The ID generation:</p>
+        <ul>
+          <li>Converts to lowercase</li>
+          <li>Replaces spaces with hyphens</li>
+          <li>Removes special characters</li>
+          <li>Limits length to 50 characters</li>
+        </ul>
+
+        <p>For best results, provide explicit IDs for important headings to ensure stable URLs.</p>
+      </section>
+
+      <section>
+        <h2>Events</h2>
+        <p>The component dispatches events when a heading link is activated.</p>
+
         <table class="props-table">
           <thead>
             <tr>
-              <th>Size</th>
-              <th>Dimensions</th>
+              <th>Event</th>
+              <th>Detail</th>
+              <th>Description</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><code>xs</code></td>
-              <td>1em (16px at base)</td>
-            </tr>
-            <tr>
-              <td><code>sm</code></td>
-              <td>1.25em (20px)</td>
-            </tr>
-            <tr>
-              <td><code>md</code></td>
-              <td>1.5em (24px)</td>
-            </tr>
-            <tr>
-              <td><code>lg</code></td>
-              <td>2em (32px)</td>
-            </tr>
-            <tr>
-              <td><code>xl</code></td>
-              <td>2.5em (40px)</td>
-            </tr>
-            <tr>
-              <td><code>2xl</code></td>
-              <td>3em (48px)</td>
+              <td><code>heading-navigate</code></td>
+              <td><code>{ id, url }</code></td>
+              <td>Fired when a heading link is clicked.</td>
             </tr>
           </tbody>
         </table>
+
+        <code-block language="javascript" show-lines label="Listening for navigation events">const headingLinks = document.querySelector('heading-links');
+
+headingLinks.addEventListener('heading-navigate', (e) => {
+  console.log('Navigated to:', e.detail.id);
+  console.log('URL:', e.detail.url);
+});</code-block>
       </section>
 
       <section>
-        <h2>Colors</h2>
-        <p>Icons inherit <code>currentColor</code> from their parent element. Change the parent's <code>color</code> property to change the icon color.</p>
-
-        <div class="example">
-          <layout-cluster data-gap="l" data-align="center">
-            <span style="color: var(--color-text);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-interactive);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-success);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-warning);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-            <span style="color: var(--color-error);">
-              <icon-wc name="circle" size="lg"></icon-wc>
-            </span>
-          </layout-cluster>
-        </div>
-
-        <code-block language="html" show-lines label="Icon color inheritance">&lt;span style="color: var(--color-text);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;
-&lt;span style="color: var(--color-interactive);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;
-&lt;span style="color: var(--color-success);"&gt;
-  &lt;icon-wc name="circle" size="lg"&gt;&lt;/icon-wc&gt;
-&lt;/span&gt;</code-block>
-      </section>
-
-      <section>
-        <h2>With Buttons</h2>
-        <p>Icons work naturally inside buttons. For icon-only buttons, always include an accessible label.</p>
-
-        <div class="example">
-          <layout-cluster data-gap="m">
-            <button type="button">
-              <icon-wc name="plus"></icon-wc>
-              Add Item
-            </button>
-            <button type="button" class="secondary">
-              <icon-wc name="download"></icon-wc>
-              Download
-            </button>
-            <button type="button" class="ghost" aria-label="Settings">
-              <icon-wc name="settings" label="Settings"></icon-wc>
-            </button>
-            <button type="button" class="ghost" aria-label="Close">
-              <icon-wc name="x" label="Close"></icon-wc>
-            </button>
-          </layout-cluster>
-        </div>
-
-        <code-block language="html" show-lines label="Icons in buttons">&lt;!-- Icon with text label --&gt;
-&lt;button type="button"&gt;
-  &lt;icon-wc name="plus"&gt;&lt;/icon-wc&gt;
-  Add Item
-&lt;/button&gt;
-
-&lt;!-- Icon-only button (needs label for accessibility) --&gt;
-&lt;button type="button" class="ghost" aria-label="Settings"&gt;
-  &lt;icon-wc name="settings" label="Settings"&gt;&lt;/icon-wc&gt;
-&lt;/button&gt;</code-block>
-      </section>
-
-      <section>
-        <h2>Lucide Integration</h2>
-        <p>The component uses the <a href="https://lucide.dev/icons" target="_blank" rel="noopener">Lucide</a> icon library by default. Lucide provides over 1,900 beautifully crafted open-source icons.</p>
-
-        <h3>Common Icons</h3>
-        <div class="example">
-          <layout-grid data-min="120px" data-gap="m">
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="menu" size="lg"></icon-wc>
-              <small>menu</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="x" size="lg"></icon-wc>
-              <small>x</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="check" size="lg"></icon-wc>
-              <small>check</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="alert-circle" size="lg"></icon-wc>
-              <small>alert-circle</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="info" size="lg"></icon-wc>
-              <small>info</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="arrow-left" size="lg"></icon-wc>
-              <small>arrow-left</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="arrow-right" size="lg"></icon-wc>
-              <small>arrow-right</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="chevron-down" size="lg"></icon-wc>
-              <small>chevron-down</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="edit" size="lg"></icon-wc>
-              <small>edit</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="trash" size="lg"></icon-wc>
-              <small>trash</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="save" size="lg"></icon-wc>
-              <small>save</small>
-            </layout-stack>
-            <layout-stack data-gap="xs" data-align="center">
-              <icon-wc name="heart" size="lg"></icon-wc>
-              <small>heart</small>
-            </layout-stack>
-          </layout-grid>
-        </div>
-
-        <h3>Icon Categories</h3>
+        <h2>Keyboard Support</h2>
         <table class="props-table">
           <thead>
             <tr>
-              <th>Purpose</th>
-              <th>Icon Names</th>
+              <th>Key</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Navigation</td>
-              <td><code>menu</code>, <code>x</code>, <code>arrow-left</code>, <code>arrow-right</code></td>
+              <td><kbd>Tab</kbd></td>
+              <td>Focus the anchor link</td>
             </tr>
             <tr>
-              <td>Actions</td>
-              <td><code>plus</code>, <code>minus</code>, <code>edit</code>, <code>trash</code>, <code>save</code></td>
-            </tr>
-            <tr>
-              <td>Status</td>
-              <td><code>check</code>, <code>x</code>, <code>alert-circle</code>, <code>info</code></td>
-            </tr>
-            <tr>
-              <td>Media</td>
-              <td><code>play</code>, <code>pause</code>, <code>volume-2</code>, <code>image</code></td>
-            </tr>
-            <tr>
-              <td>User</td>
-              <td><code>user</code>, <code>users</code>, <code>settings</code>, <code>log-out</code></td>
-            </tr>
-            <tr>
-              <td>Files</td>
-              <td><code>file</code>, <code>folder</code>, <code>download</code>, <code>upload</code></td>
-            </tr>
-            <tr>
-              <td>Social</td>
-              <td><code>share</code>, <code>heart</code>, <code>star</code>, <code>message-circle</code></td>
+              <td><kbd>Enter</kbd></td>
+              <td>Activate the link (navigate and copy)</td>
             </tr>
           </tbody>
         </table>
-      </section>
-
-      <section>
-        <h2>Custom Icons</h2>
-        <p>Add custom icons to the <code>.assets/icons/custom/</code> directory and reference them with <code>set="custom"</code>.</p>
-
-        <code-block language="html" show-lines label="Custom icon set usage">&lt;!-- Using a custom icon --&gt;
-&lt;icon-wc name="logo" set="custom"&gt;&lt;/icon-wc&gt;
-
-&lt;!-- Custom icon requirements:
-     - SVG format with viewBox attribute
-     - No fixed width/height (component handles sizing)
-     - Use currentColor for strokes/fills
---&gt;</code-block>
       </section>
 
       <section>
         <h2>Accessibility</h2>
 
-        <h3>Decorative vs Functional Icons</h3>
-        <p>Icons can be either decorative (hidden from screen readers) or functional (announced to screen readers).</p>
+        <h3>ARIA Attributes</h3>
+        <ul>
+          <li>Each anchor link has <code>aria-label</code> describing its purpose (e.g., "Link to Usage")</li>
+          <li>Headings get <code>tabindex="-1"</code> to allow focus after navigation</li>
+          <li>Clipboard success is announced via <code>role="status"</code> live region</li>
+        </ul>
 
-        <table class="props-table">
-          <thead>
-            <tr>
-              <th>Context</th>
-              <th>Pattern</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Icon + visible text</td>
-              <td>No <code>label</code> needed (decorative)</td>
-            </tr>
-            <tr>
-              <td>Icon-only button</td>
-              <td>Add <code>label</code> attribute</td>
-            </tr>
-            <tr>
-              <td>Status indicator</td>
-              <td>Add <code>label</code> describing status</td>
-            </tr>
-            <tr>
-              <td>Purely decorative</td>
-              <td>No <code>label</code> needed</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3>Screen Reader Experience</h3>
+        <p>When navigating to a heading via the link:</p>
+        <ul>
+          <li>The heading receives focus and is announced</li>
+          <li>"Link copied to clipboard" is announced as a status message</li>
+        </ul>
 
-        <div class="example">
-          <layout-stack data-gap="m">
-            <p><strong>Decorative icon</strong> (with visible text):</p>
-            <button type="button">
-              <icon-wc name="save"></icon-wc>
-              Save Document
-            </button>
-
-            <p><strong>Functional icon</strong> (icon only):</p>
-            <button type="button" class="ghost" aria-label="Close dialog">
-              <icon-wc name="x" label="Close"></icon-wc>
-            </button>
-          </layout-stack>
-        </div>
-
-        <code-block language="html" show-lines label="Decorative vs functional icons">&lt;!-- Decorative - icon is hidden from screen readers --&gt;
-&lt;button&gt;
-  &lt;icon-wc name="save"&gt;&lt;/icon-wc&gt;
-  Save Document
-&lt;/button&gt;
-
-&lt;!-- Functional - icon is announced to screen readers --&gt;
-&lt;button aria-label="Close dialog"&gt;
-  &lt;icon-wc name="x" label="Close"&gt;&lt;/icon-wc&gt;
-&lt;/button&gt;</code-block>
+        <h3>Best Practices</h3>
+        <ul>
+          <li>Use semantic heading hierarchy (h2 before h3, etc.)</li>
+          <li>Provide meaningful heading text</li>
+          <li>Consider providing explicit IDs for important sections</li>
+        </ul>
       </section>
 
       <section>
         <h2>Styling</h2>
-        <p>Icons can be styled using CSS. The component uses Shadow DOM but allows color inheritance.</p>
+        <p>The anchor links can be styled using CSS.</p>
 
-        <code-block language="css" show-lines label="Icon styling with CSS">/* Change icon color */
-.danger icon-wc {
-  color: var(--color-error);
+        <code-block language="css" show-lines label="Heading link styles">/* The anchor link element */
+heading-links .heading-anchor {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--size-xs);
+  padding: var(--size-3xs);
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-default);
 }
 
-/* Custom sizing via CSS */
-icon-wc.hero-icon {
-  width: 4rem;
-  height: 4rem;
+/* Show on heading hover */
+heading-links :is(h1, h2, h3, h4, h5, h6):hover .heading-anchor {
+  opacity: 1;
 }
 
-/* Hover effects */
-button:hover icon-wc {
-  color: var(--color-interactive-hover);
+/* Hover state */
+heading-links .heading-anchor:hover {
+  color: var(--color-interactive);
+  background: var(--color-surface-raised);
+}
+
+/* Success state after copy */
+heading-links .heading-anchor.copied {
+  color: var(--color-success);
 }</code-block>
       </section>
 
       <section>
-        <h2>JavaScript API</h2>
-        <p>The component exposes properties that mirror its attributes.</p>
+        <h2>With page-toc</h2>
+        <p>The <code>heading-links</code> component works seamlessly with <code>&lt;page-toc&gt;</code>. The page-toc component can generate a table of contents from headings that have been enhanced with IDs by heading-links.</p>
 
-        <code-block language="javascript" show-lines label="JavaScript API usage">const icon = document.querySelector('icon-wc');
+        <code-block language="html" show-lines label="Combined usage with page-toc">&lt;layout-sidebar data-side="end"&gt;
+  &lt;aside&gt;
+    &lt;page-toc data-levels="h2,h3" data-scope="article"&gt;&lt;/page-toc&gt;
+  &lt;/aside&gt;
+  &lt;article&gt;
+    &lt;heading-links data-levels="h2,h3"&gt;
+      &lt;h2&gt;Section One&lt;/h2&gt;
+      &lt;p&gt;Content...&lt;/p&gt;
+      &lt;h3&gt;Subsection&lt;/h3&gt;
+      &lt;p&gt;More content...&lt;/p&gt;
+    &lt;/heading-links&gt;
+  &lt;/article&gt;
+&lt;/layout-sidebar&gt;</code-block>
+      </section>
 
-// Read-only properties
-console.log(icon.name);     // "menu"
-console.log(icon.set);      // "lucide"
-console.log(icon.size);     // "md"
-console.log(icon.label);    // null or "Close"
-console.log(icon.basePath); // "/.assets/icons"
-console.log(icon.iconPath); // "/.assets/icons/lucide/menu.svg"
+      <section>
+        <h2>Dynamic Content</h2>
+        <p>The component uses MutationObserver to watch for new headings added to the DOM. New headings are automatically enhanced.</p>
 
-// Change icon dynamically
-icon.setAttribute('name', 'settings');
-icon.setAttribute('size', 'lg');</code-block>
+        <code-block language="javascript" show-lines label="Adding headings dynamically">const container = document.querySelector('heading-links');
+const newSection = document.createElement('section');
+newSection.innerHTML = '&lt;h2&gt;New Section&lt;/h2&gt;&lt;p&gt;Content&lt;/p&gt;';
+container.appendChild(newSection);
+// The h2 is automatically enhanced with an anchor link</code-block>
+      </section>
+
+      <section>
+        <h2>Use Cases</h2>
+
+        <h3>Documentation Sites</h3>
+        <p>Enable deep linking to specific sections:</p>
+        <code-block language="html" show-lines label="Documentation use case">&lt;article&gt;
+  &lt;heading-links data-levels="h2,h3,h4"&gt;
+    &lt;h2 id="installation"&gt;Installation&lt;/h2&gt;
+    &lt;h3 id="npm"&gt;npm&lt;/h3&gt;
+    &lt;h3 id="cdn"&gt;CDN&lt;/h3&gt;
+    &lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+  &lt;/heading-links&gt;
+&lt;/article&gt;</code-block>
+
+        <h3>Blog Posts</h3>
+        <p>Allow readers to share specific sections:</p>
+        <code-block language="html" show-lines label="Blog post use case">&lt;article class="blog-post"&gt;
+  &lt;heading-links data-levels="h2"&gt;
+    &lt;h2&gt;Introduction&lt;/h2&gt;
+    &lt;p&gt;...&lt;/p&gt;
+    &lt;h2&gt;Key Findings&lt;/h2&gt;
+    &lt;p&gt;...&lt;/p&gt;
+    &lt;h2&gt;Conclusion&lt;/h2&gt;
+    &lt;p&gt;...&lt;/p&gt;
+  &lt;/heading-links&gt;
+&lt;/article&gt;</code-block>
+
+        <h3>FAQ Pages</h3>
+        <p>Link directly to specific questions:</p>
+        <code-block language="html" show-lines label="FAQ use case">&lt;heading-links data-levels="h3"&gt;
+  &lt;h2&gt;Frequently Asked Questions&lt;/h2&gt;
+  &lt;h3 id="faq-pricing"&gt;How much does it cost?&lt;/h3&gt;
+  &lt;p&gt;...&lt;/p&gt;
+  &lt;h3 id="faq-support"&gt;How do I get support?&lt;/h3&gt;
+  &lt;p&gt;...&lt;/p&gt;
+&lt;/heading-links&gt;</code-block>
       </section>
           </heading-links>
         </article>

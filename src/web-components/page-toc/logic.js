@@ -16,12 +16,12 @@
  *
  * @example Manual markup (progressive enhancement)
  * <page-toc>
- *   <details class="page-toc-details" open>
- *     <summary class="page-toc-summary">On this page</summary>
- *     <nav class="page-toc-nav" aria-label="On this page">
- *       <ul class="page-toc-list">
- *         <li class="page-toc-item"><a href="#usage" class="page-toc-link">Usage</a></li>
- *         <li class="page-toc-item"><a href="#examples" class="page-toc-link">Examples</a></li>
+ *   <details class="details" open>
+ *     <summary class="summary">On this page</summary>
+ *     <nav class="nav" aria-label="On this page">
+ *       <ul class="list">
+ *         <li class="item"><a href="#usage" class="link">Usage</a></li>
+ *         <li class="item"><a href="#examples" class="link">Examples</a></li>
  *       </ul>
  *     </nav>
  *   </details>
@@ -91,9 +91,9 @@ class PageToc extends HTMLElement {
           this.#headings.push(heading);
           this.#links.set(id, link);
 
-          // Add page-toc-link class if not present (for styling)
-          if (!link.classList.contains('page-toc-link')) {
-            link.classList.add('page-toc-link');
+          // Add link class if not present (for styling)
+          if (!link.classList.contains('link')) {
+            link.classList.add('link');
           }
 
           // Add smooth scroll behavior
@@ -190,21 +190,21 @@ class PageToc extends HTMLElement {
 
     // Build ToC structure with details/summary for mobile disclosure
     this.#details = document.createElement('details');
-    this.#details.className = 'page-toc-details';
+    this.#details.className = 'details';
     this.#details.open = true; // Start open; CSS controls visibility on narrow screens
     const details = this.#details;
 
     const summary = document.createElement('summary');
-    summary.className = 'page-toc-summary';
+    summary.className = 'summary';
     summary.textContent = title;
     details.appendChild(summary);
 
     const nav = document.createElement('nav');
-    nav.className = 'page-toc-nav';
+    nav.className = 'nav';
     nav.setAttribute('aria-label', title);
 
     const list = document.createElement('ul');
-    list.className = 'page-toc-list';
+    list.className = 'list';
 
     // Group headings by level for nesting
     const levelOrder = levels.split(',').map(l => l.trim().toLowerCase());
@@ -216,12 +216,12 @@ class PageToc extends HTMLElement {
 
       // Create list item
       const li = document.createElement('li');
-      li.className = 'page-toc-item';
+      li.className = 'item';
       li.dataset.level = level;
 
       const link = document.createElement('a');
       link.href = `#${heading.id}`;
-      link.className = 'page-toc-link';
+      link.className = 'link';
       link.textContent = this.#getHeadingText(heading);
 
       // Smooth scroll on click

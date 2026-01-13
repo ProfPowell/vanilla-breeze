@@ -73,20 +73,20 @@ class SearchWc extends HTMLElement {
 
     // Create dialog
     this.#dialog = document.createElement('div');
-    this.#dialog.className = 'search-wc-dialog';
+    this.#dialog.className = 'dialog';
     this.#dialog.setAttribute('role', 'dialog');
     this.#dialog.setAttribute('aria-label', 'Site search');
     this.#dialog.id = `search-dialog-${crypto.randomUUID().slice(0, 8)}`;
     this.#trigger.setAttribute('aria-controls', this.#dialog.id);
 
     this.#dialog.innerHTML = `
-      <div class="search-wc-backdrop"></div>
-      <div class="search-wc-panel">
-        <div class="search-wc-input-wrapper">
-          <x-icon name="search" class="search-wc-icon"></x-icon>
+      <div class="backdrop"></div>
+      <div class="panel">
+        <div class="input-wrapper">
+          <x-icon name="search" class="icon"></x-icon>
           <input
             type="search"
-            class="search-wc-input"
+            class="input"
             placeholder="Search documentation..."
             autocomplete="off"
             autocorrect="off"
@@ -95,16 +95,16 @@ class SearchWc extends HTMLElement {
             aria-label="Search"
             aria-autocomplete="list"
           />
-          <kbd class="search-wc-shortcut">Esc</kbd>
+          <kbd class="shortcut">Esc</kbd>
         </div>
-        <div class="search-wc-results" role="listbox" aria-label="Search results"></div>
-        <div class="search-wc-footer">
-          <span class="search-wc-hint">
+        <div class="results" role="listbox" aria-label="Search results"></div>
+        <div class="footer">
+          <span class="hint">
             <kbd>↑</kbd><kbd>↓</kbd> to navigate
             <kbd>↵</kbd> to select
             <kbd>esc</kbd> to close
           </span>
-          <span class="search-wc-powered">
+          <span class="powered">
             Powered by <a href="https://pagefind.app" target="_blank" rel="noopener">Pagefind</a>
           </span>
         </div>
@@ -114,8 +114,8 @@ class SearchWc extends HTMLElement {
     this.appendChild(this.#dialog);
 
     // Cache references
-    this.#input = this.#dialog.querySelector('.search-wc-input');
-    this.#resultsList = this.#dialog.querySelector('.search-wc-results');
+    this.#input = this.#dialog.querySelector('.input');
+    this.#resultsList = this.#dialog.querySelector('.results');
   }
 
   #bindEvents() {
@@ -126,7 +126,7 @@ class SearchWc extends HTMLElement {
     document.addEventListener('keydown', this.#handleGlobalKeyDown);
 
     // Dialog events
-    this.#dialog.querySelector('.search-wc-backdrop').addEventListener('click', () => this.close());
+    this.#dialog.querySelector('.backdrop').addEventListener('click', () => this.close());
     this.#input.addEventListener('input', this.#handleInput);
     this.#input.addEventListener('keydown', this.#handleInputKeyDown);
     this.#resultsList.addEventListener('click', this.#handleResultClick);
@@ -223,7 +223,7 @@ class SearchWc extends HTMLElement {
     }
 
     try {
-      this.#resultsList.innerHTML = '<div class="search-wc-loading">Searching...</div>';
+      this.#resultsList.innerHTML = '<div class="loading">Searching...</div>';
 
       const search = await this.#pagefind.search(query);
       const results = await Promise.all(
@@ -234,7 +234,7 @@ class SearchWc extends HTMLElement {
       this.#renderResults(results);
     } catch (error) {
       console.error('Search error:', error);
-      this.#resultsList.innerHTML = '<div class="search-wc-error">Search error. Please try again.</div>';
+      this.#resultsList.innerHTML = '<div class="error">Search error. Please try again.</div>';
     }
   }
 
@@ -243,7 +243,7 @@ class SearchWc extends HTMLElement {
 
     if (results.length === 0) {
       if (this.#input.value.trim()) {
-        this.#resultsList.innerHTML = '<div class="search-wc-empty">No results found</div>';
+        this.#resultsList.innerHTML = '<div class="empty">No results found</div>';
       } else {
         this.#resultsList.innerHTML = '';
       }
@@ -253,20 +253,20 @@ class SearchWc extends HTMLElement {
     this.#resultsList.innerHTML = results.map((result, index) => `
       <a
         href="${result.url}"
-        class="search-wc-result"
+        class="result"
         role="option"
         data-result-index="${index}"
         tabindex="-1"
       >
-        <span class="search-wc-result-title">${result.meta?.title || 'Untitled'}</span>
-        <span class="search-wc-result-excerpt">${result.excerpt || ''}</span>
+        <span class="result-title">${result.meta?.title || 'Untitled'}</span>
+        <span class="result-excerpt">${result.excerpt || ''}</span>
       </a>
     `).join('');
   }
 
   #renderNoPagefind() {
     this.#resultsList.innerHTML = `
-      <div class="search-wc-error">
+      <div class="error">
         Search index not found.<br>
         Run <code>npx pagefind --site dist</code> after building.
       </div>
