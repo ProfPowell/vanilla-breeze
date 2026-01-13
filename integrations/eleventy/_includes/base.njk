@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default('en') }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Eleventy">
+
+  {# Favicon #}
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  {# Primary Meta Tags #}
+  <title>{{ title }}{% if title %} | {% endif %}{{ site.title }}</title>
+  <meta name="title" content="{{ title }}{% if title %} | {% endif %}{{ site.title }}">
+  <meta name="description" content="{{ description | default(site.description) }}">
+
+  {# Canonical URL #}
+  <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+
+  {# Open Graph #}
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+  <meta property="og:title" content="{{ title }}{% if title %} | {% endif %}{{ site.title }}">
+  <meta property="og:description" content="{{ description | default(site.description) }}">
+  {% if image %}
+  <meta property="og:image" content="{{ site.url }}{{ image }}">
+  {% endif %}
+
+  {# Twitter #}
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="{{ site.url }}{{ page.url }}">
+  <meta property="twitter:title" content="{{ title }}{% if title %} | {% endif %}{{ site.title }}">
+  <meta property="twitter:description" content="{{ description | default(site.description) }}">
+
+  {# Preconnect #}
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+  {# Vanilla Breeze Styles #}
+  <link rel="stylesheet" href="/css/main.css">
+
+  {# Theme: prevent flash of wrong theme #}
+  <script>
+    const theme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.mode = theme;
+  </script>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% block header %}
+  <header>
+    <a href="/" class="logo">{{ site.title }}</a>
+    {% include "nav-main.njk" %}
+    <div class="header-actions">
+      {% include "theme-toggle.njk" %}
+    </div>
+  </header>
+  {% endblock %}
+
+  <main>
+    {% block content %}
+    {{ content | safe }}
+    {% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer>
+    <p>&copy; {{ site.year }} {{ site.title }}. All rights reserved.</p>
+  </footer>
+  {% endblock %}
+
+  {# Vanilla Breeze JavaScript #}
+  <script type="module" src="/js/main.js"></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

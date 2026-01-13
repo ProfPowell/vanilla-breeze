@@ -1,0 +1,163 @@
+/**
+ * Responsive Grid Configurations
+ *
+ * Uses the layout-grid custom element.
+ * CSS-only responsive behavior via CSS Grid auto-fit.
+ * No media queries required for basic responsive behavior.
+ */
+
+/* ==================== LAYOUT-GRID BASICS ==================== */
+/*
+  The layout-grid element creates responsive grids automatically.
+
+  Attributes:
+  - data-gap: xs | s | m | l | xl | 2xl (default: m)
+  - data-min-width: minimum column width in px (default: 250)
+
+  Example:
+  <layout-grid data-gap="l" data-min-width="300">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+  </layout-grid>
+*/
+
+/* ==================== COMMON GRID PATTERNS ==================== */
+
+/* Card grid: 3-4 columns on wide screens */
+.card-grid {
+  --grid-min: 280px;
+  --grid-gap: var(--size-l);
+}
+
+/* Thumbnail grid: Many small items */
+.thumbnail-grid {
+  --grid-min: 150px;
+  --grid-gap: var(--size-s);
+}
+
+/* Feature grid: 2-3 larger columns */
+.feature-grid {
+  --grid-min: 350px;
+  --grid-gap: var(--size-xl);
+}
+
+/* ==================== FIXED COLUMN GRIDS ==================== */
+/* When you need exact column counts */
+
+.grid-2 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Responsive fixed grids (optional media queries) */
+@media (max-width: 768px) {
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== MASONRY-LIKE LAYOUTS ==================== */
+/* Dense packing for varied-height items */
+.grid-masonry {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-flow: dense;
+}
+
+/* Span items across multiple columns */
+.grid-masonry .span-2 {
+  grid-column: span 2;
+}
+
+.grid-masonry .span-row {
+  grid-row: span 2;
+}
+
+/* ==================== ASYMMETRIC GRIDS ==================== */
+/* Main content + sidebar */
+.grid-sidebar {
+  display: grid;
+  gap: var(--size-xl);
+  grid-template-columns: 1fr 300px;
+}
+
+/* Sidebar on left */
+.grid-sidebar-left {
+  display: grid;
+  gap: var(--size-xl);
+  grid-template-columns: 250px 1fr;
+}
+
+@media (max-width: 900px) {
+  .grid-sidebar,
+  .grid-sidebar-left {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== GALLERY GRID ==================== */
+/* Auto-fit with aspect ratio preservation */
+.gallery-grid {
+  display: grid;
+  gap: var(--size-s);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.gallery-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 1;
+  border-radius: var(--radius-s);
+}
+
+/* ==================== DASHBOARD GRID ==================== */
+/* Complex layouts with named areas */
+.dashboard-grid {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr 1fr;
+  grid-template-areas:
+    "header header header header"
+    "sidebar main main main"
+    "sidebar main main main";
+}
+
+.dashboard-grid > header { grid-area: header; }
+.dashboard-grid > aside { grid-area: sidebar; }
+.dashboard-grid > main { grid-area: main; }
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main";
+  }
+}

@@ -1,0 +1,32 @@
+{#
+  Browser Window Partial
+
+  Usage:
+  {% set browserSrc = "/demos/example.html" %}
+  {% set browserUrl = "https://example.com" %}
+  {% set browserTitle = "Example Demo" %}
+  {% include "browser-window.njk" %}
+
+  Or inline:
+  <browser-window url="https://example.com" title="Demo" shadow>
+    <p>Your content here</p>
+  </browser-window>
+#}
+
+<browser-window
+  {% if browserSrc %}src="{{ browserSrc }}"{% endif %}
+  url="{{ browserUrl | default('https://example.com') }}"
+  title="{{ browserTitle | default('Demo') }}"
+  shadow
+>
+  {% if browserContent %}
+    {{ browserContent | safe }}
+  {% endif %}
+</browser-window>
+
+<style>
+  browser-window {
+    display: block;
+    margin-block: var(--size-l);
+  }
+</style>

@@ -1,0 +1,79 @@
+{#
+  Page Table of Contents Partial
+
+  Usage:
+  {% include "page-toc.njk" %}
+
+  Requires headings to be extracted. Works with eleventy-plugin-toc
+  or custom heading extraction.
+#}
+
+{% if toc and toc.length > 0 %}
+<page-toc>
+  <nav class="toc" aria-label="On this page">
+    <h2 class="toc-title">On this page</h2>
+    <ul>
+      {% for heading in toc %}
+        <li>
+          <a href="#{{ heading.slug }}">{{ heading.text }}</a>
+          {% if heading.children and heading.children.length > 0 %}
+            <ul>
+              {% for child in heading.children %}
+                <li>
+                  <a href="#{{ child.slug }}">{{ child.text }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+</page-toc>
+{% endif %}
+
+<style>
+  .toc {
+    position: sticky;
+    top: var(--size-l);
+    max-height: calc(100vh - var(--size-2xl));
+    overflow-y: auto;
+  }
+
+  .toc-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-s);
+  }
+
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc li li {
+    padding-inline-start: var(--size-m);
+  }
+
+  .toc a {
+    display: block;
+    padding: var(--size-2xs) var(--size-s);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    border-inline-start: 2px solid transparent;
+  }
+
+  .toc a:hover {
+    color: var(--color-text);
+  }
+
+  .toc a[aria-current="true"] {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+</style>

@@ -1,0 +1,111 @@
+---
+/**
+ * FormField Component
+ *
+ * Wrapper around the form-field custom element.
+ * Provides consistent form field styling and validation states.
+ *
+ * Props:
+ * - label: Field label text
+ * - name: Input name attribute
+ * - type: Input type (text, email, password, etc.)
+ * - required: Whether field is required
+ * - hint: Helper text below input
+ * - error: Error message to display
+ * - class: Additional CSS classes
+ */
+
+interface Props {
+  label: string;
+  name: string;
+  type?: string;
+  required?: boolean;
+  hint?: string;
+  error?: string;
+  placeholder?: string;
+  value?: string;
+  class?: string;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  required = false,
+  hint,
+  error,
+  placeholder,
+  value,
+  class: className,
+} = Astro.props;
+
+const id = `field-${name}`;
+const hasError = Boolean(error);
+---
+
+<form-field class:list={[className, { 'has-error': hasError }]}>
+  <label for={id}>
+    {label}
+    {required && <span class="required" aria-hidden="true">*</span>}
+  </label>
+
+  {type === 'textarea' ? (
+    <textarea
+      id={id}
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      aria-invalid={hasError || undefined}
+      aria-describedby={hint || error ? `${id}-hint` : undefined}
+    >{value}</textarea>
+  ) : type === 'select' ? (
+    <select
+      id={id}
+      name={name}
+      required={required}
+      aria-invalid={hasError || undefined}
+      aria-describedby={hint || error ? `${id}-hint` : undefined}
+    >
+      <slot />
+    </select>
+  ) : (
+    <input
+      type={type}
+      id={id}
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      value={value}
+      aria-invalid={hasError || undefined}
+      aria-describedby={hint || error ? `${id}-hint` : undefined}
+    />
+  )}
+
+  {(hint || error) && (
+    <small id={`${id}-hint`} class:list={{ error: hasError }}>
+      {error || hint}
+    </small>
+  )}
+</form-field>
+
+<style>
+  .required {
+    color: var(--color-error);
+  }
+
+  .has-error input,
+  .has-error textarea,
+  .has-error select {
+    border-color: var(--color-error);
+  }
+
+  .has-error input:focus,
+  .has-error textarea:focus,
+  .has-error select:focus {
+    outline-color: var(--color-error);
+  }
+
+  small.error {
+    color: var(--color-error-text);
+  }
+</style>

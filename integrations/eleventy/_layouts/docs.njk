@@ -1,0 +1,80 @@
+---
+layout: base.njk
+---
+{#
+  Docs Layout
+
+  Documentation page with sidebar navigation and optional TOC.
+
+  Front matter:
+  - title: Page title
+  - description: Meta description
+  - toc: Table of contents data (optional)
+#}
+
+{% block content %}
+<layout-sidebar data-gap="2xl" data-sidebar-width="narrow" data-content-min="60">
+  {# Sidebar Navigation #}
+  <aside class="nav-sidebar">
+    {% include "nav-tree.njk" %}
+  </aside>
+
+  {# Main Content #}
+  <article>
+    <layout-sidebar data-gap="xl" data-sidebar-width="narrow" data-content-min="50" data-side="right">
+      {# Article Content #}
+      <div class="content">
+        <header>
+          <h1>{{ title }}</h1>
+          {% if description %}
+          <p class="lead">{{ description }}</p>
+          {% endif %}
+        </header>
+
+        <layout-text data-measure="normal">
+          {{ content | safe }}
+        </layout-text>
+      </div>
+
+      {# Table of Contents #}
+      {% if toc %}
+      <aside class="toc-sidebar">
+        {% include "page-toc.njk" %}
+      </aside>
+      {% endif %}
+    </layout-sidebar>
+  </article>
+</layout-sidebar>
+{% endblock %}
+
+<style>
+  .nav-sidebar {
+    position: sticky;
+    top: var(--size-l);
+    max-height: calc(100vh - var(--size-2xl));
+    overflow-y: auto;
+  }
+
+  .content header {
+    margin-block-end: var(--size-l);
+  }
+
+  .content h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .lead {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  .toc-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .toc-sidebar {
+      display: block;
+    }
+  }
+</style>

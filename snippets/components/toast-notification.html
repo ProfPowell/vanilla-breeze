@@ -1,0 +1,160 @@
+<!--
+  Toast Notification Component
+
+  Uses toast-wc web component for non-blocking notifications.
+  Requires JavaScript to show toasts dynamically.
+
+  Attributes:
+  - data-position: top-start | top-center | top-end | bottom-start | bottom-center | bottom-end
+  - data-duration: Auto-dismiss time in ms (default: 5000, 0 = manual dismiss)
+
+  Variants: info | success | warning | error
+-->
+
+<!-- Toast Container (place once in your page, usually at body level) -->
+<toast-wc id="notifications" data-position="top-end"></toast-wc>
+
+<!-- Trigger Buttons for Demo -->
+<layout-cluster data-gap="m">
+  <button type="button" class="primary" onclick="showToast('success')">
+    Success Toast
+  </button>
+  <button type="button" onclick="showToast('info')">
+    Info Toast
+  </button>
+  <button type="button" class="secondary" onclick="showToast('warning')">
+    Warning Toast
+  </button>
+  <button type="button" class="danger" onclick="showToast('error')">
+    Error Toast
+  </button>
+</layout-cluster>
+
+<!-- JavaScript API -->
+<script type="module">
+  const toastContainer = document.getElementById('notifications');
+
+  // Basic usage
+  toastContainer.show({
+    message: 'This is a toast notification!',
+    variant: 'info'
+  });
+
+  // With all options
+  toastContainer.show({
+    message: 'Settings saved successfully.',
+    variant: 'success',
+    duration: 3000  // Auto-dismiss after 3 seconds
+  });
+
+  // Warning with longer duration
+  toastContainer.show({
+    message: 'Your session will expire in 5 minutes.',
+    variant: 'warning',
+    duration: 10000
+  });
+
+  // Error with manual dismiss (duration: 0)
+  toastContainer.show({
+    message: 'Failed to save changes. Please try again.',
+    variant: 'error',
+    duration: 0  // Must be manually dismissed
+  });
+
+  // Helper function for demo buttons
+  window.showToast = (variant) => {
+    const messages = {
+      success: 'Operation completed successfully!',
+      info: 'Here is some useful information.',
+      warning: 'Please review before continuing.',
+      error: 'Something went wrong. Please try again.'
+    };
+
+    toastContainer.show({
+      message: messages[variant],
+      variant: variant
+    });
+  };
+</script>
+
+<!-- Different Positions -->
+<div class="toast-examples">
+  <!-- Top positions -->
+  <toast-wc id="toast-top-start" data-position="top-start"></toast-wc>
+  <toast-wc id="toast-top-center" data-position="top-center"></toast-wc>
+  <toast-wc id="toast-top-end" data-position="top-end"></toast-wc>
+
+  <!-- Bottom positions -->
+  <toast-wc id="toast-bottom-start" data-position="bottom-start"></toast-wc>
+  <toast-wc id="toast-bottom-center" data-position="bottom-center"></toast-wc>
+  <toast-wc id="toast-bottom-end" data-position="bottom-end"></toast-wc>
+</div>
+
+<!-- Common Use Cases -->
+<script type="module">
+  // Form submission feedback
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const toast = document.getElementById('notifications');
+
+    try {
+      await submitForm(event.target);
+      toast.show({
+        message: 'Form submitted successfully!',
+        variant: 'success'
+      });
+    } catch (error) {
+      toast.show({
+        message: `Error: ${error.message}`,
+        variant: 'error',
+        duration: 0
+      });
+    }
+  }
+
+  // Copy to clipboard feedback
+  async function copyToClipboard(text) {
+    const toast = document.getElementById('notifications');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.show({
+        message: 'Copied to clipboard!',
+        variant: 'success',
+        duration: 2000
+      });
+    } catch (error) {
+      toast.show({
+        message: 'Failed to copy',
+        variant: 'error'
+      });
+    }
+  }
+
+  // Network status changes
+  window.addEventListener('online', () => {
+    document.getElementById('notifications').show({
+      message: 'Connection restored',
+      variant: 'success'
+    });
+  });
+
+  window.addEventListener('offline', () => {
+    document.getElementById('notifications').show({
+      message: 'You are offline',
+      variant: 'warning',
+      duration: 0
+    });
+  });
+</script>
+
+<!-- Stacked Toasts (automatic when multiple are shown) -->
+<script type="module">
+  // Multiple toasts stack automatically
+  const toast = document.getElementById('notifications');
+
+  // These will stack vertically
+  toast.show({ message: 'First notification', variant: 'info' });
+  toast.show({ message: 'Second notification', variant: 'success' });
+  toast.show({ message: 'Third notification', variant: 'warning' });
+</script>

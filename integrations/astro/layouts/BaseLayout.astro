@@ -1,0 +1,115 @@
+---
+/**
+ * BaseLayout
+ *
+ * Minimal page layout with header, main, and footer.
+ * Use as a foundation for other layouts.
+ *
+ * Props:
+ * - title: Page title
+ * - description: Meta description
+ * - image: OG image URL (optional)
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+}
+
+const { title, description, image } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <BaseHead title={title} description={description} image={image} />
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">Site Name</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/docs/">Docs</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>
+    <layout-center data-max-width="wide">
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <p>&copy; {new Date().getFullYear()} Site Name. All rights reserved.</p>
+        <nav aria-label="Footer navigation">
+          <ul class="inline-list">
+            <li><a href="/privacy/">Privacy</a></li>
+            <li><a href="/terms/">Terms</a></li>
+          </ul>
+        </nav>
+      </layout-cluster>
+    </layout-center>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
+<style>
+  header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-l);
+    padding: var(--size-m) var(--size-l);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  nav ul {
+    display: flex;
+    gap: var(--size-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .header-actions {
+    margin-inline-start: auto;
+  }
+
+  main {
+    min-height: 70vh;
+    padding: var(--size-xl) var(--size-l);
+  }
+
+  footer {
+    padding: var(--size-l);
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-surface-raised);
+  }
+
+  .inline-list {
+    display: flex;
+    gap: var(--size-m);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>

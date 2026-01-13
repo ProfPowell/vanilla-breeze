@@ -1,0 +1,208 @@
+<!--
+  Dropdown Menu Component
+
+  Uses dropdown-wc web component with native menu element.
+  Progressive enhancement: keyboard accessible.
+
+  Key attributes:
+  - data-trigger: Marks the button that opens the dropdown
+  - data-placement: top | bottom | left | right (with -start/-end variants)
+-->
+
+<!-- Basic Dropdown -->
+<dropdown-wc>
+  <button data-trigger>Options</button>
+  <menu>
+    <li><button>Edit</button></li>
+    <li><button>Duplicate</button></li>
+    <li><button>Share</button></li>
+    <li role="separator"></li>
+    <li><button class="danger">Delete</button></li>
+  </menu>
+</dropdown-wc>
+
+<!-- Dropdown with Icons -->
+<dropdown-wc>
+  <button data-trigger>
+    <icon-wc name="more-vertical" size="sm"></icon-wc>
+    <span class="visually-hidden">More actions</span>
+  </button>
+  <menu>
+    <li>
+      <button>
+        <icon-wc name="pencil" size="sm"></icon-wc>
+        Edit
+      </button>
+    </li>
+    <li>
+      <button>
+        <icon-wc name="copy" size="sm"></icon-wc>
+        Duplicate
+      </button>
+    </li>
+    <li>
+      <button>
+        <icon-wc name="share" size="sm"></icon-wc>
+        Share
+      </button>
+    </li>
+    <li role="separator"></li>
+    <li>
+      <button class="danger">
+        <icon-wc name="trash-2" size="sm"></icon-wc>
+        Delete
+      </button>
+    </li>
+  </menu>
+</dropdown-wc>
+
+<!-- User Account Dropdown -->
+<dropdown-wc>
+  <button data-trigger class="ghost">
+    <layout-cluster data-gap="s">
+      <user-avatar data-name="John Doe" data-size="sm"></user-avatar>
+      <span>John Doe</span>
+      <icon-wc name="chevron-down" size="xs"></icon-wc>
+    </layout-cluster>
+  </button>
+  <menu>
+    <li>
+      <button>
+        <icon-wc name="user" size="sm"></icon-wc>
+        Profile
+      </button>
+    </li>
+    <li>
+      <button>
+        <icon-wc name="settings" size="sm"></icon-wc>
+        Settings
+      </button>
+    </li>
+    <li>
+      <button>
+        <icon-wc name="help-circle" size="sm"></icon-wc>
+        Help
+      </button>
+    </li>
+    <li role="separator"></li>
+    <li>
+      <button>
+        <icon-wc name="log-out" size="sm"></icon-wc>
+        Sign Out
+      </button>
+    </li>
+  </menu>
+</dropdown-wc>
+
+<!-- Dropdown with Submenus (nested) -->
+<dropdown-wc>
+  <button data-trigger>Actions</button>
+  <menu>
+    <li><button>New File</button></li>
+    <li><button>New Folder</button></li>
+    <li role="separator"></li>
+    <li>
+      <dropdown-wc data-placement="right-start">
+        <button data-trigger>
+          Export As
+          <icon-wc name="chevron-right" size="xs"></icon-wc>
+        </button>
+        <menu>
+          <li><button>PDF</button></li>
+          <li><button>Word Document</button></li>
+          <li><button>Plain Text</button></li>
+        </menu>
+      </dropdown-wc>
+    </li>
+    <li><button>Print</button></li>
+  </menu>
+</dropdown-wc>
+
+<!-- Dropdown with Checkmarks -->
+<dropdown-wc>
+  <button data-trigger>Sort By</button>
+  <menu role="menu" aria-label="Sort options">
+    <li role="menuitemradio" aria-checked="true">
+      <button>
+        <icon-wc name="check" size="sm" class="check-icon"></icon-wc>
+        Name
+      </button>
+    </li>
+    <li role="menuitemradio" aria-checked="false">
+      <button>
+        <icon-wc name="check" size="sm" class="check-icon"></icon-wc>
+        Date Modified
+      </button>
+    </li>
+    <li role="menuitemradio" aria-checked="false">
+      <button>
+        <icon-wc name="check" size="sm" class="check-icon"></icon-wc>
+        Size
+      </button>
+    </li>
+  </menu>
+</dropdown-wc>
+
+<!-- Different Placements -->
+<layout-cluster data-gap="l">
+  <dropdown-wc data-placement="bottom-start">
+    <button data-trigger>Bottom Start</button>
+    <menu>
+      <li><button>Option 1</button></li>
+      <li><button>Option 2</button></li>
+    </menu>
+  </dropdown-wc>
+
+  <dropdown-wc data-placement="bottom-end">
+    <button data-trigger>Bottom End</button>
+    <menu>
+      <li><button>Option 1</button></li>
+      <li><button>Option 2</button></li>
+    </menu>
+  </dropdown-wc>
+
+  <dropdown-wc data-placement="top-start">
+    <button data-trigger>Top Start</button>
+    <menu>
+      <li><button>Option 1</button></li>
+      <li><button>Option 2</button></li>
+    </menu>
+  </dropdown-wc>
+</layout-cluster>
+
+<!-- Event Handling -->
+<script type="module">
+  document.querySelectorAll('dropdown-wc').forEach(dropdown => {
+    dropdown.addEventListener('select', (e) => {
+      console.log('Selected:', e.detail.value);
+    });
+
+    dropdown.addEventListener('open', () => {
+      console.log('Dropdown opened');
+    });
+
+    dropdown.addEventListener('close', () => {
+      console.log('Dropdown closed');
+    });
+  });
+</script>
+
+<!-- Additional Styles -->
+<style>
+  /* Hide checkmark for unchecked items */
+  [role="menuitemradio"][aria-checked="false"] .check-icon {
+    visibility: hidden;
+  }
+
+  /* Visually hidden utility */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+</style>

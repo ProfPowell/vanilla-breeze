@@ -1,0 +1,215 @@
+<!--
+  Modal Dialog Pattern
+
+  Uses native <dialog> element with layout-imposter for backdrop.
+  Progressive enhancement: dialogs work without custom JavaScript.
+
+  Key features:
+  - Native focus management and trapping
+  - Escape key closes dialog
+  - Click outside to close (optional)
+  - Accessible by default
+-->
+
+<!-- Basic Modal Dialog -->
+<button type="button" onclick="document.getElementById('basic-modal').showModal()">
+  Open Modal
+</button>
+
+<dialog id="basic-modal">
+  <layout-stack data-gap="l">
+    <header>
+      <h2>Modal Title</h2>
+    </header>
+
+    <div class="dialog-body">
+      <p>This is a basic modal dialog using the native dialog element.</p>
+      <p>Press Escape or click the close button to dismiss.</p>
+    </div>
+
+    <footer>
+      <layout-cluster data-justify="flex-end" data-gap="m">
+        <button type="button" class="secondary" onclick="this.closest('dialog').close()">
+          Cancel
+        </button>
+        <button type="button" class="primary" onclick="this.closest('dialog').close('confirm')">
+          Confirm
+        </button>
+      </layout-cluster>
+    </footer>
+  </layout-stack>
+</dialog>
+
+<!-- Confirmation Dialog -->
+<button type="button" class="danger" onclick="document.getElementById('confirm-modal').showModal()">
+  Delete Item
+</button>
+
+<dialog id="confirm-modal" class="confirm-dialog">
+  <form method="dialog">
+    <layout-stack data-gap="l">
+      <header>
+        <icon-wc name="alert-triangle" size="lg" class="warning-icon"></icon-wc>
+        <h2>Confirm Deletion</h2>
+      </header>
+
+      <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+
+      <footer>
+        <layout-cluster data-justify="flex-end" data-gap="m">
+          <button type="submit" value="cancel" class="secondary">Cancel</button>
+          <button type="submit" value="delete" class="danger">Delete</button>
+        </layout-cluster>
+      </footer>
+    </layout-stack>
+  </form>
+</dialog>
+
+<!-- Form Modal -->
+<button type="button" onclick="document.getElementById('form-modal').showModal()">
+  Add New Item
+</button>
+
+<dialog id="form-modal">
+  <form method="dialog">
+    <layout-stack data-gap="l">
+      <header>
+        <h2>Add New Item</h2>
+        <button type="button" class="ghost close-btn" aria-label="Close" onclick="this.closest('dialog').close()">
+          <icon-wc name="x"></icon-wc>
+        </button>
+      </header>
+
+      <div class="dialog-body">
+        <layout-stack data-gap="m">
+          <form-field>
+            <label for="item-name">Name</label>
+            <input type="text" id="item-name" name="name" required>
+          </form-field>
+
+          <form-field>
+            <label for="item-desc">Description</label>
+            <textarea id="item-desc" name="description" rows="3"></textarea>
+          </form-field>
+        </layout-stack>
+      </div>
+
+      <footer>
+        <layout-cluster data-justify="flex-end" data-gap="m">
+          <button type="button" class="secondary" onclick="this.closest('dialog').close()">
+            Cancel
+          </button>
+          <button type="submit" value="save" class="primary">Save</button>
+        </layout-cluster>
+      </footer>
+    </layout-stack>
+  </form>
+</dialog>
+
+<!-- Large Content Modal with Scrolling -->
+<button type="button" onclick="document.getElementById('scroll-modal').showModal()">
+  View Details
+</button>
+
+<dialog id="scroll-modal" class="large-dialog">
+  <layout-stack data-gap="l">
+    <header>
+      <h2>Terms of Service</h2>
+    </header>
+
+    <div class="dialog-body scrollable">
+      <layout-text data-measure="normal">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+        <!-- Long content here -->
+      </layout-text>
+    </div>
+
+    <footer>
+      <layout-cluster data-justify="flex-end" data-gap="m">
+        <button type="button" class="primary" onclick="this.closest('dialog').close()">
+          I Agree
+        </button>
+      </layout-cluster>
+    </footer>
+  </layout-stack>
+</dialog>
+
+<!-- Event Handling -->
+<script type="module">
+  const confirmDialog = document.getElementById('confirm-modal');
+
+  // Handle dialog close
+  confirmDialog.addEventListener('close', () => {
+    if (confirmDialog.returnValue === 'delete') {
+      console.log('User confirmed deletion');
+      // Perform delete action
+    } else {
+      console.log('User cancelled');
+    }
+  });
+
+  // Click outside to close (optional)
+  document.querySelectorAll('dialog').forEach(dialog => {
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+  });
+</script>
+
+<!-- Dialog Styles -->
+<style>
+  dialog {
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-lg);
+    max-width: min(90vw, 500px);
+    max-height: 85vh;
+  }
+
+  dialog::backdrop {
+    background: var(--color-overlay-strong);
+    backdrop-filter: blur(4px);
+  }
+
+  dialog > layout-stack {
+    padding: var(--size-l);
+  }
+
+  dialog header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--size-m);
+  }
+
+  dialog header h2 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+  }
+
+  dialog .close-btn {
+    margin-inline-start: auto;
+  }
+
+  dialog .dialog-body.scrollable {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-inline-end: var(--size-s);
+  }
+
+  .confirm-dialog header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .confirm-dialog .warning-icon {
+    color: var(--color-warning);
+  }
+
+  .large-dialog {
+    max-width: min(90vw, 700px);
+  }
+</style>

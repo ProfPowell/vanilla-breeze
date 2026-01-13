@@ -1,0 +1,43 @@
+{#
+  Code Block Partial
+
+  Usage:
+  {% codeBlock "javascript", "example.js" %}
+  const greeting = "Hello World";
+  console.log(greeting);
+  {% endcodeBlock %}
+
+  Or with variables:
+  {% set codeContent = "console.log('Hello');" %}
+  {% set codeLang = "javascript" %}
+  {% set codeFilename = "hello.js" %}
+  {% include "code-block.njk" %}
+#}
+
+<code-block
+  {% if codeLang %}data-language="{{ codeLang }}"{% endif %}
+  {% if codeFilename %}data-filename="{{ codeFilename }}"{% endif %}
+>
+  <pre><code{% if codeLang %} class="language-{{ codeLang }}"{% endif %}>{{ codeContent | escape }}</code></pre>
+</code-block>
+
+<style>
+  code-block {
+    display: block;
+    margin-block: var(--size-m);
+  }
+
+  code-block pre {
+    margin: 0;
+    padding: var(--size-m);
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+  }
+
+  code-block code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+  }
+</style>

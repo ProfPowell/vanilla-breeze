@@ -1,0 +1,49 @@
+{#
+  Theme Toggle Partial
+
+  Button that toggles between light and dark themes.
+
+  Usage:
+  {% include "theme-toggle.njk" %}
+#}
+
+<theme-wc>
+  <button data-trigger class="ghost" aria-label="Toggle theme">
+    <span class="icon-light">
+      <icon-wc name="sun" size="sm"></icon-wc>
+    </span>
+    <span class="icon-dark">
+      <icon-wc name="moon" size="sm"></icon-wc>
+    </span>
+    <span class="theme-label">Theme</span>
+  </button>
+</theme-wc>
+
+<style>
+  theme-wc button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-xs);
+  }
+
+  /* Show sun in dark mode, moon in light mode */
+  .icon-light { display: none; }
+  .icon-dark { display: inline-flex; }
+
+  [data-mode="dark"] .icon-light { display: inline-flex; }
+  [data-mode="dark"] .icon-dark { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode]) .icon-light { display: inline-flex; }
+    :root:not([data-mode]) .icon-dark { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .theme-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      clip: rect(0, 0, 0, 0);
+    }
+  }
+</style>

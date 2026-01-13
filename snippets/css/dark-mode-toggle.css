@@ -1,0 +1,140 @@
+/**
+ * Dark Mode Toggle Styles
+ *
+ * Vanilla Breeze uses CSS light-dark() for automatic mode switching.
+ * This file shows how to implement manual theme controls.
+ *
+ * Three approaches:
+ * 1. Automatic (OS preference) - default behavior
+ * 2. Manual toggle via data-mode attribute
+ * 3. Storage-persisted preference
+ */
+
+/* ==================== BASE SETUP ==================== */
+:root {
+  color-scheme: light dark;
+}
+
+/* Force light mode */
+:root[data-mode="light"] {
+  color-scheme: light;
+}
+
+/* Force dark mode */
+:root[data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Adjust colors that need dark-mode tuning */
+  --color-primary: oklch(65% 0.18 var(--hue-primary));
+
+  /* Darker shadows for dark backgrounds */
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4);
+}
+
+/* ==================== TOGGLE BUTTON ==================== */
+.theme-toggle {
+  --toggle-size: var(--size-xl);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Icon states */
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+}
+
+/* Show sun in dark mode, moon in light mode */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+
+:root[data-mode="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-mode="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* Auto-detect system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode]) .theme-toggle .icon-sun { display: block; }
+  :root:not([data-mode]) .theme-toggle .icon-moon { display: none; }
+}
+
+/* ==================== MINIMAL JAVASCRIPT ==================== */
+/*
+  Progressive enhancement: Theme toggle script
+
+  <script>
+    // Check for saved preference or system preference
+    const getTheme = () => {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    // Apply theme
+    const setTheme = (theme) => {
+      document.documentElement.dataset.mode = theme;
+      localStorage.setItem('theme', theme);
+    };
+
+    // Initialize
+    setTheme(getTheme());
+
+    // Toggle handler
+    document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+      const current = document.documentElement.dataset.mode;
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+*/
+
+/* ==================== THREE-WAY TOGGLE ==================== */
+/* Light / System / Dark selector */
+.theme-switcher {
+  display: flex;
+  gap: var(--size-2xs);
+  padding: var(--size-2xs);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-m);
+}
+
+.theme-switcher button {
+  padding: var(--size-xs) var(--size-s);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.theme-switcher button:hover {
+  color: var(--color-text);
+}
+
+.theme-switcher button[aria-pressed="true"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}

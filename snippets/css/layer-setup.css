@@ -1,0 +1,57 @@
+/**
+ * CSS Layer Setup
+ *
+ * Establishes the cascade order for Vanilla Breeze styles.
+ * Layers listed first have LOWEST precedence.
+ * Un-layered styles have HIGHEST precedence (use sparingly).
+ *
+ * Layer purposes:
+ * - tokens: Design tokens (custom properties)
+ * - reset: Baseline normalization
+ * - native-elements: Styling for standard HTML elements
+ * - custom-elements: CSS-only custom element layouts
+ * - web-components: JavaScript-enhanced components
+ * - utils: Utility overrides (highest layer precedence)
+ */
+
+/* Declare all layers upfront for explicit ordering */
+@layer tokens, reset, native-elements, custom-elements, web-components, utils;
+
+/* Import each layer's styles */
+@import "./tokens/index.css" layer(tokens);
+@import "./base/reset.css" layer(reset);
+@import "./native-elements/index.css" layer(native-elements);
+@import "./custom-elements/index.css" layer(custom-elements);
+@import "./web-components/index.css" layer(web-components);
+@import "./utils/index.css" layer(utils);
+
+/**
+ * USAGE EXAMPLES:
+ *
+ * Adding styles to a specific layer:
+ *
+ * @layer native-elements {
+ *   button {
+ *     font-weight: var(--font-weight-medium);
+ *   }
+ * }
+ *
+ * Creating component-specific overrides:
+ *
+ * @layer web-components {
+ *   accordion-wc {
+ *     --accordion-gap: var(--size-m);
+ *   }
+ * }
+ *
+ * Utility classes (highest precedence):
+ *
+ * @layer utils {
+ *   .visually-hidden {
+ *     position: absolute;
+ *     clip: rect(0 0 0 0);
+ *     width: 1px;
+ *     height: 1px;
+ *   }
+ * }
+ */

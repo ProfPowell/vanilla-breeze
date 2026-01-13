@@ -1,0 +1,118 @@
+/**
+ * Astro-Specific Style Overrides
+ *
+ * Additional styles for Astro integration.
+ * Import after main.css in your Astro project.
+ */
+
+/* ==================== ASTRO VIEW TRANSITIONS ==================== */
+/* Smooth page transitions */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-normal);
+  animation-timing-function: var(--ease-out);
+}
+
+/* Disable transitions for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ==================== ASTRO ISLANDS ==================== */
+/* Prevent layout shift for client:* directives */
+[data-astro-cid] {
+  contain: content;
+}
+
+/* Loading state for islands */
+astro-island[ssr] {
+  display: contents;
+}
+
+/* ==================== ASTRO SLOT STYLING ==================== */
+/* Ensure slotted content inherits properly */
+::slotted(*) {
+  color: inherit;
+}
+
+/* ==================== CONTENT COLLECTIONS ==================== */
+/* Styles for MDX content */
+.astro-content {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.astro-content > * + * {
+  margin-block-start: var(--size-m);
+}
+
+.astro-content h2 {
+  margin-block-start: var(--size-2xl);
+  font-size: var(--font-size-2xl);
+}
+
+.astro-content h3 {
+  margin-block-start: var(--size-xl);
+  font-size: var(--font-size-xl);
+}
+
+/* ==================== ASTRO IMAGES ==================== */
+/* Optimize Astro Image component output */
+picture {
+  display: block;
+}
+
+picture img {
+  width: 100%;
+  height: auto;
+}
+
+/* ==================== CODE HIGHLIGHTING ==================== */
+/* Shiki/Prism compatibility for Astro */
+.astro-code {
+  padding: var(--size-m);
+  border-radius: var(--radius-m);
+  overflow-x: auto;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.astro-code code {
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+}
+
+/* Light/dark theme code blocks */
+.astro-code-light {
+  display: block;
+}
+
+.astro-code-dark {
+  display: none;
+}
+
+:root[data-mode="dark"] .astro-code-light {
+  display: none;
+}
+
+:root[data-mode="dark"] .astro-code-dark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode]) .astro-code-light {
+    display: none;
+  }
+
+  :root:not([data-mode]) .astro-code-dark {
+    display: block;
+  }
+}

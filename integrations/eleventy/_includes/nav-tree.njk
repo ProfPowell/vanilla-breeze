@@ -1,0 +1,38 @@
+{#
+  Tree Navigation Partial
+
+  Usage:
+  {% include "nav-tree.njk" %}
+
+  Requires `navigation` data from _data/navigation.json
+  or pass items directly:
+  {% set navItems = customNavigation %}
+  {% include "nav-tree.njk" %}
+#}
+
+{% macro renderNavItem(item, currentUrl) %}
+  <li>
+    {% if item.children %}
+      <details{% if currentUrl | startsWith(item.href) %} open{% endif %}>
+        <summary>{{ item.label }}</summary>
+        <ul>
+          {% for child in item.children %}
+            {{ renderNavItem(child, currentUrl) }}
+          {% endfor %}
+        </ul>
+      </details>
+    {% else %}
+      <a href="{{ item.href }}"{% if item.href == currentUrl %} aria-current="page"{% endif %}>
+        {{ item.label }}
+      </a>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+<nav class="tree" data-density="compact" aria-label="Navigation">
+  <ul>
+    {% for item in (navItems or navigation.items) %}
+      {{ renderNavItem(item, page.url) }}
+    {% endfor %}
+  </ul>
+</nav>
