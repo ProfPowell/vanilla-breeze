@@ -101,7 +101,7 @@
       <code-block language="html" label="Basic centered hero">&lt;section class="hero"&gt;
   &lt;layout-cover data-min-height="60vh" data-padding="xl"&gt;
     &lt;layout-center data-max-width="measure-wide"&gt;
-      &lt;layout-stack data-gap="l" style="text-align: center;"&gt;
+      &lt;layout-stack data-gap="l" class="hero-content"&gt;
         &lt;h1&gt;Build Beautiful Interfaces&lt;/h1&gt;
         &lt;p class="lead"&gt;
           A lightweight CSS framework built on modern standards.
@@ -163,10 +163,10 @@
         <p>Add a background image with CSS custom property and overlay.</p>
       </layout-text>
 
-      <code-block language="html" label="Hero with background image">&lt;section class="hero" style="--hero-bg: url('/images/hero-bg.jpg');"&gt;
+      <code-block language="html" label="Hero with background image">&lt;section class="hero hero-with-bg"&gt;
   &lt;layout-cover data-min-height="70vh" data-padding="xl"&gt;
     &lt;layout-center data-max-width="measure-wide"&gt;
-      &lt;layout-stack data-gap="l" style="text-align: center;"&gt;
+      &lt;layout-stack data-gap="l" class="hero-content"&gt;
         &lt;h1&gt;Your Headline Here&lt;/h1&gt;
         &lt;p class="lead"&gt;Supporting text that explains the value proposition.&lt;/p&gt;
         &lt;a href="/cta/" class="button large"&gt;Call to Action&lt;/a&gt;
@@ -182,28 +182,35 @@
 
       <code-block language="css" label="Hero background styles">.hero {
   background: var(--color-surface-raised);
-  background-image: var(--hero-bg, none);
+}
+
+.hero-content {
+  text-align: center;
+}
+
+.hero .lead {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-muted);
+}
+
+/* Hero with background image */
+.hero-with-bg {
+  background-image: url('/images/hero-bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;
 }
 
-/* Overlay for background images */
-.hero[style*="--hero-bg"]::before {
+.hero-with-bg::before {
   content: "";
   position: absolute;
   inset: 0;
   background: var(--color-overlay-strong);
 }
 
-.hero[style*="--hero-bg"] > * {
+.hero-with-bg > * {
   position: relative;
   color: var(--color-white);
-}
-
-.hero .lead {
-  font-size: var(--font-size-xl);
-  color: var(--color-text-muted);
 }</code-block>
     </section>
 
@@ -241,7 +248,7 @@
       <layout-text>
         <ul>
           <li><strong>Centering:</strong> Use <code>layout-center</code> to constrain content width and center horizontally</li>
-          <li><strong>Text alignment:</strong> Add <code>style="text-align: center;"</code> for centered hero content</li>
+          <li><strong>Text alignment:</strong> Use a <code>.hero-content</code> class with <code>text-align: center;</code> for centered content</li>
           <li><strong>Buttons:</strong> Use <code>layout-cluster</code> with <code>data-justify="center"</code> for centered button groups</li>
           <li><strong>Images:</strong> Use <code>loading="eager"</code> for hero images since they're above the fold</li>
           <li><strong>Responsive:</strong> Split layouts automatically stack on narrow viewports</li>
