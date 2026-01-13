@@ -97,7 +97,7 @@ class FootnotesWc extends HTMLElement {
     // Create back-reference link
     const backLink = document.createElement('a');
     backLink.href = `#${refId}`;
-    backLink.className = 'fn-backref';
+    backLink.setAttribute('data-backref', '');
     backLink.setAttribute('aria-label', this.#backLabel);
     backLink.textContent = '↩';
 
