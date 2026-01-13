@@ -1,0 +1,105 @@
+{# Pricing Section #}
+<section class="pricing" id="pricing">
+  <layout-center data-max-width="wide">
+    <layout-stack data-gap="2xl">
+      <header class="section-header">
+        <h2>{{ pricing.title | default('Simple, transparent pricing') }}</h2>
+        <p>{{ pricing.subtitle | default('Choose the plan that works best for you.') }}</p>
+      </header>
+
+      <layout-grid data-gap="l" data-min-width="280">
+        {% for plan in pricing.plans %}
+        <layout-card class="pricing-card{% if plan.highlighted %} highlighted{% endif %}">
+          <layout-stack data-gap="l">
+            <div class="plan-header">
+              <h3>{{ plan.name }}</h3>
+              <div class="price">
+                <span class="amount">{{ plan.price }}</span>
+                {% if plan.period %}<span class="period">{{ plan.period }}</span>{% endif %}
+              </div>
+              <p class="plan-description">{{ plan.description }}</p>
+            </div>
+
+            <ul class="features-list">
+              {% for feature in plan.features %}
+              <li>
+                <icon-wc name="check" size="sm"></icon-wc>
+                {{ feature }}
+              </li>
+              {% endfor %}
+            </ul>
+
+            <a href="{{ plan.ctaLink }}" class="button {% if plan.highlighted %}primary{% else %}secondary{% endif %} full-width">
+              {{ plan.cta }}
+            </a>
+          </layout-stack>
+        </layout-card>
+        {% endfor %}
+      </layout-grid>
+    </layout-stack>
+  </layout-center>
+</section>
+
+<style>
+  .pricing {
+    padding: var(--size-4xl) var(--size-l);
+    background: var(--color-surface-raised);
+  }
+  .pricing-card {
+    padding: var(--size-xl);
+    text-align: center;
+  }
+  .pricing-card.highlighted {
+    border: 2px solid var(--color-primary);
+    position: relative;
+  }
+  .pricing-card.highlighted::before {
+    content: 'Most Popular';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-primary);
+    color: white;
+    padding: var(--size-2xs) var(--size-m);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+  .plan-header h3 {
+    font-size: var(--font-size-xl);
+    margin-block-end: var(--size-s);
+  }
+  .price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--size-2xs);
+  }
+  .amount {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+  }
+  .period {
+    color: var(--color-text-muted);
+  }
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+  }
+  .features-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    padding-block: var(--size-xs);
+  }
+  .features-list icon-wc {
+    color: var(--color-success);
+  }
+  .full-width {
+    width: 100%;
+    justify-content: center;
+  }
+</style>

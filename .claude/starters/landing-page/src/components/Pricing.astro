@@ -1,0 +1,200 @@
+---
+interface Plan {
+  name: string;
+  price: string;
+  period?: string;
+  description: string;
+  features: string[];
+  cta: string;
+  ctaLink: string;
+  highlighted?: boolean;
+}
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  plans?: Plan[];
+}
+
+const {
+  title = 'Simple, transparent pricing',
+  subtitle = 'Choose the plan that works best for you.',
+  plans = [
+    {
+      name: 'Starter',
+      price: '$0',
+      period: '/month',
+      description: 'Perfect for trying things out.',
+      features: ['Up to 3 projects', 'Basic analytics', 'Community support'],
+      cta: 'Get Started',
+      ctaLink: '#cta',
+    },
+    {
+      name: 'Pro',
+      price: '$29',
+      period: '/month',
+      description: 'For growing teams and businesses.',
+      features: [
+        'Unlimited projects',
+        'Advanced analytics',
+        'Priority support',
+        'Custom integrations',
+      ],
+      cta: 'Start Free Trial',
+      ctaLink: '#cta',
+      highlighted: true,
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      description: 'For large organizations.',
+      features: [
+        'Everything in Pro',
+        'Dedicated support',
+        'SLA guarantee',
+        'Custom contracts',
+      ],
+      cta: 'Contact Sales',
+      ctaLink: '#cta',
+    },
+  ],
+} = Astro.props;
+---
+
+<section class="pricing" id="pricing">
+  <layout-center data-max-width="wide">
+    <layout-stack data-gap="2xl">
+      <header class="section-header">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </header>
+
+      <layout-grid data-gap="l" data-min-width="280">
+        {plans.map((plan) => (
+          <layout-card class:list={['pricing-card', { highlighted: plan.highlighted }]}>
+            <layout-stack data-gap="l">
+              <div class="plan-header">
+                <h3>{plan.name}</h3>
+                <div class="price">
+                  <span class="amount">{plan.price}</span>
+                  {plan.period && <span class="period">{plan.period}</span>}
+                </div>
+                <p class="plan-description">{plan.description}</p>
+              </div>
+
+              <ul class="features-list">
+                {plan.features.map((feature) => (
+                  <li>
+                    <icon-wc name="check" size="sm"></icon-wc>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={plan.ctaLink}
+                class:list={['button', plan.highlighted ? 'primary' : 'secondary', 'full-width']}
+              >
+                {plan.cta}
+              </a>
+            </layout-stack>
+          </layout-card>
+        ))}
+      </layout-grid>
+    </layout-stack>
+  </layout-center>
+</section>
+
+<style>
+  .pricing {
+    padding: var(--size-4xl) var(--size-l);
+    background: var(--color-surface-raised);
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+
+  .section-header h2 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .section-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  .pricing-card {
+    padding: var(--size-xl);
+    text-align: center;
+  }
+
+  .pricing-card.highlighted {
+    border: 2px solid var(--color-primary);
+    position: relative;
+  }
+
+  .pricing-card.highlighted::before {
+    content: 'Most Popular';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    padding: var(--size-2xs) var(--size-m);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .plan-header h3 {
+    font-size: var(--font-size-xl);
+    margin-block-end: var(--size-s);
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--size-2xs);
+  }
+
+  .amount {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .period {
+    color: var(--color-text-muted);
+  }
+
+  .plan-description {
+    color: var(--color-text-muted);
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+  }
+
+  .features-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    padding-block: var(--size-xs);
+  }
+
+  .features-list icon-wc {
+    color: var(--color-success);
+  }
+
+  .full-width {
+    width: 100%;
+    justify-content: center;
+  }
+</style>

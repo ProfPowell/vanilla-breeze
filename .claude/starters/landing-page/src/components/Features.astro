@@ -1,0 +1,119 @@
+---
+interface Feature {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  features?: Feature[];
+}
+
+const {
+  title = 'Everything you need',
+  subtitle = 'Powerful features to help you build better products faster.',
+  features = [
+    {
+      icon: 'zap',
+      title: 'Lightning Fast',
+      description: 'Built for speed with optimized performance out of the box.',
+    },
+    {
+      icon: 'shield',
+      title: 'Secure by Default',
+      description: 'Enterprise-grade security with best practices baked in.',
+    },
+    {
+      icon: 'puzzle',
+      title: 'Highly Extensible',
+      description: 'Customize and extend with a powerful plugin system.',
+    },
+    {
+      icon: 'users',
+      title: 'Team Collaboration',
+      description: 'Work together seamlessly with built-in collaboration tools.',
+    },
+    {
+      icon: 'bar-chart',
+      title: 'Analytics Included',
+      description: 'Track metrics and gain insights with detailed analytics.',
+    },
+    {
+      icon: 'headphones',
+      title: '24/7 Support',
+      description: 'Get help when you need it with our dedicated support team.',
+    },
+  ],
+} = Astro.props;
+---
+
+<section class="features" id="features">
+  <layout-center data-max-width="wide">
+    <layout-stack data-gap="2xl">
+      <header class="section-header">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </header>
+
+      <layout-grid data-gap="xl" data-min-width="300">
+        {features.map((feature) => (
+          <layout-card class="feature-card">
+            <layout-stack data-gap="m">
+              <div class="icon-wrapper">
+                <icon-wc name={feature.icon} size="lg"></icon-wc>
+              </div>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </layout-stack>
+          </layout-card>
+        ))}
+      </layout-grid>
+    </layout-stack>
+  </layout-center>
+</section>
+
+<style>
+  .features {
+    padding: var(--size-4xl) var(--size-l);
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+
+  .section-header h2 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .section-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  .feature-card {
+    padding: var(--size-xl);
+  }
+
+  .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary-subtle);
+    border-radius: var(--radius-m);
+    color: var(--color-primary);
+  }
+
+  .feature-card h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .feature-card p {
+    color: var(--color-text-muted);
+  }
+</style>

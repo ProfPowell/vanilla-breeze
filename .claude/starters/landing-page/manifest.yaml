@@ -1,0 +1,148 @@
+name: landing-page
+displayName: "Landing Page"
+description: "Marketing landing page with hero, features, pricing, and CTA sections"
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project folder name"
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "lowercase with hyphens only"
+
+  - key: SITE_NAME
+    label: "Product/company name"
+    required: true
+    description: "e.g., 'Acme Inc'"
+
+  - key: TAGLINE
+    label: "Hero tagline"
+    required: true
+    description: "Main headline for the hero section"
+
+  - key: DESCRIPTION
+    label: "Site description"
+    required: true
+    maxLength: 160
+    description: "Brief description for SEO"
+
+  - key: SITE_URL
+    label: "Production URL"
+    required: true
+    validate: "^https?://"
+    default: "https://example.com"
+
+  - key: FRAMEWORK
+    label: "Site framework"
+    type: select
+    options:
+      - astro
+      - eleventy
+    default: astro
+    description: "astro=islands architecture, eleventy=zero-JS by default"
+
+  - key: SECTIONS
+    label: "Page sections to include"
+    type: multiselect
+    options:
+      - hero
+      - features
+      - pricing
+      - testimonials
+      - faq
+      - cta
+    default:
+      - hero
+      - features
+      - pricing
+      - cta
+    description: "Select sections to include on the landing page"
+
+  - key: THEME_COLOR
+    label: "Primary theme color"
+    default: "#2563eb"
+    description: "Brand color in hex format"
+
+  - key: ENABLE_ANALYTICS
+    label: "Include analytics placeholder"
+    type: boolean
+    default: false
+    description: "Add placeholder for analytics integration"
+
+includes:
+  - from: _shared/styles/_reset.css
+    to: src/styles/_reset.css
+  - from: _shared/styles/_tokens.css
+    to: src/styles/_tokens.css
+
+conditionalIncludes:
+  - condition: "{{FRAMEWORK}} === 'astro'"
+    includes:
+      - from: landing-page/astro.config.mjs
+        to: astro.config.mjs
+      - from: landing-page/src/layouts/BaseLayout.astro
+        to: src/layouts/BaseLayout.astro
+      - from: landing-page/src/components/Hero.astro
+        to: src/components/Hero.astro
+      - from: landing-page/src/components/Features.astro
+        to: src/components/Features.astro
+      - from: landing-page/src/components/Pricing.astro
+        to: src/components/Pricing.astro
+      - from: landing-page/src/components/Testimonials.astro
+        to: src/components/Testimonials.astro
+      - from: landing-page/src/components/FAQ.astro
+        to: src/components/FAQ.astro
+      - from: landing-page/src/components/CTA.astro
+        to: src/components/CTA.astro
+      - from: landing-page/src/pages/index.astro
+        to: src/pages/index.astro
+
+  - condition: "{{FRAMEWORK}} === 'eleventy'"
+    includes:
+      - from: landing-page/eleventy.config.js
+        to: eleventy.config.js
+      - from: landing-page/src/_includes/layouts/base.njk
+        to: src/_includes/layouts/base.njk
+      - from: landing-page/src/_includes/components/hero.njk
+        to: src/_includes/components/hero.njk
+      - from: landing-page/src/_includes/components/features.njk
+        to: src/_includes/components/features.njk
+      - from: landing-page/src/_includes/components/pricing.njk
+        to: src/_includes/components/pricing.njk
+      - from: landing-page/src/_includes/components/testimonials.njk
+        to: src/_includes/components/testimonials.njk
+      - from: landing-page/src/_includes/components/faq.njk
+        to: src/_includes/components/faq.njk
+      - from: landing-page/src/_includes/components/cta.njk
+        to: src/_includes/components/cta.njk
+      - from: landing-page/src/_data/site.json
+        to: src/_data/site.json
+      - from: landing-page/src/index.njk
+        to: src/index.njk
+
+skills:
+  - xhtml-author
+  - css-author
+  - typography
+  - metadata
+  - accessibility-checker
+  - performance
+  - responsive-images
+
+postScaffold:
+  - message: |
+      Landing page scaffolded successfully!
+
+      Next steps:
+      1. cd {{PROJECT_NAME}}
+      2. npm install
+      3. npm run dev
+
+      Customize your landing page:
+      - Edit content in src/pages/index.astro or src/index.njk
+      - Update styles in src/styles/
+      - Add images to public/ (Astro) or src/images/ (Eleventy)
+
+      Available commands:
+      - npm run dev      Start development server
+      - npm run build    Build for production
+      - npm run preview  Preview production build

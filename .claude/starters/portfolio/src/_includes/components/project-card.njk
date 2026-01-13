@@ -1,0 +1,100 @@
+{# Project Card #}
+<article class="project-card">
+  <a href="{{ project.url }}">
+    {% if project.data.image %}
+    <div class="project-image">
+      <img src="{{ project.data.image }}" alt="{{ project.data.title }}" loading="lazy" />
+    </div>
+    {% else %}
+    <div class="project-image placeholder">
+      <icon-wc name="image" size="xl"></icon-wc>
+    </div>
+    {% endif %}
+    <div class="project-info">
+      <h3>{{ project.data.title }}</h3>
+      <p>{{ project.data.description }}</p>
+      {% if project.data.tags %}
+      <div class="project-tags">
+        {% for tag in project.data.tags %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </a>
+</article>
+
+<style>
+  .project-card {
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .project-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .project-card a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .project-image {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--color-surface-sunken);
+  }
+
+  .project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+
+  .project-card:hover .project-image img {
+    transform: scale(1.05);
+  }
+
+  .project-image.placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--color-text-subtle);
+  }
+
+  .project-info {
+    padding: var(--size-l);
+  }
+
+  .project-info h3 {
+    font-size: var(--font-size-lg);
+    margin-block-end: var(--size-xs);
+  }
+
+  .project-info p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs);
+    margin-block-start: var(--size-m);
+  }
+
+  .tag {
+    display: inline-flex;
+    padding: var(--size-2xs) var(--size-s);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+</style>

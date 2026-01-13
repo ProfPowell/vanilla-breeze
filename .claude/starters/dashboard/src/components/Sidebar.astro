@@ -1,0 +1,166 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { label: 'Dashboard', href: '/', icon: 'layout-dashboard' },
+  { label: 'Items', href: '/items/', icon: 'list' },
+];
+
+const settingsItems = [
+  { label: 'Settings', href: '/settings/', icon: 'settings' },
+];
+
+function isActive(href: string) {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<div class="sidebar-content">
+  <header class="sidebar-header">
+    <a href="/" class="logo">{{DISPLAY_NAME}}</a>
+  </header>
+
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <ul>
+      {navItems.map((item) => (
+        <li>
+          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            <icon-wc name={item.icon} size="sm"></icon-wc>
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <h2>Settings</h2>
+    <ul>
+      {settingsItems.map((item) => (
+        <li>
+          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            <icon-wc name={item.icon} size="sm"></icon-wc>
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <footer class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar">U</div>
+      <div class="user-details">
+        <span class="user-name">User</span>
+        <span class="user-email">user@example.com</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<style>
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+  }
+
+  .sidebar-header {
+    padding: var(--size-l);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: var(--size-m);
+  }
+
+  .sidebar-nav h2 {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-block: var(--size-l) var(--size-s);
+    padding-inline: var(--size-m);
+  }
+
+  .sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: var(--size-m);
+    padding: var(--size-s) var(--size-m);
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-m);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .sidebar-nav a:hover {
+    background: var(--color-surface-raised);
+  }
+
+  .sidebar-nav a[aria-current="page"] {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .sidebar-footer {
+    padding: var(--size-m);
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--size-m);
+  }
+
+  .avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .user-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-email {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

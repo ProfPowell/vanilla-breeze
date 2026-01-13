@@ -1,0 +1,116 @@
+---
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  items?: FAQItem[];
+}
+
+const {
+  title = 'Frequently asked questions',
+  subtitle = 'Everything you need to know about our product.',
+  items = [
+    {
+      question: 'How do I get started?',
+      answer: 'Simply sign up for a free account and follow our quick start guide. You can be up and running in minutes.',
+    },
+    {
+      question: 'Is there a free trial?',
+      answer: 'Yes! All paid plans come with a 14-day free trial. No credit card required.',
+    },
+    {
+      question: 'Can I cancel anytime?',
+      answer: 'Absolutely. You can cancel your subscription at any time with no questions asked.',
+    },
+    {
+      question: 'What kind of support do you offer?',
+      answer: 'We offer email support for all plans, with priority support and dedicated account managers for Pro and Enterprise plans.',
+    },
+    {
+      question: 'Do you offer refunds?',
+      answer: 'Yes, we offer a 30-day money-back guarantee on all paid plans.',
+    },
+  ],
+} = Astro.props;
+---
+
+<section class="faq" id="faq">
+  <layout-center data-max-width="narrow">
+    <layout-stack data-gap="2xl">
+      <header class="section-header">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </header>
+
+      <accordion-wc>
+        {items.map((item, index) => (
+          <details>
+            <summary>{item.question}</summary>
+            <div class="answer">
+              <p>{item.answer}</p>
+            </div>
+          </details>
+        ))}
+      </accordion-wc>
+    </layout-stack>
+  </layout-center>
+</section>
+
+<style>
+  .faq {
+    padding: var(--size-4xl) var(--size-l);
+    background: var(--color-surface-raised);
+  }
+
+  .section-header {
+    text-align: center;
+  }
+
+  .section-header h2 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .section-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  accordion-wc {
+    display: block;
+  }
+
+  details {
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  summary {
+    padding: var(--size-l) 0;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  summary::after {
+    content: '+';
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+  }
+
+  details[open] summary::after {
+    content: '−';
+  }
+
+  .answer {
+    padding-block-end: var(--size-l);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-relaxed);
+  }
+</style>

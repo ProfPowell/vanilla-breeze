@@ -1,0 +1,100 @@
+---
+interface Column {
+  key: string;
+  label: string;
+  align?: 'left' | 'center' | 'right';
+}
+
+interface Props {
+  columns: Column[];
+  data: Record<string, any>[];
+  emptyMessage?: string;
+}
+
+const {
+  columns,
+  data,
+  emptyMessage = 'No data available',
+} = Astro.props;
+---
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        {columns.map((col) => (
+          <th style={col.align ? `text-align: ${col.align}` : ''}>
+            {col.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {data.length === 0 ? (
+        <tr>
+          <td colspan={columns.length} class="empty-state">
+            {emptyMessage}
+          </td>
+        </tr>
+      ) : (
+        data.map((row) => (
+          <tr>
+            {columns.map((col) => (
+              <td style={col.align ? `text-align: ${col.align}` : ''}>
+                {row[col.key]}
+              </td>
+            ))}
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-wrapper {
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: var(--size-m) var(--size-l);
+    text-align: left;
+  }
+
+  th {
+    background: var(--color-surface-raised);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  td {
+    font-size: var(--font-size-sm);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  tr:last-child td {
+    border-block-end: none;
+  }
+
+  tbody tr:hover {
+    background: var(--color-surface-raised);
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--size-2xl);
+  }
+</style>

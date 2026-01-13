@@ -1,0 +1,212 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Settings">
+  <layout-stack data-gap="xl">
+    <section class="settings-section">
+      <h2>Profile</h2>
+      <div class="settings-card">
+        <form>
+          <layout-stack data-gap="l">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" value="User" />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" value="user@example.com" />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="button primary">Save Changes</button>
+            </div>
+          </layout-stack>
+        </form>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>Preferences</h2>
+      <div class="settings-card">
+        <layout-stack data-gap="l">
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">Dark Mode</span>
+              <span class="setting-description">Use dark theme across the dashboard</span>
+            </div>
+            <theme-wc>
+              <button data-trigger class="toggle-button">
+                <icon-wc name="sun" size="sm" class="icon-light"></icon-wc>
+                <icon-wc name="moon" size="sm" class="icon-dark"></icon-wc>
+              </button>
+            </theme-wc>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">Email Notifications</span>
+              <span class="setting-description">Receive email updates about activity</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">Two-Factor Authentication</span>
+              <span class="setting-description">Add an extra layer of security</span>
+            </div>
+            <button class="button secondary">Enable</button>
+          </div>
+        </layout-stack>
+      </div>
+    </section>
+
+    <section class="settings-section danger">
+      <h2>Danger Zone</h2>
+      <div class="settings-card">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Delete Account</span>
+            <span class="setting-description">Permanently delete your account and all data</span>
+          </div>
+          <button class="button danger">Delete Account</button>
+        </div>
+      </div>
+    </section>
+  </layout-stack>
+</DashboardLayout>
+
+<style>
+  .settings-section h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin-block-end: var(--size-m);
+  }
+
+  .settings-card {
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-l);
+    padding: var(--size-xl);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs);
+  }
+
+  .form-group label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .form-group input {
+    padding: var(--size-s) var(--size-m);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    font-size: var(--font-size-base);
+  }
+
+  .form-actions {
+    padding-block-start: var(--size-m);
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-l);
+    padding-block: var(--size-s);
+  }
+
+  .setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+
+  .setting-label {
+    font-weight: var(--font-weight-medium);
+  }
+
+  .setting-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-full);
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+
+  .slider::before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: var(--radius-full);
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  input:checked + .slider {
+    background: var(--color-primary);
+  }
+
+  input:checked + .slider::before {
+    transform: translateX(22px);
+  }
+
+  .toggle-button {
+    display: flex;
+    align-items: center;
+    padding: var(--size-s);
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    cursor: pointer;
+  }
+
+  .icon-light { display: none; }
+  .icon-dark { display: inline-flex; }
+  :global([data-mode="dark"]) .icon-light { display: inline-flex; }
+  :global([data-mode="dark"]) .icon-dark { display: none; }
+
+  .danger h2 {
+    color: var(--color-error);
+  }
+
+  .danger .settings-card {
+    border-color: var(--color-error);
+  }
+
+  .button.danger {
+    background: var(--color-error);
+    color: white;
+  }
+</style>

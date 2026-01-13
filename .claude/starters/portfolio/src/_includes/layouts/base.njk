@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Eleventy">
+
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+
+  <title>{{ title }}{% if title %} | {% endif %}{{ site.name }}</title>
+  <meta name="description" content="{{ description | default(site.description) }}">
+
+  <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+  <meta property="og:title" content="{{ title }}{% if title %} | {% endif %}{{ site.name }}">
+  <meta property="og:description" content="{{ description | default(site.description) }}">
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="{{ title }}{% if title %} | {% endif %}{{ site.name }}">
+  <meta property="twitter:description" content="{{ description | default(site.description) }}">
+
+  <link rel="stylesheet" href="/styles/main.css">
+
+  <script>
+    const theme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.mode = theme;
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <layout-center data-max-width="wide">
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <a href="/" class="logo">{{ site.name }}</a>
+        <nav class="main-nav" aria-label="Main navigation">
+          <ul>
+            <li><a href="/"{% if page.url == "/" %} aria-current="page"{% endif %}>Home</a></li>
+            <li><a href="/projects/"{% if page.url | startsWith("/projects/") %} aria-current="page"{% endif %}>Work</a></li>
+            <li><a href="/about/"{% if page.url == "/about/" %} aria-current="page"{% endif %}>About</a></li>
+            <li><a href="/contact/"{% if page.url == "/contact/" %} aria-current="page"{% endif %}>Contact</a></li>
+          </ul>
+        </nav>
+        <theme-wc>
+          <button data-trigger class="theme-toggle" aria-label="Toggle theme">
+            <icon-wc name="sun" size="sm" class="icon-light"></icon-wc>
+            <icon-wc name="moon" size="sm" class="icon-dark"></icon-wc>
+          </button>
+        </theme-wc>
+      </layout-cluster>
+    </layout-center>
+  </header>
+
+  <main>
+    {{ content | safe }}
+  </main>
+
+  <footer class="site-footer">
+    <layout-center data-max-width="wide">
+      <layout-stack data-gap="l" data-align="center">
+        <div class="social-links">
+          {% for social in site.social %}
+          <a href="{{ social.url }}" aria-label="{{ social.name }}">
+            <icon-wc name="{{ social.icon }}" size="md"></icon-wc>
+          </a>
+          {% endfor %}
+        </div>
+        <p>&copy; {{ site.year }} {{ site.name }}. All rights reserved.</p>
+      </layout-stack>
+    </layout-center>
+  </footer>
+</body>
+</html>
+
+<style>
+  .site-header {
+    padding: var(--size-m) var(--size-l);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 50;
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .main-nav ul {
+    display: flex;
+    gap: var(--size-l);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-nav a {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .main-nav a:hover,
+  .main-nav a[aria-current="page"] {
+    color: var(--color-text);
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    padding: var(--size-xs);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+  }
+
+  .icon-light { display: none; }
+  .icon-dark { display: inline-flex; }
+  [data-mode="dark"] .icon-light { display: inline-flex; }
+  [data-mode="dark"] .icon-dark { display: none; }
+
+  @media (max-width: 768px) {
+    .main-nav {
+      display: none;
+    }
+  }
+
+  .site-footer {
+    padding: var(--size-3xl) var(--size-l);
+    background: var(--color-surface-sunken);
+    text-align: center;
+  }
+
+  .social-links {
+    display: flex;
+    gap: var(--size-m);
+  }
+
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .social-links a:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .site-footer p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+</style>

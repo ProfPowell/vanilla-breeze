@@ -1,0 +1,55 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import StatCard from '../components/StatCard.astro';
+import DataTable from '../components/DataTable.astro';
+
+// Sample data - replace with actual API calls
+const stats = [
+  { label: 'Total Users', value: '12,345', change: '+12% from last month', changeType: 'positive', icon: 'users' },
+  { label: 'Revenue', value: '$45,678', change: '+8% from last month', changeType: 'positive', icon: 'dollar-sign' },
+  { label: 'Active Projects', value: '89', change: '-3% from last month', changeType: 'negative', icon: 'folder' },
+  { label: 'Conversion Rate', value: '3.2%', change: 'No change', changeType: 'neutral', icon: 'percent' },
+];
+
+const recentActivity = [
+  { id: 1, user: 'John Doe', action: 'Created new project', time: '2 minutes ago' },
+  { id: 2, user: 'Jane Smith', action: 'Updated settings', time: '15 minutes ago' },
+  { id: 3, user: 'Bob Johnson', action: 'Deleted item #123', time: '1 hour ago' },
+  { id: 4, user: 'Alice Brown', action: 'Exported report', time: '3 hours ago' },
+];
+
+const columns = [
+  { key: 'user', label: 'User' },
+  { key: 'action', label: 'Action' },
+  { key: 'time', label: 'Time', align: 'right' as const },
+];
+---
+
+<DashboardLayout title="Dashboard">
+  <layout-stack data-gap="xl">
+    <layout-grid data-gap="l" data-min-width="250">
+      {stats.map((stat) => (
+        <StatCard
+          label={stat.label}
+          value={stat.value}
+          change={stat.change}
+          changeType={stat.changeType as 'positive' | 'negative' | 'neutral'}
+          icon={stat.icon}
+        />
+      ))}
+    </layout-grid>
+
+    <section>
+      <h2 class="section-title">Recent Activity</h2>
+      <DataTable columns={columns} data={recentActivity} />
+    </section>
+  </layout-stack>
+</DashboardLayout>
+
+<style>
+  .section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin-block-end: var(--size-m);
+  }
+</style>

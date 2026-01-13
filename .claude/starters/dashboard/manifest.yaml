@@ -14,6 +14,14 @@ prompts:
     label: "Project description"
     required: true
     maxLength: 160
+  - key: FRAMEWORK
+    label: "Site framework"
+    type: select
+    options:
+      - astro
+      - vanilla
+    default: astro
+    description: "astro=server-rendered with islands, vanilla=client-side SPA"
   - key: API_BASE_URL
     label: "API base URL"
     default: "/api"
@@ -51,6 +59,63 @@ includes:
   - from: _shared/components/x-icon
     to: src/components/x-icon
 
+conditionalIncludes:
+  - condition: "{{FRAMEWORK}} === 'astro'"
+    includes:
+      - from: dashboard/astro.config.mjs
+        to: astro.config.mjs
+      - from: dashboard/src/layouts/DashboardLayout.astro
+        to: src/layouts/DashboardLayout.astro
+      - from: dashboard/src/components/Sidebar.astro
+        to: src/components/Sidebar.astro
+      - from: dashboard/src/components/StatCard.astro
+        to: src/components/StatCard.astro
+      - from: dashboard/src/components/DataTable.astro
+        to: src/components/DataTable.astro
+      - from: dashboard/src/pages/index.astro
+        to: src/pages/index.astro
+      - from: dashboard/src/pages/settings.astro
+        to: src/pages/settings.astro
+      - from: dashboard/src/pages/items/index.astro
+        to: src/pages/items/index.astro
+      - from: dashboard/src/pages/items/[id].astro
+        to: src/pages/items/[id].astro
+
+  - condition: "{{FRAMEWORK}} === 'vanilla'"
+    includes:
+      - from: dashboard/index.html
+        to: index.html
+      - from: dashboard/login.html
+        to: login.html
+      - from: dashboard/app.html
+        to: app.html
+      - from: dashboard/src/app/main.js
+        to: src/app/main.js
+      - from: dashboard/src/app/router.js
+        to: src/app/router.js
+      - from: dashboard/src/app/auth.js
+        to: src/app/auth.js
+      - from: dashboard/src/app/api.js
+        to: src/app/api.js
+      - from: dashboard/src/components/dashboard-layout.js
+        to: src/components/dashboard-layout.js
+      - from: dashboard/src/components/sidebar-nav.js
+        to: src/components/sidebar-nav.js
+      - from: dashboard/src/components/stat-card.js
+        to: src/components/stat-card.js
+      - from: dashboard/src/components/data-table.js
+        to: src/components/data-table.js
+      - from: dashboard/src/components/chart-wrapper.js
+        to: src/components/chart-wrapper.js
+      - from: dashboard/src/views/dashboard-view.js
+        to: src/views/dashboard-view.js
+      - from: dashboard/src/views/settings-view.js
+        to: src/views/settings-view.js
+      - from: dashboard/src/views/list-view.js
+        to: src/views/list-view.js
+      - from: dashboard/src/views/detail-view.js
+        to: src/views/detail-view.js
+
 skills:
   - javascript-author
   - custom-elements
@@ -58,3 +123,7 @@ skills:
   - authentication
   - state-management
   - accessibility-checker
+
+skills_if:
+  FRAMEWORK_ASTRO:
+    - astro

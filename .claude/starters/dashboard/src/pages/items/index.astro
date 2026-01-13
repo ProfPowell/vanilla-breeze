@@ -1,0 +1,114 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import DataTable from '../../components/DataTable.astro';
+
+// Sample data - replace with actual API calls
+const items = [
+  { id: 1, name: 'Item Alpha', status: 'Active', created: '2024-01-15', actions: '<a href="/items/1">View</a>' },
+  { id: 2, name: 'Item Beta', status: 'Pending', created: '2024-01-14', actions: '<a href="/items/2">View</a>' },
+  { id: 3, name: 'Item Gamma', status: 'Active', created: '2024-01-13', actions: '<a href="/items/3">View</a>' },
+  { id: 4, name: 'Item Delta', status: 'Inactive', created: '2024-01-12', actions: '<a href="/items/4">View</a>' },
+  { id: 5, name: 'Item Epsilon', status: 'Active', created: '2024-01-11', actions: '<a href="/items/5">View</a>' },
+];
+
+const columns = [
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Name' },
+  { key: 'status', label: 'Status' },
+  { key: 'created', label: 'Created' },
+  { key: 'actions', label: 'Actions', align: 'right' as const },
+];
+---
+
+<DashboardLayout title="Items">
+  <Fragment slot="actions">
+    <a href="/items/new" class="button primary">
+      <icon-wc name="plus" size="sm"></icon-wc>
+      Add Item
+    </a>
+  </Fragment>
+
+  <layout-stack data-gap="l">
+    <div class="filters">
+      <div class="search">
+        <icon-wc name="search" size="sm"></icon-wc>
+        <input type="search" placeholder="Search items..." />
+      </div>
+      <select>
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="pending">Pending</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+
+    <DataTable columns={columns} data={items} />
+
+    <div class="pagination">
+      <span class="pagination-info">Showing 1-5 of 25 items</span>
+      <div class="pagination-controls">
+        <button class="button ghost" disabled>Previous</button>
+        <button class="button ghost">Next</button>
+      </div>
+    </div>
+  </layout-stack>
+</DashboardLayout>
+
+<style>
+  .filters {
+    display: flex;
+    gap: var(--size-m);
+    flex-wrap: wrap;
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    padding: var(--size-s) var(--size-m);
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search icon-wc {
+    color: var(--color-text-muted);
+  }
+
+  .search input {
+    border: none;
+    background: none;
+    flex: 1;
+    font-size: var(--font-size-sm);
+  }
+
+  .search input:focus {
+    outline: none;
+  }
+
+  select {
+    padding: var(--size-s) var(--size-m);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    font-size: var(--font-size-sm);
+    background: var(--color-surface);
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pagination-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .pagination-controls {
+    display: flex;
+    gap: var(--size-s);
+  }
+</style>

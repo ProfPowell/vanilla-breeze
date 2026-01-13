@@ -1,0 +1,126 @@
+---
+interface Testimonial {
+  quote: string;
+  author: string;
+  role: string;
+  company?: string;
+  avatar?: string;
+}
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  testimonials?: Testimonial[];
+}
+
+const {
+  title = 'Loved by teams everywhere',
+  subtitle = 'See what our customers have to say about us.',
+  testimonials = [
+    {
+      quote: 'This product has completely transformed how we work. The efficiency gains are incredible.',
+      author: 'Sarah Chen',
+      role: 'CTO',
+      company: 'TechCorp',
+    },
+    {
+      quote: 'The best investment we made this year. Our team productivity has doubled.',
+      author: 'Michael Rodriguez',
+      role: 'Engineering Lead',
+      company: 'StartupXYZ',
+    },
+    {
+      quote: 'Outstanding support and a product that just works. Highly recommended.',
+      author: 'Emily Watson',
+      role: 'Product Manager',
+      company: 'InnovateCo',
+    },
+  ],
+} = Astro.props;
+---
+
+<section class="testimonials" id="testimonials">
+  <layout-center data-max-width="wide">
+    <layout-stack data-gap="2xl">
+      <header class="section-header">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </header>
+
+      <layout-grid data-gap="l" data-min-width="300">
+        {testimonials.map((testimonial) => (
+          <layout-card class="testimonial-card">
+            <layout-stack data-gap="l">
+              <blockquote>
+                <p>"{testimonial.quote}"</p>
+              </blockquote>
+              <footer class="testimonial-footer">
+                <user-avatar data-name={testimonial.author} data-size="md"></user-avatar>
+                <div class="author-info">
+                  <cite class="author-name">{testimonial.author}</cite>
+                  <span class="author-role">
+                    {testimonial.role}
+                    {testimonial.company && `, ${testimonial.company}`}
+                  </span>
+                </div>
+              </footer>
+            </layout-stack>
+          </layout-card>
+        ))}
+      </layout-grid>
+    </layout-stack>
+  </layout-center>
+</section>
+
+<style>
+  .testimonials {
+    padding: var(--size-4xl) var(--size-l);
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+
+  .section-header h2 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .section-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  .testimonial-card {
+    padding: var(--size-xl);
+  }
+
+  blockquote {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-style: italic;
+    line-height: var(--line-height-relaxed);
+  }
+
+  .testimonial-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--size-m);
+  }
+
+  .author-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name {
+    font-style: normal;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .author-role {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+</style>

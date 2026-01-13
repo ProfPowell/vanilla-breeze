@@ -1,0 +1,211 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+
+const { id } = Astro.params;
+
+// Sample data - replace with actual API call
+const item = {
+  id: id,
+  name: `Item ${id}`,
+  status: 'Active',
+  description: 'This is a sample item description. Replace with actual content from your API.',
+  created: '2024-01-15',
+  updated: '2024-01-16',
+  metadata: {
+    category: 'General',
+    tags: ['sample', 'demo'],
+    owner: 'User',
+  },
+};
+---
+
+<DashboardLayout title={`Item ${id}`}>
+  <Fragment slot="actions">
+    <a href={`/items/${id}/edit`} class="button secondary">
+      <icon-wc name="edit" size="sm"></icon-wc>
+      Edit
+    </a>
+    <button class="button danger">
+      <icon-wc name="trash" size="sm"></icon-wc>
+      Delete
+    </button>
+  </Fragment>
+
+  <layout-stack data-gap="xl">
+    <nav class="breadcrumb">
+      <a href="/items/">Items</a>
+      <span>/</span>
+      <span>{item.name}</span>
+    </nav>
+
+    <div class="detail-grid">
+      <section class="detail-main">
+        <div class="detail-card">
+          <h2>Details</h2>
+          <dl class="detail-list">
+            <div>
+              <dt>Name</dt>
+              <dd>{item.name}</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>
+                <span class={`status-badge ${item.status.toLowerCase()}`}>
+                  {item.status}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Description</dt>
+              <dd>{item.description}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <aside class="detail-sidebar">
+        <div class="detail-card">
+          <h2>Metadata</h2>
+          <dl class="detail-list">
+            <div>
+              <dt>Category</dt>
+              <dd>{item.metadata.category}</dd>
+            </div>
+            <div>
+              <dt>Tags</dt>
+              <dd>
+                <div class="tags">
+                  {item.metadata.tags.map((tag) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              </dd>
+            </div>
+            <div>
+              <dt>Owner</dt>
+              <dd>{item.metadata.owner}</dd>
+            </div>
+            <div>
+              <dt>Created</dt>
+              <dd>{item.created}</dd>
+            </div>
+            <div>
+              <dt>Updated</dt>
+              <dd>{item.updated}</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </layout-stack>
+</DashboardLayout>
+
+<style>
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .breadcrumb a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: var(--size-xl);
+  }
+
+  @media (max-width: 900px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .detail-card {
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-l);
+    padding: var(--size-xl);
+  }
+
+  .detail-card h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin-block-end: var(--size-l);
+    padding-block-end: var(--size-m);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m);
+  }
+
+  .detail-list > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+
+  .detail-list dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .detail-list dd {
+    margin: 0;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    padding: var(--size-2xs) var(--size-s);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .status-badge.active {
+    background: var(--color-success-subtle);
+    color: var(--color-success);
+  }
+
+  .status-badge.pending {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning);
+  }
+
+  .status-badge.inactive {
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs);
+  }
+
+  .tag {
+    display: inline-flex;
+    padding: var(--size-2xs) var(--size-s);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+    font-size: var(--font-size-xs);
+  }
+
+  .button.danger {
+    background: var(--color-error);
+    color: white;
+  }
+</style>

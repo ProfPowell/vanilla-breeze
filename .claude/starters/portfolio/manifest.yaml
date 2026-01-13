@@ -1,0 +1,143 @@
+name: portfolio
+displayName: "Portfolio"
+description: "Personal portfolio/showcase site for designers and developers"
+
+prompts:
+  - key: PROJECT_NAME
+    label: "Project folder name"
+    required: true
+    validate: "^[a-z][a-z0-9-]*$"
+    description: "lowercase with hyphens only"
+
+  - key: SITE_NAME
+    label: "Your name or brand"
+    required: true
+    description: "e.g., 'Jane Doe' or 'Studio Name'"
+
+  - key: TAGLINE
+    label: "Tagline"
+    required: true
+    description: "Brief intro, e.g., 'Designer & Developer'"
+
+  - key: DESCRIPTION
+    label: "Site description"
+    required: true
+    maxLength: 160
+    description: "Brief description for SEO"
+
+  - key: SITE_URL
+    label: "Production URL"
+    required: true
+    validate: "^https?://"
+    default: "https://example.com"
+
+  - key: FRAMEWORK
+    label: "Site framework"
+    type: select
+    options:
+      - astro
+      - eleventy
+    default: eleventy
+    description: "astro=islands architecture, eleventy=zero-JS by default"
+
+  - key: LAYOUT_STYLE
+    label: "Portfolio layout"
+    type: select
+    options:
+      - grid
+      - masonry
+      - list
+    default: grid
+    description: "How projects are displayed"
+
+  - key: THEME_COLOR
+    label: "Primary theme color"
+    default: "#18181b"
+    description: "Brand color in hex format"
+
+  - key: SOCIAL_LINKS
+    label: "Social profiles (comma-separated)"
+    default: "github,linkedin,twitter"
+    description: "e.g., github,linkedin,dribbble,behance"
+
+includes:
+  - from: _shared/styles/_reset.css
+    to: src/styles/_reset.css
+  - from: _shared/styles/_tokens.css
+    to: src/styles/_tokens.css
+
+conditionalIncludes:
+  - condition: "{{FRAMEWORK}} === 'astro'"
+    includes:
+      - from: portfolio/astro.config.mjs
+        to: astro.config.mjs
+      - from: portfolio/src/layouts/BaseLayout.astro
+        to: src/layouts/BaseLayout.astro
+      - from: portfolio/src/components/ProjectCard.astro
+        to: src/components/ProjectCard.astro
+      - from: portfolio/src/components/Hero.astro
+        to: src/components/Hero.astro
+      - from: portfolio/src/pages/index.astro
+        to: src/pages/index.astro
+      - from: portfolio/src/pages/about.astro
+        to: src/pages/about.astro
+      - from: portfolio/src/pages/projects/index.astro
+        to: src/pages/projects/index.astro
+      - from: portfolio/src/pages/projects/[slug].astro
+        to: src/pages/projects/[slug].astro
+      - from: portfolio/src/pages/contact.astro
+        to: src/pages/contact.astro
+
+  - condition: "{{FRAMEWORK}} === 'eleventy'"
+    includes:
+      - from: portfolio/eleventy.config.js
+        to: eleventy.config.js
+      - from: portfolio/src/_includes/layouts/base.njk
+        to: src/_includes/layouts/base.njk
+      - from: portfolio/src/_includes/components/project-card.njk
+        to: src/_includes/components/project-card.njk
+      - from: portfolio/src/_includes/components/hero.njk
+        to: src/_includes/components/hero.njk
+      - from: portfolio/src/_data/site.json
+        to: src/_data/site.json
+      - from: portfolio/src/index.njk
+        to: src/index.njk
+      - from: portfolio/src/about.njk
+        to: src/about.njk
+      - from: portfolio/src/projects/projects.json
+        to: src/projects/projects.json
+      - from: portfolio/src/projects/project-one.md
+        to: src/projects/project-one.md
+      - from: portfolio/src/projects/project-two.md
+        to: src/projects/project-two.md
+      - from: portfolio/src/contact.njk
+        to: src/contact.njk
+
+skills:
+  - xhtml-author
+  - css-author
+  - typography
+  - metadata
+  - accessibility-checker
+  - responsive-images
+  - performance
+
+postScaffold:
+  - message: |
+      Portfolio scaffolded successfully!
+
+      Next steps:
+      1. cd {{PROJECT_NAME}}
+      2. npm install
+      3. npm run dev
+
+      Customize your portfolio:
+      - Add projects to src/projects/ (with frontmatter)
+      - Update about content in src/about.njk or src/pages/about.astro
+      - Add images to src/images/
+      - Customize styles in src/styles/
+
+      Available commands:
+      - npm run dev      Start development server
+      - npm run build    Build for production
+      - npm run preview  Preview production build

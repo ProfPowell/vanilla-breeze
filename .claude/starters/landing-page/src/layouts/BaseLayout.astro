@@ -1,0 +1,145 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const siteName = '{{SITE_NAME}}';
+const fullTitle = title ? `${title} | ${siteName}` : siteName;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content={Astro.generator}>
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <title>{fullTitle}</title>
+  <meta name="description" content={description}>
+
+  <link rel="canonical" href={Astro.url}>
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content={Astro.url}>
+  <meta property="og:title" content={fullTitle}>
+  <meta property="og:description" content={description}>
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content={fullTitle}>
+  <meta property="twitter:description" content={description}>
+
+  <link rel="stylesheet" href="/src/styles/main.css">
+
+  <script is:inline>
+    const theme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.mode = theme;
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <layout-center data-max-width="wide">
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <a href="/" class="logo">{siteName}</a>
+        <nav class="main-nav" aria-label="Main navigation">
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </nav>
+        <div class="header-actions">
+          <a href="#cta" class="button primary">Get Started</a>
+        </div>
+      </layout-cluster>
+    </layout-center>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="site-footer">
+    <layout-center data-max-width="wide">
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+        <nav aria-label="Footer navigation">
+          <ul class="footer-links">
+            <li><a href="/privacy/">Privacy</a></li>
+            <li><a href="/terms/">Terms</a></li>
+          </ul>
+        </nav>
+      </layout-cluster>
+    </layout-center>
+  </footer>
+</body>
+</html>
+
+<style>
+  .site-header {
+    padding: var(--size-m) var(--size-l);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 50;
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .main-nav ul {
+    display: flex;
+    gap: var(--size-l);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-nav a {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .main-nav a:hover {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 768px) {
+    .main-nav {
+      display: none;
+    }
+  }
+
+  .site-footer {
+    padding: var(--size-xl) var(--size-l);
+    background: var(--color-surface-sunken);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: var(--size-l);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--color-text);
+  }
+</style>

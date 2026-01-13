@@ -1,0 +1,106 @@
+---
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const sidebarPosition = '{{SIDEBAR_POSITION}}';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} | {{DISPLAY_NAME}}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <script is:inline>
+    const theme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.mode = theme;
+  </script>
+</head>
+<body>
+  <div class="dashboard-wrapper" data-sidebar={sidebarPosition}>
+    <aside class="sidebar">
+      <Sidebar />
+    </aside>
+    <main class="content">
+      <header class="content-header">
+        <h1>{title}</h1>
+        <slot name="actions" />
+      </header>
+      <div class="content-body">
+        <slot />
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+
+<style>
+  .dashboard-wrapper {
+    display: grid;
+    grid-template-columns: 16rem 1fr;
+    min-block-size: 100dvh;
+  }
+
+  .dashboard-wrapper[data-sidebar="right"] {
+    grid-template-columns: 1fr 16rem;
+  }
+
+  .dashboard-wrapper[data-sidebar="right"] .sidebar {
+    order: 2;
+    border-inline-start: var(--border-width-thin) solid var(--color-border);
+    border-inline-end: none;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-wrapper {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .sidebar {
+      border-inline: none;
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .dashboard-wrapper[data-sidebar="right"] .sidebar {
+      order: 1;
+      border-inline: none;
+    }
+  }
+
+  .sidebar {
+    background: var(--color-surface);
+    border-inline-end: var(--border-width-thin) solid var(--color-border);
+    overflow-y: auto;
+  }
+
+  .content {
+    background: var(--color-surface-sunken);
+    overflow-y: auto;
+  }
+
+  .content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--size-l) var(--size-xl);
+    background: var(--color-surface);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .content-header h1 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .content-body {
+    padding: var(--size-xl);
+  }
+</style>

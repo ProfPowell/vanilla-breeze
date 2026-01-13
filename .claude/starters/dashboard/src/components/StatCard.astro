@@ -1,0 +1,84 @@
+---
+interface Props {
+  label: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon?: string;
+}
+
+const {
+  label,
+  value,
+  change,
+  changeType = 'neutral',
+  icon,
+} = Astro.props;
+---
+
+<div class="stat-card">
+  <div class="stat-header">
+    <span class="stat-label">{label}</span>
+    {icon && <icon-wc name={icon} size="sm" class="stat-icon"></icon-wc>}
+  </div>
+  <div class="stat-value">{value}</div>
+  {change && (
+    <div class={`stat-change ${changeType}`}>
+      {changeType === 'positive' && <icon-wc name="trending-up" size="xs"></icon-wc>}
+      {changeType === 'negative' && <icon-wc name="trending-down" size="xs"></icon-wc>}
+      {change}
+    </div>
+  )}
+</div>
+
+<style>
+  .stat-card {
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-l);
+    padding: var(--size-l);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: var(--size-s);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .stat-icon {
+    color: var(--color-text-subtle);
+  }
+
+  .stat-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+  }
+
+  .stat-change {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs);
+    margin-block-start: var(--size-s);
+    font-size: var(--font-size-sm);
+  }
+
+  .stat-change.positive {
+    color: var(--color-success);
+  }
+
+  .stat-change.negative {
+    color: var(--color-error);
+  }
+
+  .stat-change.neutral {
+    color: var(--color-text-muted);
+  }
+</style>
