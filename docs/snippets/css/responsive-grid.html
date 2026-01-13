@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Responsive Grid Snippet - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+</head>
+<body>
+  <header>
+    <a href="/docs/" class="logo">Vanilla Breeze</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+    </nav>
+    <aside class="header-actions">
+      <theme-wc>
+        <button data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    </aside>
+    <button class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <nav popover id="mobile-menu" class="mobile-menu">
+      <button class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
+      <div class="mobile-menu-search">
+        <search-wc>
+          <button data-trigger class="ghost" style="width: 100%">
+            <icon-wc name="search" size="sm"></icon-wc>
+            Search
+          </button>
+        </search-wc>
+      </div>
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+      <div class="mobile-menu-theme">
+        <theme-wc>
+          <button data-trigger class="ghost">
+            <icon-wc name="palette" size="sm"></icon-wc>
+            Theme
+          </button>
+        </theme-wc>
+      </div>
+    </nav>
+  </header>
+
+  <main data-pagefind-body>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/docs/snippets/">Snippets</a> / <span aria-current="page">Responsive Grid</span>
+    </nav>
+
+    <h1>Responsive Grid</h1>
+    <p class="lead">Grid layout patterns using <code>layout-grid</code> and CSS Grid. Responsive by default with no media queries required.</p>
+
+    <section>
+      <h2>Overview</h2>
+      <layout-text>
+        <p>Vanilla Breeze provides automatic responsive grids through the <code>layout-grid</code> custom element. This snippet includes additional patterns for specific use cases:</p>
+        <ul>
+          <li><strong>Auto-fit grids</strong> - Columns wrap automatically based on available space</li>
+          <li><strong>Fixed column grids</strong> - Exact column counts with responsive fallbacks</li>
+          <li><strong>Asymmetric layouts</strong> - Sidebar + content patterns</li>
+          <li><strong>Masonry-like layouts</strong> - Dense packing for varied-height items</li>
+          <li><strong>Named area grids</strong> - Dashboard-style complex layouts</li>
+        </ul>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Live Demo</h2>
+      <layout-text>
+        <p>Drag the right edge of the demo window to resize and see the grids respond:</p>
+      </layout-text>
+
+      <browser-window
+        src="/docs/snippets/demos/responsive-grid.html"
+        url="https://vanilla-breeze.dev/grids"
+        title="Grid Patterns"
+        shadow>
+      </browser-window>
+    </section>
+
+    <section>
+      <h2>layout-grid Element</h2>
+      <layout-text>
+        <p>The simplest way to create responsive grids:</p>
+      </layout-text>
+
+      <code-block language="html" label="layout-grid usage">&lt;layout-grid data-gap="l" data-min="300px"&gt;
+  &lt;div&gt;Item 1&lt;/div&gt;
+  &lt;div&gt;Item 2&lt;/div&gt;
+  &lt;div&gt;Item 3&lt;/div&gt;
+  &lt;div&gt;Item 4&lt;/div&gt;
+&lt;/layout-grid&gt;</code-block>
+
+      <layout-text>
+        <p>Attributes:</p>
+        <ul>
+          <li><code>data-gap</code> - Gap size: xs, s, m, l, xl, 2xl (default: m)</li>
+          <li><code>data-min</code> - Minimum column width (default: 250px)</li>
+        </ul>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Common Grid Patterns</h2>
+
+      <h3>Card Grid</h3>
+      <code-block language="css" label="Card grid (3-4 columns)">.card-grid {
+  --grid-min: 280px;
+  --grid-gap: var(--size-l);
+}</code-block>
+
+      <h3>Thumbnail Grid</h3>
+      <code-block language="css" label="Thumbnail grid (many small items)">.thumbnail-grid {
+  --grid-min: 150px;
+  --grid-gap: var(--size-s);
+}</code-block>
+
+      <h3>Feature Grid</h3>
+      <code-block language="css" label="Feature grid (2-3 larger columns)">.feature-grid {
+  --grid-min: 350px;
+  --grid-gap: var(--size-xl);
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Fixed Column Grids</h2>
+      <layout-text>
+        <p>When you need exact column counts:</p>
+      </layout-text>
+
+      <code-block language="css" label="Fixed column grids">.grid-2 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Responsive fallbacks */
+@media (max-width: 768px) {
+  .grid-3, .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Sidebar Layouts</h2>
+      <layout-text>
+        <p>Asymmetric content + sidebar patterns:</p>
+      </layout-text>
+
+      <code-block language="css" label="Sidebar layouts">/* Sidebar on right */
+.grid-sidebar {
+  display: grid;
+  gap: var(--size-xl);
+  grid-template-columns: 1fr 300px;
+}
+
+/* Sidebar on left */
+.grid-sidebar-left {
+  display: grid;
+  gap: var(--size-xl);
+  grid-template-columns: 250px 1fr;
+}
+
+@media (max-width: 900px) {
+  .grid-sidebar,
+  .grid-sidebar-left {
+    grid-template-columns: 1fr;
+  }
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Masonry-Like Layout</h2>
+      <layout-text>
+        <p>Dense packing for items with varied heights:</p>
+      </layout-text>
+
+      <code-block language="css" label="Masonry layout">.grid-masonry {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-flow: dense;
+}
+
+/* Span items across multiple columns */
+.grid-masonry .span-2 {
+  grid-column: span 2;
+}
+
+.grid-masonry .span-row {
+  grid-row: span 2;
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Gallery Grid</h2>
+      <layout-text>
+        <p>Image gallery with aspect ratio preservation:</p>
+      </layout-text>
+
+      <code-block language="css" label="Gallery grid">.gallery-grid {
+  display: grid;
+  gap: var(--size-s);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.gallery-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 1;
+  border-radius: var(--radius-s);
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Dashboard Grid</h2>
+      <layout-text>
+        <p>Complex layouts with named grid areas:</p>
+      </layout-text>
+
+      <code-block language="css" label="Dashboard grid">.dashboard-grid {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr 1fr;
+  grid-template-areas:
+    "header header header header"
+    "sidebar main main main"
+    "sidebar main main main";
+}
+
+.dashboard-grid > header { grid-area: header; }
+.dashboard-grid > aside { grid-area: sidebar; }
+.dashboard-grid > main { grid-area: main; }
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main";
+  }
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Related</h2>
+      <layout-grid data-min="200px" data-gap="m">
+        <a href="/docs/elements/custom-elements/layout-grid.html" class="section-card">
+          <h3>layout-grid Element</h3>
+          <p>Full documentation for the grid element</p>
+        </a>
+        <a href="/docs/elements/custom-elements/layout-sidebar.html" class="section-card">
+          <h3>layout-sidebar Element</h3>
+          <p>Sidebar layout component</p>
+        </a>
+        <a href="/docs/snippets/css/tokens-starter.html" class="section-card">
+          <h3>Tokens Starter</h3>
+          <p>Size tokens for grid gaps</p>
+        </a>
+      </layout-grid>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vanilla Breeze - A layered HTML component system</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>

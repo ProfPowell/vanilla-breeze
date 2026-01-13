@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dark Mode Toggle Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      font-family: var(--font-sans);
+    }
+
+    h3 {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block: var(--size-l) var(--size-s);
+    }
+
+    h3:first-of-type {
+      margin-block-start: 0;
+    }
+
+    /* Toggle button */
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-xs);
+      padding: var(--size-xs) var(--size-s);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      cursor: pointer;
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+      transition: background var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      background: var(--color-border);
+    }
+
+    .theme-toggle .icon-sun,
+    .theme-toggle .icon-moon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+
+    :root[data-mode="dark"] .theme-toggle .icon-sun { display: block; }
+    :root[data-mode="dark"] .theme-toggle .icon-moon { display: none; }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-mode]) .theme-toggle .icon-sun { display: block; }
+      :root:not([data-mode]) .theme-toggle .icon-moon { display: none; }
+    }
+
+    /* Three-way switcher */
+    .theme-switcher {
+      display: inline-flex;
+      gap: var(--size-2xs);
+      padding: var(--size-2xs);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+    }
+
+    .theme-switcher button {
+      padding: var(--size-xs) var(--size-s);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-switcher button:hover {
+      color: var(--color-text);
+    }
+
+    .theme-switcher button[aria-pressed="true"] {
+      background: var(--color-surface);
+      color: var(--color-text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Preview card */
+    .preview-card {
+      margin-block-start: var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      box-shadow: var(--shadow-md);
+    }
+
+    .preview-card h4 {
+      font-size: var(--font-size-md);
+      margin: 0 0 var(--size-xs);
+    }
+
+    .preview-card p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .mode-indicator {
+      display: inline-block;
+      padding: var(--size-2xs) var(--size-xs);
+      background: var(--color-primary);
+      color: white;
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-xs);
+      margin-block-start: var(--size-s);
+    }
+  </style>
+</head>
+<body>
+  <h3>Toggle Button</h3>
+  <button class="theme-toggle" aria-label="Toggle theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <span>Toggle Theme</span>
+  </button>
+
+  <h3>Three-Way Selector</h3>
+  <div class="theme-switcher" role="group" aria-label="Theme preference">
+    <button data-theme="light" aria-pressed="false">Light</button>
+    <button data-theme="system" aria-pressed="true">System</button>
+    <button data-theme="dark" aria-pressed="false">Dark</button>
+  </div>
+
+  <div class="preview-card">
+    <h4>Preview Card</h4>
+    <p>This card shows how colors adapt to the current theme.</p>
+    <span class="mode-indicator" id="mode-label">System</span>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const root = document.documentElement;
+    const toggle = document.querySelector('.theme-toggle');
+    const switcher = document.querySelector('.theme-switcher');
+    const modeLabel = document.getElementById('mode-label');
+
+    function updateLabel() {
+      const mode = root.dataset.mode;
+      if (mode === 'light') {
+        modeLabel.textContent = 'Light Mode';
+      } else if (mode === 'dark') {
+        modeLabel.textContent = 'Dark Mode';
+      } else {
+        modeLabel.textContent = 'System';
+      }
+    }
+
+    function updateSwitcherButtons() {
+      const mode = root.dataset.mode || 'system';
+      switcher.querySelectorAll('button').forEach(btn => {
+        btn.setAttribute('aria-pressed', btn.dataset.theme === mode);
+      });
+    }
+
+    toggle.addEventListener('click', () => {
+      const isDark = root.dataset.mode === 'dark' ||
+        (!root.dataset.mode && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      root.dataset.mode = isDark ? 'light' : 'dark';
+      updateLabel();
+      updateSwitcherButtons();
+    });
+
+    switcher.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        delete root.dataset.mode;
+      } else {
+        root.dataset.mode = theme;
+      }
+
+      updateLabel();
+      updateSwitcherButtons();
+    });
+
+    updateLabel();
+  </script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dark Mode Toggle Snippet - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+</head>
+<body>
+  <header>
+    <a href="/docs/" class="logo">Vanilla Breeze</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+    </nav>
+    <aside class="header-actions">
+      <theme-wc>
+        <button data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    </aside>
+    <button class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <nav popover id="mobile-menu" class="mobile-menu">
+      <button class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
+      <div class="mobile-menu-search">
+        <search-wc>
+          <button data-trigger class="ghost" style="width: 100%">
+            <icon-wc name="search" size="sm"></icon-wc>
+            Search
+          </button>
+        </search-wc>
+      </div>
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+      <div class="mobile-menu-theme">
+        <theme-wc>
+          <button data-trigger class="ghost">
+            <icon-wc name="palette" size="sm"></icon-wc>
+            Theme
+          </button>
+        </theme-wc>
+      </div>
+    </nav>
+  </header>
+
+  <main data-pagefind-body>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/docs/snippets/">Snippets</a> / <span aria-current="page">Dark Mode Toggle</span>
+    </nav>
+
+    <h1>Dark Mode Toggle</h1>
+    <p class="lead">Theme switching styles using CSS <code>light-dark()</code> and the <code>data-mode</code> attribute. Supports automatic, light-only, and dark-only modes.</p>
+
+    <section>
+      <h2>Overview</h2>
+      <layout-text>
+        <p>Vanilla Breeze uses the CSS <code>light-dark()</code> function for automatic theme switching. This snippet shows three approaches:</p>
+        <ol>
+          <li><strong>Automatic</strong> - Follows OS/browser preference (default)</li>
+          <li><strong>Manual toggle</strong> - Switch via <code>data-mode</code> attribute</li>
+          <li><strong>Three-way</strong> - Light / System / Dark selector</li>
+        </ol>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Live Demo</h2>
+      <layout-text>
+        <p>Try the toggle button and three-way selector:</p>
+      </layout-text>
+
+      <browser-window
+        src="/docs/snippets/demos/dark-mode-toggle.html"
+        url="https://vanilla-breeze.dev/theme"
+        title="Theme Toggle"
+        shadow>
+      </browser-window>
+    </section>
+
+    <section>
+      <h2>Base Setup</h2>
+      <layout-text>
+        <p>Enable light-dark support and define mode overrides:</p>
+      </layout-text>
+
+      <code-block language="css" label="Theme base">:root {
+  /* Enable automatic light/dark switching */
+  color-scheme: light dark;
+}
+
+/* Force light mode */
+:root[data-mode="light"] {
+  color-scheme: light;
+}
+
+/* Force dark mode */
+:root[data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Adjust colors that need dark-mode tuning */
+  --color-primary: oklch(65% 0.18 var(--hue-primary));
+
+  /* Darker shadows for dark backgrounds */
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4);
+}</code-block>
+    </section>
+
+    <section>
+      <h2>Toggle Button Styles</h2>
+      <layout-text>
+        <p>Style a theme toggle button with icon swapping:</p>
+      </layout-text>
+
+      <code-block language="css" label="Toggle button">.theme-toggle {
+  --toggle-size: var(--size-xl);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+/* Show sun in dark mode, moon in light mode */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+
+:root[data-mode="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-mode="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* Auto-detect system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode]) .theme-toggle .icon-sun { display: block; }
+  :root:not([data-mode]) .theme-toggle .icon-moon { display: none; }
+}</code-block>
+    </section>
+
+    <section>
+      <h2>JavaScript</h2>
+      <layout-text>
+        <p>Minimal JavaScript for toggle functionality with localStorage persistence:</p>
+      </layout-text>
+
+      <code-block language="javascript" label="Theme toggle script">// Check for saved preference or system preference
+const getTheme = () => {
+  const saved = localStorage.getItem('theme');
+  if (saved) return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+// Apply theme
+const setTheme = (theme) => {
+  document.documentElement.dataset.mode = theme;
+  localStorage.setItem('theme', theme);
+};
+
+// Initialize
+setTheme(getTheme());
+
+// Toggle handler
+document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+  const current = document.documentElement.dataset.mode;
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});</code-block>
+    </section>
+
+    <section>
+      <h2>Three-Way Selector</h2>
+      <layout-text>
+        <p>For users who want explicit Light / System / Dark options:</p>
+      </layout-text>
+
+      <code-block language="css" label="Three-way switcher">.theme-switcher {
+  display: flex;
+  gap: var(--size-2xs);
+  padding: var(--size-2xs);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-m);
+}
+
+.theme-switcher button {
+  padding: var(--size-xs) var(--size-s);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.theme-switcher button:hover {
+  color: var(--color-text);
+}
+
+.theme-switcher button[aria-pressed="true"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}</code-block>
+
+      <code-block language="html" label="Three-way HTML">&lt;div class="theme-switcher" role="group" aria-label="Theme"&gt;
+  &lt;button aria-pressed="false"&gt;Light&lt;/button&gt;
+  &lt;button aria-pressed="true"&gt;System&lt;/button&gt;
+  &lt;button aria-pressed="false"&gt;Dark&lt;/button&gt;
+&lt;/div&gt;</code-block>
+    </section>
+
+    <section>
+      <h2>How light-dark() Works</h2>
+      <layout-text>
+        <p>The CSS <code>light-dark()</code> function returns different values based on the computed <code>color-scheme</code>:</p>
+      </layout-text>
+
+      <code-block language="css" label="light-dark() example">:root {
+  color-scheme: light dark;
+
+  /* First value for light mode, second for dark */
+  --color-background: light-dark(white, #1a1a1a);
+  --color-text: light-dark(#1a1a1a, white);
+}
+
+/* Usage */
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+}</code-block>
+
+      <layout-text>
+        <p>This is simpler than media queries because it automatically responds to both OS preferences AND manual <code>color-scheme</code> overrides.</p>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Related</h2>
+      <layout-grid data-min="200px" data-gap="m">
+        <a href="/docs/snippets/css/tokens-starter.html" class="section-card">
+          <h3>Tokens Starter</h3>
+          <p>Color tokens with light-dark() setup</p>
+        </a>
+        <a href="/docs/elements/web-components/theme-wc.html" class="section-card">
+          <h3>theme-wc Component</h3>
+          <p>Built-in theme switching component</p>
+        </a>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark" class="section-card" target="_blank">
+          <h3>MDN: light-dark()</h3>
+          <p>CSS light-dark() function reference</p>
+        </a>
+      </layout-grid>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vanilla Breeze - A layered HTML component system</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>
