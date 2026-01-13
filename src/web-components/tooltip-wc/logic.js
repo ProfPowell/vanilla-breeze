@@ -5,13 +5,21 @@
  * Uses native Popover API for top-layer rendering and CSS Anchor
  * Positioning where available, with JS fallback for older browsers.
  *
+ * @attr {string} data-content - Simple text tooltip content
  * @attr {string} data-position - Position: 'top' (default), 'bottom', 'left', 'right'
  * @attr {number} data-delay - Show delay in ms (default: 200)
  *
- * @example
+ * @example Simple text tooltip
+ * <tooltip-wc data-content="Save your changes">
+ *   <button>Save</button>
+ * </tooltip-wc>
+ *
+ * @example Rich content tooltip (use template for HTML)
  * <tooltip-wc data-position="top">
  *   <button>Hover me</button>
- *   <template data-tooltip>Tooltip content here</template>
+ *   <template data-tooltip>
+ *     <strong>Formatted</strong> content with <kbd>Ctrl+S</kbd>
+ *   </template>
  * </tooltip-wc>
  */
 
@@ -38,16 +46,25 @@ class TooltipWc extends HTMLElement {
     this.#trigger = this.querySelector(':scope > :not(template)');
     if (!this.#trigger) return;
 
-    // Find tooltip template
+    // Get tooltip content: template takes precedence over data-content
     const template = this.querySelector(':scope > template[data-tooltip]');
-    if (!template) return;
+    const textContent = this.dataset.content;
+
+    if (!template && !textContent) return;
 
     // Create tooltip element with Popover API
     this.#tooltip = document.createElement('div');
     this.#tooltip.className = 'tooltip';
     this.#tooltip.setAttribute('role', 'tooltip');
-    this.#tooltip.setAttribute('popover', 'hint'); // Use Popover API
-    this.#tooltip.innerHTML = template.innerHTML;
+    this.#tooltip.setAttribute('popover', 'hint');
+
+    // Use template HTML or plain text from data-content
+    if (template) {
+      this.#tooltip.innerHTML = template.innerHTML;
+    } else {
+      this.#tooltip.textContent = textContent;
+    }
+
     this.#tooltip.id = `tooltip-${crypto.randomUUID().slice(0, 8)}`;
 
     // Position
