@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modal Dialog Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    dialog {
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-l);
+      box-shadow: var(--shadow-lg);
+      max-width: min(90vw, 500px);
+      max-height: 85vh;
+    }
+    dialog::backdrop {
+      background: var(--color-overlay-strong);
+      backdrop-filter: blur(4px);
+    }
+    dialog > layout-stack {
+      padding: var(--size-l);
+    }
+    dialog header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--size-m);
+    }
+    dialog header h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="primary" id="open-modal">
+    Open Modal
+  </button>
+
+  <dialog id="basic-modal">
+    <layout-stack data-gap="l">
+      <header>
+        <h2>Modal Title</h2>
+      </header>
+
+      <div class="dialog-body">
+        <p>This is a basic modal dialog using the native dialog element.</p>
+        <p>Press Escape or click the close button to dismiss.</p>
+      </div>
+
+      <footer>
+        <layout-cluster data-justify="flex-end" data-gap="m">
+          <button type="button" class="secondary" id="cancel-btn">
+            Cancel
+          </button>
+          <button type="button" class="primary" id="confirm-btn">
+            Confirm
+          </button>
+        </layout-cluster>
+      </footer>
+    </layout-stack>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const modal = document.getElementById('basic-modal');
+
+    document.getElementById('open-modal').addEventListener('click', () => {
+      modal.showModal();
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      modal.close();
+    });
+
+    document.getElementById('confirm-btn').addEventListener('click', () => {
+      modal.close('confirm');
+    });
+  </script>
+</body>
+</html>

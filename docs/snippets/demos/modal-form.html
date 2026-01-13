@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Form Modal Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    dialog {
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-l);
+      box-shadow: var(--shadow-lg);
+      max-width: min(90vw, 500px);
+    }
+    dialog::backdrop {
+      background: var(--color-overlay-strong);
+      backdrop-filter: blur(4px);
+    }
+    dialog > form {
+      padding: var(--size-l);
+    }
+    dialog header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--size-m);
+    }
+    dialog header h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+    .close-btn {
+      margin-inline-start: auto;
+    }
+  </style>
+</head>
+<body>
+  <button type="button" id="add-btn">
+    Add New Item
+  </button>
+
+  <dialog id="form-modal">
+    <form method="dialog">
+      <layout-stack data-gap="l">
+        <header>
+          <h2>Add New Item</h2>
+          <button type="button" class="ghost close-btn" aria-label="Close" id="close-btn">
+            <icon-wc name="x"></icon-wc>
+          </button>
+        </header>
+
+        <div class="dialog-body">
+          <layout-stack data-gap="m">
+            <form-field>
+              <label for="item-name">Name</label>
+              <input type="text" id="item-name" name="name" required>
+            </form-field>
+
+            <form-field>
+              <label for="item-desc">Description</label>
+              <textarea id="item-desc" name="description" rows="3"></textarea>
+            </form-field>
+          </layout-stack>
+        </div>
+
+        <footer>
+          <layout-cluster data-justify="flex-end" data-gap="m">
+            <button type="button" class="secondary" id="cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" value="save" class="primary">Save</button>
+          </layout-cluster>
+        </footer>
+      </layout-stack>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const modal = document.getElementById('form-modal');
+
+    document.getElementById('add-btn').addEventListener('click', () => {
+      modal.showModal();
+    });
+
+    document.getElementById('close-btn').addEventListener('click', () => {
+      modal.close();
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      modal.close();
+    });
+  </script>
+</body>
+</html>

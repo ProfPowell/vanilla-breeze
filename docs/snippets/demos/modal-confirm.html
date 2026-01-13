@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmation Dialog Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    dialog {
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-l);
+      box-shadow: var(--shadow-lg);
+      max-width: min(90vw, 400px);
+    }
+    dialog::backdrop {
+      background: var(--color-overlay-strong);
+      backdrop-filter: blur(4px);
+    }
+    dialog > form {
+      padding: var(--size-l);
+    }
+    .confirm-dialog header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--size-s);
+    }
+    .confirm-dialog header h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+    .warning-icon {
+      color: var(--color-warning);
+    }
+    .confirm-dialog p {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="danger" id="delete-btn">
+    Delete Item
+  </button>
+
+  <dialog id="confirm-modal" class="confirm-dialog">
+    <form method="dialog">
+      <layout-stack data-gap="l">
+        <header>
+          <icon-wc name="alert-triangle" size="lg" class="warning-icon"></icon-wc>
+          <h2>Confirm Deletion</h2>
+        </header>
+
+        <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+
+        <footer>
+          <layout-cluster data-justify="center" data-gap="m">
+            <button type="submit" value="cancel" class="secondary">Cancel</button>
+            <button type="submit" value="delete" class="danger">Delete</button>
+          </layout-cluster>
+        </footer>
+      </layout-stack>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const modal = document.getElementById('confirm-modal');
+
+    document.getElementById('delete-btn').addEventListener('click', () => {
+      modal.showModal();
+    });
+
+    modal.addEventListener('close', () => {
+      if (modal.returnValue === 'delete') {
+        console.log('User confirmed deletion');
+      }
+    });
+  </script>
+</body>
+</html>

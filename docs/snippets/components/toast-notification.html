@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Toast Notifications Snippet - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+</head>
+<body>
+  <header>
+    <a href="/docs/" class="logo">Vanilla Breeze</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+    </nav>
+    <aside class="header-actions">
+      <theme-wc>
+        <button data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    </aside>
+    <button class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <nav popover id="mobile-menu" class="mobile-menu">
+      <button class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
+      <div class="mobile-menu-search">
+        <search-wc>
+          <button data-trigger class="ghost mobile-search-btn">
+            <x-icon name="search" size="sm"></x-icon>
+            Search
+          </button>
+        </search-wc>
+      </div>
+      <ul>
+        <li><a href="/docs/">Home</a></li>
+        <li><a href="/docs/tokens/">Tokens</a></li>
+        <li><a href="/docs/elements/">Elements</a></li>
+        <li><a href="/docs/snippets/">Snippets</a></li>
+        <li><a href="/docs/examples/">Examples</a></li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+      <div class="mobile-menu-theme">
+        <theme-wc>
+          <button data-trigger class="ghost">
+            <icon-wc name="palette" size="sm"></icon-wc>
+            Theme
+          </button>
+        </theme-wc>
+      </div>
+    </nav>
+  </header>
+
+  <main data-pagefind-body>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/docs/snippets/">Snippets</a> / <span aria-current="page">Toast Notifications</span>
+    </nav>
+
+    <h1>Toast Notifications</h1>
+    <p class="lead">Toast patterns for non-blocking notifications with variants, positions, and JavaScript API.</p>
+
+    <section>
+      <h2>Overview</h2>
+      <layout-text>
+        <p>The toast component uses the <code>&lt;toast-wc&gt;</code> web component to display non-blocking notifications. Toasts require JavaScript to show dynamically but provide a clean API for common use cases like form feedback and status updates.</p>
+        <p><strong>Key features:</strong></p>
+        <ul>
+          <li>Four semantic variants: info, success, warning, error</li>
+          <li>Six position options (corners and center edges)</li>
+          <li>Auto-dismiss with configurable duration</li>
+          <li>Manual dismiss option</li>
+          <li>Multiple toasts stack automatically</li>
+        </ul>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Live Example</h2>
+      <layout-text>
+        <p>Click the buttons to see different toast variants in action.</p>
+      </layout-text>
+
+      <browser-window
+        src="/docs/snippets/demos/toast-notification.html"
+        url="https://vanilla-breeze.dev/toast-notification"
+        title="Toast Notifications"
+        shadow>
+      </browser-window>
+    </section>
+
+    <section>
+      <h2>Setup</h2>
+      <layout-text>
+        <p>Place a single toast container in your page, typically at the body level.</p>
+      </layout-text>
+
+      <code-block language="html" label="Toast container">&lt;!-- Place once in your page --&gt;
+&lt;toast-wc id="notifications" data-position="top-end"&gt;&lt;/toast-wc&gt;</code-block>
+    </section>
+
+    <section>
+      <h2>JavaScript API</h2>
+      <layout-text>
+        <p>Use the <code>show()</code> method to display toasts programmatically.</p>
+      </layout-text>
+
+      <code-block language="javascript" label="Basic usage">const toast = document.getElementById('notifications');
+
+// Basic toast
+toast.show({
+  message: 'This is a toast notification!',
+  variant: 'info'
+});
+
+// Success with custom duration
+toast.show({
+  message: 'Settings saved successfully.',
+  variant: 'success',
+  duration: 3000  // Auto-dismiss after 3 seconds
+});
+
+// Error with manual dismiss
+toast.show({
+  message: 'Failed to save changes. Please try again.',
+  variant: 'error',
+  duration: 0  // Must be manually dismissed
+});</code-block>
+    </section>
+
+    <section>
+      <h2>Common Use Cases</h2>
+
+      <h3>Form Submission Feedback</h3>
+      <code-block language="javascript" label="Form feedback">async function handleSubmit(event) {
+  event.preventDefault();
+  const toast = document.getElementById('notifications');
+
+  try {
+    await submitForm(event.target);
+    toast.show({
+      message: 'Form submitted successfully!',
+      variant: 'success'
+    });
+  } catch (error) {
+    toast.show({
+      message: `Error: ${error.message}`,
+      variant: 'error',
+      duration: 0
+    });
+  }
+}</code-block>
+
+      <h3>Copy to Clipboard</h3>
+      <code-block language="javascript" label="Clipboard feedback">async function copyToClipboard(text) {
+  const toast = document.getElementById('notifications');
+
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.show({
+      message: 'Copied to clipboard!',
+      variant: 'success',
+      duration: 2000
+    });
+  } catch (error) {
+    toast.show({
+      message: 'Failed to copy',
+      variant: 'error'
+    });
+  }
+}</code-block>
+
+      <h3>Network Status</h3>
+      <code-block language="javascript" label="Network events">window.addEventListener('online', () => {
+  document.getElementById('notifications').show({
+    message: 'Connection restored',
+    variant: 'success'
+  });
+});
+
+window.addEventListener('offline', () => {
+  document.getElementById('notifications').show({
+    message: 'You are offline',
+    variant: 'warning',
+    duration: 0
+  });
+});</code-block>
+    </section>
+
+    <section>
+      <h2>Configuration</h2>
+      <layout-text>
+        <p>The <code>&lt;toast-wc&gt;</code> element accepts these data attributes:</p>
+      </layout-text>
+
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Values</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>data-position</code></td>
+            <td><code>top-start</code> <code>top-center</code> <code>top-end</code><br><code>bottom-start</code> <code>bottom-center</code> <code>bottom-end</code></td>
+            <td>Screen position for toasts. Default is <code>top-end</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Show Options</h3>
+      <layout-text>
+        <p>The <code>show()</code> method accepts an options object:</p>
+      </layout-text>
+
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>message</code></td>
+            <td>String</td>
+            <td>The notification text to display.</td>
+          </tr>
+          <tr>
+            <td><code>variant</code></td>
+            <td><code>info</code> <code>success</code> <code>warning</code> <code>error</code></td>
+            <td>Visual style and semantic meaning.</td>
+          </tr>
+          <tr>
+            <td><code>duration</code></td>
+            <td>Number</td>
+            <td>Auto-dismiss time in ms. Default 5000. Use 0 for manual dismiss.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Usage Notes</h2>
+      <layout-text>
+        <ul>
+          <li><strong>Single container:</strong> Only place one toast-wc container per page</li>
+          <li><strong>Position:</strong> Use <code>top-end</code> for most applications (top-right in LTR)</li>
+          <li><strong>Duration:</strong> Use shorter durations (2-3s) for success messages, longer or manual for errors</li>
+          <li><strong>Stacking:</strong> Multiple toasts automatically stack vertically</li>
+          <li><strong>Accessibility:</strong> Toasts use ARIA live regions for screen reader announcements</li>
+        </ul>
+      </layout-text>
+    </section>
+
+    <section>
+      <h2>Related</h2>
+      <layout-grid data-min="200px" data-gap="m">
+        <a href="/docs/elements/web-components/toast-wc.html" class="section-card">
+          <h3>Toast WC</h3>
+          <p>Web component documentation</p>
+        </a>
+        <a href="/docs/snippets/components/modal-dialog.html" class="section-card">
+          <h3>Modal Dialog</h3>
+          <p>Blocking dialog patterns</p>
+        </a>
+      </layout-grid>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vanilla Breeze - A layered HTML component system</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>
