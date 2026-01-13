@@ -337,6 +337,52 @@
       </section>
 
       <section>
+        <h2>How It Works</h2>
+        <p>The <code>&lt;tooltip-wc&gt;</code> component uses modern web platform features for optimal performance:</p>
+
+        <h3>Popover API</h3>
+        <p>Tooltips use the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/Popover_API">Popover API</a> with <code>popover="hint"</code>. This renders tooltips in the browser's top layer, avoiding z-index conflicts and overflow clipping issues.</p>
+
+        <h3>CSS Anchor Positioning</h3>
+        <p>In modern browsers (Chrome 125+, Safari 18+), tooltips use <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning">CSS Anchor Positioning</a> for smooth, hardware-accelerated positioning. This eliminates JavaScript positioning calculations in supported browsers.</p>
+
+        <p>For older browsers, the component automatically falls back to JavaScript-based positioning.</p>
+
+        <h3>Browser Support</h3>
+        <table class="props-table">
+          <thead>
+            <tr>
+              <th>Browser</th>
+              <th>Positioning</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Chrome 125+</td>
+              <td>CSS Anchor</td>
+              <td>Full support</td>
+            </tr>
+            <tr>
+              <td>Safari 18+</td>
+              <td>CSS Anchor</td>
+              <td>Full support</td>
+            </tr>
+            <tr>
+              <td>Firefox</td>
+              <td>JS Fallback</td>
+              <td>Anchor positioning not yet supported</td>
+            </tr>
+            <tr>
+              <td>Older browsers</td>
+              <td>JS Fallback</td>
+              <td>Requires Popover API support</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
         <h2>Attributes</h2>
         <table class="props-table">
           <thead>
@@ -596,7 +642,7 @@ tooltip.hide();</code-block>
 
       <section>
         <h2>Keyboard Support</h2>
-        <p>Tooltips appear on keyboard focus and can be dismissed with the Escape key.</p>
+        <p>Tooltips appear on keyboard focus and can be dismissed with the Escape key. Escape handling is built into the Popover API—no custom JavaScript required.</p>
 
         <table class="props-table">
           <thead>
@@ -631,9 +677,10 @@ tooltip.hide();</code-block>
 
         <h3>ARIA Attributes</h3>
         <ul>
-          <li>The tooltip has <code>role="tooltip"</code></li>
+          <li>The tooltip has <code>role="tooltip"</code> and <code>popover="hint"</code></li>
           <li>The trigger element has <code>aria-describedby</code> pointing to the tooltip</li>
           <li>The tooltip arrow has <code>aria-hidden="true"</code></li>
+          <li>Uses the browser's top layer for proper stacking without z-index conflicts</li>
         </ul>
 
         <h3>Screen Reader Behavior</h3>
@@ -651,7 +698,7 @@ tooltip.hide();</code-block>
 
       <section>
         <h2>Viewport Awareness</h2>
-        <p>Tooltips automatically adjust their position to stay within the viewport. If a tooltip would overflow, it shifts to remain visible.</p>
+        <p>Tooltips automatically adjust their position to stay within the viewport. The JavaScript fallback (for browsers without CSS Anchor support) clamps tooltip positions to keep them visible.</p>
 
         <div class="example">
           <layout-cluster data-gap="l" data-justify="between">
