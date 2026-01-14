@@ -104,7 +104,7 @@ Standard page layout container providing consistent structure with header, main 
     &[data-layout="standard"] > main {
       max-width: var(--content-max-width, 75rem);
       margin-inline: auto;
-      padding-inline: var(--spacing-lg);
+      padding-inline: var(--size-l);
     }
 
     /* Full width - edge to edge */
@@ -117,7 +117,7 @@ Standard page layout container providing consistent structure with header, main 
     &[data-layout="centered"] > main {
       max-width: var(--prose-max-width, 45rem);
       margin-inline: auto;
-      padding-inline: var(--spacing-lg);
+      padding-inline: var(--size-l);
     }
   }
 
@@ -128,7 +128,7 @@ Standard page layout container providing consistent structure with header, main 
     top: 0;
     left: 0;
     z-index: var(--z-modal);
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
     background: var(--primary);
     color: var(--primary-contrast);
     text-decoration: none;

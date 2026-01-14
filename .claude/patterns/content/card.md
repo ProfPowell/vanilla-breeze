@@ -110,8 +110,8 @@ Versatile content container for displaying grouped information. Cards can contai
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-lg);
+      gap: var(--size-xs);
+      padding: var(--size-l);
     }
 
     /* Meta text */
@@ -140,9 +140,9 @@ Versatile content container for displaying grouped information. Cards can contai
     /* Actions */
     & [data-actions] {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
       margin-block-start: auto;
-      padding-block-start: var(--spacing-md);
+      padding-block-start: var(--size-m);
     }
 
     /* Style variants */

@@ -51,7 +51,7 @@ class SettingsView extends BaseView {
       ${super.styles()}
 
       [data-role="lead"] {
-        margin-block-end: var(--spacing-2xl, 3rem);
+        margin-block-end: var(--size-2xl);
       }
 
       form {
@@ -61,29 +61,29 @@ class SettingsView extends BaseView {
       fieldset {
         border: 1px solid var(--border, #e5e5e5);
         border-radius: var(--radius-lg, 0.5rem);
-        padding: var(--spacing-lg, 1.5rem);
-        margin-block-end: var(--spacing-lg, 1.5rem);
+        padding: var(--size-l);
+        margin-block-end: var(--size-l);
       }
 
       legend {
         font-weight: 600;
-        padding-inline: var(--spacing-sm, 0.5rem);
+        padding-inline: var(--size-xs);
       }
 
       [data-field] {
-        margin-block-end: var(--spacing-md, 1rem);
+        margin-block-end: var(--size-m);
       }
 
       [data-field] label {
         display: block;
-        margin-block-end: var(--spacing-xs, 0.25rem);
+        margin-block-end: var(--size-2xs);
         font-weight: 500;
       }
 
       [data-field][data-type="checkbox"] {
         display: flex;
         align-items: center;
-        gap: var(--spacing-sm, 0.5rem);
+        gap: var(--size-xs);
       }
 
       [data-field][data-type="checkbox"] label {
@@ -94,18 +94,18 @@ class SettingsView extends BaseView {
       select,
       input[type="text"] {
         inline-size: 100%;
-        padding: var(--spacing-sm, 0.5rem);
+        padding: var(--size-xs);
         border: 1px solid var(--border, #e5e5e5);
         border-radius: var(--radius-md, 0.25rem);
         font: inherit;
       }
 
       [data-role="actions"] {
-        margin-block-start: var(--spacing-xl, 2rem);
+        margin-block-start: var(--size-xl);
       }
 
       [data-variant="primary"] {
-        padding: var(--spacing-sm, 0.5rem) var(--spacing-lg, 1.5rem);
+        padding: var(--size-xs) var(--size-l);
         background: var(--primary, #1e40af);
         color: white;
         border: none;

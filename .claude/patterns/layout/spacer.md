@@ -49,7 +49,7 @@ Invisible layout utility that adds consistent vertical or horizontal space. Use 
 @layer layout {
   layout-spacer,
   .spacer {
-    --spacer-size: var(--spacing-md, 1rem);
+    --spacer-size: var(--size-m);
 
     display: block;
     flex-shrink: 0;
@@ -73,37 +73,37 @@ Invisible layout utility that adds consistent vertical or horizontal space. Use 
   /* Size variants */
   layout-spacer[data-size="xs"],
   .spacer[data-size="xs"] {
-    --spacer-size: var(--spacing-xs, 0.25rem);
+    --spacer-size: var(--size-2xs);
   }
 
   layout-spacer[data-size="sm"],
   .spacer[data-size="sm"] {
-    --spacer-size: var(--spacing-sm, 0.5rem);
+    --spacer-size: var(--size-xs);
   }
 
   layout-spacer[data-size="md"],
   .spacer[data-size="md"] {
-    --spacer-size: var(--spacing-md, 1rem);
+    --spacer-size: var(--size-m);
   }
 
   layout-spacer[data-size="lg"],
   .spacer[data-size="lg"] {
-    --spacer-size: var(--spacing-lg, 1.5rem);
+    --spacer-size: var(--size-l);
   }
 
   layout-spacer[data-size="xl"],
   .spacer[data-size="xl"] {
-    --spacer-size: var(--spacing-xl, 2rem);
+    --spacer-size: var(--size-xl);
   }
 
   layout-spacer[data-size="2xl"],
   .spacer[data-size="2xl"] {
-    --spacer-size: var(--spacing-2xl, 3rem);
+    --spacer-size: var(--size-2xl);
   }
 
   layout-spacer[data-size="3xl"],
   .spacer[data-size="3xl"] {
-    --spacer-size: var(--spacing-3xl, 4rem);
+    --spacer-size: var(--size-3xl);
   }
 
   /* Responsive - reduces on mobile */

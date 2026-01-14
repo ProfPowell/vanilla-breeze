@@ -95,8 +95,8 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
     border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--shadow-xl);
-    max-height: calc(100vh - var(--spacing-2xl) * 2);
-    max-width: calc(100vw - var(--spacing-lg) * 2);
+    max-height: calc(100vh - var(--size-2xl) * 2);
+    max-width: calc(100vw - var(--size-l) * 2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -112,8 +112,8 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--spacing-md);
-      padding: var(--spacing-lg);
+      gap: var(--size-m);
+      padding: var(--size-l);
       border-block-end: 1px solid var(--border);
 
       & h2 {
@@ -147,21 +147,21 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
     & [data-body] {
       flex: 1;
       overflow-y: auto;
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
     }
 
     /* Footer */
     & [data-footer] {
       display: flex;
       justify-content: flex-end;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-lg);
+      gap: var(--size-xs);
+      padding: var(--size-l);
       border-block-start: 1px solid var(--border);
       background: var(--surface-alt);
     }
 
     & [data-footer] button {
-      padding: var(--spacing-sm) var(--spacing-lg);
+      padding: var(--size-xs) var(--size-l);
       font-weight: var(--font-weight-medium);
       border-radius: var(--radius-md);
       cursor: pointer;
@@ -206,8 +206,8 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
 
     &[data-size="full"],
     modal-dialog[data-size="full"] & {
-      width: calc(100vw - var(--spacing-lg) * 2);
-      height: calc(100vh - var(--spacing-lg) * 2);
+      width: calc(100vw - var(--size-l) * 2);
+      height: calc(100vh - var(--size-l) * 2);
       max-height: none;
       border-radius: var(--radius-md);
     }
@@ -261,20 +261,20 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
   modal-dialog form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   modal-dialog label {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     font-weight: var(--font-weight-medium);
   }
 
   modal-dialog input,
   modal-dialog textarea,
   modal-dialog select {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: var(--text-base);

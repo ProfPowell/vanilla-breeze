@@ -149,8 +149,8 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
     grid-area: header;
     display: flex;
     align-items: center;
-    gap: var(--spacing-md, 1rem);
-    padding-inline: var(--spacing-lg, 1.5rem);
+    gap: var(--size-m);
+    padding-inline: var(--size-l);
     background: var(--surface, white);
     border-block-end: 1px solid var(--border, oklch(0.85 0 0));
     position: sticky;
@@ -170,14 +170,14 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
   .dashboard-layout .dashboard-header nav {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm, 0.5rem);
+    gap: var(--size-xs);
   }
 
   dashboard-layout [data-actions],
   .dashboard-layout [data-actions] {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm, 0.5rem);
+    gap: var(--size-xs);
     margin-inline-start: auto;
   }
 
@@ -221,16 +221,16 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
   .dashboard-layout .dashboard-sidebar nav {
     display: flex;
     flex-direction: column;
-    padding: var(--spacing-md, 1rem);
-    gap: var(--spacing-xs, 0.25rem);
+    padding: var(--size-m);
+    gap: var(--size-2xs);
   }
 
   dashboard-layout [data-sidebar] nav a,
   .dashboard-layout .dashboard-sidebar nav a {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm, 0.5rem);
-    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+    gap: var(--size-xs);
+    padding: var(--size-xs) var(--size-m);
     color: var(--text-muted, oklch(0.5 0 0));
     text-decoration: none;
     border-radius: var(--radius-md, 0.5rem);
@@ -259,14 +259,14 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
   dashboard-layout[data-sidebar-collapsed="true"] [data-sidebar] nav a,
   .dashboard-layout[data-sidebar-collapsed="true"] .dashboard-sidebar nav a {
     justify-content: center;
-    padding: var(--spacing-sm, 0.5rem);
+    padding: var(--size-xs);
   }
 
   /* Main content */
   dashboard-layout [data-main],
   .dashboard-layout .dashboard-main {
     grid-area: main;
-    padding: var(--spacing-lg, 1.5rem);
+    padding: var(--size-l);
     overflow-y: auto;
     background: var(--surface, white);
   }

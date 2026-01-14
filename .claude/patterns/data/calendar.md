@@ -156,7 +156,7 @@ Date grid display for viewing and selecting dates. Can show month, week, or day 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md);
+    padding: var(--size-m);
     background: var(--surface-alt, oklch(0.98 0 0));
     border-block-end: 1px solid var(--border);
   }
@@ -199,7 +199,7 @@ Date grid display for viewing and selecting dates. Can show month, week, or day 
   }
 
   date-calendar thead th {
-    padding: var(--spacing-sm);
+    padding: var(--size-xs);
     font-size: var(--text-xs);
     font-weight: var(--font-weight-medium);
     color: var(--text-muted);
@@ -207,7 +207,7 @@ Date grid display for viewing and selecting dates. Can show month, week, or day 
   }
 
   date-calendar tbody td {
-    padding: var(--spacing-xs);
+    padding: var(--size-2xs);
     text-align: center;
   }
 

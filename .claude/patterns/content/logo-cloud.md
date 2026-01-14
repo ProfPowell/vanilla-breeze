@@ -66,7 +66,7 @@ Grid or row of partner, client, or integration logos. Used to show social proof,
 @layer components {
   logo-cloud {
     display: block;
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--size-xl) var(--size-l);
     text-align: center;
 
     /* Heading */
@@ -76,7 +76,7 @@ Grid or row of partner, client, or integration logos. Used to show social proof,
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--text-muted);
-      margin-block-end: var(--spacing-xl);
+      margin-block-end: var(--size-xl);
     }
 
     /* Logos container */
@@ -85,7 +85,7 @@ Grid or row of partner, client, or integration logos. Used to show social proof,
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: var(--spacing-xl) var(--spacing-2xl);
+      gap: var(--size-xl) var(--size-2xl);
       list-style: none;
       margin: 0;
       padding: 0;
@@ -105,7 +105,7 @@ Grid or row of partner, client, or integration logos. Used to show social proof,
     &[data-layout="grid"] [data-logos] {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
-      gap: var(--spacing-xl);
+      gap: var(--size-xl);
 
       & li {
         display: flex;
@@ -151,7 +151,7 @@ Grid or row of partner, client, or integration logos. Used to show social proof,
 
     &[data-style="dark"] {
       background: var(--surface-dark, #1a1a1a);
-      padding: var(--spacing-2xl);
+      padding: var(--size-2xl);
       border-radius: var(--radius-lg);
 
       & h2 {

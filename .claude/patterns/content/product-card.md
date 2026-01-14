@@ -153,9 +153,9 @@ E-commerce product display card with image, title, price, and purchase action. O
     /* Badges */
     & [data-badge] {
       position: absolute;
-      top: var(--spacing-sm);
-      left: var(--spacing-sm);
-      padding: var(--spacing-xs) var(--spacing-sm);
+      top: var(--size-xs);
+      left: var(--size-xs);
+      padding: var(--size-2xs) var(--size-xs);
       font-size: var(--text-xs);
       font-weight: var(--font-weight-semibold);
       text-transform: uppercase;
@@ -178,8 +178,8 @@ E-commerce product display card with image, title, price, and purchase action. O
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-md);
+      gap: var(--size-2xs);
+      padding: var(--size-m);
     }
 
     /* Category */
@@ -202,7 +202,7 @@ E-commerce product display card with image, title, price, and purchase action. O
     & [data-rating] {
       display: flex;
       align-items: center;
-      gap: var(--spacing-xs);
+      gap: var(--size-2xs);
       font-size: var(--text-sm);
       color: var(--text-muted);
 
@@ -228,9 +228,9 @@ E-commerce product display card with image, title, price, and purchase action. O
     & [data-price] {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
       margin-block-start: auto;
-      padding-block-start: var(--spacing-sm);
+      padding-block-start: var(--size-xs);
     }
 
     & [data-sale] {
@@ -253,8 +253,8 @@ E-commerce product display card with image, title, price, and purchase action. O
     /* Actions */
     & [data-actions] {
       display: flex;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md);
+      gap: var(--size-xs);
+      padding: var(--size-m);
       padding-block-start: 0;
       opacity: 0;
       transform: translateY(0.5rem);
@@ -266,8 +266,8 @@ E-commerce product display card with image, title, price, and purchase action. O
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-md);
+      gap: var(--size-xs);
+      padding: var(--size-xs) var(--size-m);
       background: var(--primary);
       color: var(--primary-contrast);
       border: none;
@@ -285,7 +285,7 @@ E-commerce product display card with image, title, price, and purchase action. O
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: var(--spacing-sm);
+      padding: var(--size-xs);
       background: var(--surface-alt);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
@@ -304,7 +304,7 @@ E-commerce product display card with image, title, price, and purchase action. O
       }
 
       & [data-body] {
-        padding: var(--spacing-sm);
+        padding: var(--size-xs);
       }
 
       & [data-description],

@@ -33,12 +33,12 @@ Generate a starter design token system using CSS custom properties.
     --color-border: #e5e7eb;
 
     /* Spacing Scale */
-    --spacing-xs: 0.25rem;   /* 4px */
-    --spacing-sm: 0.5rem;    /* 8px */
-    --spacing-md: 1rem;      /* 16px */
-    --spacing-lg: 1.5rem;    /* 24px */
-    --spacing-xl: 2rem;      /* 32px */
-    --spacing-2xl: 3rem;     /* 48px */
+    --size-2xs: 0.25rem;   /* 4px */
+    --size-xs: 0.5rem;    /* 8px */
+    --size-m: 1rem;      /* 16px */
+    --size-l: 1.5rem;    /* 24px */
+    --size-xl: 2rem;      /* 32px */
+    --size-2xl: 3rem;     /* 48px */
 
     /* Typography */
     --font-family-base: system-ui, -apple-system, sans-serif;

@@ -98,7 +98,7 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
           font-size: 2em;
           line-height: 0;
           vertical-align: -0.3em;
-          margin-inline-end: var(--spacing-xs);
+          margin-inline-end: var(--size-2xs);
         }
 
         &::after {
@@ -111,8 +111,8 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
     & [data-attribution] {
       display: flex;
       align-items: center;
-      gap: var(--spacing-md);
-      margin-block-start: var(--spacing-lg);
+      gap: var(--size-m);
+      margin-block-start: var(--size-l);
     }
 
     & [data-avatar] {
@@ -142,8 +142,8 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
     /* Rating */
     & [data-rating] {
       display: flex;
-      gap: var(--spacing-xs);
-      margin-block-start: var(--spacing-md);
+      gap: var(--size-2xs);
+      margin-block-start: var(--size-m);
 
       & x-icon {
         color: var(--warning, #f59e0b);
@@ -152,14 +152,14 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
 
     /* Style variants */
     &[data-style="card"] {
-      padding: var(--spacing-xl);
+      padding: var(--size-xl);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
     }
 
     &[data-style="featured"] {
-      padding: var(--spacing-2xl);
+      padding: var(--size-2xl);
       background: var(--primary);
       color: var(--primary-contrast);
       border-radius: var(--radius-lg);
@@ -184,7 +184,7 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
     }
 
     &[data-style="minimal"] {
-      padding-inline-start: var(--spacing-lg);
+      padding-inline-start: var(--size-l);
       border-inline-start: 3px solid var(--primary);
     }
 

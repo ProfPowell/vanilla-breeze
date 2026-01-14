@@ -33,7 +33,7 @@ class NavBar extends HTMLElement {
           justify-content: space-between;
           max-inline-size: var(--content-width, 72rem);
           margin-inline: auto;
-          padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+          padding: var(--size-m) var(--size-l);
         }
 
         nav > a:first-child {
@@ -45,7 +45,7 @@ class NavBar extends HTMLElement {
 
         ul {
           display: flex;
-          gap: var(--spacing-lg, 1.5rem);
+          gap: var(--size-l);
           list-style: none;
           margin: 0;
           padding: 0;

@@ -31,7 +31,7 @@ class AppShell extends HTMLElement {
         }
 
         footer {
-          padding: var(--spacing-lg, 1.5rem);
+          padding: var(--size-l);
           background: var(--surface-alt, #f5f5f5);
           border-block-start: 1px solid var(--border, #e5e5e5);
           text-align: center;

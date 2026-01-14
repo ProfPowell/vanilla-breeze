@@ -76,18 +76,18 @@ Container pattern for embedding charts and data visualizations. Provides consist
   chart-wrapper {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
     background: var(--surface, white);
     border: 1px solid var(--border, oklch(0.85 0 0));
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
   }
 
   /* Header */
   chart-wrapper [data-header] {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   chart-wrapper [data-title] {
@@ -140,16 +140,16 @@ Container pattern for embedding charts and data visualizations. Provides consist
   chart-wrapper [data-legend] {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
     justify-content: center;
-    padding-block-start: var(--spacing-md);
+    padding-block-start: var(--size-m);
     border-block-start: 1px solid var(--border);
   }
 
   chart-wrapper [data-legend-item] {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     font-size: var(--text-sm);
     color: var(--text-muted);
   }
@@ -187,14 +187,14 @@ Container pattern for embedding charts and data visualizations. Provides consist
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
     font-size: var(--text-xs);
     color: var(--text-muted);
   }
 
   /* Size variants */
   chart-wrapper[data-size="compact"] {
-    padding: var(--spacing-md);
+    padding: var(--size-m);
   }
 
   chart-wrapper[data-size="compact"] [data-chart] {
@@ -206,7 +206,7 @@ Container pattern for embedding charts and data visualizations. Provides consist
   }
 
   chart-wrapper[data-size="full"] {
-    padding: var(--spacing-xl);
+    padding: var(--size-xl);
   }
 
   chart-wrapper[data-size="full"] [data-chart] {
@@ -241,7 +241,7 @@ Container pattern for embedding charts and data visualizations. Provides consist
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
     background: oklch(0.98 0.02 25);
     color: var(--error);
   }
@@ -262,7 +262,7 @@ Container pattern for embedding charts and data visualizations. Provides consist
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
     background: var(--surface-alt);
     color: var(--text-muted);
   }

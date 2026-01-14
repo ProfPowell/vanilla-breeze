@@ -42,24 +42,24 @@ class AboutView extends BaseView {
 
       [data-role="lead"] {
         font-size: var(--font-size-lg, 1.25rem);
-        margin-block-end: var(--spacing-2xl, 3rem);
+        margin-block-end: var(--size-2xl);
       }
 
       section {
-        margin-block-end: var(--spacing-2xl, 3rem);
+        margin-block-end: var(--size-2xl);
       }
 
       h2 {
         font-size: var(--font-size-xl, 1.5rem);
-        margin-block-end: var(--spacing-md, 1rem);
+        margin-block-end: var(--size-m);
       }
 
       ul {
-        padding-inline-start: var(--spacing-lg, 1.5rem);
+        padding-inline-start: var(--size-l);
       }
 
       li {
-        margin-block-end: var(--spacing-sm, 0.5rem);
+        margin-block-end: var(--size-xs);
       }
     `;
   }

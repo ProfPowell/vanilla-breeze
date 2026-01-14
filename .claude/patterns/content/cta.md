@@ -64,7 +64,7 @@ Prominent section encouraging user action. Typically contains a headline, suppor
 @layer components {
   cta-section {
     display: block;
-    padding: var(--spacing-2xl) var(--spacing-lg);
+    padding: var(--size-2xl) var(--size-l);
 
     /* Content wrapper */
     & [data-content] {
@@ -76,14 +76,14 @@ Prominent section encouraging user action. Typically contains a headline, suppor
     & h2 {
       font-size: clamp(1.5rem, 4vw, 2.5rem);
       line-height: 1.2;
-      margin-block-end: var(--spacing-md);
+      margin-block-end: var(--size-m);
     }
 
     /* Supporting text */
     & p {
       font-size: var(--text-lg);
       color: var(--text-muted);
-      margin-block-end: var(--spacing-xl);
+      margin-block-end: var(--size-xl);
       line-height: 1.6;
     }
 
@@ -91,14 +91,14 @@ Prominent section encouraging user action. Typically contains a headline, suppor
     & [data-actions] {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
     }
 
     & [data-button] {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md) var(--spacing-xl);
+      gap: var(--size-xs);
+      padding: var(--size-m) var(--size-xl);
       font-size: var(--text-base);
       font-weight: var(--font-weight-medium);
       text-decoration: none;
@@ -153,19 +153,19 @@ Prominent section encouraging user action. Typically contains a headline, suppor
     }
 
     &[data-style="minimal"] {
-      padding-block: var(--spacing-xl);
+      padding-block: var(--size-xl);
       border-block-start: 1px solid var(--border);
     }
 
     &[data-style="banner"] {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       background: var(--surface-alt);
 
       & [data-content] {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: var(--spacing-lg);
+        gap: var(--size-l);
         max-width: var(--content-max-width);
       }
 
@@ -202,7 +202,7 @@ Prominent section encouraging user action. Typically contains a headline, suppor
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: var(--spacing-xl);
+        gap: var(--size-xl);
         max-width: var(--content-max-width);
       }
 

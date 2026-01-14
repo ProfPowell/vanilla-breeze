@@ -72,7 +72,7 @@ Layout utility that allows content to break out of its container and span the fu
   .full-bleed[data-style="contained"] > * {
     width: 100%;
     max-width: var(--content-width-default, 65rem);
-    padding-inline: var(--spacing-lg, 1.5rem);
+    padding-inline: var(--size-l);
   }
 
   /* Background variants */
@@ -104,7 +104,7 @@ Layout utility that allows content to break out of its container and span the fu
   /* Padding for content sections */
   full-bleed[data-bg]:not([data-bg="none"]),
   .full-bleed[data-bg]:not([data-bg="none"]) {
-    padding-block: var(--spacing-2xl, 3rem);
+    padding-block: var(--size-2xl);
   }
 }
 ```

@@ -75,7 +75,7 @@ Two-column layout that divides content into primary and secondary areas. Commonl
   split-layout,
   .split-layout {
     display: grid;
-    gap: var(--split-gap, var(--spacing-xl, 2rem));
+    gap: var(--split-gap, var(--size-xl));
     align-items: var(--split-align, center);
   }
 
@@ -153,12 +153,12 @@ Two-column layout that divides content into primary and secondary areas. Commonl
 
   split-layout[data-gap="small"],
   .split-layout[data-gap="small"] {
-    --split-gap: var(--spacing-md, 1rem);
+    --split-gap: var(--size-m);
   }
 
   split-layout[data-gap="large"],
   .split-layout[data-gap="large"] {
-    --split-gap: var(--spacing-2xl, 3rem);
+    --split-gap: var(--size-2xl);
   }
 
   /* Images in secondary area */
@@ -174,7 +174,7 @@ Two-column layout that divides content into primary and secondary areas. Commonl
   .split-layout [data-primary] {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md, 1rem);
+    gap: var(--size-m);
   }
 
   split-layout [data-primary] h2,

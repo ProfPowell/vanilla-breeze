@@ -69,14 +69,14 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
     & [data-skeleton="text"] {
       height: 1rem;
       width: 100%;
-      margin-block-end: var(--spacing-sm);
+      margin-block-end: var(--size-xs);
     }
 
     /* Heading */
     & [data-skeleton="heading"] {
       height: 1.5rem;
       width: 60%;
-      margin-block-end: var(--spacing-md);
+      margin-block-end: var(--size-m);
     }
 
     /* Avatar */
@@ -102,7 +102,7 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
     & [data-skeleton="image"] {
       width: 100%;
       aspect-ratio: 16 / 9;
-      margin-block-end: var(--spacing-md);
+      margin-block-end: var(--size-m);
     }
 
     /* Button placeholder */
@@ -161,7 +161,7 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
 @layer components {
   /* Card skeleton */
   skeleton-loader[data-type="card"] {
-    padding: var(--spacing-md);
+    padding: var(--size-m);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
   }
@@ -170,8 +170,8 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
   skeleton-loader[data-type="table-row"] {
     display: grid;
     grid-template-columns: 3rem 1fr 1fr 1fr 6rem;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: var(--size-m);
+    padding: var(--size-m);
     align-items: center;
 
     & [data-skeleton] {
@@ -182,8 +182,8 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
   /* List item skeleton */
   skeleton-loader[data-type="list-item"] {
     display: flex;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: var(--size-m);
+    padding: var(--size-m);
     align-items: flex-start;
 
     & [data-skeleton="avatar"] {
@@ -200,11 +200,11 @@ Loading placeholder that mimics content structure while data loads. Reduces perc
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-xl);
+    gap: var(--size-m);
+    padding: var(--size-xl);
 
     & [data-skeleton="avatar-lg"] {
-      margin-block-end: var(--spacing-sm);
+      margin-block-end: var(--size-xs);
     }
   }
 }

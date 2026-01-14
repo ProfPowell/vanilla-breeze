@@ -58,12 +58,12 @@ Visual separator for distinguishing content sections. Uses the semantic `<hr>` e
   layout-divider,
   hr.divider {
     --divider-color: var(--border, oklch(0.85 0 0));
-    --divider-spacing: var(--spacing-lg, 1.5rem);
+    --divider-spacing: var(--size-l);
     --divider-thickness: 1px;
 
     display: flex;
     align-items: center;
-    gap: var(--spacing-md, 1rem);
+    gap: var(--size-m);
     margin-block: var(--divider-spacing);
     border: none;
     color: var(--text-muted, oklch(0.5 0 0));
@@ -137,12 +137,12 @@ Visual separator for distinguishing content sections. Uses the semantic `<hr>` e
 
   layout-divider[data-spacing="small"],
   hr.divider[data-spacing="small"] {
-    --divider-spacing: var(--spacing-sm, 0.5rem);
+    --divider-spacing: var(--size-xs);
   }
 
   layout-divider[data-spacing="large"],
   hr.divider[data-spacing="large"] {
-    --divider-spacing: var(--spacing-2xl, 3rem);
+    --divider-spacing: var(--size-2xl);
   }
 
   /* Vertical orientation */

@@ -59,14 +59,14 @@ export class BaseView extends HTMLElement {
       }
 
       article {
-        padding: var(--spacing-lg, 1.5rem);
+        padding: var(--size-l);
         max-inline-size: var(--content-width, 72rem);
         margin-inline: auto;
       }
 
       h1 {
         font-size: var(--font-size-3xl, 2.5rem);
-        margin-block-end: var(--spacing-md, 1rem);
+        margin-block-end: var(--size-m);
       }
 
       p {

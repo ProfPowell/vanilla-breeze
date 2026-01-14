@@ -104,15 +104,15 @@ Hierarchical data display with expandable/collapsible nodes. Used for file explo
   }
 
   tree-view ul ul {
-    padding-inline-start: var(--spacing-lg);
+    padding-inline-start: var(--size-l);
   }
 
   tree-view [data-node] {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: var(--size-2xs);
+    padding: var(--size-2xs) var(--size-xs);
     border-radius: var(--radius-sm);
     cursor: pointer;
     user-select: none;
@@ -193,7 +193,7 @@ Hierarchical data display with expandable/collapsible nodes. Used for file explo
 
   /* Leaf nodes (no children) */
   tree-view [data-leaf] {
-    padding-inline-start: calc(1.25rem + var(--spacing-xs) + var(--spacing-sm));
+    padding-inline-start: calc(1.25rem + var(--size-2xs) + var(--size-xs));
   }
 
   /* Children container */
@@ -220,7 +220,7 @@ Hierarchical data display with expandable/collapsible nodes. Used for file explo
   tree-view[data-style="lines"] ul ul {
     position: relative;
     margin-inline-start: 0.625rem;
-    padding-inline-start: var(--spacing-md);
+    padding-inline-start: var(--size-m);
     border-inline-start: 1px solid var(--border);
   }
 
@@ -228,18 +228,18 @@ Hierarchical data display with expandable/collapsible nodes. Used for file explo
     content: "";
     position: absolute;
     left: 0;
-    width: var(--spacing-sm);
+    width: var(--size-xs);
     height: 1px;
     background: var(--border);
   }
 
   /* Compact variant */
   tree-view[data-style="compact"] [data-node] {
-    padding: var(--spacing-xs) var(--spacing-xs);
+    padding: var(--size-2xs) var(--size-2xs);
   }
 
   tree-view[data-style="compact"] ul ul {
-    padding-inline-start: var(--spacing-md);
+    padding-inline-start: var(--size-m);
   }
 
   /* Disabled nodes */
@@ -277,7 +277,7 @@ Hierarchical data display with expandable/collapsible nodes. Used for file explo
   tree-view[data-checkable] [data-checkbox] {
     width: 1rem;
     height: 1rem;
-    margin-inline-end: var(--spacing-xs);
+    margin-inline-end: var(--size-2xs);
   }
 
   tree-view [data-checkbox]:indeterminate {

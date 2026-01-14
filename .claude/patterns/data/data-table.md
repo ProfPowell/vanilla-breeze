@@ -127,7 +127,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
 
   data-table th,
   .table-wrapper th {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--size-m) var(--size-l);
     text-align: start;
     font-weight: var(--font-weight-semibold);
     color: var(--text, oklch(0.2 0 0));
@@ -152,7 +152,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
     display: inline-block;
     width: 1rem;
     height: 1rem;
-    margin-inline-start: var(--spacing-xs);
+    margin-inline-start: var(--size-2xs);
     opacity: 0.3;
     vertical-align: middle;
   }
@@ -175,7 +175,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
   /* Body */
   data-table td,
   .table-wrapper td {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--size-m) var(--size-l);
     border-block-end: 1px solid var(--border, oklch(0.9 0 0));
     color: var(--text, oklch(0.2 0 0));
   }
@@ -188,12 +188,12 @@ Responsive table for displaying structured tabular data with optional sorting, f
   /* Density variants */
   data-table[data-density="compact"] th,
   data-table[data-density="compact"] td {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
   }
 
   data-table[data-density="relaxed"] th,
   data-table[data-density="relaxed"] td {
-    padding: var(--spacing-lg) var(--spacing-xl);
+    padding: var(--size-l) var(--size-xl);
   }
 
   /* Style variants */
@@ -223,12 +223,12 @@ Responsive table for displaying structured tabular data with optional sorting, f
 
   data-table td[data-actions] {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     justify-content: flex-end;
   }
 
   data-table [data-action] {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-sm);
     background: transparent;
     border: 1px solid var(--border);
@@ -258,7 +258,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
   /* Badge in cells */
   data-table [data-badge] {
     display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-xs);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-full);
@@ -281,7 +281,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
 
   /* Empty state */
   data-table [data-empty] {
-    padding: var(--spacing-2xl);
+    padding: var(--size-2xl);
     text-align: center;
     color: var(--text-muted);
   }
@@ -314,7 +314,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
 
   data-table[data-responsive] tbody tr {
     display: block;
-    margin-block-end: var(--spacing-md);
+    margin-block-end: var(--size-m);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
   }

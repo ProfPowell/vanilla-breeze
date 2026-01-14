@@ -64,7 +64,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 @layer layout {
   layout-cluster,
   .cluster {
-    --cluster-gap: var(--spacing-sm, 0.5rem);
+    --cluster-gap: var(--size-xs);
     --cluster-justify: flex-start;
     --cluster-align: center;
 
@@ -83,27 +83,27 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 
   layout-cluster[data-gap="xs"],
   .cluster[data-gap="xs"] {
-    --cluster-gap: var(--spacing-xs, 0.25rem);
+    --cluster-gap: var(--size-2xs);
   }
 
   layout-cluster[data-gap="sm"],
   .cluster[data-gap="sm"] {
-    --cluster-gap: var(--spacing-sm, 0.5rem);
+    --cluster-gap: var(--size-xs);
   }
 
   layout-cluster[data-gap="md"],
   .cluster[data-gap="md"] {
-    --cluster-gap: var(--spacing-md, 1rem);
+    --cluster-gap: var(--size-m);
   }
 
   layout-cluster[data-gap="lg"],
   .cluster[data-gap="lg"] {
-    --cluster-gap: var(--spacing-lg, 1.5rem);
+    --cluster-gap: var(--size-l);
   }
 
   layout-cluster[data-gap="xl"],
   .cluster[data-gap="xl"] {
-    --cluster-gap: var(--spacing-xl, 2rem);
+    --cluster-gap: var(--size-xl);
   }
 
   /* Justify variants */

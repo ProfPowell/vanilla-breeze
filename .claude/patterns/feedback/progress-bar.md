@@ -57,7 +57,7 @@ Visual indicator of operation progress. Uses the native `<progress>` element wit
   progress-bar {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
 
     /* Label */
     & label {
@@ -107,7 +107,7 @@ Visual indicator of operation progress. Uses the native `<progress>` element wit
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
 
       & label {
         flex: 1;
@@ -234,7 +234,7 @@ Visual indicator of operation progress. Uses the native `<progress>` element wit
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--spacing-xs);
+      gap: var(--size-2xs);
       position: relative;
       z-index: 2;
     }

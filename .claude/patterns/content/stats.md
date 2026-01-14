@@ -90,18 +90,18 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
 @layer components {
   stats-section {
     display: block;
-    padding: var(--spacing-2xl) var(--spacing-lg);
+    padding: var(--size-2xl) var(--size-l);
 
     /* Section header */
     & > header {
       max-width: 40rem;
       margin-inline: auto;
-      margin-block-end: var(--spacing-2xl);
+      margin-block-end: var(--size-2xl);
       text-align: center;
 
       & h2 {
         font-size: clamp(1.5rem, 3vw, 2.5rem);
-        margin-block-end: var(--spacing-sm);
+        margin-block-end: var(--size-xs);
       }
 
       & p {
@@ -113,7 +113,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
     /* Stats grid */
     & [data-grid] {
       display: grid;
-      gap: var(--spacing-xl);
+      gap: var(--size-xl);
       max-width: var(--content-max-width);
       margin: 0 auto;
     }
@@ -122,7 +122,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
     & [data-stat] {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xs);
+      gap: var(--size-2xs);
       text-align: center;
     }
 
@@ -154,7 +154,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
 
     /* Style variants */
     &[data-style="cards"] [data-stat] {
-      padding: var(--spacing-xl);
+      padding: var(--size-xl);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -162,7 +162,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
 
     &[data-style="minimal"] {
       & [data-stat] {
-        padding: var(--spacing-lg) 0;
+        padding: var(--size-l) 0;
         border-block-start: 1px solid var(--border);
       }
     }
@@ -185,7 +185,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
     & [data-stat] x-icon {
       font-size: 2rem;
       color: var(--primary);
-      margin-block-end: var(--spacing-sm);
+      margin-block-end: var(--size-xs);
     }
   }
 

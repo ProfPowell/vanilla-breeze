@@ -295,7 +295,7 @@ tag-topic[data-topic="a11y"] {
 ```css
 gallery-grid {
   display: grid;
-  gap: var(--spacing-md);
+  gap: var(--size-m);
 }
 
 gallery-grid[data-columns="2"] {

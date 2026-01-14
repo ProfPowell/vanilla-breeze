@@ -38,7 +38,7 @@ No JavaScript needed for expand/collapse:
 details {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  padding: var(--size-m);
 
   & summary {
     cursor: pointer;
@@ -50,7 +50,7 @@ details {
   }
 
   &[open] summary {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--size-m);
   }
 }
 ```
@@ -81,7 +81,7 @@ dialog {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   max-width: 32rem;
-  padding: var(--spacing-lg);
+  padding: var(--size-l);
 
   &::backdrop {
     background: oklch(0% 0 0 / 0.5);
@@ -117,7 +117,7 @@ Popovers provide lightweight, non-modal overlays:
 [popover] {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  padding: var(--size-m);
   box-shadow: var(--shadow-md);
 
   /* Entry animation */
@@ -343,7 +343,7 @@ body {
 
   & nav label {
     cursor: pointer;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
   }
 
   &:has(#tab-1:checked) label[for="tab-1"],

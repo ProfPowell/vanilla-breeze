@@ -91,12 +91,12 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    gap: var(--spacing-xl);
+    gap: var(--size-xl);
     min-height: 100%;
 
     /* Sidebar */
     & > aside {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       background: var(--surface-alt);
       border-inline-end: 1px solid var(--border);
     }
@@ -107,12 +107,12 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xs);
+      gap: var(--size-2xs);
     }
 
     & > aside nav a {
       display: block;
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--size-xs) var(--size-m);
       color: var(--text);
       text-decoration: none;
       border-radius: var(--radius-md);
@@ -131,7 +131,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 
     /* Main content */
     & > main {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       max-width: var(--prose-max-width, 65ch);
     }
 
@@ -154,9 +154,9 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
     /* Sticky sidebar */
     &[data-sticky-sidebar] > aside {
       position: sticky;
-      top: var(--spacing-lg);
+      top: var(--size-l);
       align-self: start;
-      max-height: calc(100vh - var(--spacing-lg) * 2);
+      max-height: calc(100vh - var(--size-l) * 2);
       overflow-y: auto;
     }
   }
@@ -169,8 +169,8 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
       & [data-sidebar-toggle] {
         display: flex;
         position: fixed;
-        bottom: var(--spacing-lg);
-        right: var(--spacing-lg);
+        bottom: var(--size-l);
+        right: var(--size-l);
         z-index: var(--z-fixed);
         width: 3rem;
         height: 3rem;
@@ -202,7 +202,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
       }
 
       & > main {
-        padding: var(--spacing-md);
+        padding: var(--size-m);
       }
 
       &[data-sidebar="end"] > aside {

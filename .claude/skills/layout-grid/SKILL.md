@@ -297,7 +297,7 @@ Subgrid enables nested elements to align with parent grid tracks.
     display: grid;
     grid-row: span 3;
     grid-template-rows: subgrid;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   product-card img { grid-row: 1; }
@@ -313,7 +313,7 @@ Subgrid enables nested elements to align with parent grid tracks.
   form {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   form-field {
@@ -535,7 +535,7 @@ Note: True masonry requires JavaScript to calculate `--rows` or wait for CSS `ma
   dashboard-widget {
     container-type: inline-size;
     display: grid;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   /* Single column by default */

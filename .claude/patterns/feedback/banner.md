@@ -65,8 +65,8 @@ Site-wide announcement bar typically positioned at the top of the page. Used for
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    gap: var(--size-m);
+    padding: var(--size-xs) var(--size-l);
     text-align: center;
     font-size: var(--text-sm);
 
@@ -76,7 +76,7 @@ Site-wide announcement bar typically positioned at the top of the page. Used for
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
     }
 
     & p {
@@ -96,7 +96,7 @@ Site-wide announcement bar typically positioned at the top of the page. Used for
 
     /* Action button */
     & [data-action] {
-      padding: var(--spacing-xs) var(--spacing-md);
+      padding: var(--size-2xs) var(--size-m);
       font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
       text-decoration: none;
@@ -205,7 +205,7 @@ Site-wide announcement bar typically positioned at the top of the page. Used for
 @media (max-width: 480px) {
   site-banner {
     flex-wrap: wrap;
-    padding: var(--spacing-md);
+    padding: var(--size-m);
 
     & [data-content] {
       width: 100%;

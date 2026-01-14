@@ -53,7 +53,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   key-value [data-key] {
@@ -72,7 +72,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value[data-layout="inline"] {
     flex-direction: row;
     align-items: baseline;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
   }
 
   key-value[data-layout="inline"] [data-key]::after {
@@ -107,7 +107,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value[data-hero] {
     align-items: center;
     text-align: center;
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
   }
 
   key-value[data-hero] [data-value] {
@@ -123,7 +123,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value[data-icon] {
     flex-direction: row;
     align-items: flex-start;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   key-value [data-icon-wrapper] {
@@ -141,14 +141,14 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value[data-icon] [data-content] {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   /* Trend indicator */
   key-value [data-trend] {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
   }
@@ -169,11 +169,11 @@ Single key-value pair display for showing labeled data. A building block for sta
   key-value [data-copyable] {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
   }
 
   key-value [data-copy] {
-    padding: var(--spacing-xs);
+    padding: var(--size-2xs);
     background: transparent;
     border: none;
     border-radius: var(--radius-sm);
@@ -189,7 +189,7 @@ Single key-value pair display for showing labeled data. A building block for sta
 
   /* Card wrapper */
   key-value[data-card] {
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);

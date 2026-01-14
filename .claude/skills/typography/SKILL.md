@@ -103,23 +103,23 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: var(--font-size-3xl);
   letter-spacing: -0.02em;  /* Tighten large text */
-  margin-block: 0 var(--spacing-lg);
+  margin-block: 0 var(--size-l);
 }
 
 h2 {
   font-size: var(--font-size-2xl);
   letter-spacing: -0.01em;
-  margin-block: var(--spacing-2xl) var(--spacing-md);
+  margin-block: var(--size-2xl) var(--size-m);
 }
 
 h3 {
   font-size: var(--font-size-xl);
-  margin-block: var(--spacing-xl) var(--spacing-sm);
+  margin-block: var(--size-xl) var(--size-xs);
 }
 
 h4 {
   font-size: var(--font-size-lg);
-  margin-block: var(--spacing-lg) var(--spacing-sm);
+  margin-block: var(--size-l) var(--size-xs);
 }
 
 h5, h6 {
@@ -127,7 +127,7 @@ h5, h6 {
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.05em;  /* Loosen small caps */
-  margin-block: var(--spacing-md) var(--spacing-xs);
+  margin-block: var(--size-m) var(--size-2xs);
 }
 ```
 
@@ -141,7 +141,7 @@ article, .prose {
   text-wrap: pretty;  /* Improved line breaking */
 
   & p {
-    margin-block: 0 var(--spacing-md);
+    margin-block: 0 var(--size-m);
     max-inline-size: 65ch;  /* Optimal line length */
   }
 
@@ -195,12 +195,12 @@ Vertical rhythm creates consistent spacing based on line height, creating visual
   --baseline: 1.5rem;  /* Based on body line-height */
 
   /* Spacing as multiples of baseline */
-  --spacing-xs: calc(var(--baseline) * 0.25);   /* 6px */
-  --spacing-sm: calc(var(--baseline) * 0.5);    /* 12px */
-  --spacing-md: var(--baseline);                 /* 24px */
-  --spacing-lg: calc(var(--baseline) * 1.5);    /* 36px */
-  --spacing-xl: calc(var(--baseline) * 2);      /* 48px */
-  --spacing-2xl: calc(var(--baseline) * 3);     /* 72px */
+  --size-2xs: calc(var(--baseline) * 0.25);   /* 6px */
+  --size-xs: calc(var(--baseline) * 0.5);    /* 12px */
+  --size-m: var(--baseline);                 /* 24px */
+  --size-l: calc(var(--baseline) * 1.5);    /* 36px */
+  --size-xl: calc(var(--baseline) * 2);      /* 48px */
+  --size-2xl: calc(var(--baseline) * 3);     /* 72px */
 }
 ```
 
@@ -499,7 +499,7 @@ strong { font-weight: 600; }
 /* Ensure tappable text links */
 nav a, button {
   min-block-size: 44px;
-  padding-block: var(--spacing-sm);
+  padding-block: var(--size-xs);
 }
 ```
 

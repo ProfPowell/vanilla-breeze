@@ -53,22 +53,22 @@ class HomeView extends BaseView {
 
       [data-section="hero"] {
         text-align: center;
-        padding: var(--spacing-3xl, 4rem) var(--spacing-lg, 1.5rem);
+        padding: var(--size-3xl) var(--size-l);
         background: var(--surface-alt, #f5f5f5);
-        margin: calc(-1 * var(--spacing-lg, 1.5rem));
-        margin-block-end: var(--spacing-2xl, 3rem);
+        margin: calc(-1 * var(--size-l));
+        margin-block-end: var(--size-2xl);
       }
 
       [data-role="lead"] {
         font-size: var(--font-size-lg, 1.25rem);
         max-inline-size: 40rem;
         margin-inline: auto;
-        margin-block-end: var(--spacing-xl, 2rem);
+        margin-block-end: var(--size-xl);
       }
 
       [data-section="hero"] nav {
         display: flex;
-        gap: var(--spacing-md, 1rem);
+        gap: var(--size-m);
         justify-content: center;
         flex-wrap: wrap;
       }
@@ -76,7 +76,7 @@ class HomeView extends BaseView {
       [data-variant="primary"],
       [data-variant="secondary"] {
         display: inline-flex;
-        padding: var(--spacing-sm, 0.5rem) var(--spacing-lg, 1.5rem);
+        padding: var(--size-xs) var(--size-l);
         border-radius: var(--radius-md, 0.25rem);
         text-decoration: none;
         font-weight: 500;
@@ -95,13 +95,13 @@ class HomeView extends BaseView {
 
       [data-section="features"] h2 {
         text-align: center;
-        margin-block-end: var(--spacing-xl, 2rem);
+        margin-block-end: var(--size-xl);
       }
 
       [data-section="features"] ul {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--spacing-lg, 1.5rem);
+        gap: var(--size-l);
         list-style: none;
         padding: 0;
         margin: 0;
@@ -109,14 +109,14 @@ class HomeView extends BaseView {
 
       feature-card {
         display: block;
-        padding: var(--spacing-lg, 1.5rem);
+        padding: var(--size-l);
         background: var(--surface, white);
         border: 1px solid var(--border, #e5e5e5);
         border-radius: var(--radius-lg, 0.5rem);
       }
 
       feature-card h3 {
-        margin-block-end: var(--spacing-sm, 0.5rem);
+        margin-block-end: var(--size-xs);
       }
     `;
   }

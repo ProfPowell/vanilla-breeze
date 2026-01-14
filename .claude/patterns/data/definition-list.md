@@ -76,7 +76,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   dl.definition-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
     margin: 0;
   }
 
@@ -84,7 +84,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   dl.definition-list > div {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   definition-list dt,
@@ -107,7 +107,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
     flex-direction: row;
     justify-content: space-between;
     align-items: baseline;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   definition-list[data-layout="inline"] dt {
@@ -122,7 +122,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   definition-list[data-layout="grid"] {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-lg);
+    gap: var(--size-l);
   }
 
   @media (max-width: 29.999rem) {
@@ -134,7 +134,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   /* Dividers */
   definition-list[data-dividers] [data-group],
   dl.definition-list[data-dividers] > div {
-    padding-block-end: var(--spacing-md);
+    padding-block-end: var(--size-m);
     border-block-end: 1px solid var(--border, oklch(0.9 0 0));
   }
 
@@ -151,7 +151,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
 
   /* Compact variant */
   definition-list[data-compact] {
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
   }
 
   definition-list[data-compact] dt {
@@ -166,7 +166,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   definition-list [data-icon] {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
   }
 
   definition-list [data-icon] svg {
@@ -179,11 +179,11 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   definition-list [data-copyable] {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--size-xs);
   }
 
   definition-list [data-copy-btn] {
-    padding: var(--spacing-xs);
+    padding: var(--size-2xs);
     background: transparent;
     border: none;
     border-radius: var(--radius-sm);
@@ -216,7 +216,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   /* Badge values */
   definition-list [data-badge] {
     display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-xs);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-full);

@@ -98,18 +98,18 @@ Accordion-style FAQ list using native `<details>` and `<summary>` elements. Prov
 @layer components {
   faq-list {
     display: block;
-    padding: var(--spacing-2xl) var(--spacing-lg);
+    padding: var(--size-2xl) var(--size-l);
 
     /* Section header */
     & > header {
       max-width: 40rem;
       margin-inline: auto;
-      margin-block-end: var(--spacing-2xl);
+      margin-block-end: var(--size-2xl);
       text-align: center;
 
       & h2 {
         font-size: clamp(1.5rem, 3vw, 2.5rem);
-        margin-block-end: var(--spacing-sm);
+        margin-block-end: var(--size-xs);
       }
 
       & p {
@@ -124,7 +124,7 @@ Accordion-style FAQ list using native `<details>` and `<summary>` elements. Prov
       margin-inline: auto;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
     }
 
     /* Individual FAQ item */
@@ -138,8 +138,8 @@ Accordion-style FAQ list using native `<details>` and `<summary>` elements. Prov
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--spacing-md);
-      padding: var(--spacing-lg);
+      gap: var(--size-m);
+      padding: var(--size-l);
       font-weight: var(--font-weight-medium);
       cursor: pointer;
       background: var(--surface);
@@ -169,7 +169,7 @@ Accordion-style FAQ list using native `<details>` and `<summary>` elements. Prov
 
     /* Answer content */
     & [data-answer] {
-      padding: 0 var(--spacing-lg) var(--spacing-lg);
+      padding: 0 var(--size-l) var(--size-l);
       color: var(--text-muted);
       line-height: 1.7;
 

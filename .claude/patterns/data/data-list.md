@@ -79,14 +79,14 @@ Flexible list layout for displaying collections of records. More adaptable than 
   data-list[data-layout="grid"] {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: var(--spacing-lg);
+    gap: var(--size-l);
   }
 
   /* List item */
   data-list [data-item] {
     display: flex;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: var(--size-m);
+    padding: var(--size-m);
     align-items: flex-start;
     transition: background var(--transition-fast);
   }
@@ -110,12 +110,12 @@ Flexible list layout for displaying collections of records. More adaptable than 
     background: var(--surface, white);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
   }
 
   /* Compact layout */
   data-list[data-layout="compact"] [data-item] {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
   }
 
   data-list[data-layout="compact"] [data-media] {
@@ -137,7 +137,7 @@ Flexible list layout for displaying collections of records. More adaptable than 
     height: auto;
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-md);
-    margin-block-end: var(--spacing-sm);
+    margin-block-end: var(--size-xs);
   }
 
   /* Icon media */
@@ -167,7 +167,7 @@ Flexible list layout for displaying collections of records. More adaptable than 
   }
 
   data-list [data-description] {
-    margin: var(--spacing-xs) 0 0;
+    margin: var(--size-2xs) 0 0;
     font-size: var(--text-sm);
     color: var(--text-muted, oklch(0.5 0 0));
     line-height: 1.5;
@@ -176,8 +176,8 @@ Flexible list layout for displaying collections of records. More adaptable than 
   data-list [data-meta] {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    margin-block-start: var(--spacing-sm);
+    gap: var(--size-xs);
+    margin-block-start: var(--size-xs);
     font-size: var(--text-xs);
     color: var(--text-muted);
   }
@@ -185,23 +185,23 @@ Flexible list layout for displaying collections of records. More adaptable than 
   data-list [data-meta] > * {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   /* Actions */
   data-list [data-actions] {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     flex-shrink: 0;
   }
 
   data-list[data-layout="grid"] [data-actions] {
-    margin-block-start: var(--spacing-md);
+    margin-block-start: var(--size-m);
     width: 100%;
   }
 
   data-list [data-action] {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-sm);
     background: transparent;
     border: 1px solid var(--border);
@@ -232,7 +232,7 @@ Flexible list layout for displaying collections of records. More adaptable than 
 
   /* Empty state */
   data-list [data-empty] {
-    padding: var(--spacing-2xl);
+    padding: var(--size-2xl);
     text-align: center;
     color: var(--text-muted);
   }

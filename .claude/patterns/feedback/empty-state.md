@@ -65,7 +65,7 @@ Placeholder content shown when there's no data to display. Provides context abou
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: var(--spacing-2xl);
+    padding: var(--size-2xl);
     min-height: 20rem;
 
     /* Illustration */
@@ -73,7 +73,7 @@ Placeholder content shown when there's no data to display. Provides context abou
       font-size: 4rem;
       color: var(--text-muted);
       opacity: 0.5;
-      margin-block-end: var(--spacing-lg);
+      margin-block-end: var(--size-l);
     }
 
     & [data-illustration] img {
@@ -87,7 +87,7 @@ Placeholder content shown when there's no data to display. Provides context abou
       font-size: var(--text-xl);
       font-weight: var(--font-weight-semibold);
       color: var(--text);
-      margin: 0 0 var(--spacing-sm);
+      margin: 0 0 var(--size-xs);
     }
 
     /* Description */
@@ -95,21 +95,21 @@ Placeholder content shown when there's no data to display. Provides context abou
       font-size: var(--text-base);
       color: var(--text-muted);
       max-width: 24rem;
-      margin: 0 0 var(--spacing-lg);
+      margin: 0 0 var(--size-l);
       line-height: 1.6;
     }
 
     /* Actions */
     & [data-actions] {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
     }
 
     & [data-button] {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-lg);
+      gap: var(--size-xs);
+      padding: var(--size-xs) var(--size-l);
       font-weight: var(--font-weight-medium);
       text-decoration: none;
       border-radius: var(--radius-md);
@@ -133,12 +133,12 @@ Placeholder content shown when there's no data to display. Provides context abou
 
     /* Size variants */
     &[data-size="small"] {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       min-height: 10rem;
 
       & [data-illustration] {
         font-size: 2.5rem;
-        margin-block-end: var(--spacing-md);
+        margin-block-end: var(--size-m);
       }
 
       & [data-title] {
@@ -151,7 +151,7 @@ Placeholder content shown when there's no data to display. Provides context abou
     }
 
     &[data-size="large"] {
-      padding: var(--spacing-2xl) var(--spacing-xl);
+      padding: var(--size-2xl) var(--size-xl);
       min-height: 30rem;
 
       & [data-illustration] {

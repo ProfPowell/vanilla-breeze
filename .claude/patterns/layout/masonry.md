@@ -63,7 +63,7 @@ Pinterest-style layout where items of varying heights are arranged to minimize v
   masonry-grid,
   .masonry {
     --masonry-columns: 3;
-    --masonry-gap: var(--spacing-lg, 1.5rem);
+    --masonry-gap: var(--size-l);
 
     column-count: var(--masonry-columns);
     column-gap: var(--masonry-gap);
@@ -135,12 +135,12 @@ Pinterest-style layout where items of varying heights are arranged to minimize v
 
   masonry-grid[data-gap="small"],
   .masonry[data-gap="small"] {
-    --masonry-gap: var(--spacing-sm, 0.5rem);
+    --masonry-gap: var(--size-xs);
   }
 
   masonry-grid[data-gap="large"],
   .masonry[data-gap="large"] {
-    --masonry-gap: var(--spacing-xl, 2rem);
+    --masonry-gap: var(--size-xl);
   }
 
   /* Item styling */
@@ -160,7 +160,7 @@ Pinterest-style layout where items of varying heights are arranged to minimize v
 
   masonry-grid [data-item] > :not(img),
   .masonry .masonry-item > :not(img) {
-    padding: var(--spacing-md, 1rem);
+    padding: var(--size-m);
   }
 }
 ```

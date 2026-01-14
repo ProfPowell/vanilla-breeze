@@ -62,8 +62,8 @@ Inline message for providing feedback about an action or state. Used to communic
   alert-message {
     display: flex;
     align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    gap: var(--size-m);
+    padding: var(--size-m) var(--size-l);
     border-radius: var(--radius-md);
     line-height: 1.5;
 
@@ -82,7 +82,7 @@ Inline message for providing feedback about an action or state. Used to communic
     & [data-title] {
       display: block;
       font-weight: var(--font-weight-semibold);
-      margin-block-end: var(--spacing-xs);
+      margin-block-end: var(--size-2xs);
     }
 
     & p {
@@ -92,8 +92,8 @@ Inline message for providing feedback about an action or state. Used to communic
     /* Actions */
     & [data-actions] {
       display: flex;
-      gap: var(--spacing-sm);
-      margin-block-start: var(--spacing-sm);
+      gap: var(--size-xs);
+      margin-block-start: var(--size-xs);
     }
 
     /* Dismiss button */

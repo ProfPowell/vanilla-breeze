@@ -67,7 +67,7 @@ Navigation trail showing the user's location within the site hierarchy. Helps wi
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -76,7 +76,7 @@ Navigation trail showing the user's location within the site hierarchy. Helps wi
   breadcrumbs li {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--size-2xs);
   }
 
   /* Separators */
@@ -117,7 +117,7 @@ Navigation trail showing the user's location within the site hierarchy. Helps wi
   breadcrumbs[data-truncate] li:nth-child(2)::before {
     content: "...";
     color: var(--text-muted);
-    margin-inline-end: var(--spacing-xs);
+    margin-inline-end: var(--size-2xs);
   }
 }
 

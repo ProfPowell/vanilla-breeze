@@ -132,15 +132,15 @@ Card specifically designed for blog post previews. Displays featured image, cate
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-lg);
+      gap: var(--size-xs);
+      padding: var(--size-l);
     }
 
     /* Category badge */
     & [data-category] {
       display: inline-block;
       width: fit-content;
-      padding: var(--spacing-xs) var(--spacing-sm);
+      padding: var(--size-2xs) var(--size-xs);
       font-size: var(--text-xs);
       font-weight: var(--font-weight-medium);
       text-transform: uppercase;
@@ -174,9 +174,9 @@ Card specifically designed for blog post previews. Displays featured image, cate
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
       margin-block-start: auto;
-      padding-block-start: var(--spacing-md);
+      padding-block-start: var(--size-m);
       font-size: var(--text-sm);
       color: var(--text-muted);
     }
@@ -185,7 +185,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
     & [data-author] {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
 
       & img {
         width: 2rem;
@@ -207,7 +207,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
       }
 
       & [data-body] {
-        padding: var(--spacing-md);
+        padding: var(--size-m);
       }
 
       & h3 {

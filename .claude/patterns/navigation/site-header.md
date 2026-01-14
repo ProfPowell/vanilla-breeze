@@ -94,8 +94,8 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-lg);
+    gap: var(--size-l);
+    padding: var(--size-m) var(--size-l);
     background: var(--surface);
     border-block-end: 1px solid var(--border);
 
@@ -113,14 +113,14 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
     /* Navigation */
     & nav ul {
       display: flex;
-      gap: var(--spacing-lg);
+      gap: var(--size-l);
       list-style: none;
       margin: 0;
       padding: 0;
     }
 
     & nav a {
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--size-xs) var(--size-m);
       color: var(--text);
       text-decoration: none;
       border-radius: var(--radius-md);
@@ -139,7 +139,7 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
     /* Actions */
     & [data-actions] {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
       align-items: center;
     }
 
@@ -157,11 +157,11 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
 
     /* Size variants */
     &[data-size="compact"] {
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--size-xs) var(--size-m);
     }
 
     &[data-size="large"] {
-      padding: var(--spacing-lg) var(--spacing-xl);
+      padding: var(--size-l) var(--size-xl);
     }
 
     /* Style variants */
@@ -200,7 +200,7 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
 
         & ul {
           flex-direction: column;
-          gap: var(--spacing-sm);
+          gap: var(--size-xs);
         }
       }
 

@@ -111,18 +111,18 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
 @layer components {
   feature-grid {
     display: block;
-    padding: var(--spacing-2xl) var(--spacing-lg);
+    padding: var(--size-2xl) var(--size-l);
 
     /* Section header */
     & > header {
       max-width: 40rem;
       margin-inline: auto;
-      margin-block-end: var(--spacing-2xl);
+      margin-block-end: var(--size-2xl);
       text-align: center;
 
       & h2 {
         font-size: clamp(1.5rem, 3vw, 2.5rem);
-        margin-block-end: var(--spacing-sm);
+        margin-block-end: var(--size-xs);
       }
 
       & p {
@@ -134,7 +134,7 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
     /* Grid layout */
     & [data-grid] {
       display: grid;
-      gap: var(--spacing-xl);
+      gap: var(--size-xl);
       max-width: var(--content-max-width);
       margin-inline: auto;
     }
@@ -143,12 +143,12 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
     & article {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
     }
 
     & article x-icon {
       color: var(--primary);
-      margin-block-end: var(--spacing-sm);
+      margin-block-end: var(--size-xs);
     }
 
     & article h3 {
@@ -178,7 +178,7 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
 
     /* Cards style */
     &[data-style="cards"] article {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -192,7 +192,7 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
 
     /* Minimal style */
     &[data-style="minimal"] article {
-      padding: var(--spacing-md) 0;
+      padding: var(--size-m) 0;
       border-block-start: 1px solid var(--border);
     }
 

@@ -59,7 +59,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 @layer layout {
   layout-stack,
   .stack {
-    --stack-gap: var(--spacing-md, 1rem);
+    --stack-gap: var(--size-m);
 
     display: flex;
     flex-direction: column;
@@ -90,32 +90,32 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 
   layout-stack[data-gap="xs"],
   .stack[data-gap="xs"] {
-    --stack-gap: var(--spacing-xs, 0.25rem);
+    --stack-gap: var(--size-2xs);
   }
 
   layout-stack[data-gap="sm"],
   .stack[data-gap="sm"] {
-    --stack-gap: var(--spacing-sm, 0.5rem);
+    --stack-gap: var(--size-xs);
   }
 
   layout-stack[data-gap="md"],
   .stack[data-gap="md"] {
-    --stack-gap: var(--spacing-md, 1rem);
+    --stack-gap: var(--size-m);
   }
 
   layout-stack[data-gap="lg"],
   .stack[data-gap="lg"] {
-    --stack-gap: var(--spacing-lg, 1.5rem);
+    --stack-gap: var(--size-l);
   }
 
   layout-stack[data-gap="xl"],
   .stack[data-gap="xl"] {
-    --stack-gap: var(--spacing-xl, 2rem);
+    --stack-gap: var(--size-xl);
   }
 
   layout-stack[data-gap="2xl"],
   .stack[data-gap="2xl"] {
-    --stack-gap: var(--spacing-2xl, 3rem);
+    --stack-gap: var(--size-2xl);
   }
 
   /* Recursive - applies to nested stacks too */
@@ -159,7 +159,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
   /* Custom gap on specific item */
   layout-stack [data-gap-above],
   .stack [data-gap-above] {
-    margin-block-start: var(--spacing-2xl, 3rem);
+    margin-block-start: var(--size-2xl);
   }
 }
 ```

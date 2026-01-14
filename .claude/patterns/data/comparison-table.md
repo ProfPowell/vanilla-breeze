@@ -142,7 +142,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
   }
 
   comparison-table th {
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
     text-align: center;
     vertical-align: bottom;
     border-block-end: 2px solid var(--border, oklch(0.85 0 0));
@@ -171,7 +171,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
     font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
     color: var(--text-muted);
-    margin-block-start: var(--spacing-xs);
+    margin-block-start: var(--size-2xs);
   }
 
   /* Recommended column */
@@ -198,18 +198,18 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
 
   comparison-table [data-badge] {
     display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-xs);
     font-weight: var(--font-weight-semibold);
     background: var(--primary);
     color: var(--primary-contrast);
     border-radius: var(--radius-full);
-    margin-block-end: var(--spacing-sm);
+    margin-block-end: var(--size-xs);
   }
 
   /* Body */
   comparison-table tbody td {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--size-m) var(--size-l);
     text-align: center;
     border-block-end: 1px solid var(--border, oklch(0.9 0 0));
   }
@@ -227,7 +227,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
 
   /* Group headers */
   comparison-table tr[data-group-header] td {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--size-m) var(--size-l);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
@@ -262,14 +262,14 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
 
   /* Footer / CTAs */
   comparison-table tfoot td {
-    padding: var(--spacing-lg);
+    padding: var(--size-l);
     text-align: center;
     border-block-start: 2px solid var(--border);
   }
 
   comparison-table [data-cta] {
     display: inline-block;
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--size-xs) var(--size-l);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
@@ -318,7 +318,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
   comparison-table::after {
     content: "Scroll to see more →";
     display: block;
-    padding: var(--spacing-sm);
+    padding: var(--size-xs);
     text-align: center;
     font-size: var(--text-sm);
     color: var(--text-muted);

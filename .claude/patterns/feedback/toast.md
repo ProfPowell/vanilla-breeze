@@ -75,8 +75,8 @@ Toasts require JavaScript to function. Provide `<output>` for screen reader anno
     z-index: var(--z-toast, 1100);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    gap: var(--size-xs);
+    padding: var(--size-m);
     pointer-events: none;
     max-width: 24rem;
     width: 100%;
@@ -122,8 +122,8 @@ Toasts require JavaScript to function. Provide `<output>` for screen reader anno
   toast-message {
     display: flex;
     align-items: flex-start;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    gap: var(--size-xs);
+    padding: var(--size-m);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -158,7 +158,7 @@ Toasts require JavaScript to function. Provide `<output>` for screen reader anno
       padding: 0;
       cursor: pointer;
       text-decoration: underline;
-      margin-block-start: var(--spacing-xs);
+      margin-block-start: var(--size-2xs);
 
       &:hover {
         text-decoration: none;

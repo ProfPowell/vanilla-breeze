@@ -239,7 +239,7 @@ Use the element as a semantic styling hook without JavaScript:
 ```css
 product-card {
   display: block;  /* Required: browsers default to inline */
-  padding: var(--spacing-lg);
+  padding: var(--size-l);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
@@ -358,7 +358,7 @@ For one-off custom elements, use the `x-*` prefix (e.g., `<x-highlight>`). These
 ```css
 x-highlight {
   background: var(--warning-light);
-  padding-inline: var(--spacing-xs);
+  padding-inline: var(--size-2xs);
 }
 ```
 

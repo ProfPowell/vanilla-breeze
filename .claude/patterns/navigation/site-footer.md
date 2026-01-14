@@ -125,8 +125,8 @@ Primary footer for site-wide information. Contains navigation links, contact inf
 @layer components {
   site-footer {
     display: grid;
-    gap: var(--spacing-xl);
-    padding: var(--spacing-xl) var(--spacing-lg);
+    gap: var(--size-xl);
+    padding: var(--size-xl) var(--size-l);
     background: var(--surface-alt);
     border-block-start: 1px solid var(--border);
 
@@ -134,7 +134,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
     & nav {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-      gap: var(--spacing-xl);
+      gap: var(--size-xl);
     }
 
     & nav section h2 {
@@ -143,7 +143,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
-      margin-block-end: var(--spacing-md);
+      margin-block-end: var(--size-m);
     }
 
     & nav ul {
@@ -152,7 +152,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
     }
 
     & nav a {
@@ -168,7 +168,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
     /* Social links */
     & [data-social] {
       display: flex;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
       justify-content: center;
     }
 
@@ -198,25 +198,25 @@ Primary footer for site-wide information. Contains navigation links, contact inf
 
     & [data-newsletter] label {
       display: block;
-      margin-block-end: var(--spacing-sm);
+      margin-block-end: var(--size-xs);
       font-weight: var(--font-weight-medium);
     }
 
     & [data-newsletter] > div {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: var(--size-xs);
     }
 
     & [data-newsletter] input {
       flex: 1;
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--size-xs) var(--size-m);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       background: var(--surface);
     }
 
     & [data-newsletter] button {
-      padding: var(--spacing-sm) var(--spacing-lg);
+      padding: var(--size-xs) var(--size-l);
       background: var(--primary);
       color: var(--primary-contrast);
       border: none;
@@ -235,8 +235,8 @@ Primary footer for site-wide information. Contains navigation links, contact inf
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: var(--spacing-md);
-      padding-block-start: var(--spacing-lg);
+      gap: var(--size-m);
+      padding-block-start: var(--size-l);
       border-block-start: 1px solid var(--border);
       font-size: var(--text-sm);
       color: var(--text-muted);
@@ -244,7 +244,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
 
     & [data-legal] ul {
       display: flex;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
       list-style: none;
       margin: 0;
       padding: 0;
@@ -262,7 +262,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
 
     /* Style variants */
     &[data-style="minimal"] {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
 
       & nav {
         display: none;
@@ -274,7 +274,7 @@ Primary footer for site-wide information. Contains navigation links, contact inf
     }
 
     &[data-style="extended"] {
-      padding: var(--spacing-2xl) var(--spacing-xl);
+      padding: var(--size-2xl) var(--size-xl);
     }
   }
 

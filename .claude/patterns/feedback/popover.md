@@ -77,7 +77,7 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
   /* Popover base styles */
   [popover] {
     margin: 0;
-    padding: var(--spacing-sm);
+    padding: var(--size-xs);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--surface);
@@ -104,25 +104,25 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
     &[data-position="bottom"] {
       top: 100%;
       left: 0;
-      margin-block-start: var(--spacing-xs);
+      margin-block-start: var(--size-2xs);
     }
 
     &[data-position="top"] {
       bottom: 100%;
       left: 0;
-      margin-block-end: var(--spacing-xs);
+      margin-block-end: var(--size-2xs);
     }
 
     &[data-position="left"] {
       right: 100%;
       top: 0;
-      margin-inline-end: var(--spacing-xs);
+      margin-inline-end: var(--size-2xs);
     }
 
     &[data-position="right"] {
       left: 100%;
       top: 0;
-      margin-inline-start: var(--spacing-xs);
+      margin-inline-start: var(--size-2xs);
     }
   }
 
@@ -136,8 +136,8 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
   popover-menu nav button {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--size-xs);
+    padding: var(--size-xs) var(--size-m);
     color: var(--text);
     text-decoration: none;
     background: none;
@@ -160,7 +160,7 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
   }
 
   popover-menu nav hr {
-    margin: var(--spacing-xs) 0;
+    margin: var(--size-2xs) 0;
     border: none;
     border-top: 1px solid var(--border);
   }
@@ -173,8 +173,8 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
   popover-menu > button {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--size-xs);
+    padding: var(--size-xs) var(--size-m);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -195,7 +195,7 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
 
   /* Tooltip variant */
   [popover].tooltip {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--size-2xs) var(--size-xs);
     font-size: var(--text-sm);
     background: var(--surface-dark, oklch(0.2 0 0));
     color: white;

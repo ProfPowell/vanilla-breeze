@@ -109,7 +109,7 @@ Design tokens provide:
 | Category | Purpose | Examples |
 |----------|---------|----------|
 | Colors | Brand, semantic, surface colors | `--primary`, `--error` |
-| Spacing | Consistent gaps and padding | `--spacing-sm`, `--spacing-lg` |
+| Spacing | Consistent gaps and padding | `--size-xs`, `--size-l` |
 | Typography | Font sizes, weights, heights | `--font-size-lg`, `--line-height-normal` |
 | Effects | Shadows, transitions, borders | `--shadow-md`, `--transition-normal` |
 | Layout | Widths, breakpoints | `--content-width`, `--sidebar-width` |
@@ -320,13 +320,13 @@ button {
 
     /* ==================== SPACING ==================== */
 
-    --spacing-xs: 0.25rem;   /* 4px */
-    --spacing-sm: 0.5rem;    /* 8px */
-    --spacing-md: 1rem;      /* 16px */
-    --spacing-lg: 1.5rem;    /* 24px */
-    --spacing-xl: 2rem;      /* 32px */
-    --spacing-2xl: 3rem;     /* 48px */
-    --spacing-3xl: 4rem;     /* 64px */
+    --size-2xs: 0.25rem;   /* 4px */
+    --size-xs: 0.5rem;    /* 8px */
+    --size-m: 1rem;      /* 16px */
+    --size-l: 1.5rem;    /* 24px */
+    --size-xl: 2rem;      /* 32px */
+    --size-2xl: 3rem;     /* 48px */
+    --size-3xl: 4rem;     /* 64px */
 
     /* ==================== TYPOGRAPHY ==================== */
 
@@ -424,17 +424,17 @@ For sites with theme toggle UI that override system preference, use CSS `:has()`
   --form-border: var(--border);
   --form-focus: var(--primary);
   --form-invalid: var(--error);
-  --form-input-padding: var(--spacing-sm) var(--spacing-md);
+  --form-input-padding: var(--size-xs) var(--size-m);
   --form-input-radius: var(--radius-md);
 
   /* Button tokens */
-  --button-padding: var(--spacing-sm) var(--spacing-lg);
+  --button-padding: var(--size-xs) var(--size-l);
   --button-radius: var(--radius-md);
   --button-primary-bg: var(--primary);
   --button-primary-text: var(--text-inverted);
 
   /* Card tokens */
-  --card-padding: var(--spacing-lg);
+  --card-padding: var(--size-l);
   --card-radius: var(--radius-lg);
   --card-shadow: var(--shadow-sm);
   --card-bg: var(--surface);
@@ -455,7 +455,7 @@ For sites with theme toggle UI that override system preference, use CSS `:has()`
 |-------|--------|
 | `--blue`, `--primary-color` | `--primary` |
 | `--red`, `--error-color` | `--error` |
-| `--16px` | `--spacing-md` |
+| `--16px` | `--size-m` |
 | `#2563eb` (hex in code) | `var(--primary)` |
 
 ---
@@ -693,7 +693,7 @@ Reference the scoping root itself:
   :scope {
     /* Styles the <blog-card> element */
     display: grid;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   h3 {
@@ -731,7 +731,7 @@ Combine scope and layers for full control:
   @scope (product-card) {
     :scope {
       container-type: inline-size;
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
     }
 
     img {
@@ -844,11 +844,11 @@ nav a:hover { }
 nav {
   & ul {
     display: flex;
-    gap: var(--spacing-lg);
+    gap: var(--size-l);
   }
 
   & a {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--size-xs) var(--size-m);
 
     &:hover {
       background: var(--overlay-light);
@@ -874,10 +874,10 @@ Media queries can be nested inside selectors:
 
 ```css
 header {
-  padding: var(--spacing-lg);
+  padding: var(--size-l);
 
   @media (max-width: 768px) {
-    padding: var(--spacing-md);
+    padding: var(--size-m);
   }
 }
 ```
@@ -961,7 +961,7 @@ Use classes sparingly for:
 @layer components {
   gallery-grid {
     display: grid;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
 
     &[data-columns="2"] { grid-template-columns: repeat(2, 1fr); }
     &[data-columns="3"] { grid-template-columns: repeat(3, 1fr); }
@@ -1202,7 +1202,7 @@ Container queries integrate naturally with the layer system:
   blog-card {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--size-m);
   }
 
   /* Container-responsive layout */
@@ -1231,8 +1231,8 @@ Make components that adapt without external configuration:
     container-type: inline-size;
 
     display: grid;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    gap: var(--size-m);
+    padding: var(--size-l);
   }
 
   /* Compact layout (narrow) */
@@ -1305,10 +1305,10 @@ sidebar-panel {
   container-type: inline-size;
 
   & blog-card {
-    padding: var(--spacing-md);
+    padding: var(--size-m);
 
     @container (min-width: 350px) {
-      padding: var(--spacing-lg);
+      padding: var(--size-l);
       display: grid;
       grid-template-columns: 100px 1fr;
     }
@@ -1350,7 +1350,7 @@ Subgrid allows nested elements to participate in their parent's grid, enabling a
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-lg);
+  gap: var(--size-l);
 }
 
 /* Card spans parent columns, subgrids rows */
@@ -1364,7 +1364,7 @@ Subgrid allows nested elements to participate in their parent's grid, enabling a
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto 1fr auto;  /* Define rows at parent level */
-  gap: var(--spacing-lg);
+  gap: var(--size-l);
 }
 
 .card {
@@ -1382,7 +1382,7 @@ Align labels and inputs across form fields:
 form {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: var(--spacing-md);
+  gap: var(--size-m);
 }
 
 form-field {
@@ -1410,14 +1410,14 @@ product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-auto-rows: auto 1fr auto;  /* image, details, actions */
-  gap: var(--spacing-lg);
+  gap: var(--size-l);
 }
 
 product-card {
   display: grid;
   grid-row: span 3;
   grid-template-rows: subgrid;
-  gap: var(--spacing-md);
+  gap: var(--size-m);
 }
 
 product-card img { grid-row: 1; }
@@ -1555,12 +1555,12 @@ margin-inline: 1rem;       /* left and right */
 Same pattern as margins:
 
 ```css
-padding-block: var(--spacing-lg);
-padding-inline: var(--spacing-md);
+padding-block: var(--size-l);
+padding-inline: var(--size-m);
 
 /* Individual sides */
-padding-block-start: var(--spacing-lg);
-padding-inline-end: var(--spacing-sm);
+padding-block-start: var(--size-l);
+padding-inline-end: var(--size-xs);
 ```
 
 #### Sizing
@@ -1635,7 +1635,7 @@ blog-card {
 ```css
 /* Space between icon and text, flips in RTL */
 button svg {
-  margin-inline-end: var(--spacing-sm);
+  margin-inline-end: var(--size-xs);
 }
 ```
 
@@ -1650,7 +1650,7 @@ main-layout {
 
 sidebar-panel {
   border-inline-end: 1px solid var(--border);
-  padding-inline-end: var(--spacing-lg);
+  padding-inline-end: var(--size-l);
 }
 ```
 
@@ -1660,7 +1660,7 @@ sidebar-panel {
 /* Accent border on start edge */
 blog-card[data-featured] {
   border-inline-start: 4px solid var(--primary);
-  padding-inline-start: var(--spacing-lg);
+  padding-inline-start: var(--size-l);
 }
 ```
 
@@ -1718,18 +1718,18 @@ Define spacing tokens and use them with logical properties:
 ```css
 /* _tokens.css */
 :root {
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
+  --size-2xs: 0.25rem;
+  --size-xs: 0.5rem;
+  --size-m: 1rem;
+  --size-l: 1.5rem;
+  --size-xl: 2rem;
 }
 
 /* Component using logical properties with tokens */
 article {
-  padding-block: var(--spacing-xl);
-  padding-inline: var(--spacing-lg);
-  margin-block-end: var(--spacing-lg);
+  padding-block: var(--size-xl);
+  padding-inline: var(--size-l);
+  margin-block-end: var(--size-l);
 }
 ```
 
@@ -1754,8 +1754,8 @@ blog-card {
 @layer components {
   blog-card {
     display: grid;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    gap: var(--size-m);
+    padding: var(--size-l);
     background: var(--surface);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
@@ -1789,7 +1789,7 @@ blog-card {
 
     /* Responsive */
     @media (max-width: 768px) {
-      padding: var(--spacing-md);
+      padding: var(--size-m);
     }
   }
 }

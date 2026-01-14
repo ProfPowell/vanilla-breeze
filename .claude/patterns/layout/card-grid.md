@@ -65,7 +65,7 @@ Responsive grid layout for displaying cards or similar content blocks. Uses CSS 
   card-grid,
   .card-grid {
     --card-grid-min: 16rem;
-    --card-grid-gap: var(--spacing-lg, 1.5rem);
+    --card-grid-gap: var(--size-l);
 
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(var(--card-grid-min), 100%), 1fr));
@@ -149,12 +149,12 @@ Responsive grid layout for displaying cards or similar content blocks. Uses CSS 
 
   card-grid[data-gap="small"],
   .card-grid[data-gap="small"] {
-    --card-grid-gap: var(--spacing-md, 1rem);
+    --card-grid-gap: var(--size-m);
   }
 
   card-grid[data-gap="large"],
   .card-grid[data-gap="large"] {
-    --card-grid-gap: var(--spacing-xl, 2rem);
+    --card-grid-gap: var(--size-xl);
   }
 
   /* Alignment variants */

@@ -46,7 +46,7 @@ Hidden link that becomes visible on focus, allowing keyboard users to skip repet
     top: 0;
     left: 0;
     z-index: var(--z-modal, 1000);
-    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+    padding: var(--size-xs) var(--size-m);
     background: var(--primary, #0066cc);
     color: var(--primary-contrast, #ffffff);
     font-weight: var(--font-weight-medium, 500);
@@ -81,12 +81,12 @@ Hidden link that becomes visible on focus, allowing keyboard users to skip repet
 
     &:focus {
       position: fixed;
-      top: var(--spacing-sm);
-      left: var(--spacing-sm);
+      top: var(--size-xs);
+      left: var(--size-xs);
       z-index: var(--z-modal);
       width: auto;
       height: auto;
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--size-xs) var(--size-m);
       margin: 0;
       overflow: visible;
       clip: auto;

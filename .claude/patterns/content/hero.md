@@ -76,7 +76,7 @@ Large, prominent section typically at the top of a page. Used to introduce conte
 ```css
 @layer components {
   hero-section {
-    --hero-padding: var(--spacing-2xl);
+    --hero-padding: var(--size-2xl);
     --hero-min-height: 60vh;
 
     position: relative;
@@ -124,13 +124,13 @@ Large, prominent section typically at the top of a page. Used to introduce conte
     & h1 {
       font-size: clamp(2rem, 5vw, 4rem);
       line-height: 1.1;
-      margin-block-end: var(--spacing-md);
+      margin-block-end: var(--size-m);
     }
 
     & p {
       font-size: clamp(1.125rem, 2vw, 1.5rem);
       line-height: 1.5;
-      margin-block-end: var(--spacing-lg);
+      margin-block-end: var(--size-l);
       opacity: 0.9;
     }
 
@@ -138,14 +138,14 @@ Large, prominent section typically at the top of a page. Used to introduce conte
     & [data-actions] {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-md);
+      gap: var(--size-m);
     }
 
     & [data-button] {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md) var(--spacing-xl);
+      gap: var(--size-xs);
+      padding: var(--size-m) var(--size-xl);
       font-size: var(--text-lg);
       font-weight: var(--font-weight-medium);
       text-decoration: none;
@@ -171,7 +171,7 @@ Large, prominent section typically at the top of a page. Used to introduce conte
     /* Size variants */
     &[data-size="small"] {
       --hero-min-height: 40vh;
-      --hero-padding: var(--spacing-xl);
+      --hero-padding: var(--size-xl);
     }
 
     &[data-size="medium"] {
@@ -214,7 +214,7 @@ Large, prominent section typically at the top of a page. Used to introduce conte
     &[data-layout="split"] {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: var(--spacing-2xl);
+      gap: var(--size-2xl);
 
       &::before {
         display: none;
@@ -256,7 +256,7 @@ Large, prominent section typically at the top of a page. Used to introduce conte
   /* Mobile responsive */
   @media (max-width: 768px) {
     hero-section {
-      --hero-padding: var(--spacing-xl) var(--spacing-lg);
+      --hero-padding: var(--size-xl) var(--size-l);
 
       &[data-layout="split"] {
         grid-template-columns: 1fr;

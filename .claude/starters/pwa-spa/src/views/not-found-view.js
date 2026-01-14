@@ -41,22 +41,22 @@ class NotFoundView extends BaseView {
       h1 {
         font-size: 6rem;
         color: var(--primary, #1e40af);
-        margin-block-end: var(--spacing-sm, 0.5rem);
+        margin-block-end: var(--size-xs);
       }
 
       [data-role="title"] {
         font-size: var(--font-size-xl, 1.5rem);
         color: var(--text, #111);
-        margin-block-end: var(--spacing-md, 1rem);
+        margin-block-end: var(--size-m);
       }
 
       [data-role="message"] {
-        margin-block-end: var(--spacing-xl, 2rem);
+        margin-block-end: var(--size-xl);
       }
 
       [data-variant="primary"] {
         display: inline-flex;
-        padding: var(--spacing-sm, 0.5rem) var(--spacing-lg, 1.5rem);
+        padding: var(--size-xs) var(--size-l);
         background: var(--primary, #1e40af);
         color: white;
         text-decoration: none;

@@ -54,7 +54,7 @@ Container utility that constrains content to a maximum width and centers it hori
     --content-width-narrow: 40rem;
     --content-width-default: 65rem;
     --content-width-wide: 80rem;
-    --content-padding: var(--spacing-lg, 1.5rem);
+    --content-padding: var(--size-l);
 
     display: block;
     width: 100%;
@@ -87,7 +87,7 @@ Container utility that constrains content to a maximum width and centers it hori
 
   content-width[data-padding="large"],
   .content-width[data-padding="large"] {
-    padding-inline: var(--spacing-xl, 2rem);
+    padding-inline: var(--size-xl);
   }
 
   /* Prose optimization for narrow content */
