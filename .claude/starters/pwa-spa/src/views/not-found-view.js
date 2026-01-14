@@ -18,7 +18,7 @@ class NotFoundView extends BaseView {
         <p data-role="message">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <a href="/" data-link data-variant="primary">Go to Home</a>
+        <a href="/" data-link class="button">Go to Home</a>
       </section>
     `;
   }
@@ -54,7 +54,7 @@ class NotFoundView extends BaseView {
         margin-block-end: var(--size-xl);
       }
 
-      [data-variant="primary"] {
+      button {
         display: inline-flex;
         padding: var(--size-xs) var(--size-l);
         background: var(--primary, #1e40af);

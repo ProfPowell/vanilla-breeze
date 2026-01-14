@@ -187,13 +187,13 @@ class DetailView extends HTMLElement {
           cursor: pointer;
         }
 
-        [data-variant="primary"] {
+        button {
           background: var(--primary, #1e40af);
           color: var(--primary-foreground, #fff);
           border: none;
         }
 
-        [data-variant="secondary"] {
+        button.secondary {
           background: transparent;
           color: var(--text, #1a1a1a);
           border: 1px solid var(--border, #e5e5e5);
@@ -221,8 +221,8 @@ class DetailView extends HTMLElement {
         </div>
 
         <nav data-role="actions">
-          <button type="button" data-variant="primary">Edit</button>
-          <button type="button" data-variant="secondary">Duplicate</button>
+          <button type="button">Edit</button>
+          <button type="button" class="secondary">Duplicate</button>
           <button type="button" data-variant="danger">Delete</button>
         </nav>
       </article>

@@ -131,13 +131,13 @@ class SettingsView extends HTMLElement {
           cursor: pointer;
         }
 
-        [data-variant="primary"] {
+        button {
           background: var(--primary, #1e40af);
           color: var(--primary-foreground, #fff);
           border: none;
         }
 
-        [data-variant="primary"]:hover {
+        button:hover {
           background: var(--primary-hover, #1e3a8a);
         }
 
@@ -197,7 +197,7 @@ class SettingsView extends HTMLElement {
           </div>
 
           <nav data-role="actions">
-            <button type="submit" data-variant="primary">Save Changes</button>
+            <button type="submit">Save Changes</button>
             <button type="button" id="logout-btn" data-variant="danger">Log Out</button>
           </nav>
         </form>

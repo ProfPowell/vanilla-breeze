@@ -40,7 +40,7 @@ class SettingsView extends BaseView {
         </fieldset>
 
         <nav data-role="actions">
-          <button type="submit" data-variant="primary">Save Settings</button>
+          <button type="submit">Save Settings</button>
         </nav>
       </form>
     `;
@@ -104,7 +104,7 @@ class SettingsView extends BaseView {
         margin-block-start: var(--size-xl);
       }
 
-      [data-variant="primary"] {
+      button {
         padding: var(--size-xs) var(--size-l);
         background: var(--primary, #1e40af);
         color: white;
@@ -115,7 +115,7 @@ class SettingsView extends BaseView {
         cursor: pointer;
       }
 
-      [data-variant="primary"]:hover {
+      button:hover {
         background: var(--primary-hover, #1e3a8a);
       }
     `;

@@ -25,11 +25,11 @@ This creates a clean **HTML/CSS/JS bridge** where markup declares intent, CSS re
 |--------|---------|-----------------|
 | **Semantics** | Presentation-focused | Meaning-focused |
 | **State** | `.is-active`, `.is-loading` | `data-state="active"` |
-| **Variants** | `.btn-primary`, `.btn-large` | `data-variant="primary"` |
+| **Variants** | `.btn-primary`, `.btn-large` | `button.secondary`, `button.small` |
 | **JS Access** | `classList.toggle('active')` | `dataset.state = "active"` |
 | **Validation** | Cannot validate values | Can define allowed values |
 | **Readability** | Class soup | Self-documenting |
-| **CSS Selectors** | `.btn.primary.large` | `button[data-variant="primary"]` |
+| **CSS Selectors** | `.btn.primary.large` | `button.secondary` |
 
 ---
 
@@ -413,7 +413,7 @@ Define allowed data attributes and their values:
 | Pattern | Examples |
 |---------|----------|
 | `data-type` | `data-type="success"`, `data-type="warning"` |
-| `data-variant` | `data-variant="primary"`, `data-variant="outline"` |
+| Element classes | `button.secondary`, `button.ghost`, `button.small` |
 | `data-{category}` | `data-topic="css"`, `data-size="large"` |
 
 ### Configuration Attributes

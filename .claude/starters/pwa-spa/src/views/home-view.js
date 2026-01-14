@@ -16,8 +16,8 @@ class HomeView extends BaseView {
         <h1>Welcome to {{DISPLAY_NAME}}</h1>
         <p data-role="lead">{{DESCRIPTION}}</p>
         <nav aria-label="Get started">
-          <a href="/about" data-link data-variant="primary">Learn More</a>
-          <a href="/settings" data-link data-variant="secondary">Settings</a>
+          <a href="/about" data-link class="button">Learn More</a>
+          <a href="/settings" data-link class="button secondary">Settings</a>
         </nav>
       </header>
 
@@ -73,8 +73,8 @@ class HomeView extends BaseView {
         flex-wrap: wrap;
       }
 
-      [data-variant="primary"],
-      [data-variant="secondary"] {
+      button,
+      button.secondary {
         display: inline-flex;
         padding: var(--size-xs) var(--size-l);
         border-radius: var(--radius-md, 0.25rem);
@@ -82,12 +82,12 @@ class HomeView extends BaseView {
         font-weight: 500;
       }
 
-      [data-variant="primary"] {
+      button {
         background: var(--primary, #1e40af);
         color: white;
       }
 
-      [data-variant="secondary"] {
+      button.secondary {
         background: transparent;
         color: var(--primary, #1e40af);
         border: 1px solid var(--primary, #1e40af);

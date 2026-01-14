@@ -67,7 +67,7 @@ class ListView extends HTMLElement {
           outline-offset: 2px;
         }
 
-        [data-variant="primary"] {
+        button {
           display: inline-flex;
           align-items: center;
           gap: var(--space-2, 0.5rem);
@@ -81,7 +81,7 @@ class ListView extends HTMLElement {
           cursor: pointer;
         }
 
-        [data-variant="primary"]:hover {
+        button:hover {
           background: var(--primary-hover, #1e3a8a);
         }
 
@@ -102,7 +102,7 @@ class ListView extends HTMLElement {
             placeholder="Search items..."
             aria-label="Search items"
           />
-          <button type="button" data-variant="primary">
+          <button type="button">
             <span aria-hidden="true">+</span>
             Add Item
           </button>
