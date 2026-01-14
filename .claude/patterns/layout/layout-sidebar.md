@@ -27,13 +27,13 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 
 ### Sticky
 
-**Attribute:** `data-sticky-sidebar`
+**Attribute:** ``
 **Values:** (boolean attribute)
 
 ## Baseline HTML
 
 ```html
-<div class="sidebar-layout">
+<div class="layout-sidebar">
   <aside>
     <nav aria-label="Section">
       <ul>
@@ -56,7 +56,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 ## Enhanced HTML
 
 ```html
-<sidebar-layout data-sidebar="start" data-sticky-sidebar>
+<layout-sidebar  >
   <button commandfor="sidebar" command="toggle-popover" aria-label="Toggle sidebar" data-sidebar-toggle>
     <x-icon name="menu" />
   </button>
@@ -79,14 +79,14 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
       <section id="api">...</section>
     </article>
   </main>
-</sidebar-layout>
+</layout-sidebar>
 ```
 
 ## CSS
 
 ```css
 @layer components {
-  sidebar-layout {
+  layout-sidebar {
     --sidebar-width: 16rem;
 
     display: grid;
@@ -141,7 +141,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
     }
 
     /* End sidebar variant */
-    &[data-sidebar="end"] {
+    &[data-side="end"] {
       grid-template-columns: 1fr var(--sidebar-width);
 
       & > aside {
@@ -152,7 +152,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
     }
 
     /* Sticky sidebar */
-    &[data-sticky-sidebar] > aside {
+    &[] > aside {
       position: sticky;
       top: var(--size-l);
       align-self: start;
@@ -163,7 +163,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 
   /* Mobile responsive */
   @media (max-width: 768px) {
-    sidebar-layout {
+    layout-sidebar {
       display: block;
 
       & [data-sidebar-toggle] {
@@ -205,7 +205,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
         padding: var(--size-m);
       }
 
-      &[data-sidebar="end"] > aside {
+      &[data-side="end"] > aside {
         inset-inline-start: auto;
         inset-inline-end: 0;
         border-inline-start: 1px solid var(--border);
@@ -229,7 +229,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 ### Documentation Sidebar
 
 ```html
-<sidebar-layout data-sidebar="start" data-sticky-sidebar>
+<layout-sidebar  >
   <aside>
     <nav aria-label="Documentation">
       <h2>Getting Started</h2>
@@ -247,13 +247,13 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
   <main>
     <!-- Documentation content -->
   </main>
-</sidebar-layout>
+</layout-sidebar>
 ```
 
 ### Filters Sidebar (E-commerce)
 
 ```html
-<sidebar-layout data-sidebar="start">
+<layout-sidebar >
   <aside>
     <form aria-label="Filters">
       <fieldset>
@@ -269,13 +269,13 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
   <main>
     <!-- Product grid -->
   </main>
-</sidebar-layout>
+</layout-sidebar>
 ```
 
 ### Right Sidebar (Table of Contents)
 
 ```html
-<sidebar-layout data-sidebar="end" data-sticky-sidebar>
+<layout-sidebar data-side="end" >
   <main>
     <!-- Article content -->
   </main>
@@ -284,11 +284,11 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
       <!-- TOC links -->
     </nav>
   </aside>
-</sidebar-layout>
+</layout-sidebar>
 ```
 
 ## Related Patterns
 
-- [page-shell](./page-shell.md)
+- [layout-stack.page](./layout-stack.md)
 - [nav-menu](../navigation/nav-menu.md)
 - [table-of-contents](../navigation/table-of-contents.md)

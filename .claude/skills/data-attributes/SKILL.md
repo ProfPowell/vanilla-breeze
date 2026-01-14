@@ -99,7 +99,7 @@ Configure component behavior or layout:
 
 ```html
 <!-- Grid configuration -->
-<gallery-grid data-columns="3" data-gap="md">...</gallery-grid>
+<gallery-grid data-columns="3" data-gap="m">...</gallery-grid>
 
 <!-- Animation settings -->
 <carousel data-autoplay data-interval="5000">...</carousel>
@@ -420,7 +420,7 @@ Define allowed data attributes and their values:
 
 | Pattern | Examples |
 |---------|----------|
-| `data-{property}` | `data-columns="3"`, `data-gap="md"` |
+| `data-{property}` | `data-columns="3"`, `data-gap="m"` |
 | `data-{setting}` | `data-autoplay`, `data-loop` |
 
 ---

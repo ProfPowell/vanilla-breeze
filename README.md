@@ -44,7 +44,7 @@ These components enhance documentation but are **not part of the core library**.
 * tree view -  Modify lists to work with tree structure may be a wrapper component or data- modifier.  The main issue is likely state management of the tree and that may call for JavaScript
 
 Consult the file 
-[component-taxonomy.md](component-taxonomy.md) for information about the components that exist and relation to HTML and vanilla-breeze solutions
+[component-taxonomy.md](zz-old/component-taxonomy.md) for information about the components that exist and relation to HTML and vanilla-breeze solutions
 
 ### Theme Builder
 

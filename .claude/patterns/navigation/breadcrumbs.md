@@ -221,5 +221,5 @@ Add structured data for SEO:
 ## Related Patterns
 
 - [site-header](./site-header.md)
-- [page-shell](../layout/page-shell.md)
+- [layout-stack](../layout/layout-stack.md)
 - [nav-menu](./nav-menu.md)

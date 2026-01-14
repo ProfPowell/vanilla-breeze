@@ -481,5 +481,5 @@ customElements.define('tree-view', TreeView);
 ## Related Patterns
 
 - [nav-menu](../navigation/nav-menu.md)
-- [sidebar-layout](../layout/sidebar-layout.md)
+- [layout-sidebar](../layout/layout-sidebar.md)
 - [data-list](./data-list.md)

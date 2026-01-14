@@ -57,7 +57,7 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
 ## Enhanced HTML
 
 ```html
-<dashboard-layout data-sidebar="start">
+<dashboard-layout >
   <header data-header>
     <a href="/" data-logo>AppName</a>
     <nav aria-label="Primary">
@@ -129,8 +129,8 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
   }
 
   /* End sidebar variant */
-  dashboard-layout[data-sidebar="end"],
-  .dashboard-layout[data-sidebar="end"] {
+  dashboard-layout[data-side="end"],
+  .dashboard-layout[data-side="end"] {
     grid-template-areas:
       "header header"
       "main sidebar";
@@ -378,7 +378,7 @@ customElements.define('dashboard-layout', DashboardLayout);
 ### Standard Dashboard
 
 ```html
-<dashboard-layout data-sidebar="start">
+<dashboard-layout >
   <header data-header>
     <a href="/" data-logo>Admin</a>
     <nav>
@@ -429,6 +429,6 @@ customElements.define('dashboard-layout', DashboardLayout);
 
 ## Related Patterns
 
-- [sidebar-layout](../navigation/sidebar-layout.md)
+- [layout-sidebar](../navigation/layout-sidebar.md)
 - [site-header](../navigation/site-header.md)
-- [page-shell](../navigation/page-shell.md)
+- [layout-stack](../navigation/layout-stack.md)

@@ -257,6 +257,6 @@ Two-column layout that divides content into primary and secondary areas. Commonl
 
 ## Related Patterns
 
-- [sidebar-layout](../navigation/sidebar-layout.md)
+- [layout-sidebar](../navigation/layout-sidebar.md)
 - [feature-grid](../content/feature-grid.md)
 - [hero](../content/hero.md)

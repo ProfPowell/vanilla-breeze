@@ -87,7 +87,7 @@ Create a new pattern in the pattern library.
 | navigation | Wayfinding | site-header, breadcrumbs, tabs |
 | content | Display | hero, card, testimonial, faq-list |
 | feedback | Status | alert, toast, modal, skeleton |
-| layout | Structure | page-shell, sidebar-layout, card-grid |
+| layout | Structure | layout-stack, layout-sidebar, card-grid |
 | data | Data display | data-table, tree-view, calendar |
 
 ## Notes

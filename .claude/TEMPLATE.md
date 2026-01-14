@@ -193,7 +193,7 @@ bd close <id>
 | Category | Patterns |
 |----------|----------|
 | **Navigation** | site-header, site-footer, breadcrumbs, skip-link |
-| **Layout** | page-shell, sidebar-layout, dashboard-layout, split-layout, card-grid, masonry, stack, cluster, content-width, full-bleed, divider, spacer |
+| **Layout** | layout-stack, layout-sidebar, dashboard-layout, split-layout, card-grid, masonry, stack, cluster, content-width, full-bleed, divider, spacer |
 | **Content** | hero, card, blog-card, product-card, testimonial, stats, cta, logo-cloud, feature-grid, faq-list |
 | **Feedback** | alert, banner, toast, modal, popover, empty-state, skeleton, progress-bar |
 | **Data** | data-table, data-list, definition-list, key-value, comparison-table, tree-view, calendar, chart-wrapper |

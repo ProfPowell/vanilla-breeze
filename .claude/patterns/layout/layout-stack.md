@@ -64,7 +64,7 @@ Standard page layout container providing consistent structure with header, main 
   <title>Page Title</title>
 </head>
 <body>
-  <page-shell data-layout="standard">
+  <layout-stack class="page">
     <skip-link href="#main">Skip to main content</skip-link>
 
     <site-header data-sticky>
@@ -80,7 +80,7 @@ Standard page layout container providing consistent structure with header, main 
     <site-footer>
       <!-- footer content -->
     </site-footer>
-  </page-shell>
+  </layout-stack>
 </body>
 </html>
 ```
@@ -89,7 +89,7 @@ Standard page layout container providing consistent structure with header, main 
 
 ```css
 @layer components {
-  page-shell {
+  layout-stack.page {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
@@ -141,17 +141,17 @@ Standard page layout container providing consistent structure with header, main 
   }
 
   /* Ensure header and footer span full width */
-  page-shell > site-header,
-  page-shell > header,
-  page-shell > site-footer,
-  page-shell > footer {
+  layout-stack.page > site-header,
+  layout-stack.page > header,
+  layout-stack.page > site-footer,
+  layout-stack.page > footer {
     width: 100%;
   }
 }
 
-/* Body reset when using page-shell */
+/* Body reset when using layout-stack.page */
 @layer base {
-  body:has(page-shell) {
+  body:has(layout-stack.page) {
     margin: 0;
     padding: 0;
   }
@@ -170,7 +170,7 @@ Standard page layout container providing consistent structure with header, main 
 ### Standard Page
 
 ```html
-<page-shell data-layout="standard">
+<layout-stack class="page">
   <skip-link href="#main">Skip to main content</skip-link>
 
   <site-header data-sticky>
@@ -193,23 +193,23 @@ Standard page layout container providing consistent structure with header, main 
       <p>&copy; 2025 Company</p>
     </div>
   </site-footer>
-</page-shell>
+</layout-stack>
 ```
 
 ### Full Width Layout
 
 ```html
-<page-shell data-layout="full-width">
+<layout-stack class="page">
   <!-- For landing pages, dashboards with full-width sections -->
-</page-shell>
+</layout-stack>
 ```
 
 ### Centered Content Layout
 
 ```html
-<page-shell data-layout="centered">
+<layout-stack class="page">
   <!-- For blog posts, documentation, articles -->
-</page-shell>
+</layout-stack>
 ```
 
 ## Related Patterns
@@ -217,4 +217,4 @@ Standard page layout container providing consistent structure with header, main 
 - [site-header](../navigation/site-header.md)
 - [site-footer](../navigation/site-footer.md)
 - [skip-link](../navigation/skip-link.md)
-- [sidebar-layout](./sidebar-layout.md)
+- [layout-sidebar](./layout-sidebar.md)

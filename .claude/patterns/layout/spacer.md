@@ -224,7 +224,7 @@ Invisible layout utility that adds consistent vertical or horizontal space. Use 
 </div>
 
 <!-- ✅ Do: Use stack for consistent spacing -->
-<layout-stack data-gap="sm">
+<layout-stack data-gap="s">
   <p>Text</p>
   <p>More text</p>
   <p>Even more</p>

@@ -1323,105 +1323,211 @@ Replace content after existing examples with:
 <!DOCTYPE html>
 <html lang="en" data-page="docs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Static Table Examples | Vanilla Breeze</title>
-  <link rel="stylesheet" href="../../src/main.css">
-  <link rel="stylesheet" href="../docs.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Static Table Examples | Vanilla Breeze</title>
+	<link rel="stylesheet" href="../../src/main.css">
+	<link rel="stylesheet" href="../docs.css">
 </head>
 <body>
-  <layout-sidebar data-side="left" data-gap="l">
-    <nav class="tree">
-      <ul>
-        <li><a href="../">Documentation</a></li>
-        <li>
-          <a href="../examples/">Examples</a>
-          <ul>
-            <li><strong>Static Table</strong></li>
-            <li><a href="table-interactive.html">Interactive Table</a></li>
-            <li><a href="table-responsive.html">Responsive Table</a></li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
+<layout-sidebar data-side="left" data-gap="l">
+	<nav class="tree">
+		<ul>
+			<li><a href="../..">Documentation</a></li>
+			<li>
+				<a href="../examples/">Examples</a>
+				<ul>
+					<li><strong>Static Table</strong></li>
+					<li><a href="table-interactive.html">Interactive Table</a></li>
+					<li><a href="table-responsive.html">Responsive Table</a></li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
 
-    <main>
-      <h1>Static Table Examples</h1>
-      <p class="lead">CSS-only table features without JavaScript.</p>
+	<main>
+		<h1>Static Table Examples</h1>
+		<p class="lead">CSS-only table features without JavaScript.</p>
 
-      <h2>Sticky Header</h2>
-      <div style="max-height: 300px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
-        <table data-sticky-header>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Department</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Alice</td><td>alice@example.com</td><td>Engineering</td></tr>
-            <tr><td>Bob</td><td>bob@example.com</td><td>Marketing</td></tr>
-            <tr><td>Carol</td><td>carol@example.com</td><td>Sales</td></tr>
-            <tr><td>David</td><td>david@example.com</td><td>Engineering</td></tr>
-            <tr><td>Eve</td><td>eve@example.com</td><td>HR</td></tr>
-            <tr><td>Frank</td><td>frank@example.com</td><td>Marketing</td></tr>
-            <tr><td>Grace</td><td>grace@example.com</td><td>Engineering</td></tr>
-            <tr><td>Henry</td><td>henry@example.com</td><td>Sales</td></tr>
-            <tr><td>Iris</td><td>iris@example.com</td><td>HR</td></tr>
-            <tr><td>Jack</td><td>jack@example.com</td><td>Engineering</td></tr>
-          </tbody>
-        </table>
-      </div>
+		<h2>Sticky Header</h2>
+		<div style="max-height: 300px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
+			<table data-sticky-header>
+				<thead>
+				<tr>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Department</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td>Alice</td>
+					<td>alice@example.com</td>
+					<td>Engineering</td>
+				</tr>
+				<tr>
+					<td>Bob</td>
+					<td>bob@example.com</td>
+					<td>Marketing</td>
+				</tr>
+				<tr>
+					<td>Carol</td>
+					<td>carol@example.com</td>
+					<td>Sales</td>
+				</tr>
+				<tr>
+					<td>David</td>
+					<td>david@example.com</td>
+					<td>Engineering</td>
+				</tr>
+				<tr>
+					<td>Eve</td>
+					<td>eve@example.com</td>
+					<td>HR</td>
+				</tr>
+				<tr>
+					<td>Frank</td>
+					<td>frank@example.com</td>
+					<td>Marketing</td>
+				</tr>
+				<tr>
+					<td>Grace</td>
+					<td>grace@example.com</td>
+					<td>Engineering</td>
+				</tr>
+				<tr>
+					<td>Henry</td>
+					<td>henry@example.com</td>
+					<td>Sales</td>
+				</tr>
+				<tr>
+					<td>Iris</td>
+					<td>iris@example.com</td>
+					<td>HR</td>
+				</tr>
+				<tr>
+					<td>Jack</td>
+					<td>jack@example.com</td>
+					<td>Engineering</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
 
-      <h2>Sticky Column</h2>
-      <div style="max-width: 600px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
-        <table data-sticky-column="1" style="width: 150%;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Department</th>
-              <th>Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Alice</td><td>alice@example.com</td><td>Engineering</td><td>San Francisco</td></tr>
-            <tr><td>2</td><td>Bob</td><td>bob@example.com</td><td>Marketing</td><td>New York</td></tr>
-            <tr><td>3</td><td>Carol</td><td>carol@example.com</td><td>Sales</td><td>Chicago</td></tr>
-          </tbody>
-        </table>
-      </div>
+		<h2>Sticky Column</h2>
+		<div style="max-width: 600px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
+			<table data-sticky-column="1" style="width: 150%;">
+				<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Department</th>
+					<th>Location</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td>1</td>
+					<td>Alice</td>
+					<td>alice@example.com</td>
+					<td>Engineering</td>
+					<td>San Francisco</td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>Bob</td>
+					<td>bob@example.com</td>
+					<td>Marketing</td>
+					<td>New York</td>
+				</tr>
+				<tr>
+					<td>3</td>
+					<td>Carol</td>
+					<td>carol@example.com</td>
+					<td>Sales</td>
+					<td>Chicago</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
 
-      <h2>Both Sticky Header and Column</h2>
-      <div style="max-width: 600px; max-height: 300px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
-        <table data-sticky-header data-sticky-column="1" style="width: 150%;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Department</th>
-              <th>Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Alice</td><td>alice@example.com</td><td>Engineering</td><td>San Francisco</td></tr>
-            <tr><td>2</td><td>Bob</td><td>bob@example.com</td><td>Marketing</td><td>New York</td></tr>
-            <tr><td>3</td><td>Carol</td><td>carol@example.com</td><td>Sales</td><td>Chicago</td></tr>
-            <tr><td>4</td><td>David</td><td>david@example.com</td><td>Engineering</td><td>Austin</td></tr>
-            <tr><td>5</td><td>Eve</td><td>eve@example.com</td><td>HR</td><td>Boston</td></tr>
-            <tr><td>6</td><td>Frank</td><td>frank@example.com</td><td>Marketing</td><td>Seattle</td></tr>
-            <tr><td>7</td><td>Grace</td><td>grace@example.com</td><td>Engineering</td><td>Portland</td></tr>
-            <tr><td>8</td><td>Henry</td><td>henry@example.com</td><td>Sales</td><td>Denver</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </main>
-  </layout-sidebar>
+		<h2>Both Sticky Header and Column</h2>
+		<div style="max-width: 600px; max-height: 300px; overflow: auto; border: var(--border-width-thin) solid var(--color-border);">
+			<table data-sticky-header data-sticky-column="1" style="width: 150%;">
+				<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Department</th>
+					<th>Location</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td>1</td>
+					<td>Alice</td>
+					<td>alice@example.com</td>
+					<td>Engineering</td>
+					<td>San Francisco</td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>Bob</td>
+					<td>bob@example.com</td>
+					<td>Marketing</td>
+					<td>New York</td>
+				</tr>
+				<tr>
+					<td>3</td>
+					<td>Carol</td>
+					<td>carol@example.com</td>
+					<td>Sales</td>
+					<td>Chicago</td>
+				</tr>
+				<tr>
+					<td>4</td>
+					<td>David</td>
+					<td>david@example.com</td>
+					<td>Engineering</td>
+					<td>Austin</td>
+				</tr>
+				<tr>
+					<td>5</td>
+					<td>Eve</td>
+					<td>eve@example.com</td>
+					<td>HR</td>
+					<td>Boston</td>
+				</tr>
+				<tr>
+					<td>6</td>
+					<td>Frank</td>
+					<td>frank@example.com</td>
+					<td>Marketing</td>
+					<td>Seattle</td>
+				</tr>
+				<tr>
+					<td>7</td>
+					<td>Grace</td>
+					<td>grace@example.com</td>
+					<td>Engineering</td>
+					<td>Portland</td>
+				</tr>
+				<tr>
+					<td>8</td>
+					<td>Henry</td>
+					<td>henry@example.com</td>
+					<td>Sales</td>
+					<td>Denver</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</main>
+</layout-sidebar>
 
-  <script type="module" src="../../src/main.js"></script>
+<script type="module" src="../../src/main.js"></script>
 </body>
 </html>
 ```

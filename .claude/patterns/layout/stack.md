@@ -45,7 +45,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 ## Enhanced HTML
 
 ```html
-<layout-stack data-gap="lg">
+<layout-stack data-gap="l">
   <h2>Section Title</h2>
   <p>First paragraph with consistent spacing below.</p>
   <p>Second paragraph with same spacing.</p>
@@ -93,18 +93,18 @@ Vertical layout utility that adds consistent spacing between child elements. A f
     --stack-gap: var(--size-2xs);
   }
 
-  layout-stack[data-gap="sm"],
-  .stack[data-gap="sm"] {
+  layout-stack[data-gap="s"],
+  .stack[data-gap="s"] {
     --stack-gap: var(--size-xs);
   }
 
-  layout-stack[data-gap="md"],
-  .stack[data-gap="md"] {
+  layout-stack[data-gap="m"],
+  .stack[data-gap="m"] {
     --stack-gap: var(--size-m);
   }
 
-  layout-stack[data-gap="lg"],
-  .stack[data-gap="lg"] {
+  layout-stack[data-gap="l"],
+  .stack[data-gap="l"] {
     --stack-gap: var(--size-l);
   }
 
@@ -175,7 +175,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 
 ```html
 <article>
-  <layout-stack data-gap="lg">
+  <layout-stack data-gap="l">
     <h1>Article Title</h1>
     <p class="lead">Introduction paragraph with larger text.</p>
     <p>Body paragraph one.</p>
@@ -193,7 +193,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 
 ```html
 <div class="card">
-  <layout-stack data-gap="sm">
+  <layout-stack data-gap="s">
     <h3>Card Title</h3>
     <p>Card description text goes here.</p>
     <a href="/details">View Details</a>
@@ -205,7 +205,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 
 ```html
 <form>
-  <layout-stack data-gap="md">
+  <layout-stack data-gap="m">
     <label>
       Name
       <input type="text" name="name" />
@@ -227,7 +227,7 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 
 ```html
 <div class="card" style="min-height: 20rem;">
-  <layout-stack data-gap="md" data-split="2">
+  <layout-stack data-gap="m" data-split="2">
     <h3>Card Title</h3>
     <p>Card content that should stay at top.</p>
     <!-- Everything after this pushed to bottom -->
@@ -243,14 +243,14 @@ Vertical layout utility that adds consistent spacing between child elements. A f
 ```html
 <layout-stack data-gap="xl">
   <section>
-    <layout-stack data-gap="md">
+    <layout-stack data-gap="m">
       <h2>Section One</h2>
       <p>Content for section one.</p>
     </layout-stack>
   </section>
 
   <section>
-    <layout-stack data-gap="md">
+    <layout-stack data-gap="m">
       <h2>Section Two</h2>
       <p>Content for section two.</p>
     </layout-stack>

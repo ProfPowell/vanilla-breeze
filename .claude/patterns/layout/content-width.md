@@ -152,5 +152,5 @@ Container utility that constrains content to a maximum width and centers it hori
 ## Related Patterns
 
 - [full-bleed](./full-bleed.md)
-- [page-shell](../navigation/page-shell.md)
+- [layout-stack](../navigation/layout-stack.md)
 - [stack](./stack.md)

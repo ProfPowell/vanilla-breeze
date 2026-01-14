@@ -4,11 +4,11 @@ Structural page organization.
 
 ## Components
 
-- `page-shell` - Basic page wrapper
+- `layout-stack` - Basic page wrapper
 - `content-width` - Centered content
 - `full-bleed` - Edge-to-edge section
 - `split-layout` - Two-column
-- `sidebar-layout` - Main + sidebar
+- `layout-sidebar` - Main + sidebar
 - `dashboard-layout` - App shell
 - `card-grid` - Responsive card grid
 - `masonry` - Pinterest-style

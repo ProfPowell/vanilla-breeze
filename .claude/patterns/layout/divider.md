@@ -276,7 +276,7 @@ customElements.define('layout-divider', LayoutDivider);
 ### Vertical Divider (in Cluster)
 
 ```html
-<layout-cluster data-gap="md" data-align="center">
+<layout-cluster data-gap="m" data-align="center">
   <span>Option A</span>
   <layout-divider data-orientation="vertical" data-spacing="small"></layout-divider>
   <span>Option B</span>

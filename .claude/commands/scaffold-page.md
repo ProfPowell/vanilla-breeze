@@ -47,7 +47,7 @@ Create a new page using pattern compositions.
 | login | centered login-form |
 | signup | centered signup-form |
 | dashboard | dashboard-layout, stats, data-table |
-| settings | sidebar-layout, settings-form |
+| settings | layout-sidebar, settings-form |
 | list-view | filter-form, data-table, pagination |
 | error-404 | error-page |
 | error-500 | error-page |

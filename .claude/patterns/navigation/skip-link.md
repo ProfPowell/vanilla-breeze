@@ -163,7 +163,7 @@ document.querySelector('skip-link, .skip-link')?.addEventListener('click', (e) =
 ### With Page Shell
 
 ```html
-<page-shell>
+<layout-stack class="page">
   <skip-link href="#main">Skip to main content</skip-link>
 
   <site-header>
@@ -177,7 +177,7 @@ document.querySelector('skip-link, .skip-link')?.addEventListener('click', (e) =
   <site-footer>
     <!-- footer -->
   </site-footer>
-</page-shell>
+</layout-stack>
 ```
 
 ## Testing
@@ -189,5 +189,5 @@ document.querySelector('skip-link, .skip-link')?.addEventListener('click', (e) =
 
 ## Related Patterns
 
-- [page-shell](../layout/page-shell.md)
+- [layout-stack](../layout/layout-stack.md)
 - [site-header](./site-header.md)

@@ -357,4 +357,4 @@ Large, prominent section typically at the top of a page. Used to introduce conte
 
 - [cta](./cta.md)
 - [feature-grid](./feature-grid.md)
-- [page-shell](../layout/page-shell.md)
+- [layout-stack](../layout/layout-stack.md)

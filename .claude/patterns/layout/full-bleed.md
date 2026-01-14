@@ -172,4 +172,4 @@ Layout utility that allows content to break out of its container and span the fu
 
 - [content-width](./content-width.md)
 - [hero](../content/hero.md)
-- [page-shell](../navigation/page-shell.md)
+- [layout-stack](../navigation/layout-stack.md)

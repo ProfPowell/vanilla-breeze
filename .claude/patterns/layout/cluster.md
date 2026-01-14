@@ -50,7 +50,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ## Enhanced HTML
 
 ```html
-<layout-cluster data-gap="sm" data-justify="start" data-align="center">
+<layout-cluster data-gap="s" data-justify="start" data-align="center">
   <span class="tag">HTML</span>
   <span class="tag">CSS</span>
   <span class="tag">JavaScript</span>
@@ -86,18 +86,18 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
     --cluster-gap: var(--size-2xs);
   }
 
-  layout-cluster[data-gap="sm"],
-  .cluster[data-gap="sm"] {
+  layout-cluster[data-gap="s"],
+  .cluster[data-gap="s"] {
     --cluster-gap: var(--size-xs);
   }
 
-  layout-cluster[data-gap="md"],
-  .cluster[data-gap="md"] {
+  layout-cluster[data-gap="m"],
+  .cluster[data-gap="m"] {
     --cluster-gap: var(--size-m);
   }
 
-  layout-cluster[data-gap="lg"],
-  .cluster[data-gap="lg"] {
+  layout-cluster[data-gap="l"],
+  .cluster[data-gap="l"] {
     --cluster-gap: var(--size-l);
   }
 
@@ -159,8 +159,8 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
   }
 
   /* No wrap */
-  layout-cluster[data-wrap="nowrap"],
-  .cluster[data-wrap="nowrap"] {
+  layout-cluster[data-nowrap],
+  .cluster[data-nowrap] {
     flex-wrap: nowrap;
     overflow-x: auto;
   }
@@ -194,7 +194,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ### Button Group
 
 ```html
-<layout-cluster data-gap="sm" data-justify="end">
+<layout-cluster data-gap="s" data-justify="end">
   <button data-button="secondary">Cancel</button>
   <button data-button="primary">Save Changes</button>
 </layout-cluster>
@@ -203,7 +203,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ### Social Links
 
 ```html
-<layout-cluster data-gap="md" data-justify="center">
+<layout-cluster data-gap="m" data-justify="center">
   <a href="https://twitter.com" aria-label="Twitter">
     <x-icon name="twitter"></x-icon>
   </a>
@@ -223,7 +223,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
   <layout-cluster data-justify="between" data-align="center">
     <a href="/" class="logo">Brand</a>
     <nav>
-      <layout-cluster data-gap="lg">
+      <layout-cluster data-gap="l">
         <a href="/about">About</a>
         <a href="/products">Products</a>
         <a href="/contact">Contact</a>
@@ -236,7 +236,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ### Filter Pills
 
 ```html
-<layout-cluster data-gap="sm" data-wrap="nowrap">
+<layout-cluster data-gap="s" data-nowrap>
   <button class="pill" data-active>All</button>
   <button class="pill">Active</button>
   <button class="pill">Completed</button>
@@ -247,7 +247,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ### Card Meta (Icon + Text Pairs)
 
 ```html
-<layout-cluster data-gap="md" data-align="center">
+<layout-cluster data-gap="m" data-align="center">
   <span class="meta-item">
     <x-icon name="calendar"></x-icon>
     Jan 15, 2025
@@ -266,7 +266,7 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ### Centered Actions
 
 ```html
-<layout-cluster data-gap="md" data-justify="center">
+<layout-cluster data-gap="m" data-justify="center">
   <a href="/signup" data-button="primary">Get Started</a>
   <a href="/demo" data-button="secondary">Watch Demo</a>
 </layout-cluster>

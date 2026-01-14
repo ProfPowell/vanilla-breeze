@@ -1,7 +1,7 @@
 /**
  * Navigation Patterns Example Styles
- * Demonstrates Phase 2 patterns: site-header, site-footer, page-shell,
- * sidebar-layout, breadcrumbs, and skip-link
+ * Demonstrates Phase 2 patterns: site-header, site-footer, layout-stack.page,
+ * layout-sidebar, breadcrumbs, and skip-link
  */
 
 /* ==========================================================================
@@ -85,7 +85,7 @@
     background: var(--surface);
   }
 
-  body:has(page-shell) {
+  body:has(layout-stack.page) {
     margin: 0;
     padding: 0;
   }
@@ -145,13 +145,13 @@
    ========================================================================== */
 
 @layer components {
-  page-shell {
+  layout-stack.page {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
 
     & > main,
-    & > sidebar-layout {
+    & > layout-sidebar {
       flex: 1;
       width: 100%;
     }
@@ -290,7 +290,7 @@
    ========================================================================== */
 
 @layer components {
-  sidebar-layout {
+  layout-sidebar {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
     gap: var(--size-xl);
@@ -364,7 +364,7 @@
     }
 
     /* Sticky sidebar */
-    &[data-sticky-sidebar] > aside {
+    &[] > aside {
       position: sticky;
       top: calc(4rem + var(--size-l));
       align-self: start;
@@ -374,7 +374,7 @@
   }
 
   @media (max-width: 768px) {
-    sidebar-layout {
+    layout-sidebar {
       display: block;
 
       & [data-sidebar-toggle] {
