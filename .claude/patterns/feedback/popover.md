@@ -47,22 +47,22 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
   <button popovertarget="user-menu" aria-expanded="false">
     <img src="avatar.jpg" alt="" />
     <span>John Doe</span>
-    <x-icon name="chevron-down"></x-icon>
+    <icon-wc name="chevron-down"></icon-wc>
   </button>
 
   <div id="user-menu" popover data-position="bottom">
     <nav aria-label="User menu">
       <a href="/profile">
-        <x-icon name="user"></x-icon>
+        <icon-wc name="user"></icon-wc>
         Profile
       </a>
       <a href="/settings">
-        <x-icon name="settings"></x-icon>
+        <icon-wc name="settings"></icon-wc>
         Settings
       </a>
       <hr />
       <button type="button" data-action="logout">
-        <x-icon name="log-out"></x-icon>
+        <icon-wc name="log-out"></icon-wc>
         Sign out
       </button>
     </nav>
@@ -165,7 +165,7 @@ Contextual overlay triggered by user action. Uses the native Popover API for lig
     border-top: 1px solid var(--border);
   }
 
-  popover-menu nav x-icon {
+  popover-menu nav icon-wc {
     color: var(--text-muted);
   }
 
@@ -316,15 +316,15 @@ customElements.define('popover-menu', PopoverMenu);
 <popover-menu>
   <button popovertarget="actions-menu">
     Actions
-    <x-icon name="chevron-down"></x-icon>
+    <icon-wc name="chevron-down"></icon-wc>
   </button>
 
   <div id="actions-menu" popover data-position="bottom">
     <nav>
-      <a href="#edit"><x-icon name="edit"></x-icon> Edit</a>
-      <a href="#duplicate"><x-icon name="copy"></x-icon> Duplicate</a>
+      <a href="#edit"><icon-wc name="edit"></icon-wc> Edit</a>
+      <a href="#duplicate"><icon-wc name="copy"></icon-wc> Duplicate</a>
       <hr />
-      <button data-action="delete"><x-icon name="trash"></x-icon> Delete</button>
+      <button data-action="delete"><icon-wc name="trash"></icon-wc> Delete</button>
     </nav>
   </div>
 </popover-menu>
@@ -334,7 +334,7 @@ customElements.define('popover-menu', PopoverMenu);
 
 ```html
 <button popovertarget="help-tip" popovertargetaction="toggle">
-  <x-icon name="help-circle"></x-icon>
+  <icon-wc name="help-circle"></icon-wc>
 </button>
 
 <div id="help-tip" popover="manual" class="tooltip" data-position="top" data-arrow>
@@ -347,7 +347,7 @@ customElements.define('popover-menu', PopoverMenu);
 ```html
 <button popovertarget="more-info">
   Learn more
-  <x-icon name="info"></x-icon>
+  <icon-wc name="info"></icon-wc>
 </button>
 
 <div id="more-info" popover data-position="right">
@@ -361,7 +361,7 @@ customElements.define('popover-menu', PopoverMenu);
 
 ```html
 <button popovertarget="cmd-palette">
-  <x-icon name="command"></x-icon>
+  <icon-wc name="command"></icon-wc>
   Commands
   <kbd>⌘K</kbd>
 </button>

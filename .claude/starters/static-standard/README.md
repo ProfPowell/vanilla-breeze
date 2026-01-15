@@ -32,7 +32,7 @@ project/
 ├── scripts/
 │   └── main.js             # Progressive enhancement
 ├── components/
-│   └── x-icon/             # Icon component
+│   └── icon-wc/             # Icon component
 └── images/
     ├── favicon.svg         # Vector favicon
     ├── logo.svg            # Site logo
@@ -97,11 +97,11 @@ Or import a theme:
 
 ### Adding Icons
 
-Use the x-icon component:
+Use the icon-wc component:
 
 ```html
-<script type="module" src="/components/x-icon/x-icon.js"></script>
-<x-icon name="menu" size="md"></x-icon>
+<script type="module" src="/components/icon-wc/icon-wc.js"></script>
+<icon-wc name="menu" size="md"></icon-wc>
 ```
 
 ## Skills Invoked

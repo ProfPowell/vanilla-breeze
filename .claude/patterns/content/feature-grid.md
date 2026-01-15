@@ -67,37 +67,37 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
 
   <div data-grid>
     <article>
-      <x-icon name="zap" size="lg"></x-icon>
+      <icon-wc name="zap" size="lg"></icon-wc>
       <h3>Fast Performance</h3>
       <p>Lightning-fast load times with globally distributed CDN and optimized delivery.</p>
     </article>
 
     <article>
-      <x-icon name="shield" size="lg"></x-icon>
+      <icon-wc name="shield" size="lg"></icon-wc>
       <h3>Secure by Default</h3>
       <p>Enterprise-grade security with encryption, SSO, and compliance certifications.</p>
     </article>
 
     <article>
-      <x-icon name="headphones" size="lg"></x-icon>
+      <icon-wc name="headphones" size="lg"></icon-wc>
       <h3>24/7 Support</h3>
       <p>Expert help whenever you need it, with average response times under 2 hours.</p>
     </article>
 
     <article>
-      <x-icon name="puzzle" size="lg"></x-icon>
+      <icon-wc name="puzzle" size="lg"></icon-wc>
       <h3>Integrations</h3>
       <p>Connect with 100+ tools you already use, from Slack to Salesforce.</p>
     </article>
 
     <article>
-      <x-icon name="trending-up" size="lg"></x-icon>
+      <icon-wc name="trending-up" size="lg"></icon-wc>
       <h3>Analytics</h3>
       <p>Deep insights into your performance with real-time dashboards.</p>
     </article>
 
     <article>
-      <x-icon name="users" size="lg"></x-icon>
+      <icon-wc name="users" size="lg"></icon-wc>
       <h3>Team Collaboration</h3>
       <p>Work together seamlessly with shared workspaces and permissions.</p>
     </article>
@@ -146,7 +146,7 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
       gap: var(--size-xs);
     }
 
-    & article x-icon {
+    & article icon-wc {
       color: var(--primary);
       margin-block-end: var(--size-xs);
     }
@@ -248,7 +248,7 @@ Grid layout displaying feature highlights or benefits. Each feature has an icon,
   </header>
   <div data-grid>
     <article>
-      <x-icon name="zap"></x-icon>
+      <icon-wc name="zap"></icon-wc>
       <h3>Speed</h3>
       <p>Optimized for performance.</p>
     </article>

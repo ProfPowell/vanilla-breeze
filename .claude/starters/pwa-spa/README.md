@@ -35,7 +35,7 @@ project/
 │   ├── components/
 │   │   ├── app-shell.js
 │   │   ├── nav-bar.js
-│   │   └── x-icon/
+│   │   └── icon-wc/
 │   └── styles/
 │       ├── main.css
 │       ├── _reset.css

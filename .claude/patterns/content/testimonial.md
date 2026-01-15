@@ -65,11 +65,11 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
   </footer>
 
   <div data-rating aria-label="5 out of 5 stars">
-    <x-icon name="star" data-filled></x-icon>
-    <x-icon name="star" data-filled></x-icon>
-    <x-icon name="star" data-filled></x-icon>
-    <x-icon name="star" data-filled></x-icon>
-    <x-icon name="star" data-filled></x-icon>
+    <icon-wc name="star" data-filled></icon-wc>
+    <icon-wc name="star" data-filled></icon-wc>
+    <icon-wc name="star" data-filled></icon-wc>
+    <icon-wc name="star" data-filled></icon-wc>
+    <icon-wc name="star" data-filled></icon-wc>
   </div>
 </testimonial-card>
 ```
@@ -145,7 +145,7 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
       gap: var(--size-2xs);
       margin-block-start: var(--size-m);
 
-      & x-icon {
+      & icon-wc {
         color: var(--warning, #f59e0b);
       }
     }
@@ -276,11 +276,11 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
 ```html
 <testimonial-card data-style="card">
   <div data-rating aria-label="5 out of 5 stars">
-    <x-icon name="star"></x-icon>
-    <x-icon name="star"></x-icon>
-    <x-icon name="star"></x-icon>
-    <x-icon name="star"></x-icon>
-    <x-icon name="star"></x-icon>
+    <icon-wc name="star"></icon-wc>
+    <icon-wc name="star"></icon-wc>
+    <icon-wc name="star"></icon-wc>
+    <icon-wc name="star"></icon-wc>
+    <icon-wc name="star"></icon-wc>
   </div>
   <blockquote>
     <p>"Exceeded all expectations!"</p>

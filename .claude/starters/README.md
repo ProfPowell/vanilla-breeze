@@ -43,7 +43,7 @@ All starters reference common resources from [`_shared/`](./_shared/):
 
 - **Styles**: CSS reset and design tokens
 - **Templates**: HTML head, header, footer, error pages
-- **Components**: x-icon Web Component
+- **Components**: icon-wc Web Component
 
 ## Design Principles
 

@@ -574,7 +574,7 @@ Not all custom elements should be block. Consider the content model:
 |--------------|---------|----------|
 | Container/Section | `block` | `product-card`, `hero-section`, `card-grid` |
 | Badge/Indicator | `inline-flex` | `status-badge`, `tag-item` |
-| Icon | `inline-flex` | `x-icon` |
+| Icon | `inline-flex` | `icon-wc` |
 
 Elements with `phrasing: true` in `elements.json` are designed to be inline.
 
@@ -1901,21 +1901,21 @@ When authoring CSS, consider invoking these related skills:
 |-------------|--------------|-----|
 | Animations, transitions | **animation-motion** | Proper keyframes, scroll-driven effects, reduced-motion |
 | Print styles (@media print) | **print-styles** | Print-specific layout, page breaks, hiding nav |
-| Icon styling | **icons** | Use `<x-icon>` component, not inline SVG |
+| Icon styling | **icons** | Use `<icon-wc>` component, not inline SVG |
 | Dark/light themes | **data-attributes** | State via `data-theme`, not classes |
 | Responsive images | **responsive-images** | Image sizing, aspect ratios, art direction |
 
 ### When Styling Components with Icons
 
-When styling buttons, toggles, or UI elements that need icons, ensure the HTML uses `<x-icon>`:
+When styling buttons, toggles, or UI elements that need icons, ensure the HTML uses `<icon-wc>`:
 
 ```css
-/* Styling icons is simple when using x-icon */
-button x-icon {
+/* Styling icons is simple when using icon-wc */
+button icon-wc {
   color: currentColor;
 }
 
-button:hover x-icon {
+button:hover icon-wc {
   color: var(--primary);
 }
 ```
@@ -1928,7 +1928,7 @@ See the **icons** skill before adding any visual indicators to HTML.
 - **typography** - Type scale, hierarchy, rhythm, text-wrap, font pairing
 - **animation-motion** - CSS animations, transitions, and scroll-driven effects
 - **print-styles** - Write print-friendly CSS using @media print
-- **icons** - Lucide icon library with `<x-icon>` Web Component
+- **icons** - Lucide icon library with `<icon-wc>` Web Component
 - **data-attributes** - Using data-* attributes for state and variants
 - **xhtml-author** - Write valid XHTML-strict HTML5 markup
 - **responsive-images** - Modern responsive image techniques

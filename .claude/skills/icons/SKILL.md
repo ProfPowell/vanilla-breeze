@@ -1,16 +1,16 @@
 ---
 name: icons
-description: Use consistent Lucide icons with the <x-icon> component. Use when adding icons to pages, buttons, or UI elements.
+description: Use consistent Lucide icons with the <icon-wc> component. Use when adding icons to pages, buttons, or UI elements.
 allowed-tools: Read, Write, Edit, Bash
 ---
 
 # Icons Skill
 
-Use the Lucide icon library with local SVG files and the `<x-icon>` Web Component for consistent, accessible icons.
+Use the Lucide icon library with local SVG files and the `<icon-wc>` Web Component for consistent, accessible icons.
 
 ## CRITICAL: When to Use This Skill
 
-**ALWAYS use the `<x-icon>` component. NEVER use inline SVGs.**
+**ALWAYS use the `<icon-wc>` component. NEVER use inline SVGs.**
 
 | You Are Adding... | USE THIS SKILL |
 |-------------------|----------------|
@@ -34,13 +34,13 @@ Use the Lucide icon library with local SVG files and the `<x-icon>` Web Componen
 ### Good (Do this instead):
 
 ```html
-<!-- CORRECT: x-icon component -->
+<!-- CORRECT: icon-wc component -->
 <button>
-  <x-icon name="sun" label="Light theme"></x-icon>
+  <icon-wc name="sun" label="Light theme"></icon-wc>
 </button>
 ```
 
-**Why?** The `<x-icon>` component:
+**Why?** The `<icon-wc>` component:
 - Ensures consistent sizing across the app
 - Handles accessibility automatically
 - Uses optimized, cached SVG loading
@@ -53,20 +53,20 @@ Use the Lucide icon library with local SVG files and the `<x-icon>` Web Componen
 
 ```html
 <!-- Basic usage -->
-<x-icon name="menu"></x-icon>
-<x-icon name="arrow-right"></x-icon>
-<x-icon name="check"></x-icon>
+<icon-wc name="menu"></icon-wc>
+<icon-wc name="arrow-right"></icon-wc>
+<icon-wc name="check"></icon-wc>
 
 <!-- With size -->
-<x-icon name="home" size="lg"></x-icon>
+<icon-wc name="home" size="lg"></icon-wc>
 
 <!-- With accessible label (for functional icons) -->
 <button>
-  <x-icon name="x" label="Close"></x-icon>
+  <icon-wc name="x" label="Close"></icon-wc>
 </button>
 
 <!-- Custom icon set -->
-<x-icon name="logo" set="custom"></x-icon>
+<icon-wc name="logo" set="custom"></icon-wc>
 ```
 
 ## Directory Structure
@@ -76,7 +76,7 @@ Use the Lucide icon library with local SVG files and the `<x-icon>` Web Componen
 ├── js/
 │   └── components/
 │       └── x-icon/          # Icon Web Component
-│           ├── x-icon.js
+│           ├── icon-wc.js
 │           └── x-icon-styles.js
 └── icons/
     ├── lucide/              # Lucide icons (synced from npm)
@@ -99,15 +99,15 @@ npm install lucide-static --save-dev
 # 2. Sync icons
 npm run icons:sync
 
-# 3. Copy x-icon component
-mkdir -p .assets/js/components/x-icon
-cp .claude/skills/icons/templates/x-icon/*.js .assets/js/components/x-icon/
+# 3. Copy icon-wc component
+mkdir -p .assets/js/components/icon-wc
+cp .claude/skills/icons/templates/icon-wc/*.js .assets/js/components/icon-wc/
 
 # 4. Include in HTML
-<script type="module" src="/.assets/js/components/x-icon/x-icon.js"></script>
+<script type="module" src="/.assets/js/components/icon-wc/icon-wc.js"></script>
 ```
 
-## The `<x-icon>` Component
+## The `<icon-wc>` Component
 
 ### Attributes
 
@@ -136,12 +136,12 @@ Icons inherit `currentColor` for stroke color:
 
 ```css
 /* Change icon color */
-.danger x-icon {
+.danger icon-wc {
   color: var(--color-error);
 }
 
 /* Custom sizing */
-x-icon.hero-icon {
+icon-wc.hero-icon {
   width: 4rem;
   height: 4rem;
 }
@@ -173,7 +173,7 @@ Icons without a `label` are hidden from screen readers:
 ```html
 <!-- Decorative - hidden from screen readers -->
 <button>
-  <x-icon name="save"></x-icon>
+  <icon-wc name="save"></icon-wc>
   Save Document
 </button>
 ```
@@ -185,7 +185,7 @@ Add `label` for icon-only buttons or links:
 ```html
 <!-- Functional - announced to screen readers -->
 <button aria-label="Close dialog">
-  <x-icon name="x" label="Close"></x-icon>
+  <icon-wc name="x" label="Close"></icon-wc>
 </button>
 ```
 
@@ -212,7 +212,7 @@ Add `label` for icon-only buttons or links:
 2. Use with `set="custom"`:
 
 ```html
-<x-icon name="logo" set="custom"></x-icon>
+<icon-wc name="logo" set="custom"></icon-wc>
 ```
 
 ### Custom Icon Requirements
@@ -232,7 +232,7 @@ To use a different icon library:
 4. Run `npm run icons:sync`
 5. Or manually copy SVGs to `.assets/icons/[set-name]/`
 
-The `<x-icon>` component works with any SVG icon library.
+The `<icon-wc>` component works with any SVG icon library.
 
 ## Finding Icons
 

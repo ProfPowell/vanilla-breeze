@@ -65,11 +65,11 @@ E-commerce product display card with image, title, price, and purchase action. O
       <h3>Widget Pro</h3>
 
       <div data-rating aria-label="4.5 out of 5 stars">
-        <x-icon name="star" data-filled></x-icon>
-        <x-icon name="star" data-filled></x-icon>
-        <x-icon name="star" data-filled></x-icon>
-        <x-icon name="star" data-filled></x-icon>
-        <x-icon name="star-half" data-filled></x-icon>
+        <icon-wc name="star" data-filled></icon-wc>
+        <icon-wc name="star" data-filled></icon-wc>
+        <icon-wc name="star" data-filled></icon-wc>
+        <icon-wc name="star" data-filled></icon-wc>
+        <icon-wc name="star-half" data-filled></icon-wc>
         <span>(128 reviews)</span>
       </div>
 
@@ -84,11 +84,11 @@ E-commerce product display card with image, title, price, and purchase action. O
 
   <div data-actions>
     <button type="button" data-add-cart>
-      <x-icon name="shopping-cart"></x-icon>
+      <icon-wc name="shopping-cart"></icon-wc>
       Add to Cart
     </button>
     <button type="button" data-wishlist aria-label="Add to wishlist">
-      <x-icon name="heart"></x-icon>
+      <icon-wc name="heart"></icon-wc>
     </button>
   </div>
 </product-card>
@@ -206,7 +206,7 @@ E-commerce product display card with image, title, price, and purchase action. O
       font-size: var(--text-sm);
       color: var(--text-muted);
 
-      & x-icon {
+      & icon-wc {
         color: var(--warning, #f59e0b);
         font-size: 0.875em;
       }

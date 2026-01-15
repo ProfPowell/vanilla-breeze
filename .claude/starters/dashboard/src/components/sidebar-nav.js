@@ -102,13 +102,13 @@ class SidebarNav extends HTMLElement {
           font-weight: var(--font-medium, 500);
         }
 
-        nav ul a x-icon {
+        nav ul a icon-wc {
           inline-size: 1.25rem;
           block-size: 1.25rem;
           opacity: 0.7;
         }
 
-        nav ul a[aria-current="page"] x-icon {
+        nav ul a[aria-current="page"] icon-wc {
           opacity: 1;
         }
 
@@ -168,13 +168,13 @@ class SidebarNav extends HTMLElement {
           <ul>
             <li>
               <a href="/dashboard" data-link>
-                <x-icon name="layout-dashboard"></x-icon>
+                <icon-wc name="layout-dashboard"></icon-wc>
                 Dashboard
               </a>
             </li>
             <li>
               <a href="/list" data-link>
-                <x-icon name="list"></x-icon>
+                <icon-wc name="list"></icon-wc>
                 Items
               </a>
             </li>
@@ -186,7 +186,7 @@ class SidebarNav extends HTMLElement {
           <ul>
             <li>
               <a href="/settings" data-link>
-                <x-icon name="settings"></x-icon>
+                <icon-wc name="settings"></icon-wc>
                 Settings
               </a>
             </li>

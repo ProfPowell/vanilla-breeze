@@ -69,7 +69,7 @@ class StatCard extends HTMLElement {
           font-weight: var(--font-medium, 500);
         }
 
-        header > x-icon {
+        header > icon-wc {
           inline-size: 1.5rem;
           block-size: 1.5rem;
           color: var(--text-muted, #666);
@@ -102,7 +102,7 @@ class StatCard extends HTMLElement {
           color: var(--text-muted, #666);
         }
 
-        [data-trend] x-icon {
+        [data-trend] icon-wc {
           inline-size: 1rem;
           block-size: 1rem;
         }
@@ -111,13 +111,13 @@ class StatCard extends HTMLElement {
       <article>
         <header>
           <span>${this.label}</span>
-          <x-icon name="${this.icon}"></x-icon>
+          <icon-wc name="${this.icon}"></icon-wc>
         </header>
         <div data-role="value">${this.value}</div>
         ${this.trend ? `
           <div data-trend="${this.trendDirection}">
-            ${this.trendDirection === 'up' ? '<x-icon name="trending-up"></x-icon>' : ''}
-            ${this.trendDirection === 'down' ? '<x-icon name="trending-down"></x-icon>' : ''}
+            ${this.trendDirection === 'up' ? '<icon-wc name="trending-up"></icon-wc>' : ''}
+            ${this.trendDirection === 'down' ? '<icon-wc name="trending-down"></icon-wc>' : ''}
             <span>${this.trend}</span>
           </div>
         ` : ''}

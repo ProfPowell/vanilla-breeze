@@ -182,7 +182,7 @@ Display of key metrics and numbers. Used to highlight important statistics, achi
     }
 
     /* With icons */
-    & [data-stat] x-icon {
+    & [data-stat] icon-wc {
       font-size: 2rem;
       color: var(--primary);
       margin-block-end: var(--size-xs);
@@ -313,7 +313,7 @@ customElements.define('stats-section', StatsSection);
 <stats-section data-style="cards" data-columns="3">
   <dl data-grid>
     <div data-stat>
-      <x-icon name="users"></x-icon>
+      <icon-wc name="users"></icon-wc>
       <dd data-value>10K+</dd>
       <dt data-label>Users</dt>
     </div>
