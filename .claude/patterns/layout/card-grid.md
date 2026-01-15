@@ -215,7 +215,7 @@ Responsive grid layout for displaying cards or similar content blocks. Uses CSS 
 ```html
 <card-grid data-columns="4" data-gap="default" data-align="start">
   <div class="feature">
-    <x-icon name="zap"></x-icon>
+    <icon-wc name="zap"></icon-wc>
     <h3>Fast</h3>
     <p>Lightning quick performance</p>
   </div>

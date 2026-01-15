@@ -622,7 +622,7 @@ class FeedbackReporter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
       <button type="button" class="feedback-trigger" aria-label="Report an issue">
-        <x-icon name="message-circle"></x-icon>
+        <icon-wc name="message-circle"></icon-wc>
       </button>
       <dialog class="feedback-dialog">
         <form method="dialog">

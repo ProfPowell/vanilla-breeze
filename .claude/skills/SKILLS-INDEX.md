@@ -145,7 +145,7 @@ Quick reference for all project skills. **Consult before starting work.**
 | forms | form-field pattern with validation |
 | git-workflow | Conventional commits |
 | i18n | Internationalization |
-| icons | Lucide x-icon component |
+| icons | Lucide icon-wc component |
 | images | Image coordination and automation |
 | javascript-author | Vanilla JS patterns |
 | layout-grid | CSS grid layouts |

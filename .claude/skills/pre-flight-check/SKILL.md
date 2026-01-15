@@ -124,7 +124,7 @@ When building these features, invoke ALL listed skills:
 
 ### Critical: Icons
 
-**ALWAYS invoke the icons skill when adding visual indicators.** Theme toggles, buttons with icons, navigation icons, status indicators - ALL should use `<x-icon>`, never inline SVGs.
+**ALWAYS invoke the icons skill when adding visual indicators.** Theme toggles, buttons with icons, navigation icons, status indicators - ALL should use `<icon-wc>`, never inline SVGs.
 
 See [COMPOSITIONS.md](../COMPOSITIONS.md) for more multi-skill patterns.
 
@@ -474,6 +474,6 @@ bd show <issue-id>
 - **xhtml-author** - Write valid XHTML-strict HTML5 markup
 - **css-author** - Modern CSS organization with @layer
 - **javascript-author** - Vanilla JavaScript for Web Components
-- **icons** - Lucide icon library with `<x-icon>` Web Component
+- **icons** - Lucide icon library with `<icon-wc>` Web Component
 - **forms** - HTML-first form patterns with CSS-only validation
 - **accessibility-checker** - Ensure WCAG2AA accessibility compliance

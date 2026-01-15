@@ -22,7 +22,7 @@ Invoke this skill when:
 | Writing HTML content | **xhtml-author** | XHTML-strict patterns, semantic structure |
 | Styling components | **css-author** | Modular CSS, @layer cascade, design tokens |
 | Page metadata | **metadata** | SEO, Open Graph, Twitter Cards |
-| Icons | **icons** | Use `<x-icon>` component, Lucide library |
+| Icons | **icons** | Use `<icon-wc>` component, Lucide library |
 | Forms | **forms** | `<form-field>` custom element, validation |
 | Patterns/sections | **patterns** | Hero, features, CTA, cards, navigation |
 
@@ -155,7 +155,7 @@ All HTML pages must follow XHTML-strict patterns:
     <!-- Site footer -->
   </footer>
 
-  <script type="module" src="/assets/js/components/x-icon/x-icon.js"></script>
+  <script type="module" src="/assets/js/components/icon-wc/icon-wc.js"></script>
   <script src="/assets/js/main.js" defer=""></script>
 </body>
 </html>
@@ -550,7 +550,7 @@ When scaffolding a new site:
 - [ ] Set up JS with init pattern
 - [ ] Create/copy favicon set
 - [ ] Create og-image.png for social sharing
-- [ ] Copy x-icon component to assets/js/components/
+- [ ] Copy icon-wc component to assets/js/components/
 - [ ] Copy required Lucide icons to assets/icons/lucide/
 - [ ] Run `npm run icons:sync` to populate icons directory
 
@@ -561,14 +561,14 @@ When scaffolding a new site:
 
 ## Icons Usage
 
-The scaffold uses the `<x-icon>` Web Component for icons. **Never use inline SVGs** for standard icons - always use the x-icon component.
+The scaffold uses the `<icon-wc>` Web Component for icons. **Never use inline SVGs** for standard icons - always use the icon-wc component.
 
-### Required x-icon Script
+### Required icon-wc Script
 
 Include in all HTML pages (except 500, offline, noscript):
 
 ```html
-<script type="module" src="/assets/js/components/x-icon/x-icon.js"></script>
+<script type="module" src="/assets/js/components/icon-wc/icon-wc.js"></script>
 <script src="/assets/js/main.js" defer=""></script>
 ```
 
@@ -576,17 +576,17 @@ Include in all HTML pages (except 500, offline, noscript):
 
 | Icon | Usage | Example |
 |------|-------|---------|
-| `menu` | Mobile navigation toggle | `<x-icon name="menu"></x-icon>` |
-| `zap` | Feature card (speed/performance) | `<x-icon name="zap" size="lg"></x-icon>` |
-| `lock` | Feature card (security) | `<x-icon name="lock" size="lg"></x-icon>` |
-| `info` | Feature card (information) | `<x-icon name="info" size="lg"></x-icon>` |
-| `mail` | Contact method (email) | `<x-icon name="mail"></x-icon>` |
-| `map-pin` | Contact method (location) | `<x-icon name="map-pin"></x-icon>` |
-| `clock` | Contact method (response time) | `<x-icon name="clock"></x-icon>` |
-| `twitter` | Social link | `<x-icon name="twitter"></x-icon>` |
-| `github` | Social link | `<x-icon name="github"></x-icon>` |
-| `linkedin` | Social link | `<x-icon name="linkedin"></x-icon>` |
-| `frown` | 404 error page | `<x-icon name="frown" size="2xl"></x-icon>` |
+| `menu` | Mobile navigation toggle | `<icon-wc name="menu"></icon-wc>` |
+| `zap` | Feature card (speed/performance) | `<icon-wc name="zap" size="lg"></icon-wc>` |
+| `lock` | Feature card (security) | `<icon-wc name="lock" size="lg"></icon-wc>` |
+| `info` | Feature card (information) | `<icon-wc name="info" size="lg"></icon-wc>` |
+| `mail` | Contact method (email) | `<icon-wc name="mail"></icon-wc>` |
+| `map-pin` | Contact method (location) | `<icon-wc name="map-pin"></icon-wc>` |
+| `clock` | Contact method (response time) | `<icon-wc name="clock"></icon-wc>` |
+| `twitter` | Social link | `<icon-wc name="twitter"></icon-wc>` |
+| `github` | Social link | `<icon-wc name="github"></icon-wc>` |
+| `linkedin` | Social link | `<icon-wc name="linkedin"></icon-wc>` |
+| `frown` | 404 error page | `<icon-wc name="frown" size="2xl"></icon-wc>` |
 
 ### Size Presets
 
@@ -606,8 +606,8 @@ Some pages must use **inline SVGs** for reliability:
 | Page | Reason |
 |------|--------|
 | `errors/500.html` | No external dependencies (server may be down) |
-| `errors/offline.html` | No network access to load x-icon |
-| `errors/noscript.html` | JavaScript disabled, x-icon won't work |
+| `errors/offline.html` | No network access to load icon-wc |
+| `errors/noscript.html` | JavaScript disabled, icon-wc won't work |
 | **Site logo** | Brand-specific, not in Lucide library |
 
 ### Icons Directory Structure
@@ -622,7 +622,7 @@ assets/
 └── js/
     └── components/
         └── x-icon/
-            ├── x-icon.js
+            ├── icon-wc.js
             └── x-icon-styles.js
 ```
 
@@ -634,5 +634,5 @@ Run `npm run icons:sync` after scaffolding to populate the icons directory.
 - **css-author** - Modern CSS organization with native @import, @layer cascade
 - **metadata** - HTML metadata and head content
 - **performance** - Write performance-friendly HTML pages
-- **icons** - Lucide icons with `<x-icon>` component
+- **icons** - Lucide icons with `<icon-wc>` component
 - **patterns** - Reusable section and component patterns

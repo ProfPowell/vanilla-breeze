@@ -64,7 +64,7 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
   </a>
 
   <button commandfor="main-nav" command="toggle-popover" aria-label="Menu" data-mobile-toggle>
-    <x-icon name="menu" size="md" />
+    <icon-wc name="menu" size="md" />
   </button>
 
   <nav id="main-nav" popover aria-label="Main">
@@ -77,10 +77,10 @@ Primary navigation bar for site-wide navigation. Contains logo, main navigation 
 
   <div data-actions>
     <a href="/search" aria-label="Search">
-      <x-icon name="search" />
+      <icon-wc name="search" />
     </a>
     <a href="/cart" aria-label="Cart">
-      <x-icon name="shopping-cart" />
+      <icon-wc name="shopping-cart" />
     </a>
   </div>
 </site-header>

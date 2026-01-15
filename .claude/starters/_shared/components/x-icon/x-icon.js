@@ -3,13 +3,13 @@
  * Loads SVG icons from the Lucide icon library
  *
  * @example
- * <x-icon name="menu"></x-icon>
- * <x-icon name="home" size="lg" label="Home"></x-icon>
+ * <icon-wc name="menu"></icon-wc>
+ * <icon-wc name="home" size="lg" label="Home"></icon-wc>
  */
 
 const ICON_CACHE = new Map();
 
-class XIcon extends HTMLElement {
+class IconWc extends HTMLElement {
   static get observedAttributes() {
     return ['name', 'size', 'label', 'set', 'base-path'];
   }
@@ -115,6 +115,6 @@ class XIcon extends HTMLElement {
   }
 }
 
-customElements.define('x-icon', XIcon);
+customElements.define('icon-wc', IconWc);
 
-export { XIcon };
+export { IconWc };

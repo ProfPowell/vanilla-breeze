@@ -95,13 +95,13 @@ Primary footer for site-wide information. Contains navigation links, contact inf
 
   <div data-social>
     <a href="https://twitter.com/company" aria-label="Twitter">
-      <x-icon name="twitter" />
+      <icon-wc name="twitter" />
     </a>
     <a href="https://github.com/company" aria-label="GitHub">
-      <x-icon name="github" />
+      <icon-wc name="github" />
     </a>
     <a href="https://linkedin.com/company/company" aria-label="LinkedIn">
-      <x-icon name="linkedin" />
+      <icon-wc name="linkedin" />
     </a>
   </div>
 

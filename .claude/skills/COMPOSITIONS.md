@@ -11,7 +11,7 @@ Common multi-skill patterns for complex features. When building these features, 
 | **css-author** | Design tokens, color schemes, @layer organization |
 | **javascript-author** | State management, localStorage persistence |
 | **data-storage** | Persistent preference storage patterns |
-| **icons** | Sun/moon toggle icons with `<x-icon>` |
+| **icons** | Sun/moon toggle icons with `<icon-wc>` |
 | **progressive-enhancement** | CSS-only fallback, prefers-color-scheme |
 | **accessibility-checker** | Contrast ratios for both themes |
 
@@ -68,7 +68,7 @@ Common multi-skill patterns for complex features. When building these features, 
 
 **Key elements:**
 - `<nav aria-label="Main">` wrapper
-- `<x-icon name="menu">` for mobile toggle
+- `<icon-wc name="menu">` for mobile toggle
 - `aria-current="page"` for current page
 
 ---

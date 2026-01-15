@@ -434,7 +434,7 @@
       ],
       "related": ["hero", "stats", "card"],
       "examples": [
-        { "name": "Three-Column Cards", "html": "<feature-grid data-columns=\"3\" data-style=\"cards\">\n  <div data-grid>\n    <article>\n      <x-icon name=\"zap\"></x-icon>\n      <h3>Fast</h3>\n      <p>Lightning performance.</p>\n    </article>\n  </div>\n</feature-grid>" }
+        { "name": "Three-Column Cards", "html": "<feature-grid data-columns=\"3\" data-style=\"cards\">\n  <div data-grid>\n    <article>\n      <icon-wc name=\"zap\"></icon-wc>\n      <h3>Fast</h3>\n      <p>Lightning performance.</p>\n    </article>\n  </div>\n</feature-grid>" }
       ]
     },
     {
@@ -580,7 +580,7 @@
       "status": "stable",
       "element": "alert-message",
       "anatomy": [
-        { "name": "icon", "description": "Visual indicator of message type", "element": "x-icon", "required": false },
+        { "name": "icon", "description": "Visual indicator of message type", "element": "icon-wc", "required": false },
         { "name": "content", "description": "Message body with title and description", "element": "div" },
         { "name": "title", "description": "Brief message heading", "element": "strong", "required": false },
         { "name": "description", "description": "Detailed message text", "element": "p" },
@@ -597,7 +597,7 @@
       },
       "related": ["banner", "toast", "empty-state"],
       "examples": [
-        { "name": "Error Alert", "html": "<alert-message data-type=\"error\" data-style=\"filled\">\n  <x-icon name=\"alert-circle\" data-icon></x-icon>\n  <div data-content>\n    <strong data-title>Error</strong>\n    <p>Please check your input.</p>\n  </div>\n</alert-message>" }
+        { "name": "Error Alert", "html": "<alert-message data-type=\"error\" data-style=\"filled\">\n  <icon-wc name=\"alert-circle\" data-icon></icon-wc>\n  <div data-content>\n    <strong data-title>Error</strong>\n    <p>Please check your input.</p>\n  </div>\n</alert-message>" }
       ]
     },
     {
@@ -607,7 +607,7 @@
       "status": "stable",
       "element": "site-banner",
       "anatomy": [
-        { "name": "icon", "description": "Optional icon", "element": "x-icon", "required": false },
+        { "name": "icon", "description": "Optional icon", "element": "icon-wc", "required": false },
         { "name": "content", "description": "Message text with optional link", "element": "div" },
         { "name": "action", "description": "Optional CTA button", "element": "a", "required": false },
         { "name": "dismiss", "description": "Close button", "element": "button", "required": false }
@@ -624,35 +624,36 @@
       },
       "related": ["alert", "toast", "site-header"],
       "examples": [
-        { "name": "Promo Banner", "html": "<site-banner data-type=\"promo\" data-position=\"top\">\n  <div data-content>\n    <p>Black Friday Sale! <a href=\"/pricing\">Shop now</a></p>\n  </div>\n  <button data-dismiss aria-label=\"Dismiss banner\"><x-icon name=\"x\"></x-icon></button>\n</site-banner>" }
+        { "name": "Promo Banner", "html": "<site-banner data-type=\"promo\" data-position=\"top\">\n  <div data-content>\n    <p>Black Friday Sale! <a href=\"/pricing\">Shop now</a></p>\n  </div>\n  <button data-dismiss aria-label=\"Dismiss banner\"><icon-wc name=\"x\"></icon-wc></button>\n</site-banner>" }
       ]
     },
     {
       "name": "toast",
       "category": "feedback",
-      "description": "Temporary notification that appears briefly to provide feedback on an action",
+      "description": "Temporary notification using toast-wc Web Component with programmatic API",
       "status": "stable",
-      "element": "toast-notification",
+      "element": "toast-wc",
       "anatomy": [
-        { "name": "icon", "description": "Status icon", "element": "x-icon", "required": false },
-        { "name": "content", "description": "Message content", "element": "div" },
-        { "name": "title", "description": "Toast heading", "element": "strong", "required": false },
-        { "name": "message", "description": "Toast body", "element": "p" },
-        { "name": "action", "description": "Optional action button", "element": "button", "required": false },
-        { "name": "dismiss", "description": "Close button", "element": "button", "required": false }
+        { "name": "container", "description": "Toast container", "element": "toast-wc" },
+        { "name": "toast", "description": "Individual toast (auto-generated)", "element": ".toast" },
+        { "name": "icon", "description": "Status icon", "element": ".icon" },
+        { "name": "message", "description": "Toast message", "element": ".message" },
+        { "name": "action", "description": "Optional action button", "element": ".action", "required": false },
+        { "name": "close", "description": "Dismiss button", "element": ".close", "required": false }
       ],
-      "states": ["entering", "visible", "exiting", "dismissed"],
+      "states": ["entering", "visible", "hiding"],
       "variants": [
-        { "name": "type", "attribute": "data-type", "values": ["info", "success", "warning", "error"], "default": "info" },
-        { "name": "position", "attribute": "data-position", "values": ["top-right", "top-center", "bottom-right", "bottom-center"], "default": "bottom-right" }
+        { "name": "variant", "attribute": "data-variant", "values": ["info", "success", "warning", "error"], "default": "info" },
+        { "name": "position", "attribute": "data-position", "values": ["top-end", "top-start", "bottom-end", "bottom-start", "top-center", "bottom-center"], "default": "top-end" }
       ],
       "accessibility": {
-        "aria": ["role=\"status\"", "aria-live=\"polite\""],
+        "aria": ["role=\"region\"", "aria-live=\"polite\"", "aria-label=\"Notifications\""],
         "keyboard": [{ "key": "Escape", "action": "Dismiss toast" }]
       },
       "related": ["alert", "banner", "progress-bar"],
       "examples": [
-        { "name": "Success Toast", "html": "<toast-notification data-type=\"success\">\n  <x-icon name=\"check-circle\" data-icon></x-icon>\n  <div data-content>\n    <p>Changes saved successfully!</p>\n  </div>\n</toast-notification>" }
+        { "name": "Toast Container", "html": "<toast-wc data-position=\"bottom-end\"></toast-wc>" },
+        { "name": "Show Toast (JS)", "html": "toasts.show({ message: 'Changes saved!', variant: 'success' });" }
       ]
     },
     {
@@ -721,7 +722,7 @@
       "status": "stable",
       "element": "empty-state",
       "anatomy": [
-        { "name": "illustration", "description": "Optional visual icon or image", "element": "x-icon", "required": false },
+        { "name": "illustration", "description": "Optional visual icon or image", "element": "icon-wc", "required": false },
         { "name": "title", "description": "Brief description of empty state", "element": "h3" },
         { "name": "description", "description": "Helpful context or instructions", "element": "p" },
         { "name": "actions", "description": "Primary CTA to resolve empty state", "element": "div", "required": false }
@@ -736,7 +737,7 @@
       },
       "related": ["skeleton", "alert", "progress-bar"],
       "examples": [
-        { "name": "No Results", "html": "<empty-state data-type=\"no-results\">\n  <x-icon name=\"search\" data-illustration></x-icon>\n  <h3 data-title>No results found</h3>\n  <p data-description>Try different keywords.</p>\n</empty-state>" }
+        { "name": "No Results", "html": "<empty-state data-type=\"no-results\">\n  <icon-wc name=\"search\" data-illustration></icon-wc>\n  <h3 data-title>No results found</h3>\n  <p data-description>Try different keywords.</p>\n</empty-state>" }
       ]
     },
     {
@@ -1224,7 +1225,7 @@
       "element": "[data-button]",
       "anatomy": [
         { "name": "button", "description": "Button element with data-button attribute", "element": "button" },
-        { "name": "icon", "description": "Optional leading or trailing icon", "element": "x-icon", "required": false },
+        { "name": "icon", "description": "Optional leading or trailing icon", "element": "icon-wc", "required": false },
         { "name": "label", "description": "Button text", "element": "span", "required": false }
       ],
       "states": ["default", "hover", "focus", "active", "disabled", "loading"],
@@ -1242,7 +1243,7 @@
       "related": ["link", "badge", "form-field"],
       "examples": [
         { "name": "Primary Button", "html": "<button data-button=\"primary\">Save Changes</button>" },
-        { "name": "With Icon", "html": "<button data-button=\"secondary\">\n  <x-icon name=\"plus\"></x-icon>\n  <span>Add Item</span>\n</button>" }
+        { "name": "With Icon", "html": "<button data-button=\"secondary\">\n  <icon-wc name=\"plus\"></icon-wc>\n  <span>Add Item</span>\n</button>" }
       ]
     },
     {
@@ -1253,7 +1254,7 @@
       "element": "[data-link]",
       "anatomy": [
         { "name": "anchor", "description": "Anchor element with data-link attribute", "element": "a" },
-        { "name": "icon", "description": "Optional external link icon", "element": "x-icon", "required": false }
+        { "name": "icon", "description": "Optional external link icon", "element": "icon-wc", "required": false }
       ],
       "states": ["default", "hover", "focus", "visited", "active"],
       "variants": [
@@ -1520,29 +1521,31 @@
     {
       "name": "tooltip",
       "category": "component",
-      "description": "Contextual hints that appear on hover/focus using native Popover API",
+      "description": "Contextual hints that appear on hover/focus using tooltip-wc Web Component",
       "status": "stable",
-      "element": "tooltip-wrapper",
+      "element": "tooltip-wc",
       "anatomy": [
-        { "name": "container", "description": "Tooltip wrapper", "element": "tooltip-wrapper" },
+        { "name": "container", "description": "Tooltip wrapper", "element": "tooltip-wc" },
         { "name": "trigger", "description": "Element that shows tooltip", "element": "button" },
-        { "name": "tooltip", "description": "Tooltip content with popover attribute", "element": "div[popover][data-tooltip]" }
+        { "name": "tooltip", "description": "Tooltip content (auto-generated or template)", "element": "template[data-tooltip]" }
       ],
       "states": ["hidden", "visible"],
       "variants": [
         { "name": "position", "attribute": "data-position", "values": ["top", "bottom", "left", "right"], "default": "top" }
       ],
       "accessibility": {
-        "aria": ["aria-describedby linking tooltip to trigger", "popover=\"hint\" for tooltip behavior"],
+        "aria": ["aria-describedby automatically set on trigger", "popover=\"hint\" for tooltip behavior"],
         "keyboard": [
           { "key": "Focus", "action": "Show tooltip" },
-          { "key": "Blur", "action": "Hide tooltip" }
+          { "key": "Blur", "action": "Hide tooltip" },
+          { "key": "Escape", "action": "Hide tooltip" }
         ]
       },
       "related": ["popover", "button", "badge"],
       "examples": [
-        { "name": "Basic Tooltip", "html": "<tooltip-wrapper>\n  <button popovertarget=\"tip\" aria-describedby=\"tip\">Hover me</button>\n  <div id=\"tip\" popover=\"hint\" data-tooltip>Tooltip content</div>\n</tooltip-wrapper>" },
-        { "name": "Icon Button Tooltip", "html": "<tooltip-wrapper>\n  <button aria-label=\"Edit\" popovertarget=\"edit-tip\" aria-describedby=\"edit-tip\">\n    <x-icon name=\"edit\"></x-icon>\n  </button>\n  <div id=\"edit-tip\" popover=\"hint\" data-tooltip>Edit</div>\n</tooltip-wrapper>" }
+        { "name": "Simple Text Tooltip", "html": "<tooltip-wc data-content=\"Tooltip text\">\n  <button>Hover me</button>\n</tooltip-wc>" },
+        { "name": "Rich Content Tooltip", "html": "<tooltip-wc>\n  <button>Hover me</button>\n  <template data-tooltip>\n    <strong>Bold</strong> and <kbd>Ctrl+S</kbd>\n  </template>\n</tooltip-wc>" },
+        { "name": "Icon Button Tooltip", "html": "<tooltip-wc data-content=\"Edit\">\n  <button aria-label=\"Edit\">\n    <icon-wc name=\"edit\"></icon-wc>\n  </button>\n</tooltip-wc>" }
       ]
     }
   ]

@@ -33,7 +33,7 @@ A web project template with validation, automation, and AI-assisted development 
 | `metadata` | SEO, Open Graph, social sharing |
 | `i18n` | Internationalization, lang, RTL |
 | `patterns` | Reusable page patterns |
-| `icons` | Lucide icon library with `<x-icon>` |
+| `icons` | Lucide icon library with `<icon-wc>` |
 | `service-worker` | Offline support, caching strategies, PWA |
 | `unit-testing` | Node.js native test runner patterns |
 | `e2e-testing` | Playwright browser testing patterns |

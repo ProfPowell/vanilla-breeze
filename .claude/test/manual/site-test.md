@@ -23,8 +23,8 @@ Prompt:
 - `lucide-static` installed as devDependency
 - Icons synced to `assets/icons/lucide/`
 - `assets/icons/custom/` directory created
-- `x-icon` component copied to project
-- `elements.json` updated with `x-icon` definition
+- `icon-wc` component copied to project
+- `elements.json` updated with `icon-wc` definition
 
 ### Step 1.2: Verify icon count
 
@@ -38,20 +38,20 @@ ls assets/icons/lucide/*.svg | wc -l
 
 Prompt:
 ```
-Create examples/icons.html that demonstrates using x-icon with home, settings, and user icons
+Create examples/icons.html that demonstrates using icon-wc with home, settings, and user icons
 ```
 
 **Expected**:
 ```html
-<script type="module" src="/assets/js/components/x-icon/x-icon.js"></script>
-<x-icon name="home"></x-icon>
-<x-icon name="settings" size="lg"></x-icon>
-<x-icon name="user" size="sm"></x-icon>
+<script type="module" src="/assets/js/components/icon-wc/icon-wc.js"></script>
+<icon-wc name="home"></icon-wc>
+<icon-wc name="settings" size="lg"></icon-wc>
+<icon-wc name="user" size="sm"></icon-wc>
 ```
 
 **Pass Criteria**:
 - [ ] Icons synced successfully
-- [ ] x-icon component available
+- [ ] icon-wc component available
 - [ ] Icons render in HTML
 
 ---

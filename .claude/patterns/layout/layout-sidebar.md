@@ -58,7 +58,7 @@ Two-column layout with primary content and a sidebar. Supports left or right sid
 ```html
 <layout-sidebar  >
   <button commandfor="sidebar" command="toggle-popover" aria-label="Toggle sidebar" data-sidebar-toggle>
-    <x-icon name="menu" />
+    <icon-wc name="menu" />
   </button>
 
   <aside id="sidebar" popover>

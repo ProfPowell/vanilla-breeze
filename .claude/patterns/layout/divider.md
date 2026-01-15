@@ -290,7 +290,7 @@ customElements.define('layout-divider', LayoutDivider);
 ```html
 <layout-divider>
   <span data-icon>
-    <x-icon name="star"></x-icon>
+    <icon-wc name="star"></icon-wc>
   </span>
 </layout-divider>
 ```

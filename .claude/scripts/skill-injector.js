@@ -138,7 +138,7 @@ const TDD_DETECTION = {
 const CONTENT_PATTERNS = [
   // HTML content patterns
   { pattern: /<form[\s>]/i, skill: 'forms', reason: 'Form detected - use <form-field> pattern' },
-  { pattern: /<x-icon|lucide-|icon/i, skill: 'icons', reason: 'Icon pattern detected - use <x-icon> component' },
+  { pattern: /<icon-wc|lucide-|icon/i, skill: 'icons', reason: 'Icon pattern detected - use <icon-wc> component' },
   { pattern: /<picture[\s>]/i, skill: 'responsive-images', reason: 'Picture element detected' },
   { pattern: /<img[\s>]/i, skill: 'responsive-images', reason: 'Image detected - consider responsive patterns' },
   { pattern: /<nav[\s>]/i, skill: 'accessibility-checker', reason: 'Navigation detected - ensure aria-label' },

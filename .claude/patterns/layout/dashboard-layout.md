@@ -62,12 +62,12 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
     <a href="/" data-logo>AppName</a>
     <nav aria-label="Primary">
       <button data-sidebar-toggle aria-label="Toggle sidebar">
-        <x-icon name="menu"></x-icon>
+        <icon-wc name="menu"></icon-wc>
       </button>
     </nav>
     <div data-actions>
       <button data-icon-button aria-label="Notifications">
-        <x-icon name="bell"></x-icon>
+        <icon-wc name="bell"></icon-wc>
       </button>
       <button data-avatar>
         <img src="avatar.jpg" alt="User" />
@@ -78,15 +78,15 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
   <aside data-sidebar aria-label="Navigation">
     <nav>
       <a href="/dashboard" data-active>
-        <x-icon name="home"></x-icon>
+        <icon-wc name="home"></icon-wc>
         <span>Dashboard</span>
       </a>
       <a href="/projects">
-        <x-icon name="folder"></x-icon>
+        <icon-wc name="folder"></icon-wc>
         <span>Projects</span>
       </a>
       <a href="/settings">
-        <x-icon name="settings"></x-icon>
+        <icon-wc name="settings"></icon-wc>
         <span>Settings</span>
       </a>
     </nav>

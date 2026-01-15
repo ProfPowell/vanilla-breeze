@@ -53,7 +53,7 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
     <header data-header>
       <h2 id="modal-title">Edit Profile</h2>
       <button data-close aria-label="Close">
-        <x-icon name="x"></x-icon>
+        <icon-wc name="x"></icon-wc>
       </button>
     </header>
 
@@ -358,7 +358,7 @@ customElements.define('modal-dialog', ModalDialog);
     <header data-header>
       <h2 id="basic-title">Modal Title</h2>
       <button data-close aria-label="Close">
-        <x-icon name="x"></x-icon>
+        <icon-wc name="x"></icon-wc>
       </button>
     </header>
     <div data-body>
@@ -398,7 +398,7 @@ customElements.define('modal-dialog', ModalDialog);
     <header data-header>
       <h2 id="form-title">Edit Profile</h2>
       <button data-close aria-label="Close">
-        <x-icon name="x"></x-icon>
+        <icon-wc name="x"></icon-wc>
       </button>
     </header>
     <div data-body>

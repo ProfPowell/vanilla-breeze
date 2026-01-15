@@ -52,7 +52,7 @@ Site-wide announcement bar typically positioned at the top of the page. Used for
     <p>🎉 Black Friday Sale: Get 50% off all plans! <a href="/pricing">Shop now</a></p>
   </div>
   <button data-dismiss aria-label="Dismiss banner">
-    <x-icon name="x"></x-icon>
+    <icon-wc name="x"></icon-wc>
   </button>
 </site-banner>
 ```
@@ -270,7 +270,7 @@ customElements.define('site-banner', SiteBanner);
     <a href="/launch">See what's new</a>
   </div>
   <button data-dismiss aria-label="Dismiss">
-    <x-icon name="x"></x-icon>
+    <icon-wc name="x"></icon-wc>
   </button>
 </site-banner>
 ```

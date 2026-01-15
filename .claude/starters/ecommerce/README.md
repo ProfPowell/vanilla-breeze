@@ -37,7 +37,7 @@ src/
 │   ├── cart-drawer.js      # Slide-out cart panel
 │   ├── product-card.js     # Product grid item
 │   ├── quantity-input.js   # Increment/decrement input
-│   └── x-icon.js           # Icon component
+│   └── icon-wc.js           # Icon component
 ├── lib/
 │   ├── store.js            # Cart state management
 │   └── api.js              # API client

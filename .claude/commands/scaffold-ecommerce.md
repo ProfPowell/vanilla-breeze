@@ -57,7 +57,7 @@ Create a new e-commerce storefront project with product catalog, shopping cart, 
    │   │   ├── cart-drawer.js
    │   │   ├── product-card.js
    │   │   ├── quantity-input.js
-   │   │   └── x-icon.js
+   │   │   └── icon-wc.js
    │   ├── lib/
    │   │   ├── store.js
    │   │   └── api.js

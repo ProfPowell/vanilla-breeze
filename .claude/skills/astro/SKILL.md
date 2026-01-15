@@ -364,11 +364,11 @@ Integrate your custom elements:
 ```astro
 ---
 // Import the custom element definition
-import '../components/x-icon.js';
+import '../components/icon-wc.js';
 ---
 
 <!-- Use custom element (no hydration needed) -->
-<x-icon name="menu" size="24"></x-icon>
+<icon-wc name="menu" size="24"></icon-wc>
 
 <!-- Custom element with slots -->
 <theme-selector>

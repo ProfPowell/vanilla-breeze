@@ -147,7 +147,7 @@ When creating HTML, also invoke these skills based on content:
 
 | Content Type | Invoke Skill | Why |
 |--------------|--------------|-----|
-| Any icon or visual indicator | **icons** | Use `<x-icon>`, never inline SVG |
+| Any icon or visual indicator | **icons** | Use `<icon-wc>`, never inline SVG |
 | Form elements | **forms** | Use `<form-field>` custom element |
 | Images | **responsive-images** | Use `<picture>` with srcset |
 | Page head content | **metadata** | SEO, social, performance hints |
@@ -163,7 +163,7 @@ When creating HTML, also invoke these skills based on content:
 <svg viewBox="0 0 24 24">...</svg>
 
 <!-- CORRECT - invoke icons skill first -->
-<x-icon name="menu" label="Menu"></x-icon>
+<icon-wc name="menu" label="Menu"></icon-wc>
 ```
 
 See the **icons** skill for the full pattern.
@@ -208,7 +208,7 @@ See the **progressive-enhancement** skill for complete patterns.
 
 ## Related Skills
 
-- **icons** - Lucide icon library with `<x-icon>` Web Component
+- **icons** - Lucide icon library with `<icon-wc>` Web Component
 - **forms** - HTML-first form patterns with CSS-only validation
 - **responsive-images** - Modern responsive image techniques
 - **metadata** - HTML metadata and head content

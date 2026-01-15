@@ -7,21 +7,21 @@ import { styles } from './x-icon-styles.js';
 const iconCache = new Map();
 
 /**
- * @class XIcon
+ * @class IconWc
  * @extends HTMLElement
  * @description A lightweight icon component that loads SVG icons from local files
  *
  * @example
- * <x-icon name="menu"></x-icon>
- * <x-icon name="arrow-right" size="lg"></x-icon>
- * <x-icon name="logo" set="custom"></x-icon>
+ * <icon-wc name="menu"></icon-wc>
+ * <icon-wc name="arrow-right" size="lg"></icon-wc>
+ * <icon-wc name="logo" set="custom"></icon-wc>
  *
  * @attr {string} name - Icon name (required, matches filename without .svg)
  * @attr {string} set - Icon set directory (default: "lucide", or "custom")
  * @attr {string} size - Icon size: xs, sm, md, lg, xl, 2xl (default: md)
  * @attr {string} label - Accessible label for functional icons
  */
-class XIcon extends HTMLElement {
+class IconWc extends HTMLElement {
     /**
      * @static
      * @returns {string[]} List of attributes to observe for changes
@@ -228,6 +228,6 @@ class XIcon extends HTMLElement {
     }
 }
 
-customElements.define('x-icon', XIcon);
+customElements.define('icon-wc', IconWc);
 
-export { XIcon };
+export { IconWc };

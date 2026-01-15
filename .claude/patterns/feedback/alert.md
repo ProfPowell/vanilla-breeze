@@ -44,13 +44,13 @@ Inline message for providing feedback about an action or state. Used to communic
 
 ```html
 <alert-message data-type="error" data-style="filled">
-  <x-icon name="alert-circle" data-icon></x-icon>
+  <icon-wc name="alert-circle" data-icon></icon-wc>
   <div data-content>
     <strong data-title>Error</strong>
     <p>Please check your input and try again.</p>
   </div>
   <button data-dismiss aria-label="Dismiss">
-    <x-icon name="x"></x-icon>
+    <icon-wc name="x"></icon-wc>
   </button>
 </alert-message>
 ```
@@ -225,7 +225,7 @@ customElements.define('alert-message', AlertMessage);
 
 ```html
 <alert-message data-type="info">
-  <x-icon name="info" data-icon></x-icon>
+  <icon-wc name="info" data-icon></icon-wc>
   <div data-content>
     <p>Your session will expire in 5 minutes.</p>
   </div>
@@ -236,7 +236,7 @@ customElements.define('alert-message', AlertMessage);
 
 ```html
 <alert-message data-type="success">
-  <x-icon name="check-circle" data-icon></x-icon>
+  <icon-wc name="check-circle" data-icon></icon-wc>
   <div data-content>
     <strong data-title>Success!</strong>
     <p>Your changes have been saved.</p>
@@ -248,7 +248,7 @@ customElements.define('alert-message', AlertMessage);
 
 ```html
 <alert-message data-type="error" role="alert">
-  <x-icon name="alert-circle" data-icon></x-icon>
+  <icon-wc name="alert-circle" data-icon></icon-wc>
   <div data-content>
     <strong data-title>Payment Failed</strong>
     <p>Your card was declined. Please try a different payment method.</p>
@@ -258,7 +258,7 @@ customElements.define('alert-message', AlertMessage);
     </div>
   </div>
   <button data-dismiss aria-label="Dismiss">
-    <x-icon name="x"></x-icon>
+    <icon-wc name="x"></icon-wc>
   </button>
 </alert-message>
 ```
@@ -267,7 +267,7 @@ customElements.define('alert-message', AlertMessage);
 
 ```html
 <alert-message data-type="warning" data-style="filled">
-  <x-icon name="alert-triangle" data-icon></x-icon>
+  <icon-wc name="alert-triangle" data-icon></icon-wc>
   <div data-content>
     <p>Your account is approaching its storage limit.</p>
   </div>

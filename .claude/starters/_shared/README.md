@@ -22,7 +22,7 @@ HTML templates with `{{PLACEHOLDER}}` variables:
 
 ### Components
 
-- `components/x-icon/` - Icon Web Component using Lucide icons
+- `components/icon-wc/` - Icon Web Component using Lucide icons
 
 ## Template Variables
 

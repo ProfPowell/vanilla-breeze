@@ -116,8 +116,8 @@
           </div>
         </div>
 
-        <!-- Toast Region -->
-        <toast-region data-position="bottom-right" aria-live="polite" aria-label="Notifications"></toast-region>
+        <!-- Toast Container -->
+        <toast-wc data-position="bottom-end"></toast-wc>
       </section>
 
       <!-- Modal Section -->
@@ -341,48 +341,20 @@
   </layout-stack>
 
   <script>
-    // Toast functionality
-    function showToast(type) {
-      const region = document.querySelector('toast-region');
+    // Toast functionality using toast-wc API
+    function showToast(variant) {
+      const toasts = document.querySelector('toast-wc');
       const messages = {
-        success: { title: 'Success!', message: 'Your changes have been saved.' },
-        error: { title: 'Error', message: 'Something went wrong. Please try again.' },
-        info: { title: 'Info', message: 'Your session will expire soon.' },
-        warning: { title: 'Warning', message: 'This action cannot be undone.' }
+        success: 'Your changes have been saved.',
+        error: 'Something went wrong. Please try again.',
+        info: 'Your session will expire soon.',
+        warning: 'This action cannot be undone.'
       };
 
-      const icons = {
-        success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-        error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-        info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
-        warning: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
-      };
-
-      const toast = document.createElement('toast-notification');
-      toast.setAttribute('data-type', type);
-      toast.innerHTML = `
-        <span data-icon>${icons[type]}</span>
-        <div data-content>
-          <strong data-title>${messages[type].title}</strong>
-          <p>${messages[type].message}</p>
-        </div>
-        <button data-dismiss aria-label="Dismiss">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      `;
-
-      region.appendChild(toast);
-
-      // Auto dismiss after 5 seconds
-      setTimeout(() => {
-        toast.setAttribute('data-exiting', '');
-        setTimeout(() => toast.remove(), 300);
-      }, 5000);
-
-      // Manual dismiss
-      toast.querySelector('[data-dismiss]').addEventListener('click', () => {
-        toast.setAttribute('data-exiting', '');
-        setTimeout(() => toast.remove(), 300);
+      toasts.show({
+        message: messages[variant],
+        variant: variant,
+        duration: 5000
       });
     }
 

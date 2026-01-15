@@ -205,13 +205,13 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ```html
 <layout-cluster data-gap="m" data-justify="center">
   <a href="https://twitter.com" aria-label="Twitter">
-    <x-icon name="twitter"></x-icon>
+    <icon-wc name="twitter"></icon-wc>
   </a>
   <a href="https://github.com" aria-label="GitHub">
-    <x-icon name="github"></x-icon>
+    <icon-wc name="github"></icon-wc>
   </a>
   <a href="https://linkedin.com" aria-label="LinkedIn">
-    <x-icon name="linkedin"></x-icon>
+    <icon-wc name="linkedin"></icon-wc>
   </a>
 </layout-cluster>
 ```
@@ -249,15 +249,15 @@ Horizontal layout utility for grouping inline elements with consistent spacing a
 ```html
 <layout-cluster data-gap="m" data-align="center">
   <span class="meta-item">
-    <x-icon name="calendar"></x-icon>
+    <icon-wc name="calendar"></icon-wc>
     Jan 15, 2025
   </span>
   <span class="meta-item">
-    <x-icon name="user"></x-icon>
+    <icon-wc name="user"></icon-wc>
     John Doe
   </span>
   <span class="meta-item">
-    <x-icon name="clock"></x-icon>
+    <icon-wc name="clock"></icon-wc>
     5 min read
   </span>
 </layout-cluster>

@@ -46,7 +46,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="medium" data-type="default">
-  <x-icon name="inbox" data-illustration></x-icon>
+  <icon-wc name="inbox" data-illustration></icon-wc>
   <h3 data-title>No messages yet</h3>
   <p data-description>When you receive messages, they'll appear here.</p>
   <div data-actions>
@@ -197,12 +197,12 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="large">
-  <x-icon name="folder" data-illustration></x-icon>
+  <icon-wc name="folder" data-illustration></icon-wc>
   <h3 data-title>No projects yet</h3>
   <p data-description>Projects help you organize your work. Create your first project to get started.</p>
   <div data-actions>
     <a href="/projects/new" data-button="primary">
-      <x-icon name="plus"></x-icon>
+      <icon-wc name="plus"></icon-wc>
       Create Project
     </a>
   </div>
@@ -213,7 +213,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="medium" data-type="no-results">
-  <x-icon name="search" data-illustration></x-icon>
+  <icon-wc name="search" data-illustration></icon-wc>
   <h3 data-title>No results found</h3>
   <p data-description>We couldn't find anything matching "{{ query }}". Try different keywords or check your filters.</p>
   <div data-actions>
@@ -226,7 +226,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="medium" data-type="error">
-  <x-icon name="alert-circle" data-illustration></x-icon>
+  <icon-wc name="alert-circle" data-illustration></icon-wc>
   <h3 data-title>Unable to load data</h3>
   <p data-description>Something went wrong while loading your data. Please try again.</p>
   <div data-actions>
@@ -240,7 +240,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="small">
-  <x-icon name="users" data-illustration></x-icon>
+  <icon-wc name="users" data-illustration></icon-wc>
   <h3 data-title>No team members</h3>
   <p data-description>Invite people to collaborate on this project.</p>
   <div data-actions>
@@ -253,7 +253,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
 ```html
 <empty-state data-size="medium" data-type="success">
-  <x-icon name="check-circle" data-illustration></x-icon>
+  <icon-wc name="check-circle" data-illustration></icon-wc>
   <h3 data-title>All caught up!</h3>
   <p data-description>You've completed all your tasks. Great job!</p>
 </empty-state>
