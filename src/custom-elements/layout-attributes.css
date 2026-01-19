@@ -1,0 +1,529 @@
+/* ==========================================================================
+   Layout Attributes System
+
+   Enable semantic HTML elements to use VB layouts via data-layout attribute.
+   Alternative to custom element wrappers - same layouts, better semantics.
+
+   Usage: <article data-layout="stack" data-gap="m">...</article>
+   ========================================================================== */
+
+/* ==========================================================================
+   PHASE 1: CORE LAYOUTS
+   Stack, Cluster, Grid, Center - highest usage, simplest implementation
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Stack: Vertical layout with gap
+   -------------------------------------------------------------------------- */
+[data-layout="stack"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_gap, var(--size-m));
+}
+
+[data-layout="stack"][data-gap="none"]  { --_gap: 0; }
+[data-layout="stack"][data-gap="3xs"]   { --_gap: var(--size-3xs); }
+[data-layout="stack"][data-gap="2xs"]   { --_gap: var(--size-2xs); }
+[data-layout="stack"][data-gap="xs"]    { --_gap: var(--size-xs); }
+[data-layout="stack"][data-gap="s"]     { --_gap: var(--size-s); }
+[data-layout="stack"][data-gap="m"]     { --_gap: var(--size-m); }
+[data-layout="stack"][data-gap="l"]     { --_gap: var(--size-l); }
+[data-layout="stack"][data-gap="xl"]    { --_gap: var(--size-xl); }
+[data-layout="stack"][data-gap="2xl"]   { --_gap: var(--size-2xl); }
+[data-layout="stack"][data-gap="3xl"]   { --_gap: var(--size-3xl); }
+
+[data-layout="stack"][data-align="start"]   { align-items: flex-start; }
+[data-layout="stack"][data-align="center"]  { align-items: center; }
+[data-layout="stack"][data-align="end"]     { align-items: flex-end; }
+[data-layout="stack"][data-align="stretch"] { align-items: stretch; }
+
+/* --------------------------------------------------------------------------
+   Cluster: Horizontal flex with wrapping
+   -------------------------------------------------------------------------- */
+[data-layout="cluster"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--_gap, var(--size-s));
+  align-items: var(--_align, center);
+}
+
+[data-layout="cluster"][data-gap="xs"] { --_gap: var(--size-xs); }
+[data-layout="cluster"][data-gap="s"]  { --_gap: var(--size-s); }
+[data-layout="cluster"][data-gap="m"]  { --_gap: var(--size-m); }
+[data-layout="cluster"][data-gap="l"]  { --_gap: var(--size-l); }
+[data-layout="cluster"][data-gap="xl"] { --_gap: var(--size-xl); }
+
+[data-layout="cluster"][data-justify="start"]   { justify-content: flex-start; }
+[data-layout="cluster"][data-justify="end"]     { justify-content: flex-end; }
+[data-layout="cluster"][data-justify="center"]  { justify-content: center; }
+[data-layout="cluster"][data-justify="between"] { justify-content: space-between; }
+
+[data-layout="cluster"][data-align="start"]    { --_align: flex-start; }
+[data-layout="cluster"][data-align="end"]      { --_align: flex-end; }
+[data-layout="cluster"][data-align="center"]   { --_align: center; }
+[data-layout="cluster"][data-align="stretch"]  { --_align: stretch; }
+[data-layout="cluster"][data-align="baseline"] { --_align: baseline; }
+
+[data-layout="cluster"][data-nowrap] {
+  flex-wrap: nowrap;
+}
+
+/* Overlap variant - for stacked/overlapping items like avatar groups */
+[data-layout="cluster"][data-overlap] {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+[data-layout="cluster"][data-overlap] > * {
+  margin-inline-start: var(--_overlap, -0.5rem);
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+[data-layout="cluster"][data-overlap] > :last-child {
+  margin-inline-start: 0;
+}
+
+[data-layout="cluster"][data-overlap="xs"] { --_overlap: -0.25rem; }
+[data-layout="cluster"][data-overlap="s"]  { --_overlap: -0.5rem; }
+[data-layout="cluster"][data-overlap="m"]  { --_overlap: -0.75rem; }
+[data-layout="cluster"][data-overlap="l"]  { --_overlap: -1rem; }
+
+/* --------------------------------------------------------------------------
+   Grid: Auto-fit responsive grid
+   -------------------------------------------------------------------------- */
+[data-layout="grid"] {
+  display: grid;
+  gap: var(--_gap, var(--size-m));
+  grid-template-columns: repeat(auto-fit, minmax(var(--_min, 15rem), 1fr));
+}
+
+[data-layout="grid"][data-min="6rem"]  { --_min: 6rem; }
+[data-layout="grid"][data-min="8rem"]  { --_min: 8rem; }
+[data-layout="grid"][data-min="10rem"] { --_min: 10rem; }
+[data-layout="grid"][data-min="12rem"] { --_min: 12rem; }
+[data-layout="grid"][data-min="15rem"] { --_min: 15rem; }
+[data-layout="grid"][data-min="18rem"] { --_min: 18rem; }
+[data-layout="grid"][data-min="20rem"] { --_min: 20rem; }
+[data-layout="grid"][data-min="25rem"] { --_min: 25rem; }
+
+[data-layout="grid"][data-gap="none"] { --_gap: 0; }
+[data-layout="grid"][data-gap="xs"]   { --_gap: var(--size-xs); }
+[data-layout="grid"][data-gap="s"]    { --_gap: var(--size-s); }
+[data-layout="grid"][data-gap="m"]    { --_gap: var(--size-m); }
+[data-layout="grid"][data-gap="l"]    { --_gap: var(--size-l); }
+[data-layout="grid"][data-gap="xl"]   { --_gap: var(--size-xl); }
+
+/* --------------------------------------------------------------------------
+   Center: Centered content container
+   -------------------------------------------------------------------------- */
+[data-layout="center"] {
+  display: block;
+  box-sizing: content-box;
+  max-inline-size: var(--_max, var(--content-normal, 60rem));
+  margin-inline: auto;
+  padding-inline: var(--size-m);
+}
+
+[data-layout="center"][data-max="narrow"] { --_max: var(--content-narrow, 45rem); }
+[data-layout="center"][data-max="normal"] { --_max: var(--content-normal, 60rem); }
+[data-layout="center"][data-max="wide"]   { --_max: var(--content-wide, 80rem); }
+[data-layout="center"][data-max="prose"]  { --_max: 65ch; }
+
+[data-layout="center"][data-intrinsic] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+[data-layout="center"][data-text] {
+  text-align: center;
+}
+
+[data-layout="center"][data-gutter="none"] { padding-inline: 0; }
+[data-layout="center"][data-gutter="s"]    { padding-inline: var(--size-s); }
+[data-layout="center"][data-gutter="l"]    { padding-inline: var(--size-l); }
+
+
+/* ==========================================================================
+   PHASE 2: COMMON PATTERNS
+   Page Stack, Split, Sidebar - page-level and two-column patterns
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Page Stack: Header/Main/Footer with sticky footer
+   -------------------------------------------------------------------------- */
+[data-layout="page-stack"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+[data-layout="page-stack"] > main {
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Split: Two-column ratio grid
+   -------------------------------------------------------------------------- */
+[data-layout="split"] {
+  display: grid;
+  grid-template-columns: var(--_ratio, 1fr 1fr);
+  gap: var(--_gap, var(--size-xl));
+  align-items: center;
+}
+
+[data-layout="split"][data-ratio="2:1"]    { --_ratio: 2fr 1fr; }
+[data-layout="split"][data-ratio="1:2"]    { --_ratio: 1fr 2fr; }
+[data-layout="split"][data-ratio="3:1"]    { --_ratio: 3fr 1fr; }
+[data-layout="split"][data-ratio="1:3"]    { --_ratio: 1fr 3fr; }
+[data-layout="split"][data-ratio="golden"] { --_ratio: 1.618fr 1fr; }
+
+[data-layout="split"][data-gap="s"]  { --_gap: var(--size-s); }
+[data-layout="split"][data-gap="m"]  { --_gap: var(--size-m); }
+[data-layout="split"][data-gap="l"]  { --_gap: var(--size-l); }
+[data-layout="split"][data-gap="xl"] { --_gap: var(--size-xl); }
+
+[data-layout="split"][data-align="start"]   { align-items: start; }
+[data-layout="split"][data-align="center"]  { align-items: center; }
+[data-layout="split"][data-align="end"]     { align-items: end; }
+[data-layout="split"][data-align="stretch"] { align-items: stretch; }
+
+@media (max-width: 48rem) {
+  [data-layout="split"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar: Two-column with flexible main content
+   -------------------------------------------------------------------------- */
+[data-layout="sidebar"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--_gap, var(--size-m));
+}
+
+[data-layout="sidebar"] > :first-child {
+  flex-basis: var(--_sidebar-width, 15rem);
+  flex-grow: 1;
+}
+
+[data-layout="sidebar"] > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: var(--_content-min, 50%);
+}
+
+[data-layout="sidebar"][data-gap="xs"] { --_gap: var(--size-xs); }
+[data-layout="sidebar"][data-gap="s"]  { --_gap: var(--size-s); }
+[data-layout="sidebar"][data-gap="m"]  { --_gap: var(--size-m); }
+[data-layout="sidebar"][data-gap="l"]  { --_gap: var(--size-l); }
+[data-layout="sidebar"][data-gap="xl"] { --_gap: var(--size-xl); }
+
+[data-layout="sidebar"][data-side="end"] {
+  flex-direction: row-reverse;
+}
+
+[data-layout="sidebar"][data-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
+[data-layout="sidebar"][data-sidebar-width="normal"] { --_sidebar-width: 15rem; }
+[data-layout="sidebar"][data-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
+
+[data-layout="sidebar"][data-content-min="40"] { --_content-min: 40%; }
+[data-layout="sidebar"][data-content-min="50"] { --_content-min: 50%; }
+[data-layout="sidebar"][data-content-min="60"] { --_content-min: 60%; }
+
+[data-layout="sidebar"][data-nowrap] {
+  flex-wrap: nowrap;
+}
+
+
+/* ==========================================================================
+   PHASE 3: COMPLEX GRID
+   Holy Grail, Dashboard - named grid areas targeting semantic elements
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Holy Grail: Classic 3-column layout with header/footer
+   -------------------------------------------------------------------------- */
+[data-layout="holy-grail"] {
+  display: grid;
+  grid-template-areas:
+    "header header header"
+    "nav    main   aside"
+    "footer footer footer";
+  grid-template-columns: minmax(10rem, 15rem) 1fr minmax(10rem, 20rem);
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+
+[data-layout="holy-grail"] > header { grid-area: header; }
+[data-layout="holy-grail"] > nav    { grid-area: nav; }
+[data-layout="holy-grail"] > main   { grid-area: main; }
+[data-layout="holy-grail"] > aside  { grid-area: aside; }
+[data-layout="holy-grail"] > footer { grid-area: footer; }
+
+/* Holy grail without aside becomes two-column */
+[data-layout="holy-grail"]:not(:has(> aside)) {
+  grid-template-areas:
+    "header header"
+    "nav    main"
+    "footer footer";
+  grid-template-columns: minmax(10rem, 15rem) 1fr;
+}
+
+/* Holy grail without nav becomes two-column (aside on right) */
+[data-layout="holy-grail"]:not(:has(> nav)) {
+  grid-template-areas:
+    "header header"
+    "main   aside"
+    "footer footer";
+  grid-template-columns: 1fr minmax(10rem, 20rem);
+}
+
+/* Holy grail without nav or aside becomes single column */
+[data-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 60rem) {
+  [data-layout="holy-grail"] {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto auto;
+  }
+
+  [data-layout="holy-grail"]:not(:has(> aside)) {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  [data-layout="holy-grail"]:not(:has(> nav)) {
+    grid-template-areas:
+      "header"
+      "main"
+      "aside"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto;
+  }
+
+  [data-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
+    grid-template-areas:
+      "header"
+      "main"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Dashboard: App shell with sticky header and sidebar
+   -------------------------------------------------------------------------- */
+[data-layout="dashboard"] {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "nav    main";
+  grid-template-columns: var(--_sidebar-width, 16rem) 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+}
+
+[data-layout="dashboard"] > header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+[data-layout="dashboard"] > nav {
+  grid-area: nav;
+  position: sticky;
+  top: var(--_header-height, 3.5rem);
+  height: calc(100dvh - var(--_header-height, 3.5rem));
+  overflow-y: auto;
+}
+
+[data-layout="dashboard"] > main {
+  grid-area: main;
+}
+
+[data-layout="dashboard"][data-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
+[data-layout="dashboard"][data-sidebar-width="normal"] { --_sidebar-width: 16rem; }
+[data-layout="dashboard"][data-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
+
+[data-layout="dashboard"][data-header-height="3rem"]   { --_header-height: 3rem; }
+[data-layout="dashboard"][data-header-height="3.5rem"] { --_header-height: 3.5rem; }
+[data-layout="dashboard"][data-header-height="4rem"]   { --_header-height: 4rem; }
+
+@media (max-width: 48rem) {
+  [data-layout="dashboard"] {
+    grid-template-areas:
+      "header"
+      "main";
+    grid-template-columns: 1fr;
+  }
+
+  [data-layout="dashboard"] > nav {
+    position: fixed;
+    inset-block-start: var(--_header-height, 3.5rem);
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    width: var(--_sidebar-width, 16rem);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+    background: var(--color-surface);
+    z-index: 20;
+  }
+
+  [data-layout="dashboard"][data-nav-open] > nav {
+    transform: translateX(0);
+  }
+}
+
+
+/* ==========================================================================
+   PHASE 4: SPECIAL CASES
+   Cover, Switcher, Prose - layouts requiring special handling
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Cover: Full-height container with vertically centered principal element
+   -------------------------------------------------------------------------- */
+[data-layout="cover"] {
+  display: flex;
+  flex-direction: column;
+  min-block-size: var(--_min-height, 100dvh);
+  padding: var(--_padding, var(--size-m));
+}
+
+[data-layout="cover"][data-min="50vh"]  { --_min-height: 50vh; }
+[data-layout="cover"][data-min="75vh"]  { --_min-height: 75vh; }
+[data-layout="cover"][data-min="100vh"] { --_min-height: 100vh; }
+[data-layout="cover"][data-min="100dvh"] { --_min-height: 100dvh; }
+[data-layout="cover"][data-min="auto"]  { --_min-height: auto; }
+
+[data-layout="cover"][data-padding="none"] { --_padding: 0; }
+[data-layout="cover"][data-padding="s"]    { --_padding: var(--size-s); }
+[data-layout="cover"][data-padding="m"]    { --_padding: var(--size-m); }
+[data-layout="cover"][data-padding="l"]    { --_padding: var(--size-l); }
+[data-layout="cover"][data-padding="xl"]   { --_padding: var(--size-xl); }
+
+[data-layout="cover"][data-gap="s"]  { gap: var(--size-s); }
+[data-layout="cover"][data-gap="m"]  { gap: var(--size-m); }
+[data-layout="cover"][data-gap="l"]  { gap: var(--size-l); }
+
+/* The principal (centered) element - use data-principal on the child */
+[data-layout="cover"] > [data-principal] {
+  margin-block: auto;
+}
+
+/* Header element (top-aligned) */
+[data-layout="cover"] > header,
+[data-layout="cover"] > [data-cover-top] {
+  margin-block-end: auto;
+}
+
+/* Footer element (bottom-aligned) */
+[data-layout="cover"] > footer,
+[data-layout="cover"] > [data-cover-bottom] {
+  margin-block-start: auto;
+}
+
+/* Single child auto-centers */
+[data-layout="cover"] > :only-child {
+  margin-block: auto;
+}
+
+[data-layout="cover"][data-nospace] {
+  padding: 0;
+}
+
+[data-layout="cover"][data-center] {
+  align-items: center;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Switcher: Flexbox that switches direction at a threshold
+   -------------------------------------------------------------------------- */
+[data-layout="switcher"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--_gap, var(--size-m));
+}
+
+[data-layout="switcher"] > * {
+  flex-grow: 1;
+  flex-basis: calc((var(--_threshold, 30rem) - 100%) * 999);
+}
+
+[data-layout="switcher"][data-gap="none"] { --_gap: 0; }
+[data-layout="switcher"][data-gap="xs"]   { --_gap: var(--size-xs); }
+[data-layout="switcher"][data-gap="s"]    { --_gap: var(--size-s); }
+[data-layout="switcher"][data-gap="m"]    { --_gap: var(--size-m); }
+[data-layout="switcher"][data-gap="l"]    { --_gap: var(--size-l); }
+[data-layout="switcher"][data-gap="xl"]   { --_gap: var(--size-xl); }
+
+[data-layout="switcher"][data-threshold="20rem"] { --_threshold: 20rem; }
+[data-layout="switcher"][data-threshold="25rem"] { --_threshold: 25rem; }
+[data-layout="switcher"][data-threshold="30rem"] { --_threshold: 30rem; }
+[data-layout="switcher"][data-threshold="35rem"] { --_threshold: 35rem; }
+[data-layout="switcher"][data-threshold="40rem"] { --_threshold: 40rem; }
+[data-layout="switcher"][data-threshold="45rem"] { --_threshold: 45rem; }
+
+/* Limit number of items before forcing vertical */
+[data-layout="switcher"][data-limit="2"] > :nth-last-child(n+3),
+[data-layout="switcher"][data-limit="2"] > :nth-last-child(n+3) ~ * {
+  flex-basis: 100%;
+}
+
+[data-layout="switcher"][data-limit="3"] > :nth-last-child(n+4),
+[data-layout="switcher"][data-limit="3"] > :nth-last-child(n+4) ~ * {
+  flex-basis: 100%;
+}
+
+[data-layout="switcher"][data-limit="4"] > :nth-last-child(n+5),
+[data-layout="switcher"][data-limit="4"] > :nth-last-child(n+5) ~ * {
+  flex-basis: 100%;
+}
+
+[data-layout="switcher"][data-reverse] {
+  flex-direction: row-reverse;
+}
+
+[data-layout="switcher"][data-reverse][data-threshold] {
+  flex-wrap: wrap-reverse;
+}
+
+/* --------------------------------------------------------------------------
+   Prose: Typography utility for readable text content
+   -------------------------------------------------------------------------- */
+[data-layout="prose"] {
+  max-inline-size: 65ch;
+}
+
+[data-layout="prose"][data-max="narrow"] { max-inline-size: 45ch; }
+[data-layout="prose"][data-max="normal"] { max-inline-size: 65ch; }
+[data-layout="prose"][data-max="wide"]   { max-inline-size: 80ch; }
+
+/* Prose inherits from parent by default, but can be centered */
+[data-layout="prose"][data-center] {
+  margin-inline: auto;
+}
