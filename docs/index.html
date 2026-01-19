@@ -231,31 +231,88 @@
     /* Quick Start Section */
     .quickstart-section {
       padding-block: var(--size-2xl);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
     }
 
     .quickstart-section h2 {
       text-align: center;
-      margin-block-end: var(--size-xl);
+      margin-block-end: var(--size-2xl);
     }
 
-    .quickstart-grid {
+    .quickstart-steps {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: var(--size-xl);
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-2xl);
       max-inline-size: var(--content-wide);
       margin-inline: auto;
     }
 
-    .quickstart-item h3 {
-      font-size: var(--font-size-base);
-      margin-block-end: var(--size-s);
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .quickstart-code {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-l);
     }
 
-    .quickstart-item code-block {
+    .quickstart-step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--size-m);
+      align-items: start;
+    }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 2rem;
+      block-size: 2rem;
+      background: var(--color-interactive);
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: var(--font-size-lg);
+      margin-block-end: var(--size-xs);
+    }
+
+    .step-content p {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      margin-block-end: var(--size-s);
+    }
+
+    .step-content code-block {
       margin-block: 0;
+    }
+
+    .quickstart-result {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quickstart-result h3 {
+      font-size: var(--font-size-lg);
+      margin-block-end: var(--size-m);
+      text-align: center;
+    }
+
+    .quickstart-result browser-window {
+      flex: 1;
+      resize: none;
+    }
+
+    .result-demo {
+      padding: var(--size-l);
+    }
+
+    @media (max-width: 900px) {
+      .quickstart-steps {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Stats Bar */
@@ -536,30 +593,54 @@
     <!-- Quick Start Section -->
     <section class="quickstart-section">
       <h2>Quick Start</h2>
-      <div class="quickstart-grid">
-        <div class="quickstart-item">
-          <h3>1. Add the stylesheet</h3>
-          <code-block language="html">&lt;link rel="stylesheet" href="vanilla-breeze.css"&gt;</code-block>
-        </div>
-        <div class="quickstart-item">
-          <h3>2. Write semantic HTML</h3>
-          <code-block language="html">&lt;button class="primary"&gt;Click me&lt;/button&gt;
-
-&lt;layout-stack data-gap="m"&gt;
-  &lt;p&gt;Stacked content&lt;/p&gt;
-  &lt;p&gt;With consistent spacing&lt;/p&gt;
+      <div class="quickstart-steps">
+        <div class="quickstart-code">
+          <div class="quickstart-step">
+            <span class="step-number">1</span>
+            <div class="step-content">
+              <h3>Add the stylesheet</h3>
+              <p>Include Vanilla Breeze CSS in your HTML head.</p>
+              <code-block language="html">&lt;link rel="stylesheet" href="vanilla-breeze.css"&gt;</code-block>
+            </div>
+          </div>
+          <div class="quickstart-step">
+            <span class="step-number">2</span>
+            <div class="step-content">
+              <h3>Write semantic HTML</h3>
+              <p>Use native elements with simple class names for variants.</p>
+              <code-block language="html">&lt;layout-stack data-gap="m"&gt;
+  &lt;h1&gt;Welcome&lt;/h1&gt;
+  &lt;p&gt;Build beautiful interfaces with semantic HTML.&lt;/p&gt;
+  &lt;layout-cluster data-gap="s"&gt;
+    &lt;button class="primary"&gt;Get Started&lt;/button&gt;
+    &lt;button class="outline"&gt;Learn More&lt;/button&gt;
+  &lt;/layout-cluster&gt;
 &lt;/layout-stack&gt;</code-block>
+            </div>
+          </div>
+          <div class="quickstart-step">
+            <span class="step-number">3</span>
+            <div class="step-content">
+              <h3>Add interactivity (optional)</h3>
+              <p>Include JS for enhanced components like accordions and tabs.</p>
+              <code-block language="html">&lt;script type="module" src="vanilla-breeze.js"&gt;&lt;/script&gt;</code-block>
+            </div>
+          </div>
         </div>
-        <div class="quickstart-item">
-          <h3>3. Add components (optional)</h3>
-          <code-block language="html">&lt;script type="module" src="vanilla-breeze.js"&gt;&lt;/script&gt;
-
-&lt;accordion-wc&gt;
-  &lt;details&gt;
-    &lt;summary&gt;Expandable&lt;/summary&gt;
-    &lt;p&gt;With JavaScript enhancement&lt;/p&gt;
-  &lt;/details&gt;
-&lt;/accordion-wc&gt;</code-block>
+        <div class="quickstart-result">
+          <h3>Result</h3>
+          <browser-window url="index.html">
+            <div class="result-demo">
+              <layout-stack data-gap="m">
+                <h1 style="margin: 0;">Welcome</h1>
+                <p style="margin: 0; color: var(--color-text-muted);">Build beautiful interfaces with semantic HTML.</p>
+                <layout-cluster data-gap="s">
+                  <button class="primary">Get Started</button>
+                  <button class="outline">Learn More</button>
+                </layout-cluster>
+              </layout-stack>
+            </div>
+          </browser-window>
         </div>
       </div>
     </section>
