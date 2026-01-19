@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -163,12 +163,14 @@
       margin-bottom: var(--size-l);
     }
 
-    /* Comparison grid */
+    /* Comparison grid - semantic ul */
     .comparison {
       display: grid;
       gap: var(--size-l);
       grid-template-columns: 1fr 1fr;
-      margin-bottom: var(--size-xl);
+      margin: 0 0 var(--size-xl);
+      padding: 0;
+      list-style: none;
     }
 
     @media (max-width: 60rem) {
@@ -177,38 +179,46 @@
       }
     }
 
+    /* Comparison panel - semantic figure */
     .comparison-panel {
+      margin: 0;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
       overflow: hidden;
     }
 
-    .comparison-panel h4 {
+    /* Panel label - semantic strong */
+    .panel-label {
+      display: block;
       margin: 0;
       padding: var(--size-s) var(--size-m);
       background: var(--color-surface-raised);
       border-bottom: 1px solid var(--color-border);
       font-size: var(--font-size-s);
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--color-text-muted);
     }
 
-    .comparison-panel h4.current {
+    .panel-label.current {
       background: var(--color-gray-200);
     }
 
-    .comparison-panel h4.proposed {
+    .panel-label.proposed {
       background: var(--color-primary-subtle);
     }
 
+    /* Demo area - semantic section */
     .demo-area {
       padding: var(--size-m);
       background: var(--color-surface);
       min-height: 6rem;
     }
 
+    /* Code area - semantic figcaption */
     .code-area {
+      margin: 0;
       padding: var(--size-m);
       background: var(--color-gray-900);
       border-top: 1px solid var(--color-border);
@@ -219,12 +229,14 @@
       font-family: var(--font-mono);
       font-size: var(--font-size-s);
       color: var(--color-gray-100);
+      background: transparent;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    /* Demo items */
+    /* Demo items - semantic p */
     .demo-item {
+      margin: 0;
       background: var(--color-gray-100);
       color: var(--color-text);
       padding: var(--size-s) var(--size-m);
@@ -331,102 +343,105 @@
   </style>
 </head>
 <body>
-  <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
 
-  <h1>Layout Attributes POC</h1>
+  <main>
+    <h1>Layout Attributes POC</h1>
   <p class="lead">Side-by-side comparison: Custom elements vs data-layout attributes on semantic HTML.</p>
 
   <!-- ========== STACK COMPARISON ========== -->
   <h2>Stack Layout</h2>
   <p>Vertical rhythm with consistent spacing between child elements.</p>
 
-  <div class="comparison">
+  <ul class="comparison">
     <!-- Current: Custom Element -->
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-stack&gt;</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-stack&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-stack data-gap="m">
-          <div class="demo-item">Item 1</div>
-          <div class="demo-item">Item 2</div>
-          <div class="demo-item">Item 3</div>
+          <p class="demo-item">Item 1</p>
+          <p class="demo-item">Item 2</p>
+          <p class="demo-item">Item 3</p>
         </layout-stack>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-stack data-gap="m"&gt;
   &lt;div class="demo-item"&gt;Item 1&lt;/div&gt;
   &lt;div class="demo-item"&gt;Item 2&lt;/div&gt;
   &lt;div class="demo-item"&gt;Item 3&lt;/div&gt;
 &lt;/layout-stack&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
     <!-- Proposed: Data Attribute -->
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="stack"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="stack"</strong>
+      <aside class="demo-area" inert>
         <article data-layout="stack" data-gap="m">
-          <div class="demo-item">Item 1</div>
-          <div class="demo-item">Item 2</div>
-          <div class="demo-item">Item 3</div>
+          <p class="demo-item">Item 1</p>
+          <p class="demo-item">Item 2</p>
+          <p class="demo-item">Item 3</p>
         </article>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;article data-layout="stack" data-gap="m"&gt;
   &lt;div class="demo-item"&gt;Item 1&lt;/div&gt;
   &lt;div class="demo-item"&gt;Item 2&lt;/div&gt;
   &lt;div class="demo-item"&gt;Item 3&lt;/div&gt;
 &lt;/article&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <h3>Stack with Large Gap</h3>
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-stack&gt;</h4>
-      <div class="demo-area">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-stack&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-stack data-gap="xl">
           <p>First paragraph with large spacing.</p>
           <p>Second paragraph below.</p>
           <p>Third paragraph at the end.</p>
         </layout-stack>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-stack data-gap="xl"&gt;
   &lt;p&gt;First paragraph...&lt;/p&gt;
   &lt;p&gt;Second paragraph...&lt;/p&gt;
   &lt;p&gt;Third paragraph...&lt;/p&gt;
 &lt;/layout-stack&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="stack"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="stack"</strong>
+      <aside class="demo-area" inert>
         <section data-layout="stack" data-gap="xl">
           <p>First paragraph with large spacing.</p>
           <p>Second paragraph below.</p>
           <p>Third paragraph at the end.</p>
         </section>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;section data-layout="stack" data-gap="xl"&gt;
   &lt;p&gt;First paragraph...&lt;/p&gt;
   &lt;p&gt;Second paragraph...&lt;/p&gt;
   &lt;p&gt;Third paragraph...&lt;/p&gt;
 &lt;/section&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <!-- ========== CLUSTER COMPARISON ========== -->
   <h2>Cluster Layout</h2>
   <p>Horizontal grouping with wrapping. Perfect for tags, buttons, and navigation.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-cluster&gt;</h4>
-      <div class="demo-area">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-cluster&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-cluster data-gap="s">
           <span class="tag">HTML</span>
           <span class="tag">CSS</span>
@@ -434,20 +449,20 @@
           <span class="tag">Web Components</span>
           <span class="tag">Accessibility</span>
         </layout-cluster>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-cluster data-gap="s"&gt;
   &lt;span class="tag"&gt;HTML&lt;/span&gt;
   &lt;span class="tag"&gt;CSS&lt;/span&gt;
   &lt;span class="tag"&gt;JavaScript&lt;/span&gt;
   ...
 &lt;/layout-cluster&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="cluster"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="cluster"</strong>
+      <aside class="demo-area" inert>
         <nav data-layout="cluster" data-gap="s">
           <span class="tag">HTML</span>
           <span class="tag">CSS</span>
@@ -455,23 +470,23 @@
           <span class="tag">Web Components</span>
           <span class="tag">Accessibility</span>
         </nav>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;nav data-layout="cluster" data-gap="s"&gt;
   &lt;span class="tag"&gt;HTML&lt;/span&gt;
   &lt;span class="tag"&gt;CSS&lt;/span&gt;
   &lt;span class="tag"&gt;JavaScript&lt;/span&gt;
   ...
 &lt;/nav&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <h3>Cluster with justify-between</h3>
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-cluster&gt;</h4>
-      <div class="demo-area">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-cluster&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-cluster data-justify="between">
           <strong>Site Name</strong>
           <layout-cluster data-gap="m">
@@ -480,8 +495,8 @@
             <a href="#">Contact</a>
           </layout-cluster>
         </layout-cluster>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-cluster data-justify="between"&gt;
   &lt;strong&gt;Site Name&lt;/strong&gt;
   &lt;layout-cluster data-gap="m"&gt;
@@ -489,12 +504,12 @@
     ...
   &lt;/layout-cluster&gt;
 &lt;/layout-cluster&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="cluster"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="cluster"</strong>
+      <aside class="demo-area" inert>
         <header data-layout="cluster" data-justify="between">
           <strong>Site Name</strong>
           <nav data-layout="cluster" data-gap="m">
@@ -503,8 +518,8 @@
             <a href="#">Contact</a>
           </nav>
         </header>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;header data-layout="cluster" data-justify="between"&gt;
   &lt;strong&gt;Site Name&lt;/strong&gt;
   &lt;nav data-layout="cluster" data-gap="m"&gt;
@@ -512,65 +527,65 @@
     ...
   &lt;/nav&gt;
 &lt;/header&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <!-- ========== GRID COMPARISON ========== -->
   <h2>Grid Layout</h2>
   <p>Responsive auto-fit grid. Resize the browser to see columns adapt.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-grid&gt;</h4>
-      <div class="demo-area">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-grid&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-grid data-min="10rem" data-gap="m">
-          <div class="card">Card 1</div>
-          <div class="card">Card 2</div>
-          <div class="card">Card 3</div>
-          <div class="card">Card 4</div>
+          <article class="card">Card 1</article>
+          <article class="card">Card 2</article>
+          <article class="card">Card 3</article>
+          <article class="card">Card 4</article>
         </layout-grid>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-grid data-min="10rem" data-gap="m"&gt;
   &lt;div class="card"&gt;Card 1&lt;/div&gt;
   &lt;div class="card"&gt;Card 2&lt;/div&gt;
   &lt;div class="card"&gt;Card 3&lt;/div&gt;
   &lt;div class="card"&gt;Card 4&lt;/div&gt;
 &lt;/layout-grid&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="grid"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="grid"</strong>
+      <aside class="demo-area" inert>
         <ul data-layout="grid" data-min="10rem" data-gap="m" style="list-style: none; padding: 0; margin: 0;">
           <li class="card">Card 1</li>
           <li class="card">Card 2</li>
           <li class="card">Card 3</li>
           <li class="card">Card 4</li>
         </ul>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;ul data-layout="grid" data-min="10rem" data-gap="m"&gt;
   &lt;li class="card"&gt;Card 1&lt;/li&gt;
   &lt;li class="card"&gt;Card 2&lt;/li&gt;
   &lt;li class="card"&gt;Card 3&lt;/li&gt;
   &lt;li class="card"&gt;Card 4&lt;/li&gt;
 &lt;/ul&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <!-- ========== COMPOSED EXAMPLE ========== -->
   <h2>Composed Layouts</h2>
   <p>Real-world example: A blog card using nested layouts.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: Custom Elements</h4>
-      <div class="demo-area">
-        <div class="card">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: Custom Elements</strong>
+      <aside class="demo-area" inert>
+        <article class="card">
           <layout-stack data-gap="s">
             <layout-cluster data-justify="between">
               <span class="tag">Tutorial</span>
@@ -583,9 +598,9 @@
               <a href="#">Read more &rarr;</a>
             </layout-cluster>
           </layout-stack>
-        </div>
-      </div>
-      <div class="code-area">
+        </article>
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;div class="card"&gt;
   &lt;layout-stack data-gap="s"&gt;
     &lt;layout-cluster data-justify="between"&gt;
@@ -600,12 +615,12 @@
     &lt;/layout-cluster&gt;
   &lt;/layout-stack&gt;
 &lt;/div&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: Semantic + Attributes</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: Semantic + Attributes</strong>
+      <aside class="demo-area" inert>
         <article class="card" data-layout="stack" data-gap="s">
           <header data-layout="cluster" data-justify="between">
             <span class="tag">Tutorial</span>
@@ -618,8 +633,8 @@
             <a href="#">Read more &rarr;</a>
           </footer>
         </article>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;article class="card" data-layout="stack" data-gap="s"&gt;
   &lt;header data-layout="cluster" data-justify="between"&gt;
     &lt;span class="tag"&gt;Tutorial&lt;/span&gt;
@@ -632,9 +647,9 @@
     &lt;a href="#"&gt;Read more&lt;/a&gt;
   &lt;/footer&gt;
 &lt;/article&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <!-- ========== PAGE LAYOUTS ========== -->
   <h2>Page Layouts</h2>
@@ -643,60 +658,60 @@
   <h3>Header / Main / Footer</h3>
   <p>Classic page structure that fills viewport height. Footer sticks to bottom even with little content.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: Custom Elements</h4>
-      <div class="demo-area" style="height: 20rem; padding: 0;">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: Custom Elements</strong>
+      <aside class="demo-area" style="height: 20rem; padding: 0;" inert>
         <layout-stack data-gap="none" style="height: 100%;">
           <header class="page-header">Header</header>
-          <main class="page-main" style="flex: 1;">Main Content</main>
+          <section class="page-main" style="flex: 1;">Main Content</section>
           <footer class="page-footer">Footer</footer>
         </layout-stack>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-stack data-gap="none" style="min-height: 100vh"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;main style="flex: 1"&gt;Main Content&lt;/main&gt;
   &lt;footer&gt;Footer&lt;/footer&gt;
 &lt;/layout-stack&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="stack"</h4>
-      <div class="demo-area" style="height: 20rem; padding: 0;">
-        <div data-layout="page-stack" style="height: 100%;">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="stack"</strong>
+      <aside class="demo-area" style="height: 20rem; padding: 0;" inert>
+        <section data-layout="page-stack" style="height: 100%;">
           <header class="page-header">Header</header>
-          <main class="page-main">Main Content</main>
+          <section class="page-main">Main Content</section>
           <footer class="page-footer">Footer</footer>
-        </div>
-      </div>
-      <div class="code-area">
+        </section>
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;body data-layout="page-stack"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;main&gt;Main Content&lt;/main&gt;
   &lt;footer&gt;Footer&lt;/footer&gt;
 &lt;/body&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <h3>Holy Grail Layout</h3>
   <p>Header, footer, sidebar navigation, and main content. Sidebar collapses on mobile.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: Custom Elements + CSS Grid</h4>
-      <div class="demo-area" style="height: 20rem; padding: 0;">
-        <div class="holy-grail-demo">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: Custom Elements + CSS Grid</strong>
+      <aside class="demo-area" style="height: 20rem; padding: 0;" inert>
+        <section class="holy-grail-demo">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
-          <main class="hg-main">Main Content</main>
+          <section class="hg-main">Main Content</section>
           <aside class="hg-aside">Aside</aside>
           <footer class="hg-footer">Footer</footer>
-        </div>
-      </div>
-      <div class="code-area">
+        </section>
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;div class="holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;nav&gt;Nav&lt;/nav&gt;
@@ -706,21 +721,21 @@
 &lt;/div&gt;
 
 /* Requires custom CSS class */</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="holy-grail"</h4>
-      <div class="demo-area" style="height: 20rem; padding: 0;">
-        <div class="holy-grail-demo" data-layout="holy-grail">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="holy-grail"</strong>
+      <aside class="demo-area" style="height: 20rem; padding: 0;" inert>
+        <section class="holy-grail-demo" data-layout="holy-grail">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
-          <main class="hg-main">Main Content</main>
+          <section class="hg-main">Main Content</section>
           <aside class="hg-aside">Aside</aside>
           <footer class="hg-footer">Footer</footer>
-        </div>
-      </div>
-      <div class="code-area">
+        </section>
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;body data-layout="holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;nav&gt;Nav&lt;/nav&gt;
@@ -730,55 +745,55 @@
 &lt;/body&gt;
 
 /* Applied to body - no wrapper needed */</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <h3>Sidebar Layout (Responsive)</h3>
   <p>Two-column layout that stacks on mobile. Try resizing the browser.</p>
 
-  <div class="comparison">
-    <div class="comparison-panel">
-      <h4 class="current">Current: &lt;layout-sidebar&gt;</h4>
-      <div class="demo-area">
+  <ul class="comparison">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label current">Current: &lt;layout-sidebar&gt;</strong>
+      <aside class="demo-area" inert>
         <layout-sidebar data-side="start" data-gap="m">
           <nav class="sidebar-demo">Sidebar Nav</nav>
-          <main class="main-demo">Main content area that takes remaining space</main>
+          <section class="main-demo">Main content area that takes remaining space</section>
         </layout-sidebar>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;layout-sidebar data-side="start" data-gap="m"&gt;
   &lt;nav&gt;Sidebar Nav&lt;/nav&gt;
   &lt;main&gt;Main content...&lt;/main&gt;
 &lt;/layout-sidebar&gt;</pre>
-      </div>
-    </div>
+      </figcaption>
+    </figure></li>
 
-    <div class="comparison-panel">
-      <h4 class="proposed">Proposed: data-layout="sidebar"</h4>
-      <div class="demo-area">
+    <li><figure class="comparison-panel">
+      <strong class="panel-label proposed">Proposed: data-layout="sidebar"</strong>
+      <aside class="demo-area" inert>
         <section data-layout="sidebar" data-side="start" data-gap="m">
           <nav class="sidebar-demo">Sidebar Nav</nav>
-          <main class="main-demo">Main content area that takes remaining space</main>
+          <section class="main-demo">Main content area that takes remaining space</section>
         </section>
-      </div>
-      <div class="code-area">
+      </aside>
+      <figcaption class="code-area">
         <pre>&lt;section data-layout="sidebar" data-side="start" data-gap="m"&gt;
   &lt;nav&gt;Sidebar Nav&lt;/nav&gt;
   &lt;main&gt;Main content...&lt;/main&gt;
 &lt;/section&gt;</pre>
-      </div>
-    </div>
-  </div>
+      </figcaption>
+    </figure></li>
+  </ul>
 
   <!-- ========== SUMMARY ========== -->
   <h2>Summary</h2>
   <table style="width: 100%; border-collapse: collapse;">
     <thead>
       <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
-        <th style="padding: var(--size-s);">Aspect</th>
-        <th style="padding: var(--size-s);">Custom Elements</th>
-        <th style="padding: var(--size-s);">Data Attributes</th>
+        <th scope="col" style="padding: var(--size-s);">Aspect</th>
+        <th scope="col" style="padding: var(--size-s);">Custom Elements</th>
+        <th scope="col" style="padding: var(--size-s);">Data Attributes</th>
       </tr>
     </thead>
     <tbody>
@@ -809,6 +824,7 @@
       </tr>
     </tbody>
   </table>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
 </body>
