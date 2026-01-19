@@ -51,29 +51,35 @@ function generateDesktopNav(activeSection) {
   return `<nav class="horizontal pills" aria-label="Main navigation">
       <ul>
         <li><a href="/docs/"${isHome ? ' aria-current="page"' : ''}>Home</a></li>
-        <li class="has-dropdown">
-          <a href="/docs/quick-start.html"${isDocs ? ' aria-current="true"' : ''}>Docs</a>
-          <ul class="dropdown">
-            <li><a href="/docs/quick-start.html">Quick Start</a></li>
-            <li><a href="/docs/tutorial.html">Tutorial</a></li>
-            <li><a href="/docs/themes.html">Themes</a></li>
-          </ul>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/quick-start.html" data-trigger${isDocs ? ' aria-current="true"' : ''}>Docs</a>
+            <menu>
+              <li><a href="/docs/quick-start.html">Quick Start</a></li>
+              <li><a href="/docs/tutorial.html">Tutorial</a></li>
+              <li><a href="/docs/themes.html">Themes</a></li>
+            </menu>
+          </dropdown-wc>
         </li>
-        <li class="has-dropdown">
-          <a href="/docs/tokens/"${isApi ? ' aria-current="true"' : ''}>API</a>
-          <ul class="dropdown">
-            <li><a href="/docs/tokens/">Tokens</a></li>
-            <li><a href="/docs/elements/native/">Native Elements</a></li>
-            <li><a href="/docs/elements/custom-elements/">Custom Elements</a></li>
-            <li><a href="/docs/elements/web-components/">Web Components</a></li>
-          </ul>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/tokens/" data-trigger${isApi ? ' aria-current="true"' : ''}>API</a>
+            <menu>
+              <li><a href="/docs/tokens/">Tokens</a></li>
+              <li><a href="/docs/elements/native/">Native Elements</a></li>
+              <li><a href="/docs/elements/custom-elements/">Custom Elements</a></li>
+              <li><a href="/docs/elements/web-components/">Web Components</a></li>
+            </menu>
+          </dropdown-wc>
         </li>
-        <li class="has-dropdown">
-          <a href="/docs/snippets/"${isExamples ? ' aria-current="true"' : ''}>Examples</a>
-          <ul class="dropdown">
-            <li><a href="/docs/snippets/">Snippets</a></li>
-            <li><a href="/docs/examples/">Demos</a></li>
-          </ul>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/snippets/" data-trigger${isExamples ? ' aria-current="true"' : ''}>Examples</a>
+            <menu>
+              <li><a href="/docs/snippets/">Snippets</a></li>
+              <li><a href="/docs/examples/">Demos</a></li>
+            </menu>
+          </dropdown-wc>
         </li>
         <li><a href="/docs/integrations/"${isIntegrations ? ' aria-current="page"' : ''}>Integrations</a></li>
       </ul>

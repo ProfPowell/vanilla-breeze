@@ -7,6 +7,7 @@
  * @attr {string} data-position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
  * @attr {boolean} data-open - Whether menu is open (reflected)
  * @attr {boolean} data-no-flip - Disable automatic flip when menu doesn't fit
+ * @attr {boolean} data-hover - Open on hover/focus instead of click (useful for nav menus)
  *
  * @example
  * <dropdown-wc>
@@ -18,6 +19,15 @@
  *     <li><button>Delete</button></li>
  *   </menu>
  * </dropdown-wc>
+ *
+ * @example Hover-activated (for navigation)
+ * <dropdown-wc data-hover>
+ *   <a href="/section/" data-trigger>Section</a>
+ *   <menu>
+ *     <li><a href="/section/page1">Page 1</a></li>
+ *     <li><a href="/section/page2">Page 2</a></li>
+ *   </menu>
+ * </dropdown-wc>
  */
 class DropdownWc extends HTMLElement {
   #trigger;
@@ -25,6 +35,8 @@ class DropdownWc extends HTMLElement {
   #items = [];
   #activeIndex = -1;
   #isOpen = false;
+  #hoverMode = false;
+  #closeTimeout = null;
 
   connectedCallback() {
     this.#setup();
@@ -46,6 +58,9 @@ class DropdownWc extends HTMLElement {
     this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
     if (!this.#menu) return;
 
+    // Check for hover mode
+    this.#hoverMode = this.hasAttribute('data-hover');
+
     // Set up ARIA
     this.#trigger.setAttribute('aria-haspopup', 'menu');
     this.#trigger.setAttribute('aria-expanded', 'false');
@@ -60,7 +75,16 @@ class DropdownWc extends HTMLElement {
     this.#collectItems();
 
     // Event listeners
-    this.#trigger.addEventListener('click', this.#handleTriggerClick);
+    if (this.#hoverMode) {
+      // Hover mode: open on hover/focus, click navigates (for link triggers)
+      this.addEventListener('mouseenter', this.#handleMouseEnter);
+      this.addEventListener('mouseleave', this.#handleMouseLeave);
+      this.#trigger.addEventListener('focus', this.#handleTriggerFocus);
+      this.#trigger.addEventListener('blur', this.#handleTriggerBlur);
+    } else {
+      // Click mode: toggle on click
+      this.#trigger.addEventListener('click', this.#handleTriggerClick);
+    }
     this.#trigger.addEventListener('keydown', this.#handleTriggerKeyDown);
     this.#menu.addEventListener('keydown', this.#handleMenuKeyDown);
     document.addEventListener('click', this.#handleOutsideClick);
@@ -68,13 +92,20 @@ class DropdownWc extends HTMLElement {
   }
 
   #cleanup() {
+    if (this.#closeTimeout) {
+      clearTimeout(this.#closeTimeout);
+    }
     if (this.#trigger) {
       this.#trigger.removeEventListener('click', this.#handleTriggerClick);
       this.#trigger.removeEventListener('keydown', this.#handleTriggerKeyDown);
+      this.#trigger.removeEventListener('focus', this.#handleTriggerFocus);
+      this.#trigger.removeEventListener('blur', this.#handleTriggerBlur);
     }
     if (this.#menu) {
       this.#menu.removeEventListener('keydown', this.#handleMenuKeyDown);
     }
+    this.removeEventListener('mouseenter', this.#handleMouseEnter);
+    this.removeEventListener('mouseleave', this.#handleMouseLeave);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);
   }
@@ -100,6 +131,43 @@ class DropdownWc extends HTMLElement {
   #handleTriggerClick = (e) => {
     e.stopPropagation();
     this.toggle();
+  };
+
+  // Hover mode handlers
+  #handleMouseEnter = () => {
+    if (this.#closeTimeout) {
+      clearTimeout(this.#closeTimeout);
+      this.#closeTimeout = null;
+    }
+    this.open();
+  };
+
+  #handleMouseLeave = () => {
+    // Small delay to allow moving between trigger and menu
+    this.#closeTimeout = setTimeout(() => {
+      this.close();
+    }, 100);
+  };
+
+  #handleTriggerFocus = () => {
+    if (this.#closeTimeout) {
+      clearTimeout(this.#closeTimeout);
+      this.#closeTimeout = null;
+    }
+    this.open();
+  };
+
+  #handleTriggerBlur = (e) => {
+    // Don't close if focus moved into the menu
+    if (this.#menu?.contains(e.relatedTarget)) {
+      return;
+    }
+    // Small delay to check if focus is moving into menu
+    this.#closeTimeout = setTimeout(() => {
+      if (!this.contains(document.activeElement)) {
+        this.close();
+      }
+    }, 100);
   };
 
   #handleTriggerKeyDown = (e) => {

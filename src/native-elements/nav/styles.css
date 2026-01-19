@@ -443,3 +443,88 @@ nav {
     padding-inline-start: var(--size-s);
   }
 }
+
+/* --- Dropdown Composition in Nav --- */
+/* When using <dropdown-wc> inside nav for dropdown menus */
+
+nav dropdown-wc {
+  display: inline-flex;
+}
+
+nav dropdown-wc [data-trigger] {
+  /* Inherit nav link styling */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs);
+  padding: var(--_link-padding);
+  color: var(--_link-color);
+  text-decoration: none;
+  border-radius: var(--radius-full);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    background: var(--_hover-bg);
+    color: var(--_hover-color);
+  }
+
+  &[aria-expanded="true"] {
+    background: var(--_hover-bg);
+    color: var(--_hover-color);
+  }
+
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: calc(var(--border-width-medium) * -1);
+  }
+}
+
+/* Active section styling for dropdown triggers */
+nav dropdown-wc [data-trigger][aria-current="true"] {
+  color: var(--color-interactive);
+}
+
+/* Chevron indicator for dropdown triggers */
+nav dropdown-wc [data-trigger]::after {
+  content: '';
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-inline-start: var(--size-3xs);
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-25%);
+  opacity: 0.6;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+nav dropdown-wc [data-trigger][aria-expanded="true"]::after {
+  transform: rotate(-135deg) translateY(-25%);
+}
+
+/* Menu styling inside nav - override dropdown-wc defaults for nav context */
+nav dropdown-wc menu {
+  min-inline-size: 12rem;
+}
+
+nav dropdown-wc menu a {
+  display: block;
+  padding: var(--size-xs) var(--size-m);
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-interactive);
+  }
+}
+
+/* Hide dropdown on mobile - mobile nav has its own expanded pattern */
+@media (max-width: 768px) {
+  nav dropdown-wc menu {
+    display: none;
+  }
+}
