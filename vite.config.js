@@ -30,6 +30,9 @@ export default defineConfig({
   // Serve from project root
   root: '.',
 
+  // Base URL for GitHub Pages (set via env var in CI, defaults to '/' for local dev)
+  base: process.env.BASE_URL || '/',
+
   // Dev server configuration
   server: {
     open: '/docs/',
