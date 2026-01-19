@@ -36,11 +36,25 @@ class ThemePicker extends HTMLElement {
     { id: 'dark', name: 'Dark', icon: 'moon' }
   ];
 
-  static #THEMES = [
+  // Color themes - override hue values only
+  static #COLOR_THEMES = [
     { id: 'default', name: 'Default', hue: 260 },
     { id: 'ocean', name: 'Ocean', hue: 200 },
     { id: 'forest', name: 'Forest', hue: 145 },
     { id: 'sunset', name: 'Sunset', hue: 25 }
+  ];
+
+  // Personality themes - comprehensive design systems
+  static #PERSONALITY_THEMES = [
+    { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated' },
+    { id: 'minimal', name: 'Minimal', hue: 240, shape: 'sharp', character: 'Clean & flat' },
+    { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant' }
+  ];
+
+  // Combined list for backwards compatibility
+  static #THEMES = [
+    ...ThemePicker.#COLOR_THEMES,
+    ...ThemePicker.#PERSONALITY_THEMES
   ];
 
   // Delay before auto-dismissing after selection (ms)
@@ -132,9 +146,9 @@ class ThemePicker extends HTMLElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Brand Theme</legend>
-        <div class="options options--themes" role="radiogroup" aria-label="Brand theme">
-          ${ThemePicker.#THEMES.map(t => `
+        <legend>Color Themes</legend>
+        <div class="options options--themes" role="radiogroup" aria-label="Color theme">
+          ${ThemePicker.#COLOR_THEMES.map(t => `
             <label class="option option--theme">
               <input
                 type="radio"
@@ -144,6 +158,29 @@ class ThemePicker extends HTMLElement {
               />
               <span class="option-content">
                 <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
+                <span>${t.name}</span>
+              </span>
+            </label>
+          `).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Personality Themes</legend>
+        <div class="options options--themes" role="radiogroup" aria-label="Personality theme">
+          ${ThemePicker.#PERSONALITY_THEMES.map(t => `
+            <label class="option option--theme">
+              <input
+                type="radio"
+                name="theme-brand"
+                value="${t.id}"
+                ${brand === t.id ? 'checked' : ''}
+              />
+              <span class="option-content">
+                <span class="swatch-combo">
+                  <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
+                  <span class="shape-indicator" data-shape="${t.shape}"></span>
+                </span>
                 <span>${t.name}</span>
               </span>
             </label>

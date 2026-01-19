@@ -225,41 +225,58 @@
       </nav>
 
       <h1>Themes</h1>
-      <p class="lead">Vanilla Breeze uses CSS custom properties for a flexible, performant theming system. Change colors instantly without rebuilding CSS or reloading pages.</p>
+      <p class="lead">Vanilla Breeze uses CSS custom properties for a flexible, performant theming system. Beyond colors, themes can transform typography, shapes, shadows, and motion to create distinct design personalities.</p>
 
       <!-- Introduction -->
       <section>
         <h2>Introduction to Theming</h2>
-        <p>The theming system in Vanilla Breeze is built on three core principles:</p>
+        <p>The theming system in Vanilla Breeze is built on these core principles:</p>
         <ol>
-          <li><strong>CSS Custom Properties</strong> - All colors are defined as CSS variables that can be overridden</li>
+          <li><strong>CSS Custom Properties</strong> - All design tokens are defined as CSS variables that can be overridden</li>
           <li><strong>OKLCH Color Space</strong> - Modern perceptually uniform colors with hue-based theming</li>
           <li><strong>Automatic Dark Mode</strong> - Uses <code>light-dark()</code> function and <code>color-scheme</code> for native dark mode support</li>
+          <li><strong>Comprehensive Token Categories</strong> - Colors, typography, borders, shadows, and motion can all be themed</li>
         </ol>
-        <p>Themes work by overriding a small set of hue variables (<code>--hue-primary</code>, <code>--hue-secondary</code>, <code>--hue-accent</code>) which automatically propagate to all derived color tokens.</p>
 
-        <code-block language="css" label="How theming works">/* Default theme defines base hues */
-:root {
-  --hue-primary: 260;   /* Purple-blue */
-  --hue-secondary: 200; /* Cyan */
-  --hue-accent: 30;     /* Orange */
+        <h3>Theme Types</h3>
+        <p>Vanilla Breeze includes two types of themes:</p>
+        <ul>
+          <li><strong>Color Themes</strong> (Ocean, Forest, Sunset) - Override hue values to change the color palette while keeping default shapes and typography</li>
+          <li><strong>Personality Themes</strong> (Modern, Minimal, Classic) - Comprehensive themes that transform colors, shapes, shadows, typography, and motion for distinct design feels</li>
+        </ul>
 
-  /* Colors are calculated from hues */
-  --color-primary: oklch(50% 0.2 var(--hue-primary));
-}
-
-/* A theme simply overrides the hues */
+        <code-block language="css" label="Color theme (simple)">/* Color themes override hues */
 :root[data-theme="ocean"] {
   --hue-primary: 200;   /* Teal */
   --hue-secondary: 180; /* Cyan */
   --hue-accent: 45;     /* Gold */
+}</code-block>
+
+        <code-block language="css" label="Personality theme (comprehensive)">/* Personality themes override multiple token categories */
+:root[data-theme="modern"] {
+  /* Colors */
+  --hue-primary: 270;
+  --color-primary: oklch(55% 0.22 var(--hue-primary));
+
+  /* Shape - large radii for soft feel */
+  --radius-m: 0.75rem;
+  --radius-l: 1rem;
+
+  /* Shadows - elevated for depth */
+  --shadow-md: 0 6px 12px -2px oklch(0% 0 0 / 0.12);
+
+  /* Motion - snappy interactions */
+  --duration-normal: 150ms;
+  --ease-default: cubic-bezier(0.2, 0, 0.1, 1);
 }</code-block>
       </section>
 
       <!-- Built-in Themes -->
       <section>
         <h2>Built-in Themes</h2>
-        <p>Vanilla Breeze includes four built-in themes. Each theme defines a cohesive color palette suitable for different brand identities.</p>
+
+        <h3>Color Themes</h3>
+        <p>Color themes change the color palette while keeping default shapes and typography. Perfect for brand customization.</p>
 
         <div class="theme-demo-grid">
           <div class="theme-card">
@@ -303,45 +320,109 @@
           </div>
         </div>
 
-        <h3>Theme Details</h3>
+        <h3>Personality Themes</h3>
+        <p>Personality themes are comprehensive design systems that transform colors, shapes, shadows, typography, and motion for distinct design feels.</p>
+
+        <div class="theme-demo-grid">
+          <div class="theme-card" data-theme="modern">
+            <h4>Modern</h4>
+            <p>Vibrant colors, large radii, elevated shadows, snappy motion</p>
+            <div class="color-swatches">
+              <span class="swatch" style="background: oklch(55% 0.22 270);" title="Primary: Hue 270"></span>
+              <span class="swatch" style="background: oklch(50% 0.12 220);" title="Secondary: Hue 220"></span>
+              <span class="swatch" style="background: oklch(75% 0.18 45);" title="Accent: Hue 45"></span>
+            </div>
+          </div>
+
+          <div class="theme-card" data-theme="minimal">
+            <h4>Minimal</h4>
+            <p>Neutral colors, sharp edges, flat shadows, subtle motion</p>
+            <div class="color-swatches">
+              <span class="swatch" style="background: oklch(35% 0.03 240);" title="Primary: Neutral"></span>
+              <span class="swatch" style="background: oklch(50% 0.02 240);" title="Secondary: Neutral"></span>
+              <span class="swatch" style="background: oklch(50% 0.08 210);" title="Accent: Blue hint"></span>
+            </div>
+          </div>
+
+          <div class="theme-card" data-theme="classic">
+            <h4>Classic</h4>
+            <p>Deep blue, serif typography, subtle shadows, smooth motion</p>
+            <div class="color-swatches">
+              <span class="swatch" style="background: oklch(40% 0.12 220);" title="Primary: Deep blue"></span>
+              <span class="swatch" style="background: oklch(45% 0.08 200);" title="Secondary: Teal"></span>
+              <span class="swatch" style="background: oklch(60% 0.14 35);" title="Accent: Gold"></span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Theme Comparison</h3>
         <table class="token-table">
           <thead>
             <tr>
               <th>Theme</th>
-              <th>Primary Hue</th>
-              <th>Secondary Hue</th>
-              <th>Accent Hue</th>
-              <th>Character</th>
+              <th>Type</th>
+              <th>Colors</th>
+              <th>Shape</th>
+              <th>Shadows</th>
+              <th>Motion</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><code>default</code></td>
-              <td>260 (Purple)</td>
-              <td>200 (Cyan)</td>
-              <td>30 (Orange)</td>
-              <td>Versatile, modern</td>
+              <td>Color</td>
+              <td>Purple-blue</td>
+              <td>Default</td>
+              <td>Default</td>
+              <td>Default</td>
             </tr>
             <tr>
               <td><code>ocean</code></td>
-              <td>200 (Teal)</td>
-              <td>180 (Cyan)</td>
-              <td>45 (Gold)</td>
-              <td>Professional, calm</td>
+              <td>Color</td>
+              <td>Teal-blue</td>
+              <td>Default</td>
+              <td>Default</td>
+              <td>Default</td>
             </tr>
             <tr>
               <td><code>forest</code></td>
-              <td>145 (Green)</td>
-              <td>90 (Lime)</td>
-              <td>30 (Amber)</td>
-              <td>Natural, organic</td>
+              <td>Color</td>
+              <td>Green</td>
+              <td>Default</td>
+              <td>Default</td>
+              <td>Default</td>
             </tr>
             <tr>
               <td><code>sunset</code></td>
-              <td>25 (Orange)</td>
-              <td>0 (Red)</td>
-              <td>280 (Purple)</td>
-              <td>Warm, energetic</td>
+              <td>Color</td>
+              <td>Orange-red</td>
+              <td>Default</td>
+              <td>Default</td>
+              <td>Default</td>
+            </tr>
+            <tr>
+              <td><code>modern</code></td>
+              <td>Personality</td>
+              <td>Vibrant purple</td>
+              <td>Large radii</td>
+              <td>Elevated</td>
+              <td>Snappy</td>
+            </tr>
+            <tr>
+              <td><code>minimal</code></td>
+              <td>Personality</td>
+              <td>Neutral gray</td>
+              <td>Sharp/none</td>
+              <td>Flat</td>
+              <td>Subtle</td>
+            </tr>
+            <tr>
+              <td><code>classic</code></td>
+              <td>Personality</td>
+              <td>Deep blue</td>
+              <td>Small radii</td>
+              <td>Subtle</td>
+              <td>Smooth</td>
             </tr>
           </tbody>
         </table>
@@ -824,6 +905,177 @@
         </table>
       </section>
 
+      <!-- Comprehensive Token Categories -->
+      <section>
+        <h2>Comprehensive Token Categories</h2>
+        <p>Personality themes can override tokens from multiple categories to create distinct design personalities. Here are all the themeable token categories:</p>
+
+        <h3>Typography Tokens</h3>
+        <table class="token-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Purpose</th>
+              <th>Default Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--font-sans</code></td>
+              <td>Primary sans-serif font stack</td>
+              <td>system-ui, -apple-system, sans-serif</td>
+            </tr>
+            <tr>
+              <td><code>--font-serif</code></td>
+              <td>Serif font stack</td>
+              <td>Charter, Cambria, serif</td>
+            </tr>
+            <tr>
+              <td><code>--font-mono</code></td>
+              <td>Monospace font stack</td>
+              <td>ui-monospace, Menlo, monospace</td>
+            </tr>
+            <tr>
+              <td><code>--line-height-normal</code></td>
+              <td>Default line height</td>
+              <td>1.5</td>
+            </tr>
+            <tr>
+              <td><code>--line-height-tight</code></td>
+              <td>Compact line height</td>
+              <td>1.25</td>
+            </tr>
+            <tr>
+              <td><code>--letter-spacing-normal</code></td>
+              <td>Default letter spacing</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Shape Tokens (Border Radius)</h3>
+        <table class="token-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Purpose</th>
+              <th>Default</th>
+              <th>Sharp</th>
+              <th>Rounded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--radius-s</code></td>
+              <td>Small radius</td>
+              <td>0.25rem</td>
+              <td>0.125rem</td>
+              <td>0.5rem</td>
+            </tr>
+            <tr>
+              <td><code>--radius-m</code></td>
+              <td>Medium radius</td>
+              <td>0.5rem</td>
+              <td>0.25rem</td>
+              <td>0.75rem</td>
+            </tr>
+            <tr>
+              <td><code>--radius-l</code></td>
+              <td>Large radius</td>
+              <td>0.75rem</td>
+              <td>0.375rem</td>
+              <td>1rem</td>
+            </tr>
+            <tr>
+              <td><code>--radius-xl</code></td>
+              <td>Extra large radius</td>
+              <td>1rem</td>
+              <td>0.5rem</td>
+              <td>1.25rem</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Shadow Tokens</h3>
+        <table class="token-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Purpose</th>
+              <th>Default</th>
+              <th>Flat</th>
+              <th>Elevated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--shadow-sm</code></td>
+              <td>Small shadow</td>
+              <td>Subtle</td>
+              <td>none/minimal</td>
+              <td>Pronounced</td>
+            </tr>
+            <tr>
+              <td><code>--shadow-md</code></td>
+              <td>Medium shadow</td>
+              <td>Standard</td>
+              <td>Very subtle</td>
+              <td>Strong depth</td>
+            </tr>
+            <tr>
+              <td><code>--shadow-lg</code></td>
+              <td>Large shadow</td>
+              <td>Elevated</td>
+              <td>Subtle</td>
+              <td>Dramatic</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Motion Tokens</h3>
+        <table class="token-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Purpose</th>
+              <th>Default</th>
+              <th>Snappy</th>
+              <th>Smooth</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--duration-fast</code></td>
+              <td>Fast transitions</td>
+              <td>100ms</td>
+              <td>80ms</td>
+              <td>120ms</td>
+            </tr>
+            <tr>
+              <td><code>--duration-normal</code></td>
+              <td>Default transitions</td>
+              <td>200ms</td>
+              <td>150ms</td>
+              <td>250ms</td>
+            </tr>
+            <tr>
+              <td><code>--duration-slow</code></td>
+              <td>Slow transitions</td>
+              <td>300ms</td>
+              <td>250ms</td>
+              <td>400ms</td>
+            </tr>
+            <tr>
+              <td><code>--ease-default</code></td>
+              <td>Default easing</td>
+              <td>ease-out</td>
+              <td>Snappy out</td>
+              <td>Smooth ease</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
       <!-- Applying Themes Programmatically -->
       <section>
         <h2>Applying Themes Programmatically</h2>
@@ -838,7 +1090,8 @@ ThemeManager.init();
 ThemeManager.setMode('dark');    // 'auto' | 'light' | 'dark'
 
 // Set brand theme
-ThemeManager.setBrand('ocean');  // 'default' | 'ocean' | 'forest' | 'sunset'
+ThemeManager.setBrand('ocean');  // Color: 'default' | 'ocean' | 'forest' | 'sunset'
+                                 // Personality: 'modern' | 'minimal' | 'classic'
 
 // Toggle between light and dark
 ThemeManager.toggleMode();
@@ -957,12 +1210,21 @@ delete document.documentElement.dataset.mode;</code-block>
 
         <code-block language="text" label="Directory structure">src/tokens/
   colors.css           # Base color tokens with default hues
+  typography.css       # Font families, sizes, line heights
+  borders.css          # Border widths and radii
+  shadows.css          # Shadow scale
+  motion.css           # Animation durations and easings
   themes/
-    index.css          # Imports all theme files
-    _brand-ocean.css   # Ocean theme
-    _brand-forest.css  # Forest theme
-    _brand-sunset.css  # Sunset theme
-    _brand-template.css # Template for creating new themes</code-block>
+    index.css            # Imports all theme files
+    _theme-template.css  # Template for creating new themes
+    # Color themes
+    _brand-ocean.css     # Ocean color theme
+    _brand-forest.css    # Forest color theme
+    _brand-sunset.css    # Sunset color theme
+    # Personality themes
+    _brand-modern.css    # Modern personality theme
+    _brand-minimal.css   # Minimal personality theme
+    _brand-classic.css   # Classic personality theme</code-block>
 
         <h3>Naming Conventions</h3>
         <ul>
