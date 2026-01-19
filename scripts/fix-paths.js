@@ -34,6 +34,9 @@ const patterns = [
   // Script src: src="/src/..." -> src="/vanilla-breeze/src/..."
   { regex: /src="\/src\//g, replacement: `src="${baseUrl}/src/` },
   { regex: /src='\/src\//g, replacement: `src='${baseUrl}/src/` },
+  // Component src (browser-window, iframe): src="/docs/..." -> src="/vanilla-breeze/docs/..."
+  { regex: /src="\/docs\//g, replacement: `src="${baseUrl}/docs/` },
+  { regex: /src='\/docs\//g, replacement: `src='${baseUrl}/docs/` },
 ];
 
 // Also fix JS files that reference /src/icons
