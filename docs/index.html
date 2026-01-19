@@ -29,13 +29,108 @@
 
     .hero-demo {
       margin-block: var(--size-xl);
-      max-inline-size: 700px;
+      max-inline-size: 960px;
       margin-inline: auto;
     }
 
     .hero-demo browser-window {
       resize: none;
       text-align: start;
+    }
+
+    .demo-app {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      grid-template-rows: auto 1fr;
+      min-block-size: 320px;
+    }
+
+    .demo-header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--size-s) var(--size-m);
+      border-block-end: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+
+    .demo-header .logo {
+      font-weight: 600;
+      font-size: var(--font-size-base);
+    }
+
+    .demo-sidebar {
+      padding: var(--size-m);
+      border-inline-end: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
+    }
+
+    .demo-sidebar nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .demo-sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      padding: var(--size-xs) var(--size-s);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+    }
+
+    .demo-sidebar nav a:hover {
+      background: var(--color-surface);
+    }
+
+    .demo-sidebar nav a[aria-current] {
+      background: var(--color-interactive);
+      color: white;
+    }
+
+    .demo-content {
+      padding: var(--size-m);
+      overflow: hidden;
+    }
+
+    .demo-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--size-s);
+    }
+
+    .demo-card {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .demo-card h4 {
+      font-size: var(--font-size-sm);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .demo-card .value {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--color-interactive);
+    }
+
+    @media (max-width: 640px) {
+      .demo-app {
+        grid-template-columns: 1fr;
+      }
+      .demo-sidebar {
+        display: none;
+      }
+      .demo-cards {
+        grid-template-columns: 1fr;
+      }
     }
 
     .hero-actions {
@@ -256,26 +351,59 @@
       <p class="tagline">A layered HTML component system. Build with native HTML, enhance with CSS, add interactivity with JavaScript - each layer optional.</p>
 
       <div class="hero-demo">
-        <browser-window url="my-page.html">
-          <layout-stack data-gap="m">
-            <layout-cluster data-gap="s">
-              <button>Default</button>
-              <button class="primary">Primary</button>
-              <button class="outline">Outline</button>
-              <button class="ghost">Ghost</button>
-            </layout-cluster>
-            <nav class="horizontal pills" aria-label="Demo navigation">
-              <ul>
-                <li><a href="#" aria-current="page">Active</a></li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-              </ul>
-            </nav>
-            <details>
-              <summary>Native HTML disclosure</summary>
-              <p>No JavaScript required. CSS handles all the styling.</p>
-            </details>
-          </layout-stack>
+        <browser-window url="dashboard.html">
+          <div class="demo-app">
+            <header class="demo-header">
+              <span class="logo">Acme Dashboard</span>
+              <layout-cluster data-gap="s">
+                <button class="ghost small">
+                  <icon-wc name="bell" size="sm"></icon-wc>
+                </button>
+                <user-avatar initials="JD" size="sm"></user-avatar>
+              </layout-cluster>
+            </header>
+            <aside class="demo-sidebar">
+              <nav>
+                <ul>
+                  <li><a href="#" aria-current="page"><icon-wc name="layout-dashboard" size="sm"></icon-wc> Dashboard</a></li>
+                  <li><a href="#"><icon-wc name="users" size="sm"></icon-wc> Users</a></li>
+                  <li><a href="#"><icon-wc name="package" size="sm"></icon-wc> Products</a></li>
+                  <li><a href="#"><icon-wc name="bar-chart-2" size="sm"></icon-wc> Analytics</a></li>
+                  <li><a href="#"><icon-wc name="settings" size="sm"></icon-wc> Settings</a></li>
+                </ul>
+              </nav>
+            </aside>
+            <main class="demo-content">
+              <layout-stack data-gap="m">
+                <layout-cluster data-justify="space-between">
+                  <h3 style="margin: 0; font-size: var(--font-size-lg);">Overview</h3>
+                  <layout-cluster data-gap="xs">
+                    <button class="primary small">Add New</button>
+                    <button class="outline small">Export</button>
+                  </layout-cluster>
+                </layout-cluster>
+                <div class="demo-cards">
+                  <div class="demo-card">
+                    <h4>Total Users</h4>
+                    <span class="value">2,847</span>
+                  </div>
+                  <div class="demo-card">
+                    <h4>Revenue</h4>
+                    <span class="value">$48.2k</span>
+                  </div>
+                  <div class="demo-card">
+                    <h4>Orders</h4>
+                    <span class="value">1,024</span>
+                  </div>
+                </div>
+                <layout-cluster data-gap="s">
+                  <layout-badge data-variant="success">Active</layout-badge>
+                  <layout-badge data-variant="warning">Pending</layout-badge>
+                  <layout-badge data-variant="info">Processing</layout-badge>
+                </layout-cluster>
+              </layout-stack>
+            </main>
+          </div>
         </browser-window>
       </div>
 
