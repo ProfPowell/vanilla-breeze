@@ -22,12 +22,13 @@ function getActiveSection(filePath) {
     return 'home';
   }
   if (relativePath === 'quick-start.html' ||
-      relativePath === 'tutorial.html' ||
-      relativePath === 'themes.html') {
+      relativePath === 'tutorial.html') {
     return 'docs';
   }
   if (relativePath.startsWith('tokens') ||
-      relativePath.startsWith('elements')) {
+      relativePath.startsWith('elements') ||
+      relativePath.startsWith('attributes') ||
+      relativePath === 'themes.html') {
     return 'api';
   }
   if (relativePath.startsWith('snippets') ||
@@ -57,18 +58,17 @@ function generateDesktopNav(activeSection) {
             <menu>
               <li><a href="/docs/quick-start.html">Quick Start</a></li>
               <li><a href="/docs/tutorial.html">Tutorial</a></li>
-              <li><a href="/docs/themes.html">Themes</a></li>
             </menu>
           </dropdown-wc>
         </li>
         <li>
           <dropdown-wc data-position="bottom-start" data-hover>
-            <a href="/docs/tokens/" data-trigger${isApi ? ' aria-current="true"' : ''}>API</a>
+            <a href="/docs/elements/" data-trigger${isApi ? ' aria-current="true"' : ''}>API</a>
             <menu>
+              <li><a href="/docs/elements/">Elements</a></li>
+              <li><a href="/docs/attributes/">Attributes</a></li>
               <li><a href="/docs/tokens/">Tokens</a></li>
-              <li><a href="/docs/elements/native/">Native Elements</a></li>
-              <li><a href="/docs/elements/custom-elements/">Custom Elements</a></li>
-              <li><a href="/docs/elements/web-components/">Web Components</a></li>
+              <li><a href="/docs/themes.html">Themes</a></li>
             </menu>
           </dropdown-wc>
         </li>
@@ -113,16 +113,15 @@ function generateMobileNav(activeSection) {
           <ul>
             <li><a href="/docs/quick-start.html">Quick Start</a></li>
             <li><a href="/docs/tutorial.html">Tutorial</a></li>
-            <li><a href="/docs/themes.html">Themes</a></li>
           </ul>
         </li>
         <li class="mobile-section">
           <span class="mobile-section-title"${isApi ? ' aria-current="true"' : ''}>API</span>
           <ul>
+            <li><a href="/docs/elements/">Elements</a></li>
+            <li><a href="/docs/attributes/">Attributes</a></li>
             <li><a href="/docs/tokens/">Tokens</a></li>
-            <li><a href="/docs/elements/native/">Native Elements</a></li>
-            <li><a href="/docs/elements/custom-elements/">Custom Elements</a></li>
-            <li><a href="/docs/elements/web-components/">Web Components</a></li>
+            <li><a href="/docs/themes.html">Themes</a></li>
           </ul>
         </li>
         <li class="mobile-section">
