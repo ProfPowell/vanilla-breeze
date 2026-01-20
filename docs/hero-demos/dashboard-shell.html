@@ -88,11 +88,25 @@
       margin: 0 0 var(--size-s);
     }
 
-    /* Stats list reset */
+    /* Stats grid - force equal columns for dashboard stats */
     .stats-list {
       list-style: none;
       padding: 0;
       margin: 0;
+      /* Override auto-fit with fixed 4 columns on wide screens */
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 48rem) {
+      .stats-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 24rem) {
+      .stats-list {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Stat card content */
@@ -101,11 +115,13 @@
       color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      margin: 0;
     }
 
     .stat-value {
       font-size: var(--font-size-l);
       font-weight: 700;
+      margin: 0;
     }
 
     /* Activity list */
@@ -134,9 +150,18 @@
       border-block-end: none;
     }
 
+    /* Activity text truncation - prevent layout shift */
+    .activity-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
     .activity-item time {
       color: var(--color-text-muted);
       font-size: var(--font-size-xs);
+      flex-shrink: 0;
     }
 
     /* Mobile drawer overlay */
@@ -246,15 +271,15 @@
       <h3 class="activity-header">Recent Activity</h3>
       <ul class="activity-list">
         <li class="activity-item" data-layout="cluster" data-justify="between">
-          <span>New user registered</span>
+          <span class="activity-text">New user registered</span>
           <time datetime="2026-01-20T14:30">2 min ago</time>
         </li>
         <li class="activity-item" data-layout="cluster" data-justify="between">
-          <span>Order #1234 completed</span>
+          <span class="activity-text">Order #1234 completed</span>
           <time datetime="2026-01-20T14:15">15 min ago</time>
         </li>
         <li class="activity-item" data-layout="cluster" data-justify="between">
-          <span>Inventory updated</span>
+          <span class="activity-text">Inventory updated</span>
           <time datetime="2026-01-20T13:45">45 min ago</time>
         </li>
       </ul>
