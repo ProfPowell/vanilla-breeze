@@ -7,8 +7,9 @@
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     /* ==========================================================================
-       DEMO CONTAINER
-       Constrains demo to hero-embeddable size with contained drawer behavior
+       DEMO-SPECIFIC STYLES ONLY
+       The dashboard layout itself uses data-layout="dashboard" from VB.
+       These styles handle the demo containment and minimal visual polish.
        ========================================================================== */
 
     body {
@@ -18,84 +19,37 @@
       min-height: 100dvh;
     }
 
-    .demo-wrapper {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .demo-header {
-      text-align: center;
-      margin-block-end: var(--size-m);
-    }
-
-    .demo-header h1 {
-      font-size: var(--font-size-xl);
-      margin: 0 0 var(--size-2xs);
-    }
-
-    .demo-header p {
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-
-    .demo-container {
+    /* Demo container - constrains the dashboard to embeddable size */
+    .demo-frame {
       height: 420px;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-l);
       overflow: hidden;
       box-shadow: var(--shadow-l);
       position: relative;
+    }
+
+    /* Override dashboard min-height for contained demo */
+    .demo-frame [data-layout="dashboard"] {
+      min-height: 100%;
+    }
+
+    /* Dashboard header needs z-index above mobile drawer */
+    .demo-frame [data-layout="dashboard"] > header {
       background: var(--color-surface);
-    }
-
-    /* ==========================================================================
-       DASHBOARD LAYOUT (contained within demo)
-       Override data-layout="dashboard" for contained demo behavior
-       ========================================================================== */
-
-    .demo-dashboard {
-      display: grid;
-      grid-template-areas:
-        "header header"
-        "nav    main";
-      grid-template-columns: 12rem 1fr;
-      grid-template-rows: auto 1fr;
-      height: 100%;
-    }
-
-    .demo-dashboard > header { grid-area: header; }
-    .demo-dashboard > nav { grid-area: nav; }
-    .demo-dashboard > main { grid-area: main; }
-
-    /* Mobile: single column, nav hidden by default */
-    @media (max-width: 48rem) {
-      .demo-dashboard {
-        grid-template-areas:
-          "header"
-          "main";
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Dashboard header - z-index above drawer */
-    .dash-header {
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      border-block-end: 1px solid var(--color-border);
       padding: var(--size-s) var(--size-m);
-      display: flex;
-      align-items: center;
-      gap: var(--size-m);
       position: relative;
       z-index: 25;
     }
 
-    .dash-header h2 {
+    .demo-frame [data-layout="dashboard"] > header h2 {
       font-size: var(--font-size-m);
       margin: 0;
       font-weight: 600;
     }
 
-    /* Hamburger button - hidden on desktop, visible on mobile */
+    /* Menu toggle - hidden desktop, visible mobile */
     .menu-toggle {
       display: none;
       padding: var(--size-xs);
@@ -118,27 +72,14 @@
       }
     }
 
-    /* Dashboard nav/sidebar */
-    .dash-nav {
+    /* Dashboard nav styling */
+    .demo-frame [data-layout="dashboard"] > nav {
       background: var(--color-surface);
-      border-right: 1px solid var(--color-border);
+      border-inline-end: 1px solid var(--color-border);
       padding: var(--size-m);
-      overflow-y: auto;
     }
 
-    .dash-nav ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--size-2xs);
-    }
-
-    .dash-nav a {
-      display: flex;
-      align-items: center;
-      gap: var(--size-s);
+    .demo-frame [data-layout="dashboard"] > nav a {
       padding: var(--size-xs) var(--size-s);
       border-radius: var(--radius-s);
       text-decoration: none;
@@ -147,37 +88,36 @@
       transition: background 0.15s ease;
     }
 
-    .dash-nav a:hover {
+    .demo-frame [data-layout="dashboard"] > nav a:hover {
       background: var(--color-gray-100);
     }
 
-    .dash-nav a[aria-current="page"] {
+    .demo-frame [data-layout="dashboard"] > nav a[aria-current="page"] {
       background: var(--color-primary-subtle);
       color: var(--color-primary);
       font-weight: 500;
     }
 
-    /* Mobile drawer behavior - CONTAINED within demo-container */
+    /* Mobile drawer - CONTAINED within demo-frame */
     @media (max-width: 48rem) {
-      .dash-nav {
+      .demo-frame [data-layout="dashboard"] > nav {
         position: absolute;
-        top: 3rem; /* Below header */
+        top: 3rem;
         left: 0;
         bottom: 0;
         width: 12rem;
         z-index: 20;
         transform: translateX(-100%);
         transition: transform 0.2s ease-out;
-        border-right: 1px solid var(--color-border);
         box-shadow: var(--shadow-l);
       }
 
-      .demo-dashboard[data-nav-open] .dash-nav {
+      .demo-frame [data-layout="dashboard"][data-nav-open] > nav {
         transform: translateX(0);
       }
     }
 
-    /* Mobile drawer overlay - CONTAINED within demo-container */
+    /* Mobile drawer overlay */
     .drawer-overlay {
       display: none;
     }
@@ -194,125 +134,78 @@
         transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
       }
 
-      .demo-dashboard[data-nav-open] .drawer-overlay {
+      [data-layout="dashboard"][data-nav-open] .drawer-overlay {
         opacity: 1;
         visibility: visible;
       }
     }
 
-    /* Dashboard main content */
-    .dash-main {
+    /* Dashboard main content area */
+    .demo-frame [data-layout="dashboard"] > main {
       background: var(--color-gray-50);
       padding: var(--size-m);
       overflow-y: auto;
     }
 
-    .dash-main h3 {
+    .demo-frame [data-layout="dashboard"] > main h3 {
       font-size: var(--font-size-m);
       margin: 0 0 var(--size-s);
     }
 
-    /* Stats grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: var(--size-s);
-      margin-bottom: var(--size-m);
+    /* Stat card value styling */
+    .stat-value {
+      font-size: var(--font-size-l);
+      font-weight: 700;
     }
 
-    .stat-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      padding: var(--size-s);
-    }
-
-    .stat-card .label {
+    .stat-label {
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: var(--size-3xs);
     }
 
-    .stat-card .value {
-      font-size: var(--font-size-l);
-      font-weight: 700;
-      color: var(--color-text);
-    }
-
-    /* Activity list */
-    .activity-list {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      overflow: hidden;
-    }
-
-    .activity-list h4 {
+    /* Activity section header */
+    .activity-header {
       font-size: var(--font-size-s);
       font-weight: 600;
       margin: 0;
       padding: var(--size-xs) var(--size-s);
       background: var(--color-gray-50);
-      border-bottom: 1px solid var(--color-border);
+      border-block-end: 1px solid var(--color-border);
     }
 
-    .activity-list ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    .activity-list li {
+    .activity-item {
       padding: var(--size-xs) var(--size-s);
       font-size: var(--font-size-s);
-      border-bottom: 1px solid var(--color-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border-block-end: 1px solid var(--color-border);
     }
 
-    .activity-list li:last-child {
-      border-bottom: none;
+    .activity-item:last-child {
+      border-block-end: none;
     }
 
-    .activity-list time {
+    .activity-item time {
       color: var(--color-text-muted);
       font-size: var(--font-size-xs);
-    }
-
-    /* Code hint badge */
-    .code-hint {
-      margin-block-start: var(--size-m);
-      padding: var(--size-s);
-      background: var(--color-gray-900);
-      color: var(--color-gray-100);
-      border-radius: var(--radius-m);
-      font-family: var(--font-mono);
-      font-size: var(--font-size-xs);
-      text-align: center;
-    }
-
-    .code-hint code {
-      color: var(--color-primary-400);
     }
   </style>
 </head>
 <body>
-  <div class="demo-wrapper">
-    <header class="demo-header">
-      <h1>Dashboard App Shell</h1>
-      <p>"Full app layout. One attribute."</p>
+  <article data-layout="center" data-max="wide">
+    <header data-layout="stack" data-gap="2xs" data-align="center" style="margin-block-end: var(--size-m);">
+      <h1 style="font-size: var(--font-size-xl); margin: 0;">Dashboard App Shell</h1>
+      <p style="color: var(--color-text-muted); margin: 0;">"Full app layout. One attribute."</p>
     </header>
 
-    <div class="demo-container">
-      <div class="demo-dashboard" id="dashboard">
-        <!-- Overlay for mobile drawer - contained within demo -->
+    <figure class="demo-frame">
+      <!-- THE ACTUAL data-layout="dashboard" IN ACTION -->
+      <section data-layout="dashboard" id="dashboard">
+        <!-- Overlay for mobile drawer -->
         <div class="drawer-overlay" id="overlay" aria-hidden="true"></div>
 
         <!-- Dashboard Header -->
-        <header class="dash-header">
+        <header data-layout="cluster" data-gap="m">
           <button type="button" class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
             <icon-wc name="menu" size="sm"></icon-wc>
           </button>
@@ -320,34 +213,34 @@
         </header>
 
         <!-- Dashboard Nav/Sidebar -->
-        <nav class="dash-nav" aria-label="Main navigation">
-          <ul>
+        <nav aria-label="Main navigation">
+          <ul data-layout="stack" data-gap="2xs">
             <li>
-              <a href="#" aria-current="page">
+              <a href="#" data-layout="cluster" data-gap="s" aria-current="page">
                 <icon-wc name="home" size="sm"></icon-wc>
                 Dashboard
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#" data-layout="cluster" data-gap="s">
                 <icon-wc name="users" size="sm"></icon-wc>
                 Users
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#" data-layout="cluster" data-gap="s">
                 <icon-wc name="package" size="sm"></icon-wc>
                 Products
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#" data-layout="cluster" data-gap="s">
                 <icon-wc name="bar-chart-2" size="sm"></icon-wc>
                 Analytics
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#" data-layout="cluster" data-gap="s">
                 <icon-wc name="settings" size="sm"></icon-wc>
                 Settings
               </a>
@@ -356,53 +249,61 @@
         </nav>
 
         <!-- Dashboard Main Content -->
-        <main class="dash-main">
+        <main data-layout="stack" data-gap="m">
           <h3>Overview</h3>
 
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="label">Revenue</div>
-              <div class="value">$48.2K</div>
-            </div>
-            <div class="stat-card">
-              <div class="label">Users</div>
-              <div class="value">2,847</div>
-            </div>
-            <div class="stat-card">
-              <div class="label">Orders</div>
-              <div class="value">384</div>
-            </div>
-            <div class="stat-card">
-              <div class="label">Conversion</div>
-              <div class="value">3.2%</div>
-            </div>
-          </div>
+          <ul data-layout="grid" data-min="8rem" data-gap="s" style="list-style: none; padding: 0; margin: 0;">
+            <li>
+              <layout-card data-padding="s">
+                <p class="stat-label">Revenue</p>
+                <p class="stat-value">$48.2K</p>
+              </layout-card>
+            </li>
+            <li>
+              <layout-card data-padding="s">
+                <p class="stat-label">Users</p>
+                <p class="stat-value">2,847</p>
+              </layout-card>
+            </li>
+            <li>
+              <layout-card data-padding="s">
+                <p class="stat-label">Orders</p>
+                <p class="stat-value">384</p>
+              </layout-card>
+            </li>
+            <li>
+              <layout-card data-padding="s">
+                <p class="stat-label">Conversion</p>
+                <p class="stat-value">3.2%</p>
+              </layout-card>
+            </li>
+          </ul>
 
-          <div class="activity-list">
-            <h4>Recent Activity</h4>
-            <ul>
-              <li>
+          <layout-card data-padding="none">
+            <h4 class="activity-header">Recent Activity</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li class="activity-item" data-layout="cluster" data-justify="between">
                 <span>New user registered</span>
                 <time datetime="2026-01-20T14:30">2 min ago</time>
               </li>
-              <li>
+              <li class="activity-item" data-layout="cluster" data-justify="between">
                 <span>Order #1234 completed</span>
                 <time datetime="2026-01-20T14:15">15 min ago</time>
               </li>
-              <li>
+              <li class="activity-item" data-layout="cluster" data-justify="between">
                 <span>Inventory updated</span>
                 <time datetime="2026-01-20T13:45">45 min ago</time>
               </li>
             </ul>
-          </div>
+          </layout-card>
         </main>
-      </div>
-    </div>
+      </section>
+    </figure>
 
-    <div class="code-hint">
-      <code>&lt;div data-layout="dashboard"&gt;</code> + <code>data-nav-open</code> for mobile drawer
-    </div>
-  </div>
+    <footer style="margin-block-start: var(--size-m); padding: var(--size-s); background: var(--color-gray-900); color: var(--color-gray-100); border-radius: var(--radius-m); font-family: var(--font-mono); font-size: var(--font-size-xs); text-align: center;">
+      <code style="color: var(--color-primary-400);">&lt;section data-layout="dashboard"&gt;</code> + <code style="color: var(--color-primary-400);">data-nav-open</code> for mobile drawer
+    </footer>
+  </article>
 
   <script type="module" src="/src/main.js"></script>
 
