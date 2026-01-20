@@ -89,22 +89,24 @@
     }
 
     /* Stats grid - force equal columns for dashboard stats */
-    .stats-list {
+    /* Use higher specificity to override [data-layout="grid"] */
+    .stats-list.stats-list {
       list-style: none;
       padding: 0;
       margin: 0;
-      /* Override auto-fit with fixed 4 columns on wide screens */
+      display: grid;
+      gap: var(--size-s);
       grid-template-columns: repeat(4, 1fr);
     }
 
     @media (max-width: 48rem) {
-      .stats-list {
+      .stats-list.stats-list {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media (max-width: 24rem) {
-      .stats-list {
+      .stats-list.stats-list {
         grid-template-columns: 1fr;
       }
     }
@@ -164,26 +166,28 @@
       flex-shrink: 0;
     }
 
-    /* Mobile drawer overlay */
+    /* Drawer overlay - positioned absolute to not disrupt grid */
     .drawer-overlay {
-      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgb(0 0 0 / 0.3);
+      z-index: 15;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
     }
 
-    @media (max-width: 48rem) {
-      .drawer-overlay {
-        display: block;
-        position: fixed;
-        inset: 0;
-        background: rgb(0 0 0 / 0.3);
-        z-index: 15;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
-      }
+    body[data-nav-open] .drawer-overlay {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
 
-      body[data-nav-open] .drawer-overlay {
-        opacity: 1;
-        visibility: visible;
+    /* Hide overlay on desktop */
+    @media (min-width: 48.01rem) {
+      .drawer-overlay {
+        display: none;
       }
     }
   </style>
@@ -240,7 +244,7 @@
   <main data-layout="stack" data-gap="m">
     <h2>Overview</h2>
 
-    <ul class="stats-list" data-layout="grid" data-min="8rem" data-gap="s">
+    <ul class="stats-list">
       <li>
         <layout-card data-padding="s">
           <p class="stat-label">Revenue</p>
