@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard App Shell - Hero Demo - Vanilla Breeze</title>
+  <title>Dashboard App Shell - Hero Demo</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     /* ==========================================================================
-       PAGE WRAPPER STYLES
-       Constrain demo to hero-embeddable size (~500px height)
+       DEMO CONTAINER
+       Constrains demo to hero-embeddable size with contained drawer behavior
        ========================================================================== */
 
     body {
@@ -18,36 +18,66 @@
       min-height: 100dvh;
     }
 
-    .demo-container {
-      /* Contain the dashboard demo within a fixed-height container */
-      height: 480px;
+    .demo-wrapper {
       max-width: 900px;
       margin: 0 auto;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-block-end: var(--size-m);
+    }
+
+    .demo-header h1 {
+      font-size: var(--font-size-xl);
+      margin: 0 0 var(--size-2xs);
+    }
+
+    .demo-header p {
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .demo-container {
+      height: 420px;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-l);
       overflow: hidden;
       box-shadow: var(--shadow-l);
       position: relative;
+      background: var(--color-surface);
     }
 
     /* ==========================================================================
-       WOW FACTOR: Complete dashboard layout from ONE attribute
-
-       data-layout="dashboard" provides:
-       - CSS Grid with header spanning full width
-       - Sticky header that stays visible on scroll
-       - Sticky sidebar with its own scroll
-       - Mobile drawer with slide animation (toggle data-nav-open)
-       - All responsive behavior built in
+       DASHBOARD LAYOUT (contained within demo)
+       Override data-layout="dashboard" for contained demo behavior
        ========================================================================== */
 
-    /* Override dashboard to work in contained demo (not full viewport) */
     .demo-dashboard {
-      min-height: 100%;
+      display: grid;
+      grid-template-areas:
+        "header header"
+        "nav    main";
+      grid-template-columns: 12rem 1fr;
+      grid-template-rows: auto 1fr;
       height: 100%;
     }
 
-    /* Dashboard header styling */
+    .demo-dashboard > header { grid-area: header; }
+    .demo-dashboard > nav { grid-area: nav; }
+    .demo-dashboard > main { grid-area: main; }
+
+    /* Mobile: single column, nav hidden by default */
+    @media (max-width: 48rem) {
+      .demo-dashboard {
+        grid-template-areas:
+          "header"
+          "main";
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Dashboard header - z-index above drawer */
     .dash-header {
       background: var(--color-surface);
       border-bottom: 1px solid var(--color-border);
@@ -55,17 +85,17 @@
       display: flex;
       align-items: center;
       gap: var(--size-m);
-      height: 3.5rem;
-      box-sizing: border-box;
+      position: relative;
+      z-index: 25;
     }
 
-    .dash-header h1 {
+    .dash-header h2 {
       font-size: var(--font-size-m);
       margin: 0;
       font-weight: 600;
     }
 
-    /* Hamburger button - only shows on mobile */
+    /* Hamburger button - hidden on desktop, visible on mobile */
     .menu-toggle {
       display: none;
       padding: var(--size-xs);
@@ -73,32 +103,27 @@
       border: none;
       cursor: pointer;
       border-radius: var(--radius-s);
+      color: var(--color-text);
     }
 
     .menu-toggle:hover {
       background: var(--color-gray-100);
     }
 
-    .menu-toggle svg {
-      display: block;
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-
     @media (max-width: 48rem) {
       .menu-toggle {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 
-    /* Dashboard nav/sidebar styling */
+    /* Dashboard nav/sidebar */
     .dash-nav {
       background: var(--color-surface);
       border-right: 1px solid var(--color-border);
       padding: var(--size-m);
-      /* Override position for contained demo */
-      position: static !important;
-      height: auto !important;
+      overflow-y: auto;
     }
 
     .dash-nav ul {
@@ -132,10 +157,47 @@
       font-weight: 500;
     }
 
-    .dash-nav svg {
-      width: 1rem;
-      height: 1rem;
-      flex-shrink: 0;
+    /* Mobile drawer behavior - CONTAINED within demo-container */
+    @media (max-width: 48rem) {
+      .dash-nav {
+        position: absolute;
+        top: 3rem; /* Below header */
+        left: 0;
+        bottom: 0;
+        width: 12rem;
+        z-index: 20;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease-out;
+        border-right: 1px solid var(--color-border);
+        box-shadow: var(--shadow-l);
+      }
+
+      .demo-dashboard[data-nav-open] .dash-nav {
+        transform: translateX(0);
+      }
+    }
+
+    /* Mobile drawer overlay - CONTAINED within demo-container */
+    .drawer-overlay {
+      display: none;
+    }
+
+    @media (max-width: 48rem) {
+      .drawer-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: rgb(0 0 0 / 0.3);
+        z-index: 15;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+      }
+
+      .demo-dashboard[data-nav-open] .drawer-overlay {
+        opacity: 1;
+        visibility: visible;
+      }
     }
 
     /* Dashboard main content */
@@ -145,15 +207,15 @@
       overflow-y: auto;
     }
 
-    .dash-main h2 {
-      font-size: var(--font-size-l);
-      margin: 0 0 var(--size-m);
+    .dash-main h3 {
+      font-size: var(--font-size-m);
+      margin: 0 0 var(--size-s);
     }
 
     /* Stats grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: var(--size-s);
       margin-bottom: var(--size-m);
     }
@@ -162,7 +224,7 @@
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
-      padding: var(--size-m);
+      padding: var(--size-s);
     }
 
     .stat-card .label {
@@ -170,11 +232,11 @@
       color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: var(--size-2xs);
+      margin-bottom: var(--size-3xs);
     }
 
     .stat-card .value {
-      font-size: var(--font-size-xl);
+      font-size: var(--font-size-l);
       font-weight: 700;
       color: var(--color-text);
     }
@@ -187,10 +249,11 @@
       overflow: hidden;
     }
 
-    .activity-list h3 {
+    .activity-list h4 {
       font-size: var(--font-size-s);
+      font-weight: 600;
       margin: 0;
-      padding: var(--size-s) var(--size-m);
+      padding: var(--size-xs) var(--size-s);
       background: var(--color-gray-50);
       border-bottom: 1px solid var(--color-border);
     }
@@ -202,7 +265,7 @@
     }
 
     .activity-list li {
-      padding: var(--size-s) var(--size-m);
+      padding: var(--size-xs) var(--size-s);
       font-size: var(--font-size-s);
       border-bottom: 1px solid var(--color-border);
       display: flex;
@@ -219,242 +282,130 @@
       font-size: var(--font-size-xs);
     }
 
-    /* Mobile drawer overlay */
-    .drawer-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgb(0 0 0 / 0.3);
-      z-index: 15;
-      opacity: 0;
-      transition: opacity 0.2s ease-out;
-    }
-
-    @media (max-width: 48rem) {
-      .demo-dashboard[data-nav-open] .drawer-overlay {
-        display: block;
-        opacity: 1;
-      }
-
-      /* Mobile nav needs fixed positioning within container */
-      .demo-dashboard .dash-nav {
-        position: fixed !important;
-        top: 3.5rem;
-        left: 0;
-        bottom: 0;
-        width: 16rem;
-        z-index: 20;
-        transform: translateX(-100%);
-        transition: transform 0.2s ease-out;
-        border-right: 1px solid var(--color-border);
-        box-shadow: var(--shadow-l);
-      }
-
-      .demo-dashboard[data-nav-open] .dash-nav {
-        transform: translateX(0);
-      }
-    }
-
-    /* ==========================================================================
-       DEMO INSTRUCTIONS
-       ========================================================================== */
-
-    .demo-info {
-      max-width: 900px;
-      margin: var(--size-l) auto 0;
-      padding: var(--size-m);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-    }
-
-    .demo-info h2 {
-      font-size: var(--font-size-m);
-      margin: 0 0 var(--size-s);
-    }
-
-    .demo-info p {
-      margin: 0 0 var(--size-s);
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-    }
-
-    .demo-info code {
-      background: var(--color-gray-100);
-      padding: var(--size-3xs) var(--size-xs);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-s);
-    }
-
-    .demo-info pre {
-      margin: var(--size-s) 0 0;
-      padding: var(--size-m);
+    /* Code hint badge */
+    .code-hint {
+      margin-block-start: var(--size-m);
+      padding: var(--size-s);
       background: var(--color-gray-900);
       color: var(--color-gray-100);
       border-radius: var(--radius-m);
-      font-size: var(--font-size-s);
-      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+      text-align: center;
+    }
+
+    .code-hint code {
+      color: var(--color-primary-400);
     }
   </style>
 </head>
 <body>
-  <!-- ==========================================================================
-       HERO DEMO: Dashboard App Shell
+  <div class="demo-wrapper">
+    <header class="demo-header">
+      <h1>Dashboard App Shell</h1>
+      <p>"Full app layout. One attribute."</p>
+    </header>
 
-       WOW FACTOR: Complete dashboard layout with ONE attribute
-       - data-layout="dashboard" creates the entire app shell
-       - Sticky header spans full width
-       - Sticky sidebar with independent scroll
-       - Mobile: Nav becomes animated slide-out drawer
-       - Toggle with data-nav-open attribute
-       ========================================================================== -->
+    <div class="demo-container">
+      <div class="demo-dashboard" id="dashboard">
+        <!-- Overlay for mobile drawer - contained within demo -->
+        <div class="drawer-overlay" id="overlay" aria-hidden="true"></div>
 
-  <div class="demo-container">
-    <!--
-      THE MAGIC: One data-layout="dashboard" creates:
-      - Header spanning full width (sticky)
-      - Sidebar that sticks below header
-      - Main content area that fills remaining space
-      - Mobile drawer animation (toggle data-nav-open)
-    -->
-    <div data-layout="dashboard" class="demo-dashboard" id="dashboard">
+        <!-- Dashboard Header -->
+        <header class="dash-header">
+          <button type="button" class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+            <icon-wc name="menu" size="sm"></icon-wc>
+          </button>
+          <h2>Acme Dashboard</h2>
+        </header>
 
-      <!-- Overlay for mobile drawer (closes nav when clicked) -->
-      <div class="drawer-overlay" id="overlay" aria-hidden="true"></div>
-
-      <!-- Dashboard Header - Sticky at top -->
-      <header class="dash-header">
-        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <h1>Acme Dashboard</h1>
-      </header>
-
-      <!-- Dashboard Nav/Sidebar - Sticky on desktop, drawer on mobile -->
-      <nav class="dash-nav" aria-label="Main navigation">
-        <ul>
-          <li>
-            <a href="#" aria-current="page">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-              Dashboard
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              Users
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-              Products
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <line x1="18" y1="20" x2="18" y2="10"/>
-                <line x1="12" y1="20" x2="12" y2="4"/>
-                <line x1="6" y1="20" x2="6" y2="14"/>
-              </svg>
-              Analytics
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-              Settings
-            </a>
-          </li>
-        </ul>
-      </nav>
-
-      <!-- Dashboard Main Content -->
-      <main class="dash-main">
-        <h2>Overview</h2>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="label">Revenue</div>
-            <div class="value">$48.2K</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Users</div>
-            <div class="value">2,847</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Orders</div>
-            <div class="value">384</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Conversion</div>
-            <div class="value">3.2%</div>
-          </div>
-        </div>
-
-        <div class="activity-list">
-          <h3>Recent Activity</h3>
+        <!-- Dashboard Nav/Sidebar -->
+        <nav class="dash-nav" aria-label="Main navigation">
           <ul>
             <li>
-              <span>New user registered</span>
-              <time datetime="2026-01-20T14:30">2 min ago</time>
+              <a href="#" aria-current="page">
+                <icon-wc name="home" size="sm"></icon-wc>
+                Dashboard
+              </a>
             </li>
             <li>
-              <span>Order #1234 completed</span>
-              <time datetime="2026-01-20T14:15">15 min ago</time>
+              <a href="#">
+                <icon-wc name="users" size="sm"></icon-wc>
+                Users
+              </a>
             </li>
             <li>
-              <span>Product inventory updated</span>
-              <time datetime="2026-01-20T13:45">45 min ago</time>
+              <a href="#">
+                <icon-wc name="package" size="sm"></icon-wc>
+                Products
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="bar-chart-2" size="sm"></icon-wc>
+                Analytics
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="settings" size="sm"></icon-wc>
+                Settings
+              </a>
             </li>
           </ul>
-        </div>
-      </main>
+        </nav>
+
+        <!-- Dashboard Main Content -->
+        <main class="dash-main">
+          <h3>Overview</h3>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="label">Revenue</div>
+              <div class="value">$48.2K</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Users</div>
+              <div class="value">2,847</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Orders</div>
+              <div class="value">384</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Conversion</div>
+              <div class="value">3.2%</div>
+            </div>
+          </div>
+
+          <div class="activity-list">
+            <h4>Recent Activity</h4>
+            <ul>
+              <li>
+                <span>New user registered</span>
+                <time datetime="2026-01-20T14:30">2 min ago</time>
+              </li>
+              <li>
+                <span>Order #1234 completed</span>
+                <time datetime="2026-01-20T14:15">15 min ago</time>
+              </li>
+              <li>
+                <span>Inventory updated</span>
+                <time datetime="2026-01-20T13:45">45 min ago</time>
+              </li>
+            </ul>
+          </div>
+        </main>
+      </div>
     </div>
-  </div>
 
-  <!-- Demo Information -->
-  <div class="demo-info">
-    <h2>The Magic: Full App Layout. One Attribute.</h2>
-    <p>
-      <code>data-layout="dashboard"</code> creates a complete app shell with sticky header,
-      sticky sidebar, and mobile drawer animation. Toggle <code>data-nav-open</code> to
-      show/hide the mobile navigation drawer.
-    </p>
-    <p>
-      <strong>Try it:</strong> Resize the browser below 768px (or use devtools mobile view)
-      and click the hamburger menu to see the drawer animation.
-    </p>
-    <pre>&lt;div data-layout="dashboard"&gt;
-  &lt;header&gt;Dashboard Header&lt;/header&gt;
-  &lt;nav&gt;Sidebar Navigation&lt;/nav&gt;
-  &lt;main&gt;Main Content&lt;/main&gt;
-&lt;/div&gt;
-
-&lt;!-- Mobile: Toggle drawer with data-nav-open --&gt;</pre>
+    <div class="code-hint">
+      <code>&lt;div data-layout="dashboard"&gt;</code> + <code>data-nav-open</code> for mobile drawer
+    </div>
   </div>
 
   <script type="module" src="/src/main.js"></script>
 
-  <!-- Minimal JavaScript for mobile drawer toggle -->
   <script>
     (function() {
       var dashboard = document.getElementById('dashboard');
@@ -475,7 +426,6 @@
       menuToggle.addEventListener('click', toggleNav);
       overlay.addEventListener('click', toggleNav);
 
-      // Close on escape key
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && dashboard.hasAttribute('data-nav-open')) {
           toggleNav();
