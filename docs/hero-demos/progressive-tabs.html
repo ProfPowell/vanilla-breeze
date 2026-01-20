@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progressive Enhancement Tabs - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    /*
+     * Progressive Enhancement Tabs Demo
+     * ==================================
+     *
+     * THE WOW FACTOR:
+     * ---------------
+     * This demo showcases true progressive enhancement:
+     *
+     * BEFORE JavaScript loads:
+     * - The <details> elements work as native disclosure widgets
+     * - Users can still expand/collapse content using browser defaults
+     * - The shared "name" attribute creates exclusive accordion behavior
+     * - Zero functionality lost without JavaScript!
+     *
+     * AFTER JavaScript loads:
+     * - tabs-wc enhances to a proper tabbed interface
+     * - ARIA roles (tablist, tab, tabpanel) are added automatically
+     * - Full keyboard navigation with arrow keys, Home, End
+     * - Visual transformation from accordion to horizontal tabs
+     *
+     * This is what progressive enhancement should be:
+     * Content accessible immediately, enhanced when ready.
+     */
+
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      font-family: var(--font-family-base);
+    }
+
+    .demo-container {
+      max-inline-size: 600px;
+      margin-inline: auto;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-block-end: var(--size-m);
+    }
+
+    .demo-header h1 {
+      font-size: var(--font-size-l);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .demo-header p {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+      margin: 0;
+    }
+
+    /* Control panel for toggling JavaScript simulation */
+    .control-panel {
+      display: flex;
+      gap: var(--size-s);
+      align-items: center;
+      justify-content: center;
+      padding: var(--size-s);
+      background: var(--color-background);
+      border-radius: var(--radius-m);
+      margin-block-end: var(--size-m);
+      border: 1px solid var(--color-border);
+    }
+
+    .control-panel button {
+      padding: var(--size-xs) var(--size-m);
+      border-radius: var(--radius-s);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      cursor: pointer;
+      font-size: var(--font-size-s);
+      font-weight: 500;
+      transition: all var(--duration-fast) var(--ease-default);
+    }
+
+    .control-panel button:hover {
+      background: var(--color-interactive);
+      color: var(--color-text-on-interactive);
+      border-color: var(--color-interactive);
+    }
+
+    .control-panel button[aria-pressed="true"] {
+      background: var(--color-danger);
+      color: white;
+      border-color: var(--color-danger);
+    }
+
+    /* Status indicator */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs);
+      font-size: var(--font-size-s);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      inline-size: 8px;
+      block-size: 8px;
+      border-radius: var(--radius-full);
+      background: var(--color-success);
+    }
+
+    .status-dot.disabled {
+      background: var(--color-danger);
+    }
+
+    /*
+     * Native details fallback styling
+     * These styles ensure a good experience BEFORE JavaScript loads
+     */
+    .native-mode tabs-wc {
+      display: block;
+      border: none;
+    }
+
+    .native-mode tabs-wc > details {
+      display: block;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .native-mode tabs-wc > details > summary {
+      display: flex;
+      align-items: center;
+      padding: var(--size-s) var(--size-m);
+      cursor: pointer;
+      font-weight: 500;
+      list-style: none;
+      border-radius: var(--radius-m);
+    }
+
+    .native-mode tabs-wc > details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .native-mode tabs-wc > details > summary::before {
+      content: "+";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.25em;
+      block-size: 1.25em;
+      margin-inline-end: var(--size-xs);
+      font-family: monospace;
+      font-weight: bold;
+      background: var(--color-background);
+      border-radius: var(--radius-s);
+    }
+
+    .native-mode tabs-wc > details[open] > summary::before {
+      content: "-";
+    }
+
+    .native-mode tabs-wc > details[open] > summary {
+      border-radius: var(--radius-m) var(--radius-m) 0 0;
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .native-mode tabs-wc > details > :not(summary) {
+      display: none;
+      padding: var(--size-m);
+      background: var(--color-background);
+      border-radius: 0 0 var(--radius-m) var(--radius-m);
+    }
+
+    .native-mode tabs-wc > details[open] > :not(summary) {
+      display: block;
+    }
+
+    /* Info box explaining current mode */
+    .mode-info {
+      margin-block-start: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-info-subtle);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-s);
+      border-inline-start: 3px solid var(--color-info);
+    }
+
+    .mode-info strong {
+      color: var(--color-info);
+    }
+
+    /* Transition for mode switching */
+    tabs-wc,
+    tabs-wc > details,
+    tabs-wc > details > summary,
+    tabs-wc > details > :not(summary) {
+      transition: all var(--duration-normal) var(--ease-default);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <header class="demo-header">
+      <h1>Progressive Enhancement Tabs</h1>
+      <p>Works before JavaScript loads</p>
+    </header>
+
+    <!--
+      CONTROL PANEL
+      =============
+      Toggle between enhanced (JS) and native (no-JS) modes
+      to see progressive enhancement in action.
+    -->
+    <div class="control-panel">
+      <div class="status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">JavaScript: Enhanced</span>
+      </div>
+      <button type="button" id="toggle-js" aria-pressed="false">
+        Simulate No JavaScript
+      </button>
+    </div>
+
+    <!--
+      THE TABS COMPONENT
+      ==================
+      This is the exact same markup whether JS is loaded or not.
+
+      Key elements:
+      - tabs-wc: Custom element that enhances to tablist
+      - details: Native disclosure element (works without JS)
+      - name="demo-tabs": Creates exclusive accordion behavior
+      - summary: Becomes the tab trigger
+      - Content: Becomes the tabpanel
+
+      Without JS: Works as an accordion with native details
+      With JS: Transforms to horizontal tab interface
+    -->
+    <tabs-wc aria-label="Product features" id="demo-tabs">
+      <details name="demo-tabs" open="">
+        <summary>How It Works</summary>
+        <layout-stack data-gap="s">
+          <p><strong>Before JavaScript:</strong> These tabs work as native <code>&lt;details&gt;</code> disclosure elements. The browser handles expand/collapse natively.</p>
+          <p><strong>After JavaScript:</strong> The <code>tabs-wc</code> component adds ARIA roles, keyboard navigation, and transforms the visual appearance.</p>
+        </layout-stack>
+      </details>
+      <details name="demo-tabs">
+        <summary>Key Benefits</summary>
+        <layout-stack data-gap="s">
+          <ul style="margin: 0; padding-inline-start: var(--size-m);">
+            <li>Content accessible immediately on page load</li>
+            <li>No flash of unstyled content (FOUC)</li>
+            <li>Works on slow connections</li>
+            <li>Accessible even if JS fails to load</li>
+          </ul>
+        </layout-stack>
+      </details>
+      <details name="demo-tabs">
+        <summary>Keyboard Nav</summary>
+        <layout-stack data-gap="s">
+          <p>When enhanced, use these keys:</p>
+          <ul style="margin: 0; padding-inline-start: var(--size-m);">
+            <li><kbd>Arrow Left/Right</kbd> - Navigate tabs</li>
+            <li><kbd>Home</kbd> - First tab</li>
+            <li><kbd>End</kbd> - Last tab</li>
+          </ul>
+        </layout-stack>
+      </details>
+      <details name="demo-tabs">
+        <summary>The Code</summary>
+        <layout-stack data-gap="s">
+          <p>Just wrap <code>&lt;details&gt;</code> elements:</p>
+          <pre style="font-size: var(--font-size-xs); background: var(--color-background); padding: var(--size-xs); border-radius: var(--radius-s); overflow-x: auto; margin: 0;"><code>&lt;tabs-wc&gt;
+  &lt;details name="tabs" open&gt;
+    &lt;summary&gt;Tab 1&lt;/summary&gt;
+    &lt;p&gt;Content...&lt;/p&gt;
+  &lt;/details&gt;
+&lt;/tabs-wc&gt;</code></pre>
+        </layout-stack>
+      </details>
+    </tabs-wc>
+
+    <!-- Mode explanation that updates based on current state -->
+    <div class="mode-info" id="mode-info">
+      <strong>Enhanced Mode:</strong> Full tab interface with ARIA roles and keyboard navigation. Try using arrow keys!
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    /**
+     * Demo Control Script
+     * ===================
+     * Toggles between enhanced (JavaScript) and native (no-JS) modes
+     * to demonstrate progressive enhancement in action.
+     */
+    const toggleBtn = document.getElementById('toggle-js');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const modeInfo = document.getElementById('mode-info');
+    const demoContainer = document.querySelector('.demo-container');
+
+    let isNativeMode = false;
+
+    toggleBtn.addEventListener('click', () => {
+      isNativeMode = !isNativeMode;
+
+      if (isNativeMode) {
+        // Simulate no-JS mode by adding class that overrides tab styles
+        demoContainer.classList.add('native-mode');
+        toggleBtn.textContent = 'Enable JavaScript';
+        toggleBtn.setAttribute('aria-pressed', 'true');
+        statusDot.classList.add('disabled');
+        statusText.textContent = 'JavaScript: Disabled (simulated)';
+        modeInfo.innerHTML = '<strong>Native Mode:</strong> Displays as accordion using native &lt;details&gt; elements. No JavaScript required for basic functionality!';
+      } else {
+        // Re-enable enhanced mode
+        demoContainer.classList.remove('native-mode');
+        toggleBtn.textContent = 'Simulate No JavaScript';
+        toggleBtn.setAttribute('aria-pressed', 'false');
+        statusDot.classList.remove('disabled');
+        statusText.textContent = 'JavaScript: Enhanced';
+        modeInfo.innerHTML = '<strong>Enhanced Mode:</strong> Full tab interface with ARIA roles and keyboard navigation. Try using arrow keys!';
+      }
+    });
+  </script>
+</body>
+</html>

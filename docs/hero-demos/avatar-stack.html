@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Avatar Stack Magic - Hero Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+      max-height: 500px;
+      overflow: hidden;
+    }
+
+    .demo-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: var(--font-size-xl);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .tagline {
+      font-size: var(--font-size-m);
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-block-end: var(--size-l);
+    }
+
+    .demo-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      margin-block-end: var(--size-m);
+    }
+
+    .demo-section h2 {
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-s);
+      font-weight: 500;
+    }
+
+    .comparison-row {
+      display: flex;
+      gap: var(--size-l);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .comparison-item {
+      text-align: center;
+    }
+
+    .comparison-item small {
+      display: block;
+      margin-block-start: var(--size-xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .overlap-sizes {
+      display: flex;
+      gap: var(--size-xl);
+      flex-wrap: wrap;
+    }
+
+    .overlap-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-xs);
+    }
+
+    .overlap-item code {
+      font-size: var(--font-size-xs);
+      background: var(--color-surface-raised);
+      padding: var(--size-3xs) var(--size-xs);
+      border-radius: var(--radius-s);
+    }
+
+    .code-preview {
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+      padding: var(--size-s);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--color-text-muted);
+    }
+
+    .code-preview .highlight {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>Avatar Stack Magic</h1>
+    <p class="tagline">Overlapping avatars in one attribute.</p>
+
+    <!--
+      WOW FACTOR: Professional avatar groups like GitHub/Slack
+      with pure CSS overlap - no JavaScript positioning needed!
+
+      Traditional approach: JavaScript to calculate positions,
+      manage z-index, handle resize events, etc.
+
+      Vanilla Breeze: Just add data-overlap to layout-cluster.
+      That's it. CSS handles the rest.
+    -->
+
+    <!-- Demo 1: The Magic Comparison -->
+    <div class="demo-section">
+      <h2>Normal Gap vs. Overlap - Same Markup, One Attribute Difference</h2>
+      <div class="comparison-row">
+        <div class="comparison-item">
+          <!-- Normal cluster with gap -->
+          <layout-cluster data-gap="xs" data-align="center">
+            <user-avatar data-size="md">
+              <img src="https://i.pravatar.cc/150?img=11" alt="User 1"/>
+            </user-avatar>
+            <user-avatar data-size="md">
+              <img src="https://i.pravatar.cc/150?img=12" alt="User 2"/>
+            </user-avatar>
+            <user-avatar data-size="md">
+              <img src="https://i.pravatar.cc/150?img=13" alt="User 3"/>
+            </user-avatar>
+          </layout-cluster>
+          <small>data-gap="xs"</small>
+        </div>
+
+        <div class="comparison-item">
+          <!--
+            THE MAGIC: Just swap data-gap for data-overlap
+            Avatars automatically stack with proper z-index ordering
+          -->
+          <layout-cluster data-overlap="s" data-align="center">
+            <user-avatar data-size="md" data-ring>
+              <img src="https://i.pravatar.cc/150?img=11" alt="User 1"/>
+            </user-avatar>
+            <user-avatar data-size="md" data-ring>
+              <img src="https://i.pravatar.cc/150?img=12" alt="User 2"/>
+            </user-avatar>
+            <user-avatar data-size="md" data-ring>
+              <img src="https://i.pravatar.cc/150?img=13" alt="User 3"/>
+            </user-avatar>
+          </layout-cluster>
+          <small>data-overlap="s" + data-ring</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo 2: Overlap Size Variants -->
+    <div class="demo-section">
+      <h2>Overlap Sizes: xs, s, m, l</h2>
+      <div class="overlap-sizes">
+        <div class="overlap-item">
+          <layout-cluster data-overlap="xs">
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=1" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=2" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=3" alt="User"/>
+            </user-avatar>
+          </layout-cluster>
+          <code>xs</code>
+        </div>
+
+        <div class="overlap-item">
+          <layout-cluster data-overlap="s">
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=4" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=5" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=6" alt="User"/>
+            </user-avatar>
+          </layout-cluster>
+          <code>s</code>
+        </div>
+
+        <div class="overlap-item">
+          <layout-cluster data-overlap="m">
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=7" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=8" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=9" alt="User"/>
+            </user-avatar>
+          </layout-cluster>
+          <code>m</code>
+        </div>
+
+        <div class="overlap-item">
+          <layout-cluster data-overlap="l">
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=10" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=14" alt="User"/>
+            </user-avatar>
+            <user-avatar data-size="sm" data-ring>
+              <img src="https://i.pravatar.cc/150?img=15" alt="User"/>
+            </user-avatar>
+          </layout-cluster>
+          <code>l</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo 3: Real-World Use Case - Contributors with +N Counter -->
+    <div class="demo-section">
+      <h2>Real-World: Project Contributors</h2>
+      <layout-cluster data-gap="m" data-align="center">
+        <!--
+          Complete avatar stack with images, initials, and +N counter
+          Mix and match freely - it all just works!
+        -->
+        <layout-cluster data-overlap="s">
+          <user-avatar data-size="md" data-ring>
+            <img src="https://i.pravatar.cc/150?img=32" alt="Alice Chen"/>
+          </user-avatar>
+          <user-avatar data-size="md" data-ring>
+            <img src="https://i.pravatar.cc/150?img=33" alt="Bob Park"/>
+          </user-avatar>
+          <user-avatar data-size="md" data-ring>
+            <span data-fallback>JD</span>
+          </user-avatar>
+          <user-avatar data-size="md" data-ring>
+            <img src="https://i.pravatar.cc/150?img=35" alt="Diana Lee"/>
+          </user-avatar>
+          <user-avatar data-size="md" data-ring>
+            <span data-fallback>+12</span>
+          </user-avatar>
+        </layout-cluster>
+        <span style="color: var(--color-text-muted); font-size: var(--font-size-s);">16 contributors</span>
+      </layout-cluster>
+    </div>
+
+    <!-- The minimal markup needed -->
+    <div class="code-preview">&lt;layout-cluster <span class="highlight">data-overlap="s"</span>&gt;
+  &lt;user-avatar data-ring&gt;&lt;img src="..." alt="User"/&gt;&lt;/user-avatar&gt;
+  &lt;user-avatar data-ring&gt;&lt;img src="..." alt="User"/&gt;&lt;/user-avatar&gt;
+  &lt;user-avatar data-ring&gt;&lt;span data-fallback&gt;+5&lt;/span&gt;&lt;/user-avatar&gt;
+&lt;/layout-cluster&gt;</div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
