@@ -68,6 +68,43 @@ Every element must be explicitly closed:
 <li>List item
 ```
 
+## Void Elements (Self-Closing)
+
+HTML has specific void elements that cannot have content and must self-close:
+
+```html
+<!-- Void elements - use self-closing syntax -->
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="styles.css"/>
+<input type="text" name="field"/>
+<img src="image.jpg" alt="Description"/>
+<br/>
+<hr/>
+```
+
+**Complete list of void elements:** area, base, br, col, embed, hr, img, input, link, meta, source, track, wbr
+
+## Custom Elements (Never Self-Closing)
+
+Custom elements and web components are NOT void elements. They must always have explicit opening and closing tags, even when empty:
+
+```html
+<!-- Correct - custom elements need closing tags -->
+<icon-wc name="home"></icon-wc>
+<layout-stack></layout-stack>
+<accordion-wc></accordion-wc>
+<toast-wc></toast-wc>
+
+<!-- Wrong - custom elements cannot be self-closing -->
+<icon-wc name="home"/>
+<layout-stack/>
+```
+
+This applies to all custom elements including:
+- Layout elements: `<layout-stack>`, `<layout-grid>`, `<layout-card>`, etc.
+- Web components: `<icon-wc>`, `<tabs-wc>`, `<accordion-wc>`, `<dropdown-wc>`, etc.
+- Any element with a hyphen in its name
+
 ## Nesting
 
 Elements must be properly nested (close in reverse order):
