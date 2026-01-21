@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card List Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface-raised);
+    }
+    h2 { margin-block-end: var(--size-m); }
+    section { margin-block-end: var(--size-2xl); }
+
+    /* Product price styling */
+    .price {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--color-interactive);
+    }
+    .badge {
+      display: inline-block;
+      padding: var(--size-2xs) var(--size-xs);
+      background: oklch(55% 0.2 145);
+      color: white;
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-sm);
+    }
+    .badge.out-of-stock {
+      background: oklch(55% 0.15 25);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-gap="xl">
+    <h1>Card List Component</h1>
+    <p>Template-based list rendering with safe data binding. Only property paths allowed - no expressions.</p>
+
+    <section>
+      <h2>Inline Data with data-items</h2>
+      <card-list data-layout="grid" data-items='[
+        {"id": 1, "name": "Wireless Headphones", "description": "Premium noise-cancelling headphones with 30-hour battery life.", "price": "$249.99", "inStock": true, "category": "Audio"},
+        {"id": 2, "name": "Mechanical Keyboard", "description": "RGB backlit mechanical keyboard with Cherry MX switches.", "price": "$159.99", "inStock": true, "category": "Peripherals"},
+        {"id": 3, "name": "4K Monitor", "description": "27-inch 4K IPS monitor with HDR support and USB-C.", "price": "$449.99", "inStock": false, "category": "Displays"},
+        {"id": 4, "name": "Webcam Pro", "description": "1080p webcam with autofocus and built-in microphone.", "price": "$89.99", "inStock": true, "category": "Peripherals"}
+      ]' data-key="id">
+        <template>
+          <semantic-card>
+            <header>
+              <h3 data-field="name"></h3>
+            </header>
+            <section>
+              <p data-field="description"></p>
+              <p class="price" data-field="price"></p>
+            </section>
+            <footer>
+              <span class="badge" data-field-if="inStock">In Stock</span>
+              <span class="badge out-of-stock" data-field-unless="inStock">Out of Stock</span>
+              <button data-field-if="inStock" class="primary">Add to Cart</button>
+            </footer>
+          </semantic-card>
+        </template>
+      </card-list>
+    </section>
+
+    <section>
+      <h2>Nested Properties</h2>
+      <p>Access nested data with dot notation like <code>user.name</code> or <code>address.city</code>.</p>
+      <card-list data-layout="stack" data-items='[
+        {"id": 1, "user": {"name": "Alice Chen", "email": "alice@example.com"}, "address": {"city": "San Francisco", "country": "USA"}},
+        {"id": 2, "user": {"name": "Bob Martinez", "email": "bob@example.com"}, "address": {"city": "New York", "country": "USA"}},
+        {"id": 3, "user": {"name": "Carol Johnson", "email": "carol@example.com"}, "address": {"city": "London", "country": "UK"}}
+      ]' data-key="id">
+        <template>
+          <layout-card data-variant="outlined">
+            <layout-cluster data-justify="between" data-align="center">
+              <layout-stack data-gap="2xs">
+                <strong data-field="user.name"></strong>
+                <small data-field="user.email"></small>
+              </layout-stack>
+              <span data-field="address.city"></span>
+            </layout-cluster>
+          </layout-card>
+        </template>
+      </card-list>
+    </section>
+
+    <section>
+      <h2>Attribute Binding with data-field-attr</h2>
+      <p>Set element attributes using <code>data-field-attr="href: url, title: name"</code> syntax.</p>
+      <card-list data-layout="grid" data-items='[
+        {"id": 1, "title": "Getting Started Guide", "url": "#getting-started", "description": "Learn the basics of using this framework."},
+        {"id": 2, "title": "API Reference", "url": "#api", "description": "Complete documentation of all components."},
+        {"id": 3, "title": "Examples Gallery", "url": "#examples", "description": "Browse example implementations and demos."}
+      ]' data-key="id">
+        <template>
+          <semantic-card data-variant="outlined">
+            <header>
+              <h3>
+                <a data-field="title" data-field-attr="href: url, title: description"></a>
+              </h3>
+            </header>
+            <section>
+              <p data-field="description"></p>
+            </section>
+          </semantic-card>
+        </template>
+      </card-list>
+    </section>
+
+    <section>
+      <h2>Conditional Rendering</h2>
+      <p>Use <code>data-field-if</code> to show elements when a property is truthy, or <code>data-field-unless</code> to hide them.</p>
+      <card-list data-layout="grid" data-items='[
+        {"id": 1, "name": "Free Plan", "price": "$0/mo", "featured": false, "features": ["5 projects", "Basic support"]},
+        {"id": 2, "name": "Pro Plan", "price": "$29/mo", "featured": true, "features": ["Unlimited projects", "Priority support", "Analytics"]},
+        {"id": 3, "name": "Enterprise", "price": "Contact us", "featured": false, "features": ["Custom solutions", "Dedicated support", "SLA"]}
+      ]' data-key="id">
+        <template>
+          <semantic-card>
+            <header>
+              <layout-cluster data-gap="s" data-align="center">
+                <h3 data-field="name"></h3>
+                <span class="badge" data-field-if="featured">Most Popular</span>
+              </layout-cluster>
+            </header>
+            <section>
+              <p class="price" data-field="price"></p>
+            </section>
+            <footer>
+              <button class="primary" data-field-if="featured">Get Started</button>
+              <button data-field-unless="featured">Learn More</button>
+            </footer>
+          </semantic-card>
+        </template>
+      </card-list>
+    </section>
+
+    <section>
+      <h2>Security: Unsafe Paths Rejected</h2>
+      <p>Only simple property paths are allowed. Expressions, method calls, and template literals are blocked with console warnings.</p>
+      <layout-card data-variant="outlined">
+        <layout-stack data-gap="s">
+          <p><strong>Allowed:</strong></p>
+          <code>name</code> - Simple property<br>
+          <code>user.email</code> - Nested property<br>
+          <code>items[0].title</code> - Array index access
+
+          <p><strong>Rejected (console warning):</strong></p>
+          <code>price.toFixed(2)</code> - Method call<br>
+          <code>`$${price}`</code> - Template literal<br>
+          <code>stock > 0 ? 'yes' : 'no'</code> - Ternary<br>
+          <code>price * 1.1</code> - Arithmetic
+        </layout-stack>
+      </layout-card>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

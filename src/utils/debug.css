@@ -1,0 +1,51 @@
+/* Debug utilities for content model validation */
+/* Activated by <html data-debug> or localStorage.vanillaBreeze.debug = 'true' */
+
+/* Visual feedback for invalid content structures */
+[data-debug-invalid] {
+  outline: 3px dashed oklch(55% 0.25 25) !important;
+  outline-offset: 2px;
+  position: relative;
+}
+
+/* Show error message on hover */
+[data-debug-invalid]::after {
+  content: attr(data-debug-message);
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  z-index: 9999;
+  padding: var(--size-xs) var(--size-s);
+  background: oklch(25% 0.05 25);
+  color: oklch(95% 0 0);
+  font-size: var(--font-size-sm);
+  font-family: system-ui, sans-serif;
+  white-space: nowrap;
+  border-radius: var(--radius-s);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+
+[data-debug-invalid]:hover::after {
+  opacity: 1;
+}
+
+/* Debug mode indicator in corner */
+html[data-debug]::before {
+  content: "DEBUG MODE";
+  position: fixed;
+  inset-block-end: var(--size-s);
+  inset-inline-end: var(--size-s);
+  z-index: 99999;
+  padding: var(--size-2xs) var(--size-s);
+  background: oklch(55% 0.2 280);
+  color: oklch(100% 0 0);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-s);
+  pointer-events: none;
+}

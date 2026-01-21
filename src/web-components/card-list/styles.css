@@ -1,0 +1,64 @@
+/* card-list: Template-based list rendering component */
+
+card-list {
+  display: block;
+}
+
+/* Loading state */
+card-list[data-loading] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+card-list[data-loading]::after {
+  content: "Loading...";
+  display: block;
+  padding: var(--size-m);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Error state */
+card-list[data-error]::before {
+  content: "Error: " attr(data-error);
+  display: block;
+  padding: var(--size-m);
+  color: oklch(55% 0.2 25);
+  background: oklch(95% 0.02 25);
+  border-radius: var(--radius-m);
+  margin-block-end: var(--size-m);
+}
+
+/* Hide template from display */
+card-list > template {
+  display: none;
+}
+
+/* Default grid layout for rendered items */
+card-list[data-layout="grid"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--size-l);
+}
+
+/* Stack layout */
+card-list[data-layout="stack"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-m);
+}
+
+/* Reel/horizontal layout */
+card-list[data-layout="reel"] {
+  display: flex;
+  gap: var(--size-m);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-block: var(--size-s);
+}
+
+card-list[data-layout="reel"] > :not(template) {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}

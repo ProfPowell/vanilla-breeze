@@ -3,6 +3,7 @@ import './custom-elements/register.js';
 import './web-components/index.js';
 import './utils/tooltip-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
+import './lib/debug-content-model.js';
 
 // Initialize theme system early to prevent FOUC
 ThemeManager.init();
