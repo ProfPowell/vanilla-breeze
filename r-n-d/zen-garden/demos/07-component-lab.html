@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Laboratory - Maximal JS Demo | Vanilla Breeze</title>
+
+  <!-- Core System (excluding grid.css - this demo has custom layout) -->
+  <link rel="stylesheet" href="../vanilla-breeze-tokens.css">
+  <!-- <link rel="stylesheet" href="../vanilla-breeze-grid.css"> -->
+  <link rel="stylesheet" href="../vanilla-breeze-base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../themes/theme-swiss.css">
+  <link rel="stylesheet" href="../themes/theme-organic.css">
+  <link rel="stylesheet" href="../themes/theme-brutalist.css">
+  <link rel="stylesheet" href="../themes/theme-cyber.css">
+
+  <style>
+    /* ============================================
+       COMPONENT LABORATORY
+       Full interactive component testing environment
+       ============================================ */
+
+    body {
+      display: grid;
+      grid-template-columns: 320px 1fr 320px;
+      min-height: 100dvh;
+      gap: 0;
+    }
+
+    @media (width < 1200px) {
+      body {
+        grid-template-columns: 280px 1fr;
+      }
+
+      .code-panel {
+        display: none;
+      }
+    }
+
+    @media (width < 768px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 50vh;
+        overflow-y: auto;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        box-shadow: var(--shadow-xl);
+        transform: translateY(calc(100% - 48px));
+        transition: transform var(--duration-normal) var(--ease-default);
+      }
+
+      .controls-panel.expanded {
+        transform: translateY(0);
+      }
+    }
+
+    /* ============================================
+       CONTROLS PANEL
+       ============================================ */
+    .controls-panel {
+      background: var(--color-surface-alt);
+      border-inline-end: 1px solid var(--color-border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: var(--space-4);
+      border-block-end: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      background: var(--color-surface-alt);
+      z-index: 10;
+    }
+
+    .panel-header h2 {
+      font-size: var(--text-lg);
+      margin: 0;
+    }
+
+    .control-section {
+      padding: var(--space-4);
+      border-block-end: 1px solid var(--color-border-muted);
+    }
+
+    .control-section h3 {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 var(--space-3) 0;
+    }
+
+    .control-group {
+      margin-block-end: var(--space-3);
+    }
+
+    .control-group:last-child {
+      margin-block-end: 0;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      margin-block-end: var(--space-1);
+    }
+
+    .control-group select,
+    .control-group input[type="text"] {
+      width: 100%;
+      padding: var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: var(--text-sm);
+    }
+
+    /* Checkbox/Radio groups */
+    .option-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .option-group label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+
+    /* Theme grid */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2);
+    }
+
+    .theme-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-2);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-default);
+    }
+
+    .theme-option:hover {
+      border-color: var(--color-border-strong);
+    }
+
+    .theme-option.active {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+
+    .theme-swatch {
+      width: 100%;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      margin-block-end: var(--space-1);
+    }
+
+    .theme-option span {
+      font-size: var(--text-xs);
+    }
+
+    /* ============================================
+       PREVIEW AREA
+       ============================================ */
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      background: var(--color-surface);
+      overflow: hidden;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-surface-raised);
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .preview-header h1 {
+      font-size: var(--text-xl);
+      margin: 0;
+    }
+
+    .preview-tabs {
+      display: flex;
+      gap: var(--space-1);
+      margin-inline-start: auto;
+    }
+
+    .preview-tabs button {
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-interactive);
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+
+    .preview-tabs button.active {
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+    }
+
+    .preview-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8);
+      overflow: auto;
+    }
+
+    .preview-canvas {
+      padding: var(--space-8);
+      background: var(--color-surface-alt);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      min-width: 300px;
+      text-align: center;
+    }
+
+    /* ============================================
+       STATE PREVIEW GRID
+       ============================================ */
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .state-preview {
+      padding: var(--space-4);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      text-align: center;
+    }
+
+    .state-preview h4 {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-3) 0;
+    }
+
+    /* ============================================
+       CODE PANEL
+       ============================================ */
+    .code-panel {
+      background: var(--color-surface-sunken);
+      border-inline-start: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-panel .panel-header {
+      background: var(--color-surface-sunken);
+    }
+
+    .code-tabs {
+      display: flex;
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .code-tabs button {
+      flex: 1;
+      padding: var(--space-2);
+      background: transparent;
+      border: none;
+      font-size: var(--text-sm);
+      cursor: pointer;
+      color: var(--color-text-muted);
+    }
+
+    .code-tabs button.active {
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    .code-output {
+      flex: 1;
+      padding: var(--space-4);
+      overflow: auto;
+    }
+
+    .code-output pre {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    .code-output code {
+      font-size: var(--text-xs);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .copy-button {
+      padding: var(--space-2) var(--space-4);
+      margin: var(--space-4);
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+      border: none;
+      border-radius: var(--radius-interactive);
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+
+    /* ============================================
+       ACCESSIBILITY PANEL
+       ============================================ */
+    .a11y-panel {
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .contrast-check {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      border-radius: var(--radius-interactive);
+      font-size: var(--text-sm);
+    }
+
+    .contrast-check.pass {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+    }
+
+    .contrast-check.fail {
+      background: var(--color-error-bg);
+      color: var(--color-error);
+    }
+
+    /* ============================================
+       COMPONENT STYLES (for preview)
+       ============================================ */
+
+    /* Force hover state for preview */
+    .force-hover:hover,
+    .force-hover.hover {
+      /* Styles inherited from base */
+    }
+
+    /* Force focus state for preview */
+    .force-focus:focus,
+    .force-focus.focus {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: 2px;
+    }
+
+    /* Force disabled state */
+    .force-disabled,
+    .force-disabled.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Loading state */
+    .loading {
+      position: relative;
+      color: transparent !important;
+    }
+
+    .loading::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: inherit;
+      border-radius: inherit;
+    }
+
+    .loading::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1em;
+      height: 1em;
+      margin: -0.5em 0 0 -0.5em;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       DEMO FOOTER
+       ============================================ */
+    .demo-footer {
+      padding: var(--space-3);
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .demo-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-block-end: var(--space-2);
+    }
+
+    .demo-nav a {
+      padding: 0.25rem 0.75rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      text-decoration: none;
+      font-size: var(--text-xs);
+    }
+
+    .demo-nav a:hover {
+      background: var(--color-primary-subtle);
+    }
+
+    .demo-nav a.current {
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+      border-color: var(--color-primary);
+    }
+
+    /* Smooth transitions */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="swiss">
+
+  <!-- Controls Panel -->
+  <aside class="controls-panel">
+    <div class="panel-header">
+      <h2>Component Lab</h2>
+    </div>
+
+    <div class="control-section">
+      <h3>Component</h3>
+      <div class="control-group">
+        <label for="component-select">Type</label>
+        <select id="component-select">
+          <option value="button">Button</option>
+          <option value="input">Input</option>
+          <option value="card">Card</option>
+          <option value="badge">Badge</option>
+          <option value="alert">Alert</option>
+          <option value="nav">Navigation</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>Theme</h3>
+      <div class="theme-grid">
+        <div class="theme-option active" data-theme="swiss">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, white 50%, oklch(50% 0.25 25) 50%);"></div>
+          <span>Swiss</span>
+        </div>
+        <div class="theme-option" data-theme="organic">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, oklch(95% 0.03 80) 50%, oklch(55% 0.15 145) 50%);"></div>
+          <span>Organic</span>
+        </div>
+        <div class="theme-option" data-theme="brutalist">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, oklch(95% 0 0) 50%, oklch(55% 0.15 50) 50%);"></div>
+          <span>Brutalist</span>
+        </div>
+        <div class="theme-option" data-theme="cyber">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, oklch(12% 0.02 280) 50%, oklch(75% 0.25 180) 50%);"></div>
+          <span>Cyber</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-section" id="variant-controls">
+      <h3>Variant</h3>
+      <div class="option-group">
+        <label>
+          <input type="radio" name="variant" value="default" checked>
+          Default
+        </label>
+        <label>
+          <input type="radio" name="variant" value="primary">
+          Primary
+        </label>
+      </div>
+    </div>
+
+    <div class="control-section" id="state-controls">
+      <h3>States</h3>
+      <div class="option-group">
+        <label>
+          <input type="checkbox" id="state-hover">
+          Hover
+        </label>
+        <label>
+          <input type="checkbox" id="state-focus">
+          Focus
+        </label>
+        <label>
+          <input type="checkbox" id="state-disabled">
+          Disabled
+        </label>
+        <label>
+          <input type="checkbox" id="state-loading">
+          Loading
+        </label>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>Content</h3>
+      <div class="control-group">
+        <label for="component-text">Text</label>
+        <input type="text" id="component-text" value="Click me">
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>View Mode</h3>
+      <div class="option-group">
+        <label>
+          <input type="radio" name="view" value="single" checked>
+          Single
+        </label>
+        <label>
+          <input type="radio" name="view" value="states">
+          All States
+        </label>
+        <label>
+          <input type="radio" name="view" value="themes">
+          All Themes
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Preview Area -->
+  <main class="preview-area">
+    <header class="preview-header">
+      <h1>Preview</h1>
+      <div class="preview-tabs">
+        <button class="active" data-tab="preview">Preview</button>
+        <button data-tab="a11y">Accessibility</button>
+      </div>
+    </header>
+
+    <div class="preview-content">
+      <div class="preview-canvas" id="preview-canvas">
+        <!-- Component renders here -->
+        <button data-variant="primary">Click me</button>
+      </div>
+    </div>
+
+    <div class="a11y-panel" id="a11y-panel" style="display: none;">
+      <h3 style="margin: 0 0 var(--space-3) 0; font-size: var(--text-sm);">Accessibility Checks</h3>
+      <div class="contrast-check pass">
+        <span>AA Contrast: PASS (7.2:1)</span>
+      </div>
+      <div class="contrast-check pass" style="margin-top: var(--space-2);">
+        <span>Focus Indicator: PASS</span>
+      </div>
+      <div class="contrast-check pass" style="margin-top: var(--space-2);">
+        <span>Touch Target: PASS (44x44px min)</span>
+      </div>
+    </div>
+
+    <footer class="demo-footer">
+      <nav class="demo-nav">
+        <a href="01-layout-switcher.html">01 Layout</a>
+        <a href="02-tabs-accordion.html">02 Tabs</a>
+        <a href="03-responsive-grid.html">03 Grid</a>
+        <a href="04-landing-page.html">04 Landing</a>
+        <a href="05-dashboard.html">05 Dashboard</a>
+        <a href="06-theme-builder.html">06 Theme</a>
+        <a href="07-component-lab.html" class="current">07 Lab</a>
+        <a href="08-animation-motion.html">08 Motion</a>
+      </nav>
+      <p>Vanilla Breeze Component Laboratory</p>
+    </footer>
+  </main>
+
+  <!-- Code Panel -->
+  <aside class="code-panel">
+    <div class="panel-header">
+      <h2>Code Output</h2>
+    </div>
+
+    <div class="code-tabs">
+      <button class="active" data-code="html">HTML</button>
+      <button data-code="css">CSS Tokens</button>
+    </div>
+
+    <div class="code-output">
+      <pre><code id="code-display">&lt;button data-variant="primary"&gt;
+  Click me
+&lt;/button&gt;</code></pre>
+    </div>
+
+    <button class="copy-button" id="copy-code">Copy Code</button>
+  </aside>
+
+  <script>
+    // Component Laboratory JavaScript
+    // Full interactive component testing
+
+    const state = {
+      component: 'button',
+      theme: 'swiss',
+      variant: 'primary',
+      text: 'Click me',
+      states: {
+        hover: false,
+        focus: false,
+        disabled: false,
+        loading: false
+      },
+      viewMode: 'single'
+    };
+
+    const components = {
+      button: {
+        render: (opts) => {
+          const classes = [];
+          if (opts.states.hover) classes.push('hover');
+          if (opts.states.focus) classes.push('focus');
+          if (opts.states.disabled) classes.push('disabled');
+          if (opts.states.loading) classes.push('loading');
+
+          const attrs = [];
+          if (opts.variant === 'primary') attrs.push('data-variant="primary"');
+          if (opts.states.disabled) attrs.push('disabled');
+
+          return `<button ${attrs.join(' ')} class="${classes.join(' ')}">${opts.text}</button>`;
+        },
+        code: (opts) => {
+          const attrs = opts.variant === 'primary' ? ' data-variant="primary"' : '';
+          return `<button${attrs}>${opts.text}</button>`;
+        }
+      },
+      input: {
+        render: (opts) => {
+          const classes = [];
+          if (opts.states.hover) classes.push('hover');
+          if (opts.states.focus) classes.push('focus');
+          if (opts.states.disabled) classes.push('disabled');
+
+          return `<input type="text" placeholder="${opts.text}" class="${classes.join(' ')}" ${opts.states.disabled ? 'disabled' : ''}>`;
+        },
+        code: (opts) => `<input type="text" placeholder="${opts.text}">`
+      },
+      card: {
+        render: (opts) => {
+          return `<div class="card" style="max-width: 300px; text-align: left;">
+            <h4 style="margin: 0 0 var(--space-2) 0;">${opts.text}</h4>
+            <p style="margin: 0; color: var(--color-text-muted);">Card content goes here. This is a preview of the card component.</p>
+          </div>`;
+        },
+        code: (opts) => `<div class="card">
+  <h4>${opts.text}</h4>
+  <p>Card content goes here.</p>
+</div>`
+      },
+      badge: {
+        render: (opts) => {
+          const bg = opts.variant === 'primary' ? 'var(--color-primary)' : 'var(--color-surface-alt)';
+          const color = opts.variant === 'primary' ? 'var(--color-text-inverted)' : 'var(--color-text)';
+          return `<span style="
+            display: inline-block;
+            padding: var(--space-1) var(--space-2);
+            background: ${bg};
+            color: ${color};
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: var(--weight-medium);
+          ">${opts.text}</span>`;
+        },
+        code: (opts) => `<span class="badge${opts.variant === 'primary' ? ' badge-primary' : ''}">${opts.text}</span>`
+      },
+      alert: {
+        render: (opts) => {
+          return `<div style="
+            padding: var(--space-4);
+            background: var(--color-primary-subtle);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius-card);
+            color: var(--color-text);
+            text-align: left;
+            max-width: 400px;
+          ">
+            <strong style="display: block; margin-bottom: var(--space-1);">Alert</strong>
+            ${opts.text}
+          </div>`;
+        },
+        code: (opts) => `<div class="alert alert-info">
+  <strong>Alert</strong>
+  ${opts.text}
+</div>`
+      },
+      nav: {
+        render: (opts) => {
+          return `<nav style="
+            display: flex;
+            gap: var(--space-2);
+            padding: var(--space-2);
+            background: var(--color-surface-alt);
+            border-radius: var(--radius-card);
+          ">
+            <a href="#" style="padding: var(--space-2) var(--space-3); border-radius: var(--radius-interactive); background: var(--nav-item-active-bg); color: var(--nav-item-active-text); text-decoration: none;">Home</a>
+            <a href="#" style="padding: var(--space-2) var(--space-3); border-radius: var(--radius-interactive); text-decoration: none;">About</a>
+            <a href="#" style="padding: var(--space-2) var(--space-3); border-radius: var(--radius-interactive); text-decoration: none;">Contact</a>
+          </nav>`;
+        },
+        code: () => `<nav>
+  <a href="#" aria-current="page">Home</a>
+  <a href="#">About</a>
+  <a href="#">Contact</a>
+</nav>`
+      }
+    };
+
+    function updatePreview() {
+      const canvas = document.getElementById('preview-canvas');
+      const codeDisplay = document.getElementById('code-display');
+      const component = components[state.component];
+
+      if (state.viewMode === 'single') {
+        canvas.innerHTML = component.render(state);
+      } else if (state.viewMode === 'states') {
+        canvas.innerHTML = `
+          <div class="state-grid">
+            <div class="state-preview">
+              <h4>Default</h4>
+              ${component.render({...state, states: {}})}
+            </div>
+            <div class="state-preview">
+              <h4>Hover</h4>
+              ${component.render({...state, states: {hover: true}})}
+            </div>
+            <div class="state-preview">
+              <h4>Focus</h4>
+              ${component.render({...state, states: {focus: true}})}
+            </div>
+            <div class="state-preview">
+              <h4>Disabled</h4>
+              ${component.render({...state, states: {disabled: true}})}
+            </div>
+          </div>
+        `;
+      } else if (state.viewMode === 'themes') {
+        const themes = ['swiss', 'organic', 'brutalist', 'cyber'];
+        canvas.innerHTML = `
+          <div class="state-grid">
+            ${themes.map(theme => `
+              <div class="state-preview" data-theme="${theme}">
+                <h4>${theme.charAt(0).toUpperCase() + theme.slice(1)}</h4>
+                ${component.render(state)}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      codeDisplay.textContent = component.code(state);
+    }
+
+    // Event listeners
+    document.getElementById('component-select').addEventListener('change', (e) => {
+      state.component = e.target.value;
+      // Update text based on component
+      const defaults = {
+        button: 'Click me',
+        input: 'Enter text...',
+        card: 'Card Title',
+        badge: 'New',
+        alert: 'This is an important message.',
+        nav: 'Navigation'
+      };
+      state.text = defaults[state.component];
+      document.getElementById('component-text').value = state.text;
+      updatePreview();
+    });
+
+    // Theme switching
+    document.querySelectorAll('.theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        state.theme = opt.dataset.theme;
+        document.body.dataset.theme = state.theme;
+        updatePreview();
+      });
+    });
+
+    // Variant
+    document.querySelectorAll('input[name="variant"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        state.variant = e.target.value;
+        updatePreview();
+      });
+    });
+
+    // States
+    ['hover', 'focus', 'disabled', 'loading'].forEach(s => {
+      document.getElementById(`state-${s}`).addEventListener('change', (e) => {
+        state.states[s] = e.target.checked;
+        updatePreview();
+      });
+    });
+
+    // Text
+    document.getElementById('component-text').addEventListener('input', (e) => {
+      state.text = e.target.value;
+      updatePreview();
+    });
+
+    // View mode
+    document.querySelectorAll('input[name="view"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        state.viewMode = e.target.value;
+        updatePreview();
+      });
+    });
+
+    // Preview tabs
+    document.querySelectorAll('.preview-tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preview-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const tab = btn.dataset.tab;
+        document.querySelector('.preview-content').style.display = tab === 'preview' ? 'flex' : 'none';
+        document.getElementById('a11y-panel').style.display = tab === 'a11y' ? 'block' : 'none';
+      });
+    });
+
+    // Code tabs
+    document.querySelectorAll('.code-tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.code-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const codeType = btn.dataset.code;
+        const codeDisplay = document.getElementById('code-display');
+
+        if (codeType === 'html') {
+          codeDisplay.textContent = components[state.component].code(state);
+        } else {
+          codeDisplay.textContent = `/* Button tokens */
+--button-font: var(--font-body);
+--button-font-size: var(--text-sm);
+--button-font-weight: var(--weight-medium);
+--button-padding-x: var(--space-4);
+--button-padding-y: var(--space-2);
+--button-radius: var(--radius-interactive);
+
+/* Primary variant */
+--button-primary-bg: var(--color-primary);
+--button-primary-text: var(--color-text-inverted);
+--button-primary-bg-hover: var(--color-primary-hover);`;
+        }
+      });
+    });
+
+    // Copy code
+    document.getElementById('copy-code').addEventListener('click', async () => {
+      const code = document.getElementById('code-display').textContent;
+      await navigator.clipboard.writeText(code);
+
+      const btn = document.getElementById('copy-code');
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = original, 2000);
+    });
+
+    // Mobile panel toggle
+    if (window.innerWidth < 768) {
+      const panel = document.querySelector('.controls-panel');
+      const header = panel.querySelector('.panel-header');
+      header.addEventListener('click', () => {
+        panel.classList.toggle('expanded');
+      });
+    }
+
+    // Initial render
+    updatePreview();
+  </script>
+</body>
+</html>
