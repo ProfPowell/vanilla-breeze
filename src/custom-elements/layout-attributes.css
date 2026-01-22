@@ -810,14 +810,15 @@ main:has(> aside) {
    -------------------------------------------------------------------------- */
 
 @media (width < 768px) {
-  [data-layout="body-sidebar-left"],
-  [data-layout="body-sidebar-right"],
-  [data-layout="body-holy-grail"],
-  [data-layout="body-dashboard"] {
+  /* Only collapse if data-nowrap is NOT present */
+  [data-layout="body-sidebar-left"]:not([data-nowrap]),
+  [data-layout="body-sidebar-right"]:not([data-nowrap]),
+  [data-layout="body-holy-grail"]:not([data-nowrap]),
+  [data-layout="body-dashboard"]:not([data-nowrap]) {
     grid-template: var(--tpl-stack);
   }
 
-  [data-layout="body-app-shell"] {
+  [data-layout="body-app-shell"]:not([data-nowrap]) {
     grid-template:
       "body-header" auto
       "body-main"   1fr
@@ -825,8 +826,8 @@ main:has(> aside) {
       / 1fr;
   }
 
-  /* Main with aside stacks on mobile */
-  main:has(> aside) {
+  /* Main with aside stacks on mobile (unless nowrap) */
+  main:has(> aside):not([data-nowrap]) {
     grid-template-columns: 1fr;
   }
 }
