@@ -688,11 +688,151 @@ article[data-layout] > footer { grid-area: article-footer; }
 [data-grid-area="banner"] { grid-area: banner; }
 [data-grid-area="toc"] { grid-area: toc; }
 
-/* --------------------------------------------------------------------------
-   Body-Level Layouts (using template tokens)
-   Works on any container element with body-* layouts.
-   When applied to <body>, also sets min-height: 100dvh.
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   PAGE LAYOUTS: data-page-layout
+
+   Use on <body> for full-page layouts with semantic element identity.
+   Semantic children (header, nav, main, aside, footer) are auto-assigned
+   to grid areas based on their element type - no classes needed.
+
+   Hierarchy:
+   - data-page-layout  → Page structure (body level)
+   - data-layout       → Component layouts (any element)
+
+   Example:
+   <body data-page-layout="sidebar-left">
+     <header>...</header>
+     <nav>...</nav>
+     <main data-layout="stack">  <!-- Component layout nested inside -->
+       <article>...</article>
+     </main>
+     <footer>...</footer>
+   </body>
+   ========================================================================== */
+
+/* Base grid setup for page layouts */
+[data-page-layout] {
+  display: grid;
+  min-height: 100dvh;
+  gap: var(--_layout-gap, var(--size-m));
+}
+
+/* Grid identity: semantic elements auto-register grid areas */
+[data-page-layout] > header { grid-area: body-header; }
+[data-page-layout] > nav { grid-area: body-nav; }
+[data-page-layout] > main { grid-area: body-main; }
+[data-page-layout] > aside { grid-area: body-aside; }
+[data-page-layout] > footer { grid-area: body-footer; }
+[data-page-layout] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
+
+/* Page layout templates */
+[data-page-layout="stack"] { grid-template: var(--tpl-stack); }
+[data-page-layout="sidebar-left"] { grid-template: var(--tpl-sidebar-left); }
+[data-page-layout="sidebar-right"] { grid-template: var(--tpl-sidebar-right); }
+[data-page-layout="holy-grail"] { grid-template: var(--tpl-holy-grail); }
+[data-page-layout="app-shell"] { grid-template: var(--tpl-app-shell); gap: 0; }
+[data-page-layout="dashboard"] { grid-template: var(--tpl-dashboard); gap: 0; }
+[data-page-layout="article"] { grid-template: var(--tpl-article); justify-content: center; }
+[data-page-layout="landing"] { grid-template: var(--tpl-landing); }
+
+/* Gap modifiers */
+[data-page-layout][data-gap="none"] { --_layout-gap: 0; }
+[data-page-layout][data-gap="xs"]   { --_layout-gap: var(--size-xs); }
+[data-page-layout][data-gap="s"]    { --_layout-gap: var(--size-s); }
+[data-page-layout][data-gap="m"]    { --_layout-gap: var(--size-m); }
+[data-page-layout][data-gap="l"]    { --_layout-gap: var(--size-l); }
+[data-page-layout][data-gap="xl"]   { --_layout-gap: var(--size-xl); }
+
+/* Content-aware adaptations (:has() powered) */
+[data-page-layout="sidebar-left"]:not(:has(> nav)) { grid-template-columns: 1fr; }
+[data-page-layout="sidebar-right"]:not(:has(> aside)) { grid-template-columns: 1fr; }
+
+[data-page-layout="holy-grail"]:not(:has(> aside)) {
+  grid-template:
+    "body-header body-header" auto
+    "body-nav    body-main"   1fr
+    "body-footer body-footer" auto
+    / var(--_sidebar-width) 1fr;
+}
+
+[data-page-layout="holy-grail"]:not(:has(> nav)) {
+  grid-template:
+    "body-header body-header" auto
+    "body-main   body-aside"  1fr
+    "body-footer body-footer" auto
+    / 1fr var(--_sidebar-width);
+}
+
+[data-page-layout="holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
+  grid-template: var(--tpl-stack);
+}
+
+/* Utilities for page layouts */
+[data-page-layout] > [data-bleed] { grid-column: 1 / -1; }
+
+[data-page-layout] > nav[data-sticky],
+[data-page-layout] > aside[data-sticky] {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100dvh;
+  overflow-y: auto;
+}
+
+[data-page-layout] > header[data-sticky] {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky, 100);
+}
+
+[data-page-layout][data-sidebar="collapsed"] { --_sidebar-width: var(--_sidebar-collapsed); }
+[data-page-layout][data-sidebar="hidden"] > nav { display: none; }
+
+/* Responsive: collapse to stack on mobile */
+@media (width < 768px) {
+  [data-page-layout="sidebar-left"]:not([data-nowrap]),
+  [data-page-layout="sidebar-right"]:not([data-nowrap]),
+  [data-page-layout="holy-grail"]:not([data-nowrap]),
+  [data-page-layout="dashboard"]:not([data-nowrap]) {
+    grid-template: var(--tpl-stack);
+  }
+
+  [data-page-layout="app-shell"]:not([data-nowrap]) {
+    grid-template:
+      "body-header" auto
+      "body-main"   1fr
+      "body-nav"    auto
+      / 1fr;
+  }
+}
+
+/* Wide screens: constrain max width */
+@media (width >= 1400px) {
+  body[data-page-layout="holy-grail"],
+  body[data-page-layout="dashboard"] {
+    max-width: 1400px;
+    margin-inline: auto;
+  }
+}
+
+/* Print: simplify */
+@media print {
+  [data-page-layout] {
+    display: block;
+  }
+  [data-page-layout] > nav,
+  [data-page-layout] > aside {
+    display: none;
+  }
+}
+
+
+/* ==========================================================================
+   LEGACY: data-layout="body-*" (backwards compatibility)
+
+   Prefer data-page-layout for new projects.
+   These patterns work on any container, not just <body>.
+   ========================================================================== */
 
 /* Base grid setup for body-* layouts (any container) */
 [data-layout^="body-"] {
