@@ -197,6 +197,12 @@
 
 /* --------------------------------------------------------------------------
    Sidebar: Two-column with flexible main content
+
+   Semantic-aware layout: nav/aside are treated as sidebar elements,
+   main/article/section as content elements. This enables natural DOM order -
+   write <main> before <aside> for sidebar-right layouts.
+
+   For generic elements (div), position-based fallback applies.
    -------------------------------------------------------------------------- */
 [data-layout="sidebar"] {
   display: flex;
@@ -204,35 +210,65 @@
   gap: var(--_gap, var(--size-m));
 }
 
-[data-layout="sidebar"] > :first-child {
+/* --- Semantic sidebar elements (nav, aside) --- */
+[data-layout="sidebar"] > nav,
+[data-layout="sidebar"] > aside {
   flex-basis: var(--_sidebar-width, 15rem);
   flex-grow: 1;
 }
 
-[data-layout="sidebar"] > :last-child {
+/* --- Semantic content elements (main, article, section) --- */
+[data-layout="sidebar"] > main,
+[data-layout="sidebar"] > article,
+[data-layout="sidebar"] > section:not([data-layout]) {
   flex-basis: 0;
   flex-grow: 999;
   min-inline-size: var(--_content-min, 50%);
 }
 
+/* --- Generic element fallback (position-based) --- */
+/* Only applies when no semantic sidebar elements are present */
+[data-layout="sidebar"]:not(:has(> nav, > aside)) > :first-child {
+  flex-basis: var(--_sidebar-width, 15rem);
+  flex-grow: 1;
+}
+
+[data-layout="sidebar"]:not(:has(> nav, > aside)) > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: var(--_content-min, 50%);
+}
+
+/* --- Gap variants --- */
 [data-layout="sidebar"][data-gap="xs"] { --_gap: var(--size-xs); }
 [data-layout="sidebar"][data-gap="s"]  { --_gap: var(--size-s); }
 [data-layout="sidebar"][data-gap="m"]  { --_gap: var(--size-m); }
 [data-layout="sidebar"][data-gap="l"]  { --_gap: var(--size-l); }
 [data-layout="sidebar"][data-gap="xl"] { --_gap: var(--size-xl); }
 
-[data-layout="sidebar"][data-side="end"] {
+/* --- Sidebar on end (right in LTR) --- */
+/* Semantic elements: use order property for natural DOM order */
+[data-layout="sidebar"][data-side="end"] > nav,
+[data-layout="sidebar"][data-side="end"] > aside {
+  order: 1;
+}
+
+/* Generic elements: use flex-direction for backwards compatibility */
+[data-layout="sidebar"][data-side="end"]:not(:has(> nav, > aside)) {
   flex-direction: row-reverse;
 }
 
+/* --- Width variants --- */
 [data-layout="sidebar"][data-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
 [data-layout="sidebar"][data-sidebar-width="normal"] { --_sidebar-width: 15rem; }
 [data-layout="sidebar"][data-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
 
+/* --- Content minimum width variants --- */
 [data-layout="sidebar"][data-content-min="40"] { --_content-min: 40%; }
 [data-layout="sidebar"][data-content-min="50"] { --_content-min: 50%; }
 [data-layout="sidebar"][data-content-min="60"] { --_content-min: 60%; }
 
+/* --- No wrap --- */
 [data-layout="sidebar"][data-nowrap] {
   flex-wrap: nowrap;
 }
