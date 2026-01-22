@@ -605,18 +605,28 @@
 
 /* --------------------------------------------------------------------------
    Grid Identity Layer
-   Semantic elements auto-register their grid areas
+   Semantic elements auto-register their grid areas.
+   Works on any container with body-* layouts (not just <body>).
    -------------------------------------------------------------------------- */
 
-/* Body-level landmarks */
-body[data-layout] > header { grid-area: body-header; }
-body[data-layout] > nav { grid-area: body-nav; }
-body[data-layout] > main { grid-area: body-main; }
-body[data-layout] > aside { grid-area: body-aside; }
-body[data-layout] > footer { grid-area: body-footer; }
+/* Body-level landmarks (for any container with body-* layouts) */
+[data-layout^="body-"] > header,
+[data-layout^="body-"] > .demo-header { grid-area: body-header; }
+
+[data-layout^="body-"] > nav,
+[data-layout^="body-"] > .demo-nav { grid-area: body-nav; }
+
+[data-layout^="body-"] > main,
+[data-layout^="body-"] > .demo-main { grid-area: body-main; }
+
+[data-layout^="body-"] > aside,
+[data-layout^="body-"] > .demo-aside { grid-area: body-aside; }
+
+[data-layout^="body-"] > footer,
+[data-layout^="body-"] > .demo-footer { grid-area: body-footer; }
 
 /* Secondary nav (if present) */
-body[data-layout] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
+[data-layout^="body-"] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
 
 /* Main-level structure (for nested layouts) */
 main[data-layout] > header { grid-area: main-header; }
@@ -644,66 +654,71 @@ article[data-layout] > footer { grid-area: article-footer; }
 
 /* --------------------------------------------------------------------------
    Body-Level Layouts (using template tokens)
-   Apply data-layout to <body> for full-page layout control
+   Works on any container element with body-* layouts.
+   When applied to <body>, also sets min-height: 100dvh.
    -------------------------------------------------------------------------- */
 
-/* Base grid setup for body-level layouts */
-body[data-layout] {
+/* Base grid setup for body-* layouts (any container) */
+[data-layout^="body-"] {
   display: grid;
-  min-height: 100dvh;
   gap: var(--_layout-gap, var(--size-m));
 }
 
+/* Full viewport height when applied to body */
+body[data-layout^="body-"] {
+  min-height: 100dvh;
+}
+
 /* Stack layout (mobile-first default) */
-body[data-layout="body-stack"] {
+[data-layout="body-stack"] {
   grid-template: var(--tpl-stack);
 }
 
 /* Sidebar Left */
-body[data-layout="body-sidebar-left"] {
+[data-layout="body-sidebar-left"] {
   grid-template: var(--tpl-sidebar-left);
 }
 
 /* Sidebar Right */
-body[data-layout="body-sidebar-right"] {
+[data-layout="body-sidebar-right"] {
   grid-template: var(--tpl-sidebar-right);
 }
 
 /* Holy Grail (3-column) */
-body[data-layout="body-holy-grail"] {
+[data-layout="body-holy-grail"] {
   grid-template: var(--tpl-holy-grail);
 }
 
 /* App Shell */
-body[data-layout="body-app-shell"] {
+[data-layout="body-app-shell"] {
   grid-template: var(--tpl-app-shell);
   gap: 0;
 }
 
 /* Dashboard */
-body[data-layout="body-dashboard"] {
+[data-layout="body-dashboard"] {
   grid-template: var(--tpl-dashboard);
   gap: 0;
 }
 
 /* Article (centered content) */
-body[data-layout="body-article"] {
+[data-layout="body-article"] {
   grid-template: var(--tpl-article);
   justify-content: center;
 }
 
 /* Landing page */
-body[data-layout="body-landing"] {
+[data-layout="body-landing"] {
   grid-template: var(--tpl-landing);
 }
 
 /* Gap modifiers for body layouts */
-body[data-layout][data-gap="none"] { --_layout-gap: 0; }
-body[data-layout][data-gap="xs"]   { --_layout-gap: var(--size-xs); }
-body[data-layout][data-gap="s"]    { --_layout-gap: var(--size-s); }
-body[data-layout][data-gap="m"]    { --_layout-gap: var(--size-m); }
-body[data-layout][data-gap="l"]    { --_layout-gap: var(--size-l); }
-body[data-layout][data-gap="xl"]   { --_layout-gap: var(--size-xl); }
+[data-layout^="body-"][data-gap="none"] { --_layout-gap: 0; }
+[data-layout^="body-"][data-gap="xs"]   { --_layout-gap: var(--size-xs); }
+[data-layout^="body-"][data-gap="s"]    { --_layout-gap: var(--size-s); }
+[data-layout^="body-"][data-gap="m"]    { --_layout-gap: var(--size-m); }
+[data-layout^="body-"][data-gap="l"]    { --_layout-gap: var(--size-l); }
+[data-layout^="body-"][data-gap="xl"]   { --_layout-gap: var(--size-xl); }
 
 /* --------------------------------------------------------------------------
    Content-Aware Layouts (:has() powered adaptations)
@@ -711,17 +726,17 @@ body[data-layout][data-gap="xl"]   { --_layout-gap: var(--size-xl); }
    -------------------------------------------------------------------------- */
 
 /* Adjust sidebar-left when nav is absent */
-body[data-layout="body-sidebar-left"]:not(:has(> nav)) {
+[data-layout="body-sidebar-left"]:not(:has(> nav)):not(:has(> .demo-nav)) {
   grid-template-columns: 1fr;
 }
 
 /* Adjust sidebar-right when aside is absent */
-body[data-layout="body-sidebar-right"]:not(:has(> aside)) {
+[data-layout="body-sidebar-right"]:not(:has(> aside)):not(:has(> .demo-aside)) {
   grid-template-columns: 1fr;
 }
 
 /* Holy grail without aside becomes two-column */
-body[data-layout="body-holy-grail"]:not(:has(> aside)) {
+[data-layout="body-holy-grail"]:not(:has(> aside)):not(:has(> .demo-aside)) {
   grid-template:
     "body-header body-header" auto
     "body-nav    body-main"   1fr
@@ -730,7 +745,7 @@ body[data-layout="body-holy-grail"]:not(:has(> aside)) {
 }
 
 /* Holy grail without nav becomes two-column (aside on right) */
-body[data-layout="body-holy-grail"]:not(:has(> nav)) {
+[data-layout="body-holy-grail"]:not(:has(> nav)):not(:has(> .demo-nav)) {
   grid-template:
     "body-header body-header" auto
     "body-main   body-aside"  1fr
@@ -739,7 +754,7 @@ body[data-layout="body-holy-grail"]:not(:has(> nav)) {
 }
 
 /* Holy grail without both becomes single column */
-body[data-layout="body-holy-grail"]:not(:has(> nav)):not(:has(> aside)) {
+[data-layout="body-holy-grail"]:not(:has(> nav)):not(:has(> .demo-nav)):not(:has(> aside)):not(:has(> .demo-aside)) {
   grid-template: var(--tpl-stack);
 }
 
@@ -755,13 +770,13 @@ main:has(> aside) {
    -------------------------------------------------------------------------- */
 
 /* Full-bleed: span all columns */
-body[data-layout] > [data-bleed] {
+[data-layout^="body-"] > [data-bleed] {
   grid-column: 1 / -1;
 }
 
 /* Sticky positioning for nav/aside */
-body[data-layout] > nav[data-sticky],
-body[data-layout] > aside[data-sticky] {
+[data-layout^="body-"] > nav[data-sticky],
+[data-layout^="body-"] > aside[data-sticky] {
   position: sticky;
   top: 0;
   align-self: start;
@@ -770,18 +785,18 @@ body[data-layout] > aside[data-sticky] {
 }
 
 /* Sticky header */
-body[data-layout] > header[data-sticky] {
+[data-layout^="body-"] > header[data-sticky] {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky, 100);
 }
 
 /* Sidebar state modifiers */
-body[data-layout][data-sidebar="collapsed"] {
+[data-layout^="body-"][data-sidebar="collapsed"] {
   --_sidebar-width: var(--_sidebar-collapsed);
 }
 
-body[data-layout][data-sidebar="hidden"] > nav {
+[data-layout^="body-"][data-sidebar="hidden"] > nav {
   display: none;
 }
 
@@ -795,14 +810,14 @@ body[data-layout][data-sidebar="hidden"] > nav {
    -------------------------------------------------------------------------- */
 
 @media (width < 768px) {
-  body[data-layout="body-sidebar-left"],
-  body[data-layout="body-sidebar-right"],
-  body[data-layout="body-holy-grail"],
-  body[data-layout="body-dashboard"] {
+  [data-layout="body-sidebar-left"],
+  [data-layout="body-sidebar-right"],
+  [data-layout="body-holy-grail"],
+  [data-layout="body-dashboard"] {
     grid-template: var(--tpl-stack);
   }
 
-  body[data-layout="body-app-shell"] {
+  [data-layout="body-app-shell"] {
     grid-template:
       "body-header" auto
       "body-main"   1fr
@@ -816,7 +831,7 @@ body[data-layout][data-sidebar="hidden"] > nav {
   }
 }
 
-/* Wide screens: constrain max width */
+/* Wide screens: constrain max width (only for body) */
 @media (width >= 1400px) {
   body[data-layout="body-holy-grail"],
   body[data-layout="body-dashboard"] {
@@ -827,12 +842,12 @@ body[data-layout][data-sidebar="hidden"] > nav {
 
 /* Print: simplify to single column */
 @media print {
-  body[data-layout] {
+  [data-layout^="body-"] {
     display: block;
   }
 
-  body[data-layout] > nav,
-  body[data-layout] > aside {
+  [data-layout^="body-"] > nav,
+  [data-layout^="body-"] > aside {
     display: none;
   }
 }

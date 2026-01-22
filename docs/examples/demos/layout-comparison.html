@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Layout Approaches Comparison - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h3 { margin-bottom: var(--size-s); margin-top: var(--size-l); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    /* Comparison grid - 3 columns */
+    .comparison-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--size-m);
+      margin-bottom: var(--size-xl);
+    }
+
+    @media (max-width: 900px) {
+      .comparison-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Demo panel */
+    .demo-panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .demo-label {
+      display: block;
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .demo-label.custom-element {
+      background: oklch(65% 0.15 280 / 0.15);
+      color: oklch(40% 0.15 280);
+    }
+
+    .demo-label.data-attr {
+      background: oklch(65% 0.15 145 / 0.15);
+      color: oklch(35% 0.15 145);
+    }
+
+    .demo-label.grid-identity {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+    }
+
+    .demo-area {
+      background: var(--color-surface);
+      min-height: 200px;
+      overflow: hidden;
+    }
+
+    .code-area {
+      padding: var(--size-m);
+      background: var(--color-gray-900);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .code-area pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-100);
+      background: transparent;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Layout demo elements */
+    .demo-header {
+      padding: var(--size-s);
+      background: var(--color-gray-200);
+      text-align: center;
+      font-weight: 600;
+      font-size: var(--font-size-s);
+    }
+
+    .demo-nav {
+      padding: var(--size-s);
+      background: var(--color-gray-100);
+      font-size: var(--font-size-xs);
+    }
+
+    .demo-nav a {
+      display: block;
+      padding: var(--size-2xs) var(--size-xs);
+      margin-bottom: 2px;
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .demo-nav a:hover {
+      background: var(--color-gray-200);
+    }
+
+    .demo-main {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+    }
+
+    .demo-aside {
+      padding: var(--size-s);
+      background: var(--color-gray-100);
+      font-size: var(--font-size-xs);
+    }
+
+    .demo-footer {
+      padding: var(--size-xs) var(--size-s);
+      background: var(--color-gray-200);
+      text-align: center;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Feature matrix */
+    .feature-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--size-l) 0;
+    }
+
+    .feature-matrix th,
+    .feature-matrix td {
+      padding: var(--size-s);
+      border: 1px solid var(--color-border);
+      text-align: left;
+    }
+
+    .feature-matrix th {
+      background: var(--color-surface-raised);
+    }
+
+    .feature-matrix td:first-child {
+      font-weight: 600;
+    }
+
+    .checkmark { color: oklch(55% 0.2 145); }
+    .crossmark { color: oklch(55% 0.2 25); }
+
+    /* Approach summary cards */
+    .approach-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--size-m);
+      margin-bottom: var(--size-xl);
+    }
+
+    @media (max-width: 900px) {
+      .approach-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .approach-card {
+      padding: var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .approach-card h3 {
+      margin-top: 0;
+    }
+
+    .approach-card.custom-element {
+      border-color: oklch(65% 0.15 280 / 0.5);
+      background: oklch(65% 0.15 280 / 0.05);
+    }
+
+    .approach-card.data-attr {
+      border-color: oklch(65% 0.15 145 / 0.5);
+      background: oklch(65% 0.15 145 / 0.05);
+    }
+
+    .approach-card.grid-identity {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <main>
+    <h1>Layout Approaches Comparison</h1>
+    <p class="lead">Compare three layout implementation approaches in Vanilla Breeze: Custom Elements, Data Attributes, and Grid Identity.</p>
+
+    <!-- ========== APPROACH OVERVIEW ========== -->
+    <h2>Three Approaches</h2>
+
+    <div class="approach-cards">
+      <article class="approach-card custom-element">
+        <h3>1. Custom Elements</h3>
+        <p><code>&lt;layout-stack&gt;</code>, <code>&lt;layout-sidebar&gt;</code>, etc.</p>
+        <p><strong>Pros:</strong> Self-documenting, encapsulated</p>
+        <p><strong>Cons:</strong> Non-semantic wrappers, more DOM nodes</p>
+      </article>
+
+      <article class="approach-card data-attr">
+        <h3>2. Data Attributes</h3>
+        <p><code>data-layout="stack"</code>, <code>data-layout="sidebar"</code></p>
+        <p><strong>Pros:</strong> Works on any element, semantic HTML</p>
+        <p><strong>Cons:</strong> Verbose for complex layouts</p>
+      </article>
+
+      <article class="approach-card grid-identity">
+        <h3>3. Grid Identity</h3>
+        <p><code>data-layout="body-holy-grail"</code> with semantic children</p>
+        <p><strong>Pros:</strong> Pure semantic HTML, CSS handles mapping</p>
+        <p><strong>Cons:</strong> Fixed element roles, body-level only</p>
+      </article>
+    </div>
+
+    <!-- ========== SIDEBAR-LEFT COMPARISON ========== -->
+    <h2>Sidebar Left Layout</h2>
+    <p>Two-column layout with navigation on the left.</p>
+
+    <div class="comparison-row">
+      <!-- Custom Element -->
+      <figure class="demo-panel">
+        <strong class="demo-label custom-element">Custom Element</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <layout-sidebar data-gap="none" style="height: 100%;">
+            <nav class="demo-nav" slot="sidebar">
+              <a href="#">Dashboard</a>
+              <a href="#">Projects</a>
+              <a href="#">Settings</a>
+            </nav>
+            <div class="demo-main">Main Content</div>
+          </layout-sidebar>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;layout-sidebar&gt;
+  &lt;nav slot="sidebar"&gt;...&lt;/nav&gt;
+  &lt;main&gt;Content&lt;/main&gt;
+&lt;/layout-sidebar&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Data Attribute -->
+      <figure class="demo-panel">
+        <strong class="demo-label data-attr">Data Attribute</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <section data-layout="sidebar" data-gap="none" style="height: 100%;">
+            <nav class="demo-nav">
+              <a href="#">Dashboard</a>
+              <a href="#">Projects</a>
+              <a href="#">Settings</a>
+            </nav>
+            <div class="demo-main">Main Content</div>
+          </section>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;section data-layout="sidebar"&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;Content&lt;/main&gt;
+&lt;/section&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Grid Identity -->
+      <figure class="demo-panel">
+        <strong class="demo-label grid-identity">Grid Identity</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <div data-layout="body-sidebar-left" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <nav class="demo-nav">
+              <a href="#">Dashboard</a>
+              <a href="#">Projects</a>
+              <a href="#">Settings</a>
+            </nav>
+            <main class="demo-main">Main Content</main>
+            <footer class="demo-footer">Footer</footer>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;body data-layout="body-sidebar-left"&gt;
+  &lt;header&gt;...&lt;/header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;Content&lt;/main&gt;
+  &lt;footer&gt;...&lt;/footer&gt;
+&lt;/body&gt;</pre>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- ========== HOLY GRAIL COMPARISON ========== -->
+    <h2>Holy Grail Layout</h2>
+    <p>Classic three-column layout with header, nav, main, aside, and footer.</p>
+
+    <div class="comparison-row">
+      <!-- Custom Element -->
+      <figure class="demo-panel">
+        <strong class="demo-label custom-element">Custom Element</strong>
+        <div class="demo-area" style="height: 250px;" inert>
+          <layout-stack data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <layout-sidebar data-gap="none" style="flex: 1;">
+              <nav class="demo-nav" slot="sidebar">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+              </nav>
+              <layout-sidebar data-gap="none" data-side="right">
+                <div class="demo-main">Main</div>
+                <aside class="demo-aside" slot="sidebar">Aside</aside>
+              </layout-sidebar>
+            </layout-sidebar>
+            <footer class="demo-footer">Footer</footer>
+          </layout-stack>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;layout-stack&gt;
+  &lt;header&gt;...&lt;/header&gt;
+  &lt;layout-sidebar&gt;
+    &lt;nav slot="sidebar"&gt;...&lt;/nav&gt;
+    &lt;layout-sidebar data-side="right"&gt;
+      &lt;main&gt;...&lt;/main&gt;
+      &lt;aside slot="sidebar"&gt;...&lt;/aside&gt;
+    &lt;/layout-sidebar&gt;
+  &lt;/layout-sidebar&gt;
+  &lt;footer&gt;...&lt;/footer&gt;
+&lt;/layout-stack&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Data Attribute -->
+      <figure class="demo-panel">
+        <strong class="demo-label data-attr">Data Attribute</strong>
+        <div class="demo-area" style="height: 250px;" inert>
+          <div data-layout="holy-grail" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <nav class="demo-nav">
+              <a href="#">Home</a>
+              <a href="#">About</a>
+            </nav>
+            <main class="demo-main">Main</main>
+            <aside class="demo-aside">Aside</aside>
+            <footer class="demo-footer">Footer</footer>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;div data-layout="holy-grail"&gt;
+  &lt;header&gt;...&lt;/header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;...&lt;/main&gt;
+  &lt;aside&gt;...&lt;/aside&gt;
+  &lt;footer&gt;...&lt;/footer&gt;
+&lt;/div&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Grid Identity -->
+      <figure class="demo-panel">
+        <strong class="demo-label grid-identity">Grid Identity</strong>
+        <div class="demo-area" style="height: 250px;" inert>
+          <div data-layout="body-holy-grail" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <nav class="demo-nav">
+              <a href="#">Home</a>
+              <a href="#">About</a>
+            </nav>
+            <main class="demo-main">Main</main>
+            <aside class="demo-aside">Aside</aside>
+            <footer class="demo-footer">Footer</footer>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;body data-layout="body-holy-grail"&gt;
+  &lt;header&gt;...&lt;/header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;...&lt;/main&gt;
+  &lt;aside&gt;...&lt;/aside&gt;
+  &lt;footer&gt;...&lt;/footer&gt;
+&lt;/body&gt;</pre>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- ========== DASHBOARD COMPARISON ========== -->
+    <h2>Dashboard Layout</h2>
+    <p>Admin panel style with header spanning full width and sidebar navigation.</p>
+
+    <div class="comparison-row">
+      <!-- Custom Element -->
+      <figure class="demo-panel">
+        <strong class="demo-label custom-element">Custom Element</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <layout-stack data-gap="none" style="height: 100%;">
+            <header class="demo-header">Dashboard</header>
+            <layout-sidebar data-gap="none" style="flex: 1;">
+              <nav class="demo-nav" slot="sidebar">
+                <a href="#">Overview</a>
+                <a href="#">Users</a>
+                <a href="#">Reports</a>
+              </nav>
+              <div class="demo-main">Dashboard Content</div>
+            </layout-sidebar>
+          </layout-stack>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;layout-stack&gt;
+  &lt;header&gt;Dashboard&lt;/header&gt;
+  &lt;layout-sidebar&gt;
+    &lt;nav slot="sidebar"&gt;...&lt;/nav&gt;
+    &lt;main&gt;Content&lt;/main&gt;
+  &lt;/layout-sidebar&gt;
+&lt;/layout-stack&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Data Attribute -->
+      <figure class="demo-panel">
+        <strong class="demo-label data-attr">Data Attribute</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <div data-layout="dashboard" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Dashboard</header>
+            <nav class="demo-nav">
+              <a href="#">Overview</a>
+              <a href="#">Users</a>
+              <a href="#">Reports</a>
+            </nav>
+            <main class="demo-main">Dashboard Content</main>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;div data-layout="dashboard"&gt;
+  &lt;header&gt;Dashboard&lt;/header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;Content&lt;/main&gt;
+&lt;/div&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Grid Identity -->
+      <figure class="demo-panel">
+        <strong class="demo-label grid-identity">Grid Identity</strong>
+        <div class="demo-area" style="height: 220px;" inert>
+          <div data-layout="body-dashboard" style="height: 100%;">
+            <header class="demo-header">Dashboard</header>
+            <nav class="demo-nav">
+              <a href="#">Overview</a>
+              <a href="#">Users</a>
+              <a href="#">Reports</a>
+            </nav>
+            <main class="demo-main">Dashboard Content</main>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;body data-layout="body-dashboard"&gt;
+  &lt;header&gt;Dashboard&lt;/header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+  &lt;main&gt;Content&lt;/main&gt;
+&lt;/body&gt;</pre>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- ========== :HAS() ADAPTATION ========== -->
+    <h2>Content-Aware Adaptation (:has())</h2>
+    <p>Holy Grail layout automatically adapts when aside is absent.</p>
+
+    <div class="comparison-row">
+      <!-- Custom Element -->
+      <figure class="demo-panel">
+        <strong class="demo-label custom-element">Custom Element</strong>
+        <div class="demo-area" style="height: 200px;" inert>
+          <layout-stack data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <layout-sidebar data-gap="none" style="flex: 1;">
+              <nav class="demo-nav" slot="sidebar">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+              </nav>
+              <div class="demo-main">Main (no aside)</div>
+            </layout-sidebar>
+            <footer class="demo-footer">Footer</footer>
+          </layout-stack>
+        </div>
+        <figcaption class="code-area">
+          <pre>Manual structure change required
+&lt;!-- Must remove nested sidebar --&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Data Attribute -->
+      <figure class="demo-panel">
+        <strong class="demo-label data-attr">Data Attribute</strong>
+        <div class="demo-area" style="height: 200px;" inert>
+          <div data-layout="holy-grail" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <nav class="demo-nav">
+              <a href="#">Home</a>
+              <a href="#">About</a>
+            </nav>
+            <main class="demo-main">Main (aside absent - auto adapts!)</main>
+            <footer class="demo-footer">Footer</footer>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;!-- :has() CSS auto-adapts --&gt;
+&lt;div data-layout="holy-grail"&gt;
+  &lt;!-- No aside element --&gt;
+&lt;/div&gt;</pre>
+        </figcaption>
+      </figure>
+
+      <!-- Grid Identity -->
+      <figure class="demo-panel">
+        <strong class="demo-label grid-identity">Grid Identity</strong>
+        <div class="demo-area" style="height: 200px;" inert>
+          <div data-layout="body-holy-grail" data-gap="none" style="height: 100%;">
+            <header class="demo-header">Header</header>
+            <nav class="demo-nav">
+              <a href="#">Home</a>
+              <a href="#">About</a>
+            </nav>
+            <main class="demo-main">Main (aside absent - auto adapts!)</main>
+            <footer class="demo-footer">Footer</footer>
+          </div>
+        </div>
+        <figcaption class="code-area">
+          <pre>&lt;!-- :has() CSS auto-adapts --&gt;
+&lt;body data-layout="body-holy-grail"&gt;
+  &lt;!-- No aside element --&gt;
+&lt;/body&gt;</pre>
+        </figcaption>
+      </figure>
+    </div>
+
+    <!-- ========== FEATURE MATRIX ========== -->
+    <h2>Feature Comparison</h2>
+
+    <table class="feature-matrix">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Custom Elements</th>
+          <th>Data Attributes</th>
+          <th>Grid Identity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Semantic HTML</td>
+          <td class="crossmark">&#10007; Wrapper elements</td>
+          <td class="checkmark">&#10003; Any element</td>
+          <td class="checkmark">&#10003; Pure semantic</td>
+        </tr>
+        <tr>
+          <td>Self-documenting</td>
+          <td class="checkmark">&#10003; Tag name is layout</td>
+          <td class="checkmark">&#10003; Attribute is layout</td>
+          <td class="checkmark">&#10003; Structure is layout</td>
+        </tr>
+        <tr>
+          <td>Component-level use</td>
+          <td class="checkmark">&#10003; Anywhere</td>
+          <td class="checkmark">&#10003; Anywhere</td>
+          <td class="crossmark">&#10007; Body-level only</td>
+        </tr>
+        <tr>
+          <td>:has() adaptation</td>
+          <td class="crossmark">&#10007; Manual changes</td>
+          <td class="checkmark">&#10003; Auto-adapts</td>
+          <td class="checkmark">&#10003; Auto-adapts</td>
+        </tr>
+        <tr>
+          <td>Template tokens</td>
+          <td class="crossmark">&#10007; Not applicable</td>
+          <td class="crossmark">&#10007; Not applicable</td>
+          <td class="checkmark">&#10003; --tpl-* variables</td>
+        </tr>
+        <tr>
+          <td>Grid areas</td>
+          <td class="crossmark">&#10007; Flexbox-based</td>
+          <td class="checkmark">&#10003; Named areas</td>
+          <td class="checkmark">&#10003; Auto-assigned</td>
+        </tr>
+        <tr>
+          <td>Nesting depth</td>
+          <td class="crossmark">&#10007; Deep (wrappers)</td>
+          <td class="checkmark">&#10003; Shallow</td>
+          <td class="checkmark">&#10003; Flat</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ========== RECOMMENDATION ========== -->
+    <h2>When to Use Each</h2>
+
+    <div class="approach-cards">
+      <article class="approach-card custom-element">
+        <h3>Custom Elements</h3>
+        <p><strong>Best for:</strong></p>
+        <ul>
+          <li>Small, isolated layouts</li>
+          <li>When you want visual nesting</li>
+          <li>Teams familiar with Web Components</li>
+        </ul>
+      </article>
+
+      <article class="approach-card data-attr">
+        <h3>Data Attributes</h3>
+        <p><strong>Best for:</strong></p>
+        <ul>
+          <li>Component-level layouts (cards, panels)</li>
+          <li>Layouts on semantic elements</li>
+          <li>Most flexible approach</li>
+        </ul>
+      </article>
+
+      <article class="approach-card grid-identity">
+        <h3>Grid Identity</h3>
+        <p><strong>Best for:</strong></p>
+        <ul>
+          <li>Full page layouts</li>
+          <li>App shells, dashboards</li>
+          <li>Maximum semantic purity</li>
+        </ul>
+      </article>
+    </div>
+
+    <h2>Links</h2>
+    <ul>
+      <li><a href="/docs/examples/demos/layout-attributes.html">Data Attributes Demo</a> - Full demo of data-layout patterns</li>
+      <li><a href="/docs/examples/demos/grid-identity.html">Grid Identity Demo</a> - Full demo of body-* layouts</li>
+    </ul>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
