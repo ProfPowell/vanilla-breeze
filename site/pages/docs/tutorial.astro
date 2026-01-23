@@ -1,0 +1,778 @@
+---
+/**
+ * Tutorial: Build Your First Landing Page
+ *
+ * Step-by-step guide to building a complete landing page with Vanilla Breeze.
+ */
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+// Code examples as template strings
+const minimalHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Landing Page</title>
+
+  <!-- Vanilla Breeze CSS - that's all you need! -->
+  <link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.css">
+</head>
+<body>
+  <h1>Hello, Vanilla Breeze!</h1>
+  <p>Your page is ready.</p>
+</body>
+</html>`;
+
+const pageStructure = `<body>
+  <header>
+    <a href="/" class="logo">Acme Corp</a>
+    <nav>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Build Better Products</h1>
+    <p>The all-in-one platform for modern teams.</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Acme Corp. All rights reserved.</p>
+  </footer>
+</body>`;
+
+const spacingTokens = `/* Spacing scale */
+--size-3xs: 0.125rem;  /* 2px */
+--size-2xs: 0.25rem;   /* 4px */
+--size-xs:  0.5rem;    /* 8px */
+--size-s:   0.75rem;   /* 12px */
+--size-m:   1rem;      /* 16px */
+--size-l:   1.5rem;    /* 24px */
+--size-xl:  2rem;      /* 32px */
+--size-2xl: 3rem;      /* 48px */
+--size-3xl: 4rem;      /* 64px */`;
+
+const colorTokens = `/* Surface colors */
+--color-surface: white;
+--color-surface-raised: #f9f9f9;
+--color-background: white;
+
+/* Text colors */
+--color-text: #171717;
+--color-text-muted: #6b6b6b;
+
+/* Interactive */
+--color-interactive: #6366f1;
+--color-interactive-hover: #4f46e5;
+
+/* Borders */
+--color-border: #e5e5e5;`;
+
+const tokenUsage = `.my-custom-section {
+  /* Good - uses tokens */
+  padding: var(--size-xl);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-m);
+
+  /* Avoid - hard-coded values */
+  /* padding: 32px; */
+  /* background: #f5f5f5; */
+}`;
+
+const heroSection = `<section class="hero">
+  <layout-stack data-gap="l" data-align="center">
+    <h1>Build Better Products</h1>
+    <p class="lead">
+      The all-in-one platform that helps modern teams
+      ship faster with confidence.
+    </p>
+
+    <layout-cluster data-gap="s" data-justify="center">
+      <button>Get Started Free</button>
+      <button class="secondary">Watch Demo</button>
+    </layout-cluster>
+  </layout-stack>
+</section>`;
+
+const layoutGridBasics = `<layout-grid data-min="15rem" data-gap="l">
+  <!-- Items automatically flow into columns -->
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
+</layout-grid>`;
+
+const cardVariants = `<!-- Default card with subtle shadow -->
+<layout-card>
+  <h3>Default Card</h3>
+  <p>Subtle shadow, rounded corners.</p>
+</layout-card>
+
+<!-- Elevated card -->
+<layout-card data-variant="elevated">
+  <h3>Elevated Card</h3>
+  <p>More prominent shadow.</p>
+</layout-card>
+
+<!-- Outlined card -->
+<layout-card data-variant="outlined">
+  <h3>Outlined Card</h3>
+  <p>Border instead of shadow.</p>
+</layout-card>`;
+
+const navStyles = `<!-- Horizontal nav with pills (default for headers) -->
+<nav class="horizontal pills">
+  <ul>
+    <li><a href="#" aria-current="page">Home</a></li>
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Pricing</a></li>
+  </ul>
+</nav>
+
+<!-- Tab-style navigation -->
+<nav class="horizontal tabs">
+  <ul>
+    <li><a href="#" aria-current="page">Overview</a></li>
+    <li><a href="#">Settings</a></li>
+  </ul>
+</nav>`;
+
+const contactForm = `<form>
+  <layout-stack data-gap="m">
+    <form-field>
+      <label for="name">Name</label>
+      <input type="text" id="name" required placeholder="Your name">
+    </form-field>
+
+    <form-field>
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="you@example.com">
+    </form-field>
+
+    <form-field>
+      <label for="message">Message</label>
+      <textarea id="message" rows="4" placeholder="How can we help?"></textarea>
+    </form-field>
+
+    <button type="submit">Send Message</button>
+  </layout-stack>
+</form>`;
+
+const addJs = `<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze.js"><\/script>`;
+
+const accordionFaq = `<accordion-wc data-single>
+  <details name="faq">
+    <summary>How do I get started?</summary>
+    <div>
+      <p>Getting started is easy! Sign up for a free account.</p>
+    </div>
+  </details>
+
+  <details name="faq">
+    <summary>Can I cancel anytime?</summary>
+    <div>
+      <p>Yes, cancel anytime. No fees.</p>
+    </div>
+  </details>
+</accordion-wc>`;
+---
+
+<DocsLayout
+  title="Tutorial: Build Your First Landing Page"
+  description="Learn Vanilla Breeze step by step by building a complete landing page from scratch. Master layout primitives, design tokens, and progressive enhancement."
+  currentSection="docs"
+>
+  <style>
+    .tutorial-hero {
+      text-align: center;
+      padding-block: var(--size-2xl);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .tutorial-hero h1 {
+      font-size: var(--font-size-3xl);
+      margin-block-end: var(--size-s);
+    }
+
+    .tutorial-hero .lead {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-muted);
+      max-inline-size: 60ch;
+      margin-inline: auto;
+    }
+
+    .toc {
+      padding: var(--size-l);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+      margin-block: var(--size-xl);
+    }
+
+    .toc h2 {
+      font-size: var(--font-size-lg);
+      margin-block-end: var(--size-s);
+    }
+
+    .toc ol {
+      list-style: decimal;
+      padding-inline-start: var(--size-l);
+      margin: 0;
+      columns: 2;
+      column-gap: var(--size-xl);
+    }
+
+    @media (max-width: 600px) {
+      .toc ol {
+        columns: 1;
+      }
+    }
+
+    .toc li {
+      padding-block: var(--size-2xs);
+    }
+
+    .toc a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--color-interactive);
+    }
+
+    .tutorial-section {
+      padding-block: var(--size-2xl);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .tutorial-section:first-of-type {
+      border-block-start: none;
+      padding-block-start: var(--size-xl);
+    }
+
+    .tutorial-section h2 {
+      font-size: var(--font-size-2xl);
+      margin-block-end: var(--size-m);
+    }
+
+    .tutorial-section h3 {
+      font-size: var(--font-size-lg);
+      margin-block-start: var(--size-xl);
+      margin-block-end: var(--size-s);
+    }
+
+    .step-intro {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-l);
+    }
+
+    .key-concept {
+      padding: var(--size-m);
+      background: var(--color-primary-subtle);
+      border-inline-start: var(--border-width-thick) solid var(--color-interactive);
+      border-radius: var(--radius-s);
+      margin-block: var(--size-m);
+    }
+
+    .key-concept strong {
+      color: var(--color-interactive);
+    }
+
+    .side-by-side {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-m);
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .side-by-side {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .milestone {
+      padding: var(--size-l);
+      background: var(--color-success-subtle);
+      border-radius: var(--radius-m);
+      margin-block: var(--size-l);
+    }
+
+    .milestone h4 {
+      color: var(--color-success-text);
+      margin-block-end: var(--size-xs);
+    }
+
+    .milestone p {
+      margin: 0;
+      color: var(--color-success-text);
+    }
+
+    .file-tree {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      background: var(--color-surface-raised);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--size-m);
+    }
+
+    .philosophy-card {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .philosophy-card h4 {
+      font-size: var(--font-size-base);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .philosophy-card p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .demo-preview {
+      padding: var(--size-l);
+    }
+
+    .demo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--size-s) var(--size-m);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .demo-logo {
+      font-weight: 600;
+      font-size: var(--font-size-lg);
+    }
+
+    .demo-nav {
+      display: flex;
+      gap: var(--size-m);
+    }
+
+    .demo-nav a {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+
+    .demo-footer {
+      padding: var(--size-m);
+      text-align: center;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .demo-hero {
+      padding: var(--size-xl) var(--size-m);
+      text-align: center;
+    }
+
+    .demo-feature {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border-radius: var(--radius-m);
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
+    }
+  </style>
+
+  <section class="tutorial-hero">
+    <h1>Tutorial: Build Your First Landing Page</h1>
+    <p class="lead">Learn Vanilla Breeze step by step. In this tutorial, you will build a complete landing page from scratch, mastering layout primitives, design tokens, forms, and interactive components along the way.</p>
+  </section>
+
+  <nav class="toc" aria-label="Tutorial sections">
+    <h2>What You Will Learn</h2>
+    <ol>
+      <li><a href="#introduction">Introduction and Philosophy</a></li>
+      <li><a href="#project-setup">Setting Up the Project</a></li>
+      <li><a href="#page-structure">Page Structure</a></li>
+      <li><a href="#design-tokens">Design Tokens</a></li>
+      <li><a href="#hero-section">Hero Section</a></li>
+      <li><a href="#features-grid">Features Grid</a></li>
+      <li><a href="#card-component">Card Components</a></li>
+      <li><a href="#navigation">Navigation</a></li>
+      <li><a href="#forms">Forms</a></li>
+      <li><a href="#interactivity">Interactivity</a></li>
+      <li><a href="#responsive">Responsive Design</a></li>
+      <li><a href="#next-steps">Next Steps</a></li>
+    </ol>
+  </nav>
+
+  <!-- Section 1: Introduction -->
+  <section id="introduction" class="tutorial-section">
+    <h2>1. Introduction and Philosophy</h2>
+    <p class="step-intro">Before we write any code, let us understand what makes Vanilla Breeze different from other CSS frameworks.</p>
+
+    <h3>What We Will Build</h3>
+    <p>By the end of this tutorial, you will have built a complete landing page with:</p>
+    <ul>
+      <li>A hero section with a call-to-action</li>
+      <li>A responsive features grid</li>
+      <li>Styled cards with proper elevation</li>
+      <li>Navigation with multiple styles</li>
+      <li>A contact form with validation</li>
+      <li>An interactive FAQ accordion</li>
+    </ul>
+
+    <h3>The Vanilla Breeze Philosophy</h3>
+    <div class="philosophy-grid">
+      <div class="philosophy-card">
+        <h4>HTML-First</h4>
+        <p>Start with semantic HTML5 elements. Your page works before any CSS loads.</p>
+      </div>
+      <div class="philosophy-card">
+        <h4>Progressive Enhancement</h4>
+        <p>Add CSS for styling, JavaScript for interactivity. Each layer is optional.</p>
+      </div>
+      <div class="philosophy-card">
+        <h4>Zero Dependencies</h4>
+        <p>No build tools required. Link a CSS file and you are ready to go.</p>
+      </div>
+      <div class="philosophy-card">
+        <h4>Composition Over Configuration</h4>
+        <p>Combine simple layout primitives to build complex interfaces.</p>
+      </div>
+    </div>
+
+    <div class="key-concept">
+      <strong>Key Concept:</strong> Vanilla Breeze uses three layers of components: <strong>Native Elements</strong> (84 styled HTML5 elements), <strong>Custom Elements</strong> (15 CSS-only layout primitives), and <strong>Web Components</strong> (9 interactive JavaScript components). You only use what you need.
+    </div>
+  </section>
+
+  <!-- Section 2: Project Setup -->
+  <section id="project-setup" class="tutorial-section">
+    <h2>2. Setting Up the Project</h2>
+    <p class="step-intro">Let us create our project structure and link the Vanilla Breeze stylesheet.</p>
+
+    <h3>File Structure</h3>
+    <p>Create a new folder for your project with this structure:</p>
+
+    <div class="file-tree">my-landing-page/<br />  index.html</div>
+
+    <p>That is it. No <code>node_modules</code>, no build configuration, no package.json required.</p>
+
+    <h3>The Minimal HTML Document</h3>
+    <p>Create your <code>index.html</code> file with this starting template:</p>
+
+    <code-block language="html" label="index.html">{minimalHtml}</code-block>
+
+    <p>Open this file in your browser and you will see styled typography immediately.</p>
+
+    <browser-window url="index.html">
+      <div class="demo-preview">
+        <h1 style="font-size: var(--font-size-3xl); margin-block-end: var(--size-s);">Hello, Vanilla Breeze!</h1>
+        <p>Your page is ready.</p>
+      </div>
+    </browser-window>
+
+    <div class="key-concept">
+      <strong>Pro Tip:</strong> For local development, you can download the CSS file or use a CDN. For production, consider self-hosting for better performance and reliability.
+    </div>
+  </section>
+
+  <!-- Section 3: Page Structure -->
+  <section id="page-structure" class="tutorial-section">
+    <h2>3. Page Structure with Semantic HTML</h2>
+    <p class="step-intro">Every good webpage starts with a solid semantic structure. Vanilla Breeze styles these elements automatically.</p>
+
+    <h3>The Three-Part Layout</h3>
+    <p>Most landing pages follow a simple pattern: header, main content, and footer.</p>
+
+    <code-block language="html" label="index.html">{pageStructure}</code-block>
+
+    <browser-window url="index.html">
+      <div style="min-block-size: 300px; display: flex; flex-direction: column;">
+        <div class="demo-header">
+          <span class="demo-logo">Acme Corp</span>
+          <div class="demo-nav">
+            <a href="#">Features</a>
+            <a href="#">Pricing</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+        <div style="flex: 1; padding: var(--size-xl);">
+          <h1 style="font-size: var(--font-size-2xl); margin: 0 0 var(--size-xs);">Build Better Products</h1>
+          <p style="margin: 0; color: var(--color-text-muted);">The all-in-one platform for modern teams.</p>
+        </div>
+        <div class="demo-footer">
+          <p style="margin: 0;">2026 Acme Corp. All rights reserved.</p>
+        </div>
+      </div>
+    </browser-window>
+
+    <div class="milestone">
+      <h4>Milestone 1 Complete</h4>
+      <p>You have a structured HTML page with semantic elements. Even without custom styles, it is readable and functional.</p>
+    </div>
+  </section>
+
+  <!-- Section 4: Design Tokens -->
+  <section id="design-tokens" class="tutorial-section">
+    <h2>4. Design Tokens and Theming</h2>
+    <p class="step-intro">Vanilla Breeze uses CSS custom properties (design tokens) for consistent spacing, colors, and typography.</p>
+
+    <h3>The Token System</h3>
+    <div class="side-by-side">
+      <div>
+        <h4>Spacing (T-shirt Sizes)</h4>
+        <code-block language="css" label="Spacing Tokens">{spacingTokens}</code-block>
+      </div>
+      <div>
+        <h4>Colors (Semantic)</h4>
+        <code-block language="css" label="Color Tokens">{colorTokens}</code-block>
+      </div>
+    </div>
+
+    <h3>Using Tokens in Your CSS</h3>
+    <code-block language="css" label="Good practice">{tokenUsage}</code-block>
+
+    <div class="key-concept">
+      <strong>Why Tokens?</strong> Using tokens ensures your customizations automatically work with dark mode, maintain consistency, and make global changes easy.
+    </div>
+  </section>
+
+  <!-- Section 5: Hero Section -->
+  <section id="hero-section" class="tutorial-section">
+    <h2>5. Building the Hero Section</h2>
+    <p class="step-intro">Now let us create an impactful hero section using layout-stack and layout-cluster.</p>
+
+    <code-block language="html" label="Hero section">{heroSection}</code-block>
+
+    <browser-window url="index.html">
+      <div style="min-block-size: 300px; display: flex; flex-direction: column;">
+        <div class="demo-header">
+          <span class="demo-logo">Acme Corp</span>
+          <div class="demo-nav">
+            <a href="#">Features</a>
+            <a href="#">Pricing</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+        <div class="demo-hero" style="flex: 1;">
+          <layout-stack data-gap="l" data-align="center">
+            <h1 style="font-size: var(--font-size-2xl); margin: 0;">Build Better Products</h1>
+            <p style="margin: 0; color: var(--color-text-muted); max-inline-size: 40ch;">The all-in-one platform that helps modern teams ship faster with confidence.</p>
+            <layout-cluster data-gap="s" data-justify="center">
+              <button type="button">Get Started Free</button>
+              <button type="button" class="secondary">Watch Demo</button>
+            </layout-cluster>
+          </layout-stack>
+        </div>
+      </div>
+    </browser-window>
+
+    <div class="milestone">
+      <h4>Milestone 2 Complete</h4>
+      <p>Your hero section is responsive and uses layout primitives. The buttons are styled automatically.</p>
+    </div>
+  </section>
+
+  <!-- Section 6: Features Grid -->
+  <section id="features-grid" class="tutorial-section">
+    <h2>6. Creating a Features Grid</h2>
+    <p class="step-intro">Display your product features in a responsive grid that adapts to any screen size.</p>
+
+    <code-block language="html" label="layout-grid basics">{layoutGridBasics}</code-block>
+
+    <p>The <code>data-min</code> attribute sets the minimum width of each column. The grid calculates how many columns fit automatically.</p>
+
+    <browser-window url="index.html#features">
+      <div style="padding: var(--size-l); background: var(--color-surface-raised);">
+        <layout-stack data-gap="l" data-align="center">
+          <h2 style="margin: 0; font-size: var(--font-size-xl);">Everything You Need</h2>
+          <layout-grid data-min="10rem" data-gap="m">
+            <div class="demo-feature">
+              <h3 style="font-size: var(--font-size-base); margin: 0 0 var(--size-2xs);">Lightning Fast</h3>
+              <p style="font-size: var(--font-size-sm); margin: 0; color: var(--color-text-muted);">Built for speed.</p>
+            </div>
+            <div class="demo-feature">
+              <h3 style="font-size: var(--font-size-base); margin: 0 0 var(--size-2xs);">Secure</h3>
+              <p style="font-size: var(--font-size-sm); margin: 0; color: var(--color-text-muted);">Enterprise-grade.</p>
+            </div>
+            <div class="demo-feature">
+              <h3 style="font-size: var(--font-size-base); margin: 0 0 var(--size-2xs);">Collaborate</h3>
+              <p style="font-size: var(--font-size-sm); margin: 0; color: var(--color-text-muted);">Work together.</p>
+            </div>
+          </layout-grid>
+        </layout-stack>
+      </div>
+    </browser-window>
+
+    <div class="key-concept">
+      <strong>Responsive Without Media Queries:</strong> The <code>data-min="15rem"</code> attribute means each column must be at least 15rem wide. As the viewport shrinks, columns automatically reflow.
+    </div>
+  </section>
+
+  <!-- Section 7: Card Component -->
+  <section id="card-component" class="tutorial-section">
+    <h2>7. Building Card Components</h2>
+    <p class="step-intro">Cards are a fundamental UI pattern. Vanilla Breeze provides a layout-card element with built-in variants.</p>
+
+    <code-block language="html" label="Card variants">{cardVariants}</code-block>
+
+    <h3>Card Data Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>elevated</code>, <code>outlined</code>, <code>ghost</code></td>
+          <td>Visual style variant</td>
+        </tr>
+        <tr>
+          <td><code>data-padding</code></td>
+          <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td>Internal padding amount</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Section 8: Navigation -->
+  <section id="navigation" class="tutorial-section">
+    <h2>8. Adding Navigation</h2>
+    <p class="step-intro">Vanilla Breeze provides multiple navigation styles through simple class names.</p>
+
+    <code-block language="html" label="Navigation styles">{navStyles}</code-block>
+
+    <div class="key-concept">
+      <strong>Accessibility Note:</strong> Always use <code>aria-current="page"</code> on the link representing the current page.
+    </div>
+  </section>
+
+  <!-- Section 9: Forms -->
+  <section id="forms" class="tutorial-section">
+    <h2>9. Forms and Inputs</h2>
+    <p class="step-intro">Vanilla Breeze styles all native form elements automatically.</p>
+
+    <code-block language="html" label="Contact form">{contactForm}</code-block>
+
+    <div class="key-concept">
+      <strong>Progressive Enhancement:</strong> The form works perfectly without JavaScript. Native HTML5 validation handles required fields and email format.
+    </div>
+  </section>
+
+  <!-- Section 10: Interactivity -->
+  <section id="interactivity" class="tutorial-section">
+    <h2>10. Adding Interactivity</h2>
+    <p class="step-intro">For interactive components, Vanilla Breeze provides Web Components. Let us add an FAQ accordion.</p>
+
+    <h3>Including JavaScript</h3>
+    <code-block language="html" label="Add JavaScript">{addJs}</code-block>
+
+    <h3>The Accordion Component</h3>
+    <code-block language="html" label="FAQ Accordion">{accordionFaq}</code-block>
+
+    <div class="example">
+      <accordion-wc data-single>
+        <details name="tutorial-faq" open>
+          <summary>How do I get started?</summary>
+          <div>
+            <p>Getting started is easy! Sign up for a free account, and you will be guided through our onboarding process. No credit card required.</p>
+          </div>
+        </details>
+        <details name="tutorial-faq">
+          <summary>Can I cancel anytime?</summary>
+          <div>
+            <p>Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees.</p>
+          </div>
+        </details>
+      </accordion-wc>
+    </div>
+
+    <div class="milestone">
+      <h4>Milestone 3 Complete</h4>
+      <p>Your landing page now has interactive elements that work with keyboard and screen readers.</p>
+    </div>
+  </section>
+
+  <!-- Section 11: Responsive -->
+  <section id="responsive" class="tutorial-section">
+    <h2>11. Responsive and Accessible</h2>
+    <p class="step-intro">Vanilla Breeze is designed to be responsive and accessible by default.</p>
+
+    <h3>Built-in Responsiveness</h3>
+    <p>The layout primitives are inherently responsive:</p>
+    <ul>
+      <li><strong>layout-grid:</strong> Automatically adjusts columns based on <code>data-min</code></li>
+      <li><strong>layout-cluster:</strong> Wraps items naturally when space runs out</li>
+      <li><strong>layout-stack:</strong> Works at any width</li>
+      <li><strong>layout-sidebar:</strong> Stacks on narrow viewports</li>
+    </ul>
+
+    <h3>Accessibility Checklist</h3>
+    <ul>
+      <li>Use semantic HTML elements (<code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;section&gt;</code>)</li>
+      <li>Add <code>aria-label</code> to navigation landmarks</li>
+      <li>Use <code>aria-current="page"</code> for current navigation items</li>
+      <li>Include <code>alt</code> text for images</li>
+      <li>Ensure form fields have associated <code>&lt;label&gt;</code> elements</li>
+    </ul>
+
+    <div class="key-concept">
+      <strong>Test Early:</strong> Test your page with keyboard navigation and a screen reader during development, not after.
+    </div>
+  </section>
+
+  <!-- Section 12: Next Steps -->
+  <section id="next-steps" class="tutorial-section">
+    <h2>12. Next Steps and Resources</h2>
+    <p class="step-intro">Congratulations! You have built a complete landing page. Here is where to go next.</p>
+
+    <h3>Explore More</h3>
+    <layout-grid data-min="15rem" data-gap="m">
+      <a href="/docs/tokens/" class="section-card">
+        <h3>Design Tokens</h3>
+        <p>Deep dive into colors, spacing, typography, and shadows.</p>
+      </a>
+      <a href="/docs/elements/" class="section-card">
+        <h3>All Elements</h3>
+        <p>Browse all 84 native, 15 custom, and 9 web components.</p>
+      </a>
+      <a href="/docs/examples/" class="section-card">
+        <h3>Kitchen Sink</h3>
+        <p>See every component in action on a single page.</p>
+      </a>
+      <a href="/docs/snippets/" class="section-card">
+        <h3>Copy-Paste Snippets</h3>
+        <p>Ready-to-use patterns for common UI needs.</p>
+      </a>
+    </layout-grid>
+
+    <h3>Community and Support</h3>
+    <ul>
+      <li><a href="https://github.com/profpowell/vanilla-breeze">GitHub Repository</a> - Star the project, report issues</li>
+      <li><a href="https://github.com/profpowell/vanilla-breeze/discussions">GitHub Discussions</a> - Ask questions, share ideas</li>
+    </ul>
+
+    <div class="milestone">
+      <h4>Tutorial Complete!</h4>
+      <p>You have learned the core concepts of Vanilla Breeze. Now go build something amazing with simple, elegant markup.</p>
+    </div>
+  </section>
+</DocsLayout>
