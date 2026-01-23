@@ -1,0 +1,471 @@
+---
+/**
+ * Layout Attributes Documentation
+ *
+ * Complete reference for data-layout and related attributes.
+ * Alternative to custom element wrappers with better HTML semantics.
+ */
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+// Code examples
+const stackExample = `<article data-layout="stack" data-gap="m">
+  <h2>Article Title</h2>
+  <p>First paragraph...</p>
+  <p>Second paragraph...</p>
+</article>`;
+
+const clusterExample = `<nav data-layout="cluster" data-gap="s" data-justify="center">
+  <a href="/">Home</a>
+  <a href="/about">About</a>
+  <a href="/contact">Contact</a>
+</nav>`;
+
+const gridExample = `<section data-layout="grid" data-min="15rem" data-gap="m">
+  <article>Card 1</article>
+  <article>Card 2</article>
+  <article>Card 3</article>
+</section>`;
+
+const centerExample = `<main data-layout="center" data-max="prose">
+  <h1>Centered Content</h1>
+  <p>This content is centered with a comfortable reading width...</p>
+</main>`;
+
+const sidebarExample = `<div data-layout="sidebar" data-sidebar-width="wide">
+  <nav>Sidebar navigation...</nav>
+  <main>Main content area...</main>
+</div>`;
+
+const pageLayoutExample = `<body data-page-layout="sidebar-left">
+  <header>Site header...</header>
+  <nav>Sidebar navigation...</nav>
+  <main>Page content...</main>
+  <footer>Site footer...</footer>
+</body>`;
+
+const dashboardExample = `<body data-page-layout="dashboard">
+  <header data-sticky>Dashboard header...</header>
+  <nav data-sticky>Navigation sidebar...</nav>
+  <main data-layout="stack" data-gap="l">
+    Content area with nested stack layout...
+  </main>
+</body>`;
+
+const coverExample = `<section data-layout="cover" data-min="100vh" data-center>
+  <header>Top content</header>
+  <div data-principal>
+    <h1>Hero headline centered vertically</h1>
+  </div>
+  <footer>Bottom content</footer>
+</section>`;
+---
+
+<DocsLayout
+  title="Layout Attributes"
+  description="Data attributes for semantic layouts. Use data-layout on any HTML element instead of custom element wrappers."
+  currentSection="api"
+>
+  <h1>Layout Attributes</h1>
+  <p class="lead">Apply powerful layouts to semantic HTML elements using data attributes. An alternative to custom elements with better accessibility and HTML validation.</p>
+
+  <nav class="subnav" aria-label="Attribute categories">
+    <ul>
+      <li><a href="#core-layouts">Core Layouts</a></li>
+      <li><a href="#page-layouts">Page Layouts</a></li>
+      <li><a href="#special-layouts">Special Layouts</a></li>
+      <li><a href="#modifiers">Modifiers</a></li>
+      <li><a href="#utilities">Utilities</a></li>
+    </ul>
+  </nav>
+
+  <!-- Core Layouts Section -->
+  <section id="core-layouts">
+    <h2>Core Layouts</h2>
+    <p>Fundamental layout patterns for everyday use.</p>
+
+    <h3 id="stack">Stack</h3>
+    <p>Vertical layout with consistent gaps. The foundation of vertical rhythm.</p>
+
+    <div class="example">
+      <article data-layout="stack" data-gap="m" style="max-width: 20rem; padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <h4 style="margin: 0;">Article Title</h4>
+        <p style="margin: 0;">First paragraph of content goes here.</p>
+        <p style="margin: 0;">Second paragraph continues the story.</p>
+      </article>
+    </div>
+
+    <code-block language="html" label="Stack layout">{stackExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-gap</code></td><td><code>none</code>, <code>3xs</code>-<code>3xl</code></td><td>Spacing between items</td></tr>
+        <tr><td><code>data-align</code></td><td><code>start</code>, <code>center</code>, <code>end</code>, <code>stretch</code></td><td>Cross-axis alignment</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="cluster">Cluster</h3>
+    <p>Horizontal layout with wrapping. Perfect for navigation, tags, and button groups.</p>
+
+    <div class="example">
+      <nav data-layout="cluster" data-gap="s">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Contact</a>
+      </nav>
+    </div>
+
+    <code-block language="html" label="Cluster layout">{clusterExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-gap</code></td><td><code>xs</code>-<code>xl</code></td><td>Spacing between items</td></tr>
+        <tr><td><code>data-justify</code></td><td><code>start</code>, <code>end</code>, <code>center</code>, <code>between</code></td><td>Main axis distribution</td></tr>
+        <tr><td><code>data-align</code></td><td><code>start</code>, <code>end</code>, <code>center</code>, <code>stretch</code>, <code>baseline</code></td><td>Cross-axis alignment</td></tr>
+        <tr><td><code>data-nowrap</code></td><td>boolean</td><td>Prevent wrapping</td></tr>
+        <tr><td><code>data-overlap</code></td><td><code>xs</code>-<code>l</code></td><td>Overlap items (avatar stacks)</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="grid">Grid</h3>
+    <p>Responsive auto-fit grid. Items automatically wrap based on minimum width.</p>
+
+    <div class="example">
+      <section data-layout="grid" data-min="10rem" data-gap="m">
+        <div style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m); text-align: center;">Card 1</div>
+        <div style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m); text-align: center;">Card 2</div>
+        <div style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m); text-align: center;">Card 3</div>
+        <div style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m); text-align: center;">Card 4</div>
+      </section>
+    </div>
+
+    <code-block language="html" label="Grid layout">{gridExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-min</code></td><td><code>6rem</code>-<code>25rem</code></td><td>Minimum item width</td></tr>
+        <tr><td><code>data-gap</code></td><td><code>none</code>, <code>xs</code>-<code>xl</code></td><td>Spacing between items</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="center">Center</h3>
+    <p>Horizontally centered container with max-width constraint.</p>
+
+    <div class="example">
+      <div style="background: var(--color-surface-sunken); padding: var(--size-m);">
+        <main data-layout="center" data-max="narrow" style="background: var(--color-surface); padding: var(--size-m); border-radius: var(--radius-m);">
+          <p style="margin: 0;">Centered content with controlled width. Perfect for article layouts and readable text.</p>
+        </main>
+      </div>
+    </div>
+
+    <code-block language="html" label="Center layout">{centerExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-max</code></td><td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td><td>Maximum width</td></tr>
+        <tr><td><code>data-gutter</code></td><td><code>none</code>, <code>s</code>, <code>l</code></td><td>Horizontal padding</td></tr>
+        <tr><td><code>data-intrinsic</code></td><td>boolean</td><td>Center based on content width</td></tr>
+        <tr><td><code>data-text</code></td><td>boolean</td><td>Also center text alignment</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="sidebar">Sidebar</h3>
+    <p>Two-column layout with flexible sidebar. Semantic-aware: nav/aside become sidebar, main/article become content.</p>
+
+    <div class="example">
+      <div data-layout="sidebar" data-sidebar-width="narrow" data-gap="m" style="min-height: 8rem;">
+        <nav style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-m);">
+          <p style="margin: 0;">Sidebar</p>
+        </nav>
+        <main style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-m);">
+          <p style="margin: 0;">Main content area</p>
+        </main>
+      </div>
+    </div>
+
+    <code-block language="html" label="Sidebar layout">{sidebarExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-side</code></td><td><code>start</code> (default), <code>end</code></td><td>Sidebar position</td></tr>
+        <tr><td><code>data-sidebar-width</code></td><td><code>narrow</code>, <code>normal</code>, <code>wide</code></td><td>Sidebar width</td></tr>
+        <tr><td><code>data-content-min</code></td><td><code>40</code>, <code>50</code>, <code>60</code></td><td>Content min-width %</td></tr>
+        <tr><td><code>data-gap</code></td><td><code>xs</code>-<code>xl</code></td><td>Gap between sidebar and content</td></tr>
+        <tr><td><code>data-nowrap</code></td><td>boolean</td><td>Prevent stacking on mobile</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="split">Split</h3>
+    <p>Two-column ratio-based layout. Great for hero sections and content with media.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-ratio</code></td><td><code>1:2</code>, <code>2:1</code>, <code>1:3</code>, <code>3:1</code>, <code>golden</code></td><td>Column ratio</td></tr>
+        <tr><td><code>data-gap</code></td><td><code>s</code>-<code>xl</code></td><td>Gap between columns</td></tr>
+        <tr><td><code>data-align</code></td><td><code>start</code>, <code>center</code>, <code>end</code>, <code>stretch</code></td><td>Vertical alignment</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Page Layouts Section -->
+  <section id="page-layouts">
+    <h2>Page Layouts</h2>
+    <p>Full-page layouts using <code>data-page-layout</code> on the <code>&lt;body&gt;</code> element. Semantic children (header, nav, main, aside, footer) are auto-assigned to grid areas.</p>
+
+    <h3>Available Page Layouts</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>stack</code></td><td>Single column (mobile-first default)</td></tr>
+        <tr><td><code>sidebar-left</code></td><td>Two-column with left navigation</td></tr>
+        <tr><td><code>sidebar-right</code></td><td>Two-column with right sidebar</td></tr>
+        <tr><td><code>holy-grail</code></td><td>Three-column classic layout</td></tr>
+        <tr><td><code>app-shell</code></td><td>Vertical nav bar for apps</td></tr>
+        <tr><td><code>dashboard</code></td><td>Admin panel with sticky nav</td></tr>
+        <tr><td><code>article</code></td><td>Centered content for reading</td></tr>
+        <tr><td><code>landing</code></td><td>Marketing page with named sections</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Example: Dashboard Layout</h3>
+    <code-block language="html" label="Dashboard page layout">{dashboardExample}</code-block>
+
+    <h3>Semantic Grid Identity</h3>
+    <p>Semantic elements automatically register to grid areas:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Grid Area</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&lt;header&gt;</code></td><td><code>body-header</code></td></tr>
+        <tr><td><code>&lt;nav&gt;</code></td><td><code>body-nav</code></td></tr>
+        <tr><td><code>&lt;main&gt;</code></td><td><code>body-main</code></td></tr>
+        <tr><td><code>&lt;aside&gt;</code></td><td><code>body-aside</code></td></tr>
+        <tr><td><code>&lt;footer&gt;</code></td><td><code>body-footer</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Content-Aware Adaptation</h3>
+    <p>Layouts automatically adapt when elements are missing:</p>
+    <ul>
+      <li><code>holy-grail</code> without <code>&lt;aside&gt;</code> becomes two-column</li>
+      <li><code>sidebar-left</code> without <code>&lt;nav&gt;</code> becomes single-column</li>
+      <li>All layouts collapse to stack on mobile (unless <code>data-nowrap</code> is set)</li>
+    </ul>
+
+    <h3>Basic Page Layout</h3>
+    <code-block language="html" label="Page layout with sidebar">{pageLayoutExample}</code-block>
+  </section>
+
+  <!-- Special Layouts Section -->
+  <section id="special-layouts">
+    <h2>Special Layouts</h2>
+
+    <h3 id="cover">Cover</h3>
+    <p>Full-height container with vertically centered principal element. Perfect for hero sections.</p>
+
+    <code-block language="html" label="Cover layout">{coverExample}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-min</code></td><td><code>50vh</code>, <code>75vh</code>, <code>100vh</code>, <code>100dvh</code>, <code>auto</code></td><td>Minimum height</td></tr>
+        <tr><td><code>data-padding</code></td><td><code>none</code>, <code>s</code>-<code>xl</code></td><td>Internal padding</td></tr>
+        <tr><td><code>data-center</code></td><td>boolean</td><td>Center align contents</td></tr>
+        <tr><td><code>data-principal</code></td><td>child attribute</td><td>Mark the centered element</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="switcher">Switcher</h3>
+    <p>Flexbox layout that switches from horizontal to vertical at a threshold width.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-threshold</code></td><td><code>20rem</code>-<code>45rem</code></td><td>Switch breakpoint</td></tr>
+        <tr><td><code>data-gap</code></td><td><code>none</code>, <code>xs</code>-<code>xl</code></td><td>Spacing between items</td></tr>
+        <tr><td><code>data-limit</code></td><td><code>2</code>, <code>3</code>, <code>4</code></td><td>Max items before forcing vertical</td></tr>
+        <tr><td><code>data-reverse</code></td><td>boolean</td><td>Reverse item order</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="prose">Prose</h3>
+    <p>Typography utility for readable text content with controlled line length.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-max</code></td><td><code>narrow</code> (45ch), <code>normal</code> (65ch), <code>wide</code> (80ch)</td><td>Maximum line length</td></tr>
+        <tr><td><code>data-center</code></td><td>boolean</td><td>Center the prose block</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Modifiers Section -->
+  <section id="modifiers">
+    <h2>Gap Modifier</h2>
+    <p>The <code>data-gap</code> attribute controls spacing in all layout types.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Size Token</th>
+          <th>Pixels</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>none</code></td><td>0</td><td>0px</td></tr>
+        <tr><td><code>3xs</code></td><td><code>--size-3xs</code></td><td>2px</td></tr>
+        <tr><td><code>2xs</code></td><td><code>--size-2xs</code></td><td>4px</td></tr>
+        <tr><td><code>xs</code></td><td><code>--size-xs</code></td><td>8px</td></tr>
+        <tr><td><code>s</code></td><td><code>--size-s</code></td><td>12px</td></tr>
+        <tr><td><code>m</code></td><td><code>--size-m</code></td><td>16px</td></tr>
+        <tr><td><code>l</code></td><td><code>--size-l</code></td><td>24px</td></tr>
+        <tr><td><code>xl</code></td><td><code>--size-xl</code></td><td>32px</td></tr>
+        <tr><td><code>2xl</code></td><td><code>--size-2xl</code></td><td>48px</td></tr>
+        <tr><td><code>3xl</code></td><td><code>--size-3xl</code></td><td>64px</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Utilities Section -->
+  <section id="utilities">
+    <h2>Utilities</h2>
+    <p>Helper attributes that work with page layouts.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-sticky</code></td><td>Make header, nav, or aside sticky</td></tr>
+        <tr><td><code>data-bleed</code></td><td>Span all grid columns (full-width)</td></tr>
+        <tr><td><code>data-nowrap</code></td><td>Prevent responsive stacking</td></tr>
+        <tr><td><code>data-sidebar="collapsed"</code></td><td>Use collapsed sidebar width</td></tr>
+        <tr><td><code>data-sidebar="hidden"</code></td><td>Hide the sidebar nav</td></tr>
+        <tr><td><code>data-order="-1|1|99"</code></td><td>Reorder elements</td></tr>
+        <tr><td><code>data-grid-area</code></td><td>Explicit grid area assignment</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Grid Area Override</h3>
+    <p>Use <code>data-grid-area</code> to explicitly assign elements to named areas:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>hero</code></td><td>Hero section on landing pages</td></tr>
+        <tr><td><code>sidebar</code></td><td>Generic sidebar area</td></tr>
+        <tr><td><code>content</code></td><td>Main content area</td></tr>
+        <tr><td><code>feature</code></td><td>Feature section</td></tr>
+        <tr><td><code>cta</code></td><td>Call-to-action section</td></tr>
+        <tr><td><code>toc</code></td><td>Table of contents</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Responsive Behavior -->
+  <section>
+    <h2>Responsive Behavior</h2>
+    <p>All page layouts automatically collapse to a single column on viewports narrower than 768px, unless <code>data-nowrap</code> is set.</p>
+
+    <h3>Container Queries</h3>
+    <p>Semantic sections (<code>main</code>, <code>article</code>, <code>section</code>, <code>aside</code>) have container queries enabled. Nested layouts can respond to their container width, not just viewport.</p>
+  </section>
+
+  <!-- Next Steps -->
+  <section>
+    <h2>Next Steps</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/tokens/" class="section-card">
+        <h3>Tokens</h3>
+        <p>CSS custom properties for consistent design.</p>
+      </a>
+      <a href="/docs/themes/" class="section-card">
+        <h3>Themes</h3>
+        <p>Apply color and personality themes.</p>
+      </a>
+      <a href="/docs/elements/" class="section-card">
+        <h3>Elements</h3>
+        <p>Browse layout custom elements.</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

@@ -1,0 +1,421 @@
+---
+/**
+ * Themes Documentation
+ *
+ * Reference for color themes and personality themes.
+ * Apply via data-theme attribute on the html element.
+ */
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+// Code examples
+const applyTheme = `<!-- Apply a theme -->
+<html data-theme="ocean">
+
+<!-- Combine with mode override -->
+<html data-theme="ocean" data-mode="dark">
+
+<!-- Force light or dark mode -->
+<html data-mode="light">
+<html data-mode="dark">`;
+
+const createTheme = `/* Custom brand theme */
+:root[data-theme="my-brand"],
+[data-theme="my-brand"] {
+  --hue-primary: 210;   /* Blue */
+  --hue-secondary: 280; /* Purple */
+  --hue-accent: 45;     /* Gold */
+
+  /* Recalculate brand colors with new hues */
+  --color-primary: oklch(50% 0.2 var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+  --color-accent: oklch(65% 0.18 var(--hue-accent));
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+}`;
+
+const darkModeTheme = `/* Dark mode adjustments for your theme */
+:root[data-theme="my-brand"][data-mode="dark"],
+[data-theme="my-brand"][data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Brighter primary for dark mode contrast */
+  --color-primary: oklch(65% 0.15 var(--hue-primary));
+
+  /* Optional: tinted surfaces */
+  --color-background: oklch(12% 0.02 var(--hue-primary));
+  --color-surface: oklch(16% 0.02 var(--hue-primary));
+}`;
+
+const personalityTheme = `/* Personality theme overrides more than just colors */
+:root[data-theme="modern"] {
+  /* Shape */
+  --radius-s: 0.5rem;
+  --radius-m: 0.75rem;
+  --radius-l: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.08);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Motion */
+  --duration-normal: 150ms;
+  --ease-default: cubic-bezier(0.2, 0, 0, 1);
+}`;
+---
+
+<DocsLayout
+  title="Themes"
+  description="Color themes and personality themes for Vanilla Breeze. Customize your design with a single attribute."
+  currentSection="api"
+>
+  <h1>Themes</h1>
+  <p class="lead">Themes let you customize the look and feel of your site with a single attribute. Choose from color themes that change the palette, or personality themes that transform the entire design.</p>
+
+  <nav class="subnav" aria-label="Theme sections">
+    <ul>
+      <li><a href="#using-themes">Using Themes</a></li>
+      <li><a href="#color-themes">Color Themes</a></li>
+      <li><a href="#personality-themes">Personality Themes</a></li>
+      <li><a href="#dark-mode">Dark Mode</a></li>
+      <li><a href="#custom-themes">Custom Themes</a></li>
+    </ul>
+  </nav>
+
+  <!-- Using Themes Section -->
+  <section id="using-themes">
+    <h2>Using Themes</h2>
+    <p>Apply a theme by adding the <code>data-theme</code> attribute to the <code>&lt;html&gt;</code> element.</p>
+
+    <code-block language="html" label="Applying themes">{applyTheme}</code-block>
+
+    <h3>Theme Categories</h3>
+    <p>Vanilla Breeze includes two types of themes:</p>
+
+    <layout-grid data-min="250px" data-gap="m">
+      <layout-card>
+        <layout-stack data-gap="s">
+          <h4 style="margin: 0;">Color Themes</h4>
+          <p style="margin: 0; color: var(--color-text-muted);">Change the brand color palette. Shape, shadows, and typography remain default.</p>
+          <ul style="margin: 0; padding-inline-start: var(--size-m);">
+            <li>Ocean</li>
+            <li>Forest</li>
+            <li>Sunset</li>
+          </ul>
+        </layout-stack>
+      </layout-card>
+      <layout-card>
+        <layout-stack data-gap="s">
+          <h4 style="margin: 0;">Personality Themes</h4>
+          <p style="margin: 0; color: var(--color-text-muted);">Transform colors, shape, shadows, typography, and motion for distinct design feels.</p>
+          <ul style="margin: 0; padding-inline-start: var(--size-m);">
+            <li>Modern</li>
+            <li>Minimal</li>
+            <li>Classic</li>
+          </ul>
+        </layout-stack>
+      </layout-card>
+    </layout-grid>
+  </section>
+
+  <!-- Color Themes Section -->
+  <section id="color-themes">
+    <h2>Color Themes</h2>
+    <p>Color themes override hue values to change the brand palette. They preserve the default shape, shadows, and typography.</p>
+
+    <h3 id="ocean">Ocean</h3>
+    <p>A calm, professional teal-blue palette.</p>
+
+    <div class="example" data-theme="ocean" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-cluster data-gap="m">
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 200)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 180)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 45)</span>
+        </layout-cluster>
+        <layout-cluster data-gap="s">
+          <button type="button">Primary Button</button>
+          <button type="button" class="secondary">Secondary</button>
+        </layout-cluster>
+      </layout-stack>
+    </div>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--hue-primary</code></td><td>200</td><td>Teal-blue</td></tr>
+        <tr><td><code>--hue-secondary</code></td><td>180</td><td>Cyan</td></tr>
+        <tr><td><code>--hue-accent</code></td><td>45</td><td>Gold</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="forest">Forest</h3>
+    <p>Natural, earthy green palette.</p>
+
+    <div class="example" data-theme="forest" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-cluster data-gap="m">
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 145)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 120)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 30)</span>
+        </layout-cluster>
+        <layout-cluster data-gap="s">
+          <button type="button">Primary Button</button>
+          <button type="button" class="secondary">Secondary</button>
+        </layout-cluster>
+      </layout-stack>
+    </div>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--hue-primary</code></td><td>145</td><td>Green</td></tr>
+        <tr><td><code>--hue-secondary</code></td><td>120</td><td>Forest green</td></tr>
+        <tr><td><code>--hue-accent</code></td><td>30</td><td>Orange/amber</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="sunset">Sunset</h3>
+    <p>Warm, vibrant orange-red palette.</p>
+
+    <div class="example" data-theme="sunset" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-cluster data-gap="m">
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 25)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 350)</span>
+          <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 50)</span>
+        </layout-cluster>
+        <layout-cluster data-gap="s">
+          <button type="button">Primary Button</button>
+          <button type="button" class="secondary">Secondary</button>
+        </layout-cluster>
+      </layout-stack>
+    </div>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--hue-primary</code></td><td>25</td><td>Orange-red</td></tr>
+        <tr><td><code>--hue-secondary</code></td><td>350</td><td>Pink-red</td></tr>
+        <tr><td><code>--hue-accent</code></td><td>50</td><td>Yellow</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Personality Themes Section -->
+  <section id="personality-themes">
+    <h2>Personality Themes</h2>
+    <p>Personality themes transform the entire design system, overriding colors, border radius, shadows, typography, and motion.</p>
+
+    <h3 id="modern">Modern</h3>
+    <p>Clean, sharp aesthetic with subtle shadows and fast animations.</p>
+
+    <div class="example" data-theme="modern" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-card>
+          <layout-stack data-gap="s">
+            <h4 style="margin: 0;">Modern Card</h4>
+            <p style="margin: 0; color: var(--color-text-muted);">Sharp corners, subtle shadows, fast transitions.</p>
+            <layout-cluster data-gap="s">
+              <button type="button">Action</button>
+              <button type="button" class="secondary">Cancel</button>
+            </layout-cluster>
+          </layout-stack>
+        </layout-card>
+      </layout-stack>
+    </div>
+
+    <p><strong>Characteristics:</strong></p>
+    <ul>
+      <li>Smaller border radius for sharp, clean edges</li>
+      <li>Subtle, diffuse shadows</li>
+      <li>Fast transitions (150ms)</li>
+      <li>Modern system fonts</li>
+    </ul>
+
+    <h3 id="minimal">Minimal</h3>
+    <p>Stripped-down aesthetic focusing on content and whitespace.</p>
+
+    <div class="example" data-theme="minimal" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-card>
+          <layout-stack data-gap="s">
+            <h4 style="margin: 0;">Minimal Card</h4>
+            <p style="margin: 0; color: var(--color-text-muted);">No shadows, subtle borders, generous spacing.</p>
+            <layout-cluster data-gap="s">
+              <button type="button">Action</button>
+              <button type="button" class="secondary">Cancel</button>
+            </layout-cluster>
+          </layout-stack>
+        </layout-card>
+      </layout-stack>
+    </div>
+
+    <p><strong>Characteristics:</strong></p>
+    <ul>
+      <li>No shadows (replaced with subtle borders)</li>
+      <li>Very small border radius</li>
+      <li>Muted color palette</li>
+      <li>Focus on typography and whitespace</li>
+    </ul>
+
+    <h3 id="classic">Classic</h3>
+    <p>Traditional, refined aesthetic with generous curves and deeper shadows.</p>
+
+    <div class="example" data-theme="classic" style="padding: var(--size-l); background: var(--color-background); border-radius: var(--radius-l);">
+      <layout-stack data-gap="m">
+        <layout-card>
+          <layout-stack data-gap="s">
+            <h4 style="margin: 0;">Classic Card</h4>
+            <p style="margin: 0; color: var(--color-text-muted);">Rounded corners, pronounced shadows, elegant feel.</p>
+            <layout-cluster data-gap="s">
+              <button type="button">Action</button>
+              <button type="button" class="secondary">Cancel</button>
+            </layout-cluster>
+          </layout-stack>
+        </layout-card>
+      </layout-stack>
+    </div>
+
+    <p><strong>Characteristics:</strong></p>
+    <ul>
+      <li>Larger border radius for softer edges</li>
+      <li>Deeper, more pronounced shadows</li>
+      <li>Slower, more deliberate transitions</li>
+      <li>Serif font option for headings</li>
+    </ul>
+  </section>
+
+  <!-- Dark Mode Section -->
+  <section id="dark-mode">
+    <h2>Dark Mode</h2>
+    <p>Vanilla Breeze automatically adapts to the user's system preference via <code>color-scheme: light dark</code> and the <code>light-dark()</code> CSS function.</p>
+
+    <h3>Override Mode</h3>
+    <p>Force a specific mode with the <code>data-mode</code> attribute:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-mode="light"</code></td><td>Force light mode</td></tr>
+        <tr><td><code>data-mode="dark"</code></td><td>Force dark mode</td></tr>
+        <tr><td>(no attribute)</td><td>Follow system preference</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Theme + Mode Combinations</h3>
+    <p>Themes can be combined with mode overrides:</p>
+
+    <div class="example" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--size-m);">
+      <div data-theme="ocean" data-mode="light" style="padding: var(--size-m); background: var(--color-background); border-radius: var(--radius-m);">
+        <layout-stack data-gap="s">
+          <p style="margin: 0; font-weight: 600;">Ocean + Light</p>
+          <button type="button">Button</button>
+        </layout-stack>
+      </div>
+      <div data-theme="ocean" data-mode="dark" style="padding: var(--size-m); background: var(--color-background); border-radius: var(--radius-m);">
+        <layout-stack data-gap="s">
+          <p style="margin: 0; font-weight: 600; color: var(--color-text);">Ocean + Dark</p>
+          <button type="button">Button</button>
+        </layout-stack>
+      </div>
+    </div>
+
+    <h3>Dark Mode Adjustments</h3>
+    <p>In dark mode, Vanilla Breeze automatically:</p>
+    <ul>
+      <li>Brightens primary colors for better contrast</li>
+      <li>Uses deeper shadows with higher opacity</li>
+      <li>Adjusts surface colors for proper hierarchy</li>
+    </ul>
+  </section>
+
+  <!-- Custom Themes Section -->
+  <section id="custom-themes">
+    <h2>Creating Custom Themes</h2>
+    <p>Create your own brand theme by overriding hue values and optionally recalculating colors.</p>
+
+    <h3>Basic Color Theme</h3>
+    <p>The simplest approach: override the three hue variables.</p>
+
+    <code-block language="css" label="Custom brand theme">{createTheme}</code-block>
+
+    <h3>Dark Mode Support</h3>
+    <p>Add dark mode adjustments for your custom theme:</p>
+
+    <code-block language="css" label="Dark mode adjustments">{darkModeTheme}</code-block>
+
+    <h3>Personality Theme</h3>
+    <p>For a complete transformation, override shape, shadows, typography, and motion:</p>
+
+    <code-block language="css" label="Personality theme">{personalityTheme}</code-block>
+
+    <h3>Token Reference</h3>
+    <p>Tokens commonly overridden in themes:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Tokens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Color Hues</td><td><code>--hue-primary</code>, <code>--hue-secondary</code>, <code>--hue-accent</code></td></tr>
+        <tr><td>Brand Colors</td><td><code>--color-primary</code>, <code>--color-secondary</code>, <code>--color-accent</code></td></tr>
+        <tr><td>Surfaces</td><td><code>--color-background</code>, <code>--color-surface</code>, <code>--color-surface-raised</code></td></tr>
+        <tr><td>Border Radius</td><td><code>--radius-s</code>, <code>--radius-m</code>, <code>--radius-l</code></td></tr>
+        <tr><td>Shadows</td><td><code>--shadow-sm</code>, <code>--shadow-md</code>, <code>--shadow-lg</code></td></tr>
+        <tr><td>Typography</td><td><code>--font-sans</code>, <code>--font-serif</code></td></tr>
+        <tr><td>Motion</td><td><code>--duration-normal</code>, <code>--ease-default</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Next Steps -->
+  <section>
+    <h2>Next Steps</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/tokens/" class="section-card">
+        <h3>Tokens</h3>
+        <p>Complete design token reference.</p>
+      </a>
+      <a href="/docs/attributes/" class="section-card">
+        <h3>Attributes</h3>
+        <p>Layout attributes for semantic HTML.</p>
+      </a>
+      <a href="/docs/elements/" class="section-card">
+        <h3>Elements</h3>
+        <p>Browse all styled elements.</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>
