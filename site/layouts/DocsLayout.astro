@@ -6,11 +6,12 @@
  * Outputs clean, semantic HTML using Vanilla Breeze patterns.
  */
 
-// Import styles through Astro bundling
-import '../../src/main.css';
-import '../../docs/docs.css';
+import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+
+// Docs-specific styles (BaseHead imports main.css)
+import '../../docs/docs.css';
 
 interface Props {
   title: string;
@@ -19,21 +20,12 @@ interface Props {
 }
 
 const { title, description, currentSection = 'docs' } = Astro.props;
-const fullTitle = `${title} - Vanilla Breeze`;
 ---
 
 <!DOCTYPE html>
 <html lang="en" data-page="docs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{fullTitle}</title>
-  <meta name="description" content={description} />
-  <script is:inline>
-    const theme = localStorage.getItem('theme') ||
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.dataset.mode = theme;
-  </script>
+  <BaseHead title={title} description={description} />
 </head>
 <body>
   <Header currentSection={currentSection} />
