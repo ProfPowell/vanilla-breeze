@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://profpowell.github.io',
-  base: '/vanilla-breeze',
+  site: 'https://profpowell.github.io/vanilla-breeze',
+  // base: '/vanilla-breeze', // Enable for GitHub Pages deployment
   srcDir: './site',
   outDir: './dist',
 
@@ -10,11 +10,13 @@ export default defineConfig({
     resolve: {
       alias: {
         '@lib': '/src',
-        '@components': '/site/components'
+        '@components': '/site/components',
+        '/src': '/src',
+        '/docs': '/docs'
       }
     },
     server: {
-      fs: { allow: ['./r-n-d', './src', './docs'] }
+      fs: { allow: ['.'] }
     }
   }
 });
