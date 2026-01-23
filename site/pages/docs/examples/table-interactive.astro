@@ -1,0 +1,245 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Table Interactive Examples"
+  description="Enhanced table features with sorting, filtering, pagination, and row selection using the table-wc component."
+  currentSection="examples"
+>
+  <h1>Table Interactive Examples</h1>
+  <p class="lead">Enhanced table features with sorting, filtering, pagination, and row selection using the <code>table-wc</code> component.</p>
+
+  <!-- Full-featured Interactive Demo -->
+  <section class="demo-section">
+    <h2>Full-Featured Interactive Table</h2>
+    <p>This example demonstrates all interactive features: sortable columns, text filtering, pagination, row selection, and bulk actions.</p>
+
+    <!-- Bulk Actions Bar -->
+    <div data-bulk-actions>
+      <span><span data-selected-count>0</span> rows selected</span>
+      <button type="button" class="secondary">
+        <icon-wc name="mail" size="sm"></icon-wc>
+        Email Selected
+      </button>
+      <button type="button" class="secondary">
+        <icon-wc name="download" size="sm"></icon-wc>
+        Export Selected
+      </button>
+      <button type="button" class="danger">
+        <icon-wc name="trash-2" size="sm"></icon-wc>
+        Delete Selected
+      </button>
+    </div>
+
+    <table-wc id="interactive-table">
+      <table data-filterable data-paginate="5">
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" data-action="select-all" aria-label="Select all rows"/>
+            </th>
+            <th data-sort="string">Name</th>
+            <th data-sort="string">Email</th>
+            <th data-sort="string">Department</th>
+            <th data-sort="date">Hired</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Alice Chen</td>
+            <td>alice.chen@company.com</td>
+            <td>Engineering</td>
+            <td data-sort-value="2021-03-15">Mar 15, 2021</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Bob Martinez</td>
+            <td>bob.martinez@company.com</td>
+            <td>Marketing</td>
+            <td data-sort-value="2020-07-22">Jul 22, 2020</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Carol Johnson</td>
+            <td>carol.johnson@company.com</td>
+            <td>Sales</td>
+            <td data-sort-value="2019-11-01">Nov 1, 2019</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>David Kim</td>
+            <td>david.kim@company.com</td>
+            <td>Engineering</td>
+            <td data-sort-value="2022-01-10">Jan 10, 2022</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Emma Wilson</td>
+            <td>emma.wilson@company.com</td>
+            <td>Design</td>
+            <td data-sort-value="2021-09-05">Sep 5, 2021</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Frank Brown</td>
+            <td>frank.brown@company.com</td>
+            <td>Support</td>
+            <td data-sort-value="2020-04-18">Apr 18, 2020</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Grace Lee</td>
+            <td>grace.lee@company.com</td>
+            <td>Engineering</td>
+            <td data-sort-value="2023-02-28">Feb 28, 2023</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Henry Davis</td>
+            <td>henry.davis@company.com</td>
+            <td>Finance</td>
+            <td data-sort-value="2018-06-12">Jun 12, 2018</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Ivy Thomas</td>
+            <td>ivy.thomas@company.com</td>
+            <td>Marketing</td>
+            <td data-sort-value="2022-08-30">Aug 30, 2022</td>
+          </tr>
+          <tr data-selectable>
+            <td><input type="checkbox" data-action="select-row" aria-label="Select row"/></td>
+            <td>Jack White</td>
+            <td>jack.white@company.com</td>
+            <td>Sales</td>
+            <td data-sort-value="2021-12-03">Dec 3, 2021</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wc>
+
+    <!-- Event Log -->
+    <h3>Event Monitor</h3>
+    <p>Events dispatched by the table component:</p>
+    <div id="event-log" class="event-log" aria-live="polite"></div>
+    <button type="button" id="clear-log" class="secondary" style="margin-block-start: var(--size-s);">Clear Log</button>
+  </section>
+
+  <!-- Feature Highlights -->
+  <section class="demo-section">
+    <h2>Features Demonstrated</h2>
+    <dl>
+      <dt><code>data-filterable</code></dt>
+      <dd>Adds a search input that filters rows in real-time. The filter checks all cell content.</dd>
+
+      <dt><code>data-paginate="5"</code></dt>
+      <dd>Limits visible rows to 5 per page with automatic pagination controls.</dd>
+
+      <dt><code>th[data-sort="type"]</code></dt>
+      <dd>Makes columns sortable. Supported types: <code>string</code>, <code>number</code>, <code>date</code>.</dd>
+
+      <dt><code>data-selectable</code> on rows</dt>
+      <dd>Enables row selection with checkboxes. Works with <code>data-action="select-all"</code> and <code>data-action="select-row"</code>.</dd>
+
+      <dt><code>[data-bulk-actions]</code></dt>
+      <dd>Container that appears when rows are selected. Use with <code>[data-selected-count]</code> to show selection count.</dd>
+
+      <dt><code>data-sort-value</code> on cells</dt>
+      <dd>Provides a sortable value different from display text (e.g., ISO date vs. formatted date).</dd>
+    </dl>
+  </section>
+
+</DocsLayout>
+
+<style>
+  .demo-section {
+    margin-block-end: var(--size-2xl);
+  }
+
+  .demo-section h2 {
+    margin-block-end: var(--size-s);
+  }
+
+  .demo-section > p {
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-m);
+  }
+
+  .event-log {
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    padding: var(--size-m);
+    margin-block-start: var(--size-m);
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+  }
+
+  .event-log:empty::before {
+    content: 'No events yet. Interact with the table above.';
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  :global(.event-entry) {
+    padding: var(--size-2xs) 0;
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  :global(.event-entry:last-child) {
+    border-block-end: none;
+  }
+
+  :global(.event-type) {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  :global(.event-data) {
+    color: var(--color-text-muted);
+    margin-inline-start: var(--size-xs);
+  }
+</style>
+
+<script>
+  const tableWc = document.getElementById('interactive-table');
+  const eventLog = document.getElementById('event-log');
+  const clearLogBtn = document.getElementById('clear-log');
+
+  function logEvent(type, detail) {
+    const entry = document.createElement('div');
+    entry.className = 'event-entry';
+
+    const formattedDetail = Object.entries(detail)
+      .filter(([key]) => key !== 'rows' && key !== 'row') // Skip DOM elements
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join(', ');
+
+    entry.innerHTML = `<span class="event-type">${type}</span><span class="event-data">${formattedDetail}</span>`;
+    eventLog.insertBefore(entry, eventLog.firstChild);
+  }
+
+  tableWc.addEventListener('table:sort', (e) => {
+    logEvent('table:sort', (e as CustomEvent).detail);
+  });
+
+  tableWc.addEventListener('table:filter', (e) => {
+    logEvent('table:filter', (e as CustomEvent).detail);
+  });
+
+  tableWc.addEventListener('table:page', (e) => {
+    logEvent('table:page', (e as CustomEvent).detail);
+  });
+
+  tableWc.addEventListener('table:selection', (e) => {
+    logEvent('table:selection', { count: (e as CustomEvent).detail.count });
+  });
+
+  clearLogBtn.addEventListener('click', () => {
+    eventLog.innerHTML = '';
+  });
+</script>
