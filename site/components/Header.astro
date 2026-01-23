@@ -1,0 +1,99 @@
+---
+/**
+ * Header
+ *
+ * Main site header component with navigation, search, and theme toggle.
+ * Reads navigation structure from navigation.json.
+ *
+ * Props:
+ * - currentSection: Which section is active ('home' | 'docs' | 'api' | 'examples' | 'integrations')
+ * - variant: 'full' for dropdowns + mobile menu, 'simple' for basic nav
+ * - showSearch: Show search button (default: true for full variant)
+ * - showTheme: Show theme toggle (default: true)
+ * - showMobileMenu: Show mobile menu toggle (default: true for full variant)
+ */
+
+import MobileMenu from './MobileMenu.astro';
+import navigation from '../data/navigation.json';
+
+interface Props {
+  currentSection?: 'home' | 'docs' | 'api' | 'examples' | 'integrations';
+  variant?: 'full' | 'simple';
+  showSearch?: boolean;
+  showTheme?: boolean;
+  showMobileMenu?: boolean;
+}
+
+const {
+  currentSection,
+  variant = 'full',
+  showSearch = variant === 'full',
+  showTheme = true,
+  showMobileMenu = variant === 'full',
+} = Astro.props;
+
+const { header } = navigation;
+const navItems = header.nav;
+---
+
+<header>
+  <a href={header.logo.href} class="logo">{header.logo.text}</a>
+  <nav class="horizontal pills" aria-label="Main navigation">
+    <ul>
+      {navItems.map((item) => (
+        <li>
+          {item.children ? (
+            <dropdown-wc data-position="bottom-start" data-hover>
+              <a
+                href={item.href}
+                data-trigger
+                aria-current={currentSection === item.section ? 'true' : undefined}
+              >{item.label}</a>
+              <menu>
+                {item.children.map((child) => (
+                  <li><a href={child.href}>{child.label}</a></li>
+                ))}
+              </menu>
+            </dropdown-wc>
+          ) : (
+            <a
+              href={item.href}
+              aria-current={currentSection === item.section ? 'page' : undefined}
+            >{item.label}</a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <div class="header-actions">
+    {showSearch && (
+      <search-wc>
+        <button type="button" data-trigger class="ghost">
+          <icon-wc name="search" size="sm"></icon-wc>
+          Search
+        </button>
+      </search-wc>
+    )}
+    {showTheme && (
+      <theme-wc>
+        <button type="button" data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    )}
+  </div>
+  {showMobileMenu && (
+    <>
+      <button type="button" class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+        <icon-wc name="menu"></icon-wc>
+      </button>
+      <MobileMenu
+        navItems={navItems}
+        currentSection={currentSection}
+        showSearch={showSearch}
+        showTheme={showTheme}
+      />
+    </>
+  )}
+</header>

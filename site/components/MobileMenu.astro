@@ -1,0 +1,85 @@
+---
+/**
+ * MobileMenu
+ *
+ * Mobile navigation menu using HTML5 popover.
+ * Renders navigation items from navigation.json with grouped sections.
+ */
+
+interface NavChild {
+  label: string;
+  href: string;
+}
+
+interface NavItem {
+  label: string;
+  href: string;
+  section?: string;
+  children?: NavChild[];
+}
+
+interface Props {
+  navItems: NavItem[];
+  currentSection?: string;
+  id?: string;
+  showSearch?: boolean;
+  showTheme?: boolean;
+}
+
+const {
+  navItems,
+  currentSection,
+  id = 'mobile-menu',
+  showSearch = true,
+  showTheme = true,
+} = Astro.props;
+---
+
+<nav popover id={id} class="mobile-menu">
+  <button type="button" class="mobile-menu-close" popovertarget={id} popovertargetaction="hide" aria-label="Close menu">
+    <icon-wc name="x"></icon-wc>
+  </button>
+  {showSearch && (
+    <div class="mobile-menu-search">
+      <search-wc>
+        <button type="button" data-trigger class="ghost" style="inline-size: 100%">
+          <icon-wc name="search" size="sm"></icon-wc>
+          Search
+        </button>
+      </search-wc>
+    </div>
+  )}
+  <ul>
+    {navItems.map((item) => (
+      item.children ? (
+        <li class="mobile-section">
+          <strong class="mobile-section-title">{item.label}</strong>
+          <ul>
+            {item.children.map((child) => (
+              <li>
+                <a href={child.href}>{child.label}</a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ) : (
+        <li>
+          <a
+            href={item.href}
+            aria-current={currentSection === item.section ? 'page' : undefined}
+          >{item.label}</a>
+        </li>
+      )
+    ))}
+  </ul>
+  {showTheme && (
+    <div class="mobile-menu-theme">
+      <theme-wc>
+        <button type="button" data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    </div>
+  )}
+</nav>
