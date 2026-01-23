@@ -1,0 +1,418 @@
+---
+/**
+ * Meter Element Documentation
+ *
+ * Displays a scalar measurement within a known range, like a gauge. The meter
+ * automatically changes color based on whether the value is in the optimum,
+ * suboptimum, or poor range.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicMeterCode = `<label>Storage Used</label>
+<meter value="0.7" min="0" max="1">70%</meter>
+
+<label>Battery Level</label>
+<meter value="85" min="0" max="100">85%</meter>`;
+
+const optimumRangeCode = `<!-- High optimum (higher is better, like battery) -->
+<meter value="0.9" min="0" max="1"
+       low="0.3" high="0.7" optimum="0.9">90%</meter>
+
+<!-- Low optimum (lower is better, like disk usage) -->
+<meter value="0.2" min="0" max="1"
+       low="0.3" high="0.7" optimum="0.1">20%</meter>`;
+
+const sizeVariantsCode = `<meter class="xs" value="0.6">60%</meter>
+<meter class="s" value="0.6">60%</meter>
+<meter value="0.6">60%</meter>  <!-- default -->
+<meter class="l" value="0.6">60%</meter>`;
+
+const segmentedMeterCode = `<meter class="segmented" value="0.7">70%</meter>`;
+
+const labeledMeterCode = `<div class="labeled">
+  <label>
+    <span>Storage</span>
+    <span>14.3 GB / 20 GB</span>
+  </label>
+  <meter value="14.3" min="0" max="20">71.5%</meter>
+</div>`;
+
+const cssReferenceCode = `meter {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--size-s);
+  border: none;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-surface-raised);
+}
+
+/* WebKit/Blink meter styling */
+meter::-webkit-meter-bar {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+meter::-webkit-meter-optimum-value {
+  background: oklch(60% 0.18 145); /* green */
+}
+
+meter::-webkit-meter-suboptimum-value {
+  background: oklch(75% 0.18 75); /* yellow */
+}
+
+meter::-webkit-meter-even-less-good-value {
+  background: oklch(55% 0.2 25); /* red */
+}
+
+/* Size variants */
+meter.xs { block-size: var(--size-3xs); }
+meter.s { block-size: var(--size-2xs); }
+meter.m { block-size: var(--size-s); }
+meter.l { block-size: var(--size-m); }
+
+/* Segmented meter */
+meter.segmented {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-surface-raised),
+    var(--color-surface-raised) 9%,
+    var(--color-surface) 9%,
+    var(--color-surface) 10%
+  );
+}`;
+---
+
+<ElementLayout
+  title="meter"
+  description="Displays a scalar measurement within a known range, like a gauge. The meter automatically changes color based on whether the value is in the optimum, suboptimum, or poor range."
+  elementName="meter"
+  category="native"
+  nativeGroup="Forms"
+  currentPath="/docs/elements/native/meter/"
+>
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Displaying disk space usage</li>
+      <li>Password strength indicators</li>
+      <li>Poll results or voting percentages</li>
+      <li>Budget utilization</li>
+      <li>Score or rating displays</li>
+    </ul>
+    <p><strong>Use <a href="/docs/elements/native/progress/">progress</a> instead</strong> for tasks that are in progress (like file uploads or loading states).</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A simple meter showing a value within a range.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>Storage Used</label>
+          <meter value="0.7" min="0" max="1">70%</meter>
+        </form-field>
+        <form-field>
+          <label>Battery Level</label>
+          <meter value="85" min="0" max="100">85%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic meter elements">{basicMeterCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Meter Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>Current value (required)</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>Minimum possible value</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>Maximum possible value</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td><code>low</code></td>
+          <td>Upper bound of low range</td>
+          <td>min</td>
+        </tr>
+        <tr>
+          <td><code>high</code></td>
+          <td>Lower bound of high range</td>
+          <td>max</td>
+        </tr>
+        <tr>
+          <td><code>optimum</code></td>
+          <td>Optimal value (affects color)</td>
+          <td>midpoint</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Optimum Range Behavior</h2>
+    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute.</p>
+
+    <h3>High Optimum (like battery or score)</h3>
+    <p>When <code>optimum</code> is in the high range, low values show red and high values show green.</p>
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>Optimum (high value = good): <strong style="color: oklch(60% 0.18 145);">90%</strong></label>
+          <meter value="0.9" min="0" max="1" low="0.3" high="0.7" optimum="0.9">90%</meter>
+        </form-field>
+        <form-field>
+          <label>Suboptimum (medium value): <strong style="color: oklch(70% 0.15 75);">50%</strong></label>
+          <meter value="0.5" min="0" max="1" low="0.3" high="0.7" optimum="0.9">50%</meter>
+        </form-field>
+        <form-field>
+          <label>Poor (low value = bad): <strong style="color: oklch(55% 0.2 25);">20%</strong></label>
+          <meter value="0.2" min="0" max="1" low="0.3" high="0.7" optimum="0.9">20%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Low Optimum (like disk usage or errors)</h3>
+    <p>When <code>optimum</code> is in the low range, high values show red and low values show green.</p>
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>Optimum (low usage = good): <strong style="color: oklch(60% 0.18 145);">20%</strong></label>
+          <meter value="0.2" min="0" max="1" low="0.3" high="0.7" optimum="0.1">20%</meter>
+        </form-field>
+        <form-field>
+          <label>Suboptimum (medium usage): <strong style="color: oklch(70% 0.15 75);">50%</strong></label>
+          <meter value="0.5" min="0" max="1" low="0.3" high="0.7" optimum="0.1">50%</meter>
+        </form-field>
+        <form-field>
+          <label>Poor (high usage = bad): <strong style="color: oklch(55% 0.2 25);">90%</strong></label>
+          <meter value="0.9" min="0" max="1" low="0.3" high="0.7" optimum="0.1">90%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Optimum range examples">{optimumRangeCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Different heights for various contexts.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>.xs (extra small)</label>
+          <meter class="xs" value="0.6" min="0" max="1">60%</meter>
+        </form-field>
+        <form-field>
+          <label>.s (small)</label>
+          <meter class="s" value="0.6" min="0" max="1">60%</meter>
+        </form-field>
+        <form-field>
+          <label>Default (.m)</label>
+          <meter class="m" value="0.6" min="0" max="1">60%</meter>
+        </form-field>
+        <form-field>
+          <label>.l (large)</label>
+          <meter class="l" value="0.6" min="0" max="1">60%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Meter size variants">{sizeVariantsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Segmented Meter</h2>
+    <p>Visual segmentation for discrete levels.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>Segmented Meter</label>
+          <meter class="segmented" value="0.7" min="0" max="1">70%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Segmented meter">{segmentedMeterCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Labeled Meter</h2>
+    <p>Use the <code>.labeled</code> wrapper pattern for meters with percentage displays.</p>
+
+    <div class="example">
+      <layout-stack data-gap="l" style="max-inline-size: 25rem;">
+        <div class="labeled">
+          <label>
+            <span>Storage</span>
+            <span>14.3 GB / 20 GB</span>
+          </label>
+          <meter value="14.3" min="0" max="20" low="5" high="17" optimum="0">71.5%</meter>
+        </div>
+        <div class="labeled">
+          <label>
+            <span>Password Strength</span>
+            <span>Strong</span>
+          </label>
+          <meter value="0.85" min="0" max="1" low="0.3" high="0.6" optimum="1">85%</meter>
+        </div>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Labeled meter">{labeledMeterCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Output Element</h2>
+    <p>Use <a href="/docs/elements/native/output/">output</a> to display the current value dynamically.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label>CPU Usage: <output id="cpu-output">45%</output></label>
+          <meter id="cpu-meter" value="45" min="0" max="100" low="30" high="80" optimum="20">45%</meter>
+        </form-field>
+      </layout-stack>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Examples</h2>
+
+    <h3>Password Strength</h3>
+    <div class="example">
+      <form style="max-inline-size: 25rem;">
+        <layout-stack data-gap="m">
+          <form-field>
+            <label for="password-strength">Password</label>
+            <input type="password" id="password-strength" placeholder="Enter password" />
+          </form-field>
+          <div class="labeled">
+            <label>
+              <span>Strength</span>
+              <span>Good</span>
+            </label>
+            <meter value="0.65" min="0" max="1" low="0.3" high="0.6" optimum="1">65%</meter>
+          </div>
+        </layout-stack>
+      </form>
+    </div>
+
+    <h3>Budget Usage</h3>
+    <div class="example">
+      <layout-stack data-gap="l" style="max-inline-size: 25rem;">
+        <div class="labeled">
+          <label>
+            <span>Marketing Budget</span>
+            <span>$7,500 / $10,000</span>
+          </label>
+          <meter value="75" min="0" max="100" low="30" high="80" optimum="0">75%</meter>
+        </div>
+        <div class="labeled">
+          <label>
+            <span>Development Budget</span>
+            <span>$45,000 / $50,000</span>
+          </label>
+          <meter value="90" min="0" max="100" low="30" high="80" optimum="0">90%</meter>
+        </div>
+      </layout-stack>
+    </div>
+
+    <h3>Survey Results</h3>
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <div class="labeled">
+          <label>
+            <span>Satisfaction Rate</span>
+            <span>87%</span>
+          </label>
+          <meter value="87" min="0" max="100">87%</meter>
+        </div>
+      </layout-stack>
+    </div>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Include fallback text</strong>: Content between tags is shown if meter is not supported</li>
+      <li><strong>Use labels</strong>: Always associate a label with the meter</li>
+      <li><strong>Provide context</strong>: Include units or percentages in visible text</li>
+      <li><strong>Don't rely on color alone</strong>: Accompany color changes with text indicators</li>
+      <li><strong>Screen reader support</strong>: Meters are announced as "X out of Y"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Meter vs Progress</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Use meter</th>
+          <th>Use progress</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Static measurements</td>
+          <td>Tasks in progress</td>
+        </tr>
+        <tr>
+          <td>Disk space, battery level</td>
+          <td>File uploads, loading</td>
+        </tr>
+        <tr>
+          <td>Has optimum value ranges</td>
+          <td>Has determinate/indeterminate states</td>
+        </tr>
+        <tr>
+          <td>Gauge-like display</td>
+          <td>Progress bar display</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Meter CSS styles">{cssReferenceCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/progress/">progress</a> - For task completion (loading, uploading)</li>
+      <li><a href="/docs/elements/native/output/">output</a> - Display calculated values</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Label for the meter</li>
+    </ul>
+  </section>
+</ElementLayout>

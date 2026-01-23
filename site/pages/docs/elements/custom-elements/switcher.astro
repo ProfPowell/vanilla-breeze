@@ -1,0 +1,292 @@
+---
+/**
+ * layout-switcher Element Documentation
+ *
+ * A flexbox container that automatically switches from horizontal to vertical layout based on available space.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicUsageCode = `<layout-switcher data-gap="m">
+  <div>Item 1</div>
+  <div>Item 2</div>
+</layout-switcher>`;
+
+const thresholdCode = `<!-- Lower threshold - stays horizontal longer -->
+<layout-switcher data-threshold="20rem">
+  <div>Card A</div>
+  <div>Card B</div>
+</layout-switcher>
+
+<!-- Higher threshold - stacks earlier -->
+<layout-switcher data-threshold="40rem">
+  <div>Card A</div>
+  <div>Card B</div>
+</layout-switcher>`;
+
+const limitCode = `<!-- Forces vertical when more than 2 items -->
+<layout-switcher data-gap="m" data-limit="2">
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div> <!-- This causes stack -->
+</layout-switcher>`;
+
+const formActionsCode = `<layout-switcher data-gap="s" data-threshold="25rem">
+  <button type="button" class="secondary">Cancel</button>
+  <button type="submit">Save Changes</button>
+</layout-switcher>`;
+
+const cardHeaderCode = `<layout-card data-variant="outlined" data-padding="m">
+  <layout-switcher data-gap="m" data-threshold="30rem">
+    <layout-stack data-gap="xs">
+      <strong>Project Name</strong>
+      <p>Last updated 2 hours ago</p>
+    </layout-stack>
+    <layout-cluster data-gap="s">
+      <button type="button" class="small secondary">Edit</button>
+      <button type="button" class="small">View</button>
+    </layout-cluster>
+  </layout-switcher>
+</layout-card>`;
+
+const pricingCode = `<layout-switcher data-gap="l" data-threshold="35rem">
+  <layout-card data-variant="outlined" data-padding="l">
+    <layout-stack data-gap="m" data-align="center">
+      <strong>Basic</strong>
+      <span>$9/mo</span>
+      <button type="button" class="secondary">Choose Basic</button>
+    </layout-stack>
+  </layout-card>
+  <layout-card data-variant="elevated" data-padding="l">
+    <layout-stack data-gap="m" data-align="center">
+      <strong>Pro</strong>
+      <span>$29/mo</span>
+      <button type="button">Choose Pro</button>
+    </layout-stack>
+  </layout-card>
+</layout-switcher>`;
+
+const cssImplementation = `layout-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--_gap, var(--size-m));
+}
+
+layout-switcher > * {
+  flex-grow: 1;
+  flex-basis: calc((var(--_threshold, 30rem) - 100%) * 999);
+}
+
+/* Threshold variants */
+layout-switcher[data-threshold="20rem"] { --_threshold: 20rem; }
+layout-switcher[data-threshold="30rem"] { --_threshold: 30rem; }
+layout-switcher[data-threshold="40rem"] { --_threshold: 40rem; }
+
+/* Limit variants */
+layout-switcher[data-limit="2"] > :nth-last-child(n+3),
+layout-switcher[data-limit="2"] > :nth-last-child(n+3) ~ * {
+  flex-basis: 100%;
+}`;
+---
+
+<ElementLayout
+  title="layout-switcher"
+  description="A flexbox container that automatically switches from horizontal to vertical layout based on available space. Ideal for responsive layouts without media queries."
+  elementName="layout-switcher"
+  category="custom"
+  currentPath="/docs/elements/custom-elements/switcher/"
+>
+  <browser-window
+    src="/docs/examples/demos/switcher-basic.html"
+    url="https://vanilla-breeze.dev/switcher"
+    title="Switcher Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-threshold</code></td>
+          <td><code>20rem</code>, <code>25rem</code>, <code>30rem</code>, <code>35rem</code>, <code>40rem</code>, <code>45rem</code></td>
+          <td><code>30rem</code></td>
+          <td>Container width at which layout switches from horizontal to vertical</td>
+        </tr>
+        <tr>
+          <td><code>data-gap</code></td>
+          <td><code>none</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td><code>m</code></td>
+          <td>Gap between items</td>
+        </tr>
+        <tr>
+          <td><code>data-limit</code></td>
+          <td><code>2</code>, <code>3</code>, <code>4</code></td>
+          <td>-</td>
+          <td>Maximum items before forcing vertical layout</td>
+        </tr>
+        <tr>
+          <td><code>data-reverse</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Reverses order when stacked</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>Items display side-by-side when space allows, then stack vertically.</p>
+
+    <div class="example">
+      <layout-switcher data-gap="m">
+        <layout-card data-variant="outlined" data-padding="m">
+          <p style="margin: 0;"><strong>Item 1</strong></p>
+          <p style="margin: 0;">Content that shares space horizontally when there's room.</p>
+        </layout-card>
+        <layout-card data-variant="outlined" data-padding="m">
+          <p style="margin: 0;"><strong>Item 2</strong></p>
+          <p style="margin: 0;">Stacks vertically when the container is narrow.</p>
+        </layout-card>
+      </layout-switcher>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic layout-switcher usage">{basicUsageCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Threshold Variants</h2>
+    <p>The <code>data-threshold</code> attribute controls when the switch happens.</p>
+
+    <h3>Lower Threshold (20rem)</h3>
+    <p>Stays horizontal longer, only stacks on very narrow containers.</p>
+    <div class="example">
+      <layout-switcher data-gap="m" data-threshold="20rem">
+        <layout-card data-variant="outlined" data-padding="s">
+          <p style="margin: 0;">Card A</p>
+        </layout-card>
+        <layout-card data-variant="outlined" data-padding="s">
+          <p style="margin: 0;">Card B</p>
+        </layout-card>
+      </layout-switcher>
+    </div>
+
+    <h3>Higher Threshold (40rem)</h3>
+    <p>Switches to vertical layout earlier, at wider container widths.</p>
+    <div class="example">
+      <layout-switcher data-gap="m" data-threshold="40rem">
+        <layout-card data-variant="outlined" data-padding="s">
+          <p style="margin: 0;">Card A</p>
+        </layout-card>
+        <layout-card data-variant="outlined" data-padding="s">
+          <p style="margin: 0;">Card B</p>
+        </layout-card>
+      </layout-switcher>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Threshold variants">{thresholdCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Item Limit</h2>
+    <p>The <code>data-limit</code> attribute forces vertical layout when there are more items than the limit.</p>
+
+    <h3>Limit of 2</h3>
+    <div class="example">
+      <layout-switcher data-gap="m" data-limit="2">
+        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 1</p></layout-card>
+        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 2</p></layout-card>
+        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 3 (forces stack)</p></layout-card>
+      </layout-switcher>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Item limit forcing vertical layout">{limitCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Form Actions</h3>
+    <div class="example">
+      <layout-switcher data-gap="s" data-threshold="25rem">
+        <button type="button" class="secondary">Cancel</button>
+        <button type="submit">Save Changes</button>
+      </layout-switcher>
+    </div>
+    <code-block language="html" show-lines label="Form action buttons">{formActionsCode}</code-block>
+
+    <h3>Card Header</h3>
+    <div class="example">
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-switcher data-gap="m" data-threshold="30rem">
+          <layout-stack data-gap="xs">
+            <strong>Project Name</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Last updated 2 hours ago</p>
+          </layout-stack>
+          <layout-cluster data-gap="s">
+            <button type="button" class="small secondary">Edit</button>
+            <button type="button" class="small">View</button>
+          </layout-cluster>
+        </layout-switcher>
+      </layout-card>
+    </div>
+    <code-block language="html" show-lines label="Card with header switcher">{cardHeaderCode}</code-block>
+
+    <h3>Feature Comparison</h3>
+    <div class="example">
+      <layout-switcher data-gap="l" data-threshold="35rem">
+        <layout-card data-variant="outlined" data-padding="l">
+          <layout-stack data-gap="m" data-align="center">
+            <strong style="font-size: var(--font-size-lg);">Basic</strong>
+            <p style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">$9/mo</p>
+            <ul style="margin: 0; padding-inline-start: var(--size-l);">
+              <li>5 Projects</li>
+              <li>10GB Storage</li>
+              <li>Email Support</li>
+            </ul>
+            <button type="button" class="secondary">Choose Basic</button>
+          </layout-stack>
+        </layout-card>
+        <layout-card data-variant="elevated" data-padding="l">
+          <layout-stack data-gap="m" data-align="center">
+            <strong style="font-size: var(--font-size-lg);">Pro</strong>
+            <p style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">$29/mo</p>
+            <ul style="margin: 0; padding-inline-start: var(--size-l);">
+              <li>Unlimited Projects</li>
+              <li>100GB Storage</li>
+              <li>Priority Support</li>
+            </ul>
+            <button type="button">Choose Pro</button>
+          </layout-stack>
+        </layout-card>
+      </layout-switcher>
+    </div>
+    <code-block language="html" show-lines label="Pricing comparison cards">{pricingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Implementation</h2>
+    <code-block language="css" show-lines label="layout-switcher CSS implementation">{cssImplementation}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/sidebar/">layout-sidebar</a> - Two-column layout with sidebar</li>
+      <li><a href="/docs/elements/custom-elements/grid/">layout-grid</a> - Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/cluster/">layout-cluster</a> - Horizontal grouping with wrapping</li>
+    </ul>
+  </section>
+</ElementLayout>

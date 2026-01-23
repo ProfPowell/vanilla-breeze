@@ -1,0 +1,214 @@
+---
+/**
+ * HTML Root (<html>) Element Documentation
+ *
+ * The root element of an HTML document, containing all other elements.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicExample = `<!DOCTYPE html>
+<html lang="en">
+  <head>...</head>
+  <body>...</body>
+</html>`;
+
+const docsPageExample = `<html lang="en" data-page="docs">
+  <head>...</head>
+  <body>...</body>
+</html>`;
+
+const pageTypeExample = `<html lang="en" data-page="docs">`;
+
+const darkModeExample = `<html lang="en" data-mode="dark">`;
+
+const oceanThemeExample = `<html lang="en" data-theme="ocean">`;
+
+const combinedExample = `<html lang="en" data-page="docs" data-theme="forest" data-mode="dark">`;
+
+const themeManagerExample = `import { ThemeManager } from './lib/theme-manager.js';
+
+// Initialize on page load (applies saved preferences)
+ThemeManager.init();
+
+// Change mode
+ThemeManager.setMode('dark');    // Force dark
+ThemeManager.setMode('light');   // Force light
+ThemeManager.setMode('auto');    // Follow system
+
+// Change brand theme
+ThemeManager.setBrand('ocean');  // Apply ocean theme
+ThemeManager.setBrand('default'); // Reset to default
+
+// Toggle between light and dark
+ThemeManager.toggleMode();
+
+// Get current state
+const { mode, brand, effectiveMode } = ThemeManager.getState();
+
+// Listen for changes
+window.addEventListener('theme-change', (e) => {
+  console.log(e.detail); // { mode, brand, effectiveMode }
+});`;
+---
+
+<ElementLayout
+  title="html"
+  description="The root element of an HTML document, containing all other elements."
+  elementName="html"
+  category="native"
+  nativeGroup="Document"
+  currentPath="/docs/elements/native/html/"
+>
+  <!-- Description Section -->
+  <section>
+    <h2>Description</h2>
+    <p>The <code>&lt;html&gt;</code> element is the root of an HTML document. In Vanilla Breeze, it serves as the attachment point for theming and page layout configuration via data attributes.</p>
+  </section>
+
+  <!-- Basic Example Section -->
+  <section>
+    <h2>Basic Example</h2>
+    <code-block language="html" label="Minimal html structure">{basicExample}</code-block>
+
+    <h3>Documentation Page</h3>
+    <p>Documentation pages use the <code>data-page="docs"</code> attribute for layout:</p>
+    <code-block language="html" label="Documentation page">{docsPageExample}</code-block>
+  </section>
+
+  <!-- Vanilla Breeze Attributes Section -->
+  <section>
+    <h2>Vanilla Breeze Attributes</h2>
+    <p>Vanilla Breeze uses data attributes on the <code>&lt;html&gt;</code> element to control theming and layout.</p>
+
+    <h3>data-page</h3>
+    <p>Sets the page layout type. Different values apply different structural styles.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>docs</code></td>
+          <td>Documentation layout with sticky header, sidebar navigation, and article structure</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Page type">{pageTypeExample}</code-block>
+
+    <h3>data-mode</h3>
+    <p>Controls light/dark mode. When omitted, mode follows the user's system preference (auto).</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><em>(omitted)</em></td>
+          <td>Auto mode - follows system preference via <code>prefers-color-scheme</code></td>
+        </tr>
+        <tr>
+          <td><code>light</code></td>
+          <td>Force light mode regardless of system preference</td>
+        </tr>
+        <tr>
+          <td><code>dark</code></td>
+          <td>Force dark mode regardless of system preference</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Force dark mode">{darkModeExample}</code-block>
+
+    <h3>data-theme</h3>
+    <p>Sets the brand color theme. When omitted, uses the default purple/blue theme.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><em>(omitted)</em></td>
+          <td>Default theme - purple primary (hue 260)</td>
+        </tr>
+        <tr>
+          <td><code>ocean</code></td>
+          <td>Teal-blue professional palette (hue 200)</td>
+        </tr>
+        <tr>
+          <td><code>forest</code></td>
+          <td>Green nature-inspired palette (hue 145)</td>
+        </tr>
+        <tr>
+          <td><code>sunset</code></td>
+          <td>Warm orange-coral palette (hue 25)</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Ocean theme">{oceanThemeExample}</code-block>
+
+    <h3>Combining Attributes</h3>
+    <p>All data attributes can be combined:</p>
+    <code-block language="html" label="Combined attributes">{combinedExample}</code-block>
+  </section>
+
+  <!-- Theme Manager Section -->
+  <section>
+    <h2>Theme Manager</h2>
+    <p>Vanilla Breeze includes a <code>ThemeManager</code> utility for programmatic theme control with localStorage persistence.</p>
+    <code-block language="javascript" label="Using ThemeManager">{themeManagerExample}</code-block>
+  </section>
+
+  <!-- Standard Attributes Section -->
+  <section>
+    <h2>Standard Attributes</h2>
+    <p>The <code>&lt;html&gt;</code> element supports these standard HTML attributes:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>lang</code></td>
+          <td>Document language (e.g., <code>en</code>, <code>es</code>, <code>fr</code>). Required for accessibility.</td>
+        </tr>
+        <tr>
+          <td><code>dir</code></td>
+          <td>Text direction: <code>ltr</code> (left-to-right) or <code>rtl</code> (right-to-left)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Accessibility Section -->
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Always set <code>lang</code>:</strong> Screen readers use this to select the correct pronunciation</li>
+      <li><strong>Theme considerations:</strong> The <code>data-mode</code> attribute works with <code>color-scheme</code> CSS to ensure proper contrast and respect user preferences</li>
+      <li><strong>Motion preferences:</strong> Vanilla Breeze respects <code>prefers-reduced-motion</code> regardless of theme settings</li>
+    </ul>
+  </section>
+
+  <!-- Related Section -->
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Document metadata container</li>
+      <li><a href="/docs/elements/native/body/"><code>&lt;body&gt;</code></a> - Document content container</li>
+      <li><a href="/docs/elements/web-components/theme-wc/"><code>&lt;theme-wc&gt;</code></a> - Theme picker component</li>
+      <li><a href="/docs/tokens/">Design Tokens</a> - Color, spacing, and typography tokens</li>
+    </ul>
+  </section>
+</ElementLayout>

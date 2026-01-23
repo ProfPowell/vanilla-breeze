@@ -1,0 +1,375 @@
+---
+/**
+ * layout-card Element Documentation
+ *
+ * Container component with background, padding, and visual variants.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const variantCode = `<layout-card>
+  Default card with subtle shadow
+</layout-card>
+
+<layout-card data-variant="elevated">
+  Elevated card with stronger shadow
+</layout-card>
+
+<layout-card data-variant="outlined">
+  Outlined card with border
+</layout-card>
+
+<layout-card data-variant="ghost">
+  Ghost card with no background
+</layout-card>`;
+
+const contentCardCode = `<layout-card>
+  <layout-stack data-gap="m">
+    <div data-media data-ratio="16:9" data-radius="s">
+      <img src="image.jpg" alt="Card image" loading="lazy" />
+    </div>
+    <layout-stack data-gap="xs">
+      <h3>Card Title</h3>
+      <p>Brief description of the card content.</p>
+    </layout-stack>
+    <layout-cluster data-gap="s">
+      <button type="button">Primary</button>
+      <button type="button" class="secondary">Secondary</button>
+    </layout-cluster>
+  </layout-stack>
+</layout-card>`;
+
+const productCardCode = `<layout-card data-variant="outlined">
+  <layout-stack data-gap="m">
+    <div data-media data-ratio="1:1" data-radius="s">
+      <img src="product.jpg" alt="Product image" loading="lazy" />
+    </div>
+    <layout-stack data-gap="xs">
+      <span>Category</span>
+      <strong>Product Name</strong>
+      <span>$49.99</span>
+    </layout-stack>
+    <button type="button">Add to Cart</button>
+  </layout-stack>
+</layout-card>`;
+
+const statCardsCode = `<layout-grid data-min="15rem" data-gap="m">
+  <layout-card data-variant="elevated" data-padding="l">
+    <layout-stack data-gap="xs">
+      <span>Total Revenue</span>
+      <span>$45,231</span>
+      <span>+12.5% from last month</span>
+    </layout-stack>
+  </layout-card>
+</layout-grid>`;
+
+const nestedCardsCode = `<layout-card data-padding="l">
+  <layout-stack data-gap="m">
+    <h3>Outer Card</h3>
+    <p>Nested cards get a raised surface color.</p>
+    <layout-card>
+      <!-- Inner card auto-adjusts background -->
+      <strong>Nested Card</strong>
+    </layout-card>
+  </layout-stack>
+</layout-card>`;
+
+const profileCardCode = `<layout-card data-variant="outlined">
+  <layout-stack data-gap="m" data-align="center">
+    <img src="avatar.jpg" alt="Avatar" />
+    <layout-stack data-gap="xs" data-align="center">
+      <strong>Jane Doe</strong>
+      <span>Product Designer</span>
+    </layout-stack>
+    <layout-cluster data-gap="xs">
+      <span class="tag">UX</span>
+      <span class="tag">UI</span>
+    </layout-cluster>
+  </layout-stack>
+</layout-card>`;
+
+const cssImplementation = `layout-card {
+  display: block;
+  padding: var(--_padding, var(--size-m));
+  background: var(--color-surface);
+  border-radius: var(--radius-l);
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
+
+  &[data-variant="elevated"] {
+    box-shadow:
+      0 4px 6px oklch(0% 0 0 / 0.07),
+      0 2px 4px oklch(0% 0 0 / 0.05);
+  }
+
+  &[data-variant="outlined"] {
+    box-shadow: none;
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+
+  &[data-variant="ghost"] {
+    box-shadow: none;
+    background: transparent;
+  }
+
+  &[data-padding="none"] { --_padding: 0; }
+  &[data-padding="s"]    { --_padding: var(--size-s); }
+  &[data-padding="m"]    { --_padding: var(--size-m); }
+  &[data-padding="l"]    { --_padding: var(--size-l); }
+  &[data-padding="xl"]   { --_padding: var(--size-xl); }
+
+  /* Nested cards get raised background */
+  layout-card {
+    background: var(--color-surface-raised);
+  }
+}`;
+---
+
+<ElementLayout
+  title="layout-card"
+  description="Container component with background, padding, and visual variants. The foundational surface element for grouping content."
+  elementName="layout-card"
+  category="custom"
+  currentPath="/docs/elements/custom-elements/layout-card/"
+>
+  <browser-window
+    src="/docs/examples/demos/layout-card-basic.html"
+    url="https://vanilla-breeze.dev/card"
+    title="Card Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>default</code>, <code>elevated</code>, <code>outlined</code>, <code>ghost</code></td>
+          <td><code>default</code></td>
+          <td>Visual style variant</td>
+        </tr>
+        <tr>
+          <td><code>data-padding</code></td>
+          <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td><code>m</code></td>
+          <td>Internal padding</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Variant Styles</h2>
+    <p>The <code>data-variant</code> attribute controls the visual appearance of the card.</p>
+
+    <layout-grid data-min="15rem" data-gap="l">
+      <div class="example">
+        <p><strong>Default</strong></p>
+        <layout-card>
+          <layout-stack data-gap="s">
+            <strong>Default Card</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Subtle shadow with background color.</p>
+          </layout-stack>
+        </layout-card>
+      </div>
+
+      <div class="example">
+        <p><strong>data-variant="elevated"</strong></p>
+        <layout-card data-variant="elevated">
+          <layout-stack data-gap="s">
+            <strong>Elevated Card</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Stronger shadow for more emphasis.</p>
+          </layout-stack>
+        </layout-card>
+      </div>
+
+      <div class="example">
+        <p><strong>data-variant="outlined"</strong></p>
+        <layout-card data-variant="outlined">
+          <layout-stack data-gap="s">
+            <strong>Outlined Card</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Border instead of shadow.</p>
+          </layout-stack>
+        </layout-card>
+      </div>
+
+      <div class="example">
+        <p><strong>data-variant="ghost"</strong></p>
+        <layout-card data-variant="ghost">
+          <layout-stack data-gap="s">
+            <strong>Ghost Card</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Transparent, no shadow or border.</p>
+          </layout-stack>
+        </layout-card>
+      </div>
+    </layout-grid>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Card variant examples">{variantCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Padding Variants</h2>
+    <p>The <code>data-padding</code> attribute controls the internal spacing.</p>
+
+    <layout-grid data-min="12rem" data-gap="m">
+      <layout-card data-variant="outlined" data-padding="none">
+        <div style="background: var(--color-surface-raised); padding: var(--size-xs);">
+          <code>padding="none"</code>
+        </div>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="s">
+        <code>padding="s"</code>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="m">
+        <code>padding="m"</code> (default)
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="l">
+        <code>padding="l"</code>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="xl">
+        <code>padding="xl"</code>
+      </layout-card>
+    </layout-grid>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Content Card</h3>
+    <div class="example" style="max-inline-size: 25rem;">
+      <layout-card>
+        <layout-stack data-gap="m">
+          <div data-media data-ratio="16:9" data-radius="s">
+            <img src="https://picsum.photos/400/225" alt="Card image" loading="lazy" />
+          </div>
+          <layout-stack data-gap="xs">
+            <h3 style="margin: 0;">Card Title</h3>
+            <p style="margin: 0; color: var(--color-text-muted);">A brief description of the card content that provides context for the user.</p>
+          </layout-stack>
+          <layout-cluster data-gap="s">
+            <button type="button">Primary</button>
+            <button type="button" class="secondary">Secondary</button>
+          </layout-cluster>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <code-block language="html" show-lines label="Content card with image">{contentCardCode}</code-block>
+
+    <h3>Product Card</h3>
+    <div class="example" style="max-inline-size: 20rem;">
+      <layout-card data-variant="outlined">
+        <layout-stack data-gap="m">
+          <div data-media data-ratio="1:1" data-radius="s">
+            <img src="https://picsum.photos/300/300" alt="Product image" loading="lazy" />
+          </div>
+          <layout-stack data-gap="xs">
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Category</span>
+            <strong>Product Name</strong>
+            <span style="font-size: var(--font-size-lg); font-weight: 600;">$49.99</span>
+          </layout-stack>
+          <button type="button" style="inline-size: 100%;">Add to Cart</button>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <code-block language="html" show-lines label="Product card with outlined variant">{productCardCode}</code-block>
+
+    <h3>Stat Cards</h3>
+    <div class="example">
+      <layout-grid data-min="15rem" data-gap="m">
+        <layout-card data-variant="elevated" data-padding="l">
+          <layout-stack data-gap="xs">
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Total Revenue</span>
+            <span style="font-size: var(--font-size-2xl); font-weight: 700;">$45,231</span>
+            <span style="color: var(--color-success); font-size: var(--font-size-sm);">+12.5% from last month</span>
+          </layout-stack>
+        </layout-card>
+        <layout-card data-variant="elevated" data-padding="l">
+          <layout-stack data-gap="xs">
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Active Users</span>
+            <span style="font-size: var(--font-size-2xl); font-weight: 700;">2,345</span>
+            <span style="color: var(--color-success); font-size: var(--font-size-sm);">+8.2% from last month</span>
+          </layout-stack>
+        </layout-card>
+      </layout-grid>
+    </div>
+
+    <code-block language="html" show-lines label="Stat cards with elevated variant">{statCardsCode}</code-block>
+
+    <h3>Nested Cards</h3>
+    <div class="example" style="max-inline-size: 30rem;">
+      <layout-card data-padding="l">
+        <layout-stack data-gap="m">
+          <h3 style="margin: 0;">Outer Card</h3>
+          <p style="margin: 0; color: var(--color-text-muted);">Nested cards automatically get a raised surface color.</p>
+          <layout-card>
+            <layout-stack data-gap="s">
+              <strong>Nested Card</strong>
+              <p style="margin: 0; color: var(--color-text-muted);">This inner card has a distinct background.</p>
+            </layout-stack>
+          </layout-card>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <code-block language="html" show-lines label="Nested cards with auto background">{nestedCardsCode}</code-block>
+
+    <h3>Interactive Card (as link)</h3>
+    <div class="example">
+      <layout-grid data-min="15rem" data-gap="m">
+        <a href="#" class="section-card">
+          <h3>Link Card</h3>
+          <p>Click to navigate</p>
+        </a>
+        <a href="#" class="section-card">
+          <h3>Another Link</h3>
+          <p>Interactive card style</p>
+        </a>
+      </layout-grid>
+    </div>
+
+    <h3>Profile Card</h3>
+    <div class="example" style="max-inline-size: 20rem;">
+      <layout-card data-variant="outlined">
+        <layout-stack data-gap="m" data-align="center">
+          <img src="https://picsum.photos/80/80" alt="Avatar" style="border-radius: var(--radius-full); inline-size: 5rem; block-size: 5rem; object-fit: cover;" loading="lazy" />
+          <layout-stack data-gap="xs" data-align="center">
+            <strong>Jane Doe</strong>
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Product Designer</span>
+          </layout-stack>
+          <layout-cluster data-gap="xs">
+            <span style="padding: var(--size-xs) var(--size-s); background: var(--color-surface-raised); border-radius: var(--radius-full); font-size: var(--font-size-sm);">UX</span>
+            <span style="padding: var(--size-xs) var(--size-s); background: var(--color-surface-raised); border-radius: var(--radius-full); font-size: var(--font-size-sm);">UI</span>
+            <span style="padding: var(--size-xs) var(--size-s); background: var(--color-surface-raised); border-radius: var(--radius-full); font-size: var(--font-size-sm);">Figma</span>
+          </layout-cluster>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <code-block language="html" show-lines label="Profile card with centered content">{profileCardCode}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Implementation</h2>
+    <code-block language="css" show-lines label="layout-card CSS styles">{cssImplementation}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/stack/">layout-stack</a> - Vertical stacking layout</li>
+      <li><a href="/docs/elements/custom-elements/grid/">layout-grid</a> - Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/cluster/">layout-cluster</a> - Horizontal grouping with wrapping</li>
+    </ul>
+  </section>
+</ElementLayout>

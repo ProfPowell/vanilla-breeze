@@ -1,0 +1,103 @@
+---
+/**
+ * Bidirectional Isolate (<bdi>) Element Documentation
+ *
+ * The bdi element isolates text that might be formatted in a different direction.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicBdiCode = `<p>User <bdi>إيان</bdi> posted 3 comments.</p>`;
+
+const leaderboardCode = `<ul>
+  <li><bdi>Alice</bdi>: 15 points</li>
+  <li><bdi>محمد</bdi>: 12 points</li>
+  <li><bdi>Bob</bdi>: 10 points</li>
+  <li><bdi>יעקב</bdi>: 8 points</li>
+</ul>`;
+
+const withoutBdiCode = `<!-- Without bdi - text direction issues -->
+<p>User محمد posted 3 comments.</p>
+
+<!-- With bdi - properly isolated -->
+<p>User <bdi>محمد</bdi> posted 3 comments.</p>`;
+
+const dynamicContentCode = `<p>
+  Latest comment by <bdi class="username"><!-- Dynamic username --></bdi>:
+  <bdi class="comment"><!-- Dynamic comment --></bdi>
+</p>`;
+---
+
+<ElementLayout
+  title="bdi"
+  description="Isolates text that might be formatted in a different direction from surrounding text."
+  elementName="bdi"
+  category="native"
+  nativeGroup="Text Semantics"
+  currentPath="/docs/elements/native/bdi/"
+>
+  <section>
+    <h2>Description</h2>
+    <p>The <code>&lt;bdi&gt;</code> (Bidirectional Isolate) element tells the browser's bidirectional algorithm to treat the text it contains in isolation from its surrounding text. This is particularly useful when embedding user-generated content or other text whose direction is unknown.</p>
+    <p>Without <code>&lt;bdi&gt;</code>, a username in Arabic or Hebrew could cause the surrounding punctuation and text to display incorrectly due to the bidirectional algorithm treating it as part of a right-to-left sequence.</p>
+  </section>
+
+  <section>
+    <h2>Basic Example</h2>
+    <div class="example">
+      <p>User <bdi>إيان</bdi> posted 3 comments.</p>
+    </div>
+    <code-block language="html" label="Basic bdi example">{basicBdiCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Leaderboard with Mixed Names</h2>
+    <p>When displaying a list of usernames that may include different scripts:</p>
+    <div class="example">
+      <ul>
+        <li><bdi>Alice</bdi>: 15 points</li>
+        <li><bdi>محمد</bdi>: 12 points</li>
+        <li><bdi>Bob</bdi>: 10 points</li>
+        <li><bdi>יעקב</bdi>: 8 points</li>
+      </ul>
+    </div>
+    <code-block language="html" label="Leaderboard example">{leaderboardCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Why Use bdi?</h2>
+    <p>The difference becomes clear when RTL text is embedded without isolation:</p>
+    <code-block language="html" label="With vs without bdi">{withoutBdiCode}</code-block>
+    <p>Without <code>&lt;bdi&gt;</code>, the colon and number "3" might appear in unexpected positions when RTL text is present.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Content</h2>
+    <p>Always wrap user-generated content in <code>&lt;bdi&gt;</code> when you don't know the text direction:</p>
+    <div class="example">
+      <p>
+        Latest comment by <bdi class="username">DemoUser</bdi>:
+        <bdi class="comment">This is a sample comment</bdi>
+      </p>
+    </div>
+    <code-block language="html" label="Dynamic content">{dynamicContentCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <p>Note: The <code>dir</code> attribute defaults to <code>auto</code> on <code>&lt;bdi&gt;</code> elements, meaning the direction is determined by the element's content.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p>The <code>&lt;bdi&gt;</code> element has no special accessibility role. It purely affects visual rendering of bidirectional text. Screen readers will read the content in its logical order regardless of visual direction.</p>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> - Forces a specific text direction (overrides bidirectional algorithm)</li>
+    </ul>
+  </section>
+</ElementLayout>

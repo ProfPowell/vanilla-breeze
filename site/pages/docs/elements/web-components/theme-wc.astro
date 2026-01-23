@@ -1,0 +1,312 @@
+---
+/**
+ * theme-wc Web Component Documentation
+ *
+ * Theme selection component for color mode (light/dark/auto) and brand themes.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicUsageCode = `<theme-picker>
+  <button data-trigger>
+    <icon-wc name="palette"></icon-wc>
+    Theme
+  </button>
+</theme-picker>`;
+
+const inlineVariantCode = `<theme-picker data-variant="inline"></theme-picker>`;
+
+const textTriggerCode = `<theme-picker>
+  <button data-trigger>Theme</button>
+</theme-picker>`;
+
+const iconOnlyTriggerCode = `<theme-picker>
+  <button data-trigger aria-label="Theme settings">
+    <icon-wc name="palette"></icon-wc>
+  </button>
+</theme-picker>`;
+
+const ghostButtonCode = `<theme-picker>
+  <button data-trigger class="ghost">
+    <icon-wc name="palette" size="sm"></icon-wc>
+    Theme
+  </button>
+</theme-picker>`;
+
+const themeManagerCode = `import { ThemeManager } from './lib/theme-manager.js';
+
+// Initialize (called automatically in main.js)
+ThemeManager.init();
+
+// Get current state
+const { mode, brand, effectiveMode } = ThemeManager.getState();
+
+// Set color mode: 'auto', 'light', or 'dark'
+ThemeManager.setMode('dark');
+
+// Set brand theme: 'default', 'ocean', 'forest', 'sunset'
+ThemeManager.setBrand('ocean');
+
+// Toggle between light and dark
+ThemeManager.toggleMode();
+
+// Reset to defaults
+ThemeManager.reset();
+
+// Listen for changes
+window.addEventListener('theme-change', (e) => {
+  console.log(e.detail); // { mode, brand, effectiveMode }
+});`;
+
+const copyTemplateCode = `# Copy the template
+cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css`;
+
+const customHueCode = `:root[data-theme="coral"],
+[data-theme="coral"] {
+  --hue-primary: 15;    /* coral orange */
+  --hue-secondary: 350; /* pink */
+  --hue-accent: 180;    /* teal contrast */
+
+  /* Colors are auto-calculated from hues */
+  --color-primary: oklch(50% 0.15 var(--hue-primary));
+  /* ... */
+}`;
+
+const registerThemeCode = `@import "./_brand-coral.css";`;
+
+const foucPreventionCode = `<script>
+  try {
+    const t = JSON.parse(localStorage.getItem('vb-theme') || '{}');
+    if (t.mode && t.mode !== 'auto') document.documentElement.dataset.mode = t.mode;
+    if (t.brand && t.brand !== 'default') document.documentElement.dataset.theme = t.brand;
+  } catch {}
+</script>`;
+---
+
+<ElementLayout
+  title="theme-wc"
+  description="Theme selection component for color mode (light/dark/auto) and brand themes."
+  elementName="theme-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/theme-wc/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;theme-picker&gt;</code> component provides a UI for users to select their preferred color mode and brand theme. It integrates with <code>ThemeManager</code> for persistence and system preference detection.</p>
+
+    <browser-window
+      src="/docs/examples/demos/theme-wc-popover.html"
+      url="https://vanilla-breeze.dev/theme-picker"
+      title="Theme Picker"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic theme picker with trigger button">{basicUsageCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Inline Variant</h2>
+    <p>For settings pages, use the inline variant which is always visible:</p>
+
+    <browser-window
+      src="/docs/examples/demos/theme-wc-inline.html"
+      url="https://vanilla-breeze.dev/settings"
+      title="Settings Page"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Inline variant for settings pages">{inlineVariantCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Trigger Variants</h2>
+
+    <h3>Text Button</h3>
+    <p>Simple text trigger:</p>
+    <code-block language="html" show-lines label="Text-only trigger">{textTriggerCode}</code-block>
+
+    <h3>Icon-Only Button</h3>
+    <p>For compact layouts, use an icon-only trigger with an accessible label:</p>
+    <code-block language="html" show-lines label="Icon-only trigger with aria-label">{iconOnlyTriggerCode}</code-block>
+
+    <h3>Custom Styling</h3>
+    <p>Apply button variant classes to match your design:</p>
+    <code-block language="html" show-lines label="Ghost button variant">{ghostButtonCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>popover</code>, <code>inline</code></td>
+          <td><code>popover</code></td>
+          <td>Display mode - popover with trigger or always visible</td>
+        </tr>
+        <tr>
+          <td><code>data-open</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Reflected attribute indicating open state (popover only)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>ThemeManager API</h2>
+    <p>For programmatic theme control, use the <code>ThemeManager</code> module:</p>
+
+    <code-block language="javascript" show-lines label="ThemeManager API usage">{themeManagerCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Available Themes</h2>
+
+    <h3>Color Modes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>auto</code></td>
+          <td>Follows system preference (prefers-color-scheme)</td>
+        </tr>
+        <tr>
+          <td><code>light</code></td>
+          <td>Forces light mode</td>
+        </tr>
+        <tr>
+          <td><code>dark</code></td>
+          <td>Forces dark mode</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Brand Themes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Theme</th>
+          <th>Primary Hue</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>default</code></td>
+          <td>260 (purple)</td>
+          <td>Default brand colors</td>
+        </tr>
+        <tr>
+          <td><code>ocean</code></td>
+          <td>200 (teal)</td>
+          <td>Cool blue-green palette</td>
+        </tr>
+        <tr>
+          <td><code>forest</code></td>
+          <td>145 (green)</td>
+          <td>Natural earthy greens</td>
+        </tr>
+        <tr>
+          <td><code>sunset</code></td>
+          <td>25 (orange)</td>
+          <td>Warm orange-red palette</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Creating Custom Themes</h2>
+    <p>Create new brand themes by copying the template:</p>
+
+    <code-block language="bash" show-lines label="Copy the theme template">{copyTemplateCode}</code-block>
+
+    <p>Edit the hue values (0-360):</p>
+    <code-block language="css" show-lines label="Define custom hue values">{customHueCode}</code-block>
+
+    <p>Register in <code>src/tokens/themes/index.css</code>:</p>
+    <code-block language="css" show-lines label="Register in themes/index.css">{registerThemeCode}</code-block>
+
+    <h3>Hue Reference</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Hue Range</th>
+          <th>Colors</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0-30</td><td>Red / Orange</td></tr>
+        <tr><td>30-60</td><td>Orange / Yellow</td></tr>
+        <tr><td>60-120</td><td>Yellow / Green</td></tr>
+        <tr><td>120-180</td><td>Green / Cyan</td></tr>
+        <tr><td>180-240</td><td>Cyan / Blue</td></tr>
+        <tr><td>240-300</td><td>Blue / Purple</td></tr>
+        <tr><td>300-360</td><td>Purple / Red</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Preventing FOUC</h2>
+    <p>To prevent a flash of unstyled content, add this inline script to your HTML <code>&lt;head&gt;</code>:</p>
+
+    <code-block language="html" show-lines label="Inline script for FOUC prevention">{foucPreventionCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>theme-wc-open</code></td>
+          <td>-</td>
+          <td>Fired when popover opens</td>
+        </tr>
+        <tr>
+          <td><code>theme-wc-close</code></td>
+          <td>-</td>
+          <td>Fired when popover closes</td>
+        </tr>
+        <tr>
+          <td><code>theme-change</code></td>
+          <td><code>{'{ mode, brand, effectiveMode }'}</code></td>
+          <td>Fired on window when theme changes</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Popover uses <code>role="dialog"</code> with <code>aria-label</code></li>
+      <li>Radio groups use proper <code>role="radiogroup"</code></li>
+      <li>Trigger button announces expanded state via <code>aria-expanded</code></li>
+      <li>Escape key closes the popover</li>
+      <li>Focus is trapped within popover when open</li>
+    </ul>
+  </section>
+</ElementLayout>

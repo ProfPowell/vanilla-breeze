@@ -1,0 +1,276 @@
+---
+/**
+ * layout-imposter Element Documentation
+ *
+ * A positioning helper for overlays, modals, and fixed UI elements.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicCode = `<div style="position: relative; height: 200px;">
+  <layout-imposter>
+    <div>Centered content</div>
+  </layout-imposter>
+</div>`;
+
+const edgePositionsCode = `<layout-imposter data-position="top" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="bottom" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="start" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="end" data-margin="s">...</layout-imposter>`;
+
+const cornerPositionsCode = `<layout-imposter data-position="top-start" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="top-end" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="bottom-start" data-margin="s">...</layout-imposter>
+<layout-imposter data-position="bottom-end" data-margin="s">...</layout-imposter>`;
+
+const notificationBadgeCode = `<div style="position: relative; display: inline-block;">
+  <button type="button">Notifications</button>
+  <layout-imposter data-position="top-end">
+    <span class="badge">3</span>
+  </layout-imposter>
+</div>`;
+
+const imageOverlayCode = `<div style="position: relative;">
+  <img src="image.jpg" alt="Photo" />
+  <layout-imposter data-position="bottom-start" data-margin="m">
+    <span class="caption">Photo caption</span>
+  </layout-imposter>
+</div>`;
+
+const cardStatusCode = `<div style="position: relative;">
+  <layout-card data-variant="outlined" data-padding="l">
+    <strong>Project Alpha</strong>
+    <p>Last updated yesterday</p>
+  </layout-card>
+  <layout-imposter data-position="top-end" data-margin="m">
+    <span class="status-badge">Active</span>
+  </layout-imposter>
+</div>`;
+
+const cssImplementation = `layout-imposter {
+  position: var(--_position, absolute);
+  inset-block-start: var(--_inset-block, 50%);
+  inset-inline-start: var(--_inset-inline, 50%);
+  translate: var(--_translate, -50% -50%);
+}
+
+/* Fixed positioning */
+layout-imposter[data-fixed] {
+  --_position: fixed;
+}
+
+/* Position presets */
+layout-imposter[data-position="top"] {
+  --_inset-block: var(--_margin, 0);
+  --_inset-inline: 50%;
+  --_translate: -50% 0;
+}
+
+layout-imposter[data-position="bottom-end"] {
+  --_inset-block: auto;
+  inset-block-end: var(--_margin, 0);
+  --_inset-inline: auto;
+  inset-inline-end: var(--_margin, 0);
+  --_translate: 0 0;
+}
+
+/* Contain within viewport */
+layout-imposter[data-contain] {
+  max-inline-size: calc(100dvw - var(--_margin, 0) * 2);
+  max-block-size: calc(100dvh - var(--_margin, 0) * 2);
+  overflow: auto;
+}`;
+---
+
+<ElementLayout
+  title="layout-imposter"
+  description="A positioning helper for overlays, modals, and fixed UI elements. Uses CSS transforms for centering without requiring JavaScript calculations."
+  elementName="layout-imposter"
+  category="custom"
+  currentPath="/docs/elements/custom-elements/imposter/"
+>
+  <browser-window
+    src="/docs/examples/demos/imposter-basic.html"
+    url="https://vanilla-breeze.dev/imposter"
+    title="Imposter Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position</code></td>
+          <td><code>center</code>, <code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>, <code>top-start</code>, <code>top-end</code>, <code>bottom-start</code>, <code>bottom-end</code></td>
+          <td><code>center</code></td>
+          <td>Where to position the element within its container</td>
+        </tr>
+        <tr>
+          <td><code>data-fixed</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Uses fixed positioning instead of absolute</td>
+        </tr>
+        <tr>
+          <td><code>data-margin</code></td>
+          <td><code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td>-</td>
+          <td>Margin from edges when not centered</td>
+        </tr>
+        <tr>
+          <td><code>data-contain</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Constrains size to viewport with overflow scroll</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>The imposter positions itself within a positioned ancestor (or viewport when fixed).</p>
+
+    <div class="example">
+      <div style="position: relative; block-size: 200px; background: var(--color-surface-alt); border-radius: var(--radius-m);">
+        <layout-imposter>
+          <layout-card data-variant="elevated" data-padding="m">
+            <p style="margin: 0;">Centered content</p>
+          </layout-card>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic centered imposter">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Position Variants</h2>
+    <p>The <code>data-position</code> attribute controls placement within the container.</p>
+
+    <h3>Edge Positions</h3>
+    <div class="example">
+      <div style="position: relative; block-size: 150px; background: var(--color-surface-alt); border-radius: var(--radius-m);">
+        <layout-imposter data-position="top" data-margin="s">
+          <span style="background: var(--color-primary); color: var(--color-on-primary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Top</span>
+        </layout-imposter>
+        <layout-imposter data-position="bottom" data-margin="s">
+          <span style="background: var(--color-primary); color: var(--color-on-primary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Bottom</span>
+        </layout-imposter>
+        <layout-imposter data-position="start" data-margin="s">
+          <span style="background: var(--color-primary); color: var(--color-on-primary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Start</span>
+        </layout-imposter>
+        <layout-imposter data-position="end" data-margin="s">
+          <span style="background: var(--color-primary); color: var(--color-on-primary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">End</span>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Edge positions">{edgePositionsCode}</code-block>
+
+    <h3>Corner Positions</h3>
+    <div class="example">
+      <div style="position: relative; block-size: 150px; background: var(--color-surface-alt); border-radius: var(--radius-m);">
+        <layout-imposter data-position="top-start" data-margin="s">
+          <span style="background: var(--color-secondary); color: var(--color-on-secondary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Top Start</span>
+        </layout-imposter>
+        <layout-imposter data-position="top-end" data-margin="s">
+          <span style="background: var(--color-secondary); color: var(--color-on-secondary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Top End</span>
+        </layout-imposter>
+        <layout-imposter data-position="bottom-start" data-margin="s">
+          <span style="background: var(--color-secondary); color: var(--color-on-secondary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Bottom Start</span>
+        </layout-imposter>
+        <layout-imposter data-position="bottom-end" data-margin="s">
+          <span style="background: var(--color-secondary); color: var(--color-on-secondary); padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Bottom End</span>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Corner positions">{cornerPositionsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Notification Badge</h3>
+    <div class="example">
+      <div style="position: relative; display: inline-block;">
+        <button type="button">
+          Notifications
+        </button>
+        <layout-imposter data-position="top-end">
+          <span style="background: var(--color-danger); color: white; font-size: var(--font-size-xs); padding: 0.125rem 0.375rem; border-radius: var(--radius-full); font-weight: 600; translate: 50% -50%;">3</span>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Button with notification badge">{notificationBadgeCode}</code-block>
+
+    <h3>Image Overlay</h3>
+    <div class="example">
+      <div style="position: relative; display: inline-block;">
+        <div data-media data-ratio="16:9" style="inline-size: 300px;">
+          <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); inline-size: 100%; block-size: 100%;"></div>
+        </div>
+        <layout-imposter data-position="bottom-start" data-margin="m">
+          <span style="background: oklch(0% 0 0 / 0.7); color: white; padding: var(--size-xs) var(--size-s); border-radius: var(--radius-s); font-size: var(--font-size-sm);">Photo caption</span>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Image with overlay caption">{imageOverlayCode}</code-block>
+
+    <h3>Card with Status Badge</h3>
+    <div class="example">
+      <div style="position: relative; display: inline-block;">
+        <layout-card data-variant="outlined" data-padding="l" style="inline-size: 250px;">
+          <layout-stack data-gap="s">
+            <strong>Project Alpha</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">Last updated yesterday</p>
+          </layout-stack>
+        </layout-card>
+        <layout-imposter data-position="top-end" data-margin="m">
+          <span style="background: var(--color-success); color: white; padding: var(--size-2xs) var(--size-xs); border-radius: var(--radius-s); font-size: var(--font-size-xs); font-weight: 600;">Active</span>
+        </layout-imposter>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Card with positioned status badge">{cardStatusCode}</code-block>
+
+    <h3>Loading Overlay</h3>
+    <div class="example">
+      <div style="position: relative; block-size: 150px; background: var(--color-surface-alt); border-radius: var(--radius-m);">
+        <layout-imposter data-contain>
+          <layout-stack data-gap="s" data-align="center">
+            <div style="inline-size: 2rem; block-size: 2rem; border: 3px solid var(--color-border); border-block-start-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Loading...</span>
+          </layout-stack>
+        </layout-imposter>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>CSS Implementation</h2>
+    <code-block language="css" show-lines label="layout-imposter CSS implementation">{cssImplementation}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/cover/">layout-cover</a> - Full-height vertically centered layout</li>
+      <li><a href="/docs/elements/custom-elements/center/">layout-center</a> - Horizontally centered container</li>
+      <li><a href="/docs/elements/custom-elements/layout-badge/">layout-badge</a> - Badge component</li>
+    </ul>
+  </section>
+</ElementLayout>

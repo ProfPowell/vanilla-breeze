@@ -1,0 +1,298 @@
+---
+/**
+ * Summary Element Documentation
+ *
+ * The clickable heading for a <details> disclosure widget.
+ * Provides the visible label that toggles the expanded content.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicSummaryCode = `<details>
+  <summary>Click this summary</summary>
+  <p>The summary element acts as the trigger for the details content.</p>
+</details>`;
+
+const emphasisSummaryCode = `<details>
+  <summary><strong>Important:</strong> Read this carefully</summary>
+  <p>This content is marked as important.</p>
+</details>`;
+
+const summaryStylingCode = `summary {
+  padding: var(--size-s) var(--size-m);
+  cursor: pointer;
+  font-weight: 500;
+
+  /* Hide default list marker */
+  list-style: none;
+
+  /* Flexbox for alignment */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-s);
+
+  /* Touch-friendly minimum height */
+  min-block-size: var(--size-touch-min);
+
+  /* Custom chevron indicator */
+  &::after {
+    content: "";
+    inline-size: 0.5em;
+    block-size: 0.5em;
+    border-inline-end: var(--border-width-medium) solid currentColor;
+    border-block-end: var(--border-width-medium) solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform var(--duration-fast) var(--ease-default);
+    flex-shrink: 0;
+  }
+
+  /* Hide WebKit default marker */
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Focus state */
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: calc(var(--border-width-medium) * -1);
+  }
+}
+
+/* Rotate chevron when open */
+details[open] > summary::after {
+  transform: rotate(45deg);
+}`;
+
+const antiPatternsCode = `<!-- Bad: Interactive element inside summary -->
+<details>
+  <summary>
+    Settings
+    <button>Reset</button>  <!-- Don't do this -->
+  </summary>
+  ...
+</details>
+
+<!-- Bad: Summary not first child -->
+<details>
+  <p>Some text</p>  <!-- Summary must come first -->
+  <summary>Label</summary>
+  ...
+</details>`;
+---
+
+<ElementLayout
+  title="summary"
+  description="The clickable heading for a details disclosure widget. Provides the visible label that toggles the expanded content."
+  elementName="summary"
+  category="native"
+  nativeGroup="Interactive"
+  currentPath="/docs/elements/native/summary/"
+>
+  <section>
+    <h2>Description</h2>
+    <p>The <code>&lt;summary&gt;</code> element must be the first child of a <code>&lt;details&gt;</code> element. It acts as the disclosure button that users click or tap to expand or collapse the details content.</p>
+
+    <p>Browsers render <code>&lt;summary&gt;</code> with a disclosure triangle (marker) by default. Vanilla Breeze replaces this with a custom chevron indicator for better visual consistency.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Inside details:</strong> Always pair with <code>&lt;details&gt;</code> as its first child</li>
+      <li><strong>Descriptive labels:</strong> Provide clear, concise labels that describe what will be revealed</li>
+      <li><strong>Question text:</strong> FAQ patterns with questions as summary content</li>
+      <li><strong>Section headings:</strong> For collapsible content sections</li>
+    </ul>
+
+    <h3>Important</h3>
+    <p>The <code>&lt;summary&gt;</code> element is only valid as the first child of a <code>&lt;details&gt;</code> element. Using it elsewhere has no special behavior or semantics.</p>
+  </section>
+
+  <section>
+    <h2>Basic Example</h2>
+    <div class="example">
+      <details>
+        <summary>Click this summary</summary>
+        <p>The summary element acts as the trigger for the details content.</p>
+      </details>
+    </div>
+
+    <code-block language="html" show-lines label="Basic details with summary">{basicSummaryCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Customization</h2>
+
+    <h3>Text-Only Summary</h3>
+    <div class="example">
+      <details>
+        <summary>Simple text summary</summary>
+        <p>Most summaries contain just text, which is styled with medium font weight.</p>
+      </details>
+    </div>
+
+    <h3>Summary with Inline Elements</h3>
+    <p>You can include inline elements like icons, badges, or emphasis within the summary.</p>
+    <div class="example">
+      <details>
+        <summary><strong>Important:</strong> Read this carefully</summary>
+        <p>This content is marked as important using a strong element in the summary.</p>
+      </details>
+    </div>
+
+    <code-block language="html" show-lines label="Summary with inline emphasis">{emphasisSummaryCode}</code-block>
+
+    <h3>Summary with Icons</h3>
+    <div class="example">
+      <details>
+        <summary>
+          <span style="display: flex; align-items: center; gap: var(--size-xs);">
+            <svg class="s currentcolor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            Help and Information
+          </span>
+        </summary>
+        <p>Icons can provide visual cues about the content type.</p>
+      </details>
+    </div>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The summary element receives careful styling to ensure touch-friendly sizing and clear visual feedback.</p>
+
+    <h3>CSS Implementation</h3>
+    <code-block language="css" show-lines label="Summary element CSS styles">{summaryStylingCode}</code-block>
+
+    <h3>Key Styling Features</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Implementation</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Custom marker</td>
+          <td><code>::after</code> pseudo-element</td>
+          <td>Consistent chevron across browsers</td>
+        </tr>
+        <tr>
+          <td>Touch target</td>
+          <td><code>min-block-size: var(--size-touch-min)</code></td>
+          <td>44px minimum for accessibility</td>
+        </tr>
+        <tr>
+          <td>Focus ring</td>
+          <td><code>:focus-visible</code></td>
+          <td>Keyboard navigation visibility</td>
+        </tr>
+        <tr>
+          <td>Animation</td>
+          <td><code>transition</code> on chevron</td>
+          <td>Smooth open/close indicator</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Layout Patterns</h2>
+
+    <h3>Default Layout</h3>
+    <p>The summary uses flexbox with <code>space-between</code> to position the text and chevron.</p>
+    <div class="example">
+      <details>
+        <summary>Text on left, chevron on right</summary>
+        <p>The default layout with justified content.</p>
+      </details>
+    </div>
+
+    <h3>Multi-line Summary</h3>
+    <p>Long summary text wraps naturally while the chevron remains aligned.</p>
+    <div class="example" style="max-inline-size: 300px;">
+      <details>
+        <summary>This is a longer summary text that will wrap to multiple lines on smaller screens</summary>
+        <p>The chevron indicator stays aligned even with wrapping text.</p>
+      </details>
+    </div>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Built-in Behavior</h3>
+    <ul>
+      <li>Acts as an implicit button - no <code>role="button"</code> needed</li>
+      <li>Keyboard accessible with Enter and Space keys</li>
+      <li>Screen readers announce expanded/collapsed state</li>
+      <li>Focus indicator provided via <code>:focus-visible</code></li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li><strong>Descriptive text:</strong> Write clear summaries that explain what content will be revealed</li>
+      <li><strong>Avoid interactive children:</strong> Don't nest buttons, links, or other interactive elements inside summary</li>
+      <li><strong>Single summary:</strong> Only one summary per details element</li>
+      <li><strong>First child:</strong> Summary must be the first child of details</li>
+    </ul>
+
+    <h3>What to Avoid</h3>
+    <code-block language="html" show-lines label="Anti-patterns to avoid">{antiPatternsCode}</code-block>
+
+    <h3>Keyboard Support</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus to/from the summary element</td>
+        </tr>
+        <tr>
+          <td><kbd>Enter</kbd></td>
+          <td>Toggle the details open/closed</td>
+        </tr>
+        <tr>
+          <td><kbd>Space</kbd></td>
+          <td>Toggle the details open/closed</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Screen Reader Announcements</h2>
+    <p>When focused, screen readers will announce:</p>
+    <ul>
+      <li>The summary text content</li>
+      <li>That it's a disclosure control (button)</li>
+      <li>Whether it's currently expanded or collapsed</li>
+    </ul>
+
+    <p>Example announcement: "Click this summary, button, collapsed" or "Click this summary, button, expanded"</p>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> - The parent disclosure widget (required)</li>
+      <li><a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a> - Enhanced accordion with keyboard navigation between panels</li>
+      <li><a href="/docs/elements/native/interactive/">Interactive Elements</a> - Overview of all interactive native elements</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Browser Support</h2>
+    <p>The <code>&lt;summary&gt;</code> element is supported in all modern browsers. The <code>::marker</code> pseudo-element has varying support, which is why Vanilla Breeze uses <code>::after</code> for the custom chevron indicator.</p>
+  </section>
+</ElementLayout>

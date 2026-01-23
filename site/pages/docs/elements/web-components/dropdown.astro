@@ -1,0 +1,246 @@
+---
+/**
+ * dropdown-wc Web Component Documentation
+ *
+ * Accessible dropdown menus with keyboard navigation,
+ * focus management, and automatic positioning.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const basicUsageCode = `<dropdown-wc>
+  <button data-trigger>Options</button>
+  <menu>
+    <li><button>Edit</button></li>
+    <li><button>Duplicate</button></li>
+    <li><button>Share</button></li>
+    <li role="separator"></li>
+    <li><button class="danger">Delete</button></li>
+  </menu>
+</dropdown-wc>`;
+
+const positionCode = `<dropdown-wc data-position="bottom-end">
+  <button data-trigger>Bottom End</button>
+  <menu>...</menu>
+</dropdown-wc>`;
+
+const destructiveCode = `<li><button class="danger">Delete permanently</button></li>`;
+
+const jsApiCode = `const dropdown = document.querySelector('dropdown-wc');
+
+// Methods
+dropdown.open();      // Open the menu
+dropdown.close();     // Close the menu
+dropdown.toggle();    // Toggle open/closed
+
+// Properties
+dropdown.isOpen;      // Boolean: current state
+
+// Events
+dropdown.addEventListener('dropdown-open', () => {
+  console.log('Menu opened');
+});
+
+dropdown.addEventListener('dropdown-close', () => {
+  console.log('Menu closed');
+});`;
+---
+
+<ElementLayout
+  title="dropdown-wc"
+  description="Accessible dropdown menus with keyboard navigation, focus management, and automatic positioning."
+  elementName="dropdown-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/dropdown/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;dropdown-wc&gt;</code> component provides an accessible dropdown menu. It handles all keyboard interactions (arrow keys, Escape, Enter), click-outside-to-close, and proper ARIA attributes.</p>
+
+    <browser-window
+      src="/docs/examples/demos/dropdown-basic.html"
+      url="https://vanilla-breeze.dev/dropdown"
+      title="Dropdown Menu"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic dropdown menu structure">{basicUsageCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position</code></td>
+          <td><code>bottom-start</code>, <code>bottom-end</code>, <code>top-start</code>, <code>top-end</code></td>
+          <td><code>bottom-start</code></td>
+          <td>Menu position relative to trigger</td>
+        </tr>
+        <tr>
+          <td><code>data-open</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Reflected attribute indicating open state</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <p>Full keyboard support following WAI-ARIA menu pattern:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Open menu (on trigger) or activate item (in menu)</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowDown</kbd></td>
+          <td>Open menu and focus first item, or move to next item</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowUp</kbd></td>
+          <td>Open menu and focus last item, or move to previous item</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd></td>
+          <td>Focus first menu item</td>
+        </tr>
+        <tr>
+          <td><kbd>End</kbd></td>
+          <td>Focus last menu item</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close menu and return focus to trigger</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Close menu and move focus to next element</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Position Variants</h2>
+    <p>Control menu alignment with the <code>data-position</code> attribute.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <dropdown-wc data-position="bottom-start">
+          <button data-trigger>Bottom Start</button>
+          <menu>
+            <li><button>Option 1</button></li>
+            <li><button>Option 2</button></li>
+          </menu>
+        </dropdown-wc>
+
+        <dropdown-wc data-position="bottom-end">
+          <button data-trigger>Bottom End</button>
+          <menu>
+            <li><button>Option 1</button></li>
+            <li><button>Option 2</button></li>
+          </menu>
+        </dropdown-wc>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Dropdown with position attribute">{positionCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Menu with Separators</h2>
+    <p>Use <code>role="separator"</code> on empty list items to create visual dividers.</p>
+
+    <div class="example">
+      <dropdown-wc>
+        <button data-trigger>File</button>
+        <menu>
+          <li><button>New</button></li>
+          <li><button>Open</button></li>
+          <li><button>Save</button></li>
+          <li role="separator"></li>
+          <li><button>Export</button></li>
+          <li><button>Print</button></li>
+          <li role="separator"></li>
+          <li><button class="danger">Close</button></li>
+        </menu>
+      </dropdown-wc>
+    </div>
+  </section>
+
+  <section>
+    <h2>Destructive Actions</h2>
+    <p>Add the <code>danger</code> class to highlight destructive actions.</p>
+
+    <div class="example">
+      <dropdown-wc>
+        <button data-trigger class="secondary">Manage</button>
+        <menu>
+          <li><button>Edit</button></li>
+          <li><button>Archive</button></li>
+          <li role="separator"></li>
+          <li><button class="danger">Delete permanently</button></li>
+        </menu>
+      </dropdown-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Destructive action button">{destructiveCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Links</h2>
+    <p>Menu items can be links instead of buttons for navigation.</p>
+
+    <div class="example">
+      <dropdown-wc>
+        <button data-trigger>Account</button>
+        <menu>
+          <li><a href="#profile">Profile</a></li>
+          <li><a href="#settings">Settings</a></li>
+          <li><a href="#billing">Billing</a></li>
+          <li role="separator"></li>
+          <li><a href="#logout">Sign out</a></li>
+        </menu>
+      </dropdown-wc>
+    </div>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>Control the dropdown programmatically:</p>
+
+    <code-block language="javascript" show-lines label="Dropdown JavaScript API">{jsApiCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Trigger has <code>aria-haspopup="menu"</code> and <code>aria-expanded</code></li>
+      <li>Menu has <code>role="menu"</code></li>
+      <li>Menu items have <code>role="menuitem"</code></li>
+      <li>Separators have <code>role="separator"</code></li>
+      <li>Full keyboard navigation per WAI-ARIA menu pattern</li>
+      <li>Focus returns to trigger on close</li>
+      <li>Click outside or Escape closes menu</li>
+    </ul>
+  </section>
+</ElementLayout>
