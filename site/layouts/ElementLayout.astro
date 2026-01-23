@@ -1,0 +1,317 @@
+---
+/**
+ * ElementLayout
+ *
+ * Layout for individual element documentation pages.
+ * Includes sidebar navigation and table of contents.
+ */
+
+import '../../src/main.css';
+import '../../docs/docs.css';
+
+interface Props {
+  title: string;
+  description: string;
+  elementName: string;
+  category: 'native' | 'custom' | 'component';
+  currentPath?: string;
+}
+
+const { title, description, elementName, category, currentPath } = Astro.props;
+const fullTitle = `${title} - Vanilla Breeze`;
+
+// Navigation structure
+const navigation = {
+  native: {
+    label: 'Native Elements',
+    groups: [
+      {
+        label: 'Document',
+        items: [
+          { name: 'html', href: '/docs/elements/native/html/' },
+          { name: 'head', href: '/docs/elements/native/head/' },
+          { name: 'title', href: '/docs/elements/native/title/' },
+          { name: 'base', href: '/docs/elements/native/base/' },
+          { name: 'link', href: '/docs/elements/native/link/' },
+          { name: 'meta', href: '/docs/elements/native/meta/' },
+          { name: 'style', href: '/docs/elements/native/style/' },
+          { name: 'body', href: '/docs/elements/native/body/' },
+        ]
+      },
+      {
+        label: 'Sectioning',
+        items: [
+          { name: 'article', href: '/docs/elements/native/article/' },
+          { name: 'aside', href: '/docs/elements/native/aside/' },
+          { name: 'footer', href: '/docs/elements/native/footer/' },
+          { name: 'header', href: '/docs/elements/native/header/' },
+          { name: 'main', href: '/docs/elements/native/main/' },
+          { name: 'nav', href: '/docs/elements/native/nav/' },
+          { name: 'section', href: '/docs/elements/native/section/' },
+        ]
+      },
+      {
+        label: 'Forms',
+        items: [
+          { name: 'form', href: '/docs/elements/native/form/' },
+          { name: 'input', href: '/docs/elements/native/input/' },
+          { name: 'button', href: '/docs/elements/native/button/' },
+          { name: 'select', href: '/docs/elements/native/select/' },
+          { name: 'textarea', href: '/docs/elements/native/textarea/' },
+          { name: 'label', href: '/docs/elements/native/label/' },
+        ]
+      },
+    ]
+  },
+  custom: {
+    label: 'Custom Elements',
+    items: [
+      { name: 'layout-stack', href: '/docs/elements/custom-elements/stack/' },
+      { name: 'layout-grid', href: '/docs/elements/custom-elements/grid/' },
+      { name: 'layout-sidebar', href: '/docs/elements/custom-elements/sidebar/' },
+      { name: 'layout-cluster', href: '/docs/elements/custom-elements/cluster/' },
+      { name: 'layout-center', href: '/docs/elements/custom-elements/center/' },
+      { name: 'layout-cover', href: '/docs/elements/custom-elements/cover/' },
+      { name: 'layout-reel', href: '/docs/elements/custom-elements/reel/' },
+      { name: 'layout-switcher', href: '/docs/elements/custom-elements/switcher/' },
+      { name: 'layout-imposter', href: '/docs/elements/custom-elements/imposter/' },
+      { name: 'layout-text', href: '/docs/elements/custom-elements/layout-text/' },
+      { name: 'layout-card', href: '/docs/elements/custom-elements/layout-card/' },
+      { name: 'status-message', href: '/docs/elements/custom-elements/status-message/' },
+      { name: 'user-avatar', href: '/docs/elements/custom-elements/user-avatar/' },
+      { name: 'layout-badge', href: '/docs/elements/custom-elements/layout-badge/' },
+      { name: 'form-field', href: '/docs/elements/custom-elements/form-field/' },
+    ]
+  },
+  component: {
+    label: 'Web Components',
+    items: [
+      { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/' },
+      { name: 'tabs-wc', href: '/docs/elements/web-components/tabs/' },
+      { name: 'dropdown-wc', href: '/docs/elements/web-components/dropdown/' },
+      { name: 'tooltip-wc', href: '/docs/elements/web-components/tooltip/' },
+      { name: 'toast-wc', href: '/docs/elements/web-components/toast/' },
+      { name: 'theme-wc', href: '/docs/elements/web-components/theme-wc/' },
+      { name: 'search-wc', href: '/docs/elements/web-components/search-wc/' },
+      { name: 'icon-wc', href: '/docs/elements/web-components/icons/' },
+      { name: 'footnotes-wc', href: '/docs/elements/web-components/footnotes/' },
+      { name: 'table-wc', href: '/docs/elements/web-components/table-wc/' },
+    ]
+  }
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <script is:inline>
+    const theme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.mode = theme;
+  </script>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">Vanilla Breeze</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/quick-start/" data-trigger>Docs</a>
+            <menu>
+              <li><a href="/docs/quick-start/">Quick Start</a></li>
+              <li><a href="/docs/tutorial/">Tutorial</a></li>
+            </menu>
+          </dropdown-wc>
+        </li>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/elements/" data-trigger aria-current="true">API</a>
+            <menu>
+              <li><a href="/docs/elements/">Elements</a></li>
+              <li><a href="/docs/attributes/">Attributes</a></li>
+              <li><a href="/docs/tokens/">Tokens</a></li>
+              <li><a href="/docs/themes/">Themes</a></li>
+            </menu>
+          </dropdown-wc>
+        </li>
+        <li>
+          <dropdown-wc data-position="bottom-start" data-hover>
+            <a href="/docs/snippets/" data-trigger>Examples</a>
+            <menu>
+              <li><a href="/docs/snippets/">Snippets</a></li>
+              <li><a href="/docs/examples/">Demos</a></li>
+            </menu>
+          </dropdown-wc>
+        </li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <search-wc>
+        <button type="button" data-trigger class="ghost">
+          <icon-wc name="search" size="sm"></icon-wc>
+          Search
+        </button>
+      </search-wc>
+      <theme-wc>
+        <button type="button" data-trigger class="ghost">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </button>
+      </theme-wc>
+    </div>
+    <button type="button" class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <nav popover id="mobile-menu" class="mobile-menu">
+      <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">
+        <icon-wc name="x"></icon-wc>
+      </button>
+      <div class="mobile-menu-search">
+        <search-wc>
+          <button type="button" data-trigger class="ghost" style="inline-size: 100%">
+            <icon-wc name="search" size="sm"></icon-wc>
+            Search
+          </button>
+        </search-wc>
+      </div>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li class="mobile-section">
+          <strong class="mobile-section-title">Docs</strong>
+          <ul>
+            <li><a href="/docs/quick-start/">Quick Start</a></li>
+            <li><a href="/docs/tutorial/">Tutorial</a></li>
+          </ul>
+        </li>
+        <li class="mobile-section">
+          <strong class="mobile-section-title">API</strong>
+          <ul>
+            <li><a href="/docs/elements/">Elements</a></li>
+            <li><a href="/docs/attributes/">Attributes</a></li>
+            <li><a href="/docs/tokens/">Tokens</a></li>
+            <li><a href="/docs/themes/">Themes</a></li>
+          </ul>
+        </li>
+        <li class="mobile-section">
+          <strong class="mobile-section-title">Examples</strong>
+          <ul>
+            <li><a href="/docs/snippets/">Snippets</a></li>
+            <li><a href="/docs/examples/">Demos</a></li>
+          </ul>
+        </li>
+        <li><a href="/docs/integrations/">Integrations</a></li>
+      </ul>
+      <div class="mobile-menu-theme">
+        <theme-wc>
+          <button type="button" data-trigger class="ghost">
+            <icon-wc name="palette" size="sm"></icon-wc>
+            Theme
+          </button>
+        </theme-wc>
+      </div>
+    </nav>
+  </header>
+
+  <main data-pagefind-body>
+    <input type="checkbox" id="nav-drawer-toggle" class="nav-drawer-checkbox"/>
+    <label for="nav-drawer-toggle" class="nav-drawer-toggle">
+      <icon-wc name="list-tree" size="sm"></icon-wc>
+      Navigation
+    </label>
+    <label for="nav-drawer-toggle" class="nav-drawer-backdrop"></label>
+
+    <layout-sidebar data-gap="xl" data-sidebar-width="narrow" data-content-min="60">
+      <nav class="tree" id="nav-drawer" data-density="compact" aria-label="Elements navigation">
+        <label for="nav-drawer-toggle" class="nav-drawer-close" aria-label="Close navigation">
+          <icon-wc name="x"></icon-wc>
+        </label>
+
+        <!-- Native Elements -->
+        <details open={category === 'native'}>
+          <summary>{navigation.native.label}</summary>
+          {navigation.native.groups.map(group => (
+            <details>
+              <summary>{group.label}</summary>
+              <ul>
+                {group.items.map(item => (
+                  <li>
+                    <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                      {item.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </details>
+
+        <!-- Custom Elements -->
+        <details open={category === 'custom'}>
+          <summary>{navigation.custom.label}</summary>
+          <ul>
+            {navigation.custom.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Web Components -->
+        <details open={category === 'component'}>
+          <summary>{navigation.component.label}</summary>
+          <ul>
+            {navigation.component.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </nav>
+
+      <layout-sidebar data-side="end" data-sidebar-width="narrow" data-gap="xl">
+        <aside>
+          <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+        </aside>
+        <article>
+          <h1>{elementName}</h1>
+          <p class="lead">{description}</p>
+
+          <heading-links data-levels="h2,h3">
+            <slot />
+          </heading-links>
+        </article>
+      </layout-sidebar>
+    </layout-sidebar>
+  </main>
+
+  <footer>
+    <p class="footer-tagline">Vanilla Breeze</p>
+    <p class="footer-legal">
+      <span>A layered HTML component system</span>
+      <br />
+      <span>&copy; 2026 Thomas A. Powell</span>
+      <span>MIT License</span>
+      <a href="https://github.com/profpowell/vanilla-breeze">GitHub</a>
+    </p>
+  </footer>
+
+  <script>
+    import '../../src/main.js';
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>

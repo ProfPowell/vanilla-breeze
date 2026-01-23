@@ -1,0 +1,278 @@
+---
+/**
+ * layout-stack Element Documentation
+ *
+ * Vertical stacking layout with configurable gap.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+// Code examples as template strings
+const gapVariantsCode = `<layout-stack data-gap="xs">
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
+</layout-stack>
+
+<layout-stack data-gap="m">
+  <!-- Default gap -->
+</layout-stack>
+
+<layout-stack data-gap="xl">
+  <!-- Large gap -->
+</layout-stack>`;
+
+const alignmentCode = `<layout-stack data-gap="s" data-align="start">
+  <button type="button">Short</button>
+  <button type="button">Medium Button</button>
+  <button type="button">Longer Button Text</button>
+</layout-stack>
+
+<layout-stack data-gap="s" data-align="center">
+  <!-- Centered items -->
+</layout-stack>
+
+<layout-stack data-gap="s" data-align="end">
+  <!-- End-aligned items -->
+</layout-stack>`;
+
+const formLayoutCode = `<layout-stack data-gap="m">
+  <layout-stack data-gap="xs">
+    <label for="name">Name</label>
+    <input type="text" id="name" />
+  </layout-stack>
+  <layout-stack data-gap="xs">
+    <label for="email">Email</label>
+    <input type="email" id="email" />
+  </layout-stack>
+  <button type="submit">Submit</button>
+</layout-stack>`;
+
+const cardContentCode = `<layout-card>
+  <layout-stack data-gap="s">
+    <h3>Card Title</h3>
+    <p>Card description text.</p>
+    <layout-cluster data-gap="s">
+      <button type="button">Action</button>
+      <button type="button" class="secondary">Cancel</button>
+    </layout-cluster>
+  </layout-stack>
+</layout-card>`;
+
+const nestedStacksCode = `<layout-stack data-gap="xl">
+  <layout-stack data-gap="s">
+    <h3>Section 1</h3>
+    <p>Content for section 1</p>
+  </layout-stack>
+  <layout-stack data-gap="s">
+    <h3>Section 2</h3>
+    <p>Content for section 2</p>
+  </layout-stack>
+</layout-stack>`;
+
+const cssImplementation = `layout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_gap, var(--size-m));
+
+  &[data-gap="none"]  { --_gap: 0; }
+  &[data-gap="3xs"]   { --_gap: var(--size-3xs); }
+  &[data-gap="2xs"]   { --_gap: var(--size-2xs); }
+  &[data-gap="xs"]    { --_gap: var(--size-xs); }
+  &[data-gap="s"]     { --_gap: var(--size-s); }
+  &[data-gap="m"]     { --_gap: var(--size-m); }
+  &[data-gap="l"]     { --_gap: var(--size-l); }
+  &[data-gap="xl"]    { --_gap: var(--size-xl); }
+  &[data-gap="2xl"]   { --_gap: var(--size-2xl); }
+  &[data-gap="3xl"]   { --_gap: var(--size-3xl); }
+
+  &[data-align="start"]   { align-items: flex-start; }
+  &[data-align="center"]  { align-items: center; }
+  &[data-align="end"]     { align-items: flex-end; }
+  &[data-align="stretch"] { align-items: stretch; }
+}`;
+---
+
+<ElementLayout
+  title="layout-stack"
+  description="Vertical stacking layout with configurable gap. The fundamental building block for vertical rhythm."
+  elementName="layout-stack"
+  category="custom"
+  currentPath="/docs/elements/custom-elements/stack/"
+>
+  <browser-window
+    src="/docs/examples/demos/stack-basic.html"
+    url="https://vanilla-breeze.dev/stack"
+    title="Stack Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-gap</code></td>
+          <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
+          <td><code>m</code></td>
+          <td>Controls the vertical gap between child elements</td>
+        </tr>
+        <tr>
+          <td><code>data-align</code></td>
+          <td><code>start</code>, <code>center</code>, <code>end</code>, <code>stretch</code></td>
+          <td><code>stretch</code></td>
+          <td>Controls horizontal alignment of child elements</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Gap Variants</h2>
+    <p>The <code>data-gap</code> attribute controls the spacing between stacked items.</p>
+
+    <layout-grid data-min="15rem" data-gap="l">
+      <div class="example">
+        <p><strong>data-gap="xs"</strong></p>
+        <layout-stack data-gap="xs">
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 1</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 2</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 3</div>
+        </layout-stack>
+      </div>
+
+      <div class="example">
+        <p><strong>data-gap="m"</strong> (default)</p>
+        <layout-stack data-gap="m">
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 1</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 2</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 3</div>
+        </layout-stack>
+      </div>
+
+      <div class="example">
+        <p><strong>data-gap="xl"</strong></p>
+        <layout-stack data-gap="xl">
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 1</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 2</div>
+          <div style="background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s);">Item 3</div>
+        </layout-stack>
+      </div>
+    </layout-grid>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Gap variants example">{gapVariantsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Alignment Variants</h2>
+    <p>The <code>data-align</code> attribute controls horizontal alignment of items.</p>
+
+    <layout-grid data-min="15rem" data-gap="l">
+      <div class="example">
+        <p><strong>data-align="start"</strong></p>
+        <layout-stack data-gap="s" data-align="start">
+          <button type="button">Short</button>
+          <button type="button">Medium Button</button>
+          <button type="button">Longer Button Text</button>
+        </layout-stack>
+      </div>
+
+      <div class="example">
+        <p><strong>data-align="center"</strong></p>
+        <layout-stack data-gap="s" data-align="center">
+          <button type="button">Short</button>
+          <button type="button">Medium Button</button>
+          <button type="button">Longer Button Text</button>
+        </layout-stack>
+      </div>
+
+      <div class="example">
+        <p><strong>data-align="end"</strong></p>
+        <layout-stack data-gap="s" data-align="end">
+          <button type="button">Short</button>
+          <button type="button">Medium Button</button>
+          <button type="button">Longer Button Text</button>
+        </layout-stack>
+      </div>
+    </layout-grid>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Alignment variants example">{alignmentCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Form Layout</h3>
+    <div class="example" style="max-inline-size: 25rem;">
+      <layout-stack data-gap="m">
+        <layout-stack data-gap="xs">
+          <label for="form-name">Name</label>
+          <input type="text" id="form-name" placeholder="Your name" />
+        </layout-stack>
+        <layout-stack data-gap="xs">
+          <label for="form-email">Email</label>
+          <input type="email" id="form-email" placeholder="you@example.com" />
+        </layout-stack>
+        <button type="submit">Submit</button>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Form layout with nested stacks">{formLayoutCode}</code-block>
+
+    <h3>Card Content</h3>
+    <div class="example" style="max-inline-size: 20rem;">
+      <layout-card>
+        <layout-stack data-gap="s">
+          <h3 style="margin: 0;">Card Title</h3>
+          <p style="margin: 0; color: var(--color-text-muted);">Card description text that explains the content.</p>
+          <layout-cluster data-gap="s">
+            <button type="button">Action</button>
+            <button type="button" class="secondary">Cancel</button>
+          </layout-cluster>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <code-block language="html" show-lines label="Card with stacked content">{cardContentCode}</code-block>
+
+    <h3>Nested Stacks</h3>
+    <div class="example">
+      <layout-stack data-gap="xl">
+        <layout-stack data-gap="s">
+          <h3 style="margin: 0;">Section 1</h3>
+          <p style="margin: 0;">Content for section 1</p>
+        </layout-stack>
+        <layout-stack data-gap="s">
+          <h3 style="margin: 0;">Section 2</h3>
+          <p style="margin: 0;">Content for section 2</p>
+        </layout-stack>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Nested stacks with different gaps">{nestedStacksCode}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Implementation</h2>
+    <code-block language="css" show-lines label="layout-stack CSS implementation">{cssImplementation}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/cluster/">layout-cluster</a> - Horizontal grouping with wrapping</li>
+      <li><a href="/docs/elements/custom-elements/grid/">layout-grid</a> - Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/sidebar/">layout-sidebar</a> - Two-column layout with sidebar</li>
+      <li><a href="/docs/elements/custom-elements/layout-card/">layout-card</a> - Card container</li>
+    </ul>
+  </section>
+</ElementLayout>
