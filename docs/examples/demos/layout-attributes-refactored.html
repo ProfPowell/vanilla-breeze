@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en" data-page="docs">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Layout Attributes - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+      max-width: 1200px;
+      margin-inline: auto;
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h2:first-of-type { border-top: none; margin-top: var(--size-l); }
+    h3 { margin-bottom: var(--size-s); margin-top: var(--size-l); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+      max-width: 65ch;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    /* Demo grid */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-l);
+      margin-top: var(--size-m);
+    }
+
+    @media (max-width: 800px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Iframe styling inside browser-window */
+    browser-window iframe {
+      width: 100%;
+      height: 250px;
+      border: none;
+      display: block;
+    }
+
+    browser-window iframe.tall {
+      height: 300px;
+    }
+
+    /* Component demo containers */
+    .component-demo {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      margin-bottom: var(--size-m);
+    }
+
+    /* Demo items */
+    .demo-item {
+      background: var(--color-gray-100);
+      color: var(--color-text);
+      padding: var(--size-s) var(--size-m);
+      border-radius: var(--radius-s);
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: var(--size-2xs) var(--size-s);
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-s);
+      font-weight: 500;
+    }
+
+    .card {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    /* Split demo */
+    .split-item {
+      padding: var(--size-l);
+      background: var(--color-gray-100);
+      border-radius: var(--radius-s);
+      text-align: center;
+    }
+
+    /* Summary table */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-s);
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: var(--size-s);
+      border: 1px solid var(--color-border);
+      text-align: left;
+    }
+
+    .summary-table th {
+      background: var(--color-surface-raised);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <article>
+    <h1>Layout Attributes</h1>
+    <p class="lead">
+      Use <code>data-layout</code> on semantic HTML elements for all VB layouts.
+      No wrapper elements needed.
+    </p>
+
+    <!-- ========== COMPONENT LAYOUTS ========== -->
+    <h2>Component Layouts</h2>
+    <p>These layouts work on any element, ideal for cards, sections, and nested content.</p>
+
+    <!-- STACK -->
+    <h3>Stack Layout</h3>
+    <p>Vertical rhythm with consistent spacing between child elements.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <article data-layout="stack" data-gap="m">
+            <p class="demo-item">Item 1</p>
+            <p class="demo-item">Item 2</p>
+            <p class="demo-item">Item 3</p>
+          </article>
+        </div>
+      </div>
+
+      <code-block language="html" label="Stack">&lt;article data-layout="stack" data-gap="m"&gt;
+  &lt;p&gt;Item 1&lt;/p&gt;
+  &lt;p&gt;Item 2&lt;/p&gt;
+  &lt;p&gt;Item 3&lt;/p&gt;
+&lt;/article&gt;</code-block>
+    </div>
+
+    <!-- CLUSTER -->
+    <h3>Cluster Layout</h3>
+    <p>Horizontal grouping with wrapping. Perfect for tags, buttons, and navigation.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <nav data-layout="cluster" data-gap="s">
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+            <span class="tag">JavaScript</span>
+            <span class="tag">Web Components</span>
+          </nav>
+        </div>
+      </div>
+
+      <code-block language="html" label="Cluster">&lt;nav data-layout="cluster" data-gap="s"&gt;
+  &lt;span class="tag"&gt;HTML&lt;/span&gt;
+  &lt;span class="tag"&gt;CSS&lt;/span&gt;
+  &lt;span class="tag"&gt;JavaScript&lt;/span&gt;
+  &lt;span class="tag"&gt;Web Components&lt;/span&gt;
+&lt;/nav&gt;</code-block>
+    </div>
+
+    <h4>Cluster with justify-between</h4>
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <header data-layout="cluster" data-justify="between">
+            <strong>Site Name</strong>
+            <nav data-layout="cluster" data-gap="m">
+              <a href="#">About</a>
+              <a href="#">Services</a>
+              <a href="#">Contact</a>
+            </nav>
+          </header>
+        </div>
+      </div>
+
+      <code-block language="html" label="Header with Navigation">&lt;header data-layout="cluster" data-justify="between"&gt;
+  &lt;strong&gt;Site Name&lt;/strong&gt;
+  &lt;nav data-layout="cluster" data-gap="m"&gt;
+    &lt;a href="#"&gt;About&lt;/a&gt;
+    &lt;a href="#"&gt;Services&lt;/a&gt;
+    &lt;a href="#"&gt;Contact&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;</code-block>
+    </div>
+
+    <!-- GRID -->
+    <h3>Grid Layout</h3>
+    <p>Responsive auto-fit grid. Resize the browser to see columns adapt.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <ul data-layout="grid" data-min="8rem" data-gap="m" style="list-style: none; padding: 0; margin: 0;">
+            <li class="card">Card 1</li>
+            <li class="card">Card 2</li>
+            <li class="card">Card 3</li>
+            <li class="card">Card 4</li>
+          </ul>
+        </div>
+      </div>
+
+      <code-block language="html" label="Grid">&lt;ul data-layout="grid" data-min="10rem" data-gap="m"&gt;
+  &lt;li class="card"&gt;Card 1&lt;/li&gt;
+  &lt;li class="card"&gt;Card 2&lt;/li&gt;
+  &lt;li class="card"&gt;Card 3&lt;/li&gt;
+  &lt;li class="card"&gt;Card 4&lt;/li&gt;
+&lt;/ul&gt;</code-block>
+    </div>
+
+    <!-- CENTER -->
+    <h3>Center Layout</h3>
+    <p>Max-width container with auto margins. Great for readable content.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <div data-layout="center" data-max="narrow" style="background: var(--color-gray-100); padding: var(--size-m);">
+            <p>This content is centered with a max-width. It won't stretch beyond the specified width.</p>
+          </div>
+        </div>
+      </div>
+
+      <code-block language="html" label="Center">&lt;main data-layout="center" data-max="narrow"&gt;
+  &lt;p&gt;Centered content...&lt;/p&gt;
+&lt;/main&gt;</code-block>
+    </div>
+
+    <!-- SIDEBAR -->
+    <h3>Sidebar Layout</h3>
+    <p>Two-column flexbox that wraps responsively. Try resizing.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <section data-layout="sidebar" data-gap="m" style="--_sidebar-width: 100px;">
+            <nav style="background: var(--color-gray-100); padding: var(--size-s); border-radius: var(--radius-s);">Sidebar</nav>
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); padding: var(--size-s); border-radius: var(--radius-s);">Main content that takes remaining space</div>
+          </section>
+        </div>
+      </div>
+
+      <code-block language="html" label="Sidebar">&lt;section data-layout="sidebar" data-gap="m"&gt;
+  &lt;nav&gt;Sidebar&lt;/nav&gt;
+  &lt;main&gt;Main content...&lt;/main&gt;
+&lt;/section&gt;</code-block>
+    </div>
+
+    <!-- SPLIT -->
+    <h3>Split Layout</h3>
+    <p>Two-column ratio grid. Stacks on mobile.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <section data-layout="split" data-ratio="2:1" data-gap="l">
+            <div class="split-item">Main (2fr)</div>
+            <div class="split-item">Sidebar (1fr)</div>
+          </section>
+        </div>
+      </div>
+
+      <code-block language="html" label="Split 2:1">&lt;section data-layout="split" data-ratio="2:1" data-gap="l"&gt;
+  &lt;article&gt;Main content (2fr)&lt;/article&gt;
+  &lt;aside&gt;Sidebar (1fr)&lt;/aside&gt;
+&lt;/section&gt;</code-block>
+    </div>
+
+    <!-- SWITCHER -->
+    <h3>Switcher Layout</h3>
+    <p>Flexbox that switches from horizontal to vertical based on container width.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo">
+          <section data-layout="switcher" data-threshold="20rem" data-gap="m">
+            <div class="split-item">Item 1</div>
+            <div class="split-item">Item 2</div>
+            <div class="split-item">Item 3</div>
+          </section>
+        </div>
+      </div>
+
+      <code-block language="html" label="Switcher">&lt;section data-layout="switcher" data-threshold="30rem"&gt;
+  &lt;div&gt;Item 1&lt;/div&gt;
+  &lt;div&gt;Item 2&lt;/div&gt;
+  &lt;div&gt;Item 3&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- Stacks when container &lt; 30rem --&gt;</code-block>
+    </div>
+
+
+    <!-- ========== PAGE LAYOUTS ========== -->
+    <h2>Page Layouts</h2>
+    <p>
+      Full-page layouts using <code>data-layout</code> or <code>data-page-layout</code> on <code>&lt;body&gt;</code>.
+      Semantic elements are automatically placed in grid areas.
+    </p>
+
+    <!-- PAGE STACK -->
+    <h3>Page Stack</h3>
+    <p>Header/Main/Footer with sticky footer. Main expands to fill available space.</p>
+
+    <div class="demo-grid">
+      <browser-window url="page-stack.html">
+        <iframe src="raw-layouts/page-stack.html" title="Page Stack Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Page Stack">&lt;body data-layout="page-stack"&gt;
+  &lt;header&gt;Header&lt;/header&gt;
+  &lt;main&gt;Main Content&lt;/main&gt;
+  &lt;footer&gt;Footer&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <!-- HOLY GRAIL -->
+    <h3>Holy Grail Layout</h3>
+    <p>Classic 3-column layout with header/footer. Uses CSS Grid named areas targeting semantic elements.</p>
+
+    <div class="demo-grid">
+      <browser-window url="holy-grail.html">
+        <iframe src="raw-layouts/holy-grail.html" title="Holy Grail Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Holy Grail">&lt;body data-layout="holy-grail"&gt;
+  &lt;header&gt;Header&lt;/header&gt;
+  &lt;nav&gt;Nav&lt;/nav&gt;
+  &lt;main&gt;Main Content&lt;/main&gt;
+  &lt;aside&gt;Aside&lt;/aside&gt;
+  &lt;footer&gt;Footer&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <h4>Holy Grail (no aside)</h4>
+    <p>The layout automatically adapts when semantic elements are missing.</p>
+
+    <div class="demo-grid">
+      <browser-window url="holy-grail-no-aside.html">
+        <iframe src="raw-layouts/holy-grail-no-aside.html" title="Holy Grail Layout without Aside"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Holy Grail (adapts)">&lt;body data-layout="holy-grail"&gt;
+  &lt;header&gt;Header&lt;/header&gt;
+  &lt;nav&gt;Nav&lt;/nav&gt;
+  &lt;main&gt;Main Content&lt;/main&gt;
+  &lt;!-- No aside - layout adapts automatically --&gt;
+  &lt;footer&gt;Footer&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <!-- DASHBOARD -->
+    <h3>Dashboard Layout</h3>
+    <p>App shell with sticky header and sidebar.</p>
+
+    <div class="demo-grid">
+      <browser-window url="dashboard.html">
+        <iframe src="raw-layouts/dashboard.html" title="Dashboard Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Dashboard">&lt;body data-layout="dashboard"&gt;
+  &lt;header&gt;Dashboard Header&lt;/header&gt;
+  &lt;nav&gt;Navigation&lt;/nav&gt;
+  &lt;main&gt;Dashboard Content&lt;/main&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <!-- SIDEBAR LEFT (PAGE) -->
+    <h3>Sidebar Left (Page Layout)</h3>
+    <p>Two-column page layout with navigation on the left.</p>
+
+    <div class="demo-grid">
+      <browser-window url="sidebar-left.html">
+        <iframe src="raw-layouts/sidebar-left.html" title="Sidebar Left Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Sidebar Left (Page)">&lt;body data-page-layout="sidebar-left"&gt;
+  &lt;header&gt;Header&lt;/header&gt;
+  &lt;nav&gt;
+    &lt;a href="#"&gt;Home&lt;/a&gt;
+    &lt;a href="#"&gt;About&lt;/a&gt;
+  &lt;/nav&gt;
+  &lt;main&gt;Main Content&lt;/main&gt;
+  &lt;footer&gt;Footer&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <!-- SIDEBAR RIGHT (PAGE) -->
+    <h3>Sidebar Right (Page Layout)</h3>
+    <p>Two-column page layout with aside on the right.</p>
+
+    <div class="demo-grid">
+      <browser-window url="sidebar-right.html">
+        <iframe src="raw-layouts/sidebar-right.html" title="Sidebar Right Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Sidebar Right (Page)">&lt;body data-page-layout="sidebar-right"&gt;
+  &lt;header&gt;Header&lt;/header&gt;
+  &lt;main&gt;Main Content&lt;/main&gt;
+  &lt;aside&gt;Sidebar&lt;/aside&gt;
+  &lt;footer&gt;Footer&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+    <!-- COVER -->
+    <h3>Cover Layout</h3>
+    <p>Full-height container with vertically centered principal element.</p>
+
+    <div class="demo-grid">
+      <browser-window url="cover.html">
+        <iframe src="raw-layouts/cover.html" class="tall" title="Cover Layout"></iframe>
+      </browser-window>
+
+      <code-block language="html" label="Cover">&lt;body data-layout="cover" data-center&gt;
+  &lt;header&gt;Top content&lt;/header&gt;
+  &lt;div data-principal&gt;
+    &lt;h1&gt;Hero Headline&lt;/h1&gt;
+    &lt;p&gt;Vertically centered content&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;footer&gt;Bottom content&lt;/footer&gt;
+&lt;/body&gt;</code-block>
+    </div>
+
+
+    <!-- ========== COMPOSED EXAMPLE ========== -->
+    <h2>Composed Layouts</h2>
+    <p>Real-world example: A blog card using nested layouts on semantic elements.</p>
+
+    <div class="demo-grid">
+      <div>
+        <div class="component-demo" style="max-width: 350px;">
+          <article class="card" data-layout="stack" data-gap="s">
+            <header data-layout="cluster" data-justify="between">
+              <span class="tag">Tutorial</span>
+              <time datetime="2026-01-22">Jan 22, 2026</time>
+            </header>
+            <h3 style="margin: 0;">Building Semantic Layouts</h3>
+            <p style="margin: 0; color: var(--color-text-muted);">Learn how to build layouts with semantic HTML and data attributes.</p>
+            <footer data-layout="cluster" data-justify="between">
+              <span style="font-size: var(--font-size-s); color: var(--color-text-muted);">5 min read</span>
+              <a href="#">Read more &rarr;</a>
+            </footer>
+          </article>
+        </div>
+      </div>
+
+      <code-block language="html" label="Blog Card">&lt;article class="card" data-layout="stack" data-gap="s"&gt;
+  &lt;header data-layout="cluster" data-justify="between"&gt;
+    &lt;span class="tag"&gt;Tutorial&lt;/span&gt;
+    &lt;time&gt;Jan 22, 2026&lt;/time&gt;
+  &lt;/header&gt;
+  &lt;h3&gt;Building Semantic Layouts&lt;/h3&gt;
+  &lt;p&gt;Learn how to build...&lt;/p&gt;
+  &lt;footer data-layout="cluster" data-justify="between"&gt;
+    &lt;span&gt;5 min read&lt;/span&gt;
+    &lt;a href="#"&gt;Read more&lt;/a&gt;
+  &lt;/footer&gt;
+&lt;/article&gt;</code-block>
+    </div>
+
+
+    <!-- ========== SUMMARY ========== -->
+    <h2>Summary</h2>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Layout</th>
+          <th>Level</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>stack</code></td>
+          <td>Component</td>
+          <td>Vertical rhythm, forms, cards</td>
+        </tr>
+        <tr>
+          <td><code>cluster</code></td>
+          <td>Component</td>
+          <td>Tags, buttons, nav links</td>
+        </tr>
+        <tr>
+          <td><code>grid</code></td>
+          <td>Component</td>
+          <td>Card grids, galleries</td>
+        </tr>
+        <tr>
+          <td><code>center</code></td>
+          <td>Component</td>
+          <td>Max-width containers</td>
+        </tr>
+        <tr>
+          <td><code>sidebar</code></td>
+          <td>Component</td>
+          <td>Responsive two-column</td>
+        </tr>
+        <tr>
+          <td><code>split</code></td>
+          <td>Component</td>
+          <td>Two-column ratio layouts</td>
+        </tr>
+        <tr>
+          <td><code>switcher</code></td>
+          <td>Component</td>
+          <td>Container-query-like responsive</td>
+        </tr>
+        <tr>
+          <td><code>page-stack</code></td>
+          <td>Page</td>
+          <td>Sticky footer pages</td>
+        </tr>
+        <tr>
+          <td><code>holy-grail</code></td>
+          <td>Page</td>
+          <td>Classic 3-column pages</td>
+        </tr>
+        <tr>
+          <td><code>dashboard</code></td>
+          <td>Page</td>
+          <td>App shells</td>
+        </tr>
+        <tr>
+          <td><code>sidebar-left/right</code></td>
+          <td>Page</td>
+          <td>Two-column pages (data-page-layout)</td>
+        </tr>
+        <tr>
+          <td><code>cover</code></td>
+          <td>Both</td>
+          <td>Hero sections (use data-principal)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Links</h3>
+    <ul>
+      <li><a href="/docs/examples/demos/layout-comparison.html">Layout System Overview</a> - Page vs Component layouts explained</li>
+      <li><a href="/r-n-d/zen-garden/examples/pure-css/layout-switcher.html">Layout Switcher</a> - Pure CSS layout switching demo</li>
+    </ul>
+  </article>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+  </script>
+</body>
+</html>
