@@ -1,0 +1,272 @@
+---
+/**
+ * BlogLayout
+ *
+ * Layout for blog posts with article metadata and author info.
+ *
+ * Props:
+ * - title: Post title
+ * - description: Post excerpt/description
+ * - pubDate: Publication date
+ * - updatedDate: Last update date (optional)
+ * - author: Author name
+ * - authorImage: Author avatar URL (optional)
+ * - heroImage: Hero/cover image URL (optional)
+ * - tags: Array of tag strings (optional)
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  author: string;
+  authorImage?: string;
+  heroImage?: string;
+  tags?: string[];
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  author,
+  authorImage,
+  heroImage,
+  tags = [],
+} = Astro.props;
+
+const formattedPubDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const formattedUpdateDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <BaseHead title={title} description={description} image={heroImage} />
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="logo">Blog</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/blog/" aria-current="true">Blog</a></li>
+        <li><a href="/about/">About</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <main>
+    <article>
+      {heroImage && (
+        <div class="hero-image">
+          <img src={heroImage} alt="" width="1200" height="630" />
+        </div>
+      )}
+
+      <header class="article-header">
+        <layout-center data-max-width="narrow">
+          <layout-stack data-gap="m">
+            {tags.length > 0 && (
+              <layout-cluster data-gap="xs">
+                {tags.map((tag) => (
+                  <a href={`/blog/tags/${tag}/`} class="badge">
+                    {tag}
+                  </a>
+                ))}
+              </layout-cluster>
+            )}
+
+            <h1>{title}</h1>
+
+            <p class="lead">{description}</p>
+
+            <div class="meta">
+              <layout-cluster data-gap="m">
+                <div class="author">
+                  {authorImage ? (
+                    <img src={authorImage} alt="" class="author-image" width="40" height="40" />
+                  ) : (
+                    <user-avatar data-name={author} data-size="sm"></user-avatar>
+                  )}
+                  <span>{author}</span>
+                </div>
+                <time datetime={pubDate.toISOString()}>{formattedPubDate}</time>
+                {updatedDate && (
+                  <span class="updated">
+                    Updated <time datetime={updatedDate.toISOString()}>{formattedUpdateDate}</time>
+                  </span>
+                )}
+              </layout-cluster>
+            </div>
+          </layout-stack>
+        </layout-center>
+      </header>
+
+      <layout-center data-max-width="narrow">
+        <layout-text data-measure="normal" class="prose">
+          <slot />
+        </layout-text>
+      </layout-center>
+
+      <footer class="article-footer">
+        <layout-center data-max-width="narrow">
+          <layout-stack data-gap="l">
+            {tags.length > 0 && (
+              <div class="tags-section">
+                <h2>Tags</h2>
+                <layout-cluster data-gap="xs">
+                  {tags.map((tag) => (
+                    <a href={`/blog/tags/${tag}/`} class="badge secondary">
+                      {tag}
+                    </a>
+                  ))}
+                </layout-cluster>
+              </div>
+            )}
+
+            <nav class="post-nav" aria-label="Post navigation">
+              <a href="/blog/" class="back-link">
+                <icon-wc name="arrow-left" size="sm"></icon-wc>
+                Back to all posts
+              </a>
+            </nav>
+          </layout-stack>
+        </layout-center>
+      </footer>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <layout-center data-max-width="wide">
+      <p>&copy; {new Date().getFullYear()} Blog. All rights reserved.</p>
+    </layout-center>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-l);
+    padding: var(--size-m) var(--size-l);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .site-header nav ul {
+    display: flex;
+    gap: var(--size-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .header-actions {
+    margin-inline-start: auto;
+  }
+
+  .hero-image {
+    aspect-ratio: 1200 / 630;
+    overflow: hidden;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .article-header {
+    padding: var(--size-2xl) var(--size-l);
+    text-align: center;
+  }
+
+  .article-header h1 {
+    font-size: var(--font-size-4xl);
+    line-height: var(--line-height-tight);
+  }
+
+  .lead {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+  }
+
+  .meta {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .author {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-xs);
+  }
+
+  .author-image {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+  }
+
+  .updated {
+    color: var(--color-text-subtle);
+  }
+
+  .prose {
+    padding: var(--size-l);
+  }
+
+  .article-footer {
+    padding: var(--size-2xl) var(--size-l);
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+    margin-block-start: var(--size-2xl);
+  }
+
+  .tags-section h2 {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-s);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-xs);
+  }
+
+  .site-footer {
+    padding: var(--size-l);
+    background: var(--color-surface-raised);
+    text-align: center;
+  }
+</style>

@@ -1,0 +1,257 @@
+---
+/**
+ * DocsLayout
+ *
+ * Documentation page layout with sidebar navigation and TOC.
+ * Designed for technical documentation sites.
+ *
+ * Props:
+ * - title: Page title
+ * - description: Meta description
+ * - headings: Array of headings for TOC (from getHeadings())
+ * - navigation: Navigation tree data
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import NavTree from '../components/NavTree.astro';
+import PageToc from '../components/PageToc.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface NavItem {
+  label: string;
+  href?: string;
+  children?: NavItem[];
+}
+
+interface Props {
+  title: string;
+  description: string;
+  headings?: Heading[];
+  navigation?: NavItem[];
+}
+
+const { title, description, headings = [], navigation = [] } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <BaseHead title={title} description={description} />
+  <style>
+    /* Mobile nav drawer */
+    @media (max-width: 900px) {
+      .nav-sidebar {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform var(--duration-normal) var(--ease-out);
+        background: var(--color-surface);
+        padding: var(--size-l);
+        overflow-y: auto;
+      }
+
+      .nav-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .nav-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 99;
+        background: var(--color-overlay-strong);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--duration-normal) var(--ease-out);
+      }
+
+      .nav-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+    <a href="/" class="logo">Vanilla Breeze</a>
+    <nav class="horizontal pills" aria-label="Main navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/" aria-current="true">Docs</a></li>
+        <li><a href="/examples/">Examples</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <search-wc>
+        <button data-trigger class="ghost">
+          <icon-wc name="search" size="sm"></icon-wc>
+          Search
+        </button>
+      </search-wc>
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <div class="nav-backdrop"></div>
+
+  <main>
+    <layout-sidebar data-gap="2xl" data-sidebar-width="narrow" data-content-min="60">
+      <!-- Sidebar Navigation -->
+      <aside class="nav-sidebar">
+        <button class="nav-close" aria-label="Close navigation">
+          <icon-wc name="x"></icon-wc>
+        </button>
+        <NavTree items={navigation} />
+      </aside>
+
+      <!-- Main Content -->
+      <article>
+        <layout-sidebar data-gap="xl" data-sidebar-width="narrow" data-content-min="50" data-side="right">
+          <!-- Article Content -->
+          <div class="content">
+            <header>
+              <h1>{title}</h1>
+            </header>
+            <layout-text data-measure="normal">
+              <slot />
+            </layout-text>
+          </div>
+
+          <!-- Table of Contents -->
+          {headings.length > 0 && (
+            <aside class="toc-sidebar">
+              <PageToc headings={headings} />
+            </aside>
+          )}
+        </layout-sidebar>
+      </article>
+    </layout-sidebar>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Mobile nav toggle
+    const toggle = document.querySelector('.mobile-nav-toggle');
+    const close = document.querySelector('.nav-close');
+    const sidebar = document.querySelector('.nav-sidebar');
+    const backdrop = document.querySelector('.nav-backdrop');
+
+    function openNav() {
+      sidebar?.classList.add('open');
+      backdrop?.classList.add('open');
+      toggle?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeNav() {
+      sidebar?.classList.remove('open');
+      backdrop?.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    }
+
+    toggle?.addEventListener('click', openNav);
+    close?.addEventListener('click', closeNav);
+    backdrop?.addEventListener('click', closeNav);
+  </script>
+</body>
+</html>
+
+<style>
+  header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-l);
+    padding: var(--size-m) var(--size-l);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 50;
+  }
+
+  .mobile-nav-toggle {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .mobile-nav-toggle {
+      display: inline-flex;
+    }
+  }
+
+  .logo {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  header nav ul {
+    display: flex;
+    gap: var(--size-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--size-s);
+    margin-inline-start: auto;
+  }
+
+  main {
+    padding: var(--size-l);
+  }
+
+  .nav-sidebar {
+    position: sticky;
+    top: calc(var(--size-l) + 60px);
+    max-height: calc(100vh - var(--size-2xl) - 60px);
+    overflow-y: auto;
+  }
+
+  .nav-close {
+    display: none;
+    position: absolute;
+    top: var(--size-m);
+    right: var(--size-m);
+  }
+
+  @media (max-width: 900px) {
+    .nav-close {
+      display: inline-flex;
+    }
+  }
+
+  .content header {
+    position: static;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-block-end: var(--size-l);
+  }
+
+  .content h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .toc-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .toc-sidebar {
+      display: block;
+    }
+  }
+</style>

@@ -1,0 +1,93 @@
+---
+/**
+ * NavTree Component
+ *
+ * Renders a tree navigation from a structured data object.
+ * Supports nested sections with automatic open state for active items.
+ *
+ * Props:
+ * - items: Navigation tree structure
+ * - currentPath: Current page path for highlighting
+ * - density: 'default' | 'compact' (optional)
+ */
+
+interface NavItem {
+  label: string;
+  href?: string;
+  children?: NavItem[];
+}
+
+interface Props {
+  items: NavItem[];
+  currentPath?: string;
+  density?: 'default' | 'compact';
+  label?: string;
+}
+
+const {
+  items,
+  currentPath = Astro.url.pathname,
+  density = 'compact',
+  label = 'Navigation',
+} = Astro.props;
+
+// Check if any child (recursively) matches current path
+function hasActiveChild(item: NavItem): boolean {
+  if (item.href === currentPath) return true;
+  if (item.children) {
+    return item.children.some(child => hasActiveChild(child));
+  }
+  return false;
+}
+---
+
+<nav class="tree" data-density={density} aria-label={label}>
+  <ul>
+    {items.map((item) => (
+      <li>
+        {item.children ? (
+          <details open={hasActiveChild(item)}>
+            <summary>{item.label}</summary>
+            <ul>
+              {item.children.map((child) => (
+                <li>
+                  {child.children ? (
+                    <details open={hasActiveChild(child)}>
+                      <summary>{child.label}</summary>
+                      <ul>
+                        {child.children.map((grandchild) => (
+                          <li>
+                            <a
+                              href={grandchild.href}
+                              aria-current={grandchild.href === currentPath ? 'page' : undefined}
+                            >
+                              {grandchild.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  ) : (
+                    <a
+                      href={child.href}
+                      aria-current={child.href === currentPath ? 'page' : undefined}
+                    >
+                      {child.label}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : (
+          <a
+            href={item.href}
+            aria-current={item.href === currentPath ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>

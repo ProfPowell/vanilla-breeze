@@ -1,0 +1,214 @@
+---
+/**
+ * LandingLayout
+ *
+ * Marketing/landing page layout with hero support.
+ * Minimal chrome, focused on content sections.
+ *
+ * Props:
+ * - title: Page title
+ * - description: Meta description
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <BaseHead title={title} description={description} />
+</head>
+<body>
+  <header>
+    <layout-center data-max-width="wide">
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <a href="/" class="logo">Brand</a>
+        <nav class="horizontal pills" aria-label="Main navigation">
+          <ul>
+            <li><a href="/features/">Features</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/docs/">Docs</a></li>
+            <li><a href="/blog/">Blog</a></li>
+          </ul>
+        </nav>
+        <div class="header-actions">
+          <ThemeToggle />
+          <a href="/login/" class="button ghost">Log In</a>
+          <a href="/signup/" class="button primary">Get Started</a>
+        </div>
+      </layout-cluster>
+    </layout-center>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>
+    <layout-center data-max-width="wide">
+      <layout-grid data-gap="2xl" data-min-width="200">
+        <!-- Company -->
+        <div>
+          <h3>Company</h3>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/careers/">Careers</a></li>
+            <li><a href="/press/">Press</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Product -->
+        <div>
+          <h3>Product</h3>
+          <ul>
+            <li><a href="/features/">Features</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/changelog/">Changelog</a></li>
+            <li><a href="/roadmap/">Roadmap</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="/docs/">Documentation</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/help/">Help Center</a></li>
+            <li><a href="/community/">Community</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <h3>Legal</h3>
+          <ul>
+            <li><a href="/privacy/">Privacy Policy</a></li>
+            <li><a href="/terms/">Terms of Service</a></li>
+            <li><a href="/security/">Security</a></li>
+            <li><a href="/cookies/">Cookie Policy</a></li>
+          </ul>
+        </div>
+      </layout-grid>
+
+      <hr />
+
+      <layout-cluster data-justify="space-between" data-gap="l">
+        <p class="copyright">&copy; {new Date().getFullYear()} Brand. All rights reserved.</p>
+        <layout-cluster data-gap="m">
+          <a href="https://twitter.com/brand" aria-label="Twitter">
+            <icon-wc name="twitter" size="sm"></icon-wc>
+          </a>
+          <a href="https://github.com/brand" aria-label="GitHub">
+            <icon-wc name="github" size="sm"></icon-wc>
+          </a>
+          <a href="https://linkedin.com/company/brand" aria-label="LinkedIn">
+            <icon-wc name="linkedin" size="sm"></icon-wc>
+          </a>
+        </layout-cluster>
+      </layout-cluster>
+    </layout-center>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
+<style>
+  header {
+    padding: var(--size-m) var(--size-l);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 50;
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .logo {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  header nav ul {
+    display: flex;
+    gap: var(--size-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--size-s);
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    header nav {
+      display: none;
+    }
+  }
+
+  main > :global(section) {
+    padding: var(--size-3xl) var(--size-l);
+  }
+
+  main > :global(section:nth-child(even)) {
+    background: var(--color-surface-raised);
+  }
+
+  footer {
+    padding: var(--size-3xl) var(--size-l) var(--size-xl);
+    background: var(--color-surface-sunken);
+  }
+
+  footer h3 {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-m);
+  }
+
+  footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  footer li {
+    margin-block: var(--size-xs);
+  }
+
+  footer a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    color: var(--color-text);
+  }
+
+  footer hr {
+    margin-block: var(--size-2xl);
+    border: none;
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .copyright {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+</style>
