@@ -1,0 +1,249 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const dialogStylesCode = `dialog {
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-lg);
+  max-width: min(90vw, 500px);
+  max-height: 85vh;
+}
+
+dialog::backdrop {
+  background: var(--color-overlay-strong);
+  backdrop-filter: blur(4px);
+}
+
+dialog > layout-stack,
+dialog > form {
+  padding: var(--size-l);
+}
+
+dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--size-m);
+}
+
+dialog header h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+}`;
+
+const clickOutsideCode = `dialog.addEventListener('click', (e) => {
+  if (e.target === dialog) {
+    dialog.close();
+  }
+});`;
+
+const confirmDialogCode = `<dialog id="confirm-modal" class="confirm-dialog">
+  <form method="dialog">
+    <layout-stack data-gap="l">
+      <header>
+        <icon-wc name="alert-triangle" size="lg" class="warning-icon"></icon-wc>
+        <h2>Confirm Deletion</h2>
+      </header>
+
+      <p>Are you sure? This action cannot be undone.</p>
+
+      <footer>
+        <layout-cluster data-justify="center" data-gap="m">
+          <button type="submit" value="cancel" class="secondary">Cancel</button>
+          <button type="submit" value="delete" class="danger">Delete</button>
+        </layout-cluster>
+      </footer>
+    </layout-stack>
+  </form>
+</dialog>
+
+<script>
+  const modal = document.getElementById('confirm-modal');
+  modal.addEventListener('close', () => {
+    if (modal.returnValue === 'delete') {
+      // Perform delete action
+    }
+  });
+<\/script>`;
+---
+
+<DocsLayout
+  title="Modal Dialog Snippet"
+  description="Native dialog patterns with forms, confirmation, and scrolling. Accessible by default with focus management."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/snippets/">Snippets</a> / <span aria-current="page">Modal Dialog</span>
+  </nav>
+
+  <h1>Modal Dialog</h1>
+  <p class="lead">Native dialog patterns with forms, confirmation, and scrolling. Accessible by default with focus management.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Modal dialogs use the native HTML <code>&lt;dialog&gt;</code> element which provides built-in accessibility features: focus trapping, escape key handling, and proper ARIA semantics. No JavaScript library required.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Native focus management and trapping</li>
+        <li>Escape key closes dialog</li>
+        <li>Built-in backdrop with <code>::backdrop</code></li>
+        <li>Form integration with <code>method="dialog"</code></li>
+        <li>Return value for form submissions</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Basic Modal</h2>
+    <layout-text>
+      <p>A simple modal with header, body content, and action buttons.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/snippets/demos/modal-basic.html"
+      url="https://vanilla-breeze.dev/modal-basic"
+      title="Basic Modal"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Basic modal">&lt;button type="button" id="open-modal"&gt;
+  Open Modal
+&lt;/button&gt;
+
+&lt;dialog id="basic-modal"&gt;
+  &lt;layout-stack data-gap="l"&gt;
+    &lt;header&gt;
+      &lt;h2&gt;Modal Title&lt;/h2&gt;
+    &lt;/header&gt;
+
+    &lt;div class="dialog-body"&gt;
+      &lt;p&gt;This is a basic modal dialog.&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;footer&gt;
+      &lt;layout-cluster data-justify="flex-end" data-gap="m"&gt;
+        &lt;button type="button" class="secondary" id="cancel-btn"&gt;
+          Cancel
+        &lt;/button&gt;
+        &lt;button type="button" class="primary" id="confirm-btn"&gt;
+          Confirm
+        &lt;/button&gt;
+      &lt;/layout-cluster&gt;
+    &lt;/footer&gt;
+  &lt;/layout-stack&gt;
+&lt;/dialog&gt;
+
+&lt;script&gt;
+  const modal = document.getElementById('basic-modal');
+  document.getElementById('open-modal').onclick = () =&gt; modal.showModal();
+  document.getElementById('cancel-btn').onclick = () =&gt; modal.close();
+  document.getElementById('confirm-btn').onclick = () =&gt; modal.close('confirm');
+&lt;/script&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Confirmation Dialog</h2>
+    <layout-text>
+      <p>A centered confirmation dialog for destructive actions. Uses <code>method="dialog"</code> for form submission.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/snippets/demos/modal-confirm.html"
+      url="https://vanilla-breeze.dev/modal-confirm"
+      title="Confirmation Dialog"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Confirmation dialog">{confirmDialogCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Form Modal</h2>
+    <layout-text>
+      <p>A modal containing a form with inputs. Includes a close button in the header.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/snippets/demos/modal-form.html"
+      url="https://vanilla-breeze.dev/modal-form"
+      title="Form Modal"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Form modal">&lt;dialog id="form-modal"&gt;
+  &lt;form method="dialog"&gt;
+    &lt;layout-stack data-gap="l"&gt;
+      &lt;header&gt;
+        &lt;h2&gt;Add New Item&lt;/h2&gt;
+        &lt;button type="button" class="ghost close-btn" aria-label="Close"&gt;
+          &lt;icon-wc name="x"&gt;&lt;/icon-wc&gt;
+        &lt;/button&gt;
+      &lt;/header&gt;
+
+      &lt;div class="dialog-body"&gt;
+        &lt;layout-stack data-gap="m"&gt;
+          &lt;form-field&gt;
+            &lt;label for="item-name"&gt;Name&lt;/label&gt;
+            &lt;input type="text" id="item-name" name="name" required&gt;
+          &lt;/form-field&gt;
+
+          &lt;form-field&gt;
+            &lt;label for="item-desc"&gt;Description&lt;/label&gt;
+            &lt;textarea id="item-desc" name="description" rows="3"&gt;&lt;/textarea&gt;
+          &lt;/form-field&gt;
+        &lt;/layout-stack&gt;
+      &lt;/div&gt;
+
+      &lt;footer&gt;
+        &lt;layout-cluster data-justify="flex-end" data-gap="m"&gt;
+          &lt;button type="button" class="secondary"&gt;Cancel&lt;/button&gt;
+          &lt;button type="submit" value="save" class="primary"&gt;Save&lt;/button&gt;
+        &lt;/layout-cluster&gt;
+      &lt;/footer&gt;
+    &lt;/layout-stack&gt;
+  &lt;/form&gt;
+&lt;/dialog&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Dialog Styles</h2>
+    <layout-text>
+      <p>Base styles for the dialog element. Add to your project CSS.</p>
+    </layout-text>
+
+    <code-block language="css" label="Dialog styles">{dialogStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Opening:</strong> Use <code>dialog.showModal()</code> for modal behavior with backdrop</li>
+        <li><strong>Closing:</strong> Use <code>dialog.close()</code> or let users press Escape</li>
+        <li><strong>Return value:</strong> Use <code>method="dialog"</code> on forms to get the submit button's value</li>
+        <li><strong>Focus:</strong> First focusable element receives focus when opened</li>
+        <li><strong>Click outside:</strong> Add click listener on dialog to close when clicking backdrop</li>
+        <li><strong>Scrolling:</strong> For long content, add a scrollable class to the body section</li>
+      </ul>
+    </layout-text>
+
+    <h3>Click Outside to Close</h3>
+    <code-block language="javascript" label="Click outside handler">{clickOutsideCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/native/dialog/" class="section-card">
+        <h3>Dialog Element</h3>
+        <p>Native dialog documentation</p>
+      </a>
+      <a href="/docs/snippets/components/toast-notification/" class="section-card">
+        <h3>Toast Notifications</h3>
+        <p>Non-blocking notifications</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>
