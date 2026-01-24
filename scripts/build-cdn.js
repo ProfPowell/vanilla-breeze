@@ -23,10 +23,35 @@ if (!existsSync(CDN)) {
   mkdirSync(CDN, { recursive: true });
 }
 
-// Find the bundled main files in dist/assets
-const assetsDir = join(DIST, 'assets');
+// Find the bundled main files in dist/assets (Vite) or dist/_astro (Astro)
+let assetsDir = join(DIST, 'assets');
 if (!existsSync(assetsDir)) {
-  console.error('Error: dist/assets not found. Run `npm run build` first.');
+  // For Astro builds, build CDN from source files instead
+  const srcDir = join(DIST, 'src');
+  if (existsSync(srcDir)) {
+    console.log('Building CDN files from source (Astro build detected)...');
+
+    // Copy main.css as CDN CSS
+    const srcCss = join(srcDir, 'main.css');
+    if (existsSync(srcCss)) {
+      const cssContent = readFileSync(srcCss, 'utf-8');
+      writeFileSync(join(CDN, 'vanilla-breeze.css'), cssContent);
+      console.log(`Created: cdn/vanilla-breeze.css`);
+    }
+
+    // Copy main.js as CDN JS
+    const srcJs = join(srcDir, 'main.js');
+    if (existsSync(srcJs)) {
+      const jsContent = readFileSync(srcJs, 'utf-8');
+      writeFileSync(join(CDN, 'vanilla-breeze.js'), jsContent);
+      console.log(`Created: cdn/vanilla-breeze.js`);
+    }
+
+    console.log('\nCDN files ready at dist/cdn/');
+    process.exit(0);
+  }
+
+  console.error('Error: No build assets found. Run `npm run build` first.');
   process.exit(1);
 }
 
