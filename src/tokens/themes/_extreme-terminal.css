@@ -1,0 +1,317 @@
+/**
+ * Extreme Theme: Terminal
+ * Green-on-black CRT hacker aesthetic
+ * Inspired by retro computer terminals
+ *
+ * Character: Retro-tech, mysterious, authentic
+ * - Green phosphor text on black
+ * - Monospace typography only
+ * - Scanline effects
+ * - Blinking cursor animations
+ */
+
+:root[data-theme="terminal"],
+[data-theme="terminal"] {
+  /* ===== COLORS ===== */
+  --color-surface: oklch(5% 0.02 145); /* Near black with green tint */
+  --color-surface-alt: oklch(8% 0.02 145);
+  --color-surface-raised: oklch(12% 0.02 145);
+  --color-surface-sunken: oklch(3% 0.01 145);
+  --color-background: oklch(3% 0.02 145);
+
+  --color-text: oklch(75% 0.2 145); /* Phosphor green */
+  --color-text-muted: oklch(55% 0.15 145);
+  --color-text-subtle: oklch(40% 0.1 145);
+
+  --color-primary: oklch(80% 0.22 145); /* Bright green */
+  --color-primary-hover: oklch(85% 0.25 145);
+  --color-primary-subtle: oklch(20% 0.08 145);
+
+  --color-accent: oklch(75% 0.15 60); /* Amber/yellow */
+  --color-accent-hover: oklch(80% 0.18 60);
+
+  --color-border: oklch(30% 0.1 145);
+  --color-border-muted: oklch(20% 0.05 145);
+  --color-border-strong: oklch(75% 0.2 145);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  /* CRT glow effect */
+  --glow-green: 0 0 10px oklch(75% 0.2 145 / 0.5),
+    0 0 20px oklch(75% 0.2 145 / 0.3),
+    0 0 30px oklch(75% 0.2 145 / 0.1);
+  --glow-text: 0 0 5px currentColor;
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "VT323", "Courier New", Courier, monospace;
+  --font-mono: "VT323", "Courier New", Courier, monospace;
+
+  --text-heading-1: 2rem;
+  --text-heading-2: 1.5rem;
+  --text-heading-3: 1.25rem;
+  --text-heading-4: 1rem;
+  --text-body: 1rem;
+
+  --weight-normal: 400;
+  --weight-bold: 400; /* Monospace doesn't need bold */
+  --line-height-normal: 1.4;
+  --line-height-tight: 1.2;
+
+  --letter-spacing-normal: 0.05em;
+
+  /* ===== SHAPE ===== */
+  --radius-xs: 0;
+  --radius-s: 0;
+  --radius-m: 0;
+  --radius-l: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+
+  /* ===== SHADOWS ===== */
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: var(--glow-green);
+  --shadow-lg: var(--glow-green);
+  --shadow-xl: var(--glow-green);
+  --shadow-2xl: var(--glow-green);
+
+  /* ===== MOTION ===== */
+  --duration-instant: 0ms;
+  --duration-fast: 50ms;
+  --duration-normal: 100ms;
+  --duration-slow: 200ms;
+
+  --ease-default: steps(1);
+  --ease-out: steps(1);
+}
+
+/* Terminal component overrides */
+:root[data-theme="terminal"],
+[data-theme="terminal"] {
+  /* CRT scanlines overlay */
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      oklch(0% 0 0 / 0.1) 2px,
+      oklch(0% 0 0 / 0.1) 3px
+    );
+    z-index: 9998;
+  }
+
+  /* CRT screen curvature effect */
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, oklch(0% 0 0 / 0.4) 100%);
+    z-index: 9997;
+  }
+
+  /* All text glows */
+  & * {
+    text-shadow: var(--glow-text);
+  }
+
+  /* Terminal prompt headings */
+  & h1::before,
+  & h2::before,
+  & h3::before {
+    color: var(--color-accent);
+  }
+
+  & h1 {
+    text-transform: uppercase;
+
+    &::before {
+      content: "root@system:~# ";
+    }
+  }
+
+  & h2::before {
+    content: "$ ";
+  }
+
+  & h3::before {
+    content: "> ";
+  }
+
+  /* Blinking cursor after headings */
+  & h1::after,
+  & h2::after {
+    content: "█";
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Terminal-style links */
+  & a:not([class]) {
+    color: var(--color-accent);
+    text-decoration: none;
+
+    &::before {
+      content: "[";
+    }
+
+    &::after {
+      content: "]";
+    }
+
+    &:hover {
+      background: var(--color-accent);
+      color: var(--color-background);
+    }
+  }
+
+  /* ASCII-style dividers */
+  & hr {
+    border: none;
+    height: auto;
+    margin-block: 1.5rem;
+    color: var(--color-border-strong);
+
+    &::before {
+      content: "════════════════════════════════════════════════════════════════";
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  /* Terminal buttons */
+  & button,
+  & .button {
+    border: 1px solid var(--color-primary);
+    background: transparent;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+
+    &::before {
+      content: "[ ";
+    }
+
+    &::after {
+      content: " ]";
+    }
+
+    &:hover {
+      background: var(--color-primary);
+      color: var(--color-background);
+      text-shadow: none;
+    }
+  }
+
+  /* Cards as terminal windows */
+  & .card {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    position: relative;
+    padding-block-start: 2rem;
+
+    &::before {
+      content: "┌─ TERMINAL ─────────────────────────────────┐";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 0.25rem 0.5rem;
+      background: var(--color-surface-raised);
+      border-block-end: 1px solid var(--color-border-strong);
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  /* Input fields */
+  & input,
+  & textarea {
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    caret-color: var(--color-primary);
+
+    &::placeholder {
+      color: var(--color-text-subtle);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: var(--glow-green);
+    }
+  }
+
+  /* Code blocks */
+  & pre {
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+
+    &::before {
+      content: "$ cat script.sh";
+      display: block;
+      color: var(--color-text-muted);
+      margin-block-end: 0.5rem;
+      padding-block-end: 0.5rem;
+      border-block-end: 1px solid var(--color-border);
+    }
+  }
+
+  /* Blockquote as system message */
+  & blockquote {
+    border: 1px solid var(--color-accent);
+    background: oklch(15% 0.05 60 / 0.2);
+    padding: 1rem;
+
+    &::before {
+      content: "[!] SYSTEM MESSAGE:";
+      display: block;
+      color: var(--color-accent);
+      margin-block-end: 0.5rem;
+      font-weight: bold;
+    }
+  }
+
+  /* Selection */
+  & ::selection {
+    background: var(--color-primary);
+    color: var(--color-background);
+    text-shadow: none;
+  }
+
+  /* Typewriter effect for paragraphs */
+  & p {
+    &::before {
+      content: "> ";
+      color: var(--color-text-subtle);
+    }
+  }
+}
+
+/* Light mode variant (amber terminal) */
+:root[data-theme="terminal"][data-mode="light"],
+[data-theme="terminal"][data-mode="light"] {
+  --color-surface: oklch(12% 0.03 60);
+  --color-background: oklch(8% 0.03 60);
+  --color-text: oklch(85% 0.18 60); /* Amber */
+  --color-primary: oklch(85% 0.2 60);
+  --color-accent: oklch(75% 0.2 145); /* Green becomes accent */
+  --glow-green: 0 0 10px oklch(85% 0.18 60 / 0.5);
+}

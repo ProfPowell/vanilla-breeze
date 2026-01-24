@@ -1,0 +1,388 @@
+/**
+ * Extreme Theme: 8-bit
+ * Pixel art inspired retro gaming aesthetic
+ * Inspired by NES/C64/Game Boy era
+ *
+ * Character: Nostalgic, chunky, playful
+ * - Limited 16-color palette
+ * - Pixelated/stepped borders
+ * - Blocky shapes, zero radii
+ * - CRT glow effects
+ */
+
+:root[data-theme="8bit"],
+[data-theme="8bit"] {
+  /* ===== COLORS ===== */
+  /* Classic NES-inspired palette */
+  --color-surface: oklch(20% 0.02 250); /* Dark blue-gray */
+  --color-surface-alt: oklch(25% 0.03 250);
+  --color-surface-raised: oklch(30% 0.03 250);
+  --color-surface-sunken: oklch(15% 0.02 250);
+  --color-background: oklch(12% 0.02 250);
+
+  --color-text: oklch(95% 0.02 60); /* Warm white */
+  --color-text-muted: oklch(70% 0.02 60);
+  --color-text-subtle: oklch(50% 0.02 250);
+
+  /* NES color palette */
+  --color-primary: oklch(70% 0.2 145); /* Green */
+  --color-primary-hover: oklch(75% 0.22 145);
+  --color-primary-subtle: oklch(30% 0.08 145);
+
+  --color-accent: oklch(65% 0.22 25); /* Red */
+  --color-accent-hover: oklch(70% 0.24 25);
+
+  --color-yellow: oklch(85% 0.18 90);
+  --color-blue: oklch(55% 0.2 250);
+  --color-cyan: oklch(75% 0.15 200);
+  --color-magenta: oklch(60% 0.2 320);
+  --color-orange: oklch(75% 0.2 50);
+
+  --color-border: oklch(45% 0.05 250);
+  --color-border-muted: oklch(35% 0.04 250);
+  --color-border-strong: oklch(95% 0.02 60);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  /* CRT glow */
+  --glow-crt: 0 0 10px currentColor, 0 0 20px currentColor;
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "Press Start 2P", "VT323", "Courier New", monospace;
+  --font-mono: "Press Start 2P", "VT323", "Courier New", monospace;
+
+  --text-heading-1: 1.5rem;
+  --text-heading-2: 1.25rem;
+  --text-heading-3: 1rem;
+  --text-heading-4: 0.875rem;
+  --text-body: 0.75rem;
+
+  --weight-normal: 400;
+  --weight-bold: 400; /* Pixel fonts don't have weights */
+  --line-height-normal: 2;
+  --line-height-tight: 1.5;
+
+  --letter-spacing-normal: 0;
+
+  /* ===== SHAPE ===== */
+  /* Blocky, no curves */
+  --radius-xs: 0;
+  --radius-s: 0;
+  --radius-m: 0;
+  --radius-l: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+
+  /* Pixel-perfect border sizes */
+  --border-pixel: 4px;
+
+  /* ===== SHADOWS ===== */
+  /* Pixel drop shadows */
+  --shadow-xs: 2px 2px 0 oklch(0% 0 0);
+  --shadow-sm: 4px 4px 0 oklch(0% 0 0);
+  --shadow-md: 4px 4px 0 oklch(0% 0 0);
+  --shadow-lg: 8px 8px 0 oklch(0% 0 0);
+  --shadow-xl: 8px 8px 0 oklch(0% 0 0);
+  --shadow-2xl: 12px 12px 0 oklch(0% 0 0);
+
+  /* ===== MOTION ===== */
+  /* Instant, no easing (like old games) */
+  --duration-instant: 0ms;
+  --duration-fast: 0ms;
+  --duration-normal: 100ms;
+  --duration-slow: 200ms;
+
+  --ease-default: steps(4);
+  --ease-out: steps(4);
+}
+
+/* 8-bit component overrides */
+:root[data-theme="8bit"],
+[data-theme="8bit"] {
+  /* CRT scanline effect */
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      oklch(0% 0 0 / 0.15) 2px,
+      oklch(0% 0 0 / 0.15) 4px
+    );
+    z-index: 9998;
+  }
+
+  /* Pixel border effect using gradient */
+  --pixel-border: linear-gradient(
+      90deg,
+      var(--color-border-strong) 4px,
+      transparent 4px
+    )
+    0 0 / 8px 100% repeat-x,
+    linear-gradient(
+      180deg,
+      var(--color-border-strong) 4px,
+      transparent 4px
+    )
+    0 0 / 100% 8px repeat-y,
+    linear-gradient(
+      90deg,
+      var(--color-border-strong) 4px,
+      transparent 4px
+    )
+    100% 0 / 8px 100% repeat-x,
+    linear-gradient(
+      180deg,
+      var(--color-border-strong) 4px,
+      transparent 4px
+    )
+    0 100% / 100% 8px repeat-y;
+
+  /* Pixel-style headings */
+  & h1,
+  & h2,
+  & h3,
+  & h4 {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  & h1 {
+    color: var(--color-yellow);
+    text-shadow: var(--glow-crt);
+
+    &::before {
+      content: "★ ";
+      color: var(--color-accent);
+    }
+
+    &::after {
+      content: " ★";
+      color: var(--color-accent);
+    }
+  }
+
+  & h2 {
+    color: var(--color-cyan);
+    border-block-end: var(--border-pixel) solid currentColor;
+    padding-block-end: 0.5rem;
+  }
+
+  & h3 {
+    color: var(--color-primary);
+
+    &::before {
+      content: "► ";
+    }
+  }
+
+  /* Pixel-style dividers */
+  & hr {
+    border: none;
+    height: var(--border-pixel);
+    margin-block: 2rem;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-accent) 0,
+      var(--color-accent) 8px,
+      var(--color-yellow) 8px,
+      var(--color-yellow) 16px,
+      var(--color-primary) 16px,
+      var(--color-primary) 24px,
+      var(--color-cyan) 24px,
+      var(--color-cyan) 32px
+    );
+  }
+
+  /* Links with pixel underline */
+  & a:not([class]) {
+    color: var(--color-cyan);
+    text-decoration: none;
+    border-block-end: var(--border-pixel) solid transparent;
+
+    &:hover {
+      border-color: currentColor;
+      text-shadow: var(--glow-crt);
+    }
+  }
+
+  /* Pixel buttons */
+  & button,
+  & .button {
+    background: var(--color-primary);
+    color: oklch(10% 0 0);
+    border: var(--border-pixel) solid oklch(0% 0 0);
+    box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+    font-size: var(--text-body);
+    padding: 0.75rem 1rem;
+    position: relative;
+
+    /* Inner highlight */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 50%;
+      bottom: 50%;
+      background: oklch(100% 0 0 / 0.2);
+    }
+
+    &:hover {
+      background: var(--color-primary-hover);
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    &:active {
+      transform: translate(2px, 2px);
+      box-shadow: var(--shadow-xs);
+    }
+  }
+
+  /* Pixel cards (like game windows) */
+  & .card {
+    background: var(--color-surface);
+    border: var(--border-pixel) solid var(--color-border-strong);
+    box-shadow: var(--shadow-md);
+    position: relative;
+    padding-block-start: 2.5rem;
+
+    /* Title bar */
+    &::before {
+      content: "════════════════════════";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 0.5rem;
+      background: var(--color-blue);
+      color: var(--color-text);
+      font-size: 0.5rem;
+      border-block-end: var(--border-pixel) solid var(--color-border-strong);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: 8px 8px 0 oklch(0% 0 0);
+    }
+  }
+
+  /* Pixel inputs */
+  & input,
+  & textarea {
+    background: oklch(10% 0 0);
+    border: var(--border-pixel) solid var(--color-border);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    padding: 0.5rem;
+
+    &:focus {
+      border-color: var(--color-primary);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--color-text-subtle);
+    }
+  }
+
+  /* Pixel code blocks */
+  & pre {
+    background: oklch(8% 0 0);
+    border: var(--border-pixel) solid var(--color-cyan);
+    box-shadow: var(--shadow-sm);
+
+    & code {
+      color: var(--color-primary);
+    }
+  }
+
+  & code {
+    background: oklch(15% 0.02 250);
+    color: var(--color-yellow);
+    border: 2px solid var(--color-border);
+    padding: 0 0.25rem;
+  }
+
+  /* Pixel blockquotes */
+  & blockquote {
+    background: var(--color-surface-alt);
+    border: var(--border-pixel) solid var(--color-magenta);
+    padding: 1rem;
+    position: relative;
+
+    &::before {
+      content: "💬";
+      position: absolute;
+      top: -1rem;
+      left: 1rem;
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Pixel lists */
+  & ul {
+    list-style: none;
+
+    & > li::before {
+      content: "►";
+      color: var(--color-accent);
+      margin-inline-end: 0.5rem;
+    }
+  }
+
+  /* HP bar style progress */
+  & progress {
+    appearance: none;
+    height: 1rem;
+    border: var(--border-pixel) solid var(--color-border-strong);
+    background: oklch(10% 0 0);
+
+    &::-webkit-progress-bar {
+      background: oklch(10% 0 0);
+    }
+
+    &::-webkit-progress-value {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--color-primary),
+        var(--color-primary) 8px,
+        var(--color-primary-hover) 8px,
+        var(--color-primary-hover) 16px
+      );
+    }
+  }
+
+  /* Selection */
+  & ::selection {
+    background: var(--color-accent);
+    color: var(--color-text);
+  }
+}
+
+/* Light mode (Game Boy inspired) */
+:root[data-theme="8bit"][data-mode="light"],
+[data-theme="8bit"][data-mode="light"] {
+  --color-surface: oklch(85% 0.05 115); /* GB green-ish */
+  --color-surface-alt: oklch(75% 0.06 115);
+  --color-surface-raised: oklch(90% 0.04 115);
+  --color-background: oklch(88% 0.05 115);
+
+  --color-text: oklch(20% 0.05 115);
+  --color-text-muted: oklch(35% 0.05 115);
+
+  --color-primary: oklch(35% 0.08 115);
+  --color-border-strong: oklch(20% 0.05 115);
+
+  --shadow-sm: 4px 4px 0 oklch(20% 0.05 115 / 0.5);
+  --shadow-md: 4px 4px 0 oklch(20% 0.05 115 / 0.5);
+}
