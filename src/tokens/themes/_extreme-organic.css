@@ -19,9 +19,9 @@
   --color-surface-sunken: oklch(90% 0.04 70); /* Warm beige */
   --color-background: oklch(97% 0.02 80);
 
-  --color-text: oklch(25% 0.05 50); /* Warm dark brown */
-  --color-text-muted: oklch(45% 0.04 50);
-  --color-text-subtle: oklch(55% 0.03 60);
+  --color-text: oklch(22% 0.05 50); /* Warm dark brown */
+  --color-text-muted: oklch(40% 0.04 50); /* Improved contrast */
+  --color-text-subtle: oklch(50% 0.03 60); /* Improved contrast */
 
   --color-primary: oklch(50% 0.12 145); /* Forest green */
   --color-primary-hover: oklch(45% 0.14 145);
@@ -83,20 +83,20 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Organic page-level effects - only on :root */
+:root[data-theme="organic"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 9998;
+}
+
 /* Organic component overrides */
 :root[data-theme="organic"],
 [data-theme="organic"] {
-  /* Subtle texture overlay */
-  &::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    z-index: 9998;
-  }
-
   /* Flowing dividers */
   & hr {
     border: none;
@@ -217,8 +217,9 @@
 
   --color-border: oklch(35% 0.04 55);
   --color-border-muted: oklch(28% 0.03 55);
+}
 
-  &::before {
-    opacity: 0.05;
-  }
+/* Dark mode texture adjustment */
+:root[data-theme="organic"][data-mode="dark"]::before {
+  opacity: 0.05;
 }

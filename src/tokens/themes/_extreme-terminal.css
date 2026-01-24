@@ -20,8 +20,8 @@
   --color-background: oklch(3% 0.02 145);
 
   --color-text: oklch(75% 0.2 145); /* Phosphor green */
-  --color-text-muted: oklch(55% 0.15 145);
-  --color-text-subtle: oklch(40% 0.1 145);
+  --color-text-muted: oklch(60% 0.15 145); /* Improved contrast */
+  --color-text-subtle: oklch(50% 0.12 145); /* Improved contrast */
 
   --color-primary: oklch(80% 0.22 145); /* Bright green */
   --color-primary-hover: oklch(85% 0.25 145);
@@ -86,40 +86,34 @@
   --ease-out: steps(1);
 }
 
+/* Terminal page-level effects - only on :root */
+:root[data-theme="terminal"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    oklch(0% 0 0 / 0.1) 2px,
+    oklch(0% 0 0 / 0.1) 3px
+  );
+  z-index: 9998;
+}
+
+:root[data-theme="terminal"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, oklch(0% 0 0 / 0.4) 100%);
+  z-index: 9997;
+}
+
 /* Terminal component overrides */
 :root[data-theme="terminal"],
 [data-theme="terminal"] {
-  /* CRT scanlines overlay */
-  &::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 1px,
-      oklch(0% 0 0 / 0.1) 2px,
-      oklch(0% 0 0 / 0.1) 3px
-    );
-    z-index: 9998;
-  }
-
-  /* CRT screen curvature effect */
-  &::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 60%, oklch(0% 0 0 / 0.4) 100%);
-    z-index: 9997;
-  }
-
-  /* All text glows */
-  & * {
-    text-shadow: var(--glow-text);
-  }
-
   /* Terminal prompt headings */
   & h1::before,
   & h2::before,
