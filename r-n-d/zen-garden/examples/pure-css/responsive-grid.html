@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Grid - Container Queries Demo | Vanilla Breeze</title>
+
+  <!-- Core System -->
+  <link rel="stylesheet" href="../../core/tokens.css">
+  <link rel="stylesheet" href="../../core/grid.css">
+  <link rel="stylesheet" href="../../core/base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../../themes/swiss.css">
+  <link rel="stylesheet" href="../../themes/organic.css">
+  <link rel="stylesheet" href="../../themes/brutalist.css">
+  <link rel="stylesheet" href="../../themes/cyber.css">
+
+  <style>
+    /* ============================================
+       RESPONSIVE GRID SHOWCASE
+       Container Queries & Resizable Panels
+       ============================================ */
+
+    body {
+      display: grid;
+      grid-template:
+        "body-header" auto
+        "body-main"   1fr
+        "body-footer" auto
+        / 1fr;
+      min-height: 100dvh;
+    }
+
+    main {
+      padding: var(--space-6);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Theme Switcher */
+    .theme-switcher {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .theme-switcher select {
+      padding: 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: var(--text-sm);
+    }
+
+    /* ============================================
+       DEMO INFO
+       ============================================ */
+    .demo-info {
+      padding: var(--space-5);
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      margin-block-end: var(--space-6);
+    }
+
+    .demo-info h2 {
+      margin: 0 0 var(--space-3) 0;
+      font-size: var(--text-xl);
+    }
+
+    .technique-list {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-3) 0 0 0;
+    }
+
+    .technique-list li {
+      padding: var(--space-2) 0;
+      padding-inline-start: var(--space-6);
+      position: relative;
+    }
+
+    .technique-list li::before {
+      content: "\2713";
+      position: absolute;
+      left: 0;
+      color: var(--color-success);
+      font-weight: bold;
+    }
+
+    /* ============================================
+       SECTION HEADERS
+       ============================================ */
+    .section-header {
+      margin-block: var(--space-8) var(--space-4);
+    }
+
+    .section-header h2 {
+      margin: 0 0 var(--space-2) 0;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    /* ============================================
+       RESIZABLE CONTAINER
+       User can drag to resize and see breakpoints
+       ============================================ */
+    .resizable-wrapper {
+      margin-block-end: var(--space-8);
+    }
+
+    .resize-handle-area {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-block-end: var(--space-3);
+    }
+
+    .resize-handle-area label {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+    }
+
+    .resize-handle-area input[type="range"] {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .width-display {
+      font-family: var(--font-code);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      min-width: 60px;
+    }
+
+    .resizable-container {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      resize: horizontal;
+      min-width: 280px;
+      max-width: 100%;
+      background: var(--color-surface-alt);
+    }
+
+    /* ============================================
+       CONTAINER QUERIES
+       Cards adapt to their container, not viewport
+       ============================================ */
+    .cq-demo {
+      container-type: inline-size;
+      padding: var(--space-4);
+    }
+
+    /* Base card grid - mobile first */
+    .card-grid {
+      display: grid;
+      gap: var(--space-4);
+      grid-template-columns: 1fr;
+    }
+
+    /* Container query breakpoints */
+    @container (min-width: 400px) {
+      .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @container (min-width: 600px) {
+      .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @container (min-width: 900px) {
+      .card-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    /* ============================================
+       RESPONSIVE CARD COMPONENT
+       ============================================ */
+    .responsive-card {
+      container-type: inline-size;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .card-inner {
+      display: grid;
+      grid-template:
+        "image"   auto
+        "content" 1fr
+        / 1fr;
+    }
+
+    .card-image {
+      grid-area: image;
+      aspect-ratio: 16 / 9;
+      background: var(--color-surface-sunken);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .card-content {
+      grid-area: content;
+      padding: var(--space-4);
+    }
+
+    .card-content h4 {
+      margin: 0 0 var(--space-2) 0;
+      font-size: var(--text-base);
+    }
+
+    .card-content p {
+      margin: 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* Card adapts to its own container width */
+    @container (min-width: 300px) {
+      .card-inner {
+        grid-template:
+          "image content" 1fr
+          / 120px 1fr;
+      }
+
+      .card-image {
+        aspect-ratio: 1;
+      }
+    }
+
+    /* ============================================
+       VIEWPORT COMPARISON
+       Side-by-side iframes showing breakpoints
+       ============================================ */
+    .viewport-comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-4);
+      margin-block-end: var(--space-8);
+    }
+
+    .viewport-frame {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background: var(--color-surface-raised);
+    }
+
+    .viewport-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface-alt);
+      border-block-end: 1px solid var(--color-border);
+      font-size: var(--text-sm);
+    }
+
+    .viewport-header span {
+      font-weight: var(--weight-medium);
+    }
+
+    .viewport-header code {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .viewport-content {
+      padding: var(--space-4);
+      container-type: inline-size;
+    }
+
+    /* ============================================
+       BREAKPOINT INDICATOR
+       Visual feedback for current container width
+       ============================================ */
+    .breakpoint-indicator {
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface-sunken);
+      border-radius: var(--radius-interactive);
+      font-size: var(--text-sm);
+      font-family: var(--font-code);
+      margin-block-end: var(--space-4);
+      text-align: center;
+    }
+
+    .breakpoint-indicator::before {
+      content: "Container: < 400px (1 column)";
+    }
+
+    @container (min-width: 400px) {
+      .breakpoint-indicator::before {
+        content: "Container: 400-599px (2 columns)";
+      }
+    }
+
+    @container (min-width: 600px) {
+      .breakpoint-indicator::before {
+        content: "Container: 600-899px (3 columns)";
+      }
+    }
+
+    @container (min-width: 900px) {
+      .breakpoint-indicator::before {
+        content: "Container: 900px+ (4 columns)";
+      }
+    }
+
+    /* ============================================
+       CODE BLOCKS
+       ============================================ */
+    .code-block {
+      background: var(--color-surface-sunken);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: var(--text-sm);
+      margin-block: var(--space-4);
+    }
+
+    /* ============================================
+       AUTO-FIT GRID DEMO
+       ============================================ */
+    .auto-fit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+      margin-block-end: var(--space-4);
+    }
+
+    .auto-fit-card {
+      padding: var(--space-4);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      text-align: center;
+    }
+
+    .auto-fit-card h4 {
+      margin: 0 0 var(--space-2) 0;
+    }
+
+    .auto-fit-card p {
+      margin: 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* ============================================
+       SUBGRID DEMO (when supported)
+       ============================================ */
+    .subgrid-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .subgrid-card {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 3;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-4);
+    }
+
+    @supports not (grid-template-rows: subgrid) {
+      .subgrid-card {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .subgrid-card > *:last-child {
+        margin-top: auto;
+      }
+    }
+
+    .subgrid-card h4 {
+      margin: 0;
+    }
+
+    .subgrid-card p {
+      margin: var(--space-2) 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .subgrid-card .card-meta {
+      font-size: var(--text-xs);
+      color: var(--color-text-subtle);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border-muted);
+    }
+
+    /* ============================================
+       DEMO NAVIGATION
+       ============================================ */
+    .demo-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .demo-nav a {
+      padding: 0.5rem 1rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      text-decoration: none;
+      font-size: var(--text-sm);
+    }
+
+    .demo-nav a:hover {
+      background: var(--color-primary-subtle);
+    }
+
+    .demo-nav a.current {
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+      border-color: var(--color-primary);
+    }
+
+    /* Smooth transitions */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="swiss">
+
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <select id="theme-select">
+      <option value="swiss">Swiss</option>
+      <option value="organic">Organic</option>
+      <option value="brutalist">Brutalist</option>
+      <option value="cyber">Cyber</option>
+    </select>
+  </div>
+
+  <header>
+    <h1>Responsive Grid</h1>
+    <nav>
+      <a href="../demo.html">Main Demo</a>
+      <a href="layout-switcher.html">Layout Switcher</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="demo-info">
+      <h2>Container Queries & Responsive Grids</h2>
+      <p>Modern CSS responsive patterns that adapt to their container, not just the viewport. Drag the resize handle to see breakpoints in action.</p>
+
+      <ul class="technique-list">
+        <li><code>container-type: inline-size</code> for query containers</li>
+        <li><code>@container</code> queries for component-level responsiveness</li>
+        <li><code>auto-fit</code> and <code>minmax()</code> for fluid grids</li>
+        <li>CSS <code>subgrid</code> for aligned card content</li>
+      </ul>
+    </div>
+
+    <!-- ============================================
+         RESIZABLE CONTAINER DEMO
+         ============================================ -->
+    <div class="section-header">
+      <h2>Resizable Container</h2>
+      <p>Drag the slider or resize the container to see how cards respond to their container width (not viewport).</p>
+    </div>
+
+    <div class="resizable-wrapper">
+      <div class="resize-handle-area">
+        <label for="container-width">Container Width:</label>
+        <input type="range" id="container-width" min="280" max="1200" value="800">
+        <span class="width-display" id="width-display">800px</span>
+      </div>
+
+      <div class="resizable-container" id="resizable" style="width: 800px;">
+        <div class="cq-demo">
+          <div class="breakpoint-indicator"></div>
+          <div class="card-grid">
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Image</div>
+                <div class="card-content">
+                  <h4>Card Title</h4>
+                  <p>Card description that explains the content.</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Image</div>
+                <div class="card-content">
+                  <h4>Another Card</h4>
+                  <p>More content for this card component.</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Image</div>
+                <div class="card-content">
+                  <h4>Third Card</h4>
+                  <p>Responsive layout using container queries.</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Image</div>
+                <div class="card-content">
+                  <h4>Fourth Card</h4>
+                  <p>Adapts based on container, not viewport.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         CONTAINER QUERY CODE
+         ============================================ -->
+    <div class="section-header">
+      <h2>The Container Query Pattern</h2>
+      <p>Components query their container's width, enabling truly reusable responsive components.</p>
+    </div>
+
+    <div class="code-block">
+<pre><code>/* Define a query container */
+.card-container {
+  container-type: inline-size;
+}
+
+/* Component adapts to its container */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@container (min-width: 400px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 600px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}</code></pre>
+    </div>
+
+    <!-- ============================================
+         VIEWPORT COMPARISON
+         ============================================ -->
+    <div class="section-header">
+      <h2>Same Component, Different Containers</h2>
+      <p>The same card component renders differently based on its container width.</p>
+    </div>
+
+    <div class="viewport-comparison">
+      <div class="viewport-frame">
+        <div class="viewport-header">
+          <span>Narrow Sidebar</span>
+          <code>~300px</code>
+        </div>
+        <div class="viewport-content" style="max-width: 300px;">
+          <div class="card-grid">
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Stacked layout</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewport-frame">
+        <div class="viewport-header">
+          <span>Wide Sidebar</span>
+          <code>~450px</code>
+        </div>
+        <div class="viewport-content" style="max-width: 450px;">
+          <div class="card-grid">
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Horizontal layout</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Two columns</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewport-frame">
+        <div class="viewport-header">
+          <span>Main Content</span>
+          <code>~700px</code>
+        </div>
+        <div class="viewport-content">
+          <div class="card-grid">
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Three columns</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Three columns</p>
+                </div>
+              </div>
+            </div>
+            <div class="responsive-card">
+              <div class="card-inner">
+                <div class="card-image">Img</div>
+                <div class="card-content">
+                  <h4>Card</h4>
+                  <p>Three columns</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         AUTO-FIT GRID
+         ============================================ -->
+    <div class="section-header">
+      <h2>Auto-Fit Grid</h2>
+      <p>Using <code>auto-fit</code> with <code>minmax()</code> for intrinsic responsiveness without media queries.</p>
+    </div>
+
+    <div class="auto-fit-grid">
+      <div class="auto-fit-card">
+        <h4>Design Tokens</h4>
+        <p>Three-layer architecture for scalable design systems.</p>
+      </div>
+      <div class="auto-fit-card">
+        <h4>Grid Identity</h4>
+        <p>Semantic HTML auto-registers grid areas.</p>
+      </div>
+      <div class="auto-fit-card">
+        <h4>CSS Layers</h4>
+        <p>Cascade control without specificity battles.</p>
+      </div>
+      <div class="auto-fit-card">
+        <h4>Modern Color</h4>
+        <p>oklch() for perceptually uniform palettes.</p>
+      </div>
+      <div class="auto-fit-card">
+        <h4>Zero Build</h4>
+        <p>No npm, no webpack - just CSS.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+<pre><code>/* Auto-fit grid - no media queries needed */
+.auto-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}</code></pre>
+    </div>
+
+    <!-- ============================================
+         SUBGRID DEMO
+         ============================================ -->
+    <div class="section-header">
+      <h2>Subgrid Alignment</h2>
+      <p>CSS Subgrid ensures card content aligns across rows, even with varying content lengths.</p>
+    </div>
+
+    <div class="subgrid-demo">
+      <article class="subgrid-card">
+        <h4>Short Title</h4>
+        <p>Brief description.</p>
+        <div class="card-meta">Updated 2 hours ago</div>
+      </article>
+      <article class="subgrid-card">
+        <h4>A Much Longer Card Title That Wraps</h4>
+        <p>This card has a longer description that takes up more vertical space than the others.</p>
+        <div class="card-meta">Updated yesterday</div>
+      </article>
+      <article class="subgrid-card">
+        <h4>Medium Title</h4>
+        <p>Medium length description text here.</p>
+        <div class="card-meta">Updated last week</div>
+      </article>
+      <article class="subgrid-card">
+        <h4>Another Card</h4>
+        <p>Content aligns with siblings thanks to subgrid.</p>
+        <div class="card-meta">Updated today</div>
+      </article>
+    </div>
+
+    <div class="code-block">
+<pre><code>/* Parent grid */
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Cards use subgrid for row alignment */
+.card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3; /* title, content, meta */
+}</code></pre>
+    </div>
+
+  </main>
+
+  <footer>
+    <nav class="demo-nav">
+      <a href="layout-switcher.html">01 Layout Switcher</a>
+      <a href="tabs-accordion.html">02 Tabs</a>
+      <a href="responsive-grid.html" class="current">03 Grid</a>
+      <a href="landing-page.html">04 Landing</a>
+      <a href="../minimal-js/dashboard.html">05 Dashboard</a>
+      <a href="../minimal-js/theme-builder.html">06 Theme</a>
+      <a href="../interactive/component-lab.html">07 Lab</a>
+      <a href="../interactive/animation-motion.html">08 Motion</a>
+    </nav>
+    <p style="text-align: center; padding: var(--space-4); color: var(--color-text-muted);">Vanilla Breeze Zen Garden | Container Queries Demo</p>
+  </footer>
+
+  <script>
+    // Theme switching
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.body.dataset.theme = e.target.value;
+    });
+
+    // Resizable container sync with slider
+    const slider = document.getElementById('container-width');
+    const container = document.getElementById('resizable');
+    const display = document.getElementById('width-display');
+
+    slider.addEventListener('input', (e) => {
+      const width = e.target.value;
+      container.style.width = `${width}px`;
+      display.textContent = `${width}px`;
+    });
+
+    // Sync slider when container is manually resized
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const width = Math.round(entry.contentRect.width);
+        slider.value = width;
+        display.textContent = `${width}px`;
+      }
+    });
+
+    resizeObserver.observe(container);
+  </script>
+</body>
+</html>

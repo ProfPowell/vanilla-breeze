@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Page - Layout Template Demo | Vanilla Breeze</title>
+
+  <!-- Core System -->
+  <link rel="stylesheet" href="../../core/tokens.css">
+  <link rel="stylesheet" href="../../core/grid.css">
+  <link rel="stylesheet" href="../../core/base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../../themes/swiss.css">
+  <link rel="stylesheet" href="../../themes/organic.css">
+  <link rel="stylesheet" href="../../themes/brutalist.css">
+  <link rel="stylesheet" href="../../themes/cyber.css">
+
+  <style>
+    /* ============================================
+       LANDING PAGE LAYOUT
+       Uses data-layout="landing" with named grid areas
+       ============================================ */
+
+    body[data-layout="landing"] {
+      display: grid;
+      grid-template:
+        "body-header" auto
+        "hero"        auto
+        "feature"     auto
+        "testimonial" auto
+        "cta"         auto
+        "body-footer" auto
+        / 1fr;
+      min-height: 100dvh;
+      gap: 0;
+    }
+
+    /* Theme Switcher */
+    .theme-switcher {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .theme-switcher select {
+      padding: 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: var(--text-sm);
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    body > header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .logo {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: var(--space-6);
+    }
+
+    .header-nav a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      font-weight: var(--weight-medium);
+      transition: color var(--duration-fast) var(--ease-default);
+    }
+
+    .header-nav a:hover {
+      color: var(--color-text);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    @media (width < 768px) {
+      .header-nav {
+        display: none;
+      }
+    }
+
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+    [data-grid-area="hero"] {
+      grid-area: hero;
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+      background: var(--color-surface-alt);
+    }
+
+    .hero-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      margin-block-end: var(--space-4);
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1.1;
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    .hero-subtitle {
+      font-size: var(--text-xl);
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-8) 0;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: var(--space-4);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-cta button {
+      padding: var(--space-3) var(--space-6);
+      font-size: var(--text-lg);
+    }
+
+    /* ============================================
+       FEATURES SECTION
+       ============================================ */
+    [data-grid-area="feature"] {
+      grid-area: feature;
+      padding: var(--space-16) var(--space-6);
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto var(--space-12) auto;
+    }
+
+    .section-header h2 {
+      margin: 0 0 var(--space-3) 0;
+    }
+
+    .section-header p {
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-6);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      padding: var(--space-6);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--card-shadow);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-radius: var(--radius-lg);
+      font-size: 1.5rem;
+      margin-block-end: var(--space-4);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 var(--space-2) 0;
+      font-size: var(--text-lg);
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    /* ============================================
+       TESTIMONIALS SECTION
+       ============================================ */
+    [data-grid-area="testimonial"] {
+      grid-area: testimonial;
+      padding: var(--space-16) var(--space-6);
+      background: var(--color-surface-alt);
+    }
+
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-6);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .testimonial-card {
+      padding: var(--space-6);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+    }
+
+    .testimonial-quote {
+      font-size: var(--text-lg);
+      font-style: italic;
+      margin: 0 0 var(--space-4) 0;
+      position: relative;
+      padding-inline-start: var(--space-4);
+      border-inline-start: 3px solid var(--color-primary);
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .testimonial-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: var(--weight-bold);
+      color: var(--color-primary);
+    }
+
+    .testimonial-name {
+      font-weight: var(--weight-semibold);
+      margin: 0;
+    }
+
+    .testimonial-role {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    /* ============================================
+       CTA SECTION
+       ============================================ */
+    [data-grid-area="cta"] {
+      grid-area: cta;
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+    }
+
+    .cta-content {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cta-content h2 {
+      margin: 0 0 var(--space-4) 0;
+      color: inherit;
+    }
+
+    .cta-content p {
+      margin: 0 0 var(--space-6) 0;
+      opacity: 0.9;
+    }
+
+    .cta-content button {
+      background: white;
+      color: var(--color-primary);
+      border: none;
+      padding: var(--space-3) var(--space-6);
+      font-size: var(--text-lg);
+    }
+
+    .cta-content button:hover {
+      background: var(--color-surface-alt);
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    body > footer {
+      padding: var(--space-8) var(--space-6);
+      background: var(--color-surface);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-8);
+      max-width: 1200px;
+      margin: 0 auto var(--space-8) auto;
+    }
+
+    .footer-section h4 {
+      margin: 0 0 var(--space-3) 0;
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-section li {
+      margin-block-end: var(--space-2);
+    }
+
+    .footer-section a {
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .footer-section a:hover {
+      color: var(--color-primary);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-block-start: var(--space-6);
+      border-block-start: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    /* Demo Navigation */
+    .demo-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: var(--space-4);
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .demo-nav a {
+      padding: 0.5rem 1rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      text-decoration: none;
+      font-size: var(--text-sm);
+    }
+
+    .demo-nav a:hover {
+      background: var(--color-primary-subtle);
+    }
+
+    .demo-nav a.current {
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+      border-color: var(--color-primary);
+    }
+
+    /* Smooth transitions */
+    *, *::before, *::after {
+      transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        color 0.2s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-layout="landing" data-theme="swiss">
+
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <select id="theme-select">
+      <option value="swiss">Swiss</option>
+      <option value="organic">Organic</option>
+      <option value="brutalist">Brutalist</option>
+      <option value="cyber">Cyber</option>
+    </select>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <a href="../demo.html" class="logo">Vanilla Breeze</a>
+    <nav class="header-nav">
+      <a href="#features">Features</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="07-component-lab.html">Components</a>
+      <a href="../demo.html">Documentation</a>
+    </nav>
+    <div class="header-actions">
+      <button>Sign In</button>
+      <button data-variant="primary">Get Started</button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section data-grid-area="hero">
+    <div class="hero-content">
+      <span class="hero-badge">New in 2026</span>
+      <h1 class="hero-title">Modern CSS, Zero Build Steps</h1>
+      <p class="hero-subtitle">Design tokens, named grid areas, and semantic HTML. Build beautiful interfaces with pure CSS custom properties.</p>
+      <div class="hero-cta">
+        <button data-variant="primary">Get Started Free</button>
+        <button>View Documentation</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section data-grid-area="feature" id="features">
+    <div class="section-header">
+      <h2>Everything You Need</h2>
+      <p>A complete design system built on modern CSS features. No build tools, no JavaScript frameworks required.</p>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="feature-icon">@</div>
+        <h3>Three-Layer Tokens</h3>
+        <p>Primitives, semantic, and component tokens create a flexible architecture that scales from simple sites to complex applications.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">#</div>
+        <h3>Grid Identity System</h3>
+        <p>Semantic HTML elements auto-register their grid areas. Switch layouts with a single data attribute change.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">*</div>
+        <h3>CSS Zen Garden Theming</h3>
+        <p>Four distinct themes demonstrate the power of CSS custom properties. Same markup, dramatically different visuals.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">!</div>
+        <h3>Modern CSS Features</h3>
+        <p>CSS Layers, @property, oklch(), light-dark(), CSS Nesting, and :has() create a future-proof foundation.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">%</div>
+        <h3>Zero Dependencies</h3>
+        <p>No npm install, no webpack config, no PostCSS plugins. Just link the stylesheets and start building.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">&</div>
+        <h3>Accessible by Default</h3>
+        <p>Semantic HTML, proper contrast ratios, focus indicators, and prefers-reduced-motion support built in.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section data-grid-area="testimonial" id="testimonials">
+    <div class="section-header">
+      <h2>Loved by Developers</h2>
+      <p>See what others are saying about the Vanilla Breeze approach.</p>
+    </div>
+
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <blockquote class="testimonial-quote">
+          Finally, a CSS architecture that makes sense. The three-layer token system is brilliant for maintaining consistency across large projects.
+        </blockquote>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">SC</div>
+          <div>
+            <p class="testimonial-name">Sarah Chen</p>
+            <p class="testimonial-role">Senior Frontend Developer</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote class="testimonial-quote">
+          I was skeptical about no-build CSS, but the developer experience is actually better. Hot reload is instant because there's nothing to compile.
+        </blockquote>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MJ</div>
+          <div>
+            <p class="testimonial-name">Marcus Johnson</p>
+            <p class="testimonial-role">Design Systems Lead</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote class="testimonial-quote">
+          The grid identity system changed how I think about layouts. Semantic HTML that automatically places itself is the future.
+        </blockquote>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">EK</div>
+          <div>
+            <p class="testimonial-name">Elena Kowalski</p>
+            <p class="testimonial-role">UX Engineer</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section data-grid-area="cta">
+    <div class="cta-content">
+      <h2>Ready to Simplify Your CSS?</h2>
+      <p>Join thousands of developers building faster, more maintainable interfaces with modern CSS.</p>
+      <button>Download Now - It's Free</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="../interactive/component-lab.html">Components</a></li>
+          <li><a href="../minimal-js/theme-builder.html">Theme Builder</a></li>
+          <li><a href="layout-switcher.html">Layouts</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="../../showcase/">Documentation</a></li>
+          <li><a href="tabs-accordion.html">Examples</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Demos</h4>
+        <ul>
+          <li><a href="layout-switcher.html">Layout Switcher</a></li>
+          <li><a href="../minimal-js/dashboard.html">Dashboard</a></li>
+          <li><a href="../interactive/animation-motion.html">Animations</a></li>
+          <li><a href="responsive-grid.html">Responsive Grid</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Community</h4>
+        <ul>
+          <li><a href="#">Discord</a></li>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contributing</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Vanilla Breeze Design System. Built with modern CSS.</p>
+    </div>
+  </footer>
+
+  <!-- Demo Navigation -->
+  <nav class="demo-nav">
+    <a href="layout-switcher.html">01 Layout</a>
+    <a href="tabs-accordion.html">02 Tabs</a>
+    <a href="responsive-grid.html">03 Grid</a>
+    <a href="landing-page.html" class="current">04 Landing</a>
+    <a href="../minimal-js/dashboard.html">05 Dashboard</a>
+    <a href="../minimal-js/theme-builder.html">06 Theme</a>
+    <a href="../interactive/component-lab.html">07 Lab</a>
+    <a href="../interactive/animation-motion.html">08 Motion</a>
+  </nav>
+
+  <script>
+    // Theme switching
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.body.dataset.theme = e.target.value;
+    });
+  </script>
+</body>
+</html>
