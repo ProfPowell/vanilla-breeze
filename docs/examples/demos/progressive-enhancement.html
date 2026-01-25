@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progressive Enhancement Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-xl);
+    }
+
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+
+    h3 { margin-bottom: var(--size-s); }
+
+    /* Toggle bar */
+    .toggle-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      gap: var(--size-l);
+      align-items: center;
+      padding: var(--size-m);
+      margin-bottom: var(--size-xl);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .toggle-bar label {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .toggle-bar input[type="checkbox"] {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+
+    .js-status {
+      margin-left: auto;
+      padding: var(--size-2xs) var(--size-s);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+    }
+
+    .js-status.enabled {
+      background: var(--color-success-subtle);
+      color: var(--color-success);
+    }
+
+    .js-status.disabled {
+      background: var(--color-warning-subtle);
+      color: var(--color-warning);
+    }
+
+    /* Comparison grid */
+    .comparison {
+      display: grid;
+      gap: var(--size-l);
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: var(--size-xl);
+    }
+
+    @media (max-width: 60rem) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .panel-header.before {
+      color: var(--color-warning);
+    }
+
+    .panel-header.after {
+      color: var(--color-success);
+    }
+
+    .panel-header .badge {
+      padding: var(--size-3xs) var(--size-2xs);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-xs);
+    }
+
+    .panel-header.before .badge {
+      background: var(--color-warning-subtle);
+    }
+
+    .panel-header.after .badge {
+      background: var(--color-success-subtle);
+    }
+
+    .panel-content {
+      padding: var(--size-m);
+    }
+
+    /* Description boxes */
+    .description {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      margin-bottom: var(--size-l);
+    }
+
+    .description h4 {
+      margin: 0 0 var(--size-xs);
+      font-size: var(--font-size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .description p {
+      margin: 0;
+    }
+
+    /* Code display */
+    .code-toggle {
+      margin-top: var(--size-m);
+    }
+
+    .code-toggle summary {
+      cursor: pointer;
+      color: var(--color-primary);
+      font-size: var(--font-size-s);
+    }
+
+    .code-toggle pre {
+      margin-top: var(--size-s);
+      padding: var(--size-m);
+      background: var(--color-gray-900);
+      color: var(--color-gray-100);
+      border-radius: var(--radius-s);
+      overflow-x: auto;
+      font-size: var(--font-size-s);
+    }
+
+    /* Component demos need some spacing */
+    .demo-area {
+      min-height: 200px;
+    }
+
+    /* Hide JS-only content when disabled */
+    html[data-no-js] script:not([data-essential]) {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Progressive Enhancement</h1>
+  <p class="lead">See how Vanilla Breeze components work without JavaScript (HTML baseline) versus with JavaScript enhancement. Toggle JS to compare real behavior.</p>
+
+  <div class="toggle-bar">
+    <label>
+      <input type="checkbox" id="js-toggle" checked/>
+      JavaScript Enabled
+    </label>
+    <span class="js-status enabled" id="js-status">JS Active</span>
+    <small style="color: var(--color-text-muted);">Toggle to see baseline HTML behavior</small>
+  </div>
+
+  <!-- ================================================================
+       ACCORDION
+       ================================================================ -->
+  <section>
+    <h2>Accordion</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> Native <code>&lt;details&gt;</code> elements are fully functional - users can expand/collapse any panel independently.</p>
+      <p><strong>With JS:</strong> The <code>accordion-wc</code> wrapper adds single-open mode (only one panel open at a time), smooth animations, and programmatic control via API methods.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">HTML Only</span>
+          Before JS
+        </div>
+        <div class="panel-content demo-area">
+          <!-- Native details - always works -->
+          <details>
+            <summary>What is Vanilla Breeze?</summary>
+            <div>
+              <p>A layered HTML component system that builds on native browser features.</p>
+            </div>
+          </details>
+          <details>
+            <summary>How does it work?</summary>
+            <div>
+              <p>Start with semantic HTML, add CSS for styling, enhance with JS for interactivity.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Is it accessible?</summary>
+            <div>
+              <p>Yes! Native elements provide built-in keyboard navigation and screen reader support.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Enhanced</span>
+          With JS
+        </div>
+        <div class="panel-content demo-area" id="accordion-demo">
+          <accordion-wc data-single data-bordered>
+            <details name="demo-accordion" open>
+              <summary>What is Vanilla Breeze?</summary>
+              <div>
+                <p>A layered HTML component system that builds on native browser features.</p>
+              </div>
+            </details>
+            <details name="demo-accordion">
+              <summary>How does it work?</summary>
+              <div>
+                <p>Start with semantic HTML, add CSS for styling, enhance with JS for interactivity.</p>
+              </div>
+            </details>
+            <details name="demo-accordion">
+              <summary>Is it accessible?</summary>
+              <div>
+                <p>Yes! Native elements provide built-in keyboard navigation and screen reader support.</p>
+              </div>
+            </details>
+          </accordion-wc>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- HTML Baseline (works without JS) --&gt;
+&lt;details&gt;
+  &lt;summary&gt;Question?&lt;/summary&gt;
+  &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+&lt;/details&gt;
+
+&lt;!-- Enhanced with accordion-wc --&gt;
+&lt;accordion-wc data-single data-bordered&gt;
+  &lt;details name="faq" open&gt;
+    &lt;summary&gt;Question?&lt;/summary&gt;
+    &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+  &lt;/details&gt;
+  ...
+&lt;/accordion-wc&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- ================================================================
+       TABS
+       ================================================================ -->
+  <section>
+    <h2>Tabs</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> Content sections are displayed stacked vertically. All content is visible and accessible.</p>
+      <p><strong>With JS:</strong> The <code>tabs-wc</code> component creates a tabbed interface with ARIA roles, keyboard navigation (arrow keys), and proper focus management.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">HTML Only</span>
+          Before JS
+        </div>
+        <div class="panel-content demo-area">
+          <!-- Stacked sections - always accessible -->
+          <section>
+            <h3>Overview</h3>
+            <p>This is the overview content. Without JavaScript, all tab content is visible as stacked sections.</p>
+          </section>
+          <section>
+            <h3>Features</h3>
+            <p>Features content goes here. Users can scroll through all content naturally.</p>
+          </section>
+          <section>
+            <h3>Usage</h3>
+            <p>Usage documentation and examples would appear in this section.</p>
+          </section>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Enhanced</span>
+          With JS
+        </div>
+        <div class="panel-content demo-area" id="tabs-demo">
+          <tabs-wc>
+            <nav slot="tabs">
+              <button>Overview</button>
+              <button>Features</button>
+              <button>Usage</button>
+            </nav>
+            <section>
+              <p>This is the overview content. With JavaScript, only the active tab's content is visible.</p>
+            </section>
+            <section>
+              <p>Features content goes here. Click tabs or use arrow keys to navigate.</p>
+            </section>
+            <section>
+              <p>Usage documentation and examples would appear in this section.</p>
+            </section>
+          </tabs-wc>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- HTML Baseline (stacked sections) --&gt;
+&lt;section&gt;
+  &lt;h3&gt;Overview&lt;/h3&gt;
+  &lt;p&gt;Content...&lt;/p&gt;
+&lt;/section&gt;
+&lt;section&gt;
+  &lt;h3&gt;Features&lt;/h3&gt;
+  &lt;p&gt;Content...&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;!-- Enhanced with tabs-wc --&gt;
+&lt;tabs-wc&gt;
+  &lt;nav slot="tabs"&gt;
+    &lt;button&gt;Overview&lt;/button&gt;
+    &lt;button&gt;Features&lt;/button&gt;
+  &lt;/nav&gt;
+  &lt;section&gt;&lt;p&gt;Overview content&lt;/p&gt;&lt;/section&gt;
+  &lt;section&gt;&lt;p&gt;Features content&lt;/p&gt;&lt;/section&gt;
+&lt;/tabs-wc&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- ================================================================
+       DROPDOWN
+       ================================================================ -->
+  <section>
+    <h2>Dropdown Menu</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> Links are displayed as a visible list. All navigation options are immediately accessible.</p>
+      <p><strong>With JS:</strong> The <code>dropdown-wc</code> component hides the menu behind a trigger button, with click-outside-to-close, escape key handling, and proper ARIA expanded states.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">HTML Only</span>
+          Before JS
+        </div>
+        <div class="panel-content demo-area">
+          <!-- Visible nav list - always accessible -->
+          <nav>
+            <strong>Account Menu</strong>
+            <ul style="margin-top: var(--size-xs); padding-left: var(--size-l);">
+              <li><a href="#">Profile</a></li>
+              <li><a href="#">Settings</a></li>
+              <li><a href="#">Billing</a></li>
+              <li><a href="#">Sign Out</a></li>
+            </ul>
+          </nav>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Enhanced</span>
+          With JS
+        </div>
+        <div class="panel-content demo-area" id="dropdown-demo">
+          <dropdown-wc>
+            <button slot="trigger">Account Menu</button>
+            <nav slot="content">
+              <a href="#">Profile</a>
+              <a href="#">Settings</a>
+              <a href="#">Billing</a>
+              <a href="#">Sign Out</a>
+            </nav>
+          </dropdown-wc>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- HTML Baseline (visible list) --&gt;
+&lt;nav&gt;
+  &lt;strong&gt;Account Menu&lt;/strong&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Profile&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Settings&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
+
+&lt;!-- Enhanced with dropdown-wc --&gt;
+&lt;dropdown-wc&gt;
+  &lt;button slot="trigger"&gt;Account Menu&lt;/button&gt;
+  &lt;nav slot="content"&gt;
+    &lt;a href="#"&gt;Profile&lt;/a&gt;
+    &lt;a href="#"&gt;Settings&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/dropdown-wc&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- ================================================================
+       DIALOG/MODAL
+       ================================================================ -->
+  <section>
+    <h2>Dialog / Modal</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> The native <code>&lt;dialog&gt;</code> element can still be shown via the <code>open</code> attribute or form method="dialog". Content is accessible.</p>
+      <p><strong>With JS:</strong> Full modal behavior with <code>showModal()</code>, backdrop, focus trapping, escape to close, and scroll locking.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">HTML Only</span>
+          Before JS
+        </div>
+        <div class="panel-content demo-area">
+          <!-- Native dialog with open attribute -->
+          <dialog open style="position: relative; padding: var(--size-m); border: 1px solid var(--color-border); border-radius: var(--radius-m);">
+            <h3 style="margin: 0 0 var(--size-s);">Dialog Title</h3>
+            <p>This dialog is visible via the <code>open</code> attribute. Without JavaScript, it appears inline in the document flow.</p>
+            <form method="dialog">
+              <button>Close</button>
+            </form>
+          </dialog>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Enhanced</span>
+          With JS
+        </div>
+        <div class="panel-content demo-area" id="dialog-demo">
+          <button id="open-dialog">Open Modal Dialog</button>
+          <dialog id="demo-dialog">
+            <h3>Modal Dialog</h3>
+            <p>This opens as a true modal with backdrop, focus trap, and escape-to-close. Try pressing Escape or clicking outside.</p>
+            <form method="dialog">
+              <button>Close</button>
+            </form>
+          </dialog>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- HTML Baseline (inline dialog) --&gt;
+&lt;dialog open&gt;
+  &lt;h3&gt;Dialog Title&lt;/h3&gt;
+  &lt;p&gt;Content...&lt;/p&gt;
+  &lt;form method="dialog"&gt;
+    &lt;button&gt;Close&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/dialog&gt;
+
+&lt;!-- Enhanced with showModal() --&gt;
+&lt;button onclick="dialog.showModal()"&gt;Open&lt;/button&gt;
+&lt;dialog id="dialog"&gt;
+  &lt;h3&gt;Modal Dialog&lt;/h3&gt;
+  &lt;p&gt;Content with backdrop and focus trap&lt;/p&gt;
+  &lt;form method="dialog"&gt;
+    &lt;button&gt;Close&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/dialog&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- ================================================================
+       TOAST NOTIFICATIONS
+       ================================================================ -->
+  <section>
+    <h2>Toast Notifications</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> Status messages display inline as static alert boxes. Information is always visible.</p>
+      <p><strong>With JS:</strong> The <code>toast-wc</code> component shows temporary, dismissible notifications that auto-hide and can be triggered programmatically.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">HTML Only</span>
+          Before JS
+        </div>
+        <div class="panel-content demo-area">
+          <!-- Static status messages -->
+          <div role="alert" style="padding: var(--size-s) var(--size-m); background: var(--color-success-subtle); border: 1px solid var(--color-success); border-radius: var(--radius-s); margin-bottom: var(--size-s);">
+            <strong>Success!</strong> Your changes have been saved.
+          </div>
+          <div role="alert" style="padding: var(--size-s) var(--size-m); background: var(--color-warning-subtle); border: 1px solid var(--color-warning); border-radius: var(--radius-s);">
+            <strong>Warning:</strong> Your session will expire soon.
+          </div>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Enhanced</span>
+          With JS
+        </div>
+        <div class="panel-content demo-area" id="toast-demo">
+          <button id="show-toast-success">Show Success Toast</button>
+          <button id="show-toast-warning">Show Warning Toast</button>
+          <toast-wc id="toast-container"></toast-wc>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- HTML Baseline (static alerts) --&gt;
+&lt;div role="alert"&gt;
+  &lt;strong&gt;Success!&lt;/strong&gt; Message saved.
+&lt;/div&gt;
+
+&lt;!-- Enhanced with toast-wc --&gt;
+&lt;toast-wc id="toaster"&gt;&lt;/toast-wc&gt;
+&lt;script&gt;
+  toaster.show({
+    message: 'Success!',
+    variant: 'success',
+    duration: 3000
+  });
+&lt;/script&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- ================================================================
+       LOADING STATES
+       ================================================================ -->
+  <section>
+    <h2>Loading States</h2>
+
+    <div class="description">
+      <h4>Progressive Enhancement</h4>
+      <p><strong>Without JS:</strong> The <code>data-loading</code> attribute provides CSS-only skeleton and shimmer effects. No JavaScript required for the visual loading state.</p>
+      <p><strong>With JS:</strong> Loading states can be toggled dynamically, and content can be replaced when data arrives.</p>
+    </div>
+
+    <ul class="comparison">
+      <li class="panel">
+        <div class="panel-header before">
+          <span class="badge">CSS Only</span>
+          No JS Needed
+        </div>
+        <div class="panel-content demo-area">
+          <!-- CSS-only skeleton loading -->
+          <layout-card data-loading="skeleton">
+            <div style="height: 120px;">Image placeholder</div>
+            <h3>Card Title</h3>
+            <p>Card description text that shows as a skeleton placeholder.</p>
+            <button>Action</button>
+          </layout-card>
+        </div>
+      </li>
+      <li class="panel">
+        <div class="panel-header after">
+          <span class="badge">Dynamic</span>
+          JS Controlled
+        </div>
+        <div class="panel-content demo-area" id="loading-demo">
+          <button id="toggle-loading">Toggle Loading State</button>
+          <layout-card id="loading-card" style="margin-top: var(--size-m);">
+            <img src="https://picsum.photos/300/120" alt="Sample" width="300" height="120"/>
+            <h3>Loaded Card</h3>
+            <p>This card shows real content. Click the button to toggle loading state.</p>
+            <button>Action</button>
+          </layout-card>
+        </div>
+      </li>
+    </ul>
+
+    <details class="code-toggle">
+      <summary>View HTML Code</summary>
+      <pre><code>&lt;!-- CSS-only skeleton (no JS) --&gt;
+&lt;layout-card data-loading="skeleton"&gt;
+  &lt;div&gt;Image placeholder&lt;/div&gt;
+  &lt;h3&gt;Title&lt;/h3&gt;
+  &lt;p&gt;Description...&lt;/p&gt;
+&lt;/layout-card&gt;
+
+&lt;!-- JS-controlled loading --&gt;
+&lt;layout-card id="card"&gt;...&lt;/layout-card&gt;
+&lt;script&gt;
+  // Show loading
+  card.setAttribute('data-loading', 'skeleton');
+  // Hide loading
+  card.removeAttribute('data-loading');
+&lt;/script&gt;</code></pre>
+    </details>
+  </section>
+
+  <!-- Scripts -->
+  <script type="module" src="/src/main.js"></script>
+
+  <script data-essential>
+    // JS toggle functionality
+    const jsToggle = document.getElementById('js-toggle');
+    const jsStatus = document.getElementById('js-status');
+
+    // Dialog demo
+    const openDialogBtn = document.getElementById('open-dialog');
+    const demoDialog = document.getElementById('demo-dialog');
+
+    if (openDialogBtn && demoDialog) {
+      openDialogBtn.addEventListener('click', () => {
+        demoDialog.showModal();
+      });
+    }
+
+    // Toast demo
+    const toastContainer = document.getElementById('toast-container');
+    const showSuccessBtn = document.getElementById('show-toast-success');
+    const showWarningBtn = document.getElementById('show-toast-warning');
+
+    if (showSuccessBtn && toastContainer) {
+      showSuccessBtn.addEventListener('click', () => {
+        toastContainer.show({
+          message: 'Success! Your changes have been saved.',
+          variant: 'success',
+          duration: 3000
+        });
+      });
+    }
+
+    if (showWarningBtn && toastContainer) {
+      showWarningBtn.addEventListener('click', () => {
+        toastContainer.show({
+          message: 'Warning: Your session will expire soon.',
+          variant: 'warning',
+          duration: 3000
+        });
+      });
+    }
+
+    // Loading toggle demo
+    const toggleLoadingBtn = document.getElementById('toggle-loading');
+    const loadingCard = document.getElementById('loading-card');
+
+    if (toggleLoadingBtn && loadingCard) {
+      toggleLoadingBtn.addEventListener('click', () => {
+        if (loadingCard.hasAttribute('data-loading')) {
+          loadingCard.removeAttribute('data-loading');
+        } else {
+          loadingCard.setAttribute('data-loading', 'skeleton');
+        }
+      });
+    }
+
+    // JS toggle handler - reloads page without scripts
+    jsToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        jsStatus.textContent = 'JS Active';
+        jsStatus.className = 'js-status enabled';
+        // Reload to re-enable scripts
+        window.location.reload();
+      } else {
+        jsStatus.textContent = 'JS Disabled';
+        jsStatus.className = 'js-status disabled';
+        // Remove enhanced components, show baseline HTML
+        document.querySelectorAll('accordion-wc, tabs-wc, dropdown-wc').forEach(el => {
+          // For accordion, just remove the wrapper
+          if (el.tagName === 'ACCORDION-WC') {
+            const details = el.querySelectorAll('details');
+            el.replaceWith(...details);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

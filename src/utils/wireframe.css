@@ -1,0 +1,240 @@
+/* Wireframe mode: Sketch-like aesthetic for rapid HTML prototyping */
+/* Activated by <html data-wireframe> or on any container element */
+
+/* Root variables for wireframe styling */
+[data-wireframe] {
+  --wireframe-stroke: oklch(40% 0 0);
+  --wireframe-fill: oklch(95% 0 0);
+  --wireframe-text: oklch(25% 0 0);
+  --wireframe-muted: oklch(70% 0 0);
+  --wireframe-border: 2px dashed var(--wireframe-stroke);
+}
+
+/* Wireframe mode indicator */
+html[data-wireframe]::before {
+  content: "WIREFRAME";
+  position: fixed;
+  inset-block-end: var(--size-s);
+  inset-inline-end: var(--size-s);
+  z-index: 99999;
+  padding: var(--size-2xs) var(--size-s);
+  background: var(--wireframe-stroke);
+  color: var(--wireframe-fill);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-s);
+  pointer-events: none;
+}
+
+/* Apply grayscale to everything in wireframe mode */
+html[data-wireframe] {
+  filter: grayscale(1);
+}
+
+/* Remove all shadows and decorative effects */
+[data-wireframe] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* --- Borders: Convert to dashed sketch lines --- */
+[data-wireframe] :is(
+  article, aside, section, main, nav, header, footer,
+  div, form, fieldset,
+  layout-card, layout-sidebar, layout-stack, layout-grid, layout-center, layout-cluster, layout-cover, layout-switcher, layout-reel
+) {
+  border: var(--wireframe-border) !important;
+  border-radius: 0 !important;
+  background: var(--wireframe-fill) !important;
+}
+
+/* Headings: Simple underlines */
+[data-wireframe] :is(h1, h2, h3, h4, h5, h6) {
+  border-block-end: var(--wireframe-border);
+  padding-block-end: var(--size-2xs);
+  background: transparent !important;
+}
+
+/* Links: Dotted underline only */
+[data-wireframe] a {
+  color: var(--wireframe-text) !important;
+  text-decoration: underline dotted var(--wireframe-stroke) !important;
+  background: transparent !important;
+}
+
+/* Buttons: Simple outlined boxes */
+[data-wireframe] button,
+[data-wireframe] [role="button"],
+[data-wireframe] input[type="submit"],
+[data-wireframe] input[type="button"],
+[data-wireframe] .button {
+  border: var(--wireframe-border) !important;
+  border-radius: 0 !important;
+  background: var(--wireframe-fill) !important;
+  color: var(--wireframe-text) !important;
+}
+
+/* Form inputs: Simple outlined fields */
+[data-wireframe] :is(input, textarea, select) {
+  border: var(--wireframe-border) !important;
+  border-radius: 0 !important;
+  background: var(--wireframe-fill) !important;
+  color: var(--wireframe-text) !important;
+}
+
+/* --- Images: Placeholder boxes with X --- */
+[data-wireframe] img,
+[data-wireframe] picture,
+[data-wireframe] video,
+[data-wireframe] iframe,
+[data-wireframe] canvas {
+  position: relative;
+  background: var(--wireframe-fill) !important;
+  border: var(--wireframe-border) !important;
+  object-fit: none !important;
+}
+
+/* Hide actual image content */
+[data-wireframe] img {
+  color: transparent;
+}
+
+/* Add X pattern overlay to images using gradient */
+[data-wireframe] picture,
+[data-wireframe] figure:has(img) {
+  position: relative;
+}
+
+[data-wireframe] img::after,
+[data-wireframe] picture::after,
+[data-wireframe] video::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  pointer-events: none;
+}
+
+/* Tables: Simple grid lines */
+[data-wireframe] table {
+  border-collapse: collapse;
+  border: var(--wireframe-border) !important;
+}
+
+[data-wireframe] :is(th, td) {
+  border: 1px dashed var(--wireframe-stroke) !important;
+  background: var(--wireframe-fill) !important;
+}
+
+[data-wireframe] th {
+  background: oklch(90% 0 0) !important;
+}
+
+/* Cards and interactive elements */
+[data-wireframe] :is(details, dialog) {
+  border: var(--wireframe-border) !important;
+  border-radius: 0 !important;
+  background: var(--wireframe-fill) !important;
+}
+
+[data-wireframe] summary {
+  border-block-end: 1px dashed var(--wireframe-stroke) !important;
+}
+
+/* Lists: Simple markers */
+[data-wireframe] :is(ul, ol) {
+  list-style: square !important;
+}
+
+[data-wireframe] ul {
+  list-style: "- " !important;
+}
+
+/* Blockquotes: Left border only */
+[data-wireframe] blockquote {
+  border: none !important;
+  border-inline-start: 4px solid var(--wireframe-stroke) !important;
+  background: transparent !important;
+}
+
+/* Code blocks: Simple box */
+[data-wireframe] :is(pre, code) {
+  border: 1px dashed var(--wireframe-stroke) !important;
+  border-radius: 0 !important;
+  background: oklch(92% 0 0) !important;
+}
+
+/* Horizontal rules: Simple dashed line */
+[data-wireframe] hr {
+  border: none !important;
+  border-block-start: var(--wireframe-border) !important;
+  background: transparent !important;
+}
+
+/* --- Annotations: Label elements with their tag name --- */
+/* Optional: Add data-wireframe="annotate" for element labels */
+[data-wireframe="annotate"] *:not(script):not(style):not(br):not(hr)::before {
+  content: "<" attr(data-label, "") ">";
+  position: absolute;
+  inset-block-start: -1.2em;
+  inset-inline-start: 0;
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--wireframe-muted);
+  pointer-events: none;
+}
+
+/* Label common elements automatically when annotating */
+[data-wireframe="annotate"] header::before { content: "<header>"; }
+[data-wireframe="annotate"] nav::before { content: "<nav>"; }
+[data-wireframe="annotate"] main::before { content: "<main>"; }
+[data-wireframe="annotate"] aside::before { content: "<aside>"; }
+[data-wireframe="annotate"] footer::before { content: "<footer>"; }
+[data-wireframe="annotate"] article::before { content: "<article>"; }
+[data-wireframe="annotate"] section::before { content: "<section>"; }
+
+/* --- Scoped wireframe mode --- */
+/* Apply wireframe only to a specific container */
+:not(html)[data-wireframe] {
+  /* Don't apply grayscale filter to containers, only html */
+  filter: none;
+}
+
+/* Container-scoped mode indicator */
+:not(html)[data-wireframe]::before {
+  content: "wireframe";
+  display: block;
+  padding: var(--size-3xs) var(--size-2xs);
+  margin-block-end: var(--size-xs);
+  background: var(--wireframe-stroke);
+  color: var(--wireframe-fill);
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  width: fit-content;
+}
+
+/* --- Reduced motion support --- */
+/* Wireframe mode is mostly static, but ensure no transitions */
+@media (prefers-reduced-motion: reduce) {
+  [data-wireframe] * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
