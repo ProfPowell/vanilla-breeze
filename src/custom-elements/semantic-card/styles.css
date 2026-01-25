@@ -10,6 +10,7 @@ semantic-card {
   border-radius: var(--radius-l);
   box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
   overflow: hidden;
+  container-type: inline-size;
 
   /* --- Variant styles --- */
 
@@ -98,4 +99,28 @@ semantic-card[data-padding="l"] {
 
 semantic-card semantic-card {
   background: var(--color-surface-raised);
+}
+
+/* --- Container query: compact mode for narrow containers --- */
+
+semantic-card {
+  @container (max-width: 300px) {
+    & > :is(header, [slot="header"]) {
+      padding: var(--size-s);
+    }
+
+    & > :is(section, [slot="content"]),
+    & > :not(:is(header, section, footer, [slot])) {
+      padding: var(--size-s);
+    }
+
+    & > :is(footer, [slot="footer"]) {
+      padding: var(--size-s);
+      flex-direction: column;
+    }
+
+    & > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
+      font-size: var(--font-size-base);
+    }
+  }
 }

@@ -6,6 +6,25 @@
  * Use data-mode="light|dark" to force a specific mode.
  */
 
+/* @property declarations enable smooth hue transitions when themes change */
+@property --hue-primary {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 260;
+}
+
+@property --hue-secondary {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 200;
+}
+
+@property --hue-accent {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 30;
+}
+
 :root {
   /* Enable light-dark() function */
   color-scheme: light dark;
@@ -163,4 +182,19 @@
   --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
   --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
   --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+}
+
+/* ==================== THEME TRANSITIONS ==================== */
+/* Smooth hue interpolation when switching themes */
+:root {
+  transition:
+    --hue-primary var(--duration-slow) var(--ease-default),
+    --hue-secondary var(--duration-slow) var(--ease-default),
+    --hue-accent var(--duration-slow) var(--ease-default);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
 }
