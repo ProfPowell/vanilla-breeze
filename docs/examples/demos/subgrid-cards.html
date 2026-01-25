@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subgrid Demo: Card Alignment - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h3 { margin-bottom: var(--size-s); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-xl);
+      margin: var(--size-l) 0;
+    }
+
+    @media (width < 900px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-section h3 {
+      margin-bottom: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .comparison-section h3.after {
+      background: var(--color-primary-subtle);
+    }
+
+    /* Before: Independent card grids */
+    .card-grid-before {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--size-m);
+    }
+
+    .card-before {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .card-before header,
+    .card-before section,
+    .card-before footer {
+      padding: var(--size-m);
+    }
+
+    .card-before header {
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .card-before footer {
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
+    }
+
+    /* After: Subgrid card alignment */
+    .card-grid-subgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-auto-rows: auto 1fr auto;
+      gap: var(--size-m);
+    }
+
+    .card-subgrid {
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .card-subgrid header,
+    .card-subgrid section,
+    .card-subgrid footer {
+      padding: var(--size-m);
+    }
+
+    .card-subgrid header {
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .card-subgrid footer {
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--color-gray-900);
+      color: var(--color-gray-100);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      overflow-x: auto;
+      margin: var(--size-m) 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+    }
+
+    /* Debug grid lines */
+    .debug-grid .card-grid-subgrid {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent calc(100% - 1px),
+          var(--color-primary) calc(100% - 1px),
+          var(--color-primary) 100%
+        );
+    }
+
+    .highlight-row {
+      position: relative;
+    }
+
+    .highlight-row::before {
+      content: "";
+      position: absolute;
+      left: -4px;
+      right: -4px;
+      top: 0;
+      bottom: 0;
+      border: 2px dashed var(--color-primary);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* Verdict */
+    .verdict {
+      padding: var(--size-m);
+      background: var(--color-success-subtle);
+      border: 1px solid var(--color-success);
+      border-radius: var(--radius-m);
+      margin-top: var(--size-xl);
+    }
+
+    .verdict h3 {
+      margin: 0 0 var(--size-s);
+      color: var(--color-success);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <main>
+    <h1>Subgrid Demo: Card Alignment</h1>
+    <p class="lead">Compare traditional card grids vs subgrid for cross-card alignment of headers, content, and footers.</p>
+
+    <h2>The Problem</h2>
+    <p>When cards have varying content lengths, their headers and footers don't align across the row. Each card manages its own internal grid independently.</p>
+
+    <div class="comparison">
+      <section class="comparison-section">
+        <h3>Before: Independent Grids</h3>
+        <div class="card-grid-before">
+          <article class="card-before">
+            <header><h4>Short Title</h4></header>
+            <section>
+              <p>Brief content that fits in one line.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+          <article class="card-before">
+            <header><h4>A Much Longer Card Title That Wraps</h4></header>
+            <section>
+              <p>This card has more content which makes the body taller than the first card.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+          <article class="card-before">
+            <header><h4>Medium Title</h4></header>
+            <section>
+              <p>Middle ground content length here.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+        </div>
+        <p><strong>Notice:</strong> Headers and footers don't align across cards.</p>
+      </section>
+
+      <section class="comparison-section">
+        <h3 class="after">After: Subgrid Alignment</h3>
+        <div class="card-grid-subgrid">
+          <article class="card-subgrid">
+            <header><h4>Short Title</h4></header>
+            <section>
+              <p>Brief content that fits in one line.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+          <article class="card-subgrid">
+            <header><h4>A Much Longer Card Title That Wraps</h4></header>
+            <section>
+              <p>This card has more content which makes the body taller than the first card.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+          <article class="card-subgrid">
+            <header><h4>Medium Title</h4></header>
+            <section>
+              <p>Middle ground content length here.</p>
+            </section>
+            <footer><button>Action</button></footer>
+          </article>
+        </div>
+        <p><strong>Notice:</strong> All headers align, all footers align!</p>
+      </section>
+    </div>
+
+    <h2>The CSS</h2>
+
+    <h3>Before (Traditional)</h3>
+    <div class="code-block">
+      <pre>.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--size-m);
+}
+
+.card {
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* Each card is independent */
+}</pre>
+    </div>
+
+    <h3>After (Subgrid)</h3>
+    <div class="code-block">
+      <pre>.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-auto-rows: auto 1fr auto; /* Parent defines row tracks */
+  gap: var(--size-m);
+}
+
+.card {
+  display: grid;
+  grid-row: span 3;            /* Card spans 3 rows */
+  grid-template-rows: subgrid; /* Inherit parent's row tracks */
+}</pre>
+    </div>
+
+    <h2>Key Difference</h2>
+    <ul>
+      <li><strong>Before:</strong> Each card has its own <code>grid-template-rows</code>, so row heights are independent</li>
+      <li><strong>After:</strong> Parent defines row tracks, cards use <code>subgrid</code> to share them, ensuring alignment</li>
+    </ul>
+
+    <h2>Complexity Comparison</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: var(--size-m) 0;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--color-border);">
+          <th style="text-align: left; padding: var(--size-s);">Metric</th>
+          <th style="text-align: left; padding: var(--size-s);">Before</th>
+          <th style="text-align: left; padding: var(--size-s);">After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Lines of CSS</td>
+          <td style="padding: var(--size-s);">~8</td>
+          <td style="padding: var(--size-s);">~10</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Cross-card alignment</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">HTML changes</td>
+          <td style="padding: var(--size-s);">None</td>
+          <td style="padding: var(--size-s);">None</td>
+        </tr>
+        <tr>
+          <td style="padding: var(--size-s);">Browser support</td>
+          <td style="padding: var(--size-s);">All</td>
+          <td style="padding: var(--size-s);">Baseline 2023</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="verdict">
+      <h3>Evaluation</h3>
+      <p><strong>Benefit:</strong> Subgrid provides true cross-card alignment that's impossible with traditional CSS grid. The alignment is automatic and responds to content changes.</p>
+      <p><strong>Cost:</strong> Minimal - only 2 extra lines of CSS. The conceptual model (cards span rows) is slightly more complex but well worth it.</p>
+      <p><strong>Recommendation:</strong> Add <code>[data-subgrid="rows"]</code> utility to layout-attributes.css for card grids.</p>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

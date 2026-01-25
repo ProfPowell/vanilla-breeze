@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subgrid Demo: Form Alignment - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h3 { margin-bottom: var(--size-s); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-xl);
+      margin: var(--size-l) 0;
+    }
+
+    @media (width < 900px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-section h3 {
+      margin-bottom: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .comparison-section h3.after {
+      background: var(--color-primary-subtle);
+    }
+
+    /* Before: Fixed-width labels */
+    .form-before {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-l);
+    }
+
+    .form-before fieldset {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .form-before legend {
+      font-weight: 600;
+      padding: 0 var(--size-xs);
+    }
+
+    .form-before .field {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: var(--size-s);
+      align-items: center;
+      margin-bottom: var(--size-s);
+    }
+
+    .form-before .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-before label {
+      font-size: var(--font-size-s);
+    }
+
+    .form-before input {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+    }
+
+    /* After: Subgrid form alignment */
+    .form-subgrid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: var(--size-m) var(--size-s);
+    }
+
+    .form-subgrid fieldset {
+      display: grid;
+      grid-column: span 2;
+      grid-template-columns: subgrid;
+      gap: var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .form-subgrid legend {
+      grid-column: span 2;
+      font-weight: 600;
+      padding: 0 var(--size-xs);
+    }
+
+    .form-subgrid .field {
+      display: grid;
+      grid-column: span 2;
+      grid-template-columns: subgrid;
+      align-items: center;
+    }
+
+    .form-subgrid label {
+      font-size: var(--font-size-s);
+    }
+
+    .form-subgrid input {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--color-gray-900);
+      color: var(--color-gray-100);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      overflow-x: auto;
+      margin: var(--size-m) 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+    }
+
+    /* Highlight alignment */
+    .form-subgrid label {
+      background: linear-gradient(90deg, transparent calc(100% - 2px), var(--color-primary) 2px);
+    }
+
+    /* Verdict */
+    .verdict {
+      padding: var(--size-m);
+      background: var(--color-success-subtle);
+      border: 1px solid var(--color-success);
+      border-radius: var(--radius-m);
+      margin-top: var(--size-xl);
+    }
+
+    .verdict h3 {
+      margin: 0 0 var(--size-s);
+      color: var(--color-success);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <main>
+    <h1>Subgrid Demo: Form Field Alignment</h1>
+    <p class="lead">Compare fixed-width labels vs subgrid for cross-fieldset label alignment.</p>
+
+    <h2>The Problem</h2>
+    <p>Form labels in different fieldsets don't align when using fixed widths. Labels may truncate or waste space depending on the longest label in each fieldset.</p>
+
+    <div class="comparison">
+      <section class="comparison-section">
+        <h3>Before: Fixed Width Labels</h3>
+        <form class="form-before">
+          <fieldset>
+            <legend>Personal Info</legend>
+            <div class="field">
+              <label for="name1">Full Name</label>
+              <input type="text" id="name1" placeholder="John Doe"/>
+            </div>
+            <div class="field">
+              <label for="email1">Email Address</label>
+              <input type="email" id="email1" placeholder="john@example.com"/>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Address</legend>
+            <div class="field">
+              <label for="street1">Street</label>
+              <input type="text" id="street1" placeholder="123 Main St"/>
+            </div>
+            <div class="field">
+              <label for="city1">City</label>
+              <input type="text" id="city1" placeholder="Springfield"/>
+            </div>
+          </fieldset>
+        </form>
+        <p><strong>Notice:</strong> "Email Address" is cramped at 120px, while "City" wastes space.</p>
+      </section>
+
+      <section class="comparison-section">
+        <h3 class="after">After: Subgrid Alignment</h3>
+        <form class="form-subgrid">
+          <fieldset>
+            <legend>Personal Info</legend>
+            <div class="field">
+              <label for="name2">Full Name</label>
+              <input type="text" id="name2" placeholder="John Doe"/>
+            </div>
+            <div class="field">
+              <label for="email2">Email Address</label>
+              <input type="email" id="email2" placeholder="john@example.com"/>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Address</legend>
+            <div class="field">
+              <label for="street2">Street</label>
+              <input type="text" id="street2" placeholder="123 Main St"/>
+            </div>
+            <div class="field">
+              <label for="city2">City</label>
+              <input type="text" id="city2" placeholder="Springfield"/>
+            </div>
+          </fieldset>
+        </form>
+        <p><strong>Notice:</strong> Label column auto-sizes to longest label ("Email Address"), all labels align!</p>
+      </section>
+    </div>
+
+    <h2>The CSS</h2>
+
+    <h3>Before (Fixed Width)</h3>
+    <div class="code-block">
+      <pre>.field {
+  display: grid;
+  grid-template-columns: 120px 1fr; /* Fixed label width */
+  gap: var(--size-s);
+}</pre>
+    </div>
+
+    <h3>After (Subgrid)</h3>
+    <div class="code-block">
+      <pre>form {
+  display: grid;
+  grid-template-columns: max-content 1fr; /* Label auto-sizes */
+  gap: var(--size-m) var(--size-s);
+}
+
+fieldset {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: subgrid; /* Inherit form columns */
+}
+
+.field {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: subgrid; /* Inherit fieldset columns */
+}</pre>
+    </div>
+
+    <h2>Key Difference</h2>
+    <ul>
+      <li><strong>Before:</strong> Each field has a fixed 120px label column - may truncate long labels or waste space</li>
+      <li><strong>After:</strong> Form defines <code>max-content 1fr</code>, fieldsets and fields use subgrid to share the column</li>
+      <li><strong>Result:</strong> Label column auto-sizes to the longest label across ALL fieldsets</li>
+    </ul>
+
+    <h2>Complexity Comparison</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: var(--size-m) 0;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--color-border);">
+          <th style="text-align: left; padding: var(--size-s);">Metric</th>
+          <th style="text-align: left; padding: var(--size-s);">Before</th>
+          <th style="text-align: left; padding: var(--size-s);">After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Lines of CSS</td>
+          <td style="padding: var(--size-s);">~5</td>
+          <td style="padding: var(--size-s);">~15</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Cross-fieldset alignment</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Auto-sizing labels</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr>
+          <td style="padding: var(--size-s);">Nested subgrid levels</td>
+          <td style="padding: var(--size-s);">0</td>
+          <td style="padding: var(--size-s);">2</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="verdict">
+      <h3>Evaluation</h3>
+      <p><strong>Benefit:</strong> Perfect label alignment across fieldsets with auto-sizing. No magic numbers needed.</p>
+      <p><strong>Cost:</strong> More CSS lines, requires understanding nested subgrid (form &rarr; fieldset &rarr; field).</p>
+      <p><strong>Recommendation:</strong> Beneficial for forms with multiple fieldsets. The extra CSS is worth the alignment and flexibility. Consider adding a <code>[data-layout="form-grid"]</code> utility.</p>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+/* ==========================================================================
+   Page Layout Templates
+
+   Requires: layout-grid-identity.css
+
+   Usage: <body data-layout="page-sidebar">
+
+   These are opt-in layouts for common page structures. Import this file
+   alongside layout-grid-identity.css to enable semantic page layouts.
+
+   Browser Support: All modern browsers (uses :has() for adaptations)
+   ========================================================================== */
+
+/* --- Base page grid --- */
+body[data-layout^="page-"] {
+  display: grid;
+  min-height: 100dvh;
+  gap: var(--layout-gap, 0);
+}
+
+/* --- Stack (mobile-first default) --- */
+body[data-layout="page-stack"] {
+  grid-template:
+    "body-header" auto
+    "body-nav" auto
+    "body-main" 1fr
+    "body-footer" auto
+    / 1fr;
+}
+
+/* --- Sidebar Left --- */
+body[data-layout="page-sidebar"] {
+  grid-template:
+    "body-header body-header" auto
+    "body-nav    body-main"   1fr
+    "body-footer body-footer" auto
+    / var(--sidebar-width, 280px) 1fr;
+}
+
+@media (width < 768px) {
+  body[data-layout="page-sidebar"] {
+    grid-template:
+      "body-header" auto
+      "body-main" 1fr
+      "body-nav" auto
+      "body-footer" auto
+      / 1fr;
+  }
+}
+
+/* --- Sidebar Right --- */
+body[data-layout="page-sidebar-right"] {
+  grid-template:
+    "body-header body-header" auto
+    "body-main   body-aside"  1fr
+    "body-footer body-footer" auto
+    / 1fr var(--sidebar-width, 280px);
+}
+
+@media (width < 768px) {
+  body[data-layout="page-sidebar-right"] {
+    grid-template:
+      "body-header" auto
+      "body-main" 1fr
+      "body-aside" auto
+      "body-footer" auto
+      / 1fr;
+  }
+}
+
+/* --- Holy Grail --- */
+body[data-layout="page-holy-grail"] {
+  grid-template:
+    "body-header body-header body-header" auto
+    "body-nav    body-main   body-aside"  1fr
+    "body-footer body-footer body-footer" auto
+    / var(--sidebar-width, 280px) 1fr var(--sidebar-width, 280px);
+}
+
+@media (width < 1024px) {
+  body[data-layout="page-holy-grail"] {
+    grid-template:
+      "body-header body-header" auto
+      "body-nav    body-main"   1fr
+      "body-footer body-footer" auto
+      / var(--sidebar-width, 280px) 1fr;
+
+    & > aside {
+      display: none;
+    }
+  }
+}
+
+@media (width < 768px) {
+  body[data-layout="page-holy-grail"] {
+    grid-template:
+      "body-header" auto
+      "body-main" 1fr
+      "body-footer" auto
+      / 1fr;
+
+    & > nav,
+    & > aside {
+      display: none;
+    }
+  }
+}
+
+/* --- :has() Adaptations --- */
+
+/* Adjust when nav is absent */
+body[data-layout="page-sidebar"]:not(:has(> nav)) {
+  grid-template-columns: 1fr;
+}
+
+/* Adjust when aside present in main */
+main:has(> aside) {
+  display: grid;
+  grid-template:
+    "main-article main-aside" 1fr
+    / 1fr var(--sidebar-width, 280px);
+  gap: var(--layout-gap, 1rem);
+}
+
+@media (width < 768px) {
+  main:has(> aside) {
+    grid-template:
+      "main-article" 1fr
+      "main-aside" auto
+      / 1fr;
+  }
+}
+
+/* --- Print Styles --- */
+@media print {
+  body[data-layout^="page-"] > nav,
+  body[data-layout^="page-"] > aside {
+    display: none;
+  }
+
+  body[data-layout^="page-"] {
+    display: block;
+  }
+}

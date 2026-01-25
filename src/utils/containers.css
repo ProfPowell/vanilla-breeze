@@ -1,0 +1,67 @@
+/* ==========================================================================
+   Container Query Utilities
+
+   Establishes container context on sectioning elements to enable
+   component-level responsive design throughout the framework.
+
+   Browser Support: Baseline 2023 (Chrome 105+, Firefox 110+, Safari 16+)
+   ========================================================================== */
+
+/* --- Phase 1: Sectioning Elements --- */
+/* Semantic sectioning elements establish inline-size container context */
+main,
+article,
+section,
+aside {
+  container-type: inline-size;
+}
+
+/* --- Phase 2: Explicit Container Utilities --- */
+
+/* Opt-in container establishment via data attribute */
+[data-container] {
+  container-type: inline-size;
+}
+
+/* Full size containment (width and height) */
+[data-container="size"] {
+  container-type: size;
+}
+
+/* Named containers for targeted queries */
+[data-container-name] {
+  container-name: attr(data-container-name ident);
+}
+
+/* Common named container shortcuts */
+[data-container-name="sidebar"] {
+  container-name: sidebar;
+}
+
+[data-container-name="main"] {
+  container-name: main;
+}
+
+[data-container-name="card"] {
+  container-name: card;
+}
+
+[data-container-name="panel"] {
+  container-name: panel;
+}
+
+/* --- Phase 3: Container-Aware Layout Adjustments --- */
+
+/* Navigation adapts in narrow containers */
+nav {
+  container-type: inline-size;
+}
+
+nav[data-compact] {
+  @container (max-width: 200px) {
+    /* Text labels hidden, icons remain */
+    & [data-nav-text] {
+      display: none;
+    }
+  }
+}

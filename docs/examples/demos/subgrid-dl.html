@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subgrid Demo: Definition Lists - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h3 { margin-bottom: var(--size-s); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-xl);
+      margin: var(--size-l) 0;
+    }
+
+    @media (width < 900px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-section h3 {
+      margin-bottom: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .comparison-section h3.after {
+      background: var(--color-primary-subtle);
+    }
+
+    /* Before: Basic grid on dl */
+    .dl-before {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: var(--size-s) var(--size-m);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .dl-before dt {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .dl-before dd {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    /* Before with div wrappers - breaks alignment */
+    .dl-before-wrapped {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .dl-before-wrapped > div {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: var(--size-s) var(--size-m);
+      padding: var(--size-xs) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .dl-before-wrapped > div:last-child {
+      border-bottom: none;
+    }
+
+    .dl-before-wrapped dt {
+      font-weight: 600;
+    }
+
+    .dl-before-wrapped dd {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    /* After: Subgrid with wrappers */
+    .dl-subgrid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: var(--size-s) var(--size-m);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .dl-subgrid > div {
+      display: grid;
+      grid-column: span 2;
+      grid-template-columns: subgrid;
+      padding: var(--size-xs) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .dl-subgrid > div:last-child {
+      border-bottom: none;
+    }
+
+    .dl-subgrid dt {
+      font-weight: 600;
+    }
+
+    .dl-subgrid dd {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--color-gray-900);
+      color: var(--color-gray-100);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      overflow-x: auto;
+      margin: var(--size-m) 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+    }
+
+    /* Verdict */
+    .verdict {
+      padding: var(--size-m);
+      background: var(--color-warning-subtle);
+      border: 1px solid var(--color-warning);
+      border-radius: var(--radius-m);
+      margin-top: var(--size-xl);
+    }
+
+    .verdict h3 {
+      margin: 0 0 var(--size-s);
+      color: var(--color-warning);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <main>
+    <h1>Subgrid Demo: Definition Lists</h1>
+    <p class="lead">Compare traditional dl grid layouts vs subgrid when using HTML5 div wrappers for grouping.</p>
+
+    <h2>The Problem</h2>
+    <p>HTML5 allows <code>&lt;div&gt;</code> wrappers inside <code>&lt;dl&gt;</code> to group <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pairs. However, this breaks traditional grid alignment since each wrapper becomes its own grid context.</p>
+
+    <h2>Simple Case: No Wrappers</h2>
+    <p>Without div wrappers, basic grid works fine:</p>
+
+    <div class="comparison">
+      <section class="comparison-section">
+        <h3>Grid Without Wrappers (Works)</h3>
+        <dl class="dl-before">
+          <dt>Term</dt>
+          <dd>Definition for the first term.</dd>
+          <dt>Longer Term</dt>
+          <dd>Definition for the longer term.</dd>
+          <dt>API</dt>
+          <dd>Application Programming Interface</dd>
+        </dl>
+        <p>This works because dt/dd are direct grid children.</p>
+      </section>
+    </div>
+
+    <h2>Complex Case: With Div Wrappers</h2>
+    <p>When you need to group dt/dd pairs (for styling, interaction, or semantic grouping), alignment breaks:</p>
+
+    <div class="comparison">
+      <section class="comparison-section">
+        <h3>Before: Wrappers Break Alignment</h3>
+        <dl class="dl-before-wrapped">
+          <div>
+            <dt>Term</dt>
+            <dd>Definition for the first term.</dd>
+          </div>
+          <div>
+            <dt>Longer Term</dt>
+            <dd>Definition for the longer term.</dd>
+          </div>
+          <div>
+            <dt>API</dt>
+            <dd>Application Programming Interface</dd>
+          </div>
+        </dl>
+        <p><strong>Notice:</strong> Each wrapper has its own max-content column, so dt widths vary.</p>
+      </section>
+
+      <section class="comparison-section">
+        <h3 class="after">After: Subgrid Restores Alignment</h3>
+        <dl class="dl-subgrid">
+          <div>
+            <dt>Term</dt>
+            <dd>Definition for the first term.</dd>
+          </div>
+          <div>
+            <dt>Longer Term</dt>
+            <dd>Definition for the longer term.</dd>
+          </div>
+          <div>
+            <dt>API</dt>
+            <dd>Application Programming Interface</dd>
+          </div>
+        </dl>
+        <p><strong>Notice:</strong> All terms align to the longest ("Longer Term").</p>
+      </section>
+    </div>
+
+    <h2>The CSS</h2>
+
+    <h3>Before (Each Wrapper Independent)</h3>
+    <div class="code-block">
+      <pre>dl > div {
+  display: grid;
+  grid-template-columns: max-content 1fr; /* Each div sizes independently */
+}</pre>
+    </div>
+
+    <h3>After (Subgrid)</h3>
+    <div class="code-block">
+      <pre>dl {
+  display: grid;
+  grid-template-columns: max-content 1fr; /* Parent defines columns */
+}
+
+dl > div {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: subgrid; /* Inherit parent columns */
+}</pre>
+    </div>
+
+    <h2>Key Difference</h2>
+    <ul>
+      <li><strong>Before:</strong> Each div wrapper has its own <code>max-content</code> calculation</li>
+      <li><strong>After:</strong> Parent dl defines columns, wrappers use subgrid to participate in parent's column sizing</li>
+      <li><strong>Result:</strong> dt column auto-sizes to the longest term across ALL groups</li>
+    </ul>
+
+    <h2>Complexity Comparison</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: var(--size-m) 0;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--color-border);">
+          <th style="text-align: left; padding: var(--size-s);">Metric</th>
+          <th style="text-align: left; padding: var(--size-s);">Before</th>
+          <th style="text-align: left; padding: var(--size-s);">After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Lines of CSS</td>
+          <td style="padding: var(--size-s);">~4</td>
+          <td style="padding: var(--size-s);">~8</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Cross-group alignment</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Requires HTML change</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">No</td>
+        </tr>
+        <tr>
+          <td style="padding: var(--size-s);">Works without wrappers</td>
+          <td style="padding: var(--size-s);">Yes</td>
+          <td style="padding: var(--size-s);">Yes (same)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="verdict">
+      <h3>Evaluation</h3>
+      <p><strong>Benefit:</strong> Subgrid solves a real problem when div wrappers are needed (for styling borders, hover states, etc.).</p>
+      <p><strong>Cost:</strong> Minimal extra CSS. Only needed when using div wrappers.</p>
+      <p><strong>Recommendation:</strong> Marginal benefit - document as a technique. Most definition lists don't need wrappers, and when they don't, basic grid works fine. Add to documentation rather than core utilities.</p>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

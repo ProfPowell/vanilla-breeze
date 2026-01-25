@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subgrid Demo: Article Layout - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/docs/docs.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 { margin-bottom: var(--size-s); }
+    h2 {
+      margin-top: var(--size-2xl);
+      margin-bottom: var(--size-m);
+      padding-top: var(--size-l);
+      border-top: 1px solid var(--color-border);
+    }
+    h3 { margin-bottom: var(--size-s); }
+
+    .lead {
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      margin-bottom: var(--size-l);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: var(--size-l);
+    }
+
+    .comparison {
+      display: grid;
+      gap: var(--size-xl);
+      margin: var(--size-l) 0;
+    }
+
+    .comparison-section h3 {
+      margin-bottom: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .comparison-section h3.after {
+      background: var(--color-primary-subtle);
+    }
+
+    /* Before: Independent article/aside */
+    .main-before {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .main-before article {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .main-before article header {
+      padding-bottom: var(--size-m);
+      margin-bottom: var(--size-m);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .main-before article h2 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+
+    .main-before article p {
+      margin-bottom: var(--size-m);
+    }
+
+    .main-before article p:last-child {
+      margin-bottom: 0;
+    }
+
+    .main-before aside {
+      padding: var(--size-m);
+      background: var(--color-gray-100);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-s);
+    }
+
+    .main-before aside h4 {
+      margin: 0 0 var(--size-s);
+    }
+
+    .main-before aside ul {
+      margin: 0;
+      padding-left: var(--size-m);
+    }
+
+    .main-before aside li {
+      margin-bottom: var(--size-xs);
+    }
+
+    /* After: Subgrid shared rows */
+    .main-subgrid {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      grid-template-rows: auto auto auto auto;
+      gap: var(--size-l) var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .main-subgrid article {
+      display: grid;
+      grid-row: span 4;
+      grid-template-rows: subgrid;
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+    }
+
+    .main-subgrid article header {
+      padding-bottom: var(--size-m);
+      border-bottom: 1px solid var(--color-border);
+      align-self: start;
+    }
+
+    .main-subgrid article h2 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+
+    .main-subgrid article p {
+      margin: 0;
+    }
+
+    .main-subgrid aside {
+      display: grid;
+      grid-row: span 4;
+      grid-template-rows: subgrid;
+      padding: var(--size-m);
+      background: var(--color-gray-100);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-s);
+    }
+
+    .main-subgrid aside h4 {
+      margin: 0;
+      align-self: start;
+    }
+
+    .main-subgrid aside ul {
+      margin: 0;
+      padding-left: var(--size-m);
+    }
+
+    .main-subgrid aside li {
+      margin-bottom: var(--size-xs);
+    }
+
+    /* Debug: Show row alignment */
+    .debug-rows .main-subgrid {
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent calc(100% / 4 - 1px),
+          var(--color-primary-subtle) calc(100% / 4 - 1px),
+          var(--color-primary-subtle) calc(100% / 4)
+        );
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--color-gray-900);
+      color: var(--color-gray-100);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      overflow-x: auto;
+      margin: var(--size-m) 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-s);
+    }
+
+    /* Verdict */
+    .verdict {
+      padding: var(--size-m);
+      background: var(--color-warning-subtle);
+      border: 1px solid var(--color-warning);
+      border-radius: var(--radius-m);
+      margin-top: var(--size-xl);
+    }
+
+    .verdict h3 {
+      margin: 0 0 var(--size-s);
+      color: var(--color-warning);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/" class="back-link">&larr; Back to Examples</a>
+  </nav>
+
+  <main>
+    <h1>Subgrid Demo: Article Layout</h1>
+    <p class="lead">Compare independent article/aside layouts vs subgrid for shared vertical rhythm.</p>
+
+    <h2>The Problem</h2>
+    <p>When an article and aside sit side-by-side, their internal sections don't share a baseline grid. The article's header and aside's header may not align, and content sections have independent heights.</p>
+
+    <div class="comparison">
+      <section class="comparison-section">
+        <h3>Before: Independent Layouts</h3>
+        <div class="main-before">
+          <article>
+            <header><h2>Article Title</h2></header>
+            <p>First paragraph of the article. This content flows independently.</p>
+            <p>Second paragraph with more content.</p>
+            <p>Third paragraph wrapping up the article.</p>
+          </article>
+          <aside>
+            <h4>Related Links</h4>
+            <ul>
+              <li><a href="#">Link One</a></li>
+              <li><a href="#">Link Two</a></li>
+              <li><a href="#">Link Three</a></li>
+            </ul>
+          </aside>
+        </div>
+        <p><strong>Notice:</strong> Article sections and aside sections are independent - no shared vertical rhythm.</p>
+      </section>
+
+      <section class="comparison-section">
+        <h3 class="after">After: Subgrid Shared Rows</h3>
+        <div class="main-subgrid">
+          <article>
+            <header><h2>Article Title</h2></header>
+            <p>First paragraph of the article. This content flows independently.</p>
+            <p>Second paragraph with more content.</p>
+            <p>Third paragraph wrapping up the article.</p>
+          </article>
+          <aside>
+            <h4>Related Links</h4>
+            <ul>
+              <li><a href="#">Link One</a></li>
+              <li><a href="#">Link Two</a></li>
+              <li><a href="#">Link Three</a></li>
+            </ul>
+            <p>Extra sidebar content that shares grid rows with article.</p>
+          </aside>
+        </div>
+        <p><strong>Notice:</strong> Article header and aside header align on the same row. Content sections share row tracks.</p>
+      </section>
+    </div>
+
+    <h2>The CSS</h2>
+
+    <h3>Before (Independent)</h3>
+    <div class="code-block">
+      <pre>main {
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  gap: var(--size-l);
+}
+
+/* Article and aside manage their own layouts independently */</pre>
+    </div>
+
+    <h3>After (Subgrid)</h3>
+    <div class="code-block">
+      <pre>main {
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  grid-template-rows: auto auto auto auto; /* Define shared row tracks */
+  gap: var(--size-l);
+}
+
+article {
+  display: grid;
+  grid-row: span 4;            /* Span 4 rows */
+  grid-template-rows: subgrid; /* Inherit parent's row tracks */
+}
+
+aside {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+}</pre>
+    </div>
+
+    <h2>Key Difference</h2>
+    <ul>
+      <li><strong>Before:</strong> Article and aside have independent vertical flow</li>
+      <li><strong>After:</strong> Both participate in parent's row grid, creating shared rhythm</li>
+      <li><strong>Trade-off:</strong> Requires knowing the number of rows in advance (<code>grid-row: span 4</code>)</li>
+    </ul>
+
+    <h2>Complexity Comparison</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: var(--size-m) 0;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--color-border);">
+          <th style="text-align: left; padding: var(--size-s);">Metric</th>
+          <th style="text-align: left; padding: var(--size-s);">Before</th>
+          <th style="text-align: left; padding: var(--size-s);">After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Lines of CSS</td>
+          <td style="padding: var(--size-s);">~5</td>
+          <td style="padding: var(--size-s);">~12</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Shared vertical rhythm</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: var(--size-s);">Fixed row count needed</td>
+          <td style="padding: var(--size-s);">No</td>
+          <td style="padding: var(--size-s);">Yes</td>
+        </tr>
+        <tr>
+          <td style="padding: var(--size-s);">Dynamic content support</td>
+          <td style="padding: var(--size-s);">Full</td>
+          <td style="padding: var(--size-s);">Limited</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>When It Works</h2>
+    <ul>
+      <li>Fixed structure pages (e.g., landing pages with known sections)</li>
+      <li>Dashboard layouts where panels have consistent structure</li>
+      <li>Magazine layouts with defined column/row grids</li>
+    </ul>
+
+    <h2>When It Doesn't Work</h2>
+    <ul>
+      <li>Blog posts with variable content length</li>
+      <li>CMS-driven pages where content is dynamic</li>
+      <li>Any case where number of sections varies</li>
+    </ul>
+
+    <div class="verdict">
+      <h3>Evaluation</h3>
+      <p><strong>Benefit:</strong> Creates true vertical rhythm across columns - visually elegant when it works.</p>
+      <p><strong>Cost:</strong> Requires hardcoded row spans. Not suitable for dynamic content.</p>
+      <p><strong>Recommendation:</strong> Marginal benefit for general use. Document as an advanced technique for fixed-structure layouts. Do NOT add to core utilities - the row span requirement limits practical use.</p>
+    </div>
+
+    <h2>Summary</h2>
+    <p>Subgrid for rows is powerful but inflexible. It's best suited for:</p>
+    <ul>
+      <li><strong>Magazine/editorial layouts</strong> with designed grid systems</li>
+      <li><strong>Dashboard panels</strong> with consistent structure</li>
+      <li><strong>Marketing pages</strong> with fixed section counts</li>
+    </ul>
+    <p>For general article layouts with dynamic content, the traditional approach (independent flow) remains more practical.</p>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
