@@ -4,6 +4,7 @@
    Requires: layout-grid-identity.css
 
    Usage: <body data-layout="page-sidebar">
+          or on any container element for demos
 
    These are opt-in layouts for common page structures. Import this file
    alongside layout-grid-identity.css to enable semantic page layouts.
@@ -12,14 +13,18 @@
    ========================================================================== */
 
 /* --- Base page grid --- */
-body[data-layout^="page-"] {
+[data-layout^="page-"] {
   display: grid;
-  min-height: 100dvh;
   gap: var(--layout-gap, 0);
 }
 
+/* Full viewport height when on body */
+body[data-layout^="page-"] {
+  min-height: 100dvh;
+}
+
 /* --- Stack (mobile-first default) --- */
-body[data-layout="page-stack"] {
+[data-layout="page-stack"] {
   grid-template:
     "body-header" auto
     "body-nav" auto
@@ -29,7 +34,7 @@ body[data-layout="page-stack"] {
 }
 
 /* --- Sidebar Left --- */
-body[data-layout="page-sidebar"] {
+[data-layout="page-sidebar"] {
   grid-template:
     "body-header body-header" auto
     "body-nav    body-main"   1fr
@@ -38,7 +43,7 @@ body[data-layout="page-sidebar"] {
 }
 
 @media (width < 768px) {
-  body[data-layout="page-sidebar"] {
+  [data-layout="page-sidebar"]:not([data-nowrap]) {
     grid-template:
       "body-header" auto
       "body-main" 1fr
@@ -49,7 +54,7 @@ body[data-layout="page-sidebar"] {
 }
 
 /* --- Sidebar Right --- */
-body[data-layout="page-sidebar-right"] {
+[data-layout="page-sidebar-right"] {
   grid-template:
     "body-header body-header" auto
     "body-main   body-aside"  1fr
@@ -58,7 +63,7 @@ body[data-layout="page-sidebar-right"] {
 }
 
 @media (width < 768px) {
-  body[data-layout="page-sidebar-right"] {
+  [data-layout="page-sidebar-right"]:not([data-nowrap]) {
     grid-template:
       "body-header" auto
       "body-main" 1fr
@@ -69,7 +74,7 @@ body[data-layout="page-sidebar-right"] {
 }
 
 /* --- Holy Grail --- */
-body[data-layout="page-holy-grail"] {
+[data-layout="page-holy-grail"] {
   grid-template:
     "body-header body-header body-header" auto
     "body-nav    body-main   body-aside"  1fr
@@ -78,7 +83,7 @@ body[data-layout="page-holy-grail"] {
 }
 
 @media (width < 1024px) {
-  body[data-layout="page-holy-grail"] {
+  [data-layout="page-holy-grail"]:not([data-nowrap]) {
     grid-template:
       "body-header body-header" auto
       "body-nav    body-main"   1fr
@@ -92,7 +97,7 @@ body[data-layout="page-holy-grail"] {
 }
 
 @media (width < 768px) {
-  body[data-layout="page-holy-grail"] {
+  [data-layout="page-holy-grail"]:not([data-nowrap]) {
     grid-template:
       "body-header" auto
       "body-main" 1fr
@@ -109,7 +114,7 @@ body[data-layout="page-holy-grail"] {
 /* --- :has() Adaptations --- */
 
 /* Adjust when nav is absent */
-body[data-layout="page-sidebar"]:not(:has(> nav)) {
+[data-layout="page-sidebar"]:not(:has(> nav)) {
   grid-template-columns: 1fr;
 }
 
@@ -133,12 +138,12 @@ main:has(> aside) {
 
 /* --- Print Styles --- */
 @media print {
-  body[data-layout^="page-"] > nav,
-  body[data-layout^="page-"] > aside {
+  [data-layout^="page-"] > nav,
+  [data-layout^="page-"] > aside {
     display: none;
   }
 
-  body[data-layout^="page-"] {
+  [data-layout^="page-"] {
     display: block;
   }
 }
