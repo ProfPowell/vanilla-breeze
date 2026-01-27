@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 /**
- * Build CDN distribution files
+ * Build CDN distribution files using esbuild
  *
  * Creates stable-named bundled files for CDN distribution:
- * - cdn/vanilla-breeze.css (all CSS bundled)
+ * - cdn/vanilla-breeze.css (all CSS bundled, @imports resolved)
  * - cdn/vanilla-breeze.js (all JS bundled, ES module)
  *
  * These files can be referenced via GitHub Pages or unpkg after npm publish.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import * as esbuild from 'esbuild';
+import { mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const SRC = join(ROOT, 'src');
 const DIST = join(ROOT, 'dist');
 const CDN = join(DIST, 'cdn');
 
@@ -23,65 +25,38 @@ if (!existsSync(CDN)) {
   mkdirSync(CDN, { recursive: true });
 }
 
-// Find the bundled main files in dist/assets (Vite) or dist/_astro (Astro)
-let assetsDir = join(DIST, 'assets');
-if (!existsSync(assetsDir)) {
-  // For Astro builds, build CDN from source files instead
-  const srcDir = join(DIST, 'src');
-  if (existsSync(srcDir)) {
-    console.log('Building CDN files from source (Astro build detected)...');
+async function buildCDN() {
+  console.log('Building CDN files with esbuild...\n');
 
-    // Copy main.css as CDN CSS
-    const srcCss = join(srcDir, 'main.css');
-    if (existsSync(srcCss)) {
-      const cssContent = readFileSync(srcCss, 'utf-8');
-      writeFileSync(join(CDN, 'vanilla-breeze.css'), cssContent);
-      console.log(`Created: cdn/vanilla-breeze.css`);
-    }
+  // Build CSS bundle - esbuild resolves all @import statements
+  const cssResult = await esbuild.build({
+    entryPoints: [join(SRC, 'main.css')],
+    bundle: true,
+    minify: true,
+    outfile: join(CDN, 'vanilla-breeze.css'),
+    logLevel: 'info',
+  });
 
-    // Copy main.js as CDN JS
-    const srcJs = join(srcDir, 'main.js');
-    if (existsSync(srcJs)) {
-      const jsContent = readFileSync(srcJs, 'utf-8');
-      writeFileSync(join(CDN, 'vanilla-breeze.js'), jsContent);
-      console.log(`Created: cdn/vanilla-breeze.js`);
-    }
+  // Build JS bundle - bundles all imports into single ES module
+  // ignoreSideEffects: false ensures all JS files are included even if
+  // package.json sideEffects array would otherwise exclude them
+  const jsResult = await esbuild.build({
+    entryPoints: [join(SRC, 'main.js')],
+    bundle: true,
+    minify: true,
+    format: 'esm',
+    outfile: join(CDN, 'vanilla-breeze.js'),
+    logLevel: 'info',
+    ignoreAnnotations: true,  // Include all imports regardless of sideEffects
+  });
 
-    console.log('\nCDN files ready at dist/cdn/');
-    process.exit(0);
-  }
-
-  console.error('Error: No build assets found. Run `npm run build` first.');
-  process.exit(1);
+  console.log('\nCDN files ready at dist/cdn/');
+  console.log('After deployment, reference via:');
+  console.log('  CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
+  console.log('  JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
 }
 
-const assets = readdirSync(assetsDir);
-
-// Find main CSS file (main-*.css)
-const mainCss = assets.find(f => f.startsWith('main-') && f.endsWith('.css'));
-if (!mainCss) {
-  console.error('Error: Could not find main CSS bundle in dist/assets');
+buildCDN().catch(e => {
+  console.error('CDN build failed:', e);
   process.exit(1);
-}
-
-// Find main JS file (main-*.js)
-const mainJs = assets.find(f => f.startsWith('main-') && f.endsWith('.js'));
-if (!mainJs) {
-  console.error('Error: Could not find main JS bundle in dist/assets');
-  process.exit(1);
-}
-
-// Copy CSS
-const cssContent = readFileSync(join(assetsDir, mainCss), 'utf-8');
-writeFileSync(join(CDN, 'vanilla-breeze.css'), cssContent);
-console.log(`Created: cdn/vanilla-breeze.css (${(cssContent.length / 1024).toFixed(1)}KB)`);
-
-// Copy JS
-const jsContent = readFileSync(join(assetsDir, mainJs), 'utf-8');
-writeFileSync(join(CDN, 'vanilla-breeze.js'), jsContent);
-console.log(`Created: cdn/vanilla-breeze.js (${(jsContent.length / 1024).toFixed(1)}KB)`);
-
-console.log('\nCDN files ready at dist/cdn/');
-console.log('After deployment, reference via:');
-console.log('  CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
-console.log('  JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
+});
