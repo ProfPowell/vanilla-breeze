@@ -51,10 +51,20 @@ class ThemePicker extends HTMLElement {
     { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant' }
   ];
 
+  // Extreme themes - dramatic visual transformations
+  static #EXTREME_THEMES = [
+    { id: 'swiss', name: 'Swiss', icon: 'grid-3x3', character: 'Precision grid design' },
+    { id: 'brutalist', name: 'Brutalist', icon: 'square', character: 'Raw, industrial' },
+    { id: 'cyber', name: 'Cyber', icon: 'zap', character: 'Neon futuristic' },
+    { id: 'terminal', name: 'Terminal', icon: 'terminal', character: 'Retro CRT' },
+    { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted' }
+  ];
+
   // Combined list for backwards compatibility
   static #THEMES = [
     ...ThemePicker.#COLOR_THEMES,
-    ...ThemePicker.#PERSONALITY_THEMES
+    ...ThemePicker.#PERSONALITY_THEMES,
+    ...ThemePicker.#EXTREME_THEMES
   ];
 
   // Delay before auto-dismissing after selection (ms)
@@ -181,6 +191,26 @@ class ThemePicker extends HTMLElement {
                   <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
                   <span class="shape-indicator" data-shape="${t.shape}"></span>
                 </span>
+                <span>${t.name}</span>
+              </span>
+            </label>
+          `).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Extreme Themes</legend>
+        <div class="options options--themes" role="radiogroup" aria-label="Extreme theme">
+          ${ThemePicker.#EXTREME_THEMES.map(t => `
+            <label class="option option--theme option--extreme">
+              <input
+                type="radio"
+                name="theme-brand"
+                value="${t.id}"
+                ${brand === t.id ? 'checked' : ''}
+              />
+              <span class="option-content">
+                <x-icon name="${t.icon}"></x-icon>
                 <span>${t.name}</span>
               </span>
             </label>
