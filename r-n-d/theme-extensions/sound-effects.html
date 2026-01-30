@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound Effects - Theme Extension R&amp;D | Vanilla Breeze</title>
+
+  <!-- Core VB System -->
+  <link rel="stylesheet" href="../../src/vanilla-breeze.css">
+
+  <style>
+    /* ============================================
+       SOUND EFFECTS EXPLORATION
+       Audio feedback for interactions (experimental)
+       ============================================ */
+
+    :root {
+      /* Sound preference token (read by JS) */
+      --sound-enabled: 1;
+    }
+
+    body {
+      display: grid;
+      grid-template:
+        "body-header" auto
+        "body-main"   1fr
+        "body-footer" auto
+        / 1fr;
+      min-height: 100dvh;
+    }
+
+    main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Sound toggle in header */
+    .sound-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-l);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sound-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: var(--text-sm);
+      transition: background 0.15s ease;
+    }
+
+    .sound-toggle-btn:hover {
+      background: var(--color-surface-alt);
+    }
+
+    .sound-toggle-btn[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    .sound-toggle-btn .icon {
+      font-size: 1.2em;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .volume-control input[type="range"] {
+      width: 80px;
+    }
+
+    .volume-control .volume-value {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      min-width: 3ch;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: var(--space-12) var(--space-4);
+      margin-block-end: var(--space-8);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    .hero p {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Section */
+    .demo-section {
+      margin-block-end: var(--space-12);
+      padding: var(--space-6);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-l);
+    }
+
+    .demo-section h2 {
+      margin: 0 0 var(--space-2) 0;
+    }
+
+    .demo-section > p {
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-6) 0;
+    }
+
+    /* ============================================
+       SOUND BUTTONS
+       ============================================ */
+    .sound-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .sound-card {
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      text-align: center;
+    }
+
+    .sound-card h3 {
+      margin: 0 0 var(--space-2) 0;
+      font-size: var(--text-lg);
+    }
+
+    .sound-card p {
+      margin: 0 0 var(--space-4) 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .sound-btn {
+      padding: var(--space-3) var(--space-5);
+      border: none;
+      border-radius: var(--radius-s);
+      font-family: inherit;
+      font-size: var(--text-base);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .sound-btn:active {
+      transform: scale(0.97);
+    }
+
+    .sound-btn.click {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .sound-btn.success {
+      background: var(--color-success);
+      color: white;
+    }
+
+    .sound-btn.error {
+      background: var(--color-danger);
+      color: white;
+    }
+
+    .sound-btn.warning {
+      background: var(--color-warning);
+      color: var(--color-text);
+    }
+
+    .sound-btn.info {
+      background: var(--color-info);
+      color: white;
+    }
+
+    /* ============================================
+       TOGGLE SWITCHES
+       ============================================ */
+    .toggle-demo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      justify-content: center;
+    }
+
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      background: var(--color-surface-sunken);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .toggle-switch::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-switch[aria-checked="true"] {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    .toggle-switch[aria-checked="true"]::before {
+      transform: translateX(24px);
+    }
+
+    .toggle-label {
+      font-size: var(--text-sm);
+    }
+
+    /* ============================================
+       FORM WITH SOUNDS
+       ============================================ */
+    .form-demo {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-block-end: var(--space-4);
+    }
+
+    .form-group label {
+      display: block;
+      margin-block-end: var(--space-2);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      font-family: inherit;
+      font-size: var(--text-base);
+      background: var(--color-surface);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+
+    .form-actions button {
+      flex: 1;
+      padding: var(--space-3);
+      border: none;
+      border-radius: var(--radius-s);
+      font-family: inherit;
+      font-size: var(--text-base);
+      cursor: pointer;
+    }
+
+    .form-actions .submit {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .form-actions .reset {
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+    }
+
+    /* Status message */
+    .status-message {
+      padding: var(--space-3);
+      border-radius: var(--radius-s);
+      font-size: var(--text-sm);
+      margin-top: var(--space-4);
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: var(--color-success-subtle);
+      color: var(--color-success);
+      border: 1px solid var(--color-success);
+    }
+
+    .status-message.error {
+      display: block;
+      background: var(--color-danger-subtle);
+      color: var(--color-danger);
+      border: 1px solid var(--color-danger);
+    }
+
+    /* ============================================
+       HOVER SOUND DEMO
+       ============================================ */
+    .hover-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-3);
+    }
+
+    .hover-card {
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .hover-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .hover-card h4 {
+      margin: 0;
+      font-size: var(--text-base);
+    }
+
+    /* ============================================
+       SOUND SETTINGS PANEL
+       ============================================ */
+    .settings-panel {
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .settings-panel h3 {
+      margin: 0 0 var(--space-4) 0;
+      font-size: var(--text-lg);
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-label {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .setting-label span {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+    }
+
+    .setting-label small {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--color-surface-sunken);
+      padding: var(--space-4);
+      border-radius: var(--radius-m);
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      margin-block: var(--space-4);
+    }
+
+    /* Token display */
+    .token-list {
+      display: grid;
+      gap: var(--space-3);
+      margin-block: var(--space-4);
+    }
+
+    .token-item {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: var(--space-4);
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      align-items: center;
+    }
+
+    .token-name {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--color-primary);
+    }
+
+    .token-value {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Warning banner */
+    .warning-banner {
+      padding: var(--space-4);
+      background: var(--color-warning-subtle);
+      border: 1px solid var(--color-warning);
+      border-radius: var(--radius-m);
+      margin-block-end: var(--space-6);
+    }
+
+    .warning-banner strong {
+      color: var(--color-warning-emphasis);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: var(--space-6);
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    footer a {
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sound Toggle -->
+  <div class="sound-toggle">
+    <button class="sound-toggle-btn" id="sound-toggle" aria-pressed="true">
+      <span class="icon" id="sound-icon">🔊</span>
+      <span id="sound-label">Sound On</span>
+    </button>
+    <div class="volume-control">
+      <input type="range" id="volume" min="0" max="100" value="50" aria-label="Volume">
+      <span class="volume-value" id="volume-value">50%</span>
+    </div>
+  </div>
+
+  <header>
+    <nav>
+      <a href="index.html">Theme Extensions</a>
+      <a href="../theme-picker/">Picker Variants</a>
+      <a href="../theme-lab/">Theme Lab</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Sound Effects</h1>
+      <p>Exploring audio feedback for UI interactions using the Web Audio API. An experimental feature for enhanced user experience.</p>
+    </section>
+
+    <div class="warning-banner">
+      <strong>Experimental Feature:</strong> Sound effects are opt-in and respect user preferences. Always provide a clear way to disable sounds.
+    </div>
+
+    <!-- Proposed Tokens -->
+    <section class="demo-section">
+      <h2>Proposed Sound Token</h2>
+      <p>CSS can't play sounds, but can signal intent to JavaScript.</p>
+
+      <div class="token-list">
+        <div class="token-item">
+          <span class="token-name">--sound-enabled</span>
+          <span class="token-value">1 (read by JS for sound state)</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+<pre><code>/* CSS signals preference */
+:root {
+  --sound-enabled: 1;
+}
+
+[data-sound="off"] {
+  --sound-enabled: 0;
+}
+
+/* JS reads the value */
+const soundEnabled = getComputedStyle(document.documentElement)
+  .getPropertyValue('--sound-enabled').trim() === '1';</code></pre>
+      </div>
+    </section>
+
+    <!-- Sound Buttons -->
+    <section class="demo-section">
+      <h2>Sound Types</h2>
+      <p>Different sounds for different feedback types. Click to hear each sound.</p>
+
+      <div class="sound-grid">
+        <div class="sound-card">
+          <h3>Click</h3>
+          <p>Short percussive tap</p>
+          <button class="sound-btn click" data-sound="click">Click Me</button>
+        </div>
+        <div class="sound-card">
+          <h3>Success</h3>
+          <p>Pleasant chime</p>
+          <button class="sound-btn success" data-sound="success">Success</button>
+        </div>
+        <div class="sound-card">
+          <h3>Error</h3>
+          <p>Low buzz</p>
+          <button class="sound-btn error" data-sound="error">Error</button>
+        </div>
+        <div class="sound-card">
+          <h3>Warning</h3>
+          <p>Alert tone</p>
+          <button class="sound-btn warning" data-sound="warning">Warning</button>
+        </div>
+        <div class="sound-card">
+          <h3>Info</h3>
+          <p>Soft notification</p>
+          <button class="sound-btn info" data-sound="info">Info</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toggle Switches -->
+    <section class="demo-section">
+      <h2>Toggle Switches</h2>
+      <p>Toggles with switch click sounds.</p>
+
+      <div class="toggle-demo">
+        <div class="toggle-item">
+          <button class="toggle-switch" role="switch" aria-checked="false" data-sound="toggle"></button>
+          <span class="toggle-label">Enable notifications</span>
+        </div>
+        <div class="toggle-item">
+          <button class="toggle-switch" role="switch" aria-checked="true" data-sound="toggle"></button>
+          <span class="toggle-label">Dark mode</span>
+        </div>
+        <div class="toggle-item">
+          <button class="toggle-switch" role="switch" aria-checked="false" data-sound="toggle"></button>
+          <span class="toggle-label">Auto-save</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hover Sounds -->
+    <section class="demo-section">
+      <h2>Hover Sounds</h2>
+      <p>Subtle sounds on hover (use sparingly to avoid annoyance).</p>
+
+      <div class="hover-grid">
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 1</h4>
+        </div>
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 2</h4>
+        </div>
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 3</h4>
+        </div>
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 4</h4>
+        </div>
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 5</h4>
+        </div>
+        <div class="hover-card" data-sound="hover">
+          <h4>Card 6</h4>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form Demo -->
+    <section class="demo-section">
+      <h2>Form with Sounds</h2>
+      <p>Form submission with success/error feedback sounds.</p>
+
+      <div class="form-demo">
+        <form id="demo-form">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Enter your name" data-sound="focus">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" data-sound="focus">
+          </div>
+          <div class="form-group">
+            <label for="outcome">Simulate Outcome</label>
+            <select id="outcome">
+              <option value="success">Success</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="reset" class="reset" data-sound="click">Reset</button>
+            <button type="submit" class="submit" data-sound="click">Submit</button>
+          </div>
+        </form>
+        <div class="status-message" id="status-message"></div>
+      </div>
+    </section>
+
+    <!-- Settings Panel -->
+    <section class="demo-section">
+      <h2>Sound Settings</h2>
+      <p>Granular control over individual sound types.</p>
+
+      <div class="settings-panel">
+        <h3>Sound Preferences</h3>
+        <div class="setting-row">
+          <div class="setting-label">
+            <span>Click sounds</span>
+            <small>Button and link clicks</small>
+          </div>
+          <button class="toggle-switch" role="switch" aria-checked="true" data-setting="click"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <span>Hover sounds</span>
+            <small>Subtle feedback on hover</small>
+          </div>
+          <button class="toggle-switch" role="switch" aria-checked="false" data-setting="hover"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <span>Success sounds</span>
+            <small>Positive feedback chimes</small>
+          </div>
+          <button class="toggle-switch" role="switch" aria-checked="true" data-setting="success"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <span>Error sounds</span>
+            <small>Error and warning alerts</small>
+          </div>
+          <button class="toggle-switch" role="switch" aria-checked="true" data-setting="error"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementation -->
+    <section class="demo-section">
+      <h2>Implementation</h2>
+      <p>Web Audio API for generated sounds (no audio files needed).</p>
+
+      <div class="code-block">
+<pre><code>// Sound Manager using Web Audio API
+class SoundManager {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+    this.volume = 0.5;
+  }
+
+  init() {
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  playClick() {
+    if (!this.enabled) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
+
+    gain.gain.setValueAtTime(this.volume * 0.3, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.05);
+  }
+
+  playSuccess() {
+    // Major chord arpeggio
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 0.15), i * 80);
+    });
+  }
+
+  playError() {
+    // Low buzz
+    this.playTone(150, 0.2, 'sawtooth');
+  }
+}
+
+// Usage with data attributes
+document.addEventListener('click', (e) => {
+  const sound = e.target.dataset.sound;
+  if (sound) soundManager['play' + capitalize(sound)]?.();
+});</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vanilla Breeze Theme Extensions R&D | <a href="index.html">Back to Index</a></p>
+  </footer>
+
+  <script>
+    // ============================================
+    // SOUND MANAGER - Web Audio API
+    // ============================================
+    class SoundManager {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.volume = 0.5;
+        this.settings = {
+          click: true,
+          hover: false,
+          success: true,
+          error: true,
+          toggle: true,
+          focus: true,
+          warning: true,
+          info: true
+        };
+
+        // Restore from localStorage
+        const saved = localStorage.getItem('vb-sound-prefs');
+        if (saved) {
+          try {
+            const prefs = JSON.parse(saved);
+            this.enabled = prefs.enabled ?? true;
+            this.volume = prefs.volume ?? 0.5;
+            Object.assign(this.settings, prefs.settings || {});
+          } catch (e) {}
+        }
+      }
+
+      init() {
+        if (this.ctx) return;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      save() {
+        localStorage.setItem('vb-sound-prefs', JSON.stringify({
+          enabled: this.enabled,
+          volume: this.volume,
+          settings: this.settings
+        }));
+      }
+
+      canPlay(type) {
+        return this.enabled && this.settings[type];
+      }
+
+      playTone(freq, duration, type = 'sine') {
+        if (!this.ctx) this.init();
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(this.volume * 0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+
+      playClick() {
+        if (!this.canPlay('click')) return;
+        if (!this.ctx) this.init();
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.04);
+
+        gain.gain.setValueAtTime(this.volume * 0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+
+      playToggle() {
+        if (!this.canPlay('toggle')) return;
+        this.playTone(600, 0.05);
+        setTimeout(() => this.playTone(800, 0.05), 30);
+      }
+
+      playHover() {
+        if (!this.canPlay('hover')) return;
+        if (!this.ctx) this.init();
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        gain.gain.setValueAtTime(this.volume * 0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.03);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.03);
+      }
+
+      playSuccess() {
+        if (!this.canPlay('success')) return;
+
+        // Major chord arpeggio (C-E-G)
+        [523.25, 659.25, 783.99].forEach((freq, i) => {
+          setTimeout(() => this.playTone(freq, 0.12), i * 70);
+        });
+      }
+
+      playError() {
+        if (!this.canPlay('error')) return;
+
+        // Low dissonant buzz
+        this.playTone(150, 0.15, 'sawtooth');
+        setTimeout(() => this.playTone(140, 0.1, 'sawtooth'), 100);
+      }
+
+      playWarning() {
+        if (!this.canPlay('warning')) return;
+
+        // Two-tone alert
+        this.playTone(400, 0.1);
+        setTimeout(() => this.playTone(350, 0.1), 120);
+      }
+
+      playInfo() {
+        if (!this.canPlay('info')) return;
+
+        // Soft notification ping
+        this.playTone(880, 0.08);
+      }
+
+      playFocus() {
+        if (!this.canPlay('focus')) return;
+
+        // Very subtle focus sound
+        this.playTone(500, 0.02);
+      }
+    }
+
+    // Initialize
+    const soundManager = new SoundManager();
+
+    // ============================================
+    // UI CONTROLS
+    // ============================================
+
+    // Sound toggle button
+    const soundToggle = document.getElementById('sound-toggle');
+    const soundIcon = document.getElementById('sound-icon');
+    const soundLabel = document.getElementById('sound-label');
+
+    function updateSoundToggleUI() {
+      soundToggle.setAttribute('aria-pressed', soundManager.enabled);
+      soundIcon.textContent = soundManager.enabled ? '🔊' : '🔇';
+      soundLabel.textContent = soundManager.enabled ? 'Sound On' : 'Sound Off';
+    }
+
+    soundToggle.addEventListener('click', () => {
+      soundManager.init();
+      soundManager.enabled = !soundManager.enabled;
+      soundManager.save();
+      updateSoundToggleUI();
+      if (soundManager.enabled) {
+        soundManager.playClick();
+      }
+    });
+
+    // Initial state
+    updateSoundToggleUI();
+
+    // Volume control
+    const volumeSlider = document.getElementById('volume');
+    const volumeValue = document.getElementById('volume-value');
+
+    volumeSlider.value = soundManager.volume * 100;
+    volumeValue.textContent = Math.round(soundManager.volume * 100) + '%';
+
+    volumeSlider.addEventListener('input', () => {
+      soundManager.volume = volumeSlider.value / 100;
+      volumeValue.textContent = volumeSlider.value + '%';
+      soundManager.save();
+    });
+
+    volumeSlider.addEventListener('change', () => {
+      soundManager.init();
+      soundManager.playClick();
+    });
+
+    // ============================================
+    // SOUND TRIGGERS
+    // ============================================
+
+    // Click sounds on buttons
+    document.querySelectorAll('[data-sound]').forEach(el => {
+      const soundType = el.dataset.sound;
+
+      if (soundType === 'hover') {
+        el.addEventListener('mouseenter', () => {
+          soundManager.init();
+          soundManager.playHover();
+        });
+      } else if (soundType === 'focus') {
+        el.addEventListener('focus', () => {
+          soundManager.init();
+          soundManager.playFocus();
+        });
+      } else if (soundType === 'toggle') {
+        el.addEventListener('click', () => {
+          const isChecked = el.getAttribute('aria-checked') === 'true';
+          el.setAttribute('aria-checked', !isChecked);
+          soundManager.init();
+          soundManager.playToggle();
+        });
+      } else {
+        el.addEventListener('click', () => {
+          soundManager.init();
+          const method = 'play' + soundType.charAt(0).toUpperCase() + soundType.slice(1);
+          if (soundManager[method]) {
+            soundManager[method]();
+          }
+        });
+      }
+    });
+
+    // Form handling
+    const form = document.getElementById('demo-form');
+    const statusMessage = document.getElementById('status-message');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      soundManager.init();
+
+      const outcome = document.getElementById('outcome').value;
+
+      if (outcome === 'success') {
+        soundManager.playSuccess();
+        statusMessage.className = 'status-message success';
+        statusMessage.textContent = '✓ Form submitted successfully!';
+      } else {
+        soundManager.playError();
+        statusMessage.className = 'status-message error';
+        statusMessage.textContent = '✗ Submission failed. Please try again.';
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      statusMessage.className = 'status-message';
+    });
+
+    // Settings toggles
+    document.querySelectorAll('[data-setting]').forEach(toggle => {
+      const setting = toggle.dataset.setting;
+      toggle.setAttribute('aria-checked', soundManager.settings[setting]);
+
+      toggle.addEventListener('click', () => {
+        const isChecked = toggle.getAttribute('aria-checked') === 'true';
+        toggle.setAttribute('aria-checked', !isChecked);
+        soundManager.settings[setting] = !isChecked;
+        soundManager.save();
+        soundManager.init();
+        soundManager.playToggle();
+      });
+    });
+  </script>
+</body>
+</html>
