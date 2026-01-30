@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanilla Breeze: CSS Zen Garden Demo</title>
+  
+  <!-- Core System -->
+  <link rel="stylesheet" href="../core/tokens.css">
+  <link rel="stylesheet" href="../core/grid.css">
+  <link rel="stylesheet" href="../core/base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../themes/swiss.css">
+  <link rel="stylesheet" href="../themes/organic.css">
+  <link rel="stylesheet" href="../themes/brutalist.css">
+  <link rel="stylesheet" href="../themes/cyber.css">
+  
+  <style>
+    /* Theme Switcher UI */
+    .theme-switcher {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+    }
+    
+    .theme-switcher label {
+      font-weight: var(--weight-medium);
+      color: var(--color-text);
+      margin-block-end: 0.25rem;
+    }
+    
+    .theme-switcher select {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      cursor: pointer;
+    }
+    
+    .theme-switcher .mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--color-border-muted);
+    }
+    
+    /* Smooth theme transitions */
+    *, *::before, *::after {
+      transition: 
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        color 0.2s ease,
+        box-shadow 0.3s ease;
+    }
+    
+    /* Disable transitions for user preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-layout="sidebar-left" data-theme="swiss">
+  
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <label for="theme-select">Theme</label>
+    <select id="theme-select">
+      <option value="swiss">Swiss Minimalist</option>
+      <option value="organic">Organic Nature</option>
+      <option value="brutalist">Brutalist</option>
+      <option value="cyber">Neon Cyber</option>
+    </select>
+    <div class="mode-toggle">
+      <input type="checkbox" id="dark-mode">
+      <label for="dark-mode">Dark Mode</label>
+    </div>
+  </div>
+  
+  <header>
+    <h1>Vanilla Breeze</h1>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+  
+  <nav>
+    <a href="#" aria-current="page">Dashboard</a>
+    <a href="#">Projects</a>
+    <a href="#">Analytics</a>
+    <a href="#">Reports</a>
+    <a href="#">Settings</a>
+    <a href="#">Documentation</a>
+    <a href="#">Support</a>
+  </nav>
+  
+  <main>
+    <article>
+      <h1>CSS Zen Garden: 2026 Edition</h1>
+      
+      <p>Welcome to a demonstration of what modern CSS can achieve. This single HTML document transforms dramatically across four distinct themes — each showcasing a radically different visual language while maintaining the exact same semantic structure.</p>
+      
+      <h2>The Power of Design Tokens</h2>
+      
+      <p>Using a three-layer token architecture (primitives → semantic → component), we can achieve CSS Zen Garden-style transformations through pure CSS custom properties. Each theme only redefines what changes — the cascade handles the rest.</p>
+      
+      <blockquote>
+        <p>The separation of structure from presentation is the foundation of maintainable design systems. With modern CSS, this separation is more powerful than ever.</p>
+      </blockquote>
+      
+      <h3>What Makes This Work</h3>
+      
+      <p>The system leverages several 2024-2026 CSS features:</p>
+      
+      <ul>
+        <li><strong>CSS Layers</strong> — Cascade control without specificity battles</li>
+        <li><strong>@property</strong> — Typed custom properties with animation support</li>
+        <li><strong>oklch()</strong> — Perceptually uniform color manipulation</li>
+        <li><strong>light-dark()</strong> — Single-line theme mode switching</li>
+        <li><strong>CSS Nesting</strong> — Cleaner, more maintainable selectors</li>
+        <li><strong>:has()</strong> — Parent-aware styling without JavaScript</li>
+      </ul>
+      
+      <h3>Theme Showcase</h3>
+      
+      <p>Use the theme switcher in the top-right corner to experience the transformation. Notice how each theme brings its own personality:</p>
+      
+      <div class="card">
+        <h4>Swiss Minimalist</h4>
+        <p>Clean lines, precise typography, zero-radius corners. Inspired by the International Typographic Style — letting content breathe through negative space and stark contrast.</p>
+      </div>
+      
+      <div class="card">
+        <h4>Organic Nature</h4>
+        <p>Warm earth tones, flowing curves, subtle textures. Bringing the feeling of handcrafted materials and natural forms to digital interfaces.</p>
+      </div>
+      
+      <div class="card">
+        <h4>Brutalist</h4>
+        <p>Raw, honest, unpolished. Harsh shadows, monospace type, exposed structure. The web as construction site — nothing hidden, nothing pretending to be what it isn't.</p>
+      </div>
+      
+      <div class="card">
+        <h4>Neon Cyber</h4>
+        <p>Dark backgrounds, glowing accents, terminal aesthetics. A vision of interfaces from cyberpunk futures — where technology meets neon-lit streets.</p>
+      </div>
+      
+      <hr>
+      
+      <h2>Technical Implementation</h2>
+      
+      <p>The theming system uses scoped custom property overrides. Each theme file only contains a single <code>@layer theme</code> block that redefines semantic and component tokens:</p>
+      
+      <pre><code>[data-theme="swiss"] {
+  --color-surface: white;
+  --color-primary: oklch(50% 0.25 25);
+  --radius-interactive: 0;
+  --shadow-card: none;
+  /* ... */
+}</code></pre>
+      
+      <p>This approach means themes are <strong>additive</strong> — they layer on top of the base system rather than replacing it entirely. A theme file can be as small as 50 lines or as detailed as 500 lines depending on how much customization is needed.</p>
+      
+      <h3>Interactive Elements</h3>
+      
+      <p>Buttons, inputs, and other interactive elements automatically inherit theme styling:</p>
+      
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-block: 1.5rem;">
+        <button data-variant="primary">Primary Button</button>
+        <button>Secondary Button</button>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin-block: 1.5rem;">
+        <input type="text" placeholder="Text input example">
+        <textarea placeholder="Textarea example"></textarea>
+      </div>
+      
+      <h2>Grid Identity System</h2>
+      
+      <p>The layout you see uses semantic HTML elements (header, nav, main, footer) that automatically register their grid areas. Change <code>data-layout</code> on the body to switch between layouts:</p>
+      
+      <ul>
+        <li><code>stack</code> — Mobile-first vertical stack</li>
+        <li><code>sidebar-left</code> — Navigation on the left (current)</li>
+        <li><code>sidebar-right</code> — Content sidebar on the right</li>
+        <li><code>holy-grail</code> — Classic three-column layout</li>
+        <li><code>app-shell</code> — Persistent nav with horizontal header</li>
+      </ul>
+      
+      <p>No classes needed on the semantic elements — their grid areas are derived from their identity in the DOM.</p>
+      
+    </article>
+  </main>
+  
+  <footer>
+    <p>Vanilla Breeze Design System — Built with modern CSS • No build step required</p>
+  </footer>
+  
+  <script>
+    // Theme Switcher Logic
+    const themeSelect = document.getElementById('theme-select');
+    const darkModeToggle = document.getElementById('dark-mode');
+    const body = document.body;
+    
+    // Apply theme
+    themeSelect.addEventListener('change', (e) => {
+      body.dataset.theme = e.target.value;
+      localStorage.setItem('vb-theme', e.target.value);
+    });
+    
+    // Apply dark mode
+    darkModeToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        body.dataset.mode = 'dark';
+        localStorage.setItem('vb-mode', 'dark');
+      } else {
+        delete body.dataset.mode;
+        localStorage.removeItem('vb-mode');
+      }
+    });
+    
+    // Restore saved preferences
+    const savedTheme = localStorage.getItem('vb-theme');
+    const savedMode = localStorage.getItem('vb-mode');
+    
+    if (savedTheme) {
+      body.dataset.theme = savedTheme;
+      themeSelect.value = savedTheme;
+    }
+    
+    if (savedMode === 'dark') {
+      body.dataset.mode = 'dark';
+      darkModeToggle.checked = true;
+    }
+    
+    // Respect system preference if no saved preference
+    if (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      body.dataset.mode = 'dark';
+      darkModeToggle.checked = true;
+    }
+    
+    // Layout switcher via keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'l' && e.ctrlKey) {
+        e.preventDefault();
+        const layouts = ['stack', 'sidebar-left', 'sidebar-right', 'holy-grail'];
+        const current = body.dataset.layout;
+        const next = layouts[(layouts.indexOf(current) + 1) % layouts.length];
+        body.dataset.layout = next;
+        console.log('Layout:', next);
+      }
+    });
+  </script>
+</body>
+</html>

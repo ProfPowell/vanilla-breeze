@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zen Garden Demo Gallery | Vanilla Breeze</title>
+
+  <!-- Core System -->
+  <link rel="stylesheet" href="../core/tokens.css">
+  <link rel="stylesheet" href="../core/grid.css">
+  <link rel="stylesheet" href="../core/base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../themes/swiss.css">
+  <link rel="stylesheet" href="../themes/organic.css">
+  <link rel="stylesheet" href="../themes/brutalist.css">
+  <link rel="stylesheet" href="../themes/cyber.css">
+
+  <style>
+    body {
+      display: grid;
+      grid-template:
+        "body-header" auto
+        "body-main"   1fr
+        "body-footer" auto
+        / 1fr;
+      min-height: 100dvh;
+    }
+
+    main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Theme Switcher */
+    .theme-switcher {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .theme-switcher select {
+      padding: 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: var(--text-sm);
+    }
+
+    /* Hero section */
+    .hero {
+      text-align: center;
+      padding: var(--space-12) var(--space-4);
+      margin-block-end: var(--space-8);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin: 0 0 var(--space-4) 0;
+    }
+
+    .hero p {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Tier sections */
+    .tier-section {
+      margin-block-end: var(--space-12);
+    }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-block-end: var(--space-4);
+      padding-block-end: var(--space-3);
+      border-block-end: 2px solid var(--color-border);
+    }
+
+    .tier-badge {
+      padding: var(--space-1) var(--space-2);
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tier-header h2 {
+      margin: 0;
+    }
+
+    /* Demo cards */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .demo-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-5);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--card-shadow);
+      text-decoration: none;
+      color: inherit;
+      transition:
+        transform var(--duration-fast) var(--ease-default),
+        box-shadow var(--duration-fast) var(--ease-default);
+    }
+
+    .demo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .demo-number {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--color-primary);
+      line-height: 1;
+      margin-block-end: var(--space-2);
+    }
+
+    .demo-card h3 {
+      margin: 0 0 var(--space-2) 0;
+      font-size: var(--text-lg);
+    }
+
+    .demo-card p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      flex: 1;
+    }
+
+    .demo-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin-block-start: var(--space-3);
+    }
+
+    .demo-tag {
+      padding: var(--space-0-5) var(--space-2);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: var(--space-6);
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    footer p {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    footer a {
+      color: var(--color-primary);
+    }
+
+    /* Smooth transitions */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="swiss">
+
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <select id="theme-select">
+      <option value="swiss">Swiss</option>
+      <option value="organic">Organic</option>
+      <option value="brutalist">Brutalist</option>
+      <option value="cyber">Cyber</option>
+    </select>
+  </div>
+
+  <header>
+    <h1 style="font-size: var(--text-xl); margin: 0;">Zen Garden</h1>
+    <nav>
+      <a href="../showcase/">Main Demo</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Demo Gallery</h1>
+      <p>Explore modern CSS capabilities through tiered demonstrations. From pure CSS state management to scroll-driven animations and View Transitions.</p>
+    </section>
+
+    <!-- Tier 1: Pure CSS -->
+    <section class="tier-section">
+      <div class="tier-header">
+        <span class="tier-badge">Tier 1</span>
+        <h2>Pure CSS (No JavaScript)</h2>
+      </div>
+
+      <div class="demo-grid">
+        <a href="pure-css/layout-switcher.html" class="demo-card">
+          <span class="demo-number">01</span>
+          <h3>Layout Switcher</h3>
+          <p>Switch between 5 different page layouts using radio buttons and the :checked pseudo-class. Zero JavaScript required.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">:checked</span>
+            <span class="demo-tag">CSS Grid</span>
+            <span class="demo-tag">Custom Properties</span>
+          </div>
+        </a>
+
+        <a href="pure-css/tabs-accordion.html" class="demo-card">
+          <span class="demo-number">02</span>
+          <h3>Tabs & Accordion</h3>
+          <p>Radio button tabs and native &lt;details&gt; exclusive accordion using the name attribute. Fully accessible.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">:checked</span>
+            <span class="demo-tag">&lt;details&gt;</span>
+            <span class="demo-tag">Accessible</span>
+          </div>
+        </a>
+
+        <a href="pure-css/responsive-grid.html" class="demo-card">
+          <span class="demo-number">03</span>
+          <h3>Responsive Grid</h3>
+          <p>Container queries, auto-fit/minmax(), and CSS Subgrid for aligned card content. Interactive resizable container.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">@container</span>
+            <span class="demo-tag">Subgrid</span>
+            <span class="demo-tag">auto-fit</span>
+          </div>
+        </a>
+
+        <a href="pure-css/landing-page.html" class="demo-card">
+          <span class="demo-number">04</span>
+          <h3>Landing Page</h3>
+          <p>Full marketing landing page using data-layout="landing" with named grid areas for hero, features, and CTA sections.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">Named Grid Areas</span>
+            <span class="demo-tag">Landing Layout</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Tier 2: Minimal JS -->
+    <section class="tier-section">
+      <div class="tier-header">
+        <span class="tier-badge">Tier 2</span>
+        <h2>Minimal JS (Data Attribute Flipping)</h2>
+      </div>
+
+      <div class="demo-grid">
+        <a href="minimal-js/dashboard.html" class="demo-card">
+          <span class="demo-number">05</span>
+          <h3>Dashboard</h3>
+          <p>Collapsible sidebar with ~7 lines of JavaScript. CSS handles all visual transitions. Mobile drawer pattern included.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">data-*</span>
+            <span class="demo-tag">CSS Transitions</span>
+            <span class="demo-tag">Mobile Drawer</span>
+          </div>
+        </a>
+
+        <a href="minimal-js/theme-builder.html" class="demo-card">
+          <span class="demo-number">06</span>
+          <h3>Theme Builder</h3>
+          <p>Interactive sliders manipulate CSS custom properties in real-time. Export your custom theme as CSS.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">Custom Properties</span>
+            <span class="demo-tag">Runtime Theming</span>
+            <span class="demo-tag">Export</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Tier 3: Maximal JS -->
+    <section class="tier-section">
+      <div class="tier-header">
+        <span class="tier-badge">Tier 3</span>
+        <h2>Maximal JS (Enhanced Interactions)</h2>
+      </div>
+
+      <div class="demo-grid">
+        <a href="interactive/component-lab.html" class="demo-card">
+          <span class="demo-number">07</span>
+          <h3>Component Lab</h3>
+          <p>Interactive testing environment with component selector, theme comparison, variant toggles, and code export.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">Component Explorer</span>
+            <span class="demo-tag">Code Export</span>
+            <span class="demo-tag">A11y Panel</span>
+          </div>
+        </a>
+
+        <a href="interactive/animation-motion.html" class="demo-card">
+          <span class="demo-number">08</span>
+          <h3>Animation & Motion</h3>
+          <p>Scroll-driven animations using animation-timeline: view(), View Transitions API, and theme-specific motion personalities.</p>
+          <div class="demo-tags">
+            <span class="demo-tag">Scroll-Driven</span>
+            <span class="demo-tag">View Transitions</span>
+            <span class="demo-tag">Motion Tokens</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vanilla Breeze Zen Garden R&D | <a href="../README.md">Documentation</a> | <a href="../showcase/">Main Demo</a></p>
+  </footer>
+
+  <script>
+    // Theme switching
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.body.dataset.theme = e.target.value;
+    });
+  </script>
+</body>
+</html>

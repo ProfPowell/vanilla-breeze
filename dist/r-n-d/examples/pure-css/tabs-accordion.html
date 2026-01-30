@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs &amp; Accordion - Pure CSS Demo | Vanilla Breeze</title>
+
+  <!-- Core System -->
+  <link rel="stylesheet" href="../../core/tokens.css">
+  <link rel="stylesheet" href="../../core/grid.css">
+  <link rel="stylesheet" href="../../core/base.css">
+
+  <!-- Theme Files -->
+  <link rel="stylesheet" href="../../themes/swiss.css">
+  <link rel="stylesheet" href="../../themes/organic.css">
+  <link rel="stylesheet" href="../../themes/brutalist.css">
+  <link rel="stylesheet" href="../../themes/cyber.css">
+
+  <style>
+    /* ============================================
+       PURE CSS TABS & ACCORDION
+       No JavaScript required!
+       ============================================ */
+
+    body {
+      display: grid;
+      grid-template:
+        "body-header" auto
+        "body-main"   1fr
+        "body-footer" auto
+        / 1fr;
+      min-height: 100dvh;
+    }
+
+    main {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Theme Switcher */
+    .theme-switcher {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .theme-switcher select {
+      padding: 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: var(--text-sm);
+    }
+
+    /* ============================================
+       TABS COMPONENT (Radio Button Pattern)
+       ============================================ */
+
+    .tabs {
+      margin-block-end: var(--space-8);
+    }
+
+    /* Hide radio inputs but keep accessible */
+    .tabs input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      gap: var(--space-1);
+      border-block-end: 2px solid var(--color-border);
+      padding-block-end: 0;
+    }
+
+    .tab-nav label {
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      font-weight: var(--weight-medium);
+      color: var(--color-text-muted);
+      border-block-end: 2px solid transparent;
+      margin-block-end: -2px;
+      transition:
+        color var(--duration-fast) var(--ease-default),
+        border-color var(--duration-fast) var(--ease-default);
+    }
+
+    .tab-nav label:hover {
+      color: var(--color-text);
+    }
+
+    /* Tab Panels - Hidden by default */
+    .tab-panel {
+      display: none;
+      padding: var(--space-6) 0;
+      animation: fadeIn var(--duration-normal) var(--ease-default);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Active tab styling using :checked */
+    #tab1:checked ~ .tab-nav label[for="tab1"],
+    #tab2:checked ~ .tab-nav label[for="tab2"],
+    #tab3:checked ~ .tab-nav label[for="tab3"],
+    #tab4:checked ~ .tab-nav label[for="tab4"] {
+      color: var(--color-primary);
+      border-block-end-color: var(--color-primary);
+    }
+
+    /* Show active panel using :checked */
+    #tab1:checked ~ .tab-panel[data-tab="1"],
+    #tab2:checked ~ .tab-panel[data-tab="2"],
+    #tab3:checked ~ .tab-panel[data-tab="3"],
+    #tab4:checked ~ .tab-panel[data-tab="4"] {
+      display: block;
+    }
+
+    /* ============================================
+       ACCORDION COMPONENT (Native details/summary)
+       ============================================ */
+
+    .accordion {
+      margin-block-end: var(--space-8);
+    }
+
+    /* Exclusive accordion using name attribute (native HTML) */
+    .accordion details {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      margin-block-end: var(--space-2);
+      overflow: hidden;
+    }
+
+    .accordion details:last-child {
+      margin-block-end: 0;
+    }
+
+    .accordion summary {
+      padding: var(--space-4);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-surface-alt);
+      transition: background var(--duration-fast) var(--ease-default);
+      list-style: none; /* Remove default marker */
+    }
+
+    .accordion summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .accordion summary::after {
+      content: "+";
+      font-size: 1.25rem;
+      font-weight: var(--weight-normal);
+      color: var(--color-text-muted);
+      transition: transform var(--duration-fast) var(--ease-default);
+    }
+
+    .accordion details[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .accordion summary:hover {
+      background: var(--color-surface-sunken);
+    }
+
+    .accordion details[open] summary {
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .accordion .accordion-content {
+      padding: var(--space-4);
+    }
+
+    /* Smooth open/close with CSS animation */
+    .accordion .accordion-content {
+      animation: slideDown var(--duration-normal) var(--ease-default);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ============================================
+       VERTICAL TABS VARIANT
+       ============================================ */
+
+    .tabs-vertical {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-4);
+      margin-block-end: var(--space-8);
+    }
+
+    @media (width < 600px) {
+      .tabs-vertical {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tabs-vertical input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tabs-vertical .tab-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      border-block-end: none;
+      border-inline-end: 2px solid var(--color-border);
+      padding-inline-end: var(--space-4);
+    }
+
+    @media (width < 600px) {
+      .tabs-vertical .tab-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-inline-end: none;
+        border-block-end: 2px solid var(--color-border);
+        padding-inline-end: 0;
+        padding-block-end: var(--space-2);
+      }
+    }
+
+    .tabs-vertical .tab-nav label {
+      padding: var(--space-2) var(--space-3);
+      border-block-end: none;
+      border-radius: var(--radius-interactive);
+      margin-block-end: 0;
+    }
+
+    /* Vertical tab active state */
+    #vtab1:checked ~ .tab-nav label[for="vtab1"],
+    #vtab2:checked ~ .tab-nav label[for="vtab2"],
+    #vtab3:checked ~ .tab-nav label[for="vtab3"] {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+    }
+
+    #vtab1:checked ~ .tab-panel[data-tab="v1"],
+    #vtab2:checked ~ .tab-panel[data-tab="v2"],
+    #vtab3:checked ~ .tab-panel[data-tab="v3"] {
+      display: block;
+    }
+
+    .tabs-vertical .tab-panel {
+      padding: 0;
+    }
+
+    /* ============================================
+       DEMO INFO BOXES
+       ============================================ */
+
+    .demo-info {
+      padding: var(--space-5);
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      margin-block-end: var(--space-6);
+    }
+
+    .demo-info h2 {
+      margin: 0 0 var(--space-3) 0;
+      font-size: var(--text-xl);
+    }
+
+    .code-block {
+      background: var(--color-surface-sunken);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: var(--text-sm);
+      margin-block: var(--space-4);
+    }
+
+    .technique-list {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-3) 0 0 0;
+    }
+
+    .technique-list li {
+      padding: var(--space-2) 0;
+      padding-inline-start: var(--space-6);
+      position: relative;
+    }
+
+    .technique-list li::before {
+      content: "\2713";
+      position: absolute;
+      left: 0;
+      color: var(--color-success);
+      font-weight: bold;
+    }
+
+    /* Section headers */
+    .section-header {
+      margin-block: var(--space-8) var(--space-4);
+    }
+
+    .section-header h2 {
+      margin: 0;
+    }
+
+    .section-header p {
+      margin: var(--space-2) 0 0 0;
+      color: var(--color-text-muted);
+    }
+
+    /* Demo Navigation */
+    .demo-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--color-surface-alt);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .demo-nav a {
+      padding: 0.5rem 1rem;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-interactive);
+      text-decoration: none;
+      font-size: var(--text-sm);
+    }
+
+    .demo-nav a:hover {
+      background: var(--color-primary-subtle);
+    }
+
+    .demo-nav a.current {
+      background: var(--color-primary);
+      color: var(--color-text-inverted);
+      border-color: var(--color-primary);
+    }
+
+    /* Smooth transitions */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="swiss">
+
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <select id="theme-select">
+      <option value="swiss">Swiss</option>
+      <option value="organic">Organic</option>
+      <option value="brutalist">Brutalist</option>
+      <option value="cyber">Cyber</option>
+    </select>
+  </div>
+
+  <header>
+    <h1>Tabs &amp; Accordion</h1>
+    <nav>
+      <a href="../demo.html">Main Demo</a>
+      <a href="layout-switcher.html">Layout Switcher</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="demo-info">
+      <h2>Pure CSS Interactive Components</h2>
+      <p>Tabs and accordions without JavaScript. Uses native HTML features and CSS <code>:checked</code> pseudo-class for state management.</p>
+
+      <ul class="technique-list">
+        <li>Radio buttons for exclusive tab selection</li>
+        <li>Native <code>&lt;details&gt;</code> with <code>name</code> attribute for exclusive accordion</li>
+        <li>CSS animations for smooth transitions</li>
+        <li>Fully keyboard accessible</li>
+      </ul>
+    </div>
+
+    <!-- ============================================
+         HORIZONTAL TABS
+         ============================================ -->
+
+    <div class="section-header">
+      <h2>Horizontal Tabs</h2>
+      <p>Radio button pattern with sibling combinator for panel switching.</p>
+    </div>
+
+    <div class="tabs">
+      <input type="radio" name="tabs" id="tab1" checked>
+      <input type="radio" name="tabs" id="tab2">
+      <input type="radio" name="tabs" id="tab3">
+      <input type="radio" name="tabs" id="tab4">
+
+      <nav class="tab-nav">
+        <label for="tab1">Overview</label>
+        <label for="tab2">Features</label>
+        <label for="tab3">Code</label>
+        <label for="tab4">Examples</label>
+      </nav>
+
+      <section class="tab-panel" data-tab="1">
+        <h3>How It Works</h3>
+        <p>The tabs use hidden radio inputs combined with the CSS <code>:checked</code> pseudo-class. When a radio button is checked, we use the general sibling combinator (<code>~</code>) to show the corresponding panel and style the active tab label.</p>
+        <p>This technique works because radio buttons with the same <code>name</code> attribute maintain exclusive selection natively in HTML.</p>
+      </section>
+
+      <section class="tab-panel" data-tab="2">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Zero JavaScript</strong> - Pure HTML and CSS solution</li>
+          <li><strong>Accessible</strong> - Keyboard navigation works natively</li>
+          <li><strong>Animated</strong> - Smooth fade-in transitions</li>
+          <li><strong>Themeable</strong> - Inherits design tokens automatically</li>
+          <li><strong>Responsive</strong> - Adapts to container width</li>
+        </ul>
+      </section>
+
+      <section class="tab-panel" data-tab="3">
+        <h3>HTML Structure</h3>
+        <div class="code-block">
+<pre><code>&lt;div class="tabs"&gt;
+  &lt;input type="radio" name="tabs" id="tab1" checked&gt;
+  &lt;input type="radio" name="tabs" id="tab2"&gt;
+
+  &lt;nav class="tab-nav"&gt;
+    &lt;label for="tab1"&gt;Tab 1&lt;/label&gt;
+    &lt;label for="tab2"&gt;Tab 2&lt;/label&gt;
+  &lt;/nav&gt;
+
+  &lt;section class="tab-panel" data-tab="1"&gt;...&lt;/section&gt;
+  &lt;section class="tab-panel" data-tab="2"&gt;...&lt;/section&gt;
+&lt;/div&gt;</code></pre>
+        </div>
+
+        <h3>CSS Pattern</h3>
+        <div class="code-block">
+<pre><code>/* Hide all panels by default */
+.tab-panel {
+  display: none;
+}
+
+/* Show panel when corresponding radio is checked */
+#tab1:checked ~ .tab-panel[data-tab="1"],
+#tab2:checked ~ .tab-panel[data-tab="2"] {
+  display: block;
+}
+
+/* Style active tab label */
+#tab1:checked ~ .tab-nav label[for="tab1"],
+#tab2:checked ~ .tab-nav label[for="tab2"] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="4">
+        <h3>Use Cases</h3>
+        <p>This pattern is ideal for:</p>
+        <ul>
+          <li>Settings pages with categorized options</li>
+          <li>Product pages with description/specs/reviews tabs</li>
+          <li>Documentation with multiple sections</li>
+          <li>Any content that benefits from progressive disclosure</li>
+        </ul>
+        <p>For more complex interactions (dynamic content loading, URL routing), consider adding progressive enhancement with JavaScript.</p>
+      </section>
+    </div>
+
+    <!-- ============================================
+         ACCORDION
+         ============================================ -->
+
+    <div class="section-header">
+      <h2>Accordion</h2>
+      <p>Native <code>&lt;details&gt;</code> element with exclusive behavior via the <code>name</code> attribute.</p>
+    </div>
+
+    <div class="accordion">
+      <details name="faq" open>
+        <summary>What is the Vanilla Breeze Grid System?</summary>
+        <div class="accordion-content">
+          <p>The Grid Identity System automatically assigns grid areas to semantic HTML elements. Instead of adding classes, elements like <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, and <code>&lt;footer&gt;</code> get their grid placement from their identity in the DOM.</p>
+          <p>This means you can switch between layouts just by changing the <code>data-layout</code> attribute on the body element.</p>
+        </div>
+      </details>
+
+      <details name="faq">
+        <summary>How does the token architecture work?</summary>
+        <div class="accordion-content">
+          <p>The design token system uses three layers:</p>
+          <ul>
+            <li><strong>Primitives</strong> - Raw values like colors, spacing, and typography scales</li>
+            <li><strong>Semantic</strong> - Contextual meanings like <code>--color-primary</code> or <code>--gap-lg</code></li>
+            <li><strong>Component</strong> - Specific usage like <code>--button-padding-x</code></li>
+          </ul>
+          <p>Themes override semantic tokens to create dramatic visual transformations while keeping component behavior consistent.</p>
+        </div>
+      </details>
+
+      <details name="faq">
+        <summary>Is this accessible?</summary>
+        <div class="accordion-content">
+          <p>Yes! The <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> elements are natively accessible:</p>
+          <ul>
+            <li>Keyboard navigation works out of the box (Enter/Space to toggle)</li>
+            <li>Screen readers announce the expanded/collapsed state</li>
+            <li>Focus management is handled by the browser</li>
+          </ul>
+          <p>The <code>name</code> attribute (added in 2024) enables exclusive accordion behavior natively.</p>
+        </div>
+      </details>
+
+      <details name="faq">
+        <summary>What browsers support this?</summary>
+        <div class="accordion-content">
+          <p>The exclusive accordion (<code>name</code> attribute on <code>&lt;details&gt;</code>) is supported in:</p>
+          <ul>
+            <li>Chrome 120+ (December 2023)</li>
+            <li>Firefox 130+ (August 2024)</li>
+            <li>Safari 17.2+ (December 2023)</li>
+          </ul>
+          <p>In older browsers, the accordion still works but allows multiple panels to be open simultaneously.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ============================================
+         VERTICAL TABS
+         ============================================ -->
+
+    <div class="section-header">
+      <h2>Vertical Tabs</h2>
+      <p>Same pattern, different layout using CSS Grid.</p>
+    </div>
+
+    <div class="tabs-vertical">
+      <input type="radio" name="vtabs" id="vtab1" checked>
+      <input type="radio" name="vtabs" id="vtab2">
+      <input type="radio" name="vtabs" id="vtab3">
+
+      <nav class="tab-nav">
+        <label for="vtab1">Getting Started</label>
+        <label for="vtab2">Configuration</label>
+        <label for="vtab3">Advanced</label>
+      </nav>
+
+      <section class="tab-panel" data-tab="v1">
+        <h3>Getting Started</h3>
+        <p>To use the Vanilla Breeze system, include the three core CSS files:</p>
+        <div class="code-block">
+<pre><code>&lt;link rel="stylesheet" href="vanilla-breeze-tokens.css"&gt;
+&lt;link rel="stylesheet" href="vanilla-breeze-grid.css"&gt;
+&lt;link rel="stylesheet" href="vanilla-breeze-base.css"&gt;</code></pre>
+        </div>
+        <p>Then add a theme file and set <code>data-theme</code> and <code>data-layout</code> attributes on your body element.</p>
+      </section>
+
+      <section class="tab-panel" data-tab="v2">
+        <h3>Configuration</h3>
+        <p>Customize the system by overriding CSS custom properties. The token system allows granular control at each layer:</p>
+        <div class="code-block">
+<pre><code>:root {
+  /* Override primitives */
+  --blue-500: oklch(55% 0.2 240);
+
+  /* Override semantic */
+  --color-primary: var(--blue-500);
+
+  /* Override component */
+  --button-radius: var(--radius-full);
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="v3">
+        <h3>Advanced Usage</h3>
+        <p>For advanced customization, you can create your own theme file following the pattern in the theme files. Use the <code>@layer theme</code> directive to ensure proper cascade ordering.</p>
+        <p>Container queries and the <code>:has()</code> selector enable component-level responsive behavior without JavaScript.</p>
+      </section>
+    </div>
+
+    <!-- ============================================
+         NON-EXCLUSIVE ACCORDION
+         ============================================ -->
+
+    <div class="section-header">
+      <h2>Non-Exclusive Accordion</h2>
+      <p>Without the <code>name</code> attribute, multiple panels can be open simultaneously.</p>
+    </div>
+
+    <div class="accordion">
+      <details>
+        <summary>Panel One (can be open with others)</summary>
+        <div class="accordion-content">
+          <p>This panel doesn't have a <code>name</code> attribute, so it operates independently. Multiple panels can be open at the same time.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Panel Two (can be open with others)</summary>
+        <div class="accordion-content">
+          <p>Open this panel while Panel One is open. Both will stay visible. This is the default behavior of <code>&lt;details&gt;</code> elements.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Panel Three (can be open with others)</summary>
+        <div class="accordion-content">
+          <p>All three panels can be open simultaneously. Use this pattern when content isn't mutually exclusive and users might want to compare sections.</p>
+        </div>
+      </details>
+    </div>
+
+  </main>
+
+  <footer>
+    <nav class="demo-nav">
+      <a href="layout-switcher.html">01 Layout Switcher</a>
+      <a href="tabs-accordion.html" class="current">02 Tabs</a>
+      <a href="responsive-grid.html">03 Grid</a>
+      <a href="landing-page.html">04 Landing</a>
+      <a href="../minimal-js/dashboard.html">05 Dashboard</a>
+      <a href="../minimal-js/theme-builder.html">06 Theme</a>
+      <a href="../interactive/component-lab.html">07 Lab</a>
+      <a href="../interactive/animation-motion.html">08 Motion</a>
+    </nav>
+    <p style="text-align: center; padding: var(--space-4); color: var(--color-text-muted);">Vanilla Breeze Zen Garden | Pure CSS Demo</p>
+  </footer>
+
+  <script>
+    // Only JS: theme switching
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.body.dataset.theme = e.target.value;
+    });
+  </script>
+</body>
+</html>
