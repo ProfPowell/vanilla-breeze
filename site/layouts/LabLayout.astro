@@ -2,8 +2,8 @@
 /**
  * LabLayout
  *
- * Layout for experimental Lab section with "experimental" branding.
- * Similar to DocsLayout but with Lab-specific styling and warning badge.
+ * Layout for experimental Lab section.
+ * Based on DocsLayout with optional experimental indicator.
  */
 
 import BaseHead from '../components/BaseHead.astro';
@@ -28,52 +28,11 @@ const { title, description, includeLabs = false } = Astro.props;
 <head>
   <BaseHead title={`${title} | Lab`} description={description} />
   {includeLabs && <link rel="stylesheet" href="/cdn/vanilla-breeze-labs.css" />}
-  <style>
-    /* Lab-specific banner */
-    .lab-banner {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border-bottom: 1px solid #f59e0b;
-      padding: var(--size-xs) var(--size-m);
-      text-align: center;
-      font-size: var(--size-s);
-    }
-
-    .lab-banner-content {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--size-xs);
-      color: #92400e;
-    }
-
-    .lab-badge {
-      display: inline-block;
-      background: #f59e0b;
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Override page header for lab */
-    [data-page="lab"] main {
-      padding-block-start: var(--size-l);
-    }
-  </style>
 </head>
 <body>
-  <div class="lab-banner">
-    <div class="lab-banner-content">
-      <span class="lab-badge">Lab</span>
-      <span>Experimental patterns &mdash; may change or be removed</span>
-    </div>
-  </div>
+  <Header currentSection="lab" />
 
-  <Header currentSection="docs" />
-
-  <main>
+  <main data-pagefind-body>
     <slot />
   </main>
 
