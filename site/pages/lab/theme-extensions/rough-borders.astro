@@ -7,6 +7,41 @@
  */
 
 import LabLayout from '../../../layouts/LabLayout.astro';
+
+// Code examples as template strings
+const svgFilterCode = `<filter id="rough-light">
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2"/>
+  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
+</filter>
+
+.card { filter: url(#rough-light); }`;
+
+const borderImageCode = `.sketch-border {
+  border: 8px solid transparent;
+  border-image: url("data:image/svg+xml,...") 10 stretch;
+}`;
+
+const maskImageCode = `.torn-edge {
+  mask-image: url("data:image/svg+xml,...");
+  mask-size: 100% 100%;
+}`;
+
+const gradientBorderCode = `.dashed-border {
+  background:
+    repeating-linear-gradient(90deg,
+      var(--color-border) 0, var(--color-border) 8px,
+      transparent 8px, transparent 16px
+    ) 0 0 / 100% 3px no-repeat,
+    var(--color-surface);
+}`;
+
+const boxShadowCode = `.sketch-shadow {
+  box-shadow:
+    3px 3px 0 -1px var(--color-surface),
+    3px 3px 0 0 var(--color-border),
+    6px 6px 0 -1px var(--color-surface),
+    6px 6px 0 0 var(--color-border);
+}`;
 ---
 
 <LabLayout
@@ -19,215 +54,207 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   <section>
     <h2>Proposed Border Tokens</h2>
     <p>New tokens to add rough/sketchy border styles to themes.</p>
-    <div class="token-list">
-      <div class="token-item">
-        <span class="token-name">--border-style</span>
-        <span class="token-value">solid | dashed | rough | sketchy | none</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--border-roughness</span>
-        <span class="token-value">0 | 1 | 2 | 3 (intensity)</span>
-      </div>
-    </div>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--border-style</code></td>
+          <td><code>solid | dashed | rough | sketchy | none</code></td>
+        </tr>
+        <tr>
+          <td><code>--border-roughness</code></td>
+          <td><code>0 | 1 | 2 | 3</code> (intensity level)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Technique 1: SVG Filter Displacement</h2>
     <p>Using feTurbulence + feDisplacementMap to create organic, hand-drawn edge effects.</p>
-    <div class="demo-grid">
-      <div class="demo-card rough-filter-light">
-        <h3>Light (scale: 2)</h3>
-        <p>Subtle wobble, good for subtle personality</p>
+    <browser-window url="svg-filter-demo">
+      <div class="demo-grid">
+        <div class="demo-card rough-filter-light">
+          <h3>Light (scale: 2)</h3>
+          <p>Subtle wobble, good for subtle personality</p>
+        </div>
+        <div class="demo-card rough-filter-medium">
+          <h3>Medium (scale: 4)</h3>
+          <p>Noticeable roughness, sketchy feel</p>
+        </div>
+        <div class="demo-card rough-filter-heavy">
+          <h3>Heavy (scale: 8)</h3>
+          <p>Very rough, torn paper effect</p>
+        </div>
       </div>
-      <div class="demo-card rough-filter-medium">
-        <h3>Medium (scale: 4)</h3>
-        <p>Noticeable roughness, sketchy feel</p>
-      </div>
-      <div class="demo-card rough-filter-heavy">
-        <h3>Heavy (scale: 8)</h3>
-        <p>Very rough, torn paper effect</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>&lt;filter id="rough-light"&gt;
-  &lt;feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2"/&gt;
-  &lt;feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/&gt;
-&lt;/filter&gt;
-
-.card &#123; filter: url(#rough-light); &#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="SVG filter displacement">{svgFilterCode}</code-block>
   </section>
 
   <section>
     <h2>Technique 2: Border Image Patterns</h2>
     <p>Using border-image with SVG patterns for hand-drawn border effects.</p>
-    <div class="demo-grid">
-      <div class="demo-card border-image-sketch">
-        <h3>Sketchy Curves</h3>
-        <p>Bezier curves for wobbly edges</p>
+    <browser-window url="border-image-demo">
+      <div class="demo-grid">
+        <div class="demo-card border-image-sketch">
+          <h3>Sketchy Curves</h3>
+          <p>Bezier curves for wobbly edges</p>
+        </div>
+        <div class="demo-card border-image-rough">
+          <h3>Rough Dashes</h3>
+          <p>Variable dash pattern</p>
+        </div>
+        <div class="demo-card border-image-marker">
+          <h3>Marker Style</h3>
+          <p>Hand-drawn marker strokes</p>
+        </div>
       </div>
-      <div class="demo-card border-image-rough">
-        <h3>Rough Dashes</h3>
-        <p>Variable dash pattern</p>
-      </div>
-      <div class="demo-card border-image-marker">
-        <h3>Marker Style</h3>
-        <p>Hand-drawn marker strokes</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>.sketch-border &#123;
-  border: 8px solid transparent;
-  border-image: url("data:image/svg+xml,...") 10 stretch;
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="Border image patterns">{borderImageCode}</code-block>
   </section>
 
   <section>
     <h2>Technique 3: Mask Image Edges</h2>
     <p>Using mask-image to create torn or wavy edge effects.</p>
-    <div class="demo-grid">
-      <div class="demo-card mask-torn">
-        <h3>Torn Edges</h3>
-        <p>Irregular top and bottom edges</p>
+    <browser-window url="mask-image-demo">
+      <div class="demo-grid">
+        <div class="demo-card mask-torn">
+          <h3>Torn Edges</h3>
+          <p>Irregular top and bottom edges</p>
+        </div>
+        <div class="demo-card mask-wavy">
+          <h3>Wavy Edges</h3>
+          <p>Smooth sine wave pattern</p>
+        </div>
       </div>
-      <div class="demo-card mask-wavy">
-        <h3>Wavy Edges</h3>
-        <p>Smooth sine wave pattern</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>.torn-edge &#123;
-  mask-image: url("data:image/svg+xml,...");
-  mask-size: 100% 100%;
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="Mask image edges">{maskImageCode}</code-block>
   </section>
 
   <section>
     <h2>Technique 4: CSS Gradient Borders</h2>
     <p>Using repeating gradients for dashed and dotted border patterns.</p>
-    <div class="demo-grid">
-      <div class="demo-card gradient-dashed">
-        <h3>Gradient Dashes</h3>
-        <p>Repeating linear gradient</p>
+    <browser-window url="gradient-borders-demo">
+      <div class="demo-grid">
+        <div class="demo-card gradient-dashed">
+          <h3>Gradient Dashes</h3>
+          <p>Repeating linear gradient</p>
+        </div>
+        <div class="demo-card gradient-dots-border">
+          <h3>Dot Border</h3>
+          <p>Radial gradient dots</p>
+        </div>
       </div>
-      <div class="demo-card gradient-dots-border">
-        <h3>Dot Border</h3>
-        <p>Radial gradient dots</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>.dashed-border &#123;
-  background:
-    repeating-linear-gradient(90deg,
-      var(--color-border) 0, var(--color-border) 8px,
-      transparent 8px, transparent 16px
-    ) 0 0 / 100% 3px no-repeat,
-    var(--color-surface);
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="CSS gradient borders">{gradientBorderCode}</code-block>
   </section>
 
   <section>
     <h2>Technique 5: Box Shadow Effects</h2>
     <p>Using layered box-shadows for sketchy and offset effects.</p>
-    <div class="demo-grid">
-      <div class="demo-card shadow-sketch">
-        <h3>Sketch Shadow</h3>
-        <p>Layered offset shadows</p>
+    <browser-window url="box-shadow-demo">
+      <div class="demo-grid">
+        <div class="demo-card shadow-sketch">
+          <h3>Sketch Shadow</h3>
+          <p>Layered offset shadows</p>
+        </div>
+        <div class="demo-card shadow-offset">
+          <h3>Hard Offset</h3>
+          <p>Brutalist solid shadow</p>
+        </div>
       </div>
-      <div class="demo-card shadow-offset">
-        <h3>Hard Offset</h3>
-        <p>Brutalist solid shadow</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>.sketch-shadow &#123;
-  box-shadow:
-    3px 3px 0 -1px var(--color-surface),
-    3px 3px 0 0 var(--color-border),
-    6px 6px 0 -1px var(--color-surface),
-    6px 6px 0 0 var(--color-border);
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="Box shadow effects">{boxShadowCode}</code-block>
   </section>
 
   <section>
     <h2>Technique 6: Pseudo-element Decorations</h2>
     <p>Using ::before and ::after for decorative corner accents.</p>
-    <div class="demo-grid">
-      <div class="demo-card pseudo-corners">
-        <h3>Corner Accents</h3>
-        <p>Decorative L-shapes at corners</p>
+    <browser-window url="pseudo-element-demo">
+      <div class="demo-grid">
+        <div class="demo-card pseudo-corners">
+          <h3>Corner Accents</h3>
+          <p>Decorative L-shapes at corners</p>
+        </div>
+        <div class="demo-card pseudo-tape">
+          <h3>Tape Effect</h3>
+          <p>Simulated masking tape</p>
+        </div>
       </div>
-      <div class="demo-card pseudo-tape">
-        <h3>Tape Effect</h3>
-        <p>Simulated masking tape</p>
-      </div>
-    </div>
+    </browser-window>
   </section>
 
   <section>
     <h2>Interactive Border Picker</h2>
     <p>Click a style to apply it to the preview card.</p>
-    <div class="interactive-demo">
-      <div class="preview-area">
-        <div class="preview-card" id="preview-card">
-          <h3>Preview Card</h3>
-          <p>Select a border style</p>
+    <browser-window url="interactive-picker">
+      <div class="interactive-demo">
+        <div class="preview-area">
+          <div class="preview-card" id="preview-card">
+            <h3>Preview Card</h3>
+            <p>Select a border style</p>
+          </div>
+        </div>
+        <div class="style-options">
+          <button class="style-option" data-style="none" aria-pressed="true">
+            <strong>None</strong>
+            <span>Standard border</span>
+          </button>
+          <button class="style-option" data-style="rough-filter-light">
+            <strong>SVG Filter Light</strong>
+            <span>Subtle displacement</span>
+          </button>
+          <button class="style-option" data-style="rough-filter-medium">
+            <strong>SVG Filter Medium</strong>
+            <span>Noticeable roughness</span>
+          </button>
+          <button class="style-option" data-style="border-image-sketch">
+            <strong>Sketch Border</strong>
+            <span>Hand-drawn curves</span>
+          </button>
+          <button class="style-option" data-style="mask-torn">
+            <strong>Torn Edges</strong>
+            <span>Irregular mask</span>
+          </button>
+          <button class="style-option" data-style="shadow-offset">
+            <strong>Hard Offset</strong>
+            <span>Brutalist shadow</span>
+          </button>
+          <button class="style-option" data-style="pseudo-corners">
+            <strong>Corner Accents</strong>
+            <span>Decorative corners</span>
+          </button>
         </div>
       </div>
-      <div class="style-options">
-        <button class="style-option" data-style="none" aria-pressed="true">
-          <strong>None</strong>
-          <span>Standard border</span>
-        </button>
-        <button class="style-option" data-style="rough-filter-light">
-          <strong>SVG Filter Light</strong>
-          <span>Subtle displacement</span>
-        </button>
-        <button class="style-option" data-style="rough-filter-medium">
-          <strong>SVG Filter Medium</strong>
-          <span>Noticeable roughness</span>
-        </button>
-        <button class="style-option" data-style="border-image-sketch">
-          <strong>Sketch Border</strong>
-          <span>Hand-drawn curves</span>
-        </button>
-        <button class="style-option" data-style="mask-torn">
-          <strong>Torn Edges</strong>
-          <span>Irregular mask</span>
-        </button>
-        <button class="style-option" data-style="shadow-offset">
-          <strong>Hard Offset</strong>
-          <span>Brutalist shadow</span>
-        </button>
-        <button class="style-option" data-style="pseudo-corners">
-          <strong>Corner Accents</strong>
-          <span>Decorative corners</span>
-        </button>
-      </div>
-    </div>
+    </browser-window>
   </section>
 
   <section>
     <h2>Rough Buttons</h2>
     <p>Applying rough border techniques to interactive buttons.</p>
-    <div class="buttons-demo">
-      <button class="btn-rough filter-rough">Filter Rough</button>
-      <button class="btn-rough shadow-offset-btn">Offset Shadow</button>
-    </div>
+    <browser-window url="buttons-demo">
+      <div class="buttons-demo">
+        <button class="btn-rough filter-rough">Filter Rough</button>
+        <button class="btn-rough shadow-offset-btn">Offset Shadow</button>
+      </div>
+    </browser-window>
   </section>
 
   <section>
     <h2>Rough Inputs</h2>
     <p>Form inputs with sketchy border treatments.</p>
-    <div class="inputs-demo">
-      <input type="text" class="input-rough filter-input" placeholder="Filter rough input">
-      <input type="text" class="input-rough sketch-input" placeholder="Sketch shadow input">
-      <input type="text" class="input-rough underline-input" placeholder="Underline only">
-    </div>
+    <browser-window url="inputs-demo">
+      <div class="inputs-demo">
+        <input type="text" class="input-rough filter-input" placeholder="Filter rough input">
+        <input type="text" class="input-rough sketch-input" placeholder="Sketch shadow input">
+        <input type="text" class="input-rough underline-input" placeholder="Underline only">
+      </div>
+    </browser-window>
   </section>
 
   <!-- SVG Filters (must be in DOM) -->
@@ -250,41 +277,12 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 </LabLayout>
 
 <style>
-  /* Token list */
-  .token-list {
-    display: grid;
-    gap: var(--size-s);
-    margin-block: var(--size-m);
-  }
-
-  .token-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: var(--size-m);
-    padding: var(--size-s);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-s);
-    align-items: center;
-  }
-
-  .token-name {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-sm);
-    color: var(--color-primary);
-  }
-
-  .token-value {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-
   /* Demo Grid */
   .demo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .demo-card {
@@ -302,21 +300,6 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     margin: 0;
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-  }
-
-  /* Code block */
-  .code-block {
-    background: var(--color-surface-alt);
-    padding: var(--size-m);
-    border-radius: var(--radius-m);
-    overflow-x: auto;
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-sm);
-    margin-block: var(--size-m);
-  }
-
-  .code-block pre {
-    margin: 0;
   }
 
   /* SVG Filter Techniques */
@@ -504,6 +487,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--size-l);
+    padding: var(--size-m);
   }
 
   @media (width < 768px) {
@@ -584,6 +568,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     flex-wrap: wrap;
     gap: var(--size-m);
     justify-content: center;
+    padding: var(--size-l);
   }
 
   .btn-rough {
@@ -623,6 +608,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-l);
   }
 
   .input-rough {

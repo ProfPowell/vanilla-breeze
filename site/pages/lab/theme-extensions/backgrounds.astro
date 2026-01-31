@@ -7,6 +7,44 @@
  */
 
 import LabLayout from '../../../layouts/LabLayout.astro';
+
+// Code examples as template strings
+const meshGradientCode = `/* Mesh gradient - multiple radial overlays */
+.mesh-bg {
+  background:
+    radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 1) 0px, transparent 50%);
+}
+
+/* Animated gradient */
+.animated-bg {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}`;
+
+const textureCode = `/* Noise texture via SVG data URI */
+--texture-noise: url("data:image/svg+xml,...");
+
+/* Apply texture overlay */
+.surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--texture-noise);
+  opacity: var(--surface-texture-opacity);
+  pointer-events: none;
+}`;
+
+const glassmorphismCode = `/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(var(--glass-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 8px));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-m);
+}`;
 ---
 
 <LabLayout
@@ -19,202 +57,185 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   <section>
     <h2>Proposed Surface Tokens</h2>
     <p>New tokens to add texture and depth to surfaces.</p>
-    <div class="token-list">
-      <div class="token-item">
-        <span class="token-name">--surface-texture</span>
-        <span class="token-value">none | noise | grain | dots | lines</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--surface-texture-opacity</span>
-        <span class="token-value">0.05</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--bg-gradient</span>
-        <span class="token-value">linear-gradient(...)</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--glass-blur</span>
-        <span class="token-value">0 | 8px | 16px</span>
-      </div>
-    </div>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--surface-texture</code></td>
+          <td><code>none | noise | grain | dots | lines</code></td>
+        </tr>
+        <tr>
+          <td><code>--surface-texture-opacity</code></td>
+          <td><code>0.05</code> (default)</td>
+        </tr>
+        <tr>
+          <td><code>--bg-gradient</code></td>
+          <td><code>linear-gradient(...)</code></td>
+        </tr>
+        <tr>
+          <td><code>--glass-blur</code></td>
+          <td><code>0 | 8px | 16px</code></td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Gradient Backgrounds</h2>
     <p>Various gradient techniques for hero sections, cards, and page backgrounds.</p>
-    <div class="gradient-grid">
-      <div class="gradient-card gradient-linear">
-        <h3>Linear</h3>
-        <p>135deg diagonal blend</p>
+    <browser-window url="gradient-demo">
+      <div class="gradient-grid">
+        <div class="gradient-card gradient-linear">
+          <h3>Linear</h3>
+          <p>135deg diagonal blend</p>
+        </div>
+        <div class="gradient-card gradient-radial">
+          <h3>Radial</h3>
+          <p>Circle from top-left</p>
+        </div>
+        <div class="gradient-card gradient-conic">
+          <h3>Conic</h3>
+          <p>Color wheel effect</p>
+        </div>
+        <div class="gradient-card gradient-mesh">
+          <h3>Mesh</h3>
+          <p>Multiple radial overlays</p>
+        </div>
+        <div class="gradient-card gradient-animated">
+          <h3>Animated</h3>
+          <p>Shifting background position</p>
+        </div>
+        <div class="gradient-card gradient-layered">
+          <h3>Layered</h3>
+          <p>Highlight + base gradient</p>
+        </div>
       </div>
-      <div class="gradient-card gradient-radial">
-        <h3>Radial</h3>
-        <p>Circle from top-left</p>
-      </div>
-      <div class="gradient-card gradient-conic">
-        <h3>Conic</h3>
-        <p>Color wheel effect</p>
-      </div>
-      <div class="gradient-card gradient-mesh">
-        <h3>Mesh</h3>
-        <p>Multiple radial overlays</p>
-      </div>
-      <div class="gradient-card gradient-animated">
-        <h3>Animated</h3>
-        <p>Shifting background position</p>
-      </div>
-      <div class="gradient-card gradient-layered">
-        <h3>Layered</h3>
-        <p>Highlight + base gradient</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>/* Mesh gradient - multiple radial overlays */
-.mesh-bg &#123;
-  background:
-    radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 1) 0px, transparent 50%);
-&#125;
-
-/* Animated gradient */
-.animated-bg &#123;
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-  background-size: 400% 400%;
-  animation: gradient-shift 15s ease infinite;
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="Gradient techniques">{meshGradientCode}</code-block>
   </section>
 
   <section>
     <h2>Texture Patterns</h2>
     <p>Subtle texture overlays that add depth and character to surfaces.</p>
-    <div class="texture-grid">
-      <div class="texture-card texture-none">
-        <h3>None</h3>
-        <p>Clean, flat surface</p>
+    <browser-window url="texture-demo">
+      <div class="texture-grid">
+        <div class="texture-card texture-none">
+          <h3>None</h3>
+          <p>Clean, flat surface</p>
+        </div>
+        <div class="texture-card texture-noise">
+          <h3>Noise</h3>
+          <p>SVG turbulence filter</p>
+        </div>
+        <div class="texture-card texture-dots">
+          <h3>Dots</h3>
+          <p>Repeating dot pattern</p>
+        </div>
+        <div class="texture-card texture-grid-pattern">
+          <h3>Grid</h3>
+          <p>Diagonal grid lines</p>
+        </div>
+        <div class="texture-card texture-lines">
+          <h3>Lines</h3>
+          <p>Fine diagonal lines</p>
+        </div>
+        <div class="texture-card texture-grain">
+          <h3>Grain</h3>
+          <p>Film grain effect</p>
+        </div>
       </div>
-      <div class="texture-card texture-noise">
-        <h3>Noise</h3>
-        <p>SVG turbulence filter</p>
-      </div>
-      <div class="texture-card texture-dots">
-        <h3>Dots</h3>
-        <p>Repeating dot pattern</p>
-      </div>
-      <div class="texture-card texture-grid-pattern">
-        <h3>Grid</h3>
-        <p>Diagonal grid lines</p>
-      </div>
-      <div class="texture-card texture-lines">
-        <h3>Lines</h3>
-        <p>Fine diagonal lines</p>
-      </div>
-      <div class="texture-card texture-grain">
-        <h3>Grain</h3>
-        <p>Film grain effect</p>
-      </div>
-    </div>
-    <div class="code-block">
-      <pre><code>/* Noise texture via SVG data URI */
---texture-noise: url("data:image/svg+xml,...");
-
-/* Apply texture overlay */
-.surface::before &#123;
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--texture-noise);
-  opacity: var(--surface-texture-opacity);
-  pointer-events: none;
-&#125;</code></pre>
-    </div>
+    </browser-window>
+    <code-block language="css" label="Texture overlay technique">{textureCode}</code-block>
   </section>
 
   <section>
     <h2>Glassmorphism</h2>
     <p>Frosted glass effect using backdrop-filter. Adjust the blur amount with the slider.</p>
-    <div class="glass-demo">
-      <div class="glass-cards">
-        <div class="glass-card">
-          <h3>Glass Card</h3>
-          <p>Semi-transparent with blur backdrop</p>
-        </div>
-        <div class="glass-card">
-          <h3>Frosted</h3>
-          <p>Works best on colorful backgrounds</p>
-        </div>
-        <div class="glass-card">
-          <h3>Layered</h3>
-          <p>Border adds subtle definition</p>
+    <browser-window url="glassmorphism-demo">
+      <div class="glass-demo">
+        <div class="glass-cards">
+          <div class="glass-card">
+            <h3>Glass Card</h3>
+            <p>Semi-transparent with blur backdrop</p>
+          </div>
+          <div class="glass-card">
+            <h3>Frosted</h3>
+            <p>Works best on colorful backgrounds</p>
+          </div>
+          <div class="glass-card">
+            <h3>Layered</h3>
+            <p>Border adds subtle definition</p>
+          </div>
         </div>
       </div>
-    </div>
+    </browser-window>
     <div class="glass-controls">
       <label>
         Blur: <span id="blur-value">8px</span>
         <input type="range" id="glass-blur" min="0" max="32" value="8">
       </label>
     </div>
-    <div class="code-block">
-      <pre><code>/* Glassmorphism card */
-.glass-card &#123;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(var(--glass-blur, 8px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 8px));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-m);
-&#125;</code></pre>
-    </div>
+    <code-block language="css" label="Glassmorphism card">{glassmorphismCode}</code-block>
   </section>
 
   <section>
     <h2>Nested Surfaces</h2>
     <p>Showing layered surfaces using the existing VB surface tokens.</p>
-    <div class="nested-demo">
-      <h4>Level 0: --color-surface-alt</h4>
-      <div class="nested-level-1">
-        <h4>Level 1: --color-surface</h4>
-        <div class="nested-level-2">
-          <h4>Level 2: --color-surface-raised</h4>
-          <div class="nested-level-3">
-            <h4>Level 3: --color-surface-sunken</h4>
+    <browser-window url="nested-surfaces">
+      <div class="nested-demo">
+        <h4>Level 0: --color-surface-alt</h4>
+        <div class="nested-level-1">
+          <h4>Level 1: --color-surface</h4>
+          <div class="nested-level-2">
+            <h4>Level 2: --color-surface-raised</h4>
+            <div class="nested-level-3">
+              <h4>Level 3: --color-surface-sunken</h4>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </browser-window>
   </section>
 
   <section>
     <h2>Animated Gradients</h2>
     <p>Subtle movement for hero sections and featured content.</p>
-    <div class="animated-gradient-demo">
-      <div class="animated-card gradient-hue-rotate">
-        <h3>Hue Rotate</h3>
-        <p>Filter-based color cycling</p>
+    <browser-window url="animated-gradients">
+      <div class="animated-gradient-demo">
+        <div class="animated-card gradient-hue-rotate">
+          <h3>Hue Rotate</h3>
+          <p>Filter-based color cycling</p>
+        </div>
+        <div class="animated-card gradient-pulse">
+          <h3>Pulse Glow</h3>
+          <p>Breathing radial highlight</p>
+        </div>
+        <div class="animated-card gradient-wave">
+          <h3>Wave</h3>
+          <p>Rotating ellipse overlay</p>
+        </div>
       </div>
-      <div class="animated-card gradient-pulse">
-        <h3>Pulse Glow</h3>
-        <p>Breathing radial highlight</p>
-      </div>
-      <div class="animated-card gradient-wave">
-        <h3>Wave</h3>
-        <p>Rotating ellipse overlay</p>
-      </div>
-    </div>
+    </browser-window>
   </section>
 
   <section>
     <h2>Page Background Preview</h2>
     <p>Test different page-level background treatments.</p>
-    <div class="page-bg-demo" data-bg="solid" id="page-bg-demo">
-      <div class="page-bg-content">
-        <div class="page-bg-card">
-          <h3>Content Card</h3>
-          <p>This card floats above the page background. Try different backgrounds to see how they affect the overall feel.</p>
+    <browser-window url="page-background">
+      <div class="page-bg-demo" data-bg="solid" id="page-bg-demo">
+        <div class="page-bg-content">
+          <div class="page-bg-card">
+            <h3>Content Card</h3>
+            <p>This card floats above the page background. Try different backgrounds to see how they affect the overall feel.</p>
+          </div>
         </div>
       </div>
-    </div>
+    </browser-window>
     <div class="bg-controls">
       <button data-bg="solid" aria-pressed="true">Solid</button>
       <button data-bg="gradient" aria-pressed="false">Gradient</button>
@@ -225,56 +246,12 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 </LabLayout>
 
 <style>
-  /* Token list */
-  .token-list {
-    display: grid;
-    gap: var(--size-s);
-    margin-block: var(--size-m);
-  }
-
-  .token-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: var(--size-m);
-    padding: var(--size-s);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-s);
-    align-items: center;
-  }
-
-  .token-name {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-sm);
-    color: var(--color-primary);
-  }
-
-  .token-value {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-
-  /* Code block */
-  .code-block {
-    background: var(--color-surface-alt);
-    padding: var(--size-m);
-    border-radius: var(--radius-m);
-    overflow-x: auto;
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-sm);
-    margin-block: var(--size-m);
-  }
-
-  .code-block pre {
-    margin: 0;
-  }
-
   /* Gradient Grid */
   .gradient-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .gradient-card {
@@ -344,8 +321,9 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   /* Texture Grid */
   .texture-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .texture-card {
@@ -492,6 +470,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   /* Nested Surfaces */
   .nested-demo {
     padding: var(--size-l);
+    margin: var(--size-m);
     background: var(--color-surface-alt);
     border-radius: var(--radius-l);
   }
@@ -527,8 +506,9 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   /* Animated Gradients */
   .animated-gradient-demo {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .animated-card {
