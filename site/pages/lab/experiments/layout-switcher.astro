@@ -1,0 +1,204 @@
+---
+/**
+ * Layout Switcher Experiment
+ *
+ * Pure CSS layout switching between different layout patterns.
+ */
+
+import LabLayout from '../../../layouts/LabLayout.astro';
+---
+
+<LabLayout
+  title="Layout Switcher"
+  description="Pure CSS layout switching between sidebar, holy-grail, and other patterns."
+>
+  <style>
+    .layout-demo {
+      --layout: sidebar-left;
+      display: grid;
+      gap: var(--size-m);
+      min-height: 400px;
+    }
+
+    .layout-demo[data-layout="sidebar-left"] {
+      grid-template-columns: 200px 1fr;
+    }
+
+    .layout-demo[data-layout="sidebar-right"] {
+      grid-template-columns: 1fr 200px;
+    }
+
+    .layout-demo[data-layout="holy-grail"] {
+      grid-template-columns: 200px 1fr 200px;
+    }
+
+    .layout-demo[data-layout="single"] {
+      grid-template-columns: 1fr;
+    }
+
+    .layout-controls {
+      display: flex;
+      gap: var(--size-s);
+      flex-wrap: wrap;
+      margin-block-end: var(--size-l);
+    }
+
+    .layout-btn {
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s ease;
+    }
+
+    .layout-btn:hover {
+      background: var(--color-surface);
+    }
+
+    .layout-btn.active {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    .layout-area {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .layout-area.sidebar {
+      background: var(--color-surface-alt);
+    }
+
+    .layout-area.main {
+      min-height: 300px;
+    }
+
+    @media (width < 768px) {
+      .layout-demo {
+        grid-template-columns: 1fr !important;
+      }
+      .layout-area.sidebar {
+        order: -1;
+      }
+    }
+  </style>
+
+  <layout-center>
+    <layout-stack>
+      <nav class="breadcrumb">
+        <a href="/lab/">Lab</a>
+        <span>/</span>
+        <a href="/lab/experiments/">Experiments</a>
+        <span>/</span>
+        <span>Layout Switcher</span>
+      </nav>
+
+      <header>
+        <h1>Layout Switcher</h1>
+        <p class="intro">
+          Switch between different layout patterns using CSS Grid. The layout
+          responds to both user selection and screen size.
+        </p>
+      </header>
+
+      <section class="demo-section">
+        <h2>Choose Layout</h2>
+        <div class="layout-controls">
+          <button class="layout-btn active" data-layout="sidebar-left">Sidebar Left</button>
+          <button class="layout-btn" data-layout="sidebar-right">Sidebar Right</button>
+          <button class="layout-btn" data-layout="holy-grail">Holy Grail</button>
+          <button class="layout-btn" data-layout="single">Single Column</button>
+        </div>
+
+        <div class="layout-demo" data-layout="sidebar-left">
+          <div class="layout-area sidebar">Sidebar</div>
+          <div class="layout-area main">Main Content</div>
+        </div>
+      </section>
+    </layout-stack>
+  </layout-center>
+
+  <script>
+    const demo = document.querySelector('.layout-demo');
+    const buttons = document.querySelectorAll('.layout-btn');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const layout = btn.getAttribute('data-layout');
+        demo?.setAttribute('data-layout', layout || 'sidebar-left');
+
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update grid areas based on layout
+        const sidebar = demo?.querySelector('.sidebar');
+        const main = demo?.querySelector('.main');
+
+        if (layout === 'holy-grail' && demo) {
+          // Add second sidebar for holy grail
+          if (demo.querySelectorAll('.sidebar').length === 1) {
+            const aside = document.createElement('div');
+            aside.className = 'layout-area sidebar';
+            aside.textContent = 'Aside';
+            demo.appendChild(aside);
+          }
+        } else {
+          // Remove extra sidebars
+          const sidebars = demo?.querySelectorAll('.sidebar');
+          if (sidebars && sidebars.length > 1) {
+            sidebars[1].remove();
+          }
+        }
+      });
+    });
+  </script>
+</LabLayout>
+
+<style>
+  nav.breadcrumb {
+    display: flex;
+    gap: var(--size-xs);
+    font-size: var(--size-s);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-l);
+  }
+
+  nav.breadcrumb a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  header {
+    margin-block-end: var(--size-xl);
+  }
+
+  h1 {
+    font-size: var(--size-2xl);
+    margin-block-end: var(--size-s);
+  }
+
+  .intro {
+    font-size: var(--size-m);
+    color: var(--color-text-muted);
+    max-width: 60ch;
+  }
+
+  .demo-section {
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-m);
+  }
+
+  .demo-section h2 {
+    margin: 0 0 var(--size-m) 0;
+  }
+</style>

@@ -1,0 +1,113 @@
+---
+/**
+ * LabLayout
+ *
+ * Layout for experimental Lab section with "experimental" branding.
+ * Similar to DocsLayout but with Lab-specific styling and warning badge.
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Docs-specific styles (BaseHead imports main.css)
+import '../../docs/docs.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Include vanilla-breeze-labs.css for experimental features */
+  includeLabs?: boolean;
+}
+
+const { title, description, includeLabs = false } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-page="lab">
+<head>
+  <BaseHead title={`${title} | Lab`} description={description} />
+  {includeLabs && <link rel="stylesheet" href="/cdn/vanilla-breeze-labs.css" />}
+  <style>
+    /* Lab-specific banner */
+    .lab-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-bottom: 1px solid #f59e0b;
+      padding: var(--size-xs) var(--size-m);
+      text-align: center;
+      font-size: var(--size-s);
+    }
+
+    .lab-banner-content {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-xs);
+      color: #92400e;
+    }
+
+    .lab-badge {
+      display: inline-block;
+      background: #f59e0b;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Override page header for lab */
+    [data-page="lab"] main {
+      padding-block-start: var(--size-l);
+    }
+  </style>
+</head>
+<body>
+  <div class="lab-banner">
+    <div class="lab-banner-content">
+      <span class="lab-badge">Lab</span>
+      <span>Experimental patterns &mdash; may change or be removed</span>
+    </div>
+  </div>
+
+  <Header currentSection="docs" />
+
+  <main>
+    <slot />
+  </main>
+
+  <Footer />
+
+  <script>
+    // Vanilla Breeze core
+    import '/src/lib/theme-manager.js';
+    import '/src/custom-elements/register.js';
+    import '/src/utils/tooltip-init.js';
+    import '/src/lib/debug-content-model.js';
+    import { ThemeManager } from '/src/lib/theme-manager.js';
+    import { initExternalThemeSync } from '/src/utils/external-theme-sync.js';
+
+    // Web components - explicit imports for bundling
+    import '/src/web-components/tabs-wc/logic.js';
+    import '/src/web-components/footnotes-wc/logic.js';
+    import '/src/web-components/accordion-wc/logic.js';
+    import '/src/web-components/toast-wc/logic.js';
+    import '/src/web-components/tooltip-wc/logic.js';
+    import '/src/web-components/dropdown-wc/logic.js';
+    import '/src/web-components/icon-wc/icon-wc.js';
+    import '/src/web-components/theme-wc/logic.js';
+    import '/src/web-components/heading-links/logic.js';
+    import '/src/web-components/page-toc/logic.js';
+    import '/src/web-components/table-wc/logic.js';
+    import '/src/web-components/search-wc/logic.js';
+    import '/src/web-components/card-list/logic.js';
+
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+
+    ThemeManager.init();
+    initExternalThemeSync();
+  </script>
+</body>
+</html>

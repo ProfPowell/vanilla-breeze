@@ -50,10 +50,37 @@ async function buildCDN() {
     ignoreAnnotations: true,  // Include all imports regardless of sideEffects
   });
 
+  // Build Labs CSS bundle (experimental features)
+  const labsCssPath = join(SRC, 'labs', 'labs.css');
+  if (existsSync(labsCssPath)) {
+    await esbuild.build({
+      entryPoints: [labsCssPath],
+      bundle: true,
+      minify: true,
+      outfile: join(CDN, 'vanilla-breeze-labs.css'),
+      logLevel: 'info',
+    });
+  }
+
+  // Build Labs JS bundle (experimental features)
+  const labsJsPath = join(SRC, 'labs', 'labs.js');
+  if (existsSync(labsJsPath)) {
+    await esbuild.build({
+      entryPoints: [labsJsPath],
+      bundle: true,
+      minify: true,
+      format: 'esm',
+      outfile: join(CDN, 'vanilla-breeze-labs.js'),
+      logLevel: 'info',
+    });
+  }
+
   console.log('\nCDN files ready at dist/cdn/');
   console.log('After deployment, reference via:');
   console.log('  CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
   console.log('  JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
+  console.log('  Labs CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-labs.css');
+  console.log('  Labs JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-labs.js');
 }
 
 buildCDN().catch(e => {

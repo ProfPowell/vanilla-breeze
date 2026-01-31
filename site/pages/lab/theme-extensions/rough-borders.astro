@@ -1,0 +1,244 @@
+---
+/**
+ * Rough Borders Demo
+ *
+ * Non-standard border treatments using SVG filters, border-image,
+ * mask-image, and CSS techniques for sketchy themes.
+ */
+
+import LabLayout from '../../../layouts/LabLayout.astro';
+---
+
+<LabLayout
+  title="Rough Borders"
+  description="Non-standard border treatments using SVG filters and CSS techniques for sketchy themes."
+>
+  <layout-center>
+    <layout-stack>
+      <nav class="breadcrumb">
+        <a href="/lab/">Lab</a>
+        <span>/</span>
+        <a href="/lab/theme-extensions/">Theme Extensions</a>
+        <span>/</span>
+        <span>Rough Borders</span>
+      </nav>
+
+      <header>
+        <h1>Rough Borders</h1>
+        <p class="intro">
+          Non-standard border treatments using SVG filters, border-image, mask-image,
+          and CSS techniques for wireframe, grungy, and sketchy themes.
+        </p>
+      </header>
+
+      <section class="demo-section">
+        <h2>SVG Filter Technique</h2>
+        <p>Using feTurbulence to create hand-drawn effects.</p>
+        <div class="border-grid">
+          <div class="border-card rough-1">
+            <h3>Subtle</h3>
+            <p>Light distortion</p>
+          </div>
+          <div class="border-card rough-2">
+            <h3>Medium</h3>
+            <p>Visible wobble</p>
+          </div>
+          <div class="border-card rough-3">
+            <h3>Heavy</h3>
+            <p>Sketchy effect</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Dashed & Dotted Variations</h2>
+        <p>Creative uses of standard border styles.</p>
+        <div class="border-grid">
+          <div class="border-card dashed">
+            <h3>Dashed</h3>
+            <p>Custom dash pattern</p>
+          </div>
+          <div class="border-card dotted">
+            <h3>Dotted</h3>
+            <p>Rounded dots</p>
+          </div>
+          <div class="border-card double-line">
+            <h3>Double</h3>
+            <p>Double border</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Decorative Borders</h2>
+        <p>Using gradients and patterns for unique effects.</p>
+        <div class="border-grid">
+          <div class="border-card gradient-border">
+            <h3>Gradient</h3>
+            <p>Rainbow border</p>
+          </div>
+          <div class="border-card animated-border">
+            <h3>Animated</h3>
+            <p>Moving gradient</p>
+          </div>
+          <div class="border-card neon-border">
+            <h3>Neon</h3>
+            <p>Glowing effect</p>
+          </div>
+        </div>
+      </section>
+    </layout-stack>
+  </layout-center>
+
+  <!-- SVG Filters for rough edges -->
+  <svg style="position: absolute; width: 0; height: 0;">
+    <defs>
+      <filter id="rough-1">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+      </filter>
+      <filter id="rough-2">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" />
+      </filter>
+      <filter id="rough-3">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" />
+      </filter>
+    </defs>
+  </svg>
+</LabLayout>
+
+<style>
+  nav.breadcrumb {
+    display: flex;
+    gap: var(--size-xs);
+    font-size: var(--size-s);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-l);
+  }
+
+  nav.breadcrumb a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  header {
+    margin-block-end: var(--size-xl);
+  }
+
+  h1 {
+    font-size: var(--size-2xl);
+    margin-block-end: var(--size-s);
+  }
+
+  .intro {
+    font-size: var(--size-m);
+    color: var(--color-text-muted);
+    max-width: 60ch;
+  }
+
+  .demo-section {
+    margin-block-end: var(--size-2xl);
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-m);
+  }
+
+  .demo-section h2 {
+    margin: 0 0 var(--size-xs) 0;
+  }
+
+  .demo-section > p {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--size-l) 0;
+  }
+
+  .border-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--size-m);
+  }
+
+  .border-card {
+    padding: var(--size-l);
+    background: var(--color-surface-alt);
+    border: 2px solid var(--color-text);
+    text-align: center;
+  }
+
+  .border-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+    font-size: var(--size-m);
+  }
+
+  .border-card p {
+    margin: 0;
+    font-size: var(--size-s);
+    color: var(--color-text-muted);
+  }
+
+  /* Rough filters */
+  .rough-1 { filter: url(#rough-1); }
+  .rough-2 { filter: url(#rough-2); }
+  .rough-3 { filter: url(#rough-3); }
+
+  /* Dashed variations */
+  .dashed {
+    border-style: dashed;
+    border-width: 3px;
+  }
+
+  .dotted {
+    border-style: dotted;
+    border-width: 3px;
+  }
+
+  .double-line {
+    border-style: double;
+    border-width: 4px;
+  }
+
+  /* Gradient border */
+  .gradient-border {
+    border: none;
+    background:
+      linear-gradient(var(--color-surface-alt), var(--color-surface-alt)) padding-box,
+      linear-gradient(135deg, #667eea, #764ba2, #ff6b6b, #f59e0b) border-box;
+    border: 3px solid transparent;
+    border-radius: var(--radius-m);
+  }
+
+  /* Animated border */
+  .animated-border {
+    border: none;
+    background:
+      linear-gradient(var(--color-surface-alt), var(--color-surface-alt)) padding-box,
+      linear-gradient(var(--angle), #ff6b6b, #f59e0b, #10b981, #3b82f6, #8b5cf6, #ff6b6b) border-box;
+    border: 3px solid transparent;
+    border-radius: var(--radius-m);
+    animation: rotate-gradient 3s linear infinite;
+  }
+
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes rotate-gradient {
+    to { --angle: 360deg; }
+  }
+
+  /* Neon border */
+  .neon-border {
+    border-color: #00ff88;
+    box-shadow:
+      0 0 5px #00ff88,
+      0 0 10px #00ff88,
+      0 0 20px #00ff88,
+      inset 0 0 5px rgba(0, 255, 136, 0.1);
+    border-radius: var(--radius-m);
+  }
+</style>
