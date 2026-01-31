@@ -342,8 +342,8 @@ const glassmorphismCode = `/* Glassmorphism card */
     content: "";
     position: absolute;
     inset: 0;
-    opacity: 0.05;
     pointer-events: none;
+    border-radius: inherit;
   }
 
   .texture-card h3 {
@@ -364,13 +364,17 @@ const glassmorphismCode = `/* Glassmorphism card */
     background: var(--color-surface);
     border: 1px solid var(--color-border);
   }
+  .texture-none::before {
+    display: none;
+  }
 
   .texture-noise {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
   }
   .texture-noise::before {
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.5;
   }
 
   .texture-dots {
@@ -378,7 +382,9 @@ const glassmorphismCode = `/* Glassmorphism card */
     border: 1px solid var(--color-border);
   }
   .texture-dots::before {
-    background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23000' fill-opacity='0.1'/%3E%3C/svg%3E");
+    background-image: radial-gradient(circle, #666 1px, transparent 1px);
+    background-size: 8px 8px;
+    opacity: 0.3;
   }
 
   .texture-grid-pattern {
@@ -386,7 +392,11 @@ const glassmorphismCode = `/* Glassmorphism card */
     border: 1px solid var(--color-border);
   }
   .texture-grid-pattern::before {
-    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='none' stroke='%23000' stroke-opacity='0.05'/%3E%3C/svg%3E");
+    background-image:
+      linear-gradient(to right, #999 1px, transparent 1px),
+      linear-gradient(to bottom, #999 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.2;
   }
 
   .texture-lines {
@@ -394,7 +404,14 @@ const glassmorphismCode = `/* Glassmorphism card */
     border: 1px solid var(--color-border);
   }
   .texture-lines::before {
-    background: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6L6 0' stroke='%23000' stroke-opacity='0.08' stroke-width='0.5'/%3E%3C/svg%3E");
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      #999 4px,
+      #999 5px
+    );
+    opacity: 0.15;
   }
 
   .texture-grain {
@@ -402,8 +419,8 @@ const glassmorphismCode = `/* Glassmorphism card */
     border: 1px solid var(--color-border);
   }
   .texture-grain::before {
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.03;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.4;
     mix-blend-mode: multiply;
   }
 
@@ -660,11 +677,18 @@ const glassmorphismCode = `/* Glassmorphism card */
   .bg-controls button {
     padding: var(--size-xs) var(--size-s);
     background: var(--color-surface);
+    color: var(--color-text);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-s);
     font-size: var(--font-size-sm);
     cursor: pointer;
     font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .bg-controls button:hover {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border-strong, var(--color-border));
   }
 
   .bg-controls button[aria-pressed="true"] {
