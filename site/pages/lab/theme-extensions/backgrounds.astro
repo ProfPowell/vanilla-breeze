@@ -13,152 +13,223 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   title="Backgrounds & Surfaces"
   description="Page and component backgrounds beyond solid colors: gradients, textures, glassmorphism."
 >
-  <layout-center>
-    <layout-stack>
-      <nav class="breadcrumb">
-        <a href="/lab/">Lab</a>
-        <span>/</span>
-        <a href="/lab/theme-extensions/">Theme Extensions</a>
-        <span>/</span>
-        <span>Backgrounds</span>
-      </nav>
+  <h1>Backgrounds & Surfaces</h1>
+  <p class="lead">Exploring page and component background treatments beyond solid colors: gradients, textures, glassmorphism, and animated backgrounds.</p>
 
-      <header>
-        <h1>Backgrounds & Surfaces</h1>
-        <p class="intro">
-          Page and component backgrounds beyond solid colors: gradients, noise
-          textures, glassmorphism, and animated backgrounds.
-        </p>
-      </header>
+  <section>
+    <h2>Proposed Surface Tokens</h2>
+    <p>New tokens to add texture and depth to surfaces.</p>
+    <div class="token-list">
+      <div class="token-item">
+        <span class="token-name">--surface-texture</span>
+        <span class="token-value">none | noise | grain | dots | lines</span>
+      </div>
+      <div class="token-item">
+        <span class="token-name">--surface-texture-opacity</span>
+        <span class="token-value">0.05</span>
+      </div>
+      <div class="token-item">
+        <span class="token-name">--bg-gradient</span>
+        <span class="token-value">linear-gradient(...)</span>
+      </div>
+      <div class="token-item">
+        <span class="token-name">--glass-blur</span>
+        <span class="token-value">0 | 8px | 16px</span>
+      </div>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>Proposed Tokens</h2>
-        <div class="token-list">
-          <div class="token-item">
-            <span class="token-name">--surface-texture</span>
-            <span class="token-value">none | noise | dots | grid | lines</span>
-          </div>
-          <div class="token-item">
-            <span class="token-name">--surface-texture-opacity</span>
-            <span class="token-value">0.05</span>
-          </div>
-          <div class="token-item">
-            <span class="token-name">--bg-gradient</span>
-            <span class="token-value">none | linear-gradient(...)</span>
-          </div>
-          <div class="token-item">
-            <span class="token-name">--glass-blur</span>
-            <span class="token-value">0 | 10px | 20px</span>
+  <section>
+    <h2>Gradient Backgrounds</h2>
+    <p>Various gradient techniques for hero sections, cards, and page backgrounds.</p>
+    <div class="gradient-grid">
+      <div class="gradient-card gradient-linear">
+        <h3>Linear</h3>
+        <p>135deg diagonal blend</p>
+      </div>
+      <div class="gradient-card gradient-radial">
+        <h3>Radial</h3>
+        <p>Circle from top-left</p>
+      </div>
+      <div class="gradient-card gradient-conic">
+        <h3>Conic</h3>
+        <p>Color wheel effect</p>
+      </div>
+      <div class="gradient-card gradient-mesh">
+        <h3>Mesh</h3>
+        <p>Multiple radial overlays</p>
+      </div>
+      <div class="gradient-card gradient-animated">
+        <h3>Animated</h3>
+        <p>Shifting background position</p>
+      </div>
+      <div class="gradient-card gradient-layered">
+        <h3>Layered</h3>
+        <p>Highlight + base gradient</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>/* Mesh gradient - multiple radial overlays */
+.mesh-bg &#123;
+  background:
+    radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 1) 0px, transparent 50%);
+&#125;
+
+/* Animated gradient */
+.animated-bg &#123;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Texture Patterns</h2>
+    <p>Subtle texture overlays that add depth and character to surfaces.</p>
+    <div class="texture-grid">
+      <div class="texture-card texture-none">
+        <h3>None</h3>
+        <p>Clean, flat surface</p>
+      </div>
+      <div class="texture-card texture-noise">
+        <h3>Noise</h3>
+        <p>SVG turbulence filter</p>
+      </div>
+      <div class="texture-card texture-dots">
+        <h3>Dots</h3>
+        <p>Repeating dot pattern</p>
+      </div>
+      <div class="texture-card texture-grid-pattern">
+        <h3>Grid</h3>
+        <p>Diagonal grid lines</p>
+      </div>
+      <div class="texture-card texture-lines">
+        <h3>Lines</h3>
+        <p>Fine diagonal lines</p>
+      </div>
+      <div class="texture-card texture-grain">
+        <h3>Grain</h3>
+        <p>Film grain effect</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>/* Noise texture via SVG data URI */
+--texture-noise: url("data:image/svg+xml,...");
+
+/* Apply texture overlay */
+.surface::before &#123;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--texture-noise);
+  opacity: var(--surface-texture-opacity);
+  pointer-events: none;
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Glassmorphism</h2>
+    <p>Frosted glass effect using backdrop-filter. Adjust the blur amount with the slider.</p>
+    <div class="glass-demo">
+      <div class="glass-cards">
+        <div class="glass-card">
+          <h3>Glass Card</h3>
+          <p>Semi-transparent with blur backdrop</p>
+        </div>
+        <div class="glass-card">
+          <h3>Frosted</h3>
+          <p>Works best on colorful backgrounds</p>
+        </div>
+        <div class="glass-card">
+          <h3>Layered</h3>
+          <p>Border adds subtle definition</p>
+        </div>
+      </div>
+    </div>
+    <div class="glass-controls">
+      <label>
+        Blur: <span id="blur-value">8px</span>
+        <input type="range" id="glass-blur" min="0" max="32" value="8">
+      </label>
+    </div>
+    <div class="code-block">
+      <pre><code>/* Glassmorphism card */
+.glass-card &#123;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(var(--glass-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 8px));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-m);
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Nested Surfaces</h2>
+    <p>Showing layered surfaces using the existing VB surface tokens.</p>
+    <div class="nested-demo">
+      <h4>Level 0: --color-surface-alt</h4>
+      <div class="nested-level-1">
+        <h4>Level 1: --color-surface</h4>
+        <div class="nested-level-2">
+          <h4>Level 2: --color-surface-raised</h4>
+          <div class="nested-level-3">
+            <h4>Level 3: --color-surface-sunken</h4>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>Gradient Backgrounds</h2>
-        <p>Smooth color transitions for page or section backgrounds.</p>
-        <div class="bg-grid">
-          <div class="bg-card gradient-1">
-            <span>Linear</span>
-          </div>
-          <div class="bg-card gradient-2">
-            <span>Radial</span>
-          </div>
-          <div class="bg-card gradient-3">
-            <span>Mesh</span>
-          </div>
-          <div class="bg-card gradient-4">
-            <span>Aurora</span>
-          </div>
-        </div>
-      </section>
+  <section>
+    <h2>Animated Gradients</h2>
+    <p>Subtle movement for hero sections and featured content.</p>
+    <div class="animated-gradient-demo">
+      <div class="animated-card gradient-hue-rotate">
+        <h3>Hue Rotate</h3>
+        <p>Filter-based color cycling</p>
+      </div>
+      <div class="animated-card gradient-pulse">
+        <h3>Pulse Glow</h3>
+        <p>Breathing radial highlight</p>
+      </div>
+      <div class="animated-card gradient-wave">
+        <h3>Wave</h3>
+        <p>Rotating ellipse overlay</p>
+      </div>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>Texture Overlays</h2>
-        <p>Subtle patterns that add depth without distraction.</p>
-        <div class="bg-grid">
-          <div class="bg-card texture-noise">
-            <span>Noise</span>
-          </div>
-          <div class="bg-card texture-dots">
-            <span>Dots</span>
-          </div>
-          <div class="bg-card texture-grid">
-            <span>Grid</span>
-          </div>
-          <div class="bg-card texture-lines">
-            <span>Lines</span>
-          </div>
+  <section>
+    <h2>Page Background Preview</h2>
+    <p>Test different page-level background treatments.</p>
+    <div class="page-bg-demo" data-bg="solid" id="page-bg-demo">
+      <div class="page-bg-content">
+        <div class="page-bg-card">
+          <h3>Content Card</h3>
+          <p>This card floats above the page background. Try different backgrounds to see how they affect the overall feel.</p>
         </div>
-      </section>
-
-      <section class="demo-section">
-        <h2>Glassmorphism</h2>
-        <p>Frosted glass effect with backdrop blur.</p>
-        <div class="glass-demo">
-          <div class="glass-bg"></div>
-          <div class="glass-card">
-            <h3>Glass Card</h3>
-            <p>Content with a frosted glass effect</p>
-          </div>
-        </div>
-      </section>
-    </layout-stack>
-  </layout-center>
+      </div>
+    </div>
+    <div class="bg-controls">
+      <button data-bg="solid" aria-pressed="true">Solid</button>
+      <button data-bg="gradient" aria-pressed="false">Gradient</button>
+      <button data-bg="radial" aria-pressed="false">Radial</button>
+      <button data-bg="noise" aria-pressed="false">Noise</button>
+    </div>
+  </section>
 </LabLayout>
 
 <style>
-  nav.breadcrumb {
-    display: flex;
-    gap: var(--size-xs);
-    font-size: var(--size-s);
-    color: var(--color-text-muted);
-    margin-block-end: var(--size-l);
-  }
-
-  nav.breadcrumb a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  nav.breadcrumb a:hover {
-    text-decoration: underline;
-  }
-
-  header {
-    margin-block-end: var(--size-xl);
-  }
-
-  h1 {
-    font-size: var(--size-2xl);
-    margin-block-end: var(--size-s);
-  }
-
-  .intro {
-    font-size: var(--size-m);
-    color: var(--color-text-muted);
-    max-width: 60ch;
-  }
-
-  .demo-section {
-    margin-block-end: var(--size-2xl);
-    padding: var(--size-l);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-m);
-  }
-
-  .demo-section h2 {
-    margin: 0 0 var(--size-xs) 0;
-  }
-
-  .demo-section > p {
-    color: var(--color-text-muted);
-    margin: 0 0 var(--size-l) 0;
-  }
-
+  /* Token list */
   .token-list {
     display: grid;
     gap: var(--size-s);
+    margin-block: var(--size-m);
   }
 
   .token-item {
@@ -166,7 +237,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     grid-template-columns: 1fr 2fr;
     gap: var(--size-m);
     padding: var(--size-s);
-    background: var(--color-surface-alt);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-s);
     align-items: center;
@@ -174,111 +245,221 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 
   .token-name {
     font-family: var(--font-mono, monospace);
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-primary);
   }
 
   .token-value {
     font-family: var(--font-mono, monospace);
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
-  .bg-grid {
+  /* Code block */
+  .code-block {
+    background: var(--color-surface-alt);
+    padding: var(--size-m);
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-sm);
+    margin-block: var(--size-m);
+  }
+
+  .code-block pre {
+    margin: 0;
+  }
+
+  /* Gradient Grid */
+  .gradient-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--size-m);
   }
 
-  .bg-card {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .gradient-card {
+    padding: var(--size-l);
     border-radius: var(--radius-m);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     color: white;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
-  .gradient-1 {
+  .gradient-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+    font-size: var(--font-size-lg);
+  }
+
+  .gradient-card p {
+    margin: 0;
+    opacity: 0.8;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Gradient types */
+  .gradient-linear {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 
-  .gradient-2 {
-    background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a24);
+  .gradient-radial {
+    background: radial-gradient(circle at 30% 30%, #ff6b6b 0%, #c44569 100%);
   }
 
-  .gradient-3 {
+  .gradient-conic {
+    background: conic-gradient(from 45deg, #12c2e9, #c471ed, #f64f59, #12c2e9);
+  }
+
+  .gradient-mesh {
     background:
-      radial-gradient(at 40% 20%, #00d2ff 0px, transparent 50%),
-      radial-gradient(at 80% 0%, #7928ca 0px, transparent 50%),
-      radial-gradient(at 0% 50%, #ff0080 0px, transparent 50%),
-      #1a1a2e;
+      radial-gradient(at 40% 20%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(340, 100%, 76%, 1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(22, 100%, 77%, 1) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(242, 100%, 70%, 1) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, hsla(343, 100%, 76%, 1) 0px, transparent 50%);
+    color: #333;
   }
 
-  .gradient-4 {
+  .gradient-animated {
     background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
     background-size: 400% 400%;
-    animation: aurora 15s ease infinite;
+    animation: gradient-shift 15s ease infinite;
   }
 
-  @keyframes aurora {
+  @keyframes gradient-shift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
 
-  .texture-noise {
+  .gradient-layered {
     background:
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, #3b82f6, #1e40af);
-    background-blend-mode: overlay;
+      linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.3) 100%),
+      linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   }
 
-  .texture-dots {
-    background:
-      url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='white' fill-opacity='0.3'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, #10b981, #047857);
-  }
-
+  /* Texture Grid */
   .texture-grid {
-    background:
-      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='none' stroke='white' stroke-opacity='0.2'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, #f59e0b, #d97706);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--size-m);
   }
 
-  .texture-lines {
-    background:
-      url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6L6 0' stroke='white' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, #8b5cf6, #6d28d9);
-  }
-
-  .glass-demo {
-    position: relative;
-    padding: var(--size-2xl);
+  .texture-card {
+    padding: var(--size-l);
     border-radius: var(--radius-m);
+    min-height: 120px;
+    position: relative;
     overflow: hidden;
   }
 
-  .glass-bg {
+  .texture-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .texture-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+    font-size: var(--font-size-base);
+    position: relative;
+  }
+
+  .texture-card p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    position: relative;
+  }
+
+  /* Texture types */
+  .texture-none {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .texture-noise {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .texture-noise::before {
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  .texture-dots {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .texture-dots::before {
+    background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23000' fill-opacity='0.1'/%3E%3C/svg%3E");
+  }
+
+  .texture-grid-pattern {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .texture-grid-pattern::before {
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='none' stroke='%23000' stroke-opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .texture-lines {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .texture-lines::before {
+    background: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6L6 0' stroke='%23000' stroke-opacity='0.08' stroke-width='0.5'/%3E%3C/svg%3E");
+  }
+
+  .texture-grain {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .texture-grain::before {
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    mix-blend-mode: multiply;
+  }
+
+  /* Glassmorphism */
+  .glass-demo {
+    position: relative;
+    padding: var(--size-2xl);
+    border-radius: var(--radius-l);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 300px;
+    overflow: hidden;
+  }
+
+  .glass-demo::before {
+    content: "";
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(at 30% 30%, #ff6b6b 0px, transparent 50%),
-      radial-gradient(at 70% 70%, #4ecdc4 0px, transparent 50%),
-      #667eea;
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3) 0, transparent 200px),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 0, transparent 300px);
+    pointer-events: none;
+  }
+
+  .glass-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--size-m);
+    position: relative;
   }
 
   .glass-card {
-    position: relative;
     padding: var(--size-l);
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(var(--glass-blur, 8px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 8px));
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-m);
     color: white;
-    max-width: 300px;
   }
 
   .glass-card h3 {
@@ -288,5 +469,260 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   .glass-card p {
     margin: 0;
     opacity: 0.9;
+    font-size: var(--font-size-sm);
+  }
+
+  .glass-controls {
+    display: flex;
+    gap: var(--size-m);
+    margin-top: var(--size-m);
+  }
+
+  .glass-controls label {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    font-size: var(--font-size-sm);
+  }
+
+  .glass-controls input[type="range"] {
+    width: 150px;
+  }
+
+  /* Nested Surfaces */
+  .nested-demo {
+    padding: var(--size-l);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-l);
+  }
+
+  .nested-level-1 {
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border-radius: var(--radius-m);
+    margin-block-start: var(--size-m);
+  }
+
+  .nested-level-2 {
+    padding: var(--size-m);
+    background: var(--color-surface-raised, var(--color-surface));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    margin-block-start: var(--size-s);
+  }
+
+  .nested-level-3 {
+    padding: var(--size-s);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-s);
+    margin-block-start: var(--size-xs);
+  }
+
+  .nested-demo h4 {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* Animated Gradients */
+  .animated-gradient-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--size-m);
+  }
+
+  .animated-card {
+    padding: var(--size-l);
+    border-radius: var(--radius-m);
+    min-height: 140px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .animated-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+  }
+
+  .animated-card p {
+    margin: 0;
+    opacity: 0.8;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Hue rotate */
+  .gradient-hue-rotate {
+    background: linear-gradient(135deg, hsl(200, 80%, 50%), hsl(280, 80%, 50%));
+    animation: hue-rotate 10s linear infinite;
+  }
+
+  @keyframes hue-rotate {
+    to { filter: hue-rotate(360deg); }
+  }
+
+  /* Pulse glow */
+  .gradient-pulse {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gradient-pulse::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 60%);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* Wave */
+  .gradient-wave {
+    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gradient-wave::before,
+  .gradient-wave::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(ellipse, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+    animation: wave 8s linear infinite;
+  }
+
+  .gradient-wave::after {
+    animation-delay: -4s;
+    opacity: 0.5;
+  }
+
+  @keyframes wave {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Page Background Preview */
+  .page-bg-demo {
+    position: relative;
+    min-height: 250px;
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .page-bg-demo[data-bg="solid"] {
+    background: var(--color-surface);
+  }
+
+  .page-bg-demo[data-bg="gradient"] {
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-alt) 100%);
+  }
+
+  .page-bg-demo[data-bg="radial"] {
+    background: radial-gradient(ellipse at 50% 0%, var(--color-primary-subtle, #e0e7ff) 0%, var(--color-surface) 70%);
+  }
+
+  .page-bg-demo[data-bg="noise"] {
+    background: var(--color-surface);
+  }
+
+  .page-bg-demo[data-bg="noise"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+  }
+
+  .page-bg-content {
+    position: relative;
+    padding: var(--size-l);
+  }
+
+  .page-bg-card {
+    max-width: 350px;
+    margin: 0 auto;
+    padding: var(--size-l);
+    background: var(--color-surface-raised, var(--color-surface));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1));
+  }
+
+  .page-bg-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+  }
+
+  .page-bg-card p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .bg-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs);
+    margin-top: var(--size-m);
+  }
+
+  .bg-controls button {
+    padding: var(--size-xs) var(--size-s);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .bg-controls button[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .gradient-animated,
+    .gradient-hue-rotate,
+    .gradient-pulse::before,
+    .gradient-wave::before,
+    .gradient-wave::after {
+      animation: none;
+    }
   }
 </style>
+
+<script>
+  // Glass blur control
+  const glassBlur = document.getElementById('glass-blur') as HTMLInputElement;
+  const blurValue = document.getElementById('blur-value');
+
+  glassBlur?.addEventListener('input', () => {
+    const value = glassBlur.value;
+    if (blurValue) blurValue.textContent = `${value}px`;
+    document.documentElement.style.setProperty('--glass-blur', `${value}px`);
+  });
+
+  // Page background controls
+  const pageBgDemo = document.getElementById('page-bg-demo');
+  const bgButtons = document.querySelectorAll('.bg-controls button');
+
+  bgButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      bgButtons.forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      if (pageBgDemo && btn instanceof HTMLElement) {
+        pageBgDemo.dataset.bg = btn.dataset.bg || 'solid';
+      }
+    });
+  });
+</script>

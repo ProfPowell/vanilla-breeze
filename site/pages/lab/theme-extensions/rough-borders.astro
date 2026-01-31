@@ -13,232 +13,671 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   title="Rough Borders"
   description="Non-standard border treatments using SVG filters and CSS techniques for sketchy themes."
 >
-  <layout-center>
-    <layout-stack>
-      <nav class="breadcrumb">
-        <a href="/lab/">Lab</a>
-        <span>/</span>
-        <a href="/lab/theme-extensions/">Theme Extensions</a>
-        <span>/</span>
-        <span>Rough Borders</span>
-      </nav>
+  <h1>Rough Borders & Textures</h1>
+  <p class="lead">Exploring non-standard border treatments for wireframe, grungy, and sketchy themes using SVG filters, border-image, and CSS techniques.</p>
 
-      <header>
-        <h1>Rough Borders</h1>
-        <p class="intro">
-          Non-standard border treatments using SVG filters, border-image, mask-image,
-          and CSS techniques for wireframe, grungy, and sketchy themes.
-        </p>
-      </header>
+  <section>
+    <h2>Proposed Border Tokens</h2>
+    <p>New tokens to add rough/sketchy border styles to themes.</p>
+    <div class="token-list">
+      <div class="token-item">
+        <span class="token-name">--border-style</span>
+        <span class="token-value">solid | dashed | rough | sketchy | none</span>
+      </div>
+      <div class="token-item">
+        <span class="token-name">--border-roughness</span>
+        <span class="token-value">0 | 1 | 2 | 3 (intensity)</span>
+      </div>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>SVG Filter Technique</h2>
-        <p>Using feTurbulence to create hand-drawn effects.</p>
-        <div class="border-grid">
-          <div class="border-card rough-1">
-            <h3>Subtle</h3>
-            <p>Light distortion</p>
-          </div>
-          <div class="border-card rough-2">
-            <h3>Medium</h3>
-            <p>Visible wobble</p>
-          </div>
-          <div class="border-card rough-3">
-            <h3>Heavy</h3>
-            <p>Sketchy effect</p>
-          </div>
+  <section>
+    <h2>Technique 1: SVG Filter Displacement</h2>
+    <p>Using feTurbulence + feDisplacementMap to create organic, hand-drawn edge effects.</p>
+    <div class="demo-grid">
+      <div class="demo-card rough-filter-light">
+        <h3>Light (scale: 2)</h3>
+        <p>Subtle wobble, good for subtle personality</p>
+      </div>
+      <div class="demo-card rough-filter-medium">
+        <h3>Medium (scale: 4)</h3>
+        <p>Noticeable roughness, sketchy feel</p>
+      </div>
+      <div class="demo-card rough-filter-heavy">
+        <h3>Heavy (scale: 8)</h3>
+        <p>Very rough, torn paper effect</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>&lt;filter id="rough-light"&gt;
+  &lt;feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2"/&gt;
+  &lt;feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/&gt;
+&lt;/filter&gt;
+
+.card &#123; filter: url(#rough-light); &#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technique 2: Border Image Patterns</h2>
+    <p>Using border-image with SVG patterns for hand-drawn border effects.</p>
+    <div class="demo-grid">
+      <div class="demo-card border-image-sketch">
+        <h3>Sketchy Curves</h3>
+        <p>Bezier curves for wobbly edges</p>
+      </div>
+      <div class="demo-card border-image-rough">
+        <h3>Rough Dashes</h3>
+        <p>Variable dash pattern</p>
+      </div>
+      <div class="demo-card border-image-marker">
+        <h3>Marker Style</h3>
+        <p>Hand-drawn marker strokes</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>.sketch-border &#123;
+  border: 8px solid transparent;
+  border-image: url("data:image/svg+xml,...") 10 stretch;
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technique 3: Mask Image Edges</h2>
+    <p>Using mask-image to create torn or wavy edge effects.</p>
+    <div class="demo-grid">
+      <div class="demo-card mask-torn">
+        <h3>Torn Edges</h3>
+        <p>Irregular top and bottom edges</p>
+      </div>
+      <div class="demo-card mask-wavy">
+        <h3>Wavy Edges</h3>
+        <p>Smooth sine wave pattern</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>.torn-edge &#123;
+  mask-image: url("data:image/svg+xml,...");
+  mask-size: 100% 100%;
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technique 4: CSS Gradient Borders</h2>
+    <p>Using repeating gradients for dashed and dotted border patterns.</p>
+    <div class="demo-grid">
+      <div class="demo-card gradient-dashed">
+        <h3>Gradient Dashes</h3>
+        <p>Repeating linear gradient</p>
+      </div>
+      <div class="demo-card gradient-dots-border">
+        <h3>Dot Border</h3>
+        <p>Radial gradient dots</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>.dashed-border &#123;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--color-border) 0, var(--color-border) 8px,
+      transparent 8px, transparent 16px
+    ) 0 0 / 100% 3px no-repeat,
+    var(--color-surface);
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technique 5: Box Shadow Effects</h2>
+    <p>Using layered box-shadows for sketchy and offset effects.</p>
+    <div class="demo-grid">
+      <div class="demo-card shadow-sketch">
+        <h3>Sketch Shadow</h3>
+        <p>Layered offset shadows</p>
+      </div>
+      <div class="demo-card shadow-offset">
+        <h3>Hard Offset</h3>
+        <p>Brutalist solid shadow</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <pre><code>.sketch-shadow &#123;
+  box-shadow:
+    3px 3px 0 -1px var(--color-surface),
+    3px 3px 0 0 var(--color-border),
+    6px 6px 0 -1px var(--color-surface),
+    6px 6px 0 0 var(--color-border);
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technique 6: Pseudo-element Decorations</h2>
+    <p>Using ::before and ::after for decorative corner accents.</p>
+    <div class="demo-grid">
+      <div class="demo-card pseudo-corners">
+        <h3>Corner Accents</h3>
+        <p>Decorative L-shapes at corners</p>
+      </div>
+      <div class="demo-card pseudo-tape">
+        <h3>Tape Effect</h3>
+        <p>Simulated masking tape</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Interactive Border Picker</h2>
+    <p>Click a style to apply it to the preview card.</p>
+    <div class="interactive-demo">
+      <div class="preview-area">
+        <div class="preview-card" id="preview-card">
+          <h3>Preview Card</h3>
+          <p>Select a border style</p>
         </div>
-      </section>
+      </div>
+      <div class="style-options">
+        <button class="style-option" data-style="none" aria-pressed="true">
+          <strong>None</strong>
+          <span>Standard border</span>
+        </button>
+        <button class="style-option" data-style="rough-filter-light">
+          <strong>SVG Filter Light</strong>
+          <span>Subtle displacement</span>
+        </button>
+        <button class="style-option" data-style="rough-filter-medium">
+          <strong>SVG Filter Medium</strong>
+          <span>Noticeable roughness</span>
+        </button>
+        <button class="style-option" data-style="border-image-sketch">
+          <strong>Sketch Border</strong>
+          <span>Hand-drawn curves</span>
+        </button>
+        <button class="style-option" data-style="mask-torn">
+          <strong>Torn Edges</strong>
+          <span>Irregular mask</span>
+        </button>
+        <button class="style-option" data-style="shadow-offset">
+          <strong>Hard Offset</strong>
+          <span>Brutalist shadow</span>
+        </button>
+        <button class="style-option" data-style="pseudo-corners">
+          <strong>Corner Accents</strong>
+          <span>Decorative corners</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>Dashed & Dotted Variations</h2>
-        <p>Creative uses of standard border styles.</p>
-        <div class="border-grid">
-          <div class="border-card dashed">
-            <h3>Dashed</h3>
-            <p>Custom dash pattern</p>
-          </div>
-          <div class="border-card dotted">
-            <h3>Dotted</h3>
-            <p>Rounded dots</p>
-          </div>
-          <div class="border-card double-line">
-            <h3>Double</h3>
-            <p>Double border</p>
-          </div>
-        </div>
-      </section>
+  <section>
+    <h2>Rough Buttons</h2>
+    <p>Applying rough border techniques to interactive buttons.</p>
+    <div class="buttons-demo">
+      <button class="btn-rough filter-rough">Filter Rough</button>
+      <button class="btn-rough shadow-offset-btn">Offset Shadow</button>
+    </div>
+  </section>
 
-      <section class="demo-section">
-        <h2>Decorative Borders</h2>
-        <p>Using gradients and patterns for unique effects.</p>
-        <div class="border-grid">
-          <div class="border-card gradient-border">
-            <h3>Gradient</h3>
-            <p>Rainbow border</p>
-          </div>
-          <div class="border-card animated-border">
-            <h3>Animated</h3>
-            <p>Moving gradient</p>
-          </div>
-          <div class="border-card neon-border">
-            <h3>Neon</h3>
-            <p>Glowing effect</p>
-          </div>
-        </div>
-      </section>
-    </layout-stack>
-  </layout-center>
+  <section>
+    <h2>Rough Inputs</h2>
+    <p>Form inputs with sketchy border treatments.</p>
+    <div class="inputs-demo">
+      <input type="text" class="input-rough filter-input" placeholder="Filter rough input">
+      <input type="text" class="input-rough sketch-input" placeholder="Sketch shadow input">
+      <input type="text" class="input-rough underline-input" placeholder="Underline only">
+    </div>
+  </section>
 
-  <!-- SVG Filters for rough edges -->
-  <svg style="position: absolute; width: 0; height: 0;">
+  <!-- SVG Filters (must be in DOM) -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
     <defs>
-      <filter id="rough-1">
-        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+      <filter id="rough-light" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
-      <filter id="rough-2">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" />
+      <filter id="rough-medium" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
-      <filter id="rough-3">
-        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" />
+      <filter id="rough-heavy" x="-15%" y="-15%" width="130%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
     </defs>
   </svg>
 </LabLayout>
 
 <style>
-  nav.breadcrumb {
-    display: flex;
-    gap: var(--size-xs);
-    font-size: var(--size-s);
-    color: var(--color-text-muted);
-    margin-block-end: var(--size-l);
+  /* Token list */
+  .token-list {
+    display: grid;
+    gap: var(--size-s);
+    margin-block: var(--size-m);
   }
 
-  nav.breadcrumb a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  header {
-    margin-block-end: var(--size-xl);
-  }
-
-  h1 {
-    font-size: var(--size-2xl);
-    margin-block-end: var(--size-s);
-  }
-
-  .intro {
-    font-size: var(--size-m);
-    color: var(--color-text-muted);
-    max-width: 60ch;
-  }
-
-  .demo-section {
-    margin-block-end: var(--size-2xl);
-    padding: var(--size-l);
+  .token-item {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--size-m);
+    padding: var(--size-s);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-m);
+    border-radius: var(--radius-s);
+    align-items: center;
   }
 
-  .demo-section h2 {
-    margin: 0 0 var(--size-xs) 0;
+  .token-name {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
   }
 
-  .demo-section > p {
+  .token-value {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    margin: 0 0 var(--size-l) 0;
   }
 
-  .border-grid {
+  /* Demo Grid */
+  .demo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--size-m);
   }
 
-  .border-card {
+  .demo-card {
     padding: var(--size-l);
-    background: var(--color-surface-alt);
-    border: 2px solid var(--color-text);
-    text-align: center;
+    background: var(--color-surface);
+    min-height: 120px;
   }
 
-  .border-card h3 {
+  .demo-card h3 {
     margin: 0 0 var(--size-xs) 0;
-    font-size: var(--size-m);
+    font-size: var(--font-size-lg);
   }
 
-  .border-card p {
+  .demo-card p {
     margin: 0;
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
 
-  /* Rough filters */
-  .rough-1 { filter: url(#rough-1); }
-  .rough-2 { filter: url(#rough-2); }
-  .rough-3 { filter: url(#rough-3); }
-
-  /* Dashed variations */
-  .dashed {
-    border-style: dashed;
-    border-width: 3px;
+  /* Code block */
+  .code-block {
+    background: var(--color-surface-alt);
+    padding: var(--size-m);
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-sm);
+    margin-block: var(--size-m);
   }
 
-  .dotted {
-    border-style: dotted;
-    border-width: 3px;
+  .code-block pre {
+    margin: 0;
   }
 
-  .double-line {
-    border-style: double;
-    border-width: 4px;
+  /* SVG Filter Techniques */
+  .rough-filter-light {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-light);
   }
 
-  /* Gradient border */
-  .gradient-border {
+  .rough-filter-medium {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-medium);
+  }
+
+  .rough-filter-heavy {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-heavy);
+  }
+
+  /* Border Image Techniques */
+  .border-image-sketch {
+    border: 8px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0,2 Q10,0 20,2 T40,2 M0,38 Q10,40 20,38 T40,38 M2,0 Q0,10 2,20 T2,40 M38,0 Q40,10 38,20 T38,40' fill='none' stroke='%23333' stroke-width='2'/%3E%3C/svg%3E") 10 stretch;
+    background: var(--color-surface);
+  }
+
+  .border-image-rough {
+    border: 12px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='2' y='2' width='44' height='44' fill='none' stroke='%23333' stroke-width='3' stroke-dasharray='8,4,2,4' stroke-linecap='round'/%3E%3C/svg%3E") 12 round;
+    background: var(--color-surface);
+  }
+
+  .border-image-marker {
+    border: 10px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M2,5 C10,2 30,8 38,3 M2,35 C8,38 32,32 38,37 M5,2 C3,12 7,28 3,38 M35,2 C38,10 33,30 37,38' fill='none' stroke='%23333' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 10 stretch;
+    background: var(--color-surface);
+  }
+
+  /* Mask Image Techniques */
+  .mask-torn {
+    border: none;
+    position: relative;
+    background: var(--color-surface);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,3 Q5,0 10,2 Q15,4 20,1 Q25,3 30,0 Q35,2 40,1 Q45,4 50,2 Q55,0 60,3 Q65,1 70,2 Q75,4 80,1 Q85,3 90,0 Q95,2 100,1 L100,97 Q95,100 90,98 Q85,96 80,99 Q75,97 70,100 Q65,98 60,97 Q55,100 50,98 Q45,96 40,99 Q35,97 30,100 Q25,98 20,99 Q15,96 10,98 Q5,100 0,97 Z' fill='white'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,3 Q5,0 10,2 Q15,4 20,1 Q25,3 30,0 Q35,2 40,1 Q45,4 50,2 Q55,0 60,3 Q65,1 70,2 Q75,4 80,1 Q85,3 90,0 Q95,2 100,1 L100,97 Q95,100 90,98 Q85,96 80,99 Q75,97 70,100 Q65,98 60,97 Q55,100 50,98 Q45,96 40,99 Q35,97 30,100 Q25,98 20,99 Q15,96 10,98 Q5,100 0,97 Z' fill='white'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .mask-wavy {
+    border: none;
+    background: var(--color-surface);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,5 Q12.5,0 25,5 T50,5 T75,5 T100,5 L100,95 Q87.5,100 75,95 T50,95 T25,95 T0,95 Z' fill='white'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,5 Q12.5,0 25,5 T50,5 T75,5 T100,5 L100,95 Q87.5,100 75,95 T50,95 T25,95 T0,95 Z' fill='white'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* CSS Gradient Borders */
+  .gradient-dashed {
     border: none;
     background:
-      linear-gradient(var(--color-surface-alt), var(--color-surface-alt)) padding-box,
-      linear-gradient(135deg, #667eea, #764ba2, #ff6b6b, #f59e0b) border-box;
-    border: 3px solid transparent;
-    border-radius: var(--radius-m);
+      repeating-linear-gradient(90deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 0 / 100% 3px no-repeat,
+      repeating-linear-gradient(90deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 100% / 100% 3px no-repeat,
+      repeating-linear-gradient(0deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 0 / 3px 100% no-repeat,
+      repeating-linear-gradient(0deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 100% 0 / 3px 100% no-repeat,
+      var(--color-surface);
   }
 
-  /* Animated border */
-  .animated-border {
+  .gradient-dots-border {
     border: none;
     background:
-      linear-gradient(var(--color-surface-alt), var(--color-surface-alt)) padding-box,
-      linear-gradient(var(--angle), #ff6b6b, #f59e0b, #10b981, #3b82f6, #8b5cf6, #ff6b6b) border-box;
-    border: 3px solid transparent;
-    border-radius: var(--radius-m);
-    animation: rotate-gradient 3s linear infinite;
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 0 / 12px 12px repeat-x,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 100% / 12px 12px repeat-x,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 0 / 12px 12px repeat-y,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 100% 0 / 12px 12px repeat-y,
+      var(--color-surface);
+    background-position: 0 0, 0 calc(100% - 6px), 0 0, calc(100% - 6px) 0;
   }
 
-  @property --angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-  }
-
-  @keyframes rotate-gradient {
-    to { --angle: 360deg; }
-  }
-
-  /* Neon border */
-  .neon-border {
-    border-color: #00ff88;
+  /* Box Shadow Techniques */
+  .shadow-sketch {
+    border: 2px solid var(--color-border);
+    border-radius: 2px;
+    background: var(--color-surface);
     box-shadow:
-      0 0 5px #00ff88,
-      0 0 10px #00ff88,
-      0 0 20px #00ff88,
-      inset 0 0 5px rgba(0, 255, 136, 0.1);
+      3px 3px 0 -1px var(--color-surface),
+      3px 3px 0 0 var(--color-border),
+      6px 6px 0 -1px var(--color-surface),
+      6px 6px 0 0 var(--color-border);
+  }
+
+  .shadow-offset {
+    border: 3px solid var(--color-text);
+    border-radius: 0;
+    background: var(--color-surface);
+    box-shadow: 5px 5px 0 var(--color-text);
+  }
+
+  /* Pseudo-element Decorations */
+  .pseudo-corners {
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-m);
+    background: var(--color-surface);
+    position: relative;
+  }
+
+  .pseudo-corners::before,
+  .pseudo-corners::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-primary);
+  }
+
+  .pseudo-corners::before {
+    top: -6px;
+    left: -6px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .pseudo-corners::after {
+    bottom: -6px;
+    right: -6px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .pseudo-tape {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    position: relative;
+  }
+
+  .pseudo-tape::before,
+  .pseudo-tape::after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 24px;
+    background: rgba(255, 220, 100, 0.7);
+    border: 1px solid rgba(200, 170, 50, 0.5);
+    transform: rotate(-5deg);
+  }
+
+  .pseudo-tape::before {
+    top: -12px;
+    left: 20px;
+  }
+
+  .pseudo-tape::after {
+    bottom: -12px;
+    right: 20px;
+    transform: rotate(3deg);
+  }
+
+  /* Interactive Demo */
+  .interactive-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-l);
+  }
+
+  @media (width < 768px) {
+    .interactive-demo {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .preview-area {
+    padding: var(--size-2xl);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-m);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .preview-card {
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    min-width: 180px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .preview-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+  }
+
+  .preview-card p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .style-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s);
+  }
+
+  .style-option {
+    padding: var(--size-s);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    transition: background 0.15s ease;
+  }
+
+  .style-option:hover {
+    background: var(--color-surface-alt);
+  }
+
+  .style-option[aria-pressed="true"] {
+    background: var(--color-primary-subtle, #e0e7ff);
+    border-color: var(--color-primary);
+  }
+
+  .style-option strong {
+    display: block;
+    margin-block-end: var(--size-xs);
+  }
+
+  .style-option span {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  /* Buttons Demo */
+  .buttons-demo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-m);
+    justify-content: center;
+  }
+
+  .btn-rough {
+    padding: var(--size-s) var(--size-l);
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+  }
+
+  .btn-rough.filter-rough {
+    filter: url(#rough-light);
+    border-radius: var(--radius-s);
+  }
+
+  .btn-rough.shadow-offset-btn {
+    border: 2px solid var(--color-text);
+    box-shadow: 3px 3px 0 var(--color-text);
+    background: var(--color-primary);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .btn-rough.shadow-offset-btn:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--color-text);
+  }
+
+  .btn-rough.shadow-offset-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--color-text);
+  }
+
+  /* Inputs Demo */
+  .inputs-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--size-m);
+  }
+
+  .input-rough {
+    padding: var(--size-s);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    width: 100%;
+  }
+
+  .input-rough.filter-input {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-s);
+    filter: url(#rough-light);
+  }
+
+  .input-rough.sketch-input {
+    border: 2px solid var(--color-border);
+    box-shadow: 2px 2px 0 var(--color-border);
+  }
+
+  .input-rough.underline-input {
+    border: none;
+    border-bottom: 3px solid var(--color-border);
+    background: transparent;
   }
 </style>
+
+<script>
+  // Interactive border picker
+  const previewCard = document.getElementById('preview-card');
+  const styleOptions = document.querySelectorAll('.style-option');
+  const allStyles = [
+    'rough-filter-light', 'rough-filter-medium', 'rough-filter-heavy',
+    'border-image-sketch', 'border-image-rough', 'border-image-marker',
+    'mask-torn', 'mask-wavy', 'gradient-dashed', 'gradient-dots-border',
+    'shadow-sketch', 'shadow-offset', 'pseudo-corners', 'pseudo-tape'
+  ];
+
+  styleOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      // Update aria-pressed
+      styleOptions.forEach(opt => opt.setAttribute('aria-pressed', 'false'));
+      option.setAttribute('aria-pressed', 'true');
+
+      // Remove all style classes
+      if (previewCard) {
+        previewCard.classList.remove(...allStyles);
+
+        // Add selected style
+        const style = option.dataset.style;
+        if (style !== 'none') {
+          previewCard.classList.add(style);
+        }
+      }
+    });
+  });
+</script>
