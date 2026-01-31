@@ -10,12 +10,8 @@
 
   <style>
     body {
-      display: grid;
-      grid-template:
-        "body-header" auto
-        "body-main"   1fr
-        "body-footer" auto
-        / 1fr;
+      display: flex;
+      flex-direction: column;
       min-height: 100dvh;
     }
 
@@ -23,7 +19,7 @@
       max-width: 1200px;
       width: 100%;
       margin: 0 auto;
-      padding: var(--space-6);
+      padding: var(--space-4, 1rem);
     }
 
     /* Theme Switcher */
@@ -51,21 +47,48 @@
       font-size: var(--text-sm);
     }
 
-    /* Hero */
+    /* Header nav */
+    header {
+      padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+      background: var(--color-surface-alt, #f9fafb);
+      border-block-end: 1px solid var(--color-border, #e5e7eb);
+    }
+
+    header nav {
+      display: flex;
+      gap: var(--space-4, 1rem);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header nav a {
+      color: var(--color-text, #1f2937);
+      text-decoration: none;
+      font-size: var(--text-sm, 0.875rem);
+      padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+      border-radius: var(--radius-s, 0.25rem);
+      transition: background 0.15s ease;
+    }
+
+    header nav a:hover {
+      background: var(--color-surface, #fff);
+    }
+
+    /* Hero - override VB's section.hero defaults */
     .hero {
-      text-align: center;
-      padding: var(--space-12) var(--space-4);
-      margin-block-end: var(--space-8);
+      min-block-size: auto;
+      padding: var(--space-4, 1rem);
+      margin-block-end: var(--space-4, 1rem);
     }
 
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      margin: 0 0 var(--space-4) 0;
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin: 0 0 var(--space-2, 0.5rem) 0;
     }
 
     .hero p {
-      font-size: var(--text-lg);
-      color: var(--color-text-muted);
+      font-size: var(--text-lg, 1.125rem);
+      color: var(--color-text-muted, #6b7280);
       max-width: 600px;
       margin: 0 auto;
     }
@@ -81,86 +104,69 @@
       display: flex;
       flex-direction: column;
       padding: var(--space-5);
-      background: var(--color-surface-raised);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-l);
+      background: var(--color-surface-raised, #fff);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: var(--radius-l, 0.5rem);
+      box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
       text-decoration: none;
       color: inherit;
       transition:
-        transform var(--duration-fast) var(--ease-3),
-        box-shadow var(--duration-fast) var(--ease-3);
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
     .demo-card:hover {
       transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
+      box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0,0,0,0.1));
     }
 
     .demo-number {
-      font-size: var(--text-4xl);
-      font-weight: var(--weight-bold);
-      color: var(--color-primary);
+      font-size: var(--text-4xl, 2.25rem);
+      font-weight: var(--weight-bold, 700);
+      color: var(--color-primary, #3b82f6);
       line-height: 1;
-      margin-block-end: var(--space-2);
+      margin-block-end: var(--space-2, 0.5rem);
     }
 
     .demo-card h2 {
-      margin: 0 0 var(--space-2) 0;
-      font-size: var(--text-xl);
+      margin: 0 0 var(--space-2, 0.5rem) 0;
+      font-size: var(--text-xl, 1.25rem);
     }
 
     .demo-card p {
       margin: 0;
-      color: var(--color-text-muted);
-      font-size: var(--text-sm);
+      color: var(--color-text-muted, #6b7280);
+      font-size: var(--text-sm, 0.875rem);
       flex: 1;
     }
 
     .demo-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-1);
-      margin-block-start: var(--space-3);
+      gap: var(--space-2, 0.5rem);
+      margin-block-start: var(--space-3, 0.75rem);
     }
 
     .demo-tag {
-      padding: var(--space-0-5) var(--space-2);
-      background: var(--color-surface-alt);
-      border-radius: var(--radius-full);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+      background: var(--color-surface-alt, #f3f4f6);
+      border-radius: var(--radius-full, 9999px);
+      font-size: var(--text-xs, 0.75rem);
+      color: var(--color-text-muted, #6b7280);
     }
 
-    /* Quick links */
+    /* Quick links - hidden since we have header nav */
     .quick-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-      justify-content: center;
-      margin-block: var(--space-8);
-    }
-
-    .quick-link {
-      padding: var(--space-3) var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      text-decoration: none;
-      color: inherit;
-      font-size: var(--text-sm);
-      transition: background 0.15s ease;
-    }
-
-    .quick-link:hover {
-      background: var(--color-surface-alt);
+      display: none;
     }
 
     /* Footer */
     footer {
       text-align: center;
-      padding: var(--space-6);
-      background: var(--color-surface-alt);
-      border-block-start: 1px solid var(--color-border);
+      padding: var(--space-4, 1rem);
+      background: var(--color-surface-alt, #f9fafb);
+      border-block-start: 1px solid var(--color-border, #e5e7eb);
+      margin-block-start: auto;
     }
 
     footer a {
@@ -183,7 +189,7 @@
 
   <header>
     <nav>
-      <a href="../zen-garden/examples/">Zen Garden</a>
+      <a href="../examples/">Zen Garden</a>
       <a href="../theme-picker/">Picker Variants</a>
       <a href="../theme-lab/">Theme Lab</a>
     </nav>
