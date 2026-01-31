@@ -7,6 +7,21 @@
  */
 
 import LabLayout from '../../../layouts/LabLayout.astro';
+
+// Code examples
+const preconnectCode = `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">`;
+
+const fontTokensCode = `/* Theme font tokens */
+--font-display: "Playfair Display", Georgia, serif;
+--font-body: "Inter", system-ui, sans-serif;
+--font-mono: "JetBrains Mono", ui-monospace, monospace;`;
+
+const codeExample = `const greeting = "Hello, World!";
+function fibonacci(n) {
+  return n <= 1 ? n : fibonacci(n - 1) + fibonacci(n - 2);
+}`;
 ---
 
 <LabLayout
@@ -17,147 +32,99 @@ import LabLayout from '../../../layouts/LabLayout.astro';
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin slot="head" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Abril+Fatface&family=Bebas+Neue&display=swap" rel="stylesheet" slot="head" />
 
-  <layout-center>
-    <layout-stack>
-      <nav class="breadcrumb">
-        <a href="/lab/">Lab</a>
-        <span>/</span>
-        <a href="/lab/theme-extensions/">Theme Extensions</a>
-        <span>/</span>
-        <span>Custom Fonts</span>
-      </nav>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/lab/">Lab</a> / <a href="/lab/theme-extensions/">Theme Extensions</a> / <span aria-current="page">Custom Fonts</span>
+  </nav>
 
-      <header>
-        <h1>Custom Fonts</h1>
-        <p class="intro">
-          External font loading with Google Fonts, variable fonts, display/body
-          pairings, and font loading API patterns.
-        </p>
-      </header>
+  <h1>Custom Fonts</h1>
+  <p class="lead">External font loading with Google Fonts, variable fonts, display/body pairings, and font loading API patterns.</p>
 
-      <section class="demo-section">
-        <h2>Font Pairings</h2>
-        <p>Popular combinations of display and body fonts.</p>
-        <div class="pairing-grid">
-          <div class="pairing-card">
-            <h3 class="font-playfair">Playfair Display</h3>
-            <p class="font-inter">Paired with Inter for a classic editorial look. The contrast between serif display and sans-serif body creates visual hierarchy.</p>
-          </div>
-          <div class="pairing-card">
-            <h3 class="font-abril">Abril Fatface</h3>
-            <p class="font-inter">Bold display type with elegant curves. Works well for headlines in magazine-style layouts.</p>
-          </div>
-          <div class="pairing-card">
-            <h3 class="font-bebas">BEBAS NEUE</h3>
-            <p class="font-inter">All-caps condensed display font. Perfect for bold, modern headlines with impact.</p>
-          </div>
+  <section>
+    <h2>Font Pairings</h2>
+    <p>Popular combinations of display and body fonts.</p>
+    <browser-window url="font-pairings">
+      <div class="pairing-grid">
+        <div class="pairing-card">
+          <h3 class="font-playfair">Playfair Display</h3>
+          <p class="font-inter">Paired with Inter for a classic editorial look. The contrast between serif display and sans-serif body creates visual hierarchy.</p>
         </div>
-      </section>
-
-      <section class="demo-section">
-        <h2>Monospace Fonts</h2>
-        <p>Code-friendly fonts with ligatures and clear distinction.</p>
-        <div class="code-samples">
-          <div class="code-card">
-            <h4>JetBrains Mono</h4>
-            <pre class="font-jetbrains"><code set:html={`const greeting = "Hello, World!";
-function fibonacci(n) {
-  return n <= 1 ? n : fibonacci(n - 1) + fibonacci(n - 2);
-}`} /></pre>
-          </div>
+        <div class="pairing-card">
+          <h3 class="font-abril">Abril Fatface</h3>
+          <p class="font-inter">Bold display type with elegant curves. Works well for headlines in magazine-style layouts.</p>
         </div>
-      </section>
-
-      <section class="demo-section">
-        <h2>Font Tokens</h2>
-        <p>Theme-level font configuration tokens.</p>
-        <div class="token-list">
-          <div class="token-item">
-            <span class="token-name">--font-display</span>
-            <span class="token-value">"Playfair Display", Georgia, serif</span>
-          </div>
-          <div class="token-item">
-            <span class="token-name">--font-body</span>
-            <span class="token-value">"Inter", system-ui, sans-serif</span>
-          </div>
-          <div class="token-item">
-            <span class="token-name">--font-mono</span>
-            <span class="token-value">"JetBrains Mono", ui-monospace, monospace</span>
-          </div>
+        <div class="pairing-card">
+          <h3 class="font-bebas">BEBAS NEUE</h3>
+          <p class="font-inter">All-caps condensed display font. Perfect for bold, modern headlines with impact.</p>
         </div>
-      </section>
+      </div>
+    </browser-window>
+  </section>
 
-      <section class="demo-section">
-        <h2>Loading Strategy</h2>
-        <p>Best practices for font loading performance.</p>
-        <div class="strategy-list">
-          <div class="strategy-card">
-            <h4>1. Preconnect</h4>
-            <code>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</code>
-            <p>Establish early connection to font servers.</p>
-          </div>
-          <div class="strategy-card">
-            <h4>2. Font Display</h4>
-            <code>font-display: swap</code>
-            <p>Show fallback font immediately, swap when loaded.</p>
-          </div>
-          <div class="strategy-card">
-            <h4>3. Subset</h4>
-            <code>&amp;subset=latin</code>
-            <p>Only load character sets you need.</p>
-          </div>
+  <section>
+    <h2>Monospace Fonts</h2>
+    <p>Code-friendly fonts with ligatures and clear distinction.</p>
+    <browser-window url="monospace-demo">
+      <div class="code-samples">
+        <div class="code-card">
+          <h4>JetBrains Mono</h4>
+          <pre class="font-jetbrains"><code>{codeExample}</code></pre>
         </div>
-      </section>
-    </layout-stack>
-  </layout-center>
+      </div>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Font Tokens</h2>
+    <p>Theme-level font configuration tokens.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--font-display</code></td>
+          <td><code>"Playfair Display", Georgia, serif</code></td>
+        </tr>
+        <tr>
+          <td><code>--font-body</code></td>
+          <td><code>"Inter", system-ui, sans-serif</code></td>
+        </tr>
+        <tr>
+          <td><code>--font-mono</code></td>
+          <td><code>"JetBrains Mono", ui-monospace, monospace</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="Font token definitions">{fontTokensCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Loading Strategy</h2>
+    <p>Best practices for font loading performance.</p>
+    <browser-window url="loading-strategy">
+      <div class="strategy-list">
+        <div class="strategy-card">
+          <h4>1. Preconnect</h4>
+          <p>Establish early connection to font servers.</p>
+        </div>
+        <div class="strategy-card">
+          <h4>2. Font Display</h4>
+          <p>Use <code>font-display: swap</code> to show fallback immediately.</p>
+        </div>
+        <div class="strategy-card">
+          <h4>3. Subset</h4>
+          <p>Only load character sets you need with <code>&amp;subset=latin</code>.</p>
+        </div>
+      </div>
+    </browser-window>
+    <code-block language="html" label="Font loading setup">{preconnectCode}</code-block>
+  </section>
 </LabLayout>
 
 <style>
-  nav.breadcrumb {
-    display: flex;
-    gap: var(--size-xs);
-    font-size: var(--size-s);
-    color: var(--color-text-muted);
-    margin-block-end: var(--size-l);
-  }
-
-  nav.breadcrumb a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  header {
-    margin-block-end: var(--size-xl);
-  }
-
-  h1 {
-    font-size: var(--size-2xl);
-    margin-block-end: var(--size-s);
-  }
-
-  .intro {
-    font-size: var(--size-m);
-    color: var(--color-text-muted);
-    max-width: 60ch;
-  }
-
-  .demo-section {
-    margin-block-end: var(--size-2xl);
-    padding: var(--size-l);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-m);
-  }
-
-  .demo-section h2 {
-    margin: 0 0 var(--size-xs) 0;
-  }
-
-  .demo-section > p {
-    color: var(--color-text-muted);
-    margin: 0 0 var(--size-l) 0;
-  }
-
   /* Font classes */
   .font-playfair { font-family: "Playfair Display", Georgia, serif; }
   .font-inter { font-family: "Inter", system-ui, sans-serif; }
@@ -168,6 +135,7 @@ function fibonacci(n) {
   .pairing-grid {
     display: grid;
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .pairing-card {
@@ -191,6 +159,7 @@ function fibonacci(n) {
   .code-samples {
     display: grid;
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .code-card {
@@ -202,7 +171,7 @@ function fibonacci(n) {
 
   .code-card h4 {
     margin: 0 0 var(--size-s) 0;
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
 
@@ -215,37 +184,10 @@ function fibonacci(n) {
     color: #e2e8f0;
   }
 
-  .token-list {
-    display: grid;
-    gap: var(--size-s);
-  }
-
-  .token-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: var(--size-m);
-    padding: var(--size-s);
-    background: var(--color-surface-alt);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-s);
-    align-items: center;
-  }
-
-  .token-name {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--size-s);
-    color: var(--color-primary);
-  }
-
-  .token-value {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-  }
-
   .strategy-list {
     display: grid;
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .strategy-card {
@@ -257,21 +199,19 @@ function fibonacci(n) {
 
   .strategy-card h4 {
     margin: 0 0 var(--size-xs) 0;
-    font-size: var(--size-m);
-  }
-
-  .strategy-card code {
-    display: block;
-    padding: var(--size-xs) var(--size-s);
-    background: var(--color-surface-sunken, #f1f5f9);
-    border-radius: var(--radius-s);
-    font-size: var(--size-s);
-    margin-block-end: var(--size-xs);
+    font-size: var(--font-size-base);
   }
 
   .strategy-card p {
     margin: 0;
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+  }
+
+  .strategy-card code {
+    background: var(--color-surface-sunken, #f1f5f9);
+    padding: var(--size-3xs) var(--size-2xs);
+    border-radius: var(--radius-s);
+    font-size: var(--font-size-sm);
   }
 </style>

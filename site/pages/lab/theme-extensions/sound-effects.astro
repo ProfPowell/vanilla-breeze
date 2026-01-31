@@ -7,142 +7,110 @@
  */
 
 import LabLayout from '../../../layouts/LabLayout.astro';
+
+// Code examples
+const soundCode = `// Web Audio API tone generator
+function playTone(frequency, duration, type = 'sine') {
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  oscillator.frequency.value = frequency;
+  oscillator.type = type;
+  gainNode.gain.value = volume * 0.3;
+
+  oscillator.start();
+  gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+  oscillator.stop(ctx.currentTime + duration);
+}`;
 ---
 
 <LabLayout
   title="Sound Effects"
   description="Experimental audio feedback using Web Audio API with user preference controls."
 >
-  <layout-center>
-    <layout-stack>
-      <nav class="breadcrumb">
-        <a href="/lab/">Lab</a>
-        <span>/</span>
-        <a href="/lab/theme-extensions/">Theme Extensions</a>
-        <span>/</span>
-        <span>Sound Effects</span>
-      </nav>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/lab/">Lab</a> / <a href="/lab/theme-extensions/">Theme Extensions</a> / <span aria-current="page">Sound Effects</span>
+  </nav>
 
-      <header>
-        <h1>Sound Effects</h1>
-        <p class="intro">
-          Experimental audio feedback using Web Audio API. Click, hover, success,
-          and error sounds with user preference controls.
-        </p>
-      </header>
+  <h1>Sound Effects</h1>
+  <p class="lead">Experimental audio feedback using Web Audio API. Click, hover, success, and error sounds with user preference controls.</p>
 
-      <div class="sound-controls">
-        <button id="sound-toggle" class="sound-toggle-btn" aria-pressed="false">
-          <span class="sound-icon">&#128266;</span>
-          <span class="sound-label">Enable Sound</span>
+  <div class="sound-controls">
+    <button id="sound-toggle" class="sound-toggle-btn" aria-pressed="false">
+      <span class="sound-icon">🔊</span>
+      <span class="sound-label">Enable Sound</span>
+    </button>
+    <label class="volume-control">
+      Volume:
+      <input type="range" id="volume" min="0" max="100" value="50" />
+    </label>
+  </div>
+
+  <section>
+    <h2>Interaction Sounds</h2>
+    <p>Click the buttons to hear different sound effects.</p>
+    <browser-window url="interaction-sounds">
+      <div class="sound-grid">
+        <button class="sound-btn" data-sound="click">
+          <span class="sound-icon">👆</span>
+          <span>Click</span>
         </button>
-        <label class="volume-control">
-          Volume:
-          <input type="range" id="volume" min="0" max="100" value="50" />
-        </label>
+        <button class="sound-btn" data-sound="success">
+          <span class="sound-icon">✅</span>
+          <span>Success</span>
+        </button>
+        <button class="sound-btn" data-sound="error">
+          <span class="sound-icon">❌</span>
+          <span>Error</span>
+        </button>
+        <button class="sound-btn" data-sound="notification">
+          <span class="sound-icon">🔔</span>
+          <span>Notification</span>
+        </button>
       </div>
+    </browser-window>
+    <code-block language="javascript" label="Web Audio API tone generator">{soundCode}</code-block>
+  </section>
 
-      <section class="demo-section">
-        <h2>Interaction Sounds</h2>
-        <p>Click the buttons to hear different sound effects.</p>
-        <div class="sound-grid">
-          <button class="sound-btn" data-sound="click">
-            <span class="sound-icon">&#128070;</span>
-            <span>Click</span>
-          </button>
-          <button class="sound-btn" data-sound="success">
-            <span class="sound-icon">&#9989;</span>
-            <span>Success</span>
-          </button>
-          <button class="sound-btn" data-sound="error">
-            <span class="sound-icon">&#10060;</span>
-            <span>Error</span>
-          </button>
-          <button class="sound-btn" data-sound="notification">
-            <span class="sound-icon">&#128276;</span>
-            <span>Notification</span>
-          </button>
+  <section>
+    <h2>Hover Sounds</h2>
+    <p>Hover over cards to trigger subtle audio feedback.</p>
+    <browser-window url="hover-sounds">
+      <div class="hover-grid">
+        <div class="hover-card" data-hover-sound="soft">
+          <h3>Soft</h3>
+          <p>Subtle pop</p>
         </div>
-      </section>
-
-      <section class="demo-section">
-        <h2>Hover Sounds</h2>
-        <p>Hover over cards to trigger subtle audio feedback.</p>
-        <div class="hover-grid">
-          <div class="hover-card" data-hover-sound="soft">
-            <h3>Soft</h3>
-            <p>Subtle pop</p>
-          </div>
-          <div class="hover-card" data-hover-sound="tick">
-            <h3>Tick</h3>
-            <p>Clock tick</p>
-          </div>
-          <div class="hover-card" data-hover-sound="whoosh">
-            <h3>Whoosh</h3>
-            <p>Air sound</p>
-          </div>
+        <div class="hover-card" data-hover-sound="tick">
+          <h3>Tick</h3>
+          <p>Clock tick</p>
         </div>
-      </section>
+        <div class="hover-card" data-hover-sound="whoosh">
+          <h3>Whoosh</h3>
+          <p>Air sound</p>
+        </div>
+      </div>
+    </browser-window>
+  </section>
 
-      <section class="demo-section">
-        <h2>Considerations</h2>
-        <p>Important factors for implementing sound in web interfaces.</p>
-        <ul class="considerations-list">
-          <li>
-            <strong>Opt-in by default:</strong> Sound should be disabled until
-            the user explicitly enables it.
-          </li>
-          <li>
-            <strong>Volume control:</strong> Users should be able to adjust or
-            mute sounds independently.
-          </li>
-          <li>
-            <strong>Accessibility:</strong> Never rely on sound alone to convey
-            information. Always pair with visual feedback.
-          </li>
-          <li>
-            <strong>Performance:</strong> Use Web Audio API with pre-generated
-            oscillator tones instead of audio files.
-          </li>
-          <li>
-            <strong>Context:</strong> Consider if sound adds value or is just
-            noise. Most web apps don't need sound.
-          </li>
-        </ul>
-      </section>
-    </layout-stack>
-  </layout-center>
+  <section>
+    <h2>Considerations</h2>
+    <p>Important factors for implementing sound in web interfaces.</p>
+    <ul>
+      <li><strong>Opt-in by default:</strong> Sound should be disabled until the user explicitly enables it.</li>
+      <li><strong>Volume control:</strong> Users should be able to adjust or mute sounds independently.</li>
+      <li><strong>Accessibility:</strong> Never rely on sound alone to convey information. Always pair with visual feedback.</li>
+      <li><strong>Performance:</strong> Use Web Audio API with pre-generated oscillator tones instead of audio files.</li>
+      <li><strong>Context:</strong> Consider if sound adds value or is just noise. Most web apps don't need sound.</li>
+    </ul>
+  </section>
 </LabLayout>
 
 <style>
-  nav.breadcrumb {
-    display: flex;
-    gap: var(--size-xs);
-    font-size: var(--size-s);
-    color: var(--color-text-muted);
-    margin-block-end: var(--size-l);
-  }
-
-  nav.breadcrumb a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  header {
-    margin-block-end: var(--size-l);
-  }
-
-  h1 {
-    font-size: var(--size-2xl);
-    margin-block-end: var(--size-s);
-  }
-
-  .intro {
-    font-size: var(--size-m);
-    color: var(--color-text-muted);
-    max-width: 60ch;
-  }
-
   .sound-controls {
     display: flex;
     gap: var(--size-m);
@@ -151,7 +119,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     background: var(--color-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-m);
-    margin-block-end: var(--size-xl);
+    margin-block-end: var(--size-l);
   }
 
   .sound-toggle-btn {
@@ -164,7 +132,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     border-radius: var(--radius-s);
     cursor: pointer;
     font-family: inherit;
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     transition: background 0.15s ease;
   }
 
@@ -182,34 +150,18 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     display: flex;
     align-items: center;
     gap: var(--size-xs);
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
   }
 
   .volume-control input {
     width: 100px;
   }
 
-  .demo-section {
-    margin-block-end: var(--size-2xl);
-    padding: var(--size-l);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-m);
-  }
-
-  .demo-section h2 {
-    margin: 0 0 var(--size-xs) 0;
-  }
-
-  .demo-section > p {
-    color: var(--color-text-muted);
-    margin: 0 0 var(--size-l) 0;
-  }
-
   .sound-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .sound-btn {
@@ -241,8 +193,9 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 
   .hover-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: var(--size-m);
+    padding: var(--size-m);
   }
 
   .hover-card {
@@ -265,22 +218,8 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 
   .hover-card p {
     margin: 0;
-    font-size: var(--size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-  }
-
-  .considerations-list {
-    margin: 0;
-    padding-left: var(--size-l);
-  }
-
-  .considerations-list li {
-    margin-block-end: var(--size-s);
-    line-height: 1.6;
-  }
-
-  .considerations-list strong {
-    color: var(--color-text);
   }
 </style>
 

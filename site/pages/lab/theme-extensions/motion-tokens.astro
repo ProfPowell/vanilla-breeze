@@ -7,19 +7,236 @@
  */
 
 import LabLayout from '../../../layouts/LabLayout.astro';
+
+// Code examples
+const hoverLiftCode = `.hover-lift {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}`;
+
+const easingCode = `/* Motion easing presets */
+--motion-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+--motion-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+--motion-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+--motion-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);`;
+
+const staggerCode = `.stagger-item {
+  animation: slide-in-up 300ms ease-out backwards;
+}
+.stagger-item:nth-child(1) { animation-delay: calc(var(--motion-stagger-delay) * 0); }
+.stagger-item:nth-child(2) { animation-delay: calc(var(--motion-stagger-delay) * 1); }
+.stagger-item:nth-child(3) { animation-delay: calc(var(--motion-stagger-delay) * 2); }
+/* ... etc */`;
 ---
 
 <LabLayout
   title="Motion Tokens"
   description="Expanded motion system with theme-driven animation presets and motion personalities."
 >
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/lab/">Lab</a> / <a href="/lab/theme-extensions/">Theme Extensions</a> / <span aria-current="page">Motion Tokens</span>
+  </nav>
+
+  <h1>Motion Tokens</h1>
+  <p class="lead">Expanding the motion system with theme-driven animation presets, hover effects, enter/exit animations, and View Transitions API integration.</p>
+
+  <div class="reduced-motion-notice">
+    <strong>Reduced Motion Enabled:</strong> Animations are minimized based on your system preference.
+  </div>
+
+  <section>
+    <h2>Proposed Motion Tokens</h2>
+    <p>New tokens to add to the existing motion.css system.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--motion-hover-transform</code></td>
+          <td><code>translateY(-2px)</code></td>
+        </tr>
+        <tr>
+          <td><code>--motion-stagger-delay</code></td>
+          <td><code>50ms</code></td>
+        </tr>
+        <tr>
+          <td><code>--motion-bounce</code></td>
+          <td><code>cubic-bezier(0.34, 1.56, 0.64, 1)</code></td>
+        </tr>
+        <tr>
+          <td><code>--motion-snappy</code></td>
+          <td><code>cubic-bezier(0.4, 0, 0.2, 1)</code></td>
+        </tr>
+        <tr>
+          <td><code>--motion-smooth</code></td>
+          <td><code>cubic-bezier(0.25, 0.1, 0.25, 1)</code></td>
+        </tr>
+        <tr>
+          <td><code>--motion-elastic</code></td>
+          <td><code>cubic-bezier(0.68, -0.55, 0.265, 1.55)</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="Easing presets">{easingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Hover Effects</h2>
+    <p>Reusable hover patterns that can be applied to cards, buttons, and interactive elements.</p>
+    <browser-window url="hover-effects">
+      <div class="hover-grid">
+        <div class="hover-card hover-lift">
+          <h3>Lift</h3>
+          <p>Raises with shadow</p>
+        </div>
+        <div class="hover-card hover-glow">
+          <h3>Glow</h3>
+          <p>Subtle ring glow</p>
+        </div>
+        <div class="hover-card hover-scale">
+          <h3>Scale</h3>
+          <p>Bouncy scale up</p>
+        </div>
+        <div class="hover-card hover-slide">
+          <h3>Slide</h3>
+          <p>Color slide-in</p>
+        </div>
+        <div class="hover-card hover-border">
+          <h3>Border</h3>
+          <p>Border appears</p>
+        </div>
+        <div class="hover-card hover-tilt">
+          <h3>Tilt</h3>
+          <p>3D perspective</p>
+        </div>
+      </div>
+    </browser-window>
+    <code-block language="css" label="Hover lift effect">{hoverLiftCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Transition Presets</h2>
+    <p>Different easing curves create different motion personalities. Hover each box to compare.</p>
+    <browser-window url="transition-presets">
+      <div class="transition-demo">
+        <div class="transition-box snappy">Snappy</div>
+        <div class="transition-box smooth">Smooth</div>
+        <div class="transition-box bouncy">Bouncy</div>
+        <div class="transition-box elastic">Elastic</div>
+      </div>
+      <div class="transition-labels">
+        <span>150ms</span>
+        <span>300ms</span>
+        <span>400ms</span>
+        <span>500ms</span>
+      </div>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Enter/Exit Animations</h2>
+    <p>Reusable keyframe animations for elements appearing and disappearing.</p>
+    <browser-window url="enter-exit">
+      <div class="enter-exit-demo" id="enter-demo">
+        <div class="enter-card">
+          <h4>Fade In</h4>
+          <div class="enter-box animate-fade"></div>
+          <button class="replay-btn" data-animation="animate-fade">Replay</button>
+        </div>
+        <div class="enter-card">
+          <h4>Slide Up</h4>
+          <div class="enter-box animate-slide-up"></div>
+          <button class="replay-btn" data-animation="animate-slide-up">Replay</button>
+        </div>
+        <div class="enter-card">
+          <h4>Slide Down</h4>
+          <div class="enter-box animate-slide-down"></div>
+          <button class="replay-btn" data-animation="animate-slide-down">Replay</button>
+        </div>
+        <div class="enter-card">
+          <h4>Scale In</h4>
+          <div class="enter-box animate-scale"></div>
+          <button class="replay-btn" data-animation="animate-scale">Replay</button>
+        </div>
+        <div class="enter-card">
+          <h4>Pop In</h4>
+          <div class="enter-box animate-pop"></div>
+          <button class="replay-btn" data-animation="animate-pop">Replay</button>
+        </div>
+      </div>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Staggered Animations</h2>
+    <p>Child elements animate in sequence using CSS custom properties for delay calculation.</p>
+    <browser-window url="staggered">
+      <div class="stagger-list" id="stagger-list">
+        <div class="stagger-item">Item 1</div>
+        <div class="stagger-item">Item 2</div>
+        <div class="stagger-item">Item 3</div>
+        <div class="stagger-item">Item 4</div>
+        <div class="stagger-item">Item 5</div>
+        <div class="stagger-item">Item 6</div>
+        <div class="stagger-item">Item 7</div>
+        <div class="stagger-item">Item 8</div>
+      </div>
+      <div class="stagger-controls">
+        <label>
+          Stagger Delay:
+          <input type="range" id="stagger-delay" min="0" max="200" value="50" />
+          <span id="stagger-value">50ms</span>
+        </label>
+        <button id="stagger-replay" class="replay-btn">Replay</button>
+      </div>
+    </browser-window>
+    <code-block language="css" label="Staggered animation delay">{staggerCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Theme Motion Personalities</h2>
+    <p>Each theme can have its own motion character. Hover the boxes to see different personalities.</p>
+    <browser-window url="personalities">
+      <div class="personality-grid">
+        <div class="personality-card personality-default">
+          <h4>Default</h4>
+          <div class="personality-box"></div>
+          <p>Smooth lift</p>
+        </div>
+        <div class="personality-card personality-swiss">
+          <h4>Swiss</h4>
+          <div class="personality-box"></div>
+          <p>Linear, precise</p>
+        </div>
+        <div class="personality-card personality-organic">
+          <h4>Organic</h4>
+          <div class="personality-box"></div>
+          <p>Flowing, natural</p>
+        </div>
+        <div class="personality-card personality-brutalist">
+          <h4>Brutalist</h4>
+          <div class="personality-box"></div>
+          <p>Instant, raw</p>
+        </div>
+        <div class="personality-card personality-cyber">
+          <h4>Cyber</h4>
+          <div class="personality-box"></div>
+          <p>Stepped, glitchy</p>
+        </div>
+      </div>
+    </browser-window>
+  </section>
+
   <style>
-    /* Motion Tokens Exploration */
+    /* Motion Tokens */
     :root {
-      --motion-hover-transform: translateY(-2px);
-      --motion-hover-shadow: var(--shadow-lg);
-      --motion-enter: fade-in 200ms ease-out;
-      --motion-exit: fade-out 150ms ease-in;
       --motion-stagger-delay: 50ms;
       --motion-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
       --motion-snappy: cubic-bezier(0.4, 0, 0.2, 1);
@@ -27,52 +244,12 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       --motion-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--size-l);
-    }
-
-    .hero {
-      text-align: center;
-      padding: var(--size-2xl) var(--size-m);
-      margin-block-end: var(--size-xl);
-    }
-
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      margin: 0 0 var(--size-m) 0;
-    }
-
-    .hero p {
-      font-size: var(--size-m);
-      color: var(--color-text-muted);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .demo-section {
-      margin-block-end: var(--size-2xl);
-      padding: var(--size-l);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-    }
-
-    .demo-section h2 {
-      margin: 0 0 var(--size-xs) 0;
-    }
-
-    .demo-section > p {
-      color: var(--color-text-muted);
-      margin: 0 0 var(--size-l) 0;
-    }
-
     /* Hover Effects Demo */
     .hover-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: var(--size-m);
+      padding: var(--size-m);
     }
 
     .hover-card {
@@ -156,6 +333,8 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       flex-wrap: wrap;
       gap: var(--size-m);
       justify-content: center;
+      padding: var(--size-m);
+      padding-block-end: 0;
     }
 
     .transition-box {
@@ -237,6 +416,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       flex-wrap: wrap;
       gap: var(--size-m);
       justify-content: center;
+      padding: var(--size-m);
     }
 
     .enter-card {
@@ -282,6 +462,8 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       flex-wrap: wrap;
       gap: var(--size-s);
       justify-content: center;
+      padding: var(--size-m);
+      padding-block-end: 0;
     }
 
     .stagger-item {
@@ -320,41 +502,12 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       width: 120px;
     }
 
-    /* Token display */
-    .token-list {
-      display: grid;
-      gap: var(--size-s);
-      margin-block: var(--size-m);
-    }
-
-    .token-item {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: var(--size-m);
-      padding: var(--size-s);
-      background: var(--color-surface-alt);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-s);
-      align-items: center;
-    }
-
-    .token-name {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--size-s);
-      color: var(--color-primary);
-    }
-
-    .token-value {
-      font-family: var(--font-mono, monospace);
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-    }
-
     /* Theme Motion Personalities */
     .personality-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: var(--size-m);
+      padding: var(--size-m);
     }
 
     .personality-card {
@@ -446,216 +599,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
       color: #92400e;
     }
 
-    nav.breadcrumb {
-      display: flex;
-      gap: var(--size-xs);
-      font-size: var(--size-s);
-      color: var(--color-text-muted);
-      margin-block-end: var(--size-l);
-      max-width: 1200px;
-      margin-inline: auto;
-      padding-inline: var(--size-l);
-    }
-
-    nav.breadcrumb a {
-      color: var(--color-primary);
-      text-decoration: none;
-    }
-
-    nav.breadcrumb a:hover {
-      text-decoration: underline;
-    }
   </style>
-
-  <nav class="breadcrumb">
-    <a href="/lab/">Lab</a>
-    <span>/</span>
-    <a href="/lab/theme-extensions/">Theme Extensions</a>
-    <span>/</span>
-    <span>Motion Tokens</span>
-  </nav>
-
-  <section class="hero">
-    <h1>Motion Tokens</h1>
-    <p>Expanding the motion system with theme-driven animation presets, hover effects, enter/exit animations, and View Transitions API integration.</p>
-  </section>
-
-  <div class="reduced-motion-notice">
-    <strong>Reduced Motion Enabled:</strong> Animations are minimized based on your system preference.
-  </div>
-
-  <section class="demo-section">
-    <h2>Proposed Motion Tokens</h2>
-    <p>New tokens to add to the existing motion.css system.</p>
-
-    <div class="token-list">
-      <div class="token-item">
-        <span class="token-name">--motion-hover-transform</span>
-        <span class="token-value">translateY(-2px)</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--motion-stagger-delay</span>
-        <span class="token-value">50ms</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--motion-bounce</span>
-        <span class="token-value">cubic-bezier(0.34, 1.56, 0.64, 1)</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--motion-snappy</span>
-        <span class="token-value">cubic-bezier(0.4, 0, 0.2, 1)</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--motion-smooth</span>
-        <span class="token-value">cubic-bezier(0.25, 0.1, 0.25, 1)</span>
-      </div>
-      <div class="token-item">
-        <span class="token-name">--motion-elastic</span>
-        <span class="token-value">cubic-bezier(0.68, -0.55, 0.265, 1.55)</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="demo-section">
-    <h2>Hover Effects</h2>
-    <p>Reusable hover patterns that can be applied to cards, buttons, and interactive elements.</p>
-
-    <div class="hover-grid">
-      <div class="hover-card hover-lift">
-        <h3>Lift</h3>
-        <p>Raises with shadow</p>
-      </div>
-      <div class="hover-card hover-glow">
-        <h3>Glow</h3>
-        <p>Subtle ring glow</p>
-      </div>
-      <div class="hover-card hover-scale">
-        <h3>Scale</h3>
-        <p>Bouncy scale up</p>
-      </div>
-      <div class="hover-card hover-slide">
-        <h3>Slide</h3>
-        <p>Color slide-in</p>
-      </div>
-      <div class="hover-card hover-border">
-        <h3>Border</h3>
-        <p>Border appears</p>
-      </div>
-      <div class="hover-card hover-tilt">
-        <h3>Tilt</h3>
-        <p>3D perspective</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="demo-section">
-    <h2>Transition Presets</h2>
-    <p>Different easing curves create different motion personalities. Hover each box to compare.</p>
-
-    <div class="transition-demo">
-      <div class="transition-box snappy">Snappy</div>
-      <div class="transition-box smooth">Smooth</div>
-      <div class="transition-box bouncy">Bouncy</div>
-      <div class="transition-box elastic">Elastic</div>
-    </div>
-    <div class="transition-labels">
-      <span>150ms</span>
-      <span>300ms</span>
-      <span>400ms</span>
-      <span>500ms</span>
-    </div>
-  </section>
-
-  <section class="demo-section">
-    <h2>Enter/Exit Animations</h2>
-    <p>Reusable keyframe animations for elements appearing and disappearing.</p>
-
-    <div class="enter-exit-demo" id="enter-demo">
-      <div class="enter-card">
-        <h4>Fade In</h4>
-        <div class="enter-box animate-fade"></div>
-        <button class="replay-btn" data-animation="animate-fade">Replay</button>
-      </div>
-      <div class="enter-card">
-        <h4>Slide Up</h4>
-        <div class="enter-box animate-slide-up"></div>
-        <button class="replay-btn" data-animation="animate-slide-up">Replay</button>
-      </div>
-      <div class="enter-card">
-        <h4>Slide Down</h4>
-        <div class="enter-box animate-slide-down"></div>
-        <button class="replay-btn" data-animation="animate-slide-down">Replay</button>
-      </div>
-      <div class="enter-card">
-        <h4>Scale In</h4>
-        <div class="enter-box animate-scale"></div>
-        <button class="replay-btn" data-animation="animate-scale">Replay</button>
-      </div>
-      <div class="enter-card">
-        <h4>Pop In</h4>
-        <div class="enter-box animate-pop"></div>
-        <button class="replay-btn" data-animation="animate-pop">Replay</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="demo-section">
-    <h2>Staggered Animations</h2>
-    <p>Child elements animate in sequence using CSS custom properties for delay calculation.</p>
-
-    <div class="stagger-list" id="stagger-list">
-      <div class="stagger-item">Item 1</div>
-      <div class="stagger-item">Item 2</div>
-      <div class="stagger-item">Item 3</div>
-      <div class="stagger-item">Item 4</div>
-      <div class="stagger-item">Item 5</div>
-      <div class="stagger-item">Item 6</div>
-      <div class="stagger-item">Item 7</div>
-      <div class="stagger-item">Item 8</div>
-    </div>
-
-    <div class="stagger-controls">
-      <label>
-        Stagger Delay:
-        <input type="range" id="stagger-delay" min="0" max="200" value="50" />
-        <span id="stagger-value">50ms</span>
-      </label>
-      <button id="stagger-replay" class="replay-btn">Replay</button>
-    </div>
-  </section>
-
-  <section class="demo-section">
-    <h2>Theme Motion Personalities</h2>
-    <p>Each theme can have its own motion character. Hover the boxes to see different personalities.</p>
-
-    <div class="personality-grid">
-      <div class="personality-card personality-default">
-        <h4>Default</h4>
-        <div class="personality-box"></div>
-        <p>Smooth lift</p>
-      </div>
-      <div class="personality-card personality-swiss">
-        <h4>Swiss</h4>
-        <div class="personality-box"></div>
-        <p>Linear, precise</p>
-      </div>
-      <div class="personality-card personality-organic">
-        <h4>Organic</h4>
-        <div class="personality-box"></div>
-        <p>Flowing, natural</p>
-      </div>
-      <div class="personality-card personality-brutalist">
-        <h4>Brutalist</h4>
-        <div class="personality-box"></div>
-        <p>Instant, raw</p>
-      </div>
-      <div class="personality-card personality-cyber">
-        <h4>Cyber</h4>
-        <div class="personality-box"></div>
-        <p>Stepped, glitchy</p>
-      </div>
-    </div>
-  </section>
 
   <script>
     // Enter animation replay
