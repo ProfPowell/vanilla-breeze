@@ -1,170 +1,147 @@
 /**
- * Line Chart
+ * Line Chart - Charts.css Pattern
  *
- * Line charts use positioned dots with optional connecting lines.
- * Pure CSS approach using pseudo-elements for data points.
+ * Uses clip-path polygon to draw actual connecting lines between data points.
+ * Each td needs --start and --end CSS variables (0-1 range).
  *
  * Usage:
  * <table class="vb-chart" data-type="line">
  *   <caption>Chart Title</caption>
  *   <tbody>
  *     <tr>
- *       <th scope="row">Jan</th>
- *       <td style="--value: 0.75">75</td>
+ *       <th scope="row">Mon</th>
+ *       <td style="--start: 0; --end: 0.45">450</td>
+ *     </tr>
+ *     <tr>
+ *       <th scope="row">Tue</th>
+ *       <td style="--start: 0.45; --end: 0.62">620</td>
  *     </tr>
  *   </tbody>
  * </table>
+ *
+ * Key pattern: --start = previous row's --end value
  */
 
-/* Line chart layout */
 .vb-chart[data-type="line"] {
+  --line-size: 3px;
   --dot-size: 10px;
 }
 
 .vb-chart[data-type="line"] tbody {
   display: flex;
-  height: var(--chart-height);
+  height: var(--chart-height, 200px);
   border-block-end: 1px solid var(--chart-axis-color);
   border-inline-start: 1px solid var(--chart-axis-color);
   position: relative;
-  padding: var(--size-xs, 0.5rem);
 }
 
 .vb-chart[data-type="line"] tr {
   flex: 1;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
   height: 100%;
 }
 
-/* X-axis labels */
+/* X-axis labels below chart */
 .vb-chart[data-type="line"] th {
-  order: 1;
   position: absolute;
-  inset-block-end: calc(-1 * var(--size-l, 1.5rem));
-  text-align: center;
-  font-size: var(--font-size-xs, 0.75rem);
-  white-space: nowrap;
-}
-
-/* Data points */
-.vb-chart[data-type="line"] td {
-  position: absolute;
-  inset-block-end: calc(var(--value, 0) * 100%);
-  inset-inline-start: 50%;
-  transform: translate(-50%, 50%);
-  width: var(--dot-size);
-  height: var(--dot-size);
-  background: var(--chart-series-1);
-  border-radius: 50%;
-  border: 2px solid var(--color-surface, #fff);
-  box-shadow: 0 0 0 1px var(--chart-series-1);
-  z-index: 2;
-  transition:
-    inset-block-end var(--chart-duration) var(--chart-easing),
-    transform var(--chart-duration) var(--chart-easing);
-
-  /* Hide text */
-  font-size: 0;
-  color: transparent;
-  overflow: hidden;
-}
-
-/* Series colors for dots */
-.vb-chart[data-type="line"] td[data-series="2"] {
-  background: var(--chart-series-2);
-  box-shadow: 0 0 0 1px var(--chart-series-2);
-}
-.vb-chart[data-type="line"] td[data-series="3"] {
-  background: var(--chart-series-3);
-  box-shadow: 0 0 0 1px var(--chart-series-3);
-}
-.vb-chart[data-type="line"] td[data-series="4"] {
-  background: var(--chart-series-4);
-  box-shadow: 0 0 0 1px var(--chart-series-4);
-}
-.vb-chart[data-type="line"] td[data-series="5"] {
-  background: var(--chart-series-5);
-  box-shadow: 0 0 0 1px var(--chart-series-5);
-}
-.vb-chart[data-type="line"] td[data-series="6"] {
-  background: var(--chart-series-6);
-  box-shadow: 0 0 0 1px var(--chart-series-6);
-}
-
-/* Hover effect - enlarge dot */
-.vb-chart[data-type="line"] td:hover {
-  transform: translate(-50%, 50%) scale(1.3);
-  z-index: 3;
-}
-
-/* Vertical drop line from dot to x-axis */
-.vb-chart[data-type="line"] td::before {
-  content: "";
-  position: absolute;
-  width: 1px;
-  background: var(--chart-series-1);
-  opacity: 0.3;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
-  height: calc((1 - var(--value, 0)) * var(--chart-height) + var(--value, 0) * 50%);
-  transform: translateX(-50%);
-  z-index: 1;
-}
-
-/* Series colors for drop lines */
-.vb-chart[data-type="line"] td[data-series="2"]::before { background: var(--chart-series-2); }
-.vb-chart[data-type="line"] td[data-series="3"]::before { background: var(--chart-series-3); }
-.vb-chart[data-type="line"] td[data-series="4"]::before { background: var(--chart-series-4); }
-
-/* Connected mode - draws horizontal baseline with dots emphasized */
-.vb-chart[data-type="line"][data-connected] tbody::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  height: 2px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    var(--chart-series-1) 5%,
-    var(--chart-series-1) 95%,
-    transparent 100%
-  );
-  opacity: 0.5;
-}
-
-/* Emphasize dots in connected mode */
-.vb-chart[data-type="line"][data-connected] td {
-  --dot-size: 12px;
-  box-shadow: 0 0 0 2px var(--chart-series-1), 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Grid lines */
-.vb-chart[data-type="line"][data-grid] tbody {
-  background-image:
-    repeating-linear-gradient(
-      to top,
-      var(--chart-grid-color) 0,
-      var(--chart-grid-color) 1px,
-      transparent 1px,
-      transparent 25%
-    );
-}
-
-/* Show value labels */
-.vb-chart[data-type="line"][data-labels] td::after {
-  content: attr(data-label);
-  position: absolute;
-  inset-block-end: calc(100% + 4px);
+  inset-block-end: -1.5em;
   inset-inline-start: 50%;
   transform: translateX(-50%);
   font-size: var(--font-size-xs, 0.75rem);
   color: var(--chart-label-color);
   white-space: nowrap;
+}
+
+/* The connecting line segment using clip-path polygon */
+.vb-chart[data-type="line"] td {
+  position: absolute;
+  inset: 0;
+  background: var(--chart-series-1);
+
+  /* Clip to create line connecting --start to --end */
+  clip-path: polygon(
+    0% calc(100% * (1 - var(--start, 0))),
+    100% calc(100% * (1 - var(--end, 0))),
+    100% calc(100% * (1 - var(--end, 0)) + var(--line-size)),
+    0% calc(100% * (1 - var(--start, 0)) + var(--line-size))
+  );
+
+  /* Hide text */
+  font-size: 0;
+  color: transparent;
+
+  transition: opacity var(--chart-duration, 300ms) var(--chart-easing, ease);
+}
+
+/* Data point dot at the end position */
+.vb-chart[data-type="line"] td::after {
+  content: "";
+  position: absolute;
+  inset-block-end: calc(var(--end, 0) * 100% - var(--dot-size) / 2);
+  inset-inline-end: calc(var(--dot-size) / -2);
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--chart-series-1);
+  border-radius: 50%;
+  border: 2px solid var(--color-surface, #fff);
+  z-index: 2;
+  transition: transform var(--chart-duration, 300ms) var(--chart-easing, ease);
+}
+
+/* Hover effect - enlarge dot */
+.vb-chart[data-type="line"] td:hover::after {
+  transform: scale(1.3);
+  z-index: 3;
+}
+
+/* Series colors for line and dot */
+.vb-chart[data-type="line"] td[data-series="2"] { background: var(--chart-series-2); }
+.vb-chart[data-type="line"] td[data-series="2"]::after { background: var(--chart-series-2); }
+
+.vb-chart[data-type="line"] td[data-series="3"] { background: var(--chart-series-3); }
+.vb-chart[data-type="line"] td[data-series="3"]::after { background: var(--chart-series-3); }
+
+.vb-chart[data-type="line"] td[data-series="4"] { background: var(--chart-series-4); }
+.vb-chart[data-type="line"] td[data-series="4"]::after { background: var(--chart-series-4); }
+
+.vb-chart[data-type="line"] td[data-series="5"] { background: var(--chart-series-5); }
+.vb-chart[data-type="line"] td[data-series="5"]::after { background: var(--chart-series-5); }
+
+.vb-chart[data-type="line"] td[data-series="6"] { background: var(--chart-series-6); }
+.vb-chart[data-type="line"] td[data-series="6"]::after { background: var(--chart-series-6); }
+
+/* First element shows starting dot at left edge */
+.vb-chart[data-type="line"] tr:first-child td::before {
+  content: "";
+  position: absolute;
+  inset-block-end: calc(var(--start, 0) * 100% - var(--dot-size) / 2);
+  inset-inline-start: calc(var(--dot-size) / -2);
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--chart-series-1);
+  border-radius: 50%;
+  border: 2px solid var(--color-surface, #fff);
+  z-index: 2;
+}
+
+.vb-chart[data-type="line"] tr:first-child td[data-series="2"]::before { background: var(--chart-series-2); }
+.vb-chart[data-type="line"] tr:first-child td[data-series="3"]::before { background: var(--chart-series-3); }
+.vb-chart[data-type="line"] tr:first-child td[data-series="4"]::before { background: var(--chart-series-4); }
+
+/* Grid lines */
+.vb-chart[data-type="line"][data-grid] tbody {
+  background-image: repeating-linear-gradient(
+    to top,
+    var(--chart-grid-color) 0,
+    var(--chart-grid-color) 1px,
+    transparent 1px,
+    transparent 25%
+  );
+}
+
+/* Show value labels */
+.vb-chart[data-type="line"][data-labels] td::after {
+  content: attr(data-label);
 }
 
 /* Larger dots variant */
