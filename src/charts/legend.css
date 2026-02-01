@@ -1,0 +1,128 @@
+/**
+ * Chart Legend
+ *
+ * Legend component for chart series identification.
+ * Can be auto-generated from data or manually created.
+ *
+ * Usage:
+ * <div class="vb-chart-legend">
+ *   <span class="vb-chart-legend-item" data-series="1">Product A</span>
+ *   <span class="vb-chart-legend-item" data-series="2">Product B</span>
+ * </div>
+ */
+
+/* Legend container */
+.vb-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-m, 1rem);
+  justify-content: center;
+  margin-block-start: var(--size-m, 1rem);
+  padding-block-start: var(--size-s, 0.75rem);
+}
+
+/* Legend positioned inside chart area */
+.vb-chart[data-legend-position="top"] + .vb-chart-legend {
+  order: -1;
+  margin-block-start: 0;
+  margin-block-end: var(--size-m, 1rem);
+  padding-block-start: 0;
+  padding-block-end: var(--size-s, 0.75rem);
+}
+
+.vb-chart[data-legend-position="left"] + .vb-chart-legend,
+.vb-chart[data-legend-position="right"] + .vb-chart-legend {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Legend items */
+.vb-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.25rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b7280);
+}
+
+/* Color swatch */
+.vb-chart-legend-item::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-xs, 2px);
+  background: var(--legend-color, var(--chart-series-1));
+  flex-shrink: 0;
+}
+
+/* Series colors */
+.vb-chart-legend-item[data-series="1"] {
+  --legend-color: var(--chart-series-1);
+}
+.vb-chart-legend-item[data-series="2"] {
+  --legend-color: var(--chart-series-2);
+}
+.vb-chart-legend-item[data-series="3"] {
+  --legend-color: var(--chart-series-3);
+}
+.vb-chart-legend-item[data-series="4"] {
+  --legend-color: var(--chart-series-4);
+}
+.vb-chart-legend-item[data-series="5"] {
+  --legend-color: var(--chart-series-5);
+}
+.vb-chart-legend-item[data-series="6"] {
+  --legend-color: var(--chart-series-6);
+}
+
+/* Interactive legend - click to toggle series visibility */
+.vb-chart-legend-item[data-interactive] {
+  cursor: pointer;
+  transition: opacity var(--duration-fast, 100ms) ease;
+}
+
+.vb-chart-legend-item[data-interactive]:hover {
+  opacity: 0.8;
+}
+
+.vb-chart-legend-item[data-interactive][aria-pressed="false"] {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/* Compact legend variant */
+.vb-chart-legend[data-compact] {
+  gap: var(--size-s, 0.75rem);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.vb-chart-legend[data-compact] .vb-chart-legend-item::before {
+  width: 8px;
+  height: 8px;
+}
+
+/* Inline legend - shows within chart caption */
+.vb-chart[data-legend="inline"] caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-m, 1rem);
+}
+
+.vb-chart[data-legend="inline"] caption::after {
+  content: "";
+  flex: 1 0 100%;
+}
+
+/* Print - ensure legend is visible */
+@media print {
+  .vb-chart-legend {
+    break-inside: avoid;
+  }
+
+  .vb-chart-legend-item::before {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,110 @@
+/**
+ * Horizontal Bar Chart
+ *
+ * Usage:
+ * <table class="vb-chart" data-type="bar">
+ *   <caption>Chart Title</caption>
+ *   <tbody>
+ *     <tr>
+ *       <th scope="row">Label</th>
+ *       <td style="--value: 0.75">75%</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ */
+
+/* Bar chart layout */
+.vb-chart[data-type="bar"] tbody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--chart-gap);
+}
+
+.vb-chart[data-type="bar"] tr {
+  display: grid;
+  grid-template-columns: var(--chart-label-width) 1fr;
+  align-items: center;
+  gap: var(--size-s, 0.75rem);
+}
+
+/* Row labels */
+.vb-chart[data-type="bar"] th {
+  text-align: end;
+  padding-inline-end: var(--size-2xs, 0.25rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bar rendering */
+.vb-chart[data-type="bar"] td {
+  height: var(--chart-bar-height);
+  background: var(--chart-series-1);
+  width: calc(var(--value, 0) * 100%);
+  min-width: 2px; /* Ensure visibility even for small values */
+  border-radius: var(--radius-s, 4px);
+  transition:
+    width var(--chart-duration) var(--chart-easing),
+    background-color var(--chart-duration) var(--chart-easing);
+
+  /* Hide text visually, keep accessible */
+  font-size: 0;
+  color: transparent;
+  overflow: hidden;
+}
+
+/* Series colors */
+.vb-chart[data-type="bar"] td[data-series="2"] {
+  background: var(--chart-series-2);
+}
+.vb-chart[data-type="bar"] td[data-series="3"] {
+  background: var(--chart-series-3);
+}
+.vb-chart[data-type="bar"] td[data-series="4"] {
+  background: var(--chart-series-4);
+}
+.vb-chart[data-type="bar"] td[data-series="5"] {
+  background: var(--chart-series-5);
+}
+.vb-chart[data-type="bar"] td[data-series="6"] {
+  background: var(--chart-series-6);
+}
+
+/* Show labels option - display value inside bar */
+.vb-chart[data-type="bar"][data-labels] td {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-inline: var(--size-xs, 0.5rem);
+  min-width: max(2px, calc(var(--value, 0) * 100%));
+}
+
+/* Small value labels - show outside bar */
+.vb-chart[data-type="bar"][data-labels] td::after {
+  content: attr(data-label);
+}
+
+/* Stacked bars for multi-series in same row */
+.vb-chart[data-type="bar"][data-stacked] tr {
+  grid-template-columns: var(--chart-label-width) 1fr;
+}
+
+.vb-chart[data-type="bar"][data-stacked] tr td {
+  display: inline-block;
+  border-radius: 0;
+}
+
+.vb-chart[data-type="bar"][data-stacked] tr td:first-of-type {
+  border-radius: var(--radius-s, 4px) 0 0 var(--radius-s, 4px);
+}
+
+.vb-chart[data-type="bar"][data-stacked] tr td:last-of-type {
+  border-radius: 0 var(--radius-s, 4px) var(--radius-s, 4px) 0;
+}
+
+/* Hover effect */
+.vb-chart[data-type="bar"] td:hover {
+  filter: brightness(1.1);
+}

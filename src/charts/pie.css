@@ -1,0 +1,123 @@
+/**
+ * Pie Chart
+ *
+ * Pie charts use conic-gradient for circular segments.
+ * Each segment requires --value (percentage) and --start (starting position).
+ *
+ * Usage:
+ * <table class="vb-chart" data-type="pie">
+ *   <caption>Market Share</caption>
+ *   <tbody style="--seg-1: 0.45; --seg-2: 0.30; --seg-3: 0.25;">
+ *     <tr>
+ *       <th scope="row">Product A</th>
+ *       <td style="--value: 0.45; --start: 0">45%</td>
+ *     </tr>
+ *     <tr>
+ *       <th scope="row">Product B</th>
+ *       <td style="--value: 0.30; --start: 0.45">30%</td>
+ *     </tr>
+ *     <tr>
+ *       <th scope="row">Product C</th>
+ *       <td style="--value: 0.25; --start: 0.75">25%</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * Note: The conic-gradient must be set via inline style on tbody
+ * or generated via JavaScript for dynamic data.
+ */
+
+/* Pie chart layout */
+.vb-chart[data-type="pie"] {
+  --chart-size: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vb-chart[data-type="pie"] caption {
+  text-align: center;
+}
+
+.vb-chart[data-type="pie"] tbody {
+  display: block;
+  width: var(--chart-size);
+  height: var(--chart-size);
+  border-radius: 50%;
+  position: relative;
+
+  /* Default gradient with CSS variables - override with inline style for dynamic data */
+  background: conic-gradient(
+    var(--chart-series-1) 0deg calc(var(--seg-1, 0.33) * 360deg),
+    var(--chart-series-2) calc(var(--seg-1, 0.33) * 360deg) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33)) * 360deg),
+    var(--chart-series-3) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33)) * 360deg) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34)) * 360deg),
+    var(--chart-series-4) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34)) * 360deg) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34) + var(--seg-4, 0)) * 360deg),
+    var(--chart-series-5) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34) + var(--seg-4, 0)) * 360deg) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34) + var(--seg-4, 0) + var(--seg-5, 0)) * 360deg),
+    var(--chart-series-6) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33) + var(--seg-3, 0.34) + var(--seg-4, 0) + var(--seg-5, 0)) * 360deg) 360deg
+  );
+
+  /* Smooth edges */
+  box-shadow: inset 0 0 0 1px var(--color-border, #e5e7eb);
+}
+
+/* Hide table rows visually, keep accessible */
+.vb-chart[data-type="pie"] tr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Donut variant - hollow center */
+.vb-chart[data-type="pie"][data-donut] tbody::after {
+  content: "";
+  position: absolute;
+  inset: 25%;
+  background: var(--color-surface, #fff);
+  border-radius: 50%;
+}
+
+/* Donut with center label */
+.vb-chart[data-type="pie"][data-donut][data-center-label] tbody::after {
+  content: attr(data-center-label);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg, 1.25rem);
+  font-weight: 600;
+  color: var(--color-text, inherit);
+}
+
+/* Size variants */
+.vb-chart[data-type="pie"][data-size="s"] {
+  --chart-size: 120px;
+}
+
+.vb-chart[data-type="pie"][data-size="l"] {
+  --chart-size: 280px;
+}
+
+/* Hover segment highlight - requires JavaScript for proper interaction */
+.vb-chart[data-type="pie"]:hover tbody {
+  /* Subtle shadow on hover */
+  box-shadow:
+    inset 0 0 0 1px var(--color-border, #e5e7eb),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Semi-circle / half-pie variant */
+.vb-chart[data-type="pie"][data-half] tbody {
+  height: calc(var(--chart-size) / 2);
+  border-radius: var(--chart-size) var(--chart-size) 0 0;
+  /* Rotate gradient to start from left */
+  background: conic-gradient(
+    from -90deg,
+    var(--chart-series-1) 0deg calc(var(--seg-1, 0.33) * 180deg),
+    var(--chart-series-2) calc(var(--seg-1, 0.33) * 180deg) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33)) * 180deg),
+    var(--chart-series-3) calc((var(--seg-1, 0.33) + var(--seg-2, 0.33)) * 180deg) 180deg,
+    transparent 180deg 360deg
+  );
+}

@@ -1,0 +1,129 @@
+/**
+ * Vertical Column Chart
+ *
+ * Usage:
+ * <table class="vb-chart" data-type="column">
+ *   <caption>Chart Title</caption>
+ *   <tbody>
+ *     <tr>
+ *       <th scope="row">Label</th>
+ *       <td style="--value: 0.75">75%</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ */
+
+/* Column chart layout */
+.vb-chart[data-type="column"] tbody {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--chart-gap);
+  height: var(--chart-height);
+  border-block-end: 1px solid var(--chart-axis-color);
+  padding-block-start: var(--size-xs, 0.5rem);
+}
+
+.vb-chart[data-type="column"] tr {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Column labels - below the chart */
+.vb-chart[data-type="column"] th {
+  order: 1; /* Move below the column */
+  text-align: center;
+  padding-block-start: var(--size-xs, 0.5rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Column rendering */
+.vb-chart[data-type="column"] td {
+  width: 100%;
+  max-width: 60px;
+  background: var(--chart-series-1);
+  height: calc(var(--value, 0) * 100%);
+  min-height: 2px; /* Ensure visibility even for small values */
+  border-radius: var(--radius-s, 4px) var(--radius-s, 4px) 0 0;
+  transition:
+    height var(--chart-duration) var(--chart-easing),
+    background-color var(--chart-duration) var(--chart-easing);
+
+  /* Hide text visually, keep accessible */
+  font-size: 0;
+  color: transparent;
+  overflow: hidden;
+}
+
+/* Series colors */
+.vb-chart[data-type="column"] td[data-series="2"] {
+  background: var(--chart-series-2);
+}
+.vb-chart[data-type="column"] td[data-series="3"] {
+  background: var(--chart-series-3);
+}
+.vb-chart[data-type="column"] td[data-series="4"] {
+  background: var(--chart-series-4);
+}
+.vb-chart[data-type="column"] td[data-series="5"] {
+  background: var(--chart-series-5);
+}
+.vb-chart[data-type="column"] td[data-series="6"] {
+  background: var(--chart-series-6);
+}
+
+/* Show labels option - display value above column */
+.vb-chart[data-type="column"][data-labels] td::before {
+  content: attr(data-label);
+  position: absolute;
+  inset-block-start: -1.5em;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--chart-label-color);
+  white-space: nowrap;
+}
+
+.vb-chart[data-type="column"][data-labels] td {
+  position: relative;
+}
+
+/* Stacked columns for multi-series */
+.vb-chart[data-type="column"][data-stacked] tr {
+  flex-direction: column-reverse;
+}
+
+.vb-chart[data-type="column"][data-stacked] td {
+  border-radius: 0;
+  height: auto;
+  flex: 0 0 calc(var(--value, 0) * var(--chart-height));
+}
+
+.vb-chart[data-type="column"][data-stacked] td:last-of-type {
+  border-radius: var(--radius-s, 4px) var(--radius-s, 4px) 0 0;
+}
+
+/* Grouped columns (side by side) */
+.vb-chart[data-type="column"][data-grouped] tr {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.vb-chart[data-type="column"][data-grouped] td {
+  flex: 1;
+  max-width: 30px;
+}
+
+/* Hover effect */
+.vb-chart[data-type="column"] td:hover {
+  filter: brightness(1.1);
+}

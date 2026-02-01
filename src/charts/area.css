@@ -1,0 +1,158 @@
+/**
+ * Area Chart
+ *
+ * Area charts display filled regions under data points.
+ * Uses CSS gradients and clip-path for the filled area effect.
+ *
+ * Usage:
+ * <table class="vb-chart" data-type="area">
+ *   <caption>Chart Title</caption>
+ *   <tbody>
+ *     <tr>
+ *       <th scope="row">Jan</th>
+ *       <td style="--value: 0.75">75</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * Note: For smooth area fills, use the JavaScript helper to generate
+ * the clip-path polygon from data values.
+ */
+
+/* Area chart layout - extends line chart */
+.vb-chart[data-type="area"] {
+  --dot-size: 8px;
+}
+
+.vb-chart[data-type="area"] tbody {
+  display: flex;
+  height: var(--chart-height);
+  border-block-end: 1px solid var(--chart-axis-color);
+  border-inline-start: 1px solid var(--chart-axis-color);
+  position: relative;
+  padding: var(--size-xs, 0.5rem);
+}
+
+.vb-chart[data-type="area"] tr {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+/* X-axis labels */
+.vb-chart[data-type="area"] th {
+  order: 1;
+  position: absolute;
+  inset-block-end: calc(-1 * var(--size-l, 1.5rem));
+  text-align: center;
+  font-size: var(--font-size-xs, 0.75rem);
+  white-space: nowrap;
+}
+
+/* Area fill - uses pseudo-element on each column */
+.vb-chart[data-type="area"] td {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: calc(var(--value, 0) * 100%);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--chart-series-1) 30%, transparent),
+    color-mix(in srgb, var(--chart-series-1) 10%, transparent)
+  );
+
+  /* Hide text */
+  font-size: 0;
+  color: transparent;
+  overflow: hidden;
+
+  transition: height var(--chart-duration) var(--chart-easing);
+}
+
+/* Data point dot on top of area */
+.vb-chart[data-type="area"] td::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--chart-series-1);
+  border-radius: 50%;
+  border: 2px solid var(--color-surface, #fff);
+  box-shadow: 0 0 0 1px var(--chart-series-1);
+  z-index: 2;
+}
+
+/* Series colors */
+.vb-chart[data-type="area"] td[data-series="2"] {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--chart-series-2) 30%, transparent),
+    color-mix(in srgb, var(--chart-series-2) 10%, transparent)
+  );
+}
+.vb-chart[data-type="area"] td[data-series="2"]::after {
+  background: var(--chart-series-2);
+  box-shadow: 0 0 0 1px var(--chart-series-2);
+}
+
+.vb-chart[data-type="area"] td[data-series="3"] {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--chart-series-3) 30%, transparent),
+    color-mix(in srgb, var(--chart-series-3) 10%, transparent)
+  );
+}
+.vb-chart[data-type="area"] td[data-series="3"]::after {
+  background: var(--chart-series-3);
+  box-shadow: 0 0 0 1px var(--chart-series-3);
+}
+
+/* Stacked areas */
+.vb-chart[data-type="area"][data-stacked] td {
+  position: relative;
+}
+
+/* Grid lines */
+.vb-chart[data-type="area"][data-grid] tbody {
+  background-image:
+    repeating-linear-gradient(
+      to top,
+      var(--chart-grid-color) 0,
+      var(--chart-grid-color) 1px,
+      transparent 1px,
+      transparent 25%
+    );
+}
+
+/* Show value labels */
+.vb-chart[data-type="area"][data-labels] td::before {
+  content: attr(data-label);
+  position: absolute;
+  inset-block-start: -1.5em;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--chart-label-color);
+  white-space: nowrap;
+  z-index: 3;
+}
+
+/* Hover effect */
+.vb-chart[data-type="area"] td:hover {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--chart-series-1) 40%, transparent),
+    color-mix(in srgb, var(--chart-series-1) 15%, transparent)
+  );
+}
+
+.vb-chart[data-type="area"] td:hover::after {
+  transform: translate(-50%, -50%) scale(1.3);
+}

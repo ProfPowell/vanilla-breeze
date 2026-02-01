@@ -1,0 +1,165 @@
+/**
+ * Chart Tooltips
+ *
+ * CSS-only tooltips using :hover and ::after pseudo-elements.
+ * Enhanced tooltips with JavaScript provide better positioning.
+ *
+ * Usage:
+ * <table class="vb-chart" data-type="bar" data-tooltip>
+ *   <tbody>
+ *     <tr>
+ *       <th scope="row">January</th>
+ *       <td style="--value: 0.65" data-tooltip="January: $6,500">$6,500</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ */
+
+/* Enable tooltips on chart */
+.vb-chart[data-tooltip] td {
+  cursor: pointer;
+}
+
+/* Tooltip content */
+.vb-chart[data-tooltip] td::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  inset-block-end: calc(100% + 8px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+  background: var(--chart-tooltip-bg);
+  color: var(--chart-tooltip-color);
+  font-size: var(--font-size-xs, 0.75rem);
+  white-space: nowrap;
+  border-radius: var(--radius-s, 4px);
+  box-shadow: var(--chart-tooltip-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast, 100ms) ease;
+  z-index: 100;
+
+  /* Reset any text hiding from chart type styles */
+  font-size: var(--font-size-xs, 0.75rem) !important;
+  color: var(--chart-tooltip-color) !important;
+}
+
+/* Tooltip arrow */
+.vb-chart[data-tooltip] td::before {
+  content: "";
+  position: absolute;
+  inset-block-end: calc(100% + 4px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-block-start-color: var(--chart-tooltip-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast, 100ms) ease;
+  z-index: 100;
+}
+
+/* Show on hover */
+.vb-chart[data-tooltip] td:hover::after,
+.vb-chart[data-tooltip] td:hover::before {
+  opacity: 1;
+}
+
+/* Focus visible for keyboard users */
+.vb-chart[data-tooltip] td:focus-visible::after,
+.vb-chart[data-tooltip] td:focus-visible::before {
+  opacity: 1;
+}
+
+.vb-chart[data-tooltip] td:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Column chart tooltips - position above the column */
+.vb-chart[data-type="column"][data-tooltip] td::after {
+  inset-block-end: auto;
+  inset-block-start: -2em;
+}
+
+.vb-chart[data-type="column"][data-tooltip] td::before {
+  inset-block-end: auto;
+  inset-block-start: calc(-2em + 12px);
+  border-block-start-color: transparent;
+  border-block-end-color: var(--chart-tooltip-bg);
+}
+
+/* Line/Area chart tooltips - position above the dot */
+.vb-chart[data-type="line"][data-tooltip] td::after,
+.vb-chart[data-type="area"][data-tooltip] td::after {
+  inset-block-end: calc(100% + 12px);
+}
+
+.vb-chart[data-type="line"][data-tooltip] td::before,
+.vb-chart[data-type="area"][data-tooltip] td::before {
+  inset-block-end: calc(100% + 8px);
+}
+
+/* Pie chart tooltips - positioned to side */
+.vb-chart[data-type="pie"][data-tooltip] tbody {
+  cursor: pointer;
+}
+
+/* Tooltip position variants */
+.vb-chart[data-tooltip-position="bottom"] td::after {
+  inset-block-end: auto;
+  inset-block-start: calc(100% + 8px);
+}
+
+.vb-chart[data-tooltip-position="bottom"] td::before {
+  inset-block-end: auto;
+  inset-block-start: calc(100% + 4px);
+  border-block-start-color: transparent;
+  border-block-end-color: var(--chart-tooltip-bg);
+}
+
+.vb-chart[data-tooltip-position="left"] td::after {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + 8px);
+  inset-block-end: 50%;
+  transform: translateY(50%);
+}
+
+.vb-chart[data-tooltip-position="left"] td::before {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + 4px);
+  inset-block-end: 50%;
+  transform: translateY(50%);
+  border-block-start-color: transparent;
+  border-inline-start-color: var(--chart-tooltip-bg);
+}
+
+.vb-chart[data-tooltip-position="right"] td::after {
+  inset-inline-start: calc(100% + 8px);
+  inset-block-end: 50%;
+  transform: translateY(50%);
+}
+
+.vb-chart[data-tooltip-position="right"] td::before {
+  inset-inline-start: calc(100% + 4px);
+  inset-block-end: 50%;
+  transform: translateY(50%);
+  border-block-start-color: transparent;
+  border-inline-end-color: var(--chart-tooltip-bg);
+}
+
+/* Print - hide tooltips */
+@media print {
+  .vb-chart[data-tooltip] td::after,
+  .vb-chart[data-tooltip] td::before {
+    display: none;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .vb-chart[data-tooltip] td::after,
+  .vb-chart[data-tooltip] td::before {
+    transition: none;
+  }
+}
