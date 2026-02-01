@@ -9,15 +9,38 @@
  * - data-wireframe="annotate" : Show element labels
  */
 
-/* Root variables for wireframe styling */
+/* Root variables for wireframe styling - Light mode (default) */
 [data-wireframe] {
-  --wireframe-stroke: oklch(40% 0 0);
-  --wireframe-fill: oklch(95% 0 0);
-  --wireframe-text: oklch(25% 0 0);
-  --wireframe-muted: oklch(70% 0 0);
+  --wireframe-stroke: oklch(30% 0 0);
+  --wireframe-fill: oklch(98% 0 0);
+  --wireframe-text: oklch(15% 0 0);
+  --wireframe-muted: oklch(50% 0 0);
+  --wireframe-accent: oklch(90% 0 0);
   --wireframe-border: 2px dashed var(--wireframe-stroke);
   --wireframe-label-bg: var(--wireframe-stroke);
   --wireframe-label-color: var(--wireframe-fill);
+}
+
+/* Dark mode support via data-mode attribute */
+[data-mode="dark"] [data-wireframe],
+html[data-wireframe][data-mode="dark"] {
+  --wireframe-stroke: oklch(80% 0 0);
+  --wireframe-fill: oklch(12% 0 0);
+  --wireframe-text: oklch(92% 0 0);
+  --wireframe-muted: oklch(65% 0 0);
+  --wireframe-accent: oklch(20% 0 0);
+}
+
+/* Dark mode support via system preference (auto mode) */
+@media (prefers-color-scheme: dark) {
+  html[data-wireframe]:not([data-mode="light"]),
+  [data-wireframe]:not([data-mode="light"]) {
+    --wireframe-stroke: oklch(80% 0 0);
+    --wireframe-fill: oklch(12% 0 0);
+    --wireframe-text: oklch(92% 0 0);
+    --wireframe-muted: oklch(65% 0 0);
+    --wireframe-accent: oklch(20% 0 0);
+  }
 }
 
 /* Wireframe mode indicator */
@@ -154,7 +177,7 @@ html[data-wireframe] {
 }
 
 [data-wireframe] th {
-  background: oklch(90% 0 0) !important;
+  background: var(--wireframe-accent) !important;
 }
 
 /* Cards and interactive elements */
@@ -188,7 +211,8 @@ html[data-wireframe] {
 [data-wireframe] :is(pre, code) {
   border: 1px dashed var(--wireframe-stroke) !important;
   border-radius: 0 !important;
-  background: oklch(92% 0 0) !important;
+  background: var(--wireframe-accent) !important;
+  color: var(--wireframe-text) !important;
 }
 
 /* Horizontal rules: Simple dashed line */
@@ -254,26 +278,45 @@ html[data-wireframe] {
 /* ============================================== */
 
 /* --- Lo-fi: Maximum abstraction, sketch aesthetic --- */
+/* Pure B&W for maximum contrast in both light and dark modes */
 [data-wireframe="lo"] {
   --wireframe-stroke: oklch(0% 0 0);
   --wireframe-fill: oklch(100% 0 0);
   --wireframe-text: oklch(0% 0 0);
-  --wireframe-muted: oklch(60% 0 0);
+  --wireframe-muted: oklch(40% 0 0);
+  --wireframe-accent: oklch(95% 0 0);
   --wireframe-border: 2px solid var(--wireframe-stroke);
-}
-
-/* Apply scribble font to all text in lo-fi mode */
-[data-wireframe="lo"] {
   --font-sans: var(--wf-font-scribble, 'Redacted Script', cursive);
   --font-serif: var(--wf-font-scribble, 'Redacted Script', cursive);
   --font-mono: var(--wf-font-scribble, 'Redacted Script', cursive);
 }
 
+/* Lo-fi dark mode - invert for white on black */
+[data-mode="dark"] [data-wireframe="lo"],
+html[data-wireframe="lo"][data-mode="dark"] {
+  --wireframe-stroke: oklch(100% 0 0);
+  --wireframe-fill: oklch(0% 0 0);
+  --wireframe-text: oklch(100% 0 0);
+  --wireframe-muted: oklch(70% 0 0);
+  --wireframe-accent: oklch(15% 0 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-wireframe="lo"]:not([data-mode="light"]),
+  [data-wireframe="lo"]:not([data-mode="light"]) {
+    --wireframe-stroke: oklch(100% 0 0);
+    --wireframe-fill: oklch(0% 0 0);
+    --wireframe-text: oklch(100% 0 0);
+    --wireframe-muted: oklch(70% 0 0);
+    --wireframe-accent: oklch(15% 0 0);
+  }
+}
+
 /* Lo-fi indicator shows "SKETCH" */
 html[data-wireframe="lo"]::before {
   content: "SKETCH";
-  background: oklch(0% 0 0);
-  color: oklch(100% 0 0);
+  background: var(--wireframe-stroke);
+  color: var(--wireframe-fill);
 }
 
 /* --- Mid-fi: Clean blocks, labeled areas (default behavior) --- */
@@ -289,17 +332,40 @@ html[data-wireframe="mid"]::before {
 
 /* --- Hi-fi: Near-production, subtle hints --- */
 [data-wireframe="hi"] {
-  --wireframe-stroke: oklch(60% 0 0);
+  --wireframe-stroke: oklch(55% 0 0);
   --wireframe-fill: oklch(98% 0 0);
-  --wireframe-text: oklch(30% 0 0);
-  --wireframe-muted: oklch(75% 0 0);
+  --wireframe-text: oklch(25% 0 0);
+  --wireframe-muted: oklch(60% 0 0);
+  --wireframe-accent: oklch(92% 0 0);
   --wireframe-border: 1px dashed var(--wireframe-stroke);
   /* Keep system fonts for hi-fi */
 }
 
+/* Hi-fi dark mode */
+[data-mode="dark"] [data-wireframe="hi"],
+html[data-wireframe="hi"][data-mode="dark"] {
+  --wireframe-stroke: oklch(55% 0 0);
+  --wireframe-fill: oklch(15% 0 0);
+  --wireframe-text: oklch(85% 0 0);
+  --wireframe-muted: oklch(55% 0 0);
+  --wireframe-accent: oklch(22% 0 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-wireframe="hi"]:not([data-mode="light"]),
+  [data-wireframe="hi"]:not([data-mode="light"]) {
+    --wireframe-stroke: oklch(55% 0 0);
+    --wireframe-fill: oklch(15% 0 0);
+    --wireframe-text: oklch(85% 0 0);
+    --wireframe-muted: oklch(55% 0 0);
+    --wireframe-accent: oklch(22% 0 0);
+  }
+}
+
 html[data-wireframe="hi"]::before {
   content: "PREVIEW";
-  background: oklch(60% 0 0);
+  background: var(--wireframe-stroke);
+  color: var(--wireframe-fill);
 }
 
 /* Hi-fi uses muted grayscale instead of full grayscale */
@@ -311,7 +377,7 @@ html[data-wireframe="hi"] {
 [data-wireframe="hi"] img::after,
 [data-wireframe="hi"] picture::after,
 [data-wireframe="hi"] video::after {
-  background: oklch(90% 0 0 / 0.5);
+  background: oklch(from var(--wireframe-accent) l c h / 0.5);
 }
 
 /* ============================================== */
@@ -380,7 +446,8 @@ html[data-wireframe="hi"] {
 
 /* Hi-fi labels are subtle */
 [data-wireframe="hi"] [data-wf-label]::before {
-  background: oklch(70% 0 0 / 0.8);
+  background: var(--wireframe-muted);
+  color: var(--wireframe-fill);
   font-size: var(--font-size-3xs, 9px);
 }
 
