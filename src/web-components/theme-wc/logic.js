@@ -28,6 +28,14 @@
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
+import { SoundManager } from '../../lib/sound-manager.js';
+
+// Extension preferences storage key
+const EXTENSIONS_KEY = 'vb-extensions';
+const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
+
+// Accessibility themes storage key
+const A11Y_THEMES_KEY = 'vb-a11y-themes';
 
 class ThemePicker extends HTMLElement {
   static #MODES = [
@@ -60,11 +68,24 @@ class ThemePicker extends HTMLElement {
     { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted' }
   ];
 
+  // Accessibility themes - composable with other themes
+  static #ACCESSIBILITY_THEMES = [
+    { id: 'a11y-high-contrast', name: 'High Contrast', icon: 'contrast', description: 'AAA contrast (7:1+)' },
+    { id: 'a11y-large-text', name: 'Large Text', icon: 'type', description: '25% larger fonts' },
+    { id: 'a11y-dyslexia', name: 'Dyslexia', icon: 'book-open', description: 'Readable typography' }
+  ];
+
   // Combined list for backwards compatibility
   static #THEMES = [
     ...ThemePicker.#COLOR_THEMES,
     ...ThemePicker.#PERSONALITY_THEMES,
     ...ThemePicker.#EXTREME_THEMES
+  ];
+
+  // Extension toggles
+  static #EXTENSIONS = [
+    { id: 'motionFx', name: 'Motion Effects', icon: 'sparkles', description: 'Hover & enter animations' },
+    { id: 'sounds', name: 'Sound Effects', icon: 'volume-2', description: 'Audio feedback' }
   ];
 
   // Delay before auto-dismissing after selection (ms)
@@ -75,6 +96,7 @@ class ThemePicker extends HTMLElement {
   #isOpen = false;
   #isInline = false;
   #autoDismissTimer = null;
+  #extensionsExpanded = false;
 
   connectedCallback() {
     this.#isInline = this.getAttribute('data-variant') === 'inline';
@@ -84,6 +106,12 @@ class ThemePicker extends HTMLElement {
 
     // Listen for external theme changes
     window.addEventListener('theme-change', this.#handleThemeChange);
+
+    // Apply extension preferences on load
+    this.#applyExtensions();
+
+    // Apply accessibility themes on load
+    this.#applyA11yThemes();
   }
 
   disconnectedCallback() {
@@ -217,6 +245,58 @@ class ThemePicker extends HTMLElement {
           `).join('')}
         </div>
       </fieldset>
+
+      <fieldset class="section section--a11y">
+        <legend>Accessibility</legend>
+        <div class="options options--a11y" aria-label="Accessibility themes">
+          ${ThemePicker.#ACCESSIBILITY_THEMES.map(t => {
+            const a11yThemes = this.#loadA11yThemes();
+            const isChecked = a11yThemes.includes(t.id);
+            return `
+            <label class="option option--a11y">
+              <input
+                type="checkbox"
+                name="a11y-theme"
+                value="${t.id}"
+                data-a11y-theme="${t.id}"
+                ${isChecked ? 'checked' : ''}
+              />
+              <span class="option-content">
+                <x-icon name="${t.icon}"></x-icon>
+                <span class="option-label">${t.name}</span>
+              </span>
+            </label>
+          `}).join('')}
+        </div>
+      </fieldset>
+
+      <details class="section section--extensions" ${this.#extensionsExpanded ? 'open' : ''}>
+        <summary class="extensions-toggle">
+          <x-icon name="sliders-horizontal"></x-icon>
+          <span>Extensions</span>
+          <x-icon name="chevron-down" class="chevron"></x-icon>
+        </summary>
+        <div class="extensions-content">
+          ${ThemePicker.#EXTENSIONS.map(ext => {
+            const prefs = this.#loadExtensions();
+            const isChecked = prefs[ext.id] ?? EXTENSION_DEFAULTS[ext.id];
+            return `
+            <label class="extension-toggle">
+              <span class="extension-info">
+                <x-icon name="${ext.icon}"></x-icon>
+                <span class="extension-name">${ext.name}</span>
+              </span>
+              <input
+                type="checkbox"
+                name="ext-${ext.id}"
+                data-extension="${ext.id}"
+                ${isChecked ? 'checked' : ''}
+              />
+              <span class="toggle-switch"></span>
+            </label>
+          `}).join('')}
+        </div>
+      </details>
     `;
   }
 
@@ -229,6 +309,22 @@ class ThemePicker extends HTMLElement {
     // Brand change
     this.#panel.querySelectorAll('input[name="theme-brand"]').forEach(input => {
       input.addEventListener('change', this.#handleBrandChange);
+    });
+
+    // Extension toggles
+    this.#panel.querySelectorAll('input[data-extension]').forEach(input => {
+      input.addEventListener('change', this.#handleExtensionChange);
+    });
+
+    // Accessibility theme toggles
+    this.#panel.querySelectorAll('input[data-a11y-theme]').forEach(input => {
+      input.addEventListener('change', this.#handleA11yThemeChange);
+    });
+
+    // Extensions details toggle
+    const extensionsDetails = this.#panel.querySelector('.section--extensions');
+    extensionsDetails?.addEventListener('toggle', (e) => {
+      this.#extensionsExpanded = e.target.open;
     });
 
     // Popover controls
@@ -265,7 +361,134 @@ class ThemePicker extends HTMLElement {
 
   #handleBrandChange = (e) => {
     ThemeManager.setBrand(e.target.value);
+    // Reapply a11y themes to combine with new brand
+    this.#applyA11yThemes();
     this.#autoDismiss();
+  };
+
+  #handleExtensionChange = (e) => {
+    const extId = e.target.dataset.extension;
+    const isEnabled = e.target.checked;
+    this.#saveExtension(extId, isEnabled);
+    this.#applyExtensions();
+  };
+
+  /**
+   * Load extension preferences from localStorage
+   * @returns {Object}
+   */
+  #loadExtensions() {
+    try {
+      const stored = localStorage.getItem(EXTENSIONS_KEY);
+      return stored ? { ...EXTENSION_DEFAULTS, ...JSON.parse(stored) } : { ...EXTENSION_DEFAULTS };
+    } catch {
+      return { ...EXTENSION_DEFAULTS };
+    }
+  }
+
+  /**
+   * Save a single extension preference
+   * @param {string} id
+   * @param {boolean} enabled
+   */
+  #saveExtension(id, enabled) {
+    try {
+      const current = this.#loadExtensions();
+      current[id] = enabled;
+      localStorage.setItem(EXTENSIONS_KEY, JSON.stringify(current));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  /**
+   * Apply extension preferences to the page
+   */
+  #applyExtensions() {
+    const prefs = this.#loadExtensions();
+    const root = document.documentElement;
+
+    // Motion effects - toggle via data attribute
+    if (prefs.motionFx) {
+      delete root.dataset.motionReduced;
+    } else {
+      root.dataset.motionReduced = '';
+    }
+
+    // Sound effects - toggle via SoundManager
+    if (prefs.sounds) {
+      SoundManager.init();
+      SoundManager.enable();
+    } else {
+      SoundManager.disable();
+    }
+
+    // Dispatch event for listeners
+    window.dispatchEvent(new CustomEvent('extensions-change', {
+      detail: prefs
+    }));
+  }
+
+  /**
+   * Load accessibility theme preferences from localStorage
+   * @returns {string[]} Array of active a11y theme IDs
+   */
+  #loadA11yThemes() {
+    try {
+      const stored = localStorage.getItem(A11Y_THEMES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Save accessibility theme preferences
+   * @param {string[]} themes Array of active a11y theme IDs
+   */
+  #saveA11yThemes(themes) {
+    try {
+      localStorage.setItem(A11Y_THEMES_KEY, JSON.stringify(themes));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  /**
+   * Apply accessibility themes to the page
+   * Combines brand theme with a11y themes in data-theme attribute
+   */
+  #applyA11yThemes() {
+    const a11yThemes = this.#loadA11yThemes();
+    const { brand } = ThemeManager.getState();
+    const root = document.documentElement;
+
+    // Build combined theme value: "brand a11y-theme1 a11y-theme2"
+    const themeValue = brand === 'default'
+      ? a11yThemes.join(' ')
+      : [brand, ...a11yThemes].join(' ');
+
+    if (themeValue) {
+      root.dataset.theme = themeValue;
+    } else {
+      delete root.dataset.theme;
+    }
+  }
+
+  #handleA11yThemeChange = (e) => {
+    const themeId = e.target.dataset.a11yTheme;
+    const isEnabled = e.target.checked;
+    const current = this.#loadA11yThemes();
+
+    if (isEnabled && !current.includes(themeId)) {
+      current.push(themeId);
+    } else if (!isEnabled && current.includes(themeId)) {
+      const index = current.indexOf(themeId);
+      current.splice(index, 1);
+    }
+
+    this.#saveA11yThemes(current);
+    this.#applyA11yThemes();
   };
 
   #autoDismiss() {
