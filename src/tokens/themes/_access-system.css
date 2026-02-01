@@ -1,0 +1,128 @@
+/**
+ * Accessibility Theme: System Preferences
+ * Automatic accessibility enhancements based on user OS/browser settings
+ *
+ * Responds to:
+ * - prefers-contrast: more (Windows/macOS high contrast preferences)
+ * - prefers-reduced-transparency (reduce transparency preference)
+ * - forced-colors: active (Windows High Contrast Mode)
+ *
+ * These media queries activate automatically without requiring data-theme.
+ */
+
+/* ==================== HIGH CONTRAST PREFERENCE ==================== */
+/* Responds to users who prefer more contrast (system setting) */
+@media (prefers-contrast: more) {
+  :root {
+    /* Stronger text contrast */
+    --color-text-muted: light-dark(
+      oklch(30% 0 0),
+      oklch(80% 0 0)
+    );
+    --color-text-subtle: light-dark(
+      oklch(35% 0 0),
+      oklch(75% 0 0)
+    );
+
+    /* More visible borders */
+    --color-border: light-dark(
+      oklch(40% 0 0),
+      oklch(70% 0 0)
+    );
+    --color-border-subtle: light-dark(
+      oklch(50% 0 0),
+      oklch(60% 0 0)
+    );
+
+    /* Enhanced focus indicators */
+    --focus-ring-width: 3px;
+
+    /* Reduce decorative shadows */
+    --shadow-xs: none;
+    --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+  }
+}
+
+/* ==================== REDUCED TRANSPARENCY ==================== */
+/* Responds to users who prefer less transparency/blur effects */
+@media (prefers-reduced-transparency) {
+  :root {
+    /* Make overlays fully opaque */
+    --color-overlay-subtle: light-dark(
+      oklch(95% 0 0),
+      oklch(15% 0 0)
+    );
+    --color-overlay-medium: light-dark(
+      oklch(90% 0 0),
+      oklch(20% 0 0)
+    );
+    --color-overlay-strong: light-dark(
+      oklch(85% 0 0),
+      oklch(10% 0 0)
+    );
+
+    /* Disable backdrop blur effects */
+    --backdrop-blur: 0;
+    --glass-opacity: 1;
+    --glass-blur: 0;
+  }
+}
+
+/* ==================== WINDOWS HIGH CONTRAST MODE ==================== */
+/* Full support for forced-colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+  :root {
+    /* Map to system color keywords for full compatibility */
+    --color-background: Canvas;
+    --color-surface: Canvas;
+    --color-surface-raised: Canvas;
+    --color-surface-sunken: Canvas;
+
+    --color-text: CanvasText;
+    --color-text-muted: CanvasText;
+    --color-text-subtle: GrayText;
+    --color-text-inverted: Canvas;
+
+    --color-primary: LinkText;
+    --color-primary-hover: LinkText;
+    --color-primary-subtle: Canvas;
+    --color-interactive: LinkText;
+    --color-interactive-hover: LinkText;
+
+    --color-accent: Highlight;
+    --color-accent-hover: Highlight;
+
+    --color-border: CanvasText;
+    --color-border-strong: CanvasText;
+    --color-border-subtle: GrayText;
+    --color-border-focus: Highlight;
+
+    --color-focus-ring: Highlight;
+    --focus-ring-color: Highlight;
+
+    /* Status colors map to appropriate system colors */
+    --color-success: LinkText;
+    --color-warning: Mark;
+    --color-error: LinkText;
+    --color-info: LinkText;
+
+    /* Disable decorative effects */
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-xl: none;
+    --shadow-2xl: none;
+
+    /* Ensure visible borders */
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+  }
+
+  /* Ensure interactive elements are visible */
+  :root a,
+  :root button,
+  :root [role="button"] {
+    forced-color-adjust: none;
+  }
+}
