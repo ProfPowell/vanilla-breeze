@@ -101,22 +101,46 @@
   z-index: 3;
 }
 
-/* Line connecting dots - requires adjacent sibling */
-.vb-chart[data-type="line"][data-connected] tr:not(:first-child) td::before {
+/* Vertical drop line from dot to x-axis */
+.vb-chart[data-type="line"] td::before {
   content: "";
   position: absolute;
-  height: 2px;
+  width: 1px;
   background: var(--chart-series-1);
-  inset-inline-end: 50%;
+  opacity: 0.3;
+  inset-inline-start: 50%;
   inset-block-start: 50%;
-  transform-origin: right center;
-  width: 100cqw; /* Container query width fallback */
-  width: calc(100% + var(--chart-gap, 0.5rem));
+  height: calc((1 - var(--value, 0)) * var(--chart-height) + var(--value, 0) * 50%);
+  transform: translateX(-50%);
   z-index: 1;
+}
 
-  /* Calculate angle based on value difference */
-  /* This is a simplification - true line angles require JS */
-  transform: translateY(-50%);
+/* Series colors for drop lines */
+.vb-chart[data-type="line"] td[data-series="2"]::before { background: var(--chart-series-2); }
+.vb-chart[data-type="line"] td[data-series="3"]::before { background: var(--chart-series-3); }
+.vb-chart[data-type="line"] td[data-series="4"]::before { background: var(--chart-series-4); }
+
+/* Connected mode - draws horizontal baseline with dots emphasized */
+.vb-chart[data-type="line"][data-connected] tbody::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--chart-series-1) 5%,
+    var(--chart-series-1) 95%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+/* Emphasize dots in connected mode */
+.vb-chart[data-type="line"][data-connected] td {
+  --dot-size: 12px;
+  box-shadow: 0 0 0 2px var(--chart-series-1), 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Grid lines */
