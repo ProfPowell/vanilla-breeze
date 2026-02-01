@@ -1,5 +1,13 @@
 /* Wireframe mode: Sketch-like aesthetic for rapid HTML prototyping */
 /* Activated by <html data-wireframe> or on any container element */
+/*
+ * Fidelity levels:
+ * - data-wireframe="lo"  : Scribble font, rough borders, pure B&W
+ * - data-wireframe="mid" : Block font, dashed borders, grayscale
+ * - data-wireframe="hi"  : System fonts, subtle styling, near-production
+ * - data-wireframe       : Default/legacy behavior (same as mid)
+ * - data-wireframe="annotate" : Show element labels
+ */
 
 /* Root variables for wireframe styling */
 [data-wireframe] {
@@ -8,6 +16,8 @@
   --wireframe-text: oklch(25% 0 0);
   --wireframe-muted: oklch(70% 0 0);
   --wireframe-border: 2px dashed var(--wireframe-stroke);
+  --wireframe-label-bg: var(--wireframe-stroke);
+  --wireframe-label-color: var(--wireframe-fill);
 }
 
 /* Wireframe mode indicator */
@@ -237,4 +247,165 @@ html[data-wireframe] {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ============================================== */
+/* FIDELITY LEVELS                                */
+/* ============================================== */
+
+/* --- Lo-fi: Maximum abstraction, sketch aesthetic --- */
+[data-wireframe="lo"] {
+  --wireframe-stroke: oklch(0% 0 0);
+  --wireframe-fill: oklch(100% 0 0);
+  --wireframe-text: oklch(0% 0 0);
+  --wireframe-muted: oklch(60% 0 0);
+  --wireframe-border: 2px solid var(--wireframe-stroke);
+}
+
+/* Apply scribble font to all text in lo-fi mode */
+[data-wireframe="lo"] {
+  --font-sans: var(--wf-font-scribble, 'Redacted Script', cursive);
+  --font-serif: var(--wf-font-scribble, 'Redacted Script', cursive);
+  --font-mono: var(--wf-font-scribble, 'Redacted Script', cursive);
+}
+
+/* Lo-fi indicator shows "SKETCH" */
+html[data-wireframe="lo"]::before {
+  content: "SKETCH";
+  background: oklch(0% 0 0);
+  color: oklch(100% 0 0);
+}
+
+/* --- Mid-fi: Clean blocks, labeled areas (default behavior) --- */
+[data-wireframe="mid"] {
+  --font-sans: var(--wf-font-block, 'Flow Block', system-ui);
+  --font-serif: var(--wf-font-block, 'Flow Block', system-ui);
+  --font-mono: var(--wf-font-block, 'Flow Block', system-ui);
+}
+
+html[data-wireframe="mid"]::before {
+  content: "WIREFRAME";
+}
+
+/* --- Hi-fi: Near-production, subtle hints --- */
+[data-wireframe="hi"] {
+  --wireframe-stroke: oklch(60% 0 0);
+  --wireframe-fill: oklch(98% 0 0);
+  --wireframe-text: oklch(30% 0 0);
+  --wireframe-muted: oklch(75% 0 0);
+  --wireframe-border: 1px dashed var(--wireframe-stroke);
+  /* Keep system fonts for hi-fi */
+}
+
+html[data-wireframe="hi"]::before {
+  content: "PREVIEW";
+  background: oklch(60% 0 0);
+}
+
+/* Hi-fi uses muted grayscale instead of full grayscale */
+html[data-wireframe="hi"] {
+  filter: grayscale(0.3) saturate(0.7);
+}
+
+/* Hi-fi shows subtle image overlay instead of X */
+[data-wireframe="hi"] img::after,
+[data-wireframe="hi"] picture::after,
+[data-wireframe="hi"] video::after {
+  background: oklch(90% 0 0 / 0.5);
+}
+
+/* ============================================== */
+/* LABELING SYSTEM                                */
+/* ============================================== */
+
+/* Elements with data-wf-label get a label badge */
+[data-wireframe] [data-wf-label] {
+  position: relative;
+}
+
+/* Label badge - positioned at top-left corner */
+[data-wireframe] [data-wf-label]::before {
+  content: var(--wf-label-text, attr(data-wf-label));
+  position: absolute;
+  inset-block-start: var(--size-2xs, 4px);
+  inset-inline-start: var(--size-2xs, 4px);
+  padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
+  background: var(--wireframe-label-bg);
+  color: var(--wireframe-label-color);
+  font-size: var(--font-size-2xs, 10px);
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+/* Center label for images and media elements */
+[data-wireframe] :is(img, picture, video, iframe, canvas)[data-wf-label] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-wireframe] :is(img, picture, video, iframe, canvas)[data-wf-label]::before {
+  inset: auto;
+  position: relative;
+  font-size: var(--font-size-s, 14px);
+  padding: var(--size-xs, 8px) var(--size-s, 12px);
+}
+
+/* Images with alt text get automatic labels in annotation mode */
+[data-wireframe="annotate"] img[alt]:not([data-wf-label])::before {
+  content: attr(alt);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wireframe-fill);
+  color: var(--wireframe-muted);
+  font-size: var(--font-size-xs, 12px);
+  font-family: system-ui, sans-serif;
+  text-align: center;
+  padding: var(--size-xs, 8px);
+}
+
+/* Lo-fi labels are bolder */
+[data-wireframe="lo"] [data-wf-label]::before {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Hi-fi labels are subtle */
+[data-wireframe="hi"] [data-wf-label]::before {
+  background: oklch(70% 0 0 / 0.8);
+  font-size: var(--font-size-3xs, 9px);
+}
+
+/* ============================================== */
+/* ENHANCED IMAGE PLACEHOLDERS                    */
+/* ============================================== */
+
+/* Show dimensions on hover for images in wireframe mode */
+[data-wireframe] img {
+  --wf-img-overlay: "";
+}
+
+/* Annotation mode shows image dimensions */
+[data-wireframe="annotate"] img::after {
+  content: var(--wf-img-overlay, "");
+  position: absolute;
+  inset-block-end: var(--size-2xs, 4px);
+  inset-inline-end: var(--size-2xs, 4px);
+  padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
+  background: var(--wireframe-muted);
+  color: var(--wireframe-fill);
+  font-size: var(--font-size-3xs, 9px);
+  font-family: monospace;
+  white-space: nowrap;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 2px;
 }
