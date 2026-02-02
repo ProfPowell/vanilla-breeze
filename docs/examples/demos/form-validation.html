@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Form Validation Demo - CSS-Only :user-valid/:user-invalid</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+    .demo-section {
+      margin-block-end: var(--size-2xl);
+    }
+    .demo-section h3 {
+      margin-block-end: var(--size-m);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .info-box {
+      background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+      border-inline-start: 3px solid var(--color-interactive);
+      padding: var(--size-m);
+      margin-block-end: var(--size-xl);
+      border-radius: var(--radius-s);
+    }
+    .info-box p {
+      margin: 0;
+    }
+    code {
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.3em;
+      border-radius: var(--radius-s);
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-max="narrow">
+    <layout-stack data-gap="xl">
+      <header>
+        <h1>Form Validation</h1>
+        <p>CSS-only validation using modern <code>:user-valid</code> and <code>:user-invalid</code> pseudo-classes. Validation feedback appears only after user interaction.</p>
+      </header>
+
+      <div class="info-box">
+        <p><strong>Try it:</strong> Tab through fields without entering values, or enter invalid data, then move focus away. Validation appears only after you've interacted with each field.</p>
+      </div>
+
+      <!-- Registration Form Example -->
+      <section class="demo-section">
+        <h3>Registration Form</h3>
+        <layout-card>
+          <form>
+            <layout-stack data-gap="l">
+              <form-field>
+                <label for="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  required=""
+                  minlength="3"
+                  maxlength="20"
+                  pattern="[a-zA-Z0-9_]+"
+                  placeholder="johndoe"
+                  autocomplete="username"
+                  aria-describedby="username-msg"
+                />
+                <output id="username-msg" for="username" aria-live="polite">3-20 characters, letters, numbers, and underscores only.</output>
+              </form-field>
+
+              <form-field>
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required=""
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  aria-describedby="email-msg"
+                />
+                <output id="email-msg" for="email" aria-live="polite">Please enter a valid email address.</output>
+              </form-field>
+
+              <form-field>
+                <label for="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required=""
+                  minlength="8"
+                  placeholder="Minimum 8 characters"
+                  autocomplete="new-password"
+                  aria-describedby="password-msg"
+                />
+                <output id="password-msg" for="password" aria-live="polite">Must be at least 8 characters long.</output>
+              </form-field>
+
+              <form-field>
+                <label for="country">Country</label>
+                <select id="country" name="country" required="" aria-describedby="country-msg">
+                  <option value="">Select your country...</option>
+                  <option value="us">United States</option>
+                  <option value="uk">United Kingdom</option>
+                  <option value="ca">Canada</option>
+                  <option value="au">Australia</option>
+                  <option value="de">Germany</option>
+                  <option value="fr">France</option>
+                  <option value="jp">Japan</option>
+                </select>
+                <output id="country-msg" for="country" aria-live="polite">Please select your country.</output>
+              </form-field>
+
+              <form-field>
+                <label for="bio">Bio</label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  rows="3"
+                  required=""
+                  minlength="10"
+                  maxlength="500"
+                  placeholder="Tell us about yourself..."
+                  aria-describedby="bio-msg"
+                ></textarea>
+                <output id="bio-msg" for="bio" aria-live="polite">10-500 characters.</output>
+              </form-field>
+
+              <form-field data-type="checkbox">
+                <label>
+                  <input type="checkbox" name="terms" required=""/>
+                  I agree to the Terms of Service
+                </label>
+              </form-field>
+
+              <layout-cluster data-justify="flex-end" data-gap="m">
+                <button type="reset" class="secondary">Reset</button>
+                <button type="submit">Create Account</button>
+              </layout-cluster>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <!-- Pattern Validation Examples -->
+      <section class="demo-section">
+        <h3>Pattern Validation</h3>
+        <layout-card>
+          <form>
+            <layout-stack data-gap="l">
+              <form-field>
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  required=""
+                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                  placeholder="123-456-7890"
+                  autocomplete="tel"
+                  aria-describedby="phone-msg"
+                />
+                <output id="phone-msg" for="phone" aria-live="polite">Format: 123-456-7890</output>
+              </form-field>
+
+              <form-field>
+                <label for="zipcode">ZIP Code</label>
+                <input
+                  type="text"
+                  id="zipcode"
+                  name="zipcode"
+                  required=""
+                  pattern="[0-9]{5}(-[0-9]{4})?"
+                  placeholder="12345 or 12345-6789"
+                  autocomplete="postal-code"
+                  aria-describedby="zip-msg"
+                />
+                <output id="zip-msg" for="zipcode" aria-live="polite">5 digits, or 5+4 format.</output>
+              </form-field>
+
+              <form-field>
+                <label for="website">Website URL</label>
+                <input
+                  type="url"
+                  id="website"
+                  name="website"
+                  placeholder="https://example.com"
+                  aria-describedby="url-msg"
+                />
+                <output id="url-msg" for="website" aria-live="polite">Include https:// prefix.</output>
+              </form-field>
+
+              <button type="submit">Submit</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <!-- Checkbox and Radio Groups -->
+      <section class="demo-section">
+        <h3>Checkbox and Radio Groups</h3>
+        <layout-card>
+          <form>
+            <layout-stack data-gap="l">
+              <fieldset>
+                <legend>Notification Preferences</legend>
+                <layout-stack data-gap="s">
+                  <form-field data-type="checkbox">
+                    <label>
+                      <input type="checkbox" name="notify-email" checked=""/>
+                      Email notifications
+                    </label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label>
+                      <input type="checkbox" name="notify-sms"/>
+                      SMS notifications
+                    </label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label>
+                      <input type="checkbox" name="notify-push"/>
+                      Push notifications
+                    </label>
+                  </form-field>
+                </layout-stack>
+              </fieldset>
+
+              <fieldset>
+                <legend>Subscription Plan</legend>
+                <layout-stack data-gap="s">
+                  <form-field data-type="radio">
+                    <label>
+                      <input type="radio" name="plan" value="free" required=""/>
+                      Free - Basic features
+                    </label>
+                  </form-field>
+                  <form-field data-type="radio">
+                    <label>
+                      <input type="radio" name="plan" value="pro"/>
+                      Pro - $9/month
+                    </label>
+                  </form-field>
+                  <form-field data-type="radio">
+                    <label>
+                      <input type="radio" name="plan" value="enterprise"/>
+                      Enterprise - Custom pricing
+                    </label>
+                  </form-field>
+                </layout-stack>
+              </fieldset>
+
+              <button type="submit">Save Preferences</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <!-- Optional Fields -->
+      <section class="demo-section">
+        <h3>Optional vs Required</h3>
+        <layout-card>
+          <form>
+            <layout-stack data-gap="l">
+              <p style="margin: 0; color: var(--color-text-muted); font-size: var(--font-size-s);">Fields marked with * are required.</p>
+
+              <form-field>
+                <label for="fullname">Full Name</label>
+                <input
+                  type="text"
+                  id="fullname"
+                  name="fullname"
+                  required=""
+                  placeholder="Jane Smith"
+                  autocomplete="name"
+                  aria-describedby="fullname-msg"
+                />
+                <output id="fullname-msg" for="fullname" aria-live="polite">Please enter your full name.</output>
+              </form-field>
+
+              <form-field>
+                <label for="company">Company</label>
+                <input
+                  type="text"
+                  id="company"
+                  name="company"
+                  placeholder="Acme Corp (optional)"
+                  autocomplete="organization"
+                />
+              </form-field>
+
+              <form-field>
+                <label for="jobtitle">Job Title</label>
+                <input
+                  type="text"
+                  id="jobtitle"
+                  name="jobtitle"
+                  placeholder="Software Engineer (optional)"
+                  autocomplete="organization-title"
+                />
+              </form-field>
+
+              <form-field>
+                <label for="workemail">Work Email</label>
+                <input
+                  type="email"
+                  id="workemail"
+                  name="workemail"
+                  required=""
+                  placeholder="jane@company.com"
+                  autocomplete="email"
+                  aria-describedby="workemail-msg"
+                />
+                <output id="workemail-msg" for="workemail" aria-live="polite">Please enter a valid work email.</output>
+              </form-field>
+
+              <button type="submit">Continue</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+    </layout-stack>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

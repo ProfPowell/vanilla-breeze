@@ -48,36 +48,6 @@ These patterns exist in both demo projects but VB already implements them:
 
 ### HIGH VALUE
 
-#### 1. CSS-Only Form Validation Patterns
-**Source:** Both projects
-**Gap in VB:** VB's form-field styling may not fully leverage modern validation pseudo-classes.
-
-```css
-/* Pattern from demo-site */
-form-field {
-  &:has(input:user-valid) {
-    input {
-      border-color: var(--color-success);
-      background: color-mix(in oklab, var(--color-success) 10%, transparent);
-    }
-  }
-
-  &:has(input:user-invalid) {
-    input {
-      border-color: var(--color-error);
-    }
-    output { display: block; } /* Show error message */
-  }
-}
-```
-
-**Benefits:**
-- No JavaScript needed for validation feedback
-- Only triggers after user interaction (not on page load)
-- Semantic `<output>` element for error messages
-- ARIA integration with `aria-describedby`
-
-**Recommendation:** Add to VB's form-field element documentation and CSS.
 
 ---
 
