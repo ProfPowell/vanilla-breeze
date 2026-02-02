@@ -1,0 +1,55 @@
+/**
+ * View Transitions - CSS-only page transition effects
+ *
+ * Enables smooth cross-document navigation transitions.
+ * Import this file to opt-in to view transitions.
+ *
+ * Usage:
+ * 1. Import this file in your main.css
+ * 2. Add view-transition-name to elements that should morph between pages:
+ *    <img style="view-transition-name: product-123" />
+ *
+ * Shared elements:
+ * - Elements with matching view-transition-name on both pages will morph
+ * - Names must be unique per page (no duplicates)
+ * - Use inline styles for dynamic/unique names: style="view-transition-name: hero-42"
+ *
+ * Browser support: Chrome 111+, Safari 18+
+ * Gracefully ignored in unsupported browsers.
+ */
+
+/* Enable view transitions for all same-origin navigations */
+@view-transition {
+  navigation: auto;
+}
+
+/* Default transition timing */
+:root {
+  --view-transition-duration: 0.3s;
+}
+
+/* Main content area - fades between pages */
+main,
+[data-vt="main"] {
+  view-transition-name: main-content;
+}
+
+/* Page header - persists across navigation */
+[data-vt="header"] {
+  view-transition-name: page-header;
+}
+
+/* Customize the default crossfade animation */
+::view-transition-old(main-content),
+::view-transition-new(main-content) {
+  animation-duration: var(--view-transition-duration);
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+  }
+}
