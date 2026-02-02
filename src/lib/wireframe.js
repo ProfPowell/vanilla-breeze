@@ -52,7 +52,7 @@ export const wireframe = {
   },
 
   /**
-   * Apply label via CSS custom property
+   * Apply label via CSS custom property or data attribute
    * @param {Element} el - Target element
    * @param {string} text - Label text
    */
@@ -61,6 +61,15 @@ export const wireframe = {
     // Escape quotes for CSS content
     const escaped = text.replace(/"/g, '\\"');
     el.style.setProperty('--wf-label-text', `"${escaped}"`);
+
+    // For images, we need to propagate the label to the parent figure
+    // since <img> elements cannot have ::before/::after pseudo-elements
+    if (el.tagName === 'IMG') {
+      const figure = el.closest('figure');
+      if (figure) {
+        figure.setAttribute('data-wf-img-label', text);
+      }
+    }
   },
 
   /**

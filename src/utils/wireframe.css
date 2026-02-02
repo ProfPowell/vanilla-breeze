@@ -119,7 +119,54 @@ html[data-wireframe] {
 }
 
 /* --- Images: Placeholder boxes with X --- */
-[data-wireframe] img,
+/*
+ * Images are void elements - can't use ::after on them directly.
+ * Strategy:
+ * 1. Hide image content with opacity
+ * 2. Show X-pattern as background on the image itself
+ * 3. Use figure/picture ::after for labels when present
+ */
+
+/* Base image styling - hide content, show X pattern */
+[data-wireframe] img {
+  position: relative;
+  opacity: 0.15 !important; /* Fade the actual image significantly */
+  border: var(--wireframe-border) !important;
+  background: var(--wireframe-fill) !important;
+}
+
+/* X-pattern using SVG data URI on the image background */
+[data-wireframe] img {
+  background-image:
+    linear-gradient(
+      to bottom right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ) !important;
+  background-color: var(--wireframe-fill) !important;
+}
+
+/* Lo-fi mode: Completely hide images */
+[data-wireframe="lo"] img {
+  opacity: 0 !important;
+}
+
+/* Hi-fi mode: Show images more clearly */
+[data-wireframe="hi"] img {
+  opacity: 0.4 !important;
+  background-image: none !important;
+}
+
+/* Picture and video elements */
 [data-wireframe] picture,
 [data-wireframe] video,
 [data-wireframe] iframe,
@@ -127,26 +174,20 @@ html[data-wireframe] {
   position: relative;
   background: var(--wireframe-fill) !important;
   border: var(--wireframe-border) !important;
-  object-fit: none !important;
 }
 
-/* Hide actual image content */
-[data-wireframe] img {
-  color: transparent;
-}
-
-/* Add X pattern overlay to images using gradient */
-[data-wireframe] picture,
+/* Figure containers - position for overlay */
 [data-wireframe] figure:has(img) {
   position: relative;
 }
 
-[data-wireframe] img::after,
-[data-wireframe] picture::after,
-[data-wireframe] video::after {
+/* X-pattern overlay on figure elements */
+[data-wireframe] figure:has(img)::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
+  pointer-events: none;
   background:
     linear-gradient(
       to bottom right,
@@ -162,7 +203,35 @@ html[data-wireframe] {
       var(--wireframe-stroke) calc(50% + 1px),
       transparent calc(50% + 1px)
     );
+}
+
+/* Don't show double X on hi-fi */
+[data-wireframe="hi"] figure:has(img)::before {
+  background: oklch(from var(--wireframe-fill) l c h / 0.3);
+}
+
+/* Picture element X-pattern */
+[data-wireframe] picture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% - 1px),
+      var(--wireframe-stroke) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
 }
 
 /* Tables: Simple grid lines */
@@ -291,6 +360,17 @@ html[data-wireframe] {
   --font-mono: var(--wf-font-scribble, 'Redacted Script', cursive);
 }
 
+/* Lo-fi font application - apply scribble font to all text elements */
+html[data-wireframe="lo"],
+html[data-wireframe="lo"] body,
+[data-wireframe="lo"] :is(
+  p, span, a, li, td, th, label, legend,
+  h1, h2, h3, h4, h5, h6,
+  button, input, textarea, select
+) {
+  font-family: var(--wf-font-scribble, 'Redacted Script', cursive) !important;
+}
+
 /* Lo-fi dark mode - invert for white on black */
 [data-mode="dark"] [data-wireframe="lo"],
 html[data-wireframe="lo"][data-mode="dark"] {
@@ -324,6 +404,17 @@ html[data-wireframe="lo"]::before {
   --font-sans: var(--wf-font-block, 'Flow Block', system-ui);
   --font-serif: var(--wf-font-block, 'Flow Block', system-ui);
   --font-mono: var(--wf-font-block, 'Flow Block', system-ui);
+}
+
+/* Mid-fi font application - apply block font to all text elements */
+html[data-wireframe="mid"],
+html[data-wireframe="mid"] body,
+[data-wireframe="mid"] :is(
+  p, span, a, li, td, th, label, legend,
+  h1, h2, h3, h4, h5, h6,
+  button, input, textarea, select
+) {
+  font-family: var(--wf-font-block, 'Flow Block', system-ui) !important;
 }
 
 html[data-wireframe="mid"]::before {
@@ -373,10 +464,8 @@ html[data-wireframe="hi"] {
   filter: grayscale(0.3) saturate(0.7);
 }
 
-/* Hi-fi shows subtle image overlay instead of X */
-[data-wireframe="hi"] img::after,
-[data-wireframe="hi"] picture::after,
-[data-wireframe="hi"] video::after {
+/* Hi-fi shows subtle overlay instead of X on picture elements */
+[data-wireframe="hi"] picture::after {
   background: oklch(from var(--wireframe-accent) l c h / 0.5);
 }
 
@@ -407,34 +496,45 @@ html[data-wireframe="hi"] {
   border-radius: 2px;
 }
 
-/* Center label for images and media elements */
-[data-wireframe] :is(img, picture, video, iframe, canvas)[data-wf-label] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/*
+ * Image labels work via figure container
+ * Note: <img> elements cannot have ::before/::after pseudo-elements.
+ * Use <figure> wrapper or JavaScript for standalone images.
+ */
 
-[data-wireframe] :is(img, picture, video, iframe, canvas)[data-wf-label]::before {
-  inset: auto;
-  position: relative;
-  font-size: var(--font-size-s, 14px);
-  padding: var(--size-xs, 8px) var(--size-s, 12px);
-}
-
-/* Images with alt text get automatic labels in annotation mode */
-[data-wireframe="annotate"] img[alt]:not([data-wf-label])::before {
-  content: attr(alt);
+/* Figure with labeled image - show label via ::after */
+[data-wireframe] figure:has(img[data-wf-label])::after,
+[data-wireframe] figure:has(img[alt]):not(:has(img[data-wf-label]))::after {
+  content: attr(data-wf-img-label);
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--wireframe-fill);
-  color: var(--wireframe-muted);
-  font-size: var(--font-size-xs, 12px);
+  z-index: 2;
+  color: var(--wireframe-text);
+  font-size: var(--font-size-s, 14px);
   font-family: system-ui, sans-serif;
+  font-weight: 500;
   text-align: center;
   padding: var(--size-xs, 8px);
+  pointer-events: none;
+}
+
+/* Picture element labels */
+[data-wireframe] picture[data-wf-label]::before {
+  content: var(--wf-label-text, attr(data-wf-label));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  color: var(--wireframe-text);
+  font-size: var(--font-size-s, 14px);
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+  pointer-events: none;
 }
 
 /* Lo-fi labels are bolder */
@@ -455,24 +555,8 @@ html[data-wireframe="hi"] {
 /* ENHANCED IMAGE PLACEHOLDERS                    */
 /* ============================================== */
 
-/* Show dimensions on hover for images in wireframe mode */
-[data-wireframe] img {
-  --wf-img-overlay: "";
-}
-
-/* Annotation mode shows image dimensions */
-[data-wireframe="annotate"] img::after {
-  content: var(--wf-img-overlay, "");
-  position: absolute;
-  inset-block-end: var(--size-2xs, 4px);
-  inset-inline-end: var(--size-2xs, 4px);
-  padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
-  background: var(--wireframe-muted);
-  color: var(--wireframe-fill);
-  font-size: var(--font-size-3xs, 9px);
-  font-family: monospace;
-  white-space: nowrap;
-  z-index: 1;
-  pointer-events: none;
-  border-radius: 2px;
-}
+/*
+ * Note: Image dimensions overlay requires JavaScript since
+ * <img> elements cannot have pseudo-elements.
+ * The wireframe.js labelElements() function handles this.
+ */

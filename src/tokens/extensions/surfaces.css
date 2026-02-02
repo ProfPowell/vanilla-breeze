@@ -1,0 +1,94 @@
+/**
+ * Surfaces Extension
+ *
+ * Adds texture overlays, gradient backgrounds, and glassmorphism effects.
+ * All tokens default to disabled/minimal values for opt-in usage.
+ *
+ * Usage:
+ *   .card::before {
+ *     content: "";
+ *     position: absolute;
+ *     inset: 0;
+ *     background: var(--texture-noise);
+ *     opacity: var(--surface-texture-opacity);
+ *     pointer-events: none;
+ *   }
+ *
+ *   .glass-panel {
+ *     background: var(--glass-bg);
+ *     backdrop-filter: blur(var(--glass-blur));
+ *   }
+ */
+
+:root {
+  /* ========================================
+   * Texture Patterns
+   * SVG-based textures for overlay effects
+   * ======================================== */
+  --surface-texture-opacity: 0.05;
+
+  /* Noise texture via SVG feTurbulence */
+  --texture-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* Fine grain texture */
+  --texture-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+
+  /* Dot pattern - 1px dots on 8px grid */
+  --texture-dots: radial-gradient(circle, currentColor 1px, transparent 1px);
+  --texture-dots-size: 8px 8px;
+
+  /* Grid pattern - 1px lines on 20px grid */
+  --texture-grid: linear-gradient(to right, currentColor 1px, transparent 1px),
+                  linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  --texture-grid-size: 20px 20px;
+
+  /* Diagonal lines pattern */
+  --texture-lines: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    currentColor 4px,
+    currentColor 5px
+  );
+
+  /* ========================================
+   * Glassmorphism
+   * Frosted glass effect tokens
+   * ======================================== */
+  --glass-blur: 0px;
+  --glass-opacity: 0.15;
+  --glass-bg: oklch(100% 0 0 / var(--glass-opacity));
+  --glass-border: oklch(100% 0 0 / 0.2);
+
+  /* ========================================
+   * Gradient Presets
+   * Common gradient patterns for backgrounds
+   * ======================================== */
+  --gradient-subtle: linear-gradient(180deg,
+    oklch(98% 0.01 var(--hue-primary, 220)) 0%,
+    oklch(96% 0.02 var(--hue-secondary, 280)) 100%
+  );
+
+  --gradient-radial: radial-gradient(
+    ellipse at 50% 0%,
+    oklch(90% 0.05 var(--hue-primary, 220)) 0%,
+    oklch(98% 0.01 var(--hue-primary, 220)) 70%
+  );
+
+  --gradient-mesh: radial-gradient(at 40% 20%, oklch(85% 0.15 var(--hue-primary, 220)) 0px, transparent 50%),
+                   radial-gradient(at 80% 0%, oklch(80% 0.12 var(--hue-secondary, 280)) 0px, transparent 50%),
+                   radial-gradient(at 0% 50%, oklch(90% 0.08 var(--hue-accent, 25)) 0px, transparent 50%);
+}
+
+/* Dark mode glass adjustments */
+[data-mode="dark"] {
+  --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
+  --glass-border: oklch(40% 0 0 / 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) {
+    --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
+    --glass-border: oklch(40% 0 0 / 0.3);
+  }
+}

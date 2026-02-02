@@ -4,6 +4,8 @@ This document establishes the naming and styling conventions for Vanilla Breeze 
 
 ## Core Principles
 
+Most importantly we always use HTML elements and bare while we can use class to verify and data-* to control and save state!
+
 1. **Native elements get short class names** - Use element.class scoping
 2. **Custom elements use data-attributes** - For configuration and state
 3. **State is always data-attributes** - Never classes for dynamic state

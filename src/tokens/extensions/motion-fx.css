@@ -1,0 +1,139 @@
+/**
+ * Motion Effects Extension
+ *
+ * Adds hover transforms, stagger animations, named easings,
+ * and enter/exit keyframe animations to the motion system.
+ *
+ * Usage:
+ *   .card { transition: transform var(--duration-normal) var(--motion-snappy); }
+ *   .card:hover { transform: var(--motion-hover-lift); }
+ *   .item { animation: vb-fade-in var(--motion-enter-duration) var(--ease-out); }
+ */
+
+:root {
+  /* ========================================
+   * Hover Transforms
+   * ======================================== */
+  --motion-hover-lift: translateY(-2px);
+  --motion-hover-scale: scale(1.02);
+  --motion-hover-glow: 0 0 0 4px var(--color-primary-subtle, oklch(90% 0.05 var(--hue-primary, 220)));
+
+  /* ========================================
+   * Stagger Animation
+   * ======================================== */
+  --motion-stagger-delay: 50ms;
+
+  /* ========================================
+   * Named Easings
+   * Complement existing --ease-* tokens with semantic motion names
+   * ======================================== */
+  --motion-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========================================
+   * Enter/Exit Duration
+   * Enter animations are slightly longer for emphasis
+   * Exit animations are quicker to feel responsive
+   * ======================================== */
+  --motion-enter-duration: 300ms;
+  --motion-exit-duration: 200ms;
+}
+
+/* ========================================
+ * Keyframe Animations
+ * Prefixed with vb- to avoid conflicts
+ * ======================================== */
+
+@keyframes vb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vb-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vb-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vb-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vb-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes vb-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes vb-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+ * Reduced Motion
+ * Override motion tokens for users who prefer reduced motion
+ * or when motion is disabled via the theme picker
+ * ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-hover-lift: none;
+    --motion-hover-scale: none;
+    --motion-stagger-delay: 0ms;
+    --motion-enter-duration: 0ms;
+    --motion-exit-duration: 0ms;
+  }
+}
+
+/* User-toggled motion reduction via theme picker */
+:root[data-motion-reduced] {
+  --motion-hover-lift: none;
+  --motion-hover-scale: none;
+  --motion-stagger-delay: 0ms;
+  --motion-enter-duration: 0ms;
+  --motion-exit-duration: 0ms;
+}
