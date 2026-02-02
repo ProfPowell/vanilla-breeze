@@ -1,0 +1,407 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const twoFactorCode = `const inputs = document.querySelectorAll('.code-inputs input');
+
+inputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    // Move to next input on digit entry
+    if (e.target.value && index < inputs.length - 1) {
+      inputs[index + 1].focus();
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    // Move to previous input on backspace
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      inputs[index - 1].focus();
+    }
+  });
+
+  input.addEventListener('paste', (e) => {
+    // Handle pasted code
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    const digits = paste.replace(/\\D/g, '').slice(0, 6).split('');
+    digits.forEach((digit, i) => {
+      if (inputs[i]) inputs[i].value = digit;
+    });
+    if (digits.length > 0) inputs[Math.min(digits.length, 5)].focus();
+  });
+});`;
+
+const stylingCode = `/* Text alignment utility */
+.text-center {
+  text-align: center;
+}
+
+/* Social login buttons */
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-s);
+  width: 100%;
+}
+
+/* Divider with centered text */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--size-m);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-s);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* 2FA code inputs */
+.code-inputs input {
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+/* Split layout brand panel */
+.brand-panel {
+  background: linear-gradient(135deg, var(--color-interactive) 0%, var(--color-interactive-hover) 100%);
+  color: white;
+}
+
+.brand-panel h2,
+.brand-panel p {
+  color: inherit;
+}`;
+---
+
+<DocsLayout
+  title="Sign In Patterns"
+  description="Login form patterns with social authentication, two-factor input, and responsive layouts. Accessible and progressively enhanced."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/">Forms</a> / <span aria-current="page">Sign In</span>
+  </nav>
+
+  <h1>Sign In</h1>
+  <p class="lead">Login form patterns with social authentication, two-factor input, and responsive layouts. Accessible and progressively enhanced.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Sign-in forms are critical user touchpoints that require careful attention to usability, accessibility, and security. These patterns demonstrate best practices for authentication UX using semantic HTML and Vanilla Breeze layout elements.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Proper <code>autocomplete</code> attributes for password managers</li>
+        <li>Accessible form fields with <code>&lt;form-field&gt;</code></li>
+        <li>Remember me and forgot password options</li>
+        <li>Social login integration patterns</li>
+        <li>Two-factor authentication code input</li>
+        <li>Responsive layouts using layout primitives</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Card Form</h2>
+    <layout-text>
+      <p>A centered login form in a card container. Uses <code>layout-cover</code> for vertical centering and <code>layout-center</code> to constrain width. Ideal for dedicated login pages.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sign-in-simple.html"
+      url="https://app.example.com/login"
+      title="Sign In"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="sign-in-simple.html">&lt;layout-cover data-min-height="100vh" data-padding="l"&gt;
+  &lt;layout-center data-max="narrow"&gt;
+    &lt;layout-card&gt;
+      &lt;form action="/auth/login" method="POST"&gt;
+        &lt;layout-stack data-gap="l"&gt;
+          &lt;header&gt;
+            &lt;layout-stack data-gap="s"&gt;
+              &lt;h1&gt;Sign in&lt;/h1&gt;
+              &lt;p&gt;Welcome back! Please enter your details.&lt;/p&gt;
+            &lt;/layout-stack&gt;
+          &lt;/header&gt;
+
+          &lt;form-field&gt;
+            &lt;label for="email"&gt;Email&lt;/label&gt;
+            &lt;input
+              type="email"
+              id="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com"
+            /&gt;
+          &lt;/form-field&gt;
+
+          &lt;form-field&gt;
+            &lt;label for="password"&gt;Password&lt;/label&gt;
+            &lt;input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="current-password"
+              placeholder="Enter your password"
+            /&gt;
+          &lt;/form-field&gt;
+
+          &lt;layout-cluster data-justify="space-between" data-align="center"&gt;
+            &lt;form-field&gt;
+              &lt;label&gt;
+                &lt;input type="checkbox" name="remember" value="yes" /&gt;
+                Remember me
+              &lt;/label&gt;
+            &lt;/form-field&gt;
+            &lt;a href="/auth/forgot-password"&gt;Forgot password?&lt;/a&gt;
+          &lt;/layout-cluster&gt;
+
+          &lt;button type="submit"&gt;Sign in&lt;/button&gt;
+
+          &lt;p class="text-center"&gt;
+            Don't have an account? &lt;a href="/auth/register"&gt;Sign up&lt;/a&gt;
+          &lt;/p&gt;
+        &lt;/layout-stack&gt;
+      &lt;/form&gt;
+    &lt;/layout-card&gt;
+  &lt;/layout-center&gt;
+&lt;/layout-cover&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Split Screen Layout</h2>
+    <layout-text>
+      <p>A two-column layout with the form on one side and branding/image on the other. Uses <code>layout-sidebar</code> with a wide sidebar for the brand panel. Collapses to single column on mobile.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sign-in-split.html"
+      url="https://app.example.com/login"
+      title="Sign In - Split Layout"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="sign-in-split.html">&lt;layout-sidebar data-gap="0" data-sidebar-width="wide" data-content-min="50" style="min-height: 100vh;"&gt;
+  &lt;!-- Brand Panel --&gt;
+  &lt;aside class="brand-panel"&gt;
+    &lt;layout-cover data-min-height="100%" data-padding="xl"&gt;
+      &lt;layout-stack data-gap="l"&gt;
+        &lt;div class="brand-logo"&gt;Acme Inc&lt;/div&gt;
+        &lt;h2&gt;Welcome back&lt;/h2&gt;
+        &lt;p&gt;Sign in to access your dashboard and continue where you left off.&lt;/p&gt;
+      &lt;/layout-stack&gt;
+    &lt;/layout-cover&gt;
+  &lt;/aside&gt;
+
+  &lt;!-- Form Panel --&gt;
+  &lt;main&gt;
+    &lt;layout-cover data-min-height="100%" data-padding="xl"&gt;
+      &lt;layout-center data-max="narrow"&gt;
+        &lt;form action="/auth/login" method="POST"&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;h1&gt;Sign in to your account&lt;/h1&gt;
+
+            &lt;form-field&gt;
+              &lt;label for="email"&gt;Email address&lt;/label&gt;
+              &lt;input type="email" id="email" name="email" required autocomplete="email" /&gt;
+            &lt;/form-field&gt;
+
+            &lt;form-field&gt;
+              &lt;label for="password"&gt;Password&lt;/label&gt;
+              &lt;input type="password" id="password" name="password" required autocomplete="current-password" /&gt;
+            &lt;/form-field&gt;
+
+            &lt;layout-cluster data-justify="space-between" data-align="center"&gt;
+              &lt;form-field&gt;
+                &lt;label&gt;&lt;input type="checkbox" name="remember" /&gt; Remember me&lt;/label&gt;
+              &lt;/form-field&gt;
+              &lt;a href="/auth/forgot-password"&gt;Forgot password?&lt;/a&gt;
+            &lt;/layout-cluster&gt;
+
+            &lt;button type="submit"&gt;Sign in&lt;/button&gt;
+          &lt;/layout-stack&gt;
+        &lt;/form&gt;
+      &lt;/layout-center&gt;
+    &lt;/layout-cover&gt;
+  &lt;/main&gt;
+&lt;/layout-sidebar&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>With Social Login</h2>
+    <layout-text>
+      <p>Sign-in form with social authentication buttons (Google, GitHub) above the traditional email/password fields. Uses a visual divider to separate authentication methods.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sign-in-social.html"
+      url="https://app.example.com/login"
+      title="Sign In - Social Login"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="sign-in-social.html">&lt;layout-cover data-min-height="100vh" data-padding="l"&gt;
+  &lt;layout-center data-max="narrow"&gt;
+    &lt;layout-card&gt;
+      &lt;layout-stack data-gap="l"&gt;
+        &lt;header&gt;
+          &lt;layout-stack data-gap="s"&gt;
+            &lt;h1&gt;Sign in&lt;/h1&gt;
+            &lt;p&gt;Choose your preferred sign-in method.&lt;/p&gt;
+          &lt;/layout-stack&gt;
+        &lt;/header&gt;
+
+        &lt;!-- Social Login Buttons --&gt;
+        &lt;layout-stack data-gap="s"&gt;
+          &lt;button type="button" class="secondary social-btn"&gt;
+            &lt;icon-wc name="brand-google"&gt;&lt;/icon-wc&gt;
+            Continue with Google
+          &lt;/button&gt;
+          &lt;button type="button" class="secondary social-btn"&gt;
+            &lt;icon-wc name="brand-github"&gt;&lt;/icon-wc&gt;
+            Continue with GitHub
+          &lt;/button&gt;
+        &lt;/layout-stack&gt;
+
+        &lt;!-- Divider --&gt;
+        &lt;div class="divider"&gt;&lt;span&gt;or continue with email&lt;/span&gt;&lt;/div&gt;
+
+        &lt;!-- Email/Password Form --&gt;
+        &lt;form action="/auth/login" method="POST"&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;form-field&gt;
+              &lt;label for="email"&gt;Email&lt;/label&gt;
+              &lt;input type="email" id="email" name="email" required autocomplete="email" /&gt;
+            &lt;/form-field&gt;
+
+            &lt;form-field&gt;
+              &lt;label for="password"&gt;Password&lt;/label&gt;
+              &lt;input type="password" id="password" name="password" required autocomplete="current-password" /&gt;
+            &lt;/form-field&gt;
+
+            &lt;button type="submit"&gt;Sign in&lt;/button&gt;
+          &lt;/layout-stack&gt;
+        &lt;/form&gt;
+
+        &lt;p class="text-center"&gt;
+          Don't have an account? &lt;a href="/auth/register"&gt;Sign up&lt;/a&gt;
+        &lt;/p&gt;
+      &lt;/layout-stack&gt;
+    &lt;/layout-card&gt;
+  &lt;/layout-center&gt;
+&lt;/layout-cover&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Two-Factor Input</h2>
+    <layout-text>
+      <p>A verification code input for two-factor authentication. Uses individual input fields for each digit with automatic focus advancement. Includes resend code link and back navigation.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sign-in-2fa.html"
+      url="https://app.example.com/verify"
+      title="Two-Factor Authentication"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="sign-in-2fa.html">&lt;layout-cover data-min-height="100vh" data-padding="l"&gt;
+  &lt;layout-center data-max="narrow"&gt;
+    &lt;layout-card&gt;
+      &lt;form action="/auth/verify" method="POST"&gt;
+        &lt;layout-stack data-gap="l"&gt;
+          &lt;header&gt;
+            &lt;layout-stack data-gap="s"&gt;
+              &lt;h1&gt;Two-factor authentication&lt;/h1&gt;
+              &lt;p&gt;Enter the 6-digit code from your authenticator app.&lt;/p&gt;
+            &lt;/layout-stack&gt;
+          &lt;/header&gt;
+
+          &lt;!-- Code Input Fields --&gt;
+          &lt;fieldset class="code-inputs"&gt;
+            &lt;legend class="visually-hidden"&gt;Verification code&lt;/legend&gt;
+            &lt;layout-cluster data-justify="center" data-gap="s"&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 1" /&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 2" /&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 3" /&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 4" /&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 5" /&gt;
+              &lt;input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required aria-label="Digit 6" /&gt;
+            &lt;/layout-cluster&gt;
+          &lt;/fieldset&gt;
+
+          &lt;button type="submit"&gt;Verify&lt;/button&gt;
+
+          &lt;layout-stack data-gap="s" class="text-center"&gt;
+            &lt;p&gt;Didn't receive a code? &lt;a href="#resend"&gt;Resend&lt;/a&gt;&lt;/p&gt;
+            &lt;a href="/auth/login"&gt;&amp;larr; Back to sign in&lt;/a&gt;
+          &lt;/layout-stack&gt;
+        &lt;/layout-stack&gt;
+      &lt;/form&gt;
+    &lt;/layout-card&gt;
+  &lt;/layout-center&gt;
+&lt;/layout-cover&gt;</code-block>
+
+    <h3>Code Input JavaScript</h3>
+    <layout-text>
+      <p>Optional JavaScript for auto-advancing focus between digits and handling paste.</p>
+    </layout-text>
+
+    <code-block language="javascript" label="2fa-code-input.js">{twoFactorCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling Reference</h2>
+    <layout-text>
+      <p>Common styles used across sign-in patterns.</p>
+    </layout-text>
+
+    <code-block language="css" label="sign-in-styles.css">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Autocomplete:</strong> Always use <code>autocomplete="email"</code> for email fields and <code>autocomplete="current-password"</code> for login password fields to support password managers</li>
+        <li><strong>Remember me:</strong> Include a "Remember me" checkbox for persistent sessions, clearly labeled</li>
+        <li><strong>Password recovery:</strong> Always provide a visible "Forgot password?" link</li>
+        <li><strong>Error handling:</strong> Show clear error messages near the relevant field using the <code>&lt;output&gt;</code> element</li>
+        <li><strong>Social login:</strong> Use recognizable brand icons and clear button labels</li>
+        <li><strong>2FA:</strong> Use <code>inputmode="numeric"</code> for mobile keyboard optimization</li>
+        <li><strong>Accessibility:</strong> Ensure all inputs have proper labels and error states are announced via <code>aria-live</code></li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/forms/registration/" class="section-card">
+        <h3>Registration</h3>
+        <p>Sign up forms with password requirements</p>
+      </a>
+      <a href="/docs/elements/custom-elements/form-field/" class="section-card">
+        <h3>Form Field</h3>
+        <p>Form field element documentation</p>
+      </a>
+      <a href="/docs/snippets/html/form-basic/" class="section-card">
+        <h3>Basic Form</h3>
+        <p>Form building blocks and patterns</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

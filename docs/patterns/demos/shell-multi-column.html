@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>App Shell - Multi-Column</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      min-block-size: 100vh;
+    }
+    .app-shell {
+      display: grid;
+      grid-template-columns: 200px 1fr 350px;
+      min-block-size: 100vh;
+    }
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 200px 1fr;
+      }
+      .message-detail {
+        display: none;
+      }
+    }
+    @media (max-width: 600px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar-nav {
+        display: none;
+      }
+    }
+
+    /* Sidebar */
+    .sidebar-nav {
+      background: var(--color-surface);
+      border-inline-end: 1px solid var(--color-border);
+      padding: var(--size-l);
+    }
+    .sidebar-nav .logo {
+      font-weight: 600;
+      font-size: var(--font-size-xl);
+      text-decoration: none;
+      color: var(--color-text);
+      display: block;
+    }
+    .sidebar-nav .button.primary {
+      inline-size: 100%;
+    }
+    .sidebar-nav .badge {
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      font-size: var(--font-size-xs);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-full);
+      margin-inline-start: auto;
+    }
+
+    /* Message List */
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      background: var(--color-surface-alt);
+    }
+    .message-list header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--size-m);
+      padding: var(--size-m) var(--size-l);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+    }
+    .message-list header h1 {
+      margin: 0;
+      font-size: var(--font-size-lg);
+    }
+    .message-list header input[type="search"] {
+      padding: var(--size-xs) var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+    }
+    .messages {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .message-item {
+      display: block;
+      padding: var(--size-m) var(--size-l);
+      border-block-end: 1px solid var(--color-border);
+      background: var(--color-surface);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .message-item:hover {
+      background: var(--color-surface-raised);
+    }
+    .message-item.selected {
+      background: var(--color-primary-subtle);
+      border-inline-start: 3px solid var(--color-primary);
+    }
+    .message-item .sender {
+      font-weight: 600;
+      margin-block-end: var(--size-2xs);
+    }
+    .message-item .subject {
+      margin-block-end: var(--size-2xs);
+    }
+    .message-item .preview {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .message-item .time {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      float: inline-end;
+    }
+
+    /* Message Detail */
+    .message-detail {
+      background: var(--color-surface);
+      border-inline-start: 1px solid var(--color-border);
+      padding: var(--size-l);
+      overflow-y: auto;
+    }
+    .message-detail .message-header {
+      padding-block-end: var(--size-l);
+      margin-block-end: var(--size-l);
+      border-block-end: 1px solid var(--color-border);
+    }
+    .message-detail .message-header h2 {
+      margin: 0 0 var(--size-s);
+      font-size: var(--font-size-lg);
+    }
+    .message-detail .message-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+    .message-detail .message-body {
+      line-height: 1.6;
+    }
+    .message-detail .message-actions {
+      margin-block-start: var(--size-xl);
+      padding-block-start: var(--size-l);
+      border-block-start: 1px solid var(--color-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar-nav">
+      <layout-stack data-gap="m">
+        <a href="#" class="logo">Mail</a>
+        <button class="button primary">Compose</button>
+        <nav class="vertical" aria-label="Mail folders">
+          <ul>
+            <li>
+              <a href="#" aria-current="page">
+                <icon-wc name="inbox"></icon-wc>
+                Inbox
+                <span class="badge">12</span>
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="paper-airplane"></icon-wc>
+                Sent
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="document"></icon-wc>
+                Drafts
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="archive-box"></icon-wc>
+                Archive
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <icon-wc name="trash"></icon-wc>
+                Trash
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </layout-stack>
+    </aside>
+
+    <main class="message-list">
+      <header>
+        <h1>Inbox</h1>
+        <input type="search" placeholder="Search mail..." aria-label="Search mail"/>
+      </header>
+      <ul class="messages">
+        <li class="message-item selected">
+          <span class="time">10:32 AM</span>
+          <div class="sender">Alice Johnson</div>
+          <div class="subject">Project Update: Q1 Goals</div>
+          <div class="preview">Hi team, I wanted to share a quick update on our progress toward the Q1 goals...</div>
+        </li>
+        <li class="message-item">
+          <span class="time">9:15 AM</span>
+          <div class="sender">Bob Smith</div>
+          <div class="subject">Meeting Rescheduled</div>
+          <div class="preview">The design review meeting has been moved to Thursday at 2pm...</div>
+        </li>
+        <li class="message-item">
+          <span class="time">Yesterday</span>
+          <div class="sender">Carol Davis</div>
+          <div class="subject">New Feature Request</div>
+          <div class="preview">We received a feature request from the marketing team that I think we should discuss...</div>
+        </li>
+        <li class="message-item">
+          <span class="time">Yesterday</span>
+          <div class="sender">Dan Wilson</div>
+          <div class="subject">Code Review Feedback</div>
+          <div class="preview">I've completed the code review for PR #234. Overall it looks good, but I have a few suggestions...</div>
+        </li>
+        <li class="message-item">
+          <span class="time">Jan 28</span>
+          <div class="sender">Eva Martinez</div>
+          <div class="subject">Weekly Report</div>
+          <div class="preview">Attached is the weekly report summarizing our team's accomplishments and blockers...</div>
+        </li>
+      </ul>
+    </main>
+
+    <aside class="message-detail">
+      <div class="message-header">
+        <h2>Project Update: Q1 Goals</h2>
+        <div class="message-meta">
+          <span>From: Alice Johnson</span>
+          <span>10:32 AM</span>
+        </div>
+      </div>
+      <div class="message-body">
+        <p>Hi team,</p>
+        <p>I wanted to share a quick update on our progress toward the Q1 goals. We've made great strides in the past two weeks, and I'm confident we'll hit our targets.</p>
+        <p><strong>Completed:</strong></p>
+        <ul>
+          <li>User authentication system refactor</li>
+          <li>Performance optimization for dashboard</li>
+          <li>Mobile responsive fixes</li>
+        </ul>
+        <p><strong>In Progress:</strong></p>
+        <ul>
+          <li>API rate limiting implementation</li>
+          <li>New onboarding flow</li>
+        </ul>
+        <p>Let me know if you have any questions or concerns.</p>
+        <p>Best,<br/>Alice</p>
+      </div>
+      <div class="message-actions">
+        <layout-cluster data-gap="s">
+          <button class="button">Reply</button>
+          <button class="button secondary">Forward</button>
+          <button class="button secondary">Archive</button>
+        </layout-cluster>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

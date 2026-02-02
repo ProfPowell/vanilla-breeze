@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Navbar - Mobile</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      background: var(--color-surface);
+      min-height: 350px;
+    }
+    .site-header {
+      background: var(--color-surface);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+      padding-inline: var(--size-l);
+      padding-block: var(--size-s);
+    }
+    .site-header .logo {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      color: var(--color-text);
+      text-decoration: none;
+    }
+    .site-header nav a:not(.logo) {
+      padding: var(--size-xs) var(--size-s);
+      color: var(--color-text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-m);
+      transition: color var(--duration-fast) var(--ease-default);
+    }
+    .site-header nav a:not(.logo):hover {
+      color: var(--color-text);
+    }
+    .site-header nav a[aria-current="page"] {
+      color: var(--color-interactive);
+      font-weight: var(--font-weight-medium);
+    }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .mobile-menu {
+        display: block;
+        position: relative;
+      }
+
+      .mobile-menu summary {
+        list-style: none;
+        cursor: pointer;
+        padding: var(--size-xs);
+        border: none;
+      }
+
+      .mobile-menu summary::-webkit-details-marker {
+        display: none;
+      }
+
+      /* Hamburger icon */
+      .hamburger {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background: var(--color-text);
+        position: relative;
+        transition: background var(--duration-fast) var(--ease-default);
+      }
+
+      .hamburger::before,
+      .hamburger::after {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 2px;
+        background: var(--color-text);
+        left: 0;
+        transition: transform var(--duration-fast) var(--ease-default), top var(--duration-fast) var(--ease-default);
+      }
+
+      .hamburger::before {
+        top: -7px;
+      }
+
+      .hamburger::after {
+        top: 7px;
+      }
+
+      /* Open state - X icon */
+      .mobile-menu[open] .hamburger {
+        background: transparent;
+      }
+
+      .mobile-menu[open] .hamburger::before {
+        top: 0;
+        transform: rotate(45deg);
+      }
+
+      .mobile-menu[open] .hamburger::after {
+        top: 0;
+        transform: rotate(-45deg);
+      }
+
+      /* Mobile nav panel */
+      .mobile-nav {
+        position: absolute;
+        top: calc(100% + var(--size-s));
+        right: 0;
+        background: var(--color-surface);
+        border: var(--border-width-thin) solid var(--color-border);
+        border-radius: var(--radius-m);
+        padding: var(--size-s);
+        min-width: 200px;
+        box-shadow: var(--shadow-m);
+        z-index: 100;
+      }
+
+      .mobile-nav a {
+        display: block;
+        padding: var(--size-s) var(--size-m);
+        border-radius: var(--radius-s);
+      }
+
+      .mobile-nav a:hover {
+        background: var(--color-surface-raised);
+      }
+    }
+
+    .page-content {
+      padding: var(--size-xl);
+      color: var(--color-text-muted);
+    }
+
+    /* For demo purposes - show mobile menu even on wide screens */
+    .demo-mobile-mode .desktop-nav {
+      display: none !important;
+    }
+    .demo-mobile-mode .mobile-menu {
+      display: block !important;
+    }
+  </style>
+</head>
+<body class="demo-mobile-mode">
+  <header class="site-header">
+    <nav aria-label="Main navigation">
+      <layout-cluster data-justify="space-between" data-align="center">
+        <a href="#" class="logo">Acme Co</a>
+
+        <!-- Desktop nav (hidden on mobile) -->
+        <layout-cluster data-gap="s" class="desktop-nav">
+          <a href="#">Products</a>
+          <a href="#">Pricing</a>
+          <a href="#" aria-current="page">About</a>
+          <a href="#">Contact</a>
+        </layout-cluster>
+
+        <!-- Mobile menu (hidden on desktop) -->
+        <details class="mobile-menu">
+          <summary aria-label="Open menu">
+            <span class="hamburger"></span>
+          </summary>
+          <layout-stack data-gap="xs" class="mobile-nav">
+            <a href="#">Products</a>
+            <a href="#">Pricing</a>
+            <a href="#" aria-current="page">About</a>
+            <a href="#">Contact</a>
+          </layout-stack>
+        </details>
+      </layout-cluster>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <p>Click the hamburger menu icon to toggle the mobile navigation. The menu uses native details/summary for the toggle behavior - no JavaScript required.</p>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

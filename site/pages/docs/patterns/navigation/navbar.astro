@@ -1,0 +1,401 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const simpleNavCode = `<header class="site-header">
+  <nav aria-label="Main navigation">
+    <layout-cluster data-justify="space-between" data-align="center">
+      <a href="/" class="logo">Acme Co</a>
+      <layout-cluster data-gap="s">
+        <a href="/products/">Products</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/about/" aria-current="page">About</a>
+        <a href="/contact/">Contact</a>
+      </layout-cluster>
+    </layout-cluster>
+  </nav>
+</header>`;
+
+const dropdownNavCode = `<header class="site-header">
+  <nav aria-label="Main navigation">
+    <layout-cluster data-justify="space-between" data-align="center">
+      <a href="/" class="logo">Acme Co</a>
+      <layout-cluster data-gap="s">
+        <dropdown-wc>
+          <button data-trigger>Products</button>
+          <menu>
+            <li><a href="/products/software/">Software</a></li>
+            <li><a href="/products/hardware/">Hardware</a></li>
+            <li><a href="/products/services/">Services</a></li>
+          </menu>
+        </dropdown-wc>
+        <a href="/pricing/">Pricing</a>
+        <dropdown-wc>
+          <button data-trigger>Resources</button>
+          <menu>
+            <li><a href="/docs/">Documentation</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/support/">Support</a></li>
+          </menu>
+        </dropdown-wc>
+        <a href="/contact/">Contact</a>
+      </layout-cluster>
+    </layout-cluster>
+  </nav>
+</header>`;
+
+const searchNavCode = `<header class="site-header">
+  <nav aria-label="Main navigation">
+    <layout-cluster data-justify="space-between" data-align="center">
+      <a href="/" class="logo">Acme Co</a>
+      <layout-cluster data-gap="m" data-align="center">
+        <layout-cluster data-gap="s">
+          <a href="/products/">Products</a>
+          <a href="/pricing/">Pricing</a>
+          <a href="/about/">About</a>
+        </layout-cluster>
+        <search class="header with-icon rounded">
+          <icon-wc name="search" size="sm"></icon-wc>
+          <input type="search" placeholder="Search..." aria-label="Search site" />
+        </search>
+      </layout-cluster>
+    </layout-cluster>
+  </nav>
+</header>`;
+
+const mobileNavCode = `<header class="site-header">
+  <nav aria-label="Main navigation">
+    <layout-cluster data-justify="space-between" data-align="center">
+      <a href="/" class="logo">Acme Co</a>
+
+      <!-- Desktop nav (hidden on mobile) -->
+      <layout-cluster data-gap="s" class="desktop-nav">
+        <a href="/products/">Products</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/about/" aria-current="page">About</a>
+        <a href="/contact/">Contact</a>
+      </layout-cluster>
+
+      <!-- Mobile menu (hidden on desktop) -->
+      <details class="mobile-menu">
+        <summary aria-label="Open menu">
+          <span class="hamburger"></span>
+        </summary>
+        <layout-stack data-gap="xs" class="mobile-nav">
+          <a href="/products/">Products</a>
+          <a href="/pricing/">Pricing</a>
+          <a href="/about/" aria-current="page">About</a>
+          <a href="/contact/">Contact</a>
+        </layout-stack>
+      </details>
+    </layout-cluster>
+  </nav>
+</header>`;
+
+const stickyNavCode = `<header class="site-header sticky">
+  <nav aria-label="Main navigation">
+    <layout-cluster data-justify="space-between" data-align="center">
+      <a href="/" class="logo">Acme Co</a>
+      <layout-cluster data-gap="s">
+        <a href="/products/">Products</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/about/">About</a>
+        <a href="/contact/">Contact</a>
+      </layout-cluster>
+      <a href="/get-started/" class="button small">Get Started</a>
+    </layout-cluster>
+  </nav>
+</header>`;
+
+const headerStylesCode = `.site-header {
+  background: var(--color-surface);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+  padding-inline: var(--size-l);
+  padding-block: var(--size-s);
+}
+
+.site-header .logo {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-header nav a:not(.logo):not(.button) {
+  padding: var(--size-xs) var(--size-s);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-m);
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.site-header nav a:not(.logo):not(.button):hover {
+  color: var(--color-text);
+}
+
+.site-header nav a[aria-current="page"] {
+  color: var(--color-interactive);
+  font-weight: var(--font-weight-medium);
+}`;
+
+const mobileStylesCode = `/* Mobile menu styles */
+.mobile-menu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: block;
+    position: relative;
+  }
+
+  .mobile-menu summary {
+    list-style: none;
+    cursor: pointer;
+    padding: var(--size-xs);
+  }
+
+  .mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Hamburger icon */
+  .hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    position: relative;
+  }
+
+  .hamburger::before,
+  .hamburger::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    left: 0;
+  }
+
+  .hamburger::before {
+    top: -7px;
+  }
+
+  .hamburger::after {
+    top: 7px;
+  }
+
+  /* Open state */
+  .mobile-menu[open] .hamburger {
+    background: transparent;
+  }
+
+  .mobile-menu[open] .hamburger::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  .mobile-menu[open] .hamburger::after {
+    top: 0;
+    transform: rotate(-45deg);
+  }
+
+  /* Mobile nav panel */
+  .mobile-nav {
+    position: absolute;
+    top: calc(100% + var(--size-s));
+    right: 0;
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    padding: var(--size-s);
+    min-width: 200px;
+    box-shadow: var(--shadow-m);
+  }
+
+  .mobile-nav a {
+    display: block;
+    padding: var(--size-s) var(--size-m);
+    border-radius: var(--radius-s);
+  }
+
+  .mobile-nav a:hover {
+    background: var(--color-surface-raised);
+  }
+}`;
+
+const stickyStylesCode = `/* Sticky header */
+.site-header.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  background: oklch(from var(--color-surface) l c h / 0.9);
+}`;
+---
+
+<DocsLayout
+  title="Navbar Patterns"
+  description="Header navigation patterns with dropdowns, search, and mobile responsive menus."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <span aria-current="page">Navbar</span>
+  </nav>
+
+  <h1>Navbar Patterns</h1>
+  <p class="lead">Header navigation patterns with dropdowns, search, and mobile responsive menus. Built with semantic HTML and accessible by default.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Navigation bars are the primary way users navigate your site. These patterns use semantic <code>&lt;nav&gt;</code> elements with <code>aria-label</code> for accessibility, and <code>layout-cluster</code> for flexible horizontal spacing.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Semantic HTML with proper ARIA attributes</li>
+        <li>Active page indication via <code>aria-current="page"</code></li>
+        <li>Dropdown menus using <code>dropdown-wc</code> component</li>
+        <li>Mobile-responsive with hamburger menu</li>
+        <li>Sticky header variant for persistent navigation</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Horizontal Nav</h2>
+    <layout-text>
+      <p>A basic navigation bar with horizontal links. Uses <code>aria-current="page"</code> to indicate the active page.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/navbar-simple.html"
+      url="https://vanilla-breeze.dev/navbar-simple"
+      title="Simple Navbar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Simple horizontal nav">{simpleNavCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Dropdown Menus</h2>
+    <layout-text>
+      <p>Navigation with dropdown submenus using the <code>dropdown-wc</code> component. Dropdowns are keyboard accessible and close on outside click or Escape.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/navbar-dropdown.html"
+      url="https://vanilla-breeze.dev/navbar-dropdown"
+      title="Navbar with Dropdowns"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Nav with dropdown menus">{dropdownNavCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Search</h2>
+    <layout-text>
+      <p>Navigation bar with an integrated search field. The search uses the <code>&lt;search&gt;</code> element with icon positioning.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/navbar-search.html"
+      url="https://vanilla-breeze.dev/navbar-search"
+      title="Navbar with Search"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Nav with search field">{searchNavCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Mobile Responsive</h2>
+    <layout-text>
+      <p>A responsive navbar that collapses to a hamburger menu on smaller screens. Uses the native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> pattern for the toggle - no JavaScript required.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/navbar-mobile.html"
+      url="https://vanilla-breeze.dev/navbar-mobile"
+      title="Mobile Responsive Navbar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Mobile responsive nav">{mobileNavCode}</code-block>
+
+    <h3>Mobile Menu CSS</h3>
+    <layout-text>
+      <p>The mobile menu requires CSS for the hamburger icon animation and responsive behavior:</p>
+    </layout-text>
+
+    <code-block language="css" label="Mobile menu styles">{mobileStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Sticky Header</h2>
+    <layout-text>
+      <p>A navigation bar that stays fixed at the top of the viewport as the user scrolls. Uses <code>position: sticky</code> with a subtle backdrop blur.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/navbar-sticky.html"
+      url="https://vanilla-breeze.dev/navbar-sticky"
+      title="Sticky Header"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Sticky header nav">{stickyNavCode}</code-block>
+
+    <h3>Sticky Header CSS</h3>
+    <code-block language="css" label="Sticky header styles">{stickyStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Base Header Styles</h2>
+    <layout-text>
+      <p>These base styles are shared across all navbar variants:</p>
+    </layout-text>
+
+    <code-block language="css" label="Base header styles">{headerStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Accessibility:</strong> Always use <code>aria-label</code> on <code>&lt;nav&gt;</code> to identify its purpose (e.g., "Main navigation")</li>
+        <li><strong>Active state:</strong> Use <code>aria-current="page"</code> on the link representing the current page</li>
+        <li><strong>Dropdowns:</strong> The <code>dropdown-wc</code> component handles keyboard navigation and ARIA automatically</li>
+        <li><strong>Mobile first:</strong> Consider building mobile-first and enhancing for desktop</li>
+        <li><strong>Skip links:</strong> Add a skip-to-content link before the nav for keyboard users</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/native/nav/" class="section-card">
+        <h3>Nav Element</h3>
+        <p>Native navigation element documentation</p>
+      </a>
+      <a href="/docs/elements/web-components/dropdown/" class="section-card">
+        <h3>Dropdown WC</h3>
+        <p>Dropdown web component documentation</p>
+      </a>
+      <a href="/docs/patterns/navigation/sidebar/" class="section-card">
+        <h3>Sidebar</h3>
+        <p>Vertical sidebar navigation patterns</p>
+      </a>
+      <a href="/docs/snippets/components/dropdown-menu/" class="section-card">
+        <h3>Dropdown Menu</h3>
+        <p>Dropdown menu snippets and examples</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>
