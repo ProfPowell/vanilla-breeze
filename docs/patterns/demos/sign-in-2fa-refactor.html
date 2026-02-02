@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sign In - Two-Factor Authentication</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+</head>
+<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <form action="/auth/verify" method="POST" data-layout="stack" data-gap="l">
+      <header data-layout="stack" data-gap="s">
+        <h1>Two-factor authentication</h1>
+        <p>Enter the 6-digit code from your authenticator app.</p>
+      </header>
+
+      <!-- Code Input Fields -->
+      <fieldset class="code-inputs">
+        <legend class="visually-hidden">Verification code</legend>
+        <div data-layout="cluster" data-justify="center" data-gap="s">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 1" name="code1"/>
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 2" name="code2"/>
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 3" name="code3"/>
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 4" name="code4"/>
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 5" name="code5"/>
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" required="" aria-label="Digit 6" name="code6"/>
+        </div>
+      </fieldset>
+
+      <button type="submit">Verify</button>
+
+      <footer data-layout="stack" data-gap="s">
+        <p>Didn't receive a code? <a href="#resend">Resend</a></p>
+        <a href="/auth/login">&larr; Back to sign in</a>
+      </footer>
+    </form>
+  </layout-card>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Auto-advance focus between code inputs
+    const inputs = document.querySelectorAll('.code-inputs input');
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        // Move to next input on digit entry
+        if (e.target.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        // Move to previous input on backspace
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        // Handle pasted code
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const digits = paste.replace(/\D/g, '').slice(0, 6).split('');
+        digits.forEach((digit, i) => {
+          if (inputs[i]) inputs[i].value = digit;
+        });
+        if (digits.length > 0) inputs[Math.min(digits.length, 5)].focus();
+      });
+    });
+  </script>
+</body>
+</html>
