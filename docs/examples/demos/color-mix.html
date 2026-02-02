@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Color-Mix Tokens Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+    }
+
+    .demo-header {
+      max-inline-size: 60rem;
+      margin-block-end: var(--size-xl);
+    }
+
+    .demo-header h1 {
+      margin-block-end: var(--size-s);
+    }
+
+    .demo-header p {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-l);
+    }
+
+    .theme-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--size-m);
+      margin-block-end: var(--size-xl);
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .theme-controls label {
+      font-weight: var(--font-weight-medium);
+      font-size: var(--font-size-s);
+    }
+
+    section {
+      margin-block-end: var(--size-2xl);
+    }
+
+    section h2 {
+      margin-block-end: var(--size-s);
+      padding-block-end: var(--size-xs);
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    section p.description {
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-m);
+    }
+
+    /* ==================== TINT SCALE DEMO ==================== */
+    .tint-scale {
+      display: flex;
+      gap: var(--size-m);
+      flex-wrap: wrap;
+    }
+
+    .tint-swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-xs);
+    }
+
+    .tint-swatch .color-box {
+      inline-size: 6rem;
+      block-size: 6rem;
+      border-radius: var(--radius-m);
+      border: 1px solid var(--color-border);
+    }
+
+    .tint-swatch code {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .tint-swatch .percent {
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-s);
+    }
+
+    /* ==================== SURFACE STATES DEMO ==================== */
+    .surface-states {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+      gap: var(--size-m);
+    }
+
+    .surface-state-card {
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--color-border);
+      text-align: center;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+
+    .surface-state-card h3 {
+      margin: 0 0 var(--size-xs) 0;
+      font-size: var(--font-size-s);
+    }
+
+    .surface-state-card code {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .surface-state-card.hover-demo { background: var(--surface-hover); }
+    .surface-state-card.focus-demo { background: var(--surface-focus); }
+    .surface-state-card.active-demo { background: var(--surface-active); }
+    .surface-state-card.selected-demo { background: var(--surface-selected); }
+
+    /* Interactive demo */
+    .interactive-demo {
+      margin-block-start: var(--size-l);
+    }
+
+    .interactive-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .interactive-list li {
+      padding: var(--size-s) var(--size-m);
+      border-block-end: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+
+    .interactive-list li:last-child {
+      border-block-end: none;
+    }
+
+    .interactive-list li:hover {
+      background: var(--surface-hover);
+    }
+
+    .interactive-list li:focus {
+      background: var(--surface-focus);
+      outline: none;
+    }
+
+    .interactive-list li:active {
+      background: var(--surface-active);
+    }
+
+    .interactive-list li[aria-selected="true"] {
+      background: var(--surface-selected);
+    }
+
+    /* ==================== STATUS BACKGROUNDS DEMO ==================== */
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: var(--size-m);
+    }
+
+    .status-card {
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--color-border);
+    }
+
+    .status-card h3 {
+      margin: 0 0 var(--size-xs) 0;
+      font-size: var(--font-size-s);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .status-card p {
+      margin: 0 0 var(--size-xs) 0;
+      font-size: var(--font-size-s);
+    }
+
+    .status-card code {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .status-card.success {
+      background: var(--status-success-bg);
+      border-color: var(--color-success);
+    }
+    .status-card.success h3 { color: var(--color-success-text); }
+
+    .status-card.warning {
+      background: var(--status-warning-bg);
+      border-color: var(--color-warning);
+    }
+    .status-card.warning h3 { color: var(--color-warning-text); }
+
+    .status-card.error {
+      background: var(--status-error-bg);
+      border-color: var(--color-error);
+    }
+    .status-card.error h3 { color: var(--color-error-text); }
+
+    .status-card.info {
+      background: var(--status-info-bg);
+      border-color: var(--color-info);
+    }
+    .status-card.info h3 { color: var(--color-info-text); }
+
+    /* ==================== BORDER TINT DEMO ==================== */
+    .border-demo {
+      display: flex;
+      gap: var(--size-l);
+      flex-wrap: wrap;
+    }
+
+    .border-box {
+      padding: var(--size-l);
+      border-radius: var(--radius-m);
+      text-align: center;
+    }
+
+    .border-box.tint {
+      border: 2px solid var(--border-tint);
+      background: var(--color-surface);
+    }
+
+    .border-box.solid {
+      border: 2px solid var(--color-border);
+      background: var(--color-surface);
+    }
+
+    .border-box code {
+      display: block;
+      margin-block-start: var(--size-xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ==================== TEXT ON TINT DEMO ==================== */
+    .text-on-tint-demo {
+      padding: var(--size-l);
+      background: var(--tint-primary-20);
+      border-radius: var(--radius-m);
+      color: var(--text-on-tint);
+    }
+
+    .text-on-tint-demo h3 {
+      margin: 0 0 var(--size-xs) 0;
+    }
+
+    .text-on-tint-demo p {
+      margin: 0;
+    }
+
+    /* ==================== TOKEN REFERENCE TABLE ==================== */
+    .token-table {
+      inline-size: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-s);
+    }
+
+    .token-table th,
+    .token-table td {
+      padding: var(--size-s);
+      text-align: start;
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .token-table th {
+      background: var(--color-surface-raised);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .token-table code {
+      background: var(--color-surface-sunken);
+      padding: 0.125em 0.375em;
+      border-radius: var(--radius-xs);
+      font-size: var(--font-size-xs);
+    }
+
+    .token-table .swatch {
+      display: inline-block;
+      inline-size: 1.5rem;
+      block-size: 1.5rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--color-border);
+      vertical-align: middle;
+      margin-inline-end: var(--size-xs);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-header">
+    <h1>Color-Mix Tokens</h1>
+    <p>Opacity and tint variations computed from base colors using <code>color-mix()</code>. These tokens adapt automatically when themes change.</p>
+  </div>
+
+  <div class="theme-controls">
+    <label>Switch Theme:</label>
+    <theme-wc data-variant="inline"></theme-wc>
+  </div>
+
+  <!-- Primary Tint Scale -->
+  <section>
+    <h2>Primary Tint Scale</h2>
+    <p class="description">Semi-transparent variations of the primary color, useful for backgrounds and highlights.</p>
+    <div class="tint-scale">
+      <div class="tint-swatch">
+        <div class="color-box" style="background: var(--tint-primary-5);"></div>
+        <span class="percent">5%</span>
+        <code>--tint-primary-5</code>
+      </div>
+      <div class="tint-swatch">
+        <div class="color-box" style="background: var(--tint-primary-10);"></div>
+        <span class="percent">10%</span>
+        <code>--tint-primary-10</code>
+      </div>
+      <div class="tint-swatch">
+        <div class="color-box" style="background: var(--tint-primary-20);"></div>
+        <span class="percent">20%</span>
+        <code>--tint-primary-20</code>
+      </div>
+      <div class="tint-swatch">
+        <div class="color-box" style="background: var(--tint-primary-30);"></div>
+        <span class="percent">30%</span>
+        <code>--tint-primary-30</code>
+      </div>
+      <div class="tint-swatch">
+        <div class="color-box" style="background: var(--color-primary);"></div>
+        <span class="percent">100%</span>
+        <code>--color-primary</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Surface Interaction States -->
+  <section>
+    <h2>Surface Interaction States</h2>
+    <p class="description">Pre-computed background colors for hover, focus, active, and selected states.</p>
+    <div class="surface-states">
+      <div class="surface-state-card hover-demo">
+        <h3>Hover</h3>
+        <code>--surface-hover</code>
+      </div>
+      <div class="surface-state-card focus-demo">
+        <h3>Focus</h3>
+        <code>--surface-focus</code>
+      </div>
+      <div class="surface-state-card active-demo">
+        <h3>Active</h3>
+        <code>--surface-active</code>
+      </div>
+      <div class="surface-state-card selected-demo">
+        <h3>Selected</h3>
+        <code>--surface-selected</code>
+      </div>
+    </div>
+
+    <div class="interactive-demo">
+      <h3>Interactive Example</h3>
+      <p class="description">Hover, click, or use keyboard to see states in action. Third item is selected.</p>
+      <ul class="interactive-list" role="listbox">
+        <li role="option" tabindex="0">List item one</li>
+        <li role="option" tabindex="0">List item two</li>
+        <li role="option" tabindex="0" aria-selected="true">List item three (selected)</li>
+        <li role="option" tabindex="0">List item four</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Status Backgrounds -->
+  <section>
+    <h2>Status Backgrounds</h2>
+    <p class="description">Subtle backgrounds derived from status colors for messages and alerts.</p>
+    <div class="status-cards">
+      <div class="status-card success">
+        <h3>Success</h3>
+        <p>Your changes have been saved successfully.</p>
+        <code>--status-success-bg</code>
+      </div>
+      <div class="status-card warning">
+        <h3>Warning</h3>
+        <p>This action cannot be undone.</p>
+        <code>--status-warning-bg</code>
+      </div>
+      <div class="status-card error">
+        <h3>Error</h3>
+        <p>Failed to load the requested resource.</p>
+        <code>--status-error-bg</code>
+      </div>
+      <div class="status-card info">
+        <h3>Info</h3>
+        <p>A new version is available for download.</p>
+        <code>--status-info-bg</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Border Tint -->
+  <section>
+    <h2>Border Tint</h2>
+    <p class="description">Semi-transparent border for subtle separators.</p>
+    <div class="border-demo">
+      <div class="border-box tint">
+        <strong>Tint Border</strong>
+        <code>--border-tint</code>
+      </div>
+      <div class="border-box solid">
+        <strong>Solid Border</strong>
+        <code>--color-border</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Text on Tint -->
+  <section>
+    <h2>Text on Tint</h2>
+    <p class="description">Text color optimized for colored backgrounds.</p>
+    <div class="text-on-tint-demo">
+      <h3>Heading on Tinted Background</h3>
+      <p>This text uses <code>--text-on-tint</code> for better readability on the primary tint background.</p>
+    </div>
+  </section>
+
+  <!-- Token Reference -->
+  <section>
+    <h2>Token Reference</h2>
+    <table class="token-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Value</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--tint-primary-5</code></td>
+          <td><span class="swatch" style="background: var(--tint-primary-5);"></span>5% primary</td>
+          <td>Subtle background highlight</td>
+        </tr>
+        <tr>
+          <td><code>--tint-primary-10</code></td>
+          <td><span class="swatch" style="background: var(--tint-primary-10);"></span>10% primary</td>
+          <td>Hover backgrounds</td>
+        </tr>
+        <tr>
+          <td><code>--tint-primary-20</code></td>
+          <td><span class="swatch" style="background: var(--tint-primary-20);"></span>20% primary</td>
+          <td>Selected states</td>
+        </tr>
+        <tr>
+          <td><code>--tint-primary-30</code></td>
+          <td><span class="swatch" style="background: var(--tint-primary-30);"></span>30% primary</td>
+          <td>Active/pressed states</td>
+        </tr>
+        <tr>
+          <td><code>--surface-hover</code></td>
+          <td><span class="swatch" style="background: var(--surface-hover);"></span>8% interactive</td>
+          <td>Row/card hover</td>
+        </tr>
+        <tr>
+          <td><code>--surface-focus</code></td>
+          <td><span class="swatch" style="background: var(--surface-focus);"></span>12% interactive</td>
+          <td>Keyboard focus background</td>
+        </tr>
+        <tr>
+          <td><code>--surface-active</code></td>
+          <td><span class="swatch" style="background: var(--surface-active);"></span>16% interactive</td>
+          <td>Pressed/active state</td>
+        </tr>
+        <tr>
+          <td><code>--surface-selected</code></td>
+          <td><span class="swatch" style="background: var(--surface-selected);"></span>10% primary</td>
+          <td>Selected items</td>
+        </tr>
+        <tr>
+          <td><code>--status-success-bg</code></td>
+          <td><span class="swatch" style="background: var(--status-success-bg);"></span>10% success</td>
+          <td>Success message background</td>
+        </tr>
+        <tr>
+          <td><code>--status-warning-bg</code></td>
+          <td><span class="swatch" style="background: var(--status-warning-bg);"></span>10% warning</td>
+          <td>Warning message background</td>
+        </tr>
+        <tr>
+          <td><code>--status-error-bg</code></td>
+          <td><span class="swatch" style="background: var(--status-error-bg);"></span>10% error</td>
+          <td>Error message background</td>
+        </tr>
+        <tr>
+          <td><code>--status-info-bg</code></td>
+          <td><span class="swatch" style="background: var(--status-info-bg);"></span>10% info</td>
+          <td>Info message background</td>
+        </tr>
+        <tr>
+          <td><code>--border-tint</code></td>
+          <td><span class="swatch" style="background: var(--border-tint);"></span>50% border</td>
+          <td>Subtle separators</td>
+        </tr>
+        <tr>
+          <td><code>--text-on-tint</code></td>
+          <td><span class="swatch" style="background: var(--text-on-tint);"></span>90% text + 10% primary</td>
+          <td>Text on colored backgrounds</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
