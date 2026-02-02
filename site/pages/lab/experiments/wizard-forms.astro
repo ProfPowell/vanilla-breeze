@@ -1,0 +1,500 @@
+---
+/**
+ * Wizard Forms Experiment
+ *
+ * Multi-step form pattern with progressive enhancement.
+ * Works as a standard form without JavaScript.
+ */
+
+import LabLayout from '../../../layouts/LabLayout.astro';
+---
+
+<LabLayout
+  title="Wizard Forms"
+  description="Multi-step form pattern with progressive enhancement."
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/lab/">Lab</a> /
+    <a href="/lab/experiments/">Experiments</a> /
+    <span aria-current="page">Wizard Forms</span>
+  </nav>
+
+  <h1>Wizard Forms</h1>
+  <p class="lead">
+    Transform standard HTML forms into multi-step wizards using semantic markup,
+    CSS, and minimal JavaScript. Works as a plain form without enhancement.
+  </p>
+
+  <section>
+    <h2>Basic Wizard</h2>
+    <p>A simple 3-step account setup form with validation.</p>
+
+    <form data-wizard id="basic-wizard">
+      <progress data-wizard-progress max="3" value="1"></progress>
+
+      <fieldset data-wizard-step>
+        <legend>Personal Information</legend>
+        <form-field>
+          <label for="basic-name">Full Name</label>
+          <input type="text" id="basic-name" name="name" required>
+          <output class="hint">Enter your legal name</output>
+        </form-field>
+        <form-field>
+          <label for="basic-email">Email Address</label>
+          <input type="email" id="basic-email" name="email" required>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Account Details</legend>
+        <form-field>
+          <label for="basic-username">Username</label>
+          <input type="text" id="basic-username" name="username" required minlength="3">
+          <output class="hint">At least 3 characters</output>
+        </form-field>
+        <form-field>
+          <label for="basic-password">Password</label>
+          <input type="password" id="basic-password" name="password" required minlength="8">
+          <output class="hint">At least 8 characters</output>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Confirmation</legend>
+        <p>Review your information and click Submit to create your account.</p>
+        <form-field>
+          <label>
+            <input type="checkbox" name="terms" required>
+            I agree to the Terms of Service
+          </label>
+        </form-field>
+      </fieldset>
+
+      <nav data-wizard-nav>
+        <button type="button" data-wizard-prev>Previous</button>
+        <button type="button" data-wizard-next>Next</button>
+        <button type="submit">Submit</button>
+      </nav>
+    </form>
+  </section>
+
+  <section>
+    <h2>Conditional Steps</h2>
+    <p>Steps that appear or hide based on user input.</p>
+
+    <form data-wizard id="conditional-wizard">
+      <progress data-wizard-progress max="4" value="1"></progress>
+
+      <fieldset data-wizard-step>
+        <legend>Account Type</legend>
+        <form-field>
+          <fieldset>
+            <legend>Select your account type:</legend>
+            <label>
+              <input type="radio" name="accountType" value="personal" checked>
+              Personal Account
+            </label>
+            <label>
+              <input type="radio" name="accountType" value="business">
+              Business Account
+            </label>
+          </fieldset>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step data-wizard-if="accountType:business">
+        <legend>Business Information</legend>
+        <p>This step only appears when Business Account is selected.</p>
+        <form-field>
+          <label for="cond-company">Company Name</label>
+          <input type="text" id="cond-company" name="company" required>
+        </form-field>
+        <form-field>
+          <label for="cond-taxid">Tax ID</label>
+          <input type="text" id="cond-taxid" name="taxId">
+          <output class="hint">Optional for tax purposes</output>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Contact Information</legend>
+        <form-field>
+          <label for="cond-phone">Phone Number</label>
+          <input type="tel" id="cond-phone" name="phone" required>
+        </form-field>
+        <form-field>
+          <label for="cond-address">Address</label>
+          <textarea id="cond-address" name="address" rows="3"></textarea>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Complete</legend>
+        <p>Your account is ready to be created.</p>
+      </fieldset>
+
+      <nav data-wizard-nav>
+        <button type="button" data-wizard-prev>Previous</button>
+        <button type="button" data-wizard-next>Next</button>
+        <button type="submit">Create Account</button>
+      </nav>
+    </form>
+  </section>
+
+  <section>
+    <h2>Optional Steps</h2>
+    <p>Steps marked as optional can be skipped without validation.</p>
+
+    <form data-wizard id="optional-wizard">
+      <progress data-wizard-progress max="3" value="1"></progress>
+
+      <fieldset data-wizard-step>
+        <legend>Required Info</legend>
+        <form-field>
+          <label for="opt-name">Name</label>
+          <input type="text" id="opt-name" name="name" required>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step data-wizard-optional>
+        <legend>Additional Details (Optional)</legend>
+        <p>You can skip this step if you prefer.</p>
+        <form-field>
+          <label for="opt-bio">Bio</label>
+          <textarea id="opt-bio" name="bio" rows="3"></textarea>
+        </form-field>
+        <form-field>
+          <label for="opt-website">Website</label>
+          <input type="url" id="opt-website" name="website" placeholder="https://">
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Done</legend>
+        <p>Click Submit to finish.</p>
+      </fieldset>
+
+      <nav data-wizard-nav>
+        <button type="button" data-wizard-prev>Previous</button>
+        <button type="button" data-wizard-next>Next</button>
+        <button type="submit">Submit</button>
+      </nav>
+    </form>
+  </section>
+
+  <section>
+    <h2>Events Demo</h2>
+    <p>The wizard emits custom events that you can listen to.</p>
+
+    <form data-wizard id="events-wizard">
+      <progress data-wizard-progress max="3" value="1"></progress>
+
+      <fieldset data-wizard-step>
+        <legend>Step 1</legend>
+        <p>Fill out any value and proceed.</p>
+        <form-field>
+          <label for="evt-field1">Field 1</label>
+          <input type="text" id="evt-field1" name="field1" required>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Step 2</legend>
+        <form-field>
+          <label for="evt-field2">Field 2</label>
+          <input type="text" id="evt-field2" name="field2" required>
+        </form-field>
+      </fieldset>
+
+      <fieldset data-wizard-step>
+        <legend>Step 3</legend>
+        <form-field>
+          <label for="evt-field3">Field 3</label>
+          <input type="text" id="evt-field3" name="field3" required>
+        </form-field>
+      </fieldset>
+
+      <nav data-wizard-nav>
+        <button type="button" data-wizard-prev>Previous</button>
+        <button type="button" data-wizard-next>Next</button>
+        <button type="submit">Submit</button>
+      </nav>
+    </form>
+
+    <div class="event-log" id="event-log">
+      <h3>Event Log</h3>
+      <ul id="event-list"></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>API Usage</h2>
+    <p>Access the wizard programmatically via methods attached to the form element.</p>
+    <pre><code>// Get the form
+const form = document.querySelector('#my-wizard');
+
+// Navigation methods
+form.wizardNext();      // Go to next step
+form.wizardPrev();      // Go to previous step
+form.wizardGoTo(2);     // Jump to step index 2 (zero-based)
+form.wizardReset();     // Reset to first step
+
+// Access the controller
+const controller = form.wizardController;
+console.log(controller.currentStep);  // Current step index
+console.log(controller.totalSteps);   // Total visible steps
+
+// Listen for events
+form.addEventListener('wizard:stepchange', (e) =&gt; &#123;
+  console.log('Moved from step ' + e.detail.from + ' to ' + e.detail.to);
+&#125;);
+
+form.addEventListener('wizard:complete', () =&gt; &#123;
+  console.log('Wizard completed!');
+&#125;);</code></pre>
+  </section>
+
+  <section>
+    <h2>Markup Reference</h2>
+    <pre><code>&lt;form data-wizard&gt;
+  &lt;progress data-wizard-progress max="3" value="1"&gt;&lt;/progress&gt;
+
+  &lt;fieldset data-wizard-step&gt;
+    &lt;legend&gt;Step 1&lt;/legend&gt;
+    &lt;!-- Form fields --&gt;
+  &lt;/fieldset&gt;
+
+  &lt;fieldset data-wizard-step data-wizard-if="fieldName:value"&gt;
+    &lt;legend&gt;Conditional Step&lt;/legend&gt;
+    &lt;!-- Only shown when condition is met --&gt;
+  &lt;/fieldset&gt;
+
+  &lt;fieldset data-wizard-step data-wizard-optional&gt;
+    &lt;legend&gt;Optional Step&lt;/legend&gt;
+    &lt;!-- Can be skipped --&gt;
+  &lt;/fieldset&gt;
+
+  &lt;nav data-wizard-nav&gt;
+    &lt;button type="button" data-wizard-prev&gt;Previous&lt;/button&gt;
+    &lt;button type="button" data-wizard-next&gt;Next&lt;/button&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+  &lt;/nav&gt;
+&lt;/form&gt;</code></pre>
+
+    <h3>Condition Syntax</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-wizard-if="fieldName:value"</code></td>
+          <td>Show when field equals value</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="fieldName:!value"</code></td>
+          <td>Show when field does NOT equal value</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="fieldName"</code></td>
+          <td>Show when field is truthy (has value/checked)</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="!fieldName"</code></td>
+          <td>Show when field is falsy (empty/unchecked)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</LabLayout>
+
+<style>
+  section {
+    margin-block: var(--size-2xl);
+  }
+
+  form[data-wizard] {
+    max-width: 600px;
+    background: var(--color-surface);
+    padding: var(--size-l);
+    border-radius: var(--radius-m);
+    border: 1px solid var(--color-border);
+  }
+
+  form-field {
+    display: block;
+    margin-block-end: var(--size-m);
+  }
+
+  form-field label {
+    display: block;
+    margin-block-end: var(--size-2xs);
+    font-weight: 500;
+  }
+
+  form-field input[type="text"],
+  form-field input[type="email"],
+  form-field input[type="password"],
+  form-field input[type="tel"],
+  form-field input[type="url"],
+  form-field textarea {
+    width: 100%;
+    padding: var(--size-s);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  form-field input:focus,
+  form-field textarea:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  form-field .hint {
+    display: block;
+    font-size: var(--size-s);
+    color: var(--color-text-muted);
+    margin-block-start: var(--size-2xs);
+  }
+
+  form-field fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  form-field fieldset legend {
+    font-weight: 500;
+    margin-block-end: var(--size-s);
+  }
+
+  form-field fieldset label {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    font-weight: normal;
+    margin-block-end: var(--size-xs);
+  }
+
+  [data-wizard-nav] button {
+    padding: var(--size-s) var(--size-l);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  [data-wizard-nav] button[type="submit"],
+  [data-wizard-nav] button[data-wizard-next] {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  [data-wizard-nav] button:hover {
+    filter: brightness(0.95);
+  }
+
+  .event-log {
+    margin-block-start: var(--size-m);
+    padding: var(--size-m);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-s);
+    max-width: 600px;
+  }
+
+  .event-log h3 {
+    margin: 0 0 var(--size-s) 0;
+    font-size: var(--size-m);
+  }
+
+  .event-log ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--size-s);
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .event-log li {
+    padding: var(--size-2xs) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  pre {
+    background: var(--color-surface-alt);
+    padding: var(--size-m);
+    border-radius: var(--radius-s);
+    overflow-x: auto;
+    font-size: var(--size-s);
+  }
+
+  code {
+    font-family: var(--font-mono, monospace);
+  }
+
+  table {
+    width: 100%;
+    max-width: 600px;
+    border-collapse: collapse;
+    margin-block: var(--size-m);
+  }
+
+  th, td {
+    padding: var(--size-s);
+    text-align: left;
+    border: 1px solid var(--color-border);
+  }
+
+  th {
+    background: var(--color-surface-alt);
+  }
+</style>
+
+<script type="module" src="/src/lib/wizard.js" is:inline></script>
+<script is:inline>
+  // Event logging demo
+  document.addEventListener('DOMContentLoaded', function() {
+    var eventsWizard = document.getElementById('events-wizard');
+    var eventList = document.getElementById('event-list');
+
+    function logEvent(name, detail) {
+      var li = document.createElement('li');
+      var time = new Date().toLocaleTimeString();
+      li.textContent = '[' + time + '] ' + name + ': ' + JSON.stringify(detail || {});
+      if (eventList) eventList.prepend(li);
+    }
+
+    if (eventsWizard) {
+      eventsWizard.addEventListener('wizard:stepchange', function(e) {
+        logEvent('wizard:stepchange', e.detail);
+      });
+
+      eventsWizard.addEventListener('wizard:complete', function() {
+        logEvent('wizard:complete', {});
+      });
+
+      eventsWizard.addEventListener('wizard:reset', function() {
+        logEvent('wizard:reset', {});
+      });
+    }
+
+    // Prevent actual form submissions for demo
+    var forms = document.querySelectorAll('form[data-wizard]');
+    forms.forEach(function(form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Form submitted! (prevented for demo)');
+      });
+    });
+  });
+</script>
