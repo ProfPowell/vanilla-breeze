@@ -1,0 +1,71 @@
+/**
+ * form-field - Accessible form field wrapper
+ *
+ * Markup pattern:
+ * <form-field>
+ *   <label for="name">Name</label>
+ *   <input id="name" required aria-describedby="name-msg" />
+ *   <output id="name-msg" for="name" aria-live="polite">Error message</output>
+ * </form-field>
+ */
+
+form-field {
+  display: block;
+}
+
+/* Required field indicator */
+form-field:has(:required) label::after {
+  content: " *";
+  color: var(--color-error);
+}
+
+/* Hide output by default, show on validation states */
+form-field output {
+  display: none;
+  font-size: var(--font-size-s);
+  margin-block-start: var(--size-xs);
+}
+
+/* Valid state - after user interaction */
+form-field:has(:user-valid) {
+  & input,
+  & textarea,
+  & select {
+    border-color: var(--color-success);
+    background: color-mix(in oklab, var(--color-success) 5%, transparent);
+  }
+
+  & output {
+    display: block;
+    color: var(--color-success);
+  }
+}
+
+/* Invalid state - after user interaction */
+form-field:has(:user-invalid) {
+  & input,
+  & textarea,
+  & select {
+    border-color: var(--color-error);
+  }
+
+  & output {
+    display: block;
+    color: var(--color-error);
+  }
+}
+
+/* Checkbox/radio variants */
+form-field[data-type="checkbox"],
+form-field[data-type="radio"] {
+  & label {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    cursor: pointer;
+  }
+
+  & input {
+    margin: 0;
+  }
+}
