@@ -4,8 +4,9 @@
  * Markup pattern:
  * <form-field>
  *   <label for="name">Name</label>
- *   <input id="name" required aria-describedby="name-msg" />
- *   <output id="name-msg" for="name" aria-live="polite">Error message</output>
+ *   <input id="name" required aria-describedby="name-hint name-error" />
+ *   <small id="name-hint">3-20 characters, letters and numbers only.</small>
+ *   <output id="name-error" for="name" aria-live="polite">Please enter a valid name.</output>
  * </form-field>
  */
 
@@ -19,7 +20,15 @@ form-field:has(:required) label::after {
   color: var(--color-error);
 }
 
-/* Hide output by default, show on validation states */
+/* Help text - always visible */
+form-field small {
+  display: block;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-start: var(--size-xs);
+}
+
+/* Error message - hidden by default */
 form-field output {
   display: none;
   font-size: var(--font-size-s);
