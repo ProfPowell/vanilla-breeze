@@ -5,8 +5,8 @@
  * <form-field>
  *   <label for="name">Name</label>
  *   <input id="name" required aria-describedby="name-hint name-error" />
- *   <small id="name-hint">3-20 characters, letters and numbers only.</small>
- *   <output id="name-error" for="name" aria-live="polite">Please enter a valid name.</output>
+ *   <output id="name-hint" class="hint" for="name">3-20 characters.</output>
+ *   <output id="name-error" class="error" for="name" aria-live="polite">Please enter a valid name.</output>
  * </form-field>
  */
 
@@ -20,18 +20,19 @@ form-field:has(:required) label::after {
   color: var(--color-error);
 }
 
-/* Help text - always visible */
-form-field small {
+/* Hint - always visible */
+form-field output.hint {
   display: block;
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
   margin-block-start: var(--size-xs);
 }
 
-/* Error message - hidden by default */
-form-field output {
+/* Error - hidden by default */
+form-field output.error {
   display: none;
   font-size: var(--font-size-s);
+  color: var(--color-error);
   margin-block-start: var(--size-xs);
 }
 
@@ -43,6 +44,10 @@ form-field:has(:user-valid) {
     border-color: var(--color-success);
     background: color-mix(in oklab, var(--color-success) 5%, transparent);
   }
+
+  & output.hint {
+    display: none;
+  }
 }
 
 /* Invalid state - after user interaction */
@@ -53,9 +58,8 @@ form-field:has(:user-invalid) {
     border-color: var(--color-error);
   }
 
-  & output {
+  & output.error {
     display: block;
-    color: var(--color-error);
   }
 }
 
