@@ -1,0 +1,394 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const simplePaginationCode = `<nav class="pagination" aria-label="Pagination">
+  <ul>
+    <li>
+      <a href="#" data-prev aria-label="Previous page">
+        <icon-wc name="chevron-left" size="sm"></icon-wc>
+        Previous
+      </a>
+    </li>
+    <li>
+      <a href="#" data-next aria-label="Next page">
+        Next
+        <icon-wc name="chevron-right" size="sm"></icon-wc>
+      </a>
+    </li>
+  </ul>
+</nav>`;
+
+const numberedPaginationCode = `<nav class="pagination" aria-label="Pagination">
+  <ul>
+    <li>
+      <a href="#" data-prev aria-label="Previous page">
+        <icon-wc name="chevron-left" size="sm"></icon-wc>
+      </a>
+    </li>
+    <li><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#" aria-current="page">3</a></li>
+    <li><a href="#">4</a></li>
+    <li><a href="#">5</a></li>
+    <li><span data-ellipsis>...</span></li>
+    <li><a href="#">10</a></li>
+    <li>
+      <a href="#" data-next aria-label="Next page">
+        <icon-wc name="chevron-right" size="sm"></icon-wc>
+      </a>
+    </li>
+  </ul>
+</nav>`;
+
+const fullPaginationCode = `<div class="pagination-bar">
+  <p class="pagination-info">
+    Showing <strong>21</strong> to <strong>30</strong> of <strong>97</strong> results
+  </p>
+
+  <nav class="pagination" aria-label="Pagination">
+    <ul>
+      <li>
+        <a href="#" data-prev aria-label="First page">
+          <icon-wc name="chevrons-left" size="sm"></icon-wc>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-prev aria-label="Previous page">
+          <icon-wc name="chevron-left" size="sm"></icon-wc>
+        </a>
+      </li>
+      <li><a href="#">1</a></li>
+      <li><a href="#">2</a></li>
+      <li><a href="#" aria-current="page">3</a></li>
+      <li><a href="#">4</a></li>
+      <li><a href="#">5</a></li>
+      <li><span data-ellipsis>...</span></li>
+      <li><a href="#">10</a></li>
+      <li>
+        <a href="#" data-next aria-label="Next page">
+          <icon-wc name="chevron-right" size="sm"></icon-wc>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-next aria-label="Last page">
+          <icon-wc name="chevrons-right" size="sm"></icon-wc>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="page-size-selector">
+    <label for="page-size">Show:</label>
+    <select id="page-size">
+      <option value="10">10</option>
+      <option value="25" selected>25</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+    <span>per page</span>
+  </div>
+</div>`;
+
+const disabledPaginationCode = `<!-- First page - Previous disabled -->
+<nav class="pagination" aria-label="Pagination">
+  <ul>
+    <li>
+      <button type="button" disabled aria-label="Previous page">
+        <icon-wc name="chevron-left" size="sm"></icon-wc>
+      </button>
+    </li>
+    <li><a href="#" aria-current="page">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><span data-ellipsis>...</span></li>
+    <li><a href="#">10</a></li>
+    <li>
+      <a href="#" data-next aria-label="Next page">
+        <icon-wc name="chevron-right" size="sm"></icon-wc>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<!-- Last page - Next disabled -->
+<nav class="pagination" aria-label="Pagination">
+  <ul>
+    <li>
+      <a href="#" data-prev aria-label="Previous page">
+        <icon-wc name="chevron-left" size="sm"></icon-wc>
+      </a>
+    </li>
+    <li><a href="#">1</a></li>
+    <li><span data-ellipsis>...</span></li>
+    <li><a href="#">8</a></li>
+    <li><a href="#">9</a></li>
+    <li><a href="#" aria-current="page">10</a></li>
+    <li>
+      <button type="button" disabled aria-label="Next page">
+        <icon-wc name="chevron-right" size="sm"></icon-wc>
+      </button>
+    </li>
+  </ul>
+</nav>`;
+
+const paginationStylesCode = `/* Pagination navigation - included in nav styles */
+nav.pagination > ul {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-2xs);
+}
+
+nav.pagination li {
+  display: flex;
+}
+
+nav.pagination a,
+nav.pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding-inline: var(--size-xs);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--radius-m);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+nav.pagination a:hover:not([disabled]):not([aria-current]),
+nav.pagination button:hover:not([disabled]):not([aria-current]) {
+  background: var(--color-gray-100);
+  color: var(--color-text);
+}
+
+nav.pagination [aria-current="page"] {
+  background: var(--color-interactive);
+  color: white;
+  border-color: var(--color-interactive);
+}
+
+nav.pagination [disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ellipsis */
+nav.pagination [data-ellipsis] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}`;
+
+const paginationBarStylesCode = `/* Pagination bar with info and page size */
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-m);
+  padding: var(--size-m);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-m);
+}
+
+.pagination-info {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+.pagination-info strong {
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--size-xs);
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+.page-size-selector select {
+  padding: var(--size-2xs) var(--size-xs);
+  font-size: var(--font-size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Responsive layout */
+@media (max-width: 640px) {
+  .pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .pagination-bar nav.pagination {
+    order: -1;
+  }
+}`;
+---
+
+<DocsLayout
+  title="Pagination Patterns"
+  description="Page navigation patterns for multi-page content, tables, and search results."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <span aria-current="page">Pagination</span>
+  </nav>
+
+  <h1>Pagination Patterns</h1>
+  <p class="lead">Page navigation patterns for multi-page content, tables, and search results. Built with semantic HTML and keyboard accessible by default.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Pagination helps users navigate through large sets of content split across multiple pages. These patterns use semantic <code>&lt;nav&gt;</code> elements with proper ARIA attributes for accessibility.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Semantic HTML with <code>aria-label</code> for screen readers</li>
+        <li>Current page indication via <code>aria-current="page"</code></li>
+        <li>Disabled states for first/last page boundaries</li>
+        <li>Responsive design that works on all screen sizes</li>
+        <li>Keyboard navigation support</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Prev/Next</h2>
+    <layout-text>
+      <p>A minimal pagination with just Previous and Next buttons. Best for sequential content like blog posts or articles where page numbers are less important.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pagination-simple.html"
+      url="https://vanilla-breeze.dev/pagination-simple"
+      title="Simple Pagination"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Simple prev/next pagination">{simplePaginationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Page Numbers</h2>
+    <layout-text>
+      <p>Pagination with numbered page links for direct page access. Includes ellipsis for large page ranges. Best for search results, product listings, or any content where users may want to jump to specific pages.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pagination-numbered.html"
+      url="https://vanilla-breeze.dev/pagination-numbered"
+      title="Numbered Pagination"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Numbered pagination with ellipsis">{numberedPaginationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Full Pagination</h2>
+    <layout-text>
+      <p>Complete pagination bar with result count, page navigation, and page size selector. Best for data tables and admin interfaces where users need full control over data display.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pagination-full.html"
+      url="https://vanilla-breeze.dev/pagination-full"
+      title="Full Pagination"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Full pagination with info and page size">{fullPaginationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Disabled States</h2>
+    <layout-text>
+      <p>When on the first or last page, disable the corresponding navigation button to indicate the boundary. Use a <code>&lt;button&gt;</code> element with the <code>disabled</code> attribute instead of a link.</p>
+    </layout-text>
+
+    <code-block language="html" label="Disabled pagination states">{disabledPaginationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Styles</h2>
+    <layout-text>
+      <p>The base pagination styles are included in the nav element styles. These provide consistent sizing, hover states, and current page highlighting:</p>
+    </layout-text>
+
+    <code-block language="css" label="Pagination base styles">{paginationStylesCode}</code-block>
+
+    <h3>Pagination Bar Styles</h3>
+    <layout-text>
+      <p>For the full pagination variant with info text and page size selector, add these additional styles:</p>
+    </layout-text>
+
+    <code-block language="css" label="Pagination bar styles">{paginationBarStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <h3>Accessibility</h3>
+      <ul>
+        <li>Always wrap pagination in a <code>&lt;nav&gt;</code> element with <code>aria-label="Pagination"</code></li>
+        <li>Mark the current page with <code>aria-current="page"</code></li>
+        <li>Add <code>aria-label</code> to icon-only buttons (e.g., "Previous page", "Next page")</li>
+        <li>Use the <code>disabled</code> attribute on buttons for first/last page states</li>
+        <li>Ensure all interactive elements are keyboard accessible</li>
+      </ul>
+
+      <h3>When to Use Each Variant</h3>
+      <ul>
+        <li><strong>Simple:</strong> Blog posts, articles, tutorials - sequential content where page numbers matter less</li>
+        <li><strong>Numbered:</strong> Search results, product catalogs - when users need to jump to specific pages</li>
+        <li><strong>Full:</strong> Data tables, admin dashboards - when users need result counts and page size control</li>
+      </ul>
+
+      <h3>Implementation Tips</h3>
+      <ul>
+        <li>For server-rendered pages, use <code>&lt;a&gt;</code> elements with proper URLs</li>
+        <li>For SPAs, use <code>&lt;button&gt;</code> elements with click handlers</li>
+        <li>Consider hiding page numbers on mobile and showing only prev/next</li>
+        <li>For very large datasets, consider infinite scroll as an alternative</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/native/nav/" class="section-card">
+        <h3>Nav Element</h3>
+        <p>Native navigation element documentation</p>
+      </a>
+      <a href="/docs/patterns/navigation/breadcrumb/" class="section-card">
+        <h3>Breadcrumb</h3>
+        <p>Hierarchical navigation patterns</p>
+      </a>
+      <a href="/docs/elements/web-components/table-wc/" class="section-card">
+        <h3>Table WC</h3>
+        <p>Data table with built-in pagination</p>
+      </a>
+      <a href="/docs/examples/table-interactive/" class="section-card">
+        <h3>Interactive Table</h3>
+        <p>Table example with pagination</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

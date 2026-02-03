@@ -1,0 +1,515 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const pricingCardStyles = `.pricing-card {
+  background: var(--color-surface-raised);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-l);
+  padding: var(--size-l);
+  text-align: center;
+}
+
+.pricing-card[data-featured] {
+  border-color: var(--color-interactive);
+  box-shadow: var(--shadow-m);
+  transform: scale(1.05);
+  position: relative;
+}
+
+.pricing-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-interactive);
+  color: var(--color-white);
+  padding: var(--size-2xs) var(--size-s);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pricing-card .price {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-xs) 0;
+}
+
+.feature-list icon-wc {
+  color: var(--color-success);
+  flex-shrink: 0;
+}`;
+
+const pricingTableStyles = `.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+
+.pricing-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-raised);
+}
+
+.pricing-table th,
+.pricing-table td {
+  padding: var(--size-m);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.pricing-table th {
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.pricing-table th:first-child {
+  text-align: left;
+}
+
+.pricing-table td {
+  text-align: center;
+}
+
+.pricing-table td:first-child {
+  text-align: left;
+  color: var(--color-text-muted);
+}
+
+.feature-check {
+  color: var(--color-success);
+}
+
+.feature-unavailable {
+  color: var(--color-text-muted);
+}`;
+
+const pricingToggleStyles = `.pricing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-m);
+}
+
+.toggle-switch {
+  position: relative;
+  width: 56px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--color-interactive);
+  border-radius: var(--radius-full);
+  transition: background 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background: var(--color-white);
+  border-radius: var(--radius-full);
+  transition: transform 0.2s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+}
+
+/* Price visibility using :has() */
+.pricing-toggle-wrapper:has(input:not(:checked)) ~ .pricing-cards .price-monthly {
+  display: inline;
+}
+
+.pricing-toggle-wrapper:has(input:checked) ~ .pricing-cards .price-yearly {
+  display: inline;
+}`;
+---
+
+<DocsLayout
+  title="Pricing Patterns"
+  description="Pricing section patterns for SaaS and product landing pages. Tiered cards, feature comparison tables, and billing toggle options."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/marketing/">Marketing</a> / <span aria-current="page">Pricing</span>
+  </nav>
+
+  <h1>Pricing Patterns</h1>
+  <p class="lead">Pricing section patterns for SaaS and product landing pages. Display plan tiers, feature comparisons, and billing options in clear, conversion-focused layouts.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Pricing sections help users understand and compare your offerings. These patterns use <code>&lt;layout-grid&gt;</code> for responsive card layouts and semantic table markup for feature comparisons, creating accessible and mobile-friendly pricing displays.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Responsive card grids with <code>layout-grid</code></li>
+        <li>Highlighted recommended tier</li>
+        <li>Feature comparison tables with sticky headers</li>
+        <li>Monthly/yearly billing toggle with <code>:has()</code> selector</li>
+        <li>Accessible markup with proper semantics</li>
+        <li>No JavaScript required for basic functionality</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Pricing Cards</h2>
+    <layout-text>
+      <p>Three-tier pricing cards in a responsive grid. The middle tier is highlighted as "Most Popular" with accent styling and a badge.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pricing-cards.html"
+      url="https://vanilla-breeze.dev/pricing-cards"
+      title="Pricing Cards"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Three-tier pricing cards">&lt;section class="pricing-section"&gt;
+  &lt;layout-center data-max-width="wide"&gt;
+    &lt;layout-stack data-gap="2xl"&gt;
+      &lt;layout-stack data-gap="s"&gt;
+        &lt;h2&gt;Simple, transparent pricing&lt;/h2&gt;
+        &lt;p class="text-muted"&gt;Choose the plan that's right for you&lt;/p&gt;
+      &lt;/layout-stack&gt;
+      &lt;layout-grid data-min="280px" data-gap="l"&gt;
+        &lt;div class="pricing-card"&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;layout-stack data-gap="xs"&gt;
+              &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
+              &lt;div&gt;
+                &lt;span class="price"&gt;$9&lt;/span&gt;
+                &lt;span class="price-period"&gt;/month&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;p class="text-sm text-muted"&gt;Perfect for individuals and small projects&lt;/p&gt;
+            &lt;/layout-stack&gt;
+            &lt;ul class="feature-list"&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Up to 3 projects&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 5 GB storage&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Basic analytics&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Email support&lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;a href="#" class="button secondary full-width"&gt;Get Started&lt;/a&gt;
+          &lt;/layout-stack&gt;
+        &lt;/div&gt;
+        &lt;div class="pricing-card" data-featured&gt;
+          &lt;span class="pricing-badge"&gt;Most Popular&lt;/span&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;layout-stack data-gap="xs"&gt;
+              &lt;span class="plan-name"&gt;Pro&lt;/span&gt;
+              &lt;div&gt;
+                &lt;span class="price"&gt;$29&lt;/span&gt;
+                &lt;span class="price-period"&gt;/month&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;p class="text-sm text-muted"&gt;Best for growing teams and businesses&lt;/p&gt;
+            &lt;/layout-stack&gt;
+            &lt;ul class="feature-list"&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Unlimited projects&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 50 GB storage&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Advanced analytics&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Priority support&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Custom integrations&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Team collaboration&lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;a href="#" class="button full-width"&gt;Get Started&lt;/a&gt;
+          &lt;/layout-stack&gt;
+        &lt;/div&gt;
+        &lt;div class="pricing-card"&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;layout-stack data-gap="xs"&gt;
+              &lt;span class="plan-name"&gt;Enterprise&lt;/span&gt;
+              &lt;div&gt;
+                &lt;span class="price"&gt;$99&lt;/span&gt;
+                &lt;span class="price-period"&gt;/month&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;p class="text-sm text-muted"&gt;For large organizations with custom needs&lt;/p&gt;
+            &lt;/layout-stack&gt;
+            &lt;ul class="feature-list"&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Everything in Pro&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Unlimited storage&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Custom analytics&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; 24/7 phone support&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; Dedicated account manager&lt;/li&gt;
+              &lt;li&gt;&lt;icon-wc name="check" size="sm"&gt;&lt;/icon-wc&gt; SLA guarantee&lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;a href="#" class="button secondary full-width"&gt;Contact Sales&lt;/a&gt;
+          &lt;/layout-stack&gt;
+        &lt;/div&gt;
+      &lt;/layout-grid&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
+&lt;/section&gt;</code-block>
+
+    <h3>Required CSS</h3>
+    <layout-text>
+      <p>Add these styles for pricing card layouts:</p>
+    </layout-text>
+
+    <code-block language="css" label="Pricing card styles">{pricingCardStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Comparison Table</h2>
+    <layout-text>
+      <p>A feature comparison table with plan columns and feature rows. Uses semantic <code>&lt;table&gt;</code> markup with proper <code>scope</code> attributes for accessibility. The header is sticky for easy comparison while scrolling.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pricing-table.html"
+      url="https://vanilla-breeze.dev/pricing-table"
+      title="Pricing Comparison Table"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Feature comparison table">&lt;div class="pricing-table-wrapper"&gt;
+  &lt;table class="pricing-table"&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th scope="col"&gt;Features&lt;/th&gt;
+        &lt;th scope="col"&gt;
+          &lt;div class="plan-header"&gt;
+            &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
+            &lt;span class="plan-price"&gt;$9&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+        &lt;th scope="col" class="plan-featured"&gt;
+          &lt;div class="plan-header"&gt;
+            &lt;span class="plan-name"&gt;Pro&lt;/span&gt;
+            &lt;span class="plan-price"&gt;$29&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+        &lt;th scope="col"&gt;
+          &lt;div class="plan-header"&gt;
+            &lt;span class="plan-name"&gt;Enterprise&lt;/span&gt;
+            &lt;span class="plan-price"&gt;$99&lt;span class="plan-period"&gt;/mo&lt;/span&gt;&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr class="category-row"&gt;
+        &lt;td colspan="4"&gt;Usage&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Projects&lt;/td&gt;
+        &lt;td&gt;3&lt;/td&gt;
+        &lt;td&gt;Unlimited&lt;/td&gt;
+        &lt;td&gt;Unlimited&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Storage&lt;/td&gt;
+        &lt;td&gt;5 GB&lt;/td&gt;
+        &lt;td&gt;50 GB&lt;/td&gt;
+        &lt;td&gt;Unlimited&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr class="category-row"&gt;
+        &lt;td colspan="4"&gt;Features&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Custom integrations&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="x" size="sm" class="feature-unavailable"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;API access&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="x" size="sm" class="feature-unavailable"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;icon-wc name="check" size="sm" class="feature-check"&gt;&lt;/icon-wc&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+    &lt;tfoot&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;a href="#" class="button secondary"&gt;Get Started&lt;/a&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;a href="#" class="button"&gt;Get Started&lt;/a&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;a href="#" class="button secondary"&gt;Contact Sales&lt;/a&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tfoot&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</code-block>
+
+    <h3>Required CSS</h3>
+    <layout-text>
+      <p>Add these styles for pricing tables:</p>
+    </layout-text>
+
+    <code-block language="css" label="Pricing table styles">{pricingTableStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>With Billing Toggle</h2>
+    <layout-text>
+      <p>Pricing cards with a monthly/yearly billing toggle. Uses the CSS <code>:has()</code> selector to show different prices based on the toggle state, requiring no JavaScript for core functionality.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/pricing-toggle.html"
+      url="https://vanilla-breeze.dev/pricing-toggle"
+      title="Pricing with Billing Toggle"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Pricing with monthly/yearly toggle">&lt;section class="pricing-section"&gt;
+  &lt;layout-center data-max-width="wide"&gt;
+    &lt;layout-stack data-gap="2xl"&gt;
+      &lt;layout-stack data-gap="m"&gt;
+        &lt;h2&gt;Simple, transparent pricing&lt;/h2&gt;
+        &lt;p class="text-muted"&gt;Choose the plan that's right for you&lt;/p&gt;
+        &lt;div class="pricing-toggle-wrapper"&gt;
+          &lt;div class="pricing-toggle"&gt;
+            &lt;span class="toggle-label active" id="monthly-label"&gt;Monthly&lt;/span&gt;
+            &lt;label class="toggle-switch"&gt;
+              &lt;input type="checkbox" aria-labelledby="monthly-label yearly-label" /&gt;
+              &lt;span class="toggle-slider"&gt;&lt;/span&gt;
+            &lt;/label&gt;
+            &lt;span class="toggle-label" id="yearly-label"&gt;Yearly&lt;/span&gt;
+            &lt;span class="savings-badge"&gt;Save 20%&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/layout-stack&gt;
+      &lt;layout-grid data-min="280px" data-gap="l" class="pricing-cards"&gt;
+        &lt;div class="pricing-card"&gt;
+          &lt;layout-stack data-gap="l"&gt;
+            &lt;layout-stack data-gap="xs"&gt;
+              &lt;span class="plan-name"&gt;Basic&lt;/span&gt;
+              &lt;div&gt;
+                &lt;span class="price price-monthly"&gt;$9&lt;/span&gt;
+                &lt;span class="price price-yearly"&gt;$7&lt;/span&gt;
+                &lt;span class="price-period"&gt;/month&lt;/span&gt;
+              &lt;/div&gt;
+            &lt;/layout-stack&gt;
+            &lt;!-- features... --&gt;
+          &lt;/layout-stack&gt;
+        &lt;/div&gt;
+        &lt;!-- more cards... --&gt;
+      &lt;/layout-grid&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
+&lt;/section&gt;</code-block>
+
+    <h3>Required CSS</h3>
+    <layout-text>
+      <p>Add these styles for the billing toggle. The <code>:has()</code> selector enables price switching without JavaScript:</p>
+    </layout-text>
+
+    <code-block language="css" label="Billing toggle styles">{pricingToggleStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Configuration</h2>
+    <layout-text>
+      <p>Common data attributes for pricing sections:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>layout-grid</code></td>
+          <td><code>data-min</code></td>
+          <td>CSS length (e.g., <code>280px</code>)</td>
+          <td>Minimum card width before wrapping.</td>
+        </tr>
+        <tr>
+          <td><code>layout-grid</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Gap between grid items.</td>
+        </tr>
+        <tr>
+          <td><code>layout-center</code></td>
+          <td><code>data-max-width</code></td>
+          <td><code>narrow</code> <code>measure</code> <code>wide</code></td>
+          <td>Maximum width of pricing section.</td>
+        </tr>
+        <tr>
+          <td><code>layout-stack</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Vertical spacing between elements.</td>
+        </tr>
+        <tr>
+          <td><code>.pricing-card</code></td>
+          <td><code>data-featured</code></td>
+          <td>Boolean attribute</td>
+          <td>Highlights the recommended plan.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Tier naming:</strong> Use clear, hierarchical names (Basic, Pro, Enterprise) that indicate value progression.</li>
+        <li><strong>Feature ordering:</strong> List features in order of importance. Lead with the most compelling features.</li>
+        <li><strong>Highlight recommended:</strong> Always highlight one tier as recommended. This guides user decisions and improves conversion.</li>
+        <li><strong>CTAs:</strong> Use primary buttons for the recommended plan and secondary buttons for others. Use "Contact Sales" for enterprise tiers.</li>
+        <li><strong>Pricing transparency:</strong> Show all costs upfront. If there are per-user or usage-based costs, make them clear.</li>
+        <li><strong>Yearly savings:</strong> When offering discounts for annual billing, display the savings prominently (e.g., "Save 20%").</li>
+        <li><strong>Comparison tables:</strong> Use tables for detailed feature comparisons. Cards work better for quick overviews.</li>
+        <li><strong>Mobile considerations:</strong> Cards stack naturally on mobile. Tables may need horizontal scrolling.</li>
+        <li><strong>Accessibility:</strong> Use proper table semantics with <code>scope</code> attributes. Ensure toggle has proper labeling.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/custom-elements/grid/" class="section-card">
+        <h3>Layout Grid</h3>
+        <p>Grid layout element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/stack/" class="section-card">
+        <h3>Layout Stack</h3>
+        <p>Stack layout element documentation</p>
+      </a>
+      <a href="/docs/patterns/marketing/cta/" class="section-card">
+        <h3>Call to Action</h3>
+        <p>CTA section patterns</p>
+      </a>
+      <a href="/docs/patterns/marketing/features/" class="section-card">
+        <h3>Features</h3>
+        <p>Feature grid patterns</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

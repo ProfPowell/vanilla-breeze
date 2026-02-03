@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Breadcrumb - Collapsed</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    /* Collapsed breadcrumb with expandable middle items */
+    .breadcrumb-collapsed {
+      font-size: var(--font-size-s);
+    }
+
+    .breadcrumb-collapsed ol {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--size-2xs);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .breadcrumb-collapsed li {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs);
+    }
+
+    .breadcrumb-collapsed li:not(:last-child)::after {
+      content: "/";
+      margin-inline-start: var(--size-2xs);
+      color: var(--color-gray-400);
+    }
+
+    .breadcrumb-collapsed a,
+    .breadcrumb-collapsed span:not(.visually-hidden) {
+      padding: var(--size-xs);
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+
+    .breadcrumb-collapsed a:hover {
+      color: var(--color-text);
+      text-decoration: underline;
+    }
+
+    .breadcrumb-collapsed [aria-current="page"] {
+      color: var(--color-text);
+      font-weight: var(--font-weight-medium);
+    }
+
+    /* Ellipsis button styling */
+    .breadcrumb-collapsed .ellipsis-toggle {
+      background: none;
+      border: none;
+      padding: var(--size-2xs) var(--size-xs);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-size: inherit;
+      line-height: 1;
+      border-radius: var(--radius-s);
+    }
+
+    .breadcrumb-collapsed .ellipsis-toggle:hover {
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+    }
+
+    /* Hidden items (shown when expanded) */
+    .breadcrumb-collapsed .hidden-items {
+      display: none;
+    }
+
+    .breadcrumb-collapsed.expanded .hidden-items {
+      display: flex;
+      align-items: center;
+    }
+
+    .breadcrumb-collapsed.expanded .ellipsis-toggle {
+      display: none;
+    }
+
+    /* Demo section styling */
+    .demo-section {
+      margin-block-end: var(--size-xl);
+    }
+
+    .demo-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-block-end: var(--size-s);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-section">
+    <p class="demo-label">Collapsed (click ellipsis to expand)</p>
+    <nav class="breadcrumb-collapsed" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="#">Home</a></li>
+        <li>
+          <button class="ellipsis-toggle" aria-label="Show hidden breadcrumb items" onclick="this.closest('.breadcrumb-collapsed').classList.add('expanded')">...</button>
+        </li>
+        <li class="hidden-items"><a href="#">Documentation</a></li>
+        <li class="hidden-items"><a href="#">Elements</a></li>
+        <li class="hidden-items"><a href="#">Navigation</a></li>
+        <li><a href="#">Patterns</a></li>
+        <li><span aria-current="page">Breadcrumb</span></li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="demo-section">
+    <p class="demo-label">Using data-collapsed attribute (CSS-only)</p>
+    <nav class="breadcrumb" data-collapsed aria-label="Breadcrumb">
+      <ol>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">Elements</a></li>
+        <li><a href="#">Navigation</a></li>
+        <li><a href="#">Patterns</a></li>
+        <li><span aria-current="page">Breadcrumb</span></li>
+      </ol>
+    </nav>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const faqAccordionStyles = `.faq-accordion details {
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.faq-accordion details:first-child {
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.faq-accordion summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--size-m) 0;
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  list-style: none;
+}
+
+.faq-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-accordion summary::marker {
+  display: none;
+  content: "";
+}
+
+.faq-accordion details[open] summary icon-wc {
+  transform: rotate(180deg);
+}
+
+.faq-accordion summary icon-wc {
+  transition: transform var(--duration-fast) var(--ease-default);
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.faq-accordion .faq-answer {
+  padding-bottom: var(--size-m);
+  color: var(--color-text-muted);
+}`;
+
+const faqGridStyles = `.faq-item h3 {
+  font-size: var(--font-size-m);
+  margin: 0 0 var(--size-xs) 0;
+}
+
+.faq-item p {
+  color: var(--color-text-muted);
+  margin: 0;
+}`;
+---
+
+<DocsLayout
+  title="FAQ Patterns"
+  description="FAQ section patterns for landing pages and marketing sites. Accordion and grid layouts for displaying frequently asked questions."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/marketing/">Marketing</a> / <span aria-current="page">FAQ</span>
+  </nav>
+
+  <h1>FAQ Patterns</h1>
+  <p class="lead">FAQ section patterns for landing pages and marketing sites. Clear, accessible layouts for answering common customer questions.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>FAQ sections help users find answers quickly without contacting support. These patterns use native HTML elements like <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> for the accordion variant, ensuring accessibility and no-JavaScript functionality.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> for accordion behavior</li>
+        <li>No JavaScript required for expand/collapse</li>
+        <li>Responsive grid layout for two-column variant</li>
+        <li>Accessible keyboard navigation built-in</li>
+        <li>Smooth CSS transitions for accordion indicator</li>
+        <li>SEO-friendly structured content</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Accordion</h2>
+    <layout-text>
+      <p>The classic FAQ accordion pattern using native <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> elements. Each question expands to reveal its answer, keeping the page compact while allowing users to explore topics of interest.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/faq-accordion.html"
+      url="https://vanilla-breeze.dev/faq-accordion"
+      title="FAQ Accordion"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="FAQ accordion with details/summary">&lt;div class="faq-accordion"&gt;
+  &lt;details&gt;
+    &lt;summary&gt;
+      &lt;span&gt;What is Vanilla Breeze?&lt;/span&gt;
+      &lt;icon-wc name="chevron-down" size="sm"&gt;&lt;/icon-wc&gt;
+    &lt;/summary&gt;
+    &lt;div class="faq-answer"&gt;
+      &lt;p&gt;Vanilla Breeze is a lightweight CSS framework built on modern web standards. It uses semantic HTML, custom elements, and design tokens to help you build beautiful interfaces without a build step or JavaScript framework.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details&gt;
+    &lt;summary&gt;
+      &lt;span&gt;How do I get started?&lt;/span&gt;
+      &lt;icon-wc name="chevron-down" size="sm"&gt;&lt;/icon-wc&gt;
+    &lt;/summary&gt;
+    &lt;div class="faq-answer"&gt;
+      &lt;p&gt;Getting started is easy. You can include Vanilla Breeze via CDN with a single link tag, or install it via npm for more customization options. Check out our Getting Started guide for step-by-step instructions.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details&gt;
+    &lt;summary&gt;
+      &lt;span&gt;Is Vanilla Breeze free to use?&lt;/span&gt;
+      &lt;icon-wc name="chevron-down" size="sm"&gt;&lt;/icon-wc&gt;
+    &lt;/summary&gt;
+    &lt;div class="faq-answer"&gt;
+      &lt;p&gt;Yes, Vanilla Breeze is completely free and open source under the MIT license. You can use it in personal and commercial projects without any restrictions.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;!-- More items... --&gt;
+&lt;/div&gt;</code-block>
+
+    <h3>Required CSS</h3>
+    <layout-text>
+      <p>Add these styles for the accordion appearance and animated chevron indicator:</p>
+    </layout-text>
+
+    <code-block language="css" label="FAQ accordion styles">{faqAccordionStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Two-Column Grid</h2>
+    <layout-text>
+      <p>A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Uses <code>&lt;layout-grid&gt;</code> with a minimum column width of 400px for automatic responsive behavior.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/faq-two-column.html"
+      url="https://vanilla-breeze.dev/faq-two-column"
+      title="FAQ Two Column"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Two-column FAQ grid">&lt;layout-grid data-min="400px" data-gap="xl" class="faq-grid"&gt;
+  &lt;article class="faq-item"&gt;
+    &lt;layout-stack data-gap="xs"&gt;
+      &lt;h3&gt;What is Vanilla Breeze?&lt;/h3&gt;
+      &lt;p&gt;A lightweight CSS framework built on modern web standards. Semantic HTML, custom elements, and design tokens without a build step.&lt;/p&gt;
+    &lt;/layout-stack&gt;
+  &lt;/article&gt;
+  &lt;article class="faq-item"&gt;
+    &lt;layout-stack data-gap="xs"&gt;
+      &lt;h3&gt;How do I get started?&lt;/h3&gt;
+      &lt;p&gt;Include Vanilla Breeze via CDN with a single link tag, or install via npm for more customization options.&lt;/p&gt;
+    &lt;/layout-stack&gt;
+  &lt;/article&gt;
+  &lt;article class="faq-item"&gt;
+    &lt;layout-stack data-gap="xs"&gt;
+      &lt;h3&gt;Is Vanilla Breeze free to use?&lt;/h3&gt;
+      &lt;p&gt;Yes, it's completely free and open source under the MIT license for personal and commercial projects.&lt;/p&gt;
+    &lt;/layout-stack&gt;
+  &lt;/article&gt;
+  &lt;!-- More items... --&gt;
+&lt;/layout-grid&gt;</code-block>
+
+    <h3>Optional CSS</h3>
+    <layout-text>
+      <p>Add these styles for consistent typography in FAQ items:</p>
+    </layout-text>
+
+    <code-block language="css" label="FAQ grid item styles">{faqGridStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Configuration</h2>
+    <layout-text>
+      <p>Common data attributes for FAQ sections:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>layout-grid</code></td>
+          <td><code>data-min</code></td>
+          <td>CSS length (e.g., <code>300px</code>, <code>400px</code>)</td>
+          <td>Minimum column width before wrapping.</td>
+        </tr>
+        <tr>
+          <td><code>layout-grid</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Gap between grid items.</td>
+        </tr>
+        <tr>
+          <td><code>layout-stack</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Vertical spacing between elements.</td>
+        </tr>
+        <tr>
+          <td><code>layout-center</code></td>
+          <td><code>data-max-width</code></td>
+          <td><code>narrow</code> <code>measure</code> <code>measure-wide</code> <code>wide</code></td>
+          <td>Maximum content width for FAQ section.</td>
+        </tr>
+        <tr>
+          <td><code>icon-wc</code></td>
+          <td><code>size</code></td>
+          <td><code>xs</code> <code>sm</code> <code>md</code> <code>lg</code> <code>xl</code></td>
+          <td>Size of the chevron indicator icon.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Accordion vs Grid:</strong> Use accordion for longer FAQ lists (6+ items) to save space. Use grid for shorter lists where scanning all questions at once is helpful.</li>
+        <li><strong>Native details/summary:</strong> The accordion uses native HTML elements, providing keyboard navigation and screen reader support without JavaScript.</li>
+        <li><strong>No JavaScript required:</strong> The accordion expand/collapse works purely with HTML and CSS. The chevron rotation uses CSS transitions.</li>
+        <li><strong>SEO structured data:</strong> Consider adding <a href="https://schema.org/FAQPage">FAQPage schema markup</a> for rich search results. Wrap your FAQ section with <code>itemscope itemtype="https://schema.org/FAQPage"</code>.</li>
+        <li><strong>Question length:</strong> Keep questions concise (under 80 characters). Move complex details to the answer section.</li>
+        <li><strong>Answer formatting:</strong> Use paragraphs, lists, and links within answers. Avoid deeply nested content.</li>
+        <li><strong>Open by default:</strong> Add the <code>open</code> attribute to a <code>&lt;details&gt;</code> element to have it expanded on page load.</li>
+        <li><strong>Grouping:</strong> For large FAQ lists, consider grouping questions by category with section headings.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/custom-elements/grid/" class="section-card">
+        <h3>Layout Grid</h3>
+        <p>Grid layout element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/stack/" class="section-card">
+        <h3>Layout Stack</h3>
+        <p>Stack layout element documentation</p>
+      </a>
+      <a href="/docs/elements/components/icon/" class="section-card">
+        <h3>Icon Component</h3>
+        <p>Icon web component documentation</p>
+      </a>
+      <a href="/docs/patterns/marketing/features/" class="section-card">
+        <h3>Feature Patterns</h3>
+        <p>Feature section patterns</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

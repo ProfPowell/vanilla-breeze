@@ -1,0 +1,359 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const testimonialStyles = `.testimonials {
+  padding: var(--size-2xl) var(--size-l);
+}
+
+.testimonials-header {
+  text-align: center;
+  max-width: 60ch;
+  margin-inline: auto;
+}
+
+.testimonials-header .lead {
+  color: var(--color-text-muted);
+}
+
+.testimonial {
+  margin: 0;
+  padding: var(--size-l);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-l);
+}
+
+.testimonial p {
+  font-size: var(--font-size-lg);
+  font-style: italic;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.testimonial footer {
+  margin-top: var(--size-m);
+  padding-top: var(--size-m);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.testimonial cite {
+  font-style: normal;
+}
+
+.testimonial .author-name {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.testimonial .author-role {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}`;
+
+const carouselStyles = `.testimonial-carousel {
+  display: flex;
+  gap: var(--size-l);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: var(--size-s) 0;
+}
+
+.testimonial-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.testimonial-carousel > * {
+  flex: 0 0 min(500px, 85vw);
+  scroll-snap-align: center;
+}`;
+
+const starRatingStyles = `.star-rating {
+  color: var(--color-warning);
+}`;
+---
+
+<DocsLayout
+  title="Testimonial Patterns"
+  description="Testimonial section patterns for landing pages and marketing sites. Quote cards, avatar grids, and carousel layouts."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/marketing/">Marketing</a> / <span aria-current="page">Testimonials</span>
+  </nav>
+
+  <h1>Testimonial Patterns</h1>
+  <p class="lead">Testimonial section patterns for landing pages and marketing sites. Social proof that builds trust through customer quotes, ratings, and endorsements.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Testimonials are essential for building credibility on marketing pages. These patterns use semantic <code>&lt;blockquote&gt;</code> and <code>&lt;cite&gt;</code> elements for proper quote attribution, combined with <code>&lt;layout-grid&gt;</code> for responsive card layouts.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Semantic HTML with <code>blockquote</code> and <code>cite</code></li>
+        <li>Responsive grid layouts with <code>layout-grid</code></li>
+        <li>Avatar integration with <code>user-avatar</code></li>
+        <li>Star ratings with <code>icon-wc</code></li>
+        <li>CSS scroll-snap carousel for featured testimonials</li>
+        <li>Accessible by default</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Quotes</h2>
+    <layout-text>
+      <p>The most straightforward testimonial pattern: quote cards with author attribution. Uses <code>layout-grid</code> for a responsive layout that automatically adjusts columns based on available space.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/testimonials-quotes.html"
+      url="https://vanilla-breeze.dev/testimonials-quotes"
+      title="Simple Quotes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Simple testimonial quotes">&lt;section class="testimonials"&gt;
+  &lt;layout-center data-max-width="wide"&gt;
+    &lt;layout-stack data-gap="2xl"&gt;
+      &lt;div class="testimonials-header"&gt;
+        &lt;layout-stack data-gap="s"&gt;
+          &lt;h2&gt;What our customers say&lt;/h2&gt;
+          &lt;p class="lead"&gt;Hear from teams who have transformed their development workflow.&lt;/p&gt;
+        &lt;/layout-stack&gt;
+      &lt;/div&gt;
+      &lt;layout-grid data-min="300px" data-gap="l"&gt;
+        &lt;blockquote class="testimonial"&gt;
+          &lt;p&gt;"This framework has completely changed how we build interfaces. We shipped our redesign in half the time."&lt;/p&gt;
+          &lt;footer&gt;
+            &lt;cite&gt;
+              &lt;span class="author-name"&gt;Sarah Chen&lt;/span&gt;
+              &lt;span class="author-role"&gt;Engineering Lead, TechCorp&lt;/span&gt;
+            &lt;/cite&gt;
+          &lt;/footer&gt;
+        &lt;/blockquote&gt;
+        &lt;blockquote class="testimonial"&gt;
+          &lt;p&gt;"The semantic HTML approach means our sites are accessible by default."&lt;/p&gt;
+          &lt;footer&gt;
+            &lt;cite&gt;
+              &lt;span class="author-name"&gt;Marcus Johnson&lt;/span&gt;
+              &lt;span class="author-role"&gt;Senior Developer, StartupXYZ&lt;/span&gt;
+            &lt;/cite&gt;
+          &lt;/footer&gt;
+        &lt;/blockquote&gt;
+        &lt;blockquote class="testimonial"&gt;
+          &lt;p&gt;"No build step, no complex configuration. We went from idea to production in record time."&lt;/p&gt;
+          &lt;footer&gt;
+            &lt;cite&gt;
+              &lt;span class="author-name"&gt;Elena Rodriguez&lt;/span&gt;
+              &lt;span class="author-role"&gt;CTO, WebAgency&lt;/span&gt;
+            &lt;/cite&gt;
+          &lt;/footer&gt;
+        &lt;/blockquote&gt;
+      &lt;/layout-grid&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>With Avatars and Ratings</h2>
+    <layout-text>
+      <p>Enhanced testimonials featuring author avatars and star ratings. The <code>user-avatar</code> component displays profile images, while <code>icon-wc</code> renders star ratings.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/testimonials-avatars.html"
+      url="https://vanilla-breeze.dev/testimonials-avatars"
+      title="Testimonials with Avatars"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Testimonials with avatars and star ratings">&lt;layout-grid data-min="300px" data-gap="l"&gt;
+  &lt;blockquote class="testimonial"&gt;
+    &lt;layout-stack data-gap="m"&gt;
+      &lt;layout-cluster class="star-rating" data-gap="xs"&gt;
+        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+      &lt;/layout-cluster&gt;
+      &lt;p&gt;"The layout primitives are incredibly powerful. We've built complex dashboards with minimal custom CSS."&lt;/p&gt;
+      &lt;footer&gt;
+        &lt;layout-cluster data-gap="s" data-align="center"&gt;
+          &lt;user-avatar data-size="lg"&gt;
+            &lt;img src="user-photo.jpg" alt="" /&gt;
+          &lt;/user-avatar&gt;
+          &lt;cite&gt;
+            &lt;span class="author-name"&gt;Alex Thompson&lt;/span&gt;
+            &lt;span class="author-role"&gt;Lead Developer, DataFlow&lt;/span&gt;
+          &lt;/cite&gt;
+        &lt;/layout-cluster&gt;
+      &lt;/footer&gt;
+    &lt;/layout-stack&gt;
+  &lt;/blockquote&gt;
+&lt;/layout-grid&gt;</code-block>
+
+    <h3>Star Rating CSS</h3>
+    <layout-text>
+      <p>Add this style for the star rating color:</p>
+    </layout-text>
+
+    <code-block language="css" label="Star rating styles">{starRatingStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Carousel</h2>
+    <layout-text>
+      <p>A horizontally scrolling carousel with CSS scroll-snap for featured testimonials. Larger cards with more prominent quotes. The carousel scrolls naturally with touch/mouse and snaps to each testimonial.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/testimonials-carousel.html"
+      url="https://vanilla-breeze.dev/testimonials-carousel"
+      title="Testimonial Carousel"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Testimonial carousel with scroll-snap">&lt;section class="testimonials"&gt;
+  &lt;layout-center data-max-width="wide"&gt;
+    &lt;layout-stack data-gap="l"&gt;
+      &lt;div class="testimonials-header"&gt;
+        &lt;layout-stack data-gap="s"&gt;
+          &lt;h2&gt;Loved by teams everywhere&lt;/h2&gt;
+          &lt;p class="lead"&gt;See what developers are saying about their experience.&lt;/p&gt;
+        &lt;/layout-stack&gt;
+      &lt;/div&gt;
+      &lt;div class="testimonial-carousel"&gt;
+        &lt;blockquote class="testimonial"&gt;
+          &lt;layout-stack data-gap="m"&gt;
+            &lt;span class="quote-icon"&gt;
+              &lt;icon-wc name="quote" size="xl"&gt;&lt;/icon-wc&gt;
+            &lt;/span&gt;
+            &lt;p class="testimonial-quote"&gt;"The shift to semantic HTML has made our codebase so much cleaner. Junior developers can understand and contribute immediately."&lt;/p&gt;
+            &lt;footer&gt;
+              &lt;layout-cluster data-gap="s" data-align="center"&gt;
+                &lt;user-avatar data-size="xl"&gt;
+                  &lt;img src="user-photo.jpg" alt="" /&gt;
+                &lt;/user-avatar&gt;
+                &lt;cite&gt;
+                  &lt;span class="author-name"&gt;David Park&lt;/span&gt;
+                  &lt;span class="author-role"&gt;Engineering Manager, TechVenture&lt;/span&gt;
+                &lt;/cite&gt;
+              &lt;/layout-cluster&gt;
+            &lt;/footer&gt;
+          &lt;/layout-stack&gt;
+        &lt;/blockquote&gt;
+        &lt;!-- Additional testimonials... --&gt;
+      &lt;/div&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-center&gt;
+&lt;/section&gt;</code-block>
+
+    <h3>Carousel CSS</h3>
+    <layout-text>
+      <p>Add these styles for the scroll-snap carousel behavior:</p>
+    </layout-text>
+
+    <code-block language="css" label="Carousel scroll-snap styles">{carouselStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Base Testimonial Styles</h2>
+    <layout-text>
+      <p>Common styles shared across all testimonial variants:</p>
+    </layout-text>
+
+    <code-block language="css" label="Base testimonial styles">{testimonialStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Configuration</h2>
+    <layout-text>
+      <p>Common data attributes for testimonial sections:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>layout-grid</code></td>
+          <td><code>data-min</code></td>
+          <td>CSS length (e.g., <code>300px</code>)</td>
+          <td>Minimum card width before wrapping.</td>
+        </tr>
+        <tr>
+          <td><code>layout-stack</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Vertical spacing between elements.</td>
+        </tr>
+        <tr>
+          <td><code>layout-cluster</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code></td>
+          <td>Gap between avatar and cite.</td>
+        </tr>
+        <tr>
+          <td><code>layout-cluster</code></td>
+          <td><code>data-align</code></td>
+          <td><code>flex-start</code> <code>center</code> <code>flex-end</code></td>
+          <td>Vertical alignment of items.</td>
+        </tr>
+        <tr>
+          <td><code>user-avatar</code></td>
+          <td><code>data-size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code> <code>xl</code></td>
+          <td>Avatar size.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Semantic markup:</strong> Always use <code>&lt;blockquote&gt;</code> for testimonial quotes and <code>&lt;cite&gt;</code> for author attribution. This provides proper semantics for assistive technologies.</li>
+        <li><strong>Avatar alt text:</strong> Avatar images should have empty <code>alt=""</code> since the author name is provided in text. The image is decorative.</li>
+        <li><strong>Quote marks:</strong> Include quotation marks in the text content rather than using CSS <code>::before</code> pseudo-elements. This ensures quotes are read by screen readers.</li>
+        <li><strong>Star ratings:</strong> Consider adding a text alternative for ratings (e.g., "5 out of 5 stars") in a visually hidden span for accessibility.</li>
+        <li><strong>Carousel UX:</strong> The scroll-snap carousel is keyboard accessible. Users can scroll with arrow keys when focused. Add visible scroll indicators or buttons for better discoverability.</li>
+        <li><strong>Performance:</strong> Use <code>loading="lazy"</code> on avatar images that are below the fold. For above-the-fold testimonials, use <code>loading="eager"</code>.</li>
+        <li><strong>Authenticity:</strong> Real testimonials with full names, titles, and company names are more credible. Consider linking to the author's profile or the company website.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/elements/custom-elements/grid/" class="section-card">
+        <h3>Layout Grid</h3>
+        <p>Grid layout element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
+        <h3>User Avatar</h3>
+        <p>Avatar component documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
+        <h3>Icon Component</h3>
+        <p>Icon element documentation</p>
+      </a>
+      <a href="/docs/patterns/marketing/cta/" class="section-card">
+        <h3>Call to Action</h3>
+        <p>CTA section patterns</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>
