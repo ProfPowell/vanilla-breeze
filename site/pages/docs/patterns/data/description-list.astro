@@ -1,47 +1,59 @@
 ---
 import DocsLayout from '../../../../layouts/DocsLayout.astro';
 
-const simpleStyles = `dl {
-  margin: 0;
-}
-
-dt {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-}
-
-dd {
-  margin: 0;
-  font-size: var(--font-size-md);
+const stackedStyles = `@scope (.key-value[data-layout="stacked"]) {
+  :scope {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-l);
+  }
+  dl-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+  dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+  dd {
+    margin: 0;
+    font-size: var(--font-size-md);
+  }
 }`;
 
-const horizontalStyles = `.dl-row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: var(--size-m);
-  align-items: baseline;
-  padding-block: var(--size-s);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.dl-row:last-child {
-  border-bottom: none;
-}
-
-dt {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-}
-
-dd {
-  margin: 0;
+const horizontalStyles = `@scope (.key-value) {
+  :scope {
+    margin: 0;
+  }
+  dl-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: var(--size-m);
+    align-items: baseline;
+    padding-block: var(--size-s);
+    border-bottom: 1px solid var(--color-border);
+  }
+  dl-item:last-child {
+    border-bottom: none;
+  }
+  dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+  dd {
+    margin: 0;
+  }
 }
 
 /* Responsive: stack on small screens */
 @media (max-width: 480px) {
-  .dl-row {
-    grid-template-columns: 1fr;
-    gap: var(--size-2xs);
+  @scope (.key-value) {
+    dl-item {
+      grid-template-columns: 1fr;
+      gap: var(--size-2xs);
+    }
   }
 }`;
 
@@ -75,6 +87,7 @@ const sectionHeadingStyles = `.section-heading {
         <li>Grouped sections for organized data presentation</li>
         <li>Consistent styling with muted labels and clear values</li>
         <li>Responsive design that adapts to screen size</li>
+        <li>Uses <code>@scope</code> for encapsulated, semantic CSS selectors</li>
       </ul>
     </layout-text>
   </section>
@@ -82,7 +95,7 @@ const sectionHeadingStyles = `.section-heading {
   <section>
     <h2>Simple Vertical Layout</h2>
     <layout-text>
-      <p>A basic vertical description list with terms stacked above their descriptions. Use <code>&lt;layout-stack&gt;</code> to control spacing between each key-value pair.</p>
+      <p>A basic vertical description list with terms stacked above their descriptions. The <code>&lt;dl-item&gt;</code> custom element groups each <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair.</p>
     </layout-text>
 
     <browser-window
@@ -92,34 +105,32 @@ const sectionHeadingStyles = `.section-heading {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple vertical description list">&lt;dl&gt;
-  &lt;layout-stack data-gap="l"&gt;
-    &lt;layout-stack data-gap="2xs"&gt;
-      &lt;dt&gt;Full Name&lt;/dt&gt;
-      &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
-    &lt;/layout-stack&gt;
+    <code-block language="html" label="Simple vertical description list">&lt;dl class="key-value" data-layout="stacked"&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Full Name&lt;/dt&gt;
+    &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
+  &lt;/dl-item&gt;
 
-    &lt;layout-stack data-gap="2xs"&gt;
-      &lt;dt&gt;Email Address&lt;/dt&gt;
-      &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
-    &lt;/layout-stack&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Email Address&lt;/dt&gt;
+    &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
+  &lt;/dl-item&gt;
 
-    &lt;layout-stack data-gap="2xs"&gt;
-      &lt;dt&gt;Phone Number&lt;/dt&gt;
-      &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
-    &lt;/layout-stack&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Phone Number&lt;/dt&gt;
+    &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
+  &lt;/dl-item&gt;
 
-    &lt;layout-stack data-gap="2xs"&gt;
-      &lt;dt&gt;Status&lt;/dt&gt;
-      &lt;dd&gt;
-        &lt;span class="badge success"&gt;Active&lt;/span&gt;
-      &lt;/dd&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-stack&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Status&lt;/dt&gt;
+    &lt;dd&gt;
+      &lt;span class="badge success"&gt;Active&lt;/span&gt;
+    &lt;/dd&gt;
+  &lt;/dl-item&gt;
 &lt;/dl&gt;</code-block>
 
-    <h3>Simple Layout Styles</h3>
-    <code-block language="css" label="Simple description list CSS">{simpleStyles}</code-block>
+    <h3>Stacked Layout Styles</h3>
+    <code-block language="css" label="Stacked description list CSS">{stackedStyles}</code-block>
   </section>
 
   <section>
@@ -135,28 +146,28 @@ const sectionHeadingStyles = `.section-heading {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Horizontal description list">&lt;dl&gt;
-  &lt;div class="dl-row"&gt;
+    <code-block language="html" label="Horizontal description list">&lt;dl class="key-value"&gt;
+  &lt;dl-item&gt;
     &lt;dt&gt;Full Name&lt;/dt&gt;
     &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
-  &lt;/div&gt;
+  &lt;/dl-item&gt;
 
-  &lt;div class="dl-row"&gt;
+  &lt;dl-item&gt;
     &lt;dt&gt;Email&lt;/dt&gt;
     &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
-  &lt;/div&gt;
+  &lt;/dl-item&gt;
 
-  &lt;div class="dl-row"&gt;
+  &lt;dl-item&gt;
     &lt;dt&gt;Phone&lt;/dt&gt;
     &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
-  &lt;/div&gt;
+  &lt;/dl-item&gt;
 
-  &lt;div class="dl-row"&gt;
+  &lt;dl-item&gt;
     &lt;dt&gt;Status&lt;/dt&gt;
     &lt;dd&gt;
       &lt;span class="badge success"&gt;Active&lt;/span&gt;
     &lt;/dd&gt;
-  &lt;/div&gt;
+  &lt;/dl-item&gt;
 &lt;/dl&gt;</code-block>
 
     <h3>Horizontal Layout Styles</h3>
@@ -181,15 +192,15 @@ const sectionHeadingStyles = `.section-heading {
   &lt;layout-card data-padding="l"&gt;
     &lt;layout-stack data-gap="m"&gt;
       &lt;h2 class="section-heading"&gt;Personal Information&lt;/h2&gt;
-      &lt;dl&gt;
-        &lt;div class="dl-row"&gt;
+      &lt;dl class="key-value"&gt;
+        &lt;dl-item&gt;
           &lt;dt&gt;Full Name&lt;/dt&gt;
           &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
-        &lt;/div&gt;
-        &lt;div class="dl-row"&gt;
+        &lt;/dl-item&gt;
+        &lt;dl-item&gt;
           &lt;dt&gt;Date of Birth&lt;/dt&gt;
           &lt;dd&gt;March 15, 1992&lt;/dd&gt;
-        &lt;/div&gt;
+        &lt;/dl-item&gt;
       &lt;/dl&gt;
     &lt;/layout-stack&gt;
   &lt;/layout-card&gt;
@@ -198,15 +209,15 @@ const sectionHeadingStyles = `.section-heading {
   &lt;layout-card data-padding="l"&gt;
     &lt;layout-stack data-gap="m"&gt;
       &lt;h2 class="section-heading"&gt;Contact Details&lt;/h2&gt;
-      &lt;dl&gt;
-        &lt;div class="dl-row"&gt;
+      &lt;dl class="key-value"&gt;
+        &lt;dl-item&gt;
           &lt;dt&gt;Email&lt;/dt&gt;
           &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
-        &lt;/div&gt;
-        &lt;div class="dl-row"&gt;
+        &lt;/dl-item&gt;
+        &lt;dl-item&gt;
           &lt;dt&gt;Phone&lt;/dt&gt;
           &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
-        &lt;/div&gt;
+        &lt;/dl-item&gt;
       &lt;/dl&gt;
     &lt;/layout-stack&gt;
   &lt;/layout-card&gt;
@@ -219,23 +230,38 @@ const sectionHeadingStyles = `.section-heading {
   <section>
     <h2>Configuration</h2>
     <layout-text>
-      <p>Description list patterns use these layout elements and CSS techniques:</p>
+      <p>Description list patterns use these elements and CSS techniques:</p>
     </layout-text>
 
-    <h3>Layout Stack</h3>
+    <h3>HTML Structure</h3>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Values</th>
+          <th>Element</th>
+          <th>Purpose</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>data-gap</code></td>
-          <td><code>2xs</code> <code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
-          <td>Vertical spacing between items. Use <code>2xs</code> between dt/dd pairs, <code>l</code> between groups.</td>
+          <td><code>&lt;dl class="key-value"&gt;</code></td>
+          <td>Container</td>
+          <td>The description list container. Add <code>data-layout="stacked"</code> for vertical layout.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dl-item&gt;</code></td>
+          <td>Row grouping</td>
+          <td>Custom element that groups a <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair for styling.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dt&gt;</code></td>
+          <td>Label</td>
+          <td>The description term (label).</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dd&gt;</code></td>
+          <td>Value</td>
+          <td>The description details (value).</td>
         </tr>
       </tbody>
     </table>
@@ -302,9 +328,10 @@ const sectionHeadingStyles = `.section-heading {
     <layout-text>
       <ul>
         <li><strong>Semantic HTML:</strong> Always use <code>&lt;dl&gt;</code>, <code>&lt;dt&gt;</code>, and <code>&lt;dd&gt;</code> elements for proper accessibility. Screen readers announce these as description lists.</li>
+        <li><strong>CSS <code>@scope</code>:</strong> Styles use <code>@scope (.key-value)</code> to encapsulate rules and enable semantic element selectors (<code>dl-item</code>, <code>dt</code>, <code>dd</code>) without class pollution.</li>
+        <li><strong>Item grouping:</strong> The <code>&lt;dl-item&gt;</code> custom element groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.</li>
         <li><strong>Multiple values:</strong> A single <code>&lt;dt&gt;</code> can have multiple <code>&lt;dd&gt;</code> elements for multiple values (e.g., multiple phone numbers).</li>
-        <li><strong>Grouping:</strong> Wrap each dt/dd pair in a <code>&lt;div&gt;</code> for horizontal layouts. This is valid HTML5 and helps with styling.</li>
-        <li><strong>Responsive design:</strong> Consider stacking horizontal layouts on smaller screens using a media query to switch from grid to block display.</li>
+        <li><strong>Responsive design:</strong> The horizontal layout uses a media query to stack on smaller screens, switching from grid to single-column display.</li>
         <li><strong>Value formatting:</strong> Use badges, icons, or formatted text in <code>&lt;dd&gt;</code> elements to enhance readability.</li>
         <li><strong>Empty values:</strong> Display a dash or "Not provided" for empty values rather than leaving blank.</li>
         <li><strong>Long values:</strong> For long text values, consider truncation with a "show more" toggle or allowing text to wrap naturally.</li>

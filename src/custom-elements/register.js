@@ -1,6 +1,7 @@
 const inertElements = [
   'layout-text',
-  'layout-reel'
+  'layout-reel',
+  'dl-item'
 ];
 
 inertElements.forEach(name => {
