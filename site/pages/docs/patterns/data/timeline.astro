@@ -140,7 +140,7 @@ const activityCode = `<ol class="activity-feed" aria-label="Recent activity">
     </user-avatar>
     <div class="content">
       <p class="text">
-        <strong>John Doe</strong> added a comment on <a href="#">Issue #423</a>
+        <a href="#"><strong>John Doe</strong></a> added a comment on <a href="#">Issue #423</a>
       </p>
       <time class="timestamp" datetime="2024-03-25T14:30">2 hours ago</time>
     </div>
@@ -152,12 +152,12 @@ const activityCode = `<ol class="activity-feed" aria-label="Recent activity">
     </user-avatar>
     <div class="content">
       <p class="text">
-        <strong>Sarah Miller</strong> uploaded a file to <a href="#">Project Alpha</a>
+        <a href="#"><strong>Sarah Miller</strong></a> uploaded a file to <a href="#">Project Alpha</a>
       </p>
-      <div class="attachment">
+      <a class="attachment" href="/files/design-mockup.fig" download>
         <icon-wc name="file" size="sm"></icon-wc>
         design-mockup-v2.fig
-      </div>
+      </a>
       <time class="timestamp" datetime="2024-03-25T11:15">5 hours ago</time>
     </div>
   </li>
@@ -172,29 +172,28 @@ const activityCss = `.activity-feed {
   padding: 0;
 }
 
-.activity-feed::before {
-  content: '';
-  position: absolute;
-  left: calc(var(--avatar-size) / 2);
-  top: var(--avatar-size);
-  bottom: var(--avatar-size);
-  width: 2px;
-  background: var(--feed-line-color);
-}
-
 @scope (.activity-feed) {
   .item {
     display: grid;
     grid-template-columns: var(--avatar-size) 1fr;
     gap: var(--size-s);
     padding-block: var(--size-s);
-    position: relative;
   }
 
   .avatar { position: relative; z-index: 1; }
   .content { min-width: 0; }
   .text { font-size: var(--font-size-sm); }
-  .timestamp { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+  .timestamp { display: block; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+  .attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-xs);
+    padding: var(--size-xs) var(--size-s);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-s);
+    color: var(--color-text);
+    text-decoration: none;
+  }
 }`;
 
 const horizontalCode = `<layout-reel data-gap="m" data-scrollbar data-padding="s">
