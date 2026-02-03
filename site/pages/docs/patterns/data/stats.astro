@@ -15,11 +15,11 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       <p>Stats patterns display key metrics at a glance. They combine large numbers with supporting context like labels, change indicators, and icons to help users quickly understand important data.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Large, prominent numbers for quick scanning</li>
-        <li>Muted labels for context</li>
-        <li>Change indicators with semantic colors</li>
+        <li>Semantic HTML using <code>&lt;figure&gt;</code>, <code>&lt;figcaption&gt;</code>, and <code>&lt;data&gt;</code></li>
+        <li>Machine-readable values via the <code>value</code> attribute on <code>&lt;data&gt;</code></li>
+        <li>Trend indicators using <code>data-trend</code> attributes</li>
+        <li>Scoped CSS for minimal class usage</li>
         <li>Responsive grid layout</li>
-        <li>Optional icons for visual distinction</li>
       </ul>
     </layout-text>
   </section>
@@ -27,7 +27,7 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
   <section>
     <h2>Simple Number Grid</h2>
     <layout-text>
-      <p>A clean grid of stat cards with labels and large numbers. Perfect for overview dashboards where you want to display multiple metrics side by side.</p>
+      <p>A clean grid of stat figures with labels and large numbers. Each stat uses a <code>&lt;figure&gt;</code> element with a <code>&lt;figcaption&gt;</code> for the label and <code>&lt;data&gt;</code> for the machine-readable value.</p>
     </layout-text>
 
     <browser-window
@@ -37,33 +37,59 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple stats grid">&lt;layout-grid data-gap="l" data-min-width="200"&gt;
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Total Users&lt;/span&gt;
-    &lt;span class="stat-value"&gt;24,521&lt;/span&gt;
-  &lt;/layout-stack&gt;
+    <code-block language="html" label="Simple stats grid">&lt;section class="stats"&gt;
+  &lt;figure&gt;
+    &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
+    &lt;data value="24521"&gt;24,521&lt;/data&gt;
+  &lt;/figure&gt;
 
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Revenue&lt;/span&gt;
-    &lt;span class="stat-value"&gt;$48,352&lt;/span&gt;
-  &lt;/layout-stack&gt;
+  &lt;figure&gt;
+    &lt;figcaption&gt;Revenue&lt;/figcaption&gt;
+    &lt;data value="48352"&gt;$48,352&lt;/data&gt;
+  &lt;/figure&gt;
 
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Orders&lt;/span&gt;
-    &lt;span class="stat-value"&gt;1,429&lt;/span&gt;
-  &lt;/layout-stack&gt;
+  &lt;figure&gt;
+    &lt;figcaption&gt;Orders&lt;/figcaption&gt;
+    &lt;data value="1429"&gt;1,429&lt;/data&gt;
+  &lt;/figure&gt;
 
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Conversion&lt;/span&gt;
-    &lt;span class="stat-value"&gt;3.2%&lt;/span&gt;
-  &lt;/layout-stack&gt;
-&lt;/layout-grid&gt;</code-block>
+  &lt;figure&gt;
+    &lt;figcaption&gt;Conversion&lt;/figcaption&gt;
+    &lt;data value="0.032"&gt;3.2%&lt;/data&gt;
+  &lt;/figure&gt;
+&lt;/section&gt;</code-block>
+
+    <code-block language="css" label="Scoped CSS">.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--size-l);
+}
+
+@scope (.stats) {
+  figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+    margin: 0;
+  }
+
+  figcaption {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  data {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+  }
+}</code-block>
   </section>
 
   <section>
     <h2>With Change Indicators</h2>
     <layout-text>
-      <p>Stats with up/down arrows showing change from a previous period. Uses semantic colors to indicate positive or negative trends.</p>
+      <p>Stats with trend indicators showing change from a previous period. Uses <code>&lt;small&gt;</code> with a <code>data-trend</code> attribute for semantic color styling.</p>
     </layout-text>
 
     <browser-window
@@ -73,49 +99,43 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Stats with change indicators">&lt;layout-grid data-gap="l" data-min-width="220"&gt;
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Total Users&lt;/span&gt;
-    &lt;span class="stat-value"&gt;24,521&lt;/span&gt;
-    &lt;layout-cluster data-gap="xs"&gt;
-      &lt;span class="stat-change positive"&gt;
-        &lt;icon-wc name="trending-up" size="sm"&gt;&lt;/icon-wc&gt;
-        12.5%
-      &lt;/span&gt;
-      &lt;span class="text-sm text-muted"&gt;vs last month&lt;/span&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-stack&gt;
+    <code-block language="html" label="Stats with change indicators">&lt;section class="stats"&gt;
+  &lt;figure&gt;
+    &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
+    &lt;data value="24521"&gt;24,521&lt;/data&gt;
+    &lt;small data-trend="up"&gt;
+      &lt;icon-wc name="trending-up" size="sm"&gt;&lt;/icon-wc&gt;
+      +12.5% vs last month
+    &lt;/small&gt;
+  &lt;/figure&gt;
 
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Revenue&lt;/span&gt;
-    &lt;span class="stat-value"&gt;$48,352&lt;/span&gt;
-    &lt;layout-cluster data-gap="xs"&gt;
-      &lt;span class="stat-change positive"&gt;
-        &lt;icon-wc name="trending-up" size="sm"&gt;&lt;/icon-wc&gt;
-        8.2%
-      &lt;/span&gt;
-      &lt;span class="text-sm text-muted"&gt;vs last month&lt;/span&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-stack&gt;
+  &lt;figure&gt;
+    &lt;figcaption&gt;Bounce Rate&lt;/figcaption&gt;
+    &lt;data value="0.423"&gt;42.3%&lt;/data&gt;
+    &lt;small data-trend="down"&gt;
+      &lt;icon-wc name="trending-down" size="sm"&gt;&lt;/icon-wc&gt;
+      -3.1% vs last month
+    &lt;/small&gt;
+  &lt;/figure&gt;
+&lt;/section&gt;</code-block>
 
-  &lt;layout-stack data-gap="xs"&gt;
-    &lt;span class="text-sm text-muted"&gt;Bounce Rate&lt;/span&gt;
-    &lt;span class="stat-value"&gt;42.3%&lt;/span&gt;
-    &lt;layout-cluster data-gap="xs"&gt;
-      &lt;span class="stat-change negative"&gt;
-        &lt;icon-wc name="trending-down" size="sm"&gt;&lt;/icon-wc&gt;
-        3.1%
-      &lt;/span&gt;
-      &lt;span class="text-sm text-muted"&gt;vs last month&lt;/span&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-stack&gt;
-&lt;/layout-grid&gt;</code-block>
+    <code-block language="css" label="Trend indicator styles">@scope (.stats) {
+  small {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs);
+    font-size: var(--font-size-sm);
+  }
+
+  small[data-trend="up"] { color: var(--color-success); }
+  small[data-trend="down"] { color: var(--color-danger); }
+}</code-block>
   </section>
 
   <section>
     <h2>Card-Based Stats</h2>
     <layout-text>
-      <p>Each stat in its own card container with an icon for visual distinction. Great for dashboard widgets where each metric needs clear separation.</p>
+      <p>Each stat in its own card container with an icon for visual distinction. The <code>&lt;figure&gt;</code> is styled for horizontal layout with icon positioning.</p>
     </layout-text>
 
     <browser-window
@@ -125,71 +145,82 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Card-based stats">&lt;layout-grid data-gap="l" data-min-width="250"&gt;
+    <code-block language="html" label="Card-based stats">&lt;section class="stats"&gt;
   &lt;layout-card&gt;
-    &lt;layout-cluster data-justify="space-between" data-align="start"&gt;
-      &lt;layout-stack data-gap="xs"&gt;
-        &lt;span class="text-sm text-muted"&gt;Total Users&lt;/span&gt;
-        &lt;span class="stat-value"&gt;24,521&lt;/span&gt;
-        &lt;span class="stat-change positive text-sm"&gt;+12.5% from last month&lt;/span&gt;
-      &lt;/layout-stack&gt;
+    &lt;figure&gt;
+      &lt;div&gt;
+        &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
+        &lt;data value="24521"&gt;24,521&lt;/data&gt;
+        &lt;small data-trend="up"&gt;+12.5% from last month&lt;/small&gt;
+      &lt;/div&gt;
       &lt;span class="stat-icon"&gt;
         &lt;icon-wc name="users" size="md"&gt;&lt;/icon-wc&gt;
       &lt;/span&gt;
-    &lt;/layout-cluster&gt;
+    &lt;/figure&gt;
   &lt;/layout-card&gt;
 
   &lt;layout-card&gt;
-    &lt;layout-cluster data-justify="space-between" data-align="start"&gt;
-      &lt;layout-stack data-gap="xs"&gt;
-        &lt;span class="text-sm text-muted"&gt;Revenue&lt;/span&gt;
-        &lt;span class="stat-value"&gt;$48,352&lt;/span&gt;
-        &lt;span class="stat-change positive text-sm"&gt;+8.2% from last month&lt;/span&gt;
-      &lt;/layout-stack&gt;
+    &lt;figure&gt;
+      &lt;div&gt;
+        &lt;figcaption&gt;Revenue&lt;/figcaption&gt;
+        &lt;data value="48352"&gt;$48,352&lt;/data&gt;
+        &lt;small data-trend="up"&gt;+8.2% from last month&lt;/small&gt;
+      &lt;/div&gt;
       &lt;span class="stat-icon"&gt;
         &lt;icon-wc name="dollar-sign" size="md"&gt;&lt;/icon-wc&gt;
       &lt;/span&gt;
-    &lt;/layout-cluster&gt;
+    &lt;/figure&gt;
   &lt;/layout-card&gt;
+&lt;/section&gt;</code-block>
 
-  &lt;layout-card&gt;
-    &lt;layout-cluster data-justify="space-between" data-align="start"&gt;
-      &lt;layout-stack data-gap="xs"&gt;
-        &lt;span class="text-sm text-muted"&gt;Active Sessions&lt;/span&gt;
-        &lt;span class="stat-value"&gt;1,893&lt;/span&gt;
-        &lt;span class="stat-change negative text-sm"&gt;-2.4% from last month&lt;/span&gt;
-      &lt;/layout-stack&gt;
-      &lt;span class="stat-icon"&gt;
-        &lt;icon-wc name="activity" size="md"&gt;&lt;/icon-wc&gt;
-      &lt;/span&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-card&gt;
+    <code-block language="css" label="Card variant styles">@scope (.stats) {
+  figure {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--size-m);
+    margin: 0;
+  }
 
-  &lt;layout-card&gt;
-    &lt;layout-cluster data-justify="space-between" data-align="start"&gt;
-      &lt;layout-stack data-gap="xs"&gt;
-        &lt;span class="text-sm text-muted"&gt;Conversion Rate&lt;/span&gt;
-        &lt;span class="stat-value"&gt;3.2%&lt;/span&gt;
-        &lt;span class="stat-change positive text-sm"&gt;+0.4% from last month&lt;/span&gt;
-      &lt;/layout-stack&gt;
-      &lt;span class="stat-icon"&gt;
-        &lt;icon-wc name="percent" size="md"&gt;&lt;/icon-wc&gt;
-      &lt;/span&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-card&gt;
-&lt;/layout-grid&gt;</code-block>
+  figure > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+
+  .stat-icon {
+    padding: var(--size-s);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Semantic Benefits</h2>
+    <layout-text>
+      <p>This pattern uses semantic HTML elements that provide meaning beyond visual presentation:</p>
+      <ul>
+        <li><strong><code>&lt;figure&gt;</code>:</strong> Groups the stat as a self-contained unit of content</li>
+        <li><strong><code>&lt;figcaption&gt;</code>:</strong> Provides the label/caption for the figure</li>
+        <li><strong><code>&lt;data value=""&gt;</code>:</strong> Contains machine-readable values for parsing by scripts or assistive technologies. The <code>value</code> attribute holds the raw number while the text content shows the formatted display</li>
+        <li><strong><code>&lt;small&gt;</code>:</strong> Indicates secondary information (the trend/change indicator)</li>
+      </ul>
+    </layout-text>
   </section>
 
   <section>
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
-        <li><strong>Number formatting:</strong> Use locale-appropriate number formatting (commas, currency symbols) for readability</li>
-        <li><strong>Color semantics:</strong> Use <code>--color-success</code> for positive changes, <code>--color-danger</code> for negative changes</li>
-        <li><strong>Accessibility:</strong> Ensure sufficient color contrast; do not rely on color alone to convey meaning</li>
-        <li><strong>Labels:</strong> Keep labels concise and use consistent terminology across stats</li>
+        <li><strong>Machine-readable values:</strong> Always include the raw number in the <code>value</code> attribute (e.g., <code>value="24521"</code> for "24,521" or <code>value="0.032"</code> for "3.2%")</li>
+        <li><strong>Color semantics:</strong> Use <code>data-trend="up"</code> for positive trends and <code>data-trend="down"</code> for negative trends</li>
+        <li><strong>Accessibility:</strong> The semantic structure helps screen readers understand the relationship between labels and values</li>
         <li><strong>Responsive:</strong> The grid automatically adjusts column count based on container width</li>
-        <li><strong>Context:</strong> Always provide context for change indicators (e.g., "vs last month")</li>
+        <li><strong>Context:</strong> Include context in trend indicators (e.g., "vs last month") so users understand what the change refers to</li>
       </ul>
     </layout-text>
   </section>
@@ -197,9 +228,13 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
   <section>
     <h2>Related</h2>
     <layout-grid data-min="200px" data-gap="m">
-      <a href="/docs/elements/custom-elements/grid/" class="section-card">
-        <h3>Layout Grid</h3>
-        <p>Responsive grid layout element</p>
+      <a href="/docs/elements/native/data/" class="section-card">
+        <h3>Data Element</h3>
+        <p>Machine-readable values</p>
+      </a>
+      <a href="/docs/elements/native/figure/" class="section-card">
+        <h3>Figure Element</h3>
+        <p>Self-contained content</p>
       </a>
       <a href="/docs/elements/custom-elements/layout-card/" class="section-card">
         <h3>Layout Card</h3>

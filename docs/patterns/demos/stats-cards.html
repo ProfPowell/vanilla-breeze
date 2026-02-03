@@ -3,87 +3,118 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Stats - Card-Based (Refactored)</title>
+  <title>Stats - Card-Based</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
       padding: var(--size-l);
       background: var(--color-surface);
     }
-    .stat-value {
-      font-size: var(--font-size-3xl);
-      font-weight: var(--font-weight-bold);
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--size-l);
     }
-    .stat-change.positive {
-      color: var(--color-success);
-    }
-    .stat-change.negative {
-      color: var(--color-danger);
-    }
-    .stat-icon {
-      padding: var(--size-s);
-      background: var(--color-surface-raised);
-      border-radius: var(--radius-m);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+    @scope (.stats) {
+      figure {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--size-m);
+        margin: 0;
+      }
+
+      figure > div {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-2xs);
+      }
+
+      figcaption {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+      }
+
+      data {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        line-height: var(--line-height-tight);
+      }
+
+      small {
+        font-size: var(--font-size-sm);
+      }
+
+      small[data-trend="up"] { color: var(--color-success); }
+      small[data-trend="down"] { color: var(--color-danger); }
+
+      .stat-icon {
+        padding: var(--size-s);
+        background: var(--color-surface-raised);
+        border-radius: var(--radius-m);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
-  <layout-grid data-gap="l" data-min-width="250">
+  <section class="stats">
     <layout-card>
-      <layout-cluster data-justify="space-between" data-align="start">
-        <layout-stack data-gap="xs">
-          <span class="text-sm text-muted">Total Users</span>
-          <span class="stat-value">24,521</span>
-          <span class="stat-change positive text-sm">+12.5% from last month</span>
-        </layout-stack>
+      <figure>
+        <div>
+          <figcaption>Total Users</figcaption>
+          <data value="24521">24,521</data>
+          <small data-trend="up">+12.5% from last month</small>
+        </div>
         <span class="stat-icon">
           <icon-wc name="users" size="md"></icon-wc>
         </span>
-      </layout-cluster>
+      </figure>
     </layout-card>
 
     <layout-card>
-      <layout-cluster data-justify="space-between" data-align="start">
-        <layout-stack data-gap="xs">
-          <span class="text-sm text-muted">Revenue</span>
-          <span class="stat-value">$48,352</span>
-          <span class="stat-change positive text-sm">+8.2% from last month</span>
-        </layout-stack>
+      <figure>
+        <div>
+          <figcaption>Revenue</figcaption>
+          <data value="48352">$48,352</data>
+          <small data-trend="up">+8.2% from last month</small>
+        </div>
         <span class="stat-icon">
           <icon-wc name="dollar-sign" size="md"></icon-wc>
         </span>
-      </layout-cluster>
+      </figure>
     </layout-card>
 
     <layout-card>
-      <layout-cluster data-justify="space-between" data-align="start">
-        <layout-stack data-gap="xs">
-          <span class="text-sm text-muted">Active Sessions</span>
-          <span class="stat-value">1,893</span>
-          <span class="stat-change negative text-sm">-2.4% from last month</span>
-        </layout-stack>
+      <figure>
+        <div>
+          <figcaption>Active Sessions</figcaption>
+          <data value="1893">1,893</data>
+          <small data-trend="down">-2.4% from last month</small>
+        </div>
         <span class="stat-icon">
           <icon-wc name="activity" size="md"></icon-wc>
         </span>
-      </layout-cluster>
+      </figure>
     </layout-card>
 
     <layout-card>
-      <layout-cluster data-justify="space-between" data-align="start">
-        <layout-stack data-gap="xs">
-          <span class="text-sm text-muted">Conversion Rate</span>
-          <span class="stat-value">3.2%</span>
-          <span class="stat-change positive text-sm">+0.4% from last month</span>
-        </layout-stack>
+      <figure>
+        <div>
+          <figcaption>Conversion Rate</figcaption>
+          <data value="0.032">3.2%</data>
+          <small data-trend="up">+0.4% from last month</small>
+        </div>
         <span class="stat-icon">
           <icon-wc name="percent" size="md"></icon-wc>
         </span>
-      </layout-cluster>
+      </figure>
     </layout-card>
-  </layout-grid>
+  </section>
 
   <script type="module" src="/src/main.js"></script>
 </body>
