@@ -9,23 +9,53 @@
     body {
       padding: var(--size-l);
       background: var(--color-surface);
-      min-height: 300px;
+    }
+
+    .messages {
+      min-height: 200px;
+      border: 1px dashed var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    /* Empty state pattern */
+    [data-state="empty"] > :not(output) {
+      display: none;
+    }
+
+    [data-state="empty"] > output {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: var(--size-s);
+      padding: var(--size-xl);
+      text-align: center;
+    }
+
+    [data-state="empty"] > output icon-wc {
+      --icon-size: 3rem;
+      color: var(--color-text-muted);
+    }
+
+    [data-state="empty"] > output p {
+      color: var(--color-text-muted);
     }
   </style>
 </head>
 <body>
-  <layout-center>
-    <layout-stack data-gap="m" style="text-align: center; padding: var(--size-xl);">
-      <icon-wc name="inbox" style="--icon-size: 3rem; color: var(--color-text-muted);"></icon-wc>
+  <section class="messages" data-state="empty">
+    <!-- Normal content (would be shown when populated) -->
+    <ul>
+      <!-- <li>Message items go here</li> -->
+    </ul>
+
+    <!-- Empty state feedback -->
+    <output role="status">
+      <icon-wc name="inbox"></icon-wc>
       <h3>No messages yet</h3>
-      <p style="color: var(--color-text-muted);">
-        When you receive messages, they will appear here.
-      </p>
-    </layout-stack>
-  </layout-center>
+      <p>When you receive messages, they will appear here.</p>
+    </output>
+  </section>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

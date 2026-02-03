@@ -9,31 +9,61 @@
     body {
       padding: var(--size-l);
       background: var(--color-surface);
-      min-height: 350px;
+    }
+
+    .documents {
+      min-height: 250px;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      max-width: 400px;
+      margin-inline: auto;
+    }
+
+    /* Empty state pattern */
+    [data-state="empty"] > :not(output) {
+      display: none;
+    }
+
+    [data-state="empty"] > output {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: var(--size-m);
+      padding: var(--size-xl);
+      text-align: center;
+    }
+
+    [data-state="empty"] > output icon-wc {
+      --icon-size: 3rem;
+      color: var(--color-text-muted);
+    }
+
+    [data-state="empty"] > output p {
+      color: var(--color-text-muted);
+      max-width: 36ch;
     }
   </style>
 </head>
 <body>
-  <layout-card style="width: 100%; max-width: 400px;">
-    <layout-center>
-      <layout-stack data-gap="l" style="text-align: center; padding: var(--size-xl);">
-        <icon-wc name="file-text" style="--icon-size: 3rem; color: var(--color-text-muted);"></icon-wc>
-        <layout-stack data-gap="s">
-          <h3>No documents</h3>
-          <p style="color: var(--color-text-muted); max-width: 36ch; margin-inline: auto;">
-            Get started by creating your first document. You can upload files or start from scratch.
-          </p>
-        </layout-stack>
-        <button>
-          <icon-wc name="plus"></icon-wc>
-          Create document
-        </button>
-      </layout-stack>
-    </layout-center>
-  </layout-card>
+  <section class="documents" data-state="empty">
+    <!-- Normal content (would be shown when populated) -->
+    <ul>
+      <!-- <li>Document items go here</li> -->
+    </ul>
+
+    <!-- Empty state feedback with action -->
+    <output role="status">
+      <icon-wc name="file-text"></icon-wc>
+      <h3>No documents</h3>
+      <p>Get started by creating your first document. You can upload files or start from scratch.</p>
+      <button type="button">
+        <icon-wc name="plus"></icon-wc>
+        Create document
+      </button>
+    </output>
+  </section>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

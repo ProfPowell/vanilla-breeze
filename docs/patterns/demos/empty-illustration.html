@@ -3,53 +3,71 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Empty State - Illustration (Refactored)</title>
+  <title>Empty State - With Illustration</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
       padding: var(--size-l);
       background: var(--color-surface);
-      min-height: 350px;
+    }
+
+    .projects {
+      min-height: 280px;
+      border: 1px dashed var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    /* Empty state pattern */
+    [data-state="empty"] > :not(output) {
+      display: none;
+    }
+
+    [data-state="empty"] > output {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-    }
-    .empty-state {
-      text-align: center;
+      gap: var(--size-m);
       padding: var(--size-xl);
+      text-align: center;
     }
-    .empty-state p {
+
+    [data-state="empty"] > output p {
+      color: var(--color-text-muted);
       max-width: 36ch;
-      margin-inline: auto;
     }
+
     .illustration-placeholder {
       width: 12rem;
       height: 8rem;
-      margin-inline: auto;
       background: var(--color-surface-raised);
       border: 2px dashed var(--color-border);
       border-radius: var(--radius-m);
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
     }
   </style>
 </head>
 <body>
-  <layout-center>
-    <layout-stack data-gap="l" class="empty-state">
+  <section class="projects" data-state="empty">
+    <!-- Normal content (would be shown when populated) -->
+    <ul>
+      <!-- <li>Project items go here</li> -->
+    </ul>
+
+    <!-- Empty state feedback with illustration -->
+    <output role="status">
       <!-- Illustration placeholder - replace with your own SVG or image -->
       <div class="illustration-placeholder">
-        <span class="text-sm text-muted">Illustration</span>
+        Illustration
       </div>
-      <layout-stack data-gap="s">
-        <h3>No projects found</h3>
-        <p class="text-muted">
-          You haven't created any projects yet. Projects help you organize your work and collaborate with your team.
-        </p>
-      </layout-stack>
-    </layout-stack>
-  </layout-center>
+      <h3>No projects found</h3>
+      <p>You haven't created any projects yet. Projects help you organize your work and collaborate with your team.</p>
+    </output>
+  </section>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

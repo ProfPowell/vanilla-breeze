@@ -4,7 +4,7 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
 <PatternLayout
   title="Empty States"
-  description="Empty state patterns for when there's no content to display. Guide users with helpful messages and actions."
+  description="Empty state patterns for when there's no content to display. State-driven feedback with semantic HTML."
   patternName="Empty States"
   category="feedback"
   currentPath="/docs/patterns/feedback/empty-states/"
@@ -12,22 +12,48 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Empty states appear when a list, table, or container has no content. They should explain the situation, reassure users, and often provide an action to add content or get started.</p>
-      <p><strong>Key features:</strong></p>
+      <p>Empty states show feedback when a container has no content to display. They're a <strong>state</strong> of the container, not a separate component.</p>
+      <p><strong>Key concepts:</strong></p>
       <ul>
-        <li>Centered layout using <code>&lt;layout-center&gt;</code></li>
-        <li>Vertical grouping with <code>&lt;layout-stack&gt;</code></li>
-        <li>Icons from Lucide set via <code>&lt;icon-wc&gt;</code></li>
-        <li>Muted description text with <code>--color-text-muted</code></li>
-        <li>Optional action buttons to guide users</li>
+        <li>Use <code>data-state="empty"</code> on the container</li>
+        <li>Use <code>&lt;output role="status"&gt;</code> for semantic, accessible feedback</li>
+        <li>CSS shows/hides content based on state attribute</li>
+        <li>Works without JavaScript (progressive enhancement)</li>
       </ul>
     </layout-text>
   </section>
 
   <section>
-    <h2>Simple with Icon</h2>
+    <h2>The Pattern</h2>
     <layout-text>
-      <p>A minimal empty state with an icon, heading, and description. Perfect for inline empty areas like sidebars or small panels.</p>
+      <p>An empty state is fundamentally feedback about a container's current status. The pattern uses:</p>
+      <ol>
+        <li>A container with <code>data-state="empty"</code> when content is absent</li>
+        <li>Normal content that gets hidden via CSS when state is "empty"</li>
+        <li><code>&lt;output role="status"&gt;</code> to show the feedback message</li>
+      </ol>
+    </layout-text>
+
+    <code-block language="css" label="Empty state CSS pattern">{`/* Hide normal content when empty */
+[data-state="empty"] > :not(output) {
+  display: none;
+}
+
+/* Style the empty state feedback */
+[data-state="empty"] > output {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-xl);
+  text-align: center;
+}`}</code-block>
+  </section>
+
+  <section>
+    <h2>Simple Example</h2>
+    <layout-text>
+      <p>A minimal empty state with an icon, heading, and description. The container shows where messages would appear, with feedback when none exist.</p>
     </layout-text>
 
     <browser-window
@@ -37,50 +63,25 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="empty-simple.html">&lt;layout-center&gt;
-  &lt;layout-stack data-gap="m" style="text-align: center; padding: var(--size-xl);"&gt;
-    &lt;icon-wc name="inbox" style="--icon-size: 3rem; color: var(--color-text-muted);"&gt;&lt;/icon-wc&gt;
+    <code-block language="html" label="empty-simple.html">&lt;section class="messages" data-state="empty"&gt;
+  &lt;!-- Normal content (hidden when empty) --&gt;
+  &lt;ul&gt;
+    &lt;!-- Message items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback --&gt;
+  &lt;output role="status"&gt;
+    &lt;icon-wc name="inbox"&gt;&lt;/icon-wc&gt;
     &lt;h3&gt;No messages yet&lt;/h3&gt;
-    &lt;p style="color: var(--color-text-muted);"&gt;
-      When you receive messages, they will appear here.
-    &lt;/p&gt;
-  &lt;/layout-stack&gt;
-&lt;/layout-center&gt;</code-block>
-  </section>
-
-  <section>
-    <h2>With Illustration Placeholder</h2>
-    <layout-text>
-      <p>An empty state with space for a custom illustration or image. Use this for feature-level empty states where visual appeal matters.</p>
-    </layout-text>
-
-    <browser-window
-      src="/docs/patterns/demos/empty-illustration.html"
-      url="https://vanilla-breeze.dev/empty-illustration"
-      title="Empty State - Illustration"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" label="empty-illustration.html">&lt;layout-center&gt;
-  &lt;layout-stack data-gap="l" class="empty-state"&gt;
-    &lt;!-- Illustration placeholder - replace with your own SVG or image --&gt;
-    &lt;div class="illustration-placeholder"&gt;
-      &lt;span class="text-sm text-muted"&gt;Illustration&lt;/span&gt;
-    &lt;/div&gt;
-    &lt;layout-stack data-gap="s"&gt;
-      &lt;h3&gt;No projects found&lt;/h3&gt;
-      &lt;p class="text-muted"&gt;
-        You haven't created any projects yet. Projects help you organize your work and collaborate with your team.
-      &lt;/p&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-stack&gt;
-&lt;/layout-center&gt;</code-block>
+    &lt;p&gt;When you receive messages, they will appear here.&lt;/p&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
   </section>
 
   <section>
     <h2>With Action Button</h2>
     <layout-text>
-      <p>An empty state with a prominent call-to-action button. Use this when users can immediately add content or take action to populate the area.</p>
+      <p>An empty state with a call-to-action button inside the output. Use this when users can immediately add content.</p>
     </layout-text>
 
     <browser-window
@@ -90,62 +91,125 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="empty-action.html">&lt;layout-card&gt;
-  &lt;layout-center&gt;
-    &lt;layout-stack data-gap="l" style="text-align: center; padding: var(--size-xl);"&gt;
-      &lt;icon-wc name="file-text" style="--icon-size: 3rem; color: var(--color-text-muted);"&gt;&lt;/icon-wc&gt;
-      &lt;layout-stack data-gap="s"&gt;
-        &lt;h3&gt;No documents&lt;/h3&gt;
-        &lt;p style="color: var(--color-text-muted); max-width: 36ch; margin-inline: auto;"&gt;
-          Get started by creating your first document. You can upload files or start from scratch.
-        &lt;/p&gt;
-      &lt;/layout-stack&gt;
-      &lt;button&gt;
-        &lt;icon-wc name="plus"&gt;&lt;/icon-wc&gt;
-        Create document
-      &lt;/button&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-center&gt;
-&lt;/layout-card&gt;</code-block>
+    <code-block language="html" label="empty-action.html">&lt;section class="documents" data-state="empty"&gt;
+  &lt;!-- Normal content (hidden when empty) --&gt;
+  &lt;ul&gt;
+    &lt;!-- Document items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback with action --&gt;
+  &lt;output role="status"&gt;
+    &lt;icon-wc name="file-text"&gt;&lt;/icon-wc&gt;
+    &lt;h3&gt;No documents&lt;/h3&gt;
+    &lt;p&gt;Get started by creating your first document.&lt;/p&gt;
+    &lt;button type="button"&gt;
+      &lt;icon-wc name="plus"&gt;&lt;/icon-wc&gt;
+      Create document
+    &lt;/button&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
   </section>
 
   <section>
-    <h2>Configuration</h2>
+    <h2>With Illustration</h2>
     <layout-text>
-      <p>Empty states are composed from layout primitives. Here are the key styling considerations:</p>
+      <p>An empty state with space for a custom illustration or image. Use this for feature-level empty states where visual appeal matters.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/empty-illustration.html"
+      url="https://vanilla-breeze.dev/empty-illustration"
+      title="Empty State - With Illustration"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="empty-illustration.html">&lt;section class="projects" data-state="empty"&gt;
+  &lt;!-- Normal content (hidden when empty) --&gt;
+  &lt;ul&gt;
+    &lt;!-- Project items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback with illustration --&gt;
+  &lt;output role="status"&gt;
+    &lt;!-- Replace with your own SVG or image --&gt;
+    &lt;img src="/illustrations/empty-projects.svg" alt="" /&gt;
+    &lt;h3&gt;No projects found&lt;/h3&gt;
+    &lt;p&gt;You haven't created any projects yet.&lt;/p&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Why This Approach?</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Semantic:</strong> <code>&lt;output&gt;</code> represents the result of a calculation or user action (query returned 0 items)</li>
+        <li><strong>Accessible:</strong> <code>role="status"</code> ensures screen readers announce the message</li>
+        <li><strong>State-driven:</strong> Matches the Vanilla Breeze data-attribute philosophy</li>
+        <li><strong>Progressive:</strong> Works CSS-only, enhanced by JavaScript when needed</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Semantic Elements</h2>
+    <layout-text>
+      <p>Use appropriate elements within the output for each content type:</p>
     </layout-text>
 
     <table class="props-table">
       <thead>
         <tr>
+          <th>Content Type</th>
           <th>Element</th>
           <th>Purpose</th>
-          <th>Customization</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>&lt;layout-center&gt;</code></td>
-          <td>Horizontally centers the content</td>
-          <td>Set <code>max-width</code> via <code>data-max</code> attribute</td>
+          <td>Status message</td>
+          <td><code>&lt;output role="status"&gt;</code></td>
+          <td>Semantic result of an action, announced by screen readers</td>
         </tr>
         <tr>
-          <td><code>&lt;layout-stack&gt;</code></td>
-          <td>Vertical spacing between elements</td>
-          <td>Adjust gap with <code>data-gap</code> (xs, s, m, l, xl)</td>
+          <td>Heading</td>
+          <td><code>&lt;h3&gt;</code> or appropriate level</td>
+          <td>Describes the empty state</td>
         </tr>
         <tr>
-          <td><code>&lt;icon-wc&gt;</code></td>
-          <td>Visual indicator</td>
-          <td>Size via <code>--icon-size</code>, color via <code>color</code></td>
+          <td>Description</td>
+          <td><code>&lt;p&gt;</code></td>
+          <td>Explains what will appear or why it's empty</td>
         </tr>
         <tr>
-          <td><code>&lt;layout-card&gt;</code></td>
-          <td>Optional bordered container</td>
-          <td>Use <code>data-variant</code> for different styles</td>
+          <td>Action</td>
+          <td><code>&lt;button&gt;</code> or <code>&lt;a&gt;</code></td>
+          <td>Optional CTA to add content</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript Integration</h2>
+    <layout-text>
+      <p>The pattern works CSS-only with server-rendered <code>data-state="empty"</code>. For dynamic content, toggle the attribute:</p>
+    </layout-text>
+
+    <code-block language="javascript" label="Managing state with JavaScript">{`// Toggle empty state based on content
+function updateEmptyState(container, items) {
+  if (items.length === 0) {
+    container.setAttribute('data-state', 'empty');
+  } else {
+    container.removeAttribute('data-state');
+  }
+}
+
+// Example: after fetching data
+fetchMessages().then(messages => {
+  updateEmptyState(messagesContainer, messages);
+  renderMessages(messages);
+});`}</code-block>
   </section>
 
   <section>
@@ -189,9 +253,9 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
         <h3>Skeleton</h3>
         <p>Loading placeholders for content</p>
       </a>
-      <a href="/docs/elements/custom-elements/center/" class="section-card">
-        <h3>Layout Center</h3>
-        <p>Center content horizontally</p>
+      <a href="/docs/elements/data-attributes/" class="section-card">
+        <h3>Data Attributes</h3>
+        <p>State management with data-* attributes</p>
       </a>
     </layout-grid>
   </section>
