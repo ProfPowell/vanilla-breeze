@@ -5,130 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Sign In - Social Login</title>
   <link rel="stylesheet" href="/src/main.css"/>
-  <style>
-    body {
-      margin: 0;
-      background: var(--color-surface);
-    }
-    .sign-in-page {
-      min-block-size: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: var(--size-l);
-    }
-    .sign-in-page > layout-center {
-      width: 100%;
-    }
-    header p {
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-    .social-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--size-s);
-      width: 100%;
-    }
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: var(--size-m);
-      color: var(--color-text-muted);
-      font-size: var(--font-size-s);
-    }
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--color-border);
-    }
-    .text-center {
-      text-align: center;
-    }
-    .text-center p {
-      margin: 0;
-      color: var(--color-text-muted);
-    }
-  </style>
 </head>
-<body>
-  <section class="sign-in-page">
-    <layout-center data-max="narrow">
-      <layout-card>
-        <layout-stack data-gap="l">
-          <header>
-            <layout-stack data-gap="s">
-              <h1>Sign in</h1>
-              <p>Choose your preferred sign-in method.</p>
-            </layout-stack>
-          </header>
+<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <div data-layout="stack" data-gap="l">
+      <header data-layout="stack" data-gap="s">
+        <h1>Sign in</h1>
+        <p>Choose your preferred sign-in method.</p>
+      </header>
 
-          <!-- Social Login Buttons -->
-          <layout-stack data-gap="s">
-            <button type="button" class="secondary social-btn">
-              <icon-wc name="brand-google"></icon-wc>
-              Continue with Google
-            </button>
-            <button type="button" class="secondary social-btn">
-              <icon-wc name="brand-github"></icon-wc>
-              Continue with GitHub
-            </button>
-          </layout-stack>
+      <!-- Social Login Buttons -->
+      <div data-layout="stack" data-gap="s">
+        <button type="button" class="secondary">
+          <icon-wc name="brand-google"></icon-wc>
+          Continue with Google
+        </button>
+        <button type="button" class="secondary">
+          <icon-wc name="brand-github"></icon-wc>
+          Continue with GitHub
+        </button>
+      </div>
 
-          <!-- Divider -->
-          <div class="divider"><span>or continue with email</span></div>
+      <!-- Divider -->
+      <text-divider>or continue with email</text-divider>
 
-          <!-- Email/Password Form -->
-          <form action="/auth/login" method="POST">
-            <layout-stack data-gap="l">
-              <form-field>
-                <label for="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required=""
-                  autocomplete="email"
-                  placeholder="you@example.com"
-                />
-              </form-field>
+      <!-- Email/Password Form -->
+      <form action="/auth/login" method="POST" data-layout="stack" data-gap="l">
+        <form-field>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required=""
+                 autocomplete="email" placeholder="you@example.com"
+                 aria-describedby="email-error"/>
+          <output id="email-error" class="error" for="email" aria-live="polite">
+            Please enter a valid email address.
+          </output>
+        </form-field>
 
-              <form-field>
-                <label for="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required=""
-                  autocomplete="current-password"
-                  placeholder="Enter your password"
-                />
-              </form-field>
+        <form-field>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required=""
+                 autocomplete="current-password" placeholder="Enter your password"
+                 aria-describedby="password-error"/>
+          <output id="password-error" class="error" for="password" aria-live="polite">
+            Password is required.
+          </output>
+        </form-field>
 
-              <layout-cluster data-justify="space-between" data-align="center">
-                <form-field>
-                  <label>
-                    <input type="checkbox" name="remember" value="yes"/>
-                    Remember me
-                  </label>
-                </form-field>
-                <a href="/auth/forgot-password">Forgot password?</a>
-              </layout-cluster>
+        <fieldset class="minimal" data-layout="cluster" data-justify="between" data-align="center">
+          <label><input type="checkbox" name="remember"/> Remember me</label>
+          <a href="/auth/forgot-password">Forgot password?</a>
+        </fieldset>
 
-              <button type="submit">Sign in</button>
-            </layout-stack>
-          </form>
+        <button type="submit">Sign in</button>
+      </form>
 
-          <div class="text-center">
-            <p>Don't have an account? <a href="/auth/register">Sign up</a></p>
-          </div>
-        </layout-stack>
-      </layout-card>
-    </layout-center>
-  </section>
+      <footer>
+        <p>Don't have an account? <a href="/auth/register">Sign up</a></p>
+      </footer>
+    </div>
+  </layout-card>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

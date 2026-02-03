@@ -26,6 +26,57 @@ const basicCode = `<form-field>
   </output>
 </form-field>`;
 
+const outputClassesCode = `<!-- Hint message - always visible -->
+<form-field>
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" required
+         minlength="3" maxlength="20"
+         aria-describedby="username-hint username-error" />
+  <output id="username-hint" class="hint" for="username">
+    3-20 characters, letters and numbers only.
+  </output>
+  <output id="username-error" class="error" for="username" aria-live="polite">
+    Please enter a valid username.
+  </output>
+</form-field>`;
+
+const passwordToggleCode = `<form-field>
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password"
+         required minlength="8"
+         autocomplete="current-password"
+         aria-describedby="password-msg" />
+  <output id="password-msg" class="error" for="password" aria-live="polite">
+    At least 8 characters required.
+  </output>
+</form-field>
+<!-- JS auto-adds show/hide toggle button -->`;
+
+const validationIconsCode = `<!-- Default: validation icons appear -->
+<form-field>
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" required />
+</form-field>
+
+<!-- Opt-out: no validation icons -->
+<form-field data-no-icon>
+  <label for="search">Search</label>
+  <input type="search" id="search" name="q" />
+</form-field>`;
+
+const otpInputCode = `<form-field data-no-icon>
+  <label for="code">Verification code</label>
+  <input type="text" id="code" name="code"
+         data-type="otp" data-length="6"
+         inputmode="numeric" pattern="[0-9]{6}"
+         autocomplete="one-time-code" required
+         aria-describedby="code-msg" />
+  <output id="code-msg" class="hint" for="code" aria-live="polite">
+    Enter the 6-digit code from your authenticator app.
+  </output>
+</form-field>
+<!-- Works as text input without JS, multi-box with JS -->`;
+
 const checkboxRadioCode = `<!-- Single Checkbox -->
 <form-field data-type="checkbox">
   <label>
@@ -215,6 +266,12 @@ form-field[data-type="radio"] label {
           <td>Special styling for non-text inputs</td>
         </tr>
         <tr>
+          <td><code>data-no-icon</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Disable validation status icons</td>
+        </tr>
+        <tr>
           <td><code>data-required</code></td>
           <td>boolean</td>
           <td>-</td>
@@ -231,6 +288,32 @@ form-field[data-type="radio"] label {
           <td>boolean</td>
           <td>-</td>
           <td>Force invalid state styling</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Input Attributes (for JS enhancements)</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-type</code> (on input)</td>
+          <td><code>otp</code>, <code>pin</code></td>
+          <td>-</td>
+          <td>Enable OTP/PIN multi-box enhancement</td>
+        </tr>
+        <tr>
+          <td><code>data-length</code> (on input)</td>
+          <td><code>4</code>, <code>6</code>, <code>8</code></td>
+          <td><code>6</code></td>
+          <td>Number of digits for OTP/PIN input</td>
         </tr>
       </tbody>
     </table>
@@ -366,6 +449,198 @@ form-field[data-type="radio"] label {
         </form-field>
       </form>
     </div>
+  </section>
+
+  <section>
+    <h2>Password Toggle</h2>
+    <p>Password inputs are automatically enhanced with a show/hide toggle button when JavaScript is available. No extra markup is needed - just use <code>type="password"</code>.</p>
+
+    <div class="example" style="max-inline-size: 25rem;">
+      <form>
+        <form-field>
+          <label for="pwd-toggle-demo">Password</label>
+          <input type="password"
+                 id="pwd-toggle-demo"
+                 name="password"
+                 required
+                 minlength="8"
+                 autocomplete="new-password"
+                 aria-describedby="pwd-toggle-msg" />
+          <output id="pwd-toggle-msg" class="error" for="pwd-toggle-demo" aria-live="polite">
+            At least 8 characters required
+          </output>
+        </form-field>
+      </form>
+    </div>
+
+    <p>The toggle button:</p>
+    <ul>
+      <li>Appears automatically when JavaScript loads</li>
+      <li>Uses accessible ARIA attributes (<code>aria-pressed</code>, <code>aria-label</code>)</li>
+      <li>Works alongside validation icons (positions adjust automatically)</li>
+      <li>Preserves tab order and keyboard navigation</li>
+    </ul>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Password input with auto toggle">{passwordToggleCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Validation Status Icons</h2>
+    <p>Form fields automatically display validation status icons after user interaction:</p>
+    <ul>
+      <li><strong>Checkmark</strong> appears when the field is valid</li>
+      <li><strong>X</strong> appears when the field is invalid</li>
+    </ul>
+    <p>Icons are positioned inside the input's padding and adjust automatically for password fields with toggle buttons.</p>
+
+    <div class="example" style="max-inline-size: 25rem;">
+      <form>
+        <layout-stack data-gap="m">
+          <form-field>
+            <label for="icon-email">Email (type and blur to see icons)</label>
+            <input type="email"
+                   id="icon-email"
+                   name="email"
+                   required
+                   aria-describedby="icon-email-msg" />
+            <output id="icon-email-msg" class="error" for="icon-email" aria-live="polite">
+              Please enter a valid email
+            </output>
+          </form-field>
+        </layout-stack>
+      </form>
+    </div>
+
+    <h3>Disabling Icons</h3>
+    <p>Use <code>data-no-icon</code> on the form-field to disable validation icons. Useful for search fields or other contexts where icons aren't needed.</p>
+
+    <div class="example" style="max-inline-size: 25rem;">
+      <form>
+        <form-field data-no-icon>
+          <label for="search-no-icon">Search (no icons)</label>
+          <input type="search" id="search-no-icon" name="q" placeholder="Search..." />
+        </form-field>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Validation icons opt-out">{validationIconsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>OTP/PIN Input</h2>
+    <p>For verification codes, use <code>data-type="otp"</code> on the input. This creates a progressive enhancement pattern:</p>
+    <ul>
+      <li><strong>Without JavaScript:</strong> Works as a standard text input</li>
+      <li><strong>With JavaScript:</strong> Enhances to a multi-box input with automatic focus management</li>
+    </ul>
+
+    <div class="example" style="max-inline-size: 25rem;">
+      <form>
+        <form-field data-no-icon>
+          <label for="otp-demo">Verification code</label>
+          <input type="text"
+                 id="otp-demo"
+                 name="code"
+                 data-type="otp"
+                 data-length="6"
+                 inputmode="numeric"
+                 pattern="[0-9]{6}"
+                 autocomplete="one-time-code"
+                 required
+                 aria-describedby="otp-demo-msg" />
+          <output id="otp-demo-msg" class="hint" for="otp-demo" aria-live="polite">
+            Enter the 6-digit code
+          </output>
+        </form-field>
+      </form>
+    </div>
+
+    <h3>Features</h3>
+    <ul>
+      <li>Auto-focus moves to the next box after entering a digit</li>
+      <li>Backspace moves focus to the previous box</li>
+      <li>Arrow keys navigate between boxes</li>
+      <li>Paste support fills multiple boxes at once</li>
+      <li>Original input becomes hidden and stores the combined value</li>
+    </ul>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="OTP input progressive enhancement">{otpInputCode}</code-block>
+
+    <h3>4-Digit PIN Variant</h3>
+    <div class="example" style="max-inline-size: 20rem;">
+      <form>
+        <form-field data-no-icon>
+          <label for="pin-demo">PIN</label>
+          <input type="text"
+                 id="pin-demo"
+                 name="pin"
+                 data-type="pin"
+                 data-length="4"
+                 inputmode="numeric"
+                 pattern="[0-9]{4}"
+                 required
+                 aria-describedby="pin-demo-msg" />
+          <output id="pin-demo-msg" class="hint" for="pin-demo" aria-live="polite">
+            Enter your 4-digit PIN
+          </output>
+        </form-field>
+      </form>
+    </div>
+  </section>
+
+  <section>
+    <h2>Output Message Classes</h2>
+    <p>Use <code>class="hint"</code> and <code>class="error"</code> on output elements for different message types:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Visibility</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.hint</code></td>
+          <td>Always visible (hides when valid)</td>
+          <td>Format requirements, help text</td>
+        </tr>
+        <tr>
+          <td><code>.error</code></td>
+          <td>Only when invalid</td>
+          <td>Error messages</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="example" style="max-inline-size: 25rem;">
+      <form>
+        <form-field>
+          <label for="output-demo">Username</label>
+          <input type="text"
+                 id="output-demo"
+                 name="username"
+                 required
+                 minlength="3"
+                 maxlength="20"
+                 pattern="[a-zA-Z0-9]+"
+                 aria-describedby="output-demo-hint output-demo-error" />
+          <output id="output-demo-hint" class="hint" for="output-demo">
+            3-20 characters, letters and numbers only.
+          </output>
+          <output id="output-demo-error" class="error" for="output-demo" aria-live="polite">
+            Please enter a valid username.
+          </output>
+        </form-field>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Hint and error output messages">{outputClassesCode}</code-block>
   </section>
 
   <section>
