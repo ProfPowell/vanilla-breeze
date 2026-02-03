@@ -3,20 +3,21 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>App Shell - Collapsible Sidebar</title>
+  <title>App Shell - Collapsible Sidebar (Refactored)</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
-    body {
-      margin: 0;
-      min-block-size: 100vh;
-    }
-    .app-shell {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      min-block-size: 100vh;
-    }
+    /*
+     * Collapsible Sidebar Pattern
+     *
+     * Uses native <details> for collapse behavior with VB layouts for structure.
+     * The sidebar width transition and state-based styling require custom CSS,
+     * but the overall page layout uses data-page-layout.
+     *
+     * VB Gap: This pattern could benefit from a future collapsible sidebar
+     * primitive that handles the width transition declaratively.
+     */
 
-    /* Collapsible Sidebar */
+    /* Sidebar container using <details> for collapse */
     .sidebar {
       background: var(--color-surface);
       border-inline-end: 1px solid var(--color-border);
@@ -43,6 +44,11 @@
       flex: 1;
       overflow-y: auto;
     }
+    /*
+     * Note: Using custom .logo instead of <brand-mark> here because the
+     * collapsed state uses ::first-letter which requires a block container.
+     * brand-mark is inline-flex, so the trick wouldn't work.
+     */
     .sidebar .logo {
       font-weight: 600;
       font-size: var(--font-size-lg);
@@ -83,18 +89,10 @@
     }
 
     /* Main content */
-    main {
-      display: flex;
-      flex-direction: column;
-    }
     main > header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--size-m);
-      padding: var(--size-m) var(--size-l);
       background: var(--color-surface);
       border-block-end: 1px solid var(--color-border);
+      padding: var(--size-m) var(--size-l);
     }
     main > header h1 {
       margin: 0;
@@ -107,34 +105,12 @@
       overflow-y: auto;
     }
 
-    /* Dashboard cards */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: var(--size-m);
-      margin-block-end: var(--size-xl);
-    }
+    /* Dashboard cards - using VB grid for layout */
     .dashboard-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      padding: var(--size-l);
-    }
-    .dashboard-card h3 {
-      margin: 0 0 var(--size-xs);
-      font-size: var(--font-size-sm);
-      font-weight: 500;
-      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    .dashboard-card .value {
-      font-size: var(--font-size-2xl);
-      font-weight: 600;
-      color: var(--color-text);
-    }
     .dashboard-card .change {
-      font-size: var(--font-size-sm);
       margin-block-start: var(--size-xs);
     }
     .dashboard-card .change.positive {
@@ -145,24 +121,7 @@
     }
 
     /* Activity section */
-    .activity-section {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      padding: var(--size-l);
-    }
-    .activity-section h2 {
-      margin: 0 0 var(--size-m);
-      font-size: var(--font-size-lg);
-    }
-    .activity-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
     .activity-item {
-      display: flex;
-      gap: var(--size-m);
       padding: var(--size-m) 0;
       border-block-end: 1px solid var(--color-border);
     }
@@ -180,16 +139,6 @@
       color: var(--color-primary);
       border-radius: var(--radius-full);
     }
-    .activity-content {
-      flex: 1;
-    }
-    .activity-content p {
-      margin: 0;
-    }
-    .activity-content .time {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-    }
 
     /* Utility */
     .sr-only {
@@ -205,139 +154,139 @@
     }
   </style>
 </head>
-<body>
-  <div class="app-shell">
-    <details class="sidebar" open>
-      <summary>
-        <icon-wc name="bars-3"></icon-wc>
-        <span class="sr-only">Toggle sidebar</span>
-      </summary>
-      <layout-stack data-gap="l" class="sidebar-content">
-        <a href="#" class="logo">AppName</a>
-        <nav class="vertical" aria-label="Main navigation">
-          <ul>
-            <li>
-              <a href="#" aria-current="page">
-                <icon-wc name="home"></icon-wc>
-                <span class="nav-label">Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <icon-wc name="folder"></icon-wc>
-                <span class="nav-label">Projects</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <icon-wc name="users"></icon-wc>
-                <span class="nav-label">Team</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <icon-wc name="chart-bar"></icon-wc>
-                <span class="nav-label">Analytics</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <icon-wc name="document-text"></icon-wc>
-                <span class="nav-label">Reports</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <icon-wc name="cog"></icon-wc>
-                <span class="nav-label">Settings</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </layout-stack>
-    </details>
+<body data-layout="sidebar" data-gap="none" style="min-block-size: 100vh;">
+  <details class="sidebar" open>
+    <summary>
+      <icon-wc name="bars-3"></icon-wc>
+      <span class="sr-only">Toggle sidebar</span>
+    </summary>
+    <layout-stack data-gap="l" class="sidebar-content">
+      <a href="#" class="logo">AppName</a>
+      <nav class="vertical" aria-label="Main navigation">
+        <ul>
+          <li>
+            <a href="#" aria-current="page">
+              <icon-wc name="home"></icon-wc>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <icon-wc name="folder"></icon-wc>
+              <span class="nav-label">Projects</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <icon-wc name="users"></icon-wc>
+              <span class="nav-label">Team</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <icon-wc name="chart-bar"></icon-wc>
+              <span class="nav-label">Analytics</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <icon-wc name="document-text"></icon-wc>
+              <span class="nav-label">Reports</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <icon-wc name="cog"></icon-wc>
+              <span class="nav-label">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </layout-stack>
+  </details>
 
-    <main>
-      <header>
-        <h1>Dashboard</h1>
-        <layout-cluster data-gap="s">
-          <button class="button small icon-only" aria-label="Notifications">
-            <icon-wc name="bell"></icon-wc>
-          </button>
-          <button class="button small icon-only" aria-label="User menu">
-            <icon-wc name="user"></icon-wc>
-          </button>
-        </layout-cluster>
-      </header>
+  <main data-layout="stack" data-gap="none">
+    <header data-layout="cluster" data-justify="between">
+      <h1>Dashboard</h1>
+      <layout-cluster data-gap="s">
+        <button class="button small icon-only" aria-label="Notifications">
+          <icon-wc name="bell"></icon-wc>
+        </button>
+        <button class="button small icon-only" aria-label="User menu">
+          <icon-wc name="user"></icon-wc>
+        </button>
+      </layout-cluster>
+    </header>
 
-      <div class="main-content">
-        <div class="dashboard-grid">
-          <div class="dashboard-card">
-            <h3>Total Revenue</h3>
-            <div class="value">$45,231</div>
-            <div class="change positive">+12.5% from last month</div>
-          </div>
-          <div class="dashboard-card">
-            <h3>Active Users</h3>
-            <div class="value">2,345</div>
-            <div class="change positive">+8.2% from last month</div>
-          </div>
-          <div class="dashboard-card">
-            <h3>New Signups</h3>
-            <div class="value">128</div>
-            <div class="change negative">-3.1% from last month</div>
-          </div>
-          <div class="dashboard-card">
-            <h3>Bounce Rate</h3>
-            <div class="value">24.5%</div>
-            <div class="change positive">-2.4% from last month</div>
-          </div>
-        </div>
+    <section class="main-content">
+      <layout-stack data-gap="xl">
+        <layout-grid data-min="15rem" data-gap="m">
+          <layout-card data-variant="outlined">
+            <h3 class="dashboard-card text-muted text-sm">Total Revenue</h3>
+            <p class="text-2xl text-bold">$45,231</p>
+            <p class="text-sm change positive">+12.5% from last month</p>
+          </layout-card>
+          <layout-card data-variant="outlined">
+            <h3 class="dashboard-card text-muted text-sm">Active Users</h3>
+            <p class="text-2xl text-bold">2,345</p>
+            <p class="text-sm change positive">+8.2% from last month</p>
+          </layout-card>
+          <layout-card data-variant="outlined">
+            <h3 class="dashboard-card text-muted text-sm">New Signups</h3>
+            <p class="text-2xl text-bold">128</p>
+            <p class="text-sm change negative">-3.1% from last month</p>
+          </layout-card>
+          <layout-card data-variant="outlined">
+            <h3 class="dashboard-card text-muted text-sm">Bounce Rate</h3>
+            <p class="text-2xl text-bold">24.5%</p>
+            <p class="text-sm change positive">-2.4% from last month</p>
+          </layout-card>
+        </layout-grid>
 
-        <div class="activity-section">
+        <layout-card data-variant="outlined" data-padding="l">
           <h2>Recent Activity</h2>
-          <ul class="activity-list">
-            <li class="activity-item">
+          <ul data-layout="stack" data-gap="none" style="list-style: none; margin: 0; padding: 0;">
+            <li class="activity-item" data-layout="cluster" data-gap="m" data-align="start">
               <div class="activity-icon">
                 <icon-wc name="user-plus" size="sm"></icon-wc>
               </div>
-              <div class="activity-content">
-                <p><strong>New user signed up:</strong> Sarah Connor</p>
-                <span class="time">2 minutes ago</span>
-              </div>
+              <layout-stack data-gap="2xs">
+                <p style="margin: 0;"><strong>New user signed up:</strong> Sarah Connor</p>
+                <span class="text-sm text-muted">2 minutes ago</span>
+              </layout-stack>
             </li>
-            <li class="activity-item">
+            <li class="activity-item" data-layout="cluster" data-gap="m" data-align="start">
               <div class="activity-icon">
                 <icon-wc name="credit-card" size="sm"></icon-wc>
               </div>
-              <div class="activity-content">
-                <p><strong>Payment received:</strong> $299 from Acme Corp</p>
-                <span class="time">15 minutes ago</span>
-              </div>
+              <layout-stack data-gap="2xs">
+                <p style="margin: 0;"><strong>Payment received:</strong> $299 from Acme Corp</p>
+                <span class="text-sm text-muted">15 minutes ago</span>
+              </layout-stack>
             </li>
-            <li class="activity-item">
+            <li class="activity-item" data-layout="cluster" data-gap="m" data-align="start">
               <div class="activity-icon">
                 <icon-wc name="document-check" size="sm"></icon-wc>
               </div>
-              <div class="activity-content">
-                <p><strong>Report generated:</strong> Weekly Analytics Summary</p>
-                <span class="time">1 hour ago</span>
-              </div>
+              <layout-stack data-gap="2xs">
+                <p style="margin: 0;"><strong>Report generated:</strong> Weekly Analytics Summary</p>
+                <span class="text-sm text-muted">1 hour ago</span>
+              </layout-stack>
             </li>
-            <li class="activity-item">
+            <li class="activity-item" data-layout="cluster" data-gap="m" data-align="start">
               <div class="activity-icon">
                 <icon-wc name="flag" size="sm"></icon-wc>
               </div>
-              <div class="activity-content">
-                <p><strong>Milestone reached:</strong> 10,000 total users</p>
-                <span class="time">3 hours ago</span>
-              </div>
+              <layout-stack data-gap="2xs">
+                <p style="margin: 0;"><strong>Milestone reached:</strong> 10,000 total users</p>
+                <span class="text-sm text-muted">3 hours ago</span>
+              </layout-stack>
             </li>
           </ul>
-        </div>
-      </div>
-    </main>
-  </div>
+        </layout-card>
+      </layout-stack>
+    </section>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
 </body>
