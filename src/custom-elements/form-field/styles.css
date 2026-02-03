@@ -65,6 +65,70 @@ form-field:has(:user-invalid) {
   }
 }
 
+/* --------------------------------------------------------------------------
+   Validation status icons
+   Using mask-image for icon display. Opt-out with data-no-icon.
+   -------------------------------------------------------------------------- */
+
+/* Add position context for icon placement */
+form-field:not([data-no-icon]) {
+  position: relative;
+}
+
+/* Base icon styles using ::after on input wrapper or input directly */
+form-field:not([data-no-icon]):has(:user-valid) input:not([type="checkbox"]):not([type="radio"]),
+form-field:not([data-no-icon]):has(:user-valid) textarea,
+form-field:not([data-no-icon]):has(:user-valid) select,
+form-field:not([data-no-icon]):has(:user-invalid) input:not([type="checkbox"]):not([type="radio"]),
+form-field:not([data-no-icon]):has(:user-invalid) textarea,
+form-field:not([data-no-icon]):has(:user-invalid) select {
+  padding-inline-end: 2.5rem;
+}
+
+/* Valid icon (checkmark) */
+form-field:not([data-no-icon]):has(:user-valid)::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: var(--size-s);
+  /* Position at input level - roughly middle of typical input height */
+  inset-block-start: calc(1lh + var(--size-s) + 0.625rem);
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  background: var(--color-success);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  pointer-events: none;
+}
+
+/* Invalid icon (x) */
+form-field:not([data-no-icon]):has(:user-invalid)::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: var(--size-s);
+  inset-block-start: calc(1lh + var(--size-s) + 0.625rem);
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  background: var(--color-error);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  pointer-events: none;
+}
+
+/* Adjust for password fields with toggle button */
+form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid)::after,
+form-field:not([data-no-icon]):has(.password-wrapper):has(:user-invalid)::after {
+  inset-inline-end: 2.75rem;
+}
+
+form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid) input,
+form-field:not([data-no-icon]):has(.password-wrapper):has(:user-invalid) input {
+  padding-inline-end: 5rem;
+}
+
 /* Checkbox/radio variants */
 form-field[data-type="checkbox"],
 form-field[data-type="radio"] {
@@ -78,4 +142,47 @@ form-field[data-type="radio"] {
   & input {
     margin: 0;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Password field enhancement
+   -------------------------------------------------------------------------- */
+form-field .password-wrapper {
+  position: relative;
+  display: flex;
+}
+
+form-field .password-wrapper input {
+  inline-size: 100%;
+  padding-inline-end: 2.75rem;
+}
+
+form-field .password-toggle {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block: 0;
+  inline-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+form-field .password-toggle:hover {
+  color: var(--color-text);
+}
+
+form-field .password-toggle:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: -2px;
+  border-radius: var(--radius-s);
+}
+
+form-field .password-toggle svg {
+  flex-shrink: 0;
 }
