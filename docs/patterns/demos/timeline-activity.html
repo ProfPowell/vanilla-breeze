@@ -10,11 +10,16 @@
       padding: var(--size-l);
       background: var(--color-surface);
     }
+
     .activity-feed {
       --feed-line-color: var(--color-border);
       --avatar-size: 2rem;
       position: relative;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
+
     .activity-feed::before {
       content: '';
       position: absolute;
@@ -24,72 +29,68 @@
       width: 2px;
       background: var(--feed-line-color);
     }
-    .activity-item {
-      display: grid;
-      grid-template-columns: var(--avatar-size) 1fr;
-      gap: var(--size-s);
-      padding-block: var(--size-s);
-      position: relative;
-    }
-    .activity-item:first-child {
-      padding-block-start: 0;
-    }
-    .activity-item:last-child {
-      padding-block-end: 0;
-    }
-    .activity-avatar {
-      width: var(--avatar-size);
-      height: var(--avatar-size);
-      border-radius: 50%;
-      background: var(--color-surface-raised);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text-muted);
-      border: 2px solid var(--color-surface);
-      position: relative;
-      z-index: 1;
-    }
-    .activity-avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .activity-content {
-      min-width: 0;
-    }
-    .activity-text {
-      font-size: var(--font-size-sm);
-      line-height: var(--line-height-normal);
-    }
-    .activity-text strong {
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
-    }
-    .activity-text a {
-      color: var(--color-interactive);
-      text-decoration: none;
-    }
-    .activity-text a:hover {
-      text-decoration: underline;
-    }
-    .activity-time {
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-      margin-block-start: var(--size-2xs);
-    }
-    .activity-attachment {
-      margin-block-start: var(--size-xs);
-      padding: var(--size-xs) var(--size-s);
-      background: var(--color-surface-alt);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-sm);
-      display: inline-flex;
-      align-items: center;
-      gap: var(--size-xs);
+
+    @scope (.activity-feed) {
+      .item {
+        display: grid;
+        grid-template-columns: var(--avatar-size) 1fr;
+        gap: var(--size-s);
+        padding-block: var(--size-s);
+        position: relative;
+      }
+
+      .item:first-child {
+        padding-block-start: 0;
+      }
+
+      .item:last-child {
+        padding-block-end: 0;
+      }
+
+      .avatar {
+        position: relative;
+        z-index: 1;
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .text {
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-normal);
+      }
+
+      .text strong {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text);
+      }
+
+      .text a {
+        color: var(--color-interactive);
+        text-decoration: none;
+      }
+
+      .text a:hover {
+        text-decoration: underline;
+      }
+
+      .timestamp {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        margin-block-start: var(--size-2xs);
+      }
+
+      .attachment {
+        margin-block-start: var(--size-xs);
+        padding: var(--size-xs) var(--size-s);
+        background: var(--color-surface-alt);
+        border-radius: var(--radius-s);
+        font-size: var(--font-size-sm);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--size-xs);
+      }
     }
   </style>
 </head>
@@ -100,71 +101,83 @@
       <a href="#" class="text-sm">View all</a>
     </layout-cluster>
 
-    <div class="activity-feed" role="feed" aria-label="Recent activity">
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">JD</div>
-        <div class="activity-content">
-          <p class="activity-text">
+    <ol class="activity-feed" aria-label="Recent activity">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>JD</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>John Doe</strong> added a comment on <a href="#">Issue #423</a>
           </p>
-          <time class="activity-time" datetime="2024-03-25T14:30">2 hours ago</time>
+          <time class="timestamp" datetime="2024-03-25T14:30">2 hours ago</time>
         </div>
-      </article>
+      </li>
 
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">SM</div>
-        <div class="activity-content">
-          <p class="activity-text">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>SM</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>Sarah Miller</strong> uploaded a file to <a href="#">Project Alpha</a>
           </p>
-          <div class="activity-attachment">
+          <div class="attachment">
             <icon-wc name="file" size="sm"></icon-wc>
             design-mockup-v2.fig
           </div>
-          <time class="activity-time" datetime="2024-03-25T11:15">5 hours ago</time>
+          <time class="timestamp" datetime="2024-03-25T11:15">5 hours ago</time>
         </div>
-      </article>
+      </li>
 
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">MJ</div>
-        <div class="activity-content">
-          <p class="activity-text">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>MJ</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>Mike Johnson</strong> completed task <a href="#">Update API documentation</a>
           </p>
-          <time class="activity-time" datetime="2024-03-24T16:45">Yesterday at 4:45 PM</time>
+          <time class="timestamp" datetime="2024-03-24T16:45">Yesterday at 4:45 PM</time>
         </div>
-      </article>
+      </li>
 
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">EW</div>
-        <div class="activity-content">
-          <p class="activity-text">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>EW</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>Emily Wang</strong> created a new branch <a href="#">feature/user-settings</a>
           </p>
-          <time class="activity-time" datetime="2024-03-24T10:20">Yesterday at 10:20 AM</time>
+          <time class="timestamp" datetime="2024-03-24T10:20">Yesterday at 10:20 AM</time>
         </div>
-      </article>
+      </li>
 
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">JD</div>
-        <div class="activity-content">
-          <p class="activity-text">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>JD</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>John Doe</strong> merged pull request <a href="#">#156 - Fix login redirect</a>
           </p>
-          <time class="activity-time" datetime="2024-03-23T09:00">2 days ago</time>
+          <time class="timestamp" datetime="2024-03-23T09:00">2 days ago</time>
         </div>
-      </article>
+      </li>
 
-      <article class="activity-item" role="article">
-        <div class="activity-avatar" aria-hidden="true">AL</div>
-        <div class="activity-content">
-          <p class="activity-text">
+      <li class="item">
+        <user-avatar data-size="sm" class="avatar">
+          <span data-fallback>AL</span>
+        </user-avatar>
+        <div class="content">
+          <p class="text">
             <strong>Alex Lee</strong> was added to <a href="#">Team Frontend</a>
           </p>
-          <time class="activity-time" datetime="2024-03-22T14:30">3 days ago</time>
+          <time class="timestamp" datetime="2024-03-22T14:30">3 days ago</time>
         </div>
-      </article>
-    </div>
+      </li>
+    </ol>
   </layout-card>
 
   <script type="module" src="/src/main.js"></script>

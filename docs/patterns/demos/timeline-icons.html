@@ -10,12 +10,16 @@
       padding: var(--size-l);
       background: var(--color-surface);
     }
+
     .timeline {
       --timeline-line-color: var(--color-border);
       --timeline-icon-size: 2rem;
       position: relative;
       padding-inline-start: calc(var(--timeline-icon-size) + var(--size-m));
+      list-style: none;
+      margin: 0;
     }
+
     .timeline::before {
       content: '';
       position: absolute;
@@ -25,131 +29,155 @@
       width: 2px;
       background: var(--timeline-line-color);
     }
-    .timeline-item {
-      position: relative;
-      padding-block-end: var(--size-l);
-    }
-    .timeline-item:last-child {
-      padding-block-end: 0;
-    }
-    .timeline-icon {
-      position: absolute;
-      left: calc(-1 * (var(--timeline-icon-size) + var(--size-m)));
-      top: 0;
-      width: var(--timeline-icon-size);
-      height: var(--timeline-icon-size);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-surface);
-      border: 2px solid var(--color-border);
-    }
-    .timeline-icon.completed {
-      background: var(--color-success);
-      border-color: var(--color-success);
-      color: white;
-    }
-    .timeline-icon.pending {
-      background: var(--color-warning);
-      border-color: var(--color-warning);
-      color: white;
-    }
-    .timeline-icon.warning {
-      background: var(--color-danger);
-      border-color: var(--color-danger);
-      color: white;
-    }
-    .timeline-icon.added {
-      background: var(--color-interactive);
-      border-color: var(--color-interactive);
-      color: white;
-    }
-    .timeline-date {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-    }
-    .timeline-title {
-      font-weight: var(--font-weight-semibold);
-      margin: 0;
-    }
-    .timeline-description {
-      color: var(--color-text-muted);
-      margin-block-start: var(--size-2xs);
-      font-size: var(--font-size-sm);
+
+    @scope (.timeline) {
+      .item {
+        position: relative;
+        padding-block-end: var(--size-l);
+      }
+
+      .item:last-child {
+        padding-block-end: 0;
+      }
+
+      .marker {
+        position: absolute;
+        left: calc(-1 * (var(--timeline-icon-size) + var(--size-m)));
+        top: 0;
+        width: var(--timeline-icon-size);
+        height: var(--timeline-icon-size);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface);
+        border: 2px solid var(--color-border);
+      }
+
+      .marker[data-status="completed"] {
+        background: var(--color-success);
+        border-color: var(--color-success);
+        color: white;
+      }
+
+      .marker[data-status="pending"] {
+        background: var(--color-warning);
+        border-color: var(--color-warning);
+        color: white;
+      }
+
+      .marker[data-status="warning"] {
+        background: var(--color-danger);
+        border-color: var(--color-danger);
+        color: white;
+      }
+
+      .marker[data-status="scheduled"] {
+        background: var(--color-interactive);
+        border-color: var(--color-interactive);
+        color: white;
+      }
+
+      .date {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+      }
+
+      .title {
+        font-weight: var(--font-weight-semibold);
+        margin: 0;
+      }
+
+      .description {
+        color: var(--color-text-muted);
+        margin-block-start: var(--size-2xs);
+        font-size: var(--font-size-sm);
+      }
     }
   </style>
 </head>
 <body>
   <layout-card data-padding="l" style="max-width: 500px;">
     <h2 style="margin-block-end: var(--size-l);">Order Status</h2>
-    <div class="timeline" role="list" aria-label="Order status timeline">
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon completed" aria-label="Completed">
-          <icon-wc name="check" size="sm"></icon-wc>
-        </span>
+    <ol class="timeline" aria-label="Order status timeline">
+      <li class="item">
+        <tooltip-wc data-content="Completed on March 20, 2024 at 9:00 AM">
+          <span class="marker" data-status="completed" aria-label="Completed">
+            <icon-wc name="check" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-20T09:00">March 20, 9:00 AM</time>
-          <h3 class="timeline-title">Order Placed</h3>
-          <p class="timeline-description">Your order #12345 has been confirmed and is being processed.</p>
+          <time class="date" datetime="2024-03-20T09:00">March 20, 9:00 AM</time>
+          <h3 class="title">Order Placed</h3>
+          <p class="description">Your order #12345 has been confirmed and is being processed.</p>
         </layout-stack>
-      </article>
+      </li>
 
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon completed" aria-label="Completed">
-          <icon-wc name="check" size="sm"></icon-wc>
-        </span>
+      <li class="item">
+        <tooltip-wc data-content="Completed on March 20, 2024 at 2:30 PM">
+          <span class="marker" data-status="completed" aria-label="Completed">
+            <icon-wc name="check" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-20T14:30">March 20, 2:30 PM</time>
-          <h3 class="timeline-title">Payment Confirmed</h3>
-          <p class="timeline-description">Payment of $129.99 has been successfully processed.</p>
+          <time class="date" datetime="2024-03-20T14:30">March 20, 2:30 PM</time>
+          <h3 class="title">Payment Confirmed</h3>
+          <p class="description">Payment of $129.99 has been successfully processed.</p>
         </layout-stack>
-      </article>
+      </li>
 
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon completed" aria-label="Completed">
-          <icon-wc name="check" size="sm"></icon-wc>
-        </span>
+      <li class="item">
+        <tooltip-wc data-content="Completed on March 21, 2024 at 10:15 AM">
+          <span class="marker" data-status="completed" aria-label="Completed">
+            <icon-wc name="check" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-21T10:15">March 21, 10:15 AM</time>
-          <h3 class="timeline-title">Shipped</h3>
-          <p class="timeline-description">Package handed to carrier. Tracking: 1Z999AA10123456784</p>
+          <time class="date" datetime="2024-03-21T10:15">March 21, 10:15 AM</time>
+          <h3 class="title">Shipped</h3>
+          <p class="description">Package handed to carrier. Tracking: 1Z999AA10123456784</p>
         </layout-stack>
-      </article>
+      </li>
 
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon warning" aria-label="Delayed">
-          <icon-wc name="alert-triangle" size="sm"></icon-wc>
-        </span>
+      <li class="item">
+        <tooltip-wc data-content="Delay reported on March 22, 2024">
+          <span class="marker" data-status="warning" aria-label="Delayed">
+            <icon-wc name="alert-triangle" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-22T08:00">March 22, 8:00 AM</time>
-          <h3 class="timeline-title">Delivery Delayed</h3>
-          <p class="timeline-description">Weather conditions have caused a slight delay. New ETA: March 24.</p>
+          <time class="date" datetime="2024-03-22T08:00">March 22, 8:00 AM</time>
+          <h3 class="title">Delivery Delayed</h3>
+          <p class="description">Weather conditions have caused a slight delay. New ETA: March 24.</p>
         </layout-stack>
-      </article>
+      </li>
 
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon pending" aria-label="Pending">
-          <icon-wc name="clock" size="sm"></icon-wc>
-        </span>
+      <li class="item">
+        <tooltip-wc data-content="Expected delivery on March 24, 2024">
+          <span class="marker" data-status="pending" aria-label="Pending">
+            <icon-wc name="clock" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-24">Expected March 24</time>
-          <h3 class="timeline-title">Out for Delivery</h3>
-          <p class="timeline-description">Package will be delivered to your address.</p>
+          <time class="date" datetime="2024-03-24">Expected March 24</time>
+          <h3 class="title">Out for Delivery</h3>
+          <p class="description">Package will be delivered to your address.</p>
         </layout-stack>
-      </article>
+      </li>
 
-      <article class="timeline-item" role="listitem">
-        <span class="timeline-icon added" aria-label="Scheduled">
-          <icon-wc name="plus" size="sm"></icon-wc>
-        </span>
+      <li class="item">
+        <tooltip-wc data-content="Scheduled for March 24, 2024">
+          <span class="marker" data-status="scheduled" aria-label="Scheduled">
+            <icon-wc name="plus" size="sm"></icon-wc>
+          </span>
+        </tooltip-wc>
         <layout-stack data-gap="2xs">
-          <time class="timeline-date" datetime="2024-03-24">March 24</time>
-          <h3 class="timeline-title">Delivery Complete</h3>
-          <p class="timeline-description">Awaiting delivery confirmation.</p>
+          <time class="date" datetime="2024-03-24">March 24</time>
+          <h3 class="title">Delivery Complete</h3>
+          <p class="description">Awaiting delivery confirmation.</p>
         </layout-stack>
-      </article>
-    </div>
+      </li>
+    </ol>
   </layout-card>
 
   <script type="module" src="/src/main.js"></script>

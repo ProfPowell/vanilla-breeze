@@ -1,25 +1,25 @@
 ---
 import DocsLayout from '../../../../layouts/DocsLayout.astro';
 
-const simpleCode = `<div class="timeline" role="list" aria-label="Project timeline">
-  <article class="timeline-item" role="listitem">
-    <time class="timeline-date" datetime="2024-01-15">January 15, 2024</time>
-    <h3 class="timeline-title">Project Launched</h3>
-    <p class="timeline-content">Initial release deployed to production with core features.</p>
-  </article>
+const simpleCode = `<ol class="timeline" aria-label="Project timeline">
+  <li class="item">
+    <time class="date" datetime="2024-01-15">January 15, 2024</time>
+    <h3 class="title">Project Launched</h3>
+    <p class="content">Initial release deployed to production with core features.</p>
+  </li>
 
-  <article class="timeline-item" role="listitem">
-    <time class="timeline-date" datetime="2024-02-01">February 1, 2024</time>
-    <h3 class="timeline-title">Version 1.1 Released</h3>
-    <p class="timeline-content">Added user authentication and dashboard improvements.</p>
-  </article>
+  <li class="item">
+    <time class="date" datetime="2024-02-01">February 1, 2024</time>
+    <h3 class="title">Version 1.1 Released</h3>
+    <p class="content">Added user authentication and dashboard improvements.</p>
+  </li>
 
-  <article class="timeline-item" role="listitem">
-    <time class="timeline-date" datetime="2024-02-20">February 20, 2024</time>
-    <h3 class="timeline-title">API Integration Complete</h3>
-    <p class="timeline-content">Third-party API integrations added for payment processing.</p>
-  </article>
-</div>`;
+  <li class="item">
+    <time class="date" datetime="2024-02-20">February 20, 2024</time>
+    <h3 class="title">API Integration Complete</h3>
+    <p class="content">Third-party API integrations added for payment processing.</p>
+  </li>
+</ol>`;
 
 const simpleCss = `.timeline {
   --timeline-line-color: var(--color-border);
@@ -27,6 +27,8 @@ const simpleCss = `.timeline {
   --timeline-dot-size: 0.75rem;
   position: relative;
   padding-inline-start: var(--size-xl);
+  list-style: none;
+  margin: 0;
 }
 
 .timeline::before {
@@ -39,116 +41,135 @@ const simpleCss = `.timeline {
   background: var(--timeline-line-color);
 }
 
-.timeline-item {
-  position: relative;
-  padding-block-end: var(--size-l);
-}
+@scope (.timeline) {
+  .item {
+    position: relative;
+    padding-block-end: var(--size-l);
+  }
 
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: calc(-1 * var(--size-xl) + (var(--timeline-dot-size) / 2) - (var(--timeline-dot-size) / 2));
-  top: var(--size-2xs);
-  width: var(--timeline-dot-size);
-  height: var(--timeline-dot-size);
-  background: var(--timeline-dot-color);
-  border-radius: 50%;
-  border: 2px solid var(--color-surface);
-  box-shadow: 0 0 0 2px var(--timeline-dot-color);
+  .item::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--size-xl) + (var(--timeline-dot-size) / 2) - (var(--timeline-dot-size) / 2));
+    top: var(--size-2xs);
+    width: var(--timeline-dot-size);
+    height: var(--timeline-dot-size);
+    background: var(--timeline-dot-color);
+    border-radius: 50%;
+    border: 2px solid var(--color-surface);
+    box-shadow: 0 0 0 2px var(--timeline-dot-color);
+  }
+
+  .date { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+  .title { font-weight: var(--font-weight-semibold); margin: 0; }
+  .content { color: var(--color-text-muted); margin-block-start: var(--size-2xs); }
 }`;
 
-const iconsCode = `<div class="timeline" role="list" aria-label="Order status timeline">
-  <article class="timeline-item" role="listitem">
-    <span class="timeline-icon completed" aria-label="Completed">
-      <icon-wc name="check" size="sm"></icon-wc>
-    </span>
+const iconsCode = `<ol class="timeline" aria-label="Order status timeline">
+  <li class="item">
+    <tooltip-wc data-content="Completed on March 20, 2024 at 9:00 AM">
+      <span class="marker" data-status="completed" aria-label="Completed">
+        <icon-wc name="check" size="sm"></icon-wc>
+      </span>
+    </tooltip-wc>
     <layout-stack data-gap="2xs">
-      <time class="timeline-date" datetime="2024-03-20T09:00">March 20, 9:00 AM</time>
-      <h3 class="timeline-title">Order Placed</h3>
-      <p class="timeline-description">Your order #12345 has been confirmed.</p>
+      <time class="date" datetime="2024-03-20T09:00">March 20, 9:00 AM</time>
+      <h3 class="title">Order Placed</h3>
+      <p class="description">Your order #12345 has been confirmed.</p>
     </layout-stack>
-  </article>
+  </li>
 
-  <article class="timeline-item" role="listitem">
-    <span class="timeline-icon pending" aria-label="Pending">
-      <icon-wc name="clock" size="sm"></icon-wc>
-    </span>
+  <li class="item">
+    <tooltip-wc data-content="Expected delivery on March 24, 2024">
+      <span class="marker" data-status="pending" aria-label="Pending">
+        <icon-wc name="clock" size="sm"></icon-wc>
+      </span>
+    </tooltip-wc>
     <layout-stack data-gap="2xs">
-      <time class="timeline-date" datetime="2024-03-24">Expected March 24</time>
-      <h3 class="timeline-title">Out for Delivery</h3>
-      <p class="timeline-description">Package will be delivered to your address.</p>
+      <time class="date" datetime="2024-03-24">Expected March 24</time>
+      <h3 class="title">Out for Delivery</h3>
+      <p class="description">Package will be delivered to your address.</p>
     </layout-stack>
-  </article>
-</div>`;
+  </li>
+</ol>`;
 
-const iconsCss = `.timeline-icon {
-  position: absolute;
-  left: calc(-1 * (var(--timeline-icon-size) + var(--size-m)));
-  top: 0;
-  width: var(--timeline-icon-size);
-  height: var(--timeline-icon-size);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-}
+const iconsCss = `@scope (.timeline) {
+  .marker {
+    position: absolute;
+    left: calc(-1 * (var(--timeline-icon-size) + var(--size-m)));
+    top: 0;
+    width: var(--timeline-icon-size);
+    height: var(--timeline-icon-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+  }
 
-.timeline-icon.completed {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: white;
-}
+  .marker[data-status="completed"] {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+  }
 
-.timeline-icon.pending {
-  background: var(--color-warning);
-  border-color: var(--color-warning);
-  color: white;
-}
+  .marker[data-status="pending"] {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: white;
+  }
 
-.timeline-icon.warning {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-  color: white;
-}
+  .marker[data-status="warning"] {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: white;
+  }
 
-.timeline-icon.added {
-  background: var(--color-interactive);
-  border-color: var(--color-interactive);
-  color: white;
+  .marker[data-status="scheduled"] {
+    background: var(--color-interactive);
+    border-color: var(--color-interactive);
+    color: white;
+  }
 }`;
 
-const activityCode = `<div class="activity-feed" role="feed" aria-label="Recent activity">
-  <article class="activity-item" role="article">
-    <div class="activity-avatar" aria-hidden="true">JD</div>
-    <div class="activity-content">
-      <p class="activity-text">
+const activityCode = `<ol class="activity-feed" aria-label="Recent activity">
+  <li class="item">
+    <user-avatar data-size="sm" class="avatar">
+      <span data-fallback>JD</span>
+    </user-avatar>
+    <div class="content">
+      <p class="text">
         <strong>John Doe</strong> added a comment on <a href="#">Issue #423</a>
       </p>
-      <time class="activity-time" datetime="2024-03-25T14:30">2 hours ago</time>
+      <time class="timestamp" datetime="2024-03-25T14:30">2 hours ago</time>
     </div>
-  </article>
+  </li>
 
-  <article class="activity-item" role="article">
-    <div class="activity-avatar" aria-hidden="true">SM</div>
-    <div class="activity-content">
-      <p class="activity-text">
+  <li class="item">
+    <user-avatar data-size="sm" class="avatar">
+      <span data-fallback>SM</span>
+    </user-avatar>
+    <div class="content">
+      <p class="text">
         <strong>Sarah Miller</strong> uploaded a file to <a href="#">Project Alpha</a>
       </p>
-      <div class="activity-attachment">
+      <div class="attachment">
         <icon-wc name="file" size="sm"></icon-wc>
         design-mockup-v2.fig
       </div>
-      <time class="activity-time" datetime="2024-03-25T11:15">5 hours ago</time>
+      <time class="timestamp" datetime="2024-03-25T11:15">5 hours ago</time>
     </div>
-  </article>
-</div>`;
+  </li>
+</ol>`;
 
 const activityCss = `.activity-feed {
   --feed-line-color: var(--color-border);
   --avatar-size: 2rem;
   position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .activity-feed::before {
@@ -161,34 +182,98 @@ const activityCss = `.activity-feed {
   background: var(--feed-line-color);
 }
 
-.activity-item {
-  display: grid;
-  grid-template-columns: var(--avatar-size) 1fr;
-  gap: var(--size-s);
-  padding-block: var(--size-s);
-  position: relative;
+@scope (.activity-feed) {
+  .item {
+    display: grid;
+    grid-template-columns: var(--avatar-size) 1fr;
+    gap: var(--size-s);
+    padding-block: var(--size-s);
+    position: relative;
+  }
+
+  .avatar { position: relative; z-index: 1; }
+  .content { min-width: 0; }
+  .text { font-size: var(--font-size-sm); }
+  .timestamp { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+}`;
+
+const horizontalCode = `<layout-reel data-gap="m" data-scrollbar data-padding="s">
+  <ol class="timeline horizontal" aria-label="Project milestones">
+    <li class="item" data-status="completed">
+      <time class="date" datetime="2024-01-15">Jan 15</time>
+      <h3 class="title">Kickoff</h3>
+      <p class="description">Project initiated</p>
+    </li>
+
+    <li class="item" data-status="current">
+      <time class="date" datetime="2024-03-01">Mar 1</time>
+      <h3 class="title">Development</h3>
+      <p class="description">In progress</p>
+    </li>
+
+    <li class="item" data-status="upcoming">
+      <time class="date" datetime="2024-04-15">Apr 15</time>
+      <h3 class="title">Launch</h3>
+      <p class="description">Go live</p>
+    </li>
+  </ol>
+</layout-reel>`;
+
+const horizontalCss = `.timeline.horizontal {
+  --timeline-dot-size: 0.75rem;
+  --timeline-dot-color: var(--color-interactive);
+  --timeline-line-color: var(--color-border);
+  display: contents;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.activity-avatar {
-  width: var(--avatar-size);
-  height: var(--avatar-size);
-  border-radius: 50%;
-  background: var(--color-surface-raised);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
-  border: 2px solid var(--color-surface);
-  position: relative;
-  z-index: 1;
+@scope (.timeline.horizontal) {
+  .item {
+    position: relative;
+    padding-block-start: calc(var(--timeline-dot-size) + var(--size-m));
+    min-width: 12rem;
+  }
+
+  /* Connecting line */
+  .item::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--timeline-dot-size) / 2);
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--timeline-line-color);
+  }
+
+  /* Timeline dot */
+  .item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--timeline-dot-size);
+    height: var(--timeline-dot-size);
+    background: var(--timeline-dot-color);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--timeline-dot-color);
+    z-index: 1;
+  }
+
+  /* Status variants */
+  .item[data-status="completed"]::before { --timeline-dot-color: var(--color-success); }
+  .item[data-status="current"]::before { --timeline-dot-color: var(--color-interactive); }
+  .item[data-status="upcoming"]::before { --timeline-dot-color: var(--color-gray-400); }
+
+  .date, .title, .description { text-align: center; }
 }`;
 ---
 
 <DocsLayout
   title="Timeline Pattern"
-  description="Vertical timeline displays for chronological events, status tracking, and activity feeds. Perfect for order tracking, project history, and notifications."
+  description="Vertical and horizontal timeline displays for chronological events, status tracking, and activity feeds. Perfect for order tracking, project history, and notifications."
   currentSection="examples"
 >
   <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -196,7 +281,7 @@ const activityCss = `.activity-feed {
   </nav>
 
   <h1>Timeline</h1>
-  <p class="lead">Vertical timeline displays for chronological events, status tracking, and activity feeds. Perfect for order tracking, project history, and notifications.</p>
+  <p class="lead">Timeline displays for chronological events, status tracking, and activity feeds. Perfect for order tracking, project history, and notifications.</p>
 
   <section>
     <h2>Overview</h2>
@@ -204,10 +289,12 @@ const activityCss = `.activity-feed {
       <p>Timeline patterns display chronological sequences of events with visual connectors. They help users understand the progression of activities, track status changes, and review historical data.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Vertical layout with connecting line</li>
-        <li>Dot markers or status icons at each event</li>
+        <li>Semantic <code>&lt;ol&gt;</code>/<code>&lt;li&gt;</code> structure for ordered events</li>
+        <li>Scoped CSS with <code>@scope</code> for clean namespacing</li>
+        <li>Vertical and horizontal layout options</li>
+        <li>Status indicators via <code>data-status</code> attributes</li>
+        <li>Integration with <code>user-avatar</code>, <code>tooltip-wc</code>, and <code>layout-reel</code></li>
         <li>Semantic <code>&lt;time&gt;</code> elements for dates</li>
-        <li>Activity feed variant for notifications</li>
         <li>CSS custom properties for easy theming</li>
       </ul>
     </layout-text>
@@ -216,7 +303,7 @@ const activityCss = `.activity-feed {
   <section>
     <h2>Simple Vertical Timeline</h2>
     <layout-text>
-      <p>A clean vertical timeline with dots connecting each event. Uses CSS pseudo-elements for the line and markers. Ideal for project history, milestones, or changelog displays.</p>
+      <p>A clean vertical timeline with dots connecting each event. Uses semantic <code>&lt;ol&gt;</code>/<code>&lt;li&gt;</code> markup and CSS pseudo-elements for the line and markers. Ideal for project history, milestones, or changelog displays.</p>
     </layout-text>
 
     <browser-window
@@ -228,13 +315,13 @@ const activityCss = `.activity-feed {
 
     <code-block language="html" label="Timeline HTML structure">{simpleCode}</code-block>
 
-    <code-block language="css" label="Timeline CSS with pseudo-elements">{simpleCss}</code-block>
+    <code-block language="css" label="Timeline CSS with @scope">{simpleCss}</code-block>
   </section>
 
   <section>
     <h2>Timeline with Status Icons</h2>
     <layout-text>
-      <p>Each timeline entry displays a status icon instead of a simple dot. Use semantic colors to indicate completed, pending, warning, or new items. Great for order tracking and process workflows.</p>
+      <p>Each timeline entry displays a status icon instead of a simple dot. Uses <code>data-status</code> attributes for styling variants and wraps icons in <code>tooltip-wc</code> to show completion details on hover. Great for order tracking and process workflows.</p>
     </layout-text>
 
     <browser-window
@@ -244,15 +331,15 @@ const activityCss = `.activity-feed {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Timeline with icons">{iconsCode}</code-block>
+    <code-block language="html" label="Timeline with icons and tooltips">{iconsCode}</code-block>
 
-    <code-block language="css" label="Status icon styles">{iconsCss}</code-block>
+    <code-block language="css" label="Status icon styles with data attributes">{iconsCss}</code-block>
   </section>
 
   <section>
     <h2>Activity Feed</h2>
     <layout-text>
-      <p>A compact feed-style timeline for notifications and activity logs. Features user avatars, action descriptions with links, and relative timestamps. Suitable for dashboards and notification centers.</p>
+      <p>A compact feed-style timeline for notifications and activity logs. Uses the <code>user-avatar</code> component for avatars, action descriptions with links, and relative timestamps. Suitable for dashboards and notification centers.</p>
     </layout-text>
 
     <browser-window
@@ -262,9 +349,27 @@ const activityCss = `.activity-feed {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Activity feed structure">{activityCode}</code-block>
+    <code-block language="html" label="Activity feed with user-avatar">{activityCode}</code-block>
 
     <code-block language="css" label="Activity feed styles">{activityCss}</code-block>
+  </section>
+
+  <section>
+    <h2>Horizontal Timeline</h2>
+    <layout-text>
+      <p>A horizontal scrolling timeline using <code>layout-reel</code> for touch-friendly scroll-snap behavior. The <code>&lt;ol&gt;</code> uses <code>display: contents</code> so <code>&lt;li&gt;</code> items participate directly in the reel's flex layout. Ideal for project roadmaps and milestone tracking.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/timeline-horizontal.html"
+      url="https://vanilla-breeze.dev/timeline-horizontal"
+      title="Horizontal Timeline"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Horizontal timeline with layout-reel">{horizontalCode}</code-block>
+
+    <code-block language="css" label="Horizontal timeline styles">{horizontalCss}</code-block>
   </section>
 
   <section>
@@ -286,7 +391,7 @@ const activityCss = `.activity-feed {
           <tr>
             <td><code>--timeline-line-color</code></td>
             <td><code>var(--color-border)</code></td>
-            <td>Color of the connecting vertical line</td>
+            <td>Color of the connecting line</td>
           </tr>
           <tr>
             <td><code>--timeline-dot-color</code></td>
@@ -317,13 +422,14 @@ const activityCss = `.activity-feed {
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
+        <li><strong>Semantic markup:</strong> Use <code>&lt;ol&gt;</code>/<code>&lt;li&gt;</code> for ordered timelines - screen readers announce item count and position</li>
+        <li><strong>Scoped CSS:</strong> Use <code>@scope</code> to avoid class name collisions - <code>.item</code>, <code>.date</code>, <code>.title</code> are scoped to the timeline</li>
         <li><strong>Semantic time elements:</strong> Always use <code>&lt;time&gt;</code> with a <code>datetime</code> attribute for machine-readable dates</li>
-        <li><strong>ARIA roles:</strong> Use <code>role="list"</code> and <code>role="listitem"</code> for timelines, <code>role="feed"</code> for activity feeds</li>
-        <li><strong>Icon accessibility:</strong> Include <code>aria-label</code> on status icons to convey meaning to screen readers</li>
-        <li><strong>Loading more items:</strong> For long timelines, implement pagination or infinite scroll with a "Load more" button</li>
-        <li><strong>Relative timestamps:</strong> For activity feeds, consider JavaScript to update relative times ("2 hours ago") dynamically</li>
-        <li><strong>Color semantics:</strong> Use consistent colors across your app - <code>--color-success</code> for completed, <code>--color-warning</code> for pending, <code>--color-danger</code> for issues</li>
-        <li><strong>Responsive design:</strong> Timeline patterns work well on mobile; the vertical layout scales naturally</li>
+        <li><strong>Status via data attributes:</strong> Use <code>data-status</code> instead of classes for state styling - cleaner separation of concerns</li>
+        <li><strong>Tooltips:</strong> Wrap status icons in <code>tooltip-wc</code> to provide additional context on hover</li>
+        <li><strong>User avatars:</strong> Use the <code>user-avatar</code> component for consistent avatar styling in activity feeds</li>
+        <li><strong>Horizontal scroll:</strong> Use <code>layout-reel</code> with <code>data-scrollbar</code> for horizontal timelines with visible scrollbar</li>
+        <li><strong>Color semantics:</strong> Use consistent colors - <code>--color-success</code> for completed, <code>--color-warning</code> for pending, <code>--color-danger</code> for issues</li>
       </ul>
     </layout-text>
   </section>
@@ -335,13 +441,17 @@ const activityCss = `.activity-feed {
         <h3>Stats</h3>
         <p>Metric cards and data displays</p>
       </a>
-      <a href="/docs/elements/custom-elements/layout-stack/" class="section-card">
-        <h3>Layout Stack</h3>
-        <p>Vertical stacking layout element</p>
+      <a href="/docs/elements/custom-elements/layout-reel/" class="section-card">
+        <h3>Layout Reel</h3>
+        <p>Horizontal scrolling container</p>
       </a>
-      <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
-        <h3>Icon WC</h3>
-        <p>Icon web component for status icons</p>
+      <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
+        <h3>User Avatar</h3>
+        <p>Avatar component with fallbacks</p>
+      </a>
+      <a href="/docs/elements/web-components/tooltip-wc/" class="section-card">
+        <h3>Tooltip WC</h3>
+        <p>Tooltip web component</p>
       </a>
     </layout-grid>
   </section>
