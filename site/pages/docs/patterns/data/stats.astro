@@ -1,5 +1,138 @@
 ---
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
+
+const simpleCode = `<section class="stats">
+  <figure>
+    <figcaption>Total Users</figcaption>
+    <data value="24521">24,521</data>
+  </figure>
+
+  <figure>
+    <figcaption>Revenue</figcaption>
+    <data value="48352">$48,352</data>
+  </figure>
+
+  <figure>
+    <figcaption>Orders</figcaption>
+    <data value="1429">1,429</data>
+  </figure>
+
+  <figure>
+    <figcaption>Conversion</figcaption>
+    <data value="0.032">3.2%</data>
+  </figure>
+</section>`;
+
+const simpleCss = `.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--size-l);
+}
+
+@scope (.stats) {
+  figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+    margin: 0;
+  }
+
+  figcaption {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  data {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+  }
+}`;
+
+const changeCode = `<section class="stats">
+  <figure>
+    <figcaption>Total Users</figcaption>
+    <data value="24521">24,521</data>
+    <small data-trend="up">
+      <icon-wc name="trending-up" size="sm"></icon-wc>
+      +12.5% vs last month
+    </small>
+  </figure>
+
+  <figure>
+    <figcaption>Bounce Rate</figcaption>
+    <data value="0.423">42.3%</data>
+    <small data-trend="down">
+      <icon-wc name="trending-down" size="sm"></icon-wc>
+      -3.1% vs last month
+    </small>
+  </figure>
+</section>`;
+
+const changeCss = `@scope (.stats) {
+  small {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs);
+    font-size: var(--font-size-sm);
+  }
+
+  small[data-trend="up"] { color: var(--color-success); }
+  small[data-trend="down"] { color: var(--color-danger); }
+}`;
+
+const cardsCode = `<section class="stats">
+  <layout-card>
+    <figure>
+      <div>
+        <figcaption>Total Users</figcaption>
+        <data value="24521">24,521</data>
+        <small data-trend="up">+12.5% from last month</small>
+      </div>
+      <span class="stat-icon">
+        <icon-wc name="users" size="md"></icon-wc>
+      </span>
+    </figure>
+  </layout-card>
+
+  <layout-card>
+    <figure>
+      <div>
+        <figcaption>Revenue</figcaption>
+        <data value="48352">$48,352</data>
+        <small data-trend="up">+8.2% from last month</small>
+      </div>
+      <span class="stat-icon">
+        <icon-wc name="dollar-sign" size="md"></icon-wc>
+      </span>
+    </figure>
+  </layout-card>
+</section>`;
+
+const cardsCss = `@scope (.stats) {
+  figure {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--size-m);
+    margin: 0;
+  }
+
+  figure > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+
+  .stat-icon {
+    padding: var(--size-s);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}`;
 ---
 
 <PatternLayout
@@ -37,53 +170,9 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple stats grid">&lt;section class="stats"&gt;
-  &lt;figure&gt;
-    &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
-    &lt;data value="24521"&gt;24,521&lt;/data&gt;
-  &lt;/figure&gt;
+    <code-block language="html" label="Simple stats grid">{simpleCode}</code-block>
 
-  &lt;figure&gt;
-    &lt;figcaption&gt;Revenue&lt;/figcaption&gt;
-    &lt;data value="48352"&gt;$48,352&lt;/data&gt;
-  &lt;/figure&gt;
-
-  &lt;figure&gt;
-    &lt;figcaption&gt;Orders&lt;/figcaption&gt;
-    &lt;data value="1429"&gt;1,429&lt;/data&gt;
-  &lt;/figure&gt;
-
-  &lt;figure&gt;
-    &lt;figcaption&gt;Conversion&lt;/figcaption&gt;
-    &lt;data value="0.032"&gt;3.2%&lt;/data&gt;
-  &lt;/figure&gt;
-&lt;/section&gt;</code-block>
-
-    <code-block language="css" label="Scoped CSS">.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--size-l);
-}
-
-@scope (.stats) {
-  figure {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-2xs);
-    margin: 0;
-  }
-
-  figcaption {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-  }
-
-  data {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    line-height: var(--line-height-tight);
-  }
-}</code-block>
+    <code-block language="css" label="Scoped CSS">{simpleCss}</code-block>
   </section>
 
   <section>
@@ -99,37 +188,9 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Stats with change indicators">&lt;section class="stats"&gt;
-  &lt;figure&gt;
-    &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
-    &lt;data value="24521"&gt;24,521&lt;/data&gt;
-    &lt;small data-trend="up"&gt;
-      &lt;icon-wc name="trending-up" size="sm"&gt;&lt;/icon-wc&gt;
-      +12.5% vs last month
-    &lt;/small&gt;
-  &lt;/figure&gt;
+    <code-block language="html" label="Stats with change indicators">{changeCode}</code-block>
 
-  &lt;figure&gt;
-    &lt;figcaption&gt;Bounce Rate&lt;/figcaption&gt;
-    &lt;data value="0.423"&gt;42.3%&lt;/data&gt;
-    &lt;small data-trend="down"&gt;
-      &lt;icon-wc name="trending-down" size="sm"&gt;&lt;/icon-wc&gt;
-      -3.1% vs last month
-    &lt;/small&gt;
-  &lt;/figure&gt;
-&lt;/section&gt;</code-block>
-
-    <code-block language="css" label="Trend indicator styles">@scope (.stats) {
-  small {
-    display: flex;
-    align-items: center;
-    gap: var(--size-2xs);
-    font-size: var(--font-size-sm);
-  }
-
-  small[data-trend="up"] { color: var(--color-success); }
-  small[data-trend="down"] { color: var(--color-danger); }
-}</code-block>
+    <code-block language="css" label="Trend indicator styles">{changeCss}</code-block>
   </section>
 
   <section>
@@ -145,58 +206,9 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Card-based stats">&lt;section class="stats"&gt;
-  &lt;layout-card&gt;
-    &lt;figure&gt;
-      &lt;div&gt;
-        &lt;figcaption&gt;Total Users&lt;/figcaption&gt;
-        &lt;data value="24521"&gt;24,521&lt;/data&gt;
-        &lt;small data-trend="up"&gt;+12.5% from last month&lt;/small&gt;
-      &lt;/div&gt;
-      &lt;span class="stat-icon"&gt;
-        &lt;icon-wc name="users" size="md"&gt;&lt;/icon-wc&gt;
-      &lt;/span&gt;
-    &lt;/figure&gt;
-  &lt;/layout-card&gt;
+    <code-block language="html" label="Card-based stats">{cardsCode}</code-block>
 
-  &lt;layout-card&gt;
-    &lt;figure&gt;
-      &lt;div&gt;
-        &lt;figcaption&gt;Revenue&lt;/figcaption&gt;
-        &lt;data value="48352"&gt;$48,352&lt;/data&gt;
-        &lt;small data-trend="up"&gt;+8.2% from last month&lt;/small&gt;
-      &lt;/div&gt;
-      &lt;span class="stat-icon"&gt;
-        &lt;icon-wc name="dollar-sign" size="md"&gt;&lt;/icon-wc&gt;
-      &lt;/span&gt;
-    &lt;/figure&gt;
-  &lt;/layout-card&gt;
-&lt;/section&gt;</code-block>
-
-    <code-block language="css" label="Card variant styles">@scope (.stats) {
-  figure {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--size-m);
-    margin: 0;
-  }
-
-  figure > div {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-2xs);
-  }
-
-  .stat-icon {
-    padding: var(--size-s);
-    background: var(--color-surface-raised);
-    border-radius: var(--radius-m);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}</code-block>
+    <code-block language="css" label="Card variant styles">{cardsCss}</code-block>
   </section>
 
   <section>
