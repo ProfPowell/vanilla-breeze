@@ -1,0 +1,385 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const simpleCode = `<aside class="sidebar">
+  <nav aria-label="Main navigation">
+    <layout-stack data-gap="xs">
+      <a href="/dashboard/" aria-current="page">
+        <icon-wc name="home"></icon-wc>
+        Dashboard
+      </a>
+      <a href="/projects/">
+        <icon-wc name="folder"></icon-wc>
+        Projects
+      </a>
+      <a href="/team/">
+        <icon-wc name="users"></icon-wc>
+        Team
+      </a>
+      <a href="/calendar/">
+        <icon-wc name="calendar"></icon-wc>
+        Calendar
+      </a>
+      <a href="/reports/">
+        <icon-wc name="chart-bar"></icon-wc>
+        Reports
+      </a>
+    </layout-stack>
+  </nav>
+</aside>`;
+
+const sectionsCode = `<aside class="sidebar">
+  <layout-stack data-gap="l">
+    <!-- Main Section -->
+    <nav aria-label="Main navigation">
+      <layout-stack data-gap="xs">
+        <h3>Main</h3>
+        <a href="/dashboard/" aria-current="page">
+          <icon-wc name="home"></icon-wc>
+          Dashboard
+        </a>
+        <a href="/projects/">
+          <icon-wc name="folder"></icon-wc>
+          Projects
+        </a>
+        <a href="/team/">
+          <icon-wc name="users"></icon-wc>
+          Team
+        </a>
+      </layout-stack>
+    </nav>
+
+    <!-- Settings Section -->
+    <nav aria-label="Settings navigation">
+      <layout-stack data-gap="xs">
+        <h3>Settings</h3>
+        <a href="/settings/">
+          <icon-wc name="cog"></icon-wc>
+          General
+        </a>
+        <a href="/security/">
+          <icon-wc name="shield-check"></icon-wc>
+          Security
+        </a>
+      </layout-stack>
+    </nav>
+
+    <!-- Support Section -->
+    <nav aria-label="Support navigation">
+      <layout-stack data-gap="xs">
+        <h3>Support</h3>
+        <a href="/help/">
+          <icon-wc name="question-mark-circle"></icon-wc>
+          Help Center
+        </a>
+        <a href="/contact/">
+          <icon-wc name="chat-bubble-left-right"></icon-wc>
+          Contact Us
+        </a>
+      </layout-stack>
+    </nav>
+  </layout-stack>
+</aside>`;
+
+const collapsibleCode = `<aside class="sidebar">
+  <nav aria-label="Main navigation">
+    <layout-stack data-gap="xs">
+      <!-- Projects Section -->
+      <details open>
+        <summary>
+          Projects
+          <icon-wc name="chevron-down" size="sm"></icon-wc>
+        </summary>
+        <div class="nav-items">
+          <layout-stack data-gap="2xs">
+            <a href="/projects/" aria-current="page">
+              <icon-wc name="folder"></icon-wc>
+              All Projects
+            </a>
+            <a href="/projects/favorites/">
+              <icon-wc name="star"></icon-wc>
+              Favorites
+            </a>
+            <a href="/projects/archived/">
+              <icon-wc name="archive-box"></icon-wc>
+              Archived
+            </a>
+          </layout-stack>
+        </div>
+      </details>
+
+      <!-- Team Section -->
+      <details open>
+        <summary>
+          Team
+          <icon-wc name="chevron-down" size="sm"></icon-wc>
+        </summary>
+        <div class="nav-items">
+          <layout-stack data-gap="2xs">
+            <a href="/team/members/">
+              <icon-wc name="users"></icon-wc>
+              Members
+            </a>
+            <a href="/team/invitations/">
+              <icon-wc name="user-plus"></icon-wc>
+              Invitations
+            </a>
+          </layout-stack>
+        </div>
+      </details>
+    </layout-stack>
+  </nav>
+</aside>`;
+
+const sidebarStylesCode = `.sidebar {
+  inline-size: 260px;
+  min-block-size: 100vh;
+  background: var(--color-surface);
+  border-inline-end: 1px solid var(--color-border);
+  padding: var(--size-l);
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-s) var(--size-m);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-m);
+  transition: color var(--duration-fast) var(--ease-default),
+              background var(--duration-fast) var(--ease-default);
+}
+
+.sidebar nav a:hover {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+.sidebar nav a[aria-current="page"] {
+  color: var(--color-interactive);
+  background: var(--color-interactive-muted);
+  font-weight: var(--font-weight-medium);
+}`;
+
+const sectionHeadingStylesCode = `.sidebar h3 {
+  margin: 0;
+  padding: var(--size-xs) var(--size-m);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}`;
+
+const collapsibleStylesCode = `.sidebar details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--size-s) var(--size-m);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  cursor: pointer;
+  border-radius: var(--radius-m);
+  list-style: none;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.sidebar details summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar details summary:hover {
+  background: var(--color-surface-raised);
+}
+
+/* Rotate chevron when open */
+.sidebar details summary icon-wc {
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.sidebar details[open] summary icon-wc {
+  transform: rotate(180deg);
+}
+
+/* Indent nested items */
+.sidebar details .nav-items {
+  padding-inline-start: var(--size-m);
+  padding-block: var(--size-xs);
+}`;
+---
+
+<DocsLayout
+  title="Sidebar Navigation"
+  description="Vertical sidebar navigation patterns with icons, sections, and collapsible groups."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/">Navigation</a> / <span aria-current="page">Sidebar</span>
+  </nav>
+
+  <h1>Sidebar Navigation</h1>
+  <p class="lead">Vertical sidebar navigation patterns with icons, grouped sections, and collapsible menus. Built with semantic HTML and accessible by default.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Sidebar navigation provides vertical navigation typically used in application shells. These patterns use semantic <code>&lt;nav&gt;</code> elements with <code>&lt;layout-stack&gt;</code> for vertical spacing and <code>&lt;icon-wc&gt;</code> for visual icons.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Semantic HTML with proper ARIA attributes</li>
+        <li>Active page indication via <code>aria-current="page"</code></li>
+        <li>Icons from Lucide set via <code>&lt;icon-wc&gt;</code></li>
+        <li>Grouped sections with headings for organization</li>
+        <li>Collapsible sections using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code></li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Sidebar</h2>
+    <layout-text>
+      <p>A basic vertical navigation with icon-labeled links. Uses <code>aria-current="page"</code> to indicate the active page.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sidebar-simple.html"
+      url="https://vanilla-breeze.dev/sidebar-simple"
+      title="Simple Sidebar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Simple sidebar navigation">{simpleCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Grouped Sections</h2>
+    <layout-text>
+      <p>Navigation organized into labeled sections using headings. Each section has its own <code>&lt;nav&gt;</code> element with a descriptive <code>aria-label</code> for accessibility.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sidebar-sections.html"
+      url="https://vanilla-breeze.dev/sidebar-sections"
+      title="Sidebar with Sections"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Grouped sidebar sections">{sectionsCode}</code-block>
+
+    <h3>Section Heading Styles</h3>
+    <layout-text>
+      <p>Section headings use uppercase text with muted color to visually separate groups:</p>
+    </layout-text>
+
+    <code-block language="css" label="Section heading styles">{sectionHeadingStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Collapsible Sections</h2>
+    <layout-text>
+      <p>Navigation with expandable/collapsible groups using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> elements. No JavaScript required - the browser handles the toggle behavior automatically.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/sidebar-collapsible.html"
+      url="https://vanilla-breeze.dev/sidebar-collapsible"
+      title="Collapsible Sidebar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Collapsible sidebar sections">{collapsibleCode}</code-block>
+
+    <h3>Collapsible Section Styles</h3>
+    <layout-text>
+      <p>The collapsible sections require CSS for the summary styling and chevron rotation:</p>
+    </layout-text>
+
+    <code-block language="css" label="Collapsible section styles">{collapsibleStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Base Sidebar Styles</h2>
+    <layout-text>
+      <p>These base styles are shared across all sidebar variants:</p>
+    </layout-text>
+
+    <code-block language="css" label="Base sidebar styles">{sidebarStylesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Configuration</h2>
+    <layout-text>
+      <p>Sidebar navigation is composed from layout primitives. Here are the key styling considerations:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Purpose</th>
+          <th>Customization</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;layout-stack&gt;</code></td>
+          <td>Vertical spacing between links</td>
+          <td>Adjust gap with <code>data-gap</code> (xs, s, m, l, xl)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;icon-wc&gt;</code></td>
+          <td>Visual icons for each link</td>
+          <td>Size via <code>size</code> attribute or <code>--icon-size</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;details&gt;</code></td>
+          <td>Native collapsible container</td>
+          <td>Add <code>open</code> attribute to expand by default</td>
+        </tr>
+        <tr>
+          <td><code>aria-current</code></td>
+          <td>Indicates current page</td>
+          <td>Set to <code>"page"</code> on the active link</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Accessibility:</strong> Always use <code>aria-label</code> on <code>&lt;nav&gt;</code> elements to identify their purpose</li>
+        <li><strong>Active state:</strong> Use <code>aria-current="page"</code> on the link representing the current page</li>
+        <li><strong>Multiple navs:</strong> When using grouped sections, give each <code>&lt;nav&gt;</code> a unique <code>aria-label</code></li>
+        <li><strong>Icons:</strong> Ensure icons have sufficient contrast and are paired with text labels</li>
+        <li><strong>Width:</strong> Keep sidebar width between 200-280px for optimal readability</li>
+        <li><strong>Collapsible state:</strong> Use <code>open</code> attribute on <code>&lt;details&gt;</code> to set initial expanded state</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/navigation/navbar/" class="section-card">
+        <h3>Navbar</h3>
+        <p>Horizontal header navigation patterns</p>
+      </a>
+      <a href="/docs/patterns/application/shells/" class="section-card">
+        <h3>App Shells</h3>
+        <p>Full application layout patterns with sidebars</p>
+      </a>
+      <a href="/docs/elements/web-components/icon/" class="section-card">
+        <h3>Icon WC</h3>
+        <p>Icon web component documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/stack/" class="section-card">
+        <h3>Layout Stack</h3>
+        <p>Vertical stacking layout primitive</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

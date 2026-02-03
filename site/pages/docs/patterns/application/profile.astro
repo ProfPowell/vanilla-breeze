@@ -1,0 +1,405 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const profileHeaderStyles = `.profile-header {
+  text-align: center;
+  padding: var(--size-2xl);
+}
+
+.profile-name {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+}
+
+.profile-role {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+}
+
+.profile-bio {
+  max-width: 50ch;
+  margin-inline: auto;
+  color: var(--color-text-muted);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}`;
+
+const profileCardStyles = `.profile-card-name {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.profile-card-email {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.profile-card-description {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}`;
+
+const activityItemStyles = `.activity-item {
+  padding: var(--size-m);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+}
+
+.activity-item:hover {
+  background: var(--color-surface-raised);
+}
+
+.activity-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.activity-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.activity-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}`;
+---
+
+<DocsLayout
+  title="Profile"
+  description="User profile patterns with avatar displays, stats, activity feeds, and action buttons. Build profile pages and user cards for your applications."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/application/">Application</a> / <span aria-current="page">Profile</span>
+  </nav>
+
+  <h1>Profile</h1>
+  <p class="lead">User profile patterns with avatar displays, stats, activity feeds, and action buttons. Build profile pages and user cards with Vanilla Breeze layout primitives.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Profile patterns display user information in various contexts, from compact cards to full-page layouts. These patterns combine avatars, user data, statistics, and interactive elements into cohesive displays.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Avatar display with image or initials fallback</li>
+        <li>User stats (posts, followers, following) with clear visual hierarchy</li>
+        <li>Activity feeds showing recent actions</li>
+        <li>Action buttons for messaging, following, and editing</li>
+        <li>Responsive layouts that adapt to different screen sizes</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Profile Header</h2>
+    <layout-text>
+      <p>A centered profile header with a large avatar, user name, role, bio, stats row, and edit button. Ideal for the top of a user's profile page.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/profile-header.html"
+      url="https://app.example.com/profile"
+      title="Profile Header"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="profile-header.html">&lt;layout-card&gt;
+  &lt;div class="profile-header"&gt;
+    &lt;layout-stack data-gap="l" data-align="center"&gt;
+      &lt;!-- Avatar --&gt;
+      &lt;user-avatar data-size="2xl"&gt;
+        &lt;span data-fallback&gt;JD&lt;/span&gt;
+      &lt;/user-avatar&gt;
+
+      &lt;!-- Name and Role --&gt;
+      &lt;layout-stack data-gap="xs" data-align="center"&gt;
+        &lt;h1 class="profile-name"&gt;Jane Doe&lt;/h1&gt;
+        &lt;span class="profile-role"&gt;Senior Product Designer&lt;/span&gt;
+      &lt;/layout-stack&gt;
+
+      &lt;!-- Bio --&gt;
+      &lt;p class="profile-bio"&gt;
+        Passionate about creating intuitive user experiences...
+      &lt;/p&gt;
+
+      &lt;!-- Stats --&gt;
+      &lt;layout-cluster data-gap="xl" data-justify="center"&gt;
+        &lt;div class="stat-item"&gt;
+          &lt;span class="stat-value"&gt;142&lt;/span&gt;
+          &lt;span class="stat-label"&gt;Posts&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="stat-item"&gt;
+          &lt;span class="stat-value"&gt;12.4K&lt;/span&gt;
+          &lt;span class="stat-label"&gt;Followers&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="stat-item"&gt;
+          &lt;span class="stat-value"&gt;891&lt;/span&gt;
+          &lt;span class="stat-label"&gt;Following&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/layout-cluster&gt;
+
+      &lt;!-- Edit Button --&gt;
+      &lt;button class="button secondary"&gt;
+        &lt;icon-wc name="edit" size="sm"&gt;&lt;/icon-wc&gt;
+        Edit Profile
+      &lt;/button&gt;
+    &lt;/layout-stack&gt;
+  &lt;/div&gt;
+&lt;/layout-card&gt;</code-block>
+
+    <h3>Profile Header Styles</h3>
+    <code-block language="css" label="Profile header CSS">{profileHeaderStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Profile Card</h2>
+    <layout-text>
+      <p>A compact profile card suitable for user lists, team member displays, or search results. Features an avatar, name, email, description, and action buttons.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/profile-card.html"
+      url="https://app.example.com/team"
+      title="Profile Cards"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="profile-card.html">&lt;layout-card data-padding="l"&gt;
+  &lt;layout-stack data-gap="m"&gt;
+    &lt;layout-cluster data-gap="m" data-align="center"&gt;
+      &lt;user-avatar data-size="lg"&gt;
+        &lt;img src="user-photo.jpg" alt="Alex Thompson" /&gt;
+      &lt;/user-avatar&gt;
+      &lt;layout-stack data-gap="2xs"&gt;
+        &lt;h3 class="profile-card-name"&gt;Alex Thompson&lt;/h3&gt;
+        &lt;span class="profile-card-email"&gt;alex@example.com&lt;/span&gt;
+      &lt;/layout-stack&gt;
+    &lt;/layout-cluster&gt;
+    &lt;p class="profile-card-description"&gt;
+      Full-stack developer with 8 years of experience.
+    &lt;/p&gt;
+    &lt;layout-cluster data-gap="s"&gt;
+      &lt;button class="button small"&gt;
+        &lt;icon-wc name="mail" size="sm"&gt;&lt;/icon-wc&gt;
+        Message
+      &lt;/button&gt;
+      &lt;button class="button small secondary"&gt;
+        &lt;icon-wc name="user-plus" size="sm"&gt;&lt;/icon-wc&gt;
+        Follow
+      &lt;/button&gt;
+    &lt;/layout-cluster&gt;
+  &lt;/layout-stack&gt;
+&lt;/layout-card&gt;</code-block>
+
+    <h3>Profile Card Styles</h3>
+    <code-block language="css" label="Profile card CSS">{profileCardStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Full Profile Page</h2>
+    <layout-text>
+      <p>A complete profile page layout with a sidebar containing user info and a main content area showing an activity feed. Uses <code>layout-sidebar</code> for responsive two-column layout.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/profile-full.html"
+      url="https://app.example.com/users/sarah-chen"
+      title="Full Profile Page"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="profile-full.html">&lt;layout-sidebar data-gap="xl" data-side-width="280px" data-content-min="50%"&gt;
+  &lt;!-- Profile Sidebar --&gt;
+  &lt;layout-card data-padding="l" data-sticky&gt;
+    &lt;layout-stack data-gap="l" data-align="center"&gt;
+      &lt;user-avatar data-size="2xl"&gt;
+        &lt;img src="user-photo.jpg" alt="Sarah Chen" /&gt;
+        &lt;span data-status="online"&gt;&lt;/span&gt;
+      &lt;/user-avatar&gt;
+
+      &lt;layout-stack data-gap="xs" data-align="center"&gt;
+        &lt;h1 class="profile-name"&gt;Sarah Chen&lt;/h1&gt;
+        &lt;span class="profile-role"&gt;Engineering Manager&lt;/span&gt;
+      &lt;/layout-stack&gt;
+
+      &lt;p class="profile-bio"&gt;Leading distributed teams...&lt;/p&gt;
+
+      &lt;layout-cluster data-gap="l" data-justify="center"&gt;
+        &lt;div class="stat-item"&gt;
+          &lt;span class="stat-value"&gt;89&lt;/span&gt;
+          &lt;span class="stat-label"&gt;Posts&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;!-- More stats... --&gt;
+      &lt;/layout-cluster&gt;
+
+      &lt;layout-cluster data-gap="s"&gt;
+        &lt;button class="button"&gt;Follow&lt;/button&gt;
+        &lt;button class="button secondary"&gt;Message&lt;/button&gt;
+      &lt;/layout-cluster&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-card&gt;
+
+  &lt;!-- Activity Feed --&gt;
+  &lt;layout-stack data-gap="l"&gt;
+    &lt;header data-layout="cluster" data-justify="space-between"&gt;
+      &lt;h2&gt;Recent Activity&lt;/h2&gt;
+      &lt;!-- Filter buttons --&gt;
+    &lt;/header&gt;
+
+    &lt;layout-stack data-gap="m"&gt;
+      &lt;article class="activity-item"&gt;
+        &lt;layout-stack data-gap="s"&gt;
+          &lt;layout-cluster data-gap="s" data-align="center"&gt;
+            &lt;icon-wc name="file-text" size="sm"&gt;&lt;/icon-wc&gt;
+            &lt;span class="activity-meta"&gt;Published a post&lt;/span&gt;
+          &lt;/layout-cluster&gt;
+          &lt;h3&gt;Building Resilient Microservices&lt;/h3&gt;
+          &lt;p&gt;Lessons learned from migrating...&lt;/p&gt;
+        &lt;/layout-stack&gt;
+      &lt;/article&gt;
+      &lt;!-- More activity items... --&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-stack&gt;
+&lt;/layout-sidebar&gt;</code-block>
+
+    <h3>Activity Item Styles</h3>
+    <code-block language="css" label="Activity item CSS">{activityItemStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Configuration</h2>
+    <layout-text>
+      <p>Profile patterns use these layout elements and attributes:</p>
+    </layout-text>
+
+    <h3>User Avatar</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-size</code></td>
+          <td><code>xs</code> <code>sm</code> <code>md</code> <code>lg</code> <code>xl</code> <code>2xl</code></td>
+          <td>Avatar size. Use <code>2xl</code> for profile headers, <code>lg</code> for cards.</td>
+        </tr>
+        <tr>
+          <td><code>data-shape</code></td>
+          <td><code>rounded</code> <code>square</code></td>
+          <td>Border radius style. Default is circle.</td>
+        </tr>
+        <tr>
+          <td><code>data-ring</code></td>
+          <td>boolean</td>
+          <td>Add a decorative ring around the avatar.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Layout Sidebar</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-side-width</code></td>
+          <td>CSS length</td>
+          <td>Width of the sidebar. Use <code>280px</code> for profile sidebars.</td>
+        </tr>
+        <tr>
+          <td><code>data-content-min</code></td>
+          <td>CSS length or percentage</td>
+          <td>Minimum width before stacking. Use <code>50%</code> for balanced layouts.</td>
+        </tr>
+        <tr>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Gap between sidebar and content.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Layout Stack</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-align</code></td>
+          <td><code>start</code> <code>center</code> <code>end</code></td>
+          <td>Horizontal alignment. Use <code>center</code> for profile headers.</td>
+        </tr>
+        <tr>
+          <td><code>data-gap</code></td>
+          <td><code>2xs</code> <code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Vertical spacing between items.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Avatar fallbacks:</strong> Always provide initials via <code>&lt;span data-fallback&gt;</code> as a fallback when images fail to load</li>
+        <li><strong>Status indicators:</strong> Use <code>&lt;span data-status="online"&gt;</code> inside <code>user-avatar</code> to show user presence</li>
+        <li><strong>Responsive layouts:</strong> The sidebar layout automatically stacks on smaller screens when content-min is reached</li>
+        <li><strong>Activity loading:</strong> Consider pagination or infinite scroll for long activity feeds to improve performance</li>
+        <li><strong>Accessibility:</strong> Ensure avatar images have meaningful <code>alt</code> text and buttons have clear labels</li>
+        <li><strong>Stats formatting:</strong> Use abbreviated numbers (e.g., 12.4K) for large counts to maintain visual balance</li>
+        <li><strong>Sticky sidebar:</strong> Use <code>data-sticky</code> on the sidebar card to keep profile info visible while scrolling</li>
+        <li><strong>Empty states:</strong> Provide helpful messages when activity feeds are empty</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/application/dashboard/" class="section-card">
+        <h3>Dashboard</h3>
+        <p>Admin dashboards with stats and data tables</p>
+      </a>
+      <a href="/docs/patterns/feedback/empty-states/" class="section-card">
+        <h3>Empty States</h3>
+        <p>Helpful states when content is unavailable</p>
+      </a>
+      <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
+        <h3>User Avatar</h3>
+        <p>Avatar element documentation and API</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

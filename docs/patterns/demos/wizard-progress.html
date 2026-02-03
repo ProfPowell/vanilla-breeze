@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Wizard - Progress Bar</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    .wizard-progress {
+      --progress-height: 0.5rem;
+      --progress-bg: var(--color-border);
+      --progress-fill: var(--color-interactive);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: var(--space-s);
+    }
+    .progress-step {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .progress-label {
+      font-size: var(--text-s);
+      color: var(--color-text-muted);
+    }
+    .progress-track {
+      width: 100%;
+      height: var(--progress-height);
+      background: var(--progress-bg);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--progress-fill);
+      border-radius: var(--radius-full);
+      transition: width var(--duration-normal) var(--ease-default);
+    }
+    .progress-percentage {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-top: var(--space-xs);
+      text-align: right;
+    }
+    /* Step dots below progress bar */
+    .progress-dots {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-s);
+      padding-inline: var(--space-2xs);
+    }
+    .progress-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2xs);
+    }
+    .dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 50%;
+      background: var(--color-border);
+      border: 2px solid var(--color-surface);
+      box-shadow: 0 0 0 2px var(--color-border);
+    }
+    .dot.completed {
+      background: var(--color-success);
+      box-shadow: 0 0 0 2px var(--color-success);
+    }
+    .dot.active {
+      background: var(--color-interactive);
+      box-shadow: 0 0 0 2px var(--color-interactive);
+    }
+    .dot-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+    .dot.active + .dot-label,
+    .progress-dot:has(.active) .dot-label {
+      color: var(--color-text);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <div data-layout="stack" data-gap="xl">
+      <!-- Progress Bar -->
+      <div class="wizard-progress" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Form completion progress">
+        <div class="progress-header">
+          <span class="progress-step">Step 2 of 4</span>
+          <span class="progress-label">Payment Information</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 50%;"></div>
+        </div>
+        <div class="progress-percentage">50% complete</div>
+        <div class="progress-dots" aria-hidden="true">
+          <div class="progress-dot">
+            <span class="dot completed"></span>
+            <span class="dot-label">Cart</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot active"></span>
+            <span class="dot-label">Payment</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot"></span>
+            <span class="dot-label">Shipping</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot"></span>
+            <span class="dot-label">Confirm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment -->
+      <form action="/checkout/payment" method="POST" data-layout="stack" data-gap="l">
+        <header data-layout="stack" data-gap="xs">
+          <h1>Payment details</h1>
+          <p>Enter your payment information securely.</p>
+        </header>
+
+        <form-field>
+          <label for="card-name">Name on card</label>
+          <input type="text" id="card-name" name="card_name" required
+                 autocomplete="cc-name" placeholder="John Doe"
+                 aria-describedby="card-name-error"/>
+          <output id="card-name-error" class="error" for="card-name" aria-live="polite">
+            Please enter the name on your card.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="card-number">Card number</label>
+          <input type="text" id="card-number" name="card_number" required
+                 autocomplete="cc-number" placeholder="1234 5678 9012 3456"
+                 inputmode="numeric" pattern="[0-9\s]{13,19}"
+                 aria-describedby="card-number-error"/>
+          <output id="card-number-error" class="error" for="card-number" aria-live="polite">
+            Please enter a valid card number.
+          </output>
+        </form-field>
+
+        <div data-layout="split" data-gap="m">
+          <form-field>
+            <label for="expiry">Expiry date</label>
+            <input type="text" id="expiry" name="expiry" required
+                   autocomplete="cc-exp" placeholder="MM/YY"
+                   inputmode="numeric" pattern="[0-9]{2}/[0-9]{2}"
+                   aria-describedby="expiry-error"/>
+            <output id="expiry-error" class="error" for="expiry" aria-live="polite">
+              Enter MM/YY format.
+            </output>
+          </form-field>
+
+          <form-field>
+            <label for="cvc">Security code</label>
+            <input type="text" id="cvc" name="cvc" required
+                   autocomplete="cc-csc" placeholder="123"
+                   inputmode="numeric" pattern="[0-9]{3,4}"
+                   aria-describedby="cvc-error"/>
+            <output id="cvc-error" class="error" for="cvc" aria-live="polite">
+              3 or 4 digits.
+            </output>
+          </form-field>
+        </div>
+
+        <fieldset class="minimal">
+          <label>
+            <input type="checkbox" name="save_card"/>
+            Save card for future purchases
+          </label>
+        </fieldset>
+
+        <div data-layout="cluster" data-justify="between" data-gap="m">
+          <button type="button" class="secondary">
+            <icon-wc name="arrow-left" size="sm"></icon-wc>
+            Back to Cart
+          </button>
+          <button type="submit">
+            Continue to Shipping
+            <icon-wc name="arrow-right" size="sm"></icon-wc>
+          </button>
+        </div>
+      </form>
+    </div>
+  </layout-card>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

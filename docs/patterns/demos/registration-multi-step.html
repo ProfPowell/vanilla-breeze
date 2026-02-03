@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Registration - Multi-Step</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    .step-indicator {
+      --step-size: 2rem;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-s);
+      color: var(--color-text-muted);
+    }
+    .step-number {
+      width: var(--step-size);
+      height: var(--step-size);
+      border-radius: 50%;
+      background: var(--color-surface-raised);
+      border: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--text-s);
+    }
+    .step.active {
+      color: var(--color-text);
+    }
+    .step.active .step-number {
+      background: var(--color-interactive);
+      border-color: var(--color-interactive);
+      color: white;
+    }
+    .step.completed .step-number {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      color: white;
+    }
+    .step-connector {
+      flex: 1;
+      height: 2px;
+      background: var(--color-border);
+      min-width: 2rem;
+    }
+    .step-connector.completed {
+      background: var(--color-success);
+    }
+  </style>
+</head>
+<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <div data-layout="stack" data-gap="l">
+      <header data-layout="stack" data-gap="s">
+        <h1>Create account</h1>
+        <p>Step 1 of 3</p>
+      </header>
+
+      <!-- Step Indicator -->
+      <nav class="step-indicator" aria-label="Registration progress">
+        <layout-cluster data-gap="s" data-align="center" data-justify="center">
+          <div class="step active" aria-current="step">
+            <span class="step-number">1</span>
+            <span class="step-label">Account</span>
+          </div>
+          <div class="step-connector" aria-hidden="true"></div>
+          <div class="step">
+            <span class="step-number">2</span>
+            <span class="step-label">Profile</span>
+          </div>
+          <div class="step-connector" aria-hidden="true"></div>
+          <div class="step">
+            <span class="step-number">3</span>
+            <span class="step-label">Preferences</span>
+          </div>
+        </layout-cluster>
+      </nav>
+
+      <!-- Step 1: Account Info -->
+      <form action="/auth/register/step1" method="POST" data-layout="stack" data-gap="l">
+        <form-field>
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" required=""
+                 autocomplete="email" placeholder="you@example.com"
+                 aria-describedby="email-error"/>
+          <output id="email-error" class="error" for="email" aria-live="polite">
+            Please enter a valid email address.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required=""
+                 autocomplete="new-password" placeholder="Create a password"
+                 minlength="8"
+                 aria-describedby="password-hint"/>
+          <output id="password-hint" for="password" aria-live="polite">
+            Must be at least 8 characters.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="password-confirm">Confirm password</label>
+          <input type="password" id="password-confirm" name="password_confirm" required=""
+                 autocomplete="new-password" placeholder="Confirm your password"
+                 aria-describedby="password-confirm-error"/>
+          <output id="password-confirm-error" class="error" for="password-confirm" aria-live="polite">
+            Passwords must match.
+          </output>
+        </form-field>
+
+        <div data-layout="cluster" data-justify="between" data-gap="m">
+          <button type="button" class="secondary" disabled>Back</button>
+          <button type="submit">Next</button>
+        </div>
+      </form>
+
+      <footer>
+        <p>Already have an account? <a href="/auth/login">Sign in</a></p>
+      </footer>
+    </div>
+  </layout-card>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

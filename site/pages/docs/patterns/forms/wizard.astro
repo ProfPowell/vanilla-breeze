@@ -1,0 +1,584 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const stepsCode = `<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <div data-layout="stack" data-gap="xl">
+      <header data-layout="stack" data-gap="s">
+        <h1>Create your account</h1>
+        <p>Step 2 of 4 - Tell us about yourself</p>
+      </header>
+
+      <!-- Step Indicator -->
+      <nav class="wizard-steps" aria-label="Progress">
+        <ol class="step-list">
+          <li class="step-item">
+            <div class="step completed" role="button" tabindex="0" aria-label="Go back to Account step (completed)">
+              <span class="step-number">
+                <icon-wc name="check" size="sm"></icon-wc>
+              </span>
+              <span class="step-label">Account</span>
+            </div>
+          </li>
+          <li class="step-connector completed" aria-hidden="true"></li>
+          <li class="step-item">
+            <div class="step active" aria-current="step">
+              <span class="step-number">2</span>
+              <span class="step-label">Details</span>
+            </div>
+          </li>
+          <li class="step-connector" aria-hidden="true"></li>
+          <li class="step-item">
+            <div class="step">
+              <span class="step-number">3</span>
+              <span class="step-label">Preferences</span>
+            </div>
+          </li>
+          <li class="step-connector" aria-hidden="true"></li>
+          <li class="step-item">
+            <div class="step">
+              <span class="step-number">4</span>
+              <span class="step-label">Review</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Step 2: Details -->
+      <form action="/wizard/step2" method="POST" data-layout="stack" data-gap="l">
+        <form-field>
+          <label for="first-name">First name</label>
+          <input type="text" id="first-name" name="first_name" required
+                 autocomplete="given-name" placeholder="John"/>
+        </form-field>
+
+        <form-field>
+          <label for="last-name">Last name</label>
+          <input type="text" id="last-name" name="last_name" required
+                 autocomplete="family-name" placeholder="Doe"/>
+        </form-field>
+
+        <div data-layout="cluster" data-justify="between" data-gap="m">
+          <button type="button" class="secondary">Back</button>
+          <button type="submit">Next</button>
+        </div>
+      </form>
+    </div>
+  </layout-card>
+</body>`;
+
+const tabsCode = `<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="default" data-padding="none" data-principal>
+    <div data-layout="stack" data-gap="none">
+      <!-- Tab Navigation -->
+      <nav class="wizard-tabs" aria-label="Form steps">
+        <ol class="tab-list" role="tablist">
+          <li class="tab-item" role="presentation">
+            <button class="tab completed" role="tab" aria-selected="false" id="tab-account" aria-controls="panel-account">
+              <span class="tab-number">
+                <icon-wc name="check" size="xs"></icon-wc>
+              </span>
+              <span>Account</span>
+            </button>
+          </li>
+          <li class="tab-item" role="presentation">
+            <button class="tab completed" role="tab" aria-selected="false" id="tab-profile" aria-controls="panel-profile">
+              <span class="tab-number">
+                <icon-wc name="check" size="xs"></icon-wc>
+              </span>
+              <span>Profile</span>
+            </button>
+          </li>
+          <li class="tab-item" role="presentation">
+            <button class="tab active" role="tab" aria-selected="true" id="tab-preferences" aria-controls="panel-preferences" aria-current="step">
+              <span class="tab-number">3</span>
+              <span>Preferences</span>
+            </button>
+          </li>
+          <li class="tab-item" role="presentation">
+            <button class="tab future" role="tab" aria-selected="false" aria-disabled="true" id="tab-confirm" aria-controls="panel-confirm">
+              <span class="tab-number">4</span>
+              <span>Confirm</span>
+            </button>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Tab Panel -->
+      <div class="tab-panel" role="tabpanel" id="panel-preferences" aria-labelledby="tab-preferences">
+        <header data-layout="stack" data-gap="xs">
+          <h2>Set your preferences</h2>
+          <p>Customize your experience with these settings.</p>
+        </header>
+
+        <form action="/wizard/preferences" method="POST" data-layout="stack" data-gap="l">
+          <form-field>
+            <label for="timezone">Timezone</label>
+            <select id="timezone" name="timezone" required>
+              <option value="">Select timezone...</option>
+              <option value="est" selected>Eastern Time (ET)</option>
+            </select>
+          </form-field>
+
+          <fieldset>
+            <legend>Notifications</legend>
+            <layout-stack data-gap="s">
+              <label>
+                <input type="checkbox" name="email_notifications" checked/>
+                Email notifications for updates
+              </label>
+            </layout-stack>
+          </fieldset>
+
+          <div data-layout="cluster" data-justify="between" data-gap="m">
+            <button type="button" class="secondary">Back</button>
+            <button type="submit">Continue to Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </layout-card>
+</body>`;
+
+const progressCode = `<body data-layout="cover" data-min="100vh" data-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-principal>
+    <div data-layout="stack" data-gap="xl">
+      <!-- Progress Bar -->
+      <div class="wizard-progress" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Form completion progress">
+        <div class="progress-header">
+          <span class="progress-step">Step 2 of 4</span>
+          <span class="progress-label">Payment Information</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 50%;"></div>
+        </div>
+        <div class="progress-percentage">50% complete</div>
+        <div class="progress-dots" aria-hidden="true">
+          <div class="progress-dot">
+            <span class="dot completed"></span>
+            <span class="dot-label">Cart</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot active"></span>
+            <span class="dot-label">Payment</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot"></span>
+            <span class="dot-label">Shipping</span>
+          </div>
+          <div class="progress-dot">
+            <span class="dot"></span>
+            <span class="dot-label">Confirm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment -->
+      <form action="/checkout/payment" method="POST" data-layout="stack" data-gap="l">
+        <header data-layout="stack" data-gap="xs">
+          <h1>Payment details</h1>
+          <p>Enter your payment information securely.</p>
+        </header>
+
+        <form-field>
+          <label for="card-number">Card number</label>
+          <input type="text" id="card-number" name="card_number" required
+                 autocomplete="cc-number" placeholder="1234 5678 9012 3456"/>
+        </form-field>
+
+        <div data-layout="split" data-gap="m">
+          <form-field>
+            <label for="expiry">Expiry date</label>
+            <input type="text" id="expiry" name="expiry" required
+                   autocomplete="cc-exp" placeholder="MM/YY"/>
+          </form-field>
+
+          <form-field>
+            <label for="cvc">Security code</label>
+            <input type="text" id="cvc" name="cvc" required
+                   autocomplete="cc-csc" placeholder="123"/>
+          </form-field>
+        </div>
+
+        <div data-layout="cluster" data-justify="between" data-gap="m">
+          <button type="button" class="secondary">
+            <icon-wc name="arrow-left" size="sm"></icon-wc>
+            Back to Cart
+          </button>
+          <button type="submit">
+            Continue to Shipping
+            <icon-wc name="arrow-right" size="sm"></icon-wc>
+          </button>
+        </div>
+      </form>
+    </div>
+  </layout-card>
+</body>`;
+
+const stepIndicatorStyles = `.wizard-steps {
+  --step-size: 2.5rem;
+  --step-connector-height: 2px;
+}
+.step-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.step-number {
+  width: var(--step-size);
+  height: var(--step-size);
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--text-s);
+  color: var(--color-text-muted);
+}
+.step-label {
+  font-size: var(--text-s);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.step-connector {
+  width: 4rem;
+  height: var(--step-connector-height);
+  background: var(--color-border);
+  margin-inline: var(--space-s);
+}
+/* Active step */
+.step.active .step-number {
+  background: var(--color-interactive);
+  border-color: var(--color-interactive);
+  color: white;
+}
+.step.active .step-label {
+  color: var(--color-text);
+  font-weight: 600;
+}
+/* Completed step */
+.step.completed .step-number {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+.step-connector.completed {
+  background: var(--color-success);
+}`;
+
+const tabStyles = `.wizard-tabs {
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+.tab-list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tab-item {
+  flex: 1;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-m) var(--space-l);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  width: 100%;
+  margin-bottom: -1px;
+}
+.tab-number {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+}
+/* Active tab */
+.tab.active {
+  color: var(--color-interactive);
+  border-bottom-color: var(--color-interactive);
+}
+.tab.active .tab-number {
+  background: var(--color-interactive);
+  border-color: var(--color-interactive);
+  color: white;
+}
+/* Completed tab */
+.tab.completed {
+  cursor: pointer;
+  color: var(--color-text);
+}
+.tab.completed .tab-number {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+/* Future tab */
+.tab.future {
+  opacity: 0.6;
+  cursor: default;
+}`;
+
+const progressStyles = `.wizard-progress {
+  --progress-height: 0.5rem;
+  --progress-bg: var(--color-border);
+  --progress-fill: var(--color-interactive);
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-s);
+}
+.progress-step {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.progress-label {
+  font-size: var(--text-s);
+  color: var(--color-text-muted);
+}
+.progress-track {
+  width: 100%;
+  height: var(--progress-height);
+  background: var(--progress-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--progress-fill);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-normal) var(--ease-default);
+}
+.progress-percentage {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+  text-align: right;
+}`;
+---
+
+<DocsLayout
+  title="Wizard / Multi-Step Form Patterns"
+  description="Multi-step form patterns with numbered steps, tab navigation, and progress bar indicators. Guide users through complex forms with clear progress feedback."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/">Forms</a> / <span aria-current="page">Wizard</span>
+  </nav>
+
+  <h1>Wizard / Multi-Step Forms</h1>
+  <p class="lead">Multi-step form patterns with numbered steps, tab navigation, and progress bar indicators. Guide users through complex forms with clear progress feedback.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Wizard patterns break complex forms into manageable steps, reducing cognitive load and improving completion rates. These patterns provide clear progress indication and allow users to navigate between completed steps.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Clear progress indication showing current position and total steps</li>
+        <li>Visual distinction between completed, active, and future steps</li>
+        <li>Navigation buttons (Back/Next) with proper disabled states</li>
+        <li>Clickable completed steps for easy review and editing</li>
+        <li><code>aria-current="step"</code> for accessibility</li>
+        <li><code>role="progressbar"</code> with proper ARIA attributes</li>
+        <li><code>&lt;icon-wc name="check"&gt;</code> for completed step indicators</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Numbered Steps</h2>
+    <layout-text>
+      <p>A horizontal step indicator with numbered circles connected by lines. Completed steps show checkmarks and can be clicked to navigate back. The current step is highlighted with the interactive color.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/wizard-steps.html"
+      url="https://app.example.com/signup/step-2"
+      title="Create Account - Step 2"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="wizard-steps.html" show-lines>{stepsCode}</code-block>
+
+    <h3>Step Indicator Styles</h3>
+    <code-block language="css" label="Numbered step indicator styles">{stepIndicatorStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Tab Navigation</h2>
+    <layout-text>
+      <p>A tab-style navigation where each step is represented as a tab. Completed tabs can be clicked to jump back to previous sections. Future tabs are visually disabled until their prerequisites are met.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/wizard-tabs.html"
+      url="https://app.example.com/onboarding"
+      title="Onboarding - Preferences"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="wizard-tabs.html" show-lines>{tabsCode}</code-block>
+
+    <h3>Tab Navigation Styles</h3>
+    <code-block language="css" label="Tab wizard styles">{tabStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Progress Bar</h2>
+    <layout-text>
+      <p>A horizontal progress bar showing completion percentage with step dots below. Includes text showing "Step X of Y" and the current step name. Great for checkout flows and linear processes.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/wizard-progress.html"
+      url="https://shop.example.com/checkout/payment"
+      title="Checkout - Payment"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="wizard-progress.html" show-lines>{progressCode}</code-block>
+
+    <h3>Progress Bar Styles</h3>
+    <code-block language="css" label="Progress bar styles">{progressStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Configuration</h2>
+    <layout-text>
+      <p>Key configuration options for wizard patterns:</p>
+    </layout-text>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Purpose</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--step-size</code></td>
+          <td>Size of step number circles</td>
+          <td><code>2rem</code>, <code>2.5rem</code>, <code>3rem</code></td>
+        </tr>
+        <tr>
+          <td><code>--step-connector-height</code></td>
+          <td>Thickness of connecting lines</td>
+          <td><code>2px</code>, <code>3px</code></td>
+        </tr>
+        <tr>
+          <td><code>--progress-height</code></td>
+          <td>Height of progress bar track</td>
+          <td><code>0.5rem</code>, <code>0.75rem</code>, <code>1rem</code></td>
+        </tr>
+        <tr>
+          <td><code>--progress-fill</code></td>
+          <td>Progress bar fill color</td>
+          <td><code>var(--color-interactive)</code>, <code>var(--color-success)</code></td>
+        </tr>
+        <tr>
+          <td><code>aria-current="step"</code></td>
+          <td>Marks current step for screen readers</td>
+          <td>Apply to active step element</td>
+        </tr>
+        <tr>
+          <td><code>aria-valuenow</code></td>
+          <td>Current progress percentage</td>
+          <td><code>0</code> to <code>100</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <h3>Step Validation</h3>
+      <ul>
+        <li>Validate each step before allowing progression to the next</li>
+        <li>Show inline validation errors using <code>&lt;output class="error"&gt;</code></li>
+        <li>Disable the "Next" button until required fields are valid</li>
+        <li>Consider allowing users to skip optional steps</li>
+      </ul>
+
+      <h3>Saving Progress</h3>
+      <ul>
+        <li>Auto-save form data to prevent loss on accidental navigation</li>
+        <li>Use <code>sessionStorage</code> or server-side persistence</li>
+        <li>Show a "saved" indicator when data is preserved</li>
+        <li>Allow users to resume incomplete forms</li>
+      </ul>
+
+      <h3>Accessibility</h3>
+      <ul>
+        <li>Use <code>aria-current="step"</code> on the active step for screen readers</li>
+        <li>Add <code>role="progressbar"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code></li>
+        <li>Completed steps should have descriptive <code>aria-label</code> (e.g., "Go back to Account step (completed)")</li>
+        <li>Announce step changes to screen readers with live regions</li>
+        <li>Use <code>aria-disabled="true"</code> on future steps that cannot be accessed</li>
+        <li>Ensure keyboard navigation works for clickable completed steps</li>
+      </ul>
+
+      <h3>Navigation Best Practices</h3>
+      <ul>
+        <li>Always allow users to go back to previous steps</li>
+        <li>Preserve form data when navigating between steps</li>
+        <li>Disable future steps until prerequisites are complete</li>
+        <li>Show a summary/review step before final submission</li>
+        <li>Provide a "Save and exit" option for long forms</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/forms/registration/" class="section-card">
+        <h3>Registration</h3>
+        <p>Multi-step registration forms</p>
+      </a>
+      <a href="/docs/patterns/forms/contact/" class="section-card">
+        <h3>Contact</h3>
+        <p>Contact and inquiry forms</p>
+      </a>
+      <a href="/docs/elements/custom-elements/form-field/" class="section-card">
+        <h3>Form Field</h3>
+        <p>Form field element with validation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/icon/" class="section-card">
+        <h3>Icon</h3>
+        <p>Icon component for step indicators</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

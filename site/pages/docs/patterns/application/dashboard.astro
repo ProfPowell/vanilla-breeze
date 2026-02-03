@@ -1,0 +1,392 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const statsCode = `<layout-center data-max-width="wide">
+  <layout-stack data-gap="xl">
+    <!-- Page Header -->
+    <header data-layout="cluster" data-justify="space-between" data-align="center">
+      <layout-stack data-gap="xs">
+        <h1>Dashboard</h1>
+        <p class="text-muted">Overview of your business metrics</p>
+      </layout-stack>
+      <layout-cluster data-gap="s">
+        <button class="button secondary">
+          <icon-wc name="calendar" size="sm"></icon-wc>
+          Last 30 days
+        </button>
+        <button class="button">
+          <icon-wc name="download" size="sm"></icon-wc>
+          Export
+        </button>
+      </layout-cluster>
+    </header>
+
+    <!-- Stats Grid -->
+    <layout-grid data-gap="l" data-min-width="200">
+      <layout-card>
+        <layout-cluster data-justify="space-between" data-align="start">
+          <layout-stack data-gap="xs">
+            <span class="text-sm text-muted">Total Revenue</span>
+            <span class="stat-value">$45,231</span>
+            <span class="stat-change positive">
+              <icon-wc name="trending-up" size="sm"></icon-wc>
+              +12% from last month
+            </span>
+          </layout-stack>
+          <span class="stat-icon">
+            <icon-wc name="dollar-sign" size="md"></icon-wc>
+          </span>
+        </layout-cluster>
+      </layout-card>
+      <!-- Additional stat cards... -->
+    </layout-grid>
+  </layout-stack>
+</layout-center>`;
+
+const chartsCode = `<layout-grid data-gap="l" data-min-width="400">
+  <!-- Main Chart -->
+  <layout-card data-padding="l">
+    <layout-stack data-gap="m">
+      <layout-cluster data-justify="space-between" data-align="center">
+        <h2 class="text-lg">Traffic Overview</h2>
+        <layout-cluster data-gap="s">
+          <button class="button small ghost">Daily</button>
+          <button class="button small secondary">Weekly</button>
+          <button class="button small ghost">Monthly</button>
+        </layout-cluster>
+      </layout-cluster>
+      <div class="chart-placeholder chart-main">
+        <!-- Your chart library renders here -->
+      </div>
+    </layout-stack>
+  </layout-card>
+
+  <!-- Secondary Chart -->
+  <layout-card data-padding="l">
+    <layout-stack data-gap="m">
+      <h2 class="text-lg">Traffic Sources</h2>
+      <div class="chart-placeholder chart-secondary">
+        <!-- Your chart library renders here -->
+      </div>
+    </layout-stack>
+  </layout-card>
+</layout-grid>`;
+
+const chartStyles = `.chart-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.chart-main {
+  aspect-ratio: 16 / 9;
+  min-height: 300px;
+}
+
+.chart-secondary {
+  aspect-ratio: 4 / 3;
+  min-height: 200px;
+}`;
+
+const tableCode = `<layout-card data-padding="none">
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Customer</th>
+          <th scope="col">Email</th>
+          <th scope="col">Status</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Date</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <span class="user-avatar">JD</span>
+              <span>John Doe</span>
+            </div>
+          </td>
+          <td>john.doe@example.com</td>
+          <td><span class="status-badge completed">Completed</span></td>
+          <td>$250.00</td>
+          <td>Jan 15, 2026</td>
+          <td>
+            <layout-cluster data-gap="xs">
+              <button class="button ghost small icon-only" aria-label="View">
+                <icon-wc name="eye" size="sm"></icon-wc>
+              </button>
+              <button class="button ghost small icon-only" aria-label="Edit">
+                <icon-wc name="edit" size="sm"></icon-wc>
+              </button>
+              <button class="button ghost small icon-only" aria-label="More">
+                <icon-wc name="more-vertical" size="sm"></icon-wc>
+              </button>
+            </layout-cluster>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</layout-card>`;
+
+const badgeStyles = `.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs);
+  padding: var(--size-2xs) var(--size-s);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-badge.completed {
+  background: color-mix(in oklch, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.status-badge.pending {
+  background: color-mix(in oklch, var(--color-warning) 15%, transparent);
+  color: var(--color-warning);
+}
+
+.status-badge.cancelled {
+  background: color-mix(in oklch, var(--color-danger) 15%, transparent);
+  color: var(--color-danger);
+}
+
+.status-badge.processing {
+  background: color-mix(in oklch, var(--color-info) 15%, transparent);
+  color: var(--color-info);
+}`;
+
+const tableStyles = `.data-table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--size-m);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.data-table th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-surface-raised);
+}`;
+---
+
+<DocsLayout
+  title="Dashboard"
+  description="Dashboard layouts with stat cards, charts, and data tables. Build comprehensive admin interfaces and analytics views."
+  currentSection="examples"
+>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/patterns/">Patterns</a> / <a href="/docs/patterns/application/">Application</a> / <span aria-current="page">Dashboard</span>
+  </nav>
+
+  <h1>Dashboard</h1>
+  <p class="lead">Dashboard layouts with stat cards, charts, and data tables. Build comprehensive admin interfaces and analytics views with Vanilla Breeze layout primitives.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Dashboard patterns combine multiple components to create data-rich interfaces. These layouts organize statistics, visualizations, and tabular data in a way that's easy to scan and understand.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Stat cards with change indicators for key metrics</li>
+        <li>Chart placeholder layouts for any visualization library</li>
+        <li>Data tables with sorting, filtering, and pagination</li>
+        <li>Responsive grid layouts that adapt to screen size</li>
+        <li>Consistent spacing and card-based organization</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Stats Grid Dashboard</h2>
+    <layout-text>
+      <p>A dashboard focused on key metrics displayed in stat cards. Includes a page header with actions and a responsive grid of metrics with trend indicators.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/dashboard-stats.html"
+      url="https://app.example.com/dashboard"
+      title="Stats Grid Dashboard"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="dashboard-stats.html">{statsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Charts Dashboard</h2>
+    <layout-text>
+      <p>A dashboard layout with chart placeholders for analytics and data visualization. Uses a responsive grid for chart positioning with compact stat cards at the top.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/dashboard-charts.html"
+      url="https://app.example.com/analytics"
+      title="Charts Dashboard"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="dashboard-charts.html">{chartsCode}</code-block>
+
+    <h3>Chart Placeholder Styles</h3>
+    <code-block language="css" label="Chart placeholder CSS">{chartStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Data Table Dashboard</h2>
+    <layout-text>
+      <p>A dashboard centered on tabular data with a filter bar, sortable columns, status badges, and row actions. Includes pagination for large datasets.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/dashboard-table.html"
+      url="https://app.example.com/orders"
+      title="Data Table Dashboard"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="dashboard-table.html">{tableCode}</code-block>
+
+    <h3>Status Badge Styles</h3>
+    <code-block language="css" label="Status badge CSS">{badgeStyles}</code-block>
+
+    <h3>Data Table Styles</h3>
+    <code-block language="css" label="Data table CSS">{tableStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>Configuration</h2>
+    <layout-text>
+      <p>Dashboard patterns use these layout elements and attributes:</p>
+    </layout-text>
+
+    <h3>Layout Grid</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-min-width</code></td>
+          <td>Number (pixels)</td>
+          <td>Minimum column width before wrapping. Use 200-250 for stat cards.</td>
+        </tr>
+        <tr>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Gap between grid items. Use <code>l</code> for dashboard sections.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Layout Card</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-padding</code></td>
+          <td><code>none</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Card padding. Use <code>none</code> for tables, <code>l</code> for charts.</td>
+        </tr>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>outlined</code></td>
+          <td>Card style variant. Default has subtle shadow.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Layout Cluster</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-justify</code></td>
+          <td><code>start</code> <code>center</code> <code>end</code> <code>space-between</code></td>
+          <td>Horizontal distribution. Use <code>space-between</code> for headers.</td>
+        </tr>
+        <tr>
+          <td><code>data-align</code></td>
+          <td><code>start</code> <code>center</code> <code>end</code></td>
+          <td>Vertical alignment. Use <code>center</code> for header actions.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Loading states:</strong> Show skeleton placeholders while data loads to prevent layout shift</li>
+        <li><strong>Responsive layout:</strong> The grid automatically adjusts columns; test on mobile to ensure usability</li>
+        <li><strong>Chart libraries:</strong> Chart placeholders work with any library (Chart.js, D3, ApexCharts, etc.)</li>
+        <li><strong>Table overflow:</strong> Wrap tables in <code>.data-table-wrapper</code> for horizontal scrolling on small screens</li>
+        <li><strong>Semantic colors:</strong> Use <code>--color-success</code> for positive trends, <code>--color-danger</code> for negative</li>
+        <li><strong>Empty states:</strong> Provide helpful empty states when no data is available</li>
+        <li><strong>Accessibility:</strong> Ensure tables have proper <code>scope</code> attributes and buttons have <code>aria-label</code></li>
+        <li><strong>Real-time updates:</strong> Consider using subtle animations when stats update dynamically</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/application/shells/" class="section-card">
+        <h3>App Shells</h3>
+        <p>Application shell layouts with navigation</p>
+      </a>
+      <a href="/docs/patterns/data/stats/" class="section-card">
+        <h3>Stats</h3>
+        <p>Stat card patterns and change indicators</p>
+      </a>
+      <a href="/docs/patterns/application/settings/" class="section-card">
+        <h3>Settings</h3>
+        <p>Settings and preferences pages</p>
+      </a>
+    </layout-grid>
+  </section>
+</DocsLayout>

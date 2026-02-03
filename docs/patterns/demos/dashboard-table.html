@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard - Data Table</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-xl);
+      background: var(--color-surface-alt);
+    }
+    .data-table-wrapper {
+      overflow-x: auto;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      background: var(--color-surface);
+      border-radius: var(--radius-l);
+      overflow: hidden;
+    }
+    .data-table th,
+    .data-table td {
+      padding: var(--size-m);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
+    }
+    .data-table th {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--color-surface);
+    }
+    .data-table tbody tr:hover {
+      background: var(--color-surface-raised);
+    }
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-2xs);
+      padding: var(--size-2xs) var(--size-s);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+    }
+    .status-badge.completed {
+      background: color-mix(in oklch, var(--color-success) 15%, transparent);
+      color: var(--color-success);
+    }
+    .status-badge.pending {
+      background: color-mix(in oklch, var(--color-warning) 15%, transparent);
+      color: var(--color-warning);
+    }
+    .status-badge.cancelled {
+      background: color-mix(in oklch, var(--color-danger) 15%, transparent);
+      color: var(--color-danger);
+    }
+    .status-badge.processing {
+      background: color-mix(in oklch, var(--color-info) 15%, transparent);
+      color: var(--color-info);
+    }
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background: var(--color-surface-alt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: var(--font-weight-medium);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+    .filter-bar {
+      background: var(--color-surface);
+      padding: var(--size-m);
+      border-radius: var(--radius-l);
+      margin-block-end: var(--size-m);
+    }
+    .search-input {
+      min-width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-max-width="wide">
+    <layout-stack data-gap="l">
+      <!-- Page Header -->
+      <header data-layout="cluster" data-justify="space-between" data-align="center">
+        <layout-stack data-gap="xs">
+          <h1>Orders</h1>
+          <p class="text-muted">Manage and track customer orders</p>
+        </layout-stack>
+        <button class="button">
+          <icon-wc name="plus" size="sm"></icon-wc>
+          Add New Order
+        </button>
+      </header>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar" data-layout="cluster" data-justify="space-between" data-gap="m">
+        <layout-cluster data-gap="m">
+          <div class="input-group with-icon">
+            <icon-wc name="search" size="sm"></icon-wc>
+            <input type="search" class="search-input" placeholder="Search orders..." aria-label="Search orders"/>
+          </div>
+          <select aria-label="Filter by status">
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="processing">Processing</option>
+            <option value="pending">Pending</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </layout-cluster>
+        <layout-cluster data-gap="s">
+          <button class="button ghost small">
+            <icon-wc name="filter" size="sm"></icon-wc>
+            Filters
+          </button>
+          <button class="button ghost small">
+            <icon-wc name="download" size="sm"></icon-wc>
+            Export
+          </button>
+        </layout-cluster>
+      </div>
+
+      <!-- Data Table -->
+      <layout-card data-padding="none">
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Customer</th>
+                <th scope="col">Email</th>
+                <th scope="col">Status</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Date</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">JD</span>
+                    <span>John Doe</span>
+                  </div>
+                </td>
+                <td>john.doe@example.com</td>
+                <td><span class="status-badge completed">Completed</span></td>
+                <td>$250.00</td>
+                <td>Jan 15, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">SM</span>
+                    <span>Sarah Miller</span>
+                  </div>
+                </td>
+                <td>sarah.miller@example.com</td>
+                <td><span class="status-badge processing">Processing</span></td>
+                <td>$125.50</td>
+                <td>Jan 14, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">RJ</span>
+                    <span>Robert Johnson</span>
+                  </div>
+                </td>
+                <td>robert.j@example.com</td>
+                <td><span class="status-badge pending">Pending</span></td>
+                <td>$89.99</td>
+                <td>Jan 14, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">EW</span>
+                    <span>Emily Wilson</span>
+                  </div>
+                </td>
+                <td>emily.wilson@example.com</td>
+                <td><span class="status-badge completed">Completed</span></td>
+                <td>$432.00</td>
+                <td>Jan 13, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">MB</span>
+                    <span>Michael Brown</span>
+                  </div>
+                </td>
+                <td>m.brown@example.com</td>
+                <td><span class="status-badge cancelled">Cancelled</span></td>
+                <td>$75.00</td>
+                <td>Jan 12, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar">JT</span>
+                    <span>Jessica Taylor</span>
+                  </div>
+                </td>
+                <td>j.taylor@example.com</td>
+                <td><span class="status-badge processing">Processing</span></td>
+                <td>$567.25</td>
+                <td>Jan 11, 2026</td>
+                <td>
+                  <layout-cluster data-gap="xs">
+                    <button class="button ghost small icon-only" aria-label="View order">
+                      <icon-wc name="eye" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="Edit order">
+                      <icon-wc name="edit" size="sm"></icon-wc>
+                    </button>
+                    <button class="button ghost small icon-only" aria-label="More actions">
+                      <icon-wc name="more-vertical" size="sm"></icon-wc>
+                    </button>
+                  </layout-cluster>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </layout-card>
+
+      <!-- Pagination -->
+      <layout-cluster data-justify="space-between" data-align="center">
+        <span class="text-sm text-muted">Showing 1-6 of 48 results</span>
+        <nav aria-label="Pagination">
+          <layout-cluster data-gap="xs">
+            <button class="button ghost small" disabled aria-label="Previous page">
+              <icon-wc name="chevron-left" size="sm"></icon-wc>
+            </button>
+            <button class="button small" aria-current="page">1</button>
+            <button class="button ghost small">2</button>
+            <button class="button ghost small">3</button>
+            <span class="text-muted">...</span>
+            <button class="button ghost small">8</button>
+            <button class="button ghost small" aria-label="Next page">
+              <icon-wc name="chevron-right" size="sm"></icon-wc>
+            </button>
+          </layout-cluster>
+        </nav>
+      </layout-cluster>
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
