@@ -55,7 +55,7 @@ const changeCode = `<section class="stats">
     <data value="24521">24,521</data>
     <small data-trend="up">
       <icon-wc name="trending-up" size="sm"></icon-wc>
-      +12.5% vs last month
+      <data value="0.125">+12.5%</data> vs last month
     </small>
   </figure>
 
@@ -64,7 +64,7 @@ const changeCode = `<section class="stats">
     <data value="0.423">42.3%</data>
     <small data-trend="down">
       <icon-wc name="trending-down" size="sm"></icon-wc>
-      -3.1% vs last month
+      <data value="-0.031">-3.1%</data> vs last month
     </small>
   </figure>
 </section>`;
@@ -79,16 +79,22 @@ const changeCss = `@scope (.stats) {
 
   small[data-trend="up"] { color: var(--color-success); }
   small[data-trend="down"] { color: var(--color-danger); }
+
+  small data {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }`;
 
 const cardsCode = `<section class="stats">
   <layout-card>
-    <figure>
-      <div>
+    <figure data-layout="cluster" data-justify="between" data-align="start">
+      <layout-stack data-gap="2xs">
         <figcaption>Total Users</figcaption>
         <data value="24521">24,521</data>
-        <small data-trend="up">+12.5% from last month</small>
-      </div>
+        <small data-trend="up"><data value="0.125">+12.5%</data> from last month</small>
+      </layout-stack>
       <span class="stat-icon">
         <icon-wc name="users" size="md"></icon-wc>
       </span>
@@ -96,12 +102,12 @@ const cardsCode = `<section class="stats">
   </layout-card>
 
   <layout-card>
-    <figure>
-      <div>
+    <figure data-layout="cluster" data-justify="between" data-align="start">
+      <layout-stack data-gap="2xs">
         <figcaption>Revenue</figcaption>
         <data value="48352">$48,352</data>
-        <small data-trend="up">+8.2% from last month</small>
-      </div>
+        <small data-trend="up"><data value="0.082">+8.2%</data> from last month</small>
+      </layout-stack>
       <span class="stat-icon">
         <icon-wc name="dollar-sign" size="md"></icon-wc>
       </span>
@@ -111,26 +117,19 @@ const cardsCode = `<section class="stats">
 
 const cardsCss = `@scope (.stats) {
   figure {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--size-m);
     margin: 0;
   }
 
-  figure > div {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-2xs);
+  small data {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
   }
 
   .stat-icon {
     padding: var(--size-s);
     background: var(--color-surface-raised);
     border-radius: var(--radius-m);
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 }`;
 ---
@@ -178,7 +177,7 @@ const cardsCss = `@scope (.stats) {
   <section>
     <h2>With Change Indicators</h2>
     <layout-text>
-      <p>Stats with trend indicators showing change from a previous period. Uses <code>&lt;small&gt;</code> with a <code>data-trend</code> attribute for semantic color styling.</p>
+      <p>Stats with trend indicators showing change from a previous period. Uses <code>&lt;small&gt;</code> with a <code>data-trend</code> attribute for semantic color styling. The percentage change is wrapped in a nested <code>&lt;data&gt;</code> element for machine-readability.</p>
     </layout-text>
 
     <browser-window
@@ -196,7 +195,7 @@ const cardsCss = `@scope (.stats) {
   <section>
     <h2>Card-Based Stats</h2>
     <layout-text>
-      <p>Each stat in its own card container with an icon for visual distinction. The <code>&lt;figure&gt;</code> is styled for horizontal layout with icon positioning.</p>
+      <p>Each stat in its own card container with an icon for visual distinction. Uses <code>data-layout="cluster"</code> on the figure for horizontal layout and <code>&lt;layout-stack&gt;</code> for vertical content stacking.</p>
     </layout-text>
 
     <browser-window
@@ -218,7 +217,7 @@ const cardsCss = `@scope (.stats) {
       <ul>
         <li><strong><code>&lt;figure&gt;</code>:</strong> Groups the stat as a self-contained unit of content</li>
         <li><strong><code>&lt;figcaption&gt;</code>:</strong> Provides the label/caption for the figure</li>
-        <li><strong><code>&lt;data value=""&gt;</code>:</strong> Contains machine-readable values for parsing by scripts or assistive technologies. The <code>value</code> attribute holds the raw number while the text content shows the formatted display</li>
+        <li><strong><code>&lt;data value=""&gt;</code>:</strong> Contains machine-readable values for parsing by scripts or assistive technologies. The <code>value</code> attribute holds the raw number while the text content shows the formatted display. Can be nested inside <code>&lt;small&gt;</code> to make change percentages machine-readable too</li>
         <li><strong><code>&lt;small&gt;</code>:</strong> Indicates secondary information (the trend/change indicator)</li>
       </ul>
     </layout-text>
@@ -228,7 +227,7 @@ const cardsCss = `@scope (.stats) {
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
-        <li><strong>Machine-readable values:</strong> Always include the raw number in the <code>value</code> attribute (e.g., <code>value="24521"</code> for "24,521" or <code>value="0.032"</code> for "3.2%")</li>
+        <li><strong>Machine-readable values:</strong> Always include the raw number in the <code>value</code> attribute (e.g., <code>value="24521"</code> for "24,521" or <code>value="0.032"</code> for "3.2%"). Use nested <code>&lt;data&gt;</code> inside trend indicators for machine-readable change values (e.g., <code>&lt;data value="0.125"&gt;+12.5%&lt;/data&gt;</code>)</li>
         <li><strong>Color semantics:</strong> Use <code>data-trend="up"</code> for positive trends and <code>data-trend="down"</code> for negative trends</li>
         <li><strong>Accessibility:</strong> The semantic structure helps screen readers understand the relationship between labels and values</li>
         <li><strong>Responsive:</strong> The grid automatically adjusts column count based on container width</li>
