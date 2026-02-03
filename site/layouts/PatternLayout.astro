@@ -1,0 +1,187 @@
+---
+/**
+ * PatternLayout
+ *
+ * Layout for pattern documentation pages.
+ * Includes sidebar navigation and table of contents.
+ */
+
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import navigation from '../data/navigation.json';
+
+// Docs-specific styles (BaseHead imports main.css)
+import '../../docs/docs.css';
+
+interface Props {
+  title: string;
+  description: string;
+  patternName: string;
+  category: 'navigation' | 'forms' | 'marketing' | 'application' | 'feedback' | 'data';
+  currentPath?: string;
+}
+
+const { title, description, patternName, category, currentPath } = Astro.props;
+
+// Get patterns navigation from JSON
+const patterns = navigation.patterns;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-page="docs">
+<head>
+  <BaseHead title={title} description={description} />
+</head>
+<body>
+  <Header currentSection="examples" />
+
+  <main data-pagefind-body>
+    <input type="checkbox" id="nav-drawer-toggle" class="nav-drawer-checkbox"/>
+    <label for="nav-drawer-toggle" class="nav-drawer-toggle">
+      <icon-wc name="list-tree" size="sm"></icon-wc>
+      Navigation
+    </label>
+    <label for="nav-drawer-toggle" class="nav-drawer-backdrop"></label>
+
+    <layout-sidebar data-gap="xl" data-sidebar-width="narrow" data-content-min="60">
+      <nav class="tree" id="nav-drawer" data-density="compact" aria-label="Patterns navigation">
+        <label for="nav-drawer-toggle" class="nav-drawer-close" aria-label="Close navigation">
+          <icon-wc name="x"></icon-wc>
+        </label>
+
+        <!-- Navigation Patterns -->
+        <details open={category === 'navigation'}>
+          <summary>{patterns.navigation.label}</summary>
+          <ul>
+            {patterns.navigation.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Form Patterns -->
+        <details open={category === 'forms'}>
+          <summary>{patterns.forms.label}</summary>
+          <ul>
+            {patterns.forms.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Marketing Patterns -->
+        <details open={category === 'marketing'}>
+          <summary>{patterns.marketing.label}</summary>
+          <ul>
+            {patterns.marketing.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Application Patterns -->
+        <details open={category === 'application'}>
+          <summary>{patterns.application.label}</summary>
+          <ul>
+            {patterns.application.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Feedback Patterns -->
+        <details open={category === 'feedback'}>
+          <summary>{patterns.feedback.label}</summary>
+          <ul>
+            {patterns.feedback.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <!-- Data Display Patterns -->
+        <details open={category === 'data'}>
+          <summary>{patterns.data.label}</summary>
+          <ul>
+            {patterns.data.items.map(item => (
+              <li>
+                <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                  {item.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </nav>
+
+      <layout-sidebar data-side="end" data-sidebar-width="narrow" data-gap="xl">
+        <aside>
+          <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+        </aside>
+        <article>
+          <h1>{patternName}</h1>
+          <p class="lead">{description}</p>
+
+          <heading-links data-levels="h2,h3">
+            <slot />
+          </heading-links>
+        </article>
+      </layout-sidebar>
+    </layout-sidebar>
+  </main>
+
+  <Footer />
+
+  <script>
+    // Vanilla Breeze core
+    import '/src/lib/theme-manager.js';
+    import '/src/custom-elements/register.js';
+    import '/src/utils/tooltip-init.js';
+    import '/src/lib/debug-content-model.js';
+    import { ThemeManager } from '/src/lib/theme-manager.js';
+    import { initExternalThemeSync } from '/src/utils/external-theme-sync.js';
+
+    // Web components - explicit imports for bundling
+    import '/src/web-components/tabs-wc/logic.js';
+    import '/src/web-components/footnotes-wc/logic.js';
+    import '/src/web-components/accordion-wc/logic.js';
+    import '/src/web-components/toast-wc/logic.js';
+    import '/src/web-components/tooltip-wc/logic.js';
+    import '/src/web-components/dropdown-wc/logic.js';
+    import '/src/web-components/icon-wc/icon-wc.js';
+    import '/src/web-components/theme-wc/logic.js';
+    import '/src/web-components/heading-links/logic.js';
+    import '/src/web-components/page-toc/logic.js';
+    import '/src/web-components/table-wc/logic.js';
+    import '/src/web-components/search-wc/logic.js';
+    import '/src/web-components/card-list/logic.js';
+
+    import '@profpowell/code-block';
+    import '@profpowell/browser-window';
+
+    ThemeManager.init();
+    initExternalThemeSync();
+  </script>
+</body>
+</html>
