@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Feedback States - Table</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .users {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .users h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    table.content {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.content th,
+    table.content td {
+      padding: var(--size-s);
+      text-align: left;
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    table.content th {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* State toggle buttons for demo */
+    .state-controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-end: var(--size-l);
+    }
+
+    .state-controls button {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      cursor: pointer;
+    }
+
+    .state-controls button[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Demo state controls -->
+  <div class="state-controls">
+    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" data-set-state="empty" aria-pressed="true">Empty</button>
+    <button type="button" data-set-state="loading" aria-pressed="false">Loading</button>
+    <button type="button" data-set-state="error" aria-pressed="false">Error</button>
+  </div>
+
+  <section class="users" data-state="empty">
+    <h2>Team Members</h2>
+
+    <!-- Populated content -->
+    <table class="content">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Alice Chen</td>
+          <td>alice@example.com</td>
+          <td>Engineer</td>
+        </tr>
+        <tr>
+          <td>Bob Martinez</td>
+          <td>bob@example.com</td>
+          <td>Designer</td>
+        </tr>
+        <tr>
+          <td>Carol Johnson</td>
+          <td>carol@example.com</td>
+          <td>Manager</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty feedback -->
+    <output data-empty data-feedback="message" role="status">
+      <icon-wc name="users"></icon-wc>
+      <h3>No team members</h3>
+      <p>Invite people to your team to collaborate.</p>
+      <button type="button">
+        <icon-wc name="user-plus"></icon-wc>
+        Invite member
+      </button>
+    </output>
+
+    <!-- Loading feedback -->
+    <output data-loading data-feedback="skeleton" role="status" aria-busy="true">
+      <span class="skeleton-line"></span>
+      <span class="skeleton-line"></span>
+      <span class="skeleton-line"></span>
+    </output>
+
+    <!-- Error feedback -->
+    <output data-error data-feedback="message" role="alert">
+      <icon-wc name="alert-circle"></icon-wc>
+      <h3>Failed to load team</h3>
+      <p>Could not fetch team members. Please try again.</p>
+      <button type="button">
+        <icon-wc name="refresh-cw"></icon-wc>
+        Retry
+      </button>
+    </output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Demo: Toggle states with buttons
+    const container = document.querySelector('.users');
+    const buttons = document.querySelectorAll('[data-set-state]');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const state = button.dataset.setState;
+
+        // Update container state
+        if (state === 'populated') {
+          container.removeAttribute('data-state');
+        } else {
+          container.dataset.state = state;
+        }
+
+        // Update button pressed states
+        buttons.forEach(btn => {
+          btn.setAttribute('aria-pressed', btn === button ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

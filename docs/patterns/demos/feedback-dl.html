@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Feedback States - Description List</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .product-specs {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      max-width: 500px;
+    }
+
+    .product-specs h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    dl.content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--size-xs) var(--size-m);
+    }
+
+    dl.content dt {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-muted);
+    }
+
+    dl.content dd {
+      margin: 0;
+    }
+
+    /* State toggle buttons for demo */
+    .state-controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-end: var(--size-l);
+    }
+
+    .state-controls button {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      cursor: pointer;
+    }
+
+    .state-controls button[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Demo state controls -->
+  <div class="state-controls">
+    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" data-set-state="empty" aria-pressed="false">Empty</button>
+    <button type="button" data-set-state="loading" aria-pressed="true">Loading</button>
+    <button type="button" data-set-state="error" aria-pressed="false">Error</button>
+  </div>
+
+  <section class="product-specs" data-state="loading">
+    <h2>Specifications</h2>
+
+    <!-- Populated content -->
+    <dl class="content">
+      <dt>Dimensions</dt>
+      <dd>12.5 × 8.2 × 0.6 inches</dd>
+
+      <dt>Weight</dt>
+      <dd>2.4 lbs (1.09 kg)</dd>
+
+      <dt>Display</dt>
+      <dd>14" Retina, 2560×1600</dd>
+
+      <dt>Processor</dt>
+      <dd>M3 Pro, 12-core CPU</dd>
+
+      <dt>Memory</dt>
+      <dd>18GB unified memory</dd>
+
+      <dt>Storage</dt>
+      <dd>512GB SSD</dd>
+    </dl>
+
+    <!-- Empty feedback -->
+    <output data-empty data-feedback="message" role="status">
+      <icon-wc name="clipboard"></icon-wc>
+      <h3>No specifications</h3>
+      <p>Product details are not available.</p>
+    </output>
+
+    <!-- Loading feedback (skeleton style) -->
+    <output data-loading data-feedback="skeleton" role="status" aria-busy="true">
+      <span class="skeleton-line" style="width: 30%"></span>
+      <span class="skeleton-line" style="width: 60%"></span>
+      <span class="skeleton-line" style="width: 25%"></span>
+      <span class="skeleton-line" style="width: 45%"></span>
+      <span class="skeleton-line" style="width: 35%"></span>
+      <span class="skeleton-line" style="width: 55%"></span>
+    </output>
+
+    <!-- Error feedback -->
+    <output data-error data-feedback="message" role="alert">
+      <icon-wc name="alert-circle"></icon-wc>
+      <h3>Failed to load specs</h3>
+      <p>Could not fetch product specifications.</p>
+      <button type="button">Retry</button>
+    </output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Demo: Toggle states with buttons
+    const container = document.querySelector('.product-specs');
+    const buttons = document.querySelectorAll('[data-set-state]');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const state = button.dataset.setState;
+
+        // Update container state
+        if (state === 'populated') {
+          container.removeAttribute('data-state');
+        } else {
+          container.dataset.state = state;
+        }
+
+        // Update button pressed states
+        buttons.forEach(btn => {
+          btn.setAttribute('aria-pressed', btn === button ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

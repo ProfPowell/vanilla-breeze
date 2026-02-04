@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Feedback States - Articles</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .blog-posts {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .blog-posts > h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    .content {
+      display: grid;
+      gap: var(--size-m);
+    }
+
+    .content article {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .content article h3 {
+      margin-block-end: var(--size-xs);
+    }
+
+    .content article time {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .content article p {
+      margin-block-start: var(--size-s);
+      color: var(--color-text-muted);
+    }
+
+    /* State toggle buttons for demo */
+    .state-controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-end: var(--size-l);
+    }
+
+    .state-controls button {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      cursor: pointer;
+    }
+
+    .state-controls button[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Demo state controls -->
+  <div class="state-controls">
+    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" data-set-state="empty" aria-pressed="true">Empty</button>
+    <button type="button" data-set-state="loading" aria-pressed="false">Loading</button>
+    <button type="button" data-set-state="error" aria-pressed="false">Error</button>
+  </div>
+
+  <section class="blog-posts" data-state="empty">
+    <h2>Recent Posts</h2>
+
+    <!-- Populated content -->
+    <div class="content">
+      <article>
+        <h3><a href="#">Getting Started with CSS Custom Properties</a></h3>
+        <time datetime="2024-01-15">January 15, 2024</time>
+        <p>Learn how to use CSS custom properties (CSS variables) to create maintainable, themeable stylesheets.</p>
+      </article>
+
+      <article>
+        <h3><a href="#">Building Accessible Forms</a></h3>
+        <time datetime="2024-01-10">January 10, 2024</time>
+        <p>A practical guide to creating forms that work for everyone, including users of assistive technologies.</p>
+      </article>
+
+      <article>
+        <h3><a href="#">The Power of Semantic HTML</a></h3>
+        <time datetime="2024-01-05">January 5, 2024</time>
+        <p>Why choosing the right HTML elements matters for accessibility, SEO, and maintainability.</p>
+      </article>
+    </div>
+
+    <!-- Empty feedback -->
+    <output data-empty data-feedback="message" role="status">
+      <icon-wc name="file-text"></icon-wc>
+      <h3>No posts yet</h3>
+      <p>Check back later for new content.</p>
+    </output>
+
+    <!-- Loading feedback -->
+    <output data-loading data-feedback="message" role="status" aria-busy="true">
+      <icon-wc name="loader" data-animate="spin"></icon-wc>
+      <h3>Loading posts...</h3>
+    </output>
+
+    <!-- Error feedback -->
+    <output data-error data-feedback="message" role="alert">
+      <icon-wc name="alert-circle"></icon-wc>
+      <h3>Could not load posts</h3>
+      <p>Something went wrong fetching blog posts.</p>
+      <button type="button">
+        <icon-wc name="refresh-cw"></icon-wc>
+        Try again
+      </button>
+    </output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Demo: Toggle states with buttons
+    const container = document.querySelector('.blog-posts');
+    const buttons = document.querySelectorAll('[data-set-state]');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const state = button.dataset.setState;
+
+        // Update container state
+        if (state === 'populated') {
+          container.removeAttribute('data-state');
+        } else {
+          container.dataset.state = state;
+        }
+
+        // Update button pressed states
+        buttons.forEach(btn => {
+          btn.setAttribute('aria-pressed', btn === button ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

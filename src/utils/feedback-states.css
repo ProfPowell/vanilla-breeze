@@ -1,0 +1,139 @@
+/* feedback-states.css: Unified state-driven feedback for containers */
+/* Shows appropriate feedback (empty, loading, error) based on data-state attribute */
+
+/*
+ * ARCHITECTURE
+ * ------------
+ * Container: data-state="empty|loading|error" controls which feedback shows
+ * Content:   .content class marks the populated content (table, ul, ol, dl, etc.)
+ * Feedback:  output[data-empty|loading|error] contains state-specific feedback
+ * Style:     data-feedback="message|skeleton" controls presentation variant
+ */
+
+/* ==========================================================================
+   Base: Hide all feedback outputs by default
+   ========================================================================== */
+
+output[data-empty],
+output[data-loading],
+output[data-error] {
+  display: none;
+}
+
+/* ==========================================================================
+   State-driven visibility
+   ========================================================================== */
+
+/* When any state is set, hide the content */
+[data-state="empty"] > .content,
+[data-state="loading"] > .content,
+[data-state="error"] > .content {
+  display: none;
+}
+
+/* Show matching feedback output for each state */
+[data-state="empty"] > [data-empty],
+[data-state="loading"] > [data-loading],
+[data-state="error"] > [data-error] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--size-xl);
+}
+
+/* ==========================================================================
+   Feedback presentation variants
+   ========================================================================== */
+
+/* Message style: icon + text content with comfortable spacing */
+[data-feedback="message"] {
+  gap: var(--size-m);
+}
+
+[data-feedback="message"] icon-wc {
+  --icon-size: 3rem;
+  color: var(--color-text-muted);
+}
+
+[data-feedback="message"] p {
+  color: var(--color-text-muted);
+  max-width: 36ch;
+}
+
+/* Skeleton style: tighter spacing for placeholder lines */
+[data-feedback="skeleton"] {
+  gap: var(--size-s);
+  width: 100%;
+  max-width: 400px;
+  margin-inline: auto;
+}
+
+/* ==========================================================================
+   Skeleton line placeholders (for loading state)
+   ========================================================================== */
+
+.skeleton-line {
+  height: 1rem;
+  background: var(--color-border);
+  border-radius: var(--radius-s);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line:nth-child(odd) {
+  width: 100%;
+}
+
+.skeleton-line:nth-child(even) {
+  width: 70%;
+}
+
+/* Animation for skeleton elements */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* ==========================================================================
+   Error state styling
+   ========================================================================== */
+
+[data-error] icon-wc {
+  color: var(--color-danger, var(--color-red-500));
+}
+
+/* ==========================================================================
+   Loading state: spinning icon animation
+   ========================================================================== */
+
+[data-loading] icon-wc[data-animate="spin"] {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Accessibility: Respect reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  [data-loading] icon-wc[data-animate="spin"] {
+    animation: none;
+  }
+}

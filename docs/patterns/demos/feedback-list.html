@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Feedback States - Lists</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--size-l);
+    }
+
+    .notifications,
+    .leaderboard {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      min-height: 250px;
+    }
+
+    .notifications h2,
+    .leaderboard h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    ul.content,
+    ol.content {
+      padding-inline-start: var(--size-l);
+    }
+
+    ul.content li,
+    ol.content li {
+      padding: var(--size-xs) 0;
+    }
+
+    /* State toggle buttons for demo */
+    .state-controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-end: var(--size-l);
+    }
+
+    .state-controls button {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+    }
+
+    .state-controls button[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Demo state controls -->
+  <div class="state-controls">
+    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" data-set-state="empty" aria-pressed="true">Empty</button>
+    <button type="button" data-set-state="loading" aria-pressed="false">Loading</button>
+    <button type="button" data-set-state="error" aria-pressed="false">Error</button>
+  </div>
+
+  <div class="demo-grid">
+    <!-- Unordered List: Notifications -->
+    <section class="notifications" data-state="empty">
+      <h2>Notifications</h2>
+
+      <!-- Populated content -->
+      <ul class="content">
+        <li>New comment on your post</li>
+        <li>Alice mentioned you in a thread</li>
+        <li>Your report is ready to download</li>
+        <li>Meeting reminder: Team sync at 3pm</li>
+      </ul>
+
+      <!-- Empty feedback -->
+      <output data-empty data-feedback="message" role="status">
+        <icon-wc name="bell-off"></icon-wc>
+        <h3>No notifications</h3>
+        <p>You're all caught up!</p>
+      </output>
+
+      <!-- Loading feedback (message style) -->
+      <output data-loading data-feedback="message" role="status" aria-busy="true">
+        <icon-wc name="loader" data-animate="spin"></icon-wc>
+        <h3>Loading notifications...</h3>
+      </output>
+
+      <!-- Error feedback -->
+      <output data-error data-feedback="message" role="alert">
+        <icon-wc name="alert-circle"></icon-wc>
+        <h3>Could not load</h3>
+        <p>Failed to fetch notifications.</p>
+        <button type="button">Retry</button>
+      </output>
+    </section>
+
+    <!-- Ordered List: Leaderboard -->
+    <section class="leaderboard" data-state="empty">
+      <h2>Top Contributors</h2>
+
+      <!-- Populated content -->
+      <ol class="content">
+        <li>Sarah K. - 1,247 points</li>
+        <li>Mike R. - 1,102 points</li>
+        <li>Lisa M. - 989 points</li>
+        <li>James T. - 876 points</li>
+        <li>Anna P. - 754 points</li>
+      </ol>
+
+      <!-- Empty feedback -->
+      <output data-empty data-feedback="message" role="status">
+        <icon-wc name="trophy"></icon-wc>
+        <h3>No rankings yet</h3>
+        <p>Be the first to earn points!</p>
+      </output>
+
+      <!-- Loading feedback (skeleton style) -->
+      <output data-loading data-feedback="skeleton" role="status" aria-busy="true">
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line"></span>
+      </output>
+
+      <!-- Error feedback -->
+      <output data-error data-feedback="message" role="alert">
+        <icon-wc name="alert-circle"></icon-wc>
+        <h3>Failed to load</h3>
+        <p>Could not fetch leaderboard.</p>
+        <button type="button">Try Again</button>
+      </output>
+    </section>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Demo: Toggle states with buttons
+    const containers = document.querySelectorAll('[data-state]');
+    const buttons = document.querySelectorAll('[data-set-state]');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const state = button.dataset.setState;
+
+        // Update all container states
+        containers.forEach(container => {
+          if (state === 'populated') {
+            container.removeAttribute('data-state');
+          } else {
+            container.dataset.state = state;
+          }
+        });
+
+        // Update button pressed states
+        buttons.forEach(btn => {
+          btn.setAttribute('aria-pressed', btn === button ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

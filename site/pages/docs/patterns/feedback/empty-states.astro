@@ -16,10 +16,12 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       <p><strong>Key concepts:</strong></p>
       <ul>
         <li>Use <code>data-state="empty"</code> on the container</li>
-        <li>Use <code>&lt;output role="status"&gt;</code> for semantic, accessible feedback</li>
+        <li>Use <code>&lt;output data-empty data-feedback="message" role="status"&gt;</code> for semantic, accessible feedback</li>
+        <li>Mark populated content with <code>.content</code> class</li>
         <li>CSS shows/hides content based on state attribute</li>
         <li>Works without JavaScript (progressive enhancement)</li>
       </ul>
+      <p><strong>See also:</strong> <a href="/docs/patterns/feedback/feedback-states/">Feedback States</a> for the unified pattern covering empty, loading, and error states.</p>
     </layout-text>
   </section>
 
@@ -29,22 +31,26 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       <p>An empty state is fundamentally feedback about a container's current status. The pattern uses:</p>
       <ol>
         <li>A container with <code>data-state="empty"</code> when content is absent</li>
-        <li>Normal content that gets hidden via CSS when state is "empty"</li>
-        <li><code>&lt;output role="status"&gt;</code> to show the feedback message</li>
+        <li>Content marked with <code>.content</code> class that gets hidden via CSS when state is "empty"</li>
+        <li><code>&lt;output data-empty data-feedback="message" role="status"&gt;</code> to show the feedback</li>
       </ol>
     </layout-text>
 
-    <code-block language="css" label="Empty state CSS pattern">{`/* Hide normal content when empty */
-[data-state="empty"] > :not(output) {
+    <code-block language="css" label="Empty state CSS pattern">{`/* Hide feedback by default */
+output[data-empty] {
   display: none;
 }
 
-/* Style the empty state feedback */
-[data-state="empty"] > output {
+/* Hide content when empty, show feedback */
+[data-state="empty"] > .content {
+  display: none;
+}
+
+[data-state="empty"] > [data-empty] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--size-s);
+  gap: var(--size-m);
   padding: var(--size-xl);
   text-align: center;
 }`}</code-block>
@@ -64,13 +70,15 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
     </browser-window>
 
     <code-block language="html" label="empty-simple.html">&lt;section class="messages" data-state="empty"&gt;
-  &lt;!-- Normal content (hidden when empty) --&gt;
-  &lt;ul&gt;
+  &lt;h2 class="visually-hidden"&gt;Messages&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
     &lt;!-- Message items go here --&gt;
   &lt;/ul&gt;
 
   &lt;!-- Empty state feedback --&gt;
-  &lt;output role="status"&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
     &lt;icon-wc name="inbox"&gt;&lt;/icon-wc&gt;
     &lt;h3&gt;No messages yet&lt;/h3&gt;
     &lt;p&gt;When you receive messages, they will appear here.&lt;/p&gt;
@@ -92,13 +100,15 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
     </browser-window>
 
     <code-block language="html" label="empty-action.html">&lt;section class="documents" data-state="empty"&gt;
-  &lt;!-- Normal content (hidden when empty) --&gt;
-  &lt;ul&gt;
+  &lt;h2 class="visually-hidden"&gt;Documents&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
     &lt;!-- Document items go here --&gt;
   &lt;/ul&gt;
 
   &lt;!-- Empty state feedback with action --&gt;
-  &lt;output role="status"&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
     &lt;icon-wc name="file-text"&gt;&lt;/icon-wc&gt;
     &lt;h3&gt;No documents&lt;/h3&gt;
     &lt;p&gt;Get started by creating your first document.&lt;/p&gt;
@@ -124,13 +134,15 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
     </browser-window>
 
     <code-block language="html" label="empty-illustration.html">&lt;section class="projects" data-state="empty"&gt;
-  &lt;!-- Normal content (hidden when empty) --&gt;
-  &lt;ul&gt;
+  &lt;h2 class="visually-hidden"&gt;Projects&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
     &lt;!-- Project items go here --&gt;
   &lt;/ul&gt;
 
   &lt;!-- Empty state feedback with illustration --&gt;
-  &lt;output role="status"&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
     &lt;!-- Replace with your own SVG or image --&gt;
     &lt;img src="/illustrations/empty-projects.svg" alt="" /&gt;
     &lt;h3&gt;No projects found&lt;/h3&gt;
@@ -245,6 +257,10 @@ fetchMessages().then(messages => {
   <section>
     <h2>Related</h2>
     <layout-grid data-min="200px" data-gap="m">
+      <a href="/docs/patterns/feedback/feedback-states/" class="section-card">
+        <h3>Feedback States</h3>
+        <p>Unified empty, loading, and error states</p>
+      </a>
       <a href="/docs/patterns/feedback/error-pages/" class="section-card">
         <h3>Error Pages</h3>
         <p>404, 500, and maintenance pages</p>
@@ -252,10 +268,6 @@ fetchMessages().then(messages => {
       <a href="/docs/patterns/feedback/skeleton/" class="section-card">
         <h3>Skeleton</h3>
         <p>Loading placeholders for content</p>
-      </a>
-      <a href="/docs/elements/data-attributes/" class="section-card">
-        <h3>Data Attributes</h3>
-        <p>State management with data-* attributes</p>
       </a>
     </layout-grid>
   </section>
