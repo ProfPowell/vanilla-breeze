@@ -1,0 +1,301 @@
+---
+/**
+ * data-ticker Attribute Documentation
+ *
+ * Animated number count-up on scroll via data attributes.
+ */
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+const basicCode = `<data value="24521" data-ticker>24,521</data>`;
+
+const durationCode = `<!-- 1 second (default) -->
+<data value="100" data-ticker>100</data>
+
+<!-- 2 seconds -->
+<data value="5000" data-ticker="2000">5,000</data>
+
+<!-- 3.5 seconds -->
+<data value="99999" data-ticker="3500">99,999</data>`;
+
+const startCode = `<!-- Count from 500 to 1000 -->
+<data value="1000" data-ticker data-ticker-start="500">1,000</data>`;
+
+const decimalsCode = `<!-- Auto-detected from value: 2 decimal places -->
+<data value="99.99" data-ticker>99.99</data>
+
+<!-- Explicit override: 1 decimal place -->
+<data value="99.99" data-ticker data-ticker-decimals="1">99.99</data>`;
+
+const formatNumberCode = `<!-- Currency formatting during animation -->
+<data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD">$48,200</data>
+
+<!-- Compact notation -->
+<data value="1500000" data-ticker="2500" data-format-number="compact">1.5M</data>
+
+<!-- Percent -->
+<data value="0.85" data-ticker="1500" data-format-number="percent">85%</data>`;
+
+const localeCode = `<data value="1234567" data-ticker="2000" data-locale="de-DE">1.234.567</data>`;
+
+const statsCode = `<section data-layout="grid" data-min="12rem" data-gap="l">
+  <div style="text-align: center;">
+    <data value="24521" data-ticker data-format-number style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">24,521</data>
+    <small>Active Users</small>
+  </div>
+  <div style="text-align: center;">
+    <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">$48,200</data>
+    <small>Revenue</small>
+  </div>
+  <div style="text-align: center;">
+    <data value="99.9" data-ticker="1500" data-ticker-decimals="1" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">99.9</data>
+    <small>Uptime %</small>
+  </div>
+</section>`;
+
+const dynamicCode = `// Dynamically added tickers are auto-observed via MutationObserver
+const el = document.createElement('data');
+el.value = '5000';
+el.dataset.ticker = '2000';
+el.textContent = '5,000';
+document.body.appendChild(el);
+// el is observed automatically \u2014 no manual init needed`;
+
+const reducedMotionCode = `/* The ticker checks for reduced motion preference:
+ *
+ * 1. prefers-reduced-motion: reduce (OS setting)
+ * 2. data-motion-reduced attribute on <html>
+ *
+ * If either is true, the animation is skipped entirely.
+ * The original text content is preserved as the no-JS fallback,
+ * and data-format-number handles formatting normally.
+ */`;
+
+const easingCode = `// easeOutExpo \u2014 fast start, decelerating finish
+function easeOutExpo(t) \{
+  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+\}`;
+---
+
+<DocsLayout
+  title="data-ticker"
+  description="Animated number count-up on scroll. Add data-ticker to any <data> element for smooth number animation using easeOutExpo easing."
+  currentSection="api"
+>
+  <h1>data-ticker</h1>
+  <p class="lead">Animated number count-up. Add <code>data-ticker</code> to any <code>&lt;data&gt;</code> element to animate from zero to the target value when scrolled into view.</p>
+
+  <heading-links data-levels="h2,h3">
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-ticker</code> attribute turns a static <code>&lt;data&gt;</code> element into an animated counter. Numbers count up from zero (or a custom start) to the <code>value</code> attribute when the element enters the viewport. The original text content serves as the no-JS fallback.</p>
+
+    <browser-window
+      src="/docs/examples/demos/ticker-basic.html"
+      url="https://vanilla-breeze.dev/ticker"
+      title="Ticker Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li>An <code>IntersectionObserver</code> watches for the element to enter the viewport (10% threshold)</li>
+      <li>When visible, a <code>requestAnimationFrame</code> loop animates from start to end value</li>
+      <li>Each frame applies <code>easeOutExpo</code> easing for a fast-start, decelerating finish</li>
+      <li>Intermediate values are formatted with <code>Intl.NumberFormat</code> matching any <code>data-format-number</code> options</li>
+      <li>At completion, sets <code>data-format-number-init</code> to prevent double-formatting</li>
+    </ol>
+    <p>The animation runs at 60fps using <code>requestAnimationFrame</code> and respects <code>prefers-reduced-motion</code>.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-ticker</code></td>
+          <td>string</td>
+          <td>Animation duration in ms. Empty or omitted defaults to <code>1000</code>.</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>The target numeric value. Standard HTML <code>value</code> attribute on <code>&lt;data&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-ticker-start</code></td>
+          <td>string</td>
+          <td>Start value for the animation. Defaults to <code>"0"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-ticker-decimals</code></td>
+          <td>string</td>
+          <td>Decimal places during animation. Auto-detected from <code>value</code> if omitted (e.g., <code>"99.99"</code> = 2).</td>
+        </tr>
+        <tr>
+          <td><code>data-locale</code></td>
+          <td>string</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Shared with <code>data-format-number</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-ticker-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Duration</h2>
+    <p>Control animation speed with the <code>data-ticker</code> value. The value is duration in milliseconds:</p>
+
+    <div class="example">
+      <layout-cluster data-gap="xl">
+        <div style="text-align: center;">
+          <data value="100" data-ticker style="font-size: var(--font-size-xl); font-weight: bold; display: block;">100</data>
+          <small>1s (default)</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="5000" data-ticker="2000" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">5,000</data>
+          <small>2s</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="99999" data-ticker="3500" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99,999</data>
+          <small>3.5s</small>
+        </div>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Duration examples">{durationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Start Value</h2>
+    <p>By default, the ticker counts from 0. Use <code>data-ticker-start</code> to begin from a different value:</p>
+
+    <div class="example">
+      <data value="1000" data-ticker data-ticker-start="500" style="font-size: var(--font-size-xl); font-weight: bold;">1,000</data>
+    </div>
+
+    <code-block language="html" show-lines label="Custom start value">{startCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Decimal Precision</h2>
+    <p>Decimal places are auto-detected from the <code>value</code> attribute. Use <code>data-ticker-decimals</code> to override:</p>
+
+    <div class="example">
+      <layout-cluster data-gap="xl">
+        <div style="text-align: center;">
+          <data value="99.99" data-ticker style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99.99</data>
+          <small>Auto (2 decimals)</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="99.99" data-ticker data-ticker-decimals="1" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99.99</data>
+          <small>Override (1 decimal)</small>
+        </div>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Decimal precision">{decimalsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Format Number</h2>
+    <p>Combine with <code>data-format-number</code> for locale-aware formatting during the animation. The ticker reads the format style and applies matching <code>Intl.NumberFormat</code> options to intermediate values:</p>
+
+    <div class="example">
+      <layout-cluster data-gap="xl">
+        <div style="text-align: center;">
+          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">$48,200</data>
+          <small>Currency</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="1500000" data-ticker="2500" data-format-number="compact" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">1.5M</data>
+          <small>Compact</small>
+        </div>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Format number cooperation">{formatNumberCode}</code-block>
+
+    <p>At animation completion, the ticker sets <code>data-format-number-init</code> to prevent the format-number observer from re-processing the element.</p>
+  </section>
+
+  <section>
+    <h2>Easing</h2>
+    <p>The animation uses <code>easeOutExpo</code> easing, which starts fast and decelerates toward the end. This creates the classic "ticker" feel where numbers roll quickly then settle on the final value.</p>
+
+    <code-block language="javascript" show-lines label="easeOutExpo easing function">{easingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Reduced Motion</h2>
+    <p>The ticker respects the user's motion preference. When reduced motion is detected, the animation is skipped entirely and the original text content is preserved:</p>
+
+    <code-block language="javascript" show-lines label="Reduced motion handling">{reducedMotionCode}</code-block>
+
+    <ul>
+      <li>Checks <code>prefers-reduced-motion: reduce</code> (OS setting)</li>
+      <li>Checks <code>data-motion-reduced</code> attribute on <code>&lt;html&gt;</code></li>
+      <li>If either is true, the ticker does nothing &mdash; text stays as-is</li>
+      <li><code>data-format-number</code> still runs normally for formatting</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Stats Pattern Integration</h2>
+    <p>The ticker pairs naturally with the <a href="/docs/patterns/data/stats/">Stats pattern</a>. Add <code>data-ticker</code> to stat values for animated reveals:</p>
+
+    <div class="example">
+      <section data-layout="grid" data-min="12rem" data-gap="l">
+        <div style="text-align: center;">
+          <data value="24521" data-ticker data-format-number style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">24,521</data>
+          <small>Active Users</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">$48,200</data>
+          <small>Revenue</small>
+        </div>
+        <div style="text-align: center;">
+          <data value="99.9" data-ticker="1500" data-ticker-decimals="1" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">99.9</data>
+          <small>Uptime %</small>
+        </div>
+      </section>
+    </div>
+
+    <code-block language="html" show-lines label="Stats with tickers">{statsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Elements added to the DOM after page load are automatically observed via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added ticker elements">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The original text content serves as a no-JS fallback</li>
+      <li>The semantic <code>&lt;data&gt;</code> element with <code>value</code> attribute provides machine-readable data at all times</li>
+      <li><code>prefers-reduced-motion</code> is respected &mdash; no animation when the user requests it</li>
+      <li><code>font-variant-numeric: tabular-nums</code> prevents layout shift during animation</li>
+      <li>No wrapper element &mdash; the <code>&lt;data&gt;</code> <em>is</em> the enhanced element</li>
+      <li>Screen readers see the final value via the <code>value</code> attribute, not the animated intermediate values</li>
+    </ul>
+  </section>
+
+  </heading-links>
+</DocsLayout>
