@@ -1,0 +1,224 @@
+---
+/**
+ * copy-wc Web Component Documentation
+ *
+ * Copy to clipboard button with visual and screen reader feedback.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicValueCode = `<copy-wc data-value="npm install vanilla-breeze">
+  <button>Copy install command</button>
+</copy-wc>`;
+
+const basicTargetCode = `<pre><code id="code-block">const greeting = "Hello, world!";</code></pre>
+
+<copy-wc data-target="#code-block">
+  <button>Copy code</button>
+</copy-wc>`;
+
+const withIconCode = `<copy-wc data-value="https://vanilla-breeze.dev">
+  <button>
+    <icon-wc name="copy" size="sm"></icon-wc>
+    Copy link
+  </button>
+</copy-wc>`;
+
+const eventCode = `const copyBtn = document.querySelector('copy-wc');
+
+copyBtn.addEventListener('copy', (e) => \{
+  console.log('Copied:', e.detail.text);
+\});`;
+
+const codeBlockCode = `<div style="position: relative;">
+  <pre><code id="snippet">npm install vanilla-breeze</code></pre>
+  <copy-wc data-target="#snippet" style="position: absolute; top: 0.5rem; right: 0.5rem;">
+    <button class="ghost small">
+      <icon-wc name="copy" size="sm"></icon-wc>
+    </button>
+  </copy-wc>
+</div>`;
+
+const shareCode = `<copy-wc data-value="https://vanilla-breeze.dev/docs">
+  <button class="secondary">
+    <icon-wc name="link" size="sm"></icon-wc>
+    Share link
+  </button>
+</copy-wc>`;
+---
+
+<ElementLayout
+  title="copy-wc"
+  description="Copy to clipboard button with visual and screen reader feedback."
+  elementName="copy-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/copy-wc/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;copy-wc&gt;</code> component wraps a button to copy text to the clipboard on click. It provides visual feedback via a <code>data-state="copied"</code> attribute and announces the action to screen readers.</p>
+
+    <browser-window
+      src="/docs/examples/demos/copy-wc-basic.html"
+      url="https://vanilla-breeze.dev/copy"
+      title="Copy Button"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Copy static text">{basicValueCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Wrap any <code>&lt;button&gt;</code> in a <code>&lt;copy-wc&gt;</code> element. On click, the component reads text from either:</p>
+    <ul>
+      <li><code>data-value</code> &mdash; a static text string on the element</li>
+      <li><code>data-target</code> &mdash; a CSS selector pointing to another element whose <code>textContent</code> will be copied</li>
+    </ul>
+    <p>After a successful copy, the component sets <code>data-state="copied"</code> for 1.5 seconds and dispatches a <code>copy</code> custom event.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-value</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Static text to copy to the clipboard.</td>
+        </tr>
+        <tr>
+          <td><code>data-target</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>CSS selector for the element whose <code>textContent</code> to copy.</td>
+        </tr>
+        <tr>
+          <td><code>data-state</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Set to <code>"copied"</code> automatically for 1.5s after a successful copy. Use in CSS for feedback styling.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Copy from Target Element</h2>
+    <p>Use <code>data-target</code> with a CSS selector to copy text from another element on the page.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m">
+        <pre><code id="code-example">const greeting = "Hello, world!";</code></pre>
+        <copy-wc data-target="#code-example">
+          <button type="button" class="secondary">Copy code</button>
+        </copy-wc>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Copy from a target element">{basicTargetCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Icons</h2>
+    <p>Pair with <code>&lt;icon-wc&gt;</code> for a more visual button.</p>
+
+    <div class="example">
+      <copy-wc data-value="https://vanilla-breeze.dev">
+        <button type="button">
+          <icon-wc name="copy" size="sm"></icon-wc>
+          Copy link
+        </button>
+      </copy-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Copy button with icon">{withIconCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <p>The component dispatches a <code>copy</code> event on successful clipboard write.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>copy</code></td>
+          <td><code>{"{\u200B"} text: string {"}\u200B"}</code></td>
+          <td>Fired after text is copied. The <code>detail.text</code> property contains the copied string.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening for copy events">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Common Use Cases</h2>
+
+    <h3>Code Block Copy Button</h3>
+    <p>Position a copy button inside a code block:</p>
+
+    <div class="example">
+      <div style="position: relative;">
+        <pre><code id="snippet-demo">npm install vanilla-breeze</code></pre>
+        <copy-wc data-target="#snippet-demo" style="position: absolute; top: 0.5rem; right: 0.5rem;">
+          <button type="button" class="ghost small">
+            <icon-wc name="copy" size="sm"></icon-wc>
+          </button>
+        </copy-wc>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Code block with copy button">{codeBlockCode}</code-block>
+
+    <h3>Share Link</h3>
+    <p>Quick share-by-link button:</p>
+
+    <div class="example">
+      <copy-wc data-value="https://vanilla-breeze.dev/docs">
+        <button type="button" class="secondary">
+          <icon-wc name="link" size="sm"></icon-wc>
+          Share link
+        </button>
+      </copy-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Share link button">{shareCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling Feedback</h2>
+    <p>The <code>data-state="copied"</code> attribute is set for 1.5 seconds after copying. Use it to style the copied state:</p>
+
+    <code-block language="css" show-lines label="Custom copied state styling">{`copy-wc[data-state="copied"] button \{
+  color: var(--color-success);
+\}`}</code-block>
+
+    <p>The default styles change the button text color to <code>--color-success</code> during the copied state.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Uses <code>aria-live="polite"</code> to announce "Copied to clipboard" to screen readers</li>
+      <li>The announcement element is visually hidden with <code>sr-only</code> and removed after 1 second</li>
+      <li>Works with any focusable button element, preserving keyboard accessibility</li>
+      <li>Falls gracefully when the Clipboard API is unavailable or permission is denied</li>
+    </ul>
+  </section>
+</ElementLayout>
