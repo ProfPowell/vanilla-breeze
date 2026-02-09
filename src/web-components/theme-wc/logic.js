@@ -49,7 +49,14 @@ class ThemePicker extends HTMLElement {
     { id: 'default', name: 'Default', hue: 260 },
     { id: 'ocean', name: 'Ocean', hue: 200 },
     { id: 'forest', name: 'Forest', hue: 145 },
-    { id: 'sunset', name: 'Sunset', hue: 25 }
+    { id: 'sunset', name: 'Sunset', hue: 25 },
+    { id: 'rose', name: 'Rose', hue: 350 },
+    { id: 'lavender', name: 'Lavender', hue: 280 },
+    { id: 'coral', name: 'Coral', hue: 15 },
+    { id: 'slate', name: 'Slate', hue: 220 },
+    { id: 'emerald', name: 'Emerald', hue: 160 },
+    { id: 'amber', name: 'Amber', hue: 45 },
+    { id: 'indigo', name: 'Indigo', hue: 250 }
   ];
 
   // Personality themes - comprehensive design systems

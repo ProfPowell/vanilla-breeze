@@ -11,3 +11,6 @@ import './page-toc/logic.js';
 import './table-wc/logic.js';
 import './search-wc/logic.js';
 import './card-list/logic.js';
+import './copy-wc/logic.js';
+import './relative-time-wc/logic.js';
+import './hotkey-wc/logic.js';
