@@ -37,19 +37,19 @@ const formatNumberCode = `<!-- Currency formatting during animation -->
 
 const localeCode = `<data value="1234567" data-ticker="2000" data-locale="de-DE">1.234.567</data>`;
 
-const statsCode = `<section data-layout="grid" data-min="12rem" data-gap="l">
-  <div style="text-align: center;">
-    <data value="24521" data-ticker data-format-number style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">24,521</data>
-    <small>Active Users</small>
-  </div>
-  <div style="text-align: center;">
-    <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">$48,200</data>
-    <small>Revenue</small>
-  </div>
-  <div style="text-align: center;">
-    <data value="99.9" data-ticker="1500" data-ticker-decimals="1" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">99.9</data>
-    <small>Uptime %</small>
-  </div>
+const statsCode = `<section class="stats">
+  <figure>
+    <figcaption>Active Users</figcaption>
+    <data value="24521" data-ticker data-format-number>24,521</data>
+  </figure>
+  <figure>
+    <figcaption>Revenue</figcaption>
+    <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD">$48,200</data>
+  </figure>
+  <figure>
+    <figcaption>Uptime %</figcaption>
+    <data value="99.9" data-ticker="1500" data-ticker-decimals="1">99.9</data>
+  </figure>
 </section>`;
 
 const dynamicCode = `// Dynamically added tickers are auto-observed via MutationObserver
@@ -161,20 +161,20 @@ function easeOutExpo(t) \{
     <p>Control animation speed with the <code>data-ticker</code> value. The value is duration in milliseconds:</p>
 
     <div class="example">
-      <layout-cluster data-gap="xl">
-        <div style="text-align: center;">
-          <data value="100" data-ticker style="font-size: var(--font-size-xl); font-weight: bold; display: block;">100</data>
-          <small>1s (default)</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="5000" data-ticker="2000" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">5,000</data>
-          <small>2s</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="99999" data-ticker="3500" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99,999</data>
-          <small>3.5s</small>
-        </div>
-      </layout-cluster>
+      <section class="stats" style="grid-template-columns: repeat(3, 1fr);">
+        <figure>
+          <figcaption>1s (default)</figcaption>
+          <data value="100" data-ticker>100</data>
+        </figure>
+        <figure>
+          <figcaption>2s</figcaption>
+          <data value="5000" data-ticker="2000">5,000</data>
+        </figure>
+        <figure>
+          <figcaption>3.5s</figcaption>
+          <data value="99999" data-ticker="3500">99,999</data>
+        </figure>
+      </section>
     </div>
 
     <code-block language="html" show-lines label="Duration examples">{durationCode}</code-block>
@@ -185,7 +185,12 @@ function easeOutExpo(t) \{
     <p>By default, the ticker counts from 0. Use <code>data-ticker-start</code> to begin from a different value:</p>
 
     <div class="example">
-      <data value="1000" data-ticker data-ticker-start="500" style="font-size: var(--font-size-xl); font-weight: bold;">1,000</data>
+      <section class="stats" style="grid-template-columns: 1fr;">
+        <figure>
+          <figcaption>Counts from 500</figcaption>
+          <data value="1000" data-ticker data-ticker-start="500">1,000</data>
+        </figure>
+      </section>
     </div>
 
     <code-block language="html" show-lines label="Custom start value">{startCode}</code-block>
@@ -196,16 +201,16 @@ function easeOutExpo(t) \{
     <p>Decimal places are auto-detected from the <code>value</code> attribute. Use <code>data-ticker-decimals</code> to override:</p>
 
     <div class="example">
-      <layout-cluster data-gap="xl">
-        <div style="text-align: center;">
-          <data value="99.99" data-ticker style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99.99</data>
-          <small>Auto (2 decimals)</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="99.99" data-ticker data-ticker-decimals="1" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">99.99</data>
-          <small>Override (1 decimal)</small>
-        </div>
-      </layout-cluster>
+      <section class="stats" style="grid-template-columns: repeat(2, 1fr);">
+        <figure>
+          <figcaption>Auto (2 decimals)</figcaption>
+          <data value="99.99" data-ticker>99.99</data>
+        </figure>
+        <figure>
+          <figcaption>Override (1 decimal)</figcaption>
+          <data value="99.99" data-ticker data-ticker-decimals="1">99.99</data>
+        </figure>
+      </section>
     </div>
 
     <code-block language="html" show-lines label="Decimal precision">{decimalsCode}</code-block>
@@ -216,16 +221,16 @@ function easeOutExpo(t) \{
     <p>Combine with <code>data-format-number</code> for locale-aware formatting during the animation. The ticker reads the format style and applies matching <code>Intl.NumberFormat</code> options to intermediate values:</p>
 
     <div class="example">
-      <layout-cluster data-gap="xl">
-        <div style="text-align: center;">
-          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">$48,200</data>
-          <small>Currency</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="1500000" data-ticker="2500" data-format-number="compact" style="font-size: var(--font-size-xl); font-weight: bold; display: block;">1.5M</data>
-          <small>Compact</small>
-        </div>
-      </layout-cluster>
+      <section class="stats" style="grid-template-columns: repeat(2, 1fr);">
+        <figure>
+          <figcaption>Currency</figcaption>
+          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD">$48,200</data>
+        </figure>
+        <figure>
+          <figcaption>Compact</figcaption>
+          <data value="1500000" data-ticker="2500" data-format-number="compact">1.5M</data>
+        </figure>
+      </section>
     </div>
 
     <code-block language="html" show-lines label="Format number cooperation">{formatNumberCode}</code-block>
@@ -259,19 +264,19 @@ function easeOutExpo(t) \{
     <p>The ticker pairs naturally with the <a href="/docs/patterns/data/stats/">Stats pattern</a>. Add <code>data-ticker</code> to stat values for animated reveals:</p>
 
     <div class="example">
-      <section data-layout="grid" data-min="12rem" data-gap="l">
-        <div style="text-align: center;">
-          <data value="24521" data-ticker data-format-number style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">24,521</data>
-          <small>Active Users</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">$48,200</data>
-          <small>Revenue</small>
-        </div>
-        <div style="text-align: center;">
-          <data value="99.9" data-ticker="1500" data-ticker-decimals="1" style="font-size: var(--font-size-2xl); font-weight: bold; display: block;">99.9</data>
-          <small>Uptime %</small>
-        </div>
+      <section class="stats">
+        <figure>
+          <figcaption>Active Users</figcaption>
+          <data value="24521" data-ticker data-format-number>24,521</data>
+        </figure>
+        <figure>
+          <figcaption>Revenue</figcaption>
+          <data value="48200" data-ticker="2000" data-format-number="currency" data-currency="USD">$48,200</data>
+        </figure>
+        <figure>
+          <figcaption>Uptime %</figcaption>
+          <data value="99.9" data-ticker="1500" data-ticker-decimals="1">99.9</data>
+        </figure>
       </section>
     </div>
 
@@ -299,3 +304,31 @@ function easeOutExpo(t) \{
 
   </heading-links>
 </DocsLayout>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--size-l);
+  }
+
+  @scope (.stats) {
+    figure {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-2xs);
+      margin: 0;
+    }
+
+    figcaption {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    data {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      line-height: var(--line-height-tight);
+    }
+  }
+</style>
