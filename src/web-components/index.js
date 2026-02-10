@@ -12,6 +12,7 @@ import './table-wc/logic.js';
 import './search-wc/logic.js';
 import './card-list/logic.js';
 import './flip-card-wc/logic.js';
+import './comparison-wc/logic.js';
 import '../utils/copy-init.js';
 import '../utils/hotkey-init.js';
 import '../utils/format-number-init.js';

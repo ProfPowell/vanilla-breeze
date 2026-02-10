@@ -1,0 +1,214 @@
+---
+/**
+ * comparison-wc Web Component Documentation
+ *
+ * Before/after image comparison slider with keyboard support
+ * and progressive enhancement.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicUsageCode = `<comparison-wc>
+  <img src="before.jpg" alt="Before" />
+  <img src="after.jpg" alt="After" />
+</comparison-wc>`;
+
+const positionCode = `<!-- Start at 25% -->
+<comparison-wc data-position="25">
+  <img src="before.jpg" alt="Before" />
+  <img src="after.jpg" alt="After" />
+</comparison-wc>`;
+
+const nonImageCode = `<comparison-wc>
+  <div class="panel-before">Draft version</div>
+  <div class="panel-after">Final version</div>
+</comparison-wc>`;
+
+const eventCode = `const slider = document.querySelector('comparison-wc');
+
+slider.addEventListener('comparison-change', (event) => \{
+  console.log('Position:', event.detail.position);
+\});`;
+
+const stylingCode = `/* Custom divider color */
+.comparison-divider \{
+  background: var(--color-interactive);
+\}
+
+/* Custom handle */
+.comparison-divider::after \{
+  background: var(--color-interactive);
+  border-color: white;
+\}`;
+
+const fallbackCode = `/* Without JS: side-by-side grid */
+comparison-wc:not(:defined) \{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--size-s);
+\}`;
+---
+
+<ElementLayout
+  title="comparison-wc"
+  description="Before/after image comparison slider with drag handle, keyboard support, and progressive enhancement."
+  elementName="comparison-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/comparison/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;comparison-wc&gt;</code> component creates a before/after comparison slider. Two children overlay each other, and a draggable divider reveals one side. Works with any two children &mdash; images, divs, or any other elements.</p>
+
+    <browser-window
+      src="/docs/examples/demos/comparison-wc-basic.html"
+      url="https://vanilla-breeze.dev/comparison"
+      title="Comparison Slider Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic comparison slider">{basicUsageCode}</code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, both children display side-by-side in a grid. The slider and clip-path only activate when JS registers the component.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position</code></td>
+          <td>number</td>
+          <td><code>50</code></td>
+          <td>Initial slider position from 0 (fully left) to 100 (fully right).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Custom Start Position</h2>
+    <p>Set <code>data-position</code> to control where the divider starts. A value of <code>25</code> means the divider starts 25% from the left, showing mostly the &ldquo;after&rdquo; content.</p>
+
+    <div class="example">
+      <comparison-wc data-position="25">
+        <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, oklch(70% 0.2 30), oklch(80% 0.15 60)); border-radius: var(--radius-m); display: grid; place-content: center; color: white; font-weight: 600; text-shadow: 0 1px 3px oklch(0% 0 0 / 0.3);">Before</div>
+        <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, oklch(70% 0.15 250), oklch(75% 0.12 200)); border-radius: var(--radius-m); display: grid; place-content: center; color: white; font-weight: 600; text-shadow: 0 1px 3px oklch(0% 0 0 / 0.3);">After</div>
+      </comparison-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Custom start position">{positionCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Non-Image Content</h2>
+    <p>The component works with any two child elements, not just images. Use divs, text blocks, or any HTML content.</p>
+
+    <div class="example">
+      <comparison-wc>
+        <div style="aspect-ratio: 16/9; padding: var(--size-l); background: var(--color-surface); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); display: flex; flex-direction: column; justify-content: center; gap: var(--size-s);">
+          <p style="margin: 0;"><strong>Draft</strong></p>
+          <p style="margin: 0;">The original version before revisions.</p>
+        </div>
+        <div style="aspect-ratio: 16/9; padding: var(--size-l); background: var(--color-surface-raised); border: var(--border-width-thin) solid var(--color-interactive); border-radius: var(--radius-m); display: flex; flex-direction: column; justify-content: center; gap: var(--size-s);">
+          <p style="margin: 0;"><strong>Final</strong></p>
+          <p style="margin: 0;">The polished version with improved clarity.</p>
+        </div>
+      </comparison-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Non-image content">{nonImageCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>ArrowLeft</kbd> / <kbd>ArrowDown</kbd></td>
+          <td>Move divider 1% left</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowRight</kbd> / <kbd>ArrowUp</kbd></td>
+          <td>Move divider 1% right</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift</kbd> + Arrow</td>
+          <td>Move divider 10% in the arrow direction</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>comparison-change</code></td>
+          <td><code>{'{ position: number }'}</code></td>
+          <td>Fired when the slider position changes (drag or keyboard).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening to position changes">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Slider Role</h3>
+    <p>The divider has <code>role="slider"</code> with <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>. Screen readers announce position changes as the slider moves.</p>
+
+    <h3>Keyboard Support</h3>
+    <p>The divider is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps for faster navigation.</p>
+
+    <h3>Touch Support</h3>
+    <p>The divider uses <code>touch-action: none</code> and <code>setPointerCapture</code> for reliable touch/pointer drag behavior across devices.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The divider and handle can be styled with CSS. The divider is a <code>.comparison-divider</code> element with a <code>::after</code> pseudo-element for the circular handle.</p>
+
+    <code-block language="css" show-lines label="Custom divider styling">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, both children display side-by-side in a natural grid. The <code>:not(:defined)</code> selector provides the fallback layout. Once JS registers the component, children overlap and the clip-path slider takes over.</p>
+
+    <code-block language="css" show-lines label="No-JS fallback">{fallbackCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/flip-card/"><code>&lt;flip-card-wc&gt;</code></a> &mdash; Flip between two content faces</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tabs-wc&gt;</code></a> &mdash; Tab panels for content switching</li>
+    </ul>
+  </section>
+</ElementLayout>
