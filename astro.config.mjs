@@ -32,7 +32,7 @@ function servePublicIndexHtml() {
 
 export default defineConfig({
   site: 'https://profpowell.github.io/vanilla-breeze',
-  // base: '/vanilla-breeze', // Enable for GitHub Pages deployment
+  base: process.env.BASE_URL || '/',
   srcDir: './site',
   outDir: './dist',
 

@@ -2,7 +2,8 @@
 /**
  * Post-build script to fix paths for GitHub Pages deployment
  *
- * Rewrites absolute paths in built HTML files to include the base URL.
+ * Rewrites absolute paths in built HTML/JS files to include the base URL.
+ * Uses negative lookahead so paths already prefixed are not doubled.
  * Only runs when BASE_URL environment variable is set.
  */
 
@@ -17,65 +18,78 @@ if (!BASE_URL || BASE_URL === '/') {
   process.exit(0);
 }
 
-// Remove trailing slash from BASE_URL for consistent handling
-const baseUrl = BASE_URL.replace(/\/$/, '');
+// Remove trailing slash for consistent handling
+const base = BASE_URL.replace(/\/$/, '');
+// Escape for use in regex
+const escaped = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-console.log(`Rewriting paths with base URL: ${baseUrl}`);
+console.log(`Rewriting paths with base URL: ${base}`);
 
-// Patterns to rewrite - only rewrite paths that start with /docs/ or /src/
-// These are internal site links that need the base URL prefix
-const patterns = [
-  // Navigation links: href="/docs/..." -> href="/vanilla-breeze/docs/..."
-  { regex: /href="\/docs\//g, replacement: `href="${baseUrl}/docs/` },
-  { regex: /href='\/docs\//g, replacement: `href='${baseUrl}/docs/` },
-  // Source links: href="/src/..." -> href="/vanilla-breeze/src/..."
-  { regex: /href="\/src\//g, replacement: `href="${baseUrl}/src/` },
-  { regex: /href='\/src\//g, replacement: `href='${baseUrl}/src/` },
-  // Script src: src="/src/..." -> src="/vanilla-breeze/src/..."
-  { regex: /src="\/src\//g, replacement: `src="${baseUrl}/src/` },
-  { regex: /src='\/src\//g, replacement: `src='${baseUrl}/src/` },
-  // Component src (browser-window, iframe): src="/docs/..." -> src="/vanilla-breeze/docs/..."
-  { regex: /src="\/docs\//g, replacement: `src="${baseUrl}/docs/` },
-  { regex: /src='\/docs\//g, replacement: `src='${baseUrl}/docs/` },
+let fixedFiles = 0;
+
+/**
+ * Build regex that matches an absolute path NOT already prefixed.
+ * E.g. href="/docs/" matches, but href="/vanilla-breeze/docs/" does not.
+ */
+function makePatterns(attr) {
+  // Match attr="/..." where / is not followed by the base path (minus leading slash)
+  // Also skip protocol-relative URLs (//), hash-only (#), and data URIs
+  const baseDir = base.slice(1); // "vanilla-breeze"
+  return new RegExp(
+    `${attr}="\\/((?!${baseDir}\\/|\\/).)`,
+    'g'
+  );
+}
+
+// HTML attribute patterns
+const htmlPatterns = [
+  { regex: makePatterns('href'), attr: 'href' },
+  { regex: makePatterns('src'), attr: 'src' },
+  { regex: makePatterns('action'), attr: 'action' },
+  { regex: makePatterns('srcset'), attr: 'srcset' },
 ];
 
-// Also fix JS files that reference /src/icons
-const jsPatterns = [
-  // Icon path in JS: '/src/icons' -> '/vanilla-breeze/src/icons'
-  { regex: /'\/src\/icons'/g, replacement: `'${baseUrl}/src/icons'` },
-  { regex: /"\/src\/icons"/g, replacement: `"${baseUrl}/src/icons"` },
-];
+// Also fix meta refresh redirects: content="0;url=/..."
+const metaRefreshRegex = new RegExp(
+  `content="(\\d+;url=)\\/((?!${base.slice(1)}\\/|\\/).)`,
+  'g'
+);
 
 function processHtmlFile(filePath) {
   let content = readFileSync(filePath, 'utf-8');
-  let modified = false;
+  const original = content;
 
-  for (const { regex, replacement } of patterns) {
-    if (regex.test(content)) {
-      content = content.replace(regex, replacement);
-      modified = true;
-    }
+  for (const { regex, attr } of htmlPatterns) {
+    // Reset lastIndex since we reuse the regex
+    regex.lastIndex = 0;
+    content = content.replace(regex, `${attr}="${base}/$1`);
   }
 
-  if (modified) {
+  // Fix meta refresh URLs
+  metaRefreshRegex.lastIndex = 0;
+  content = content.replace(metaRefreshRegex, `content="$1${base}/$2`);
+
+  if (content !== original) {
     writeFileSync(filePath, content);
+    fixedFiles++;
     console.log(`  Fixed: ${filePath}`);
   }
 }
 
 function processJsFile(filePath) {
   let content = readFileSync(filePath, 'utf-8');
-  let modified = false;
+  const original = content;
 
-  for (const { regex, replacement } of jsPatterns) {
-    if (regex.test(content)) {
-      content = content.replace(regex, replacement);
-      modified = true;
-    }
-  }
+  // Fix icon paths: '/src/icons' -> '/vanilla-breeze/src/icons'
+  const baseDir = base.slice(1);
+  content = content.replace(
+    new RegExp(`(['"])\\/(src\\/icons)(?!.*${baseDir})`, 'g'),
+    `$1${base}/$2`
+  );
 
-  if (modified) {
+  if (content !== original) {
     writeFileSync(filePath, content);
+    fixedFiles++;
     console.log(`  Fixed JS: ${filePath}`);
   }
 }
@@ -97,7 +111,6 @@ function processDirectory(dir) {
   }
 }
 
-// Process all HTML and JS files in dist
 processDirectory(DIST_DIR);
 
-console.log('Path rewriting complete!');
+console.log(`Path rewriting complete! (${fixedFiles} files updated)`);
