@@ -1,0 +1,239 @@
+---
+/**
+ * data-format-number Attribute Documentation
+ *
+ * Locale-aware number formatting via data attributes.
+ */
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+const basicCode = `<data value="1234567" data-format-number>1,234,567</data>`;
+
+const currencyCode = `<data value="48200" data-format-number="currency" data-currency="USD">$48,200</data>
+<data value="48200" data-format-number="currency" data-currency="EUR">48.200,00 EUR</data>
+<data value="48200" data-format-number="currency" data-currency="GBP">48,200 GBP</data>`;
+
+const percentCode = `<data value="0.85" data-format-number="percent">85%</data>
+<data value="0.024" data-format-number="percent">2.4%</data>`;
+
+const compactCode = `<data value="1500000" data-format-number="compact">1.5M</data>
+<data value="45600" data-format-number="compact">45.6K</data>`;
+
+const localeCode = `<data value="1234567.89" data-format-number data-locale="de-DE">1.234.567,89</data>
+<data value="1234567.89" data-format-number data-locale="ja-JP">1,234,567.89</data>`;
+
+const tableCode = `<table>
+  <thead>
+    <tr><th>Product</th><th>Revenue</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Widget A</td>
+      <td><data value="142500" data-format-number="currency" data-currency="USD">$142,500</data></td>
+    </tr>
+    <tr>
+      <td>Widget B</td>
+      <td><data value="89300" data-format-number="currency" data-currency="USD">$89,300</data></td>
+    </tr>
+  </tbody>
+</table>`;
+
+const dynamicCode = `// Dynamically added elements are auto-enhanced via MutationObserver
+const el = document.createElement('data');
+el.value = '99.5';
+el.dataset.formatNumber = 'percent';
+el.textContent = '99.5%';
+document.body.appendChild(el);
+// el is enhanced automatically \u2014 no manual init needed`;
+---
+
+<DocsLayout
+  title="data-format-number"
+  description="Locale-aware number formatting using Intl.NumberFormat. Add data-format-number to any <data> element for automatic formatting."
+  currentSection="api"
+>
+  <h1>data-format-number</h1>
+  <p class="lead">Locale-aware number formatting. Add <code>data-format-number</code> to any <code>&lt;data&gt;</code> element for automatic formatting via <code>Intl.NumberFormat</code>.</p>
+
+  <heading-links data-levels="h2,h3">
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-format-number</code> attribute enhances native <code>&lt;data&gt;</code> elements by replacing their text content with a locale-aware formatted number. The <code>value</code> attribute carries the raw number, while the displayed text is formatted for the user's locale.</p>
+
+    <browser-window
+      src="/docs/examples/demos/format-number-basic.html"
+      url="https://vanilla-breeze.dev/format-number"
+      title="Format Number"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as a number</li>
+      <li>Stores the original text content as a <code>title</code> attribute (visible on hover)</li>
+      <li>Formats the number using <code>Intl.NumberFormat</code> with the specified style</li>
+      <li>Replaces the text content with the formatted string</li>
+    </ol>
+    <p>The formatting uses the user's browser locale by default, so numbers display with the correct separators automatically.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-format-number</code></td>
+          <td>string</td>
+          <td>Format style: <code>""</code> (decimal), <code>"currency"</code>, <code>"percent"</code>, <code>"compact"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>The raw numeric value. Standard HTML <code>value</code> attribute on <code>&lt;data&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-currency</code></td>
+          <td>string</td>
+          <td>ISO 4217 currency code (e.g., <code>"USD"</code>, <code>"EUR"</code>). Required when style is <code>"currency"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-locale</code></td>
+          <td>string</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to browser locale.</td>
+        </tr>
+        <tr>
+          <td><code>data-format-number-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Format Styles</h2>
+
+    <h3>Decimal (default)</h3>
+    <p>Standard number formatting with locale-aware grouping separators:</p>
+
+    <div class="example">
+      <data value="1234567" data-format-number>1,234,567</data>
+    </div>
+
+    <code-block language="html" show-lines label="Decimal formatting">{basicCode}</code-block>
+
+    <h3>Currency</h3>
+    <p>Formats with currency symbol and locale-appropriate placement. Requires <code>data-currency</code>:</p>
+
+    <div class="example">
+      <layout-stack data-gap="s">
+        <p>USD: <data value="48200" data-format-number="currency" data-currency="USD">$48,200</data></p>
+        <p>EUR: <data value="48200" data-format-number="currency" data-currency="EUR">48.200,00 EUR</data></p>
+        <p>GBP: <data value="48200" data-format-number="currency" data-currency="GBP">48,200 GBP</data></p>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Currency formatting">{currencyCode}</code-block>
+
+    <h3>Percent</h3>
+    <p>Multiplies by 100 and adds percent sign. Pass the decimal value (e.g., <code>0.85</code> for 85%):</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <data value="0.85" data-format-number="percent">85%</data>
+        <data value="0.024" data-format-number="percent">2.4%</data>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Percent formatting">{percentCode}</code-block>
+
+    <h3>Compact</h3>
+    <p>Abbreviated notation for large numbers (e.g., 1.5M, 45.6K):</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <data value="1500000" data-format-number="compact">1.5M</data>
+        <data value="45600" data-format-number="compact">45.6K</data>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Compact notation">{compactCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Locale Override</h2>
+    <p>Use <code>data-locale</code> to force a specific locale for formatting:</p>
+
+    <div class="example">
+      <layout-stack data-gap="s">
+        <p>German: <data value="1234567.89" data-format-number data-locale="de-DE">1.234.567,89</data></p>
+        <p>Japanese: <data value="1234567.89" data-format-number data-locale="ja-JP">1,234,567.89</data></p>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Locale override">{localeCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Common Use Cases</h2>
+
+    <h3>Revenue Table</h3>
+    <p>Format currency values in a data table. The <code>font-variant-numeric: tabular-nums</code> CSS ensures columns align:</p>
+
+    <div class="example">
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Revenue</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Widget A</td>
+            <td><data value="142500" data-format-number="currency" data-currency="USD">$142,500</data></td>
+          </tr>
+          <tr>
+            <td>Widget B</td>
+            <td><data value="89300" data-format-number="currency" data-currency="USD">$89,300</data></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Revenue table">{tableCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added format-number elements">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The <code>&lt;data&gt;</code> element's original text serves as a fallback when JavaScript is unavailable. Write a reasonable pre-formatted value as the text content:</p>
+
+    <code-block language="html" show-lines label="Fallback text visible without JS">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The original text is preserved as a <code>title</code> attribute, accessible on hover</li>
+      <li>The semantic <code>&lt;data&gt;</code> element with <code>value</code> attribute provides machine-readable data</li>
+      <li>Falls back to the original text content when JavaScript is unavailable</li>
+      <li>No wrapper element &mdash; the <code>&lt;data&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
+    </ul>
+  </section>
+
+  </heading-links>
+</DocsLayout>

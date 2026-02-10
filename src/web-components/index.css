@@ -10,6 +10,7 @@
 @import "./table-wc/styles.css";
 @import "./search-wc/styles.css";
 @import "./card-list/styles.css";
+@import "./flip-card-wc/styles.css";
 /* data-copy: Clipboard copy button feedback */
 [data-copy][data-state="copied"],
 [data-copy-target][data-state="copied"] {
@@ -49,4 +50,106 @@ kbd[data-hotkey] kbd {
   justify-content: center;
   min-width: 1.6em;
   line-height: 1.4;
+}
+
+/* data-spoiler: Content concealment */
+[data-spoiler][data-spoiler-init] {
+  position: relative;
+}
+
+[data-spoiler][data-spoiler-init] > [data-spoiler-content] {
+  user-select: none;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Blur effect (default) */
+[data-spoiler="blur"][data-spoiler-init] > [data-spoiler-content] {
+  filter: blur(8px);
+}
+
+[data-spoiler="blur"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  filter: blur(0);
+}
+
+/* Solid effect */
+[data-spoiler="solid"][data-spoiler-init] > [data-spoiler-content] {
+  opacity: 0;
+}
+
+[data-spoiler="solid"][data-spoiler-init]:not([data-spoiler-visible]) > [data-spoiler-trigger] {
+  background: currentColor;
+}
+
+[data-spoiler="solid"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  opacity: 1;
+}
+
+/* Noise effect */
+[data-spoiler="noise"][data-spoiler-init] > [data-spoiler-content] {
+  opacity: 0.15;
+}
+
+[data-spoiler="noise"][data-spoiler-init]:not([data-spoiler-visible]) > [data-spoiler-trigger] {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+[data-spoiler="noise"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  opacity: 1;
+}
+
+/* Trigger overlay — reset VB button styles completely */
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger] {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  border-radius: var(--radius-s, 4px);
+}
+
+/* Hidden trigger must disappear (overrides display: flex) */
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger][hidden] {
+  display: none;
+}
+
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger] > [data-spoiler-label] {
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #333);
+  padding: var(--size-2xs, 4px) var(--size-xs, 8px);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.85em;
+  font-weight: 500;
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0,0,0,.12));
+}
+
+/* Re-hide button — normal flow, after content */
+[data-spoiler][data-spoiler-init] > [data-spoiler-hide] {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-block-start: var(--size-2xs, 4px);
+  padding: var(--size-3xs, 2px) var(--size-xs, 8px);
+  font-size: 0.75em;
+  line-height: 1.4;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text-muted, #666);
+  cursor: pointer;
+}
+
+/* Revealed state: content visible */
+[data-spoiler][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  user-select: auto;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-spoiler][data-spoiler-init] > [data-spoiler-content] {
+    transition-duration: 0s;
+  }
 }

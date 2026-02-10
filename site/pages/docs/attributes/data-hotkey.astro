@@ -1,60 +1,67 @@
 ---
 /**
- * hotkey-wc Web Component Documentation
+ * data-hotkey Attribute Documentation
  *
- * Platform-aware keyboard shortcut display with styled <kbd> elements.
+ * Platform-aware keyboard shortcut display via data attributes.
  */
-import ElementLayout from '../../../../layouts/ElementLayout.astro';
+import DocsLayout from '../../../layouts/DocsLayout.astro';
 
-const basicCode = `<hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc>`;
+const basicCode = `<kbd data-hotkey="meta+k">Ctrl+K</kbd>`;
 
-const multipleCode = `<hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc>
-<hotkey-wc data-keys="meta+s">Ctrl+S</hotkey-wc>
-<hotkey-wc data-keys="meta+shift+p">Ctrl+Shift+P</hotkey-wc>
-<hotkey-wc data-keys="alt+f4">Alt+F4</hotkey-wc>`;
+const multipleCode = `<kbd data-hotkey="meta+k">Ctrl+K</kbd>
+<kbd data-hotkey="meta+s">Ctrl+S</kbd>
+<kbd data-hotkey="meta+shift+p">Ctrl+Shift+P</kbd>
+<kbd data-hotkey="alt+f4">Alt+F4</kbd>`;
 
-const modifierCode = `<!-- meta \u2192 \u2318 on Mac, Ctrl on others -->
-<hotkey-wc data-keys="meta+c">Ctrl+C</hotkey-wc>
-
-<!-- alt \u2192 \u2325 on Mac, Alt on others -->
-<hotkey-wc data-keys="alt+tab">Alt+Tab</hotkey-wc>
-
-<!-- shift \u2192 \u21e7 on Mac, Shift on others -->
-<hotkey-wc data-keys="shift+enter">Shift+Enter</hotkey-wc>
-
-<!-- ctrl \u2192 \u2303 on Mac, Ctrl on others -->
-<hotkey-wc data-keys="ctrl+click">Ctrl+Click</hotkey-wc>`;
+const inlineCode = `<p>Press <kbd data-hotkey="meta+k">Ctrl+K</kbd> to open the search palette.</p>`;
 
 const commandPaletteCode = `<table>
   <tbody>
     <tr>
       <td>Search</td>
-      <td><hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc></td>
+      <td><kbd data-hotkey="meta+k">Ctrl+K</kbd></td>
     </tr>
     <tr>
       <td>Save</td>
-      <td><hotkey-wc data-keys="meta+s">Ctrl+S</hotkey-wc></td>
+      <td><kbd data-hotkey="meta+s">Ctrl+S</kbd></td>
     </tr>
     <tr>
       <td>Undo</td>
-      <td><hotkey-wc data-keys="meta+z">Ctrl+Z</hotkey-wc></td>
+      <td><kbd data-hotkey="meta+z">Ctrl+Z</kbd></td>
     </tr>
   </tbody>
 </table>`;
 
-const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to open the search palette.</p>`;
+const tooltipCode = `<tooltip-wc>
+  <button type="button">
+    <icon-wc name="search" size="sm"></icon-wc>
+    Search
+  </button>
+  <template data-tooltip>
+    Search <kbd data-hotkey="meta+k">Ctrl+K</kbd>
+  </template>
+</tooltip-wc>`;
+
+const dynamicCode = `// Dynamically added elements are auto-enhanced via MutationObserver
+const kbd = document.createElement('kbd');
+kbd.dataset.hotkey = 'meta+n';
+kbd.textContent = 'Ctrl+N';
+document.body.appendChild(kbd);
+// kbd is enhanced automatically \u2014 no manual init needed`;
 ---
 
-<ElementLayout
-  title="hotkey-wc"
-  description="Platform-aware keyboard shortcut display with styled kbd elements."
-  elementName="hotkey-wc"
-  category="component"
-  currentPath="/docs/elements/web-components/hotkey-wc/"
+<DocsLayout
+  title="data-hotkey"
+  description="Platform-aware keyboard shortcut display. Add data-hotkey to any <kbd> element to render platform-appropriate key symbols."
+  currentSection="api"
 >
+  <h1>data-hotkey</h1>
+  <p class="lead">Platform-aware keyboard shortcut display. Add <code>data-hotkey</code> to any <code>&lt;kbd&gt;</code> element to render platform-appropriate key symbols.</p>
+
+  <heading-links data-levels="h2,h3">
   <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;hotkey-wc&gt;</code> component parses a key combination string and renders platform-aware <code>&lt;kbd&gt;</code> elements. On Mac, modifier keys display as symbols; on other platforms, as text labels.</p>
+    <p>The <code>data-hotkey</code> attribute enhances native <code>&lt;kbd&gt;</code> elements with platform-aware key rendering. On Mac, modifier keys display as symbols; on other platforms, as text labels with <code>+</code> separators.</p>
 
     <browser-window
       src="/docs/examples/demos/hotkey-wc-basic.html"
@@ -69,13 +76,14 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
   <section>
     <h2>How It Works</h2>
     <ol>
-      <li>Reads the <code>data-keys</code> attribute (e.g., <code>"meta+k"</code>)</li>
+      <li>Reads the <code>data-hotkey</code> attribute value (e.g., <code>"meta+k"</code>)</li>
       <li>Detects the user's platform (Mac vs. other)</li>
       <li>Maps modifier names to platform-appropriate symbols or labels</li>
       <li>Generates a <code>&lt;kbd&gt;</code> element for each key in the combo</li>
       <li>Replaces the element's content with the styled key caps</li>
+      <li>Sets <code>aria-label</code> with the readable text</li>
     </ol>
-    <p>The original text content (e.g., "Ctrl+K") serves as a fallback when JavaScript is unavailable.</p>
+    <p>The original text content (e.g., "Ctrl+K") serves as a no-JS fallback. Nested <code>&lt;kbd&gt;</code> inside <code>&lt;kbd&gt;</code> is valid HTML for key combinations per the spec.</p>
   </section>
 
   <section>
@@ -85,16 +93,19 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
         <tr>
           <th>Attribute</th>
           <th>Type</th>
-          <th>Default</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>data-keys</code></td>
+          <td><code>data-hotkey</code></td>
           <td>string</td>
-          <td>-</td>
           <td>Key combination string. Keys separated by <code>+</code>. Supported modifiers: <code>meta</code>, <code>alt</code>, <code>shift</code>, <code>ctrl</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-hotkey-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-enhancement. Do not set manually.</td>
         </tr>
       </tbody>
     </table>
@@ -145,10 +156,10 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
 
     <div class="example">
       <layout-cluster data-gap="xl">
-        <span>Search: <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc></span>
-        <span>Save: <hotkey-wc data-keys="meta+s">Ctrl+S</hotkey-wc></span>
-        <span>Undo: <hotkey-wc data-keys="meta+z">Ctrl+Z</hotkey-wc></span>
-        <span>Command palette: <hotkey-wc data-keys="meta+shift+p">Ctrl+Shift+P</hotkey-wc></span>
+        <span>Search: <kbd data-hotkey="meta+k">Ctrl+K</kbd></span>
+        <span>Save: <kbd data-hotkey="meta+s">Ctrl+S</kbd></span>
+        <span>Undo: <kbd data-hotkey="meta+z">Ctrl+Z</kbd></span>
+        <span>Command palette: <kbd data-hotkey="meta+shift+p">Ctrl+Shift+P</kbd></span>
       </layout-cluster>
     </div>
 
@@ -157,11 +168,11 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
 
   <section>
     <h2>Inline Usage</h2>
-    <p>The component works naturally inline with paragraph text:</p>
+    <p>Works naturally inline with paragraph text:</p>
 
     <div class="example">
-      <p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to open the search palette.</p>
-      <p>Use <hotkey-wc data-keys="meta+shift+p">Ctrl+Shift+P</hotkey-wc> for the command palette.</p>
+      <p>Press <kbd data-hotkey="meta+k">Ctrl+K</kbd> to open the search palette.</p>
+      <p>Use <kbd data-hotkey="meta+shift+p">Ctrl+Shift+P</kbd> for the command palette.</p>
     </div>
 
     <code-block language="html" show-lines label="Inline with text">{inlineCode}</code-block>
@@ -184,23 +195,23 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
         <tbody>
           <tr>
             <td>Search</td>
-            <td><hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc></td>
+            <td><kbd data-hotkey="meta+k">Ctrl+K</kbd></td>
           </tr>
           <tr>
             <td>Save</td>
-            <td><hotkey-wc data-keys="meta+s">Ctrl+S</hotkey-wc></td>
+            <td><kbd data-hotkey="meta+s">Ctrl+S</kbd></td>
           </tr>
           <tr>
             <td>Undo</td>
-            <td><hotkey-wc data-keys="meta+z">Ctrl+Z</hotkey-wc></td>
+            <td><kbd data-hotkey="meta+z">Ctrl+Z</kbd></td>
           </tr>
           <tr>
             <td>Redo</td>
-            <td><hotkey-wc data-keys="meta+shift+z">Ctrl+Shift+Z</hotkey-wc></td>
+            <td><kbd data-hotkey="meta+shift+z">Ctrl+Shift+Z</kbd></td>
           </tr>
           <tr>
             <td>Select all</td>
-            <td><hotkey-wc data-keys="meta+a">Ctrl+A</hotkey-wc></td>
+            <td><kbd data-hotkey="meta+a">Ctrl+A</kbd></td>
           </tr>
         </tbody>
       </table>
@@ -219,7 +230,7 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
             Search
           </button>
           <template data-tooltip>
-            Search <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc>
+            Search <kbd data-hotkey="meta+k">Ctrl+K</kbd>
           </template>
         </tooltip-wc>
 
@@ -229,20 +240,32 @@ const inlineCode = `<p>Press <hotkey-wc data-keys="meta+k">Ctrl+K</hotkey-wc> to
             Save
           </button>
           <template data-tooltip>
-            Save <hotkey-wc data-keys="meta+s">Ctrl+S</hotkey-wc>
+            Save <kbd data-hotkey="meta+s">Ctrl+S</kbd>
           </template>
         </tooltip-wc>
       </layout-cluster>
     </div>
+
+    <code-block language="html" show-lines label="Shortcut in tooltip">{tooltipCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added hotkey elements">{dynamicCode}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Sets <code>aria-label</code> on the component with the full text content for screen readers</li>
+      <li>Sets <code>aria-label</code> on the element with the full text content for screen readers</li>
       <li>Uses semantic <code>&lt;kbd&gt;</code> elements which are recognized by assistive technology</li>
+      <li>Nested <code>&lt;kbd&gt;</code> inside <code>&lt;kbd&gt;</code> is valid HTML for key combinations per the spec</li>
       <li>The original text content serves as a no-JS fallback</li>
       <li>On Mac, separators between keys are omitted since the symbols are self-explanatory; on other platforms, <code>+</code> separators are included for clarity</li>
     </ul>
   </section>
-</ElementLayout>
+
+  </heading-links>
+</DocsLayout>

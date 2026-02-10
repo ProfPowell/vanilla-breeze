@@ -45,35 +45,8 @@ These patterns exist in both demo projects but VB already implements them:
 ---
 
 ## Opportunities to Incorporate
-
-### HIGH VALUE
-
-
 ---
 
-#### 2. View Transitions with Shared Element Naming
-**Source:** Both projects
-**Gap in VB:** VB may have View Transitions but not the shared element pattern.
-
-```css
-/* Global transitions */
-@view-transition { navigation: auto; }
-
-/* Shared element naming for morphing */
-.gallery-card:nth-child(1) { view-transition-name: card-1; }
-.gallery-card:nth-child(2) { view-transition-name: card-2; }
-
-/* Detail page matches the name */
-.detail-hero { view-transition-name: card-1; }
-```
-
-**Benefits:**
-- Cards/images morph into detail views
-- Creates spatial awareness in navigation
-- No JavaScript required
-- Delightful UX with minimal code
-
-**Recommendation:** Add View Transitions section to VB documentation with shared element patterns.
 
 ---
 
