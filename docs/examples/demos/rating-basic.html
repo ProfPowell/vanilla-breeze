@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rating Widget Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h2 {
+      margin-block-start: var(--size-xl);
+    }
+
+    .demo-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-m);
+      margin-block: var(--size-m);
+    }
+
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: var(--size-m);
+    }
+
+    output {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <h1>Rating Widget</h1>
+
+  <!-- CSS-Only: Whole Stars -->
+  <h2>CSS-Only: Whole Stars</h2>
+  <p>No JavaScript needed. Disable JS to verify these still work.</p>
+  <div class="demo-section">
+    <fieldset data-rating>
+      <legend>Rate this product</legend>
+      <label><input type="radio" name="css-rating" value="1" aria-label="1 star">&#9733;</label>
+      <label><input type="radio" name="css-rating" value="2" aria-label="2 stars">&#9733;</label>
+      <label><input type="radio" name="css-rating" value="3" aria-label="3 stars">&#9733;</label>
+      <label><input type="radio" name="css-rating" value="4" aria-label="4 stars">&#9733;</label>
+      <label><input type="radio" name="css-rating" value="5" aria-label="5 stars">&#9733;</label>
+    </fieldset>
+  </div>
+
+  <!-- CSS-Only: Half Stars -->
+  <h2>CSS-Only: Half Stars</h2>
+  <div class="demo-section">
+    <fieldset data-rating data-rating-half>
+      <legend>Rate with half stars</legend>
+      <label data-half="left"><input type="radio" name="half-rating" value="0.5" aria-label="Half star">&#9733;</label>
+      <label data-half="right"><input type="radio" name="half-rating" value="1" aria-label="1 star">&#9733;</label>
+      <label data-half="left"><input type="radio" name="half-rating" value="1.5" aria-label="1 and a half stars">&#9733;</label>
+      <label data-half="right"><input type="radio" name="half-rating" value="2" aria-label="2 stars">&#9733;</label>
+      <label data-half="left"><input type="radio" name="half-rating" value="2.5" aria-label="2 and a half stars">&#9733;</label>
+      <label data-half="right"><input type="radio" name="half-rating" value="3" aria-label="3 stars">&#9733;</label>
+      <label data-half="left"><input type="radio" name="half-rating" value="3.5" aria-label="3 and a half stars">&#9733;</label>
+      <label data-half="right"><input type="radio" name="half-rating" value="4" aria-label="4 stars">&#9733;</label>
+      <label data-half="left"><input type="radio" name="half-rating" value="4.5" aria-label="4 and a half stars">&#9733;</label>
+      <label data-half="right"><input type="radio" name="half-rating" value="5" aria-label="5 stars">&#9733;</label>
+    </fieldset>
+  </div>
+
+  <!-- CSS-Only: Custom Icons -->
+  <h2>Custom Icons (icon-wc hearts)</h2>
+  <div class="demo-section">
+    <fieldset data-rating>
+      <legend>How much do you love this?</legend>
+      <label><input type="radio" name="love" value="1" aria-label="1 heart"><icon-wc name="heart"></icon-wc></label>
+      <label><input type="radio" name="love" value="2" aria-label="2 hearts"><icon-wc name="heart"></icon-wc></label>
+      <label><input type="radio" name="love" value="3" aria-label="3 hearts"><icon-wc name="heart"></icon-wc></label>
+      <label><input type="radio" name="love" value="4" aria-label="4 hearts"><icon-wc name="heart"></icon-wc></label>
+      <label><input type="radio" name="love" value="5" aria-label="5 hearts"><icon-wc name="heart"></icon-wc></label>
+    </fieldset>
+  </div>
+
+  <!-- JS-Enhanced with Clear -->
+  <h2>JS-Enhanced (click selected star to clear)</h2>
+  <div class="demo-section">
+    <div class="demo-row">
+      <fieldset data-rating id="js-rating">
+        <legend>Rate this</legend>
+        <label><input type="radio" name="js-rating" value="1" aria-label="1 star">&#9733;</label>
+        <label><input type="radio" name="js-rating" value="2" aria-label="2 stars">&#9733;</label>
+        <label><input type="radio" name="js-rating" value="3" aria-label="3 stars">&#9733;</label>
+        <label><input type="radio" name="js-rating" value="4" aria-label="4 stars">&#9733;</label>
+        <label><input type="radio" name="js-rating" value="5" aria-label="5 stars">&#9733;</label>
+      </fieldset>
+      <output id="js-output">No rating</output>
+    </div>
+  </div>
+
+  <!-- Web Component: Simple -->
+  <h2>Web Component</h2>
+  <div class="demo-section">
+    <div class="demo-row">
+      <rating-wc name="wc-rating" label="Rate this product"></rating-wc>
+      <span>Simple</span>
+    </div>
+
+    <div class="demo-row">
+      <rating-wc name="wc-half" value="3.5" data-half label="Your rating"></rating-wc>
+      <span>Half-star, pre-set to 3.5</span>
+    </div>
+
+    <div class="demo-row">
+      <rating-wc value="4.2" data-readonly label="Average rating"></rating-wc>
+      <span>Read-only 4.2</span>
+    </div>
+
+    <div class="demo-row">
+      <rating-wc name="love-wc" data-icon="heart" max="3" label="How much?"></rating-wc>
+      <span>Custom icons, 3 max</span>
+    </div>
+  </div>
+
+  <!-- Form Integration -->
+  <h2>Form Integration</h2>
+  <form id="rating-form">
+    <div class="demo-section">
+      <div class="demo-row">
+        <rating-wc name="form-rating" required label="Required rating"></rating-wc>
+        <span>(required)</span>
+      </div>
+
+      <div class="demo-row">
+        <rating-wc name="optional-rating" label="Optional rating"></rating-wc>
+        <span>(optional)</span>
+      </div>
+
+      <div class="demo-row">
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </div>
+
+      <output id="form-output"></output>
+    </div>
+  </form>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // JS-enhanced event listener demo
+    document.getElementById('js-rating').addEventListener('rating-change', (e) => {
+      const out = document.getElementById('js-output');
+      out.textContent = e.detail.value > 0 ? `Rating: ${e.detail.value}` : 'No rating';
+    });
+
+    // Form submit demo
+    document.getElementById('rating-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}=${v}`).join(', ');
+      document.getElementById('form-output').textContent = entries || 'No values';
+    });
+  </script>
+</body>
+</html>

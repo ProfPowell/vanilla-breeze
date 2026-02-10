@@ -1,0 +1,104 @@
+/* rating: CSS-only star rating with :has() selectors */
+
+/* Reset fieldset for rating context */
+[data-rating] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+[data-rating] > legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Hide radios accessibly */
+[data-rating] > label > input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Base label (empty star) */
+[data-rating] > label {
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-border, oklch(75% 0 0));
+  transition: color 0.15s ease;
+  padding: 0.1em;
+  user-select: none;
+}
+
+/* Fill up to checked star */
+[data-rating] > label:has(input:checked),
+[data-rating] > label:has(~ label > input:checked) {
+  color: var(--color-warning, oklch(75% 0.15 85));
+}
+
+/* Hover: reset non-hovered stars back to gray */
+[data-rating]:hover > label:not(:hover, :has(~ label:hover)) {
+  color: var(--color-border, oklch(75% 0 0));
+}
+
+/* Hover: fill up to hovered star */
+[data-rating]:hover > label:hover,
+[data-rating]:hover > label:has(~ label:hover) {
+  color: var(--color-warning, oklch(75% 0.15 85));
+}
+
+/* Focus-visible outline on label when its input is focused */
+[data-rating] > label:has(input:focus-visible) {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 250));
+  outline-offset: 2px;
+  border-radius: var(--radius-s, 2px);
+}
+
+/* --- Half-star variant --- */
+/* Specificity must beat label:has(input[type="radio"]) (0,1,2) from input/styles */
+
+[data-rating-half] > label[data-half] {
+  display: block;
+  overflow: hidden;
+  width: 0.6em;
+  padding: 0.1em 0;
+  gap: 0;
+}
+
+[data-rating-half] > label[data-half="right"] {
+  text-indent: -0.6em;
+}
+
+/* --- Read-only variant --- */
+
+[data-rating-readonly] {
+  pointer-events: none;
+}
+
+[data-rating-readonly] > label {
+  cursor: default;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rating] > label {
+    transition-duration: 0s;
+  }
+}

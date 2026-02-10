@@ -1,0 +1,339 @@
+---
+/**
+ * rating-wc Web Component Documentation
+ *
+ * Three-layer progressive star rating: CSS-only, JS-enhanced, web component.
+ * Form-associated via ElementInternals.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const cssOnlyCode = `<fieldset data-rating>
+  <legend>Rate this product</legend>
+  <label><input type="radio" name="rating" value="1" aria-label="1 star">&#9733;</label>
+  <label><input type="radio" name="rating" value="2" aria-label="2 stars">&#9733;</label>
+  <label><input type="radio" name="rating" value="3" aria-label="3 stars">&#9733;</label>
+  <label><input type="radio" name="rating" value="4" aria-label="4 stars">&#9733;</label>
+  <label><input type="radio" name="rating" value="5" aria-label="5 stars">&#9733;</label>
+</fieldset>`;
+
+const halfStarCode = `<fieldset data-rating data-rating-half>
+  <legend>Rate this</legend>
+  <label data-half="left"><input type="radio" name="r" value="0.5" aria-label="Half star">&#9733;</label>
+  <label data-half="right"><input type="radio" name="r" value="1" aria-label="1 star">&#9733;</label>
+  <!-- ...repeat for each star... -->
+</fieldset>`;
+
+const iconCode = `<fieldset data-rating>
+  <legend>How much do you love this?</legend>
+  <label><input type="radio" name="love" value="1" aria-label="1 heart"><icon-wc name="heart"></icon-wc></label>
+  <label><input type="radio" name="love" value="2" aria-label="2 hearts"><icon-wc name="heart"></icon-wc></label>
+  <!-- ...etc... -->
+</fieldset>`;
+
+const eventCode = `const rating = document.querySelector('[data-rating]');
+
+rating.addEventListener('rating-change', (e) => \{
+  console.log('New rating:', e.detail.value);
+\});`;
+
+const wcSimpleCode = `<rating-wc name="product-rating" label="Rate this product"></rating-wc>`;
+
+const wcHalfCode = `<rating-wc name="rating" value="3.5" data-half label="Your rating"></rating-wc>`;
+
+const wcReadonlyCode = `<rating-wc value="4.2" data-readonly label="Average rating"></rating-wc>`;
+
+const wcIconCode = `<rating-wc name="rating" data-icon="heart" max="3" label="How much?"></rating-wc>`;
+
+const wcFormCode = `<form>
+  <rating-wc name="rating" required label="Your rating"></rating-wc>
+  <button type="submit">Submit</button>
+</form>`;
+
+const stylingCode = `/* Custom color */
+[data-rating] > label:has(input:checked),
+[data-rating] > label:has(~ label > input:checked) \{
+  color: var(--color-danger);
+\}
+
+/* Custom size */
+[data-rating] > label \{
+  font-size: 2rem;
+\}`;
+---
+
+<ElementLayout
+  title="rating-wc"
+  description="Three-layer star rating widget: CSS-only selection and hover, JS-enhanced clear/events, form-associated web component."
+  elementName="rating-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/rating/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>A star rating widget built the Vanilla Breeze way &mdash; CSS-first with native HTML, enhanced with JS, wrapped in a web component for convenience. Supports half-stars, custom icons via <code>&lt;icon-wc&gt;</code>, read-only display, and native form participation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/rating-basic.html"
+      url="https://vanilla-breeze.dev/rating"
+      title="Rating Widget Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Three Layers</h2>
+    <p>The rating widget follows the progressive enhancement model:</p>
+    <ol>
+      <li><strong>CSS-only</strong> &mdash; Author writes a fieldset with radio inputs. <code>:has()</code> selectors handle visual selection and hover. Works without JS.</li>
+      <li><strong>JS enhancement</strong> &mdash; <code>rating-init.js</code> adds clear/unrate (click selected star again), <code>rating-change</code> events, and screen reader announcements.</li>
+      <li><strong>Web component</strong> &mdash; <code>&lt;rating-wc&gt;</code> generates the fieldset internally. Form-associated via <code>ElementInternals</code> &mdash; no hidden inputs needed.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>CSS-Only Usage</h2>
+    <p>Write a <code>&lt;fieldset data-rating&gt;</code> with radio inputs. The CSS handles selection highlighting and hover preview via <code>:has()</code> selectors. No JavaScript required.</p>
+
+    <div class="example">
+      <fieldset data-rating>
+        <legend>Rate this product</legend>
+        <label><input type="radio" name="demo-css" value="1" aria-label="1 star">&#9733;</label>
+        <label><input type="radio" name="demo-css" value="2" aria-label="2 stars">&#9733;</label>
+        <label><input type="radio" name="demo-css" value="3" aria-label="3 stars">&#9733;</label>
+        <label><input type="radio" name="demo-css" value="4" aria-label="4 stars">&#9733;</label>
+        <label><input type="radio" name="demo-css" value="5" aria-label="5 stars">&#9733;</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="CSS-only star rating">{cssOnlyCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Half Stars</h2>
+    <p>Add <code>data-rating-half</code> to the fieldset and use <code>data-half="left"</code> / <code>data-half="right"</code> on labels. Each star gets two radio inputs: one for the half value, one for the full value.</p>
+
+    <div class="example">
+      <fieldset data-rating data-rating-half>
+        <legend>Half-star rating</legend>
+        <label data-half="left"><input type="radio" name="demo-half" value="0.5" aria-label="Half star">&#9733;</label>
+        <label data-half="right"><input type="radio" name="demo-half" value="1" aria-label="1 star">&#9733;</label>
+        <label data-half="left"><input type="radio" name="demo-half" value="1.5" aria-label="1 and a half stars">&#9733;</label>
+        <label data-half="right"><input type="radio" name="demo-half" value="2" aria-label="2 stars">&#9733;</label>
+        <label data-half="left"><input type="radio" name="demo-half" value="2.5" aria-label="2 and a half stars">&#9733;</label>
+        <label data-half="right"><input type="radio" name="demo-half" value="3" aria-label="3 stars">&#9733;</label>
+        <label data-half="left"><input type="radio" name="demo-half" value="3.5" aria-label="3 and a half stars">&#9733;</label>
+        <label data-half="right"><input type="radio" name="demo-half" value="4" aria-label="4 stars">&#9733;</label>
+        <label data-half="left"><input type="radio" name="demo-half" value="4.5" aria-label="4 and a half stars">&#9733;</label>
+        <label data-half="right"><input type="radio" name="demo-half" value="5" aria-label="5 stars">&#9733;</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Half-star rating">{halfStarCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Icons</h2>
+    <p>Replace the star character with any <code>&lt;icon-wc&gt;</code> icon. The <code>:has()</code> selectors work the same way &mdash; they target the label, not the star character.</p>
+
+    <div class="example">
+      <fieldset data-rating>
+        <legend>How much do you love this?</legend>
+        <label><input type="radio" name="demo-icon" value="1" aria-label="1 heart"><icon-wc name="heart"></icon-wc></label>
+        <label><input type="radio" name="demo-icon" value="2" aria-label="2 hearts"><icon-wc name="heart"></icon-wc></label>
+        <label><input type="radio" name="demo-icon" value="3" aria-label="3 hearts"><icon-wc name="heart"></icon-wc></label>
+        <label><input type="radio" name="demo-icon" value="4" aria-label="4 hearts"><icon-wc name="heart"></icon-wc></label>
+        <label><input type="radio" name="demo-icon" value="5" aria-label="5 hearts"><icon-wc name="heart"></icon-wc></label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Custom icon rating">{iconCode}</code-block>
+  </section>
+
+  <section>
+    <h2>JS Enhancement</h2>
+    <p>When <code>rating-init.js</code> is loaded (included in the default bundle), <code>data-rating</code> fieldsets gain:</p>
+    <ul>
+      <li><strong>Clear/unrate:</strong> Click the already-selected star to deselect (radio unchecked, value resets to 0)</li>
+      <li><strong><code>rating-change</code> event:</strong> Fires on the fieldset with <code>{'{ detail: { value } }'}</code></li>
+      <li><strong>Screen reader announcements:</strong> Live region announces the current value</li>
+    </ul>
+
+    <code-block language="javascript" show-lines label="Listening to rating changes">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Web Component</h2>
+    <p>The <code>&lt;rating-wc&gt;</code> web component generates the fieldset internally and adds form participation via <code>ElementInternals</code>.</p>
+
+    <h3>Simple</h3>
+    <div class="example">
+      <rating-wc name="demo-wc" label="Rate this product"></rating-wc>
+    </div>
+    <code-block language="html" show-lines label="Simple web component">{wcSimpleCode}</code-block>
+
+    <h3>Half-star with preset value</h3>
+    <div class="example">
+      <rating-wc name="demo-wc-half" value="3.5" data-half label="Your rating"></rating-wc>
+    </div>
+    <code-block language="html" show-lines label="Half-star preset">{wcHalfCode}</code-block>
+
+    <h3>Read-only display</h3>
+    <div class="example">
+      <rating-wc value="4.2" data-readonly label="Average rating"></rating-wc>
+    </div>
+    <code-block language="html" show-lines label="Read-only">{wcReadonlyCode}</code-block>
+
+    <h3>Custom icons</h3>
+    <div class="example">
+      <rating-wc name="demo-wc-icon" data-icon="heart" max="3" label="How much?"></rating-wc>
+    </div>
+    <code-block language="html" show-lines label="Custom icon">{wcIconCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>&mdash;</td>
+          <td>Form field name (omit for read-only)</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td><code>0</code></td>
+          <td>Current rating value</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td><code>5</code></td>
+          <td>Number of stars</td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td><code>"Rating"</code></td>
+          <td>Legend text (visually hidden)</td>
+        </tr>
+        <tr>
+          <td><code>data-half</code></td>
+          <td>&mdash;</td>
+          <td>Enable half-star increments</td>
+        </tr>
+        <tr>
+          <td><code>data-readonly</code></td>
+          <td>&mdash;</td>
+          <td>Display-only mode, no interaction</td>
+        </tr>
+        <tr>
+          <td><code>data-icon</code></td>
+          <td>&mdash;</td>
+          <td>Lucide icon name (uses <code>&lt;icon-wc&gt;</code>)</td>
+        </tr>
+        <tr>
+          <td><code>required</code></td>
+          <td>&mdash;</td>
+          <td>Makes rating required for form validation</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Form Participation</h2>
+    <p>The web component uses <code>ElementInternals</code> to participate in native forms &mdash; no hidden inputs. It supports <code>FormData</code>, the <code>required</code> attribute, Constraint Validation API, <code>form.reset()</code>, and <code>:invalid</code>/<code>:valid</code> pseudo-classes.</p>
+
+    <code-block language="html" show-lines label="Form integration">{wcFormCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>ArrowRight</kbd> / <kbd>ArrowDown</kbd></td>
+          <td>Select next star</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowLeft</kbd> / <kbd>ArrowUp</kbd></td>
+          <td>Select previous star</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus into/out of the rating group</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Keyboard navigation is provided natively by the radio group &mdash; no custom JavaScript needed.</p>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>rating-change</code></td>
+          <td><code>{'{ value: number }'}</code></td>
+          <td>Fired on the fieldset when the rating value changes (including clear to 0).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>&lt;fieldset&gt;</code> + <code>&lt;legend&gt;</code> groups the radios with an accessible label</li>
+      <li>Each radio has <code>aria-label</code> announcing the star count</li>
+      <li>Native radio keyboard navigation (arrow keys) requires no custom handling</li>
+      <li>Focus-visible outline appears on the active star label</li>
+      <li>JS enhancement adds screen reader announcements via live region</li>
+      <li>Read-only mode uses <code>role="img"</code> with a descriptive <code>aria-label</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>Override the rating color and size with CSS custom properties or direct selectors:</p>
+
+    <code-block language="css" show-lines label="Custom styling">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Each layer adds capability without breaking the previous one:</p>
+    <ul>
+      <li><strong>No JS:</strong> CSS-only radios work for selection, hover preview, form submission, and keyboard navigation</li>
+      <li><strong>With JS:</strong> Clear/unrate, events, and announcements enhance the experience</li>
+      <li><strong>Web component:</strong> Convenience wrapper that generates the markup and adds form participation via <code>ElementInternals</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> &mdash; Custom icons for rating labels</li>
+      <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; Form field wrapper with validation</li>
+      <li><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> &mdash; Native grouping element used internally</li>
+    </ul>
+  </section>
+</ElementLayout>
