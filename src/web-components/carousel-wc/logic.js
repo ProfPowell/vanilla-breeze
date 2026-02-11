@@ -176,8 +176,9 @@ class CarouselWc extends HTMLElement {
   goTo(index, smooth = true) {
     if (index < 0 || index >= this.#slides.length) return;
 
+    const target = this.#slides[index].offsetLeft - this.#track.offsetLeft;
     const behavior = smooth && !this.#reducedMotion ? 'smooth' : 'instant';
-    this.#slides[index].scrollIntoView({ behavior, inline: 'start', block: 'nearest' });
+    this.#track.scrollTo({ left: target, behavior });
 
     this.#setCurrentIndex(index);
   }
