@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Splitter Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+
+    .demo-grid {
+      display: grid;
+      gap: var(--size-2xl);
+      max-width: 700px;
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .panel {
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      min-height: 120px;
+    }
+
+    .panel-sidebar {
+      background: var(--color-surface-raised);
+    }
+
+    .panel-main {
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .panel-a {
+      background: linear-gradient(135deg, oklch(70% 0.15 250), oklch(75% 0.12 200));
+      color: white;
+    }
+
+    .panel-b {
+      background: linear-gradient(135deg, oklch(70% 0.2 30), oklch(80% 0.15 60));
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-grid">
+    <!-- Layer 1: data-resizable -->
+    <section>
+      <h2>Layer 1: CSS Resize</h2>
+      <h3>data-resizable — native browser handle, zero JS</h3>
+      <div data-layout="sidebar">
+        <nav data-resizable class="panel panel-sidebar">
+          <strong>Sidebar</strong>
+          <p>Drag the corner handle to resize.</p>
+        </nav>
+        <main class="panel panel-main">
+          <strong>Main Content</strong>
+          <p>This area fills the remaining space.</p>
+        </main>
+      </div>
+    </section>
+
+    <!-- Layer 2: data-splitter -->
+    <section>
+      <h2>Layer 2: Attribute Init</h2>
+      <h3>data-splitter — injected divider with keyboard support</h3>
+      <div data-layout="sidebar" data-splitter>
+        <nav class="panel panel-sidebar">
+          <strong>Sidebar</strong>
+          <p>Drag the divider or use arrow keys.</p>
+        </nav>
+        <main class="panel panel-main">
+          <strong>Main Content</strong>
+          <p>Focus the divider, then use arrow keys.</p>
+        </main>
+      </div>
+    </section>
+
+    <!-- Layer 2: Vertical -->
+    <section>
+      <h2>Layer 2: Vertical</h2>
+      <h3>data-splitter="vertical"</h3>
+      <div data-layout="stack" data-splitter="vertical" style="height: 300px;">
+        <div class="panel panel-a">
+          <strong>Top Panel</strong>
+        </div>
+        <div class="panel panel-b">
+          <strong>Bottom Panel</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layer 3: splitter-wc -->
+    <section>
+      <h2>Layer 3: Web Component</h2>
+      <h3>&lt;splitter-wc&gt; — full features</h3>
+      <splitter-wc data-position="35">
+        <nav class="panel panel-sidebar">
+          <strong>Sidebar</strong>
+          <p>Position starts at 35%.</p>
+        </nav>
+        <main class="panel panel-main">
+          <strong>Main Content</strong>
+          <p>Full component with all features.</p>
+        </main>
+      </splitter-wc>
+    </section>
+
+    <!-- Layer 3: Collapsible -->
+    <section>
+      <h2>Layer 3: Collapsible</h2>
+      <h3>Double-click divider to collapse</h3>
+      <splitter-wc data-collapsible data-min="15" data-max="60">
+        <aside class="panel panel-a">
+          <strong>Collapsible Panel</strong>
+          <p>Double-click the divider.</p>
+        </aside>
+        <section class="panel panel-main">
+          <strong>Content</strong>
+          <p>The aside will collapse and expand on double-click.</p>
+        </section>
+      </splitter-wc>
+    </section>
+
+    <!-- Layer 3: Vertical -->
+    <section>
+      <h2>Layer 3: Vertical</h2>
+      <h3>&lt;splitter-wc data-direction="vertical"&gt;</h3>
+      <splitter-wc data-direction="vertical" data-position="40" style="height: 300px;">
+        <div class="panel panel-a">
+          <strong>Top Panel</strong>
+        </div>
+        <div class="panel panel-b">
+          <strong>Bottom Panel</strong>
+        </div>
+      </splitter-wc>
+    </section>
+
+    <!-- Layer 3: Persistence -->
+    <section>
+      <h2>Layer 3: Persistence</h2>
+      <h3>data-persist="demo" — resize, then reload</h3>
+      <splitter-wc data-persist="demo">
+        <nav class="panel panel-sidebar">
+          <strong>Persistent Sidebar</strong>
+          <p>Resize, then reload the page.</p>
+        </nav>
+        <main class="panel panel-main">
+          <strong>Main Content</strong>
+          <p>Position is saved to localStorage.</p>
+        </main>
+      </splitter-wc>
+    </section>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

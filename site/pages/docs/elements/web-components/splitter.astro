@@ -1,0 +1,310 @@
+---
+/**
+ * splitter-wc Web Component Documentation
+ *
+ * Three-layer progressive enhancement for resizable panels:
+ * Layer 1 (CSS), Layer 2 (attribute init), Layer 3 (web component).
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const layer1Code = `<!-- Pure CSS — zero JS -->
+<div data-layout="sidebar">
+  <nav data-resizable>Sidebar content</nav>
+  <main>Main content</main>
+</div>`;
+
+const layer1VerticalCode = `<div data-resizable="vertical">
+  Vertically resizable panel
+</div>
+
+<div data-resizable="both">
+  Resizable in both directions
+</div>`;
+
+const layer2Code = `<!-- Light JS — auto-injected divider -->
+<div data-layout="sidebar" data-splitter>
+  <nav>Sidebar content</nav>
+  <main>Main content</main>
+</div>`;
+
+const layer2VerticalCode = `<div data-layout="stack" data-splitter="vertical">
+  <div>Top panel</div>
+  <div>Bottom panel</div>
+</div>`;
+
+const layer2ConstraintsCode = `<div data-layout="sidebar" data-splitter>
+  <nav data-min="20" data-max="60">Sidebar (20-60%)</nav>
+  <main>Main content</main>
+</div>`;
+
+const layer3BasicCode = `<splitter-wc>
+  <nav>Sidebar</nav>
+  <main>Content</main>
+</splitter-wc>`;
+
+const layer3FullCode = `<splitter-wc
+  data-direction="vertical"
+  data-position="30"
+  data-min="15"
+  data-max="70"
+  data-persist="editor-sidebar"
+  data-collapsible>
+  <aside>Panel A</aside>
+  <section>Panel B</section>
+</splitter-wc>`;
+
+const eventCode = `const splitter = document.querySelector('splitter-wc');
+
+splitter.addEventListener('splitter-resize', (e) => \{
+  console.log('Position:', e.detail.position);
+\});
+
+splitter.addEventListener('splitter-collapse', (e) => \{
+  console.log('Collapsed:', e.detail.collapsed);
+\});`;
+
+const apiCode = `const el = document.querySelector('splitter-wc');
+
+el.position = 30;          // Set position to 30%
+console.log(el.position);  // Read current position
+
+el.collapsed = true;       // Collapse first panel
+el.collapsed = false;      // Expand
+
+el.reset();                // Restore to initial position`;
+
+const fallbackCode = `/* Without JS: simple two-column flex */
+splitter-wc:not(:defined) \{
+  display: flex;
+  gap: var(--size-s);
+\}
+
+splitter-wc:not(:defined) > * \{
+  flex: 1;
+  min-width: 0;
+\}`;
+
+const stylingCode = `/* Custom divider color */
+.splitter-divider \{
+  background: var(--color-interactive);
+\}
+
+/* Custom grip handle */
+.splitter-divider::after \{
+  background: white;
+  border-radius: 4px;
+\}`;
+---
+
+<ElementLayout
+  title="splitter-wc"
+  description="Resizable panel splitter with three layers of progressive enhancement: CSS utility, attribute init, and full web component."
+  elementName="splitter-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/splitter/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The splitter provides resizable panel support as a three-layer progressive enhancement story &mdash; from pure CSS to full web component &mdash; matching a "platform-first, enhance upward" philosophy.</p>
+
+    <browser-window
+      src="/docs/examples/demos/splitter-basic.html"
+      url="https://vanilla-breeze.dev/splitter"
+      title="Splitter Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Layer 1: CSS Utility</h2>
+    <p><strong>Zero JavaScript.</strong> Apply <code>data-resizable</code> to any element inside a flex or grid container. The browser provides a native resize handle.</p>
+
+    <div class="example">
+      <div data-layout="sidebar" style="min-height: 120px;">
+        <nav data-resizable style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar &mdash; drag the corner handle</nav>
+        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content area</main>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="data-resizable">{layer1Code}</code-block>
+
+    <h3>Variants</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-resizable</code></td><td>Horizontal resize (default)</td></tr>
+        <tr><td><code>data-resizable="vertical"</code></td><td>Vertical resize</td></tr>
+        <tr><td><code>data-resizable="both"</code></td><td>Resize in both directions</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Vertical and both">{layer1VerticalCode}</code-block>
+
+    <aside class="note">
+      <strong>Trade-off:</strong> The browser provides a small corner triangle handle. No keyboard support, no ARIA. But it works with zero JS on any layout.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Layer 2: Attribute Init</h2>
+    <p><strong>Light JS (~80 lines).</strong> Apply <code>data-splitter</code> to a container. A small init script injects a full-height drag divider between the first two children with pointer and keyboard events.</p>
+
+    <div class="example">
+      <div data-layout="sidebar" data-splitter style="min-height: 150px;">
+        <nav style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar &mdash; drag the divider</nav>
+        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content area</main>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="data-splitter">{layer2Code}</code-block>
+
+    <h3>Vertical Splitting</h3>
+    <code-block language="html" show-lines label="Vertical splitter">{layer2VerticalCode}</code-block>
+
+    <h3>Constraints</h3>
+    <p>Set <code>data-min</code> and <code>data-max</code> on children to constrain how far the divider can move.</p>
+    <code-block language="html" show-lines label="Min/max constraints">{layer2ConstraintsCode}</code-block>
+
+    <h3>Keyboard</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1%</td></tr>
+        <tr><td><kbd>Shift</kbd> + Arrow</td><td>Move divider 10%</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>Move to minimum</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Move to maximum</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Layer 3: Web Component</h2>
+    <p><strong>Full component.</strong> Self-contained <code>&lt;splitter-wc&gt;</code> element with persistence, collapsible panels, custom events, and JS API.</p>
+
+    <div class="example">
+      <splitter-wc style="min-height: 180px;">
+        <nav style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar panel</nav>
+        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content panel</main>
+      </splitter-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Basic splitter-wc">{layer3BasicCode}</code-block>
+
+    <h3>All Attributes</h3>
+    <code-block language="html" show-lines label="Full attribute set">{layer3FullCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-direction</code></td><td><code>horizontal</code>, <code>vertical</code></td><td><code>horizontal</code></td><td>Split direction</td></tr>
+        <tr><td><code>data-position</code></td><td><code>0-100</code></td><td><code>50</code></td><td>Initial split position as percentage</td></tr>
+        <tr><td><code>data-min</code></td><td><code>0-100</code></td><td><code>10</code></td><td>Minimum panel size (%)</td></tr>
+        <tr><td><code>data-max</code></td><td><code>0-100</code></td><td><code>90</code></td><td>Maximum panel size (%)</td></tr>
+        <tr><td><code>data-persist</code></td><td>string key</td><td>&mdash;</td><td>localStorage key for position persistence</td></tr>
+        <tr><td><code>data-collapsible</code></td><td>boolean</td><td>&mdash;</td><td>Double-click divider to collapse first panel</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>splitter-resize</code></td><td><code>{'{ position: number }'}</code></td><td>Fired when the divider position changes.</td></tr>
+        <tr><td><code>splitter-collapse</code></td><td><code>{'{ collapsed: boolean }'}</code></td><td>Fired when panel is collapsed or expanded via double-click.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event listeners">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property / Method</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>element.position</code></td><td>number</td><td>Get/set current position (0-100)</td></tr>
+        <tr><td><code>element.collapsed</code></td><td>boolean</td><td>Get/set collapsed state</td></tr>
+        <tr><td><code>element.reset()</code></td><td>method</td><td>Restore to initial position, clear persistence</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="JS API">{apiCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <p>Both Layer 2 and Layer 3 support the same keyboard controls:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1% (horizontal)</td></tr>
+        <tr><td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td><td>Move divider 1% (vertical)</td></tr>
+        <tr><td><kbd>Shift</kbd> + Arrow</td><td>Move divider 10%</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>Move to minimum position</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Move to maximum position</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Separator Role</h3>
+    <p>The divider has <code>role="separator"</code> with <code>aria-orientation</code>, <code>aria-valuenow</code>, <code>aria-valuemin</code>, and <code>aria-valuemax</code>. Screen readers announce the current position.</p>
+
+    <h3>Keyboard Support</h3>
+    <p>The divider is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps. <kbd>Home</kbd> and <kbd>End</kbd> jump to min/max.</p>
+
+    <h3>Touch Support</h3>
+    <p>The divider uses <code>touch-action: none</code> and <code>setPointerCapture</code> for reliable pointer drag behavior across devices.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The divider uses the <code>.splitter-divider</code> class shared by both Layer 2 and Layer 3. The <code>::after</code> pseudo-element renders a grip indicator.</p>
+    <code-block language="css" show-lines label="Custom divider styling">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, <code>&lt;splitter-wc&gt;</code> renders as a simple two-column flex layout. The <code>:not(:defined)</code> selector provides the fallback. Once JS registers the component, the divider appears.</p>
+    <code-block language="css" show-lines label="No-JS fallback">{fallbackCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Which Layer to Choose</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Layer</th><th>JS</th><th>Keyboard</th><th>ARIA</th><th>Persistence</th><th>Best for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-resizable</code></td><td>0</td><td>No</td><td>No</td><td>No</td><td>Quick resizable panels with zero overhead</td></tr>
+        <tr><td><code>data-splitter</code></td><td>~80 lines</td><td>Yes</td><td>Yes</td><td>No</td><td>Enhanced layout containers with accessibility</td></tr>
+        <tr><td><code>&lt;splitter-wc&gt;</code></td><td>~120 lines</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Full-featured standalone component</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/comparison/"><code>&lt;comparison-wc&gt;</code></a> &mdash; Before/after image comparison slider</li>
+      <li><a href="/docs/attributes/"><code>data-layout="sidebar"</code></a> &mdash; CSS sidebar layout primitive</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tabs-wc&gt;</code></a> &mdash; Tab panels for content switching</li>
+    </ul>
+  </section>
+</ElementLayout>
