@@ -1,204 +1,173 @@
 ---
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
-const simpleNavCode = `<header class="site-header">
-  <nav aria-label="Main navigation">
-    <layout-cluster data-justify="space-between" data-align="center">
-      <a href="/"><brand-mark>Acme Co</brand-mark></a>
-      <layout-cluster data-gap="s">
-        <a href="/products/">Products</a>
-        <a href="/pricing/">Pricing</a>
-        <a href="/about/" aria-current="page">About</a>
-        <a href="/contact/">Contact</a>
-      </layout-cluster>
-    </layout-cluster>
+const simpleNavCode = `<header class="site">
+  <a href="/"><brand-mark>Acme Co</brand-mark></a>
+  <nav aria-label="Main navigation" data-layout="cluster" data-gap="s">
+    <a href="/products/">Products</a>
+    <a href="/pricing/">Pricing</a>
+    <a href="/about/" aria-current="page">About</a>
+    <a href="/contact/">Contact</a>
   </nav>
 </header>`;
 
-const dropdownNavCode = `<header class="site-header">
-  <nav aria-label="Main navigation">
-    <layout-cluster data-justify="space-between" data-align="center">
-      <a href="/"><brand-mark>Acme Co</brand-mark></a>
-      <layout-cluster data-gap="s">
-        <dropdown-wc>
-          <button data-trigger class="ghost">Products</button>
-          <menu>
-            <li><a href="/products/software/">Software</a></li>
-            <li><a href="/products/hardware/">Hardware</a></li>
-            <li><a href="/products/services/">Services</a></li>
-          </menu>
-        </dropdown-wc>
-        <a href="/pricing/">Pricing</a>
-        <dropdown-wc>
-          <button data-trigger class="ghost">Resources</button>
-          <menu>
-            <li><a href="/docs/">Documentation</a></li>
-            <li><a href="/blog/">Blog</a></li>
-            <li><a href="/support/">Support</a></li>
-          </menu>
-        </dropdown-wc>
-        <a href="/contact/">Contact</a>
-      </layout-cluster>
-    </layout-cluster>
+const dropdownNavCode = `<header class="site">
+  <a href="/"><brand-mark>Acme Co</brand-mark></a>
+  <nav aria-label="Main navigation" data-layout="cluster" data-gap="s">
+    <dropdown-wc data-no-flip>
+      <button data-trigger class="ghost">Products</button>
+      <menu>
+        <li><a href="/products/software/">Software</a></li>
+        <li><a href="/products/hardware/">Hardware</a></li>
+        <li><a href="/products/services/">Services</a></li>
+      </menu>
+    </dropdown-wc>
+    <a href="/pricing/">Pricing</a>
+    <dropdown-wc data-no-flip>
+      <button data-trigger class="ghost">Resources</button>
+      <menu>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/support/">Support</a></li>
+      </menu>
+    </dropdown-wc>
+    <a href="/contact/">Contact</a>
   </nav>
 </header>`;
 
-const searchNavCode = `<header class="site-header">
-  <nav aria-label="Main navigation">
-    <layout-cluster data-justify="space-between" data-align="center">
-      <a href="/"><brand-mark>Acme Co</brand-mark></a>
-      <layout-cluster data-gap="m" data-align="center">
-        <layout-cluster data-gap="s">
-          <a href="/products/">Products</a>
-          <a href="/pricing/">Pricing</a>
-          <a href="/about/">About</a>
-        </layout-cluster>
-        <search class="header with-icon rounded">
-          <icon-wc name="search" size="sm"></icon-wc>
-          <input type="search" placeholder="Search..." aria-label="Search site" />
-        </search>
-      </layout-cluster>
-    </layout-cluster>
+const searchNavCode = `<header class="site">
+  <a href="/"><brand-mark>Acme Co</brand-mark></a>
+  <nav aria-label="Main navigation" data-layout="cluster" data-gap="m" data-align="center">
+    <div data-layout="cluster" data-gap="s">
+      <a href="/products/">Products</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/about/">About</a>
+    </div>
+    <search class="header with-icon rounded">
+      <icon-wc name="search" size="sm"></icon-wc>
+      <input type="search" placeholder="Search..." aria-label="Search site" />
+    </search>
   </nav>
 </header>`;
 
-const mobileNavCode = `<header class="site-header">
-  <nav aria-label="Main navigation">
-    <layout-cluster data-justify="space-between" data-align="center">
-      <a href="/"><brand-mark>Acme Co</brand-mark></a>
+const mobileNavCode = `<header class="site">
+  <a href="/"><brand-mark>Acme Co</brand-mark></a>
+  <nav aria-label="Main navigation" data-layout="cluster" data-gap="s" class="desktop-nav">
+    <a href="/products/">Products</a>
+    <a href="/pricing/">Pricing</a>
+    <a href="/about/" aria-current="page">About</a>
+    <a href="/contact/">Contact</a>
+  </nav>
+  <details class="mobile-menu">
+    <summary aria-label="Open menu">
+      <span class="hamburger"></span>
+    </summary>
+    <div class="mobile-nav" data-layout="stack" data-gap="xs">
+      <a href="/products/">Products</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/about/" aria-current="page">About</a>
+      <a href="/contact/">Contact</a>
+    </div>
+  </details>
+</header>`;
 
-      <!-- Desktop nav (hidden on mobile) -->
-      <layout-cluster data-gap="s" class="desktop-nav">
-        <a href="/products/">Products</a>
-        <a href="/pricing/">Pricing</a>
-        <a href="/about/" aria-current="page">About</a>
-        <a href="/contact/">Contact</a>
-      </layout-cluster>
-
-      <!-- Mobile menu (hidden on desktop) -->
-      <details class="mobile-menu">
-        <summary aria-label="Open menu">
-          <span class="hamburger"></span>
-        </summary>
-        <layout-stack data-gap="xs" class="mobile-nav">
-          <a href="/products/">Products</a>
-          <a href="/pricing/">Pricing</a>
-          <a href="/about/" aria-current="page">About</a>
-          <a href="/contact/">Contact</a>
-        </layout-stack>
-      </details>
-    </layout-cluster>
+const stickyNavCode = `<header class="site sticky">
+  <a href="/"><brand-mark>Acme Co</brand-mark></a>
+  <nav aria-label="Main navigation" data-layout="cluster" data-gap="s" data-align="center">
+    <a href="/products/">Products</a>
+    <a href="/pricing/">Pricing</a>
+    <a href="/about/">About</a>
+    <a href="/contact/">Contact</a>
+    <a href="/get-started/" class="button small">Get Started</a>
   </nav>
 </header>`;
 
-const stickyNavCode = `<header class="site-header sticky">
-  <nav aria-label="Main navigation">
-    <layout-cluster data-justify="space-between" data-align="center">
-      <a href="/"><brand-mark>Acme Co</brand-mark></a>
-      <layout-cluster data-gap="s" data-align="center">
-        <a href="/products/">Products</a>
-        <a href="/pricing/">Pricing</a>
-        <a href="/about/">About</a>
-        <a href="/contact/">Contact</a>
-        <a href="/get-started/" class="button small">Get Started</a>
-      </layout-cluster>
-    </layout-cluster>
-  </nav>
-</header>`;
+const headerStylesNote = `/* No custom header/nav CSS needed!
+ * header.site provides: flex layout, padding, border
+ * header.site nav overrides: muted link color, compact padding
+ * nav a handles: text-decoration, transitions, hover/active states
+ * aria-current="page" gets: interactive color + medium weight */`;
 
-const headerStylesCode = `.site-header {
-  background: var(--color-surface);
-  border-block-end: var(--border-width-thin) solid var(--color-border);
-  padding-inline: var(--size-l);
-  padding-block: var(--size-s);
-}
+const mobileStylesCode = `/* Override VB details/summary styles for mobile menu */
+.mobile-menu \{
+  border: none;
+  border-radius: 0;
+\}
 
-.site-header nav a:not(:has(brand-mark)):not(.button) {
-  padding: var(--size-xs) var(--size-s);
-  color: var(--color-text-muted);
-  text-decoration: none;
-  border-radius: var(--radius-m);
-  transition: color var(--duration-fast) var(--ease-default);
-}
+.mobile-menu summary \{
+  padding: var(--size-xs);
+  min-block-size: auto;
+  border: none;
+\}
 
-.site-header nav a:not(:has(brand-mark)):not(.button):hover {
-  color: var(--color-text);
-}
+.mobile-menu summary::after \{
+  content: none;  /* Suppress VB chevron — hamburger replaces it */
+\}
 
-.site-header nav a[aria-current="page"] {
-  color: var(--color-interactive);
-  font-weight: var(--font-weight-medium);
-}`;
+.mobile-menu > .mobile-nav \{
+  padding-inline: 0;
+  padding-block-end: 0;
+\}
 
-const mobileStylesCode = `/* Mobile menu styles */
-.mobile-menu {
+/* Mobile menu toggle */
+.mobile-menu \{
   display: none;
-}
+\}
 
-@media (max-width: 768px) {
-  .desktop-nav {
+@media (max-width: 768px) \{
+  .desktop-nav \{
     display: none;
-  }
+  \}
 
-  .mobile-menu {
+  .mobile-menu \{
     display: block;
     position: relative;
-  }
-
-  .mobile-menu summary {
-    list-style: none;
-    cursor: pointer;
-    padding: var(--size-xs);
-  }
-
-  .mobile-menu summary::-webkit-details-marker {
-    display: none;
-  }
+  \}
 
   /* Hamburger icon */
-  .hamburger {
+  .hamburger \{
     display: block;
     width: 24px;
     height: 2px;
     background: var(--color-text);
     position: relative;
-  }
+  \}
 
   .hamburger::before,
-  .hamburger::after {
+  .hamburger::after \{
     content: "";
     position: absolute;
     width: 24px;
     height: 2px;
     background: var(--color-text);
     left: 0;
-  }
+  \}
 
-  .hamburger::before {
+  .hamburger::before \{
     top: -7px;
-  }
+  \}
 
-  .hamburger::after {
+  .hamburger::after \{
     top: 7px;
-  }
+  \}
 
-  /* Open state */
-  .mobile-menu[open] .hamburger {
+  /* Open state — X icon */
+  .mobile-menu[open] .hamburger \{
     background: transparent;
-  }
+  \}
 
-  .mobile-menu[open] .hamburger::before {
+  .mobile-menu[open] .hamburger::before \{
     top: 0;
     transform: rotate(45deg);
-  }
+  \}
 
-  .mobile-menu[open] .hamburger::after {
+  .mobile-menu[open] .hamburger::after \{
     top: 0;
     transform: rotate(-45deg);
-  }
+  \}
 
   /* Mobile nav panel */
-  .mobile-nav {
+  .mobile-nav \{
     position: absolute;
     top: calc(100% + var(--size-s));
     right: 0;
@@ -208,27 +177,30 @@ const mobileStylesCode = `/* Mobile menu styles */
     padding: var(--size-s);
     min-width: 200px;
     box-shadow: var(--shadow-m);
-  }
+  \}
 
-  .mobile-nav a {
+  .mobile-nav a \{
     display: block;
     padding: var(--size-s) var(--size-m);
     border-radius: var(--radius-s);
-  }
+  \}
 
-  .mobile-nav a:hover {
+  .mobile-nav a:hover \{
     background: var(--color-surface-raised);
-  }
-}`;
+  \}
+\}`;
 
-const stickyStylesCode = `/* Sticky header */
-.site-header.sticky {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+const stickyStylesCode = `/* Backdrop blur enhancement for sticky header */
+header.site.sticky \{
   backdrop-filter: blur(8px);
   background: oklch(from var(--color-surface) l c h / 0.9);
-}`;
+\}`;
+
+const searchStylesCode = `/* Search input width override for nav context */
+header.site search input \{
+  min-inline-size: 180px;
+  inline-size: auto;
+\}`;
 ---
 
 <PatternLayout
@@ -241,14 +213,14 @@ const stickyStylesCode = `/* Sticky header */
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Navigation bars are the primary way users navigate your site. These patterns use semantic <code>&lt;nav&gt;</code> elements with <code>aria-label</code> for accessibility, and <code>layout-cluster</code> for flexible horizontal spacing.</p>
+      <p>Navigation bars are the primary way users navigate your site. These patterns use <code>header.site</code> for the base layout (flex, padding, border) and <code>data-layout="cluster"</code> for horizontal link spacing. VB's <code>header.site nav</code> automatically provides muted, compact link styling — no custom CSS needed for most navbars.</p>
       <p><strong>Key features:</strong></p>
       <ul>
         <li>Semantic HTML with proper ARIA attributes</li>
         <li>Active page indication via <code>aria-current="page"</code></li>
         <li>Dropdown menus using <code>dropdown-wc</code> component</li>
-        <li>Mobile-responsive with hamburger menu</li>
-        <li>Sticky header variant for persistent navigation</li>
+        <li>Mobile-responsive with hamburger menu (details/summary)</li>
+        <li>Sticky header variant with <code>header.sticky</code></li>
       </ul>
     </layout-text>
   </section>
@@ -256,7 +228,7 @@ const stickyStylesCode = `/* Sticky header */
   <section>
     <h2>Simple Horizontal Nav</h2>
     <layout-text>
-      <p>A basic navigation bar with horizontal links. Uses <code>aria-current="page"</code> to indicate the active page.</p>
+      <p>A basic navigation bar with horizontal links. Uses <code>header.site</code> for layout and <code>aria-current="page"</code> to indicate the active page. Zero custom CSS required — all styling comes from VB's <code>header.site</code> and <code>nav</code> styles.</p>
     </layout-text>
 
     <browser-window
@@ -272,7 +244,7 @@ const stickyStylesCode = `/* Sticky header */
   <section>
     <h2>With Dropdown Menus</h2>
     <layout-text>
-      <p>Navigation with dropdown submenus using the <code>dropdown-wc</code> component. Dropdowns are keyboard accessible and close on outside click or Escape.</p>
+      <p>Navigation with dropdown submenus using the <code>dropdown-wc</code> component. Dropdowns are keyboard accessible and close on outside click or Escape. The <code>data-no-flip</code> attribute prevents menus from flipping upward in constrained viewports.</p>
     </layout-text>
 
     <browser-window
@@ -288,7 +260,7 @@ const stickyStylesCode = `/* Sticky header */
   <section>
     <h2>With Search</h2>
     <layout-text>
-      <p>Navigation bar with an integrated search field. The search uses the <code>&lt;search&gt;</code> element with icon positioning.</p>
+      <p>Navigation bar with an integrated search field. The <code>&lt;search&gt;</code> element uses the <code>.with-icon</code> class for positioned <code>&lt;icon-wc&gt;</code> icons.</p>
     </layout-text>
 
     <browser-window
@@ -299,12 +271,18 @@ const stickyStylesCode = `/* Sticky header */
     </browser-window>
 
     <code-block language="html" label="Nav with search field">{searchNavCode}</code-block>
+
+    <h3>Search Input Override</h3>
+    <layout-text>
+      <p>One small override to constrain the search input width in nav context:</p>
+    </layout-text>
+    <code-block language="css" label="Search width override">{searchStylesCode}</code-block>
   </section>
 
   <section>
     <h2>Mobile Responsive</h2>
     <layout-text>
-      <p>A responsive navbar that collapses to a hamburger menu on smaller screens. Uses the native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> pattern for the toggle - no JavaScript required.</p>
+      <p>A responsive navbar that collapses to a hamburger menu on smaller screens. Uses the native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> pattern for the toggle — no JavaScript required. The CSS overrides VB's default details/summary styles (border, chevron, padding) to work as a clean mobile menu trigger.</p>
     </layout-text>
 
     <browser-window
@@ -318,7 +296,7 @@ const stickyStylesCode = `/* Sticky header */
 
     <h3>Mobile Menu CSS</h3>
     <layout-text>
-      <p>The mobile menu requires CSS for the hamburger icon animation and responsive behavior:</p>
+      <p>The mobile menu requires CSS for VB details/summary overrides, the hamburger icon animation, and responsive behavior:</p>
     </layout-text>
 
     <code-block language="css" label="Mobile menu styles">{mobileStylesCode}</code-block>
@@ -327,7 +305,7 @@ const stickyStylesCode = `/* Sticky header */
   <section>
     <h2>Sticky Header</h2>
     <layout-text>
-      <p>A navigation bar that stays fixed at the top of the viewport as the user scrolls. Uses <code>position: sticky</code> with a subtle backdrop blur.</p>
+      <p>A navigation bar that stays fixed at the top of the viewport as the user scrolls. Uses VB's <code>header.sticky</code> (position, z-index, background) with a backdrop blur enhancement.</p>
     </layout-text>
 
     <browser-window
@@ -339,27 +317,30 @@ const stickyStylesCode = `/* Sticky header */
 
     <code-block language="html" label="Sticky header nav">{stickyNavCode}</code-block>
 
-    <h3>Sticky Header CSS</h3>
-    <code-block language="css" label="Sticky header styles">{stickyStylesCode}</code-block>
+    <h3>Backdrop Blur Enhancement</h3>
+    <code-block language="css" label="Sticky header enhancement">{stickyStylesCode}</code-block>
   </section>
 
   <section>
-    <h2>Base Header Styles</h2>
+    <h2>Built-in Styles</h2>
     <layout-text>
-      <p>These base styles are shared across all navbar variants:</p>
+      <p>VB handles all base navbar styling automatically — no custom CSS needed for the simple, dropdown, or sticky variants:</p>
     </layout-text>
 
-    <code-block language="css" label="Base header styles">{headerStylesCode}</code-block>
+    <code-block language="css" label="What VB provides (no custom CSS needed)">{headerStylesNote}</code-block>
   </section>
 
   <section>
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
+        <li><strong>Layout:</strong> <code>header.site</code> provides flex layout with <code>justify-content: space-between</code> — brand-mark left, nav right, automatically</li>
+        <li><strong>Nav styling:</strong> <code>header.site nav</code> sets muted link color, compact padding, and hover transitions via CSS custom properties</li>
         <li><strong>Accessibility:</strong> Always use <code>aria-label</code> on <code>&lt;nav&gt;</code> to identify its purpose (e.g., "Main navigation")</li>
         <li><strong>Active state:</strong> Use <code>aria-current="page"</code> on the link representing the current page</li>
-        <li><strong>Dropdowns:</strong> The <code>dropdown-wc</code> component handles keyboard navigation and ARIA automatically</li>
-        <li><strong>Mobile first:</strong> Consider building mobile-first and enhancing for desktop</li>
+        <li><strong>Dropdowns:</strong> The <code>dropdown-wc</code> component handles keyboard navigation and ARIA automatically. Use <code>data-no-flip</code> in constrained viewports</li>
+        <li><strong>Mobile menu:</strong> Override VB's details/summary styles (<code>border</code>, <code>summary::after</code> chevron, <code>padding</code>) when using details as a mobile menu trigger</li>
+        <li><strong>Sticky:</strong> Combine <code>header.site</code> + <code>header.sticky</code> for position/z-index/background, then add backdrop-filter for a polished effect</li>
         <li><strong>Skip links:</strong> Add a skip-to-content link before the nav for keyboard users</li>
       </ul>
     </layout-text>

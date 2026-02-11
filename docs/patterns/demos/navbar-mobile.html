@@ -3,33 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Navbar - Mobile (Refactored)</title>
+  <title>Navbar - Mobile</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
       margin: 0;
       background: var(--color-surface);
       min-height: 350px;
-    }
-    .site-header {
-      background: var(--color-surface);
-      border-block-end: var(--border-width-thin) solid var(--color-border);
-      padding-inline: var(--size-l);
-      padding-block: var(--size-s);
-    }
-    .site-header nav a:not(:has(brand-mark)) {
-      padding: var(--size-xs) var(--size-s);
-      color: var(--color-text-muted);
-      text-decoration: none;
-      border-radius: var(--radius-m);
-      transition: color var(--duration-fast) var(--ease-default);
-    }
-    .site-header nav a:not(:has(brand-mark)):hover {
-      color: var(--color-text);
-    }
-    .site-header nav a[aria-current="page"] {
-      color: var(--color-interactive);
-      font-weight: var(--font-weight-medium);
     }
 
     /* Mobile menu styles */
@@ -47,15 +27,25 @@
         position: relative;
       }
 
+      /* Override VB details/summary styles for mobile menu */
+      .mobile-menu {
+        border: none;
+        border-radius: 0;
+      }
+
       .mobile-menu summary {
-        list-style: none;
-        cursor: pointer;
         padding: var(--size-xs);
+        min-block-size: auto;
         border: none;
       }
 
-      .mobile-menu summary::-webkit-details-marker {
-        display: none;
+      .mobile-menu summary::after {
+        content: none;
+      }
+
+      .mobile-menu > .mobile-nav {
+        padding-inline: 0;
+        padding-block-end: 0;
       }
 
       /* Hamburger icon */
@@ -142,33 +132,25 @@
   </style>
 </head>
 <body class="demo-mobile-mode">
-  <header class="site-header">
-    <nav aria-label="Main navigation">
-      <layout-cluster data-justify="space-between" data-align="center">
-        <a href="#"><brand-mark>Acme Co</brand-mark></a>
-
-        <!-- Desktop nav (hidden on mobile) -->
-        <layout-cluster data-gap="s" class="desktop-nav">
-          <a href="#">Products</a>
-          <a href="#">Pricing</a>
-          <a href="#" aria-current="page">About</a>
-          <a href="#">Contact</a>
-        </layout-cluster>
-
-        <!-- Mobile menu (hidden on desktop) -->
-        <details class="mobile-menu">
-          <summary aria-label="Open menu">
-            <span class="hamburger"></span>
-          </summary>
-          <layout-stack data-gap="xs" class="mobile-nav">
-            <a href="#">Products</a>
-            <a href="#">Pricing</a>
-            <a href="#" aria-current="page">About</a>
-            <a href="#">Contact</a>
-          </layout-stack>
-        </details>
-      </layout-cluster>
+  <header class="site">
+    <a href="/"><brand-mark>Acme Co</brand-mark></a>
+    <nav aria-label="Main navigation" data-layout="cluster" data-gap="s" class="desktop-nav">
+      <a href="#">Products</a>
+      <a href="#">Pricing</a>
+      <a href="#" aria-current="page">About</a>
+      <a href="#">Contact</a>
     </nav>
+    <details class="mobile-menu">
+      <summary aria-label="Open menu">
+        <span class="hamburger"></span>
+      </summary>
+      <div class="mobile-nav" data-layout="stack" data-gap="xs">
+        <a href="#">Products</a>
+        <a href="#">Pricing</a>
+        <a href="#" aria-current="page">About</a>
+        <a href="#">Contact</a>
+      </div>
+    </details>
   </header>
 
   <main class="page-content">
