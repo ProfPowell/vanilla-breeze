@@ -1,0 +1,173 @@
+/* carousel-wc: Scroll carousel with controls and indicators */
+
+/* --- Progressive enhancement: no-JS fallback --- */
+carousel-wc:not(:defined) {
+  display: flex;
+  overflow-x: auto;
+  gap: var(--size-s);
+  scroll-snap-type: x mandatory;
+}
+
+carousel-wc:not(:defined) > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* --- Defined state --- */
+carousel-wc:defined {
+  display: grid;
+  grid-template-areas:
+    "prev track next"
+    ".    dots  .";
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--size-s);
+  position: relative;
+}
+
+/* --- Track --- */
+.carousel-track {
+  grid-area: track;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  gap: var(--_gap, 0px);
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-track:focus-visible {
+  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline-offset: 2px;
+  border-radius: var(--radius-s);
+}
+
+/* --- Slides --- */
+.carousel-track > * {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+/* Item width: auto */
+carousel-wc[data-item-width="auto"] .carousel-track > * {
+  flex: 0 0 auto;
+}
+
+/* Item width: custom CSS length via inline style fallback */
+
+/* Snap alignment: center for full-width slides */
+carousel-wc:not([data-item-width]) .carousel-track > *,
+carousel-wc[data-item-width="full"] .carousel-track > * {
+  scroll-snap-align: center;
+}
+
+/* --- Gap variants --- */
+carousel-wc[data-gap="xs"] { --_gap: var(--size-xs); }
+carousel-wc[data-gap="s"]  { --_gap: var(--size-s); }
+carousel-wc[data-gap="m"]  { --_gap: var(--size-m); }
+carousel-wc[data-gap="l"]  { --_gap: var(--size-l); }
+carousel-wc[data-gap="xl"] { --_gap: var(--size-xl); }
+
+/* --- Prev / Next buttons --- */
+.carousel-prev,
+.carousel-next {
+  grid-area: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full, 50%);
+  border: var(--border-width-thin) solid var(--color-border);
+  background: var(--color-surface, #fff);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.carousel-prev { grid-area: prev; }
+.carousel-next { grid-area: next; }
+
+.carousel-prev:hover:not(:disabled),
+.carousel-next:hover:not(:disabled) {
+  border-color: var(--color-interactive, oklch(55% 0.15 250));
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+}
+
+.carousel-prev:disabled,
+.carousel-next:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.carousel-prev:focus-visible,
+.carousel-next:focus-visible {
+  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline-offset: 2px;
+}
+
+/* --- Dot indicators --- */
+.carousel-indicators {
+  grid-area: dots;
+  display: flex;
+  justify-content: center;
+  gap: var(--size-xs);
+  padding-block-start: var(--size-xs);
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full, 50%);
+  border: none;
+  background: var(--color-border, oklch(80% 0 0));
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.carousel-dot:hover {
+  background: var(--color-text-muted, oklch(60% 0 0));
+}
+
+.carousel-dot[data-active] {
+  background: var(--color-interactive, oklch(55% 0.15 250));
+  transform: scale(1.3);
+}
+
+.carousel-dot:focus-visible {
+  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline-offset: 2px;
+}
+
+/* --- Live region (visually hidden) --- */
+.carousel-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track {
+    scroll-behavior: auto;
+  }
+
+  .carousel-prev,
+  .carousel-next,
+  .carousel-dot {
+    transition-duration: 0s;
+  }
+}

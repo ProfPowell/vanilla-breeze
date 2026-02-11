@@ -14,6 +14,7 @@ import './card-list/logic.js';
 import './flip-card-wc/logic.js';
 import './comparison-wc/logic.js';
 import './splitter-wc/logic.js';
+import './carousel-wc/logic.js';
 import './rating-wc/logic.js';
 import '../utils/copy-init.js';
 import '../utils/hotkey-init.js';
