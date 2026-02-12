@@ -18,7 +18,6 @@ import './carousel-wc/logic.js';
 import './rating-wc/logic.js';
 import './combobox-wc/logic.js';
 import './tags-wc/logic.js';
-import './hover-card-wc/logic.js';
 import './context-menu-wc/logic.js';
 import './command-wc/logic.js';
 import '../utils/copy-init.js';

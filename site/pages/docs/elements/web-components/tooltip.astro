@@ -116,6 +116,22 @@ const formHelpCode = `<layout-cluster data-gap="xs" data-align="center">
   </tooltip-wc>
 </layout-cluster>`;
 
+const cardVariantCode = `<tooltip-wc data-variant="card">
+  <a href="/user/jane" data-trigger>Jane Smith</a>
+  <div data-content>
+    <div style="display: flex; align-items: center; gap: var(--size-s);">
+      <img src="/avatars/jane.jpg" alt="" />
+      <div>
+        <strong>Jane Smith</strong>
+        <p class="text-muted" style="margin: 0;">Senior Developer at Acme Co</p>
+      </div>
+    </div>
+    <p class="text-muted" style="margin-block: var(--size-xs) 0;">
+      Joined March 2023 &middot; 142 contributions
+    </p>
+  </div>
+</tooltip-wc>`;
+
 const truncatedCode = `<tooltip-wc>
   <span tabindex="0" class="truncate">
     This is a very long text that gets truncated
@@ -220,6 +236,12 @@ const truncatedCode = `<tooltip-wc>
           <td>number</td>
           <td><code>200</code></td>
           <td>Show delay in milliseconds.</td>
+        </tr>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Set to <code>"card"</code> for hover card mode with rich content, card styling, and longer delay (300ms).</td>
         </tr>
       </tbody>
     </table>
@@ -349,6 +371,69 @@ const truncatedCode = `<tooltip-wc>
         </tooltip-wc>
       </layout-cluster>
     </div>
+  </section>
+
+  <section>
+    <h2>Card Variant</h2>
+    <p>For richer content previews like user profiles or link previews, use <code>data-variant="card"</code>. This mode uses a card-style popover instead of a compact tooltip.</p>
+
+    <div class="example">
+      <div>Hover over
+        <tooltip-wc data-variant="card">
+          <a href="#" data-trigger>this link</a>
+          <div data-content>
+            <p><strong>Rich Content</strong></p>
+            <p class="text-muted">This hover card shows structured content on hover. It has a surface background, border, and shadow.</p>
+          </div>
+        </tooltip-wc>
+        to see the card.
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Card variant with profile content">{cardVariantCode}</code-block>
+
+    <h3>Differences from Regular Tooltip</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Tooltip (default)</th>
+          <th>Card variant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Content model</td>
+          <td><code>data-content</code> or <code>&lt;template data-tooltip&gt;</code></td>
+          <td><code>[data-trigger]</code> + <code>[data-content]</code></td>
+        </tr>
+        <tr>
+          <td>Appearance</td>
+          <td>Dark, compact, with arrow</td>
+          <td>Light card surface, border, shadow, no arrow</td>
+        </tr>
+        <tr>
+          <td>Show delay</td>
+          <td>200ms</td>
+          <td>300ms</td>
+        </tr>
+        <tr>
+          <td>Hide delay</td>
+          <td>100ms</td>
+          <td>200ms</td>
+        </tr>
+        <tr>
+          <td>Popover type</td>
+          <td><code>hint</code></td>
+          <td><code>manual</code> (supports interactive content)</td>
+        </tr>
+        <tr>
+          <td>ARIA</td>
+          <td><code>role="tooltip"</code>, <code>aria-describedby</code></td>
+          <td>None (supplementary content)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>

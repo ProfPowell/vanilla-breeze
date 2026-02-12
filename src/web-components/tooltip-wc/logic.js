@@ -8,6 +8,7 @@
  * @attr {string} data-content - Simple text tooltip content
  * @attr {string} data-position - Position: 'top' (default), 'bottom', 'left', 'right'
  * @attr {number} data-delay - Show delay in ms (default: 200)
+ * @attr {string} data-variant - Variant: omit for tooltip (default), 'card' for hover card
  *
  * @example Simple text tooltip
  * <tooltip-wc data-content="Save your changes">
@@ -21,6 +22,15 @@
  *     <strong>Formatted</strong> content with <kbd>Ctrl+S</kbd>
  *   </template>
  * </tooltip-wc>
+ *
+ * @example Card variant (rich hover card)
+ * <tooltip-wc data-variant="card">
+ *   <a href="/user/jane" data-trigger>Jane Smith</a>
+ *   <div data-content>
+ *     <h4>Jane Smith</h4>
+ *     <p>Senior Developer</p>
+ *   </div>
+ * </tooltip-wc>
  */
 
 // Check CSS Anchor Positioning support once
@@ -32,6 +42,7 @@ class TooltipWc extends HTMLElement {
   #showTimer;
   #hideTimer;
   #useJsPositioning = !supportsAnchor;
+  #isCard = false;
 
   connectedCallback() {
     this.#setup();
@@ -42,6 +53,17 @@ class TooltipWc extends HTMLElement {
   }
 
   #setup() {
+    this.#isCard = this.dataset.variant === 'card';
+
+    if (this.#isCard) {
+      this.#setupCard();
+    } else {
+      this.#setupTooltip();
+    }
+  }
+
+  // --- Regular tooltip setup (unchanged) ---
+  #setupTooltip() {
     // Find trigger (first non-template child)
     this.#trigger = this.querySelector(':scope > :not(template)');
     if (!this.#trigger) return;
@@ -104,6 +126,38 @@ class TooltipWc extends HTMLElement {
     // Note: Escape key handling is built into Popover API - no manual listener needed
   }
 
+  // --- Card variant setup ---
+  #setupCard() {
+    this.#trigger = this.querySelector(':scope > [data-trigger]');
+    const content = this.querySelector(':scope > [data-content]');
+    if (!this.#trigger || !content) return;
+
+    // Create card popover (manual — cards may contain interactive content)
+    this.#tooltip = document.createElement('div');
+    this.#tooltip.className = 'hover-card';
+    this.#tooltip.setAttribute('popover', 'manual');
+    this.#tooltip.id = `hc-${crypto.randomUUID().slice(0, 8)}`;
+
+    // Move content into the card
+    this.#tooltip.appendChild(content);
+    content.removeAttribute('data-content');
+    content.hidden = false;
+
+    this.appendChild(this.#tooltip);
+
+    // Event listeners
+    this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
+    this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
+    this.#trigger.addEventListener('focus', this.#showImmediate);
+    this.#trigger.addEventListener('blur', this.#scheduleHide);
+
+    this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
+    this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
+
+    // Manual popover doesn't auto-handle Escape
+    document.addEventListener('keydown', this.#handleEscape);
+  }
+
   #cleanup() {
     if (this.#trigger) {
       this.#trigger.removeEventListener('mouseenter', this.#scheduleShow);
@@ -115,19 +169,24 @@ class TooltipWc extends HTMLElement {
       this.#tooltip.removeEventListener('mouseenter', this.#cancelHide);
       this.#tooltip.removeEventListener('mouseleave', this.#scheduleHide);
     }
+    if (this.#isCard) {
+      document.removeEventListener('keydown', this.#handleEscape);
+    }
     clearTimeout(this.#showTimer);
     clearTimeout(this.#hideTimer);
   }
 
   #scheduleShow = () => {
     clearTimeout(this.#hideTimer);
-    const delay = parseInt(this.dataset.delay || '200', 10);
+    const defaultDelay = this.#isCard ? 300 : 200;
+    const delay = parseInt(this.dataset.delay || String(defaultDelay), 10);
     this.#showTimer = setTimeout(() => this.show(), delay);
   };
 
   #scheduleHide = () => {
     clearTimeout(this.#showTimer);
-    this.#hideTimer = setTimeout(() => this.hide(), 100);
+    const hideDelay = this.#isCard ? 200 : 100;
+    this.#hideTimer = setTimeout(() => this.hide(), hideDelay);
   };
 
   #showImmediate = () => {
@@ -144,17 +203,25 @@ class TooltipWc extends HTMLElement {
     clearTimeout(this.#hideTimer);
   };
 
+  #handleEscape = (e) => {
+    if (e.key === 'Escape' && this.isVisible) {
+      this.hide();
+    }
+  };
+
   show() {
     if (!this.#tooltip || this.isVisible) return;
 
     this.#tooltip.showPopover();
 
-    // Only use JS positioning if CSS Anchor not supported
-    if (this.#useJsPositioning) {
+    if (this.#isCard) {
+      this.#positionCard();
+    } else if (this.#useJsPositioning) {
       this.#updatePosition();
     }
 
-    this.dispatchEvent(new CustomEvent('tooltip-show', { bubbles: true }));
+    const eventName = this.#isCard ? 'hover-card-show' : 'tooltip-show';
+    this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 
   hide() {
@@ -162,7 +229,8 @@ class TooltipWc extends HTMLElement {
 
     this.#tooltip.hidePopover();
 
-    this.dispatchEvent(new CustomEvent('tooltip-hide', { bubbles: true }));
+    const eventName = this.#isCard ? 'hover-card-hide' : 'tooltip-hide';
+    this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 
   /**
@@ -204,6 +272,43 @@ class TooltipWc extends HTMLElement {
     left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
     top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
 
+    this.#tooltip.style.top = `${top}px`;
+    this.#tooltip.style.left = `${left}px`;
+  }
+
+  /**
+   * Position the card variant relative to the trigger.
+   * Center-aligned horizontally with top/bottom viewport flip.
+   */
+  #positionCard() {
+    if (!this.#trigger || !this.#tooltip) return;
+
+    const triggerRect = this.#trigger.getBoundingClientRect();
+    const cardRect = this.#tooltip.getBoundingClientRect();
+    const preferred = this.dataset.position || 'bottom';
+    const gap = 8;
+    const padding = 8;
+
+    let top, left;
+
+    // Horizontal: center-align with trigger
+    left = triggerRect.left + (triggerRect.width - cardRect.width) / 2;
+    left = Math.max(padding, Math.min(left, window.innerWidth - cardRect.width - padding));
+
+    // Vertical: preferred position with flip
+    if (preferred === 'top') {
+      top = triggerRect.top - cardRect.height - gap;
+      if (top < padding) {
+        top = triggerRect.bottom + gap;
+      }
+    } else {
+      top = triggerRect.bottom + gap;
+      if (top + cardRect.height > window.innerHeight - padding) {
+        top = triggerRect.top - cardRect.height - gap;
+      }
+    }
+
+    this.#tooltip.style.position = 'fixed';
     this.#tooltip.style.top = `${top}px`;
     this.#tooltip.style.left = `${left}px`;
   }
