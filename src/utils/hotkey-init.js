@@ -11,7 +11,7 @@
  * <kbd data-hotkey="meta+k">Ctrl+K</kbd>
  */
 
-const SELECTOR = '[data-hotkey]';
+const SELECTOR = 'kbd[data-hotkey]';
 const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform ?? '');
 
 const SYMBOLS = {
