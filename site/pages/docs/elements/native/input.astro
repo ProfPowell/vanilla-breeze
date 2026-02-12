@@ -106,6 +106,16 @@ const rangeEnhancedCode = `<input type="range" min="0" max="1000" step="100"
 
 const uploadCode = `<input type="file" data-upload accept=".pdf,.doc" multiple>`;
 
+const maskCode = `<!-- Preset masks -->
+<input type="text" data-mask="phone" placeholder="(555) 123-4567">
+<input type="text" data-mask="credit-card" placeholder="1234 5678 9012 3456">
+<input type="text" data-mask="date" placeholder="MM/DD/YYYY">
+<input type="text" data-mask="ssn" placeholder="123-45-6789">
+<input type="text" data-mask="zip" placeholder="12345">
+
+<!-- Custom mask: # = digit, A = letter, * = any -->
+<input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234">`;
+
 const cssReferenceCode = `/* Text inputs, select, textarea */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
 textarea,
@@ -858,6 +868,82 @@ input:invalid:not(:placeholder-shown) {
       </tbody>
     </table>
     <p>The native <code>accept</code> and <code>multiple</code> attributes work as normal. Without JS, the standard file input is shown.</p>
+  </section>
+
+  <section>
+    <h2>Input Masking (data-mask)</h2>
+    <p>Add <code>data-mask</code> to a text input to format the value as the user types. Preset masks handle common patterns; use <code>data-mask="custom"</code> with <code>data-pattern</code> for arbitrary formats.</p>
+
+    <browser-window
+      src="/docs/examples/demos/mask-basic.html"
+      url="https://vanilla-breeze.dev/input-masking"
+      title="Input Masking Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="max-inline-size: 25rem;">
+        <form-field>
+          <label for="demo-mask-phone">Phone</label>
+          <input type="text" id="demo-mask-phone" data-mask="phone" placeholder="(555) 123-4567">
+        </form-field>
+        <form-field>
+          <label for="demo-mask-cc">Credit Card</label>
+          <input type="text" id="demo-mask-cc" data-mask="credit-card" placeholder="1234 5678 9012 3456">
+        </form-field>
+        <form-field>
+          <label for="demo-mask-date">Date</label>
+          <input type="text" id="demo-mask-date" data-mask="date" placeholder="MM/DD/YYYY">
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Input masking">{maskCode}</code-block>
+
+    <h3>Preset Masks</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Pattern</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>phone</code></td><td><code>(###) ###-####</code></td><td>(555) 123-4567</td></tr>
+        <tr><td><code>credit-card</code></td><td><code>#### #### #### ####</code></td><td>1234 5678 9012 3456</td></tr>
+        <tr><td><code>date</code></td><td><code>##/##/####</code></td><td>01/15/2026</td></tr>
+        <tr><td><code>ssn</code></td><td><code>###-##-####</code></td><td>123-45-6789</td></tr>
+        <tr><td><code>zip</code></td><td><code>#####</code></td><td>90210</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Custom Mask Tokens</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Token</th><th>Accepts</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>#</code></td><td>Any digit (0-9)</td></tr>
+        <tr><td><code>A</code></td><td>Any letter (a-z, A-Z)</td></tr>
+        <tr><td><code>*</code></td><td>Any alphanumeric character</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-mask</code></td><td>Mask type: <code>phone</code>, <code>credit-card</code>, <code>date</code>, <code>ssn</code>, <code>zip</code>, or <code>custom</code>.</td></tr>
+        <tr><td><code>data-pattern</code></td><td>Custom pattern string when <code>data-mask="custom"</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Behavior</h3>
+    <ul>
+      <li>Auto-sets <code>inputmode="numeric"</code> for digit-only masks</li>
+      <li>Auto-sets <code>maxlength</code> from the pattern length</li>
+      <li>Stores the unformatted value in <code>dataset.rawValue</code> for form processing</li>
+      <li>Without JS, the input works as a standard text field</li>
+    </ul>
   </section>
 
   <section>

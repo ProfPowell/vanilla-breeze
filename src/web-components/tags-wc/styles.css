@@ -1,0 +1,190 @@
+/* tags-wc: Form-associated multi-select tag input */
+
+tags-wc {
+  display: inline-block;
+  position: relative;
+
+  /* Open state */
+  &[data-open] > ul,
+  &[data-open] > ol {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+      opacity var(--motion-enter-duration) var(--ease-out),
+      visibility var(--motion-enter-duration) var(--ease-out),
+      transform var(--motion-enter-duration) var(--ease-out);
+  }
+}
+
+/* Progressive enhancement: plain input + visible list before JS */
+tags-wc:not(:defined) {
+  display: block;
+
+  & > ul,
+  & > ol {
+    list-style: none;
+    padding: 0;
+    margin-block-start: var(--size-xs);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    max-block-size: 12rem;
+    overflow-y: auto;
+  }
+
+  & > ul > li,
+  & > ol > li {
+    padding: var(--size-xs) var(--size-m);
+  }
+}
+
+@scope (tags-wc) {
+  /* Input area — flex-wrap container styled like standard VB input */
+  .tags-input-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-2xs);
+    padding: var(--size-2xs) var(--size-xs);
+    min-block-size: var(--size-touch-min);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    background: var(--color-surface);
+    cursor: text;
+    transition: border-color var(--duration-fast);
+
+    &:focus-within {
+      border-color: var(--color-interactive);
+      box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+    }
+  }
+
+  /* Tag chip */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-3xs);
+    padding: var(--size-3xs) var(--size-xs);
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-pill, 999px);
+    font-size: var(--font-size-s);
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--color-text);
+
+    /* Remove button */
+    & button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.1em;
+      block-size: 1.1em;
+      border-radius: 50%;
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      transition: color var(--duration-fast), background var(--duration-fast);
+
+      &:hover {
+        color: var(--color-error, oklch(55% 0.2 25));
+        background: oklch(from var(--color-error, oklch(55% 0.2 25)) l c h / 0.1);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-interactive);
+        outline-offset: 1px;
+      }
+    }
+  }
+
+  /* Input inside area */
+  input {
+    all: unset;
+    flex: 1;
+    min-inline-size: 6rem;
+    padding: var(--size-3xs) 0;
+    font: inherit;
+    color: var(--color-text);
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    &:disabled {
+      display: none;
+    }
+  }
+
+  /* Listbox (dropdown) */
+  ul,
+  ol {
+    position: absolute;
+    z-index: 100;
+    inset-inline: 0;
+    margin: 0;
+    margin-block-start: var(--size-3xs);
+    padding: var(--size-2xs) 0;
+    list-style: none;
+
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
+
+    max-block-size: 16rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.25rem);
+    transition:
+      opacity var(--motion-exit-duration) var(--ease-out),
+      visibility var(--motion-exit-duration) var(--ease-out),
+      transform var(--motion-exit-duration) var(--ease-out);
+  }
+
+  /* Options */
+  li[data-value] {
+    padding: var(--size-xs) var(--size-m);
+    margin: 0;
+    cursor: pointer;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--duration-fast) var(--ease-default);
+
+    &:hover {
+      background: var(--color-surface-alt);
+    }
+
+    &[data-active] {
+      background: var(--color-surface-alt);
+      outline: 2px solid var(--color-interactive);
+      outline-offset: -2px;
+    }
+
+    &[aria-selected="true"] {
+      font-weight: 500;
+      color: var(--color-interactive);
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (tags-wc) {
+    ul,
+    ol {
+      transition: none;
+      transform: none;
+    }
+  }
+}
