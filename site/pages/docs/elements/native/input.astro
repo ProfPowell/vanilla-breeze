@@ -116,6 +116,32 @@ const maskCode = `<!-- Preset masks -->
 <!-- Custom mask: # = digit, A = letter, * = any -->
 <input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234">`;
 
+const markersCode = `<input type="range" min="1" max="5" step="1" value="3"
+  data-range data-bubble data-markers>`;
+
+const toggleTagsCode = `<fieldset data-toggle-tags>
+  <legend>Favorite Topics</legend>
+  <label><input type="checkbox" name="topics" value="ai"> AI / ML</label>
+  <label><input type="checkbox" name="topics" value="web"> Web Dev</label>
+  <label><input type="checkbox" name="topics" value="mobile"> Mobile</label>
+</fieldset>
+
+<!-- With max selection limit -->
+<fieldset data-toggle-tags data-max="3">
+  <legend>Pick up to 3</legend>
+  <label><input type="checkbox" name="skills" value="js"> JavaScript</label>
+  <label><input type="checkbox" name="skills" value="py"> Python</label>
+  <label><input type="checkbox" name="skills" value="go"> Go</label>
+  <label><input type="checkbox" name="skills" value="rust"> Rust</label>
+</fieldset>`;
+
+const stepperCode = `<input type="number" min="0" max="50" step="1" value="1" data-stepper>
+
+<!-- Decimal steps -->
+<input type="number" min="0" max="10" step="0.5" value="1.0" data-stepper>`;
+
+const colorCode = `<input type="color" value="#6366f1" data-color>`;
+
 const cssReferenceCode = `/* Text inputs, select, textarea */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
 textarea,
@@ -944,6 +970,157 @@ input:invalid:not(:placeholder-shown) {
       <li>Stores the unformatted value in <code>dataset.rawValue</code> for form processing</li>
       <li>Without JS, the input works as a standard text field</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>Range Markers (data-markers)</h2>
+    <p>Add <code>data-markers</code> to a <code>data-range</code> input to display tick marks at each step value. Combines with <code>data-bubble</code> and <code>&lt;datalist&gt;</code> labels.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-markers">Rating (1-5)</label>
+        <input type="range" id="demo-markers" min="1" max="5" step="1" value="3" data-range data-bubble data-markers>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Range with tick markers">{markersCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-markers</code></td>
+          <td>Show tick marks at each step position along the track.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Toggle Tags (data-toggle-tags)</h2>
+    <p>Wrap checkboxes in a <code>&lt;fieldset data-toggle-tags&gt;</code> for pill-chip styling. Pure CSS &mdash; no JS needed. Add <code>data-max</code> to limit the number of selections.</p>
+
+    <browser-window
+      src="/docs/examples/demos/toggle-tags-basic.html"
+      url="https://vanilla-breeze.dev/toggle-tags"
+      title="Toggle Tags Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <fieldset data-toggle-tags>
+        <legend>Topics</legend>
+        <label><input type="checkbox" name="demo-topics" value="ai"> AI / ML</label>
+        <label><input type="checkbox" name="demo-topics" value="web" checked> Web Dev</label>
+        <label><input type="checkbox" name="demo-topics" value="mobile"> Mobile</label>
+        <label><input type="checkbox" name="demo-topics" value="devops"> DevOps</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Toggle tags">{toggleTagsCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-toggle-tags</code></td>
+          <td>Enable pill-chip styling on a checkbox fieldset.</td>
+        </tr>
+        <tr>
+          <td><code>data-max</code></td>
+          <td>Maximum number of selections. Unchecked boxes are disabled at the limit.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Why CSS-Only</h3>
+    <p>Native checkboxes give you form participation, validation, reset, keyboard navigation, and accessibility for free. The visual transformation uses <code>:has(:checked)</code> to style labels. JS is only loaded when <code>data-max</code> is set.</p>
+  </section>
+
+  <section>
+    <h2>Number Stepper (data-stepper)</h2>
+    <p>Add <code>data-stepper</code> to a number input for custom +/&minus; buttons. Hides native spinners and disables buttons at min/max boundaries.</p>
+
+    <browser-window
+      src="/docs/examples/demos/number-basic.html"
+      url="https://vanilla-breeze.dev/number-stepper"
+      title="Number Stepper Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <form-field style="max-inline-size: 15rem;">
+        <label for="demo-stepper">Quantity</label>
+        <input type="number" id="demo-stepper" min="0" max="50" step="1" value="1" data-stepper>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Number stepper">{stepperCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-stepper</code></td>
+          <td>Enable +/&minus; stepper buttons on a number input.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Without JS, the native number input with browser spinners works fine.</p>
+  </section>
+
+  <section>
+    <h2>Enhanced Color Input (data-color)</h2>
+    <p>Add <code>data-color</code> to a color input for a styled swatch circle and hex code display. Clicking opens the native color picker.</p>
+
+    <browser-window
+      src="/docs/examples/demos/color-basic.html"
+      url="https://vanilla-breeze.dev/color-input"
+      title="Enhanced Color Input Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-color-enhanced">Brand Color</label>
+        <input type="color" id="demo-color-enhanced" value="#6366f1" data-color>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Enhanced color input">{colorCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-color</code></td>
+          <td>Enable swatch + hex display enhancement on a color input.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Without JS, the native color picker renders (functional but unstyled).</p>
   </section>
 
   <section>

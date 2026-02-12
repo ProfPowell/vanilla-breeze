@@ -35,3 +35,6 @@ import '../utils/range-init.js';
 import '../utils/upload-init.js';
 import '../utils/autosave-init.js';
 import '../utils/mask-init.js';
+import '../utils/toggle-tags-init.js';
+import '../utils/number-init.js';
+import '../utils/color-init.js';

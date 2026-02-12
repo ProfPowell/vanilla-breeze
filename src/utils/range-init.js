@@ -8,6 +8,7 @@
  * @attr {string} data-bubble - Show floating value bubble
  * @attr {string} data-prefix - Value prefix (e.g., "$")
  * @attr {string} data-suffix - Value suffix (e.g., "%")
+ * @attr {string} data-markers - Show tick marks at each step
  *
  * @example
  * <input type="range" min="0" max="100" data-range data-bubble>
@@ -66,6 +67,20 @@ function enhanceRange(input) {
     const max = parseFloat(input.max) || 100;
     const pct = ((parseFloat(input.value) - min) / (max - min)) * 100;
     bubble.style.insetInlineStart = `${pct}%`;
+  }
+
+  // Tick markers
+  if (input.hasAttribute('data-markers')) {
+    const min = parseFloat(input.min) || 0;
+    const max = parseFloat(input.max) || 100;
+    const step = parseFloat(input.step) || 1;
+    const markers = document.createElement('div');
+    markers.className = 'range-markers';
+    const count = Math.round((max - min) / step);
+    for (let i = 0; i <= count; i++) {
+      markers.appendChild(document.createElement('span'));
+    }
+    wrapper.appendChild(markers);
   }
 
   // Datalist labels

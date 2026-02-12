@@ -271,6 +271,21 @@ textarea[data-grow][data-grow-init] {
   border: var(--border-width-thin, 1px) solid var(--color-border);
 }
 
+/* Tick markers at each step */
+.range-markers {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 0.625rem;
+  margin-block-start: var(--size-2xs);
+}
+
+.range-markers span {
+  inline-size: 2px;
+  block-size: 0.5rem;
+  background: var(--color-border);
+  border-radius: 1px;
+}
+
 /* Datalist tick labels */
 .range-labels {
   position: relative;
@@ -384,4 +399,181 @@ textarea[data-grow][data-grow-init] {
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
   margin-inline-start: var(--size-s);
+}
+
+/* --------------------------------------------------------------------------
+   data-toggle-tags: Checkbox pill chips
+   -------------------------------------------------------------------------- */
+[data-toggle-tags] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-xs);
+  border: none;
+  padding: 0;
+}
+
+[data-toggle-tags] > legend {
+  float: left;
+  inline-size: 100%;
+  margin-block-end: var(--size-xs);
+  font-weight: 600;
+}
+
+[data-toggle-tags] label {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--size-2xs) var(--size-s);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  font-size: var(--font-size-s);
+  user-select: none;
+  transition: all var(--duration-fast, 150ms) var(--ease-default, ease);
+}
+
+[data-toggle-tags] label:hover {
+  border-color: var(--color-interactive);
+}
+
+[data-toggle-tags] input[type="checkbox"] {
+  appearance: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+[data-toggle-tags] label:has(:checked) {
+  background: var(--color-interactive);
+  color: white;
+  border-color: var(--color-interactive);
+}
+
+[data-toggle-tags] label:has(:focus-visible) {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+[data-toggle-tags] label:has(:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   data-stepper: Number input with +/- buttons
+   -------------------------------------------------------------------------- */
+.number-wrapper {
+  display: inline-flex;
+  align-items: stretch;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  transition: border-color var(--duration-fast, 150ms);
+}
+
+.number-wrapper:focus-within {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+.number-wrapper input[type="number"] {
+  appearance: textfield;
+  border: none;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  inline-size: 4rem;
+  padding-block: var(--size-xs);
+  padding-inline: var(--size-2xs);
+  background: var(--color-surface);
+  font: inherit;
+  min-block-size: 0;
+}
+
+.number-wrapper input[type="number"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.number-wrapper input[type="number"]::-webkit-inner-spin-button,
+.number-wrapper input[type="number"]::-webkit-outer-spin-button {
+  display: none;
+}
+
+.number-wrapper button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  cursor: pointer;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  transition: background var(--duration-fast, 150ms);
+}
+
+.number-wrapper button:hover:not(:disabled) {
+  background: var(--color-surface-sunken, oklch(92% 0 0));
+}
+
+.number-wrapper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   data-color: Enhanced color input with swatch and hex
+   -------------------------------------------------------------------------- */
+.color-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.color-wrapper input[type="color"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  min-block-size: 0;
+}
+
+.color-display {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-xs);
+  padding: var(--size-xs) var(--size-s);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font: inherit;
+  transition: border-color var(--duration-fast, 150ms);
+}
+
+.color-display:hover {
+  border-color: var(--color-interactive);
+}
+
+.color-wrapper:focus-within .color-display {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+.color-swatch {
+  display: inline-block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.color-hex {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-s);
+  text-transform: uppercase;
 }
