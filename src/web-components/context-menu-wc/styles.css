@@ -21,7 +21,11 @@ context-menu-wc {
     left: var(--ctx-left, 0);
     z-index: 200;
 
-    /* Reset list */
+    /* Reset list — override native-elements menu horizontal flex */
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
     margin: 0;
     padding: var(--size-2xs) 0;
     list-style: none;
@@ -49,10 +53,11 @@ context-menu-wc {
       padding: 0;
     }
 
-    & button,
-    & a {
+    & > li > button,
+    & > li > a {
       display: flex;
       align-items: center;
+      justify-content: flex-start;
       gap: var(--size-s);
       inline-size: 100%;
       padding: var(--size-xs) var(--size-m);
@@ -100,13 +105,41 @@ context-menu-wc {
       inline-size: 1em;
       block-size: 1em;
     }
-  }
 
-  /* Separator */
-  [role="separator"] {
-    block-size: 1px;
-    margin: var(--size-2xs) 0;
-    background: var(--color-border);
+    /* Separator */
+    & > [role="separator"] {
+      block-size: 1px;
+      margin: var(--size-2xs) 0;
+      background: var(--color-border);
+    }
+
+    /* Group label */
+    & > li[data-group] {
+      padding: var(--size-xs) var(--size-m) var(--size-xs) var(--size-s);
+      font-size: var(--font-size-xs, 0.75rem);
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    & > li[data-group]:not(:first-child) {
+      margin-block-start: var(--size-2xs);
+      border-block-start: 1px solid var(--color-border);
+      padding-block-start: var(--size-s);
+    }
+
+    /* Shortcut badge */
+    & .ctx-kbd {
+      margin-inline-start: auto;
+      font-size: var(--font-size-xs, 0.75rem);
+      color: var(--color-text-muted);
+      background: var(--color-surface-raised);
+      padding: var(--size-3xs) var(--size-xs);
+      border-radius: var(--radius-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      font-family: inherit;
+    }
   }
 }
 

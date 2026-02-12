@@ -2,24 +2,10 @@
 /**
  * splitter-wc Web Component Documentation
  *
- * Three-layer progressive enhancement for resizable panels:
- * Layer 1 (CSS), Layer 2 (attribute init), Layer 3 (web component).
+ * Two-layer progressive enhancement for resizable panels:
+ * Layer 1 (attribute init), Layer 2 (web component).
  */
 import ElementLayout from '../../../../layouts/ElementLayout.astro';
-
-const layer1Code = `<!-- Pure CSS — zero JS -->
-<div data-layout="sidebar">
-  <nav data-resizable>Sidebar content</nav>
-  <main>Main content</main>
-</div>`;
-
-const layer1VerticalCode = `<div data-resizable="vertical">
-  Vertically resizable panel
-</div>
-
-<div data-resizable="both">
-  Resizable in both directions
-</div>`;
 
 const layer2Code = `<!-- Light JS — auto-injected divider -->
 <div data-layout="sidebar" data-splitter>
@@ -98,14 +84,14 @@ const stylingCode = `/* Custom divider color */
 
 <ElementLayout
   title="splitter-wc"
-  description="Resizable panel splitter with three layers of progressive enhancement: CSS utility, attribute init, and full web component."
+  description="Resizable panel splitter with two layers of progressive enhancement: attribute init and full web component."
   elementName="splitter-wc"
   category="component"
   currentPath="/docs/elements/web-components/splitter/"
 >
   <section>
     <h2>Overview</h2>
-    <p>The splitter provides resizable panel support as a three-layer progressive enhancement story &mdash; from pure CSS to full web component &mdash; matching a "platform-first, enhance upward" philosophy.</p>
+    <p>The splitter provides resizable panel support as a two-layer progressive enhancement story &mdash; from attribute init to full web component &mdash; matching a "platform-first, enhance upward" philosophy.</p>
 
     <browser-window
       src="/docs/examples/demos/splitter-basic.html"
@@ -116,39 +102,7 @@ const stylingCode = `/* Custom divider color */
   </section>
 
   <section>
-    <h2>Layer 1: CSS Utility</h2>
-    <p><strong>Zero JavaScript.</strong> Apply <code>data-resizable</code> to any element inside a flex or grid container. The browser provides a native resize handle.</p>
-
-    <div class="example">
-      <div data-layout="sidebar" style="min-height: 120px;">
-        <nav data-resizable style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar &mdash; drag the corner handle</nav>
-        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content area</main>
-      </div>
-    </div>
-
-    <code-block language="html" show-lines label="data-resizable">{layer1Code}</code-block>
-
-    <h3>Variants</h3>
-    <table class="props-table">
-      <thead>
-        <tr><th>Value</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>data-resizable</code></td><td>Horizontal resize (default)</td></tr>
-        <tr><td><code>data-resizable="vertical"</code></td><td>Vertical resize</td></tr>
-        <tr><td><code>data-resizable="both"</code></td><td>Resize in both directions</td></tr>
-      </tbody>
-    </table>
-
-    <code-block language="html" show-lines label="Vertical and both">{layer1VerticalCode}</code-block>
-
-    <aside class="note">
-      <strong>Trade-off:</strong> The browser provides a small corner triangle handle. No keyboard support, no ARIA. But it works with zero JS on any layout.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Layer 2: Attribute Init</h2>
+    <h2>Layer 1: Attribute Init</h2>
     <p><strong>Light JS (~80 lines).</strong> Apply <code>data-splitter</code> to a container. A small init script injects a full-height drag divider between the first two children with pointer and keyboard events.</p>
 
     <div class="example">
@@ -182,7 +136,7 @@ const stylingCode = `/* Custom divider color */
   </section>
 
   <section>
-    <h2>Layer 3: Web Component</h2>
+    <h2>Layer 2: Web Component</h2>
     <p><strong>Full component.</strong> Self-contained <code>&lt;splitter-wc&gt;</code> element with persistence, collapsible panels, custom events, and JS API.</p>
 
     <div class="example">
@@ -245,7 +199,7 @@ const stylingCode = `/* Custom divider color */
 
   <section>
     <h2>Keyboard Navigation</h2>
-    <p>Both Layer 2 and Layer 3 support the same keyboard controls:</p>
+    <p>Both layers support the same keyboard controls:</p>
     <table class="props-table">
       <thead>
         <tr><th>Key</th><th>Action</th></tr>
@@ -275,7 +229,7 @@ const stylingCode = `/* Custom divider color */
 
   <section>
     <h2>Styling</h2>
-    <p>The divider uses the <code>.splitter-divider</code> class shared by both Layer 2 and Layer 3. The <code>::after</code> pseudo-element renders a grip indicator.</p>
+    <p>The divider uses the <code>.splitter-divider</code> class shared by both layers. The <code>::after</code> pseudo-element renders a grip indicator.</p>
     <code-block language="css" show-lines label="Custom divider styling">{stylingCode}</code-block>
   </section>
 
@@ -292,7 +246,6 @@ const stylingCode = `/* Custom divider color */
         <tr><th>Layer</th><th>JS</th><th>Keyboard</th><th>ARIA</th><th>Persistence</th><th>Best for</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>data-resizable</code></td><td>0</td><td>No</td><td>No</td><td>No</td><td>Quick resizable panels with zero overhead</td></tr>
         <tr><td><code>data-splitter</code></td><td>~80 lines</td><td>Yes</td><td>Yes</td><td>No</td><td>Enhanced layout containers with accessibility</td></tr>
         <tr><td><code>&lt;splitter-wc&gt;</code></td><td>~120 lines</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Full-featured standalone component</td></tr>
       </tbody>

@@ -1,0 +1,150 @@
+---
+/**
+ * heading-links Web Component Documentation
+ *
+ * Adds anchor links to headings with click-to-copy URL support.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicCode = `<heading-links>
+  <h2>Getting Started</h2>
+  <p>Content here...</p>
+  <h3>Installation</h3>
+  <p>More content...</p>
+</heading-links>`;
+
+const levelsCode = `<!-- Only process h2 headings -->
+<heading-links data-levels="h2">
+  <h2>This gets an anchor</h2>
+  <h3>This does not</h3>
+</heading-links>
+
+<!-- Process h2, h3, and h4 -->
+<heading-links data-levels="h2,h3,h4">
+  <h2>Anchor link</h2>
+  <h3>Anchor link</h3>
+  <h4>Anchor link</h4>
+</heading-links>`;
+
+const existingIdCode = `<!-- Existing IDs are preserved -->
+<heading-links>
+  <h2 id="custom-id">This keeps its ID</h2>
+  <h3>This gets an auto-generated ID</h3>
+</heading-links>`;
+
+const eventCode = `const el = document.querySelector('heading-links');
+
+el.addEventListener('heading-navigate', (e) => \{
+  console.log('Navigated to:', e.detail.id);
+  console.log('URL:', e.detail.url);
+\});`;
+
+const stylingCode = `/* Custom anchor icon color */
+heading-links .heading-anchor \{
+  color: var(--color-primary);
+\}
+
+/* Always show anchors (instead of hover-only) */
+heading-links .heading-anchor \{
+  opacity: 1;
+\}`;
+---
+
+<ElementLayout
+  title="heading-links"
+  description="Adds clickable anchor links to headings with auto-generated IDs and click-to-copy URL support."
+  elementName="heading-links"
+  category="component"
+  currentPath="/docs/elements/web-components/heading-links/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>Wraps a content area and adds anchor link icons to headings. Hover a heading to reveal the link icon; click it to scroll, update the URL hash, and copy the link to clipboard.</p>
+
+    <browser-window
+      src="/docs/examples/demos/heading-links-basic.html"
+      url="https://vanilla-breeze.dev/heading-links"
+      title="Heading Links Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>Wrap any content containing headings. By default, <code>h2</code> and <code>h3</code> elements are processed.</p>
+
+    <code-block language="html" show-lines label="Basic usage">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-levels</code></td><td>Comma-separated heading selectors</td><td><code>h2,h3</code></td><td>Which heading levels to process</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Custom heading levels">{levelsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Auto-generated IDs</h2>
+    <p>Headings without an <code>id</code> attribute get one generated from their text content. Existing IDs are preserved. Generated IDs are limited to 50 characters and de-duplicated automatically.</p>
+
+    <code-block language="html" show-lines label="ID handling">{existingIdCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>heading-navigate</code></td><td><code>{'{ id: string, url: string }'}</code></td><td>Fired when an anchor link is clicked</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event listener">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Behavior</h2>
+    <ul>
+      <li>Anchor icons appear on heading hover or focus</li>
+      <li>Clicking an anchor scrolls smoothly to the heading, updates the URL hash, and copies the full URL to clipboard</li>
+      <li>A brief checkmark icon confirms the copy succeeded</li>
+      <li>A screen-reader announcement is made on successful copy</li>
+      <li>Headings inside <code>&lt;dialog&gt;</code> elements are skipped</li>
+      <li>A <code>MutationObserver</code> watches for dynamically added headings</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Each anchor has <code>aria-label="Link to [heading text]"</code></li>
+      <li>Headings are made focusable with <code>tabindex="-1"</code> for keyboard navigation to anchored sections</li>
+      <li>Copy confirmation uses <code>role="status"</code> with <code>aria-live="polite"</code></li>
+      <li>Focus-visible styles on anchor links</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The anchor uses the <code>.heading-anchor</code> class. It is hidden by default (<code>opacity: 0</code>) and revealed on hover/focus.</p>
+
+    <code-block language="css" show-lines label="Custom styling">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; Table of contents generator (pairs well with heading-links)</li>
+      <li><a href="/docs/attributes/data-copy/"><code>data-copy</code></a> &mdash; Click-to-copy attribute</li>
+    </ul>
+  </section>
+</ElementLayout>
