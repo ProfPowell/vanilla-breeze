@@ -22,6 +22,7 @@ import './context-menu-wc/logic.js';
 import './command-wc/logic.js';
 import '../utils/copy-init.js';
 import '../utils/hotkey-init.js';
+import '../utils/command-init.js';
 import '../utils/format-number-init.js';
 import '../utils/format-date-init.js';
 import '../utils/format-bytes-init.js';

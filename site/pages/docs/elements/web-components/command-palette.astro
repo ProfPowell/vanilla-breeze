@@ -53,6 +53,33 @@ palette.addEventListener('command-select', (e) => \{
   \}
 \});`;
 
+const discoverCode = `<!-- Command palette with auto-discovery -->
+<command-wc data-hotkey="meta+k" data-discover>
+  <command-group label="Navigation">
+    <command-item value="home">Go Home</command-item>
+  </command-group>
+  <!-- [data-command] elements auto-populate as additional groups -->
+</command-wc>
+
+<!-- Anywhere on the page: these appear in the palette -->
+<button data-command="Toggle Dark Mode" data-shortcut="meta+shift+t">
+  Dark Mode
+</button>
+<a href="/docs" data-command="Documentation" data-command-group="Navigation">
+  Docs
+</a>`;
+
+const dataCommandCode = `<!-- data-command attributes -->
+<button data-command="Save Draft" data-shortcut="meta+s" data-command-icon="save">
+  Save
+</button>
+
+<!-- Attribute reference -->
+<!-- data-command       = Label in the palette (required) -->
+<!-- data-command-group = Group name (default: "Page Actions") -->
+<!-- data-command-icon  = Icon name for icon-wc (optional) -->
+<!-- data-shortcut      = Keyboard shortcut (displayed + bound) -->`;
+
 const triggerButtonCode = `<!-- Trigger button -->
 <button onclick="document.querySelector('command-wc').open()">
   Search commands... <kbd>&#x2318;K</kbd>
@@ -117,6 +144,11 @@ const triggerButtonCode = `<!-- Trigger button -->
           <td>Search input placeholder text</td>
         </tr>
         <tr>
+          <td><code>data-discover</code></td>
+          <td><code>command-wc</code></td>
+          <td>Auto-populate from <code>[data-command]</code> elements on the page</td>
+        </tr>
+        <tr>
           <td><code>label</code></td>
           <td><code>command-group</code></td>
           <td>Group header text</td>
@@ -145,6 +177,45 @@ const triggerButtonCode = `<!-- Trigger button -->
     <h2>Trigger Button</h2>
     <p>You can add a visual trigger button that opens the palette:</p>
     <code-block language="html" show-lines label="Trigger button">{triggerButtonCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Auto-Discovery (<code>data-discover</code>)</h2>
+    <p>Add <code>data-discover</code> to <code>&lt;command-wc&gt;</code> to auto-populate the palette with <code>[data-command]</code> elements from the page. Any button, link, or element with <code>data-command</code> becomes searchable. If it also has <code>data-shortcut</code>, the shortcut is displayed <strong>and</strong> bound as a real keyboard shortcut. Selecting a discovered command in the palette clicks the original element.</p>
+
+    <code-block language="html" show-lines label="Auto-discovery">{discoverCode}</code-block>
+
+    <h3><code>data-command</code> Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-command</code></td>
+          <td>Label in the palette (required to opt in)</td>
+        </tr>
+        <tr>
+          <td><code>data-command-group</code></td>
+          <td>Group name (default: "Page Actions")</td>
+        </tr>
+        <tr>
+          <td><code>data-command-icon</code></td>
+          <td>Icon name for <code>&lt;icon-wc&gt;</code> in palette</td>
+        </tr>
+        <tr>
+          <td><code>data-shortcut</code></td>
+          <td>Keyboard shortcut &mdash; displayed AND bound globally</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="data-command attributes">{dataCommandCode}</code-block>
+
+    <p>Elements with <code>commandfor</code> (HTML Invoker API) are also auto-discovered. The label comes from <code>textContent</code>; override with <code>data-command</code> if needed.</p>
   </section>
 
   <section>

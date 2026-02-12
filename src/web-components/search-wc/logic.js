@@ -28,6 +28,8 @@
  * - Enter: Go to selected result
  */
 
+import { bindHotkey } from '../../utils/hotkey-bind.js';
+
 class SearchWc extends HTMLElement {
   static #DEBOUNCE_MS = 150;
   static #MAX_RESULTS = 8;
@@ -41,6 +43,7 @@ class SearchWc extends HTMLElement {
   #isOpen = false;
   #pagefind = null;
   #debounceTimer = null;
+  #unbindHotkey = null;
 
   connectedCallback() {
     this.#render();
@@ -48,7 +51,8 @@ class SearchWc extends HTMLElement {
   }
 
   disconnectedCallback() {
-    document.removeEventListener('keydown', this.#handleGlobalKeyDown);
+    this.#unbindHotkey?.();
+    document.removeEventListener('keydown', this.#handleEscape);
     this.#clearDebounce();
   }
 
@@ -122,8 +126,17 @@ class SearchWc extends HTMLElement {
     // Trigger click
     this.#trigger.addEventListener('click', this.#handleTriggerClick);
 
-    // Global keyboard shortcut (Cmd/Ctrl+K)
-    document.addEventListener('keydown', this.#handleGlobalKeyDown);
+    // Global keyboard shortcut (Cmd/Ctrl+K) via centralized hotkey-bind
+    this.#unbindHotkey = bindHotkey('meta+k', () => {
+      if (this.#isOpen) {
+        this.close();
+      } else {
+        this.open();
+      }
+    }, { global: true });
+
+    // Escape to close (not a global hotkey — only when open)
+    document.addEventListener('keydown', this.#handleEscape);
 
     // Dialog events
     this.#dialog.querySelector('.backdrop').addEventListener('click', () => this.close());
@@ -137,19 +150,7 @@ class SearchWc extends HTMLElement {
     this.open();
   };
 
-  #handleGlobalKeyDown = (e) => {
-    // Cmd/Ctrl+K to open
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      if (this.#isOpen) {
-        this.close();
-      } else {
-        this.open();
-      }
-      return;
-    }
-
-    // Escape to close
+  #handleEscape = (e) => {
     if (e.key === 'Escape' && this.#isOpen) {
       e.preventDefault();
       this.close();

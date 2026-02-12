@@ -3,6 +3,7 @@
  *
  * Provides a custom right-click menu that opens at cursor position.
  * Shares keyboard navigation patterns with dropdown-wc.
+ * Items with data-shortcut get real keyboard shortcut bindings.
  *
  * @example
  * <context-menu-wc>
@@ -10,20 +11,25 @@
  *     <p>Right-click anywhere here</p>
  *   </div>
  *   <menu>
- *     <li><button>Cut</button></li>
- *     <li><button>Copy</button></li>
+ *     <li><button data-shortcut="meta+x">Cut</button></li>
+ *     <li><button data-shortcut="meta+c">Copy</button></li>
  *     <li><button>Paste</button></li>
  *     <li role="separator"></li>
  *     <li><button class="danger">Delete</button></li>
  *   </menu>
  * </context-menu-wc>
  */
+
+import { formatHotkey } from '../../utils/hotkey-format.js';
+import { bindHotkey } from '../../utils/hotkey-bind.js';
+
 class ContextMenuWc extends HTMLElement {
   #trigger;
   #menu;
   #items = [];
   #activeIndex = -1;
   #isOpen = false;
+  #unbindFns = [];
 
   connectedCallback() {
     this.#setup();
@@ -44,6 +50,12 @@ class ContextMenuWc extends HTMLElement {
       this.#menu.id = `ctx-menu-${crypto.randomUUID().slice(0, 8)}`;
     }
 
+    // Group labels — mark as non-interactive
+    this.#menu.querySelectorAll(':scope > li[data-group]').forEach(label => {
+      label.setAttribute('role', 'presentation');
+      label.classList.add('ctx-group-label');
+    });
+
     // Collect menu items
     this.#items = Array.from(
       this.#menu.querySelectorAll('button, a, [role="menuitem"]')
@@ -53,9 +65,22 @@ class ContextMenuWc extends HTMLElement {
       item.setAttribute('role', 'menuitem');
       item.setAttribute('tabindex', '-1');
       item.addEventListener('click', this.#handleItemClick);
+
+      // Shortcut badges + real bindings
+      const shortcut = item.getAttribute('data-shortcut');
+      if (shortcut) {
+        const kbd = document.createElement('kbd');
+        kbd.className = 'ctx-kbd';
+        kbd.textContent = formatHotkey(shortcut);
+        item.appendChild(kbd);
+
+        // Bind the real keyboard shortcut — clicking the item
+        const unbind = bindHotkey(shortcut, () => item.click());
+        this.#unbindFns.push(unbind);
+      }
     });
 
-    this.#menu.querySelectorAll('li:empty, [role="separator"], hr').forEach(sep => {
+    this.#menu.querySelectorAll('li:empty:not([data-group]), [role="separator"], hr').forEach(sep => {
       sep.setAttribute('role', 'separator');
     });
 
@@ -78,6 +103,8 @@ class ContextMenuWc extends HTMLElement {
     this.#items.forEach(item => {
       item.removeEventListener('click', this.#handleItemClick);
     });
+    this.#unbindFns.forEach(fn => fn());
+    this.#unbindFns = [];
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('contextmenu', this.#handleOutsideContext);
     document.removeEventListener('keydown', this.#handleEscape);

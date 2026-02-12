@@ -3,21 +3,24 @@
  *
  * Searchable, keyboard-navigable list of commands in a modal dialog.
  * Supports groups, keyboard shortcuts, and fuzzy filtering.
+ * When data-discover is set, also shows commands from [data-command] elements.
  *
  * @attr {string} data-hotkey - Global keyboard shortcut to open (default: "meta+k")
  * @attr {string} data-placeholder - Search input placeholder text
+ * @attr {boolean} data-discover - When present, auto-populate from [data-command] registry
  *
  * @example
- * <command-wc data-hotkey="meta+k">
+ * <command-wc data-hotkey="meta+k" data-discover>
  *   <command-group label="Navigation">
  *     <command-item value="home">Go Home</command-item>
  *     <command-item value="settings">Settings</command-item>
  *   </command-group>
- *   <command-group label="Actions">
- *     <command-item value="theme">Toggle Dark Mode</command-item>
- *   </command-group>
  * </command-wc>
  */
+
+import { formatHotkey } from '../../utils/hotkey-format.js';
+import { bindHotkey } from '../../utils/hotkey-bind.js';
+
 class CommandWc extends HTMLElement {
   #dialog;
   #input;
@@ -25,14 +28,20 @@ class CommandWc extends HTMLElement {
   #items = [];
   #activeIndex = -1;
   #groups = [];
+  #unbindHotkey = null;
+  #discoveredHeaders = [];
 
   connectedCallback() {
     this.#build();
     this.#registerHotkey();
+    if (this.hasAttribute('data-discover')) {
+      this.#listenForRegistryChanges();
+    }
   }
 
   disconnectedCallback() {
-    document.removeEventListener('keydown', this.#handleGlobalKeyDown);
+    this.#unbindHotkey?.();
+    document.removeEventListener('command-registry-change', this.#handleRegistryChange);
   }
 
   #build() {
@@ -100,7 +109,7 @@ class CommandWc extends HTMLElement {
         if (hotkey) {
           const badge = document.createElement('kbd');
           badge.className = 'command-kbd';
-          badge.textContent = this.#formatHotkey(hotkey);
+          badge.textContent = formatHotkey(hotkey);
           btn.appendChild(badge);
         }
 
@@ -126,32 +135,15 @@ class CommandWc extends HTMLElement {
   }
 
   #registerHotkey() {
-    document.addEventListener('keydown', this.#handleGlobalKeyDown);
-  }
-
-  #handleGlobalKeyDown = (e) => {
-    const hotkey = this.dataset.hotkey || 'meta+k';
-    const parts = hotkey.toLowerCase().split('+');
-    const key = parts.pop();
-    const needsMeta = parts.includes('meta');
-    const needsCtrl = parts.includes('ctrl');
-    const needsShift = parts.includes('shift');
-    const needsAlt = parts.includes('alt');
-
-    const metaOrCtrl = needsMeta ? (e.metaKey || e.ctrlKey) : true;
-    const ctrl = needsCtrl ? e.ctrlKey : true;
-    const shift = needsShift ? e.shiftKey : !e.shiftKey;
-    const alt = needsAlt ? e.altKey : !e.altKey;
-
-    if (metaOrCtrl && ctrl && shift && alt && e.key.toLowerCase() === key) {
-      e.preventDefault();
+    const combo = this.dataset.hotkey || 'meta+k';
+    this.#unbindHotkey = bindHotkey(combo, () => {
       if (this.#dialog.open) {
         this.close();
       } else {
         this.open();
       }
-    }
-  };
+    }, { global: true });
+  }
 
   #handleInput = () => {
     const query = this.#input.value.toLowerCase().trim();
@@ -236,27 +228,93 @@ class CommandWc extends HTMLElement {
     }));
   }
 
-  #formatHotkey(str) {
-    const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
-    return str.split('+').map(k => {
-      const key = k.trim().toLowerCase();
-      if (isMac) {
-        if (key === 'meta' || key === 'cmd') return '\u2318';
-        if (key === 'alt') return '\u2325';
-        if (key === 'shift') return '\u21E7';
-        if (key === 'ctrl') return '\u2303';
-      } else {
-        if (key === 'meta' || key === 'cmd') return 'Ctrl';
-        if (key === 'alt') return 'Alt';
-        if (key === 'shift') return 'Shift';
-        if (key === 'ctrl') return 'Ctrl';
+  #listenForRegistryChanges() {
+    document.addEventListener('command-registry-change', this.#handleRegistryChange);
+  }
+
+  #handleRegistryChange = () => {
+    // Registry changed — if dialog is open, refresh discovered items
+    if (this.#dialog?.open) {
+      this.#populateDiscovered();
+      this.#handleInput();
+    }
+  };
+
+  #populateDiscovered() {
+    if (!this.hasAttribute('data-discover')) return;
+
+    // Lazy-import to avoid circular dependency at module load time
+    // command-init.js imports hotkey-bind.js; command-wc imports hotkey-bind.js
+    // but command-wc only needs getRegisteredCommands at runtime, not at parse time
+    const { getRegisteredCommands } = window.__commandRegistry || {};
+    if (!getRegisteredCommands) return;
+
+    // Remove previously added discovered items and headers
+    this.#items = this.#items.filter(item => !item.discovered);
+    this.#discoveredHeaders.forEach(h => h.remove());
+    this.#discoveredHeaders = [];
+
+    const empty = this.#list.querySelector('.command-empty');
+    const grouped = getRegisteredCommands();
+
+    for (const [groupName, entries] of grouped) {
+      const header = document.createElement('div');
+      header.className = 'command-group-header';
+      header.textContent = groupName;
+      header.setAttribute('role', 'presentation');
+      this.#list.insertBefore(header, empty);
+      this.#discoveredHeaders.push(header);
+
+      for (const entry of entries) {
+        // Skip if the element is inside this command-wc (avoid duplicating declarative items)
+        if (this.contains(entry.element)) continue;
+
+        const btn = document.createElement('button');
+        btn.className = 'command-option';
+        btn.setAttribute('role', 'option');
+        btn.dataset.value = `__discovered:${entry.label}`;
+        btn.dataset.searchText = entry.label.toLowerCase();
+
+        // Icon
+        if (entry.icon) {
+          const iconWrap = document.createElement('span');
+          iconWrap.className = 'command-icon';
+          const iconEl = document.createElement('icon-wc');
+          iconEl.setAttribute('name', entry.icon);
+          iconWrap.appendChild(iconEl);
+          btn.appendChild(iconWrap);
+        }
+
+        // Label
+        const label = document.createElement('span');
+        label.className = 'command-label';
+        label.textContent = entry.label;
+        btn.appendChild(label);
+
+        // Shortcut badge
+        if (entry.shortcut) {
+          const badge = document.createElement('kbd');
+          badge.className = 'command-kbd';
+          badge.textContent = formatHotkey(entry.shortcut);
+          btn.appendChild(badge);
+        }
+
+        // Click = click the original element (palette is a proxy)
+        btn.addEventListener('click', () => {
+          this.close();
+          entry.element.click();
+        });
+
+        this.#list.insertBefore(btn, empty);
+        this.#items.push({ btn, header, group: null, discovered: true });
       }
-      return key.toUpperCase();
-    }).join(isMac ? '' : '+');
+    }
   }
 
   open() {
     if (this.#dialog.open) return;
+    // Refresh discovered commands each time we open
+    this.#populateDiscovered();
     this.#dialog.showModal();
     this.#input.value = '';
     this.#handleInput(); // Reset filter

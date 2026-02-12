@@ -11,13 +11,9 @@
  * <kbd data-hotkey="meta+k">Ctrl+K</kbd>
  */
 
-const SELECTOR = 'kbd[data-hotkey]';
-const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform ?? '');
+import { isMac, SYMBOLS } from './hotkey-format.js';
 
-const SYMBOLS = {
-  mac: { meta: '⌘', alt: '⌥', shift: '⇧', ctrl: '⌃' },
-  other: { meta: 'Ctrl', alt: 'Alt', shift: 'Shift', ctrl: 'Ctrl' }
-};
+const SELECTOR = 'kbd[data-hotkey]';
 
 /**
  * Initialize hotkey elements within a root element

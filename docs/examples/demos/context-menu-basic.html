@@ -57,8 +57,54 @@
         <li><button type="button" class="danger">Delete</button></li>
       </menu>
     </context-menu-wc>
+
+    <h2>With Icons and Shortcuts (real bindings)</h2>
+    <p>These shortcuts are real — press them anywhere on the page to trigger the action.</p>
+    <context-menu-wc>
+      <div data-trigger class="context-area">
+        <p>Right-click for edit options</p>
+      </div>
+      <menu>
+        <li><button type="button" data-shortcut="meta+x"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+        <li><button type="button" data-shortcut="meta+c"><icon-wc name="copy"></icon-wc> Copy</button></li>
+        <li><button type="button" data-shortcut="meta+v"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+        <li role="separator"></li>
+        <li><button type="button" data-shortcut="meta+a">Select All</button></li>
+      </menu>
+    </context-menu-wc>
+
+    <h2>With Group Labels</h2>
+    <context-menu-wc>
+      <div data-trigger class="context-area">
+        <p>Right-click for grouped options</p>
+      </div>
+      <menu>
+        <li data-group>Edit</li>
+        <li><button type="button"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+        <li><button type="button"><icon-wc name="copy"></icon-wc> Copy</button></li>
+        <li data-group>View</li>
+        <li><button type="button"><icon-wc name="zoom-in"></icon-wc> Zoom In</button></li>
+        <li><button type="button"><icon-wc name="zoom-out"></icon-wc> Zoom Out</button></li>
+        <li data-group>Danger Zone</li>
+        <li><button type="button" class="danger"><icon-wc name="trash-2"></icon-wc> Delete</button></li>
+      </menu>
+    </context-menu-wc>
   </div>
 
+  <div id="output" data-layout="stack" data-gap="xs" style="margin-block-start: var(--size-l);"></div>
+
   <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const output = document.getElementById('output');
+    // Listen for context-select events from any context menu
+    document.querySelectorAll('context-menu-wc').forEach(menu => {
+      menu.addEventListener('context-select', (e) => {
+        const label = e.detail.item?.textContent?.trim() || 'unknown';
+        const p = document.createElement('p');
+        p.textContent = `Action: ${label}`;
+        output.prepend(p);
+      });
+    });
+  </script>
 </body>
 </html>
