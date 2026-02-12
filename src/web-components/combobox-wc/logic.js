@@ -4,14 +4,14 @@
  * Light DOM combobox following the W3C ARIA combobox pattern.
  * Participates in native form submission via ElementInternals.
  *
- * @attr {string} data-name - Form field name
+ * @attr {string} name - Form field name
  * @attr {boolean} data-required - Makes selection required
  * @attr {string} data-filter - Filter mode: "startsWith" | "contains" (default: "contains")
  * @attr {string} data-value - Get/set selected value programmatically
  * @attr {string} data-placeholder - Input placeholder text
  *
  * @example
- * <combobox-wc data-name="country" data-required>
+ * <combobox-wc name="country" data-required>
  *   <input type="text" placeholder="Search countries...">
  *   <ul>
  *     <li data-value="us">United States</li>
@@ -367,7 +367,6 @@ class ComboboxWc extends HTMLElement {
   // --- Form integration ---
 
   #syncFormValue() {
-    const name = this.getAttribute('data-name');
     if (this.#selectedValue) {
       this.#internals.setFormValue(this.#selectedValue, this.#selectedLabel);
     } else {
