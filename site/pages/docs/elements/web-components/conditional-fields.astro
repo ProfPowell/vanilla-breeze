@@ -1,0 +1,159 @@
+---
+/**
+ * Conditional Field Visibility Documentation
+ *
+ * Show/hide form sections based on field values using data-show-when / data-hide-when.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const showWhenCode = `<select name="account-type">
+  <option value="personal">Personal</option>
+  <option value="business">Business</option>
+</select>
+
+<fieldset data-show-when="account-type=business">
+  <legend>Business Details</legend>
+  <input name="company" placeholder="Company name">
+</fieldset>`;
+
+const hideWhenCode = `<label>
+  <input type="checkbox" name="gift" value="yes">
+  This is a gift
+</label>
+
+<form-field data-hide-when="gift=yes">
+  <label for="receipt">Send receipt to</label>
+  <input type="email" id="receipt" name="receipt">
+</form-field>`;
+
+const radioCode = `<fieldset>
+  <legend>Shipping method</legend>
+  <label><input type="radio" name="shipping" value="standard"> Standard</label>
+  <label><input type="radio" name="shipping" value="express"> Express</label>
+</fieldset>
+
+<form-field data-show-when="shipping=express">
+  <label for="phone">Phone (required for express)</label>
+  <input type="tel" id="phone" name="phone" required>
+</form-field>`;
+
+const otherCode = `<select name="reason">
+  <option value="bug">Bug Report</option>
+  <option value="feature">Feature Request</option>
+  <option value="other">Other</option>
+</select>
+
+<form-field data-show-when="reason=other">
+  <label for="specify">Please specify</label>
+  <input type="text" id="specify" name="specify">
+</form-field>`;
+---
+
+<ElementLayout
+  title="Conditional Fields"
+  description="Show or hide form sections based on another field's value. No custom JS needed."
+  elementName="data-show-when"
+  category="component"
+  currentPath="/docs/elements/web-components/conditional-fields/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>Use <code>data-show-when</code> or <code>data-hide-when</code> to conditionally display form sections based on the value of another field. Hidden elements get <code>hidden</code> and <code>inert</code> attributes, preventing them from blocking form validation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/conditional-basic.html"
+      url="https://vanilla-breeze.dev/conditional-fields"
+      title="Conditional Fields Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Show When</h2>
+    <p>Show a section when a field has a specific value.</p>
+
+    <code-block language="html" show-lines label="Show when select = business">{showWhenCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Hide When</h2>
+    <p>Hide a section when a condition is met. The inverse of <code>data-show-when</code>.</p>
+
+    <code-block language="html" show-lines label="Hide when checkbox checked">{hideWhenCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Radio Buttons</h2>
+    <p>Conditions work with radio button groups &mdash; the value of the checked radio is evaluated.</p>
+
+    <code-block language="html" show-lines label="Show when radio = express">{radioCode}</code-block>
+  </section>
+
+  <section>
+    <h2>&ldquo;Other (please specify)&rdquo;</h2>
+    <p>The classic pattern: show a text input when the user selects &ldquo;Other&rdquo; from a dropdown.</p>
+
+    <code-block language="html" show-lines label="Other specify pattern">{otherCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Format</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-show-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Show this element when the named field equals the value.</td>
+        </tr>
+        <tr>
+          <td><code>data-hide-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Hide this element when the named field equals the value.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <code>name</code> refers to the <code>name</code> attribute of the controlling form field. The condition is evaluated within the same <code>&lt;form&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2>Supported Controls</h2>
+    <ul>
+      <li><code>&lt;select&gt;</code> &mdash; matches selected option value</li>
+      <li><code>&lt;input type="radio"&gt;</code> &mdash; matches checked radio value</li>
+      <li><code>&lt;input type="checkbox"&gt;</code> &mdash; matches checkbox value when checked, empty when unchecked</li>
+      <li><code>&lt;input type="text"&gt;</code> &mdash; matches current text value</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Hidden sections receive <code>inert</code> + <code>hidden</code> &mdash; they're removed from both visual and assistive technology trees</li>
+      <li>Required fields inside hidden sections won't block form submission</li>
+      <li>Tab order skips hidden sections automatically</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <ul>
+      <li><strong>No JS:</strong> All fields are always visible. The form works but shows everything.</li>
+      <li><strong>With JS:</strong> Irrelevant sections are hidden based on current selections.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; Form field wrapper</li>
+      <li><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> &mdash; Group related conditional fields</li>
+    </ul>
+  </section>
+</ElementLayout>

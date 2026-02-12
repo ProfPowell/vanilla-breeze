@@ -224,3 +224,78 @@ form-field .otp-digit:not(:placeholder-shown) {
 form-field[data-enhanced="otp"]::after {
   display: none;
 }
+
+/* --------------------------------------------------------------------------
+   Password strength meter & rules checklist
+   -------------------------------------------------------------------------- */
+form-field .strength-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--size-xs);
+  margin-block-start: var(--size-xs);
+}
+
+form-field .strength-meter meter {
+  flex: 1;
+}
+
+form-field .strength-meter .strength-label {
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  min-inline-size: 3.5em;
+  text-align: end;
+}
+
+form-field .strength-meter[data-level="weak"] .strength-label {
+  color: oklch(55% 0.2 25);
+}
+
+form-field .strength-meter[data-level="fair"] .strength-label {
+  color: oklch(75% 0.18 75);
+}
+
+form-field .strength-meter[data-level="good"] .strength-label {
+  color: oklch(65% 0.15 145);
+}
+
+form-field .strength-meter[data-level="strong"] .strength-label {
+  color: oklch(60% 0.18 145);
+}
+
+form-field .strength-rules {
+  list-style: none;
+  padding: 0;
+  margin: var(--size-xs) 0 0;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+form-field .strength-rules li {
+  padding-inline-start: 1.5em;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* Unchecked rule icon (x) */
+form-field .strength-rules li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.3em;
+  inline-size: 1em;
+  block-size: 1em;
+  background: var(--color-text-muted);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+/* Checked rule icon (checkmark) */
+form-field .strength-rules li[data-met]::before {
+  background: var(--color-success, oklch(60% 0.18 145));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+form-field .strength-rules li[data-met] {
+  color: var(--color-success, oklch(60% 0.18 145));
+}

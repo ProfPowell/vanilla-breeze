@@ -158,3 +158,224 @@ kbd[data-hotkey] kbd {
     transition-duration: 0s;
   }
 }
+
+/* --------------------------------------------------------------------------
+   data-count: Textarea character/word counter
+   -------------------------------------------------------------------------- */
+.textarea-counter {
+  display: block;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  text-align: end;
+  margin-block-start: var(--size-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.textarea-counter[data-state="warning"] {
+  color: oklch(75% 0.18 75);
+}
+
+.textarea-counter[data-state="error"] {
+  color: var(--color-error, oklch(55% 0.2 25));
+}
+
+/* --------------------------------------------------------------------------
+   data-grow: Auto-expanding textarea
+   -------------------------------------------------------------------------- */
+textarea[data-grow][data-grow-init] {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   data-show-when / data-hide-when: Conditional fields
+   -------------------------------------------------------------------------- */
+[data-show-when][hidden],
+[data-hide-when][hidden] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   data-range: Range slider with value bubble and labels
+   -------------------------------------------------------------------------- */
+.range-wrapper {
+  position: relative;
+  padding-block-start: 1.75rem;
+  padding-block-end: 1.25rem;
+}
+
+.range-wrapper input[type="range"] {
+  inline-size: 100%;
+  cursor: pointer;
+}
+
+/* Track fill via gradient */
+.range-wrapper input[type="range"] {
+  appearance: none;
+  block-size: 0.5rem;
+  border-radius: var(--radius-full, 999px);
+  background: linear-gradient(
+    to right,
+    var(--color-interactive, oklch(55% 0.2 260)) var(--range-pct, 0%),
+    var(--color-surface-raised, oklch(95% 0 0)) var(--range-pct, 0%)
+  );
+  border: none;
+  outline: none;
+}
+
+.range-wrapper input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  border: 2px solid white;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  cursor: pointer;
+}
+
+.range-wrapper input[type="range"]::-moz-range-thumb {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  border: 2px solid white;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  cursor: pointer;
+}
+
+.range-wrapper input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 4px;
+  border-radius: var(--radius-s);
+}
+
+/* Value bubble */
+.range-bubble {
+  position: absolute;
+  inset-block-start: 0;
+  translate: -50% 0;
+  background: var(--color-surface-raised, #333);
+  color: var(--color-text);
+  padding: var(--size-3xs) var(--size-xs);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-s);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+/* Datalist tick labels */
+.range-labels {
+  position: relative;
+  block-size: 1.25rem;
+}
+
+.range-labels span {
+  position: absolute;
+  translate: -50% 0;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   data-upload: File upload drop zone
+   -------------------------------------------------------------------------- */
+.upload-zone {
+  position: relative;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--size-l);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-default),
+              background var(--duration-fast) var(--ease-default);
+}
+
+.upload-zone:hover {
+  border-color: var(--color-interactive);
+}
+
+.upload-zone[data-dragover] {
+  border-color: var(--color-interactive);
+  background: color-mix(in oklab, var(--color-interactive) 5%, transparent);
+}
+
+/* Visually hide the native file input */
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-xs);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.upload-prompt svg {
+  color: var(--color-text-muted);
+}
+
+.upload-prompt small {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted);
+}
+
+.upload-browse {
+  all: unset;
+  color: var(--color-interactive);
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.upload-browse:hover {
+  text-decoration: none;
+}
+
+.upload-file-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--size-s) 0 0;
+  text-align: start;
+}
+
+.upload-file-list[hidden] {
+  display: none;
+}
+
+.upload-file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--size-2xs) var(--size-xs);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-s);
+}
+
+.upload-file-list li:nth-child(odd) {
+  background: color-mix(in oklab, var(--color-surface-raised) 50%, transparent);
+}
+
+.upload-file-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-file-size {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-inline-start: var(--size-s);
+}

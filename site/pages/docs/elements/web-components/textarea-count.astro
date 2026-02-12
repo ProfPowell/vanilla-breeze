@@ -1,0 +1,142 @@
+---
+/**
+ * Textarea Character/Word Count Documentation
+ *
+ * Live counter for textareas using data-count attribute.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const charCode = `<form-field>
+  <label for="bio">Bio</label>
+  <textarea id="bio" maxlength="500" data-count></textarea>
+</form-field>`;
+
+const wordCode = `<textarea data-count="words" data-maxwords="200"
+  placeholder="Write your essay..."></textarea>`;
+
+const noLimitCode = `<textarea data-count placeholder="Any length..."></textarea>`;
+
+const cssCode = `/* Counter inherits these custom properties */
+.textarea-counter \{
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+\}
+
+/* Warning state (80%+) */
+.textarea-counter[data-state="warning"] \{
+  color: oklch(75% 0.18 75);
+\}
+
+/* Error state (100%) */
+.textarea-counter[data-state="error"] \{
+  color: var(--color-error);
+\}`;
+---
+
+<ElementLayout
+  title="Textarea Count"
+  description="Live character or word counter for textareas with warning and error thresholds."
+  elementName="data-count"
+  category="component"
+  currentPath="/docs/elements/web-components/textarea-count/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>Add <code>data-count</code> to any textarea to show a live character or word count. Works with native <code>maxlength</code> for character mode and <code>data-maxwords</code> for word mode. Color shifts at 80% (warning) and 100% (error).</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-count-basic.html"
+      url="https://vanilla-breeze.dev/textarea-count"
+      title="Textarea Count Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Character Count</h2>
+    <p>The default mode counts characters. Pair with native <code>maxlength</code> to show "42 / 500" format.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-char">Bio (max 200 characters)</label>
+        <textarea id="demo-char" maxlength="200" data-count rows="3" placeholder="Tell us about yourself..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Character count">{charCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Word Count</h2>
+    <p>Set <code>data-count="words"</code> and <code>data-maxwords</code> for word-based counting.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-word">Essay (max 50 words)</label>
+        <textarea id="demo-word" data-count="words" data-maxwords="50" rows="4" placeholder="Write your essay..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Word count">{wordCode}</code-block>
+  </section>
+
+  <section>
+    <h2>No Limit</h2>
+    <p>Without <code>maxlength</code> or <code>data-maxwords</code>, the counter shows the current count without a maximum.</p>
+
+    <code-block language="html" show-lines label="No limit">{noLimitCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-count</code></td>
+          <td><code>""</code>, <code>"words"</code></td>
+          <td>Enable counter. Empty for character mode, <code>"words"</code> for word mode.</td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>number</td>
+          <td>Native attribute. Sets max character count.</td>
+        </tr>
+        <tr>
+          <td><code>data-maxwords</code></td>
+          <td>number</td>
+          <td>Max word count (word mode only).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Counter uses <code>&lt;output&gt;</code> with <code>aria-live="polite"</code> for screen reader announcements</li>
+      <li>Updates are atomic (<code>aria-atomic="true"</code>) so the full count is read</li>
+      <li>Works without JS &mdash; textarea is fully usable, counter just doesn't appear</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <code-block language="css" show-lines label="Counter CSS">{cssCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/textarea-grow/"><code>data-grow</code></a> &mdash; Auto-expanding textarea (can be combined)</li>
+      <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; Form field wrapper with validation</li>
+      <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> &mdash; Native textarea element</li>
+    </ul>
+  </section>
+</ElementLayout>

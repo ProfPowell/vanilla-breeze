@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Conditional Fields Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-max="narrow">
+    <layout-card>
+      <form>
+        <layout-stack data-gap="l">
+          <h2 style="margin: 0;">Account Setup</h2>
+
+          <form-field>
+            <label for="account-type">Account Type</label>
+            <select id="account-type" name="account-type">
+              <option value="personal">Personal</option>
+              <option value="business">Business</option>
+            </select>
+          </form-field>
+
+          <fieldset data-show-when="account-type=business">
+            <legend>Business Details</legend>
+            <layout-stack data-gap="m">
+              <form-field>
+                <label for="company">Company Name</label>
+                <input type="text" id="company" name="company" placeholder="Acme Corp"/>
+              </form-field>
+              <form-field>
+                <label for="tax-id">Tax ID</label>
+                <input type="text" id="tax-id" name="tax-id" placeholder="XX-XXXXXXX"/>
+              </form-field>
+            </layout-stack>
+          </fieldset>
+
+          <hr>
+
+          <form-field>
+            <label for="contact-method">Preferred Contact</label>
+            <select id="contact-method" name="contact-method">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="other">Other</option>
+            </select>
+          </form-field>
+
+          <form-field data-show-when="contact-method=phone">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567"/>
+          </form-field>
+
+          <form-field data-show-when="contact-method=other">
+            <label for="other-contact">Please specify</label>
+            <input type="text" id="other-contact" name="other-contact" placeholder="How should we reach you?"/>
+          </form-field>
+
+          <hr>
+
+          <label>
+            <input type="checkbox" name="newsletter" value="yes">
+            Subscribe to newsletter
+          </label>
+
+          <form-field data-show-when="newsletter=yes">
+            <label for="frequency">Email frequency</label>
+            <select id="frequency" name="frequency">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </form-field>
+
+          <button type="submit">Save</button>
+        </layout-stack>
+      </form>
+    </layout-card>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

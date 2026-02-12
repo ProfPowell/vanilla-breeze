@@ -1,0 +1,131 @@
+---
+/**
+ * Auto-Expanding Textarea Documentation
+ *
+ * Textarea that grows to fit content using data-grow attribute.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicCode = `<textarea data-grow rows="2"
+  placeholder="Type to see it grow..."></textarea>`;
+
+const maxRowsCode = `<textarea data-grow rows="2" data-max-rows="10"
+  placeholder="Grows up to 10 rows, then scrolls..."></textarea>`;
+
+const combinedCode = `<form-field>
+  <label for="msg">Message</label>
+  <textarea id="msg" data-grow data-count maxlength="500"
+    rows="2" placeholder="Auto-grows with character count..."></textarea>
+</form-field>`;
+---
+
+<ElementLayout
+  title="Textarea Auto-Grow"
+  description="Auto-expanding textarea that grows to fit its content, with optional max-rows limit."
+  elementName="data-grow"
+  category="component"
+  currentPath="/docs/elements/web-components/textarea-grow/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>Add <code>data-grow</code> to a textarea to make it automatically expand as the user types. Uses CSS <code>field-sizing: content</code> where supported, with a JS measurement fallback for older browsers. Set <code>data-max-rows</code> to cap the height.</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-grow-basic.html"
+      url="https://vanilla-breeze.dev/textarea-grow"
+      title="Auto-Expand Textarea Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>The textarea starts at the specified <code>rows</code> height and grows as content is added.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-grow">Comment</label>
+        <textarea id="demo-grow" data-grow rows="2" placeholder="Type to see it grow..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Basic auto-grow">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Max Rows</h2>
+    <p>Set <code>data-max-rows</code> to limit growth. Once the limit is reached, the textarea scrolls normally.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-max">Message (max 6 rows)</label>
+        <textarea id="demo-max" data-grow rows="2" data-max-rows="6" placeholder="Grows up to 6 rows..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="With max-rows">{maxRowsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Combined with Count</h2>
+    <p><code>data-grow</code> and <code>data-count</code> work together seamlessly.</p>
+
+    <code-block language="html" show-lines label="Grow + count">{combinedCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-grow</code></td>
+          <td>&mdash;</td>
+          <td>Enable auto-expanding behavior.</td>
+        </tr>
+        <tr>
+          <td><code>data-max-rows</code></td>
+          <td>number</td>
+          <td>Maximum rows before scrolling. Omit for unlimited growth.</td>
+        </tr>
+        <tr>
+          <td><code>rows</code></td>
+          <td>number</td>
+          <td>Initial minimum height (native attribute).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ul>
+      <li><strong>Modern browsers (Chrome 123+):</strong> Uses CSS <code>field-sizing: content</code> for zero-JS auto-sizing</li>
+      <li><strong>Fallback:</strong> Measures <code>scrollHeight</code> on input and sets <code>block-size</code> directly</li>
+      <li><code>resize: none</code> is set automatically since auto-grow handles sizing</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <ul>
+      <li><strong>No JS:</strong> Standard fixed-height textarea with manual resize handle</li>
+      <li><strong>With JS:</strong> Textarea grows to fit content, resize handle removed</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/textarea-count/"><code>data-count</code></a> &mdash; Character/word counter (can be combined)</li>
+      <li><a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; Form field wrapper with validation</li>
+      <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> &mdash; Native textarea element</li>
+    </ul>
+  </section>
+</ElementLayout>
