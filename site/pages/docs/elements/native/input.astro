@@ -69,6 +69,43 @@ const autocompleteCode = `<input type="text" name="name" autocomplete="name" />
 <input type="password" autocomplete="current-password" />
 <input type="password" autocomplete="new-password" />`;
 
+const switchCode = `<!-- Small -->
+<label>
+  <input type="checkbox" data-switch="sm" name="compact">
+  Compact mode
+</label>
+
+<!-- Default -->
+<label>
+  <input type="checkbox" data-switch name="default">
+  Default size
+</label>
+
+<!-- Large -->
+<label>
+  <input type="checkbox" data-switch="lg" name="feature">
+  Large switch
+</label>`;
+
+const strengthCode = `<form-field>
+  <label for="pw">Password</label>
+  <input type="password" id="pw"
+    data-strength
+    data-rules="length:8,uppercase,lowercase,number,special"
+    placeholder="Create a strong password"
+    autocomplete="new-password" />
+</form-field>`;
+
+const rangeEnhancedCode = `<input type="range" min="0" max="1000" step="100"
+  list="prices" data-range data-bubble data-prefix="$">
+<datalist id="prices">
+  <option value="0" label="$0">
+  <option value="500" label="$500">
+  <option value="1000" label="$1K">
+</datalist>`;
+
+const uploadCode = `<input type="file" data-upload accept=".pdf,.doc" multiple>`;
+
 const cssReferenceCode = `/* Text inputs, select, textarea */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
 textarea,
@@ -663,6 +700,164 @@ input:invalid:not(:placeholder-shown) {
 
     <h3>Code</h3>
     <code-block language="html" show-lines label="Autocomplete attributes">{autocompleteCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Toggle Switch (data-switch)</h2>
+    <p>Add <code>data-switch</code> to a checkbox for on/off toggle switch styling. Uses CSS <code>appearance: none</code> with a sliding knob. JS adds <code>role="switch"</code> for screen readers.</p>
+
+    <browser-window
+      src="/docs/examples/demos/switch-basic.html"
+      url="https://vanilla-breeze.dev/switch"
+      title="Toggle Switch Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <div style="display: flex; flex-direction: column; gap: var(--size-s);">
+        <label><input type="checkbox" data-switch="sm" name="demo-sm" checked> Small</label>
+        <label><input type="checkbox" data-switch name="demo-md"> Default</label>
+        <label><input type="checkbox" data-switch="lg" name="demo-lg" checked> Large</label>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Toggle switch sizes">{switchCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-switch</code></td>
+          <td><code>""</code>, <code>"sm"</code>, <code>"lg"</code></td>
+          <td>Enable switch styling with optional size variant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Password Strength (data-strength)</h2>
+    <p>Add <code>data-strength</code> and <code>data-rules</code> to a password input inside <code>&lt;form-field&gt;</code> to show a real-time strength meter and rules checklist. Works alongside the existing password show/hide toggle.</p>
+
+    <browser-window
+      src="/docs/examples/demos/password-strength-basic.html"
+      url="https://vanilla-breeze.dev/password-strength"
+      title="Password Strength Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Password with strength rules">{strengthCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-strength</code></td>
+          <td>Enable strength meter and rules checklist.</td>
+        </tr>
+        <tr>
+          <td><code>data-rules</code></td>
+          <td>Comma-separated rules: <code>length:N</code>, <code>uppercase</code>, <code>lowercase</code>, <code>number</code>, <code>special</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Strength Levels</h3>
+    <ul>
+      <li><strong>Weak</strong> &mdash; Less than 40% of rules met</li>
+      <li><strong>Fair</strong> &mdash; 40&ndash;74% of rules met</li>
+      <li><strong>Good</strong> &mdash; 75&ndash;99% of rules met</li>
+      <li><strong>Strong</strong> &mdash; All rules met</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Range Enhancement (data-range)</h2>
+    <p>Add <code>data-range</code> to a range input for cross-browser styled track and thumb. Add <code>data-bubble</code> for a floating value display. Pair with <code>&lt;datalist&gt;</code> for tick labels.</p>
+
+    <browser-window
+      src="/docs/examples/demos/range-basic.html"
+      url="https://vanilla-breeze.dev/range-slider"
+      title="Range Slider Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-vol">Volume</label>
+        <input type="range" id="demo-vol" min="0" max="100" value="50" data-range data-bubble data-suffix="%">
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Range with datalist labels">{rangeEnhancedCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-range</code></td>
+          <td>Enable cross-browser track/thumb styling and fill.</td>
+        </tr>
+        <tr>
+          <td><code>data-bubble</code></td>
+          <td>Show floating value bubble above the thumb.</td>
+        </tr>
+        <tr>
+          <td><code>data-prefix</code></td>
+          <td>Text before the value (e.g., <code>"$"</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-suffix</code></td>
+          <td>Text after the value (e.g., <code>"%"</code>, <code>"&deg;F"</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>File Upload Zone (data-upload)</h2>
+    <p>Add <code>data-upload</code> to a file input to wrap it in a drag-and-drop zone with file list display.</p>
+
+    <browser-window
+      src="/docs/examples/demos/upload-basic.html"
+      url="https://vanilla-breeze.dev/upload"
+      title="File Upload Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="File upload zone">{uploadCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-upload</code></td>
+          <td>Enable drop zone enhancement on a file input.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The native <code>accept</code> and <code>multiple</code> attributes work as normal. Without JS, the standard file input is shown.</p>
   </section>
 
   <section>

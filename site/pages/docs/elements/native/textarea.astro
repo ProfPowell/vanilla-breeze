@@ -34,6 +34,26 @@ const formFieldTextareaCode = `<form-field>
   </output>
 </form-field>`;
 
+const countCharCode = `<form-field>
+  <label for="bio">Bio</label>
+  <textarea id="bio" maxlength="500" data-count></textarea>
+</form-field>`;
+
+const countWordCode = `<textarea data-count="words" data-maxwords="200"
+  placeholder="Write your essay..."></textarea>`;
+
+const growBasicCode = `<textarea data-grow rows="2"
+  placeholder="Type to see it grow..."></textarea>`;
+
+const growMaxCode = `<textarea data-grow rows="2" data-max-rows="10"
+  placeholder="Grows up to 10 rows, then scrolls..."></textarea>`;
+
+const growCountCode = `<form-field>
+  <label for="msg">Message</label>
+  <textarea id="msg" data-grow data-count maxlength="500"
+    rows="2" placeholder="Auto-grows with character count..."></textarea>
+</form-field>`;
+
 const cssReferenceCode = `textarea {
   display: block;
   inline-size: 100%;
@@ -346,6 +366,117 @@ console.log(greet('World'));`}</textarea>
         <tr>
           <td><code>resize: none</code></td>
           <td>Cannot be resized</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Character / Word Count (data-count)</h2>
+    <p>Add <code>data-count</code> to any textarea to show a live character or word count. Works with native <code>maxlength</code> for character mode and <code>data-maxwords</code> for word mode. Color shifts at 80% (warning) and 100% (error).</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-count-basic.html"
+      url="https://vanilla-breeze.dev/textarea-count"
+      title="Textarea Count Demo"
+      shadow>
+    </browser-window>
+
+    <h3>Character Count</h3>
+    <p>The default mode counts characters. Pair with <code>maxlength</code> to show &ldquo;42 / 500&rdquo; format.</p>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-char">Bio (max 200 characters)</label>
+        <textarea id="demo-char" maxlength="200" data-count rows="3" placeholder="Tell us about yourself..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Character count">{countCharCode}</code-block>
+
+    <h3>Word Count</h3>
+    <p>Set <code>data-count="words"</code> and <code>data-maxwords</code> for word-based counting.</p>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-word">Essay (max 50 words)</label>
+        <textarea id="demo-word" data-count="words" data-maxwords="50" rows="4" placeholder="Write your essay..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Word count">{countWordCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-count</code></td>
+          <td><code>""</code>, <code>"words"</code></td>
+          <td>Enable counter. Empty for characters, <code>"words"</code> for word mode.</td>
+        </tr>
+        <tr>
+          <td><code>data-maxwords</code></td>
+          <td>number</td>
+          <td>Max word count (word mode only).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Auto-Expand (data-grow)</h2>
+    <p>Add <code>data-grow</code> to a textarea to make it automatically expand as the user types. Uses CSS <code>field-sizing: content</code> where supported, with a JS <code>scrollHeight</code> fallback. Set <code>data-max-rows</code> to cap the height.</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-grow-basic.html"
+      url="https://vanilla-breeze.dev/textarea-grow"
+      title="Auto-Expand Textarea Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-grow">Comment</label>
+        <textarea id="demo-grow" data-grow rows="2" placeholder="Type to see it grow..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Basic auto-grow">{growBasicCode}</code-block>
+
+    <h3>Max Rows</h3>
+    <p>Set <code>data-max-rows</code> to limit growth. Once the limit is reached, the textarea scrolls normally.</p>
+
+    <code-block language="html" show-lines label="With max-rows">{growMaxCode}</code-block>
+
+    <h3>Combined with Count</h3>
+    <p><code>data-grow</code> and <code>data-count</code> work together seamlessly.</p>
+
+    <code-block language="html" show-lines label="Grow + count">{growCountCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-grow</code></td>
+          <td>&mdash;</td>
+          <td>Enable auto-expanding behavior.</td>
+        </tr>
+        <tr>
+          <td><code>data-max-rows</code></td>
+          <td>number</td>
+          <td>Maximum rows before scrolling.</td>
         </tr>
       </tbody>
     </table>

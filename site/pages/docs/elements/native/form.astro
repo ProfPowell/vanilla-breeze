@@ -72,6 +72,32 @@ const fileUploadCode = `<form enctype="multipart/form-data" method="POST">
   <button type="submit">Upload</button>
 </form>`;
 
+const autosaveCode = `<form data-autosave="contact-form">
+  <input name="name" placeholder="Name">
+  <textarea name="message" placeholder="Message"></textarea>
+  <button type="submit">Send</button>
+</form>`;
+
+const showWhenCode = `<select name="account-type">
+  <option value="personal">Personal</option>
+  <option value="business">Business</option>
+</select>
+
+<fieldset data-show-when="account-type=business">
+  <legend>Business Details</legend>
+  <input name="company" placeholder="Company name">
+</fieldset>`;
+
+const hideWhenCode = `<label>
+  <input type="checkbox" name="gift" value="yes">
+  This is a gift
+</label>
+
+<form-field data-hide-when="gift=yes">
+  <label for="receipt">Send receipt to</label>
+  <input type="email" id="receipt" name="receipt">
+</form-field>`;
+
 const cssReferenceCode = `form {
   display: block;
 }
@@ -435,6 +461,87 @@ form.grid {
         </div>
       </form>
     </div>
+  </section>
+
+  <section>
+    <h2>Conditional Fields (data-show-when)</h2>
+    <p>Use <code>data-show-when</code> or <code>data-hide-when</code> on any element inside a form to conditionally display sections based on another field&rsquo;s value. Hidden elements get <code>hidden</code> and <code>inert</code> attributes, preventing them from blocking validation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/conditional-basic.html"
+      url="https://vanilla-breeze.dev/conditional-fields"
+      title="Conditional Fields Demo"
+      shadow>
+    </browser-window>
+
+    <h3>Show When</h3>
+    <p>Show a section when a field has a specific value.</p>
+    <code-block language="html" show-lines label="Show when select = business">{showWhenCode}</code-block>
+
+    <h3>Hide When</h3>
+    <p>Hide a section when a condition is met &mdash; the inverse of <code>data-show-when</code>.</p>
+    <code-block language="html" show-lines label="Hide when checkbox checked">{hideWhenCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Format</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-show-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Show when the named field equals the value.</td>
+        </tr>
+        <tr>
+          <td><code>data-hide-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Hide when the named field equals the value.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Works with <code>&lt;select&gt;</code>, <code>&lt;input type="radio"&gt;</code>, <code>&lt;input type="checkbox"&gt;</code>, and text inputs. The <code>name</code> refers to the <code>name</code> attribute of the controlling field within the same <code>&lt;form&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2>Form Autosave (data-autosave)</h2>
+    <p>Add <code>data-autosave="key"</code> to a <code>&lt;form&gt;</code> to automatically save its data to <code>localStorage</code> as the user types. On page reload, the draft is restored and a &ldquo;Draft restored&rdquo; toast appears. Drafts are cleared on submit or reset and expire after 24 hours.</p>
+
+    <browser-window
+      src="/docs/examples/demos/autosave-basic.html"
+      url="https://vanilla-breeze.dev/autosave"
+      title="Form Autosave Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic autosave">{autosaveCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-autosave</code></td>
+          <td>Storage key for this form&rsquo;s draft. Must be unique per form.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Behavior</h3>
+    <ul>
+      <li><strong>Save:</strong> Debounced (500ms) on every <code>input</code> and <code>change</code> event</li>
+      <li><strong>Restore:</strong> On page load if a non-expired draft exists</li>
+      <li><strong>Clear:</strong> On form <code>submit</code> or <code>reset</code></li>
+      <li><strong>Skip:</strong> Password and file inputs are never saved</li>
+      <li><strong>Expire:</strong> Drafts older than 24 hours are discarded</li>
+    </ul>
   </section>
 
   <section>
