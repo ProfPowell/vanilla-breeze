@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combobox Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+
+    .demo-grid {
+      display: grid;
+      gap: var(--size-2xl);
+      max-width: 500px;
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    combobox-wc {
+      inline-size: 100%;
+    }
+
+    .form-output {
+      margin-block-start: var(--size-m);
+      padding: var(--size-m);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      white-space: pre-wrap;
+      min-height: 2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-grid">
+    <!-- Basic -->
+    <section>
+      <h2>Basic Combobox</h2>
+      <h3>Type to filter, arrow keys to navigate, Enter to select</h3>
+      <combobox-wc data-name="country">
+        <input type="text" placeholder="Search countries...">
+        <ul>
+          <li data-value="au">Australia</li>
+          <li data-value="br">Brazil</li>
+          <li data-value="ca">Canada</li>
+          <li data-value="fr">France</li>
+          <li data-value="de">Germany</li>
+          <li data-value="in">India</li>
+          <li data-value="jp">Japan</li>
+          <li data-value="mx">Mexico</li>
+          <li data-value="gb">United Kingdom</li>
+          <li data-value="us">United States</li>
+        </ul>
+      </combobox-wc>
+    </section>
+
+    <!-- Form Submission -->
+    <section>
+      <h2>Inside a Form</h2>
+      <h3>Submit to see FormData output</h3>
+      <form id="demo-form">
+        <layout-stack data-gap="m">
+          <form-field>
+            <label for="name-input">Name</label>
+            <input id="name-input" type="text" name="name" placeholder="Your name" required>
+          </form-field>
+
+          <form-field>
+            <label>Favorite Fruit</label>
+            <combobox-wc data-name="fruit">
+              <input type="text" placeholder="Pick a fruit...">
+              <ul>
+                <li data-value="apple">Apple</li>
+                <li data-value="banana">Banana</li>
+                <li data-value="cherry">Cherry</li>
+                <li data-value="grape">Grape</li>
+                <li data-value="mango">Mango</li>
+                <li data-value="orange">Orange</li>
+                <li data-value="peach">Peach</li>
+                <li data-value="strawberry">Strawberry</li>
+              </ul>
+            </combobox-wc>
+          </form-field>
+
+          <layout-cluster data-gap="s">
+            <button type="submit">Submit</button>
+            <button type="reset" data-variant="outline">Reset</button>
+          </layout-cluster>
+        </layout-stack>
+      </form>
+      <div class="form-output" id="form-output">Submit the form to see data here</div>
+    </section>
+
+    <!-- Required Validation -->
+    <section>
+      <h2>Required Validation</h2>
+      <h3>data-required prevents empty submission</h3>
+      <form id="required-form">
+        <layout-stack data-gap="m">
+          <form-field>
+            <label>Language (required)</label>
+            <combobox-wc data-name="language" data-required>
+              <input type="text" placeholder="Select a language...">
+              <ul>
+                <li data-value="en">English</li>
+                <li data-value="es">Spanish</li>
+                <li data-value="fr">French</li>
+                <li data-value="de">German</li>
+                <li data-value="ja">Japanese</li>
+                <li data-value="zh">Chinese</li>
+                <li data-value="ko">Korean</li>
+                <li data-value="pt">Portuguese</li>
+              </ul>
+            </combobox-wc>
+          </form-field>
+          <button type="submit">Submit</button>
+        </layout-stack>
+      </form>
+      <div class="form-output" id="required-output">Submit the form to see data here</div>
+    </section>
+
+    <!-- startsWith filter mode -->
+    <section>
+      <h2>Starts-With Filter</h2>
+      <h3>data-filter="startsWith" — only matches from the beginning</h3>
+      <combobox-wc data-name="color" data-filter="startsWith">
+        <input type="text" placeholder="Type a color...">
+        <ul>
+          <li data-value="red">Red</li>
+          <li data-value="orange">Orange</li>
+          <li data-value="yellow">Yellow</li>
+          <li data-value="green">Green</li>
+          <li data-value="blue">Blue</li>
+          <li data-value="indigo">Indigo</li>
+          <li data-value="violet">Violet</li>
+        </ul>
+      </combobox-wc>
+    </section>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Form submission demo
+    document.getElementById('demo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      document.getElementById('form-output').textContent = entries || '(no data)';
+    });
+
+    document.getElementById('required-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      document.getElementById('required-output').textContent = entries || '(no data)';
+    });
+  </script>
+</body>
+</html>

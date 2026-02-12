@@ -1,0 +1,257 @@
+---
+/**
+ * combobox-wc Web Component Documentation
+ *
+ * Autocomplete combobox with filtering, keyboard navigation,
+ * and native form participation via ElementInternals.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicCode = `<combobox-wc data-name="country">
+  <input type="text" placeholder="Search countries...">
+  <ul>
+    <li data-value="us">United States</li>
+    <li data-value="gb">United Kingdom</li>
+    <li data-value="ca">Canada</li>
+    <li data-value="au">Australia</li>
+  </ul>
+</combobox-wc>`;
+
+const formCode = `<form id="my-form">
+  <combobox-wc data-name="fruit" data-required>
+    <input type="text" placeholder="Pick a fruit...">
+    <ul>
+      <li data-value="apple">Apple</li>
+      <li data-value="banana">Banana</li>
+      <li data-value="cherry">Cherry</li>
+    </ul>
+  </combobox-wc>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  document.getElementById('my-form')
+    .addEventListener('submit', (e) => \{
+      e.preventDefault();
+      const data = new FormData(e.target);
+      console.log('fruit:', data.get('fruit'));
+    \});
+</script>`;
+
+const filterCode = `<!-- Default: contains (substring match) -->
+<combobox-wc data-name="item" data-filter="contains">
+  ...
+</combobox-wc>
+
+<!-- Starts-with matching -->
+<combobox-wc data-name="item" data-filter="startsWith">
+  ...
+</combobox-wc>`;
+
+const eventCode = `const combo = document.querySelector('combobox-wc');
+
+combo.addEventListener('combobox-change', (e) => \{
+  console.log('Selected:', e.detail.value, e.detail.label);
+\});
+
+combo.addEventListener('combobox-open', () => \{
+  console.log('Listbox opened');
+\});
+
+combo.addEventListener('combobox-close', () => \{
+  console.log('Listbox closed');
+\});`;
+
+const apiCode = `const el = document.querySelector('combobox-wc');
+
+// Read current value and label
+console.log(el.value);   // "us"
+console.log(el.label);   // "United States"
+
+// Set value programmatically
+el.value = 'gb';
+
+// Clear selection
+el.value = '';`;
+
+const fallbackCode = `/* Without JS: plain text input + visible list */
+combobox-wc:not(:defined) \{
+  display: block;
+\}
+
+combobox-wc:not(:defined) > ul \{
+  list-style: none;
+  padding: 0;
+  margin-block-start: var(--size-xs);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  max-block-size: 12rem;
+  overflow-y: auto;
+\}`;
+
+const stylingCode = `/* Option hover/active states */
+combobox-wc li[data-value]:hover \{
+  background: var(--color-surface-alt);
+\}
+
+combobox-wc li[data-active] \{
+  outline: 2px solid var(--color-interactive);
+\}
+
+/* Selected option */
+combobox-wc li[aria-selected="true"] \{
+  font-weight: 500;
+  color: var(--color-interactive);
+\}`;
+---
+
+<ElementLayout
+  title="combobox-wc"
+  description="Autocomplete combobox with filtering, keyboard navigation, and native form association via ElementInternals."
+  elementName="combobox-wc"
+  category="component"
+  currentPath="/docs/elements/web-components/combobox/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>An autocomplete combobox following the W3C ARIA combobox pattern. Users type to filter a list of options, navigate with arrow keys, and select with Enter or click. The selected value participates in native form submission via <code>ElementInternals</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/combobox-basic.html"
+      url="https://vanilla-breeze.dev/combobox"
+      title="Combobox Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>Place an <code>&lt;input&gt;</code> and a <code>&lt;ul&gt;</code> inside <code>&lt;combobox-wc&gt;</code>. Each <code>&lt;li&gt;</code> needs a <code>data-value</code> attribute for the form value. The visible text content becomes the label.</p>
+
+    <code-block language="html" show-lines label="Basic combobox">{basicCode}</code-block>
+
+    <h3>Inside a Form</h3>
+    <p>Use <code>data-name</code> to set the form field name. The selected <code>data-value</code> is submitted as the form value. Add <code>data-required</code> to enable required validation.</p>
+    <code-block language="html" show-lines label="Form integration">{formCode}</code-block>
+
+    <h3>Filter Modes</h3>
+    <p>By default, typing filters options by substring match (<code>contains</code>). Set <code>data-filter="startsWith"</code> to only match from the beginning of each option.</p>
+    <code-block language="html" show-lines label="Filter modes">{filterCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-name</code></td><td>string</td><td>&mdash;</td><td>Form field name</td></tr>
+        <tr><td><code>data-required</code></td><td>boolean</td><td>&mdash;</td><td>Require a selection for form validation</td></tr>
+        <tr><td><code>data-filter</code></td><td><code>"contains"</code>, <code>"startsWith"</code></td><td><code>"contains"</code></td><td>How typing filters the options</td></tr>
+        <tr><td><code>data-value</code></td><td>string</td><td>&mdash;</td><td>Get/set selected value (reflected)</td></tr>
+        <tr><td><code>data-placeholder</code></td><td>string</td><td>&mdash;</td><td>Input placeholder text</td></tr>
+        <tr><td><code>data-open</code></td><td>boolean</td><td>&mdash;</td><td>Reflected when the listbox is open</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>combobox-change</code></td><td><code>{'{ value, label }'}</code></td><td>Fired when a new option is selected.</td></tr>
+        <tr><td><code>combobox-open</code></td><td>&mdash;</td><td>Fired when the listbox opens.</td></tr>
+        <tr><td><code>combobox-close</code></td><td>&mdash;</td><td>Fired when the listbox closes.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event listeners">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>element.value</code></td><td>string</td><td>Current selected value (read/write)</td></tr>
+        <tr><td><code>element.label</code></td><td>string</td><td>Current selected label (read-only)</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="JS API">{apiCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowDown</kbd></td><td>Open listbox / move to next option</td></tr>
+        <tr><td><kbd>ArrowUp</kbd></td><td>Open listbox / move to previous option</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>Jump to first option</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Jump to last option</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Select the active option</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close listbox</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Close listbox and move focus</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>ARIA Pattern</h3>
+    <p>Implements the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/combobox/">W3C ARIA Combobox pattern</a>:</p>
+    <ul>
+      <li>Input has <code>role="combobox"</code>, <code>aria-expanded</code>, <code>aria-autocomplete="list"</code>, and <code>aria-controls</code></li>
+      <li>List has <code>role="listbox"</code> with an auto-generated ID</li>
+      <li>Options have <code>role="option"</code> and <code>aria-selected</code></li>
+      <li>Active option announced via <code>aria-activedescendant</code></li>
+    </ul>
+
+    <h3>Form Validation</h3>
+    <p>Uses <code>ElementInternals.setValidity()</code> so screen readers can announce validation errors. Works with <code>:user-valid</code> and <code>:user-invalid</code> CSS pseudo-classes.</p>
+  </section>
+
+  <section>
+    <h2>Form Association</h2>
+    <p>This component is a <a href="/docs/elements/web-components/form-association/">Form-Associated Custom Element</a>. It uses <code>ElementInternals</code> to:</p>
+    <ul>
+      <li>Submit the selected <code>data-value</code> via <code>FormData</code></li>
+      <li>Validate with <code>setValidity()</code> for required fields</li>
+      <li>Reset on form reset via <code>formResetCallback()</code></li>
+      <li>Restore state from browser history via <code>formStateRestoreCallback()</code></li>
+    </ul>
+    <p>No hidden inputs needed. The component name is set via <code>data-name</code>.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The component uses <code>@scope (combobox-wc)</code> for CSS encapsulation with VB design tokens. Override option states using the standard selectors:</p>
+    <code-block language="css" show-lines label="Custom styling">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, <code>&lt;combobox-wc&gt;</code> renders as a plain text input above a visible, scrollable list. Users can still see all options and type into the input. Once JS loads, the component adds filtering, keyboard navigation, and form association.</p>
+    <code-block language="css" show-lines label="No-JS fallback">{fallbackCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/form-association/">Form-Associated Custom Elements</a> &mdash; Guide to the pattern</li>
+      <li><a href="/docs/elements/web-components/rating/"><code>&lt;rating-wc&gt;</code></a> &mdash; Another form-associated component</li>
+      <li><a href="/docs/elements/web-components/dropdown/"><code>&lt;dropdown-wc&gt;</code></a> &mdash; Action menu (non-form)</li>
+      <li><a href="/docs/elements/native/datalist/"><code>&lt;datalist&gt;</code></a> &mdash; Native autocomplete</li>
+    </ul>
+  </section>
+</ElementLayout>
