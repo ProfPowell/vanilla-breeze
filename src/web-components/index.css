@@ -577,3 +577,279 @@ textarea[data-grow][data-grow-init] {
   font-size: var(--font-size-s);
   text-transform: uppercase;
 }
+
+/* ==========================================================================
+   Text Visual Effects
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   data-gradient-text: Gradient text coloring (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-gradient-text] {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      135deg,
+      var(--color-primary, oklch(55% 0.2 260)),
+      var(--color-secondary, oklch(60% 0.18 310))
+    );
+  }
+
+  [data-gradient-text="sunset"] {
+    background-image: linear-gradient(135deg, oklch(70% 0.22 30), oklch(65% 0.2 350), oklch(55% 0.18 310));
+  }
+
+  [data-gradient-text="ocean"] {
+    background-image: linear-gradient(135deg, oklch(70% 0.15 200), oklch(55% 0.2 260), oklch(50% 0.18 280));
+  }
+
+  [data-gradient-text="forest"] {
+    background-image: linear-gradient(135deg, oklch(65% 0.18 145), oklch(55% 0.15 160), oklch(50% 0.12 180));
+  }
+
+  [data-gradient-text="neon"] {
+    background-image: linear-gradient(135deg, oklch(75% 0.25 330), oklch(70% 0.3 290), oklch(75% 0.25 180));
+  }
+
+  [data-gradient-text][data-gradient-text-animate] {
+    background-size: 200% 200%;
+    animation: vb-gradient-flow 4s var(--ease-default, ease) infinite;
+  }
+}
+
+@keyframes vb-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-gradient-text][data-gradient-text-animate] { animation: none; }
+}
+:root[data-motion-reduced] [data-gradient-text][data-gradient-text-animate] { animation: none; }
+
+/* --------------------------------------------------------------------------
+   data-shimmer: Shimmering text highlight (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-shimmer] {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      110deg,
+      currentColor 35%,
+      oklch(85% 0.05 90) 50%,
+      currentColor 65%
+    );
+    background-size: 200% 100%;
+    animation: vb-shimmer 2s linear infinite;
+    color: var(--color-text);
+  }
+
+  [data-shimmer="slow"] { animation-duration: 4s; }
+  [data-shimmer="fast"] { animation-duration: 1s; }
+}
+
+@keyframes vb-shimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-shimmer] { animation: none; }
+}
+:root[data-motion-reduced] [data-shimmer] { animation: none; }
+
+/* --------------------------------------------------------------------------
+   data-glitch: Chromatic aberration glitch effect (CSS + tiny JS)
+   -------------------------------------------------------------------------- */
+[data-glitch][data-glitch-init] {
+  position: relative;
+  display: inline-block;
+}
+
+[data-glitch][data-glitch-init]::before,
+[data-glitch][data-glitch-init]::after {
+  content: attr(data-glitch-text);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+[data-glitch][data-glitch-init]::before {
+  color: oklch(65% 0.25 210);
+  animation: vb-glitch-1 2s infinite linear alternate-reverse;
+  clip-path: inset(0 0 65% 0);
+}
+
+[data-glitch][data-glitch-init]::after {
+  color: oklch(65% 0.25 25);
+  animation: vb-glitch-2 2s infinite linear alternate-reverse;
+  clip-path: inset(65% 0 0 0);
+}
+
+/* Hover-only variant: hide pseudos until hover */
+[data-glitch="hover"][data-glitch-init]::before,
+[data-glitch="hover"][data-glitch-init]::after {
+  opacity: 0;
+}
+
+[data-glitch="hover"][data-glitch-init]:hover::before,
+[data-glitch="hover"][data-glitch-init]:hover::after {
+  opacity: 1;
+}
+
+@keyframes vb-glitch-1 {
+  0% { clip-path: inset(20% 0 60% 0); transform: translate(-2px, -1px); }
+  20% { clip-path: inset(50% 0 20% 0); transform: translate(2px, 1px); }
+  40% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 2px); }
+  60% { clip-path: inset(40% 0 30% 0); transform: translate(1px, -2px); }
+  80% { clip-path: inset(70% 0 5% 0); transform: translate(-2px, 1px); }
+  100% { clip-path: inset(30% 0 40% 0); transform: translate(2px, -1px); }
+}
+
+@keyframes vb-glitch-2 {
+  0% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 1px); }
+  20% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -1px); }
+  40% { clip-path: inset(70% 0 10% 0); transform: translate(1px, -2px); }
+  60% { clip-path: inset(10% 0 60% 0); transform: translate(-1px, 2px); }
+  80% { clip-path: inset(40% 0 30% 0); transform: translate(2px, -1px); }
+  100% { clip-path: inset(5% 0 70% 0); transform: translate(-2px, 1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-glitch][data-glitch-init]::before,
+  [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+}
+:root[data-motion-reduced] [data-glitch][data-glitch-init]::before,
+:root[data-motion-reduced] [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+
+/* --------------------------------------------------------------------------
+   data-reveal: Word/line reveal entrance
+   -------------------------------------------------------------------------- */
+[data-reveal][data-reveal-init] .vb-reveal-chunk {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.5em);
+  transition:
+    opacity var(--reveal-duration, 400ms) var(--ease-out, ease-out),
+    transform var(--reveal-duration, 400ms) var(--ease-out, ease-out);
+  transition-delay: calc(var(--i, 0) * var(--reveal-delay, 80ms));
+}
+
+[data-reveal][data-reveal-init][data-reveal-visible] .vb-reveal-chunk {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   data-blur-reveal: Word/line blur-to-clear reveal
+   -------------------------------------------------------------------------- */
+[data-blur-reveal][data-blur-reveal-init] .vb-blur-chunk {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(8px);
+  transition:
+    opacity 400ms var(--ease-out, ease-out),
+    filter 400ms var(--ease-out, ease-out);
+  transition-delay: calc(var(--i, 0) * var(--blur-delay, 80ms));
+}
+
+[data-blur-reveal][data-blur-reveal-init][data-blur-reveal-visible] .vb-blur-chunk {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* --------------------------------------------------------------------------
+   data-highlight: Draw-in underline / box / circle
+   -------------------------------------------------------------------------- */
+
+/* Underline (default) */
+[data-highlight][data-highlight-init],
+[data-highlight="underline"][data-highlight-init] {
+  background-image: linear-gradient(
+    var(--highlight-color, currentColor),
+    var(--highlight-color, currentColor)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-block-end: 2px;
+}
+
+[data-highlight][data-highlight-init][data-highlight-visible],
+[data-highlight="underline"][data-highlight-init][data-highlight-visible] {
+  background-size: 100% 2px;
+}
+
+/* Box highlight */
+[data-highlight="box"][data-highlight-init] {
+  background-image: linear-gradient(
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent),
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-inline: 0.15em;
+}
+
+[data-highlight="box"][data-highlight-init][data-highlight-visible] {
+  background-size: 100% 100%;
+}
+
+/* Circle highlight */
+[data-highlight="circle"][data-highlight-init] {
+  position: relative;
+  display: inline-block;
+}
+
+[data-highlight="circle"][data-highlight-init]::after {
+  content: '';
+  position: absolute;
+  inset: -0.15em -0.3em;
+  border: 2px solid var(--highlight-color, currentColor);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 0.5s var(--ease-out, ease-out),
+    opacity 0.3s var(--ease-out, ease-out);
+  pointer-events: none;
+}
+
+[data-highlight="circle"][data-highlight-init][data-highlight-visible]::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   data-typewriter: Character-by-character typing
+   -------------------------------------------------------------------------- */
+.vb-typewriter-cursor {
+  display: inline;
+  animation: vb-typewriter-blink 0.7s step-end infinite;
+  font-weight: 100;
+  margin-inline-start: 1px;
+}
+
+@keyframes vb-typewriter-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-typewriter-cursor { animation: none; }
+}
+:root[data-motion-reduced] .vb-typewriter-cursor { animation: none; }
+
+/* --------------------------------------------------------------------------
+   data-scramble: Decode effect (minimal CSS — JS drives animation)
+   -------------------------------------------------------------------------- */
+[data-scramble][data-scramble-init] {
+  font-variant-numeric: tabular-nums;
+}
