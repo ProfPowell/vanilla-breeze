@@ -31,8 +31,16 @@ function getMaskConfig(input) {
   const type = input.dataset.mask;
   if (MASKS[type]) return MASKS[type];
   if (type === 'custom' && input.dataset.pattern) {
-    // Determine accept regex from tokens used in pattern
-    return { pattern: input.dataset.pattern, accept: null };
+    const pattern = input.dataset.pattern;
+    // Build accept regex from token types present in pattern
+    const parts = new Set();
+    for (const ch of pattern) {
+      if (ch === '#') parts.add('0-9');
+      else if (ch === 'A') parts.add('a-zA-Z');
+      else if (ch === '*') parts.add('a-zA-Z0-9');
+    }
+    const accept = parts.size > 0 ? new RegExp(`[${[...parts].join('')}]`) : /./;
+    return { pattern, accept };
   }
   return null;
 }
@@ -69,18 +77,8 @@ function applyMask(raw, pattern) {
   return result;
 }
 
-function extractRaw(value, pattern, acceptRegex) {
-  if (acceptRegex) {
-    return value.split('').filter(ch => acceptRegex.test(ch)).join('');
-  }
-  // For custom masks, extract only chars at token positions
-  let raw = '';
-  for (let i = 0; i < value.length && i < pattern.length; i++) {
-    if (isToken(pattern[i])) {
-      raw += value[i];
-    }
-  }
-  return raw;
+function extractRaw(value, acceptRegex) {
+  return value.split('').filter(ch => acceptRegex.test(ch)).join('');
 }
 
 function isAllDigits(pattern) {
@@ -122,21 +120,20 @@ function enhanceInput(input) {
   function handleFormat() {
     if (composing) return;
 
-    const raw = extractRaw(input.value, pattern, acceptRegex);
-    const formatted = applyMask(raw, pattern);
-
-    // Count accepted chars before current cursor to reposition
+    // Count accepted chars before cursor in old value
     const cursorBefore = input.selectionStart ?? 0;
     let acceptedBeforeCursor = 0;
     for (let i = 0; i < cursorBefore && i < input.value.length; i++) {
-      const p = i < pattern.length ? pattern[i] : null;
-      if (p && isToken(p)) acceptedBeforeCursor++;
+      if (acceptRegex.test(input.value[i])) acceptedBeforeCursor++;
     }
+
+    const raw = extractRaw(input.value, acceptRegex);
+    const formatted = applyMask(raw, pattern);
 
     input.value = formatted;
     input.dataset.rawValue = raw;
 
-    // Reposition cursor: find position of Nth accepted char
+    // Reposition cursor: find position after Nth accepted char
     let counted = 0;
     let newCursor = formatted.length;
     for (let i = 0; i < formatted.length; i++) {
@@ -144,6 +141,10 @@ function enhanceInput(input) {
         counted++;
         if (counted === acceptedBeforeCursor) {
           newCursor = i + 1;
+          // Skip past trailing literal chars so cursor lands at next token
+          while (newCursor < pattern.length && !isToken(pattern[newCursor])) {
+            newCursor++;
+          }
           break;
         }
       }
@@ -156,7 +157,7 @@ function enhanceInput(input) {
 
   // Format initial value if present
   if (input.value) {
-    const raw = extractRaw(input.value, pattern, acceptRegex);
+    const raw = extractRaw(input.value, acceptRegex);
     input.value = applyMask(raw, pattern);
     input.dataset.rawValue = raw;
   }
