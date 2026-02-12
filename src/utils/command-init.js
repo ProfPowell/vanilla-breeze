@@ -144,7 +144,54 @@ observer.observe(document.documentElement, {
   attributeFilter: ['data-command', 'commandfor']
 });
 
-// Expose for command-wc lazy access (avoids circular imports)
-window.__commandRegistry = { getRegisteredCommands };
+/**
+ * Scan for auto-discoverable elements (nav links, headings)
+ * Only called when a command-wc[data-discover="auto"] exists.
+ * @returns {{ element: Element, label: string, group: string, icon: string|null, shortcut: string|null, auto: boolean, action: Function|null }[]}
+ */
+function scanAutoDiscoverable() {
+  const EXCLUDE = 'footer, aside, dialog, [hidden], [aria-hidden="true"]';
+  const MAX_ITEMS = 50;
+  const items = [];
 
-export { getRegisteredCommands, initCommands };
+  // Nav links (not in footer/aside/dialog/hidden)
+  document.querySelectorAll('nav a[href]').forEach(a => {
+    if (a.closest(EXCLUDE)) return;
+    if (registry.has(a)) return; // already explicit
+    const label = a.textContent.trim();
+    if (!label || items.length >= MAX_ITEMS) return;
+    items.push({
+      element: a,
+      label,
+      group: 'Navigation',
+      icon: null,
+      shortcut: null,
+      auto: true,
+      action: null // default click
+    });
+  });
+
+  // Headings with IDs
+  document.querySelectorAll('h2[id], h3[id]').forEach(heading => {
+    if (heading.closest(EXCLUDE)) return;
+    if (registry.has(heading)) return;
+    const label = heading.textContent.trim();
+    if (!label || items.length >= MAX_ITEMS) return;
+    items.push({
+      element: heading,
+      label: `Jump to: ${label}`,
+      group: 'On This Page',
+      icon: null,
+      shortcut: null,
+      auto: true,
+      action: () => heading.scrollIntoView({ behavior: 'smooth' })
+    });
+  });
+
+  return items;
+}
+
+// Expose for command-wc lazy access (avoids circular imports)
+window.__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
+
+export { getRegisteredCommands, scanAutoDiscoverable, initCommands };

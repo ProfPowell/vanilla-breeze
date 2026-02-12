@@ -138,6 +138,18 @@ const truncatedCode = `<tooltip-wc>
   </span>
   <template data-tooltip>This is a very long text that gets truncated</template>
 </tooltip-wc>`;
+
+const interestforCode = `<!-- Pure HTML tooltip — no web component needed -->
+<button interestfor="wai-def">WAI-ARIA</button>
+<div id="wai-def" popover="hint">
+  Web Accessibility Initiative – Accessible Rich Internet Applications
+</div>`;
+
+const interestforStylingCode = `/* Custom timing via CSS custom properties */
+#my-tooltip \{
+  --interest-delay-start: 300ms;
+  --interest-delay-end: 150ms;
+\}`;
 ---
 
 <ElementLayout
@@ -658,5 +670,62 @@ const truncatedCode = `<tooltip-wc>
     </div>
 
     <code-block language="html" show-lines label="Truncated text with tooltip">{truncatedCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Pure HTML Tooltips (<code>interestfor</code>)</h2>
+    <p>For simple tooltips that don't need arrows, custom positioning, or rich content, you can skip the web component entirely. The <code>interestfor</code> attribute (native in Chrome 133+, polyfilled in other browsers) handles hover/focus timing and popover show/hide declaratively.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <span>
+          The
+          <button interestfor="wai-def-demo" style="all: unset; cursor: help; text-decoration: underline dotted; text-underline-offset: 3px;">WAI-ARIA</button>
+          specification defines accessible rich internet applications.
+        </span>
+        <div id="wai-def-demo" popover="hint">
+          Web Accessibility Initiative &ndash; Accessible Rich Internet Applications
+        </div>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Pure HTML tooltip with interestfor">{interestforCode}</code-block>
+
+    <h3>How It Works</h3>
+    <ul>
+      <li>The <code>interestfor</code> attribute on a button/link points to the popover's <code>id</code></li>
+      <li>On hover/focus, the browser (or polyfill) shows the popover after a delay</li>
+      <li>On leave/blur, the popover hides after a shorter delay</li>
+      <li>Hovering the popover itself keeps it open</li>
+      <li>Escape dismisses all open interest popovers</li>
+    </ul>
+
+    <h3>Custom Timing</h3>
+    <p>Control show/hide delays with CSS custom properties:</p>
+    <code-block language="css" show-lines label="Custom timing">{interestforStylingCode}</code-block>
+
+    <h3>When to Use Which</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Use case</th>
+          <th>Approach</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Simple text hint</td>
+          <td><code>interestfor</code> + <code>popover="hint"</code> (pure HTML)</td>
+        </tr>
+        <tr>
+          <td>Positioned tooltip with arrow</td>
+          <td><code>&lt;tooltip-wc&gt;</code></td>
+        </tr>
+        <tr>
+          <td>Rich hover card with interactive content</td>
+          <td><code>&lt;tooltip-wc data-variant="card"&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </ElementLayout>

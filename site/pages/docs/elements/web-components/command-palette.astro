@@ -69,6 +69,17 @@ const discoverCode = `<!-- Command palette with auto-discovery -->
   Docs
 </a>`;
 
+const autoDiscoverCode = `<!-- Aggressive auto-discovery: also scans nav links + headings -->
+<command-wc data-hotkey="meta+k" data-discover="auto">
+  <command-group label="Quick Actions">
+    <command-item value="theme">Toggle Dark Mode</command-item>
+  </command-group>
+</command-wc>
+
+<!-- These are found automatically (no data-command needed): -->
+<!-- nav links → "Navigation" group -->
+<!-- h2[id], h3[id] → "On This Page" group -->`;
+
 const dataCommandCode = `<!-- data-command attributes -->
 <button data-command="Save Draft" data-shortcut="meta+s" data-command-icon="save">
   Save
@@ -216,6 +227,40 @@ const triggerButtonCode = `<!-- Trigger button -->
     <code-block language="html" show-lines label="data-command attributes">{dataCommandCode}</code-block>
 
     <p>Elements with <code>commandfor</code> (HTML Invoker API) are also auto-discovered. The label comes from <code>textContent</code>; override with <code>data-command</code> if needed.</p>
+
+    <h3>Aggressive Auto-Discovery (<code>data-discover="auto"</code>)</h3>
+    <p>Set <code>data-discover="auto"</code> to also scan for nav links and page headings without any explicit <code>data-command</code> attributes:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Palette label</th>
+          <th>Group</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>nav a[href]</code> links</td>
+          <td>Link text</td>
+          <td>"Navigation"</td>
+        </tr>
+        <tr>
+          <td>Headings with <code>id</code> (<code>h2[id], h3[id]</code>)</td>
+          <td>"Jump to: {'{'} heading text {'}'}"</td>
+          <td>"On This Page"</td>
+        </tr>
+        <tr>
+          <td><code>[data-command]</code> elements</td>
+          <td><code>data-command</code> value</td>
+          <td><code>data-command-group</code> or "Page Actions"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Aggressive auto-discovery">{autoDiscoverCode}</code-block>
+
+    <p>Auto-discovered items are capped at 50 and styled with muted text. Elements inside <code>footer</code>, <code>aside</code>, <code>dialog</code>, <code>[hidden]</code>, or <code>[aria-hidden="true"]</code> are excluded. Clicking a heading command scrolls to it smoothly.</p>
   </section>
 
   <section>

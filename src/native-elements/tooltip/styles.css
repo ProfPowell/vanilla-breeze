@@ -139,10 +139,64 @@
   }
 }
 
+/* ---- interestfor-driven tooltips ---- */
+
+[popover="hint"]:not([role="tooltip"]) {
+  border: none;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+
+  background: var(--color-gray-900);
+  color: var(--color-gray-50);
+  padding: var(--size-xs) var(--size-s);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-s);
+  max-inline-size: 20rem;
+  white-space: normal;
+  word-wrap: break-word;
+
+  /* Polyfill timing */
+  --interest-delay-start: 200ms;
+  --interest-delay-end: 100ms;
+
+  /* Animation */
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    display var(--duration-fast) allow-discrete,
+    overlay var(--duration-fast) allow-discrete;
+}
+
+[popover="hint"]:not([role="tooltip"]):popover-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@starting-style {
+  [popover="hint"]:not([role="tooltip"]):popover-open {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [popover="hint"]:not([role="tooltip"]) {
+    background: var(--color-gray-100);
+    color: var(--color-gray-900);
+  }
+}
+
 /* --- Reduced Motion --- */
 
 @media (prefers-reduced-motion: reduce) {
   [role="tooltip"][popover] {
+    transition: none;
+  }
+
+  [popover="hint"]:not([role="tooltip"]) {
     transition: none;
   }
 }

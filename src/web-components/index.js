@@ -20,6 +20,8 @@ import './combobox-wc/logic.js';
 import './tags-wc/logic.js';
 import './context-menu-wc/logic.js';
 import './command-wc/logic.js';
+import './shortcuts-wc/logic.js';
+import '../utils/interest-polyfill.js';
 import '../utils/copy-init.js';
 import '../utils/hotkey-init.js';
 import '../utils/command-init.js';

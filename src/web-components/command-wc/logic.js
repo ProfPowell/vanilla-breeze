@@ -244,9 +244,7 @@ class CommandWc extends HTMLElement {
     if (!this.hasAttribute('data-discover')) return;
 
     // Lazy-import to avoid circular dependency at module load time
-    // command-init.js imports hotkey-bind.js; command-wc imports hotkey-bind.js
-    // but command-wc only needs getRegisteredCommands at runtime, not at parse time
-    const { getRegisteredCommands } = window.__commandRegistry || {};
+    const { getRegisteredCommands, scanAutoDiscoverable } = window.__commandRegistry || {};
     if (!getRegisteredCommands) return;
 
     // Remove previously added discovered items and headers
@@ -269,37 +267,9 @@ class CommandWc extends HTMLElement {
         // Skip if the element is inside this command-wc (avoid duplicating declarative items)
         if (this.contains(entry.element)) continue;
 
-        const btn = document.createElement('button');
-        btn.className = 'command-option';
-        btn.setAttribute('role', 'option');
+        const btn = this.#createOptionButton(entry.label, entry.icon, entry.shortcut);
         btn.dataset.value = `__discovered:${entry.label}`;
-        btn.dataset.searchText = entry.label.toLowerCase();
 
-        // Icon
-        if (entry.icon) {
-          const iconWrap = document.createElement('span');
-          iconWrap.className = 'command-icon';
-          const iconEl = document.createElement('icon-wc');
-          iconEl.setAttribute('name', entry.icon);
-          iconWrap.appendChild(iconEl);
-          btn.appendChild(iconWrap);
-        }
-
-        // Label
-        const label = document.createElement('span');
-        label.className = 'command-label';
-        label.textContent = entry.label;
-        btn.appendChild(label);
-
-        // Shortcut badge
-        if (entry.shortcut) {
-          const badge = document.createElement('kbd');
-          badge.className = 'command-kbd';
-          badge.textContent = formatHotkey(entry.shortcut);
-          btn.appendChild(badge);
-        }
-
-        // Click = click the original element (palette is a proxy)
         btn.addEventListener('click', () => {
           this.close();
           entry.element.click();
@@ -309,6 +279,77 @@ class CommandWc extends HTMLElement {
         this.#items.push({ btn, header, group: null, discovered: true });
       }
     }
+
+    // Auto-discovery: nav links + headings (only when data-discover="auto")
+    if (this.dataset.discover === 'auto' && scanAutoDiscoverable) {
+      const autoItems = scanAutoDiscoverable();
+      const autoGroups = new Map();
+
+      for (const item of autoItems) {
+        const list = autoGroups.get(item.group) || [];
+        list.push(item);
+        autoGroups.set(item.group, list);
+      }
+
+      for (const [groupName, entries] of autoGroups) {
+        const header = document.createElement('div');
+        header.className = 'command-group-header';
+        header.textContent = groupName;
+        header.setAttribute('role', 'presentation');
+        this.#list.insertBefore(header, empty);
+        this.#discoveredHeaders.push(header);
+
+        for (const entry of entries) {
+          if (this.contains(entry.element)) continue;
+
+          const btn = this.#createOptionButton(entry.label, entry.icon, entry.shortcut);
+          btn.dataset.value = `__auto:${entry.label}`;
+          btn.dataset.auto = '';
+
+          btn.addEventListener('click', () => {
+            this.close();
+            if (entry.action) {
+              entry.action();
+            } else {
+              entry.element.click();
+            }
+          });
+
+          this.#list.insertBefore(btn, empty);
+          this.#items.push({ btn, header, group: null, discovered: true });
+        }
+      }
+    }
+  }
+
+  #createOptionButton(labelText, icon, shortcut) {
+    const btn = document.createElement('button');
+    btn.className = 'command-option';
+    btn.setAttribute('role', 'option');
+    btn.dataset.searchText = labelText.toLowerCase();
+
+    if (icon) {
+      const iconWrap = document.createElement('span');
+      iconWrap.className = 'command-icon';
+      const iconEl = document.createElement('icon-wc');
+      iconEl.setAttribute('name', icon);
+      iconWrap.appendChild(iconEl);
+      btn.appendChild(iconWrap);
+    }
+
+    const label = document.createElement('span');
+    label.className = 'command-label';
+    label.textContent = labelText;
+    btn.appendChild(label);
+
+    if (shortcut) {
+      const badge = document.createElement('kbd');
+      badge.className = 'command-kbd';
+      badge.textContent = formatHotkey(shortcut);
+      btn.appendChild(badge);
+    }
+
+    return btn;
   }
 
   open() {

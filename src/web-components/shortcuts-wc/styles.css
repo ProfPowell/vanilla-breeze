@@ -1,0 +1,98 @@
+/* shortcuts-wc: Keyboard shortcuts help overlay */
+
+shortcuts-wc {
+  display: contents;
+}
+
+@scope (shortcuts-wc) {
+  .shortcuts-dialog {
+    max-inline-size: min(90vw, 28rem);
+    max-block-size: min(85dvh, 32rem);
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-l);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow:
+      0 0 0 1px oklch(0% 0 0 / 0.05),
+      0 10px 25px -5px oklch(0% 0 0 / 0.15),
+      0 20px 50px -10px oklch(0% 0 0 / 0.1);
+    overflow: hidden;
+  }
+
+  .shortcuts-dialog::backdrop {
+    background: oklch(0% 0 0 / 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .shortcuts-dialog[open] {
+    animation: vb-scale-in var(--motion-enter-duration) var(--ease-out);
+  }
+
+  .shortcuts-header {
+    padding: var(--size-m) var(--size-l);
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  .shortcuts-header h2 {
+    margin: 0;
+    font-size: var(--font-size-base, 1rem);
+    font-weight: 600;
+  }
+
+  .shortcuts-body {
+    overflow-y: auto;
+    max-block-size: min(65dvh, 26rem);
+    padding: var(--size-s) 0;
+  }
+
+  .shortcuts-group-header {
+    padding: var(--size-xs) var(--size-l);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .shortcuts-group:not(:first-child) .shortcuts-group-header {
+    margin-block-start: var(--size-2xs);
+    border-block-start: 1px solid var(--color-border);
+    padding-block-start: var(--size-s);
+  }
+
+  .shortcuts-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-m);
+    padding: var(--size-xs) var(--size-l);
+  }
+
+  .shortcuts-label {
+    flex: 1;
+    font-size: var(--font-size-sm);
+  }
+
+  .shortcuts-kbd {
+    flex-shrink: 0;
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted);
+    background: var(--color-surface-raised);
+    padding: var(--size-3xs) var(--size-xs);
+    border-radius: var(--radius-s);
+    border: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+    min-inline-size: 2rem;
+    text-align: center;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (shortcuts-wc) {
+    .shortcuts-dialog[open] {
+      animation: none;
+    }
+  }
+}

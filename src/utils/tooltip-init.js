@@ -1,8 +1,9 @@
 /**
  * tooltip-init: Initialize native tooltips using Popover API
  *
- * Binds hover/focus events to elements with aria-describedby
- * pointing to a popover tooltip element.
+ * When interestfor is available (native or polyfill), sets the
+ * interestfor attribute on triggers instead of JS hover listeners.
+ * Falls back to manual event binding otherwise.
  *
  * @example
  * // In your main.js:
@@ -20,11 +21,19 @@
 const SHOW_DELAY = 200;
 const HIDE_DELAY = 100;
 
+/** Check if interestfor is available (native or polyfill) */
+function hasInterestFor() {
+  return 'interestForElement' in HTMLButtonElement.prototype ||
+    document.documentElement.hasAttribute('data-interest-polyfill');
+}
+
 /**
  * Initialize tooltips within a root element
  * @param {Element|Document} root - Root element to search within
  */
 function initTooltips(root = document) {
+  const useInterestFor = hasInterestFor();
+
   // Initialize hover tooltips (aria-describedby)
   root.querySelectorAll('[aria-describedby]').forEach(trigger => {
     const tipId = trigger.getAttribute('aria-describedby');
@@ -40,6 +49,18 @@ function initTooltips(root = document) {
     if (trigger.hasAttribute('data-tooltip-init')) return;
     trigger.setAttribute('data-tooltip-init', '');
 
+    // Primary path: use interestfor
+    if (useInterestFor) {
+      trigger.setAttribute('interestfor', tipId);
+      // Polyfill/browser handles hover, focus, timing, and show/hide.
+      // Still need JS positioning for non-anchor browsers.
+      tip.addEventListener('toggle', (e) => {
+        if (e.newState === 'open') positionTooltip(trigger, tip);
+      });
+      return;
+    }
+
+    // Fallback path: JS event listeners
     let showTimer = null;
     let hideTimer = null;
 

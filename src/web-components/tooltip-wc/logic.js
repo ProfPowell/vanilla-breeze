@@ -1,9 +1,10 @@
 /**
- * tooltip-wc: Enhanced tooltip with Popover API
+ * tooltip-wc: Enhanced tooltip with Popover API + interestfor
  *
  * Wraps a trigger element and provides a tooltip on hover/focus.
- * Uses native Popover API for top-layer rendering and CSS Anchor
- * Positioning where available, with JS fallback for older browsers.
+ * Primary mechanism: sets `interestfor` attribute on trigger, letting
+ * the browser (or polyfill) handle hover/focus timing and show/hide.
+ * Falls back to JS event listeners when interestfor is unavailable.
  *
  * @attr {string} data-content - Simple text tooltip content
  * @attr {string} data-position - Position: 'top' (default), 'bottom', 'left', 'right'
@@ -36,6 +37,12 @@
 // Check CSS Anchor Positioning support once
 const supportsAnchor = CSS.supports('anchor-name', '--test');
 
+// Check if interestfor is available (native or polyfill)
+function hasInterestFor() {
+  return 'interestForElement' in HTMLButtonElement.prototype ||
+    document.documentElement.hasAttribute('data-interest-polyfill');
+}
+
 class TooltipWc extends HTMLElement {
   #trigger;
   #tooltip;
@@ -43,6 +50,7 @@ class TooltipWc extends HTMLElement {
   #hideTimer;
   #useJsPositioning = !supportsAnchor;
   #isCard = false;
+  #useInterestFor = false;
 
   connectedCallback() {
     this.#setup();
@@ -54,6 +62,7 @@ class TooltipWc extends HTMLElement {
 
   #setup() {
     this.#isCard = this.dataset.variant === 'card';
+    this.#useInterestFor = hasInterestFor();
 
     if (this.#isCard) {
       this.#setupCard();
@@ -62,7 +71,7 @@ class TooltipWc extends HTMLElement {
     }
   }
 
-  // --- Regular tooltip setup (unchanged) ---
+  // --- Regular tooltip setup ---
   #setupTooltip() {
     // Find trigger (first non-template child)
     this.#trigger = this.querySelector(':scope > :not(template)');
@@ -110,20 +119,29 @@ class TooltipWc extends HTMLElement {
       this.#tooltip.setAttribute('data-anchor', '');
     }
 
-    // Set ARIA relationship on trigger
-    this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
+    // Primary path: use interestfor attribute
+    if (this.#useInterestFor) {
+      this.#trigger.setAttribute('interestfor', this.#tooltip.id);
+      // ARIA is handled by the polyfill/browser, but we still set describedby
+      // for screen readers since polyfill only sets it on setup
+      if (!this.#trigger.hasAttribute('aria-describedby')) {
+        this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
+      }
 
-    // Event listeners - just binding, state managed by Popover API
-    this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
-    this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
-    this.#trigger.addEventListener('focus', this.#showImmediate);
-    this.#trigger.addEventListener('blur', this.#hideImmediate);
-
-    // Allow hovering over tooltip (keeps it open)
-    this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
-    this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
-
-    // Note: Escape key handling is built into Popover API - no manual listener needed
+      // Position on show for JS fallback positioning
+      if (this.#useJsPositioning) {
+        this.#tooltip.addEventListener('toggle', this.#handleToggle);
+      }
+    } else {
+      // Fallback: JS event listeners
+      this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
+      this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
+      this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
+      this.#trigger.addEventListener('focus', this.#showImmediate);
+      this.#trigger.addEventListener('blur', this.#hideImmediate);
+      this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
+      this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
+    }
   }
 
   // --- Card variant setup ---
@@ -145,36 +163,61 @@ class TooltipWc extends HTMLElement {
 
     this.appendChild(this.#tooltip);
 
-    // Event listeners
-    this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
-    this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
-    this.#trigger.addEventListener('focus', this.#showImmediate);
-    this.#trigger.addEventListener('blur', this.#scheduleHide);
+    // Primary path: use interestfor (polyfill supports manual popovers)
+    if (this.#useInterestFor) {
+      this.#trigger.setAttribute('interestfor', this.#tooltip.id);
 
-    this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
-    this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
-
-    // Manual popover doesn't auto-handle Escape
-    document.addEventListener('keydown', this.#handleEscape);
+      // Position card on show
+      this.#tooltip.addEventListener('toggle', this.#handleToggle);
+    } else {
+      // Fallback: JS event listeners
+      this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
+      this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
+      this.#trigger.addEventListener('focus', this.#showImmediate);
+      this.#trigger.addEventListener('blur', this.#scheduleHide);
+      this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
+      this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
+      document.addEventListener('keydown', this.#handleEscape);
+    }
   }
 
   #cleanup() {
     if (this.#trigger) {
-      this.#trigger.removeEventListener('mouseenter', this.#scheduleShow);
-      this.#trigger.removeEventListener('mouseleave', this.#scheduleHide);
-      this.#trigger.removeEventListener('focus', this.#showImmediate);
-      this.#trigger.removeEventListener('blur', this.#hideImmediate);
+      if (this.#useInterestFor) {
+        this.#trigger.removeAttribute('interestfor');
+      } else {
+        this.#trigger.removeEventListener('mouseenter', this.#scheduleShow);
+        this.#trigger.removeEventListener('mouseleave', this.#scheduleHide);
+        this.#trigger.removeEventListener('focus', this.#showImmediate);
+        this.#trigger.removeEventListener('blur', this.#hideImmediate);
+      }
     }
     if (this.#tooltip) {
       this.#tooltip.removeEventListener('mouseenter', this.#cancelHide);
       this.#tooltip.removeEventListener('mouseleave', this.#scheduleHide);
+      this.#tooltip.removeEventListener('toggle', this.#handleToggle);
     }
-    if (this.#isCard) {
+    if (this.#isCard && !this.#useInterestFor) {
       document.removeEventListener('keydown', this.#handleEscape);
     }
     clearTimeout(this.#showTimer);
     clearTimeout(this.#hideTimer);
   }
+
+  #handleToggle = (e) => {
+    if (e.newState === 'open') {
+      if (this.#isCard) {
+        this.#positionCard();
+      } else if (this.#useJsPositioning) {
+        this.#updatePosition();
+      }
+      const eventName = this.#isCard ? 'hover-card-show' : 'tooltip-show';
+      this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+    } else {
+      const eventName = this.#isCard ? 'hover-card-hide' : 'tooltip-hide';
+      this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+    }
+  };
 
   #scheduleShow = () => {
     clearTimeout(this.#hideTimer);
