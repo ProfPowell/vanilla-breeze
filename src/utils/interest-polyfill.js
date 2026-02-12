@@ -25,6 +25,9 @@ const targetData = new WeakMap();
 const activeInvokers = new Set();
 let touchInProgress = false;
 
+// CSS Anchor Positioning support
+const supportsAnchor = CSS.supports?.('anchor-name', '--a') ?? false;
+
 // ---- Timing ----
 
 function parseTime(val) {
@@ -142,6 +145,7 @@ function gainInterest(invoker, target) {
   // Show popover if applicable
   if (target.hasAttribute('popover')) {
     try { target.showPopover(); } catch {}
+    positionWithJS(invoker, target);
   }
 
   data.state = 'full';
@@ -222,6 +226,41 @@ function scheduleLose(invoker) {
     const target = getTarget(invoker);
     if (target) loseInterest(invoker, target);
   }, delay);
+}
+
+// ---- Positioning ----
+
+function setupAnchorNames(el) {
+  if (!supportsAnchor) return;
+  const id = el.getAttribute(ATTR);
+  const target = id ? document.getElementById(id) : null;
+  if (!target?.id) return;
+  const name = `--interest-${target.id}`;
+  el.style.anchorName = name;
+  target.style.positionAnchor = name;
+}
+
+function positionWithJS(invoker, target) {
+  if (supportsAnchor) return;
+  const rect = invoker.getBoundingClientRect();
+  const tipRect = target.getBoundingClientRect();
+  const gap = 8;
+  const pad = 8;
+
+  // Default: above the invoker, centered
+  let top = rect.top - tipRect.height - gap;
+  let left = rect.left + (rect.width - tipRect.width) / 2;
+
+  // Flip to below if not enough room above
+  if (top < pad) top = rect.bottom + gap;
+
+  // Clamp to viewport
+  left = Math.max(pad, Math.min(left, window.innerWidth - tipRect.width - pad));
+  top = Math.max(pad, Math.min(top, window.innerHeight - tipRect.height - pad));
+
+  target.style.top = `${top}px`;
+  target.style.left = `${left}px`;
+  target.style.margin = '0';
 }
 
 // ---- Event handling ----
@@ -331,6 +370,7 @@ function registerCustomProperties() {
 
 function setupInvoker(el) {
   ensureData(el);
+  setupAnchorNames(el);
 }
 
 function cleanupInvoker(el) {
@@ -409,6 +449,36 @@ if (!nativeSupported) {
       attributes: true,
       attributeFilter: [ATTR]
     });
+  }
+}
+
+// ---- Positioning for native interestfor (CSS Anchor Positioning) ----
+// When interestfor is native (Chrome 133+), the polyfill skips show/hide.
+// But we still need CSS anchor names for positioning.
+
+if (nativeSupported && supportsAnchor) {
+  const initNativeAnchors = () => {
+    document.querySelectorAll(`[${ATTR}]`).forEach(setupAnchorNames);
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+          if (node.hasAttribute?.(ATTR)) setupAnchorNames(node);
+          node.querySelectorAll?.(`[${ATTR}]`).forEach(setupAnchorNames);
+        }
+        if (m.type === 'attributes' && m.target.hasAttribute?.(ATTR)) {
+          setupAnchorNames(m.target);
+        }
+      }
+    }).observe(document.documentElement, {
+      childList: true, subtree: true, attributes: true, attributeFilter: [ATTR]
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNativeAnchors);
+  } else {
+    initNativeAnchors();
   }
 }
 
