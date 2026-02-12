@@ -1,0 +1,64 @@
+/* hover-card-wc: Rich content preview on hover */
+
+hover-card-wc {
+  display: inline-block;
+  position: relative;
+}
+
+@scope (hover-card-wc) {
+  .hover-card {
+    /* Reset popover defaults */
+    border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    background: transparent;
+
+    /* Card appearance */
+    & > * {
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      box-shadow: var(--shadow-m);
+      padding: var(--size-m);
+      min-inline-size: 16rem;
+      max-inline-size: 22rem;
+    }
+
+    /* Entry animation */
+    opacity: 0;
+    transform: translateY(0.25rem);
+    transition:
+      opacity var(--motion-enter-duration) var(--ease-out),
+      transform var(--motion-enter-duration) var(--ease-out);
+
+    &:popover-open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Image at top of card */
+  .hover-card img {
+    border-radius: 50%;
+    inline-size: 3rem;
+    block-size: 3rem;
+    object-fit: cover;
+  }
+
+  /* Muted text helper */
+  .hover-card .text-muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-s);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (hover-card-wc) {
+    .hover-card {
+      transition: none;
+      transform: none;
+    }
+  }
+}

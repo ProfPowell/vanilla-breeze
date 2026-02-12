@@ -1,0 +1,122 @@
+/* context-menu-wc: Right-click context menu */
+
+context-menu-wc {
+  display: block;
+
+  /* Show menu when open */
+  &[data-open] > menu,
+  &[data-open] > ul[role="menu"] {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+}
+
+@scope (context-menu-wc) {
+  /* Menu container — fixed position at cursor */
+  menu,
+  ul[role="menu"] {
+    position: fixed;
+    top: var(--ctx-top, 0);
+    left: var(--ctx-left, 0);
+    z-index: 200;
+
+    /* Reset list */
+    margin: 0;
+    padding: var(--size-2xs) 0;
+    list-style: none;
+
+    /* Appearance */
+    min-inline-size: 10rem;
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
+
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95);
+    transform-origin: top left;
+    transition:
+      opacity var(--motion-enter-duration) var(--ease-out),
+      visibility var(--motion-enter-duration) var(--ease-out),
+      transform var(--motion-enter-duration) var(--ease-out);
+
+    /* Items */
+    & > li {
+      margin: 0;
+      padding: 0;
+    }
+
+    & button,
+    & a {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      inline-size: 100%;
+      padding: var(--size-xs) var(--size-m);
+      border: none;
+      background: transparent;
+      color: var(--color-text);
+      font: inherit;
+      font-size: var(--font-size-sm);
+      text-align: start;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-default);
+
+      &:hover,
+      &:focus {
+        background: var(--color-surface-alt);
+        outline: none;
+      }
+
+      &[data-disabled] {
+        color: var(--color-text-muted);
+        cursor: not-allowed;
+
+        &:hover {
+          background: transparent;
+        }
+      }
+
+      &.danger {
+        color: var(--color-danger);
+
+        &:hover,
+        &:focus {
+          background: oklch(from var(--color-danger) l c h / 0.1);
+        }
+      }
+    }
+
+    /* Icon support */
+    & button > svg,
+    & button > icon-wc,
+    & a > svg,
+    & a > icon-wc {
+      flex-shrink: 0;
+      inline-size: 1em;
+      block-size: 1em;
+    }
+  }
+
+  /* Separator */
+  [role="separator"] {
+    block-size: 1px;
+    margin: var(--size-2xs) 0;
+    background: var(--color-border);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (context-menu-wc) {
+    menu,
+    ul[role="menu"] {
+      transition: none;
+      transform: none;
+    }
+  }
+}

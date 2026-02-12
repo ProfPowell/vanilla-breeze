@@ -110,3 +110,101 @@ dialog > footer {
 dialog > header button[type="button"]:last-child {
   margin-inline-start: auto;
 }
+
+
+/* ==========================================================================
+   Drawer Variants (data-position)
+   Slide-in panels from any edge. Uses same native <dialog> API.
+   ========================================================================== */
+
+/* --- Shared drawer base --- */
+dialog[data-position] {
+  margin: 0;
+  border-radius: 0;
+  max-block-size: 100dvh;
+}
+
+/* --- End (right in LTR) --- */
+dialog[data-position="end"] {
+  margin-inline-start: auto;
+  max-inline-size: min(90vw, 28rem);
+  block-size: 100dvh;
+  border-radius: var(--radius-l) 0 0 var(--radius-l);
+}
+
+dialog[data-position="end"][open] {
+  animation: vb-slide-in-end var(--motion-enter-duration) var(--ease-out);
+}
+
+/* --- Start (left in LTR) --- */
+dialog[data-position="start"] {
+  margin-inline-end: auto;
+  max-inline-size: min(90vw, 28rem);
+  block-size: 100dvh;
+  border-radius: 0 var(--radius-l) var(--radius-l) 0;
+}
+
+dialog[data-position="start"][open] {
+  animation: vb-slide-in-start var(--motion-enter-duration) var(--ease-out);
+}
+
+/* --- Bottom (mobile drawer) --- */
+dialog[data-position="bottom"] {
+  margin-block-start: auto;
+  max-block-size: 85dvh;
+  inline-size: 100vw;
+  max-inline-size: 100vw;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+}
+
+dialog[data-position="bottom"][open] {
+  animation: vb-slide-in-bottom var(--motion-enter-duration) var(--ease-out);
+}
+
+/* --- Top --- */
+dialog[data-position="top"] {
+  margin-block-end: auto;
+  max-block-size: 85dvh;
+  inline-size: 100vw;
+  max-inline-size: 100vw;
+  border-radius: 0 0 var(--radius-l) var(--radius-l);
+}
+
+dialog[data-position="top"][open] {
+  animation: vb-slide-in-top var(--motion-enter-duration) var(--ease-out);
+}
+
+/* --- Drawer animations --- */
+@keyframes vb-slide-in-end {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes vb-slide-in-start {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes vb-slide-in-bottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes vb-slide-in-top {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* Reduced motion: no slide, just fade */
+@media (prefers-reduced-motion: reduce) {
+  dialog[data-position][open] {
+    animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
+  }
+}
+
+/* Scrollable drawer content */
+dialog[data-position] > section,
+dialog[data-position] > form {
+  overflow-y: auto;
+  max-block-size: calc(100dvh - 8rem);
+}

@@ -145,6 +145,19 @@ document.querySelectorAll('dialog').forEach(dialog => {
 const preventBackdropCloseCode = `<dialog id="form-dialog" data-no-backdrop-close>
   <!-- User must explicitly click Cancel or Save -->
 </dialog>`;
+
+const drawerCode = `<!-- Right drawer -->
+<button commandfor="nav-drawer" command="show-modal">Menu</button>
+
+<dialog id="nav-drawer" data-position="end">
+  <header><h3>Navigation</h3></header>
+  <section>
+    <nav>...</nav>
+  </section>
+  <footer>
+    <button commandfor="nav-drawer" command="close">Close</button>
+  </footer>
+</dialog>`;
 ---
 
 <ElementLayout
@@ -641,6 +654,72 @@ const preventBackdropCloseCode = `<dialog id="form-dialog" data-no-backdrop-clos
     <p>To prevent backdrop close for specific dialogs (e.g., forms with unsaved data), add <code>data-no-backdrop-close</code>:</p>
 
     <code-block language="html" show-lines label="Prevent backdrop close">{preventBackdropCloseCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Drawer Variants</h2>
+    <p>Use <code>data-position</code> to turn any dialog into a slide-in drawer panel. No JavaScript required.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Position</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position="end"</code></td>
+          <td>Right (in LTR)</td>
+          <td>Navigation, settings panels</td>
+        </tr>
+        <tr>
+          <td><code>data-position="start"</code></td>
+          <td>Left (in LTR)</td>
+          <td>Sidebar, filters</td>
+        </tr>
+        <tr>
+          <td><code>data-position="bottom"</code></td>
+          <td>Bottom</td>
+          <td>Mobile action sheets, share menus</td>
+        </tr>
+        <tr>
+          <td><code>data-position="top"</code></td>
+          <td>Top</td>
+          <td>Banners, announcements</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <layout-stack data-gap="m">
+      <div class="example">
+        <button commandfor="demo-drawer-end" command="show-modal">Right Drawer</button>
+        <button commandfor="demo-drawer-bottom" command="show-modal">Bottom Drawer</button>
+
+        <dialog id="demo-drawer-end" data-position="end">
+          <header><h3>Settings</h3></header>
+          <p>Slide-in panel from the right edge.</p>
+          <footer>
+            <button commandfor="demo-drawer-end" command="close">Close</button>
+          </footer>
+        </dialog>
+
+        <dialog id="demo-drawer-bottom" data-position="bottom">
+          <header><h3>Share</h3></header>
+          <p>Mobile-friendly bottom drawer.</p>
+          <footer>
+            <button commandfor="demo-drawer-bottom" command="close">Close</button>
+          </footer>
+        </dialog>
+      </div>
+    </layout-stack>
+
+    <code-block language="html" show-lines label="Drawer markup">{drawerCode}</code-block>
+
+    <p>Drawers inherit all dialog features: Invokers API, ESC to close, focus trapping, backdrop, and <code>data-size</code> variants. Slide animations respect <code>prefers-reduced-motion</code>.</p>
+
+    <p><a href="/docs/examples/demos/dialog-drawer.html">View the interactive drawer demo &rarr;</a></p>
   </section>
 
   <section>

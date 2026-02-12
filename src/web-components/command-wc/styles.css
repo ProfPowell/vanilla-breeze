@@ -1,0 +1,149 @@
+/* command-wc: Command palette / Cmd+K launcher */
+
+command-wc {
+  display: contents;
+}
+
+/* Hide source elements (parsed into dialog) */
+command-group,
+command-item {
+  display: none;
+}
+
+@scope (command-wc) {
+  /* Dialog shell */
+  .command-dialog {
+    max-inline-size: min(90vw, 32rem);
+    max-block-size: min(85dvh, 24rem);
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-l);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow:
+      0 0 0 1px oklch(0% 0 0 / 0.05),
+      0 10px 25px -5px oklch(0% 0 0 / 0.15),
+      0 20px 50px -10px oklch(0% 0 0 / 0.1);
+    overflow: hidden;
+  }
+
+  .command-dialog::backdrop {
+    background: oklch(0% 0 0 / 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .command-dialog[open] {
+    animation: vb-scale-in var(--motion-enter-duration) var(--ease-out);
+  }
+
+  /* Search input area */
+  .command-search {
+    padding: var(--size-s) var(--size-m);
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  .command-search input {
+    inline-size: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: var(--font-size-base, 1rem);
+    color: var(--color-text);
+    outline: none;
+    padding: var(--size-xs) 0;
+    min-block-size: 0;
+  }
+
+  .command-search input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  /* Results list */
+  .command-list {
+    overflow-y: auto;
+    max-block-size: min(60dvh, 18rem);
+    padding: var(--size-2xs) 0;
+  }
+
+  /* Group header */
+  .command-group-header {
+    padding: var(--size-xs) var(--size-m);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Command option */
+  .command-option {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    inline-size: 100%;
+    padding: var(--size-xs) var(--size-m);
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--font-size-sm);
+    text-align: start;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-default);
+
+    &:hover,
+    &[data-active] {
+      background: var(--color-surface-alt);
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* Icon in command item */
+  .command-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    color: var(--color-text-muted);
+  }
+
+  .command-icon > svg,
+  .command-icon > icon-wc {
+    inline-size: 1em;
+    block-size: 1em;
+  }
+
+  /* Label */
+  .command-label {
+    flex: 1;
+  }
+
+  /* Keyboard shortcut badge */
+  .command-kbd {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted);
+    background: var(--color-surface-raised);
+    padding: var(--size-3xs) var(--size-xs);
+    border-radius: var(--radius-s);
+    border: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+  }
+
+  /* Empty state */
+  .command-empty {
+    padding: var(--size-l) var(--size-m);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (command-wc) {
+    .command-dialog[open] {
+      animation: none;
+    }
+  }
+}
