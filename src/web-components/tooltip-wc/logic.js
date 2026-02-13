@@ -37,10 +37,19 @@
 // Check CSS Anchor Positioning support once
 const supportsAnchor = CSS.supports('anchor-name', '--test');
 
-// Check if interestfor is available (native or polyfill)
-function hasInterestFor() {
-  return 'interestForElement' in HTMLButtonElement.prototype ||
-    document.documentElement.hasAttribute('data-interest-polyfill');
+// Elements that support native interestfor (spec-defined)
+const INTERESTFOR_TAGS = new Set(['BUTTON', 'A', 'AREA']);
+
+/**
+ * Check if interestfor can be used on a specific trigger element.
+ * Native interestfor only works on button/a/area; our polyfill supports any element.
+ */
+function canUseInterestFor(trigger) {
+  if (document.documentElement.hasAttribute('data-interest-polyfill')) return true;
+  if ('interestForElement' in HTMLButtonElement.prototype) {
+    return INTERESTFOR_TAGS.has(trigger.tagName);
+  }
+  return false;
 }
 
 class TooltipWc extends HTMLElement {
@@ -62,7 +71,6 @@ class TooltipWc extends HTMLElement {
 
   #setup() {
     this.#isCard = this.dataset.variant === 'card';
-    this.#useInterestFor = hasInterestFor();
 
     if (this.#isCard) {
       this.#setupCard();
@@ -76,6 +84,8 @@ class TooltipWc extends HTMLElement {
     // Find trigger (first non-template child)
     this.#trigger = this.querySelector(':scope > :not(template)');
     if (!this.#trigger) return;
+
+    this.#useInterestFor = canUseInterestFor(this.#trigger);
 
     // Get tooltip content: template takes precedence over data-content
     const template = this.querySelector(':scope > template[data-tooltip]');
@@ -149,6 +159,8 @@ class TooltipWc extends HTMLElement {
     this.#trigger = this.querySelector(':scope > [data-trigger]');
     const content = this.querySelector(':scope > [data-content]');
     if (!this.#trigger || !content) return;
+
+    this.#useInterestFor = canUseInterestFor(this.#trigger);
 
     // Create card popover (manual — cards may contain interactive content)
     this.#tooltip = document.createElement('div');

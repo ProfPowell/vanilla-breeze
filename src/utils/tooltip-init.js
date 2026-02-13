@@ -21,10 +21,16 @@
 const SHOW_DELAY = 200;
 const HIDE_DELAY = 100;
 
-/** Check if interestfor is available (native or polyfill) */
-function hasInterestFor() {
-  return 'interestForElement' in HTMLButtonElement.prototype ||
-    document.documentElement.hasAttribute('data-interest-polyfill');
+// Elements that support native interestfor (spec-defined)
+const INTERESTFOR_TAGS = new Set(['BUTTON', 'A', 'AREA']);
+
+/** Check if interestfor can be used on a specific trigger element */
+function canUseInterestFor(trigger) {
+  if (document.documentElement.hasAttribute('data-interest-polyfill')) return true;
+  if ('interestForElement' in HTMLButtonElement.prototype) {
+    return INTERESTFOR_TAGS.has(trigger.tagName);
+  }
+  return false;
 }
 
 /**
@@ -32,8 +38,6 @@ function hasInterestFor() {
  * @param {Element|Document} root - Root element to search within
  */
 function initTooltips(root = document) {
-  const useInterestFor = hasInterestFor();
-
   // Initialize hover tooltips (aria-describedby)
   root.querySelectorAll('[aria-describedby]').forEach(trigger => {
     const tipId = trigger.getAttribute('aria-describedby');
@@ -49,8 +53,8 @@ function initTooltips(root = document) {
     if (trigger.hasAttribute('data-tooltip-init')) return;
     trigger.setAttribute('data-tooltip-init', '');
 
-    // Primary path: use interestfor
-    if (useInterestFor) {
+    // Primary path: use interestfor (only on supported element types)
+    if (canUseInterestFor(trigger)) {
       trigger.setAttribute('interestfor', tipId);
       // Polyfill/browser handles hover, focus, timing, and show/hide.
       // Still need JS positioning for non-anchor browsers.
