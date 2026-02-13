@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard — Vanilla Breeze Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: var(--size-l);
+      background: var(--color-surface);
+      font-family: var(--font-sans), sans-serif;
+    }
+
+    /* Header */
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+      margin-block-end: var(--size-xl);
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: var(--font-size-2xl);
+    }
+
+    .breadcrumb {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-2xs);
+    }
+
+    .breadcrumb a {
+      color: var(--color-interactive);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+    }
+
+    /* Avatar */
+    .avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border-radius: var(--radius-full, 50%);
+      background: var(--color-interactive);
+      color: white;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+    }
+
+    /* Metric grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--size-m);
+      margin-block-end: var(--size-xl);
+    }
+
+    .metric-card {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xs);
+    }
+
+    .metric-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+    }
+
+    .metric-value {
+      font-size: var(--font-size-4xl);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .metric-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--size-xs);
+    }
+
+    /* Content grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-m);
+      margin-block-end: var(--size-xl);
+    }
+
+    @media (max-width: 768px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: var(--size-m);
+      border-block-end: 1px solid var(--color-border);
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: var(--size-m);
+    }
+
+    .card-footer {
+      padding: var(--size-s) var(--size-m);
+      border-block-start: 1px solid var(--color-border);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* Task/Progress rows */
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      margin-block-end: var(--size-s);
+    }
+
+    .task-row:last-of-type {
+      margin-block-end: 0;
+    }
+
+    .task-label {
+      flex: 1;
+      font-size: var(--font-size-sm);
+    }
+
+    .task-row progress {
+      flex: 2;
+    }
+
+    .task-percent {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      min-inline-size: 3em;
+      text-align: end;
+    }
+
+    /* Quick actions */
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-xs);
+      margin-block-end: var(--size-m);
+    }
+
+    /* Sparkline SVG */
+    .sparkline {
+      display: block;
+    }
+
+    .sparkline-positive {
+      --spark-color: var(--color-success, oklch(0.55 0.18 145));
+    }
+
+    .sparkline-negative {
+      --spark-color: var(--color-danger, oklch(0.55 0.2 25));
+    }
+
+    .sparkline path.line {
+      fill: none;
+      stroke: var(--spark-color);
+      stroke-width: 1.5;
+    }
+
+    .sparkline path.area {
+      fill: var(--spark-color);
+      opacity: 0.15;
+    }
+
+    /* Chart axis labels */
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      margin-block-start: var(--size-xs);
+    }
+
+    /* Countdown */
+    .countdown {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: var(--size-m);
+      font-size: var(--font-size-3xl);
+      font-weight: 600;
+    }
+
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-3xs);
+    }
+
+    .countdown-unit small {
+      font-size: var(--font-size-xs);
+      font-weight: 400;
+      color: var(--color-text-muted);
+    }
+
+    /* Footer */
+    .dashboard-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+      padding-block-start: var(--size-m);
+      border-block-start: 1px solid var(--color-border);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs);
+    }
+
+    .pagination button {
+      padding: var(--size-2xs) var(--size-xs);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+    }
+
+    .pagination button:hover {
+      background: var(--color-border);
+    }
+
+    .pagination span {
+      font-size: var(--font-size-sm);
+      padding-inline: var(--size-xs);
+    }
+
+    /* Badge variants */
+    .badge-success {
+      background: oklch(0.9 0.1 145);
+      color: oklch(0.3 0.15 145);
+    }
+
+    .badge-danger {
+      background: oklch(0.9 0.1 25);
+      color: oklch(0.35 0.15 25);
+    }
+
+    :root[data-mode="dark"] .badge-success {
+      background: oklch(0.3 0.1 145);
+      color: oklch(0.8 0.12 145);
+    }
+
+    :root[data-mode="dark"] .badge-danger {
+      background: oklch(0.3 0.1 25);
+      color: oklch(0.8 0.12 25);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/docs/examples/">Examples</a> &rsaquo; Dashboard
+      </nav>
+      <h1>Project Analytics</h1>
+    </div>
+    <div class="header-actions">
+      <dropdown-wc>
+        <span class="avatar" data-trigger aria-label="Alex Morgan menu">AM</span>
+        <menu>
+          <li><button type="button"><icon-wc name="user" size="sm"></icon-wc> Profile</button></li>
+          <li><button type="button"><icon-wc name="settings" size="sm"></icon-wc> Settings</button></li>
+          <li role="separator"></li>
+          <li><button type="button"><icon-wc name="log-out" size="sm"></icon-wc> Sign Out</button></li>
+        </menu>
+      </dropdown-wc>
+      <label>
+        <input type="checkbox" data-switch="sm" id="dark-toggle">
+        <icon-wc name="moon" size="sm"></icon-wc>
+      </label>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-label">
+        <icon-wc name="users" size="sm"></icon-wc>
+        Total Users
+      </div>
+      <div class="metric-value">
+        <span data-ticker="1500" data-format-number data-ticker-start="0">12,847</span>
+      </div>
+      <div class="metric-footer">
+        <layout-badge class="badge-success">+12.5%</layout-badge>
+        <svg class="sparkline sparkline-positive" width="80" height="24" viewBox="0 0 80 24">
+          <path class="area" d="M0,20 L7,14 L14,17 L21,10 L28,15 L35,6 L42,9 L49,4 L56,7 L63,2 L70,3 L77,0 L80,0 L80,24 L0,24Z"/>
+          <path class="line" d="M0,20 L7,14 L14,17 L21,10 L28,15 L35,6 L42,9 L49,4 L56,7 L63,2 L70,3 L77,0"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">
+        <icon-wc name="eye" size="sm"></icon-wc>
+        Page Views
+      </div>
+      <div class="metric-value">
+        <span data-ticker="1500" data-format-number data-ticker-start="0">89,234</span>
+      </div>
+      <div class="metric-footer">
+        <layout-badge class="badge-success">+8.3%</layout-badge>
+        <svg class="sparkline sparkline-positive" width="80" height="24" viewBox="0 0 80 24">
+          <path class="area" d="M0,14 L7,17 L14,10 L21,12 L28,5 L35,8 L42,3 L49,2 L56,5 L63,0 L70,1 L77,0 L80,0 L80,24 L0,24Z"/>
+          <path class="line" d="M0,14 L7,17 L14,10 L21,12 L28,5 L35,8 L42,3 L49,2 L56,5 L63,0 L70,1 L77,0"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">
+        <icon-wc name="shopping-cart" size="sm"></icon-wc>
+        Conversions
+      </div>
+      <div class="metric-value">
+        <span data-ticker="1500" data-format-number data-ticker-start="0">3,421</span>
+      </div>
+      <div class="metric-footer">
+        <layout-badge class="badge-danger">-2.1%</layout-badge>
+        <svg class="sparkline sparkline-negative" width="80" height="24" viewBox="0 0 80 24">
+          <path class="area" d="M0,2 L7,0 L14,5 L21,8 L28,6 L35,12 L42,10 L49,15 L56,13 L63,18 L70,16 L77,20 L80,20 L80,24 L0,24Z"/>
+          <path class="line" d="M0,2 L7,0 L14,5 L21,8 L28,6 L35,12 L42,10 L49,15 L56,13 L63,18 L70,16 L77,20"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">
+        <icon-wc name="dollar-sign" size="sm"></icon-wc>
+        Revenue
+      </div>
+      <div class="metric-value">
+        $<span data-ticker="1500" data-format-number data-ticker-start="0">147,500</span>
+      </div>
+      <div class="metric-footer">
+        <layout-badge class="badge-success">+15.7%</layout-badge>
+        <svg class="sparkline sparkline-positive" width="80" height="24" viewBox="0 0 80 24">
+          <path class="area" d="M0,20 L7,18 L14,15 L21,16 L28,12 L35,9 L42,10 L49,7 L56,4 L63,5 L70,2 L77,0 L80,0 L80,24 L0,24Z"/>
+          <path class="line" d="M0,20 L7,18 L14,15 L21,16 L28,12 L35,9 L42,10 L49,7 L56,4 L63,5 L70,2 L77,0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Overview + Sprint Progress -->
+  <div class="content-grid">
+
+    <!-- Activity Overview -->
+    <div class="card">
+      <div class="card-header">Activity Overview</div>
+      <div class="card-body">
+        <tabs-wc aria-label="Activity timeframes">
+          <details name="activity-tabs" open>
+            <summary>Weekly</summary>
+            <div style="padding: var(--size-m) 0;">
+              <svg class="sparkline sparkline-positive" width="100%" height="120" viewBox="0 0 300 120" preserveAspectRatio="none">
+                <path class="area" d="M0,90 L50,60 L100,100 L150,40 L200,55 L250,10 L300,30 L300,120 L0,120Z"/>
+                <path class="line" d="M0,90 L50,60 L100,100 L150,40 L200,55 L250,10 L300,30"/>
+              </svg>
+              <div class="chart-labels">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+            </div>
+          </details>
+          <details name="activity-tabs">
+            <summary>Monthly</summary>
+            <div style="padding: var(--size-m) 0;">
+              <svg class="sparkline sparkline-positive" width="100%" height="120" viewBox="0 0 550 120" preserveAspectRatio="none">
+                <path class="area" d="M0,100 L50,85 L100,92 L150,68 L200,72 L250,48 L300,55 L350,40 L400,28 L450,35 L500,20 L550,5 L550,120 L0,120Z"/>
+                <path class="line" d="M0,100 L50,85 L100,92 L150,68 L200,72 L250,48 L300,55 L350,40 L400,28 L450,35 L500,20 L550,5"/>
+              </svg>
+              <div class="chart-labels">
+                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+              </div>
+            </div>
+          </details>
+          <details name="activity-tabs">
+            <summary>Yearly</summary>
+            <div style="padding: var(--size-m) 0;">
+              <svg class="sparkline sparkline-positive" width="100%" height="120" viewBox="0 0 200 120" preserveAspectRatio="none">
+                <path class="area" d="M0,110 L50,90 L100,65 L150,30 L200,5 L200,120 L0,120Z"/>
+                <path class="line" d="M0,110 L50,90 L100,65 L150,30 L200,5"/>
+              </svg>
+              <div class="chart-labels">
+                <span>2021</span><span>2022</span><span>2023</span><span>2024</span><span>2025</span>
+              </div>
+            </div>
+          </details>
+        </tabs-wc>
+      </div>
+    </div>
+
+    <!-- Sprint Progress -->
+    <div class="card">
+      <div class="card-header">Sprint Progress</div>
+      <div class="card-body">
+        <div class="task-row">
+          <span class="task-label">Frontend</span>
+          <progress value="85" max="100">85%</progress>
+          <span class="task-percent">85%</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">Backend API</span>
+          <progress value="62" max="100">62%</progress>
+          <span class="task-percent">62%</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">Database</span>
+          <progress value="93" max="100">93%</progress>
+          <span class="task-percent">93%</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">Testing</span>
+          <progress value="41" max="100">41%</progress>
+          <span class="task-percent">41%</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">Documentation</span>
+          <progress value="28" max="100">28%</progress>
+          <span class="task-percent">28%</span>
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; align-items: center; gap: var(--size-xs);">
+        <icon-wc name="clock" size="sm"></icon-wc>
+        Updated <time data-format-date="relative" datetime="2026-02-08T10:00:00">Feb 8</time>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="content-grid">
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-header">Quick Actions</div>
+      <div class="card-body">
+        <div class="quick-actions">
+          <button class="btn-primary" id="new-project-btn">
+            <icon-wc name="plus" size="sm"></icon-wc>
+            New Project
+          </button>
+
+          <dropdown-wc>
+            <button type="button" data-trigger>
+              <icon-wc name="file-output" size="sm"></icon-wc>
+              Export
+              <icon-wc name="chevron-down" size="sm"></icon-wc>
+            </button>
+            <menu>
+              <li><button type="button"><icon-wc name="file-text" size="sm"></icon-wc> Export as CSV</button></li>
+              <li><button type="button"><icon-wc name="file-type" size="sm"></icon-wc> Export as PDF</button></li>
+              <li><button type="button"><icon-wc name="table" size="sm"></icon-wc> Export as Excel</button></li>
+            </menu>
+          </dropdown-wc>
+
+          <button id="notify-btn" class="btn-outline">
+            <icon-wc name="bell" size="sm"></icon-wc>
+            Notify Team
+          </button>
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; align-items: center; gap: var(--size-xs);">
+        <kbd>Meta+N</kbd> <span>New project</span>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="card">
+      <div class="card-header">Next Maintenance Window</div>
+      <div class="card-body" style="text-align: center; padding: var(--size-l) var(--size-m);">
+        <div class="countdown" id="countdown">
+          <div class="countdown-unit">
+            <span id="cd-days">--</span>
+            <small>day</small>
+          </div>
+          <div class="countdown-unit">
+            <span id="cd-hours">--</span>
+            <small>hr</small>
+          </div>
+          <div class="countdown-unit">
+            <span id="cd-mins">--</span>
+            <small>min</small>
+          </div>
+          <div class="countdown-unit">
+            <span id="cd-secs">--</span>
+            <small>sec</small>
+          </div>
+        </div>
+        <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-block-start: var(--size-s);">
+          Scheduled for <time id="maint-date" data-format-date="medium"></time>
+        </p>
+      </div>
+      <div class="card-footer" style="display: flex; align-items: center; gap: var(--size-xs);">
+        <layout-badge>Planned</layout-badge>
+        <span>2-hour downtime expected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer">
+    <div>Showing data for <time id="footer-date" data-format-date="medium"></time></div>
+    <nav class="pagination" aria-label="Dashboard pages">
+      <button aria-label="Previous page" id="pg-prev">&lsaquo;</button>
+      <span id="pg-label">1 of 10</span>
+      <button aria-label="Next page" id="pg-next">&rsaquo;</button>
+    </nav>
+  </footer>
+
+  <!-- Toast -->
+  <toast-wc id="dashboard-toast" data-position="bottom-right"></toast-wc>
+
+  <script>
+    // Set dates before main.js inits format-date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('footer-date').setAttribute('datetime', today);
+
+    const maintDate = new Date();
+    maintDate.setDate(maintDate.getDate() + 7);
+    maintDate.setHours(2, 0, 0, 0);
+    document.getElementById('maint-date').setAttribute('datetime', maintDate.toISOString());
+  </script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Dark mode toggle
+    const darkToggle = document.getElementById('dark-toggle');
+    darkToggle.addEventListener('change', () => {
+      document.documentElement.dataset.mode = darkToggle.checked ? 'dark' : 'light';
+    });
+
+    // Countdown timer — target date set in sync script above
+    const maintDate = new Date();
+    maintDate.setDate(maintDate.getDate() + 7);
+    maintDate.setHours(2, 0, 0, 0);
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = maintDate - now;
+      if (diff <= 0) return;
+
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+
+      document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+      document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+      document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Toast notifications
+    const toast = document.getElementById('dashboard-toast');
+
+    document.getElementById('notify-btn').addEventListener('click', () => {
+      toast.show({ message: 'Team notification sent!', variant: 'success' });
+    });
+
+    document.getElementById('new-project-btn').addEventListener('click', () => {
+      toast.show({ message: 'New project created', variant: 'info' });
+    });
+
+    // Pagination
+    let currentPage = 1;
+    const totalPages = 10;
+    const pgLabel = document.getElementById('pg-label');
+
+    document.getElementById('pg-prev').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        pgLabel.textContent = `${currentPage} of ${totalPages}`;
+      }
+    });
+
+    document.getElementById('pg-next').addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        pgLabel.textContent = `${currentPage} of ${totalPages}`;
+      }
+    });
+  </script>
+</body>
+</html>
