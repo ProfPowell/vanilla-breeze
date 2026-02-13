@@ -1,92 +1,154 @@
 ---
 /**
- * tooltip-wc Web Component Documentation
+ * Tooltip Documentation
  *
- * Positioned tooltips with keyboard support, directional arrows,
- * and configurable delay.
+ * Title-first progressive enhancement tooltips with four tiers:
+ * Tier 1: title + data-tooltip (simple text)
+ * Tier 2: data-tooltip="id" referencing a popover (rich HTML)
+ * Tier 3: tooltip-wc card variant (hover cards)
+ * Tier 0: Pure interestfor (advanced, zero-JS)
  */
 import ElementLayout from '../../../../layouts/ElementLayout.astro';
 
-// Code examples as template strings
-const basicUsageCode = `<tooltip-wc data-content="This is a tooltip!">
-  <button type="button">Hover me</button>
+// --- Tier 1: Simple text tooltip from title ---
+
+const basicUsageCode = `<!-- No JS: native browser tooltip shows "This is a tooltip!" -->
+<!-- With JS: title removed, styled popover tooltip created -->
+<button title="This is a tooltip!" data-tooltip>Hover me</button>`;
+
+const positionCode = `<button title="Tooltip appears above" data-tooltip>Top</button>
+
+<button title="Tooltip appears below" data-tooltip data-tooltip-position="bottom">Bottom</button>
+
+<button title="Tooltip appears on the left" data-tooltip data-tooltip-position="left">Left</button>
+
+<button title="Tooltip appears on the right" data-tooltip data-tooltip-position="right">Right</button>`;
+
+const elementTypesCode = `<!-- On a link -->
+<a href="#" title="Links can have tooltips too!" data-tooltip>Hover this link</a>
+
+<!-- On an icon button -->
+<button type="button" class="ghost" aria-label="Settings"
+        title="Open settings" data-tooltip data-tooltip-position="bottom">
+  <icon-wc name="settings"></icon-wc>
+</button>
+
+<!-- On text with tabindex -->
+<span tabindex="0" title="Additional information about this feature"
+      data-tooltip style="text-decoration: underline dotted; cursor: help;">
+  What's this?
+</span>`;
+
+// --- Tier 2: Rich HTML tooltip ---
+
+const richContentCode = `<button type="button" title="Save (Ctrl+S)" data-tooltip="save-tip">
+  <icon-wc name="save" size="sm"></icon-wc>
+  Save
+</button>
+<div id="save-tip" popover="hint" role="tooltip">
+  <strong>Save document</strong><br>
+  <kbd>Ctrl</kbd> + <kbd>S</kbd>
+  <span class="tooltip-arrow" aria-hidden="true"></span>
+</div>`;
+
+const richContentSecondaryCode = `<button type="button" title="Copy to clipboard" data-tooltip="copy-tip">
+  Copy
+</button>
+<div id="copy-tip" popover="hint" role="tooltip">
+  Copy to clipboard<br>
+  <small>Copied items expire after 24 hours</small>
+  <span class="tooltip-arrow" aria-hidden="true"></span>
+</div>`;
+
+// --- Tier 3: Card variant (tooltip-wc) ---
+
+const cardProfileCode = `<tooltip-wc data-variant="card">
+  <a href="/user/jane" data-trigger>Jane Smith</a>
+  <div data-content>
+    <div style="display: flex; align-items: center; gap: var(--size-s);">
+      <user-avatar data-size="lg">
+        <span data-fallback>JS</span>
+      </user-avatar>
+      <div>
+        <strong>Jane Smith</strong>
+        <span class="text-muted" style="display: block;">
+          Senior Developer
+        </span>
+      </div>
+    </div>
+    <span class="text-muted"
+          style="display: block; margin-block-start: var(--size-xs);">
+      <icon-wc name="map-pin" size="xs"></icon-wc> San Francisco
+      &middot; 142 contributions
+    </span>
+  </div>
 </tooltip-wc>`;
 
-const positionCode = `<tooltip-wc data-position="top">
-  <button>Top</button>
-  <template data-tooltip>Tooltip appears above</template>
-</tooltip-wc>
-
-<tooltip-wc data-position="bottom">
-  <button>Bottom</button>
-  <template data-tooltip>Tooltip appears below</template>
-</tooltip-wc>
-
-<tooltip-wc data-position="left">
-  <button>Left</button>
-  <template data-tooltip>Tooltip on the left</template>
-</tooltip-wc>
-
-<tooltip-wc data-position="right">
-  <button>Right</button>
-  <template data-tooltip>Tooltip on the right</template>
+const cardPreviewCode = `<tooltip-wc data-variant="card">
+  <a href="/docs/elements/native/dialog/" data-trigger>dialog element</a>
+  <div data-content>
+    <div style="display: flex; gap: var(--size-s); align-items: start;">
+      <icon-wc name="layout-template" size="lg"
+        style="color: var(--color-interactive); flex-shrink: 0;">
+      </icon-wc>
+      <div>
+        <strong>Dialog Element</strong>
+        <span class="text-muted"
+              style="display: block; margin-block-start: var(--size-2xs);">
+          Native modal and non-modal dialogs with backdrop,
+          keyboard handling, and focus management.
+        </span>
+      </div>
+    </div>
+  </div>
 </tooltip-wc>`;
 
-const richContentCode = `<tooltip-wc>
-  <button type="button">Save</button>
+// --- Tier 3: tooltip-wc with title PE ---
+
+const tooltipWcTitleCode = `<!-- Progressive enhancement: title provides no-JS fallback -->
+<tooltip-wc>
+  <button type="button" title="Save your changes">Save</button>
   <template data-tooltip>
     <strong>Save document</strong><br>
     <kbd>Ctrl</kbd> + <kbd>S</kbd>
   </template>
 </tooltip-wc>`;
 
-const secondaryInfoCode = `<tooltip-wc>
-  <button>Copy</button>
-  <template data-tooltip>
-    Copy to clipboard<br>
-    <small>Copied items expire after 24 hours</small>
-  </template>
-</tooltip-wc>`;
+// --- Tier 0: Pure interestfor ---
 
-const elementTypesCode = `<!-- On a link -->
-<tooltip-wc>
-  <a href="#">Hover this link</a>
-  <template data-tooltip>Links can have tooltips!</template>
-</tooltip-wc>
+const interestforCode = `<!-- Pure HTML tooltip — no init script needed -->
+<button interestfor="wai-def">WAI-ARIA</button>
+<div id="wai-def" popover="hint">
+  Web Accessibility Initiative – Accessible Rich Internet Applications
+</div>`;
 
-<!-- On an icon button -->
-<tooltip-wc data-position="bottom">
-  <button type="button" class="ghost" aria-label="Settings">
-    <icon-wc name="settings"></icon-wc>
-  </button>
-  <template data-tooltip>Open settings</template>
-</tooltip-wc>
+const interestforStylingCode = `/* Custom timing via CSS custom properties */
+#my-tooltip \{
+  --interest-delay-start: 300ms;
+  --interest-delay-end: 150ms;
+\}`;
 
-<!-- On text with tabindex -->
-<tooltip-wc>
-  <span tabindex="0">What's this?</span>
-  <template data-tooltip>Additional information</template>
-</tooltip-wc>`;
+// --- tooltip-wc specifics ---
 
-const delayCode = `<tooltip-wc data-delay="0">
+const delayCode = `<tooltip-wc data-tooltip-delay="0">
   <button>Instant</button>
   <template data-tooltip>Shows immediately</template>
 </tooltip-wc>
 
-<tooltip-wc data-delay="500">
+<tooltip-wc data-tooltip-delay="500">
   <button>Delayed</button>
   <template data-tooltip>Waits 500ms</template>
 </tooltip-wc>`;
 
 const eventCode = `const tooltip = document.querySelector('tooltip-wc');
 
-tooltip.addEventListener('tooltip-show', () => {
+tooltip.addEventListener('tooltip-show', () => \{
   console.log('Tooltip shown');
-});
+\});
 
-tooltip.addEventListener('tooltip-hide', () => {
+tooltip.addEventListener('tooltip-hide', () => \{
   console.log('Tooltip hidden');
-});`;
+\});`;
 
 const apiCode = `const tooltip = document.querySelector('tooltip-wc');
 
@@ -98,70 +160,18 @@ console.log(tooltip.isVisible); // true
 
 // Hide the tooltip
 tooltip.hide();`;
-
-const iconButtonCode = `<tooltip-wc>
-  <button type="button" class="ghost" aria-label="Edit">
-    <icon-wc name="edit"></icon-wc>
-  </button>
-  <template data-tooltip>Edit item</template>
-</tooltip-wc>`;
-
-const formHelpCode = `<layout-cluster data-gap="xs" data-align="center">
-  <label for="password-field">Password</label>
-  <tooltip-wc data-position="right">
-    <button type="button" class="ghost" aria-label="Password requirements">
-      <icon-wc name="help-circle" size="sm"></icon-wc>
-    </button>
-    <template data-tooltip>Must be at least 8 characters</template>
-  </tooltip-wc>
-</layout-cluster>`;
-
-const cardVariantCode = `<tooltip-wc data-variant="card">
-  <a href="/user/jane" data-trigger>Jane Smith</a>
-  <div data-content>
-    <div style="display: flex; align-items: center; gap: var(--size-s);">
-      <img src="/avatars/jane.jpg" alt="" />
-      <div>
-        <strong>Jane Smith</strong>
-        <p class="text-muted" style="margin: 0;">Senior Developer at Acme Co</p>
-      </div>
-    </div>
-    <p class="text-muted" style="margin-block: var(--size-xs) 0;">
-      Joined March 2023 &middot; 142 contributions
-    </p>
-  </div>
-</tooltip-wc>`;
-
-const truncatedCode = `<tooltip-wc>
-  <span tabindex="0" class="truncate">
-    This is a very long text that gets truncated
-  </span>
-  <template data-tooltip>This is a very long text that gets truncated</template>
-</tooltip-wc>`;
-
-const interestforCode = `<!-- Pure HTML tooltip — no web component needed -->
-<button interestfor="wai-def">WAI-ARIA</button>
-<div id="wai-def" popover="hint">
-  Web Accessibility Initiative – Accessible Rich Internet Applications
-</div>`;
-
-const interestforStylingCode = `/* Custom timing via CSS custom properties */
-#my-tooltip \{
-  --interest-delay-start: 300ms;
-  --interest-delay-end: 150ms;
-\}`;
 ---
 
 <ElementLayout
-  title="tooltip-wc"
-  description="Positioned tooltips with keyboard support, directional arrows, and configurable delay."
+  title="Tooltips"
+  description="Progressive enhancement tooltips: native title fallback upgraded to styled popovers with arrows and positioning."
   elementName="tooltip-wc"
   category="component"
   currentPath="/docs/elements/web-components/tooltip/"
 >
   <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;tooltip-wc&gt;</code> component wraps a trigger element and displays a tooltip on hover or focus. Tooltips are positioned automatically and include an arrow pointing to the trigger.</p>
+    <p>Tooltips use a <strong>title-first progressive enhancement</strong> approach. The <code>title</code> attribute provides a no-JS fallback (native browser tooltip). When JavaScript loads, the init script reads the title, removes it, and creates a styled popover with arrows and positioning.</p>
 
     <browser-window
       src="/docs/examples/demos/tooltip-basic.html"
@@ -170,20 +180,311 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Simple tooltip with data-content">{basicUsageCode}</code-block>
+    <code-block language="html" show-lines label="Simple tooltip with title + data-tooltip">{basicUsageCode}</code-block>
+
+    <h3>Progressive Enhancement</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>What the user sees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>No JavaScript</td>
+          <td>Native browser tooltip from <code>title</code> attribute</td>
+        </tr>
+        <tr>
+          <td>JavaScript loaded</td>
+          <td>Styled popover with arrow, positioned via CSS Anchor or JS fallback</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Simple Text Tooltip (Tier 1)</h2>
+    <p>Add <code>title</code> and <code>data-tooltip</code> (no value) to any element. The init script creates the popover automatically.</p>
+
+    <h3>Positions</h3>
+    <p>Use <code>data-tooltip-position</code> to control where the tooltip appears relative to the trigger.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="xl" style="padding: var(--size-xl);">
+        <button title="Tooltip appears above" data-tooltip>Top</button>
+        <button title="Tooltip appears below" data-tooltip data-tooltip-position="bottom">Bottom</button>
+        <button title="Tooltip appears on the left" data-tooltip data-tooltip-position="left">Left</button>
+        <button title="Tooltip appears on the right" data-tooltip data-tooltip-position="right">Right</button>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Tooltip position variants">{positionCode}</code-block>
+
+    <h3>With Different Elements</h3>
+    <p>Tooltips work on any focusable element: buttons, links, and elements with <code>tabindex</code>.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <a href="#" title="Links can have tooltips too!" data-tooltip>Hover this link</a>
+
+        <button type="button" class="ghost" aria-label="Settings" title="Open settings" data-tooltip data-tooltip-position="bottom">
+          <icon-wc name="settings"></icon-wc>
+        </button>
+
+        <span tabindex="0" title="Additional information about this feature" data-tooltip style="text-decoration: underline dotted; cursor: help;">What's this?</span>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Tooltips on different element types">{elementTypesCode}</code-block>
+
+    <h3>Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>title</code></td>
+          <td>trigger</td>
+          <td>Tooltip text. Read by init script and removed to prevent native double-tooltip.</td>
+        </tr>
+        <tr>
+          <td><code>data-tooltip</code></td>
+          <td>trigger</td>
+          <td>Marker for init script discovery. No value = create from title. With value = reference popover by ID.</td>
+        </tr>
+        <tr>
+          <td><code>data-tooltip-position</code></td>
+          <td>trigger</td>
+          <td>Position: <code>top</code> (default), <code>bottom</code>, <code>left</code>, or <code>right</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Rich HTML Tooltip (Tier 2)</h2>
+    <p>For tooltips with formatted content (keyboard shortcuts, icons, multiple lines), use <code>data-tooltip="id"</code> to reference an existing popover element. The <code>title</code> provides a plain-text no-JS fallback.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <span>
+          <button type="button" title="Save (Ctrl+S)" data-tooltip="save-tip-demo">
+            <icon-wc name="save" size="sm"></icon-wc>
+            Save
+          </button>
+          <div id="save-tip-demo" popover="hint" role="tooltip">
+            <strong>Save document</strong><br>
+            <kbd>Ctrl</kbd> + <kbd>S</kbd>
+            <span class="tooltip-arrow" aria-hidden="true"></span>
+          </div>
+        </span>
+
+        <span>
+          <button type="button" title="Copy to clipboard" data-tooltip="copy-tip-demo">
+            Copy
+          </button>
+          <div id="copy-tip-demo" popover="hint" role="tooltip">
+            Copy to clipboard<br>
+            <small>Copied items expire after 24 hours</small>
+            <span class="tooltip-arrow" aria-hidden="true"></span>
+          </div>
+        </span>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Rich tooltip with keyboard shortcut">{richContentCode}</code-block>
+
+    <code-block language="html" show-lines label="Tooltip with secondary info">{richContentSecondaryCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Card Variant (Tier 3)</h2>
+    <p>For richer content previews like user profiles or link previews, use <code>&lt;tooltip-wc data-variant="card"&gt;</code>. Cards use <code>popover="manual"</code> for interactive content and have longer show/hide delays.</p>
+
+    <div class="example">
+      <layout-stack data-gap="m" style="padding: var(--size-m);">
+        <div>Contributions by
+          <tooltip-wc data-variant="card">
+            <a href="#" data-trigger>Jane Smith</a>
+            <div data-content>
+              <div style="display: flex; align-items: center; gap: var(--size-s);">
+                <user-avatar data-size="lg">
+                  <span data-fallback>JS</span>
+                </user-avatar>
+                <div>
+                  <strong>Jane Smith</strong>
+                  <span class="text-muted" style="display: block;">Senior Developer</span>
+                </div>
+              </div>
+              <span class="text-muted" style="display: block; margin-block-start: var(--size-xs);">
+                <icon-wc name="map-pin" size="xs"></icon-wc> San Francisco
+                &middot; 142 contributions
+              </span>
+            </div>
+          </tooltip-wc>
+          were merged yesterday.
+        </div>
+
+        <div>See the
+          <tooltip-wc data-variant="card">
+            <a href="/docs/elements/native/dialog/" data-trigger>dialog element</a>
+            <div data-content>
+              <div style="display: flex; gap: var(--size-s); align-items: start;">
+                <icon-wc name="layout-template" size="lg" style="color: var(--color-interactive); flex-shrink: 0;"></icon-wc>
+                <div>
+                  <strong>Dialog Element</strong>
+                  <span class="text-muted" style="display: block; margin-block-start: var(--size-2xs);">Native modal and non-modal dialogs with backdrop, keyboard handling, and focus management.</span>
+                </div>
+              </div>
+            </div>
+          </tooltip-wc>
+          for modal patterns.
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="User profile hover card">{cardProfileCode}</code-block>
+
+    <code-block language="html" show-lines label="Link preview hover card">{cardPreviewCode}</code-block>
+
+    <h3>Differences from Regular Tooltip</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Tooltip (Tier 1/2)</th>
+          <th>Card variant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Content model</td>
+          <td><code>title</code> or <code>data-tooltip="id"</code></td>
+          <td><code>[data-trigger]</code> + <code>[data-content]</code></td>
+        </tr>
+        <tr>
+          <td>Appearance</td>
+          <td>Dark, compact, with arrow</td>
+          <td>Light card surface, border, shadow, no arrow</td>
+        </tr>
+        <tr>
+          <td>Show delay</td>
+          <td>200ms</td>
+          <td>300ms</td>
+        </tr>
+        <tr>
+          <td>Hide delay</td>
+          <td>100ms</td>
+          <td>200ms</td>
+        </tr>
+        <tr>
+          <td>Popover type</td>
+          <td><code>hint</code></td>
+          <td><code>manual</code> (supports interactive content)</td>
+        </tr>
+        <tr>
+          <td>ARIA</td>
+          <td><code>role="tooltip"</code>, <code>aria-describedby</code></td>
+          <td>None (supplementary content)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>tooltip-wc with Title Fallback</h2>
+    <p>The <code>&lt;tooltip-wc&gt;</code> component also reads <code>title</code> from its trigger as a content source (lowest priority after <code>&lt;template data-tooltip&gt;</code> and <code>data-content</code>). This gives progressive enhancement to the web component path too.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <tooltip-wc>
+          <button type="button" title="Save your changes">Save</button>
+          <template data-tooltip>
+            <strong>Save document</strong><br>
+            <kbd>Ctrl</kbd> + <kbd>S</kbd>
+          </template>
+        </tooltip-wc>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="tooltip-wc with title fallback">{tooltipWcTitleCode}</code-block>
+
+    <p>Content priority in <code>tooltip-wc</code>:</p>
+    <ol>
+      <li><code>&lt;template data-tooltip&gt;</code> (rich HTML)</li>
+      <li><code>data-content</code> attribute (plain text, backward compatible)</li>
+      <li><code>title</code> on trigger (PE baseline — read and removed)</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Pure HTML Tooltips — <code>interestfor</code> (Tier 0)</h2>
+    <p>For simple tooltips that don't need arrows, custom positioning, or rich content, you can skip the init script entirely. The <code>interestfor</code> attribute (native in Chrome 133+, polyfilled in other browsers) handles hover/focus timing and popover show/hide declaratively.</p>
+
+    <div class="example">
+      <layout-cluster data-gap="l">
+        <span>
+          The
+          <button interestfor="wai-def-demo" style="all: unset; cursor: help; text-decoration: underline dotted; text-underline-offset: 3px;">WAI-ARIA</button>
+          specification defines accessible rich internet applications.
+        </span>
+        <div id="wai-def-demo" popover="hint">
+          Web Accessibility Initiative &ndash; Accessible Rich Internet Applications
+        </div>
+      </layout-cluster>
+    </div>
+
+    <code-block language="html" show-lines label="Pure HTML tooltip with interestfor">{interestforCode}</code-block>
+
+    <h3>Custom Timing</h3>
+    <p>Control show/hide delays with CSS custom properties:</p>
+    <code-block language="css" show-lines label="Custom timing">{interestforStylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>When to Use Which</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Use case</th>
+          <th>Approach</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Simple text hint on a button/link</td>
+          <td><code>title</code> + <code>data-tooltip</code> (Tier 1)</td>
+        </tr>
+        <tr>
+          <td>Rich content (kbd shortcuts, icons)</td>
+          <td><code>data-tooltip="id"</code> referencing a popover (Tier 2)</td>
+        </tr>
+        <tr>
+          <td>Interactive hover card (profiles, previews)</td>
+          <td><code>&lt;tooltip-wc data-variant="card"&gt;</code> (Tier 3)</td>
+        </tr>
+        <tr>
+          <td>Zero-JS inline definition</td>
+          <td><code>interestfor</code> + <code>popover="hint"</code> (Tier 0)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>How It Works</h2>
-    <p>The <code>&lt;tooltip-wc&gt;</code> component uses modern web platform features for optimal performance:</p>
 
     <h3>Popover API</h3>
     <p>Tooltips use the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/Popover_API">Popover API</a> with <code>popover="hint"</code>. This renders tooltips in the browser's top layer, avoiding z-index conflicts and overflow clipping issues.</p>
 
     <h3>CSS Anchor Positioning</h3>
-    <p>In modern browsers (Chrome 125+, Safari 18+), tooltips use <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning">CSS Anchor Positioning</a> for smooth, hardware-accelerated positioning. This eliminates JavaScript positioning calculations in supported browsers.</p>
-
-    <p>For older browsers, the component automatically falls back to JavaScript-based positioning.</p>
+    <p>In modern browsers (Chrome 125+, Safari 18+), tooltips use <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning">CSS Anchor Positioning</a> for smooth, hardware-accelerated positioning. Older browsers fall back to JavaScript positioning automatically.</p>
 
     <h3>Browser Support</h3>
     <table class="props-table">
@@ -220,252 +521,23 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-content</code></td>
-          <td>string</td>
-          <td>-</td>
-          <td>Simple text tooltip content. For rich HTML content, use <code>&lt;template data-tooltip&gt;</code> instead.</td>
-        </tr>
-        <tr>
-          <td><code>data-position</code></td>
-          <td>string</td>
-          <td><code>"top"</code></td>
-          <td>Tooltip position: <code>top</code>, <code>bottom</code>, <code>left</code>, or <code>right</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-delay</code></td>
-          <td>number</td>
-          <td><code>200</code></td>
-          <td>Show delay in milliseconds.</td>
-        </tr>
-        <tr>
-          <td><code>data-variant</code></td>
-          <td>string</td>
-          <td>-</td>
-          <td>Set to <code>"card"</code> for hover card mode with rich content, card styling, and longer delay (300ms).</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Positions</h2>
-    <p>Use <code>data-position</code> to control where the tooltip appears relative to the trigger.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="xl" style="padding: var(--size-xl);">
-        <tooltip-wc data-position="top">
-          <button type="button" class="secondary">Top</button>
-          <template data-tooltip>Tooltip appears above</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="bottom">
-          <button type="button" class="secondary">Bottom</button>
-          <template data-tooltip>Tooltip appears below</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="left">
-          <button type="button" class="secondary">Left</button>
-          <template data-tooltip>Tooltip appears on the left</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="right">
-          <button type="button" class="secondary">Right</button>
-          <template data-tooltip>Tooltip appears on the right</template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-
-    <code-block language="html" show-lines label="Tooltip position variants">{positionCode}</code-block>
-  </section>
-
-  <section>
-    <h2>Rich Content</h2>
-    <p>For tooltips with formatted content-keyboard shortcuts, icons, multiple lines, or emphasis-use the <code>&lt;template data-tooltip&gt;</code> approach instead of <code>data-content</code>.</p>
+    <h2>Show Delay (<code>tooltip-wc</code>)</h2>
+    <p>When using <code>&lt;tooltip-wc&gt;</code>, control how long to wait before showing with <code>data-tooltip-delay</code>. Default is 200ms.</p>
 
     <div class="example">
       <layout-cluster data-gap="l">
-        <tooltip-wc>
-          <button type="button">
-            <icon-wc name="save" size="sm"></icon-wc>
-            Save
-          </button>
-          <template data-tooltip>
-            <strong>Save document</strong><br>
-            <kbd>Ctrl</kbd> + <kbd>S</kbd>
-          </template>
-        </tooltip-wc>
-
-        <tooltip-wc>
-          <button type="button" class="secondary">Copy</button>
-          <template data-tooltip>
-            Copy to clipboard<br>
-            <small>Copied items expire after 24 hours</small>
-          </template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="bottom">
-          <button type="button" class="ghost" aria-label="Status">
-            <icon-wc name="circle" size="sm" style="color: var(--color-success);"></icon-wc>
-          </button>
-          <template data-tooltip>
-            <icon-wc name="check" size="sm"></icon-wc>
-            <strong>Connected</strong><br>
-            Last sync: 2 minutes ago
-          </template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-
-    <code-block language="html" show-lines label="Rich tooltip with keyboard shortcut">{richContentCode}</code-block>
-
-    <code-block language="html" show-lines label="Tooltip with secondary info">{secondaryInfoCode}</code-block>
-  </section>
-
-  <section>
-    <h2>With Different Elements</h2>
-    <p>Tooltips can be attached to any focusable element, including links and icon buttons.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="l">
-        <tooltip-wc>
-          <a href="#">Hover this link</a>
-          <template data-tooltip>Links can have tooltips too!</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="bottom">
-          <button type="button" class="ghost" aria-label="Settings">
-            <icon-wc name="settings"></icon-wc>
-          </button>
-          <template data-tooltip>Open settings</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="bottom">
-          <button type="button" class="ghost" aria-label="Help">?</button>
-          <template data-tooltip>Click for help</template>
-        </tooltip-wc>
-
-        <tooltip-wc>
-          <span tabindex="0" style="text-decoration: underline dotted; cursor: help;">What's this?</span>
-          <template data-tooltip>Additional information about this feature</template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-
-    <code-block language="html" show-lines label="Tooltips on different element types">{elementTypesCode}</code-block>
-  </section>
-
-  <section>
-    <h2>Long Content</h2>
-    <p>Tooltips can contain longer text that wraps automatically. The tooltip stays within viewport boundaries.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="l">
-        <tooltip-wc data-position="bottom">
-          <button type="button">Hover for details</button>
-          <template data-tooltip>This is a longer tooltip that demonstrates how the component handles multi-line content. The tooltip will wrap text and stay within viewport boundaries.</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="top">
-          <button type="button" class="secondary">More info</button>
-          <template data-tooltip>Tooltips automatically adjust their position to remain visible, even when near the edge of the screen.</template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-  </section>
-
-  <section>
-    <h2>Card Variant</h2>
-    <p>For richer content previews like user profiles or link previews, use <code>data-variant="card"</code>. This mode uses a card-style popover instead of a compact tooltip.</p>
-
-    <div class="example">
-      <div>Hover over
-        <tooltip-wc data-variant="card">
-          <a href="#" data-trigger>this link</a>
-          <div data-content>
-            <p><strong>Rich Content</strong></p>
-            <p class="text-muted">This hover card shows structured content on hover. It has a surface background, border, and shadow.</p>
-          </div>
-        </tooltip-wc>
-        to see the card.
-      </div>
-    </div>
-
-    <code-block language="html" show-lines label="Card variant with profile content">{cardVariantCode}</code-block>
-
-    <h3>Differences from Regular Tooltip</h3>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Feature</th>
-          <th>Tooltip (default)</th>
-          <th>Card variant</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Content model</td>
-          <td><code>data-content</code> or <code>&lt;template data-tooltip&gt;</code></td>
-          <td><code>[data-trigger]</code> + <code>[data-content]</code></td>
-        </tr>
-        <tr>
-          <td>Appearance</td>
-          <td>Dark, compact, with arrow</td>
-          <td>Light card surface, border, shadow, no arrow</td>
-        </tr>
-        <tr>
-          <td>Show delay</td>
-          <td>200ms</td>
-          <td>300ms</td>
-        </tr>
-        <tr>
-          <td>Hide delay</td>
-          <td>100ms</td>
-          <td>200ms</td>
-        </tr>
-        <tr>
-          <td>Popover type</td>
-          <td><code>hint</code></td>
-          <td><code>manual</code> (supports interactive content)</td>
-        </tr>
-        <tr>
-          <td>ARIA</td>
-          <td><code>role="tooltip"</code>, <code>aria-describedby</code></td>
-          <td>None (supplementary content)</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Show Delay</h2>
-    <p>Use <code>data-delay</code> to control how long to wait before showing the tooltip. Default is 200ms.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="l">
-        <tooltip-wc data-delay="0">
-          <button type="button" class="secondary">No delay (0ms)</button>
+        <tooltip-wc data-tooltip-delay="0">
+          <button type="button">No delay (0ms)</button>
           <template data-tooltip>Shows immediately</template>
         </tooltip-wc>
 
-        <tooltip-wc data-delay="200">
-          <button type="button" class="secondary">Normal delay (200ms)</button>
+        <tooltip-wc data-tooltip-delay="200">
+          <button type="button">Normal delay (200ms)</button>
           <template data-tooltip>Default timing</template>
         </tooltip-wc>
 
-        <tooltip-wc data-delay="500">
-          <button type="button" class="secondary">Long delay (500ms)</button>
+        <tooltip-wc data-tooltip-delay="500">
+          <button type="button">Long delay (500ms)</button>
           <template data-tooltip>Waits half a second</template>
         </tooltip-wc>
       </layout-cluster>
@@ -475,9 +547,9 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
   </section>
 
   <section>
-    <h2>Events</h2>
-    <p>The component dispatches events when the tooltip is shown or hidden.</p>
+    <h2>Events &amp; API (<code>tooltip-wc</code>)</h2>
 
+    <h3>Events</h3>
     <table class="props-table">
       <thead>
         <tr>
@@ -498,12 +570,8 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
     </table>
 
     <code-block language="javascript" show-lines label="Listening for tooltip events">{eventCode}</code-block>
-  </section>
 
-  <section>
-    <h2>JavaScript API</h2>
-    <p>The component exposes methods for programmatic control.</p>
-
+    <h3>JavaScript API</h3>
     <table class="props-table">
       <thead>
         <tr>
@@ -536,7 +604,7 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
 
   <section>
     <h2>Keyboard Support</h2>
-    <p>Tooltips appear on keyboard focus and can be dismissed with the Escape key. Escape handling is built into the Popover API-no custom JavaScript required.</p>
+    <p>Tooltips appear on keyboard focus and can be dismissed with the Escape key. Escape handling is built into the Popover API.</p>
 
     <table class="props-table">
       <thead>
@@ -559,10 +627,7 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
 
     <div class="example">
       <p>Use Tab to focus the button below, then press Escape to hide the tooltip:</p>
-      <tooltip-wc>
-        <button type="button">Focus me with Tab</button>
-        <template data-tooltip>Press Escape to dismiss this tooltip</template>
-      </tooltip-wc>
+      <button title="Press Escape to dismiss this tooltip" data-tooltip>Focus me with Tab</button>
     </div>
   </section>
 
@@ -572,7 +637,7 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
     <h3>ARIA Attributes</h3>
     <ul>
       <li>The tooltip has <code>role="tooltip"</code> and <code>popover="hint"</code></li>
-      <li>The trigger element has <code>aria-describedby</code> pointing to the tooltip</li>
+      <li>The trigger gets <code>aria-describedby</code> pointing to the tooltip (set by init script)</li>
       <li>The tooltip arrow has <code>aria-hidden="true"</code></li>
       <li>Uses the browser's top layer for proper stacking without z-index conflicts</li>
     </ul>
@@ -586,146 +651,7 @@ const interestforStylingCode = `/* Custom timing via CSS custom properties */
       <li>Don't put essential information only in tooltips</li>
       <li>Ensure the trigger element is focusable</li>
       <li>Use tooltips for supplementary information, not primary content</li>
-      <li>Avoid interactive content inside tooltips</li>
+      <li>Avoid interactive content inside tooltips (use cards instead)</li>
     </ul>
-  </section>
-
-  <section>
-    <h2>Viewport Awareness</h2>
-    <p>Tooltips automatically adjust their position to stay within the viewport. The JavaScript fallback (for browsers without CSS Anchor support) clamps tooltip positions to keep them visible.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="l" data-justify="between">
-        <tooltip-wc data-position="left">
-          <button type="button" class="secondary">Near left edge</button>
-          <template data-tooltip>This tooltip adjusts to stay visible</template>
-        </tooltip-wc>
-
-        <tooltip-wc data-position="right">
-          <button type="button" class="secondary">Near right edge</button>
-          <template data-tooltip>This tooltip also adjusts automatically</template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-  </section>
-
-  <section>
-    <h2>Common Use Cases</h2>
-
-    <h3>Icon Button Labels</h3>
-    <p>Provide context for icon-only buttons:</p>
-    <div class="example">
-      <layout-cluster data-gap="s">
-        <tooltip-wc>
-          <button type="button" class="ghost" aria-label="Edit">
-            <icon-wc name="edit"></icon-wc>
-          </button>
-          <template data-tooltip>Edit item</template>
-        </tooltip-wc>
-        <tooltip-wc>
-          <button type="button" class="ghost" aria-label="Delete">
-            <icon-wc name="trash"></icon-wc>
-          </button>
-          <template data-tooltip>Delete item</template>
-        </tooltip-wc>
-        <tooltip-wc>
-          <button type="button" class="ghost" aria-label="Share">
-            <icon-wc name="share"></icon-wc>
-          </button>
-          <template data-tooltip>Share item</template>
-        </tooltip-wc>
-      </layout-cluster>
-    </div>
-
-    <code-block language="html" show-lines label="Icon button with tooltip">{iconButtonCode}</code-block>
-
-    <h3>Form Field Help</h3>
-    <p>Add help text for form fields:</p>
-    <div class="example">
-      <layout-stack data-gap="xs" style="max-inline-size: 20rem;">
-        <layout-cluster data-gap="xs" data-align="center">
-          <label for="password-field">Password</label>
-          <tooltip-wc data-position="right">
-            <button type="button" class="ghost small" aria-label="Password requirements" style="padding: 0;">
-              <icon-wc name="help-circle" size="sm"></icon-wc>
-            </button>
-            <template data-tooltip>Must be at least 8 characters with one number and one special character</template>
-          </tooltip-wc>
-        </layout-cluster>
-        <input type="password" id="password-field" placeholder="Enter password" />
-      </layout-stack>
-    </div>
-
-    <code-block language="html" show-lines label="Form field help tooltip">{formHelpCode}</code-block>
-
-    <h3>Truncated Text</h3>
-    <p>Show full text for truncated content:</p>
-    <div class="example">
-      <tooltip-wc>
-        <span tabindex="0" style="display: block; max-inline-size: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          This is a very long text that gets truncated
-        </span>
-        <template data-tooltip>This is a very long text that gets truncated</template>
-      </tooltip-wc>
-    </div>
-
-    <code-block language="html" show-lines label="Truncated text with tooltip">{truncatedCode}</code-block>
-  </section>
-
-  <section>
-    <h2>Pure HTML Tooltips (<code>interestfor</code>)</h2>
-    <p>For simple tooltips that don't need arrows, custom positioning, or rich content, you can skip the web component entirely. The <code>interestfor</code> attribute (native in Chrome 133+, polyfilled in other browsers) handles hover/focus timing and popover show/hide declaratively.</p>
-
-    <div class="example">
-      <layout-cluster data-gap="l">
-        <span>
-          The
-          <button interestfor="wai-def-demo" style="all: unset; cursor: help; text-decoration: underline dotted; text-underline-offset: 3px;">WAI-ARIA</button>
-          specification defines accessible rich internet applications.
-        </span>
-        <div id="wai-def-demo" popover="hint">
-          Web Accessibility Initiative &ndash; Accessible Rich Internet Applications
-        </div>
-      </layout-cluster>
-    </div>
-
-    <code-block language="html" show-lines label="Pure HTML tooltip with interestfor">{interestforCode}</code-block>
-
-    <h3>How It Works</h3>
-    <ul>
-      <li>The <code>interestfor</code> attribute on a button/link points to the popover's <code>id</code></li>
-      <li>On hover/focus, the browser (or polyfill) shows the popover after a delay</li>
-      <li>On leave/blur, the popover hides after a shorter delay</li>
-      <li>Hovering the popover itself keeps it open</li>
-      <li>Escape dismisses all open interest popovers</li>
-    </ul>
-
-    <h3>Custom Timing</h3>
-    <p>Control show/hide delays with CSS custom properties:</p>
-    <code-block language="css" show-lines label="Custom timing">{interestforStylingCode}</code-block>
-
-    <h3>When to Use Which</h3>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Use case</th>
-          <th>Approach</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Simple text hint</td>
-          <td><code>interestfor</code> + <code>popover="hint"</code> (pure HTML)</td>
-        </tr>
-        <tr>
-          <td>Positioned tooltip with arrow</td>
-          <td><code>&lt;tooltip-wc&gt;</code></td>
-        </tr>
-        <tr>
-          <td>Rich hover card with interactive content</td>
-          <td><code>&lt;tooltip-wc data-variant="card"&gt;</code></td>
-        </tr>
-      </tbody>
-    </table>
   </section>
 </ElementLayout>

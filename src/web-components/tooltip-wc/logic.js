@@ -7,8 +7,8 @@
  * Falls back to JS event listeners when interestfor is unavailable.
  *
  * @attr {string} data-content - Simple text tooltip content
- * @attr {string} data-position - Position: 'top' (default), 'bottom', 'left', 'right'
- * @attr {number} data-delay - Show delay in ms (default: 200)
+ * @attr {string} data-tooltip-position - Position: 'top' (default), 'bottom', 'left', 'right'
+ * @attr {number} data-tooltip-delay - Show delay in ms (default: 200)
  * @attr {string} data-variant - Variant: omit for tooltip (default), 'card' for hover card
  *
  * @example Simple text tooltip
@@ -17,7 +17,7 @@
  * </tooltip-wc>
  *
  * @example Rich content tooltip (use template for HTML)
- * <tooltip-wc data-position="top">
+ * <tooltip-wc data-tooltip-position="top">
  *   <button>Hover me</button>
  *   <template data-tooltip>
  *     <strong>Formatted</strong> content with <kbd>Ctrl+S</kbd>
@@ -87,11 +87,15 @@ class TooltipWc extends HTMLElement {
 
     this.#useInterestFor = canUseInterestFor(this.#trigger);
 
-    // Get tooltip content: template takes precedence over data-content
+    // Content priority: template > data-content > title on trigger
     const template = this.querySelector(':scope > template[data-tooltip]');
-    const textContent = this.dataset.content;
+    const dataContent = this.dataset.content;
+    const titleContent = this.#trigger.getAttribute('title');
 
-    if (!template && !textContent) return;
+    if (!template && !dataContent && !titleContent) return;
+
+    // Remove title to prevent native double-tooltip
+    if (titleContent) this.#trigger.removeAttribute('title');
 
     // Create tooltip element with Popover API
     this.#tooltip = document.createElement('div');
@@ -99,18 +103,18 @@ class TooltipWc extends HTMLElement {
     this.#tooltip.setAttribute('role', 'tooltip');
     this.#tooltip.setAttribute('popover', 'hint');
 
-    // Use template HTML or plain text from data-content
+    // Use content in priority order
     if (template) {
       this.#tooltip.innerHTML = template.innerHTML;
     } else {
-      this.#tooltip.textContent = textContent;
+      this.#tooltip.textContent = dataContent || titleContent;
     }
 
     this.#tooltip.id = `tooltip-${crypto.randomUUID().slice(0, 8)}`;
 
     // Position
-    const position = this.dataset.position || 'top';
-    this.#tooltip.dataset.position = position;
+    const position = this.dataset.tooltipPosition || 'top';
+    this.#tooltip.dataset.tooltipPosition = position;
 
     // Add arrow
     const arrow = document.createElement('span');
@@ -234,7 +238,7 @@ class TooltipWc extends HTMLElement {
   #scheduleShow = () => {
     clearTimeout(this.#hideTimer);
     const defaultDelay = this.#isCard ? 300 : 200;
-    const delay = parseInt(this.dataset.delay || String(defaultDelay), 10);
+    const delay = parseInt(this.dataset.tooltipDelay || String(defaultDelay), 10);
     this.#showTimer = setTimeout(() => this.show(), delay);
   };
 
@@ -297,7 +301,7 @@ class TooltipWc extends HTMLElement {
 
     const triggerRect = this.#trigger.getBoundingClientRect();
     const tooltipRect = this.#tooltip.getBoundingClientRect();
-    const position = this.dataset.position || 'top';
+    const position = this.dataset.tooltipPosition || 'top';
     const gap = 8;
 
     let top, left;
@@ -340,7 +344,7 @@ class TooltipWc extends HTMLElement {
 
     const triggerRect = this.#trigger.getBoundingClientRect();
     const cardRect = this.#tooltip.getBoundingClientRect();
-    const preferred = this.dataset.position || 'bottom';
+    const preferred = this.dataset.tooltipPosition || 'bottom';
     const gap = 8;
     const padding = 8;
 

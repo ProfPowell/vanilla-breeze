@@ -53,11 +53,41 @@
   }
 }
 
-/* --- Positioning (JS sets top/left directly) --- */
+/* --- Positioning --- */
 
 [role="tooltip"][popover] {
   position: fixed;
-  /* top and left are set by tooltip-init.js */
+  /* JS sets top/left, or CSS anchor positioning takes over */
+}
+
+/* Anchor-positioned tooltips (init-created, outside tooltip-wc) */
+[role="tooltip"][popover][data-anchor] {
+  inset: auto;
+}
+
+[role="tooltip"][popover][data-anchor]:not([data-tooltip-position]),
+[role="tooltip"][popover][data-anchor][data-tooltip-position="top"] {
+  bottom: anchor(top);
+  left: anchor(center);
+  translate: -50% calc(-1 * var(--size-xs));
+}
+
+[role="tooltip"][popover][data-anchor][data-tooltip-position="bottom"] {
+  top: anchor(bottom);
+  left: anchor(center);
+  translate: -50% var(--size-xs);
+}
+
+[role="tooltip"][popover][data-anchor][data-tooltip-position="left"] {
+  right: anchor(left);
+  top: anchor(center);
+  translate: calc(-1 * var(--size-xs)) -50%;
+}
+
+[role="tooltip"][popover][data-anchor][data-tooltip-position="right"] {
+  left: anchor(right);
+  top: anchor(center);
+  translate: var(--size-xs) -50%;
 }
 
 /* --- Arrow (optional) --- */
@@ -72,25 +102,25 @@
 }
 
 /* Arrow positions */
-[role="tooltip"][popover]:not([data-position]),
-[role="tooltip"][popover][data-position="top"] {
+[role="tooltip"][popover]:not([data-tooltip-position]),
+[role="tooltip"][popover][data-tooltip-position="top"] {
   & > .tooltip-arrow {
     inset-block-end: -4px;
     inset-inline-start: calc(50% - 4px);
   }
 }
 
-[role="tooltip"][popover][data-position="bottom"] > .tooltip-arrow {
+[role="tooltip"][popover][data-tooltip-position="bottom"] > .tooltip-arrow {
   inset-block-start: -4px;
   inset-inline-start: calc(50% - 4px);
 }
 
-[role="tooltip"][popover][data-position="left"] > .tooltip-arrow {
+[role="tooltip"][popover][data-tooltip-position="left"] > .tooltip-arrow {
   inset-inline-end: -4px;
   inset-block-start: calc(50% - 4px);
 }
 
-[role="tooltip"][popover][data-position="right"] > .tooltip-arrow {
+[role="tooltip"][popover][data-tooltip-position="right"] > .tooltip-arrow {
   inset-inline-start: -4px;
   inset-block-start: calc(50% - 4px);
 }

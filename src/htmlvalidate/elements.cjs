@@ -205,10 +205,10 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow", "template"],
     attributes: {
-      "data-position": {
+      "data-tooltip-position": {
         enum: ["top", "bottom", "left", "right"]
       },
-      "data-delay": {}
+      "data-tooltip-delay": {}
     }
   },
 
