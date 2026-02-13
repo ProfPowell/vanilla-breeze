@@ -181,7 +181,7 @@ class SlideAcceptWc extends HTMLElement {
 
   #setPosition(percent) {
     this.#position = percent;
-    this.style.setProperty('--_slide-position', `${percent}%`);
+    this.style.setProperty('--_slide-position', String(percent));
     this.#handle.setAttribute('aria-valuenow', String(Math.round(percent)));
   }
 }
