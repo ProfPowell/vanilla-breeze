@@ -53,3 +53,4 @@ import '../utils/select-all-init.js';
 import '../utils/animate-image-init.js';
 import './qr-code-wc/logic.js';
 import './html-include-wc/logic.js';
+import './slide-accept-wc/logic.js';

@@ -1,0 +1,191 @@
+/* slide-accept-wc: Slide-to-confirm interaction */
+
+/* --- Progressive enhancement: no-JS fallback --- */
+slide-accept-wc:not(:defined) {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--size-xs) var(--size-m);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface-raised);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+}
+
+/* --- Defined state --- */
+slide-accept-wc:defined {
+  display: block;
+  position: relative;
+}
+
+/* --- Track --- */
+.slide-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 3.5rem;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface-raised, oklch(95% 0 0));
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- Label --- */
+.slide-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+/* Fade label as handle passes over it */
+slide-accept-wc:defined {
+  --_slide-position: 0%;
+}
+
+/* --- Handle --- */
+.slide-handle {
+  all: unset;
+  position: absolute;
+  top: 4px;
+  left: calc(var(--_slide-position, 0%) * (1 - 3.25rem / 100%));
+  width: 3.25rem;
+  height: calc(3.5rem - 8px);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  z-index: 1;
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.15);
+  transition: none;
+}
+
+/* Position via left using calc to keep handle inside track */
+.slide-handle {
+  left: calc(var(--_slide-position, 0%) / 100 * (100% - 3.25rem));
+}
+
+.slide-handle:active {
+  cursor: grabbing;
+}
+
+/* Spring-back transition */
+slide-accept-wc[data-transitioning] .slide-handle {
+  transition: left 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- Focus visible --- */
+.slide-handle:focus-visible {
+  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+  outline-offset: 2px;
+}
+
+/* --- Activated state --- */
+slide-accept-wc[data-activated] .slide-track {
+  background: color-mix(in oklch, var(--color-success, oklch(50% 0.15 145)) 15%, var(--color-surface-raised, oklch(95% 0 0)));
+  border-color: var(--color-success, oklch(50% 0.15 145));
+}
+
+slide-accept-wc[data-activated] .slide-handle {
+  background: var(--color-success, oklch(50% 0.15 145));
+  cursor: default;
+}
+
+slide-accept-wc[data-activated] .slide-label {
+  color: var(--color-success, oklch(40% 0.15 145));
+  font-weight: 600;
+}
+
+/* --- Fill track behind handle --- */
+.slide-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  right: auto;
+  width: calc(var(--_slide-position, 0%) / 100 * 100%);
+  background: color-mix(in oklch, var(--color-interactive, oklch(55% 0.2 260)) 10%, transparent);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: none;
+}
+
+slide-accept-wc[data-transitioning] .slide-track::before {
+  transition: width 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+slide-accept-wc[data-activated] .slide-track::before {
+  background: color-mix(in oklch, var(--color-success, oklch(50% 0.15 145)) 10%, transparent);
+}
+
+/* --- Attention: Shimmer --- */
+slide-accept-wc[data-attention="shimmer"]:not([data-activated]):not([data-dragging]) .slide-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    oklch(100% 0 0 / 0.15) 50%,
+    transparent 65%
+  );
+  background-size: 200% 100%;
+  animation: slide-accept-shimmer 2.5s ease-in-out infinite;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+@keyframes slide-accept-shimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+/* --- Attention: Pulse --- */
+slide-accept-wc[data-attention="pulse"]:not([data-activated]):not([data-dragging]) .slide-handle {
+  animation: slide-accept-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes slide-accept-pulse {
+  0%, 100% { box-shadow: 0 2px 8px oklch(0% 0 0 / 0.15); }
+  50% { box-shadow: 0 2px 16px oklch(from var(--color-interactive, oklch(55% 0.2 260)) l c h / 0.4); }
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  slide-accept-wc[data-transitioning] .slide-handle,
+  slide-accept-wc[data-transitioning] .slide-track::before {
+    transition-duration: 0s;
+  }
+
+  slide-accept-wc[data-attention="shimmer"] .slide-track::after {
+    animation: none;
+  }
+
+  slide-accept-wc[data-attention="pulse"] .slide-handle {
+    animation: none;
+  }
+}
+
+:root[data-motion-reduced] slide-accept-wc[data-transitioning] .slide-handle,
+:root[data-motion-reduced] slide-accept-wc[data-transitioning] .slide-track::before {
+  transition-duration: 0s;
+}
+
+:root[data-motion-reduced] slide-accept-wc[data-attention="shimmer"] .slide-track::after {
+  animation: none;
+}
+
+:root[data-motion-reduced] slide-accept-wc[data-attention="pulse"] .slide-handle {
+  animation: none;
+}

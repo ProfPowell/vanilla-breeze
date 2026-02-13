@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slide Accept Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .demo-grid {
+      display: grid;
+      gap: var(--size-2xl);
+      max-width: 460px;
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .status {
+      margin-block-start: var(--size-xs);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+
+    .status[data-active] {
+      color: var(--color-success, oklch(50% 0.15 145));
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-grid">
+    <!-- Basic -->
+    <section>
+      <h2>Basic</h2>
+      <h3>Default slide-to-confirm</h3>
+      <slide-accept-wc data-label="Slide to confirm" data-activated-label="Confirmed!">
+        Slide to confirm
+      </slide-accept-wc>
+      <p class="status" id="status-basic">Status: Waiting...</p>
+    </section>
+
+    <!-- Shimmer attention -->
+    <section>
+      <h2>Shimmer Attention</h2>
+      <h3>data-attention="shimmer"</h3>
+      <slide-accept-wc data-label="Slide to delete" data-activated-label="Deleted!" data-attention="shimmer">
+        Slide to delete
+      </slide-accept-wc>
+      <p class="status" id="status-shimmer">Status: Waiting...</p>
+    </section>
+
+    <!-- Pulse attention -->
+    <section>
+      <h2>Pulse Attention</h2>
+      <h3>data-attention="pulse"</h3>
+      <slide-accept-wc data-label="Slide to send" data-activated-label="Sent!" data-attention="pulse">
+        Slide to send
+      </slide-accept-wc>
+      <p class="status" id="status-pulse">Status: Waiting...</p>
+    </section>
+
+    <!-- With reset -->
+    <section>
+      <h2>With Reset</h2>
+      <h3>Click "Reset" after activating</h3>
+      <slide-accept-wc id="resettable" data-label="Slide to confirm" data-activated-label="Done!" data-attention="shimmer">
+        Slide to confirm
+      </slide-accept-wc>
+      <p>
+        <button type="button" onclick="document.getElementById('resettable').querySelector('slide-accept-wc')?.reset?.() || document.getElementById('resettable').reset()">Reset</button>
+      </p>
+    </section>
+
+    <!-- Custom threshold -->
+    <section>
+      <h2>Easy Threshold</h2>
+      <h3>data-threshold="60"</h3>
+      <slide-accept-wc data-label="Slide halfway" data-activated-label="Activated!" data-threshold="60">
+        Slide halfway
+      </slide-accept-wc>
+    </section>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    document.querySelectorAll('slide-accept-wc').forEach(el => {
+      el.addEventListener('slide-accept', () => {
+        const status = el.parentElement.querySelector('.status');
+        if (status) {
+          status.textContent = 'Status: Activated!';
+          status.setAttribute('data-active', '');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
