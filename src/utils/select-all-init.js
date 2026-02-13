@@ -38,7 +38,7 @@ function enhance(master) {
 
   /** @returns {NodeListOf<HTMLInputElement>} */
   function getTargets() {
-    const scope = master.closest('table, form, fieldset, [data-select-all-scope]') || document;
+    const scope = master.closest('[data-select-all-scope]') || master.closest('table, form, fieldset') || document;
     return scope.querySelectorAll(targetSelector);
   }
 
@@ -63,7 +63,7 @@ function enhance(master) {
     }
 
     // Update any count displays
-    const scope = master.closest('table, form, fieldset, [data-select-all-scope]') || document;
+    const scope = master.closest('[data-select-all-scope]') || master.closest('table, form, fieldset') || document;
     const countEl = scope.querySelector('[data-selected-count]');
     if (countEl) {
       countEl.textContent = checked;
@@ -76,21 +76,28 @@ function enhance(master) {
     }));
   }
 
+  // Guard to prevent re-entrant syncState during bulk toggle
+  let bulkUpdating = false;
+
   // Master checkbox toggles all targets
   master.addEventListener('change', () => {
+    bulkUpdating = true;
+    const isChecked = master.checked;
     const targets = getTargets();
     targets.forEach(cb => {
-      cb.checked = master.checked;
+      cb.checked = isChecked;
       // Dispatch change event on each target for any listeners
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     });
+    bulkUpdating = false;
     master.indeterminate = false;
     syncState();
   });
 
   // Listen for changes on targets (event delegation on the scope)
-  const scope = master.closest('table, form, fieldset, [data-select-all-scope]') || document;
+  const scope = master.closest('[data-select-all-scope]') || master.closest('table, form, fieldset') || document;
   scope.addEventListener('change', (e) => {
+    if (bulkUpdating) return;
     if (e.target === master) return;
     if (e.target.matches?.(targetSelector)) {
       syncState();
@@ -122,3 +129,4 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
 export { initSelectAll };
+
