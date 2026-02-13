@@ -1,0 +1,107 @@
+/* progress-ring: Circular progress indicator */
+/* Uses CSS conic-gradient on a pseudo-element for a pure CSS circular progress bar */
+/* Set the value via --progress custom property (0-100) or data-value attribute */
+
+progress-ring {
+  --_size: var(--progress-ring-size, 4em);
+  --_width: var(--progress-ring-width, 0.35em);
+  --_color: var(--progress-ring-color, var(--color-interactive, oklch(55% 0.2 260)));
+  --_track: var(--progress-ring-track, oklch(from var(--_color) l c h / 0.15));
+  --_progress: var(--progress, 0);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  border-radius: 50%;
+  vertical-align: middle;
+  flex-shrink: 0;
+
+  /* Track ring */
+  background: conic-gradient(
+    var(--_color) calc(var(--_progress) * 1%),
+    var(--_track) calc(var(--_progress) * 1%)
+  );
+
+  /* Hollow center via mask */
+  mask: radial-gradient(
+    circle,
+    transparent calc(50% - var(--_width)),
+    #000 calc(50% - var(--_width) + 1px)
+  );
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent calc(50% - var(--_width)),
+    #000 calc(50% - var(--_width) + 1px)
+  );
+}
+
+/* Inner label area — shows slotted content (e.g., percentage text) */
+progress-ring::before {
+  content: "";
+  position: absolute;
+  inset: var(--_width);
+  border-radius: 50%;
+}
+
+/* Allow slotted content to appear above the ring */
+progress-ring > * {
+  position: relative;
+  z-index: 1;
+  font-size: calc(var(--_size) * 0.22);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Size variants */
+progress-ring[data-size="xs"] { --_size: 2em; --_width: 0.2em; }
+progress-ring[data-size="s"]  { --_size: 3em; --_width: 0.25em; }
+progress-ring[data-size="m"]  { --_size: 4em; --_width: 0.35em; }
+progress-ring[data-size="l"]  { --_size: 6em; --_width: 0.45em; }
+progress-ring[data-size="xl"] { --_size: 8em; --_width: 0.55em; }
+
+/* Color variants */
+progress-ring[data-variant="success"] {
+  --_color: var(--color-success, oklch(55% 0.18 145));
+}
+progress-ring[data-variant="warning"] {
+  --_color: oklch(60% 0.18 70);
+}
+progress-ring[data-variant="error"] {
+  --_color: var(--color-error, oklch(55% 0.2 25));
+}
+
+/* Indeterminate state — spinning animation */
+progress-ring[data-indeterminate] {
+  background: conic-gradient(
+    var(--_color) 0deg,
+    var(--_color) 90deg,
+    var(--_track) 90deg,
+    var(--_track) 360deg
+  );
+  animation: vb-progress-ring-spin 1s linear infinite;
+}
+
+@keyframes vb-progress-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animated transitions when value changes */
+progress-ring:not([data-indeterminate]) {
+  transition: background 0.3s ease;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  progress-ring[data-indeterminate] {
+    animation-duration: 2s;
+  }
+}
+
+:root[data-motion-reduced] progress-ring[data-indeterminate] {
+  animation-duration: 2s;
+}

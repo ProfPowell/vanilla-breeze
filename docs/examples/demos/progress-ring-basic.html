@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Ring Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xl);
+      margin-block-end: var(--size-l);
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <h3>Basic Progress</h3>
+  <div class="demo-row">
+    <progress-ring style="--progress: 25" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+      <span>25%</span>
+    </progress-ring>
+    <progress-ring style="--progress: 50" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+      <span>50%</span>
+    </progress-ring>
+    <progress-ring style="--progress: 75" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+      <span>75%</span>
+    </progress-ring>
+    <progress-ring style="--progress: 100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+      <span>100%</span>
+    </progress-ring>
+  </div>
+
+  <h3>Sizes</h3>
+  <div class="demo-row">
+    <progress-ring data-size="xs" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+    <progress-ring data-size="s" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+    <progress-ring data-size="m" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+    <progress-ring data-size="l" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+    <progress-ring data-size="xl" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+  </div>
+
+  <h3>Color Variants</h3>
+  <div class="demo-row">
+    <progress-ring data-size="l" style="--progress: 80" role="progressbar" aria-valuenow="80"><span>80%</span></progress-ring>
+    <progress-ring data-size="l" data-variant="success" style="--progress: 100" role="progressbar" aria-valuenow="100"><span>100%</span></progress-ring>
+    <progress-ring data-size="l" data-variant="warning" style="--progress: 45" role="progressbar" aria-valuenow="45"><span>45%</span></progress-ring>
+    <progress-ring data-size="l" data-variant="error" style="--progress: 15" role="progressbar" aria-valuenow="15"><span>15%</span></progress-ring>
+  </div>
+
+  <h3>Indeterminate</h3>
+  <div class="demo-row">
+    <progress-ring data-size="l" data-indeterminate role="progressbar" aria-label="Loading"></progress-ring>
+  </div>
+
+  <h3>Interactive Demo</h3>
+  <div class="demo-row">
+    <progress-ring data-size="xl" id="interactive-ring" style="--progress: 0" role="progressbar" aria-valuenow="0">
+      <span id="ring-label">0%</span>
+    </progress-ring>
+    <div>
+      <label for="ring-slider">Progress:</label>
+      <input type="range" id="ring-slider" min="0" max="100" value="0">
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const slider = document.getElementById('ring-slider');
+    const ring = document.getElementById('interactive-ring');
+    const label = document.getElementById('ring-label');
+    slider.addEventListener('input', () => {
+      ring.style.setProperty('--progress', slider.value);
+      ring.setAttribute('aria-valuenow', slider.value);
+      label.textContent = slider.value + '%';
+    });
+  </script>
+</body>
+</html>

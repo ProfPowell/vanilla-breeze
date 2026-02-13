@@ -1,0 +1,82 @@
+/* loading-spinner: CSS-only loading spinner */
+/* Displays an animated circular spinner for loading states */
+
+loading-spinner {
+  --_size: var(--spinner-size, 1.5em);
+  --_width: var(--spinner-width, 0.2em);
+  --_color: var(--spinner-color, currentColor);
+  --_track: var(--spinner-track, oklch(from var(--_color) l c h / 0.2));
+  --_speed: var(--spinner-speed, 0.7s);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+loading-spinner::after {
+  content: "";
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  border: var(--_width) solid var(--_track);
+  border-block-start-color: var(--_color);
+  animation: vb-spinner-rotate var(--_speed) linear infinite;
+}
+
+/* Size variants */
+loading-spinner[data-size="xs"] { --_size: 0.75em; --_width: 0.1em; }
+loading-spinner[data-size="s"]  { --_size: 1em; --_width: 0.15em; }
+loading-spinner[data-size="m"]  { --_size: 1.5em; --_width: 0.2em; }
+loading-spinner[data-size="l"]  { --_size: 2.5em; --_width: 0.25em; }
+loading-spinner[data-size="xl"] { --_size: 4em; --_width: 0.3em; }
+
+/* Color variants */
+loading-spinner[data-variant="primary"] {
+  --_color: var(--color-interactive, oklch(55% 0.2 260));
+}
+loading-spinner[data-variant="success"] {
+  --_color: var(--color-success, oklch(55% 0.18 145));
+}
+loading-spinner[data-variant="warning"] {
+  --_color: oklch(60% 0.18 70);
+}
+loading-spinner[data-variant="error"] {
+  --_color: var(--color-error, oklch(55% 0.2 25));
+}
+
+/* Screen reader label */
+loading-spinner:not([aria-label]) {
+  role: status;
+}
+
+/* Centered overlay variant — spinner over parent content */
+loading-spinner[data-overlay] {
+  position: absolute;
+  inset: 0;
+  inline-size: auto;
+  block-size: auto;
+  background: oklch(from var(--color-surface, #fff) l c h / 0.7);
+  z-index: 10;
+}
+
+@keyframes vb-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  loading-spinner::after {
+    animation-duration: 1.5s;
+  }
+}
+
+:root[data-motion-reduced] loading-spinner::after {
+  animation-duration: 1.5s;
+}

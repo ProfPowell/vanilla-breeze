@@ -1,0 +1,193 @@
+---
+/**
+ * progress-ring Custom Element Documentation
+ *
+ * CSS-only circular progress indicator.
+ */
+import ElementLayout from '../../../../layouts/ElementLayout.astro';
+
+const basicCode = `<progress-ring style="--progress: 75" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+  <span>75%</span>
+</progress-ring>`;
+
+const sizesCode = `<progress-ring data-size="xs" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+<progress-ring data-size="s" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+<progress-ring data-size="m" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+<progress-ring data-size="l" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+<progress-ring data-size="xl" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>`;
+
+const variantsCode = `<progress-ring data-variant="success" style="--progress: 100" data-size="l"><span>Done</span></progress-ring>
+<progress-ring data-variant="warning" style="--progress: 45" data-size="l"><span>45%</span></progress-ring>
+<progress-ring data-variant="error" style="--progress: 15" data-size="l"><span>15%</span></progress-ring>`;
+
+const indeterminateCode = `<progress-ring data-indeterminate data-size="l" role="progressbar" aria-label="Loading"></progress-ring>`;
+
+const customCode = `progress-ring \{
+  --progress-ring-size: 6em;
+  --progress-ring-width: 0.5em;
+  --progress-ring-color: oklch(55% 0.2 260);
+\}`;
+
+const jsUpdateCode = `const ring = document.querySelector('progress-ring');
+ring.style.setProperty('--progress', '85');
+ring.setAttribute('aria-valuenow', '85');`;
+---
+
+<ElementLayout
+  title="progress-ring"
+  description="CSS-only circular progress indicator with size and color variants."
+  elementName="progress-ring"
+  category="custom"
+  currentPath="/docs/elements/custom-elements/progress-ring/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;progress-ring&gt;</code> element displays a circular progress indicator using pure CSS (conic-gradient + mask). Set the progress value via the <code>--progress</code> custom property (0&ndash;100).</p>
+
+    <browser-window
+      src="/docs/examples/demos/progress-ring-basic.html"
+      url="https://vanilla-breeze.dev/progress-ring"
+      title="Progress Ring Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic progress ring">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-size</code></td>
+          <td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td><code>m</code></td>
+          <td>Ring size.</td>
+        </tr>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>success</code>, <code>warning</code>, <code>error</code></td>
+          <td>interactive</td>
+          <td>Color variant.</td>
+        </tr>
+        <tr>
+          <td><code>data-indeterminate</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Shows a spinning indeterminate animation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Sizes</h2>
+    <div class="example" style="display: flex; align-items: center; gap: var(--size-l);">
+      <progress-ring data-size="xs" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+      <progress-ring data-size="s" style="--progress: 60" role="progressbar" aria-valuenow="60"></progress-ring>
+      <progress-ring data-size="m" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+      <progress-ring data-size="l" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+      <progress-ring data-size="xl" style="--progress: 60" role="progressbar" aria-valuenow="60"><span>60%</span></progress-ring>
+    </div>
+
+    <code-block language="html" show-lines label="Size variants">{sizesCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Color Variants</h2>
+    <div class="example" style="display: flex; align-items: center; gap: var(--size-l);">
+      <progress-ring data-size="l" data-variant="success" style="--progress: 100" role="progressbar" aria-valuenow="100"><span>Done</span></progress-ring>
+      <progress-ring data-size="l" data-variant="warning" style="--progress: 45" role="progressbar" aria-valuenow="45"><span>45%</span></progress-ring>
+      <progress-ring data-size="l" data-variant="error" style="--progress: 15" role="progressbar" aria-valuenow="15"><span>15%</span></progress-ring>
+    </div>
+
+    <code-block language="html" show-lines label="Color variants">{variantsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Indeterminate</h2>
+    <p>Add <code>data-indeterminate</code> for a spinning animation when the progress value is unknown.</p>
+
+    <div class="example">
+      <progress-ring data-indeterminate data-size="l" role="progressbar" aria-label="Loading"></progress-ring>
+    </div>
+
+    <code-block language="html" show-lines label="Indeterminate state">{indeterminateCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Updating with JavaScript</h2>
+    <p>Update the <code>--progress</code> property dynamically. Remember to also update <code>aria-valuenow</code>.</p>
+
+    <code-block language="javascript" show-lines label="Update progress dynamically">{jsUpdateCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--progress</code></td>
+          <td><code>0</code></td>
+          <td>Progress value (0&ndash;100).</td>
+        </tr>
+        <tr>
+          <td><code>--progress-ring-size</code></td>
+          <td><code>4em</code></td>
+          <td>Ring diameter.</td>
+        </tr>
+        <tr>
+          <td><code>--progress-ring-width</code></td>
+          <td><code>0.35em</code></td>
+          <td>Ring track thickness.</td>
+        </tr>
+        <tr>
+          <td><code>--progress-ring-color</code></td>
+          <td>interactive</td>
+          <td>Filled arc color.</td>
+        </tr>
+        <tr>
+          <td><code>--progress-ring-track</code></td>
+          <td>15% of color</td>
+          <td>Background track color.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="css" show-lines label="Custom styling">{customCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Add <code>role="progressbar"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> for determinate progress.</li>
+      <li>For indeterminate, add <code>aria-label="Loading"</code> instead.</li>
+      <li>Animation slows under <code>prefers-reduced-motion: reduce</code>.</li>
+      <li>CSS-only: works without JavaScript.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/loading-spinner/"><code>&lt;loading-spinner&gt;</code></a> &mdash; Indeterminate loading animation</li>
+      <li><a href="/docs/elements/native/progress/"><code>&lt;progress&gt;</code></a> &mdash; Native linear progress bar</li>
+      <li><a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> &mdash; Native gauge/meter element</li>
+    </ul>
+  </section>
+</ElementLayout>

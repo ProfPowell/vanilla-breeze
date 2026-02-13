@@ -49,3 +49,7 @@ import '../utils/blur-reveal-init.js';
 import '../utils/highlight-init.js';
 import '../utils/typewriter-init.js';
 import '../utils/scramble-init.js';
+import '../utils/select-all-init.js';
+import '../utils/animate-image-init.js';
+import './qr-code-wc/logic.js';
+import './html-include-wc/logic.js';
