@@ -6,13 +6,19 @@
  *
  * Usage:
  * 1. Import this file in your main.css
- * 2. Add view-transition-name to elements that should morph between pages:
- *    <img style="view-transition-name: product-123" />
+ * 2. Add data-vt-name to elements that should morph between pages:
+ *    <img data-vt-name="product-123" src="..." />
  *
- * Shared elements:
- * - Elements with matching view-transition-name on both pages will morph
- * - Names must be unique per page (no duplicates)
- * - Use inline styles for dynamic/unique names: style="view-transition-name: hero-42"
+ * Named groups:
+ * - data-vt="main"    → main-content (auto-applied to <main>)
+ * - data-vt="header"  → page-header
+ * - data-vt="nav"     → site-nav
+ * - data-vt="sidebar" → page-sidebar
+ * - data-vt="hero"    → page-hero
+ * - data-vt="footer"  → site-footer
+ *
+ * Animation presets (via data-vt-class):
+ * - slide-left, slide-right, scale, fade, none
  *
  * Browser support: Chrome 111+, Safari 18+
  * Gracefully ignored in unsupported browsers.
@@ -23,29 +29,138 @@
   navigation: auto;
 }
 
-/* Default transition timing */
+/* ── Tokens ──────────────────────────────────────────── */
+
 :root {
   --view-transition-duration: 0.3s;
+  --view-transition-duration-fast: 0.15s;
+  --view-transition-duration-slow: 0.5s;
 }
 
-/* Main content area - fades between pages */
+/* ── Named Groups ────────────────────────────────────── */
+
 main,
 [data-vt="main"] {
   view-transition-name: main-content;
 }
 
-/* Page header - persists across navigation */
 [data-vt="header"] {
   view-transition-name: page-header;
 }
 
-/* Customize the default crossfade animation */
+[data-vt="nav"] {
+  view-transition-name: site-nav;
+}
+
+[data-vt="sidebar"] {
+  view-transition-name: page-sidebar;
+}
+
+[data-vt="hero"] {
+  view-transition-name: page-hero;
+}
+
+[data-vt="footer"] {
+  view-transition-name: site-footer;
+}
+
+/* ── Default Crossfade Timing ────────────────────────── */
+
 ::view-transition-old(main-content),
 ::view-transition-new(main-content) {
   animation-duration: var(--view-transition-duration);
 }
 
-/* Reduce motion preference */
+/* ── Animation Presets ───────────────────────────────── */
+
+/* Slide Left */
+[data-vt-class="slide-left"] { view-transition-class: slide-left; }
+
+::view-transition-old(*.slide-left) {
+  animation: vt-slide-out-left var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.slide-left) {
+  animation: vt-slide-in-left var(--view-transition-duration) var(--ease-out);
+}
+
+/* Slide Right */
+[data-vt-class="slide-right"] { view-transition-class: slide-right; }
+
+::view-transition-old(*.slide-right) {
+  animation: vt-slide-out-right var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.slide-right) {
+  animation: vt-slide-in-right var(--view-transition-duration) var(--ease-out);
+}
+
+/* Scale */
+[data-vt-class="scale"] { view-transition-class: scale; }
+
+::view-transition-old(*.scale) {
+  animation: vt-scale-down var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.scale) {
+  animation: vt-scale-up var(--view-transition-duration) var(--ease-out);
+}
+
+/* Fade (explicit fade-only, no morph) */
+[data-vt-class="fade"] { view-transition-class: fade; }
+
+::view-transition-old(*.fade) {
+  animation: vt-fade-out var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.fade) {
+  animation: vt-fade-in var(--view-transition-duration) var(--ease-out);
+}
+
+/* None (instant swap, no animation) */
+[data-vt-class="none"] { view-transition-class: none; }
+
+::view-transition-old(*.none),
+::view-transition-new(*.none) {
+  animation-duration: 0s;
+}
+
+/* ── Keyframes ───────────────────────────────────────── */
+
+@keyframes vt-slide-out-left {
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes vt-slide-in-left {
+  from { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes vt-slide-out-right {
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes vt-slide-in-right {
+  from { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes vt-scale-down {
+  to { transform: scale(0.9); opacity: 0; }
+}
+
+@keyframes vt-scale-up {
+  from { transform: scale(0.9); opacity: 0; }
+}
+
+@keyframes vt-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+}
+
+/* ── Reduced Motion ──────────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),

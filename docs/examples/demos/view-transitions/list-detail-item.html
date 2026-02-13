@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Article Detail - View Transitions Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/src/utils/view-transitions.css"/>
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-xs);
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-block-end: var(--size-l);
+    }
+
+    .back-link:hover { color: var(--color-interactive); }
+
+    .article-hero {
+      width: 120px;
+      height: 120px;
+      border-radius: var(--radius-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      margin-block-end: var(--size-l);
+    }
+
+    .article-title {
+      margin: 0 0 var(--size-m);
+      font-size: var(--font-size-4xl);
+    }
+
+    .article-content { max-inline-size: 65ch; }
+    .article-content p { color: var(--color-text-muted); line-height: 1.7; }
+    .article-meta {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      margin-block-end: var(--size-l);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-max="narrow">
+    <layout-stack data-gap="l">
+      <a href="list-detail.html" class="back-link">← Back to Articles</a>
+      <article id="article-container">
+        <!-- Content set by script based on ?id= parameter -->
+      </article>
+    </layout-stack>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const articles = {
+      1: {
+        emoji: '📐',
+        color: 'oklch(80% 0.12 30)',
+        title: 'Design Systems at Scale',
+        meta: '8 min read',
+        content: [
+          'Design systems are the backbone of consistent user interfaces. When teams grow and products multiply, a shared system of components, tokens, and patterns keeps everything cohesive.',
+          'The best design systems evolve organically. They start with the most-used components, document decisions clearly, and make the right thing the easy thing for developers.',
+          'Scaling a design system means balancing flexibility with consistency. Too rigid and teams work around it; too loose and the consistency benefits disappear.'
+        ]
+      },
+      2: {
+        emoji: '🌿',
+        color: 'oklch(80% 0.12 140)',
+        title: 'Progressive Enhancement',
+        meta: '6 min read',
+        content: [
+          'Progressive enhancement starts with content and core functionality, then layers on enhanced experiences for capable browsers. The baseline always works.',
+          'This approach is more resilient than graceful degradation. Instead of building for the best case and patching failures, you build from a solid foundation upward.',
+          'Modern CSS features like @supports, cascade layers, and container queries make progressive enhancement more powerful than ever. The web platform itself is built on this principle.'
+        ]
+      },
+      3: {
+        emoji: '⚡',
+        color: 'oklch(80% 0.12 250)',
+        title: 'Performance Budgets',
+        meta: '5 min read',
+        content: [
+          'A performance budget sets measurable limits for your site: total JavaScript size, time to interactive, largest contentful paint. Without limits, pages inevitably bloat.',
+          'Effective budgets are enforced in CI. When a pull request exceeds the budget, it fails automatically. This prevents the slow creep of "just one more library."',
+          'Start with real user metrics. Lab measurements matter, but field data from actual users on real networks tells the true story of your site\'s performance.'
+        ]
+      },
+      4: {
+        emoji: '🎨',
+        color: 'oklch(80% 0.12 350)',
+        title: 'Color in Interface Design',
+        meta: '7 min read',
+        content: [
+          'Color is one of the most powerful tools in interface design. It communicates hierarchy, state, and brand identity at a glance. Getting it right requires both art and science.',
+          'The OKLCH color space offers perceptually uniform lightness, making it ideal for generating accessible color palettes. Unlike HSL, equal lightness values actually look equally light.',
+          'Accessible color contrast isn\'t just about passing WCAG ratios. Consider color combinations for color-blind users, ensure sufficient contrast for text of all sizes, and test in both light and dark modes.'
+        ]
+      }
+    };
+
+    const id = new URLSearchParams(location.search).get('id') || '1';
+    const article = articles[id] || articles['1'];
+    const container = document.getElementById('article-container');
+
+    container.innerHTML = `
+      <div class="article-hero" data-vt-name="item-thumb-${id}" style="background: ${article.color};">${article.emoji}</div>
+      <div class="article-content">
+        <h1 class="article-title" data-vt-name="item-title-${id}">${article.title}</h1>
+        <p class="article-meta">${article.meta}</p>
+        ${article.content.map(p => `<p>${p}</p>`).join('\n        ')}
+      </div>
+    `;
+
+    // Re-run view transition init for dynamically added elements
+    import('/src/utils/view-transition-init.js').then(m => m.initViewTransitions());
+  </script>
+</body>
+</html>

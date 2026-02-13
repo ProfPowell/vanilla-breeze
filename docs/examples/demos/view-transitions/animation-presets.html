@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Animation Presets - View Transitions Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/src/utils/view-transitions.css"/>
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--size-l);
+    }
+
+    .preset-card {
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+      box-shadow: var(--shadow-m);
+    }
+
+    .preset-card header {
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .preset-card header h2 {
+      margin: 0;
+      font-size: var(--font-size-lg);
+    }
+
+    .preset-card header p {
+      margin: var(--size-3xs) 0 0;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .preset-card header code {
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.3em;
+      border-radius: var(--radius-s);
+      font-size: 0.85em;
+    }
+
+    .preview-area {
+      padding: var(--size-l);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-m);
+      min-height: 180px;
+    }
+
+    .preview-box {
+      width: 100%;
+      padding: var(--size-l);
+      border-radius: var(--radius-m);
+      text-align: center;
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-on-interactive);
+    }
+
+    .demo-btn {
+      appearance: none;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      padding: var(--size-xs) var(--size-m);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      font: inherit;
+      color: var(--color-text);
+    }
+
+    .demo-btn:hover {
+      background: var(--color-surface-raised);
+      border-color: var(--color-interactive);
+    }
+
+    .info-box {
+      background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+      border-inline-start: 3px solid var(--color-interactive);
+      padding: var(--size-m);
+      margin-block-end: var(--size-xl);
+      border-radius: var(--radius-s);
+    }
+
+    .info-box p { margin: 0; }
+
+    code {
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.3em;
+      border-radius: var(--radius-s);
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-max="wide">
+    <layout-stack data-gap="xl">
+      <header>
+        <h1>Animation Presets</h1>
+        <p>View transition animation presets applied via <code>data-vt-class</code>. Click "Trigger" to see each preset using <code>document.startViewTransition()</code>.</p>
+      </header>
+
+      <div class="info-box">
+        <p><strong>Note:</strong> These presets work with both MPA navigation (<code>@view-transition</code>) and SPA transitions (<code>document.startViewTransition()</code>). This demo uses the SPA API for inline previews.</p>
+      </div>
+
+      <div class="preset-grid">
+        <div class="preset-card">
+          <header>
+            <h2>Slide Left</h2>
+            <p><code>data-vt-class="slide-left"</code></p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="slide-left-box" data-vt-name="demo-slide-left" data-vt-class="slide-left" style="background: oklch(65% 0.15 200);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="slide-left">Trigger</button>
+          </div>
+        </div>
+
+        <div class="preset-card">
+          <header>
+            <h2>Slide Right</h2>
+            <p><code>data-vt-class="slide-right"</code></p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="slide-right-box" data-vt-name="demo-slide-right" data-vt-class="slide-right" style="background: oklch(65% 0.15 140);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="slide-right">Trigger</button>
+          </div>
+        </div>
+
+        <div class="preset-card">
+          <header>
+            <h2>Scale</h2>
+            <p><code>data-vt-class="scale"</code></p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="scale-box" data-vt-name="demo-scale" data-vt-class="scale" style="background: oklch(65% 0.15 30);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="scale">Trigger</button>
+          </div>
+        </div>
+
+        <div class="preset-card">
+          <header>
+            <h2>Fade</h2>
+            <p><code>data-vt-class="fade"</code></p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="fade-box" data-vt-name="demo-fade" data-vt-class="fade" style="background: oklch(65% 0.15 280);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="fade">Trigger</button>
+          </div>
+        </div>
+
+        <div class="preset-card">
+          <header>
+            <h2>None</h2>
+            <p><code>data-vt-class="none"</code></p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="none-box" data-vt-name="demo-none" data-vt-class="none" style="background: oklch(65% 0.15 60);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="none">Trigger</button>
+          </div>
+        </div>
+
+        <div class="preset-card">
+          <header>
+            <h2>Default (Crossfade)</h2>
+            <p>No <code>data-vt-class</code> — browser default</p>
+          </header>
+          <div class="preview-area">
+            <div class="preview-box" id="default-box" data-vt-name="demo-default" style="background: oklch(65% 0.15 350);">
+              Content A
+            </div>
+            <button class="demo-btn" data-demo="default">Trigger</button>
+          </div>
+        </div>
+      </div>
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const state = {};
+
+    document.querySelectorAll('[data-demo]').forEach(btn => {
+      const preset = btn.dataset.demo;
+      state[preset] = 'A';
+
+      btn.addEventListener('click', () => {
+        if (!document.startViewTransition) {
+          // Fallback: just swap without transition
+          swap(preset);
+          return;
+        }
+        document.startViewTransition(() => swap(preset));
+      });
+    });
+
+    function swap(preset) {
+      const box = document.getElementById(`${preset}-box`);
+      if (!box) return;
+      state[preset] = state[preset] === 'A' ? 'B' : 'A';
+      box.textContent = `Content ${state[preset]}`;
+
+      const hues = { A: null, B: null };
+      const currentBg = getComputedStyle(box).backgroundColor;
+
+      if (state[preset] === 'B') {
+        box.style.background = box.style.background.replace(/\d+\)$/, (m) => {
+          const hue = parseInt(m);
+          return ((hue + 180) % 360) + ')';
+        });
+      } else {
+        // Reset to original
+        const originals = {
+          'slide-left': 'oklch(65% 0.15 200)',
+          'slide-right': 'oklch(65% 0.15 140)',
+          'scale': 'oklch(65% 0.15 30)',
+          'fade': 'oklch(65% 0.15 280)',
+          'none': 'oklch(65% 0.15 60)',
+          'default': 'oklch(65% 0.15 350)'
+        };
+        box.style.background = originals[preset];
+      }
+    }
+  </script>
+</body>
+</html>
