@@ -6,6 +6,9 @@
   <title>Checkout - Multi-Step</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
+    body {
+      padding: var(--size-l);
+    }
     .step-indicator {
       --step-size: 2rem;
     }
@@ -49,160 +52,159 @@
     .step-connector.completed {
       background: var(--color-success);
     }
+    /* Override VB native fieldset padding and legend size */
     fieldset {
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-m);
       padding: var(--size-l);
     }
     fieldset legend {
-      font-weight: var(--font-weight-semibold);
-      padding: 0 var(--size-s);
       font-size: var(--font-size-base);
     }
   </style>
 </head>
-<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
-    <div data-layout="stack" data-layout-gap="l">
-      <header data-layout="stack" data-layout-gap="s">
-        <h1>Checkout</h1>
-        <p>Step 1 of 3: Shipping</p>
-      </header>
+<body>
+  <main data-layout="center" data-layout-max="narrow">
+    <layout-card data-padding="l">
+      <div data-layout="stack" data-layout-gap="l">
+        <header data-layout="stack" data-layout-gap="s">
+          <h1>Checkout</h1>
+          <p>Step 1 of 3: Shipping</p>
+        </header>
 
-      <!-- Step Indicator -->
-      <nav class="step-indicator" aria-label="Checkout progress" data-layout="cluster" data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
-          <div class="step active" aria-current="step">
-            <span class="step-number">1</span>
-            <span class="step-label">Shipping</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <span class="step-label">Payment</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <span class="step-label">Review</span>
-          </div>
-      </nav>
-
-      <!-- Step 1: Shipping -->
-      <form action="/checkout/shipping" method="POST" data-layout="stack" data-layout-gap="l">
-        <fieldset data-layout="stack" data-layout-gap="m">
-          <legend>Contact information</legend>
-            <form-field>
-              <label for="email">Email address</label>
-              <input type="email" id="email" name="email" required
-                     autocomplete="email" placeholder="you@example.com"
-                     aria-describedby="email-hint"/>
-              <output id="email-hint" for="email" aria-live="polite">
-                We'll send your order confirmation here.
-              </output>
-            </form-field>
-
-            <form-field>
-              <label for="phone">Phone number</label>
-              <input type="tel" id="phone" name="phone"
-                     autocomplete="tel" placeholder="(555) 123-4567"
-                     aria-describedby="phone-hint"/>
-              <output id="phone-hint" for="phone" aria-live="polite">
-                For delivery updates (optional).
-              </output>
-            </form-field>
-        </fieldset>
-
-        <fieldset data-layout="stack" data-layout-gap="m">
-          <legend>Shipping address</legend>
-            <div data-layout="split" data-layout-gap="m">
-              <form-field>
-                <label for="first-name">First name</label>
-                <input type="text" id="first-name" name="first_name" required
-                       autocomplete="given-name" placeholder="John"
-                       aria-describedby="first-name-error"/>
-                <output id="first-name-error" class="error" for="first-name" aria-live="polite">
-                  Please enter your first name.
-                </output>
-              </form-field>
-
-              <form-field>
-                <label for="last-name">Last name</label>
-                <input type="text" id="last-name" name="last_name" required
-                       autocomplete="family-name" placeholder="Doe"
-                       aria-describedby="last-name-error"/>
-                <output id="last-name-error" class="error" for="last-name" aria-live="polite">
-                  Please enter your last name.
-                </output>
-              </form-field>
+        <!-- Step Indicator -->
+        <nav class="step-indicator" aria-label="Checkout progress" data-layout="cluster" data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
+            <div class="step active" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-label">Shipping</span>
             </div>
+            <div class="step-connector" aria-hidden="true"></div>
+            <div class="step">
+              <span class="step-number">2</span>
+              <span class="step-label">Payment</span>
+            </div>
+            <div class="step-connector" aria-hidden="true"></div>
+            <div class="step">
+              <span class="step-number">3</span>
+              <span class="step-label">Review</span>
+            </div>
+        </nav>
 
-            <form-field>
-              <label for="address">Street address</label>
-              <input type="text" id="address" name="address" required
-                     autocomplete="street-address" placeholder="123 Main St"
-                     aria-describedby="address-error"/>
-              <output id="address-error" class="error" for="address" aria-live="polite">
-                Please enter your street address.
-              </output>
-            </form-field>
-
-            <form-field>
-              <label for="address2">Apartment, suite, etc. (optional)</label>
-              <input type="text" id="address2" name="address2"
-                     autocomplete="address-line2" placeholder="Apt 4B"/>
-            </form-field>
-
-            <div data-layout="split" data-layout-gap="m">
+        <!-- Step 1: Shipping -->
+        <form action="/checkout/shipping" method="POST" data-layout="stack" data-layout-gap="l">
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Contact information</legend>
               <form-field>
-                <label for="city">City</label>
-                <input type="text" id="city" name="city" required
-                       autocomplete="address-level2" placeholder="San Francisco"
-                       aria-describedby="city-error"/>
-                <output id="city-error" class="error" for="city" aria-live="polite">
-                  Please enter your city.
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required
+                       autocomplete="email" placeholder="you@example.com"
+                       aria-describedby="email-hint"/>
+                <output id="email-hint" for="email" aria-live="polite">
+                  We'll send your order confirmation here.
                 </output>
               </form-field>
 
               <form-field>
-                <label for="state">State</label>
-                <select id="state" name="state" required autocomplete="address-level1">
-                  <option value="">Select state</option>
-                  <option value="CA" selected>California</option>
-                  <option value="NY">New York</option>
-                  <option value="TX">Texas</option>
-                  <option value="FL">Florida</option>
-                </select>
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" name="phone"
+                       autocomplete="tel" placeholder="(555) 123-4567"
+                       aria-describedby="phone-hint"/>
+                <output id="phone-hint" for="phone" aria-live="polite">
+                  For delivery updates (optional).
+                </output>
               </form-field>
-            </div>
+          </fieldset>
 
-            <div data-layout="split" data-layout-gap="m">
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Shipping address</legend>
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="first-name">First name</label>
+                  <input type="text" id="first-name" name="first_name" required
+                         autocomplete="given-name" placeholder="John"
+                         aria-describedby="first-name-error"/>
+                  <output id="first-name-error" class="error" for="first-name" aria-live="polite">
+                    Please enter your first name.
+                  </output>
+                </form-field>
+
+                <form-field>
+                  <label for="last-name">Last name</label>
+                  <input type="text" id="last-name" name="last_name" required
+                         autocomplete="family-name" placeholder="Doe"
+                         aria-describedby="last-name-error"/>
+                  <output id="last-name-error" class="error" for="last-name" aria-live="polite">
+                    Please enter your last name.
+                  </output>
+                </form-field>
+              </div>
+
               <form-field>
-                <label for="zip">ZIP code</label>
-                <input type="text" id="zip" name="zip" required
-                       autocomplete="postal-code" placeholder="94102"
-                       aria-describedby="zip-error"/>
-                <output id="zip-error" class="error" for="zip" aria-live="polite">
-                  Please enter your ZIP code.
+                <label for="address">Street address</label>
+                <input type="text" id="address" name="address" required
+                       autocomplete="street-address" placeholder="123 Main St"
+                       aria-describedby="address-error"/>
+                <output id="address-error" class="error" for="address" aria-live="polite">
+                  Please enter your street address.
                 </output>
               </form-field>
 
               <form-field>
-                <label for="country">Country</label>
-                <select id="country" name="country" required autocomplete="country-name">
-                  <option value="US" selected>United States</option>
-                  <option value="CA">Canada</option>
-                </select>
+                <label for="address2">Apartment, suite, etc. (optional)</label>
+                <input type="text" id="address2" name="address2"
+                       autocomplete="address-line2" placeholder="Apt 4B"/>
               </form-field>
-            </div>
-        </fieldset>
 
-        <div data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
-          <a href="/cart" class="button secondary">Back to cart</a>
-          <button type="submit">Continue to payment</button>
-        </div>
-      </form>
-    </div>
-  </layout-card>
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="city">City</label>
+                  <input type="text" id="city" name="city" required
+                         autocomplete="address-level2" placeholder="San Francisco"
+                         aria-describedby="city-error"/>
+                  <output id="city-error" class="error" for="city" aria-live="polite">
+                    Please enter your city.
+                  </output>
+                </form-field>
+
+                <form-field>
+                  <label for="state">State</label>
+                  <select id="state" name="state" required autocomplete="address-level1">
+                    <option value="">Select state</option>
+                    <option value="CA" selected>California</option>
+                    <option value="NY">New York</option>
+                    <option value="TX">Texas</option>
+                    <option value="FL">Florida</option>
+                  </select>
+                </form-field>
+              </div>
+
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="zip">ZIP code</label>
+                  <input type="text" id="zip" name="zip" required
+                         autocomplete="postal-code" placeholder="94102"
+                         aria-describedby="zip-error"/>
+                  <output id="zip-error" class="error" for="zip" aria-live="polite">
+                    Please enter your ZIP code.
+                  </output>
+                </form-field>
+
+                <form-field>
+                  <label for="country">Country</label>
+                  <select id="country" name="country" required autocomplete="country-name">
+                    <option value="US" selected>United States</option>
+                    <option value="CA">Canada</option>
+                  </select>
+                </form-field>
+              </div>
+          </fieldset>
+
+          <div data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+            <a href="/cart" class="button secondary">Back to cart</a>
+            <button type="submit">Continue to payment</button>
+          </div>
+        </form>
+      </div>
+    </layout-card>
+  </main>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

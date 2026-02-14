@@ -8,34 +8,22 @@
   <style>
     body {
       margin: 0;
-    }
-    .checkout-section {
+      padding: var(--size-xl);
       background: var(--color-surface-raised);
     }
+    /* Override VB native fieldset padding and legend size */
     fieldset {
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-m);
       padding: var(--size-l);
     }
     fieldset legend {
-      font-weight: var(--font-weight-semibold);
-      padding: 0 var(--size-s);
       font-size: var(--font-size-base);
     }
     .order-summary h3 {
       font-size: var(--font-size-lg);
       margin: 0;
     }
-    .order-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--size-m);
-    }
-    .order-item-info {
-      display: flex;
-      flex-direction: column;
-      gap: var(--size-2xs);
+    .order-summary hr {
+      margin-block: 0;
     }
     .order-item-name {
       font-weight: var(--font-weight-medium);
@@ -48,14 +36,7 @@
       font-weight: var(--font-weight-medium);
       white-space: nowrap;
     }
-    .summary-divider {
-      border: 0;
-      border-top: var(--border-width-thin) solid var(--color-border);
-      margin: var(--size-m) 0;
-    }
     .summary-row {
-      display: flex;
-      justify-content: space-between;
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
@@ -65,9 +46,6 @@
       color: var(--color-text);
     }
     .security-note {
-      display: flex;
-      align-items: center;
-      gap: var(--size-xs);
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
@@ -77,164 +55,160 @@
   </style>
 </head>
 <body>
-  <section class="checkout-section" data-layout="cover" data-layout-min="100vh" data-layout-padding="xl">
-    <div data-layout="center" data-layout-max="wide" data-layout-principal>
-      <div data-layout="sidebar" data-layout-gap="2xl" data-layout-sidebar-width="narrow" data-layout-content-min="50">
-        <!-- Checkout Form -->
-        <layout-card data-padding="l">
-          <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
-            <header data-layout="stack" data-layout-gap="s">
-              <h1>Checkout</h1>
-              <p>Complete your purchase by providing shipping and payment information.</p>
-            </header>
+  <div data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="60">
+    <!-- Checkout Form -->
+    <main data-layout="stack" data-layout-gap="l">
+      <header data-layout="stack" data-layout-gap="s">
+        <h1>Checkout</h1>
+        <p>Complete your purchase by providing shipping and payment information.</p>
+      </header>
 
-            <!-- Shipping Address -->
-            <fieldset data-layout="stack" data-layout-gap="m">
-              <legend>Shipping address</legend>
-                <form-field>
-                  <label for="email">Email address</label>
-                  <input type="email" id="email" name="email" required
-                         autocomplete="email" placeholder="you@example.com"/>
-                </form-field>
+      <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
+        <!-- Shipping Address -->
+        <fieldset data-layout="stack" data-layout-gap="m">
+          <legend>Shipping address</legend>
+            <form-field>
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" required
+                     autocomplete="email" placeholder="you@example.com"/>
+            </form-field>
 
-                <form-field>
-                  <label for="full-name">Full name</label>
-                  <input type="text" id="full-name" name="full_name" required
-                         autocomplete="name" placeholder="John Doe"/>
-                </form-field>
+            <form-field>
+              <label for="full-name">Full name</label>
+              <input type="text" id="full-name" name="full_name" required
+                     autocomplete="name" placeholder="John Doe"/>
+            </form-field>
 
-                <form-field>
-                  <label for="address">Street address</label>
-                  <input type="text" id="address" name="address" required
-                         autocomplete="street-address" placeholder="123 Main St"/>
-                </form-field>
+            <form-field>
+              <label for="address">Street address</label>
+              <input type="text" id="address" name="address" required
+                     autocomplete="street-address" placeholder="123 Main St"/>
+            </form-field>
 
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="city">City</label>
-                    <input type="text" id="city" name="city" required
-                           autocomplete="address-level2" placeholder="San Francisco"/>
-                  </form-field>
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required
+                       autocomplete="address-level2" placeholder="San Francisco"/>
+              </form-field>
 
-                  <form-field>
-                    <label for="state">State</label>
-                    <input type="text" id="state" name="state" required
-                           autocomplete="address-level1" placeholder="CA"/>
-                  </form-field>
-                </div>
-
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="zip">ZIP code</label>
-                    <input type="text" id="zip" name="zip" required
-                           autocomplete="postal-code" placeholder="94102"/>
-                  </form-field>
-
-                  <form-field>
-                    <label for="country">Country</label>
-                    <select id="country" name="country" required autocomplete="country-name">
-                      <option value="">Select country</option>
-                      <option value="US" selected>United States</option>
-                      <option value="CA">Canada</option>
-                      <option value="GB">United Kingdom</option>
-                    </select>
-                  </form-field>
-                </div>
-            </fieldset>
-
-            <!-- Payment Information -->
-            <fieldset data-layout="stack" data-layout-gap="m">
-              <legend>Payment</legend>
-                <form-field>
-                  <label for="card-number">Card number</label>
-                  <input type="text" id="card-number" name="card_number" required
-                         autocomplete="cc-number" placeholder="1234 5678 9012 3456"
-                         inputmode="numeric"/>
-                </form-field>
-
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="expiry">Expiration</label>
-                    <input type="text" id="expiry" name="expiry" required
-                           autocomplete="cc-exp" placeholder="MM / YY"
-                           inputmode="numeric"/>
-                  </form-field>
-
-                  <form-field>
-                    <label for="cvc">CVC</label>
-                    <input type="text" id="cvc" name="cvc" required
-                           autocomplete="cc-csc" placeholder="123"
-                           inputmode="numeric" maxlength="4"/>
-                  </form-field>
-                </div>
-
-                <p class="security-note">
-                  <icon-wc name="lock"></icon-wc>
-                  Your payment information is encrypted and secure.
-                </p>
-            </fieldset>
-
-            <button type="submit">Place order</button>
-          </form>
-        </layout-card>
-
-        <!-- Order Summary Sidebar -->
-        <aside class="order-summary" data-layout="stack" data-layout-gap="l">
-          <h3>Order summary</h3>
-
-          <div data-layout="stack" data-layout-gap="m">
-            <div class="order-item">
-              <div class="order-item-info">
-                <span class="order-item-name">Premium Wireless Headphones</span>
-                <span class="order-item-details">Black, Qty: 1</span>
-              </div>
-              <span class="order-item-price">$249.00</span>
+              <form-field>
+                <label for="state">State</label>
+                <input type="text" id="state" name="state" required
+                       autocomplete="address-level1" placeholder="CA"/>
+              </form-field>
             </div>
 
-            <div class="order-item">
-              <div class="order-item-info">
-                <span class="order-item-name">USB-C Charging Cable</span>
-                <span class="order-item-details">6ft, Qty: 2</span>
-              </div>
-              <span class="order-item-price">$29.98</span>
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="zip">ZIP code</label>
+                <input type="text" id="zip" name="zip" required
+                       autocomplete="postal-code" placeholder="94102"/>
+              </form-field>
+
+              <form-field>
+                <label for="country">Country</label>
+                <select id="country" name="country" required autocomplete="country-name">
+                  <option value="">Select country</option>
+                  <option value="US" selected>United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="GB">United Kingdom</option>
+                </select>
+              </form-field>
+            </div>
+        </fieldset>
+
+        <!-- Payment Information -->
+        <fieldset data-layout="stack" data-layout-gap="m">
+          <legend>Payment</legend>
+            <form-field>
+              <label for="card-number">Card number</label>
+              <input type="text" id="card-number" name="card_number" required
+                     autocomplete="cc-number" placeholder="1234 5678 9012 3456"
+                     inputmode="numeric"/>
+            </form-field>
+
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="expiry">Expiration</label>
+                <input type="text" id="expiry" name="expiry" required
+                       autocomplete="cc-exp" placeholder="MM / YY"
+                       inputmode="numeric"/>
+              </form-field>
+
+              <form-field>
+                <label for="cvc">CVC</label>
+                <input type="text" id="cvc" name="cvc" required
+                       autocomplete="cc-csc" placeholder="123"
+                       inputmode="numeric" maxlength="4"/>
+              </form-field>
             </div>
 
-            <div class="order-item">
-              <div class="order-item-info">
-                <span class="order-item-name">Leather Carrying Case</span>
-                <span class="order-item-details">Brown, Qty: 1</span>
-              </div>
-              <span class="order-item-price">$49.00</span>
-            </div>
+            <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
+              <icon-wc name="lock"></icon-wc>
+              Your payment information is encrypted and secure.
+            </p>
+        </fieldset>
+
+        <button type="submit">Place order</button>
+      </form>
+    </main>
+
+    <!-- Order Summary Sidebar -->
+    <aside class="order-summary" data-layout="stack" data-layout-gap="l">
+      <h3>Order summary</h3>
+
+      <div data-layout="stack" data-layout-gap="m">
+        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <div data-layout="stack" data-layout-gap="2xs">
+            <span class="order-item-name">Premium Wireless Headphones</span>
+            <span class="order-item-details">Black, Qty: 1</span>
           </div>
+          <span class="order-item-price">$249.00</span>
+        </div>
 
-          <hr class="summary-divider"/>
-
-          <div data-layout="stack" data-layout-gap="s">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>$327.98</span>
-            </div>
-            <div class="summary-row">
-              <span>Shipping</span>
-              <span>$9.99</span>
-            </div>
-            <div class="summary-row">
-              <span>Tax</span>
-              <span>$27.12</span>
-            </div>
+        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <div data-layout="stack" data-layout-gap="2xs">
+            <span class="order-item-name">USB-C Charging Cable</span>
+            <span class="order-item-details">6ft, Qty: 2</span>
           </div>
+          <span class="order-item-price">$29.98</span>
+        </div>
 
-          <hr class="summary-divider"/>
-
-          <div class="summary-row total">
-            <span>Total</span>
-            <span>$365.09</span>
+        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+          <div data-layout="stack" data-layout-gap="2xs">
+            <span class="order-item-name">Leather Carrying Case</span>
+            <span class="order-item-details">Brown, Qty: 1</span>
           </div>
-        </aside>
+          <span class="order-item-price">$49.00</span>
+        </div>
       </div>
-    </div>
-  </section>
+
+      <hr/>
+
+      <div data-layout="stack" data-layout-gap="s">
+        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+          <span>Subtotal</span>
+          <span>$327.98</span>
+        </div>
+        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+          <span>Shipping</span>
+          <span>$9.99</span>
+        </div>
+        <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+          <span>Tax</span>
+          <span>$27.12</span>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="summary-row total" data-layout="cluster" data-layout-justify="between">
+        <span>Total</span>
+        <span>$365.09</span>
+      </div>
+    </aside>
+  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

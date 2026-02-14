@@ -1,34 +1,133 @@
 ---
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
-const singleCode = `<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-layout-max="narrow" data-padding="l" data-layout-principal>
-    <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
-      <header data-layout="stack" data-layout-gap="s">
-        <h1>Checkout</h1>
-        <p>Complete your purchase by providing the information below.</p>
-      </header>
+const singleCode = `<body>
+  <main data-layout="center" data-layout-max="narrow">
+    <layout-card data-padding="l">
+      <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
+        <header data-layout="stack" data-layout-gap="s">
+          <h1>Checkout</h1>
+          <p>Complete your purchase by providing the information below.</p>
+        </header>
 
-      <!-- Contact Information -->
-      <fieldset>
-        <legend>Contact information</legend>
-        <layout-stack data-layout-gap="m">
+        <!-- Contact Information -->
+        <fieldset data-layout="stack" data-layout-gap="m">
+          <legend>Contact information</legend>
+            <form-field>
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" required
+                     autocomplete="email" placeholder="you@example.com"
+                     aria-describedby="email-error"/>
+              <output id="email-error" class="error" for="email" aria-live="polite">
+                Please enter a valid email address.
+              </output>
+            </form-field>
+        </fieldset>
+
+        <!-- Shipping Address -->
+        <fieldset data-layout="stack" data-layout-gap="m">
+          <legend>Shipping address</legend>
+            <form-field>
+              <label for="full-name">Full name</label>
+              <input type="text" id="full-name" name="full_name" required
+                     autocomplete="name" placeholder="John Doe"/>
+            </form-field>
+
+            <form-field>
+              <label for="address">Street address</label>
+              <input type="text" id="address" name="address" required
+                     autocomplete="street-address" placeholder="123 Main St"/>
+            </form-field>
+
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required
+                       autocomplete="address-level2" placeholder="San Francisco"/>
+              </form-field>
+
+              <form-field>
+                <label for="state">State / Province</label>
+                <input type="text" id="state" name="state" required
+                       autocomplete="address-level1" placeholder="CA"/>
+              </form-field>
+            </div>
+
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="zip">ZIP / Postal code</label>
+                <input type="text" id="zip" name="zip" required
+                       autocomplete="postal-code" placeholder="94102"/>
+              </form-field>
+
+              <form-field>
+                <label for="country">Country</label>
+                <select id="country" name="country" required autocomplete="country-name">
+                  <option value="">Select country</option>
+                  <option value="US" selected>United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="GB">United Kingdom</option>
+                </select>
+              </form-field>
+            </div>
+        </fieldset>
+
+        <!-- Payment Information -->
+        <fieldset data-layout="stack" data-layout-gap="m">
+          <legend>Payment</legend>
+            <form-field>
+              <label for="card-number">Card number</label>
+              <input type="text" id="card-number" name="card_number" required
+                     autocomplete="cc-number" placeholder="1234 5678 9012 3456"
+                     inputmode="numeric"/>
+            </form-field>
+
+            <div data-layout="split" data-layout-gap="m">
+              <form-field>
+                <label for="expiry">Expiration date</label>
+                <input type="text" id="expiry" name="expiry" required
+                       autocomplete="cc-exp" placeholder="MM / YY"
+                       inputmode="numeric"/>
+              </form-field>
+
+              <form-field>
+                <label for="cvc">CVC</label>
+                <input type="text" id="cvc" name="cvc" required
+                       autocomplete="cc-csc" placeholder="123"
+                       inputmode="numeric" maxlength="4"/>
+              </form-field>
+            </div>
+
+            <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
+              <icon-wc name="lock"></icon-wc>
+              Your payment information is encrypted and secure.
+            </p>
+        </fieldset>
+
+        <button type="submit">Place order</button>
+      </form>
+    </layout-card>
+  </main>
+</body>`;
+
+const splitCode = `<div data-layout="sidebar" data-layout-gap="xl" data-layout-content-min="60">
+  <!-- Checkout Form -->
+  <main data-layout="stack" data-layout-gap="l">
+    <header data-layout="stack" data-layout-gap="s">
+      <h1>Checkout</h1>
+      <p>Complete your purchase by providing shipping and payment information.</p>
+    </header>
+
+    <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
+      <!-- Shipping Address -->
+      <fieldset data-layout="stack" data-layout-gap="m">
+        <legend>Shipping address</legend>
           <form-field>
             <label for="email">Email address</label>
             <input type="email" id="email" name="email" required
-                   autocomplete="email" placeholder="you@example.com"
-                   aria-describedby="email-error"/>
-            <output id="email-error" class="error" for="email" aria-live="polite">
-              Please enter a valid email address.
-            </output>
+                   autocomplete="email" placeholder="you@example.com"/>
           </form-field>
-        </layout-stack>
-      </fieldset>
 
-      <!-- Shipping Address -->
-      <fieldset>
-        <legend>Shipping address</legend>
-        <layout-stack data-layout-gap="m">
           <form-field>
             <label for="full-name">Full name</label>
             <input type="text" id="full-name" name="full_name" required
@@ -49,7 +148,7 @@ const singleCode = `<body data-layout="cover" data-layout-min="100vh" data-layou
             </form-field>
 
             <form-field>
-              <label for="state">State / Province</label>
+              <label for="state">State</label>
               <input type="text" id="state" name="state" required
                      autocomplete="address-level1" placeholder="CA"/>
             </form-field>
@@ -57,28 +156,25 @@ const singleCode = `<body data-layout="cover" data-layout-min="100vh" data-layou
 
           <div data-layout="split" data-layout-gap="m">
             <form-field>
-              <label for="zip">ZIP / Postal code</label>
+              <label for="zip">ZIP code</label>
               <input type="text" id="zip" name="zip" required
                      autocomplete="postal-code" placeholder="94102"/>
             </form-field>
 
             <form-field>
               <label for="country">Country</label>
-              <select id="country" name="country" required autocomplete="country-name">
+              <select id="country" name="country" required>
                 <option value="">Select country</option>
                 <option value="US" selected>United States</option>
                 <option value="CA">Canada</option>
-                <option value="GB">United Kingdom</option>
               </select>
             </form-field>
           </div>
-        </layout-stack>
       </fieldset>
 
       <!-- Payment Information -->
-      <fieldset>
+      <fieldset data-layout="stack" data-layout-gap="m">
         <legend>Payment</legend>
-        <layout-stack data-layout-gap="m">
           <form-field>
             <label for="card-number">Card number</label>
             <input type="text" id="card-number" name="card_number" required
@@ -88,192 +184,81 @@ const singleCode = `<body data-layout="cover" data-layout-min="100vh" data-layou
 
           <div data-layout="split" data-layout-gap="m">
             <form-field>
-              <label for="expiry">Expiration date</label>
+              <label for="expiry">Expiration</label>
               <input type="text" id="expiry" name="expiry" required
-                     autocomplete="cc-exp" placeholder="MM / YY"
-                     inputmode="numeric"/>
+                     autocomplete="cc-exp" placeholder="MM / YY"/>
             </form-field>
 
             <form-field>
               <label for="cvc">CVC</label>
               <input type="text" id="cvc" name="cvc" required
-                     autocomplete="cc-csc" placeholder="123"
-                     inputmode="numeric" maxlength="4"/>
+                     autocomplete="cc-csc" placeholder="123" maxlength="4"/>
             </form-field>
           </div>
 
-          <p class="security-note">
+          <p class="security-note" data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
             <icon-wc name="lock"></icon-wc>
             Your payment information is encrypted and secure.
           </p>
-        </layout-stack>
       </fieldset>
 
       <button type="submit">Place order</button>
     </form>
-  </layout-card>
-</body>`;
+  </main>
 
-const splitCode = `<section class="checkout-section">
-  <layout-cover data-layout-min="100vh" data-layout-padding="xl">
-    <layout-center data-layout-max="wide">
-      <layout-sidebar data-layout-gap="2xl" data-layout-sidebar-width="narrow" data-layout-content-min="50">
-        <!-- Checkout Form -->
-        <layout-card data-padding="l">
-          <form action="/checkout" method="POST" data-layout="stack" data-layout-gap="l">
-            <header data-layout="stack" data-layout-gap="s">
-              <h1>Checkout</h1>
-              <p>Complete your purchase by providing shipping and payment information.</p>
-            </header>
+  <!-- Order Summary Sidebar -->
+  <aside class="order-summary" data-layout="stack" data-layout-gap="l">
+    <h3>Order summary</h3>
 
-            <!-- Shipping Address -->
-            <fieldset>
-              <legend>Shipping address</legend>
-              <layout-stack data-layout-gap="m">
-                <form-field>
-                  <label for="email">Email address</label>
-                  <input type="email" id="email" name="email" required
-                         autocomplete="email" placeholder="you@example.com"/>
-                </form-field>
+    <div data-layout="stack" data-layout-gap="m">
+      <div data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="m">
+        <div data-layout="stack" data-layout-gap="2xs">
+          <span class="order-item-name">Premium Wireless Headphones</span>
+          <span class="order-item-details">Black, Qty: 1</span>
+        </div>
+        <span class="order-item-price">$249.00</span>
+      </div>
+      <!-- More items... -->
+    </div>
 
-                <form-field>
-                  <label for="full-name">Full name</label>
-                  <input type="text" id="full-name" name="full_name" required
-                         autocomplete="name" placeholder="John Doe"/>
-                </form-field>
+    <hr/>
 
-                <form-field>
-                  <label for="address">Street address</label>
-                  <input type="text" id="address" name="address" required
-                         autocomplete="street-address" placeholder="123 Main St"/>
-                </form-field>
+    <div data-layout="stack" data-layout-gap="s">
+      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+        <span>Subtotal</span>
+        <span>$327.98</span>
+      </div>
+      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+        <span>Shipping</span>
+        <span>$9.99</span>
+      </div>
+      <div class="summary-row" data-layout="cluster" data-layout-justify="between">
+        <span>Tax</span>
+        <span>$27.12</span>
+      </div>
+    </div>
 
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="city">City</label>
-                    <input type="text" id="city" name="city" required
-                           autocomplete="address-level2" placeholder="San Francisco"/>
-                  </form-field>
+    <hr/>
 
-                  <form-field>
-                    <label for="state">State</label>
-                    <input type="text" id="state" name="state" required
-                           autocomplete="address-level1" placeholder="CA"/>
-                  </form-field>
-                </div>
+    <div class="summary-row total" data-layout="cluster" data-layout-justify="between">
+      <span>Total</span>
+      <span>$365.09</span>
+    </div>
+  </aside>
+</div>`;
 
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="zip">ZIP code</label>
-                    <input type="text" id="zip" name="zip" required
-                           autocomplete="postal-code" placeholder="94102"/>
-                  </form-field>
+const stepsCode = `<body>
+  <main data-layout="center" data-layout-max="narrow">
+    <layout-card data-padding="l">
+      <div data-layout="stack" data-layout-gap="l">
+        <header data-layout="stack" data-layout-gap="s">
+          <h1>Checkout</h1>
+          <p>Step 1 of 3: Shipping</p>
+        </header>
 
-                  <form-field>
-                    <label for="country">Country</label>
-                    <select id="country" name="country" required>
-                      <option value="">Select country</option>
-                      <option value="US" selected>United States</option>
-                      <option value="CA">Canada</option>
-                    </select>
-                  </form-field>
-                </div>
-              </layout-stack>
-            </fieldset>
-
-            <!-- Payment Information -->
-            <fieldset>
-              <legend>Payment</legend>
-              <layout-stack data-layout-gap="m">
-                <form-field>
-                  <label for="card-number">Card number</label>
-                  <input type="text" id="card-number" name="card_number" required
-                         autocomplete="cc-number" placeholder="1234 5678 9012 3456"
-                         inputmode="numeric"/>
-                </form-field>
-
-                <div data-layout="split" data-layout-gap="m">
-                  <form-field>
-                    <label for="expiry">Expiration</label>
-                    <input type="text" id="expiry" name="expiry" required
-                           autocomplete="cc-exp" placeholder="MM / YY"/>
-                  </form-field>
-
-                  <form-field>
-                    <label for="cvc">CVC</label>
-                    <input type="text" id="cvc" name="cvc" required
-                           autocomplete="cc-csc" placeholder="123" maxlength="4"/>
-                  </form-field>
-                </div>
-
-                <p class="security-note">
-                  <icon-wc name="lock"></icon-wc>
-                  Your payment information is encrypted and secure.
-                </p>
-              </layout-stack>
-            </fieldset>
-
-            <button type="submit">Place order</button>
-          </form>
-        </layout-card>
-
-        <!-- Order Summary Sidebar -->
-        <aside class="order-summary">
-          <layout-stack data-layout-gap="l">
-            <h3>Order summary</h3>
-
-            <layout-stack data-layout-gap="m">
-              <div class="order-item">
-                <div class="order-item-info">
-                  <span class="order-item-name">Premium Wireless Headphones</span>
-                  <span class="order-item-details">Black, Qty: 1</span>
-                </div>
-                <span class="order-item-price">$249.00</span>
-              </div>
-              <!-- More items... -->
-            </layout-stack>
-
-            <hr class="summary-divider"/>
-
-            <layout-stack data-layout-gap="s">
-              <div class="summary-row">
-                <span>Subtotal</span>
-                <span>$327.98</span>
-              </div>
-              <div class="summary-row">
-                <span>Shipping</span>
-                <span>$9.99</span>
-              </div>
-              <div class="summary-row">
-                <span>Tax</span>
-                <span>$27.12</span>
-              </div>
-            </layout-stack>
-
-            <hr class="summary-divider"/>
-
-            <div class="summary-row total">
-              <span>Total</span>
-              <span>$365.09</span>
-            </div>
-          </layout-stack>
-        </aside>
-      </layout-sidebar>
-    </layout-center>
-  </layout-cover>
-</section>`;
-
-const stepsCode = `<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-layout-max="narrow" data-padding="l" data-layout-principal>
-    <div data-layout="stack" data-layout-gap="l">
-      <header data-layout="stack" data-layout-gap="s">
-        <h1>Checkout</h1>
-        <p>Step 1 of 3: Shipping</p>
-      </header>
-
-      <!-- Step Indicator -->
-      <nav class="step-indicator" aria-label="Checkout progress">
-        <layout-cluster data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
+        <!-- Step Indicator -->
+        <nav class="step-indicator" aria-label="Checkout progress"
+             data-layout="cluster" data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
           <div class="step active" aria-current="step">
             <span class="step-number">1</span>
             <span class="step-label">Shipping</span>
@@ -288,102 +273,95 @@ const stepsCode = `<body data-layout="cover" data-layout-min="100vh" data-layout
             <span class="step-number">3</span>
             <span class="step-label">Review</span>
           </div>
-        </layout-cluster>
-      </nav>
+        </nav>
 
-      <!-- Step 1: Shipping -->
-      <form action="/checkout/shipping" method="POST" data-layout="stack" data-layout-gap="l">
-        <fieldset>
-          <legend>Contact information</legend>
-          <layout-stack data-layout-gap="m">
-            <form-field>
-              <label for="email">Email address</label>
-              <input type="email" id="email" name="email" required
-                     autocomplete="email" placeholder="you@example.com"/>
-            </form-field>
-
-            <form-field>
-              <label for="phone">Phone number</label>
-              <input type="tel" id="phone" name="phone"
-                     autocomplete="tel" placeholder="(555) 123-4567"/>
-            </form-field>
-          </layout-stack>
-        </fieldset>
-
-        <fieldset>
-          <legend>Shipping address</legend>
-          <layout-stack data-layout-gap="m">
-            <div data-layout="split" data-layout-gap="m">
+        <!-- Step 1: Shipping -->
+        <form action="/checkout/shipping" method="POST" data-layout="stack" data-layout-gap="l">
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Contact information</legend>
               <form-field>
-                <label for="first-name">First name</label>
-                <input type="text" id="first-name" name="first_name" required
-                       autocomplete="given-name" placeholder="John"/>
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required
+                       autocomplete="email" placeholder="you@example.com"/>
               </form-field>
 
               <form-field>
-                <label for="last-name">Last name</label>
-                <input type="text" id="last-name" name="last_name" required
-                       autocomplete="family-name" placeholder="Doe"/>
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" name="phone"
+                       autocomplete="tel" placeholder="(555) 123-4567"/>
               </form-field>
-            </div>
+          </fieldset>
 
-            <form-field>
-              <label for="address">Street address</label>
-              <input type="text" id="address" name="address" required
-                     autocomplete="street-address" placeholder="123 Main St"/>
-            </form-field>
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Shipping address</legend>
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="first-name">First name</label>
+                  <input type="text" id="first-name" name="first_name" required
+                         autocomplete="given-name" placeholder="John"/>
+                </form-field>
 
-            <div data-layout="split" data-layout-gap="m">
-              <form-field>
-                <label for="city">City</label>
-                <input type="text" id="city" name="city" required
-                       autocomplete="address-level2" placeholder="San Francisco"/>
-              </form-field>
-
-              <form-field>
-                <label for="state">State</label>
-                <select id="state" name="state" required autocomplete="address-level1">
-                  <option value="">Select state</option>
-                  <option value="CA" selected>California</option>
-                </select>
-              </form-field>
-            </div>
-
-            <div data-layout="split" data-layout-gap="m">
-              <form-field>
-                <label for="zip">ZIP code</label>
-                <input type="text" id="zip" name="zip" required
-                       autocomplete="postal-code" placeholder="94102"/>
-              </form-field>
+                <form-field>
+                  <label for="last-name">Last name</label>
+                  <input type="text" id="last-name" name="last_name" required
+                         autocomplete="family-name" placeholder="Doe"/>
+                </form-field>
+              </div>
 
               <form-field>
-                <label for="country">Country</label>
-                <select id="country" name="country" required>
-                  <option value="US" selected>United States</option>
-                  <option value="CA">Canada</option>
-                </select>
+                <label for="address">Street address</label>
+                <input type="text" id="address" name="address" required
+                       autocomplete="street-address" placeholder="123 Main St"/>
               </form-field>
-            </div>
-          </layout-stack>
-        </fieldset>
 
-        <div data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
-          <a href="/cart" class="button secondary">Back to cart</a>
-          <button type="submit">Continue to payment</button>
-        </div>
-      </form>
-    </div>
-  </layout-card>
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="city">City</label>
+                  <input type="text" id="city" name="city" required
+                         autocomplete="address-level2" placeholder="San Francisco"/>
+                </form-field>
+
+                <form-field>
+                  <label for="state">State</label>
+                  <select id="state" name="state" required autocomplete="address-level1">
+                    <option value="">Select state</option>
+                    <option value="CA" selected>California</option>
+                  </select>
+                </form-field>
+              </div>
+
+              <div data-layout="split" data-layout-gap="m">
+                <form-field>
+                  <label for="zip">ZIP code</label>
+                  <input type="text" id="zip" name="zip" required
+                         autocomplete="postal-code" placeholder="94102"/>
+                </form-field>
+
+                <form-field>
+                  <label for="country">Country</label>
+                  <select id="country" name="country" required>
+                    <option value="US" selected>United States</option>
+                    <option value="CA">Canada</option>
+                  </select>
+                </form-field>
+              </div>
+          </fieldset>
+
+          <div data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+            <a href="/cart" class="button secondary">Back to cart</a>
+            <button type="submit">Continue to payment</button>
+          </div>
+        </form>
+      </div>
+    </layout-card>
+  </main>
 </body>`;
 
-const fieldsetStyles = `fieldset {
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
+const fieldsetStyles = `/* Override VB native fieldset padding and legend size */
+fieldset {
   padding: var(--size-l);
 }
 fieldset legend {
-  font-weight: var(--font-weight-semibold);
-  padding: 0 var(--size-s);
   font-size: var(--font-size-base);
 }`;
 
@@ -435,11 +413,8 @@ const orderSummaryStyles = `.order-summary h3 {
   font-size: var(--font-size-lg);
   margin: 0;
 }
-.order-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--size-m);
+.order-summary hr {
+  margin-block: 0;
 }
 .order-item-name {
   font-weight: var(--font-weight-medium);
@@ -448,13 +423,11 @@ const orderSummaryStyles = `.order-summary h3 {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
-.summary-divider {
-  border: 0;
-  border-top: var(--border-width-thin) solid var(--color-border);
+.order-item-price {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
 }
 .summary-row {
-  display: flex;
-  justify-content: space-between;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
@@ -480,8 +453,9 @@ const orderSummaryStyles = `.order-summary h3 {
       <ul>
         <li><code>&lt;fieldset&gt;</code> with <code>&lt;legend&gt;</code> for semantic grouping of related fields</li>
         <li><code>&lt;form-field&gt;</code> for consistent input styling and validation</li>
-        <li><code>&lt;layout-sidebar&gt;</code> for order summary placement</li>
+        <li><code>data-layout="sidebar"</code> with <code>&lt;main&gt;</code> and <code>&lt;aside&gt;</code> for order summary placement</li>
         <li><code>data-layout="split"</code> for side-by-side fields (city/state, expiry/CVC)</li>
+        <li><code>data-layout="cluster"</code> for inline elements (security note, summary rows)</li>
         <li><code>&lt;icon-wc name="lock"&gt;</code> for security indicators</li>
         <li>Proper <code>autocomplete</code> attributes for address and payment autofill</li>
         <li><code>inputmode="numeric"</code> for mobile keyboard optimization</li>
@@ -492,7 +466,7 @@ const orderSummaryStyles = `.order-summary h3 {
   <section>
     <h2>Single-Page Checkout</h2>
     <layout-text>
-      <p>A complete checkout form on a single page, using <code>&lt;fieldset&gt;</code> to group contact, shipping, and payment sections. Each section has a <code>&lt;legend&gt;</code> for clear visual hierarchy and accessibility. Ideal for simpler purchases or when you want to minimize steps.</p>
+      <p>A complete checkout form on a single page, using <code>&lt;fieldset&gt;</code> to group contact, shipping, and payment sections. Centered with <code>data-layout="center"</code> and wrapped in a <code>&lt;layout-card&gt;</code> for visual containment. Ideal for simpler purchases or when you want to minimize steps.</p>
     </layout-text>
 
     <browser-window
@@ -505,13 +479,16 @@ const orderSummaryStyles = `.order-summary h3 {
     <code-block language="html" label="checkout-single.html" show-lines>{singleCode}</code-block>
 
     <h3>Fieldset Styles</h3>
+    <layout-text>
+      <p>VB provides native <code>&lt;fieldset&gt;</code> styling (border, radius, padding, legend formatting). These overrides increase the padding and legend font size for a more spacious checkout layout:</p>
+    </layout-text>
     <code-block language="css" label="Fieldset customization">{fieldsetStyles}</code-block>
   </section>
 
   <section>
     <h2>Split Layout with Order Summary</h2>
     <layout-text>
-      <p>A two-column layout using <code>&lt;layout-sidebar&gt;</code> with the checkout form as the main content and an order summary in the sidebar. Keeps the order details visible throughout the checkout process, reducing cart abandonment.</p>
+      <p>A two-column layout using <code>data-layout="sidebar"</code> with the checkout form in a <code>&lt;main&gt;</code> and an order summary <code>&lt;aside&gt;</code>. The sidebar layout automatically recognizes these semantic elements for content vs sidebar sizing. Order items use <code>data-layout="cluster"</code> for label/price pairs and <code>data-layout="stack"</code> for item details. Native <code>&lt;hr&gt;</code> elements provide visual dividers.</p>
     </layout-text>
 
     <browser-window
@@ -524,13 +501,16 @@ const orderSummaryStyles = `.order-summary h3 {
     <code-block language="html" label="checkout-split.html" show-lines>{splitCode}</code-block>
 
     <h3>Order Summary Styles</h3>
+    <layout-text>
+      <p>Layout is handled entirely by <code>data-layout</code> attributes. These styles cover only visual concerns (font sizes, weights, and colors):</p>
+    </layout-text>
     <code-block language="css" label="Order summary styling">{orderSummaryStyles}</code-block>
   </section>
 
   <section>
     <h2>Multi-Step Checkout</h2>
     <layout-text>
-      <p>A wizard-style checkout flow with a visual step indicator. Breaks the checkout into Shipping, Payment, and Review steps. Uses <code>&lt;layout-cluster&gt;</code> for the progress indicator. Reduces cognitive load by focusing on one section at a time.</p>
+      <p>A wizard-style checkout flow with a visual step indicator. Breaks the checkout into Shipping, Payment, and Review steps. Uses <code>data-layout="cluster"</code> for the progress indicator. Reduces cognitive load by focusing on one section at a time.</p>
     </layout-text>
 
     <browser-window
@@ -572,9 +552,9 @@ const orderSummaryStyles = `.order-summary h3 {
           <td>City/State, Expiry/CVC pairs</td>
         </tr>
         <tr>
-          <td><code>layout-sidebar data-sidebar-width</code></td>
-          <td>Order summary width</td>
-          <td><code>narrow</code>, <code>default</code>, <code>wide</code></td>
+          <td><code>data-layout="sidebar"</code></td>
+          <td>Two-column layout with order summary</td>
+          <td>Uses <code>&lt;main&gt;</code> (content) + <code>&lt;aside&gt;</code> (sidebar)</td>
         </tr>
         <tr>
           <td><code>inputmode="numeric"</code></td>
