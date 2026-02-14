@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nested Grid Identity Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    /* Page-level styles for this demo */
+    body {
+      margin: 0;
+    }
+
+    /* Page header */
+    [data-page-layout] > header {
+      padding: var(--size-m) var(--size-l);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: var(--size-m);
+    }
+
+    [data-page-layout] > header .logo {
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+    }
+
+    [data-page-layout] > header .info {
+      margin-inline-start: auto;
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+
+    /* Page nav */
+    [data-page-layout] > nav {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-inline-end: 1px solid var(--color-border);
+    }
+
+    [data-page-layout] > nav a {
+      display: block;
+      padding: var(--size-xs) var(--size-s);
+      margin-block-end: var(--size-3xs);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: inherit;
+      font-size: var(--font-size-sm);
+    }
+
+    [data-page-layout] > nav a:hover {
+      background: var(--color-surface);
+    }
+
+    [data-page-layout] > nav a.active {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    [data-page-layout] > nav h3 {
+      font-size: var(--font-size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin: var(--size-m) 0 var(--size-xs);
+    }
+
+    [data-page-layout] > nav h3:first-child {
+      margin-block-start: 0;
+    }
+
+    /* Main content area with its own sidebar */
+    [data-page-layout] > main {
+      padding: var(--size-l);
+    }
+
+    /* Main-level nav (secondary sidebar) */
+    main[data-layout="sidebar-right"] > nav {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+      font-size: var(--font-size-s);
+      align-self: start;
+      position: sticky;
+      top: var(--size-m);
+    }
+
+    main[data-layout="sidebar-right"] > nav h4 {
+      margin: 0 0 var(--size-xs);
+      font-size: var(--font-size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    main[data-layout="sidebar-right"] > nav a {
+      display: block;
+      padding: var(--size-2xs) 0;
+      text-decoration: none;
+      color: var(--color-text-muted);
+    }
+
+    main[data-layout="sidebar-right"] > nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* Article with regions */
+    article[data-layout="regions"] {
+      max-inline-size: 65ch;
+    }
+
+    article[data-layout="regions"] > header {
+      border-block-end: 1px solid var(--color-border);
+      padding-block-end: var(--size-m);
+    }
+
+    article[data-layout="regions"] > header h1 {
+      margin: 0 0 var(--size-xs);
+    }
+
+    article[data-layout="regions"] > header .meta {
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+
+    article[data-layout="regions"] > footer {
+      border-block-start: 1px solid var(--color-border);
+      padding-block-start: var(--size-m);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+
+    /* Tier labels */
+    .tier-label {
+      display: inline-block;
+      padding: var(--size-3xs) var(--size-xs);
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+      margin-block-end: var(--size-xs);
+    }
+
+    /* Page footer */
+    [data-page-layout] > footer {
+      padding: var(--size-m) var(--size-l);
+      background: var(--color-surface-raised);
+      border-block-start: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* Info panel */
+    .info-panel {
+      padding: var(--size-m);
+      background: var(--color-primary-subtle);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-m);
+      margin-block: var(--size-l);
+      font-size: var(--font-size-sm);
+    }
+
+    .info-panel h3 {
+      margin: 0 0 var(--size-xs);
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+<!--
+  THREE-TIER GRID IDENTITY
+
+  Tier 1: data-page-layout="sidebar-left" on <body>
+    → header, nav, main, footer auto-register to body-* areas
+
+  Tier 2: data-layout="sidebar-right" on <main>
+    → article, aside auto-register to main-* areas
+
+  Tier 3: data-layout="regions" on <article>
+    → header, section, footer auto-register to header/content/footer areas
+-->
+<body data-page-layout="sidebar-left" data-layout-gap="none">
+
+  <!-- TIER 1: Page header (auto → body-header) -->
+  <header data-layout-sticky>
+    <span class="logo">DocSite</span>
+    <span>Three-Tier Grid Identity</span>
+    <span class="info">
+      <a href="/docs/examples/">&larr; Examples</a>
+    </span>
+  </header>
+
+  <!-- TIER 1: Page nav (auto → body-nav) -->
+  <nav data-layout-sticky>
+    <h3>Getting Started</h3>
+    <ul>
+      <li><a href="#">Quick Start</a></li>
+      <li><a href="#">Installation</a></li>
+      <li><a href="#">Tutorial</a></li>
+    </ul>
+    <h3>Concepts</h3>
+    <ul>
+      <li><a href="#" class="active">Grid Identity</a></li>
+      <li><a href="#">Semantic Layouts</a></li>
+      <li><a href="#">Design Tokens</a></li>
+    </ul>
+    <h3>API Reference</h3>
+    <ul>
+      <li><a href="#">Elements</a></li>
+      <li><a href="#">Attributes</a></li>
+      <li><a href="#">Themes</a></li>
+    </ul>
+  </nav>
+
+  <!-- TIER 2: Main with its own sidebar layout -->
+  <main data-layout="sidebar-right">
+
+    <!-- TIER 3: Article with regions -->
+    <article data-layout="regions" data-layout-gap="l">
+
+      <header>
+        <span class="tier-label">Tier 3: article regions</span>
+        <h1>Grid Identity System</h1>
+        <p class="meta">Last updated: January 2025 &middot; 8 min read</p>
+      </header>
+
+      <section>
+        <div class="info-panel">
+          <h3>Three Tiers Active</h3>
+          <p style="margin: 0;"><strong>Tier 1:</strong> <code>data-page-layout="sidebar-left"</code> on body &mdash; page header, nav, main, footer auto-placed.<br>
+          <strong>Tier 2:</strong> <code>data-layout="sidebar-right"</code> on main &mdash; article and aside (TOC) auto-placed via main-* areas.<br>
+          <strong>Tier 3:</strong> <code>data-layout="regions"</code> on article &mdash; header, section, footer auto-placed.</p>
+        </div>
+
+        <h2>The Concept</h2>
+        <p>The grid identity system implements the CSS Zen Garden principle: HTML declares structure, CSS assigns layout. Semantic elements auto-register to grid areas based on their type, with no classes or explicit placement needed.</p>
+        <p>This creates a clean separation of concerns across three tiers:</p>
+        <ul>
+          <li><strong>Page tier</strong> &mdash; <code>data-page-layout</code> controls the overall page structure</li>
+          <li><strong>Main tier</strong> &mdash; <code>main[data-layout]</code> creates nested layouts within the content area</li>
+          <li><strong>Component tier</strong> &mdash; <code>data-layout="regions"</code> structures individual components</li>
+        </ul>
+
+        <h2>How Identity Works</h2>
+        <p>When you add <code>data-page-layout="sidebar-left"</code> to the body, VB's CSS automatically assigns grid areas to direct children based on their element type:</p>
+        <ul>
+          <li><code>&lt;header&gt;</code> &#x2192; <code>body-header</code></li>
+          <li><code>&lt;nav&gt;</code> &#x2192; <code>body-nav</code></li>
+          <li><code>&lt;main&gt;</code> &#x2192; <code>body-main</code></li>
+          <li><code>&lt;footer&gt;</code> &#x2192; <code>body-footer</code></li>
+        </ul>
+        <p>The same principle applies at the main level. When <code>main[data-layout="sidebar-right"]</code> is set, its children register as:</p>
+        <ul>
+          <li><code>&lt;article&gt;</code> &#x2192; <code>main-article</code></li>
+          <li><code>&lt;aside&gt;</code> &#x2192; <code>main-aside</code></li>
+          <li><code>&lt;nav&gt;</code> &#x2192; <code>main-nav</code></li>
+        </ul>
+
+        <h2>Content-Aware Adaptation</h2>
+        <p>Layouts automatically adapt when elements are absent. If you remove the <code>&lt;aside&gt;</code> from this page's main area, the article would expand to fill the full width &mdash; no JavaScript needed. CSS <code>:has()</code> selectors make this possible.</p>
+      </section>
+
+      <footer>
+        <p style="margin: 0;">Published under the MIT License &middot; <a href="#">Edit this page</a></p>
+      </footer>
+    </article>
+
+    <!-- TIER 2: Main-level aside (auto → main-aside) -->
+    <aside>
+      <nav>
+        <h4>On This Page</h4>
+        <ul>
+          <li><a href="#">The Concept</a></li>
+          <li><a href="#">How Identity Works</a></li>
+          <li><a href="#">Content-Aware Adaptation</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </main>
+
+  <!-- TIER 1: Page footer (auto → body-footer) -->
+  <footer>
+    <p style="margin: 0;">Three-tier grid identity demo &middot; Built with Vanilla Breeze</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
