@@ -256,23 +256,13 @@ const stepsCode = `<body>
           <p>Step 1 of 3: Shipping</p>
         </header>
 
-        <!-- Step Indicator -->
-        <nav class="step-indicator" aria-label="Checkout progress"
-             data-layout="cluster" data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
-          <div class="step active" aria-current="step">
-            <span class="step-number">1</span>
-            <span class="step-label">Shipping</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <span class="step-label">Payment</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <span class="step-label">Review</span>
-          </div>
+        <!-- Step Indicator — uses nav.steps from VB core -->
+        <nav class="steps" aria-label="Checkout progress">
+          <ol>
+            <li aria-current="step">Shipping</li>
+            <li>Payment</li>
+            <li>Review</li>
+          </ol>
         </nav>
 
         <!-- Step 1: Shipping -->
@@ -365,49 +355,9 @@ fieldset legend {
   font-size: var(--font-size-base);
 }`;
 
-const stepIndicatorStyles = `.step-indicator {
-  --step-size: 2rem;
-}
-.step {
-  display: flex;
-  align-items: center;
-  gap: var(--space-s);
-  color: var(--color-text-muted);
-}
-.step-number {
-  width: var(--step-size);
-  height: var(--step-size);
-  border-radius: 50%;
-  background: var(--color-surface-raised);
-  border: 2px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: var(--text-s);
-}
-.step.active {
-  color: var(--color-text);
-}
-.step.active .step-number {
-  background: var(--color-interactive);
-  border-color: var(--color-interactive);
-  color: white;
-}
-.step.completed .step-number {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: white;
-}
-.step-connector {
-  flex: 1;
-  height: 2px;
-  background: var(--color-border);
-  min-width: 2rem;
-}
-.step-connector.completed {
-  background: var(--color-success);
-}`;
+const stepIndicatorNote = `/* No custom CSS needed — nav.steps is included in VB core.
+   Numbered circles, connectors, and checkmarks are automatic.
+   See the Steps pattern page for all variants and CSS variables. */`;
 
 const orderSummaryStyles = `.order-summary h3 {
   font-size: var(--font-size-lg);
@@ -522,8 +472,11 @@ const orderSummaryStyles = `.order-summary h3 {
 
     <code-block language="html" label="checkout-steps.html" show-lines>{stepsCode}</code-block>
 
-    <h3>Step Indicator Styles</h3>
-    <code-block language="css" label="Step indicator customization">{stepIndicatorStyles}</code-block>
+    <h3>Step Indicator</h3>
+    <layout-text>
+      <p>The step indicator uses <code>nav.steps</code> from VB core — no custom CSS needed. See the <a href="/docs/patterns/navigation/steps/">Steps pattern</a> for all variants and customization.</p>
+    </layout-text>
+    <code-block language="css" label="No custom CSS required">{stepIndicatorNote}</code-block>
   </section>
 
   <section>
@@ -622,6 +575,10 @@ const orderSummaryStyles = `.order-summary h3 {
   <section>
     <h2>Related</h2>
     <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/navigation/steps/" class="section-card">
+        <h3>Steps</h3>
+        <p>Step indicator CSS pattern used in multi-step checkout</p>
+      </a>
       <a href="/docs/patterns/forms/registration/" class="section-card">
         <h3>Registration</h3>
         <p>Sign up forms with multi-step flows</p>

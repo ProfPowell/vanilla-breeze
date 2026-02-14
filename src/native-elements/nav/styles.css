@@ -446,6 +446,200 @@ nav {
   }
 }
 
+/* --- Step Indicator --- */
+/* nav.steps: Multi-step progress indicator with numbered circles, */
+/* connectors, and state management via data attributes + ARIA.   */
+
+nav {
+  &.steps {
+    --_step-size: 2rem;
+    --_step-font: var(--font-size-s);
+    --_connector-height: 2px;
+    --_connector-color: var(--color-border);
+    --_connector-completed: var(--color-success);
+    --_future-bg: var(--color-surface-raised);
+    --_future-border: var(--color-border);
+    --_future-color: var(--color-text-muted);
+    --_active-bg: var(--color-interactive);
+    --_active-border: var(--color-interactive);
+    --_active-text: white;
+    --_completed-bg: var(--color-success);
+    --_completed-border: var(--color-success);
+    --_completed-text: white;
+  }
+
+  /* Size variants */
+  &.steps[data-size="sm"] {
+    --_step-size: 1.5rem;
+    --_step-font: var(--font-size-xs);
+  }
+
+  &.steps[data-size="lg"] {
+    --_step-size: 2.5rem;
+    --_step-font: var(--font-size-base);
+  }
+
+  /* Ordered list layout — default horizontal */
+  &.steps > ol {
+    display: flex;
+    align-items: center;
+    counter-reset: step;
+  }
+
+  /* Each step: flex container + CSS counter */
+  &.steps li {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    counter-increment: step;
+    font-size: var(--_step-font);
+    color: var(--_future-color);
+    gap: var(--size-xs);
+  }
+
+  &.steps li:last-child {
+    flex: 0 0 auto;
+  }
+
+  /* Circle — rendered via ::before with CSS counter */
+  &.steps li::before {
+    content: counter(step);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--_step-size);
+    height: var(--_step-size);
+    border-radius: 50%;
+    background: var(--_future-bg);
+    border: 2px solid var(--_future-border);
+    color: var(--_future-color);
+    font-weight: 600;
+    font-size: var(--_step-font);
+    line-height: 1;
+  }
+
+  /* Connector — rendered via ::after on all but last */
+  &.steps li:not(:last-child)::after {
+    content: "";
+    flex: 1;
+    height: var(--_connector-height);
+    background: var(--_connector-color);
+    min-width: 1.5rem;
+    order: 1;
+  }
+
+  /* Label text must appear between ::before and ::after */
+  &.steps li > * {
+    order: 0;
+  }
+
+  &.steps li::before {
+    order: -1;
+  }
+
+  /* Active step */
+  &.steps li[aria-current="step"] {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &.steps li[aria-current="step"]::before {
+    background: var(--_active-bg);
+    border-color: var(--_active-border);
+    color: var(--_active-text);
+  }
+
+  /* Completed step — checkmark replaces counter number */
+  &.steps li[data-completed]::before {
+    content: "\2713";
+    background: var(--_completed-bg);
+    border-color: var(--_completed-border);
+    color: var(--_completed-text);
+  }
+
+  &.steps li[data-completed] {
+    color: var(--color-text);
+  }
+
+  /* Completed connector turns success color */
+  &.steps li[data-completed]:not(:last-child)::after {
+    background: var(--_connector-completed);
+  }
+
+  /* Interactive: clickable completed steps */
+  &.steps li[data-completed] a {
+    color: var(--color-text);
+    text-decoration: none;
+    padding: var(--size-2xs) var(--size-xs);
+    border-radius: var(--radius-s);
+  }
+
+  &.steps li[data-completed] a:hover {
+    color: var(--color-interactive);
+    background: transparent;
+    text-decoration: underline;
+  }
+
+  &.steps li[data-completed] a:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: 2px;
+  }
+
+  /* ---- Labels-Below variant ---- */
+  &.steps[data-labels="below"] > ol {
+    align-items: flex-start;
+  }
+
+  &.steps[data-labels="below"] li {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    text-align: center;
+    gap: var(--size-2xs);
+  }
+
+  /* Connector repositioned: absolute at circle height */
+  &.steps[data-labels="below"] li:not(:last-child)::after {
+    position: absolute;
+    top: calc(var(--_step-size) / 2);
+    left: calc(50% + var(--_step-size) / 2 + var(--size-xs));
+    right: calc(-50% + var(--_step-size) / 2 + var(--size-xs));
+    width: auto;
+    min-width: 0;
+    flex: none;
+    order: 0;
+  }
+
+  /* ---- Vertical variant ---- */
+  &.steps[data-direction="vertical"] > ol {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &.steps[data-direction="vertical"] li {
+    flex: 0 0 auto;
+    position: relative;
+    padding-block-end: var(--size-m);
+  }
+
+  &.steps[data-direction="vertical"] li:last-child {
+    padding-block-end: 0;
+  }
+
+  /* Vertical connector: absolute line running downward */
+  &.steps[data-direction="vertical"] li:not(:last-child)::after {
+    position: absolute;
+    left: calc(var(--_step-size) / 2);
+    top: var(--_step-size);
+    width: var(--_connector-height);
+    height: calc(100% - var(--_step-size));
+    min-width: 0;
+    flex: none;
+    order: 0;
+  }
+}
+
 /* --- Pagination Bar Layout --- */
 .pagination-bar {
   display: grid;

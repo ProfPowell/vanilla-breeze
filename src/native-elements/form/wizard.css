@@ -1,0 +1,144 @@
+/**
+ * Wizard Forms - Multi-step form pattern
+ *
+ * Progressive enhancement for multi-step forms using semantic HTML.
+ * Works as a standard form without JavaScript enhancement.
+ *
+ * Markup pattern:
+ * <form data-wizard>
+ *   <progress data-wizard-progress max="3" value="1"></progress>
+ *   <fieldset data-wizard-step><legend>Step 1</legend>...</fieldset>
+ *   <fieldset data-wizard-step><legend>Step 2</legend>...</fieldset>
+ *   <nav data-wizard-nav>
+ *     <button type="button" data-wizard-prev>Previous</button>
+ *     <button type="button" data-wizard-next>Next</button>
+ *     <button type="submit">Submit</button>
+ *   </nav>
+ * </form>
+ */
+
+/* ============================================
+   BASE WIZARD STYLES
+   Applied regardless of enhancement state
+   ============================================ */
+
+form[data-wizard] {
+  --wizard-gap: var(--size-m, 1rem);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--wizard-gap);
+}
+
+/* ============================================
+   ENHANCED STATE
+   Applied when JavaScript has initialized
+   ============================================ */
+
+/* Hide inactive steps when wizard is enhanced */
+form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step] {
+  display: none;
+}
+
+form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step][data-wizard-active] {
+  display: block;
+}
+
+/* Hide conditional steps that don't match */
+form[data-wizard][data-wizard-enhanced] fieldset[data-wizard-step][data-wizard-hidden] {
+  display: none !important;
+}
+
+/* ============================================
+   PROGRESS INDICATOR
+   ============================================ */
+
+form[data-wizard] [data-wizard-progress] {
+  width: 100%;
+  height: var(--size-s, 0.5rem);
+  border-radius: var(--radius-s, 0.25rem);
+  appearance: none;
+  background: var(--color-surface-alt, #f5f5f5);
+  border: none;
+}
+
+form[data-wizard] [data-wizard-progress]::-webkit-progress-bar {
+  background: var(--color-surface-alt, #f5f5f5);
+  border-radius: var(--radius-s, 0.25rem);
+}
+
+form[data-wizard] [data-wizard-progress]::-webkit-progress-value {
+  background: var(--color-primary, #3b82f6);
+  border-radius: var(--radius-s, 0.25rem);
+  transition: width 0.3s ease;
+}
+
+form[data-wizard] [data-wizard-progress]::-moz-progress-bar {
+  background: var(--color-primary, #3b82f6);
+  border-radius: var(--radius-s, 0.25rem);
+}
+
+/* Step counter using CSS attr() - decorative enhancement */
+form[data-wizard][data-wizard-enhanced]::before {
+  content: "Step " attr(data-wizard-current) " of " attr(data-wizard-total);
+  font-size: var(--size-s, 0.875rem);
+  color: var(--color-text-muted, #6b7280);
+  text-align: center;
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+[data-wizard-nav] {
+  display: flex;
+  gap: var(--size-s, 0.5rem);
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-block-start: var(--size-m, 1rem);
+  border-block-start: 1px solid var(--color-border, #e5e5e5);
+}
+
+/* Hide prev button on first step */
+form[data-wizard][data-wizard-enhanced][data-wizard-current="1"] [data-wizard-prev] {
+  visibility: hidden;
+}
+
+/* Hide next button on last step, show submit */
+form[data-wizard][data-wizard-enhanced] [data-wizard-nav] [type="submit"] {
+  display: none;
+}
+
+form[data-wizard][data-wizard-enhanced][data-wizard-last] [data-wizard-nav] [type="submit"] {
+  display: inline-flex;
+}
+
+form[data-wizard][data-wizard-enhanced][data-wizard-last] [data-wizard-nav] [data-wizard-next] {
+  display: none;
+}
+
+/* ============================================
+   SCREEN READER STATUS
+   ============================================ */
+
+[data-wizard-status] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  form[data-wizard] [data-wizard-progress]::-webkit-progress-value {
+    transition: none;
+  }
+}

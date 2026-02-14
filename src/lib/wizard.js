@@ -30,6 +30,9 @@ class WizardController {
   /** @type {HTMLElement|null} */
   #statusRegion = null;
 
+  /** @type {HTMLElement|null} */
+  #stepNav = null;
+
   /**
    * @param {HTMLFormElement} form - Form element with data-wizard attribute
    */
@@ -58,6 +61,9 @@ class WizardController {
 
     // Find progress element
     this.#progress = this.#form.querySelector('[data-wizard-progress]');
+
+    // Discover nav.steps element for visual step indicator sync
+    this.#discoverStepNav();
 
     // Create status region for screen readers
     this.#createStatusRegion();
@@ -103,6 +109,71 @@ class WizardController {
     this.#statusRegion.setAttribute('aria-atomic', 'true');
     this.#statusRegion.setAttribute('data-wizard-status', '');
     this.#form.prepend(this.#statusRegion);
+  }
+
+  /**
+   * Discover a nav.steps element to sync with step changes
+   */
+  #discoverStepNav() {
+    // 1. Explicit selector via data-wizard-steps attribute
+    const stepsSelector = this.#form.getAttribute('data-wizard-steps');
+    if (stepsSelector) {
+      this.#stepNav = document.querySelector(stepsSelector);
+      return;
+    }
+
+    // 2. Fallback: nav.steps inside the form
+    this.#stepNav = this.#form.querySelector('nav.steps');
+  }
+
+  /**
+   * Sync nav.steps <li> elements with current wizard state
+   */
+  #syncStepNav() {
+    if (!this.#stepNav) return;
+
+    const navItems = Array.from(this.#stepNav.querySelectorAll('ol > li'));
+    const visibleSteps = this.#getVisibleSteps();
+
+    // Map each step fieldset to its corresponding nav li by index
+    let navIndex = 0;
+    for (let i = 0; i < this.#steps.length; i++) {
+      const step = this.#steps[i];
+      const navItem = navItems[navIndex];
+      if (!navItem) break;
+
+      // Sync hidden conditional steps
+      if (step.hasAttribute('data-wizard-hidden')) {
+        navItem.setAttribute('hidden', '');
+        continue;
+      } else {
+        navItem.removeAttribute('hidden');
+      }
+
+      // Determine step state relative to visible index
+      const visibleIdx = visibleSteps.indexOf(step);
+
+      // Clear previous state
+      navItem.removeAttribute('data-completed');
+      navItem.removeAttribute('aria-current');
+
+      if (visibleIdx < this.#currentIndex) {
+        // Completed
+        navItem.setAttribute('data-completed', '');
+        const link = navItem.querySelector('a');
+        if (link) {
+          const legend = step.querySelector('legend');
+          const stepName = legend?.textContent || `Step ${visibleIdx + 1}`;
+          link.setAttribute('aria-label', `Go to ${stepName} (completed)`);
+        }
+      } else if (visibleIdx === this.#currentIndex) {
+        // Active
+        navItem.setAttribute('aria-current', 'step');
+      }
+      // Future steps: no attributes needed (default state)
+
+      navIndex++;
+    }
   }
 
   /**
@@ -172,6 +243,9 @@ class WizardController {
 
     // Sync progress element
     this.#syncProgress();
+
+    // Sync nav.steps indicator
+    this.#syncStepNav();
 
     // Update URL hash
     this.#syncURL();

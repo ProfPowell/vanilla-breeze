@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Step Indicator - Interactive</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    .demo-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xl);
+    }
+    h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-start: var(--size-m);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-stack">
+    <section>
+      <h3>Interactive - clickable completed steps</h3>
+      <nav class="steps" id="demo-steps" aria-label="Registration progress">
+        <ol>
+          <li data-completed><a href="#account">Account</a></li>
+          <li data-completed><a href="#profile">Profile</a></li>
+          <li aria-current="step">Preferences</li>
+          <li>Confirm</li>
+        </ol>
+      </nav>
+
+      <div class="controls">
+        <button type="button" class="secondary" id="prev-btn">Previous</button>
+        <button type="button" id="next-btn">Next</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Size variants</h3>
+      <nav class="steps" data-size="sm" aria-label="Small steps">
+        <ol>
+          <li data-completed>Step 1</li>
+          <li aria-current="step">Step 2</li>
+          <li>Step 3</li>
+        </ol>
+      </nav>
+
+      <div style="margin-block-start: var(--size-l);">
+        <nav class="steps" data-size="lg" aria-label="Large steps">
+          <ol>
+            <li data-completed>Step 1</li>
+            <li aria-current="step">Step 2</li>
+            <li>Step 3</li>
+          </ol>
+        </nav>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const nav = document.getElementById('demo-steps');
+    const items = Array.from(nav.querySelectorAll('ol > li'));
+    let current = 2; // 0-indexed, starts on step 3
+
+    function updateSteps() {
+      items.forEach((li, i) => {
+        li.removeAttribute('data-completed');
+        li.removeAttribute('aria-current');
+
+        // Remove existing link or restore text
+        const a = li.querySelector('a');
+
+        if (i < current) {
+          li.setAttribute('data-completed', '');
+          if (!a) {
+            const text = li.textContent;
+            li.textContent = '';
+            const link = document.createElement('a');
+            link.href = '#step-' + (i + 1);
+            link.textContent = text;
+            li.appendChild(link);
+          }
+        } else if (i === current) {
+          li.setAttribute('aria-current', 'step');
+          if (a) {
+            li.textContent = a.textContent;
+          }
+        } else {
+          if (a) {
+            li.textContent = a.textContent;
+          }
+        }
+      });
+    }
+
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      if (current > 0) {
+        current--;
+        updateSteps();
+      }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      if (current < items.length - 1) {
+        current++;
+        updateSteps();
+      }
+    });
+  </script>
+</body>
+</html>

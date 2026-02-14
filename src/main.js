@@ -5,6 +5,7 @@ import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
 import './lib/debug-content-model.js';
+import './lib/wizard.js';
 import { initFormValidation } from './lib/form-validation.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 
