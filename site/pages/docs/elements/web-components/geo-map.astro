@@ -75,6 +75,32 @@ geo-map {
   --geo-map-caption-padding: 0.75rem 1rem;
 }`;
 
+const interactiveCode = `<!-- Default: click to activate (hover to see button) -->
+<geo-map lat="40.7484" lng="-73.9857" zoom="15">
+  <address>Empire State Building, New York</address>
+</geo-map>
+
+<!-- Eager: activates immediately on load -->
+<geo-map lat="48.8584" lng="2.2945" zoom="14" interactive="eager"></geo-map>
+
+<!-- No interactive button -->
+<geo-map lat="51.5007" lng="-0.1246" zoom="15" interactive="none"></geo-map>
+
+<!-- Static only: prevents all interaction -->
+<geo-map lat="35.6762" lng="139.6503" zoom="13" static-only></geo-map>`;
+
+const interactiveEventsCode = `const map = document.querySelector('geo-map');
+
+map.addEventListener('geo-map:activate', (e) => {
+  console.log('Interactive mode started:', e.detail);
+  // { lat: 40.7484, lng: -73.9857, zoom: 15 }
+});
+
+map.addEventListener('geo-map:move', (e) => {
+  console.log('Map moved:', e.detail);
+  // { lat: 40.7501, lng: -73.9823, zoom: 16 }
+});`;
+
 const eventsCode = `const map = document.querySelector('geo-map');
 
 map.addEventListener('geo-map:ready', (e) => {
@@ -349,6 +375,11 @@ const contactCode = `<section>
           <td>Marker styling</td>
         </tr>
         <tr>
+          <td><code>activate</code></td>
+          <td>Button overlay</td>
+          <td>Click-to-interact trigger (hidden when static-only)</td>
+        </tr>
+        <tr>
           <td><code>caption</code></td>
           <td>Slot wrapper</td>
           <td>Address/label display</td>
@@ -357,6 +388,96 @@ const contactCode = `<section>
           <td><code>attribution</code></td>
           <td>OSM credit</td>
           <td>Required attribution link</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Interactive Mode</h2>
+    <layout-text>
+      <p>By default, hovering over the map reveals a "Click to interact" button. Clicking activates pan and zoom &mdash; no external libraries loaded. The interactive layer is lazy-loaded on first activation.</p>
+      <p>Use <code>interactive="eager"</code> to activate immediately, <code>interactive="none"</code> to hide the button, or <code>static-only</code> to fully prevent interaction.</p>
+    </layout-text>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <div>
+          <strong>Click to activate (default)</strong>
+          <geo-map lat="40.7484" lng="-73.9857" zoom="15" style="--geo-map-height: 250px;">
+            <address>Hover, then click to interact. Drag to pan, scroll to zoom, Escape to exit.</address>
+          </geo-map>
+        </div>
+        <div>
+          <strong>Static only</strong>
+          <geo-map lat="35.6762" lng="139.6503" zoom="13" static-only provider="carto-light" style="--geo-map-height: 200px;">
+            <address>Tokyo &mdash; no interaction</address>
+          </geo-map>
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Interactive variants">{interactiveCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Interactive Attributes</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>interactive</code></td>
+          <td>String</td>
+          <td><code>click</code></td>
+          <td>Activation mode: <code>click</code> (show button on hover), <code>eager</code> (activate immediately), <code>none</code> (no button)</td>
+        </tr>
+        <tr>
+          <td><code>static-only</code></td>
+          <td>Boolean</td>
+          <td><code>false</code></td>
+          <td>Prevent interactive activation entirely. No activate button rendered.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <layout-text>
+      <p>When interactive mode is active, the following keyboard controls are available:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow keys</kbd></td>
+          <td>Pan the map (up, down, left, right)</td>
+        </tr>
+        <tr>
+          <td><kbd>+</kbd> / <kbd>=</kbd></td>
+          <td>Zoom in</td>
+        </tr>
+        <tr>
+          <td><kbd>-</kbd></td>
+          <td>Zoom out</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Exit interactive mode, return to static view</td>
         </tr>
       </tbody>
     </table>
@@ -380,6 +501,16 @@ const contactCode = `<section>
           <td>Fired after tiles finish loading</td>
         </tr>
         <tr>
+          <td><code>geo-map:activate</code></td>
+          <td><code>{'{ lat, lng, zoom }'}</code></td>
+          <td>Fired when interactive mode is activated</td>
+        </tr>
+        <tr>
+          <td><code>geo-map:move</code></td>
+          <td><code>{'{ lat, lng, zoom }'}</code></td>
+          <td>Fired after pan or zoom in interactive mode</td>
+        </tr>
+        <tr>
           <td><code>geo-map:error</code></td>
           <td><code>{'{ message }'}</code></td>
           <td>Fired on tile load failure or missing coordinates</td>
@@ -388,6 +519,7 @@ const contactCode = `<section>
     </table>
 
     <code-block language="javascript" show-lines label="Listening to events">{eventsCode}</code-block>
+    <code-block language="javascript" show-lines label="Interactive events">{interactiveEventsCode}</code-block>
   </section>
 
   <section>

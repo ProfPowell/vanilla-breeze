@@ -39,6 +39,23 @@ export function latLngToTile(lat, lng, zoom) {
  * @param {number} y - Tile Y coordinate
  * @returns {string} Tile image URL
  */
+/**
+ * Convert world pixel coordinates back to lat/lng.
+ * Inverse of the Mercator projection used by OSM tiles.
+ *
+ * @param {number} worldX - World pixel X at the given zoom
+ * @param {number} worldY - World pixel Y at the given zoom
+ * @param {number} zoom - Zoom level
+ * @returns {{ lat: number, lng: number }}
+ */
+export function worldPixelToLatLng(worldX, worldY, zoom) {
+    const worldSize = 256 * Math.pow(2, zoom);
+    const lng = (worldX / worldSize) * 360 - 180;
+    const latRad = Math.atan(Math.sinh(Math.PI * (1 - (2 * worldY) / worldSize)));
+    const lat = (latRad * 180) / Math.PI;
+    return { lat, lng };
+}
+
 export function getTileUrl(provider, z, x, y) {
     switch (provider) {
         case 'carto-light':

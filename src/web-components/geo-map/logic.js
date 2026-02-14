@@ -34,8 +34,12 @@ function markerSvg(color) {
  */
 class GeoMap extends HTMLElement {
     static get observedAttributes() {
-        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider'];
+        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'interactive', 'static-only'];
     }
+
+    /** @type {import('./interact.js').MapInteraction|null} */
+    #interaction = null;
+    #preconnected = false;
 
     constructor() {
         super();
@@ -67,15 +71,38 @@ class GeoMap extends HTMLElement {
         return this.getAttribute('provider') || 'osm';
     }
 
+    get interactive() {
+        const val = this.getAttribute('interactive');
+        if (val === 'eager' || val === 'none') return val;
+        return 'click';
+    }
+
+    get staticOnly() {
+        return this.hasAttribute('static-only');
+    }
+
     connectedCallback() {
         this.render();
         this.loadTiles();
+        this.#wireActivation();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue !== newValue && this.isConnected) {
+            // If interactive mode is active and a core attr changed, deactivate first
+            if (this.#interaction) {
+                this.#deactivate();
+            }
             this.render();
             this.loadTiles();
+            this.#wireActivation();
+        }
+    }
+
+    disconnectedCallback() {
+        if (this.#interaction) {
+            this.#interaction.destroy();
+            this.#interaction = null;
         }
     }
 
@@ -103,11 +130,17 @@ class GeoMap extends HTMLElement {
             ? `<div part="marker" aria-hidden="true">${markerSvg(this.markerColor)}</div>`
             : '';
 
+        const showActivate = hasCoords && this.interactive !== 'none' && !this.staticOnly;
+        const activateHtml = showActivate
+            ? `<button part="activate" aria-label="Activate interactive map" tabindex="0">Click to interact</button>`
+            : '';
+
         this.shadowRoot.innerHTML = `
             <style>${styles}</style>
             <div part="container">
                 <div part="tiles" role="img" aria-label="${ariaLabel}"></div>
                 ${markerHtml}
+                ${activateHtml}
                 <div part="caption"><slot></slot></div>
                 <div part="attribution">
                     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap</a>
@@ -195,6 +228,94 @@ class GeoMap extends HTMLElement {
                 tilesEl.appendChild(img);
             }
         }
+    }
+
+    /**
+     * Wire up the activate button with hover preconnect and click/eager activation.
+     */
+    #wireActivation() {
+        const btn = this.shadowRoot.querySelector('[part="activate"]');
+        if (!btn) return;
+
+        btn.addEventListener('mouseenter', () => this.#preconnect(), { once: true });
+        btn.addEventListener('focus', () => this.#preconnect(), { once: true });
+        btn.addEventListener('click', () => this.#activate());
+
+        if (this.interactive === 'eager') {
+            // Activate on next frame so tiles render first
+            requestAnimationFrame(() => this.#activate());
+        }
+    }
+
+    /**
+     * Inject a preconnect link for the tile server on hover/focus.
+     */
+    #preconnect() {
+        if (this.#preconnected) return;
+        this.#preconnected = true;
+
+        const provider = this.provider;
+        let origin;
+        if (provider === 'carto-light' || provider === 'carto-dark') {
+            origin = 'https://basemaps.cartocdn.com';
+        } else {
+            origin = 'https://tile.openstreetmap.org';
+        }
+
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = origin;
+        link.crossOrigin = '';
+        document.head.appendChild(link);
+    }
+
+    /**
+     * Activate interactive mode — lazy-load interact.js and hand off control.
+     */
+    async #activate() {
+        if (this.#interaction) return;
+        const lat = this.lat;
+        const lng = this.lng;
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const { MapInteraction } = await import('./interact.js');
+
+        // Make the host focusable for keyboard events
+        if (!this.hasAttribute('tabindex')) {
+            this.setAttribute('tabindex', '0');
+        }
+        this.focus();
+
+        this.setAttribute('data-interactive-active', '');
+        this.#interaction = new MapInteraction({
+            shadow: this.shadowRoot,
+            host: this,
+            lat,
+            lng,
+            zoom: this.zoom,
+            provider: this.provider,
+            onDeactivate: () => this.#deactivate(),
+        });
+
+        this.dispatchEvent(new CustomEvent('geo-map:activate', {
+            bubbles: true,
+            detail: { lat, lng, zoom: this.zoom }
+        }));
+    }
+
+    /**
+     * Deactivate interactive mode — destroy interaction, re-render static view.
+     */
+    #deactivate() {
+        if (!this.#interaction) return;
+        this.#interaction.destroy();
+        this.#interaction = null;
+        this.removeAttribute('data-interactive-active');
+
+        // Re-render static view
+        this.render();
+        this.loadTiles();
+        this.#wireActivation();
     }
 
     /**

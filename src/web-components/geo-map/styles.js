@@ -100,6 +100,66 @@ const styles = `
   top: 0;
 }
 
+/* Activate button — full overlay, appears on hover */
+[part="activate"] {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+[part="activate"]:hover,
+[part="activate"]:focus-visible {
+  opacity: 1;
+}
+
+[part="activate"]:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+/* Interactive mode — tiles become absolutely positioned for panning */
+:host([data-interactive-active]) [part="tiles"] {
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+:host([data-interactive-active]) [part="tiles"] img {
+  position: absolute;
+}
+
+:host([data-interactive-active]) [part="tiles"][data-dragging] {
+  cursor: grabbing;
+}
+
+:host([data-interactive-active]) [part="activate"] {
+  display: none;
+}
+
+/* Static-only — hide activate button entirely */
+:host([static-only]) [part="activate"] {
+  display: none;
+}
+
+/* Reduced motion — disable transitions */
+@media (prefers-reduced-motion: reduce) {
+  [part="activate"] {
+    transition: none;
+  }
+}
+
 /* Error state */
 [part="container"][data-state="error"] [part="tiles"] {
   display: none;
