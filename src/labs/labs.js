@@ -5,9 +5,6 @@
  * These features are in development and may change or be removed.
  */
 
-// Wizard Forms
-export * from '../lib/wizard.js';
-
 /**
  * Sound Effects Manager
  *

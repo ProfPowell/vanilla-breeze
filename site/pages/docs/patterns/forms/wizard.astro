@@ -193,6 +193,151 @@ const progressCode = `<body data-layout="cover" data-layout-min="100vh" data-lay
 const stepIndicatorNote = `/* No custom CSS needed — nav.steps is included in VB core.
    See the Steps pattern page for all variants and CSS variables. */`;
 
+const basicWizardCode = `<form data-wizard>
+  <progress data-wizard-progress max="3" value="1"></progress>
+
+  <fieldset data-wizard-step>
+    <legend>Personal Information</legend>
+    <!-- form fields -->
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Account Details</legend>
+    <!-- form fields -->
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Confirmation</legend>
+    <!-- form fields -->
+  </fieldset>
+
+  <nav data-wizard-nav>
+    <button type="button" data-wizard-prev>Previous</button>
+    <button type="button" data-wizard-next>Next</button>
+    <button type="submit">Submit</button>
+  </nav>
+</form>`;
+
+const conditionalStepCode = `<form data-wizard>
+  <fieldset data-wizard-step>
+    <legend>Account Type</legend>
+    <label>
+      <input type="radio" name="accountType" value="personal" checked>
+      Personal Account
+    </label>
+    <label>
+      <input type="radio" name="accountType" value="business">
+      Business Account
+    </label>
+  </fieldset>
+
+  <!-- Only shown when "business" is selected -->
+  <fieldset data-wizard-step data-wizard-if="accountType:business">
+    <legend>Business Information</legend>
+    <form-field>
+      <label for="company">Company Name</label>
+      <input type="text" id="company" name="company" required>
+    </form-field>
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Contact Information</legend>
+    <!-- always shown -->
+  </fieldset>
+
+  <nav data-wizard-nav>
+    <button type="button" data-wizard-prev>Previous</button>
+    <button type="button" data-wizard-next>Next</button>
+    <button type="submit">Submit</button>
+  </nav>
+</form>`;
+
+const optionalStepCode = `<form data-wizard>
+  <fieldset data-wizard-step>
+    <legend>Required Info</legend>
+    <form-field>
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required>
+    </form-field>
+  </fieldset>
+
+  <!-- Can be skipped without validation -->
+  <fieldset data-wizard-step data-wizard-optional>
+    <legend>Additional Details (Optional)</legend>
+    <form-field>
+      <label for="bio">Bio</label>
+      <textarea id="bio" name="bio" rows="3"></textarea>
+    </form-field>
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Done</legend>
+    <p>Click Submit to finish.</p>
+  </fieldset>
+
+  <nav data-wizard-nav>
+    <button type="button" data-wizard-prev>Previous</button>
+    <button type="button" data-wizard-next>Next</button>
+    <button type="submit">Submit</button>
+  </nav>
+</form>`;
+
+const stepsIntegrationCode = `<form data-wizard data-wizard-steps="#checkout-steps">
+  <nav class="steps" id="checkout-steps" aria-label="Checkout progress">
+    <ol>
+      <li>Shipping</li>
+      <li>Payment</li>
+      <li>Review</li>
+    </ol>
+  </nav>
+
+  <progress data-wizard-progress max="3" value="1"></progress>
+
+  <fieldset data-wizard-step>
+    <legend>Shipping</legend>
+    <!-- shipping fields -->
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Payment</legend>
+    <!-- payment fields -->
+  </fieldset>
+
+  <fieldset data-wizard-step>
+    <legend>Review</legend>
+    <!-- review content -->
+  </fieldset>
+
+  <nav data-wizard-nav>
+    <button type="button" data-wizard-prev>Previous</button>
+    <button type="button" data-wizard-next>Next</button>
+    <button type="submit">Place Order</button>
+  </nav>
+</form>`;
+
+const apiUsageCode = `// Get the form
+const form = document.querySelector('#my-wizard');
+
+// Navigation methods
+form.wizardNext();      // Go to next step (validates first)
+form.wizardPrev();      // Go to previous step
+form.wizardGoTo(2);     // Jump to step index 2 (zero-based)
+form.wizardReset();     // Reset to first step
+
+// Access the controller
+const ctrl = form.wizardController;
+console.log(ctrl.currentStep);  // Current step index
+console.log(ctrl.totalSteps);   // Total visible steps
+
+// Listen for events
+form.addEventListener('wizard:stepchange', (e) => {
+  console.log(\`Moved from step \${e.detail.from} to \${e.detail.to}\`);
+});
+
+form.addEventListener('wizard:complete', () => {
+  console.log('Wizard completed!');
+});`;
+
 const tabStyles = `.wizard-tabs {
   border-bottom: var(--border-width-thin) solid var(--color-border);
 }
@@ -306,17 +451,17 @@ const progressStyles = `.wizard-progress {
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Wizard patterns break complex forms into manageable steps, reducing cognitive load and improving completion rates. These patterns provide clear progress indication and allow users to navigate between completed steps.</p>
+      <p>Wizard patterns break complex forms into manageable steps, reducing cognitive load and improving completion rates. VB includes <code>wizard.js</code>, a production-ready controller that transforms standard HTML forms into multi-step wizards with progressive enhancement — forms still work without JavaScript.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Clear progress indication showing current position and total steps</li>
-        <li>Visual distinction between completed, active, and future steps</li>
-        <li>Navigation buttons (Back/Next) with proper disabled states</li>
-        <li>Clickable completed steps for easy review and editing</li>
-        <li><code>nav.steps</code> — VB core step indicator (CSS counters, auto connectors, checkmarks)</li>
-        <li><code>wizard.js</code> — auto-syncs <code>nav.steps</code> state as the user navigates steps</li>
-        <li><code>aria-current="step"</code> for accessibility</li>
-        <li><code>role="progressbar"</code> with proper ARIA attributes</li>
+        <li><code>wizard.js</code> controller — auto-initializes on <code>form[data-wizard]</code>, handles step navigation, validation, and progress</li>
+        <li><code>nav.steps</code> integration — auto-syncs step indicator state as the user navigates</li>
+        <li>Conditional steps (<code>data-wizard-if</code>) — show/hide steps based on user input</li>
+        <li>Optional steps (<code>data-wizard-optional</code>) — skip without validation</li>
+        <li>Programmatic API — <code>wizardNext()</code>, <code>wizardPrev()</code>, <code>wizardGoTo()</code>, <code>wizardReset()</code></li>
+        <li>Custom events — <code>wizard:stepchange</code>, <code>wizard:complete</code>, <code>wizard:reset</code></li>
+        <li>Visual patterns — numbered step indicators, tab navigation, and progress bars</li>
+        <li>Accessibility — <code>aria-current="step"</code>, live regions, keyboard navigation</li>
       </ul>
     </layout-text>
   </section>
@@ -379,6 +524,164 @@ const progressStyles = `.wizard-progress {
 
     <h3>Progress Bar Styles</h3>
     <code-block language="css" label="Progress bar styles">{progressStyles}</code-block>
+  </section>
+
+  <section>
+    <h2>wizard.js Controller</h2>
+    <layout-text>
+      <p>VB includes <code>wizard.js</code>, a lightweight controller that enhances <code>form[data-wizard]</code> elements with step navigation, validation, conditional steps, and progress tracking. It works as a standard form without JavaScript (progressive enhancement).</p>
+    </layout-text>
+
+    <h3>Basic Setup</h3>
+    <layout-text>
+      <p>Add <code>data-wizard</code> to a form. Each <code>&lt;fieldset data-wizard-step&gt;</code> becomes a step. The controller auto-initializes on <code>DOMContentLoaded</code>.</p>
+    </layout-text>
+    <code-block language="html" label="Basic wizard form">{basicWizardCode}</code-block>
+
+    <h3>Conditional Steps</h3>
+    <layout-text>
+      <p>Use <code>data-wizard-if</code> to show a step only when a form field matches a value. The step is hidden when the condition is not met and the progress bar adjusts automatically.</p>
+    </layout-text>
+    <code-block language="html" label="Conditional step">{conditionalStepCode}</code-block>
+
+    <h3>Optional Steps</h3>
+    <layout-text>
+      <p>Use <code>data-wizard-optional</code> to mark a step that can be skipped. The "Next" button advances without requiring validation on optional steps.</p>
+    </layout-text>
+    <code-block language="html" label="Optional step">{optionalStepCode}</code-block>
+
+    <h3>nav.steps Integration</h3>
+    <layout-text>
+      <p>When a <code>nav.steps</code> element is found inside the form (or referenced via <code>data-wizard-steps="#id"</code>), wizard.js automatically syncs step states — setting <code>data-completed</code> on past steps, <code>aria-current="step"</code> on the current step, and hiding <code>&lt;li&gt;</code> elements for conditional steps that don't apply.</p>
+    </layout-text>
+    <code-block language="html" label="Wizard + nav.steps integration">{stepsIntegrationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Markup Reference</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Element</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-wizard</code></td>
+          <td><code>&lt;form&gt;</code></td>
+          <td>Enables the wizard controller on the form</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-step</code></td>
+          <td><code>&lt;fieldset&gt;</code></td>
+          <td>Marks a fieldset as a wizard step</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-progress</code></td>
+          <td><code>&lt;progress&gt;</code></td>
+          <td>Auto-updated progress bar</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-nav</code></td>
+          <td><code>&lt;nav&gt;</code></td>
+          <td>Navigation container (shows/hides prev/next/submit buttons)</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-prev</code></td>
+          <td><code>&lt;button&gt;</code></td>
+          <td>Go to previous step</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-next</code></td>
+          <td><code>&lt;button&gt;</code></td>
+          <td>Go to next step (validates current step first)</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="..."</code></td>
+          <td><code>&lt;fieldset&gt;</code></td>
+          <td>Conditional step — shown only when condition is met</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-optional</code></td>
+          <td><code>&lt;fieldset&gt;</code></td>
+          <td>Step can be skipped without validation</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-steps="#id"</code></td>
+          <td><code>&lt;form&gt;</code></td>
+          <td>Points to a <code>nav.steps</code> element for auto-sync</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Condition Syntax</h3>
+    <layout-text>
+      <p>The <code>data-wizard-if</code> attribute supports these patterns:</p>
+    </layout-text>
+    <table>
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-wizard-if="fieldName:value"</code></td>
+          <td>Show when field equals value</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="fieldName:!value"</code></td>
+          <td>Show when field does NOT equal value</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="fieldName"</code></td>
+          <td>Show when field is truthy (has value / is checked)</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="!fieldName"</code></td>
+          <td>Show when field is falsy (empty / unchecked)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>API &amp; Events</h2>
+    <layout-text>
+      <p>Access the wizard programmatically via methods attached to the form element:</p>
+    </layout-text>
+    <code-block language="js" label="Programmatic API">{apiUsageCode}</code-block>
+
+    <h3>Custom Events</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Fires when</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>wizard:stepchange</code></td>
+          <td><code>{`{ from, to }`}</code></td>
+          <td>User navigates to a different step</td>
+        </tr>
+        <tr>
+          <td><code>wizard:complete</code></td>
+          <td>none</td>
+          <td>Form is submitted on the last step</td>
+        </tr>
+        <tr>
+          <td><code>wizard:reset</code></td>
+          <td>none</td>
+          <td>Wizard is reset to the first step</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
