@@ -14,12 +14,12 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 >
   <layout-center>
     <layout-stack>
-      <nav class="breadcrumb">
-        <a href="/lab/">Lab</a>
-        <span>/</span>
-        <a href="/lab/theme-picker/">Theme Picker</a>
-        <span>/</span>
-        <span>Variants</span>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/lab/">Lab</a></li>
+          <li><a href="/lab/theme-picker/">Theme Picker</a></li>
+          <li><span aria-current="page">Variants</span></li>
+        </ol>
       </nav>
 
       <header>
@@ -299,13 +299,25 @@ import LabLayout from '../../../layouts/LabLayout.astro';
 </LabLayout>
 
 <style>
-  nav.breadcrumb {
+  nav.breadcrumb ol {
     display: flex;
     align-items: center;
     gap: var(--size-xs);
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  nav.breadcrumb {
     margin-block-end: var(--size-l);
+  }
+
+  nav.breadcrumb li:not(:last-child)::after {
+    content: "/";
+    margin-inline-start: var(--size-xs);
+    color: var(--color-text-muted);
   }
 
   nav.breadcrumb a {
@@ -317,7 +329,7 @@ import LabLayout from '../../../layouts/LabLayout.astro';
     text-decoration: underline;
   }
 
-  nav.breadcrumb > span:last-child {
+  nav.breadcrumb li:last-child span {
     color: var(--color-text);
     font-weight: 500;
   }
