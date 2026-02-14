@@ -68,11 +68,11 @@ const sectionsCode = `<aside class="sidebar" data-layout="stack" data-layout-gap
       <h3>Support</h3>
       <ul data-layout="stack" data-layout-gap="xs">
         <li><a href="/help/">
-          <icon-wc name="question-mark-circle"></icon-wc>
+          <icon-wc name="circle-help"></icon-wc>
           Help Center
         </a></li>
         <li><a href="/contact/">
-          <icon-wc name="chat-bubble-left-right"></icon-wc>
+          <icon-wc name="message-circle"></icon-wc>
           Contact Us
         </a></li>
       </ul>
@@ -83,46 +83,36 @@ const collapsibleCode = `<aside class="sidebar">
   <nav aria-label="Main navigation" data-layout="stack" data-layout-gap="xs">
       <!-- Projects Section -->
       <details open>
-        <summary>
-          Projects
-          <icon-wc name="chevron-down" size="sm"></icon-wc>
-        </summary>
-        <div class="nav-items">
-          <ul data-layout="stack" data-layout-gap="2xs">
-            <li><a href="/projects/" aria-current="page">
-              <icon-wc name="folder"></icon-wc>
-              All Projects
-            </a></li>
-            <li><a href="/projects/favorites/">
-              <icon-wc name="star"></icon-wc>
-              Favorites
-            </a></li>
-            <li><a href="/projects/archived/">
-              <icon-wc name="archive-box"></icon-wc>
-              Archived
-            </a></li>
-          </ul>
-        </div>
+        <summary>Projects</summary>
+        <ul data-layout="stack" data-layout-gap="2xs">
+          <li><a href="/projects/" aria-current="page">
+            <icon-wc name="folder"></icon-wc>
+            All Projects
+          </a></li>
+          <li><a href="/projects/favorites/">
+            <icon-wc name="star"></icon-wc>
+            Favorites
+          </a></li>
+          <li><a href="/projects/archived/">
+            <icon-wc name="archive"></icon-wc>
+            Archived
+          </a></li>
+        </ul>
       </details>
 
       <!-- Team Section -->
       <details open>
-        <summary>
-          Team
-          <icon-wc name="chevron-down" size="sm"></icon-wc>
-        </summary>
-        <div class="nav-items">
-          <ul data-layout="stack" data-layout-gap="2xs">
-            <li><a href="/team/members/">
-              <icon-wc name="users"></icon-wc>
-              Members
-            </a></li>
-            <li><a href="/team/invitations/">
-              <icon-wc name="user-plus"></icon-wc>
-              Invitations
-            </a></li>
-          </ul>
-        </div>
+        <summary>Team</summary>
+        <ul data-layout="stack" data-layout-gap="2xs">
+          <li><a href="/team/members/">
+            <icon-wc name="users"></icon-wc>
+            Members
+          </a></li>
+          <li><a href="/team/invitations/">
+            <icon-wc name="user-plus"></icon-wc>
+            Invitations
+          </a></li>
+        </ul>
       </details>
   </nav>
 </aside>`;
@@ -135,26 +125,24 @@ const sidebarStylesCode = `.sidebar {
   padding: var(--size-l);
 }
 
+/* Override nav CSS variables for sidebar styling */
+.sidebar nav {
+  --_link-color: var(--color-text-muted);
+  --_hover-bg: var(--color-surface-raised);
+  --_hover-color: var(--color-text);
+  --_active-bg: var(--color-interactive-muted);
+  --_active-color: var(--color-interactive);
+}
+
+/* Only what CSS variables can't cover */
 .sidebar nav a {
   display: flex;
   align-items: center;
   gap: var(--size-s);
-  padding: var(--size-s) var(--size-m);
-  color: var(--color-text-muted);
-  text-decoration: none;
   border-radius: var(--radius-m);
-  transition: color var(--duration-fast) var(--ease-default),
-              background var(--duration-fast) var(--ease-default);
-}
-
-.sidebar nav a:hover {
-  color: var(--color-text);
-  background: var(--color-surface-raised);
 }
 
 .sidebar nav a[aria-current="page"] {
-  color: var(--color-interactive);
-  background: var(--color-interactive-muted);
   font-weight: var(--font-weight-medium);
 }`;
 
@@ -168,41 +156,17 @@ const sectionHeadingStylesCode = `.sidebar h3 {
   color: var(--color-text-muted);
 }`;
 
-const collapsibleStylesCode = `.sidebar details summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--size-s) var(--size-m);
+const collapsibleStylesCode = `/* VB resets details borders inside nav automatically.
+   Only override summary appearance and hover. */
+.sidebar details summary {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  cursor: pointer;
+  padding: var(--size-s) var(--size-m);
   border-radius: var(--radius-m);
-  list-style: none;
-  transition: background var(--duration-fast) var(--ease-default);
-}
-
-.sidebar details summary::-webkit-details-marker {
-  display: none;
 }
 
 .sidebar details summary:hover {
   background: var(--color-surface-raised);
-}
-
-/* Rotate chevron when open */
-.sidebar details summary icon-wc {
-  transition: transform var(--duration-fast) var(--ease-default);
-}
-
-.sidebar details[open] summary icon-wc {
-  transform: rotate(180deg);
-}
-
-/* Indent nested items */
-.sidebar details .nav-items {
-  padding-inline-start: var(--size-m);
-  padding-block: var(--size-xs);
 }`;
 ---
 
@@ -216,14 +180,15 @@ const collapsibleStylesCode = `.sidebar details summary {
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Sidebar navigation provides vertical navigation typically used in application shells. These patterns use semantic <code>&lt;nav&gt;</code> elements with <code>&lt;layout-stack&gt;</code> for vertical spacing and <code>&lt;icon-wc&gt;</code> for visual icons.</p>
+      <p>Sidebar navigation provides vertical navigation typically used in application shells. These patterns use semantic <code>&lt;nav&gt;</code> elements with <code>&lt;icon-wc&gt;</code> for visual icons.</p>
+      <p>VB's native <code>&lt;nav&gt;</code> styles provide CSS variables for link colors, hover, and active states &mdash; so sidebar patterns only need to set variables and add layout-specific rules like <code>display: flex</code> and <code>gap</code>.</p>
       <p><strong>Key features:</strong></p>
       <ul>
         <li>Semantic HTML with proper ARIA attributes</li>
         <li>Active page indication via <code>aria-current="page"</code></li>
         <li>Icons from Lucide set via <code>&lt;icon-wc&gt;</code></li>
         <li>Grouped sections with headings for organization</li>
-        <li>Collapsible sections using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code></li>
+        <li>Collapsible sections using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> &mdash; VB automatically resets borders and padding for <code>&lt;details&gt;</code> inside <code>&lt;nav&gt;</code></li>
       </ul>
     </layout-text>
   </section>
@@ -270,7 +235,8 @@ const collapsibleStylesCode = `.sidebar details summary {
   <section>
     <h2>Collapsible Sections</h2>
     <layout-text>
-      <p>Navigation with expandable/collapsible groups using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> elements. No JavaScript required - the browser handles the toggle behavior automatically.</p>
+      <p>Navigation with expandable/collapsible groups using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> elements. No JavaScript required &mdash; the browser handles the toggle behavior and VB provides the chevron indicator automatically via <code>summary::after</code>.</p>
+      <p>VB's base nav styles reset <code>&lt;details&gt;</code> borders and content padding inside <code>&lt;nav&gt;</code>, so collapsible sidebar sections only need minimal summary styling.</p>
     </layout-text>
 
     <browser-window
@@ -284,7 +250,7 @@ const collapsibleStylesCode = `.sidebar details summary {
 
     <h3>Collapsible Section Styles</h3>
     <layout-text>
-      <p>The collapsible sections require CSS for the summary styling and chevron rotation:</p>
+      <p>VB handles the chevron indicator and border reset natively. You only need to style the summary text appearance and hover state:</p>
     </layout-text>
 
     <code-block language="css" label="Collapsible section styles">{collapsibleStylesCode}</code-block>
@@ -293,7 +259,7 @@ const collapsibleStylesCode = `.sidebar details summary {
   <section>
     <h2>Base Sidebar Styles</h2>
     <layout-text>
-      <p>These base styles are shared across all sidebar variants:</p>
+      <p>These base styles are shared across all sidebar variants. Instead of writing custom <code>:hover</code> and <code>[aria-current]</code> rules, set VB's nav CSS variables and the base nav handles the rest:</p>
     </layout-text>
 
     <code-block language="css" label="Base sidebar styles">{sidebarStylesCode}</code-block>
@@ -315,9 +281,9 @@ const collapsibleStylesCode = `.sidebar details summary {
       </thead>
       <tbody>
         <tr>
-          <td><code>&lt;layout-stack&gt;</code></td>
-          <td>Vertical spacing between links</td>
-          <td>Adjust gap with <code>data-gap</code> (xs, s, m, l, xl)</td>
+          <td><code>nav</code> CSS variables</td>
+          <td>Link color, hover, and active styling</td>
+          <td>Override <code>--_link-color</code>, <code>--_hover-bg</code>, <code>--_active-bg</code>, etc.</td>
         </tr>
         <tr>
           <td><code>&lt;icon-wc&gt;</code></td>
