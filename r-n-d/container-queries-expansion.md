@@ -2,129 +2,92 @@
 
 ## Overview
 
-Expand `container-type: inline-size` beyond cards to sectioning elements, enabling component-level responsive design throughout the framework.
+Expand container query capabilities in VB's layout system. Sectioning elements already have `container-type: inline-size` (layout-attributes.css). This work adds named containers and an explicit opt-in attribute.
 
-## Current State
+## Current State (as of 2026-02)
 
-Container queries are currently applied to:
-- `semantic-card` (added 2026-01-25)
-- `layout-card` (added 2026-01-25)
-- `table-wc` (existing)
-- `layout-attributes.css` line 1038 (for card lists)
+Container queries are used in:
+- **Global**: `main, article, section, aside` have `container-type: inline-size` (layout-attributes.css)
+- **5 existing `@container` rules**: media stacking (<25rem), grid collapse (<400px), switcher stacking (<30rem), semantic-card compact (<300px), table-wc card mode (<500px)
+- **Named containers on page layout regions** (see Phase 1 below)
+- **`data-container` attribute** for explicit opt-in (see Phase 2 below)
 
-## Proposed Changes
+## Completed
 
-### Phase 1: Sectioning Elements
+### Phase 1: Named Containers on Page Layout Regions ✅
 
-Add `container-type: inline-size` to semantic sectioning elements:
-
-```css
-/* In src/native-elements or a new src/utils/containers.css */
-main,
-article,
-section,
-aside {
-  container-type: inline-size;
-}
-```
-
-**Files to modify:**
-- Option A: Create `src/utils/containers.css` and import in `src/utils/index.css`
-- Option B: Add to `src/base/reset.css` (affects all pages)
-
-**Recommendation:** Option A - keeps it opt-in via utils layer.
-
-### Phase 2: Container Query Utilities
-
-Add utility classes for elements that need container context:
+Added `container-name` to page layout children for targeted queries:
 
 ```css
-/* src/utils/containers.css */
+/* data-page-layout children */
+[data-page-layout] > main  { container-name: region-main; }
+[data-page-layout] > nav   { container-name: region-nav; }
+[data-page-layout] > aside { container-name: region-aside; }
 
-/* Explicit container establishment */
-[data-container] {
-  container-type: inline-size;
-}
+/* Legacy data-layout="body-*" children (with demo class parity) */
+[data-layout^="body-"] > main  { container-name: region-main; }
+[data-layout^="body-"] > nav   { container-name: region-nav; }
+[data-layout^="body-"] > aside { container-name: region-aside; }
 
-[data-container="size"] {
-  container-type: size;
-}
-
-/* Named containers for targeted queries */
-[data-container-name] {
-  container-name: attr(data-container-name);
-}
+/* Main-level templates */
+main[data-layout="sidebar-left"] > nav     { container-name: region-main-nav; }
+main[data-layout="sidebar-left"] > article { container-name: region-main-content; }
+main[data-layout="sidebar-right"] > article { container-name: region-main-content; }
+main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; }
 ```
 
-### Phase 3: Component Container Queries
+This enables queries like `@container region-main (width < 40rem) { ... }`.
 
-Add container-aware variants to existing components where beneficial:
+### Phase 2: `data-container` Attribute ✅
 
-#### Stack Layout
+Explicit opt-in containment for non-semantic elements:
+
 ```css
-/* When stack is in a narrow container, reduce gap */
-[data-layout="stack"] {
-  container-type: inline-size;
-
-  @container (max-width: 300px) {
-    --_gap: var(--size-s);
-  }
-}
+[data-container] { container-type: inline-size; }
+[data-container="card"]  { container-name: card; }
+[data-container="panel"] { container-name: panel; }
+[data-container="media"] { container-name: media; }
 ```
 
-#### Cluster Layout
-```css
-/* Switch from row to column in narrow containers */
-[data-layout="cluster"] {
-  @container (max-width: 250px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-```
+**Note:** The original proposal suggested `attr()` for dynamic `container-name` from HTML. This does **not work** in browsers — `attr()` only resolves to strings in `content`, not in `container-name`. The preset approach is the correct solution.
 
-#### Navigation
-```css
-/* Compact nav items in narrow sidebar */
-nav {
-  container-type: inline-size;
+## Skipped (with rationale)
 
-  @container (max-width: 200px) {
-    /* Hide text, show icons only */
-    & [data-nav-text] {
-      display: none;
-    }
-  }
-}
-```
+### Switcher Refactor to Container Queries — SKIPPED
 
-## Testing Checklist
+The switcher already has a dual mechanism:
+- **Primary**: Flexbox `calc((threshold - 100%) * 999)` — the canonical Every Layout pattern, smooth and proportional
+- **Fallback**: `@container (width < 30rem)` — coarse CQ override
 
-- [ ] Verify no layout shifts when container-type is added
-- [ ] Test nested containers (card inside article inside main)
-- [ ] Confirm container queries fire at correct breakpoints
-- [ ] Check performance with many containers on page
-- [ ] Test with existing demos (kitchen-sink, table-responsive)
+Replacing the flexbox trick with CQ would be a **regression**: the trick provides smooth, individual-item wrapping; CQ would create abrupt all-or-nothing switching.
+
+### Fluid Gap with `cqw` Units — SKIPPED
+
+VB's token-based gap system (discrete steps `3xs`–`3xl`) is intentionally predictable. Adding fluid `clamp(var(--size-s), 2cqw, var(--size-xl))` undermines the design token philosophy — designers can't predict what `2cqw` resolves to.
+
+### Style Queries for Variant Propagation — SKIPPED (revisit later)
+
+`@container style(--card-layout: featured)` is Chrome-only (no Firefox). VB handles variants via data attributes which work everywhere. Revisit when Firefox ships support.
+
+### Phase 3 Component Container Queries — SKIPPED
+
+The original proposals for stack/cluster/nav container query adaptations were speculative. The existing 5 container queries cover the necessary breakpoints. Adding more would increase CSS size without clear user demand.
 
 ## Browser Support
 
-Container queries are Baseline 2023 - safe to use without fallbacks.
+Container queries are Baseline 2023 — safe to use without fallbacks.
 
 | Browser | Version |
 |---------|---------|
-| Chrome | 105+ |
-| Firefox | 110+ |
-| Safari | 16+ |
-| Edge | 105+ |
+| Chrome  | 105+    |
+| Firefox | 110+    |
+| Safari  | 16+     |
+| Edge    | 105+    |
 
-## Risks
+## Testing Checklist
 
-1. **Performance** - Many containers on a page could impact layout calculations
-2. **Specificity** - Container queries don't increase specificity, but nested contexts can be confusing
-3. **Debugging** - Container query breakpoints aren't as visible in DevTools as media queries
-
-## Success Criteria
-
-- Components adapt to their container width, not viewport
-- Existing demos continue to work
-- No performance regression on kitchen-sink page
+- [x] No layout shifts from adding `container-name` (additive, doesn't change sizing)
+- [x] Existing container queries (media stacking, grid collapse, switcher) still work
+- [x] `@container region-main (width < 40rem)` fires on main area
+- [x] `data-container` on a `<div>` establishes inline-size containment
+- [ ] Verify no performance regression on kitchen-sink page

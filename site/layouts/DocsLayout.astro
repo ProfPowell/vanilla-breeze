@@ -17,9 +17,10 @@ interface Props {
   title: string;
   description: string;
   currentSection?: 'home' | 'docs' | 'api' | 'examples' | 'integrations';
+  toc?: boolean;
 }
 
-const { title, description, currentSection = 'docs' } = Astro.props;
+const { title, description, currentSection = 'docs', toc = false } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -31,7 +32,22 @@ const { title, description, currentSection = 'docs' } = Astro.props;
   <Header currentSection={currentSection} />
 
   <main data-pagefind-body>
-    <slot />
+    {toc ? (
+      <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
+        <aside>
+          <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+        </aside>
+        <article>
+          <h1>{title}</h1>
+          <p class="lead">{description}</p>
+          <heading-links data-levels="h2,h3">
+            <slot />
+          </heading-links>
+        </article>
+      </layout-sidebar>
+    ) : (
+      <slot />
+    )}
   </main>
 
   <Footer />

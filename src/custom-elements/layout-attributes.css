@@ -700,6 +700,14 @@
 [data-layout^="body-"] > footer,
 [data-layout^="body-"] > .demo-footer { grid-area: body-footer; }
 
+/* Named containers for targeted @container queries */
+[data-layout^="body-"] > main,
+[data-layout^="body-"] > .demo-main  { container-name: region-main; }
+[data-layout^="body-"] > nav,
+[data-layout^="body-"] > .demo-nav   { container-name: region-nav; }
+[data-layout^="body-"] > aside,
+[data-layout^="body-"] > .demo-aside { container-name: region-aside; }
+
 /* Secondary nav (if present) */
 [data-layout^="body-"] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
 
@@ -763,6 +771,11 @@ article[data-layout] > footer { grid-area: article-footer; }
 [data-page-layout] > aside { grid-area: body-aside; }
 [data-page-layout] > footer { grid-area: body-footer; }
 [data-page-layout] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
+
+/* Named containers for targeted @container queries */
+[data-page-layout] > main  { container-name: region-main; }
+[data-page-layout] > nav   { container-name: region-nav; }
+[data-page-layout] > aside { container-name: region-aside; }
 
 /* Page layout templates */
 [data-page-layout="stack"] { grid-template: var(--tpl-stack); }
@@ -864,6 +877,113 @@ article[data-layout] > footer { grid-area: article-footer; }
     display: none;
   }
 }
+
+
+/* ==========================================================================
+   PHASE 6: COMPONENT-LEVEL REGIONS & NESTED TEMPLATES
+   Generalized header/content/footer grid, media object pattern,
+   and main-level sidebar templates.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Regions: Generalized header / content / footer grid
+   Pure structure, no visual chrome. Works on any element.
+   -------------------------------------------------------------------------- */
+[data-layout="regions"] {
+  display: grid;
+  grid-template:
+    "header"  auto
+    "content" 1fr
+    "footer"  auto
+    / 1fr;
+  gap: var(--_gap, 0);
+}
+
+[data-layout="regions"] > :is(header, [slot="header"])  { grid-area: header; }
+[data-layout="regions"] > :is(section, [slot="content"]) { grid-area: content; }
+[data-layout="regions"] > :is(footer, [slot="footer"])  { grid-area: footer; }
+[data-layout="regions"] > :not(:is(header, section, footer, [slot])) { grid-area: content; }
+
+[data-layout="regions"][data-layout-gap="none"] { --_gap: 0; }
+[data-layout="regions"][data-layout-gap="3xs"]  { --_gap: var(--size-3xs); }
+[data-layout="regions"][data-layout-gap="2xs"]  { --_gap: var(--size-2xs); }
+[data-layout="regions"][data-layout-gap="xs"]   { --_gap: var(--size-xs); }
+[data-layout="regions"][data-layout-gap="s"]    { --_gap: var(--size-s); }
+[data-layout="regions"][data-layout-gap="m"]    { --_gap: var(--size-m); }
+[data-layout="regions"][data-layout-gap="l"]    { --_gap: var(--size-l); }
+[data-layout="regions"][data-layout-gap="xl"]   { --_gap: var(--size-xl); }
+[data-layout="regions"][data-layout-gap="2xl"]  { --_gap: var(--size-2xl); }
+[data-layout="regions"][data-layout-gap="3xl"]  { --_gap: var(--size-3xl); }
+
+/* --------------------------------------------------------------------------
+   Media: Figure + content side by side (media object pattern)
+   -------------------------------------------------------------------------- */
+[data-layout="media"] {
+  display: grid;
+  grid-template: "figure content" auto / auto 1fr;
+  gap: var(--_gap, var(--size-m));
+  align-items: start;
+}
+
+[data-layout="media"] > :is(figure, img, picture, video, [slot="figure"]) { grid-area: figure; }
+[data-layout="media"] > :not(:is(figure, img, picture, video, [slot="figure"])) { grid-area: content; }
+
+[data-layout="media"][data-layout-gap="none"] { --_gap: 0; }
+[data-layout="media"][data-layout-gap="xs"]   { --_gap: var(--size-xs); }
+[data-layout="media"][data-layout-gap="s"]    { --_gap: var(--size-s); }
+[data-layout="media"][data-layout-gap="m"]    { --_gap: var(--size-m); }
+[data-layout="media"][data-layout-gap="l"]    { --_gap: var(--size-l); }
+[data-layout="media"][data-layout-gap="xl"]   { --_gap: var(--size-xl); }
+
+[data-layout="media"][data-layout-reverse] {
+  grid-template: "content figure" auto / 1fr auto;
+}
+
+[data-layout="media"][data-layout-align="start"]   { align-items: start; }
+[data-layout="media"][data-layout-align="center"]  { align-items: center; }
+[data-layout="media"][data-layout-align="end"]     { align-items: end; }
+[data-layout="media"][data-layout-align="stretch"] { align-items: stretch; }
+
+/* Responsive stacking via container query */
+@container (width < 25rem) {
+  [data-layout="media"] {
+    grid-template: "figure" auto "content" auto / 1fr;
+  }
+  [data-layout="media"][data-layout-reverse] {
+    grid-template: "figure" auto "content" auto / 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Main-Level Templates
+   Activate the dormant main-level identity rules for nested layouts.
+   -------------------------------------------------------------------------- */
+main[data-layout="sidebar-left"] {
+  display: grid;
+  grid-template: "main-nav main-article" 1fr / var(--_sidebar-width, 250px) 1fr;
+  gap: var(--_gap, var(--size-m));
+}
+
+main[data-layout="sidebar-right"] {
+  display: grid;
+  grid-template: "main-article main-aside" 1fr / 1fr var(--_sidebar-width, 250px);
+  gap: var(--_gap, var(--size-m));
+}
+
+/* :has() adaptation when nav/aside is absent */
+main[data-layout="sidebar-left"]:not(:has(> nav)) {
+  grid-template-columns: 1fr;
+}
+
+main[data-layout="sidebar-right"]:not(:has(> aside)) {
+  grid-template-columns: 1fr;
+}
+
+/* Named containers for main-level regions */
+main[data-layout="sidebar-left"] > nav     { container-name: region-main-nav; }
+main[data-layout="sidebar-left"] > article { container-name: region-main-content; }
+main[data-layout="sidebar-right"] > article { container-name: region-main-content; }
+main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; }
 
 
 /* ==========================================================================
@@ -1090,6 +1210,16 @@ main, article, section, aside {
     flex-basis: 100%;
   }
 }
+
+/* Explicit container establishment via data attribute */
+[data-container] {
+  container-type: inline-size;
+}
+
+/* Named container presets */
+[data-container="card"]  { container-name: card; }
+[data-container="panel"] { container-name: panel; }
+[data-container="media"] { container-name: media; }
 
 
 /* ==========================================================================

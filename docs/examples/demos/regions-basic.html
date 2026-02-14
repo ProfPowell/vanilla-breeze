@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Regions Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h2 {
+      margin-block-start: var(--size-2xl);
+      padding-block-start: var(--size-l);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .demo-panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+      margin-block: var(--size-m);
+    }
+
+    .demo-label {
+      display: block;
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-block-end: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .demo-area {
+      padding: var(--size-l);
+    }
+
+    /* Card styling for regions demos */
+    .region-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .region-card > header {
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-block-end: 1px solid var(--color-border);
+      font-weight: 600;
+    }
+
+    .region-card > section,
+    .region-card > p {
+      padding: var(--size-m);
+    }
+
+    .region-card > footer {
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-block-start: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-l);
+    }
+
+    @media (max-width: 600px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/">&larr; Back to Examples</a>
+  </nav>
+
+  <h1>Component Regions</h1>
+  <p><code>data-layout="regions"</code> creates a header / content / footer grid on any element. Semantic children auto-place without explicit layout attributes.</p>
+
+  <!-- Basic regions -->
+  <h2>Basic Regions</h2>
+  <p>A <code>&lt;div&gt;</code> with <code>data-layout="regions"</code>. The <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, and <code>&lt;footer&gt;</code> children auto-register to named grid areas.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">data-layout="regions"</strong>
+    <div class="demo-area">
+      <div data-layout="regions" data-layout-gap="m" class="region-card">
+        <header>Card Header</header>
+        <section>
+          <p style="margin: 0;">This section content auto-places into the <code>content</code> grid area. No explicit placement needed.</p>
+        </section>
+        <footer>Updated 2 hours ago</footer>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Regions on article -->
+  <h2>Regions on Article</h2>
+  <p>Works on any element. An <code>&lt;article&gt;</code> with regions is a natural fit for blog posts, cards, and content blocks.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">article with regions</strong>
+    <div class="demo-area">
+      <article data-layout="regions" data-layout-gap="s" class="region-card">
+        <header>Getting Started with Grid Identity</header>
+        <section>
+          <p style="margin: 0 0 var(--size-s);">The grid identity system lets semantic HTML elements auto-register to grid areas based on their element type.</p>
+          <p style="margin: 0;">HTML declares structure, CSS assigns layout.</p>
+        </section>
+        <footer>By Jane Doe &middot; 5 min read</footer>
+      </article>
+    </div>
+  </figure>
+
+  <!-- Implicit content -->
+  <h2>Implicit Content Placement</h2>
+  <p>Children that are not <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>, or <code>[slot]</code> are implicitly placed in the <code>content</code> area.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">implicit content (bare &lt;p&gt; children)</strong>
+    <div class="demo-area">
+      <div data-layout="regions" data-layout-gap="m" class="region-card">
+        <header>Notification</header>
+        <p>This bare paragraph auto-places into the content area without needing a <code>&lt;section&gt;</code> wrapper.</p>
+        <footer>Dismiss</footer>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Grid of region cards -->
+  <h2>Grid of Region Cards</h2>
+  <p>The big win: <code>data-layout="grid"</code> wrapping <code>data-layout="regions"</code> articles. Each card auto-places its header, content, and footer without any explicit layout attributes on children.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">grid + regions = card list</strong>
+    <div class="demo-area">
+      <div data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+        <article data-layout="regions" data-layout-gap="s" class="region-card">
+          <header>Performance</header>
+          <section>
+            <p style="margin: 0;">Optimized for speed with lazy loading and tree-shaking built in.</p>
+          </section>
+          <footer>Core feature</footer>
+        </article>
+        <article data-layout="regions" data-layout-gap="s" class="region-card">
+          <header>Accessibility</header>
+          <section>
+            <p style="margin: 0;">WCAG 2.1 AA compliant with semantic HTML and ARIA support.</p>
+          </section>
+          <footer>Built-in</footer>
+        </article>
+        <article data-layout="regions" data-layout-gap="s" class="region-card">
+          <header>Theming</header>
+          <section>
+            <p style="margin: 0;">CSS custom properties for full design token control.</p>
+          </section>
+          <footer>Customizable</footer>
+        </article>
+        <article data-layout="regions" data-layout-gap="s" class="region-card">
+          <header>Responsive</header>
+          <section>
+            <p style="margin: 0;">Container queries and fluid layouts adapt to any viewport.</p>
+          </section>
+          <footer>Adaptive</footer>
+        </article>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Comparison with semantic-card -->
+  <h2>Regions vs semantic-card</h2>
+  <p><code>data-layout="regions"</code> is structural only (grid placement). <code>&lt;semantic-card&gt;</code> adds visual chrome (borders, shadows, padding) on top of the same grid structure.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">structural vs visual</strong>
+    <div class="demo-area">
+      <div class="comparison-grid">
+        <div>
+          <h4 style="margin: 0 0 var(--size-s);">Regions (structure only)</h4>
+          <article data-layout="regions" data-layout-gap="s" style="border: 2px dashed var(--color-border); padding: var(--size-m); border-radius: var(--radius-m);">
+            <header style="font-weight: 600;">Card Title</header>
+            <section><p style="margin: 0;">Content goes here. No visual styling from the layout.</p></section>
+            <footer style="font-size: var(--font-size-s); color: var(--color-text-muted);">Footer text</footer>
+          </article>
+        </div>
+        <div>
+          <h4 style="margin: 0 0 var(--size-s);">semantic-card (structure + visuals)</h4>
+          <semantic-card>
+            <header>Card Title</header>
+            <section><p style="margin: 0;">Content goes here. Visual chrome comes from the component.</p></section>
+            <footer>Footer text</footer>
+          </semantic-card>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

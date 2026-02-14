@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Object Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h2 {
+      margin-block-start: var(--size-2xl);
+      padding-block-start: var(--size-l);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    .demo-panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+      margin-block: var(--size-m);
+    }
+
+    .demo-label {
+      display: block;
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-block-end: 1px solid var(--color-border);
+      font-size: var(--font-size-s);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .demo-area {
+      padding: var(--size-l);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--color-primary-subtle);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .avatar-lg {
+      width: 64px;
+      height: 64px;
+      font-size: var(--font-size-lg);
+    }
+
+    .placeholder-img {
+      width: 120px;
+      height: 80px;
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      display: grid;
+      place-items: center;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+    }
+
+    .media-item {
+      padding: var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .media-item + .media-item {
+      margin-block-start: var(--size-m);
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="/docs/examples/">&larr; Back to Examples</a>
+  </nav>
+
+  <h1>Media Object</h1>
+  <p><code>data-layout="media"</code> places a figure and content side by side &mdash; the most common component pattern on the web.</p>
+
+  <!-- Basic media object -->
+  <h2>Basic: Avatar + Text</h2>
+  <p>An image or avatar next to text content. The figure auto-sizes, content fills remaining space.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">data-layout="media"</strong>
+    <div class="demo-area">
+      <div data-layout="media" data-layout-gap="m">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='24' fill='%236366f1'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='white' font-size='18' font-family='system-ui'%3EJD%3C/text%3E%3C/svg%3E" alt="JD avatar" width="48" height="48" style="border-radius: 50%;">
+        <div>
+          <strong>Jane Doe</strong>
+          <p style="margin: var(--size-2xs) 0 0;">Published a new article about CSS Grid Identity systems and how semantic HTML auto-registers to grid areas.</p>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- With figure element -->
+  <h2>With Figure Element</h2>
+  <p>Using a <code>&lt;figure&gt;</code> element for the media side. Figures auto-place to the figure grid area.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">figure element auto-placement</strong>
+    <div class="demo-area">
+      <div data-layout="media" data-layout-gap="l" data-layout-align="center">
+        <figure style="margin: 0;">
+          <div class="placeholder-img">120 &times; 80</div>
+        </figure>
+        <div>
+          <h3 style="margin: 0 0 var(--size-xs);">Product Feature</h3>
+          <p style="margin: 0; color: var(--color-text-muted);">The figure element is auto-detected and placed in the figure grid area. Content fills the rest.</p>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Reversed layout -->
+  <h2>Reversed Layout</h2>
+  <p>Add <code>data-layout-reverse</code> to flip the figure to the right side.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">data-layout-reverse</strong>
+    <div class="demo-area">
+      <div data-layout="media" data-layout-gap="l" data-layout-reverse data-layout-align="center">
+        <figure style="margin: 0;">
+          <div class="placeholder-img">120 &times; 80</div>
+        </figure>
+        <div>
+          <h3 style="margin: 0 0 var(--size-xs);">Reversed Media</h3>
+          <p style="margin: 0; color: var(--color-text-muted);">Content on the left, figure on the right. Same HTML order, different visual layout.</p>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- List of media objects -->
+  <h2>Activity Feed</h2>
+  <p>A list of media objects is a natural fit for activity feeds, comment lists, and notification panels.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">list of media objects</strong>
+    <div class="demo-area">
+      <div data-layout="stack" data-layout-gap="m">
+        <div data-layout="media" data-layout-gap="m" class="media-item">
+          <div class="avatar" slot="figure">AB</div>
+          <div>
+            <strong>Alice Brown</strong> <small style="color: var(--color-text-muted);">2 min ago</small>
+            <p style="margin: var(--size-2xs) 0 0;">Deployed v2.1.0 to production. All health checks passing.</p>
+          </div>
+        </div>
+        <div data-layout="media" data-layout-gap="m" class="media-item">
+          <div class="avatar" slot="figure">CM</div>
+          <div>
+            <strong>Carlos Martinez</strong> <small style="color: var(--color-text-muted);">15 min ago</small>
+            <p style="margin: var(--size-2xs) 0 0;">Merged pull request #247: Add container query support to media layout.</p>
+          </div>
+        </div>
+        <div data-layout="media" data-layout-gap="m" class="media-item">
+          <div class="avatar" slot="figure">SK</div>
+          <div>
+            <strong>Sara Kim</strong> <small style="color: var(--color-text-muted);">1 hour ago</small>
+            <p style="margin: var(--size-2xs) 0 0;">Opened issue: Grid identity not working with shadow DOM in Firefox.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Alignment variants -->
+  <h2>Alignment Variants</h2>
+  <p>Control vertical alignment with <code>data-layout-align</code>.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">align="center" (vertically centered)</strong>
+    <div class="demo-area">
+      <div data-layout="media" data-layout-gap="l" data-layout-align="center" class="media-item">
+        <div class="avatar avatar-lg" slot="figure">VB</div>
+        <div>
+          <h3 style="margin: 0;">Vanilla Breeze</h3>
+          <p style="margin: var(--size-2xs) 0 0;">A design system for the semantic web. CSS layouts, design tokens, and web components.</p>
+          <p style="margin: var(--size-2xs) 0 0; font-size: var(--font-size-s); color: var(--color-text-muted);">The avatar and text content are vertically centered.</p>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- Responsive stacking -->
+  <h2>Responsive Stacking</h2>
+  <p>Media objects automatically stack when their container is narrower than 25rem (via container query). Resize the browser window to see the transition.</p>
+
+  <figure class="demo-panel">
+    <strong class="demo-label">container query responsive</strong>
+    <div class="demo-area">
+      <div data-layout="media" data-layout-gap="m" data-layout-align="center">
+        <div class="avatar avatar-lg" slot="figure">RS</div>
+        <div>
+          <strong>Responsive Stack</strong>
+          <p style="margin: var(--size-2xs) 0 0;">Resize the browser window narrower than 25rem to see this media object stack vertically via container query.</p>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
