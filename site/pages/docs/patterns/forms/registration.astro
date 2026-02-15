@@ -2,7 +2,7 @@
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
 const simpleCode = `<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-layout-max="narrow" data-padding="l" data-layout-principal>
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
     <form action="/auth/register" method="POST" data-layout="stack" data-layout-gap="l">
       <header data-layout="stack" data-layout-gap="s">
         <h1>Create account</h1>
@@ -67,31 +67,20 @@ const simpleCode = `<body data-layout="cover" data-layout-min="100vh" data-layou
 </body>`;
 
 const multiStepCode = `<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-layout-max="narrow" data-padding="l" data-layout-principal>
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
     <div data-layout="stack" data-layout-gap="l">
       <header data-layout="stack" data-layout-gap="s">
         <h1>Create account</h1>
         <p>Step 1 of 3</p>
       </header>
 
-      <!-- Step Indicator -->
-      <nav class="step-indicator" aria-label="Registration progress">
-        <layout-cluster data-layout-gap="s" data-layout-align="center" data-layout-justify="center">
-          <div class="step active" aria-current="step">
-            <span class="step-number">1</span>
-            <span class="step-label">Account</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <span class="step-label">Profile</span>
-          </div>
-          <div class="step-connector" aria-hidden="true"></div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <span class="step-label">Preferences</span>
-          </div>
-        </layout-cluster>
+      <!-- Step Indicator — uses nav.steps from VB core -->
+      <nav class="steps" aria-label="Registration progress">
+        <ol>
+          <li aria-current="step">Account</li>
+          <li>Profile</li>
+          <li>Preferences</li>
+        </ol>
       </nav>
 
       <!-- Step 1: Account Info -->
@@ -141,7 +130,7 @@ const multiStepCode = `<body data-layout="cover" data-layout-min="100vh" data-la
 </body>`;
 
 const socialCode = `<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
-  <layout-card data-layout-max="narrow" data-padding="l" data-layout-principal>
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
     <div data-layout="stack" data-layout-gap="l">
       <header data-layout="stack" data-layout-gap="s">
         <h1>Create account</h1>
@@ -203,49 +192,6 @@ const socialCode = `<body data-layout="cover" data-layout-min="100vh" data-layou
   </layout-card>
 </body>`;
 
-const stepIndicatorStyles = `.step-indicator {
-  --step-size: 2rem;
-}
-.step {
-  display: flex;
-  align-items: center;
-  gap: var(--space-s);
-  color: var(--color-text-muted);
-}
-.step-number {
-  width: var(--step-size);
-  height: var(--step-size);
-  border-radius: 50%;
-  background: var(--color-surface-raised);
-  border: 2px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: var(--text-s);
-}
-.step.active {
-  color: var(--color-text);
-}
-.step.active .step-number {
-  background: var(--color-interactive);
-  border-color: var(--color-interactive);
-  color: white;
-}
-.step.completed .step-number {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: white;
-}
-.step-connector {
-  flex: 1;
-  height: 2px;
-  background: var(--color-border);
-  min-width: 2rem;
-}
-.step-connector.completed {
-  background: var(--color-success);
-}`;
 ---
 
 <PatternLayout
@@ -291,7 +237,7 @@ const stepIndicatorStyles = `.step-indicator {
   <section>
     <h2>Multi-Step Registration</h2>
     <layout-text>
-      <p>A wizard-style registration flow with a visual step indicator. Uses <code>&lt;layout-cluster&gt;</code> for the progress steps and breaks the form into manageable sections. Great for collecting more detailed information without overwhelming users.</p>
+      <p>A wizard-style registration flow with a visual step indicator. Uses the <code>nav.steps</code> CSS pattern for the progress indicator and breaks the form into manageable sections. Great for collecting more detailed information without overwhelming users.</p>
     </layout-text>
 
     <browser-window
@@ -303,8 +249,6 @@ const stepIndicatorStyles = `.step-indicator {
 
     <code-block language="html" label="registration-multi-step.html" show-lines>{multiStepCode}</code-block>
 
-    <h3>Step Indicator Styles</h3>
-    <code-block language="css" label="Step indicator customization">{stepIndicatorStyles}</code-block>
   </section>
 
   <section>
