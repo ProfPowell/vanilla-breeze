@@ -31,24 +31,28 @@
       max-width: 44ch;
       margin-inline: auto;
     }
-    .action-links a {
+    .error-links a {
       color: var(--color-interactive);
       font-size: var(--font-size-sm);
+    }
+    .error-links a + a {
+      border-inline-start: 1px solid var(--color-border);
+      padding-inline-start: var(--size-m);
     }
   </style>
 </head>
 <body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
   <main data-layout="center" data-layout-max="narrow" data-layout-principal class="error-content" data-layout-gap="xl">
-      <div data-layout="stack" data-layout-gap="m" data-layout-align="center">
+      <header data-layout="stack" data-layout-gap="m" data-layout-align="center">
         <icon-wc name="alert-triangle" class="error-icon"></icon-wc>
         <span class="error-code">Error 500</span>
-      </div>
-      <div data-layout="stack" data-layout-gap="s">
+      </header>
+      <hgroup class="spaced">
         <h1>Something went wrong</h1>
         <p>We're experiencing technical difficulties. Our team has been notified and is working on a fix. Please try again later.</p>
-      </div>
+      </hgroup>
       <div data-layout="cluster" data-layout-gap="m" data-layout-justify="center">
-        <button onclick="location.reload()">
+        <button data-action="reload">
           <icon-wc name="refresh-cw"></icon-wc>
           Try again
         </button>
@@ -57,12 +61,15 @@
           Go back home
         </a>
       </div>
-      <div data-layout="cluster" data-layout-gap="m" data-layout-justify="center" class="action-links">
+      <nav data-layout="cluster" data-layout-gap="m" data-layout-justify="center" class="error-links" aria-label="Additional navigation">
         <a href="/status">Check system status</a>
-        <span aria-hidden="true">|</span>
         <a href="/contact">Contact support</a>
-      </div>
+      </nav>
   </main>
   <script type="module" src="/src/main.js"></script>
+  <script>
+    document.querySelector('[data-action="reload"]')
+      .addEventListener('click', () => location.reload());
+  </script>
 </body>
 </html>

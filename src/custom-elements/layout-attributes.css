@@ -153,10 +153,13 @@
 [data-layout="center"][data-layout-gutter="s"]    { padding-inline: var(--size-s); }
 [data-layout="center"][data-layout-gutter="l"]    { padding-inline: var(--size-l); }
 
-/* Gap support - center becomes flex-column when gap is present */
+/* Gap support - center becomes flex-column when gap is present.
+   inline-size: 100% prevents collapse when nested in a flex parent (e.g. cover),
+   where margin-inline: auto would otherwise shrink the element to content width. */
 [data-layout="center"][data-layout-gap] {
   display: flex;
   flex-direction: column;
+  inline-size: 100%;
 }
 
 [data-layout="center"][data-layout-gap="none"]  { gap: 0; }
@@ -794,6 +797,11 @@ article[data-layout] > footer { grid-area: article-footer; }
 [data-page-layout][data-layout-gap="m"]    { --_layout-gap: var(--size-m); }
 [data-page-layout][data-layout-gap="l"]    { --_layout-gap: var(--size-l); }
 [data-page-layout][data-layout-gap="xl"]   { --_layout-gap: var(--size-xl); }
+
+/* Sidebar width for page layouts */
+[data-page-layout][data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
+[data-page-layout][data-layout-sidebar-width="normal"] { --_sidebar-width: 15rem; }
+[data-page-layout][data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
 
 /* Content-aware adaptations (:has() powered) */
 [data-page-layout="sidebar-left"]:not(:has(> nav)) { grid-template-columns: 1fr; }
