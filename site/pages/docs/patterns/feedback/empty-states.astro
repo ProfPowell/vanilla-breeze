@@ -17,6 +17,7 @@ import PatternLayout from '../../../../layouts/PatternLayout.astro';
       <ul>
         <li>Use <code>data-state="empty"</code> on the container</li>
         <li>Use <code>&lt;output data-empty data-feedback="message" role="status"&gt;</code> for semantic, accessible feedback</li>
+        <li>The <code>&lt;output&gt;</code> element is the correct semantic choice — it represents the result of an action (query returned 0 items)</li>
         <li>Mark populated content with <code>.content</code> class</li>
         <li>CSS shows/hides content based on state attribute</li>
         <li>Works without JavaScript (progressive enhancement)</li>
@@ -143,24 +144,22 @@ output[data-empty] {
 
   &lt;!-- Empty state feedback with illustration --&gt;
   &lt;output data-empty data-feedback="message" role="status"&gt;
-    &lt;!-- Replace with your own SVG or image --&gt;
-    &lt;img src="/illustrations/empty-projects.svg" alt="" /&gt;
+    &lt;!-- Decorative SVG uses currentColor for theming --&gt;
+    &lt;svg aria-hidden="true" width="192" height="128" viewBox="0 0 192 128" fill="none"&gt;
+      &lt;rect x="32" y="36" width="128" height="80" rx="6"
+            stroke="currentColor" stroke-width="2" opacity="0.25"/&gt;
+      &lt;path d="M32 42c0-3.3 2.7-6 6-6h36l8 12h72c3.3 0 6 2.7 6 6"
+            stroke="currentColor" stroke-width="2" opacity="0.4"/&gt;
+      &lt;!-- Dashed circle + plus icon hint --&gt;
+      &lt;circle cx="96" cy="82" r="16" stroke="currentColor"
+              stroke-width="2" stroke-dasharray="4 3" opacity="0.2"/&gt;
+      &lt;path d="M90 82h12M96 76v12" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" opacity="0.3"/&gt;
+    &lt;/svg&gt;
     &lt;h3&gt;No projects found&lt;/h3&gt;
     &lt;p&gt;You haven't created any projects yet.&lt;/p&gt;
   &lt;/output&gt;
 &lt;/section&gt;</code-block>
-  </section>
-
-  <section>
-    <h2>Why This Approach?</h2>
-    <layout-text>
-      <ul>
-        <li><strong>Semantic:</strong> <code>&lt;output&gt;</code> represents the result of a calculation or user action (query returned 0 items)</li>
-        <li><strong>Accessible:</strong> <code>role="status"</code> ensures screen readers announce the message</li>
-        <li><strong>State-driven:</strong> Matches the Vanilla Breeze data-attribute philosophy</li>
-        <li><strong>Progressive:</strong> Works CSS-only, enhanced by JavaScript when needed</li>
-      </ul>
-    </layout-text>
   </section>
 
   <section>
@@ -172,9 +171,9 @@ output[data-empty] {
     <table class="props-table">
       <thead>
         <tr>
-          <th>Content Type</th>
-          <th>Element</th>
-          <th>Purpose</th>
+          <th scope="col">Content Type</th>
+          <th scope="col">Element</th>
+          <th scope="col">Purpose</th>
         </tr>
       </thead>
       <tbody>
@@ -203,6 +202,24 @@ output[data-empty] {
   </section>
 
   <section>
+    <h2>Accessibility</h2>
+    <layout-text>
+      <ul>
+        <li><strong><code>&lt;output&gt;</code> element:</strong> Represents the result of an action.
+            Screen readers announce its content naturally when it becomes visible.</li>
+        <li><strong><code>role="status"</code>:</strong> Creates a polite live region. When the empty
+            state appears via JavaScript, screen readers announce the message without interrupting.</li>
+        <li><strong><code>.visually-hidden</code> headings:</strong> Container headings like
+            <code>&lt;h2 class="visually-hidden"&gt;Messages&lt;/h2&gt;</code> provide navigation
+            landmarks for screen reader users even when hidden visually.</li>
+        <li><strong>Decorative icons:</strong> <code>&lt;icon-wc&gt;</code> without a
+            <code>label</code> attribute is automatically <code>aria-hidden="true"</code>,
+            preventing redundant announcements alongside the heading text.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
     <h2>JavaScript Integration</h2>
     <layout-text>
       <p>The pattern works CSS-only with server-rendered <code>data-state="empty"</code>. For dynamic content, toggle the attribute:</p>
@@ -228,17 +245,59 @@ fetchMessages().then(messages => {
     <h2>Icon Options</h2>
     <layout-text>
       <p>Choose icons that represent the empty content type. Common icons from the Lucide set:</p>
-      <ul>
-        <li><code>inbox</code> - Messages, notifications</li>
-        <li><code>file-text</code> - Documents, notes</li>
-        <li><code>users</code> - People, team members</li>
-        <li><code>folder</code> - Files, projects</li>
-        <li><code>search</code> - Search results</li>
-        <li><code>image</code> - Photos, media</li>
-        <li><code>calendar</code> - Events, schedules</li>
-        <li><code>shopping-cart</code> - Cart, orders</li>
-      </ul>
     </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Icon</th>
+          <th scope="col">Name</th>
+          <th scope="col">Use For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><icon-wc name="inbox" size="sm"></icon-wc></td>
+          <td><code>inbox</code></td>
+          <td>Messages, notifications</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="file-text" size="sm"></icon-wc></td>
+          <td><code>file-text</code></td>
+          <td>Documents, notes</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="users" size="sm"></icon-wc></td>
+          <td><code>users</code></td>
+          <td>People, team members</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="folder" size="sm"></icon-wc></td>
+          <td><code>folder</code></td>
+          <td>Files, projects</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="search" size="sm"></icon-wc></td>
+          <td><code>search</code></td>
+          <td>Search results</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="image" size="sm"></icon-wc></td>
+          <td><code>image</code></td>
+          <td>Photos, media</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="calendar" size="sm"></icon-wc></td>
+          <td><code>calendar</code></td>
+          <td>Events, schedules</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="shopping-cart" size="sm"></icon-wc></td>
+          <td><code>shopping-cart</code></td>
+          <td>Cart, orders</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>

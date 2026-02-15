@@ -19,15 +19,82 @@
       max-width: 400px;
       margin-inline: auto;
     }
+
+    .documents:not([data-state]) > .content {
+      list-style: none;
+      padding: var(--size-m);
+      margin: 0;
+      display: grid;
+      gap: var(--size-s);
+    }
+
+    .documents .content li {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      padding: var(--size-s);
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    .documents .content li strong {
+      flex: 1;
+    }
+
+    .documents .content li span {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* State toggle buttons for demo */
+    .state-controls {
+      display: flex;
+      gap: var(--size-s);
+      margin-block-end: var(--size-l);
+    }
+
+    .state-controls button {
+      padding: var(--size-xs) var(--size-s);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .state-controls button[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
   </style>
 </head>
 <body>
+  <!-- Demo state controls -->
+  <div class="state-controls">
+    <button type="button" data-set-state="populated" aria-pressed="false">Populated</button>
+    <button type="button" data-set-state="empty" aria-pressed="true">Empty</button>
+  </div>
+
   <section class="documents" data-state="empty">
     <h2 class="visually-hidden">Documents</h2>
 
     <!-- Populated content -->
     <ul class="content">
-      <!-- <li>Document items go here</li> -->
+      <li>
+        <icon-wc name="file-text"></icon-wc>
+        <strong>Project Proposal.pdf</strong>
+        <span>12 KB</span>
+      </li>
+      <li>
+        <icon-wc name="file-text"></icon-wc>
+        <strong>Meeting Notes.md</strong>
+        <span>4 KB</span>
+      </li>
+      <li>
+        <icon-wc name="file-text"></icon-wc>
+        <strong>Design Spec.docx</strong>
+        <span>28 KB</span>
+      </li>
     </ul>
 
     <!-- Empty state feedback with action -->
@@ -43,5 +110,28 @@
   </section>
 
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // Demo: Toggle states with buttons
+    const container = document.querySelector('.documents');
+    const buttons = document.querySelectorAll('[data-set-state]');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const state = button.dataset.setState;
+
+        // Update container state
+        if (state === 'populated') {
+          container.removeAttribute('data-state');
+        } else {
+          container.dataset.state = state;
+        }
+
+        // Update button pressed states
+        buttons.forEach(btn => {
+          btn.setAttribute('aria-pressed', btn === button ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
 </body>
 </html>
