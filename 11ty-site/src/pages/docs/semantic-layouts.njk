@@ -1,0 +1,521 @@
+---
+layout: layouts/docs.njk
+title: "Semantic Layouts"
+description: "Use data-layout attributes on semantic HTML elements instead of custom element wrappers. Same CSS, same behavior, better semantics."
+currentSection: docs
+currentPath: /docs/semantic-layouts/
+permalink: /docs/semantic-layouts/
+---
+
+{% set customElementApproach %}<layout-center data-layout-max="wide">
+  <layout-stack data-layout-gap="2xl">
+    <layout-stack data-layout-gap="s">
+      <h2>Everything you need</h2>
+      <p class="lead">Build faster without compromising quality.</p>
+    </layout-stack>
+    <layout-grid data-layout-min="250px" data-layout-gap="l">
+      <div>Feature 1</div>
+      <div>Feature 2</div>
+      <div>Feature 3</div>
+    </layout-grid>
+  </layout-stack>
+</layout-center>{% endset %}
+
+{% set semanticApproach %}<section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+  <header data-layout="stack" data-layout-gap="s">
+    <h2>Everything you need</h2>
+    <p class="lead">Build faster without compromising quality.</p>
+  </header>
+  <div data-layout="grid" data-layout-min="250px" data-layout-gap="l">
+    <div>Feature 1</div>
+    <div>Feature 2</div>
+    <div>Feature 3</div>
+  </div>
+</section>{% endset %}
+
+{% set centerStackBefore %}<layout-center data-layout-max="wide">
+  <layout-stack data-layout-gap="2xl">
+    <h2>Section Title</h2>
+    <p>Content here...</p>
+  </layout-stack>
+</layout-center>{% endset %}
+
+{% set centerGapAfter %}<section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+  <h2>Section Title</h2>
+  <p>Content here...</p>
+</section>{% endset %}
+
+{% set sidebarSemantic %}<div data-layout="sidebar" data-layout-gap="xl">
+  <aside>
+    <nav>Sidebar navigation...</nav>
+  </aside>
+  <article>
+    <h2>Main content</h2>
+    <p>The article takes up the remaining space.</p>
+  </article>
+</div>{% endset %}
+
+{% set gridSemantic %}<div data-layout="grid" data-layout-min="250px" data-layout-gap="l">
+  <layout-card>Card 1</layout-card>
+  <layout-card>Card 2</layout-card>
+  <layout-card>Card 3</layout-card>
+</div>{% endset %}
+
+{% set coverSemantic %}<body data-layout="cover" data-layout-min="100dvh">
+  <header>Top bar</header>
+  <main data-layout-principal>
+    <h1>Centered content</h1>
+  </main>
+  <footer>Footer</footer>
+</body>{% endset %}
+
+{% set clusterSemantic %}<div data-layout="cluster" data-layout-gap="s">
+  <button>Save</button>
+  <button class="secondary">Cancel</button>
+  <button class="ghost">Reset</button>
+</div>{% endset %}
+
+{% set step1Before %}<!-- 5 levels of nesting -->
+<layout-center data-layout-max="wide">           <!-- 1 -->
+  <layout-stack data-layout-gap="2xl">            <!-- 2 -->
+    <layout-stack data-layout-gap="s">            <!-- 3 -->
+      <h2>Everything you need to build faster</h2>
+      <p class="lead">Our platform provides...</p>
+    </layout-stack>
+    <layout-grid data-layout-min="250px">         <!-- 4 -->
+      <layout-stack data-layout-gap="s">          <!-- 5 -->
+        <h3>Lightning Fast</h3>
+        <p>Optimized for speed...</p>
+      </layout-stack>
+    </layout-grid>
+  </layout-stack>
+</layout-center>{% endset %}
+
+{% set step2Transform %}<!-- Step 1: layout-center + layout-stack &#x2192; section with center + gap -->
+<section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+  <layout-stack data-layout-gap="s">
+    <h2>Everything you need to build faster</h2>
+    <p class="lead">Our platform provides...</p>
+  </layout-stack>
+  <layout-grid data-layout-min="250px">
+    <layout-stack data-layout-gap="s">
+      <h3>Lightning Fast</h3>
+      <p>Optimized for speed...</p>
+    </layout-stack>
+  </layout-grid>
+</section>{% endset %}
+
+{% set step3Transform %}<!-- Step 2: layout-stack on header &#x2192; header with data-layout="stack" -->
+<section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+  <header data-layout="stack" data-layout-gap="s">
+    <h2>Everything you need to build faster</h2>
+    <p class="lead">Our platform provides...</p>
+  </header>
+  <layout-grid data-layout-min="250px">
+    <layout-stack data-layout-gap="s">
+      <h3>Lightning Fast</h3>
+      <p>Optimized for speed...</p>
+    </layout-stack>
+  </layout-grid>
+</section>{% endset %}
+
+{% set step4After %}<!-- Step 3: layout-grid &#x2192; div with data-layout="grid" -->
+<!-- 3 levels of nesting (down from 5) -->
+<section data-layout="center" data-layout-max="wide" data-layout-gap="2xl">
+  <header data-layout="stack" data-layout-gap="s">
+    <h2>Everything you need to build faster</h2>
+    <p class="lead">Our platform provides...</p>
+  </header>
+  <div data-layout="grid" data-layout-min="250px" data-layout-gap="l">
+    <div data-layout="stack" data-layout-gap="s">
+      <h3>Lightning Fast</h3>
+      <p>Optimized for speed...</p>
+    </div>
+  </div>
+</section>{% endset %}
+
+{% set visualComponentExample %}<!-- Visual components stay as custom elements -->
+<div data-layout="grid" data-layout-min="250px" data-layout-gap="l">
+  <layout-card data-variant="elevated" data-padding="l">
+    <h3>Premium Plan</h3>
+    <p>Everything you need.</p>
+  </layout-card>
+  <layout-badge data-variant="success">New</layout-badge>
+  <layout-text data-size="lg">Large text block</layout-text>
+</div>{% endset %}
+
+{% block extraHead %}
+<style>
+    .step-intro {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-l);
+    }
+
+    .key-concept {
+      padding: var(--size-m);
+      background: var(--color-primary-subtle);
+      border-inline-start: var(--border-width-thick) solid var(--color-interactive);
+      border-radius: var(--radius-s);
+      margin-block: var(--size-m);
+    }
+
+    .key-concept strong {
+      color: var(--color-interactive);
+    }
+
+    .nesting-number {
+      font-size: var(--font-size-3xl);
+      color: var(--color-interactive);
+    }
+
+    .nesting-label {
+      color: var(--color-text-muted);
+    }
+
+    .nesting-arrow {
+      font-size: var(--font-size-2xl);
+      color: var(--color-interactive);
+    }
+  </style>
+{% endblock %}
+
+
+<!-- Section 1: Why Semantic Layouts -->
+  <section id="why-semantic">
+    <h2>Why Semantic Layouts</h2>
+    <p class="step-intro">Vanilla Breeze layout primitives work on any element, not just custom elements. Using them on semantic HTML gives you the same layouts with additional benefits.</p>
+
+    <div data-layout="grid" data-layout-min="200px" data-layout-gap="m">
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs">
+          <h4>Fewer Nesting Levels</h4>
+          <p>Combine center + gap on a single element instead of nesting center inside stack. Less indentation, easier to scan.</p>
+        </layout-stack>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs">
+          <h4>Better Accessibility</h4>
+          <p>HTML validators and screen readers understand <code>&lt;section&gt;</code>, <code>&lt;header&gt;</code>, and <code>&lt;article&gt;</code> natively. No extra ARIA needed.</p>
+        </layout-stack>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs">
+          <h4>LLM-Friendly Markup</h4>
+          <p>AI tools parse semantic HTML better than custom elements. Your code is more understandable to both humans and machines.</p>
+        </layout-stack>
+      </layout-card>
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs">
+          <h4>Same CSS, Same Behavior</h4>
+          <p>The data-layout attributes use the exact same CSS as the custom elements. Nothing changes except the tag name.</p>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <div class="key-concept">
+      <strong>Key Insight:</strong> Semantic layouts are not a replacement for custom elements. They are an alternative authoring approach. Both are fully supported and share the same underlying CSS system.
+    </div>
+  </section>
+
+  <!-- Section 2: Two Approaches -->
+  <section id="two-approaches">
+    <h2>Two Approaches, Same CSS</h2>
+    <p class="step-intro">Every layout primitive in Vanilla Breeze can be used as either a custom element or a data attribute on any HTML element.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Layout</th>
+          <th>Custom Element</th>
+          <th>Data Attribute</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Stack</td>
+          <td><code>&lt;layout-stack&gt;</code></td>
+          <td><code>data-layout="stack"</code></td>
+        </tr>
+        <tr>
+          <td>Center</td>
+          <td><code>&lt;layout-center&gt;</code></td>
+          <td><code>data-layout="center"</code></td>
+        </tr>
+        <tr>
+          <td>Grid</td>
+          <td><code>&lt;layout-grid&gt;</code></td>
+          <td><code>data-layout="grid"</code></td>
+        </tr>
+        <tr>
+          <td>Cluster</td>
+          <td><code>&lt;layout-cluster&gt;</code></td>
+          <td><code>data-layout="cluster"</code></td>
+        </tr>
+        <tr>
+          <td>Sidebar</td>
+          <td><code>&lt;layout-sidebar&gt;</code></td>
+          <td><code>data-layout="sidebar"</code></td>
+        </tr>
+        <tr>
+          <td>Cover</td>
+          <td><code>&lt;layout-cover&gt;</code></td>
+          <td><code>data-layout="cover"</code></td>
+        </tr>
+        <tr>
+          <td>Switcher</td>
+          <td><code>&lt;layout-switcher&gt;</code></td>
+          <td><code>data-layout="switcher"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <layout-text>
+      <p>All data-layout attributes (gap, min, max, align, justify) work identically on both custom elements and semantic elements. The only difference is the tag name in your HTML.</p>
+    </layout-text>
+
+    <h3>Side-by-Side Comparison</h3>
+    <div data-layout="grid" data-layout-min="300px" data-layout-gap="m">
+      <div>
+        <h4>Custom Elements</h4>
+        <code-block language="html" label="Custom element approach">{{ customElementApproach | safe }}</code-block>
+      </div>
+      <div>
+        <h4>Semantic HTML</h4>
+        <code-block language="html" label="Semantic approach">{{ semanticApproach | safe }}</code-block>
+      </div>
+    </div>
+
+    <div class="key-concept">
+      <strong>Notice:</strong> The semantic version uses <code>&lt;section&gt;</code> and <code>&lt;header&gt;</code> instead of generic wrappers. Screen readers announce these landmarks automatically. The <code>data-layout-gap</code> on center also eliminates the need for a nested stack.
+    </div>
+  </section>
+
+  <!-- Section 3: Building a Feature Section -->
+  <section id="building-a-feature-section">
+    <h2>Building a Feature Section</h2>
+    <p class="step-intro">Let us transform a real feature section from custom elements to semantic HTML, one step at a time.</p>
+
+    <h3>The Starting Point</h3>
+    <layout-text>
+      <p>Here is a typical feature section built with custom element wrappers. It works, but notice how many nesting levels are required.</p>
+    </layout-text>
+
+    <code-block language="html" label="Before: Custom elements (5 levels deep)">{{ step1Before | safe }}</code-block>
+
+    <h3>Step 1: Replace layout-center + layout-stack</h3>
+    <layout-text>
+      <p>The outermost <code>&lt;layout-center&gt;</code> wrapping a <code>&lt;layout-stack&gt;</code> is a common pattern. With data attributes, we can combine both behaviors on a single <code>&lt;section&gt;</code> element by using <code>data-layout="center"</code> with <code>data-layout-gap</code>.</p>
+    </layout-text>
+
+    <code-block language="html" label="Step 1: center + gap on section">{{ step2Transform | safe }}</code-block>
+
+    <h3>Step 2: Replace the inner layout-stack</h3>
+    <layout-text>
+      <p>The heading group is naturally a <code>&lt;header&gt;</code> element. We apply <code>data-layout="stack"</code> directly to it.</p>
+    </layout-text>
+
+    <code-block language="html" label="Step 2: stack on header">{{ step3Transform | safe }}</code-block>
+
+    <h3>Step 3: Replace layout-grid</h3>
+    <layout-text>
+      <p>The grid wrapper becomes a plain <code>&lt;div&gt;</code> with <code>data-layout="grid"</code>. Each feature item also gets <code>data-layout="stack"</code>.</p>
+    </layout-text>
+
+    <code-block language="html" label="Step 3: grid and stack on divs">{{ step4After | safe }}</code-block>
+
+    <h3>The Result</h3>
+    <div data-layout="cluster" data-layout-gap="l" data-layout-justify="center" data-layout-align="center">
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs" data-layout-align="center">
+          <strong class="nesting-number">5</strong>
+          <small class="nesting-label">nesting levels before</small>
+        </layout-stack>
+      </layout-card>
+      <span class="nesting-arrow">&#8594;</span>
+      <layout-card data-variant="outlined" data-padding="m">
+        <layout-stack data-layout-gap="2xs" data-layout-align="center">
+          <strong class="nesting-number">3</strong>
+          <small class="nesting-label">nesting levels after</small>
+        </layout-stack>
+      </layout-card>
+    </div>
+
+    <layout-text>
+      <p>The semantic version is flatter, uses real HTML landmarks, and produces the exact same visual result. Every <code>data-layout</code> attribute maps to the same CSS rules as its custom element counterpart.</p>
+    </layout-text>
+  </section>
+
+  <!-- Section 4: The Center + Gap Pattern -->
+  <section id="center-gap-pattern">
+    <h2>The Center + Gap Pattern</h2>
+    <p class="step-intro">The most common refactoring: eliminating a nested stack inside a center element.</p>
+
+    <layout-text>
+      <p>In Vanilla Breeze, when <code>data-layout-gap</code> is added to a center element, the center switches from <code>display: block</code> to <code>display: flex; flex-direction: column</code> with the specified gap. This means a single element can both center its content and space its children vertically.</p>
+    </layout-text>
+
+    <h3>Before: Two Elements</h3>
+    <code-block language="html" label="center wrapping a stack">{{ centerStackBefore | safe }}</code-block>
+
+    <h3>After: One Element</h3>
+    <code-block language="html" label="center with gap (no nested stack)">{{ centerGapAfter | safe }}</code-block>
+
+    <div class="key-concept">
+      <strong>How It Works:</strong> The CSS rule <code>[data-layout="center"][data-layout-gap]</code> activates <code>display: flex; flex-direction: column</code>, turning the center into a flex container with vertical gap. This is the same behavior as <code>layout-center[data-layout-gap]</code> on the custom element.
+    </div>
+  </section>
+
+  <!-- Section 5: Common Compositions -->
+  <section id="common-compositions">
+    <h2>Common Compositions</h2>
+    <p class="step-intro">Here are the most useful semantic layout patterns you will reach for regularly.</p>
+
+    <h3>Center + Gap (replaces center &gt; stack)</h3>
+    <layout-text>
+      <p>The most common pattern. Use on <code>&lt;section&gt;</code>, <code>&lt;main&gt;</code>, or <code>&lt;article&gt;</code> to center content with vertical spacing.</p>
+    </layout-text>
+    <code-block language="html" label="center + gap on section">{{ centerGapAfter | safe }}</code-block>
+
+    <h3>Sidebar on Article or Section</h3>
+    <layout-text>
+      <p>The sidebar layout is semantic-aware: it automatically recognizes <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> as sidebar elements and <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code> as content elements.</p>
+    </layout-text>
+    <code-block language="html" label="sidebar with semantic children">{{ sidebarSemantic | safe }}</code-block>
+
+    <h3>Grid on a Div</h3>
+    <layout-text>
+      <p>Use <code>data-layout="grid"</code> on a plain div to create responsive grids. Visual components like <code>&lt;layout-card&gt;</code> remain as custom elements inside.</p>
+    </layout-text>
+    <code-block language="html" label="grid with card children">{{ gridSemantic | safe }}</code-block>
+
+    <h3>Cover on Body or Main</h3>
+    <layout-text>
+      <p>The cover layout vertically centers a principal element. Use <code>data-layout-principal</code> on the child you want centered.</p>
+    </layout-text>
+    <code-block language="html" label="cover on body">{{ coverSemantic | safe }}</code-block>
+
+    <h3>Cluster on a Div for Button Groups</h3>
+    <layout-text>
+      <p>Use <code>data-layout="cluster"</code> for horizontal groups of items that wrap naturally.</p>
+    </layout-text>
+    <code-block language="html" label="cluster for button group">{{ clusterSemantic | safe }}</code-block>
+  </section>
+
+  <!-- Section 6: When to Keep Custom Elements -->
+  <section id="keep-custom-elements">
+    <h2>When to Keep Custom Elements</h2>
+    <p class="step-intro">Not everything should become a data attribute. Visual components always stay as custom elements.</p>
+
+    <layout-text>
+      <p>The key distinction is between <strong>layout primitives</strong> and <strong>visual components</strong>:</p>
+    </layout-text>
+
+    <ul>
+      <li><strong>Layout primitives</strong> (stack, center, grid, cluster, sidebar, cover, switcher) control spacing and arrangement. These are good candidates for <code>data-layout</code> attributes.</li>
+      <li><strong>Visual components</strong> (card, badge, text, brand-mark, form-field) provide visual styling like shadows, borders, backgrounds, and typography. These should remain as custom elements.</li>
+    </ul>
+
+    <code-block language="html" label="Mixing both approaches">{{ visualComponentExample | safe }}</code-block>
+
+    <layout-text>
+      <p>In this example, the grid is a data attribute (layout concern), while cards and badges remain as custom elements (visual concern). This is the recommended pattern: semantic HTML for structure, custom elements for styled components.</p>
+    </layout-text>
+
+    <div class="key-concept">
+      <strong>Rule of Thumb:</strong> If the element adds visual decoration (shadows, borders, backgrounds, badges), keep it as a custom element. If it only arranges children (spacing, alignment, columns), use <code>data-layout</code> on a semantic element.
+    </div>
+  </section>
+
+  <!-- Section 7: Decision Guide -->
+  <section id="decision-guide">
+    <h2>Decision Guide</h2>
+    <p class="step-intro">Use this table to decide which approach fits your situation.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Recommended Approach</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Quick prototyping</td>
+          <td>Custom elements</td>
+          <td>Fastest to type, self-documenting tag names</td>
+        </tr>
+        <tr>
+          <td>Simple page, minimal nesting</td>
+          <td>Either</td>
+          <td>Both work well when structure is shallow</td>
+        </tr>
+        <tr>
+          <td>Production code</td>
+          <td>Data attributes</td>
+          <td>Better semantics, cleaner HTML, fewer nesting levels</td>
+        </tr>
+        <tr>
+          <td>Complex nested layouts</td>
+          <td>Data attributes</td>
+          <td>Significantly reduces nesting depth</td>
+        </tr>
+        <tr>
+          <td>Accessibility-sensitive context</td>
+          <td>Data attributes</td>
+          <td>Screen readers understand native landmarks</td>
+        </tr>
+        <tr>
+          <td>Working with LLMs or AI tools</td>
+          <td>Data attributes</td>
+          <td>Standard HTML is better understood by AI</td>
+        </tr>
+        <tr>
+          <td>Visual components (card, badge)</td>
+          <td>Custom elements</td>
+          <td>These provide styling, not just layout</td>
+        </tr>
+        <tr>
+          <td>Teaching HTML concepts</td>
+          <td>Custom elements</td>
+          <td>Tag names make the layout intent explicit</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <layout-text>
+      <p>You can freely mix both approaches in the same page. Use custom elements where they make the code clearer and data attributes where they reduce unnecessary nesting. The CSS is the same either way.</p>
+    </layout-text>
+
+    <div class="key-concept">
+      <strong>Bottom Line:</strong> There is no wrong choice. Both approaches produce identical results. Choose whichever makes your HTML most readable for your team and your tools.
+    </div>
+  </section>
+
+  <!-- Section 8: Page Layouts & Grid Identity -->
+  <section id="page-layouts">
+    <h2>Page Layouts &amp; Grid Identity</h2>
+    <p class="step-intro">Semantic layouts extend beyond component-level patterns to full page structure with the grid identity system.</p>
+
+    <layout-text>
+      <p>VB includes a three-tier grid identity system where semantic HTML elements auto-register to grid areas based on their element type. At the page level, <code>data-page-layout</code> on the <code>&lt;body&gt;</code> turns <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, and <code>&lt;footer&gt;</code> into grid areas automatically &mdash; no classes needed.</p>
+    </layout-text>
+
+    <code-block language="html" label="Page-level grid identity">{`<body data-page-layout="sidebar-left">
+  <header>Site header</header>
+  <nav>Navigation</nav>
+  <main data-layout="stack" data-layout-gap="l">
+    Content with nested layouts...
+  </main>
+  <footer>Site footer</footer>
+</body>`}</code-block>
+
+    <layout-text>
+      <p>At the component level, <code>data-layout="regions"</code> generalizes the header/content/footer pattern to any element, and <code>data-layout="media"</code> provides a figure+content media object. These compose with page layouts for full three-tier nesting.</p>
+    </layout-text>
+
+    <div class="key-concept">
+      <strong>Learn more:</strong> See the <a href="/docs/grid-identity/">Grid Identity</a> page for the full system documentation, including page templates, named area overrides, main-level layouts, and composing all three tiers together.
+    </div>
+  </section>

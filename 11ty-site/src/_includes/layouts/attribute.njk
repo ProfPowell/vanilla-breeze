@@ -1,0 +1,67 @@
+{#
+  Attribute layout — for attribute documentation pages.
+  Includes sidebar navigation (all attribute categories) and TOC.
+
+  Front matter variables:
+    attributeName — attribute name (e.g., "data-layout")
+    category      — attribute category key (e.g., 'layout', 'formatting', 'form-controls')
+    currentPath   — current page path for aria-current
+    title         — page title
+    description   — attribute description
+#}
+{% extends "layouts/base.njk" %}
+
+{% set dataPage = "docs" %}
+{% set currentSection = "api" %}
+{% set includeDocs = true %}
+
+{%- set attributes = navigation.attributes -%}
+
+{% block pageContent %}
+<main data-pagefind-body>
+  {% include "partials/sidebar-nav-drawer.njk" %}
+
+  <layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="narrow" data-layout-content-min="60">
+    <nav class="tree" id="nav-drawer" data-layout-density="compact" aria-label="Attributes navigation" data-vt="sidebar">
+      <label for="nav-drawer-toggle" class="nav-drawer-close" aria-label="Close navigation">
+        <icon-wc name="x"></icon-wc>
+      </label>
+
+      {% for key, cat in attributes %}
+      <details{% if category == key %} open{% endif %}>
+        <summary>{{ cat.label }}</summary>
+        <ul>
+          {% for item in cat.items %}
+          <li>
+            <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
+              {{ item.name }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endfor %}
+    </nav>
+
+    <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
+      <aside>
+        <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+      </aside>
+      <article>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/docs/attributes/">Attributes</a></li>
+            <li><span aria-current="page">{{ attributeName }}</span></li>
+          </ol>
+        </nav>
+        <h1>{{ attributeName }}</h1>
+        <p class="lead">{{ description }}</p>
+
+        <heading-links data-levels="h2,h3">
+          {{ content | safe }}
+        </heading-links>
+      </article>
+    </layout-sidebar>
+  </layout-sidebar>
+</main>
+{% endblock %}

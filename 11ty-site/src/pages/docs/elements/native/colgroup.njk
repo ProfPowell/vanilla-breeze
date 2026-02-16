@@ -1,0 +1,286 @@
+---
+layout: layouts/element.njk
+title: "colgroup"
+description: "The colgroup element defines a group of columns within a table, allowing you to apply styles or attributes to entire columns without repeating them on each cell."
+elementName: colgroup
+category: native
+nativeGroup: Tables
+currentPath: /docs/elements/native/colgroup/
+permalink: /docs/elements/native/colgroup/
+---
+
+{% set spanAttributeCode %}<table>
+  <caption>Product Comparison</caption>
+  <colgroup span="1"></colgroup>
+  <colgroup span="3" style="background: oklch(95% 0.02 200);"></colgroup>
+  <thead>
+    <!-- Table headers -->
+  </thead>
+  <tbody>
+    <!-- Table data -->
+  </tbody>
+</table>{% endset %}
+
+{% set colElementsCode %}<table>
+  <caption>Sales by Region</caption>
+  <colgroup>
+    <col style="width: 30%;" />
+    <col style="width: 25%;" />
+    <col style="width: 25%;" />
+    <col style="width: 20%;" />
+  </colgroup>
+  <thead>
+    <!-- Table headers -->
+  </thead>
+  <tbody>
+    <!-- Table data -->
+  </tbody>
+</table>{% endset %}
+
+{% set cssCellTargetingCode %}/* Target cells in a specific column */
+td:nth-child(2),
+th:nth-child(2) {
+  text-align: end;
+}{% endset %}
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;colgroup&gt;</code> element groups one or more columns in a table for styling or structural purposes. It must appear after the <a href="/docs/elements/native/caption/"><code>&lt;caption&gt;</code></a> (if present) and before <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a>, <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a>, or <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> elements.</p>
+    <p>While CSS has limited support for column styling, <code>&lt;colgroup&gt;</code> remains useful for setting column widths and applying background colors.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Column widths:</strong> Set fixed or proportional widths for specific columns</li>
+      <li><strong>Column backgrounds:</strong> Apply background colors to entire columns</li>
+      <li><strong>Semantic grouping:</strong> Group related columns together for clarity</li>
+      <li><strong>Accessibility:</strong> Help assistive technologies understand column relationships</li>
+    </ul>
+
+    <h3>When Not Needed</h3>
+    <ul>
+      <li><strong>Simple tables:</strong> Tables where all columns have equal treatment</li>
+      <li><strong>Cell-level styling:</strong> When styles need to vary within a column</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Example</h2>
+    <p>Use <code>span</code> to define how many columns the group covers, or include <a href="/docs/elements/native/col/"><code>&lt;col&gt;</code></a> elements for individual column control.</p>
+
+    <h3>Using span Attribute</h3>
+    <div class="example">
+      <table>
+        <caption>Product Comparison</caption>
+        <colgroup span="1"></colgroup>
+        <colgroup span="3" style="background: oklch(95% 0.02 200);"></colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Basic</th>
+            <th scope="col">Pro</th>
+            <th scope="col">Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Storage</th>
+            <td>10 GB</td>
+            <td>100 GB</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <th scope="row">Users</th>
+            <td>1</td>
+            <td>5</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <th scope="row">Support</th>
+            <td>Email</td>
+            <td>Priority</td>
+            <td>24/7 Phone</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Colgroup with span attribute">{{ spanAttributeCode | safe }}</code-block>
+
+    <h3>Using col Elements</h3>
+    <div class="example">
+      <table>
+        <caption>Sales by Region</caption>
+        <colgroup>
+          <col style="width: 30%;" />
+          <col style="width: 25%;" />
+          <col style="width: 25%;" />
+          <col style="width: 20%;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Region</th>
+            <th scope="col" data-numeric>Q1</th>
+            <th scope="col" data-numeric>Q2</th>
+            <th scope="col" data-numeric>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>North</td>
+            <td data-numeric>$45,000</td>
+            <td data-numeric>$52,000</td>
+            <td data-numeric>$97,000</td>
+          </tr>
+          <tr>
+            <td>South</td>
+            <td data-numeric>$38,000</td>
+            <td data-numeric>$41,000</td>
+            <td data-numeric>$79,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Colgroup with col elements">{{ colElementsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Multiple Column Groups</h2>
+    <p>Use multiple <code>&lt;colgroup&gt;</code> elements to create logical groupings of columns.</p>
+
+    <div class="example">
+      <table>
+        <caption>Annual Budget Overview</caption>
+        <colgroup>
+          <col style="width: 25%;" />
+        </colgroup>
+        <colgroup span="2" style="background: oklch(95% 0.03 140);"></colgroup>
+        <colgroup span="2" style="background: oklch(95% 0.03 220);"></colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col" data-numeric>Planned</th>
+            <th scope="col" data-numeric>Actual</th>
+            <th scope="col" data-numeric>Budget</th>
+            <th scope="col" data-numeric>Remaining</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Marketing</td>
+            <td data-numeric>$50,000</td>
+            <td data-numeric>$48,500</td>
+            <td data-numeric>$55,000</td>
+            <td data-numeric>$6,500</td>
+          </tr>
+          <tr>
+            <td>Development</td>
+            <td data-numeric>$120,000</td>
+            <td data-numeric>$118,000</td>
+            <td data-numeric>$125,000</td>
+            <td data-numeric>$7,000</td>
+          </tr>
+          <tr>
+            <td>Operations</td>
+            <td data-numeric>$80,000</td>
+            <td data-numeric>$82,500</td>
+            <td data-numeric>$85,000</td>
+            <td data-numeric>$2,500</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>CSS Limitations</h2>
+    <p>Only certain CSS properties can be applied to <code>&lt;colgroup&gt;</code> and <a href="/docs/elements/native/col/"><code>&lt;col&gt;</code></a> elements:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Property</th>
+          <th scope="col">Supported</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>background</code></td>
+          <td>Yes</td>
+          <td>Background color and images</td>
+        </tr>
+        <tr>
+          <td><code>width</code></td>
+          <td>Yes</td>
+          <td>Column width</td>
+        </tr>
+        <tr>
+          <td><code>border</code></td>
+          <td>Partial</td>
+          <td>Only when <code>border-collapse: collapse</code></td>
+        </tr>
+        <tr>
+          <td><code>visibility</code></td>
+          <td>Yes</td>
+          <td>Only <code>collapse</code> value</td>
+        </tr>
+        <tr>
+          <td><code>padding</code></td>
+          <td>No</td>
+          <td>Apply to <code>th</code>/<code>td</code> instead</td>
+        </tr>
+        <tr>
+          <td><code>text-align</code></td>
+          <td>No</td>
+          <td>Apply to <code>th</code>/<code>td</code> instead</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>For properties not supported on column groups, use CSS selectors targeting cells:</p>
+
+    <code-block language="css" show-lines label="CSS targeting specific column cells">{{ cssCellTargetingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Column relationships:</strong> Helps assistive technologies understand column groupings</li>
+      <li><strong>Visual distinction:</strong> Background colors can help users track columns, but ensure sufficient contrast</li>
+      <li><strong>Not a replacement:</strong> <code>&lt;colgroup&gt;</code> does not replace the need for proper <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> headers with <code>scope</code> attributes</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Value</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>span</code></td>
+          <td>Positive integer</td>
+          <td>Number of columns the group spans. Cannot be used if <code>&lt;col&gt;</code> children are present.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - Parent container</li>
+      <li><a href="/docs/elements/native/col/"><code>&lt;col&gt;</code></a> - Individual column within a colgroup</li>
+      <li><a href="/docs/elements/native/caption/"><code>&lt;caption&gt;</code></a> - Must appear before colgroup</li>
+      <li><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> - Appears after colgroup</li>
+    </ul>
+  </section>

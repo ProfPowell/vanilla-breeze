@@ -1,0 +1,283 @@
+---
+layout: layouts/element.njk
+title: "context-menu-wc"
+description: "Right-click context menu with keyboard navigation and viewport-aware positioning."
+elementName: context-menu-wc
+category: component
+currentPath: /docs/elements/web-components/context-menu/
+permalink: /docs/elements/web-components/context-menu/
+---
+
+{% set basicCode %}<context-menu-wc>
+  <div data-trigger>
+    <p>Right-click anywhere here</p>
+  </div>
+  <menu>
+    <li><button>Cut</button></li>
+    <li><button>Copy</button></li>
+    <li><button>Paste</button></li>
+    <li role="separator"></li>
+    <li><button class="danger">Delete</button></li>
+  </menu>
+</context-menu-wc>{% endset %}
+
+{% set disabledCode %}<menu>
+  <li><button>Open</button></li>
+  <li><button data-disabled>Share (disabled)</button></li>
+  <li role="separator"></li>
+  <li><button class="danger">Delete</button></li>
+</menu>{% endset %}
+
+{% set iconsCode %}<context-menu-wc>
+  <div data-trigger>
+    <p>Right-click here</p>
+  </div>
+  <menu>
+    <li><button><icon-wc name="scissors"></icon-wc> Cut</button></li>
+    <li><button><icon-wc name="copy"></icon-wc> Copy</button></li>
+    <li><button><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+  </menu>
+</context-menu-wc>{% endset %}
+
+{% set shortcutsCode %}<menu>
+  <li><button data-shortcut="meta+x"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+  <li><button data-shortcut="meta+c"><icon-wc name="copy"></icon-wc> Copy</button></li>
+  <li><button data-shortcut="meta+v"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+  <li role="separator"></li>
+  <li><button data-shortcut="meta+a">Select All</button></li>
+</menu>{% endset %}
+
+{% set groupLabelsCode %}<menu>
+  <li data-group>Edit</li>
+  <li><button><icon-wc name="scissors"></icon-wc> Cut</button></li>
+  <li><button><icon-wc name="copy"></icon-wc> Copy</button></li>
+  <li data-group>View</li>
+  <li><button><icon-wc name="zoom-in"></icon-wc> Zoom In</button></li>
+  <li><button><icon-wc name="zoom-out"></icon-wc> Zoom Out</button></li>
+</menu>{% endset %}
+
+{% set jsApiCode %}const menu = document.querySelector('context-menu-wc');
+
+menu.addEventListener('context-select', (e) => \{
+  console.log('Selected:', e.detail.item);
+\});
+
+menu.addEventListener('context-menu-open', () => \{
+  console.log('Menu opened');
+\});{% endset %}
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;context-menu-wc&gt;</code> component provides a custom right-click menu that opens at the cursor position. It supports keyboard navigation, separators, danger items, and disabled states. Shares menu styling patterns with <code>&lt;dropdown-wc&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <div class="example">
+      <context-menu-wc>
+        <div data-trigger style="border: 2px dashed var(--color-border); border-radius: var(--radius-m); padding: var(--size-l); text-align: center; color: var(--color-text-muted);">
+          <p>Right-click here for options</p>
+        </div>
+        <menu>
+          <li><button type="button">Cut</button></li>
+          <li><button type="button">Copy</button></li>
+          <li><button type="button">Paste</button></li>
+          <li role="separator"></li>
+          <li><button type="button" class="danger">Delete</button></li>
+        </menu>
+      </context-menu-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Basic context menu">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Structure</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>[data-trigger]</code></td>
+          <td>Container where right-click is captured</td>
+        </tr>
+        <tr>
+          <td><code>&lt;menu&gt;</code></td>
+          <td>The context menu with list items</td>
+        </tr>
+        <tr>
+          <td><code>role="separator"</code></td>
+          <td>Visual divider between groups</td>
+        </tr>
+        <tr>
+          <td><code>.danger</code></td>
+          <td>Destructive action styling (red)</td>
+        </tr>
+        <tr>
+          <td><code>[data-disabled]</code></td>
+          <td>Greyed-out non-interactive item</td>
+        </tr>
+        <tr>
+          <td><code>[data-shortcut]</code></td>
+          <td>Display keyboard shortcut badge AND bind a real global shortcut</td>
+        </tr>
+        <tr>
+          <td><code>&lt;li data-group&gt;</code></td>
+          <td>Non-interactive section label</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Disabled Items</h2>
+    <code-block language="html" show-lines label="Disabled and danger items">{{ disabledCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>With Icons</h2>
+    <p>Add <code>&lt;icon-wc&gt;</code> or inline <code>&lt;svg&gt;</code> inside buttons. The existing flex layout handles alignment automatically.</p>
+
+    <div class="example">
+      <context-menu-wc>
+        <div data-trigger style="border: 2px dashed var(--color-border); border-radius: var(--radius-m); padding: var(--size-l); text-align: center; color: var(--color-text-muted);">
+          <p>Right-click for icon menu</p>
+        </div>
+        <menu>
+          <li><button type="button"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+          <li><button type="button"><icon-wc name="copy"></icon-wc> Copy</button></li>
+          <li><button type="button"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+        </menu>
+      </context-menu-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Icons in menu items">{{ iconsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Shortcuts</h2>
+    <p>Add <code>data-shortcut</code> to any button to display a keyboard shortcut badge <strong>and bind a real global keyboard shortcut</strong>. Pressing the shortcut anywhere on the page triggers the button's click. The format is platform-aware — it shows <kbd>&#x2318;</kbd> symbols on Mac and <kbd>Ctrl</kbd> text on other platforms. Shortcuts are automatically cleaned up when the component disconnects.</p>
+
+    <div class="example">
+      <context-menu-wc>
+        <div data-trigger style="border: 2px dashed var(--color-border); border-radius: var(--radius-m); padding: var(--size-l); text-align: center; color: var(--color-text-muted);">
+          <p>Right-click for shortcut badges</p>
+        </div>
+        <menu>
+          <li><button type="button" data-shortcut="meta+x"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+          <li><button type="button" data-shortcut="meta+c"><icon-wc name="copy"></icon-wc> Copy</button></li>
+          <li><button type="button" data-shortcut="meta+v"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+          <li role="separator"></li>
+          <li><button type="button" data-shortcut="meta+a">Select All</button></li>
+        </menu>
+      </context-menu-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Shortcut badges">{{ shortcutsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Group Labels</h2>
+    <p>Use <code>&lt;li data-group&gt;</code> to create labeled sections within the menu. Group labels are non-interactive and visually separated from items. Non-first groups automatically get a top border.</p>
+
+    <div class="example">
+      <context-menu-wc>
+        <div data-trigger style="border: 2px dashed var(--color-border); border-radius: var(--radius-m); padding: var(--size-l); text-align: center; color: var(--color-text-muted);">
+          <p>Right-click for grouped menu</p>
+        </div>
+        <menu>
+          <li data-group>Edit</li>
+          <li><button type="button"><icon-wc name="scissors"></icon-wc> Cut</button></li>
+          <li><button type="button"><icon-wc name="copy"></icon-wc> Copy</button></li>
+          <li data-group>View</li>
+          <li><button type="button"><icon-wc name="zoom-in"></icon-wc> Zoom In</button></li>
+          <li><button type="button"><icon-wc name="zoom-out"></icon-wc> Zoom Out</button></li>
+          <li data-group>Danger Zone</li>
+          <li><button type="button" class="danger"><icon-wc name="trash-2"></icon-wc> Delete</button></li>
+        </menu>
+      </context-menu-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Group labels">{{ groupLabelsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Arrow Down</kbd></td><td>Move to next item</td></tr>
+        <tr><td><kbd>Arrow Up</kbd></td><td>Move to previous item</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>Move to first item</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Move to last item</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate focused item</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close menu</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+
+    <h3>Methods</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>close()</code></td>
+          <td>Close the context menu</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>context-menu-open</code></td>
+          <td>Fired when the menu opens</td>
+        </tr>
+        <tr>
+          <td><code>context-menu-close</code></td>
+          <td>Fired when the menu closes</td>
+        </tr>
+        <tr>
+          <td><code>context-select</code></td>
+          <td>Fired when an item is selected (<code>detail.item</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="JavaScript API">{{ jsApiCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Full keyboard navigation (Arrow keys, Home/End, Enter, Escape)</li>
+      <li>Menu items have <code>role="menuitem"</code></li>
+      <li>Separators have <code>role="separator"</code></li>
+      <li>Closes on click outside, Escape, or scroll</li>
+      <li>Menu is positioned within viewport bounds</li>
+    </ul>
+  </section>

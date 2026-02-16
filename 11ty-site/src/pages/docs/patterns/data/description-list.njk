@@ -1,0 +1,353 @@
+---
+layout: layouts/pattern.njk
+title: "Description List Pattern"
+description: "Display key-value pairs using semantic HTML description lists. Perfect for detail panels, settings displays, and profile information."
+patternName: "Description List"
+category: data
+currentPath: /docs/patterns/data/description-list/
+permalink: /docs/patterns/data/description-list/
+---
+
+{% set stackedStyles %}@scope (.key-value[data-layout="stacked"]) {
+  :scope {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-l);
+  }
+  dl-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs);
+  }
+  dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+  dd {
+    margin: 0;
+    font-size: var(--font-size-md);
+  }
+}{% endset %}
+
+{% set horizontalStyles %}@scope (.key-value) {
+  :scope {
+    margin: 0;
+  }
+  dl-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: var(--size-m);
+    align-items: baseline;
+    padding-block: var(--size-s);
+    border-bottom: 1px solid var(--color-border);
+  }
+  dl-item:last-child {
+    border-bottom: none;
+  }
+  dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+  dd {
+    margin: 0;
+  }
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 480px) {
+  @scope (.key-value) {
+    dl-item {
+      grid-template-columns: 1fr;
+      gap: var(--size-2xs);
+    }
+  }
+}{% endset %}
+
+{% set sectionHeadingStyles %}.section-heading {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Description lists provide a structured way to present pairs of labels and values. Using the semantic <code>&lt;dl&gt;</code>, <code>&lt;dt&gt;</code>, and <code>&lt;dd&gt;</code> elements ensures proper accessibility and document structure while providing flexibility for visual styling.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Semantic HTML for accessibility and SEO</li>
+        <li>Flexible layouts: vertical stacking or horizontal rows</li>
+        <li>Grouped sections for organized data presentation</li>
+        <li>Consistent styling with muted labels and clear values</li>
+        <li>Responsive design that adapts to screen size</li>
+        <li>Uses <code>@scope</code> for encapsulated, semantic CSS selectors</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Vertical Layout</h2>
+    <layout-text>
+      <p>A basic vertical description list with terms stacked above their descriptions. The <code>&lt;dl-item&gt;</code> custom element groups each <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/description-list-simple.html"
+      url="https://app.example.com/user/details"
+      title="Simple Description List"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Simple vertical description list">&lt;dl class="key-value" data-layout="stacked"&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Full Name&lt;/dt&gt;
+    &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Email Address&lt;/dt&gt;
+    &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Phone Number&lt;/dt&gt;
+    &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Status&lt;/dt&gt;
+    &lt;dd&gt;
+      &lt;span class="badge success"&gt;Active&lt;/span&gt;
+    &lt;/dd&gt;
+  &lt;/dl-item&gt;
+&lt;/dl&gt;</code-block>
+
+    <h3>Stacked Layout Styles</h3>
+    <code-block language="css" label="Stacked description list CSS">{{ stackedStyles | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Horizontal Layout</h2>
+    <layout-text>
+      <p>A horizontal layout with labels on the left and values on the right. This format works well for detail panels, settings pages, and profile information where you want to scan labels quickly.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/description-list-horizontal.html"
+      url="https://app.example.com/account"
+      title="Horizontal Description List"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Horizontal description list">&lt;dl class="key-value"&gt;
+  &lt;dl-item&gt;
+    &lt;dt&gt;Full Name&lt;/dt&gt;
+    &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Email&lt;/dt&gt;
+    &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Phone&lt;/dt&gt;
+    &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
+  &lt;/dl-item&gt;
+
+  &lt;dl-item&gt;
+    &lt;dt&gt;Status&lt;/dt&gt;
+    &lt;dd&gt;
+      &lt;span class="badge success"&gt;Active&lt;/span&gt;
+    &lt;/dd&gt;
+  &lt;/dl-item&gt;
+&lt;/dl&gt;</code-block>
+
+    <h3>Horizontal Layout Styles</h3>
+    <code-block language="css" label="Horizontal description list CSS">{{ horizontalStyles | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Grouped Sections</h2>
+    <layout-text>
+      <p>Multiple description lists organized into logical sections with headings. Each section uses a <code>&lt;layout-card&gt;</code> for visual separation. Ideal for profile pages, order details, or settings displays.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/description-list-grouped.html"
+      url="https://app.example.com/settings"
+      title="Grouped Description Lists"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Grouped description lists">&lt;layout-stack data-layout-gap="l"&gt;
+  &lt;!-- Personal Information Section --&gt;
+  &lt;layout-card data-padding="l"&gt;
+    &lt;layout-stack data-layout-gap="m"&gt;
+      &lt;h2 class="section-heading"&gt;Personal Information&lt;/h2&gt;
+      &lt;dl class="key-value"&gt;
+        &lt;dl-item&gt;
+          &lt;dt&gt;Full Name&lt;/dt&gt;
+          &lt;dd&gt;Alexandra Chen&lt;/dd&gt;
+        &lt;/dl-item&gt;
+        &lt;dl-item&gt;
+          &lt;dt&gt;Date of Birth&lt;/dt&gt;
+          &lt;dd&gt;March 15, 1992&lt;/dd&gt;
+        &lt;/dl-item&gt;
+      &lt;/dl&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-card&gt;
+
+  &lt;!-- Contact Details Section --&gt;
+  &lt;layout-card data-padding="l"&gt;
+    &lt;layout-stack data-layout-gap="m"&gt;
+      &lt;h2 class="section-heading"&gt;Contact Details&lt;/h2&gt;
+      &lt;dl class="key-value"&gt;
+        &lt;dl-item&gt;
+          &lt;dt&gt;Email&lt;/dt&gt;
+          &lt;dd&gt;alexandra.chen@example.com&lt;/dd&gt;
+        &lt;/dl-item&gt;
+        &lt;dl-item&gt;
+          &lt;dt&gt;Phone&lt;/dt&gt;
+          &lt;dd&gt;+1 (555) 123-4567&lt;/dd&gt;
+        &lt;/dl-item&gt;
+      &lt;/dl&gt;
+    &lt;/layout-stack&gt;
+  &lt;/layout-card&gt;
+&lt;/layout-stack&gt;</code-block>
+
+    <h3>Section Heading Styles</h3>
+    <code-block language="css" label="Section heading CSS">{{ sectionHeadingStyles | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Configuration</h2>
+    <layout-text>
+      <p>Description list patterns use these elements and CSS techniques:</p>
+    </layout-text>
+
+    <h3>HTML Structure</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Purpose</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;dl class="key-value"&gt;</code></td>
+          <td>Container</td>
+          <td>The description list container. Add <code>data-layout="stacked"</code> for vertical layout.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dl-item&gt;</code></td>
+          <td>Row grouping</td>
+          <td>Custom element that groups a <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair for styling.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dt&gt;</code></td>
+          <td>Label</td>
+          <td>The description term (label).</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dd&gt;</code></td>
+          <td>Value</td>
+          <td>The description details (value).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Grid Row Widths</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Label Width</th>
+          <th>Best For</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>100px</code></td>
+          <td>Short labels</td>
+          <td>Works well for single-word labels like "Name", "Email", "Phone"</td>
+        </tr>
+        <tr>
+          <td><code>140px</code></td>
+          <td>Medium labels</td>
+          <td>Good balance for labels like "Full Name", "Phone Number"</td>
+        </tr>
+        <tr>
+          <td><code>180px</code></td>
+          <td>Long labels</td>
+          <td>Accommodates longer labels like "Email Address", "Member Since"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>CSS Custom Properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Usage</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--color-text-muted</code></td>
+          <td>Labels (dt)</td>
+          <td>Subdued color for term labels to create visual hierarchy</td>
+        </tr>
+        <tr>
+          <td><code>--color-border</code></td>
+          <td>Row separators</td>
+          <td>Light border color for horizontal row dividers</td>
+        </tr>
+        <tr>
+          <td><code>--font-size-sm</code></td>
+          <td>Labels (dt)</td>
+          <td>Smaller font size for term labels</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Semantic HTML:</strong> Always use <code>&lt;dl&gt;</code>, <code>&lt;dt&gt;</code>, and <code>&lt;dd&gt;</code> elements for proper accessibility. Screen readers announce these as description lists.</li>
+        <li><strong>CSS <code>@scope</code>:</strong> Styles use <code>@scope (.key-value)</code> to encapsulate rules and enable semantic element selectors (<code>dl-item</code>, <code>dt</code>, <code>dd</code>) without class pollution.</li>
+        <li><strong>Item grouping:</strong> The <code>&lt;dl-item&gt;</code> custom element groups each term/description pair. This is valid HTML5 and enables grid layout for horizontal display.</li>
+        <li><strong>Multiple values:</strong> A single <code>&lt;dt&gt;</code> can have multiple <code>&lt;dd&gt;</code> elements for multiple values (e.g., multiple phone numbers).</li>
+        <li><strong>Responsive design:</strong> The horizontal layout uses a media query to stack on smaller screens, switching from grid to single-column display.</li>
+        <li><strong>Value formatting:</strong> Use badges, icons, or formatted text in <code>&lt;dd&gt;</code> elements to enhance readability.</li>
+        <li><strong>Empty values:</strong> Display a dash or "Not provided" for empty values rather than leaving blank.</li>
+        <li><strong>Long values:</strong> For long text values, consider truncation with a "show more" toggle or allowing text to wrap naturally.</li>
+        <li><strong>Actions:</strong> You can include edit links or buttons within <code>&lt;dd&gt;</code> elements for inline editing capabilities.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/data/stats/" class="section-card">
+        <h3>Stats</h3>
+        <p>Metric cards and stat displays</p>
+      </a>
+      <a href="/docs/patterns/application/profile/" class="section-card">
+        <h3>Profile</h3>
+        <p>User profile pages with description lists</p>
+      </a>
+      <a href="/docs/patterns/application/settings/" class="section-card">
+        <h3>Settings</h3>
+        <p>Settings pages with grouped options</p>
+      </a>
+    </layout-grid>
+  </section>

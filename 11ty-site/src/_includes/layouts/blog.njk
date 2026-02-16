@@ -1,0 +1,121 @@
+{#
+  Blog layout — for blog post pages.
+
+  Front matter variables:
+    title        — post title
+    description  — post excerpt
+    pubDate      — publication date string
+    updatedDate  — last update date string (optional)
+    author       — author name
+    authorImage  — author avatar URL (optional)
+    heroImage    — hero/cover image URL (optional)
+    tags         — array of tag strings (optional)
+#}
+{% extends "layouts/base.njk" %}
+
+{% set headerVariant = "simple" %}
+{% set showSearch = false %}
+{% set showMobileMenu = false %}
+
+{% block pageHeader %}
+<header class="site-header">
+  <a href="/" class="logo">Blog</a>
+  <nav class="horizontal pills" aria-label="Main navigation">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog/" aria-current="true">Blog</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+  <div class="header-actions">
+    <theme-wc>
+      <button data-trigger class="ghost" aria-label="Toggle theme">
+        <icon-wc name="palette" size="sm"></icon-wc>
+        Theme
+      </button>
+    </theme-wc>
+  </div>
+</header>
+{% endblock %}
+
+{% block pageContent %}
+<main>
+  <article>
+    {% if heroImage %}
+    <div class="hero-image">
+      <img src="{{ heroImage }}" alt="" width="1200" height="630">
+    </div>
+    {% endif %}
+
+    <header class="article-header">
+      <layout-center data-layout-max="narrow">
+        <layout-stack data-layout-gap="m">
+          {% if tags and tags.length > 0 %}
+          <layout-cluster data-layout-gap="xs">
+            {% for tag in tags %}
+            <a href="/blog/tags/{{ tag }}/" class="badge">{{ tag }}</a>
+            {% endfor %}
+          </layout-cluster>
+          {% endif %}
+
+          <h1>{{ title }}</h1>
+          <p class="lead">{{ description }}</p>
+
+          <div class="meta">
+            <layout-cluster data-layout-gap="m">
+              <div class="author">
+                {% if authorImage %}
+                <img src="{{ authorImage }}" alt="" class="author-image" width="40" height="40">
+                {% endif %}
+                <span>{{ author }}</span>
+              </div>
+              <time>{{ pubDate }}</time>
+              {% if updatedDate %}
+              <span class="updated">Updated <time>{{ updatedDate }}</time></span>
+              {% endif %}
+            </layout-cluster>
+          </div>
+        </layout-stack>
+      </layout-center>
+    </header>
+
+    <layout-center data-layout-max="narrow">
+      <layout-text data-measure="normal" class="prose">
+        {{ content | safe }}
+      </layout-text>
+    </layout-center>
+
+    <footer class="article-footer">
+      <layout-center data-layout-max="narrow">
+        <layout-stack data-layout-gap="l">
+          {% if tags and tags.length > 0 %}
+          <div class="tags-section">
+            <h2>Tags</h2>
+            <layout-cluster data-layout-gap="xs">
+              {% for tag in tags %}
+              <a href="/blog/tags/{{ tag }}/" class="badge secondary">{{ tag }}</a>
+              {% endfor %}
+            </layout-cluster>
+          </div>
+          {% endif %}
+
+          <nav class="post-nav" aria-label="Post navigation">
+            <a href="/blog/" class="back-link">
+              <icon-wc name="arrow-left" size="sm"></icon-wc>
+              Back to all posts
+            </a>
+          </nav>
+        </layout-stack>
+      </layout-center>
+    </footer>
+  </article>
+</main>
+{% endblock %}
+
+{% block pageFooter %}
+<footer class="site-footer">
+  <layout-center data-layout-max="wide">
+    <p>&copy; 2026 Blog. All rights reserved.</p>
+  </layout-center>
+</footer>
+{% endblock %}

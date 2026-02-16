@@ -1,0 +1,318 @@
+---
+layout: layouts/element.njk
+title: "tabs-wc"
+currentPath: /docs/elements/web-components/tabs/
+permalink: /docs/elements/web-components/tabs/
+---
+
+{% set basicUsageCode %}<tabs-wc aria-label="Feature tabs">
+  <details name="feature-tabs" open>
+    <summary>Overview</summary>
+    <div>Content for Overview tab</div>
+  </details>
+  <details name="feature-tabs">
+    <summary>Features</summary>
+    <div>Content for Features tab</div>
+  </details>
+  <details name="feature-tabs">
+    <summary>Usage</summary>
+    <div>Content for Usage tab</div>
+  </details>
+</tabs-wc>{% endset %}
+
+{% set eventHandlingCode %}<script>
+const tabs = document.querySelector('tabs-wc');
+
+tabs.addEventListener('tab-change', (event) => {
+  console.log('Tab changed to:', event.detail.index);
+});
+</script>{% endset %}
+
+{% set jsApiCode %}const tabs = document.querySelector('tabs-wc');
+
+// Get all tab panels
+const panels = tabs.querySelectorAll('details');
+
+// Programmatically open a tab
+panels[1].open = true;  // Opens the second tab
+
+// Check which tab is open
+const openIndex = [...panels].findIndex(p => p.open);
+console.log('Open tab index:', openIndex);
+
+// Listen for changes
+tabs.addEventListener('tab-change', (e) => {
+  console.log('New tab:', e.detail.index);
+});{% endset %}
+
+{% set stylingCode %}/* Style the tab list */
+tabs-wc {
+  display: block;
+}
+
+/* Style individual tabs */
+tabs-wc summary {
+  /* Tab styling */
+}
+
+/* Active tab */
+tabs-wc summary[aria-selected="true"] {
+  border-color: var(--color-interactive);
+}
+
+/* Tab panels */
+tabs-wc details > div {
+  padding: var(--size-m);
+}{% endset %}
+
+{% set accessibilityCode %}<!-- Always include an aria-label on tabs-wc -->
+<tabs-wc aria-label="Product information">
+  ...
+</tabs-wc>{% endset %}
+
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;tabs-wc&gt;</code> component transforms a group of <code>&lt;details&gt;</code> elements into a tab interface. Without JavaScript, it works as an accordion. With JavaScript, it adds keyboard navigation and ARIA tab semantics.</p>
+
+    <browser-window
+      src="/docs/examples/demos/tabs-basic.html"
+      url="https://vanilla-breeze.dev/tabs"
+      title="Basic Tabs"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic tabs usage">{{ basicUsageCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>aria-label</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Accessible label for the tab list (required for accessibility).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Child Details Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>Shared name for exclusive behavior. All tabs should have the same name.</td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td>boolean</td>
+          <td>Initially selected tab. If none specified, first tab is selected.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The component is built on the native <code>&lt;details&gt;</code> element, which provides built-in expand/collapse functionality. The shared <code>name</code> attribute (supported in modern browsers) ensures only one panel is open at a time.</p>
+
+    <h3>Without JavaScript</h3>
+    <p>When JavaScript is disabled or fails to load, the tabs degrade gracefully to an accordion-style interface where each panel can be expanded independently.</p>
+
+    <h3>With JavaScript</h3>
+    <ul>
+      <li>ARIA <code>role="tablist"</code>, <code>role="tab"</code>, and <code>role="tabpanel"</code> are applied</li>
+      <li>Keyboard navigation is enabled</li>
+      <li><code>aria-selected</code> state is managed</li>
+      <li>Focus management is handled</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <p>When focused on a tab, the following keyboard shortcuts are available:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>ArrowRight</kbd></td>
+          <td>Move to and activate the next tab</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowLeft</kbd></td>
+          <td>Move to and activate the previous tab</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd></td>
+          <td>Move to and activate the first tab</td>
+        </tr>
+        <tr>
+          <td><kbd>End</kbd></td>
+          <td>Move to and activate the last tab</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <p>Try using arrow keys to navigate between tabs:</p>
+      <tabs-wc aria-label="Keyboard demo tabs">
+        <details name="keyboard-demo" open>
+          <summary>First</summary>
+          <div>
+            <p>Press <kbd>ArrowRight</kbd> to move to the next tab.</p>
+          </div>
+        </details>
+        <details name="keyboard-demo">
+          <summary>Second</summary>
+          <div>
+            <p>Press <kbd>ArrowLeft</kbd> to move to the previous tab, or <kbd>End</kbd> to jump to the last.</p>
+          </div>
+        </details>
+        <details name="keyboard-demo">
+          <summary>Third</summary>
+          <div>
+            <p>Press <kbd>Home</kbd> to jump back to the first tab.</p>
+          </div>
+        </details>
+      </tabs-wc>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rich Tab Content</h2>
+    <p>Tabs can contain any HTML content, including forms, images, and other components.</p>
+
+    <div class="example">
+      <tabs-wc aria-label="Content types">
+        <details name="content-types" open>
+          <summary>Text Content</summary>
+          <div>
+            <layout-text>
+              <p>Tabs can contain rich text content with proper typography.</p>
+              <blockquote>Including blockquotes, lists, and other typographic elements.</blockquote>
+            </layout-text>
+          </div>
+        </details>
+        <details name="content-types">
+          <summary>Form Content</summary>
+          <div>
+            <form class="stacked" style="max-inline-size: 20rem;">
+              <form-field>
+                <label for="tab-name">Name</label>
+                <input type="text" id="tab-name" placeholder="Your name" />
+              </form-field>
+              <form-field>
+                <label for="tab-email">Email</label>
+                <input type="email" id="tab-email" placeholder="you@example.com" />
+              </form-field>
+              <div class="actions">
+                <button type="submit">Submit</button>
+              </div>
+            </form>
+          </div>
+        </details>
+        <details name="content-types">
+          <summary>Card Grid</summary>
+          <div>
+            <layout-grid data-layout-min="150px" data-layout-gap="m">
+              <layout-card data-variant="outlined" data-padding="s">
+                <strong>Card 1</strong>
+              </layout-card>
+              <layout-card data-variant="outlined" data-padding="s">
+                <strong>Card 2</strong>
+              </layout-card>
+              <layout-card data-variant="outlined" data-padding="s">
+                <strong>Card 3</strong>
+              </layout-card>
+            </layout-grid>
+          </div>
+        </details>
+      </tabs-wc>
+    </div>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <p>The component dispatches a custom event when a tab is changed.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tab-change</code></td>
+          <td><code>{ index: number }</code></td>
+          <td>Fired when a tab is activated. <code>index</code> is the 0-based tab index.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event handling">{{ eventHandlingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>ARIA Roles</h3>
+    <p>The component automatically applies the following ARIA roles:</p>
+    <ul>
+      <li><code>role="tablist"</code> on the <code>&lt;tabs-wc&gt;</code> element</li>
+      <li><code>role="tab"</code> on each <code>&lt;summary&gt;</code> element</li>
+      <li><code>role="tabpanel"</code> on each panel content element</li>
+    </ul>
+
+    <h3>ARIA States</h3>
+    <ul>
+      <li><code>aria-selected</code> indicates the active tab</li>
+      <li><code>aria-controls</code> links tabs to their panels</li>
+      <li><code>aria-labelledby</code> links panels back to their tabs</li>
+      <li><code>tabindex</code> is managed for proper focus order</li>
+    </ul>
+
+    <h3>Screen Reader Behavior</h3>
+    <p>Screen readers will announce the tab interface and allow users to navigate between tabs using the roving tabindex pattern.</p>
+
+    <code-block language="html" show-lines label="Accessibility">{{ accessibilityCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The component manages its state internally but you can programmatically control tabs by manipulating the underlying <code>&lt;details&gt;</code> elements.</p>
+
+    <code-block language="javascript" show-lines label="JavaScript API">{{ jsApiCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The tabs component can be styled using CSS. The component adds ARIA attributes that can be used for styling.</p>
+
+    <code-block language="css" show-lines theme="dark" label="Styling tabs">{{ stylingCode | safe }}</code-block>
+  </section>

@@ -1,0 +1,248 @@
+---
+layout: layouts/element.njk
+title: "picture"
+description: "The picture element enables art direction and format switching by providing multiple image sources for different screen sizes and browser capabilities."
+elementName: picture
+category: native
+nativeGroup: Media
+currentPath: /docs/elements/native/picture/
+permalink: /docs/elements/native/picture/
+---
+
+{% set artDirectionCode %}<picture>
+  <!-- Wide viewport: landscape crop -->
+  <source media="(min-width: 800px)" srcset="hero-wide.jpg" />
+
+  <!-- Medium viewport: square crop -->
+  <source media="(min-width: 500px)" srcset="hero-medium.jpg" />
+
+  <!-- Small viewport: portrait crop (fallback) -->
+  <img src="hero-mobile.jpg" alt="Hero image" />
+</picture>{% endset %}
+
+{% set formatSwitchingCode %}<picture>
+  <!-- AVIF: best compression, growing support -->
+  <source type="image/avif" srcset="photo.avif" />
+
+  <!-- WebP: good compression, wide support -->
+  <source type="image/webp" srcset="photo.webp" />
+
+  <!-- JPEG: universal fallback -->
+  <img src="photo.jpg" alt="A beautiful photograph" />
+</picture>{% endset %}
+
+{% set darkModeCode %}<picture>
+  <!-- Dark mode version -->
+  <source media="(prefers-color-scheme: dark)" srcset="logo-dark.png" />
+
+  <!-- Light mode version (fallback) -->
+  <img src="logo-light.png" alt="Company logo" />
+</picture>{% endset %}
+
+{% set combinedCode %}<picture>
+  <!-- Wide viewport, modern format -->
+  <source
+    media="(min-width: 800px)"
+    type="image/avif"
+    srcset="hero-wide.avif 1x, hero-wide@2x.avif 2x" />
+  <source
+    media="(min-width: 800px)"
+    type="image/webp"
+    srcset="hero-wide.webp 1x, hero-wide@2x.webp 2x" />
+  <source
+    media="(min-width: 800px)"
+    srcset="hero-wide.jpg 1x, hero-wide@2x.jpg 2x" />
+
+  <!-- Narrow viewport: different crop -->
+  <source
+    type="image/avif"
+    srcset="hero-mobile.avif 1x, hero-mobile@2x.avif 2x" />
+  <source
+    type="image/webp"
+    srcset="hero-mobile.webp 1x, hero-mobile@2x.webp 2x" />
+
+  <!-- Ultimate fallback -->
+  <img
+    src="hero-mobile.jpg"
+    srcset="hero-mobile.jpg 1x, hero-mobile@2x.jpg 2x"
+    alt="Hero banner" />
+</picture>{% endset %}
+
+{% set variantsCode %}<picture>
+  <source srcset="photo.webp" type="image/webp" />
+  <img src="photo.jpg" alt="..." class="rounded" />
+</picture>{% endset %}
+
+{% set accessibleCode %}<!-- Correct: alt on img -->
+<picture>
+  <source srcset="hero-wide.jpg" media="(min-width: 800px)" />
+  <img src="hero-mobile.jpg" alt="Team members collaborating around a table" />
+</picture>{% endset %}
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;picture&gt;</code> element is a container for zero or more <code>&lt;source&gt;</code> elements and one <code>&lt;img&gt;</code> element. It allows the browser to choose the most appropriate image source based on media queries, image format support, or pixel density.</p>
+
+    <p>Vanilla Breeze styles <code>&lt;picture&gt;</code> as a block-level element, with the contained <code>&lt;img&gt;</code> expanding to fill its width. This ensures responsive behavior while allowing the browser to select the optimal source.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Art direction</strong> - Different image crops for different viewport sizes (e.g., landscape hero on desktop, portrait on mobile)</li>
+      <li><strong>Format switching</strong> - Serve modern formats (WebP, AVIF) with fallbacks for older browsers</li>
+      <li><strong>Resolution switching</strong> - Serve different resolutions based on device pixel ratio</li>
+      <li><strong>Dark mode images</strong> - Different images for light and dark color schemes</li>
+    </ul>
+
+    <h3>When to Use img Instead</h3>
+    <ul>
+      <li>Single image that works well at all sizes - use <code>&lt;img&gt;</code> with <code>srcset</code> and <code>sizes</code></li>
+      <li>Simple responsive images where only resolution changes - <code>&lt;img srcset&gt;</code> is sufficient</li>
+      <li>Decorative images - CSS background images may be more appropriate</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Art Direction</h2>
+    <p>Serve different image crops based on viewport width using <code>media</code> queries on <code>&lt;source&gt;</code> elements.</p>
+
+    <div class="example">
+      <picture>
+        <source media="(min-width: 800px)" srcset="https://picsum.photos/800/300" />
+        <source media="(min-width: 500px)" srcset="https://picsum.photos/500/350" />
+        <img src="https://picsum.photos/400/400" alt="Responsive art directed image" loading="lazy" />
+      </picture>
+    </div>
+    <code-block language="html" show-lines label="Art direction with picture">{{ artDirectionCode | safe }}</code-block>
+
+    <p>The browser evaluates <code>&lt;source&gt;</code> elements from top to bottom and uses the first one with a matching <code>media</code> condition. The <code>&lt;img&gt;</code> serves as the fallback.</p>
+  </section>
+
+  <section>
+    <h2>Format Switching</h2>
+    <p>Serve modern image formats to browsers that support them while providing fallbacks for others.</p>
+
+    <div class="example">
+      <picture>
+        <source type="image/avif" srcset="https://picsum.photos/600/400.webp" />
+        <source type="image/webp" srcset="https://picsum.photos/600/400.webp" />
+        <img src="https://picsum.photos/600/400" alt="Format switching example" loading="lazy" />
+      </picture>
+    </div>
+    <code-block language="html" show-lines label="Format switching with picture">{{ formatSwitchingCode | safe }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th>MIME Type</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AVIF</td>
+          <td><code>image/avif</code></td>
+          <td>Best compression, photos and illustrations</td>
+        </tr>
+        <tr>
+          <td>WebP</td>
+          <td><code>image/webp</code></td>
+          <td>Good compression, wide browser support</td>
+        </tr>
+        <tr>
+          <td>JPEG</td>
+          <td><code>image/jpeg</code></td>
+          <td>Photos, universal compatibility</td>
+        </tr>
+        <tr>
+          <td>PNG</td>
+          <td><code>image/png</code></td>
+          <td>Transparency, sharp edges, screenshots</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Dark Mode Images</h2>
+    <p>Serve different images based on the user's color scheme preference.</p>
+
+    <code-block language="html" show-lines label="Dark mode image switching">{{ darkModeCode | safe }}</code-block>
+
+    <p>This technique is especially useful for logos, diagrams, and illustrations that need different color treatments for light and dark themes.</p>
+  </section>
+
+  <section>
+    <h2>Combined Techniques</h2>
+    <p>Combine art direction, format switching, and resolution switching for optimal delivery.</p>
+
+    <code-block language="html" show-lines label="Combined art direction and format switching">{{ combinedCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Live Examples</h2>
+
+    <h3>Basic Picture</h3>
+    <div class="example">
+      <picture>
+        <img src="https://picsum.photos/600/400" alt="Basic picture element example" loading="lazy" />
+      </picture>
+    </div>
+
+    <h3>With Variants</h3>
+    <p>Apply variant classes to the inner <code>&lt;img&gt;</code> element, not the <code>&lt;picture&gt;</code>.</p>
+    <div class="example">
+      <picture>
+        <img src="https://picsum.photos/600/401" alt="Rounded picture" class="rounded" loading="lazy" />
+      </picture>
+    </div>
+    <code-block language="html" show-lines label="Picture with image variants">{{ variantsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <ul>
+      <li>The <code>alt</code> attribute goes on the <code>&lt;img&gt;</code> element, not <code>&lt;picture&gt;</code></li>
+      <li>All source variations should convey the same information (art direction changes framing, not content)</li>
+      <li>Screen readers announce the <code>&lt;img&gt;</code> - the <code>&lt;picture&gt;</code> wrapper is transparent</li>
+      <li>Don't use <code>&lt;picture&gt;</code> to hide content from some users</li>
+    </ul>
+
+    <code-block language="html" show-lines label="Accessible picture element">{{ accessibleCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> - Required child element that receives the final image</li>
+      <li><a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> - Define alternative image sources with media/type conditions</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Wrap picture elements that need captions</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <p>Styles defined in <code>/src/native-elements/image/styles.css</code></p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Selector</th>
+          <th>Properties</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>picture</code></td>
+          <td><code>display: block;</code></td>
+        </tr>
+        <tr>
+          <td><code>picture &gt; img</code></td>
+          <td><code>inline-size: 100%;</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>

@@ -1,0 +1,351 @@
+---
+layout: layouts/element.njk
+title: "flip-card-wc"
+description: "Accessible flip card with front/back faces, 3D flip animation, and inert toggling for screen readers."
+elementName: flip-card-wc
+category: component
+currentPath: /docs/elements/web-components/flip-card/
+permalink: /docs/elements/web-components/flip-card/
+---
+
+{% set basicUsageCode %}<flip-card-wc>
+  <div data-face="front">
+    <p>Front content visible by default.</p>
+  </div>
+  <div data-face="back">
+    <p>Back content revealed on flip.</p>
+  </div>
+</flip-card-wc>{% endset %}
+
+{% set triggerButtonsCode %}<flip-card-wc>
+  <div data-face="front">
+    <p>What does the inert attribute do?</p>
+    <button data-flip>Show answer</button>
+  </div>
+  <div data-face="back">
+    <p>It makes an element non-interactive and hidden from assistive technology.</p>
+    <button data-flip>Back to question</button>
+  </div>
+</flip-card-wc>{% endset %}
+
+{% set verticalCode %}<flip-card-wc data-orientation="vertical">
+  <div data-face="front">Front</div>
+  <div data-face="back">Back</div>
+</flip-card-wc>{% endset %}
+
+{% set durationCode %}<!-- Fast flip -->
+<flip-card-wc data-duration="fast">...</flip-card-wc>
+
+<!-- Normal (default) -->
+<flip-card-wc>...</flip-card-wc>
+
+<!-- Slow flip -->
+<flip-card-wc data-duration="slow">...</flip-card-wc>{% endset %}
+
+{% set eventCode %}const card = document.querySelector('flip-card-wc');
+
+card.addEventListener('flip-card-flip', (event) => \{
+  console.log('Flipped:', event.detail.flipped);
+\});{% endset %}
+
+{% set apiCode %}const card = document.querySelector('flip-card-wc');
+
+// Flip to back
+card.flip();
+
+// Flip to front
+card.unflip();
+
+// Toggle current state
+card.toggle();
+
+// Check state
+console.log(card.flipped); // true or false{% endset %}
+
+{% set stylingCode %}.card-face \{
+  padding: var(--size-l);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  min-block-size: 200px;
+\}
+
+[data-face="back"] .card-face \{
+  background: var(--color-surface-raised);
+\}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;flip-card-wc&gt;</code> component creates an accessible card that flips between a front and back face. It manages the <code>inert</code> attribute on the hidden face so screen readers only announce visible content.</p>
+
+    <browser-window
+      src="/docs/examples/demos/flip-card-basic.html"
+      url="https://vanilla-breeze.dev/flip-card"
+      title="Flip Card Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic flip card">{{ basicUsageCode | safe }}</code-block>
+
+    <aside class="note">
+      <strong>Why a web component?</strong> CSS <code>backface-visibility: hidden</code> is visual only &mdash; screen readers still read the hidden face. JavaScript is required to toggle <code>inert</code> on the hidden face.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-orientation</code></td>
+          <td>string</td>
+          <td><code>horizontal</code></td>
+          <td>Flip axis: <code>horizontal</code> (rotateY) or <code>vertical</code> (rotateX).</td>
+        </tr>
+        <tr>
+          <td><code>data-duration</code></td>
+          <td>string</td>
+          <td><code>normal</code></td>
+          <td>Animation speed: <code>fast</code>, <code>normal</code>, or <code>slow</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-flipped</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Reflects the current flip state. Can be set to start flipped.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Child Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Where</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-face="front"</code></td>
+          <td>Direct child</td>
+          <td>Marks the front face of the card.</td>
+        </tr>
+        <tr>
+          <td><code>data-face="back"</code></td>
+          <td>Direct child</td>
+          <td>Marks the back face of the card.</td>
+        </tr>
+        <tr>
+          <td><code>data-flip</code></td>
+          <td>Any descendant</td>
+          <td>Marks an element as a flip trigger button.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Trigger Buttons</h2>
+    <p>By default, clicking anywhere on the card flips it. Add <code>data-flip</code> to specific buttons for explicit trigger controls. When triggers exist, the card container is no longer clickable.</p>
+
+    <div class="example">
+      <flip-card-wc>
+        <div data-face="front" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface);">
+          <p><strong>Question:</strong> What does <code>inert</code> do?</p>
+          <button data-flip>Show answer</button>
+        </div>
+        <div data-face="back" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+          <p><strong>Answer:</strong> It makes an element and its descendants non-interactive and hidden from assistive technology.</p>
+          <button data-flip>Back to question</button>
+        </div>
+      </flip-card-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Flip card with trigger buttons">{{ triggerButtonsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Vertical Flip</h2>
+    <p>Add <code>data-orientation="vertical"</code> to flip along the X axis (top to bottom) instead of the default Y axis (left to right).</p>
+
+    <div class="example">
+      <flip-card-wc data-orientation="vertical">
+        <div data-face="front" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface); min-block-size: 150px;">
+          <p><strong>Vertical flip</strong></p>
+          <p>Click to flip top-to-bottom.</p>
+        </div>
+        <div data-face="back" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised); min-block-size: 150px;">
+          <p><strong>Flipped!</strong></p>
+          <p>Uses <code>rotateX</code> instead of <code>rotateY</code>.</p>
+        </div>
+      </flip-card-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Vertical flip orientation">{{ verticalCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Duration</h2>
+    <p>Control flip speed with <code>data-duration</code>. Values map to VB motion tokens.</p>
+
+    <div class="example">
+      <layout-grid data-min-item-size="200px" data-layout-gap="m">
+        <flip-card-wc data-duration="fast">
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Fast</strong></p>
+            <small>Click to flip</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Fast flip</p>
+          </div>
+        </flip-card-wc>
+
+        <flip-card-wc>
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Normal</strong> (default)</p>
+            <small>Click to flip</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Normal flip</p>
+          </div>
+        </flip-card-wc>
+
+        <flip-card-wc data-duration="slow">
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Slow</strong></p>
+            <small>Click to flip</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Slow flip</p>
+          </div>
+        </flip-card-wc>
+      </layout-grid>
+    </div>
+
+    <code-block language="html" show-lines label="Duration variants">{{ durationCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Toggle the card (when card or trigger is focused)</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus to next interactive element</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>flip-card-flip</code></td>
+          <td><code>{ flipped: boolean }</code></td>
+          <td>Fired after the card flips.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening to flip events">{{ eventCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method / Property</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>flip()</code></td>
+          <td>Flip to show the back face.</td>
+        </tr>
+        <tr>
+          <td><code>unflip()</code></td>
+          <td>Flip to show the front face.</td>
+        </tr>
+        <tr>
+          <td><code>toggle()</code></td>
+          <td>Toggle between front and back.</td>
+        </tr>
+        <tr>
+          <td><code>flipped</code></td>
+          <td>Boolean property reflecting the current state.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Programmatic flip control">{{ apiCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Inert Toggling</h3>
+    <p>The hidden face is always marked <code>inert</code>. This means screen readers only announce the currently visible face, and interactive elements on the hidden face cannot receive focus.</p>
+
+    <h3>Trigger Modes</h3>
+    <ul>
+      <li><strong>Whole-card trigger</strong> (no <code>data-flip</code> children): The card itself gets <code>role="button"</code>, <code>tabindex="0"</code>, and <code>aria-label="Flip card"</code>.</li>
+      <li><strong>Explicit triggers</strong> (<code>data-flip</code> children): The trigger buttons are the keyboard targets. No role is added to the container.</li>
+    </ul>
+
+    <h3>Focus Management</h3>
+    <p>When flipping, focus moves to the first interactive element on the newly visible face (buttons, links, inputs, or elements with <code>autofocus</code>).</p>
+
+    <h3>Reduced Motion</h3>
+    <p>When <code>prefers-reduced-motion: reduce</code> is active, the flip animation duration is set to <code>0s</code>. The state still toggles, but without animation.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The component provides the 3D flip mechanics. Style the face content with your own CSS. Each face is a direct child with <code>data-face</code>.</p>
+
+    <code-block language="css" show-lines label="Styling card faces">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, both faces display stacked in natural document flow. The <code>:not(:defined)</code> selector ensures the 3D transform and backface-visibility only apply once the component is registered.</p>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a> &mdash; Collapsible content panels</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tabs-wc&gt;</code></a> &mdash; Tab panels for content switching</li>
+    </ul>
+  </section>

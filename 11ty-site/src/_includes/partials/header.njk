@@ -1,0 +1,74 @@
+{#
+  Header partial — main site header with navigation, search, and theme toggle.
+
+  Variables (set by layout or front matter):
+    currentSection  — which nav item is active ('home', 'docs', 'api', etc.)
+    headerVariant   — 'full' (default) or 'simple'
+    showSearch      — show search button (default: true when variant is full)
+    showTheme       — show theme toggle (default: true)
+    showMobileMenu  — show mobile menu toggle (default: true when variant is full)
+
+  Data:
+    navigation.header.logo  — { text, href }
+    navigation.header.nav   — array of nav items
+#}
+
+{%- set variant = headerVariant if headerVariant else 'full' -%}
+{%- set _showSearch = showSearch if showSearch is defined else (variant == 'full') -%}
+{%- set _showTheme = showTheme if showTheme is defined else true -%}
+{%- set _showMobileMenu = showMobileMenu if showMobileMenu is defined else (variant == 'full') -%}
+
+<header data-vt="header">
+  <a href="{{ navigation.header.logo.href }}" class="logo">{{ navigation.header.logo.text }}</a>
+  <nav class="horizontal pills" aria-label="Main navigation">
+    <ul>
+      {% for item in navigation.header.nav %}
+      <li>
+        {% if item.children %}
+        <dropdown-wc data-position="bottom-start" data-hover>
+          <a
+            href="{{ item.href }}"
+            data-trigger
+            {% if currentSection == item.section %}aria-current="true"{% endif %}
+          >{{ item.label }}</a>
+          <menu>
+            {% for child in item.children %}
+            <li><a href="{{ child.href }}">{{ child.label }}</a></li>
+            {% endfor %}
+          </menu>
+        </dropdown-wc>
+        {% else %}
+        <a
+          href="{{ item.href }}"
+          {% if currentSection == item.section %}aria-current="page"{% endif %}
+        >{{ item.label }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div class="header-actions">
+    {% if _showSearch %}
+    <search-wc>
+      <button type="button" data-trigger class="ghost">
+        <icon-wc name="search" size="sm"></icon-wc>
+        Search
+      </button>
+    </search-wc>
+    {% endif %}
+    {% if _showTheme %}
+    <theme-wc>
+      <button type="button" data-trigger class="ghost">
+        <icon-wc name="palette" size="sm"></icon-wc>
+        Theme
+      </button>
+    </theme-wc>
+    {% endif %}
+  </div>
+  {% if _showMobileMenu %}
+  <button type="button" class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">
+    <icon-wc name="menu"></icon-wc>
+  </button>
+  {% include "partials/mobile-menu.njk" %}
+  {% endif %}
+</header>

@@ -1,0 +1,248 @@
+---
+layout: layouts/element.njk
+title: "legend"
+description: "Provides a caption for a fieldset element. The legend is announced by screen readers as the group's label, making it essential for accessibility."
+elementName: legend
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/legend/
+permalink: /docs/elements/native/legend/
+---
+
+{% set basicLegendCode %}<fieldset>
+  <legend>Personal Information</legend>
+  <!-- form fields -->
+</fieldset>{% endset %}
+
+{% set richContentCode %}<fieldset>
+  <legend><strong>Required:</strong> Contact Details</legend>
+  <!-- form fields -->
+</fieldset>{% endset %}
+
+{% set cssReferenceCode %}legend {
+  padding-inline: var(--size-s);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+/* In minimal fieldset */
+fieldset.minimal > legend {
+  padding: 0;
+  margin-block-end: var(--size-s);
+  font-size: var(--font-size-md);
+}{% endset %}
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Always as the first child of a <a href="/docs/elements/native/fieldset/">fieldset</a></li>
+      <li>Labeling groups of related form controls</li>
+      <li>Providing context for radio button or checkbox groups</li>
+      <li>Sectioning complex forms into logical parts</li>
+    </ul>
+    <p><strong>Important:</strong> The legend must be the first child of a fieldset for proper rendering.</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A legend provides the accessible name for its fieldset group.</p>
+
+    <div class="example">
+      <fieldset>
+        <legend>Personal Information</legend>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="legend-name">Full Name</label>
+            <input type="text" id="legend-name" />
+          </form-field>
+          <form-field>
+            <label for="legend-email">Email</label>
+            <input type="email" id="legend-email" />
+          </form-field>
+        </layout-stack>
+      </fieldset>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic legend usage">{{ basicLegendCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Visual Styles</h2>
+
+    <h3>Default (Bordered Fieldset)</h3>
+    <p>In a standard fieldset, the legend appears to break the top border.</p>
+    <div class="example">
+      <fieldset>
+        <legend>Account Settings</legend>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="legend-username">Username</label>
+            <input type="text" id="legend-username" />
+          </form-field>
+          <form-field>
+            <label for="legend-password">Password</label>
+            <input type="password" id="legend-password" />
+          </form-field>
+        </layout-stack>
+      </fieldset>
+    </div>
+
+    <h3>Minimal Fieldset</h3>
+    <p>In a minimal fieldset, the legend appears as a section heading.</p>
+    <div class="example">
+      <fieldset class="minimal">
+        <legend>Preferences</legend>
+        <layout-stack data-layout-gap="s">
+          <label>
+            <input type="checkbox" name="prefs" value="dark" /> Dark mode
+          </label>
+          <label>
+            <input type="checkbox" name="prefs" value="reduce" /> Reduce motion
+          </label>
+          <label>
+            <input type="checkbox" name="prefs" value="compact" /> Compact view
+          </label>
+        </layout-stack>
+      </fieldset>
+    </div>
+  </section>
+
+  <section>
+    <h2>For Radio Groups</h2>
+    <p>Radio buttons should always be in a fieldset with a legend. Screen readers announce the legend before each option.</p>
+
+    <div class="example">
+      <fieldset>
+        <legend>Select Payment Method</legend>
+        <layout-stack data-layout-gap="s">
+          <label>
+            <input type="radio" name="payment" value="card" checked /> Credit Card
+          </label>
+          <label>
+            <input type="radio" name="payment" value="paypal" /> PayPal
+          </label>
+          <label>
+            <input type="radio" name="payment" value="bank" /> Bank Transfer
+          </label>
+        </layout-stack>
+      </fieldset>
+    </div>
+
+    <h3>Screen Reader Behavior</h3>
+    <p>When navigating radio buttons, screen readers announce:</p>
+    <ul>
+      <li>"Select Payment Method, radio group"</li>
+      <li>"Credit Card, radio button, 1 of 3, checked"</li>
+      <li>"PayPal, radio button, 2 of 3"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>For Checkbox Groups</h2>
+    <p>Group related checkboxes with a legend to provide context.</p>
+
+    <div class="example">
+      <fieldset class="minimal">
+        <legend>Notification Settings</legend>
+        <layout-stack data-layout-gap="s">
+          <label>
+            <input type="checkbox" name="notify" value="email" checked /> Email notifications
+          </label>
+          <label>
+            <input type="checkbox" name="notify" value="sms" /> SMS notifications
+          </label>
+          <label>
+            <input type="checkbox" name="notify" value="push" /> Push notifications
+          </label>
+        </layout-stack>
+      </fieldset>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rich Content in Legends</h2>
+    <p>Legends can contain simple inline content but should remain concise.</p>
+
+    <div class="example">
+      <fieldset>
+        <legend><strong>Required:</strong> Contact Details</legend>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="legend-phone">Phone *</label>
+            <input type="tel" id="legend-phone" required />
+          </form-field>
+          <form-field>
+            <label for="legend-alt-email">Email *</label>
+            <input type="email" id="legend-alt-email" required />
+          </form-field>
+        </layout-stack>
+      </fieldset>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Rich content in legend">{{ richContentCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Nested Fieldsets</h2>
+    <p>When nesting fieldsets, each needs its own legend for proper hierarchy.</p>
+
+    <div class="example">
+      <fieldset>
+        <legend>Shipping Information</legend>
+        <layout-stack data-layout-gap="l">
+          <fieldset class="minimal">
+            <legend>Address</legend>
+            <layout-stack data-layout-gap="m">
+              <form-field>
+                <label for="nested-street">Street</label>
+                <input type="text" id="nested-street" />
+              </form-field>
+              <form-field>
+                <label for="nested-city">City</label>
+                <input type="text" id="nested-city" />
+              </form-field>
+            </layout-stack>
+          </fieldset>
+
+          <fieldset class="minimal">
+            <legend>Delivery Options</legend>
+            <layout-stack data-layout-gap="s">
+              <label>
+                <input type="radio" name="delivery" value="standard" checked /> Standard
+              </label>
+              <label>
+                <input type="radio" name="delivery" value="express" /> Express
+              </label>
+            </layout-stack>
+          </fieldset>
+        </layout-stack>
+      </fieldset>
+    </div>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Must be first child</strong>: The legend must be the first element inside a fieldset</li>
+      <li><strong>Keep concise</strong>: Legends should be brief but descriptive</li>
+      <li><strong>Announced as group label</strong>: Screen readers use the legend to introduce the fieldset</li>
+      <li><strong>Required for radio groups</strong>: Always use fieldset/legend for radio button groups</li>
+      <li><strong>Don't hide visually</strong>: Unlike labels, legends should remain visible when possible</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Legend CSS styles">{{ cssReferenceCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/fieldset/">fieldset</a> - Parent element that legend captions</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Labels individual form controls</li>
+      <li><a href="/docs/elements/native/form/">form</a> - Container for fieldsets</li>
+    </ul>
+  </section>

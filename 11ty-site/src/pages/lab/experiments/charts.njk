@@ -1,0 +1,520 @@
+---
+layout: layouts/lab.njk
+title: "Progressive Enhancement Charts"
+description: "CSS-only charting using semantic HTML tables with Vanilla Breeze design tokens."
+currentPath: /lab/experiments/charts/
+permalink: /lab/experiments/charts/
+---
+
+{% set lineChartExample %}<table class="vb-chart" data-type="line" data-grid>
+  <caption>Weekly Active Users</caption>
+  <tbody>
+    <tr>
+      <th scope="row">Mon</th>
+      <td style="--start: 0.45; --end: 0.45">450</td>
+    </tr>
+    <tr>
+      <th scope="row">Tue</th>
+      <td style="--start: 0.45; --end: 0.62">620</td>
+    </tr>
+    <!-- Key: --start = previous row's --end -->
+  </tbody>
+</table>{% endset %}
+
+{% set areaChartExample %}<table class="vb-chart" data-type="area" data-grid>
+  <caption>Page Views</caption>
+  <tbody>
+    <tr>
+      <th scope="row">Jan</th>
+      <td style="--start: 0.30; --end: 0.30">3k</td>
+    </tr>
+    <tr>
+      <th scope="row">Feb</th>
+      <td style="--start: 0.30; --end: 0.45">4.5k</td>
+    </tr>
+    <!-- Key: --start = previous row's --end -->
+  </tbody>
+</table>{% endset %}
+
+<layout-center>
+    <layout-stack>
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/lab/">Lab</a></li>
+          <li><a href="/lab/experiments/">Experiments</a></li>
+          <li><span aria-current="page">Charts</span></li>
+        </ol>
+      </nav>
+
+      <!-- Header -->
+      <header>
+        <h1>Progressive Enhancement Charts</h1>
+        <p class="intro">
+          A CSS-only charting system built on semantic HTML tables.
+          Data remains accessible and readable without CSS, transforms
+          into beautiful visualizations with CSS.
+        </p>
+      </header>
+
+      <!-- Bar Chart Demo -->
+      <section class="demo-section">
+        <h2>Bar Chart</h2>
+        <p>Horizontal bars for comparing values. The <code>--value</code> property (0-1) controls bar width.</p>
+
+        <browser-window url="bar-chart.html">
+          <table class="vb-chart" data-type="bar" data-tooltip>
+            <caption>Monthly Revenue</caption>
+            <tbody>
+              <tr>
+                <th scope="row">January</th>
+                <td style="--value: 0.65" data-tooltip="January: $6,500">$6,500</td>
+              </tr>
+              <tr>
+                <th scope="row">February</th>
+                <td style="--value: 0.80" data-tooltip="February: $8,000">$8,000</td>
+              </tr>
+              <tr>
+                <th scope="row">March</th>
+                <td style="--value: 0.92" data-tooltip="March: $9,200">$9,200</td>
+              </tr>
+              <tr>
+                <th scope="row">April</th>
+                <td style="--value: 0.75" data-tooltip="April: $7,500">$7,500</td>
+              </tr>
+              <tr>
+                <th scope="row">May</th>
+                <td style="--value: 1.0" data-tooltip="May: $10,000">$10,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </browser-window>
+
+        <details>
+          <summary>View HTML</summary>
+          <pre><code>&lt;table class="vb-chart" data-type="bar" data-tooltip&gt;
+  &lt;caption&gt;Monthly Revenue&lt;/caption&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;January&lt;/th&gt;
+      &lt;td style="--value: 0.65" data-tooltip="January: $6,500"&gt;$6,500&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;!-- more rows... --&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+        </details>
+      </section>
+
+      <!-- Column Chart Demo -->
+      <section class="demo-section">
+        <h2>Column Chart</h2>
+        <p>Vertical columns for time-series data. Labels appear below each column.</p>
+
+        <browser-window url="column-chart.html">
+          <table class="vb-chart" data-type="column" data-tooltip>
+            <caption>Quarterly Sales</caption>
+            <tbody>
+              <tr>
+                <th scope="row">Q1</th>
+                <td style="--value: 0.60" data-tooltip="Q1: $60,000">$60k</td>
+              </tr>
+              <tr>
+                <th scope="row">Q2</th>
+                <td style="--value: 0.85" data-tooltip="Q2: $85,000">$85k</td>
+              </tr>
+              <tr>
+                <th scope="row">Q3</th>
+                <td style="--value: 0.70" data-tooltip="Q3: $70,000">$70k</td>
+              </tr>
+              <tr>
+                <th scope="row">Q4</th>
+                <td style="--value: 1.0" data-tooltip="Q4: $100,000">$100k</td>
+              </tr>
+            </tbody>
+          </table>
+        </browser-window>
+      </section>
+
+      <!-- Multi-Series Bar Chart -->
+      <section class="demo-section">
+        <h2>Multi-Series with Legend</h2>
+        <p>Use <code>data-series</code> attribute for different colors. Add a legend for clarity.</p>
+
+        <browser-window url="multi-series.html">
+          <div class="chart-with-legend">
+            <table class="vb-chart" data-type="bar" data-tooltip>
+              <caption>Product Comparison</caption>
+              <tbody>
+                <tr>
+                  <th scope="row">Product A</th>
+                  <td style="--value: 0.85" data-series="1" data-tooltip="Product A: 85%">85%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Product B</th>
+                  <td style="--value: 0.65" data-series="2" data-tooltip="Product B: 65%">65%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Product C</th>
+                  <td style="--value: 0.92" data-series="3" data-tooltip="Product C: 92%">92%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Product D</th>
+                  <td style="--value: 0.45" data-series="4" data-tooltip="Product D: 45%">45%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="vb-chart-legend">
+              <span class="vb-chart-legend-item" data-series="1">Product A</span>
+              <span class="vb-chart-legend-item" data-series="2">Product B</span>
+              <span class="vb-chart-legend-item" data-series="3">Product C</span>
+              <span class="vb-chart-legend-item" data-series="4">Product D</span>
+            </div>
+          </div>
+        </browser-window>
+      </section>
+
+      <!-- Line Chart Demo -->
+      <section class="demo-section">
+        <h2>Line Chart</h2>
+        <p>Uses <code>--start</code> and <code>--end</code> to draw connecting lines between data points using clip-path polygon.</p>
+
+        <browser-window url="line-chart.html">
+          <table class="vb-chart" data-type="line" data-grid data-tooltip>
+            <caption>Weekly Active Users</caption>
+            <tbody>
+              <tr>
+                <th scope="row">Mon</th>
+                <td style="--start: 0.45; --end: 0.45" data-tooltip="Monday: 450">450</td>
+              </tr>
+              <tr>
+                <th scope="row">Tue</th>
+                <td style="--start: 0.45; --end: 0.62" data-tooltip="Tuesday: 620">620</td>
+              </tr>
+              <tr>
+                <th scope="row">Wed</th>
+                <td style="--start: 0.62; --end: 0.78" data-tooltip="Wednesday: 780">780</td>
+              </tr>
+              <tr>
+                <th scope="row">Thu</th>
+                <td style="--start: 0.78; --end: 0.55" data-tooltip="Thursday: 550">550</td>
+              </tr>
+              <tr>
+                <th scope="row">Fri</th>
+                <td style="--start: 0.55; --end: 0.90" data-tooltip="Friday: 900">900</td>
+              </tr>
+              <tr>
+                <th scope="row">Sat</th>
+                <td style="--start: 0.90; --end: 1.0" data-tooltip="Saturday: 1000">1000</td>
+              </tr>
+              <tr>
+                <th scope="row">Sun</th>
+                <td style="--start: 1.0; --end: 0.70" data-tooltip="Sunday: 700">700</td>
+              </tr>
+            </tbody>
+          </table>
+        </browser-window>
+
+        <code-block language="html" label="Line chart HTML">{{ lineChartExample | safe }}</code-block>
+      </section>
+
+      <!-- Area Chart Demo -->
+      <section class="demo-section">
+        <h2>Area Chart</h2>
+        <p>Filled region under connecting lines using <code>--start</code> and <code>--end</code> with clip-path polygon.</p>
+
+        <browser-window url="area-chart.html">
+          <table class="vb-chart" data-type="area" data-grid data-tooltip>
+            <caption>Page Views</caption>
+            <tbody>
+              <tr>
+                <th scope="row">Jan</th>
+                <td style="--start: 0.30; --end: 0.30" data-tooltip="January: 3,000">3k</td>
+              </tr>
+              <tr>
+                <th scope="row">Feb</th>
+                <td style="--start: 0.30; --end: 0.45" data-tooltip="February: 4,500">4.5k</td>
+              </tr>
+              <tr>
+                <th scope="row">Mar</th>
+                <td style="--start: 0.45; --end: 0.65" data-tooltip="March: 6,500">6.5k</td>
+              </tr>
+              <tr>
+                <th scope="row">Apr</th>
+                <td style="--start: 0.65; --end: 0.80" data-tooltip="April: 8,000">8k</td>
+              </tr>
+              <tr>
+                <th scope="row">May</th>
+                <td style="--start: 0.80; --end: 0.70" data-tooltip="May: 7,000">7k</td>
+              </tr>
+              <tr>
+                <th scope="row">Jun</th>
+                <td style="--start: 0.70; --end: 1.0" data-tooltip="June: 10,000">10k</td>
+              </tr>
+            </tbody>
+          </table>
+        </browser-window>
+
+        <code-block language="html" label="Area chart HTML">{{ areaChartExample | safe }}</code-block>
+      </section>
+
+      <!-- Pie Chart Demo -->
+      <section class="demo-section">
+        <h2>Pie Chart</h2>
+        <p>Uses <code>conic-gradient</code> for circular segments. Set segment values on <code>tbody</code> style.</p>
+
+        <browser-window url="pie-chart.html">
+          <div class="chart-with-legend">
+            <table class="vb-chart" data-type="pie">
+              <caption>Market Share</caption>
+              <tbody style="--seg-1: 0.45; --seg-2: 0.25; --seg-3: 0.20; --seg-4: 0.10">
+                <tr>
+                  <th scope="row">Company A</th>
+                  <td style="--value: 0.45; --start: 0" data-series="1">45%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Company B</th>
+                  <td style="--value: 0.25; --start: 0.45" data-series="2">25%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Company C</th>
+                  <td style="--value: 0.20; --start: 0.70" data-series="3">20%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Others</th>
+                  <td style="--value: 0.10; --start: 0.90" data-series="4">10%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="vb-chart-legend">
+              <span class="vb-chart-legend-item" data-series="1">Company A</span>
+              <span class="vb-chart-legend-item" data-series="2">Company B</span>
+              <span class="vb-chart-legend-item" data-series="3">Company C</span>
+              <span class="vb-chart-legend-item" data-series="4">Others</span>
+            </div>
+          </div>
+        </browser-window>
+      </section>
+
+      <!-- Donut Chart Variant -->
+      <section class="demo-section">
+        <h2>Donut Chart</h2>
+        <p>Add <code>data-donut</code> for hollow center. Great for displaying a key metric in the center.</p>
+
+        <browser-window url="donut-chart.html">
+          <div class="chart-with-legend">
+            <table class="vb-chart" data-type="pie" data-donut>
+              <caption>Budget Allocation</caption>
+              <tbody style="--seg-1: 0.35; --seg-2: 0.30; --seg-3: 0.20; --seg-4: 0.15">
+                <tr>
+                  <th scope="row">Development</th>
+                  <td style="--value: 0.35; --start: 0" data-series="1">35%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Marketing</th>
+                  <td style="--value: 0.30; --start: 0.35" data-series="2">30%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Operations</th>
+                  <td style="--value: 0.20; --start: 0.65" data-series="3">20%</td>
+                </tr>
+                <tr>
+                  <th scope="row">Other</th>
+                  <td style="--value: 0.15; --start: 0.85" data-series="4">15%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="vb-chart-legend">
+              <span class="vb-chart-legend-item" data-series="1">Development</span>
+              <span class="vb-chart-legend-item" data-series="2">Marketing</span>
+              <span class="vb-chart-legend-item" data-series="3">Operations</span>
+              <span class="vb-chart-legend-item" data-series="4">Other</span>
+            </div>
+          </div>
+        </browser-window>
+      </section>
+
+      <!-- JavaScript API Demo -->
+      <section class="demo-section">
+        <h2>JavaScript API</h2>
+        <p>Create charts from data using the JavaScript helper. Automatically normalizes values and builds HTML.</p>
+
+        <browser-window url="js-api-demo.html">
+          <div id="js-chart-container" class="chart-with-legend"></div>
+        </browser-window>
+
+        <details>
+          <summary>View JavaScript</summary>
+          <pre><code>import &#123; charts &#125; from '/src/lib/charts.js';
+
+charts.create(&#123;
+  container: '#js-chart-container',
+  type: 'bar',
+  caption: 'Team Performance',
+  data: [
+    &#123; label: 'Alice', value: 92, displayValue: '92 pts' &#125;,
+    &#123; label: 'Bob', value: 78, displayValue: '78 pts' &#125;,
+    &#123; label: 'Carol', value: 85, displayValue: '85 pts' &#125;,
+    &#123; label: 'David', value: 65, displayValue: '65 pts' &#125;,
+  ],
+  modifiers: &#123; tooltip: true, gap: 'm' &#125;
+&#125;);</code></pre>
+        </details>
+      </section>
+
+      <!-- Dynamic Pie Chart -->
+      <section class="demo-section">
+        <h2>Dynamic Pie Chart</h2>
+        <p>The JavaScript API handles conic-gradient calculation automatically.</p>
+
+        <browser-window url="js-pie-demo.html">
+          <div id="js-pie-container" class="chart-with-legend"></div>
+        </browser-window>
+      </section>
+
+      <!-- Interactive Controls -->
+      <section class="demo-section">
+        <h2>Interactive Controls</h2>
+        <p>Toggle chart modifiers to see different presentations.</p>
+
+        <browser-window url="interactive-demo.html">
+          <div class="controls">
+            <label>
+              <input type="checkbox" id="toggle-labels" />
+              Show Labels
+            </label>
+            <label>
+              <input type="checkbox" id="toggle-tooltip" checked />
+              Enable Tooltips
+            </label>
+            <label>
+              Gap Size:
+              <select id="select-gap">
+                <option value="">Default</option>
+                <option value="s">Small</option>
+                <option value="m">Medium</option>
+                <option value="l">Large</option>
+              </select>
+            </label>
+            <button id="animate-btn" type="button">Animate</button>
+          </div>
+
+          <table class="vb-chart" data-type="bar" data-tooltip id="interactive-chart">
+            <caption>Controllable Chart</caption>
+            <tbody>
+              <tr>
+                <th scope="row">Item A</th>
+                <td style="--value: 0.75" data-tooltip="Item A: 75%" data-label="75%">75%</td>
+              </tr>
+              <tr>
+                <th scope="row">Item B</th>
+                <td style="--value: 0.50" data-tooltip="Item B: 50%" data-label="50%">50%</td>
+              </tr>
+              <tr>
+                <th scope="row">Item C</th>
+                <td style="--value: 0.90" data-tooltip="Item C: 90%" data-label="90%">90%</td>
+              </tr>
+              <tr>
+                <th scope="row">Item D</th>
+                <td style="--value: 0.35" data-tooltip="Item D: 35%" data-label="35%">35%</td>
+              </tr>
+            </tbody>
+          </table>
+        </browser-window>
+      </section>
+
+      <!-- Progressive Enhancement Demo -->
+      <section class="demo-section">
+        <h2>Progressive Enhancement</h2>
+        <p>Without CSS, the chart degrades to a readable data table. This ensures accessibility and print friendliness.</p>
+
+        <div class="comparison-grid">
+          <div>
+            <h3>With CSS (Visual Chart)</h3>
+            <table class="vb-chart" data-type="bar">
+              <caption>Sample Data</caption>
+              <tbody>
+                <tr><th scope="row">Alpha</th><td style="--value: 0.8">80</td></tr>
+                <tr><th scope="row">Beta</th><td style="--value: 0.6">60</td></tr>
+                <tr><th scope="row">Gamma</th><td style="--value: 0.9">90</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Without CSS (Data Table)</h3>
+            <table class="no-chart-css">
+              <caption>Sample Data</caption>
+              <thead>
+                <tr><th>Label</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Alpha</th><td>80</td></tr>
+                <tr><th scope="row">Beta</th><td>60</td></tr>
+                <tr><th scope="row">Gamma</th><td>90</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Size Variants -->
+      <section class="demo-section">
+        <h2>Size Variants</h2>
+        <p>Use <code>data-size="s"</code> or <code>data-size="l"</code> for different chart scales.</p>
+
+        <div class="size-comparison">
+          <div>
+            <h3>Small</h3>
+            <table class="vb-chart" data-type="column" data-size="s">
+              <caption>Small Chart</caption>
+              <tbody>
+                <tr><th scope="row">A</th><td style="--value: 0.7">70</td></tr>
+                <tr><th scope="row">B</th><td style="--value: 0.5">50</td></tr>
+                <tr><th scope="row">C</th><td style="--value: 0.9">90</td></tr>
+                <tr><th scope="row">D</th><td style="--value: 0.6">60</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Default</h3>
+            <table class="vb-chart" data-type="column">
+              <caption>Default Chart</caption>
+              <tbody>
+                <tr><th scope="row">A</th><td style="--value: 0.7">70</td></tr>
+                <tr><th scope="row">B</th><td style="--value: 0.5">50</td></tr>
+                <tr><th scope="row">C</th><td style="--value: 0.9">90</td></tr>
+                <tr><th scope="row">D</th><td style="--value: 0.6">60</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Large</h3>
+            <table class="vb-chart" data-type="column" data-size="l">
+              <caption>Large Chart</caption>
+              <tbody>
+                <tr><th scope="row">A</th><td style="--value: 0.7">70</td></tr>
+                <tr><th scope="row">B</th><td style="--value: 0.5">50</td></tr>
+                <tr><th scope="row">C</th><td style="--value: 0.9">90</td></tr>
+                <tr><th scope="row">D</th><td style="--value: 0.6">60</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Accessibility Info -->
+      <section class="demo-section">
+        <h2>Accessibility</h2>
+        <ul class="checklist">
+          <li>Semantic <code>&lt;table&gt;</code> structure with proper headers</li>
+          <li><code>&lt;caption&gt;</code> provides chart title to assistive technology</li>
+          <li><code>&lt;th scope="row"&gt;</code> associates labels with data</li>
+          <li>Actual values in <code>&lt;td&gt;</code> cells readable by screen readers</li>
+          <li>Keyboard accessible - tooltips shown on <code>:focus-visible</code></li>
+          <li>High contrast mode supported via design tokens</li>
+          <li>Print styles revert to table format</li>
+          <li>Reduced motion respected for animations</li>
+        </ul>
+      </section>
+
+    </layout-stack>
+  </layout-center>

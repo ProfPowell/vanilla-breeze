@@ -1,0 +1,575 @@
+---
+layout: layouts/docs.njk
+title: "Accessibility - Vanilla Breeze"
+description: "Accessibility features in Vanilla Breeze: ARIA patterns, keyboard navigation, screen reader support, color contrast, and testing guidance."
+currentPath: /docs/accessibility/
+permalink: /docs/accessibility/
+---
+
+{% set liveRegions %}<!-- Polite: announced when user is idle -->
+<div aria-live="polite">
+  Loading complete. 42 results found.
+</div>
+
+<!-- Assertive: announced immediately (use sparingly) -->
+<div role="alert">
+  Error: Please fix the form errors before submitting.
+</div>
+
+<!-- Status: for status updates -->
+<div role="status">
+  Saving...
+</div>{% endset %}
+
+{% set accessibleNaming %}<!-- Visible label (preferred) -->
+<label for="email">Email address</label>
+<input type="email" id="email" />
+
+<!-- aria-label for icon-only buttons -->
+<button aria-label="Close dialog">
+  <icon-wc name="x"></icon-wc>
+</button>
+
+<!-- aria-labelledby for complex labels -->
+<section aria-labelledby="section-title">
+  <h2 id="section-title">User Settings</h2>
+  ...
+</section>
+
+<!-- aria-describedby for additional context -->
+<input type="password" aria-describedby="password-hint" />
+<p id="password-hint">Must be at least 8 characters</p>{% endset %}
+
+{% set semanticColors %}/* These automatically meet contrast requirements */
+color: var(--color-text);          /* Primary text */
+color: var(--color-text-muted);    /* Secondary text */
+background: var(--color-surface);   /* Backgrounds */
+
+/* Interactive states maintain contrast */
+background: var(--color-interactive);
+background: var(--color-interactive-hover);{% endset %}
+
+{% set reducedMotion %}/* Animations are enabled by default */
+.accordion-content {
+  transition: height var(--duration-normal) var(--ease-default);
+}
+
+/* Disabled when user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .accordion-content {
+    transition: none;
+  }
+}{% endset %}
+
+{% set formFieldExample %}<form-field>
+  <label for="username">Username</label>
+  <input
+    type="text"
+    id="username"
+    required
+    aria-describedby="username-hint"
+  />
+  <span id="username-hint" class="help">
+    Letters and numbers only, 3-20 characters
+  </span>
+</form-field>{% endset %}
+
+{% set formErrorExample %}<form-field>
+  <label for="email">Email</label>
+  <input
+    type="email"
+    id="email"
+    required
+    aria-invalid="true"
+    aria-describedby="email-error"
+  />
+  <span id="email-error" class="error" role="alert">
+    Please enter a valid email address
+  </span>
+</form-field>{% endset %}
+
+<h1>Accessibility</h1>
+  <p class="lead">Vanilla Breeze is built with accessibility as a core principle, not an afterthought. This guide covers the accessibility features built into components and how to use them effectively.</p>
+
+  <nav class="subnav" aria-label="Accessibility sections">
+    <ul>
+      <li><a href="#commitment">Our Commitment</a></li>
+      <li><a href="#keyboard">Keyboard Navigation</a></li>
+      <li><a href="#aria">ARIA Patterns</a></li>
+      <li><a href="#color">Color and Contrast</a></li>
+      <li><a href="#motion">Motion and Animation</a></li>
+      <li><a href="#forms">Accessible Forms</a></li>
+      <li><a href="#testing">Testing</a></li>
+    </ul>
+  </nav>
+
+  <!-- Commitment Section -->
+  <section id="commitment">
+    <h2>Our Commitment</h2>
+    <p>Vanilla Breeze targets <strong>WCAG 2.1 Level AA</strong> compliance. All components are designed to be:</p>
+
+    <ul>
+      <li><strong>Perceivable:</strong> Content can be presented in different ways without losing meaning</li>
+      <li><strong>Operable:</strong> All functionality is available from a keyboard</li>
+      <li><strong>Understandable:</strong> Content and operation are predictable</li>
+      <li><strong>Robust:</strong> Content works with current and future assistive technologies</li>
+    </ul>
+
+    <layout-card>
+      <layout-stack data-layout-gap="s">
+        <h3 style="margin: 0;">Report Accessibility Issues</h3>
+        <p style="margin: 0;">Found an accessibility problem? Please <a href="https://github.com/profpowell/vanilla-breeze/issues">open an issue on GitHub</a> with the label "accessibility". We take these reports seriously and prioritize fixes.</p>
+      </layout-stack>
+    </layout-card>
+  </section>
+
+  <!-- Keyboard Navigation Section -->
+  <section id="keyboard">
+    <h2>Keyboard Navigation</h2>
+    <p>All interactive components support full keyboard navigation. Here are the patterns used:</p>
+
+    <h3>Global Keys</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus to next focusable element</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift</kbd> + <kbd>Tab</kbd></td>
+          <td>Move focus to previous focusable element</td>
+        </tr>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Activate focused button or link</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close dialogs, dropdowns, and popovers</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Component-Specific Keys</h3>
+
+    <h4>Tabs (<code>tabs-wc</code>)</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Navigate between tabs (horizontal)</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td>
+          <td>Navigate between tabs (vertical orientation)</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd></td>
+          <td>Go to first tab</td>
+        </tr>
+        <tr>
+          <td><kbd>End</kbd></td>
+          <td>Go to last tab</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Accordion (<code>accordion-wc</code>)</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Toggle accordion section</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Down</kbd></td>
+          <td>Move focus to next accordion header</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd></td>
+          <td>Move focus to previous accordion header</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd></td>
+          <td>Move focus to first accordion header</td>
+        </tr>
+        <tr>
+          <td><kbd>End</kbd></td>
+          <td>Move focus to last accordion header</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Dropdown (<code>dropdown-wc</code>)</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Open dropdown, activate menu item</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Down</kbd></td>
+          <td>Open dropdown / move to next item</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd></td>
+          <td>Move to previous item</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close dropdown</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Focus Management</h3>
+    <p>Vanilla Breeze components manage focus appropriately:</p>
+    <ul>
+      <li><strong>Focus trapping:</strong> Modal dialogs trap focus within themselves</li>
+      <li><strong>Focus restoration:</strong> When a dialog closes, focus returns to the trigger</li>
+      <li><strong>Focus visible:</strong> All focusable elements have visible focus indicators</li>
+      <li><strong>Skip links:</strong> Use <code>&lt;a href="#main"&gt;Skip to content&lt;/a&gt;</code> for keyboard users</li>
+    </ul>
+  </section>
+
+  <!-- ARIA Patterns Section -->
+  <section id="aria">
+    <h2>ARIA Patterns</h2>
+    <p>Vanilla Breeze follows established ARIA patterns from the <a href="https://www.w3.org/WAI/ARIA/apg/">ARIA Authoring Practices Guide (APG)</a>.</p>
+
+    <h3>Component ARIA Roles</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Pattern</th>
+          <th>Key ARIA Attributes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tabs-wc</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tabs/">Tabs</a></td>
+          <td><code>role="tablist"</code>, <code>role="tab"</code>, <code>aria-selected</code>, <code>aria-controls</code></td>
+        </tr>
+        <tr>
+          <td><code>accordion-wc</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/">Accordion</a></td>
+          <td><code>aria-expanded</code>, <code>aria-controls</code></td>
+        </tr>
+        <tr>
+          <td><code>dropdown-wc</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">Menu Button</a></td>
+          <td><code>aria-haspopup</code>, <code>aria-expanded</code>, <code>role="menu"</code></td>
+        </tr>
+        <tr>
+          <td><code>dialog</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/">Modal Dialog</a></td>
+          <td><code>role="dialog"</code>, <code>aria-modal</code>, <code>aria-labelledby</code></td>
+        </tr>
+        <tr>
+          <td><code>tooltip-wc</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/">Tooltip</a></td>
+          <td><code>role="tooltip"</code>, <code>aria-describedby</code></td>
+        </tr>
+        <tr>
+          <td><code>toast-wc</code></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/alert/">Alert</a></td>
+          <td><code>role="alert"</code>, <code>aria-live="polite"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Live Regions</h3>
+    <p>Dynamic content changes are announced to screen readers using ARIA live regions:</p>
+    <code-block language="html" label="Live region example">{{ liveRegions | safe }}</code-block>
+
+    <h3>Labels and Descriptions</h3>
+    <p>Always provide accessible names for interactive elements:</p>
+    <code-block language="html" label="Accessible naming">{{ accessibleNaming | safe }}</code-block>
+  </section>
+
+  <!-- Color and Contrast Section -->
+  <section id="color">
+    <h2>Color and Contrast</h2>
+    <p>Vanilla Breeze design tokens are designed to meet WCAG contrast requirements.</p>
+
+    <h3>Contrast Ratios</h3>
+    <p>WCAG 2.1 AA requires:</p>
+    <ul>
+      <li><strong>4.5:1</strong> for normal text</li>
+      <li><strong>3:1</strong> for large text (18pt or 14pt bold)</li>
+      <li><strong>3:1</strong> for UI components and graphical objects</li>
+    </ul>
+
+    <h3>Built-in Contrast</h3>
+    <p>The semantic color tokens maintain appropriate contrast in both light and dark modes:</p>
+    <code-block language="css" label="Semantic color tokens">{{ semanticColors | safe }}</code-block>
+
+    <h3>Don't Rely on Color Alone</h3>
+    <p>Color should never be the only way to convey information:</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <div>
+          <p><strong>Good:</strong> Error state uses color, icon, and text</p>
+          <form-field>
+            <label for="ex-email">Email</label>
+            <input type="email" id="ex-email" aria-invalid="true" value="invalid" />
+            <span class="error"><icon-wc name="alert-circle" size="sm"></icon-wc> Please enter a valid email address</span>
+          </form-field>
+        </div>
+        <div>
+          <p><strong>Good:</strong> Links are underlined, not just colored</p>
+          <p>Visit our <a href="#">documentation</a> for more information.</p>
+        </div>
+      </layout-stack>
+    </div>
+
+    <h3>Testing Contrast</h3>
+    <p>Tools to verify contrast:</p>
+    <ul>
+      <li><a href="https://webaim.org/resources/contrastchecker/">WebAIM Contrast Checker</a></li>
+      <li><a href="https://color.a11y.com/">Color Contrast Accessibility Validator</a></li>
+      <li>Browser DevTools (Lighthouse audit)</li>
+      <li><a href="https://www.deque.com/axe/devtools/">axe DevTools</a> browser extension</li>
+    </ul>
+
+    <h3>Accessibility Themes</h3>
+    <p>For users who need enhanced contrast, Vanilla Breeze provides dedicated accessibility themes:</p>
+
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/themes/#high-contrast" class="section-card">
+        <h4>High Contrast</h4>
+        <p>WCAG AAA (7:1+) contrast ratios with enhanced focus indicators.</p>
+      </a>
+      <a href="/docs/themes/#large-text" class="section-card">
+        <h4>Large Text</h4>
+        <p>25% larger fonts with 44px touch targets.</p>
+      </a>
+      <a href="/docs/themes/#dyslexia" class="section-card">
+        <h4>Dyslexia-Friendly</h4>
+        <p>Atkinson Hyperlegible font with optimized spacing.</p>
+      </a>
+    </layout-grid>
+
+    <p>These themes are composable - combine them with any decorative theme: <code>data-theme="forest a11y-high-contrast"</code></p>
+  </section>
+
+  <!-- Motion and Animation Section -->
+  <section id="motion">
+    <h2>Motion and Animation</h2>
+    <p>Animations can cause discomfort for users with vestibular disorders. Vanilla Breeze respects user preferences.</p>
+
+    <h3>Respecting prefers-reduced-motion</h3>
+    <p>All animations in Vanilla Breeze check the user's motion preference:</p>
+    <code-block language="css" label="Reduced motion support">{{ reducedMotion | safe }}</code-block>
+
+    <h3>What Gets Reduced</h3>
+    <ul>
+      <li>Accordion open/close animations</li>
+      <li>Tab panel transitions</li>
+      <li>Toast slide-in animations</li>
+      <li>Dropdown reveal animations</li>
+      <li>Hover and focus transitions</li>
+    </ul>
+
+    <h3>Testing Reduced Motion</h3>
+    <p>To test reduced motion in your browser:</p>
+    <ol>
+      <li>Open DevTools</li>
+      <li>Press <kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open command palette</li>
+      <li>Type "reduced motion" and select "Emulate CSS prefers-reduced-motion: reduce"</li>
+    </ol>
+  </section>
+
+  <!-- Accessible Forms Section -->
+  <section id="forms">
+    <h2>Accessible Forms</h2>
+    <p>Forms are critical for accessibility. Vanilla Breeze provides patterns that work for everyone.</p>
+
+    <h3>The form-field Component</h3>
+    <p>The <code>&lt;form-field&gt;</code> custom element ensures proper label association and error handling:</p>
+    <code-block language="html" label="Accessible form field">{{ formFieldExample | safe }}</code-block>
+
+    <h3>Error States</h3>
+    <p>When validation fails, provide clear feedback:</p>
+    <code-block language="html" label="Form error handling">{{ formErrorExample | safe }}</code-block>
+
+    <h3>Form Best Practices</h3>
+    <ul>
+      <li><strong>Always use labels:</strong> Every input needs an associated <code>&lt;label&gt;</code></li>
+      <li><strong>Group related fields:</strong> Use <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code></li>
+      <li><strong>Indicate required fields:</strong> Use <code>required</code> attribute and visual indicator</li>
+      <li><strong>Provide help text:</strong> Use <code>aria-describedby</code> for hints</li>
+      <li><strong>Announce errors:</strong> Use <code>role="alert"</code> for error messages</li>
+      <li><strong>Don't rely on placeholder:</strong> Placeholders disappear and have poor contrast</li>
+    </ul>
+
+    <div class="example">
+      <form style="max-inline-size: 400px;">
+        <layout-stack data-layout-gap="m">
+          <fieldset>
+            <legend>Contact Information</legend>
+            <layout-stack data-layout-gap="m">
+              <form-field>
+                <label for="demo-name">Full Name <span aria-hidden="true">*</span></label>
+                <input type="text" id="demo-name" required />
+              </form-field>
+              <form-field>
+                <label for="demo-email">Email <span aria-hidden="true">*</span></label>
+                <input type="email" id="demo-email" required aria-describedby="demo-email-hint" />
+                <span id="demo-email-hint" class="help">We'll never share your email</span>
+              </form-field>
+            </layout-stack>
+          </fieldset>
+          <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+            <span aria-hidden="true">*</span> Required fields
+          </p>
+          <button type="submit">Submit</button>
+        </layout-stack>
+      </form>
+    </div>
+  </section>
+
+  <!-- Testing Section -->
+  <section id="testing">
+    <h2>Testing Accessibility</h2>
+    <p>Regular testing helps catch issues early. Use a combination of automated and manual testing.</p>
+
+    <h3>Automated Testing</h3>
+    <p>Tools that catch common issues:</p>
+    <ul>
+      <li><strong><a href="https://www.deque.com/axe/devtools/">axe DevTools</a>:</strong> Browser extension for page audits</li>
+      <li><strong><a href="https://wave.webaim.org/">WAVE</a>:</strong> Web accessibility evaluation tool</li>
+      <li><strong>Lighthouse:</strong> Built into Chrome DevTools</li>
+      <li><strong><a href="https://github.com/pa11y/pa11y">Pa11y</a>:</strong> Command-line accessibility testing</li>
+    </ul>
+
+    <h3>Manual Testing Checklist</h3>
+    <layout-stack data-layout-gap="s">
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Can you navigate all interactive elements with only the keyboard?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Is focus always visible when navigating?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Do all images have meaningful alt text (or empty alt for decorative)?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Are form errors clearly communicated?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Does the page make sense when zoomed to 200%?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Are headings in logical order (h1, h2, h3...)?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Is there sufficient color contrast?</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: var(--size-s);">
+        <input type="checkbox" />
+        <span>Does information rely on more than just color?</span>
+      </label>
+    </layout-stack>
+
+    <h3>Screen Reader Testing</h3>
+    <p>Test with actual screen readers:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Screen Reader</th>
+          <th>Browser Pairing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>macOS / iOS</td>
+          <td>VoiceOver (built-in)</td>
+          <td>Safari</td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td><a href="https://www.nvaccess.org/">NVDA</a> (free)</td>
+          <td>Firefox or Chrome</td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td>JAWS</td>
+          <td>Chrome</td>
+        </tr>
+        <tr>
+          <td>Android</td>
+          <td>TalkBack (built-in)</td>
+          <td>Chrome</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Quick VoiceOver Test (macOS)</h3>
+    <ol>
+      <li>Press <kbd>Cmd</kbd> + <kbd>F5</kbd> to enable VoiceOver</li>
+      <li>Use <kbd>Ctrl</kbd> + <kbd>Option</kbd> + <kbd>Arrow</kbd> keys to navigate</li>
+      <li>Listen for meaningful announcements</li>
+      <li>Press <kbd>Cmd</kbd> + <kbd>F5</kbd> again to disable</li>
+    </ol>
+  </section>
+
+  <!-- Next Steps Section -->
+  <section>
+    <h2>Resources</h2>
+    <p>Learn more about web accessibility:</p>
+
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="https://www.w3.org/WAI/ARIA/apg/" class="section-card">
+        <h3>ARIA Authoring Practices</h3>
+        <p>Official patterns and examples from W3C.</p>
+      </a>
+      <a href="https://www.w3.org/WAI/WCAG21/quickref/" class="section-card">
+        <h3>WCAG Quick Reference</h3>
+        <p>Filterable guide to WCAG criteria.</p>
+      </a>
+      <a href="https://webaim.org/" class="section-card">
+        <h3>WebAIM</h3>
+        <p>Articles, tools, and training resources.</p>
+      </a>
+      <a href="https://a11yproject.com/" class="section-card">
+        <h3>The A11Y Project</h3>
+        <p>Community-driven accessibility resources.</p>
+      </a>
+    </layout-grid>
+  </section>

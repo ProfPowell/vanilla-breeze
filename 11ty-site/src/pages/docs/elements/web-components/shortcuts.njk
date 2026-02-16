@@ -1,0 +1,89 @@
+---
+layout: layouts/element.njk
+title: "shortcuts-wc"
+description: "Keyboard shortcuts help overlay. Press ? to see all bound shortcuts."
+elementName: shortcuts-wc
+category: component
+currentPath: /docs/elements/web-components/shortcuts/
+permalink: /docs/elements/web-components/shortcuts/
+---
+
+{% set basicCode %}<!-- Place once per page, typically in your layout -->
+<shortcuts-wc></shortcuts-wc>{% endset %}
+
+{% set withCommandsCode %}<!-- Shortcuts overlay discovers data-shortcut bindings automatically -->
+<shortcuts-wc></shortcuts-wc>
+
+<!-- These shortcuts appear in the overlay -->
+<button data-command="Toggle Dark Mode" data-shortcut="meta+shift+t">
+  Dark Mode
+</button>
+<button data-command="Save Draft" data-shortcut="meta+s">
+  Save
+</button>{% endset %}
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;shortcuts-wc&gt;</code> component provides a keyboard shortcuts help overlay, similar to GitHub's <kbd>?</kbd> shortcut or Gmail's shortcut reference. Place it once in your layout and press <kbd>?</kbd> to see all currently bound keyboard shortcuts grouped by source.</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>Drop <code>&lt;shortcuts-wc&gt;</code> anywhere on the page. It renders nothing visible &mdash; it only binds the <kbd>?</kbd> hotkey. Press <kbd>?</kbd> on this page to try it (it's already included in the layout).</p>
+    <code-block language="html" show-lines label="Basic usage">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>When opened, the overlay reads from the <strong>command registry</strong> (<code>window.__commandRegistry</code>) to find all registered commands that have a <code>data-shortcut</code> attribute. Shortcuts are displayed grouped by their <code>data-command-group</code>.</p>
+    <code-block language="html" show-lines label="With commands">{{ withCommandsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Shortcut Sources</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>How it appears</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>[data-command][data-shortcut]</code> elements</td>
+          <td>Label from <code>data-command</code>, group from <code>data-command-group</code></td>
+        </tr>
+        <tr>
+          <td><code>?</code> itself</td>
+          <td>"Show keyboard shortcuts" in "General" group (always present)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard Support</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>?</kbd></td><td>Open/close the shortcuts overlay</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close the overlay</td></tr>
+      </tbody>
+    </table>
+    <p>The <kbd>?</kbd> hotkey does <strong>not</strong> fire when focus is inside an input, textarea, or content-editable element.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Opens as native <code>&lt;dialog&gt;</code> with focus trapping</li>
+      <li>Escape closes (native dialog behavior)</li>
+      <li>Shortcuts displayed using <code>&lt;kbd&gt;</code> elements</li>
+      <li>Platform-aware formatting (&#x2318; on Mac, Ctrl on others)</li>
+    </ul>
+  </section>

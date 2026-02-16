@@ -1,0 +1,205 @@
+---
+layout: layouts/pattern.njk
+title: "FAQ Patterns"
+description: "FAQ section patterns for landing pages and marketing sites. Accordion, grid, and categorized layouts for displaying frequently asked questions."
+patternName: "FAQ"
+category: marketing
+currentPath: /docs/patterns/marketing/faq/
+permalink: /docs/patterns/marketing/faq/
+---
+
+{% set faqGridStyles %}.faq-item {
+  border-top: var(--border-width-thin) solid var(--color-border);
+  padding-top: var(--size-m);
+}
+
+.faq-item h3 {
+  font-size: var(--font-size-m);
+  margin: 0 0 var(--size-xs) 0;
+}
+
+.faq-item p {
+  color: var(--color-text-muted);
+  margin: 0;
+}{% endset %}
+
+{% set faqCategoryStyles %}.faq-category h2 {
+  font-size: var(--font-size-l);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--size-xs);
+}
+
+.faq-category h2 icon-wc {
+  color: var(--color-interactive);
+}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>FAQ sections help users find answers quickly without contacting support. These patterns use the <code>&lt;accordion-wc&gt;</code> component and native <code>&lt;details&gt;</code> elements, providing accessible expand/collapse behavior with zero custom JavaScript.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Built on <code>&lt;accordion-wc&gt;</code> for keyboard navigation, ARIA, and indicator styles</li>
+        <li>No custom CSS required for accordion behavior</li>
+        <li>Responsive grid layout for scan-friendly variant</li>
+        <li>Categorized layout for large FAQ lists</li>
+        <li>Progressive enhancement &mdash; works without JavaScript</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Accordion</h2>
+    <layout-text>
+      <p>The standard FAQ accordion wraps <code>&lt;details&gt;</code> elements in <code>&lt;accordion-wc&gt;</code>. The component handles the chevron indicator, marker hiding, keyboard navigation, and ARIA attributes &mdash; no custom CSS needed.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/faq-accordion.html"
+      url="https://vanilla-breeze.dev/faq-accordion"
+      title="FAQ Accordion"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="FAQ accordion with accordion-wc">&lt;accordion-wc data-single&gt;
+  &lt;details name="faq" open&gt;
+    &lt;summary&gt;What is Vanilla Breeze?&lt;/summary&gt;
+    &lt;div&gt;
+      &lt;p&gt;A lightweight CSS framework built on modern web standards...&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details name="faq"&gt;
+    &lt;summary&gt;How do I get started?&lt;/summary&gt;
+    &lt;div&gt;
+      &lt;p&gt;Include via CDN or install via npm...&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;!-- More items... --&gt;
+&lt;/accordion-wc&gt;</code-block>
+
+    <aside class="note">
+      <strong>Why accordion-wc?</strong> You could build FAQ accordions from raw <code>&lt;details&gt;</code> elements with custom CSS, but <code>&lt;accordion-wc&gt;</code> gives you the chevron indicator, smooth rotation transition, keyboard navigation between items, ARIA attributes, and optional single-open mode &mdash; all for free. See the <a href="/docs/elements/web-components/accordion/">accordion-wc documentation</a> for the full API.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Two-Column Grid</h2>
+    <layout-text>
+      <p>A grid layout that displays all FAQ items at once, arranged in two columns on wider screens. Best for shorter lists (4&ndash;8 items) where users benefit from scanning all questions at a glance.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/faq-two-column.html"
+      url="https://vanilla-breeze.dev/faq-two-column"
+      title="FAQ Two Column"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Two-column FAQ grid">&lt;div data-layout="grid" data-layout-min="400px" data-layout-gap="xl"&gt;
+  &lt;article class="faq-item" data-layout="stack" data-layout-gap="xs"&gt;
+    &lt;h3&gt;What is Vanilla Breeze?&lt;/h3&gt;
+    &lt;p&gt;A lightweight CSS framework...&lt;/p&gt;
+  &lt;/article&gt;
+  &lt;article class="faq-item" data-layout="stack" data-layout-gap="xs"&gt;
+    &lt;h3&gt;How do I get started?&lt;/h3&gt;
+    &lt;p&gt;Include via CDN or install via npm...&lt;/p&gt;
+  &lt;/article&gt;
+  &lt;!-- More items... --&gt;
+&lt;/div&gt;</code-block>
+
+    <h3>Styling</h3>
+    <layout-text>
+      <p>A border-top on each item creates visual separation in the grid:</p>
+    </layout-text>
+
+    <code-block language="css" label="FAQ grid item styles">{{ faqGridStyles | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Categorized</h2>
+    <layout-text>
+      <p>For large FAQ lists, group questions by topic. Each category gets a heading with an icon, followed by its own <code>&lt;accordion-wc&gt;</code>. This scales well to dozens of questions without overwhelming users.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/faq-categorized.html"
+      url="https://vanilla-breeze.dev/faq-categorized"
+      title="FAQ Categorized"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Categorized FAQ with grouped accordions">&lt;div data-layout="stack" data-layout-gap="2xl"&gt;
+  &lt;div class="faq-category"&gt;
+    &lt;h2&gt;&lt;icon-wc name="rocket" size="sm"&gt;&lt;/icon-wc&gt; Getting Started&lt;/h2&gt;
+    &lt;accordion-wc&gt;
+      &lt;details&gt;
+        &lt;summary&gt;What is Vanilla Breeze?&lt;/summary&gt;
+        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+      &lt;/details&gt;
+      &lt;details&gt;
+        &lt;summary&gt;How do I get started?&lt;/summary&gt;
+        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+      &lt;/details&gt;
+    &lt;/accordion-wc&gt;
+  &lt;/div&gt;
+
+  &lt;div class="faq-category"&gt;
+    &lt;h2&gt;&lt;icon-wc name="settings" size="sm"&gt;&lt;/icon-wc&gt; Technical&lt;/h2&gt;
+    &lt;accordion-wc&gt;
+      &lt;details&gt;
+        &lt;summary&gt;What browsers are supported?&lt;/summary&gt;
+        &lt;div&gt;&lt;p&gt;Answer...&lt;/p&gt;&lt;/div&gt;
+      &lt;/details&gt;
+      &lt;!-- More items... --&gt;
+    &lt;/accordion-wc&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code-block>
+
+    <h3>Styling</h3>
+    <layout-text>
+      <p>Minimal CSS for the category heading and icon color:</p>
+    </layout-text>
+
+    <code-block language="css" label="Category heading styles">{{ faqCategoryStyles | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Accordion vs Grid:</strong> Use accordion for longer FAQ lists (6+ items) to save vertical space. Use the grid for shorter lists where scanning all questions at once is helpful.</li>
+        <li><strong>Single-open mode:</strong> Add <code>data-single</code> to <code>&lt;accordion-wc&gt;</code> so only one answer is visible at a time. Good for long lists where context switching between answers is unlikely.</li>
+        <li><strong>Bordered variant:</strong> Add <code>data-bordered</code> for a contained look with dividers between items. Works well when the FAQ sits alongside other card-based content.</li>
+        <li><strong>Indicator styles:</strong> Use <code>data-indicator="plus-minus"</code> for a +/&minus; style instead of the default chevron. See <a href="/docs/elements/web-components/accordion/">accordion-wc</a> for all options.</li>
+        <li><strong>Open by default:</strong> Add the <code>open</code> attribute to a <code>&lt;details&gt;</code> element to have it expanded on page load.</li>
+        <li><strong>Question length:</strong> Keep questions concise (under 80 characters). Move complex details to the answer section.</li>
+        <li><strong>Answer formatting:</strong> Use paragraphs, lists, and links within answers. Avoid deeply nested content.</li>
+        <li><strong>Grouping:</strong> For large FAQ lists (12+ items), the categorized pattern with section headings helps users navigate by topic.</li>
+        <li><strong>SEO:</strong> Consider adding <a href="https://schema.org/FAQPage">FAQPage schema markup</a> if your site is eligible for rich results.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/web-components/accordion/" class="section-card">
+        <h3>accordion-wc</h3>
+        <p>Accordion component with variants, keyboard nav, and ARIA</p>
+      </a>
+      <a href="/docs/elements/custom-elements/grid/" class="section-card">
+        <h3>Layout Grid</h3>
+        <p>Responsive grid layout element</p>
+      </a>
+      <a href="/docs/elements/web-components/icons/" class="section-card">
+        <h3>icon-wc</h3>
+        <p>Icon component for category headings</p>
+      </a>
+      <a href="/docs/patterns/marketing/features/" class="section-card">
+        <h3>Feature Patterns</h3>
+        <p>Feature section patterns</p>
+      </a>
+    </layout-grid>
+  </section>

@@ -1,0 +1,385 @@
+---
+layout: layouts/element.njk
+title: "layout-center"
+description: "Horizontally centered content container with configurable max-width. Essential for constraining content width on wide screens."
+elementName: layout-center
+category: custom
+currentPath: /docs/elements/custom-elements/center/
+permalink: /docs/elements/custom-elements/center/
+---
+
+{% set maxWidthCode %}<layout-center data-layout-max="narrow">
+  <article>Long-form reading content...</article>
+</layout-center>
+
+<layout-center data-layout-max="normal">
+  <!-- Default width for most layouts -->
+</layout-center>
+
+<layout-center data-layout-max="wide">
+  <!-- Dashboard or data table -->
+</layout-center>{% endset %}
+
+{% set intrinsicCode %}<layout-center data-layout-intrinsic>
+  <button type="button">Centered Button</button>
+</layout-center>
+
+<layout-center data-layout-intrinsic>
+  <layout-card style="max-inline-size: 20rem;">
+    Intrinsically centered card
+  </layout-card>
+</layout-center>{% endset %}
+
+{% set textCenteringCode %}<layout-center data-layout-text>
+  <h2>Centered Heading</h2>
+  <p>Centered paragraph text.</p>
+</layout-center>
+
+<layout-center data-layout-intrinsic data-layout-text>
+  <!-- Both container and text centered -->
+</layout-center>{% endset %}
+
+{% set pageLayoutCode %}<layout-center data-layout-max="normal">
+  <layout-stack data-layout-gap="xl">
+    <header>
+      <layout-cluster data-layout-justify="between">
+        <strong>Logo</strong>
+        <nav>...</nav>
+      </layout-cluster>
+    </header>
+    <main>
+      <p>Main page content</p>
+    </main>
+  </layout-stack>
+</layout-center>{% endset %}
+
+{% set heroCode %}<layout-center data-layout-max="narrow" data-layout-text data-layout-intrinsic>
+  <layout-stack data-layout-gap="l" data-layout-align="center">
+    <h1>Welcome to Our Platform</h1>
+    <p>Build amazing products with our toolkit.</p>
+    <layout-cluster data-layout-gap="m">
+      <button type="button">Get Started</button>
+      <button type="button" class="secondary">Learn More</button>
+    </layout-cluster>
+  </layout-stack>
+</layout-center>{% endset %}
+
+{% set articleCode %}<layout-center data-layout-max="narrow">
+  <layout-text>
+    <h2>Article Title</h2>
+    <p>Narrow max-width ensures optimal line length.</p>
+    <p>45-75 characters per line is ideal.</p>
+  </layout-text>
+</layout-center>{% endset %}
+
+{% set formContainerCode %}<layout-center data-layout-max="narrow" data-layout-intrinsic>
+  <layout-card data-variant="outlined">
+    <layout-stack data-layout-gap="m">
+      <h3>Sign In</h3>
+      <layout-stack data-layout-gap="xs">
+        <label for="email">Email</label>
+        <input type="email" id="email" />
+      </layout-stack>
+      <layout-stack data-layout-gap="xs">
+        <label for="password">Password</label>
+        <input type="password" id="password" />
+      </layout-stack>
+      <button type="submit">Sign In</button>
+    </layout-stack>
+  </layout-card>
+</layout-center>{% endset %}
+
+{% set cssImplementation %}layout-center {
+  display: block;
+  box-sizing: content-box;
+  max-inline-size: var(--_max, var(--content-normal, 60rem));
+  margin-inline: auto;
+  padding-inline: var(--size-m);
+}
+
+/* Width variants */
+layout-center[data-layout-max="narrow"] { --_max: var(--content-narrow, 45rem); }
+layout-center[data-layout-max="normal"] { --_max: var(--content-normal, 60rem); }
+layout-center[data-layout-max="wide"] { --_max: var(--content-wide, 80rem); }
+
+/* Intrinsic centering */
+layout-center[data-layout-intrinsic] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Text centering */
+layout-center[data-layout-text] {
+  text-align: center;
+}
+
+/* Gutter variants */
+layout-center[data-layout-gutter="none"] {
+  padding-inline: 0;
+}
+
+layout-center[data-layout-gutter="s"] {
+  padding-inline: var(--size-s);
+}
+
+layout-center[data-layout-gutter="l"] {
+  padding-inline: var(--size-l);
+}{% endset %}
+
+<browser-window
+    src="/docs/examples/demos/center-basic.html"
+    url="https://vanilla-breeze.dev/center"
+    title="Center Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-layout-max</code></td>
+          <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
+          <td><code>normal</code></td>
+          <td>Maximum width (45rem, 60rem, 80rem)</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-intrinsic</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Centers content that is narrower than max-width</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-text</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Centers text alignment</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-gutter</code></td>
+          <td><code>none</code>, <code>s</code>, <code>l</code></td>
+          <td><code>m</code></td>
+          <td>Horizontal padding (gutter)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Max Width Variants</h2>
+    <p>The <code>data-layout-max</code> attribute controls the maximum width of the container.</p>
+
+    <layout-stack data-layout-gap="l">
+      <div>
+        <p><strong>data-layout-max="narrow"</strong> (45rem) - Ideal for reading content</p>
+        <div class="example">
+          <layout-center data-layout-max="narrow" style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-s);">
+            <p style="margin: 0;">This content is constrained to a narrow width, perfect for long-form reading where line length matters for readability.</p>
+          </layout-center>
+        </div>
+      </div>
+
+      <div>
+        <p><strong>data-layout-max="normal"</strong> (60rem) - Default, balanced width</p>
+        <div class="example">
+          <layout-center data-layout-max="normal" style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-s);">
+            <p style="margin: 0;">Normal width provides a good balance for most content types including text, forms, and mixed layouts.</p>
+          </layout-center>
+        </div>
+      </div>
+
+      <div>
+        <p><strong>data-layout-max="wide"</strong> (80rem) - For dashboards and data-heavy layouts</p>
+        <div class="example">
+          <layout-center data-layout-max="wide" style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-s);">
+            <p style="margin: 0;">Wide containers work well for dashboards, data tables, and layouts that benefit from more horizontal space.</p>
+          </layout-center>
+        </div>
+      </div>
+    </layout-stack>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Max width variants usage">{{ maxWidthCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Intrinsic Centering</h2>
+    <p>The <code>data-layout-intrinsic</code> attribute centers content that is narrower than the max-width.</p>
+
+    <div class="example">
+      <layout-center data-layout-intrinsic style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-s);">
+        <button type="button">Centered Button</button>
+      </layout-center>
+    </div>
+
+    <div class="example">
+      <layout-center data-layout-intrinsic style="background: var(--color-surface-raised); padding: var(--size-m); border-radius: var(--radius-s);">
+        <layout-card data-variant="outlined" style="max-inline-size: 20rem;">
+          <layout-stack data-layout-gap="s">
+            <strong>Centered Card</strong>
+            <p style="margin: 0; color: var(--color-text-muted);">This card is intrinsically centered.</p>
+          </layout-stack>
+        </layout-card>
+      </layout-center>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Intrinsic centering examples">{{ intrinsicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Text Centering</h2>
+    <p>The <code>data-layout-text</code> attribute adds <code>text-align: center</code> for centered text content.</p>
+
+    <div class="example">
+      <layout-center data-layout-text style="background: var(--color-surface-raised); padding: var(--size-l); border-radius: var(--radius-s);">
+        <layout-stack data-layout-gap="m">
+          <h2 style="margin: 0;">Centered Heading</h2>
+          <p style="margin: 0; color: var(--color-text-muted);">All text content within this container is centered, making it perfect for hero sections and call-to-action blocks.</p>
+          <button type="button">Call to Action</button>
+        </layout-stack>
+      </layout-center>
+    </div>
+
+    <h3>Combined: Intrinsic + Text</h3>
+    <div class="example">
+      <layout-center data-layout-intrinsic data-layout-text style="background: var(--color-surface-raised); padding: var(--size-l); border-radius: var(--radius-s);">
+        <layout-stack data-layout-gap="s">
+          <strong>Fully Centered</strong>
+          <p style="margin: 0; color: var(--color-text-muted);">Both container and text are centered.</p>
+        </layout-stack>
+      </layout-center>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Text centering examples">{{ textCenteringCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Gutter Variants</h2>
+    <p>The <code>data-layout-gutter</code> attribute controls horizontal padding (useful for nested centers).</p>
+
+    <layout-stack data-layout-gap="m">
+      <div class="example">
+        <p><strong>data-layout-gutter="none"</strong></p>
+        <layout-center data-layout-gutter="none" data-layout-max="narrow" style="background: var(--color-surface-raised);">
+          <p style="margin: 0; padding: var(--size-s);">No side padding - content touches edges.</p>
+        </layout-center>
+      </div>
+
+      <div class="example">
+        <p><strong>data-layout-gutter="s"</strong></p>
+        <layout-center data-layout-gutter="s" data-layout-max="narrow" style="background: var(--color-surface-raised);">
+          <p style="margin: 0; padding: var(--size-s) 0;">Small gutter padding.</p>
+        </layout-center>
+      </div>
+
+      <div class="example">
+        <p><strong>data-layout-gutter="l"</strong></p>
+        <layout-center data-layout-gutter="l" data-layout-max="narrow" style="background: var(--color-surface-raised);">
+          <p style="margin: 0; padding: var(--size-s) 0;">Large gutter padding.</p>
+        </layout-center>
+      </div>
+    </layout-stack>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Page Layout</h3>
+    <div class="example" style="background: var(--color-gray-200); padding: var(--size-m); border-radius: var(--radius-m);">
+      <layout-center data-layout-max="normal">
+        <layout-stack data-layout-gap="xl">
+          <header style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-s);">
+            <layout-cluster data-layout-gap="m" data-layout-justify="between">
+              <strong>Logo</strong>
+              <layout-cluster data-layout-gap="m">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+              </layout-cluster>
+            </layout-cluster>
+          </header>
+          <main style="padding: var(--size-l); background: var(--color-surface); border-radius: var(--radius-s);">
+            <p style="margin: 0;">Main page content goes here.</p>
+          </main>
+        </layout-stack>
+      </layout-center>
+    </div>
+
+    <code-block language="html" show-lines label="Centered page layout">{{ pageLayoutCode | safe }}</code-block>
+
+    <h3>Hero Section</h3>
+    <div class="example" style="background: linear-gradient(to bottom, var(--color-gray-900), var(--color-gray-800)); color: white; padding: var(--size-2xl); border-radius: var(--radius-m);">
+      <layout-center data-layout-max="narrow" data-layout-text data-layout-intrinsic>
+        <layout-stack data-layout-gap="l" data-layout-align="center">
+          <h1 style="margin: 0; font-size: var(--font-size-3xl);">Welcome to Our Platform</h1>
+          <p style="margin: 0; opacity: 0.8; font-size: var(--font-size-lg);">Build amazing products with our comprehensive toolkit designed for modern development.</p>
+          <layout-cluster data-layout-gap="m">
+            <button type="button">Get Started</button>
+            <button type="button" class="secondary" style="background: transparent; border-color: white; color: white;">Learn More</button>
+          </layout-cluster>
+        </layout-stack>
+      </layout-center>
+    </div>
+
+    <code-block language="html" show-lines label="Centered hero with text alignment">{{ heroCode | safe }}</code-block>
+
+    <h3>Article Content</h3>
+    <div class="example">
+      <layout-center data-layout-max="narrow">
+        <layout-text>
+          <h2>Article Title</h2>
+          <p>The narrow max-width ensures optimal line length for reading. Research shows that 45-75 characters per line is ideal for readability.</p>
+          <p>This container automatically centers itself and maintains comfortable margins on all screen sizes.</p>
+        </layout-text>
+      </layout-center>
+    </div>
+
+    <code-block language="html" show-lines label="Article with narrow max-width">{{ articleCode | safe }}</code-block>
+
+    <h3>Form Container</h3>
+    <div class="example">
+      <layout-center data-layout-max="narrow" data-layout-intrinsic>
+        <layout-card data-variant="outlined" style="inline-size: 100%; max-inline-size: 25rem;">
+          <layout-stack data-layout-gap="m">
+            <h3 style="margin: 0; text-align: center;">Sign In</h3>
+            <layout-stack data-layout-gap="xs">
+              <label for="center-email">Email</label>
+              <input type="email" id="center-email" placeholder="you@example.com" />
+            </layout-stack>
+            <layout-stack data-layout-gap="xs">
+              <label for="center-password">Password</label>
+              <input type="password" id="center-password" placeholder="Enter password" />
+            </layout-stack>
+            <button type="submit" style="inline-size: 100%;">Sign In</button>
+          </layout-stack>
+        </layout-card>
+      </layout-center>
+    </div>
+
+    <code-block language="html" show-lines label="Centered form with intrinsic sizing">{{ formContainerCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Implementation</h2>
+    <code-block language="css" show-lines label="layout-center CSS implementation">{{ cssImplementation | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/stack/">layout-stack</a> - Vertical stacking layout</li>
+      <li><a href="/docs/elements/custom-elements/cover/">layout-cover</a> - Full-height vertically centered layout</li>
+      <li><a href="/docs/elements/custom-elements/layout-text/">layout-text</a> - Typography container</li>
+    </ul>
+  </section>

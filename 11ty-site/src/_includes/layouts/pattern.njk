@@ -1,0 +1,67 @@
+{#
+  Pattern layout — for pattern documentation pages.
+  Includes sidebar navigation (6 pattern categories) and TOC.
+
+  Front matter variables:
+    patternName — pattern display name (e.g., "Breadcrumb")
+    category    — 'navigation', 'forms', 'marketing', 'application', 'feedback', or 'data'
+    currentPath — current page path for aria-current
+    title       — page title
+    description — pattern description
+#}
+{% extends "layouts/base.njk" %}
+
+{% set dataPage = "docs" %}
+{% set currentSection = "examples" %}
+{% set includeDocs = true %}
+
+{%- set patterns = navigation.patterns -%}
+
+{% block pageContent %}
+<main data-pagefind-body>
+  {% include "partials/sidebar-nav-drawer.njk" %}
+
+  <layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="narrow" data-layout-content-min="60">
+    <nav class="tree" id="nav-drawer" data-layout-density="compact" aria-label="Patterns navigation" data-vt="sidebar">
+      <label for="nav-drawer-toggle" class="nav-drawer-close" aria-label="Close navigation">
+        <icon-wc name="x"></icon-wc>
+      </label>
+
+      {% for key, cat in patterns %}
+      <details{% if category == key %} open{% endif %}>
+        <summary>{{ cat.label }}</summary>
+        <ul>
+          {% for item in cat.items %}
+          <li>
+            <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
+              {{ item.name }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endfor %}
+    </nav>
+
+    <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
+      <aside>
+        <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+      </aside>
+      <article>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/docs/patterns/">Patterns</a></li>
+            <li><span aria-current="page">{{ patternName }}</span></li>
+          </ol>
+        </nav>
+        <h1>{{ patternName }}</h1>
+        <p class="lead">{{ description }}</p>
+
+        <heading-links data-levels="h2,h3">
+          {{ content | safe }}
+        </heading-links>
+      </article>
+    </layout-sidebar>
+  </layout-sidebar>
+</main>
+{% endblock %}

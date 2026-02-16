@@ -1,0 +1,371 @@
+---
+layout: layouts/element.njk
+title: "tr"
+description: "The tr element defines a row of cells in a table. It can contain header cells (th) and/or data cells (td) and must be a direct child of thead, tbody, or tfoot."
+elementName: tr
+category: native
+nativeGroup: Tables
+currentPath: /docs/elements/native/tr/
+permalink: /docs/elements/native/tr/
+---
+
+{% set basicTrCode %}<table>
+  <caption>Team Members</caption>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Role</th>
+      <th scope="col">Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Alice Johnson</td>
+      <td>Developer</td>
+      <td>New York</td>
+    </tr>
+    <!-- More rows -->
+  </tbody>
+</table>{% endset %}
+
+{% set rowHeaderCode %}<tr>
+  <th scope="row">Storage</th>
+  <td>5 GB</td>
+  <td>50 GB</td>
+  <td>Unlimited</td>
+</tr>{% endset %}
+
+{% set rowHoverCss %}/* Vanilla Breeze default hover */
+tbody tr:hover {
+  background: var(--color-surface-raised);
+}{% endset %}
+
+{% set spanningCellsCode %}<tr>
+  <th scope="row">9:00</th>
+  <td rowspan="2">Team Meeting</td>
+  <td>Planning</td>
+  <td>Code Review</td>
+</tr>
+<tr>
+  <th scope="row">10:00</th>
+  <td colspan="2">All-Hands Meeting</td>
+</tr>{% endset %}
+
+{% set jsManipulationCode %}// Add click handler to rows
+const rows = document.querySelectorAll('tbody tr');
+rows.forEach(row => {
+  row.addEventListener('click', () => {
+    // Handle row click
+    console.log('Row clicked:', row);
+  });
+});
+
+// Add a new row
+const tbody = document.querySelector('tbody');
+const newRow = tbody.insertRow();
+newRow.innerHTML = `
+  <td>New Item</td>
+  <td data-numeric>$99.99</td>
+`;
+
+// Remove a row
+const rowToRemove = tbody.rows[0];
+rowToRemove.remove();
+
+// Get row index
+const row = document.querySelector('tbody tr:first-child');
+console.log(row.rowIndex); // Index in the table
+console.log(row.sectionRowIndex); // Index within tbody{% endset %}
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;tr&gt;</code> (table row) element is a container for a horizontal group of cells. Each row must contain at least one <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> or <a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> element, and all rows in a table should have the same number of cells (accounting for colspan).</p>
+    <p>Vanilla Breeze applies hover effects to rows within <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> to help users track data across columns.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Every table row:</strong> All rows of data, headers, and footers require tr elements</li>
+      <li><strong>Grouping cells:</strong> Each horizontal set of related data goes in one row</li>
+      <li><strong>Header rows:</strong> In thead, rows typically contain th elements</li>
+      <li><strong>Data rows:</strong> In tbody, rows typically contain td elements (with optional th for row headers)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Example</h2>
+    <p>Rows contain cells that align with the table's column structure.</p>
+
+    <div class="example">
+      <table>
+        <caption>Team Members</caption>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Role</th>
+            <th scope="col">Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Alice Johnson</td>
+            <td>Developer</td>
+            <td>New York</td>
+          </tr>
+          <tr>
+            <td>Bob Smith</td>
+            <td>Designer</td>
+            <td>San Francisco</td>
+          </tr>
+          <tr>
+            <td>Carol Williams</td>
+            <td>Manager</td>
+            <td>Chicago</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Basic table row structure">{{ basicTrCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Rows with Row Headers</h2>
+    <p>Use <a href="/docs/elements/native/th/"><code>&lt;th scope="row"&gt;</code></a> in data rows to identify row headers.</p>
+
+    <div class="example">
+      <table>
+        <caption>Feature Comparison</caption>
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Basic</th>
+            <th scope="col">Pro</th>
+            <th scope="col">Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Storage</th>
+            <td>5 GB</td>
+            <td>50 GB</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <th scope="row">Users</th>
+            <td>1</td>
+            <td>10</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <th scope="row">Support</th>
+            <td>Email</td>
+            <td>Priority</td>
+            <td>24/7 Phone</td>
+          </tr>
+          <tr>
+            <th scope="row">API Access</th>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Row with row header">{{ rowHeaderCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Row Hover Effect</h2>
+    <p>Rows in tbody receive a hover effect to help users track data horizontally.</p>
+
+    <div class="example">
+      <table>
+        <caption>Hover over rows to see the effect</caption>
+        <thead>
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Category</th>
+            <th scope="col" data-numeric>Price</th>
+            <th scope="col" data-numeric>Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Laptop Stand</td>
+            <td>Accessories</td>
+            <td data-numeric>$49.99</td>
+            <td data-numeric>125</td>
+          </tr>
+          <tr>
+            <td>Wireless Mouse</td>
+            <td>Peripherals</td>
+            <td data-numeric>$29.99</td>
+            <td data-numeric>340</td>
+          </tr>
+          <tr>
+            <td>USB-C Hub</td>
+            <td>Accessories</td>
+            <td data-numeric>$39.99</td>
+            <td data-numeric>78</td>
+          </tr>
+          <tr>
+            <td>Monitor Arm</td>
+            <td>Furniture</td>
+            <td data-numeric>$89.99</td>
+            <td data-numeric>45</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="css" show-lines label="Row hover effect">{{ rowHoverCss | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Rows with Spanning Cells</h2>
+    <p>Use <code>colspan</code> and <code>rowspan</code> attributes on cells to span multiple columns or rows.</p>
+
+    <div class="example">
+      <table class="bordered">
+        <caption>Schedule with Spanning Cells</caption>
+        <thead>
+          <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Monday</th>
+            <th scope="col">Tuesday</th>
+            <th scope="col">Wednesday</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">9:00</th>
+            <td rowspan="2">Team Meeting</td>
+            <td>Planning</td>
+            <td>Code Review</td>
+          </tr>
+          <tr>
+            <th scope="row">10:00</th>
+            <td colspan="2">All-Hands Meeting</td>
+          </tr>
+          <tr>
+            <th scope="row">11:00</th>
+            <td>Development</td>
+            <td>Development</td>
+            <td>Development</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="Rows with spanning cells">{{ spanningCellsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Group Header Rows</h2>
+    <p>Rows can serve as group headers within tbody sections.</p>
+
+    <div class="example">
+      <table>
+        <caption>Products by Category</caption>
+        <thead>
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col" data-numeric>Price</th>
+            <th scope="col" data-numeric>Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="rowgroup" colspan="3" style="background: var(--color-surface-raised);">Electronics</th>
+          </tr>
+          <tr>
+            <td>Wireless Mouse</td>
+            <td data-numeric>$29.99</td>
+            <td data-numeric>150</td>
+          </tr>
+          <tr>
+            <td>USB-C Hub</td>
+            <td data-numeric>$39.99</td>
+            <td data-numeric>75</td>
+          </tr>
+          <tr>
+            <th scope="rowgroup" colspan="3" style="background: var(--color-surface-raised);">Furniture</th>
+          </tr>
+          <tr>
+            <td>Monitor Stand</td>
+            <td data-numeric>$49.99</td>
+            <td data-numeric>45</td>
+          </tr>
+          <tr>
+            <td>Desk Organizer</td>
+            <td data-numeric>$24.99</td>
+            <td data-numeric>120</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Consistent cell count:</strong> All rows should have the same number of cells (accounting for colspan)</li>
+      <li><strong>Row headers:</strong> Use <a href="/docs/elements/native/th/"><code>&lt;th scope="row"&gt;</code></a> when the first cell identifies the row</li>
+      <li><strong>Screen reader navigation:</strong> Users can navigate row by row through table data</li>
+      <li><strong>Implicit role:</strong> tr has an implicit ARIA role of <code>row</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>JavaScript Interaction</h2>
+    <p>Common operations with table rows:</p>
+
+    <code-block language="javascript" show-lines label="JavaScript row manipulation">{{ jsManipulationCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Valid Parent Elements</h2>
+    <p>The tr element must be a child of one of these elements:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Parent</th>
+          <th scope="col">Purpose</th>
+          <th scope="col">Typical Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a></td>
+          <td>Header rows</td>
+          <td><code>&lt;th scope="col"&gt;</code> cells</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a></td>
+          <td>Data rows</td>
+          <td><code>&lt;td&gt;</code> and optional <code>&lt;th scope="row"&gt;</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a></td>
+          <td>Footer/summary rows</td>
+          <td><code>&lt;td&gt;</code> cells with totals/summaries</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - The table container</li>
+      <li><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> - Header row group</li>
+      <li><a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> - Body row group</li>
+      <li><a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> - Footer row group</li>
+      <li><a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> - Header cells within rows</li>
+      <li><a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> - Data cells within rows</li>
+    </ul>
+  </section>

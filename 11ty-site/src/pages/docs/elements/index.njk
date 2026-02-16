@@ -1,0 +1,148 @@
+---
+layout: layouts/docs.njk
+title: Element Index
+description: "Complete alphabetical listing of all HTML elements, custom elements, and web components."
+currentSection: api
+currentPath: /docs/elements/
+permalink: /docs/elements/
+---
+
+{% block extraHead %}
+<style>
+  .element-index {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--size-s);
+    margin-block-start: var(--size-l);
+  }
+
+  .element-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--size-2xs);
+    padding: var(--size-s) var(--size-m);
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-s);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .element-entry:hover {
+    border-color: var(--color-interactive);
+    box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+  }
+
+  .element-entry code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+  }
+
+  .element-badge {
+    padding: var(--size-3xs) var(--size-xs);
+    border-radius: var(--radius-s);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .element-badge[data-type="native"] {
+    background: oklch(85% 0.1 145);
+    color: oklch(30% 0.1 145);
+  }
+
+  .element-badge[data-type="custom"] {
+    background: oklch(85% 0.1 250);
+    color: oklch(30% 0.1 250);
+  }
+
+  .element-badge[data-type="component"] {
+    background: oklch(85% 0.1 30);
+    color: oklch(30% 0.1 30);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-m);
+    margin-block: var(--size-l);
+    padding: var(--size-m);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    font-size: var(--font-size-sm);
+  }
+
+  .stats {
+    display: flex;
+    gap: var(--size-xl);
+    margin-block: var(--size-m);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .stats strong {
+    color: var(--color-text);
+  }
+
+  .letter-heading {
+    grid-column: 1 / -1;
+    margin-block-start: var(--size-l);
+    padding-block-end: var(--size-xs);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .letter-heading:first-of-type {
+    margin-block-start: 0;
+  }
+</style>
+{% endblock %}
+
+<h1>Element Index</h1>
+<p class="lead">Complete alphabetical listing of all HTML elements, custom elements, and web components.</p>
+
+<div class="stats">
+  <span><strong>{{ elements.nativeCount }}</strong> native elements</span>
+  <span><strong>{{ elements.customCount }}</strong> custom elements</span>
+  <span><strong>{{ elements.componentCount }}</strong> web components</span>
+  <span><strong>{{ elements.totalCount }}</strong> total</span>
+</div>
+
+<div class="legend">
+  <div class="legend-item">
+    <span class="element-badge" data-type="native">native</span>
+    <span>Standard HTML5 elements</span>
+  </div>
+  <div class="legend-item">
+    <span class="element-badge" data-type="custom">custom</span>
+    <span>CSS-only layout primitives</span>
+  </div>
+  <div class="legend-item">
+    <span class="element-badge" data-type="component">component</span>
+    <span>JavaScript-enhanced components</span>
+  </div>
+</div>
+
+<nav class="element-index" aria-label="All elements">
+  {% for letter, items in elements.byLetter %}
+    <h2 class="letter-heading">{{ letter }}</h2>
+    {% for item in items %}
+      <a href="{{ item.href }}" class="element-entry">
+        <code>&lt;{{ item.name }}&gt;</code>
+        <span class="element-badge" data-type="{{ item.type }}">{{ item.type }}</span>
+      </a>
+    {% endfor %}
+  {% endfor %}
+</nav>

@@ -1,0 +1,282 @@
+---
+layout: layouts/attribute.njk
+title: "data-count"
+description: "Live character or word count for textareas with configurable limits. Color shifts at warning and error thresholds for visual feedback."
+attributeName: data-count
+category: form-behavior
+currentPath: /docs/attributes/data-count/
+permalink: /docs/attributes/data-count/
+---
+
+{% set charCode %}<form-field>\n  <label for="bio">Bio</label>\n  <textarea id="bio" maxlength="200" data-count rows="3"></textarea>\n</form-field>{% endset %}
+
+{% set wordCode %}<form-field>\n  <label for="essay">Essay</label>\n  <textarea id="essay" data-count="words" data-maxwords="50" rows="4"></textarea>\n</form-field>{% endset %}
+
+{% set noLimitCode %}<form-field>\n  <label for="notes">Notes</label>\n  <textarea id="notes" data-count rows="3"></textarea>\n</form-field>{% endset %}
+
+{% set noLimitWordCode %}<form-field>\n  <label for="freeform">Freeform</label>\n  <textarea id="freeform" data-count="words" rows="3"></textarea>\n</form-field>{% endset %}
+
+{% set combinedCode %}<form-field>\n  <label for="msg">Message</label>\n  <textarea id="msg" data-count data-grow maxlength="500" rows="2"></textarea>\n</form-field>{% endset %}
+
+{% set formCode %}<form class="stacked">
+  <form-field>
+    <label for="title">Title</label>
+    <input type="text" id="title" maxlength="80">
+  </form-field>
+  <form-field>
+    <label for="body">Body</label>
+    <textarea id="body" maxlength="1000" data-count rows="6"></textarea>
+  </form-field>
+  <form-field>
+    <label for="summary">Summary</label>
+    <textarea id="summary" data-count="words" data-maxwords="25" rows="3"></textarea>
+  </form-field>
+  <button type="submit">Publish</button>
+</form>{% endset %}
+
+{% set eventCode %}const textarea = document.querySelector('[data-count]');
+
+textarea.addEventListener('input', () => \{
+  const counter = textarea.parentElement.querySelector('.textarea-counter');
+  console.log('Count state:', counter.dataset.state);
+  console.log('Counter text:', counter.textContent);
+\});{% endset %}
+
+{% set stylingCode %}/* Counter element */
+.textarea-counter \{
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-block-start: var(--size-2xs);
+\}
+
+/* Warning state (>=80% of limit) */
+.textarea-counter[data-state="warning"] \{
+  color: var(--color-warning);
+\}
+
+/* Error state (>=100% of limit) */
+.textarea-counter[data-state="error"] \{
+  color: var(--color-danger);
+  font-weight: 600;
+\}{% endset %}
+
+{% set dynamicCode %}// Dynamically added textareas are auto-enhanced via MutationObserver
+const textarea = document.createElement('textarea');
+textarea.maxLength = 140;
+textarea.dataset.count = '';
+textarea.rows = 3;
+document.querySelector('form-field').appendChild(textarea);
+// counter element is created automatically — no manual init needed{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-count</code> attribute adds a live counter below a textarea that updates as the user types. It supports both character counting (with <code>maxlength</code>) and word counting (with <code>data-maxwords</code>), with automatic color shifts at warning and error thresholds.</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-count-basic.html"
+      url="https://vanilla-breeze.dev/count"
+      title="Character Count"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Character count with limit">{{ charCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-count</code> to any <code>&lt;textarea&gt;</code>. The init script:</p>
+    <ol>
+      <li>Creates an <code>&lt;output&gt;</code> element with <code>class="textarea-counter"</code></li>
+      <li>Sets <code>aria-live="polite"</code> and <code>aria-atomic="true"</code> on the counter for screen reader announcements</li>
+      <li>Places the counter after the textarea (inside <code>&lt;form-field&gt;</code> if present, otherwise directly after)</li>
+      <li>Listens for <code>input</code> events to update the count in real time</li>
+      <li>Calculates thresholds: <strong>warning</strong> at &ge;80% of limit, <strong>error</strong> at &ge;100%</li>
+      <li>Sets <code>counter.dataset.state</code> to <code>""</code>, <code>"warning"</code>, or <code>"error"</code> for CSS styling</li>
+      <li>Sets <code>data-count-init</code> to prevent double-binding</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-count</code></td>
+          <td><code>""</code>, <code>"words"</code></td>
+          <td>Enables the counter. Empty string (default) counts characters. <code>"words"</code> counts words.</td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>number</td>
+          <td>Standard HTML attribute. Used as the character limit. The counter displays <code>current / max</code> format.</td>
+        </tr>
+        <tr>
+          <td><code>data-maxwords</code></td>
+          <td>number</td>
+          <td>Word limit for word-count mode. The counter displays <code>current / max</code> format.</td>
+        </tr>
+        <tr>
+          <td><code>data-count-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Character Count</h2>
+    <p>The default mode counts characters. Pair with <code>maxlength</code> to show a <code>current / max</code> display and enforce the limit.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="bio-demo">Bio</label>
+        <textarea id="bio-demo" maxlength="200" data-count rows="3"></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Character count with maxlength">{{ charCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Word Count</h2>
+    <p>Set <code>data-count="words"</code> for word counting. Use <code>data-maxwords</code> to set a word limit. Words are split on whitespace.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="essay-demo">Essay</label>
+        <textarea id="essay-demo" data-count="words" data-maxwords="50" rows="4"></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Word count with limit">{{ wordCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Count Without Limit</h2>
+    <p>Omit <code>maxlength</code> or <code>data-maxwords</code> to show a running count without enforcing a limit. No threshold states are applied.</p>
+
+    <h3>Characters without limit</h3>
+    <div class="example">
+      <form-field>
+        <label for="notes-demo">Notes</label>
+        <textarea id="notes-demo" data-count rows="3"></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Character count without limit">{{ noLimitCode | safe }}</code-block>
+
+    <h3>Words without limit</h3>
+    <div class="example">
+      <form-field>
+        <label for="freeform-demo">Freeform</label>
+        <textarea id="freeform-demo" data-count="words" rows="3"></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Word count without limit">{{ noLimitWordCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Display Format</h2>
+    <p>The counter text adapts based on the configuration:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Configuration</th>
+          <th>Display</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Characters with <code>maxlength</code></td>
+          <td><code>current / max</code></td>
+          <td>42 / 200</td>
+        </tr>
+        <tr>
+          <td>Characters without limit</td>
+          <td><code>count character(s)</code></td>
+          <td>42 characters</td>
+        </tr>
+        <tr>
+          <td>Words with <code>data-maxwords</code></td>
+          <td><code>current / max</code></td>
+          <td>12 / 50</td>
+        </tr>
+        <tr>
+          <td>Words without limit</td>
+          <td><code>count word(s)</code></td>
+          <td>12 words</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Threshold States</h2>
+    <p>When a limit is set, the counter shifts color at configurable thresholds via <code>data-state</code>:</p>
+    <ul>
+      <li><strong>Normal</strong> (<code>data-state=""</code>) &mdash; below 80% of the limit, uses muted text color</li>
+      <li><strong>Warning</strong> (<code>data-state="warning"</code>) &mdash; at or above 80% of the limit, shifts to warning color</li>
+      <li><strong>Error</strong> (<code>data-state="error"</code>) &mdash; at or above 100% of the limit, shifts to danger color with bold weight</li>
+    </ul>
+    <p>Without a limit, no threshold states are applied and the counter stays in its default style.</p>
+  </section>
+
+  <section>
+    <h2>Combined with data-grow</h2>
+    <p>Use <code>data-count</code> alongside <code>data-grow</code> for a textarea that expands as the user types while showing the count.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="msg-demo">Message</label>
+        <textarea id="msg-demo" data-count data-grow maxlength="500" rows="2"></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Count with auto-grow">{{ combinedCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Programmatic Access</h2>
+    <p>The counter element is a standard DOM node. Query it to read the current state programmatically.</p>
+
+    <code-block language="javascript" show-lines label="Reading counter state">{{ eventCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The counter is an <code>&lt;output&gt;</code> element styled via the <code>.textarea-counter</code> class. Threshold states are driven by <code>data-state</code> attribute selectors.</p>
+
+    <code-block language="css" show-lines label="Counter CSS">{{ stylingCode | safe }}</code-block>
+
+    <p>The warning state uses <code>--color-warning</code> and the error state uses <code>--color-danger</code> with increased font weight for emphasis.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Textareas added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added counted textareas">{{ dynamicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The counter uses <code>aria-live="polite"</code> so screen readers announce count changes without interrupting the user</li>
+      <li><code>aria-atomic="true"</code> ensures the entire counter text is read, not just the changed portion</li>
+      <li>The <code>&lt;output&gt;</code> element has implicit ARIA semantics for live regions</li>
+      <li>Threshold state changes (warning, error) are conveyed through the updated counter text</li>
+      <li>The counter is placed after the textarea in DOM order, matching visual reading order</li>
+      <li>Without JavaScript, the textarea works normally with no counter (progressive enhancement)</li>
+    </ul>
+  </section>

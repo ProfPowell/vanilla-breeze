@@ -1,0 +1,67 @@
+{#
+  Head partial — standard <head> content for all pages.
+
+  Expected variables (from front matter or layout):
+    title       — page title
+    description — meta description
+    image       — OG image URL (optional, defaults to /og-image.png)
+
+  Global data:
+    site.css            — main CSS path (dev vs prod)
+    site.viewTransitionsCss — view transitions CSS (dev only)
+    site.title          — site name
+    page.url            — current page URL
+#}
+
+{%- set siteTitle = site.title -%}
+{%- set fullTitle = title + ' | ' + siteTitle if title else siteTitle -%}
+{%- set ogImage = image if image else '/og-image.png' -%}
+{%- set canonicalURL = site.url + page.url -%}
+
+<!-- Global Metadata -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Eleventy">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<!-- Primary Meta Tags -->
+<title>{{ fullTitle }}</title>
+<meta name="title" content="{{ fullTitle }}">
+<meta name="description" content="{{ description }}">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ canonicalURL }}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ canonicalURL }}">
+<meta property="og:title" content="{{ fullTitle }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:image" content="{{ site.url }}{{ ogImage }}">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="{{ canonicalURL }}">
+<meta property="twitter:title" content="{{ fullTitle }}">
+<meta property="twitter:description" content="{{ description }}">
+<meta property="twitter:image" content="{{ site.url }}{{ ogImage }}">
+
+<!-- Preconnect for performance -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+<!-- Main CSS -->
+<link rel="stylesheet" href="{{ site.css }}">
+{% if site.viewTransitionsCss %}
+<link rel="stylesheet" href="{{ site.viewTransitionsCss }}">
+{% endif %}
+
+<!-- Theme: prevent flash of wrong theme -->
+<script>
+  const theme = localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.mode = theme;
+</script>

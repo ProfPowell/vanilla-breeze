@@ -1,0 +1,366 @@
+---
+layout: layouts/pattern.njk
+title: "Feedback States"
+description: "Unified pattern for empty, loading, and error states. State-driven feedback with semantic HTML and accessible output elements."
+patternName: "Feedback States"
+category: feedback
+currentPath: /docs/patterns/feedback/feedback-states/
+permalink: /docs/patterns/feedback/feedback-states/
+---
+
+{% set cssCode %}/* Default: feedback outputs hidden */
+output[data-empty],
+output[data-loading],
+output[data-error] {
+  display: none;
+}
+
+/* When state is set: hide content, show matching feedback */
+[data-state="empty"] > .content,
+[data-state="loading"] > .content,
+[data-state="error"] > .content {
+  display: none;
+}
+
+[data-state="empty"] > [data-empty],
+[data-state="loading"] > [data-loading],
+[data-state="error"] > [data-error] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--size-xl);
+}
+
+/* Feedback presentation variants */
+[data-feedback="skeleton"] {
+  gap: var(--size-s);
+}
+
+[data-feedback="message"] {
+  gap: var(--size-m);
+}{% endset %}
+
+{% set htmlBasic %}<section class="messages" data-state="empty">
+  <h2>Messages</h2>
+
+  <!-- Populated content -->
+  <ul class="content">
+    <li>Message 1</li>
+  </ul>
+
+  <!-- Feedback for empty state -->
+  <output data-empty data-feedback="message" role="status">
+    <icon-wc name="inbox"></icon-wc>
+    <h3>No messages</h3>
+    <p>Messages will appear here.</p>
+  </output>
+</section>{% endset %}
+
+{% set htmlMultiple %}<section class="products" data-state="loading">
+  <h2>Products</h2>
+
+  <table class="content">...</table>
+
+  <!-- Loading feedback (skeleton style) -->
+  <output data-loading data-feedback="skeleton" role="status" aria-busy="true">
+    <span class="skeleton-line"></span>
+    <span class="skeleton-line"></span>
+  </output>
+
+  <!-- Empty feedback -->
+  <output data-empty data-feedback="message" role="status">
+    <icon-wc name="package"></icon-wc>
+    <h3>No products</h3>
+  </output>
+
+  <!-- Error feedback -->
+  <output data-error data-feedback="message" role="alert">
+    <icon-wc name="alert-circle"></icon-wc>
+    <h3>Failed to load</h3>
+  </output>
+</section>{% endset %}
+
+{% set jsCode %}// Toggle state based on data
+function updateState(container, state) {
+  if (state === 'populated') {
+    container.removeAttribute('data-state');
+  } else {
+    container.dataset.state = state;
+  }
+}
+
+// Example: after fetching data
+fetchData().then(items => {
+  if (items.length === 0) {
+    updateState(container, 'empty');
+  } else {
+    updateState(container, 'populated');
+    renderItems(items);
+  }
+}).catch(error => {
+  updateState(container, 'error');
+});{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Feedback states communicate container status to users. Instead of separate components, this pattern uses a single data-attribute system to toggle between <strong>empty</strong>, <strong>loading</strong>, and <strong>error</strong> states.</p>
+      <p><strong>Key concepts:</strong></p>
+      <ul>
+        <li><code>data-state="empty|loading|error"</code> on the container controls visibility</li>
+        <li><code>output[data-empty|loading|error]</code> elements contain state-specific feedback</li>
+        <li><code>.content</code> class marks the populated content (table, ul, ol, dl, articles)</li>
+        <li><code>data-feedback="message|skeleton"</code> controls presentation style</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>The Pattern</h2>
+    <layout-text>
+      <p>Put <code>data-state</code> directly on semantic containers (section, article). Use <code>&lt;output&gt;</code> elements with data attributes for each feedback type.</p>
+    </layout-text>
+
+    <code-block language="css" label="feedback-states.css">{{ cssCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Data Attributes</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Applied To</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-state="empty|loading|error"</code></td>
+          <td>Container</td>
+          <td>Current state of the container</td>
+        </tr>
+        <tr>
+          <td><code>data-empty</code></td>
+          <td>Output</td>
+          <td>Feedback shown when state is empty</td>
+        </tr>
+        <tr>
+          <td><code>data-loading</code></td>
+          <td>Output</td>
+          <td>Feedback shown when state is loading</td>
+        </tr>
+        <tr>
+          <td><code>data-error</code></td>
+          <td>Output</td>
+          <td>Feedback shown when state is error</td>
+        </tr>
+        <tr>
+          <td><code>data-feedback="message|skeleton"</code></td>
+          <td>Output</td>
+          <td>Presentation style (text vs visual)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Basic Structure</h2>
+    <layout-text>
+      <p>A container with a single empty state feedback output.</p>
+    </layout-text>
+
+    <code-block language="html" label="Basic structure">{{ htmlBasic | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Multiple States</h2>
+    <layout-text>
+      <p>A single container can have feedback for multiple states. Only the matching feedback is visible based on <code>data-state</code>.</p>
+    </layout-text>
+
+    <code-block language="html" label="Multiple state feedbacks">{{ htmlMultiple | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Table Example</h2>
+    <layout-text>
+      <p>A table with all three feedback states. Use the buttons to toggle between states.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/feedback-table.html"
+      url="https://vanilla-breeze.dev/feedback-table"
+      title="Feedback States - Table"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>List Examples</h2>
+    <layout-text>
+      <p>Unordered list (notifications) and ordered list (leaderboard) with feedback states. The notifications use a message-style loading state, while the leaderboard uses skeleton lines.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/feedback-list.html"
+      url="https://vanilla-breeze.dev/feedback-list"
+      title="Feedback States - Lists"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Description List Example</h2>
+    <layout-text>
+      <p>A product specifications panel using a description list (<code>&lt;dl&gt;</code>) with skeleton loading feedback.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/feedback-dl.html"
+      url="https://vanilla-breeze.dev/feedback-dl"
+      title="Feedback States - Description List"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Articles Example</h2>
+    <layout-text>
+      <p>Blog posts as a collection of articles with feedback states for empty, loading, and error conditions.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/feedback-articles.html"
+      url="https://vanilla-breeze.dev/feedback-articles"
+      title="Feedback States - Articles"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Feedback Types</h2>
+    <layout-text>
+      <p>Use <code>data-feedback</code> to control the presentation style of feedback outputs.</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Use For</th>
+          <th>Contents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>message</code></td>
+          <td>Empty and error states, short loading messages</td>
+          <td>Icon, heading, description, optional action button</td>
+        </tr>
+        <tr>
+          <td><code>skeleton</code></td>
+          <td>Loading states showing content structure</td>
+          <td>Animated placeholder lines matching expected content</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript Integration</h2>
+    <layout-text>
+      <p>The pattern works CSS-only with server-rendered <code>data-state</code>. For dynamic content, toggle the attribute based on data fetching status.</p>
+    </layout-text>
+
+    <code-block language="javascript" label="Managing states">{{ jsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <layout-text>
+      <ul>
+        <li><strong><code>&lt;output&gt;</code> element:</strong> Semantic element for content that is the result of a user action or calculation. Screen readers announce it naturally.</li>
+        <li><strong><code>role="status"</code>:</strong> Live region for empty and loading states. Changes are announced politely.</li>
+        <li><strong><code>role="alert"</code>:</strong> Live region for error states. Changes are announced immediately.</li>
+        <li><strong><code>aria-busy="true"</code>:</strong> Indicates loading state to assistive technologies.</li>
+      </ul>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Role</th>
+          <th>Additional Attributes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Empty</td>
+          <td><code>role="status"</code></td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Loading</td>
+          <td><code>role="status"</code></td>
+          <td><code>aria-busy="true"</code></td>
+        </tr>
+        <tr>
+          <td>Error</td>
+          <td><code>role="alert"</code></td>
+          <td>None</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Icon Options</h2>
+    <layout-text>
+      <p>Choose icons that represent the state and content type:</p>
+      <ul>
+        <li><strong>Empty:</strong> <code>inbox</code>, <code>file-text</code>, <code>users</code>, <code>folder</code>, <code>bell-off</code>, <code>trophy</code></li>
+        <li><strong>Loading:</strong> <code>loader</code> (with <code>data-animate="spin"</code>)</li>
+        <li><strong>Error:</strong> <code>alert-circle</code>, <code>alert-triangle</code></li>
+        <li><strong>Retry action:</strong> <code>refresh-cw</code></li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>No wrapper divs:</strong> Apply <code>data-state</code> directly to semantic containers like <code>&lt;section&gt;</code> or <code>&lt;article&gt;</code></li>
+        <li><strong>Content class:</strong> Always mark your populated content with <code>.content</code> class</li>
+        <li><strong>Multiple outputs:</strong> Include all relevant feedback outputs in the container; CSS shows only the matching one</li>
+        <li><strong>Progressive enhancement:</strong> Works CSS-only; JavaScript enhances by toggling <code>data-state</code></li>
+        <li><strong>Skeleton matching:</strong> For skeleton loading, match the number and width of lines to your expected content</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/feedback/empty-states/" class="section-card">
+        <h3>Empty States</h3>
+        <p>Detailed empty state examples</p>
+      </a>
+      <a href="/docs/patterns/feedback/skeleton/" class="section-card">
+        <h3>Skeleton</h3>
+        <p>Skeleton animation details</p>
+      </a>
+      <a href="/docs/patterns/feedback/error-pages/" class="section-card">
+        <h3>Error Pages</h3>
+        <p>Full-page error states (404, 500)</p>
+      </a>
+      <a href="/docs/elements/native/output/" class="section-card">
+        <h3>Output Element</h3>
+        <p>Semantic output element reference</p>
+      </a>
+    </layout-grid>
+  </section>

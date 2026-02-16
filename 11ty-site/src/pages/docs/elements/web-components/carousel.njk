@@ -1,0 +1,233 @@
+---
+layout: layouts/element.njk
+title: "carousel-wc"
+description: "Scroll carousel with prev/next buttons, dot indicators, autoplay, keyboard navigation, and ARIA."
+elementName: carousel-wc
+category: component
+currentPath: /docs/elements/web-components/carousel/
+permalink: /docs/elements/web-components/carousel/
+---
+
+{% set basicCode %}<carousel-wc>
+  <div>Slide 1</div>
+  <div>Slide 2</div>
+  <div>Slide 3</div>
+</carousel-wc>{% endset %}
+
+{% set autoplayCode %}<carousel-wc data-autoplay data-loop data-autoplay-delay="3000">
+  <div>Slide A</div>
+  <div>Slide B</div>
+  <div>Slide C</div>
+</carousel-wc>{% endset %}
+
+{% set multiItemCode %}<carousel-wc data-layout-item-width="auto" data-layout-gap="m" data-loop>
+  <div class="card">Card 1</div>
+  <div class="card">Card 2</div>
+  <div class="card">Card 3</div>
+  <div class="card">Card 4</div>
+</carousel-wc>{% endset %}
+
+{% set noIndicatorsCode %}<carousel-wc data-indicators="false">
+  <div>Slide 1</div>
+  <div>Slide 2</div>
+</carousel-wc>{% endset %}
+
+{% set eventCode %}const carousel = document.querySelector('carousel-wc');
+
+carousel.addEventListener('carousel-change', (e) => \{
+  console.log('Slide:', e.detail.index);
+\});
+
+carousel.addEventListener('carousel-play', () => \{
+  console.log('Autoplay started');
+\});
+
+carousel.addEventListener('carousel-pause', () => \{
+  console.log('Autoplay paused');
+\});{% endset %}
+
+{% set apiCode %}const el = document.querySelector('carousel-wc');
+
+el.next();                  // Go to next slide
+el.prev();                  // Go to previous slide
+el.goTo(2);                 // Jump to slide index 2
+
+console.log(el.currentIndex); // Current slide index
+console.log(el.slideCount);   // Total slides
+console.log(el.playing);      // Autoplay active?
+
+el.pause();                 // Pause autoplay
+el.play();                  // Resume autoplay
+el.reset();                 // Return to initial slide{% endset %}
+
+{% set fallbackCode %}/* Without JS: simple horizontal scroll */
+carousel-wc:not(:defined) \{
+  display: flex;
+  overflow-x: auto;
+  gap: var(--size-s);
+  scroll-snap-type: x mandatory;
+\}
+
+carousel-wc:not(:defined) > * \{
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+\}{% endset %}
+
+{% set stylingCode %}/* Custom button styling */
+.carousel-prev,
+.carousel-next \{
+  background: var(--color-interactive);
+  color: white;
+  border: none;
+\}
+
+/* Custom dot styling */
+.carousel-dot[data-active] \{
+  background: var(--color-primary);
+\}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>A scroll-snap carousel with full progressive enhancement. Without JavaScript it renders as a simple scrollable row. With JS it adds prev/next buttons, dot indicators, autoplay, looping, keyboard navigation, and ARIA roles.</p>
+
+    <browser-window
+      src="/docs/examples/demos/carousel-basic.html"
+      url="https://vanilla-breeze.dev/carousel"
+      title="Carousel Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>Wrap slide elements inside <code>&lt;carousel-wc&gt;</code>. Each direct child becomes a slide.</p>
+
+    <div class="example">
+      <carousel-wc>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 250), oklch(60% 0.15 290)); color: white; border-radius: var(--radius-m); text-align: center; font-weight: 600;">Slide 1</div>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 160), oklch(60% 0.15 190)); color: white; border-radius: var(--radius-m); text-align: center; font-weight: 600;">Slide 2</div>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 30), oklch(60% 0.15 50)); color: white; border-radius: var(--radius-m); text-align: center; font-weight: 600;">Slide 3</div>
+      </carousel-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Basic carousel">{{ basicCode | safe }}</code-block>
+
+    <h3>Autoplay with Looping</h3>
+    <p>Add <code>data-autoplay</code> and <code>data-loop</code> to cycle slides automatically. Autoplay pauses on hover and focus, and is disabled entirely when <code>prefers-reduced-motion</code> is active.</p>
+    <code-block language="html" show-lines label="Autoplay + loop">{{ autoplayCode | safe }}</code-block>
+
+    <h3>Multi-item Carousel</h3>
+    <p>Set <code>data-layout-item-width="auto"</code> to show multiple items at once with a gap.</p>
+    <code-block language="html" show-lines label="Multi-item">{{ multiItemCode | safe }}</code-block>
+
+    <h3>No Indicators</h3>
+    <p>Set <code>data-indicators="false"</code> to hide dot indicators.</p>
+    <code-block language="html" show-lines label="No indicators">{{ noIndicatorsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-autoplay</code></td><td>boolean</td><td>&mdash;</td><td>Enable autoplay</td></tr>
+        <tr><td><code>data-autoplay-delay</code></td><td>number (ms)</td><td><code>5000</code></td><td>Autoplay interval</td></tr>
+        <tr><td><code>data-loop</code></td><td>boolean</td><td>&mdash;</td><td>Wrap around at ends</td></tr>
+        <tr><td><code>data-indicators</code></td><td><code>"true"</code>, <code>"false"</code></td><td><code>"true"</code></td><td>Show dot indicators</td></tr>
+        <tr><td><code>data-item-width</code></td><td><code>full</code>, <code>auto</code>, CSS length</td><td><code>full</code></td><td>Slide width</td></tr>
+        <tr><td><code>data-gap</code></td><td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td>&mdash;</td><td>Gap between slides</td></tr>
+        <tr><td><code>data-start</code></td><td>number</td><td><code>0</code></td><td>Initial slide index</td></tr>
+        <tr><td><code>data-persist</code></td><td>string key</td><td>&mdash;</td><td>localStorage key for slide persistence</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>carousel-change</code></td><td><code>{ index, slide }</code></td><td>Fired when the active slide changes.</td></tr>
+        <tr><td><code>carousel-play</code></td><td><code>{ }</code></td><td>Fired when autoplay starts.</td></tr>
+        <tr><td><code>carousel-pause</code></td><td><code>{ }</code></td><td>Fired when autoplay pauses.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event listeners">{{ eventCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property / Method</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>element.currentIndex</code></td><td>number</td><td>Current slide index (read-only)</td></tr>
+        <tr><td><code>element.slideCount</code></td><td>number</td><td>Total number of slides (read-only)</td></tr>
+        <tr><td><code>element.playing</code></td><td>boolean</td><td>Whether autoplay is active (read-only)</td></tr>
+        <tr><td><code>element.next()</code></td><td>method</td><td>Go to next slide</td></tr>
+        <tr><td><code>element.prev()</code></td><td>method</td><td>Go to previous slide</td></tr>
+        <tr><td><code>element.goTo(index)</code></td><td>method</td><td>Jump to specific slide</td></tr>
+        <tr><td><code>element.play()</code></td><td>method</td><td>Start autoplay</td></tr>
+        <tr><td><code>element.pause()</code></td><td>method</td><td>Pause autoplay</td></tr>
+        <tr><td><code>element.reset()</code></td><td>method</td><td>Return to initial slide, clear persistence</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="JS API">{{ apiCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <p>Focus the carousel track (Tab into it), then use arrow keys:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowLeft</kbd></td><td>Previous slide</td></tr>
+        <tr><td><kbd>ArrowRight</kbd></td><td>Next slide</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>First slide</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Last slide</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>ARIA Roles</h3>
+    <p>The component uses <code>role="region"</code> with <code>aria-roledescription="carousel"</code>. Each slide has <code>role="group"</code> with <code>aria-roledescription="slide"</code> and a label like "1 of 4". Dot indicators use <code>role="tablist"</code> and <code>role="tab"</code>.</p>
+
+    <h3>Live Region</h3>
+    <p>A visually hidden <code>aria-live="polite"</code> region announces slide changes to screen readers.</p>
+
+    <h3>Reduced Motion</h3>
+    <p>When <code>prefers-reduced-motion</code> is active, autoplay is completely disabled and scroll behavior uses instant transitions.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>Override the button and dot styles using the <code>.carousel-prev</code>, <code>.carousel-next</code>, and <code>.carousel-dot</code> classes.</p>
+    <code-block language="css" show-lines label="Custom styling">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, <code>&lt;carousel-wc&gt;</code> renders as a horizontal scrollable row using the <code>:not(:defined)</code> fallback. Once JS registers the component, controls and indicators appear.</p>
+    <code-block language="css" show-lines label="No-JS fallback">{{ fallbackCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/reel/"><code>&lt;layout-reel&gt;</code></a> &mdash; CSS-only horizontal scroll with snap</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tabs-wc&gt;</code></a> &mdash; Tabbed content switching</li>
+      <li><a href="/docs/elements/web-components/splitter/"><code>&lt;splitter-wc&gt;</code></a> &mdash; Resizable panel splitter</li>
+    </ul>
+  </section>

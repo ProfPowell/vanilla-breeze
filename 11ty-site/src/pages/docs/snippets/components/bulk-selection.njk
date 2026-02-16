@@ -1,0 +1,160 @@
+---
+layout: layouts/docs.njk
+title: "Bulk Selection Snippet"
+description: "Select-all checkbox patterns for tables, lists, and bulk actions."
+currentSection: examples
+currentPath: /docs/snippets/components/bulk-selection/
+permalink: /docs/snippets/components/bulk-selection/
+---
+
+{% set tableCode %}<p>Selected: <strong data-selected-count>0</strong> items</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>
+        <input type="checkbox"
+               data-select-all=".row-select"
+               aria-label="Select all">
+      </th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><input type="checkbox" class="row-select"></td>
+      <td>Alice Johnson</td>
+      <td>alice@example.com</td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="row-select"></td>
+      <td>Bob Smith</td>
+      <td>bob@example.com</td>
+      <td>Editor</td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" class="row-select"></td>
+      <td>Carol White</td>
+      <td>carol@example.com</td>
+      <td>Viewer</td>
+    </tr>
+  </tbody>
+</table>{% endset %}
+
+{% set listCode %}<fieldset data-select-all-scope>
+  <legend>
+    <label>
+      <input type="checkbox" data-select-all=".option-check">
+      Select all files
+    </label>
+  </legend>
+  <div style="display: flex; flex-direction: column; gap: var(--size-xs);">
+    <label><input type="checkbox" class="option-check"> document.pdf</label>
+    <label><input type="checkbox" class="option-check"> photo.jpg</label>
+    <label><input type="checkbox" class="option-check"> spreadsheet.xlsx</label>
+    <label><input type="checkbox" class="option-check"> presentation.pptx</label>
+  </div>
+</fieldset>{% endset %}
+
+{% set actionBarCode %}<div id="action-bar" hidden>
+  <layout-cluster data-layout-gap="m" data-layout-align="center">
+    <span><strong data-selected-count>0</strong> selected</span>
+    <button class="secondary s">Export</button>
+    <button class="danger s">Delete</button>
+  </layout-cluster>
+</div>
+
+<script>
+  const master = document.querySelector('[data-select-all]');
+  const bar = document.getElementById('action-bar');
+
+  master.addEventListener('select-all-change', (e) => {
+    bar.hidden = e.detail.checked === 0;
+  });
+<\/script>{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/docs/snippets/">Snippets</a></li>
+      <li><span aria-current="page">Bulk Selection</span></li>
+    </ol>
+  </nav>
+
+  <h1>Bulk Selection</h1>
+  <p class="lead">Select-all checkbox patterns for tables, lists, and bulk actions.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>The <code>data-select-all</code> attribute creates a master checkbox that controls a group of related checkboxes. It supports:</p>
+      <ul>
+        <li>Check/uncheck all targets at once</li>
+        <li>Indeterminate state when some items are selected</li>
+        <li>Selected count display</li>
+        <li>Custom events for building action bars</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Table Selection</h2>
+    <layout-text>
+      <p>The most common pattern: a header checkbox that controls row checkboxes in a table.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/select-all-basic.html"
+      url="https://vanilla-breeze.dev/select-all"
+      title="Select All Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Table with select-all">{{ tableCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Checkbox List</h2>
+    <layout-text>
+      <p>Use <code>data-select-all-scope</code> to limit the scope. The master checkbox finds targets within the closest scope container.</p>
+    </layout-text>
+
+    <code-block language="html" label="Checkbox list">{{ listCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Action Bar</h2>
+    <layout-text>
+      <p>Listen to the <code>select-all-change</code> event to show/hide a bulk actions toolbar.</p>
+    </layout-text>
+
+    <code-block language="html" label="Action bar pattern">{{ actionBarCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <layout-text>
+      <ul>
+        <li>The <code>data-select-all</code> value is a CSS selector for the target checkboxes</li>
+        <li>Scope is determined by the closest <code>table</code>, <code>form</code>, <code>fieldset</code>, or <code>[data-select-all-scope]</code> ancestor</li>
+        <li>The <code>data-selected-count</code> element (within scope) auto-updates with the count</li>
+        <li>The <code>select-all-change</code> event fires on the master checkbox with <code>detail: { checked, total, selected }</code></li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/web-components/table-wc/" class="section-card">
+        <h3>table-wc</h3>
+        <p>Enhanced table with built-in selection</p>
+      </a>
+      <a href="/docs/attributes/data-select-all/" class="section-card">
+        <h3>data-select-all</h3>
+        <p>Attribute documentation</p>
+      </a>
+    </layout-grid>
+  </section>

@@ -1,0 +1,284 @@
+---
+layout: layouts/attribute.njk
+title: "data-spoiler"
+description: "Hide content behind blur, solid, or noise overlays. Click or press Enter to reveal. Works on any HTML element with full keyboard and screen reader support."
+attributeName: data-spoiler
+category: interaction
+currentPath: /docs/attributes/data-spoiler/
+permalink: /docs/attributes/data-spoiler/
+---
+
+{% set basicBlurCode %}<div data-spoiler>
+  <p>Darth Vader is Luke's father.</p>
+</div>{% endset %}
+
+{% set inlineCode %}<p>The movie ends when <span data-spoiler>the hero dies</span>.</p>{% endset %}
+
+{% set solidCode %}<div data-spoiler="solid">
+  <p>Secret content hidden behind a solid overlay.</p>
+</div>{% endset %}
+
+{% set noiseCode %}<div data-spoiler="noise">
+  <p>Hidden answer behind a noise pattern.</p>
+</div>{% endset %}
+
+{% set customLabelCode %}<div data-spoiler data-spoiler-label="Show answer">
+  <p>The answer is 42.</p>
+</div>{% endset %}
+
+{% set persistCode %}<div data-spoiler data-spoiler-persist>
+  <p>Once revealed, this cannot be re-hidden.</p>
+</div>{% endset %}
+
+{% set groupCode %}<div data-spoiler data-spoiler-group="answers" data-spoiler-label="Answer 1">
+  <p>Paris</p>
+</div>
+<div data-spoiler data-spoiler-group="answers" data-spoiler-label="Answer 2">
+  <p>London</p>
+</div>
+<div data-spoiler data-spoiler-group="answers" data-spoiler-label="Answer 3">
+  <p>Tokyo</p>
+</div>{% endset %}
+
+{% set eventCode %}const spoiler = document.querySelector('[data-spoiler]');
+
+spoiler.addEventListener('spoiler-toggle', (e) => \{
+  console.log('Visible:', e.detail.visible);
+\});{% endset %}
+
+{% set dynamicCode %}// Dynamically added spoilers are auto-enhanced via MutationObserver
+const el = document.createElement('div');
+el.dataset.spoiler = 'blur';
+el.textContent = 'Hidden content';
+document.body.appendChild(el);
+// el is ready to use — no manual init needed{% endset %}
+
+{% set stylingCode %}/* All CSS is gated on [data-spoiler-init] — no JS means no concealment */
+[data-spoiler][data-spoiler-init] \{
+  position: relative;
+\}
+
+/* Customise the reveal label */
+[data-spoiler-trigger] > [data-spoiler-label] \{
+  background: var(--color-surface);
+  padding: var(--size-2xs) var(--size-xs);
+  border-radius: var(--radius-s);
+\}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-spoiler</code> attribute conceals content until the user chooses to reveal it. Perfect for spoilers, quiz answers, and progressive disclosure. No wrapper element needed &mdash; add the attribute to any element.</p>
+
+    <browser-window
+      src="/docs/examples/demos/spoiler-basic.html"
+      url="https://vanilla-breeze.dev/spoiler"
+      title="Spoiler"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic blur spoiler">{{ basicBlurCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-spoiler</code> to any element. The init script wraps the content in a content wrapper with <code>inert</code>, overlays a trigger button, and applies the chosen visual effect.</p>
+    <ul>
+      <li><strong>Click or Enter</strong> on the trigger to reveal</li>
+      <li><strong>Escape</strong> to re-hide (unless <code>data-spoiler-persist</code> is set)</li>
+      <li>A "Hide" button appears after reveal for mouse users</li>
+      <li>Screen readers hear "Spoiler revealed" via a live region</li>
+    </ul>
+    <p>Without JavaScript, content is fully visible &mdash; progressive enhancement ensures nothing is ever lost.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-spoiler</code></td>
+          <td><code>""</code>, <code>"blur"</code>, <code>"solid"</code>, <code>"noise"</code></td>
+          <td>Marks element as a spoiler. Value sets the effect (default: blur).</td>
+        </tr>
+        <tr>
+          <td><code>data-spoiler-label</code></td>
+          <td>string</td>
+          <td>Custom text for the reveal button. Default: "Reveal spoiler".</td>
+        </tr>
+        <tr>
+          <td><code>data-spoiler-persist</code></td>
+          <td>boolean</td>
+          <td>One-way reveal. No re-hide button, Escape does nothing.</td>
+        </tr>
+        <tr>
+          <td><code>data-spoiler-group</code></td>
+          <td>string</td>
+          <td>Mutual exclusion group. Revealing one hides others in the same group.</td>
+        </tr>
+        <tr>
+          <td><code>data-spoiler-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+        <tr>
+          <td><code>data-spoiler-visible</code></td>
+          <td>boolean</td>
+          <td>Present when content is revealed. Set/removed automatically.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Effects</h2>
+
+    <h3>Blur (default)</h3>
+    <p>Content is visible but unreadable behind a Gaussian blur.</p>
+
+    <div class="example">
+      <div data-spoiler="blur" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <p>This text is blurred until you reveal it.</p>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Blur effect">{{ basicBlurCode | safe }}</code-block>
+
+    <h3>Solid</h3>
+    <p>Content is completely hidden. The trigger shows a solid bar matching the text color.</p>
+
+    <div class="example">
+      <div data-spoiler="solid" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <p>Hidden behind a solid overlay.</p>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Solid effect">{{ solidCode | safe }}</code-block>
+
+    <h3>Noise</h3>
+    <p>Content is faintly visible through an SVG turbulence noise pattern.</p>
+
+    <div class="example">
+      <div data-spoiler="noise" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <p>Obscured by a noise pattern.</p>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Noise effect">{{ noiseCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Inline Spoilers</h2>
+    <p>Use on inline elements like <code>&lt;span&gt;</code> for spoilers within a paragraph. The script uses <code>&lt;span role="button"&gt;</code> instead of <code>&lt;button&gt;</code> to maintain valid HTML inside <code>&lt;p&gt;</code>.</p>
+
+    <div class="example">
+      <p>In the movie, <span data-spoiler>the butler did it</span> which shocked everyone.</p>
+    </div>
+
+    <code-block language="html" show-lines label="Inline spoiler">{{ inlineCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Label</h2>
+    <p>Set <code>data-spoiler-label</code> to customize the reveal button text.</p>
+
+    <div class="example">
+      <div data-spoiler data-spoiler-label="Show answer" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <p>The answer is 42.</p>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Custom label">{{ customLabelCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Grouped Spoilers</h2>
+    <p>Spoilers with the same <code>data-spoiler-group</code> value are mutually exclusive. Revealing one automatically hides others in the group.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="s">
+        <div data-spoiler data-spoiler-group="demo-answers" data-spoiler-label="Answer 1" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+          <p>Paris</p>
+        </div>
+        <div data-spoiler data-spoiler-group="demo-answers" data-spoiler-label="Answer 2" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+          <p>London</p>
+        </div>
+        <div data-spoiler data-spoiler-group="demo-answers" data-spoiler-label="Answer 3" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+          <p>Tokyo</p>
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Grouped spoilers">{{ groupCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Persistent Reveal</h2>
+    <p>Add <code>data-spoiler-persist</code> for a one-way reveal. The re-hide button is omitted and Escape does nothing.</p>
+
+    <div class="example">
+      <div data-spoiler data-spoiler-persist data-spoiler-label="Show answer" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">
+        <p>Once revealed, this content stays visible.</p>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Persistent reveal">{{ persistCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <p>The host element dispatches a <code>spoiler-toggle</code> event on reveal and conceal.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>spoiler-toggle</code></td>
+          <td><code>{\u200B visible: boolean }\u200B</code></td>
+          <td>Fired when the spoiler is revealed or concealed.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening for toggle events">{{ eventCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>All CSS rules are gated on <code>[data-spoiler-init]</code>. Without JavaScript, no concealment is applied &mdash; content is always visible.</p>
+
+    <code-block language="css" show-lines label="CSS architecture">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added spoilers">{{ dynamicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>inert</code> on hidden content &mdash; screen readers cannot read it, keyboard cannot reach it</li>
+      <li><code>aria-expanded</code> on the trigger button tracks revealed state</li>
+      <li><code>role="group"</code> with <code>aria-label="Spoiler"</code> on the host element</li>
+      <li>Live region announces "Spoiler revealed" on reveal</li>
+      <li>Keyboard: Tab to trigger, Enter/Space to reveal, Escape to re-hide</li>
+      <li>Inline spoilers use <code>&lt;span role="button" tabindex="0"&gt;</code> instead of <code>&lt;button&gt;</code> for valid HTML inside <code>&lt;p&gt;</code></li>
+      <li><code>prefers-reduced-motion</code>: transitions are instant</li>
+      <li>Without JavaScript, content is fully visible (progressive enhancement)</li>
+    </ul>
+  </section>

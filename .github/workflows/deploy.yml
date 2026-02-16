@@ -56,18 +56,38 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
-      - name: Build site
-        run: npm run build
-        env:
-          BASE_URL: /vanilla-breeze/
+      - name: Install 11ty dependencies
+        run: cd 11ty-site && npm ci
+
+      - name: Build CDN bundles
+        run: npm run build:cdn
+
+      - name: Build doc-extras bundle
+        run: cd 11ty-site && npm run build:doc-extras
+
+      - name: Build 11ty site
+        run: cd 11ty-site && npm run build
+
+      - name: Copy CDN to site output
+        run: cp -r dist/cdn 11ty-site/_site/cdn
+
+      - name: Copy icons to site output
+        run: mkdir -p 11ty-site/_site/src && cp -r src/icons 11ty-site/_site/src/icons
+
+      - name: Copy VB source for dev references
+        run: cp -r src/base src/tokens src/native-elements src/custom-elements src/web-components src/utils src/lib src/charts src/*.css src/*.js 11ty-site/_site/src/
 
       - name: Fix paths for GitHub Pages
         run: npm run build:fix-paths
         env:
           BASE_URL: /vanilla-breeze/
+          DIST_DIR: 11ty-site/_site
+
+      - name: Build search index
+        run: npx pagefind --site 11ty-site/_site
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -75,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: 11ty-site/_site
 
   deploy:
     environment:

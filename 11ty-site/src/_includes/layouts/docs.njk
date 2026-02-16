@@ -1,0 +1,34 @@
+{#
+  Docs layout — main documentation pages with optional TOC sidebar.
+
+  Front matter variables:
+    toc         — if true, wraps content in a TOC sidebar
+    title       — page title (shown as h1 when toc is true)
+    description — page description (shown as lead when toc is true)
+#}
+{% extends "layouts/base.njk" %}
+
+{% set dataPage = "docs" %}
+{% set currentSection = currentSection if currentSection else "docs" %}
+{% set includeDocs = true %}
+
+{% block pageContent %}
+<main data-pagefind-body>
+  {% if toc %}
+  <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
+    <aside>
+      <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
+    </aside>
+    <article>
+      <h1>{{ title }}</h1>
+      <p class="lead">{{ description }}</p>
+      <heading-links data-levels="h2,h3">
+        {{ content | safe }}
+      </heading-links>
+    </article>
+  </layout-sidebar>
+  {% else %}
+  {{ content | safe }}
+  {% endif %}
+</main>
+{% endblock %}

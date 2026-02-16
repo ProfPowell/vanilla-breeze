@@ -1,0 +1,58 @@
+{#
+  Mobile menu partial — popover navigation for narrow viewports.
+
+  Variables (inherited from header partial context):
+    currentSection  — which nav item is active
+    _showSearch     — show search button
+    _showTheme      — show theme toggle
+    navigation      — global navigation data
+#}
+
+<nav popover id="mobile-menu" class="mobile-menu">
+  <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">
+    <icon-wc name="x"></icon-wc>
+  </button>
+  {% if _showSearch %}
+  <div class="mobile-menu-search">
+    <search-wc>
+      <button type="button" data-trigger class="ghost" style="inline-size: 100%">
+        <icon-wc name="search" size="sm"></icon-wc>
+        Search
+      </button>
+    </search-wc>
+  </div>
+  {% endif %}
+  <ul>
+    {% for item in navigation.header.nav %}
+    {% if item.children %}
+    <li class="mobile-section">
+      <strong class="mobile-section-title">{{ item.label }}</strong>
+      <ul>
+        {% for child in item.children %}
+        <li>
+          <a href="{{ child.href }}">{{ child.label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% else %}
+    <li>
+      <a
+        href="{{ item.href }}"
+        {% if currentSection == item.section %}aria-current="page"{% endif %}
+      >{{ item.label }}</a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+  {% if _showTheme %}
+  <div class="mobile-menu-theme">
+    <theme-wc>
+      <button type="button" data-trigger class="ghost">
+        <icon-wc name="palette" size="sm"></icon-wc>
+        Theme
+      </button>
+    </theme-wc>
+  </div>
+  {% endif %}
+</nav>

@@ -1,0 +1,321 @@
+---
+layout: layouts/element.njk
+title: "footnotes-wc"
+description: "Progressive enhancement for footnotes with inline references and automatic collection."
+elementName: footnotes-wc
+category: component
+currentPath: /docs/elements/web-components/footnotes/
+permalink: /docs/elements/web-components/footnotes/
+---
+
+{% set basicUsageCode %}<p>
+  The Vanilla Breeze framework<foot-note>Vanilla Breeze is an experimental
+  component library.</foot-note> provides a layered approach.
+</p>
+
+<footnotes-wc></footnotes-wc>{% endset %}
+
+{% set withoutJsCode %}<!-- Renders as: -->
+The framework (Vanilla Breeze is an experimental component library)
+provides a layered approach.{% endset %}
+
+{% set multipleFootnotesCode %}<p>This is the first paragraph with a footnote<foot-note>This is
+the first footnote explaining something important.</foot-note> in
+the middle of the text.</p>
+
+<p>Here's another paragraph with multiple footnotes<foot-note>Second
+footnote.</foot-note> demonstrating how they<foot-note>Third
+footnote.</foot-note> are numbered automatically.</p>
+
+<footnotes-wc></footnotes-wc>{% endset %}
+
+{% set customLabelCode %}<footnotes-wc data-back-label="Return to text"></footnotes-wc>{% endset %}
+
+{% set generatedHtmlCode %}<!-- Original -->
+<foot-note>Footnote content</foot-note>
+
+<!-- Enhanced -->
+<foot-note id="fnref-1" data-enhanced>
+  <span>Footnote content</span>
+  <a href="#fn-1" aria-describedby="fn-1">[1]</a>
+</foot-note>
+
+<!-- Footnotes list -->
+<footnotes-wc>
+  <ol>
+    <li id="fn-1">
+      Footnote content
+      <a href="#fnref-1" class="fn-backref" aria-label="Back to content">&#8617;</a>
+    </li>
+  </ol>
+</footnotes-wc>{% endset %}
+
+{% set stylingCode %}/* Style the footnote reference links */
+foot-note a {
+  font-size: var(--font-size-sm);
+  vertical-align: super;
+  text-decoration: none;
+  color: var(--color-interactive);
+}
+
+foot-note a:hover {
+  text-decoration: underline;
+}
+
+/* Hide the inline content when enhanced */
+foot-note[data-enhanced] > span {
+  display: none;
+}
+
+/* Style the footnotes list */
+footnotes-wc ol {
+  font-size: var(--font-size-sm);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+  padding-block-start: var(--size-m);
+  margin-block-start: var(--size-xl);
+}
+
+/* Style the back-reference link */
+footnotes-wc .fn-backref {
+  margin-inline-start: var(--size-2xs);
+  text-decoration: none;
+}{% endset %}
+
+{% set academicCode %}<p>Research shows significant improvements<foot-note>Smith et al.,
+"Progressive Enhancement Study," Journal of Web Development,
+2024.</foot-note> in user experience.</p>{% endset %}
+
+{% set legalCode %}<p>The Service<foot-note>"Service" refers to the web application
+provided at example.com.</foot-note> may be modified at any
+time.</p>{% endset %}
+
+{% set technicalCode %}<p>This feature requires ES2022<foot-note>Specifically, private
+class fields and top-level await.</foot-note> support.</p>{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;footnotes-wc&gt;</code> component works with <code>&lt;foot-note&gt;</code> elements to create accessible footnotes. Without JavaScript, footnotes appear inline. With JavaScript, they become superscript links with a collected list at the bottom.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-basic.html"
+      url="https://vanilla-breeze.dev/footnotes"
+      title="Footnotes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic footnote usage">{{ basicUsageCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+
+    <h3>&lt;foot-note&gt;</h3>
+    <p>The footnote reference element. Place inline within your content where you want a footnote marker.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Content</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;foot-note&gt;</code></td>
+          <td>Text</td>
+          <td>Contains the footnote text. Becomes a superscript link when enhanced.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>&lt;footnotes-wc&gt;</h3>
+    <p>The footnotes container. Place at the end of your content where you want footnotes collected.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-back-label</code></td>
+          <td>string</td>
+          <td><code>"Back to content"</code></td>
+          <td>Accessible label for back-reference links.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The footnotes component demonstrates progressive enhancement principles.</p>
+
+    <h3>Without JavaScript</h3>
+    <p>When JavaScript is disabled or fails to load, footnotes remain inline within parentheses, keeping the content readable:</p>
+
+    <code-block language="html" show-lines label="Rendered output without JavaScript">{{ withoutJsCode | safe }}</code-block>
+
+    <h3>With JavaScript</h3>
+    <p>When JavaScript loads, the component:</p>
+    <ul>
+      <li>Finds all <code>&lt;foot-note&gt;</code> elements before the <code>&lt;footnotes-wc&gt;</code></li>
+      <li>Converts them to superscript numbered links</li>
+      <li>Collects footnote content into an ordered list</li>
+      <li>Adds back-reference links from each footnote</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>Place <code>&lt;foot-note&gt;</code> elements inline where footnotes should appear, then add a single <code>&lt;footnotes-wc&gt;</code> element where the footnote list should be rendered.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-multiple.html"
+      url="https://vanilla-breeze.dev/footnotes/multiple"
+      title="Multiple Footnotes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Multiple footnotes example">{{ multipleFootnotesCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Back Label</h2>
+    <p>Use <code>data-back-label</code> to customize the accessible label for back-reference links.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-custom-label.html"
+      url="https://vanilla-breeze.dev/footnotes/custom"
+      title="Custom Back Label"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Custom back label attribute">{{ customLabelCode | safe }}</code-block>
+
+    <p>The default label is "Back to content". Customize it for internationalization or to match your site's terminology.</p>
+  </section>
+
+  <section>
+    <h2>Long Form Content</h2>
+    <p>Footnotes work well with longer articles and prose content.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-longform.html"
+      url="https://vanilla-breeze.dev/footnotes/article"
+      title="Long Form Content"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>The component processes footnotes in the following steps:</p>
+
+    <ol>
+      <li><strong>Collection:</strong> Finds all <code>&lt;foot-note&gt;</code> elements that appear before the <code>&lt;footnotes-wc&gt;</code> element in document order.</li>
+      <li><strong>Enhancement:</strong> Each <code>&lt;foot-note&gt;</code> gets:
+        <ul>
+          <li>A unique ID (e.g., <code>fnref-1</code>)</li>
+          <li>A <code>data-enhanced</code> attribute</li>
+          <li>The original content wrapped in a span</li>
+          <li>A superscript link to the footnote</li>
+        </ul>
+      </li>
+      <li><strong>List Generation:</strong> An ordered list is created inside <code>&lt;footnotes-wc&gt;</code> with:
+        <ul>
+          <li>Each footnote's content</li>
+          <li>A back-reference link to the original location</li>
+        </ul>
+      </li>
+    </ol>
+
+    <h3>Generated HTML</h3>
+    <code-block language="html" show-lines label="Generated HTML structure">{{ generatedHtmlCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>ARIA Attributes</h3>
+    <ul>
+      <li>Footnote links have <code>aria-describedby</code> pointing to the footnote content</li>
+      <li>Back-reference links have <code>aria-label</code> for screen reader context</li>
+    </ul>
+
+    <h3>Navigation</h3>
+    <ul>
+      <li>Clicking a footnote number jumps to the footnote in the list</li>
+      <li>Clicking the back-reference returns to the original location</li>
+      <li>All links are keyboard accessible</li>
+    </ul>
+
+    <h3>Screen Reader Experience</h3>
+    <p>Screen readers will:</p>
+    <ul>
+      <li>Announce the footnote number as a link</li>
+      <li>Read the footnote content when navigating to it</li>
+      <li>Allow users to return to their reading position</li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Keep footnote content concise</li>
+      <li>Don't put essential information only in footnotes</li>
+      <li>Use footnotes for supplementary information, citations, or clarifications</li>
+      <li>Place <code>&lt;footnotes-wc&gt;</code> at the end of the content section</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The component can be styled using CSS selectors.</p>
+
+    <code-block language="css" show-lines label="Footnote component styles">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Multiple Footnote Sections</h2>
+    <p>You can have multiple <code>&lt;footnotes-wc&gt;</code> elements in a document. Each will collect only the footnotes that appear before it.</p>
+
+    <browser-window
+      src="/docs/examples/demos/footnotes-sections.html"
+      url="https://vanilla-breeze.dev/footnotes/sections"
+      title="Multiple Sections"
+      shadow>
+    </browser-window>
+
+    <aside class="note">
+      <strong>Note:</strong> Each <code>&lt;footnotes-wc&gt;</code> element only collects <code>&lt;foot-note&gt;</code> elements that appear before it in the document. This allows for multiple independent footnote sections.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Use Cases</h2>
+
+    <h3>Academic Writing</h3>
+    <p>Citations and references in scholarly articles:</p>
+    <code-block language="html" show-lines label="Academic citation example">{{ academicCode | safe }}</code-block>
+
+    <h3>Legal Documents</h3>
+    <p>Definitions and clarifications in terms of service:</p>
+    <code-block language="html" show-lines label="Legal document definition example">{{ legalCode | safe }}</code-block>
+
+    <h3>Technical Documentation</h3>
+    <p>Additional context or caveats:</p>
+    <code-block language="html" show-lines label="Technical documentation example">{{ technicalCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Limitations</h2>
+    <ul>
+      <li>Footnote numbering is determined by document order, not insertion order</li>
+      <li>The component doesn't support dynamically added footnotes after initial render</li>
+      <li>Rich HTML content in footnotes (links, formatting) is supported but may require additional styling</li>
+    </ul>
+  </section>

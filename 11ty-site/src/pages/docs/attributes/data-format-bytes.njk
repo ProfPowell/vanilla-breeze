@@ -1,0 +1,226 @@
+---
+layout: layouts/attribute.njk
+title: "data-format-bytes"
+currentPath: /docs/attributes/data-format-bytes/
+permalink: /docs/attributes/data-format-bytes/
+---
+
+{% set basicCode %}<data value="1048576" data-format-bytes>1 MB</data>{% endset %}
+
+{% set precisionCode %}<data value="1536000" data-format-bytes="1">1.5 MB</data>
+<data value="5368709120" data-format-bytes="2">5.00 GB</data>{% endset %}
+
+{% set decimalCode %}<!-- Binary (default): \u00F71024 -->
+<data value="1048576" data-format-bytes>1 MB</data>
+
+<!-- Decimal: \u00F71000 -->
+<data value="1000000" data-format-bytes data-unit="decimal">1 MB</data>{% endset %}
+
+{% set fileListCode %}<table>
+  <thead>
+    <tr><th>File</th><th>Size</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>photo.jpg</td>
+      <td><data value="3145728" data-format-bytes="1">3.0 MB</data></td>
+    </tr>
+    <tr>
+      <td>document.pdf</td>
+      <td><data value="524288" data-format-bytes="1">512.0 KB</data></td>
+    </tr>
+    <tr>
+      <td>video.mp4</td>
+      <td><data value="1073741824" data-format-bytes="1">1.0 GB</data></td>
+    </tr>
+  </tbody>
+</table>{% endset %}
+
+{% set localeCode %}<data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data>{% endset %}
+
+{% set dynamicCode %}// Dynamically added elements are auto-enhanced via MutationObserver
+const el = document.createElement('data');
+el.value = '2147483648';
+el.dataset.formatBytes = '1';
+el.textContent = '2 GB';
+document.body.appendChild(el);
+// el is enhanced automatically \u2014 no manual init needed{% endset %}
+
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-format-bytes</code> attribute enhances native <code>&lt;data&gt;</code> elements by replacing their text content with a human-readable file size string. Uses binary math (&divide;1024) by default with familiar units (KB, MB, GB).</p>
+
+    <browser-window
+      src="/docs/examples/demos/format-bytes-basic.html"
+      url="https://vanilla-breeze.dev/format-bytes"
+      title="Format Bytes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as bytes</li>
+      <li>Stores the original text content as a <code>title</code> attribute (visible on hover)</li>
+      <li>Divides by 1024 (or 1000 for decimal) to find the best unit</li>
+      <li>Formats the numeric part using <code>Intl.NumberFormat</code> for locale-aware digits</li>
+      <li>Replaces the text with the formatted value and unit label</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-format-bytes</code></td>
+          <td>string</td>
+          <td>Decimal precision for the formatted value. Default <code>"0"</code> (no decimals). Use <code>"1"</code> or <code>"2"</code> for more detail.</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>The raw byte count. Standard HTML <code>value</code> attribute on <code>&lt;data&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-unit</code></td>
+          <td>string</td>
+          <td><code>"decimal"</code> to use &divide;1000 instead of &divide;1024. Default is binary.</td>
+        </tr>
+        <tr>
+          <td><code>data-locale</code></td>
+          <td>string</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to browser locale.</td>
+        </tr>
+        <tr>
+          <td><code>data-format-bytes-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Precision</h2>
+    <p>The attribute value controls decimal places in the output:</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="s">
+        <p>0 decimals (default): <data value="1536000" data-format-bytes>1 MB</data></p>
+        <p>1 decimal: <data value="1536000" data-format-bytes="1">1.5 MB</data></p>
+        <p>2 decimals: <data value="5368709120" data-format-bytes="2">5.00 GB</data></p>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Precision control">{{ precisionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Binary vs. Decimal</h2>
+    <p>By default, <code>data-format-bytes</code> uses binary math (&divide;1024), matching how operating systems report file sizes. Add <code>data-unit="decimal"</code> to use &divide;1000 (how storage manufacturers report capacity).</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="s">
+        <p>Binary (default): <data value="1048576" data-format-bytes>1 MB</data></p>
+        <p>Decimal: <data value="1000000" data-format-bytes data-unit="decimal">1 MB</data></p>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Binary vs decimal">{{ decimalCode | safe }}</code-block>
+
+    <h3>Unit Reference</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Unit</th>
+          <th>Binary (&divide;1024)</th>
+          <th>Decimal (&divide;1000)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>B</td><td>1</td><td>1</td></tr>
+        <tr><td>KB</td><td>1,024</td><td>1,000</td></tr>
+        <tr><td>MB</td><td>1,048,576</td><td>1,000,000</td></tr>
+        <tr><td>GB</td><td>1,073,741,824</td><td>1,000,000,000</td></tr>
+        <tr><td>TB</td><td>1,099,511,627,776</td><td>1,000,000,000,000</td></tr>
+        <tr><td>PB</td><td>1,125,899,906,842,624</td><td>1,000,000,000,000,000</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Locale Override</h2>
+    <p>Use <code>data-locale</code> to format the numeric part in a specific locale:</p>
+
+    <div class="example">
+      <p>German: <data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data></p>
+    </div>
+
+    <code-block language="html" show-lines label="Locale override">{{ localeCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Common Use Cases</h2>
+
+    <h3>File List</h3>
+    <p>Display file sizes in a table. The <code>font-variant-numeric: tabular-nums</code> CSS ensures columns align:</p>
+
+    <div class="example">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Size</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>photo.jpg</td>
+            <td><data value="3145728" data-format-bytes="1">3.0 MB</data></td>
+          </tr>
+          <tr>
+            <td>document.pdf</td>
+            <td><data value="524288" data-format-bytes="1">512.0 KB</data></td>
+          </tr>
+          <tr>
+            <td>video.mp4</td>
+            <td><data value="1073741824" data-format-bytes="1">1.0 GB</data></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <code-block language="html" show-lines label="File list table">{{ fileListCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added format-bytes elements">{{ dynamicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The <code>&lt;data&gt;</code> element's original text serves as a fallback when JavaScript is unavailable. Write a reasonable pre-formatted value as the text content.</p>
+
+    <code-block language="html" show-lines label="Fallback text visible without JS">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The original text is preserved as a <code>title</code> attribute, accessible on hover</li>
+      <li>The semantic <code>&lt;data&gt;</code> element with <code>value</code> attribute provides machine-readable byte counts</li>
+      <li>Falls back to the original text content when JavaScript is unavailable</li>
+      <li>No wrapper element &mdash; the <code>&lt;data&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
+    </ul>
+  </section>

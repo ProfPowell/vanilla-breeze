@@ -1,0 +1,170 @@
+---
+layout: layouts/element.njk
+title: "qr-code-wc"
+description: "QR code generator web component with progressive enhancement. Shows text content before JS, then renders a scannable QR code."
+elementName: qr-code-wc
+category: component
+currentPath: /docs/elements/web-components/qr-code/
+permalink: /docs/elements/web-components/qr-code/
+---
+
+{% set basicCode %}<qr-code-wc data-value="https://vanilla-breeze.dev">
+  https://vanilla-breeze.dev
+</qr-code-wc>{% endset %}
+
+{% set sizeCode %}<!-- Small -->
+<qr-code-wc data-value="https://example.com" data-size="100">URL</qr-code-wc>
+
+<!-- Default -->
+<qr-code-wc data-value="https://example.com" data-size="200">URL</qr-code-wc>
+
+<!-- Large -->
+<qr-code-wc data-value="https://example.com" data-size="300">URL</qr-code-wc>{% endset %}
+
+{% set colorCode %}<qr-code-wc
+  data-value="https://example.com"
+  data-color="#1a5276"
+  data-background="#f0f0f0">
+  https://example.com
+</qr-code-wc>{% endset %}
+
+{% set apiCode %}const qr = document.querySelector('qr-code-wc');
+
+// Get as image data URL
+const dataUrl = qr.toDataURL('image/png');
+
+// Use in an img tag or download link
+const img = new Image();
+img.src = dataUrl;{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;qr-code-wc&gt;</code> component generates a QR code from text or a URL. It uses progressive enhancement: the text content is visible before JavaScript loads, then replaced with a scannable QR code canvas.</p>
+
+    <browser-window
+      src="/docs/examples/demos/qr-code-basic.html"
+      url="https://vanilla-breeze.dev/qr-code"
+      title="QR Code Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic QR code">{{ basicCode | safe }}</code-block>
+
+    <aside class="note">
+      <strong>Zero dependencies.</strong> The QR encoder is built-in &mdash; no external library required. Supports byte mode encoding for versions 1&ndash;10.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-value</code></td>
+          <td>string</td>
+          <td>textContent</td>
+          <td>Text or URL to encode. Falls back to element text content.</td>
+        </tr>
+        <tr>
+          <td><code>data-size</code></td>
+          <td>number</td>
+          <td><code>200</code></td>
+          <td>Canvas size in pixels.</td>
+        </tr>
+        <tr>
+          <td><code>data-color</code></td>
+          <td>CSS color</td>
+          <td>currentColor</td>
+          <td>Foreground (module) color.</td>
+        </tr>
+        <tr>
+          <td><code>data-background</code></td>
+          <td>CSS color</td>
+          <td>transparent</td>
+          <td>Background color.</td>
+        </tr>
+        <tr>
+          <td><code>data-error-correction</code></td>
+          <td>0&ndash;3</td>
+          <td><code>1</code> (M)</td>
+          <td>Error correction level: 0=L, 1=M, 2=Q, 3=H.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Custom Sizes</h2>
+    <div class="example" style="display: flex; align-items: flex-end; gap: var(--size-l); flex-wrap: wrap;">
+      <figure style="margin: 0; text-align: center;">
+        <qr-code-wc data-value="https://example.com" data-size="100" data-background="white" data-color="#000">Small</qr-code-wc>
+        <figcaption>100px</figcaption>
+      </figure>
+      <figure style="margin: 0; text-align: center;">
+        <qr-code-wc data-value="https://example.com" data-size="200" data-background="white" data-color="#000">Medium</qr-code-wc>
+        <figcaption>200px (default)</figcaption>
+      </figure>
+      <figure style="margin: 0; text-align: center;">
+        <qr-code-wc data-value="https://example.com" data-size="300" data-background="white" data-color="#000">Large</qr-code-wc>
+        <figcaption>300px</figcaption>
+      </figure>
+    </div>
+
+    <code-block language="html" show-lines label="Size variations">{{ sizeCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Colors</h2>
+    <p>Override the foreground and background colors to match your brand.</p>
+
+    <div class="example">
+      <qr-code-wc data-value="https://example.com" data-color="#1a5276" data-background="#f0f0f0">
+        https://example.com
+      </qr-code-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Custom colors">{{ colorCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Returns</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>toDataURL(type?)</code></td>
+          <td>string</td>
+          <td>Get the QR code as a data URL for download or embedding.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Export as image">{{ apiCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, the text content inside the element remains visible as a readable fallback. This means the URL or text is always accessible, even if the QR code can&rsquo;t render.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The canvas element gets <code>role="img"</code> with an <code>aria-label</code> describing the QR content.</li>
+      <li>The original text serves as a fallback for non-visual users.</li>
+    </ul>
+  </section>

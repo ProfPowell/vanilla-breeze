@@ -1,0 +1,312 @@
+---
+layout: layouts/element.njk
+title: "icon-wc"
+description: "SVG icons with Lucide integration, consistent sizing, and automatic accessibility."
+elementName: icon-wc
+category: component
+currentPath: /docs/elements/web-components/icons/
+permalink: /docs/elements/web-components/icons/
+---
+
+{% set basicUsageCode %}<icon-wc name="home"></icon-wc>
+<icon-wc name="settings"></icon-wc>
+<icon-wc name="user"></icon-wc>
+<icon-wc name="search"></icon-wc>
+<icon-wc name="mail"></icon-wc>{% endset %}
+
+{% set sizesCode %}<icon-wc name="star" size="xs"></icon-wc>  <!-- 1em (16px at base) -->
+<icon-wc name="star" size="sm"></icon-wc>  <!-- 1.25em (20px) -->
+<icon-wc name="star" size="md"></icon-wc>  <!-- 1.5em (24px) -->
+<icon-wc name="star" size="lg"></icon-wc>  <!-- 2em (32px) -->
+<icon-wc name="star" size="xl"></icon-wc>  <!-- 2.5em (40px) -->
+<icon-wc name="star" size="2xl"></icon-wc> <!-- 3em (48px) -->{% endset %}
+
+{% set colorsCode %}<span style="color: var(--color-text);">
+  <icon-wc name="circle" size="lg"></icon-wc>
+</span>
+<span style="color: var(--color-interactive);">
+  <icon-wc name="circle" size="lg"></icon-wc>
+</span>
+<span style="color: var(--color-success);">
+  <icon-wc name="circle" size="lg"></icon-wc>
+</span>{% endset %}
+
+{% set buttonsCode %}<!-- Icon with text label -->
+<button type="button">
+  <icon-wc name="plus"></icon-wc>
+  Add Item
+</button>
+
+<!-- Icon-only button (needs label for accessibility) -->
+<button type="button" class="ghost" aria-label="Settings">
+  <icon-wc name="settings" label="Settings"></icon-wc>
+</button>{% endset %}
+
+{% set customIconsCode %}<!-- Using a custom icon -->
+<icon-wc name="logo" set="custom"></icon-wc>
+
+<!-- Custom icon requirements:
+     - SVG format with viewBox attribute
+     - No fixed width/height (component handles sizing)
+     - Use currentColor for strokes/fills
+-->{% endset %}
+
+{% set accessibilityCode %}<!-- Decorative - icon is hidden from screen readers -->
+<button>
+  <icon-wc name="save"></icon-wc>
+  Save Document
+</button>
+
+<!-- Functional - icon is announced to screen readers -->
+<button aria-label="Close dialog">
+  <icon-wc name="x" label="Close"></icon-wc>
+</button>{% endset %}
+
+{% set stylingCode %}/* Change icon color */
+.danger icon-wc {
+  color: var(--color-error);
+}
+
+/* Custom sizing via CSS */
+icon-wc.hero-icon {
+  width: 4rem;
+  height: 4rem;
+}
+
+/* Hover effects */
+button:hover icon-wc {
+  color: var(--color-interactive-hover);
+}{% endset %}
+
+{% set jsApiCode %}const icon = document.querySelector('icon-wc');
+
+// Read-only properties
+console.log(icon.name);     // "menu"
+console.log(icon.set);      // "lucide"
+console.log(icon.size);     // "md"
+console.log(icon.label);    // null or "Close"
+console.log(icon.basePath); // "/.assets/icons"
+console.log(icon.iconPath); // "/.assets/icons/lucide/menu.svg"
+
+// Change icon dynamically
+icon.setAttribute('name', 'settings');
+icon.setAttribute('size', 'lg');{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;icon-wc&gt;</code> component provides a simple way to use SVG icons from the Lucide library or custom icon sets. Icons inherit the current text color and can be sized using preset values.</p>
+
+    <browser-window
+      src="/docs/examples/demos/icons-basic.html"
+      url="https://vanilla-breeze.dev/icons"
+      title="Icons Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic icon usage">{{ basicUsageCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Icon name (required). Matches filename without <code>.svg</code> extension.</td>
+        </tr>
+        <tr>
+          <td><code>set</code></td>
+          <td>string</td>
+          <td><code>"lucide"</code></td>
+          <td>Icon set directory. Use <code>"custom"</code> for project-specific icons.</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td>string</td>
+          <td><code>"md"</code></td>
+          <td>Size preset: <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, <code>2xl</code></td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Accessible label for functional icons. When set, icon is announced to screen readers.</td>
+        </tr>
+        <tr>
+          <td><code>base-path</code></td>
+          <td>string</td>
+          <td><code>"/.assets/icons"</code></td>
+          <td>Override the default icon path.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Sizes</h2>
+    <p>Use the <code>size</code> attribute to control icon dimensions. Sizes are relative to the current font size.</p>
+
+    <code-block language="html" show-lines label="Icon size variants">{{ sizesCode | safe }}</code-block>
+
+    <h3>Size Reference</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Size</th>
+          <th>Dimensions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>xs</code></td>
+          <td>1em (16px at base)</td>
+        </tr>
+        <tr>
+          <td><code>sm</code></td>
+          <td>1.25em (20px)</td>
+        </tr>
+        <tr>
+          <td><code>md</code></td>
+          <td>1.5em (24px)</td>
+        </tr>
+        <tr>
+          <td><code>lg</code></td>
+          <td>2em (32px)</td>
+        </tr>
+        <tr>
+          <td><code>xl</code></td>
+          <td>2.5em (40px)</td>
+        </tr>
+        <tr>
+          <td><code>2xl</code></td>
+          <td>3em (48px)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Colors</h2>
+    <p>Icons inherit <code>currentColor</code> from their parent element. Change the parent's <code>color</code> property to change the icon color.</p>
+
+    <code-block language="html" show-lines label="Icon color inheritance">{{ colorsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>With Buttons</h2>
+    <p>Icons work naturally inside buttons. For icon-only buttons, always include an accessible label.</p>
+
+    <code-block language="html" show-lines label="Icons in buttons">{{ buttonsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Lucide Integration</h2>
+    <p>The component uses the <a href="https://lucide.dev/icons" target="_blank" rel="noopener">Lucide</a> icon library by default. Lucide provides over 1,900 beautifully crafted open-source icons.</p>
+
+    <h3>Icon Categories</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Purpose</th>
+          <th>Icon Names</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Navigation</td>
+          <td><code>menu</code>, <code>x</code>, <code>arrow-left</code>, <code>arrow-right</code></td>
+        </tr>
+        <tr>
+          <td>Actions</td>
+          <td><code>plus</code>, <code>minus</code>, <code>edit</code>, <code>trash</code>, <code>save</code></td>
+        </tr>
+        <tr>
+          <td>Status</td>
+          <td><code>check</code>, <code>x</code>, <code>alert-circle</code>, <code>info</code></td>
+        </tr>
+        <tr>
+          <td>Media</td>
+          <td><code>play</code>, <code>pause</code>, <code>volume-2</code>, <code>image</code></td>
+        </tr>
+        <tr>
+          <td>User</td>
+          <td><code>user</code>, <code>users</code>, <code>settings</code>, <code>log-out</code></td>
+        </tr>
+        <tr>
+          <td>Files</td>
+          <td><code>file</code>, <code>folder</code>, <code>download</code>, <code>upload</code></td>
+        </tr>
+        <tr>
+          <td>Social</td>
+          <td><code>share</code>, <code>heart</code>, <code>star</code>, <code>message-circle</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Custom Icons</h2>
+    <p>Add custom icons to the <code>.assets/icons/custom/</code> directory and reference them with <code>set="custom"</code>.</p>
+
+    <code-block language="html" show-lines label="Custom icon set usage">{{ customIconsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Decorative vs Functional Icons</h3>
+    <p>Icons can be either decorative (hidden from screen readers) or functional (announced to screen readers).</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Context</th>
+          <th>Pattern</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Icon + visible text</td>
+          <td>No <code>label</code> needed (decorative)</td>
+        </tr>
+        <tr>
+          <td>Icon-only button</td>
+          <td>Add <code>label</code> attribute</td>
+        </tr>
+        <tr>
+          <td>Status indicator</td>
+          <td>Add <code>label</code> describing status</td>
+        </tr>
+        <tr>
+          <td>Purely decorative</td>
+          <td>No <code>label</code> needed</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Decorative vs functional icons">{{ accessibilityCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>Icons can be styled using CSS. The component uses Shadow DOM but allows color inheritance.</p>
+
+    <code-block language="css" show-lines label="Icon styling with CSS">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The component exposes properties that mirror its attributes.</p>
+
+    <code-block language="javascript" show-lines label="JavaScript API usage">{{ jsApiCode | safe }}</code-block>
+  </section>

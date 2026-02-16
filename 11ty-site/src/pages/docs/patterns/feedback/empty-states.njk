@@ -1,0 +1,331 @@
+---
+layout: layouts/pattern.njk
+title: "Empty States"
+description: "Empty state patterns for when there's no content to display. State-driven feedback with semantic HTML."
+patternName: "Empty States"
+category: feedback
+currentPath: /docs/patterns/feedback/empty-states/
+permalink: /docs/patterns/feedback/empty-states/
+---
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Empty states show feedback when a container has no content to display. They're a <strong>state</strong> of the container, not a separate component.</p>
+      <p><strong>Key concepts:</strong></p>
+      <ul>
+        <li>Use <code>data-state="empty"</code> on the container</li>
+        <li>Use <code>&lt;output data-empty data-feedback="message" role="status"&gt;</code> for semantic, accessible feedback</li>
+        <li>The <code>&lt;output&gt;</code> element is the correct semantic choice — it represents the result of an action (query returned 0 items)</li>
+        <li>Mark populated content with <code>.content</code> class</li>
+        <li>CSS shows/hides content based on state attribute</li>
+        <li>Works without JavaScript (progressive enhancement)</li>
+      </ul>
+      <p><strong>See also:</strong> <a href="/docs/patterns/feedback/feedback-states/">Feedback States</a> for the unified pattern covering empty, loading, and error states.</p>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>The Pattern</h2>
+    <layout-text>
+      <p>An empty state is fundamentally feedback about a container's current status. The pattern uses:</p>
+      <ol>
+        <li>A container with <code>data-state="empty"</code> when content is absent</li>
+        <li>Content marked with <code>.content</code> class that gets hidden via CSS when state is "empty"</li>
+        <li><code>&lt;output data-empty data-feedback="message" role="status"&gt;</code> to show the feedback</li>
+      </ol>
+    </layout-text>
+
+    <code-block language="css" label="Empty state CSS pattern">{`/* Hide feedback by default */
+output[data-empty] {
+  display: none;
+}
+
+/* Hide content when empty, show feedback */
+[data-state="empty"] > .content {
+  display: none;
+}
+
+[data-state="empty"] > [data-empty] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-m);
+  padding: var(--size-xl);
+  text-align: center;
+}`}</code-block>
+  </section>
+
+  <section>
+    <h2>Simple Example</h2>
+    <layout-text>
+      <p>A minimal empty state with an icon, heading, and description. The container shows where messages would appear, with feedback when none exist.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/empty-simple.html"
+      url="https://vanilla-breeze.dev/empty-simple"
+      title="Empty State - Simple"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="empty-simple.html">&lt;section class="messages" data-state="empty"&gt;
+  &lt;h2 class="visually-hidden"&gt;Messages&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
+    &lt;!-- Message items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback --&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
+    &lt;icon-wc name="inbox"&gt;&lt;/icon-wc&gt;
+    &lt;h3&gt;No messages yet&lt;/h3&gt;
+    &lt;p&gt;When you receive messages, they will appear here.&lt;/p&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>With Action Button</h2>
+    <layout-text>
+      <p>An empty state with a call-to-action button inside the output. Use this when users can immediately add content.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/empty-action.html"
+      url="https://vanilla-breeze.dev/empty-action"
+      title="Empty State - With Action"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="empty-action.html">&lt;section class="documents" data-state="empty"&gt;
+  &lt;h2 class="visually-hidden"&gt;Documents&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
+    &lt;!-- Document items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback with action --&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
+    &lt;icon-wc name="file-text"&gt;&lt;/icon-wc&gt;
+    &lt;h3&gt;No documents&lt;/h3&gt;
+    &lt;p&gt;Get started by creating your first document.&lt;/p&gt;
+    &lt;button type="button"&gt;
+      &lt;icon-wc name="plus"&gt;&lt;/icon-wc&gt;
+      Create document
+    &lt;/button&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>With Illustration</h2>
+    <layout-text>
+      <p>An empty state with space for a custom illustration or image. Use this for feature-level empty states where visual appeal matters.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/empty-illustration.html"
+      url="https://vanilla-breeze.dev/empty-illustration"
+      title="Empty State - With Illustration"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="empty-illustration.html">&lt;section class="projects" data-state="empty"&gt;
+  &lt;h2 class="visually-hidden"&gt;Projects&lt;/h2&gt;
+
+  &lt;!-- Populated content --&gt;
+  &lt;ul class="content"&gt;
+    &lt;!-- Project items go here --&gt;
+  &lt;/ul&gt;
+
+  &lt;!-- Empty state feedback with illustration --&gt;
+  &lt;output data-empty data-feedback="message" role="status"&gt;
+    &lt;!-- Decorative SVG uses currentColor for theming --&gt;
+    &lt;svg aria-hidden="true" width="192" height="128" viewBox="0 0 192 128" fill="none"&gt;
+      &lt;rect x="32" y="36" width="128" height="80" rx="6"
+            stroke="currentColor" stroke-width="2" opacity="0.25"/&gt;
+      &lt;path d="M32 42c0-3.3 2.7-6 6-6h36l8 12h72c3.3 0 6 2.7 6 6"
+            stroke="currentColor" stroke-width="2" opacity="0.4"/&gt;
+      &lt;!-- Dashed circle + plus icon hint --&gt;
+      &lt;circle cx="96" cy="82" r="16" stroke="currentColor"
+              stroke-width="2" stroke-dasharray="4 3" opacity="0.2"/&gt;
+      &lt;path d="M90 82h12M96 76v12" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" opacity="0.3"/&gt;
+    &lt;/svg&gt;
+    &lt;h3&gt;No projects found&lt;/h3&gt;
+    &lt;p&gt;You haven't created any projects yet.&lt;/p&gt;
+  &lt;/output&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Semantic Elements</h2>
+    <layout-text>
+      <p>Use appropriate elements within the output for each content type:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Content Type</th>
+          <th scope="col">Element</th>
+          <th scope="col">Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Status message</td>
+          <td><code>&lt;output role="status"&gt;</code></td>
+          <td>Semantic result of an action, announced by screen readers</td>
+        </tr>
+        <tr>
+          <td>Heading</td>
+          <td><code>&lt;h3&gt;</code> or appropriate level</td>
+          <td>Describes the empty state</td>
+        </tr>
+        <tr>
+          <td>Description</td>
+          <td><code>&lt;p&gt;</code></td>
+          <td>Explains what will appear or why it's empty</td>
+        </tr>
+        <tr>
+          <td>Action</td>
+          <td><code>&lt;button&gt;</code> or <code>&lt;a&gt;</code></td>
+          <td>Optional CTA to add content</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <layout-text>
+      <ul>
+        <li><strong><code>&lt;output&gt;</code> element:</strong> Represents the result of an action.
+            Screen readers announce its content naturally when it becomes visible.</li>
+        <li><strong><code>role="status"</code>:</strong> Creates a polite live region. When the empty
+            state appears via JavaScript, screen readers announce the message without interrupting.</li>
+        <li><strong><code>.visually-hidden</code> headings:</strong> Container headings like
+            <code>&lt;h2 class="visually-hidden"&gt;Messages&lt;/h2&gt;</code> provide navigation
+            landmarks for screen reader users even when hidden visually.</li>
+        <li><strong>Decorative icons:</strong> <code>&lt;icon-wc&gt;</code> without a
+            <code>label</code> attribute is automatically <code>aria-hidden="true"</code>,
+            preventing redundant announcements alongside the heading text.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>JavaScript Integration</h2>
+    <layout-text>
+      <p>The pattern works CSS-only with server-rendered <code>data-state="empty"</code>. For dynamic content, toggle the attribute:</p>
+    </layout-text>
+
+    <code-block language="javascript" label="Managing state with JavaScript">{`// Toggle empty state based on content
+function updateEmptyState(container, items) {
+  if (items.length === 0) {
+    container.setAttribute('data-state', 'empty');
+  } else {
+    container.removeAttribute('data-state');
+  }
+}
+
+// Example: after fetching data
+fetchMessages().then(messages => {
+  updateEmptyState(messagesContainer, messages);
+  renderMessages(messages);
+});`}</code-block>
+  </section>
+
+  <section>
+    <h2>Icon Options</h2>
+    <layout-text>
+      <p>Choose icons that represent the empty content type. Common icons from the Lucide set:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Icon</th>
+          <th scope="col">Name</th>
+          <th scope="col">Use For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><icon-wc name="inbox" size="sm"></icon-wc></td>
+          <td><code>inbox</code></td>
+          <td>Messages, notifications</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="file-text" size="sm"></icon-wc></td>
+          <td><code>file-text</code></td>
+          <td>Documents, notes</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="users" size="sm"></icon-wc></td>
+          <td><code>users</code></td>
+          <td>People, team members</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="folder" size="sm"></icon-wc></td>
+          <td><code>folder</code></td>
+          <td>Files, projects</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="search" size="sm"></icon-wc></td>
+          <td><code>search</code></td>
+          <td>Search results</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="image" size="sm"></icon-wc></td>
+          <td><code>image</code></td>
+          <td>Photos, media</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="calendar" size="sm"></icon-wc></td>
+          <td><code>calendar</code></td>
+          <td>Events, schedules</td>
+        </tr>
+        <tr>
+          <td><icon-wc name="shopping-cart" size="sm"></icon-wc></td>
+          <td><code>shopping-cart</code></td>
+          <td>Cart, orders</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Be helpful:</strong> Explain why the area is empty and what content will appear there</li>
+        <li><strong>Provide actions:</strong> When possible, include a button or link to add content</li>
+        <li><strong>Keep it brief:</strong> Use short, clear messages that don't overwhelm</li>
+        <li><strong>Match the context:</strong> Use icons and illustrations that relate to the content type</li>
+        <li><strong>Consider states:</strong> Differentiate between "no content yet" and "no results found"</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/feedback/feedback-states/" class="section-card">
+        <h3>Feedback States</h3>
+        <p>Unified empty, loading, and error states</p>
+      </a>
+      <a href="/docs/patterns/feedback/error-pages/" class="section-card">
+        <h3>Error Pages</h3>
+        <p>404, 500, and maintenance pages</p>
+      </a>
+      <a href="/docs/patterns/feedback/skeleton/" class="section-card">
+        <h3>Skeleton</h3>
+        <p>Loading placeholders for content</p>
+      </a>
+    </layout-grid>
+  </section>

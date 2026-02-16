@@ -1,0 +1,283 @@
+---
+layout: layouts/attribute.njk
+title: "data-switch"
+description: "Transform a checkbox into a sliding toggle switch with optional size variants. Add data-switch to any checkbox for accessible on/off controls."
+attributeName: data-switch
+category: form-controls
+currentPath: /docs/attributes/data-switch/
+permalink: /docs/attributes/data-switch/
+---
+
+{% set basicCode %}<label>
+  <input type="checkbox" data-switch>
+  Enable notifications
+</label>{% endset %}
+
+{% set sizesCode %}<label>
+  <input type="checkbox" data-switch="sm">
+  Small switch
+</label>
+
+<label>
+  <input type="checkbox" data-switch>
+  Default switch
+</label>
+
+<label>
+  <input type="checkbox" data-switch="lg">
+  Large switch
+</label>{% endset %}
+
+{% set formFieldCode %}<form-field>
+  <label>
+    <input type="checkbox" data-switch required>
+    Accept terms and conditions
+  </label>
+  <small slot="help">You must agree before continuing.</small>
+</form-field>{% endset %}
+
+{% set disabledCode %}<label>
+  <input type="checkbox" data-switch disabled>
+  Disabled off
+</label>
+
+<label>
+  <input type="checkbox" data-switch disabled checked>
+  Disabled on
+</label>
+
+<label>
+  <input type="checkbox" data-switch readonly checked>
+  Read-only on
+</label>{% endset %}
+
+{% set checkedDefaultCode %}<label>
+  <input type="checkbox" data-switch checked>
+  Enabled by default
+</label>{% endset %}
+
+{% set stylingCode %}/* Track */
+[data-switch][data-switch-init] \{
+  --switch-track-width: 2.5rem;
+  --switch-track-height: 1.375rem;
+  --switch-track-bg: var(--color-border);
+  --switch-track-bg-checked: var(--color-primary);
+  --switch-track-radius: var(--radius-pill);
+\}
+
+/* Knob */
+[data-switch][data-switch-init] \{
+  --switch-knob-size: 1rem;
+  --switch-knob-bg: white;
+  --switch-knob-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+\}{% endset %}
+
+{% set dynamicCode %}// Dynamically added switches are auto-enhanced via MutationObserver
+const input = document.createElement('input');
+input.type = 'checkbox';
+input.dataset.switch = '';
+document.body.appendChild(input);
+// input is ready to use — no manual init needed{% endset %}
+
+{% set groupCode %}<fieldset>
+  <legend>Notification preferences</legend>
+  <label>
+    <input type="checkbox" data-switch checked>
+    Email notifications
+  </label>
+  <label>
+    <input type="checkbox" data-switch>
+    SMS notifications
+  </label>
+  <label>
+    <input type="checkbox" data-switch checked>
+    Push notifications
+  </label>
+</fieldset>{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-switch</code> attribute transforms a native <code>&lt;input type="checkbox"&gt;</code> into a sliding toggle switch. No wrapper element needed &mdash; just add the attribute directly to the checkbox.</p>
+
+    <browser-window
+      src="/docs/examples/demos/switch-basic.html"
+      url="https://vanilla-breeze.dev/switch"
+      title="Toggle Switch"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic toggle switch">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-switch</code> to any <code>&lt;input type="checkbox"&gt;</code>. The init script:</p>
+    <ol>
+      <li>Sets <code>appearance: none</code> on the checkbox to remove native styling</li>
+      <li>Renders a track and sliding knob via CSS pseudo-elements</li>
+      <li>Adds <code>role="switch"</code> to the element for proper semantics</li>
+      <li>Responds to the <code>checked</code> state with a slide transition</li>
+      <li>Sets <code>data-switch-init</code> to prevent double-binding</li>
+    </ol>
+    <p>The underlying checkbox remains a real form control. It submits with the form, supports validation, and fires native <code>change</code> events.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-switch</code></td>
+          <td><code>""</code>, <code>"sm"</code>, <code>"lg"</code></td>
+          <td>Transforms the checkbox into a toggle switch. Value sets the size variant (default: standard).</td>
+        </tr>
+        <tr>
+          <td><code>data-switch-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Three size variants are available via the attribute value: <code>sm</code> (small), default (empty string), and <code>lg</code> (large). The track and knob scale proportionally.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <label>
+          <input type="checkbox" data-switch="sm">
+          Small switch
+        </label>
+        <label>
+          <input type="checkbox" data-switch>
+          Default switch
+        </label>
+        <label>
+          <input type="checkbox" data-switch="lg">
+          Large switch
+        </label>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Size variants">{{ sizesCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>With Form Field</h2>
+    <p>Wrap in <code>&lt;form-field&gt;</code> for validation feedback, helper text, and required indicators. The switch works seamlessly with form-field's validation lifecycle.</p>
+
+    <div class="example">
+      <form-field>
+        <label>
+          <input type="checkbox" data-switch required>
+          Accept terms and conditions
+        </label>
+        <small slot="help">You must agree before continuing.</small>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Switch inside form-field">{{ formFieldCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Checked by Default</h2>
+    <p>Add the native <code>checked</code> attribute to render the switch in the on position initially.</p>
+
+    <div class="example">
+      <label>
+        <input type="checkbox" data-switch checked>
+        Enabled by default
+      </label>
+    </div>
+
+    <code-block language="html" show-lines label="Checked by default">{{ checkedDefaultCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Disabled and Read-only</h2>
+    <p>Native <code>disabled</code> and <code>readonly</code> attributes are fully supported. Disabled switches are visually muted and non-interactive. Read-only switches display their current state but cannot be toggled.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <label>
+          <input type="checkbox" data-switch disabled>
+          Disabled off
+        </label>
+        <label>
+          <input type="checkbox" data-switch disabled checked>
+          Disabled on
+        </label>
+        <label>
+          <input type="checkbox" data-switch readonly checked>
+          Read-only on
+        </label>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Disabled and read-only states">{{ disabledCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Settings Group</h2>
+    <p>Combine multiple switches in a <code>&lt;fieldset&gt;</code> for grouped settings panels.</p>
+
+    <div class="example">
+      <fieldset>
+        <legend>Notification preferences</legend>
+        <layout-stack data-layout-gap="m">
+          <label>
+            <input type="checkbox" data-switch checked>
+            Email notifications
+          </label>
+          <label>
+            <input type="checkbox" data-switch>
+            SMS notifications
+          </label>
+          <label>
+            <input type="checkbox" data-switch checked>
+            Push notifications
+          </label>
+        </layout-stack>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Settings group with fieldset">{{ groupCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The switch track and knob are fully customizable via CSS custom properties. All styles are gated on <code>[data-switch-init]</code> so the checkbox renders normally without JavaScript.</p>
+
+    <code-block language="css" show-lines label="CSS custom properties">{{ stylingCode | safe }}</code-block>
+
+    <p>The <code>:checked</code> pseudo-class controls the knob position and track color. Transitions use <code>prefers-reduced-motion</code> to disable animation when requested.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Switches added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added switches">{{ dynamicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>role="switch"</code> is added automatically, announcing the control as a toggle switch to screen readers</li>
+      <li>Keyboard toggle with <kbd>Space</kbd> works natively since the underlying element is a real checkbox</li>
+      <li>A visible <code>&lt;label&gt;</code> is required &mdash; always wrap the switch in a label or use <code>aria-label</code></li>
+      <li><code>disabled</code> and <code>readonly</code> states are conveyed to assistive technology via native attributes</li>
+      <li>Focus ring follows the system focus style via <code>:focus-visible</code></li>
+      <li><code>prefers-reduced-motion</code>: slide transitions are disabled when the user prefers reduced motion</li>
+      <li>Without JavaScript, the checkbox renders normally &mdash; progressive enhancement</li>
+    </ul>
+  </section>

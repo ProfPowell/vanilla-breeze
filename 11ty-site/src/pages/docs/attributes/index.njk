@@ -1,0 +1,160 @@
+---
+layout: layouts/docs.njk
+title: "Attribute Index"
+description: "Complete listing of all data attributes organized by category with type badges."
+currentSection: api
+currentPath: /docs/attributes/
+permalink: /docs/attributes/
+---
+
+{% block extraHead %}
+<style>
+    .attribute-index {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--size-m);
+      margin-block-start: var(--size-l);
+    }
+
+    .attribute-entry {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-2xs);
+      padding: var(--size-m);
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .attribute-entry:hover {
+      border-color: var(--color-interactive);
+      box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+    }
+
+    .attribute-entry code {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
+
+    .attribute-entry .description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .attribute-badge {
+      padding: var(--size-3xs) var(--size-xs);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .attribute-badge[data-type="layout"] {
+      background: oklch(85% 0.1 145);
+      color: oklch(30% 0.1 145);
+    }
+
+    .attribute-badge[data-type="behavior"] {
+      background: oklch(85% 0.1 60);
+      color: oklch(30% 0.1 60);
+    }
+
+    .attribute-badge[data-type="formatting"] {
+      background: oklch(85% 0.1 250);
+      color: oklch(30% 0.1 250);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+      margin-block: var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      font-size: var(--font-size-sm);
+    }
+
+    .stats {
+      display: flex;
+      gap: var(--size-xl);
+      margin-block: var(--size-m);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .stats strong {
+      color: var(--color-text);
+    }
+
+    .category-heading {
+      grid-column: 1 / -1;
+      margin-block-start: var(--size-l);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+
+    .category-heading:first-of-type {
+      margin-block-start: 0;
+    }
+
+  </style>
+{% endblock %}
+
+
+<h1>Attribute Index</h1>
+  <p class="lead">Complete listing of all data attributes organized by category.</p>
+
+  <div class="stats">
+    <span><strong>{{ attributeIndex.layoutCount }}</strong> layout</span>
+    <span><strong>{{ attributeIndex.behaviorCount }}</strong> behavior</span>
+    <span><strong>{{ attributeIndex.formattingCount }}</strong> formatting</span>
+    <span><strong>{{ attributeIndex.totalCount }}</strong> total</span>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="attribute-badge" data-type="layout">layout</span>
+      <span>CSS-only structural attributes</span>
+    </div>
+    <div class="legend-item">
+      <span class="attribute-badge" data-type="behavior">behavior</span>
+      <span>JS-enhanced interactive attributes</span>
+    </div>
+    <div class="legend-item">
+      <span class="attribute-badge" data-type="formatting">formatting</span>
+      <span>JS-enhanced display/formatting attributes</span>
+    </div>
+  </div>
+
+  <nav class="attribute-index" aria-label="All attributes">
+    {% for key, category in attributeIndex.categories %}
+    <h2 class="category-heading">{{ category.label }}</h2>
+    {% for item in category.items %}
+    <a href="{{ item.href }}" class="attribute-entry">
+      <code>{{ item.name }}</code>
+      <span class="attribute-badge" data-type="{{ item.type }}">{{ item.type }}</span>
+      <p class="description">{{ item.description }}</p>
+    </a>
+    {% endfor %}
+    {% endfor %}
+  </nav>
+
+  <section>
+    <h2>See Also</h2>
+    <p>Form control and form behavior attributes are also documented in context on the <a href="/docs/elements/native/input/">input</a>, <a href="/docs/elements/native/textarea/">textarea</a>, and <a href="/docs/elements/native/form/">form</a> element pages.</p>
+  </section>

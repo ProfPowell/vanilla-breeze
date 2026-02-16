@@ -1,0 +1,502 @@
+---
+layout: layouts/element.njk
+title: "textarea"
+description: "Multi-line text input for longer content like messages, comments, or descriptions. Unlike input type='text', textarea allows line breaks and resizing."
+elementName: textarea
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/textarea/
+permalink: /docs/elements/native/textarea/
+---
+
+{% set basicTextareaCode %}<label for="message">Message</label>
+<textarea id="message" name="message" placeholder="Enter your message..."></textarea>{% endset %}
+
+{% set textareaSizeCode %}<textarea rows="3"></textarea>  <!-- 3 lines -->
+<textarea rows="5"></textarea>  <!-- 5 lines -->
+<textarea rows="10"></textarea> <!-- 10 lines -->{% endset %}
+
+{% set characterLimitsCode %}<textarea minlength="50" maxlength="200"></textarea>{% endset %}
+
+{% set textareaStatesCode %}<textarea disabled>Cannot edit</textarea>
+<textarea readonly>Can select but not edit</textarea>
+<textarea aria-invalid="true">Invalid content</textarea>{% endset %}
+
+{% set formFieldTextareaCode %}<form-field>
+  <label for="message">Message</label>
+  <textarea id="message"
+            name="message"
+            required
+            minlength="10"
+            rows="5"
+            aria-describedby="message-msg"></textarea>
+  <output id="message-msg" for="message" aria-live="polite">
+    Please enter at least 10 characters
+  </output>
+</form-field>{% endset %}
+
+{% set countCharCode %}<form-field>
+  <label for="bio">Bio</label>
+  <textarea id="bio" maxlength="500" data-count></textarea>
+</form-field>{% endset %}
+
+{% set countWordCode %}<textarea data-count="words" data-maxwords="200"
+  placeholder="Write your essay..."></textarea>{% endset %}
+
+{% set growBasicCode %}<textarea data-grow rows="2"
+  placeholder="Type to see it grow..."></textarea>{% endset %}
+
+{% set growMaxCode %}<textarea data-grow rows="2" data-max-rows="10"
+  placeholder="Grows up to 10 rows, then scrolls..."></textarea>{% endset %}
+
+{% set growCountCode %}<form-field>
+  <label for="msg">Message</label>
+  <textarea id="msg" data-grow data-count maxlength="500"
+    rows="2" placeholder="Auto-grows with character count..."></textarea>
+</form-field>{% endset %}
+
+{% set cssReferenceCode %}textarea {
+  display: block;
+  inline-size: 100%;
+  padding-block: var(--size-s);
+  padding-inline: var(--size-s);
+  min-block-size: 8rem;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  font: inherit;
+  resize: vertical;
+  transition: border-color var(--duration-fast);
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+textarea:disabled {
+  background: var(--color-surface-raised);
+  cursor: not-allowed;
+}
+
+textarea[aria-invalid="true"] {
+  border-color: oklch(55% 0.25 25);
+}{% endset %}
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Comments and messages</li>
+      <li>Descriptions and bios</li>
+      <li>Address fields (multi-line)</li>
+      <li>Code or text snippets</li>
+      <li>Any free-form text longer than a single line</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A simple textarea with label and placeholder.</p>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="textarea-basic">Message</label>
+        <textarea id="textarea-basic" name="message" placeholder="Enter your message here..."></textarea>
+      </form-field>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic textarea with label">{{ basicTextareaCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>rows</code></td>
+          <td>Initial visible lines</td>
+          <td><code>rows="5"</code></td>
+        </tr>
+        <tr>
+          <td><code>cols</code></td>
+          <td>Visible character width</td>
+          <td><code>cols="40"</code></td>
+        </tr>
+        <tr>
+          <td><code>minlength</code></td>
+          <td>Minimum character count</td>
+          <td><code>minlength="10"</code></td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>Maximum character count</td>
+          <td><code>maxlength="500"</code></td>
+        </tr>
+        <tr>
+          <td><code>required</code></td>
+          <td>Field must have a value</td>
+          <td><code>required</code></td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>Prevents editing</td>
+          <td><code>disabled</code></td>
+        </tr>
+        <tr>
+          <td><code>readonly</code></td>
+          <td>Can select but not edit</td>
+          <td><code>readonly</code></td>
+        </tr>
+        <tr>
+          <td><code>placeholder</code></td>
+          <td>Hint text when empty</td>
+          <td><code>placeholder="..."</code></td>
+        </tr>
+        <tr>
+          <td><code>wrap</code></td>
+          <td>Text wrapping behavior</td>
+          <td><code>wrap="soft"</code></td>
+        </tr>
+        <tr>
+          <td><code>spellcheck</code></td>
+          <td>Enable/disable spell check</td>
+          <td><code>spellcheck="true"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Setting Size</h2>
+
+    <h3>Using rows Attribute</h3>
+    <p>Control the initial height with <code>rows</code>.</p>
+    <div class="example">
+      <layout-stack data-layout-gap="m" style="max-inline-size: 30rem;">
+        <form-field>
+          <label for="textarea-small">Small (3 rows)</label>
+          <textarea id="textarea-small" rows="3" placeholder="Short input..."></textarea>
+        </form-field>
+        <form-field>
+          <label for="textarea-medium">Medium (5 rows, default)</label>
+          <textarea id="textarea-medium" rows="5" placeholder="Medium input..."></textarea>
+        </form-field>
+        <form-field>
+          <label for="textarea-large">Large (10 rows)</label>
+          <textarea id="textarea-large" rows="10" placeholder="Long input..."></textarea>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Textarea size with rows attribute">{{ textareaSizeCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Character Limits</h2>
+    <p>Use <code>minlength</code> and <code>maxlength</code> for validation.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m" style="max-inline-size: 30rem;">
+        <form-field>
+          <label for="textarea-minmax">Bio (50-200 characters)</label>
+          <textarea id="textarea-minmax" minlength="50" maxlength="200" placeholder="Tell us about yourself..."></textarea>
+          <span class="help">Minimum 50 characters, maximum 200</span>
+        </form-field>
+        <form-field>
+          <label for="textarea-max">Tweet (280 max)</label>
+          <textarea id="textarea-max" maxlength="280" rows="3" placeholder="What's happening?"></textarea>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Character limits">{{ characterLimitsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Textarea States</h2>
+
+    <h3>Disabled</h3>
+    <p>Cannot be edited or focused.</p>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="textarea-disabled">Disabled</label>
+        <textarea id="textarea-disabled" disabled>This content cannot be edited.</textarea>
+      </form-field>
+    </div>
+
+    <h3>Read-only</h3>
+    <p>Can be selected and copied but not edited.</p>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="textarea-readonly">Read-only</label>
+        <textarea id="textarea-readonly" readonly>This content can be selected and copied but not modified.</textarea>
+      </form-field>
+    </div>
+
+    <h3>Invalid</h3>
+    <p>Shows validation error state.</p>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="textarea-invalid">Description</label>
+        <textarea id="textarea-invalid" aria-invalid="true" minlength="50">Too short</textarea>
+        <span class="error">Please enter at least 50 characters</span>
+      </form-field>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Textarea states">{{ textareaStatesCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>With form-field</h2>
+    <p>Use the <a href="/docs/elements/custom-elements/form-field/">form-field custom element</a> for CSS-only validation.</p>
+
+    <div class="example">
+      <form style="max-inline-size: 30rem;">
+        <form-field>
+          <label for="ff-textarea">Message</label>
+          <textarea id="ff-textarea"
+                    name="message"
+                    required
+                    minlength="10"
+                    rows="5"
+                    aria-describedby="ff-textarea-msg"></textarea>
+          <output id="ff-textarea-msg" for="ff-textarea" aria-live="polite">
+            Please enter at least 10 characters
+          </output>
+        </form-field>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Textarea with form-field validation">{{ formFieldTextareaCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Real-World Examples</h2>
+
+    <h3>Contact Form Message</h3>
+    <div class="example">
+      <form class="stacked" style="max-inline-size: 30rem;">
+        <form-field>
+          <label for="contact-message">How can we help? *</label>
+          <textarea id="contact-message" name="message" required minlength="20" rows="6" placeholder="Please describe your question or issue in detail..."></textarea>
+          <span class="help">Be as specific as possible so we can assist you better.</span>
+        </form-field>
+      </form>
+    </div>
+
+    <h3>Code/Snippet Input</h3>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="code-snippet">Code Snippet</label>
+        <textarea id="code-snippet" rows="8" spellcheck="false" style="font-family: var(--font-mono); font-size: var(--font-size-sm);">{`function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greet('World'));`}</textarea>
+      </form-field>
+    </div>
+
+    <h3>Address Input</h3>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="address-textarea">Full Address</label>
+        <textarea id="address-textarea" name="address" rows="4" autocomplete="street-address" placeholder="Street address&#10;City, State ZIP&#10;Country"></textarea>
+      </form-field>
+    </div>
+
+    <h3>Comment with Character Counter</h3>
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="comment-counter">Comment</label>
+        <textarea id="comment-counter" maxlength="500" rows="4" placeholder="Share your thoughts..." oninput="document.getElementById('char-count').textContent = this.value.length + '/500'"></textarea>
+        <span class="help"><span id="char-count">0/500</span> characters</span>
+      </form-field>
+    </div>
+  </section>
+
+  <section>
+    <h2>Resizing Behavior</h2>
+    <p>By default, textareas can be resized vertically. CSS controls this behavior.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>CSS Property</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>resize: vertical</code></td>
+          <td>Can resize height only (default)</td>
+        </tr>
+        <tr>
+          <td><code>resize: horizontal</code></td>
+          <td>Can resize width only</td>
+        </tr>
+        <tr>
+          <td><code>resize: both</code></td>
+          <td>Can resize in both directions</td>
+        </tr>
+        <tr>
+          <td><code>resize: none</code></td>
+          <td>Cannot be resized</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Character / Word Count (data-count)</h2>
+    <p>Add <code>data-count</code> to any textarea to show a live character or word count. Works with native <code>maxlength</code> for character mode and <code>data-maxwords</code> for word mode. Color shifts at 80% (warning) and 100% (error).</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-count-basic.html"
+      url="https://vanilla-breeze.dev/textarea-count"
+      title="Textarea Count Demo"
+      shadow>
+    </browser-window>
+
+    <h3>Character Count</h3>
+    <p>The default mode counts characters. Pair with <code>maxlength</code> to show &ldquo;42 / 500&rdquo; format.</p>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-char">Bio (max 200 characters)</label>
+        <textarea id="demo-char" maxlength="200" data-count rows="3" placeholder="Tell us about yourself..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Character count">{{ countCharCode | safe }}</code-block>
+
+    <h3>Word Count</h3>
+    <p>Set <code>data-count="words"</code> and <code>data-maxwords</code> for word-based counting.</p>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-word">Essay (max 50 words)</label>
+        <textarea id="demo-word" data-count="words" data-maxwords="50" rows="4" placeholder="Write your essay..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Word count">{{ countWordCode | safe }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-count</code></td>
+          <td><code>""</code>, <code>"words"</code></td>
+          <td>Enable counter. Empty for characters, <code>"words"</code> for word mode.</td>
+        </tr>
+        <tr>
+          <td><code>data-maxwords</code></td>
+          <td>number</td>
+          <td>Max word count (word mode only).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Auto-Expand (data-grow)</h2>
+    <p>Add <code>data-grow</code> to a textarea to make it automatically expand as the user types. Uses CSS <code>field-sizing: content</code> where supported, with a JS <code>scrollHeight</code> fallback. Set <code>data-max-rows</code> to cap the height.</p>
+
+    <browser-window
+      src="/docs/examples/demos/textarea-grow-basic.html"
+      url="https://vanilla-breeze.dev/textarea-grow"
+      title="Auto-Expand Textarea Demo"
+      shadow>
+    </browser-window>
+
+    <div class="example">
+      <form-field style="max-inline-size: 30rem;">
+        <label for="demo-grow">Comment</label>
+        <textarea id="demo-grow" data-grow rows="2" placeholder="Type to see it grow..."></textarea>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Basic auto-grow">{{ growBasicCode | safe }}</code-block>
+
+    <h3>Max Rows</h3>
+    <p>Set <code>data-max-rows</code> to limit growth. Once the limit is reached, the textarea scrolls normally.</p>
+
+    <code-block language="html" show-lines label="With max-rows">{{ growMaxCode | safe }}</code-block>
+
+    <h3>Combined with Count</h3>
+    <p><code>data-grow</code> and <code>data-count</code> work together seamlessly.</p>
+
+    <code-block language="html" show-lines label="Grow + count">{{ growCountCode | safe }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-grow</code></td>
+          <td>&mdash;</td>
+          <td>Enable auto-expanding behavior.</td>
+        </tr>
+        <tr>
+          <td><code>data-max-rows</code></td>
+          <td>number</td>
+          <td>Maximum rows before scrolling.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Always use a label</strong>: Every textarea needs an associated <a href="/docs/elements/native/label/">label</a></li>
+      <li><strong>Don't disable resize</strong>: Allow users to resize for their needs when possible</li>
+      <li><strong>Provide character limits</strong>: If using maxlength, show remaining characters</li>
+      <li><strong>Use aria-describedby</strong>: Link to help text or validation messages</li>
+      <li><strong>Placeholder is not a label</strong>: Placeholders disappear when typing</li>
+      <li><strong>Spell checking</strong>: Keep spellcheck enabled for prose, disable for code</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Textarea CSS styles">{{ cssReferenceCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/input/">input</a> - Single-line text input</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Required for accessibility</li>
+      <li><a href="/docs/elements/native/form/">form</a> - Container for textareas</li>
+      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced textarea with validation</li>
+    </ul>
+  </section>

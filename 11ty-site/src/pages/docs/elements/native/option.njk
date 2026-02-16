@@ -1,0 +1,298 @@
+---
+layout: layouts/element.njk
+title: "option"
+description: "Defines an item in a select dropdown or datalist autocomplete. Each option represents a choice the user can select."
+elementName: option
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/option/
+permalink: /docs/elements/native/option/
+---
+
+{% set basicOptionCode %}<select id="color">
+  <option value="">Select a color...</option>
+  <option value="red">Red</option>
+  <option value="blue">Blue</option>
+  <option value="green">Green</option>
+</select>{% endset %}
+
+{% set placeholderOptionCode %}<select required>
+  <option value="" disabled selected>Choose a category...</option>
+  <option value="tech">Technology</option>
+  <option value="design">Design</option>
+</select>{% endset %}
+
+{% set preselectedOptionCode %}<select>
+  <option value="en" selected>English</option>
+  <option value="es">Spanish</option>
+</select>{% endset %}
+
+{% set disabledOptionCode %}<select>
+  <option value="free">Free Plan</option>
+  <option value="pro">Pro - $29/mo</option>
+  <option value="enterprise" disabled>Enterprise - Contact Sales</option>
+</select>{% endset %}
+
+{% set valueVsTextCode %}<!-- value="US" submitted, "United States" displayed -->
+<option value="US">United States</option>
+
+<!-- If no value attribute, "United States" is both submitted and displayed -->
+<option>United States</option>{% endset %}
+
+{% set datalistOptionCode %}<input type="text" list="airports" />
+<datalist id="airports">
+  <option value="JFK" label="New York - John F. Kennedy"></option>
+  <option value="LAX" label="Los Angeles International"></option>
+</datalist>{% endset %}
+
+{% set multipleSelectionCode %}<select multiple size="5">
+  <option value="tech">Technology</option>
+  <option value="design" selected>Design</option>
+  <option value="travel" selected>Travel</option>
+</select>{% endset %}
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Inside <a href="/docs/elements/native/select/">select</a> elements for dropdown menus</li>
+      <li>Inside <a href="/docs/elements/native/datalist/">datalist</a> elements for autocomplete suggestions</li>
+      <li>Inside <a href="/docs/elements/native/optgroup/">optgroup</a> for grouped options</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>Options have a <code>value</code> (submitted to server) and display text (shown to user).</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-basic">Favorite Color</label>
+        <select id="option-basic">
+          <option value="">Select a color...</option>
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+          <option value="green">Green</option>
+          <option value="yellow">Yellow</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Basic option usage">{{ basicOptionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>Value sent to server on form submission</td>
+          <td>Defaults to element text content if omitted</td>
+        </tr>
+        <tr>
+          <td><code>selected</code></td>
+          <td>Pre-selects this option</td>
+          <td>Boolean attribute</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>Makes option unselectable</td>
+          <td>Shown but grayed out</td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>Alternative display text</td>
+          <td>Used in datalist for additional context</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Placeholder Option</h2>
+    <p>Use an empty value with <code>disabled</code> and <code>selected</code> for placeholder text.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-placeholder">Category</label>
+        <select id="option-placeholder" required>
+          <option value="" disabled selected>Choose a category...</option>
+          <option value="tech">Technology</option>
+          <option value="design">Design</option>
+          <option value="business">Business</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Placeholder option pattern">{{ placeholderOptionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Pre-selected Option</h2>
+    <p>Use <code>selected</code> to set an initial value.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-selected">Default Language</label>
+        <select id="option-selected">
+          <option value="en" selected>English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Pre-selected option">{{ preselectedOptionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Disabled Options</h2>
+    <p>Disable specific options that shouldn't be selectable.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-disabled">Plan</label>
+        <select id="option-disabled">
+          <option value="free">Free Plan</option>
+          <option value="basic">Basic - $9/mo</option>
+          <option value="pro">Pro - $29/mo</option>
+          <option value="enterprise" disabled>Enterprise - Contact Sales</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Disabled option">{{ disabledOptionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Value vs Display Text</h2>
+    <p>The <code>value</code> attribute is what gets submitted; the text content is what users see.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-values">Country</label>
+        <select id="option-values" name="country">
+          <option value="">Select...</option>
+          <option value="US">United States</option>
+          <option value="CA">Canada</option>
+          <option value="UK">United Kingdom</option>
+          <option value="AU">Australia</option>
+        </select>
+        <span class="help">Submitted value will be country code (US, CA, etc.)</span>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Value vs display text">{{ valueVsTextCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Within Option Groups</h2>
+    <p>Options can be organized into <a href="/docs/elements/native/optgroup/">optgroup</a> categories.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-groups">Vehicle</label>
+        <select id="option-groups">
+          <option value="">Select a vehicle...</option>
+          <optgroup label="Cars">
+            <option value="sedan">Sedan</option>
+            <option value="suv">SUV</option>
+            <option value="sports">Sports Car</option>
+          </optgroup>
+          <optgroup label="Motorcycles">
+            <option value="cruiser">Cruiser</option>
+            <option value="sport">Sport Bike</option>
+            <option value="touring">Touring</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>In Datalist</h2>
+    <p>Options in <a href="/docs/elements/native/datalist/">datalist</a> provide autocomplete suggestions. The <code>label</code> attribute can add context.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-datalist">Airport Code</label>
+        <input type="text" id="option-datalist" list="airports-option" placeholder="Enter airport..." />
+        <datalist id="airports-option">
+          <option value="JFK" label="New York - John F. Kennedy"></option>
+          <option value="LAX" label="Los Angeles International"></option>
+          <option value="ORD" label="Chicago O'Hare"></option>
+          <option value="SFO" label="San Francisco International"></option>
+        </datalist>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Options in datalist">{{ datalistOptionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Multiple Selection</h2>
+    <p>In a <code>multiple</code> select, users can choose several options.</p>
+
+    <div class="example">
+      <div class="group" style="max-inline-size: 25rem;">
+        <label for="option-multiple">Select Interests</label>
+        <select id="option-multiple" multiple size="5">
+          <option value="tech">Technology</option>
+          <option value="design" selected>Design</option>
+          <option value="music">Music</option>
+          <option value="sports">Sports</option>
+          <option value="travel" selected>Travel</option>
+          <option value="food">Food</option>
+        </select>
+        <span class="help">Hold Ctrl/Cmd to select multiple</span>
+      </div>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Multiple selection">{{ multipleSelectionCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Descriptive text</strong>: Option text should clearly describe the choice</li>
+      <li><strong>Logical order</strong>: Order options in a logical sequence (alphabetical, numerical, etc.)</li>
+      <li><strong>Placeholder pattern</strong>: Use disabled first option for "Select..." prompts</li>
+      <li><strong>Screen reader support</strong>: Options are read with their position in the list</li>
+      <li><strong>Keyboard navigation</strong>: Arrow keys move through options, type to jump to matching text</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Styling Limitations</h2>
+    <p>Options have very limited CSS styling possibilities due to browser rendering.</p>
+    <ul>
+      <li>Cannot style individual option backgrounds or text colors reliably</li>
+      <li>Cannot add icons or images to options</li>
+      <li>Font styling may work but varies by browser</li>
+      <li>For fully custom dropdowns, consider JavaScript solutions</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/select/">select</a> - Dropdown container for options</li>
+      <li><a href="/docs/elements/native/optgroup/">optgroup</a> - Groups related options together</li>
+      <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete container for options</li>
+    </ul>
+  </section>

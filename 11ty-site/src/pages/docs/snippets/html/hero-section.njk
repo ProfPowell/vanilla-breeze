@@ -1,0 +1,232 @@
+---
+layout: layouts/docs.njk
+title: "Hero Section Snippet"
+description: "Hero patterns using layout-cover for vertical centering. Responsive without media queries."
+currentSection: examples
+currentPath: /docs/snippets/html/hero-section/
+permalink: /docs/snippets/html/hero-section/
+---
+
+{% set heroStylesCode %}.hero {
+  background: var(--color-surface-raised);
+}
+
+.hero-content {
+  text-align: center;
+}
+
+.hero .lead {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-muted);
+}
+
+/* Hero with background image */
+.hero-with-bg {
+  background-image: url('/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.hero-with-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-overlay-strong);
+}
+
+.hero-with-bg > * {
+  position: relative;
+  color: var(--color-white);
+}{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/docs/snippets/">Snippets</a></li>
+      <li><span aria-current="page">Hero Section</span></li>
+    </ol>
+  </nav>
+
+  <h1>Hero Section</h1>
+  <p class="lead">Hero patterns using layout-cover for vertical centering. Responsive without media queries.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Hero sections are prominent page areas that introduce content with a headline, supporting text, and call-to-action buttons. This snippet uses <code>&lt;layout-cover&gt;</code> for vertical centering, <code>&lt;layout-center&gt;</code> for horizontal alignment, and semantic <code>&lt;nav&gt;</code> with <code>&lt;ul&gt;</code> for CTA button groups.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Vertical centering with <code>layout-cover</code></li>
+        <li>Configurable minimum height</li>
+        <li>Semantic <code>&lt;nav&gt;</code> for CTA links — <code>data-layout="cluster"</code> on the <code>&lt;ul&gt;</code></li>
+        <li>Centered and split layout variants</li>
+        <li>Optional background image support</li>
+        <li>Responsive without media queries</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Basic Hero</h2>
+    <layout-text>
+      <p>A centered hero with headline, lead text, and action buttons.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/snippets/demos/hero-basic.html"
+      url="https://vanilla-breeze.dev/hero-basic"
+      title="Basic Hero"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Basic centered hero">&lt;section class="hero"&gt;
+  &lt;layout-cover data-layout-min="60vh" data-layout-padding="xl"&gt;
+    &lt;layout-center data-layout-max="normal"&gt;
+      &lt;layout-stack data-layout-gap="l" class="hero-content"&gt;
+        &lt;h1&gt;Build Beautiful Interfaces&lt;/h1&gt;
+        &lt;p class="lead"&gt;
+          A lightweight CSS framework built on modern standards.
+          No JavaScript required for core functionality.
+        &lt;/p&gt;
+        &lt;nav&gt;
+          &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
+            &lt;li&gt;&lt;a href="/get-started/" class="button"&gt;Get Started&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="/docs/" class="button secondary"&gt;Documentation&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/nav&gt;
+      &lt;/layout-stack&gt;
+    &lt;/layout-center&gt;
+  &lt;/layout-cover&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Split Layout Hero</h2>
+    <layout-text>
+      <p>A hero with text on one side and an image on the other, using <code>layout-sidebar</code>.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/snippets/demos/hero-split.html"
+      url="https://vanilla-breeze.dev/hero-split"
+      title="Split Hero"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Split layout hero">&lt;section class="hero"&gt;
+  &lt;layout-cover data-layout-min="50vh" data-layout-padding="xl"&gt;
+    &lt;layout-sidebar data-layout-gap="2xl" data-layout-sidebar-width="wide" data-layout-content-min="50"&gt;
+      &lt;layout-stack data-layout-gap="l"&gt;
+        &lt;layout-badge data-variant="info"&gt;New Release&lt;/layout-badge&gt;
+        &lt;h1&gt;Feature Announcement&lt;/h1&gt;
+        &lt;p&gt;
+          Detailed description of the feature or product.
+          Highlight key benefits and unique selling points.
+        &lt;/p&gt;
+        &lt;nav&gt;
+          &lt;ul data-layout="cluster" data-layout-gap="m"&gt;
+            &lt;li&gt;&lt;a href="/learn-more/" class="button"&gt;Learn More&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="/demo/" class="button ghost"&gt;Watch Demo&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/nav&gt;
+      &lt;/layout-stack&gt;
+      &lt;img
+        src="/images/feature.png"
+        alt="Feature illustration"
+        width="600"
+        height="400"
+        loading="eager"&gt;
+    &lt;/layout-sidebar&gt;
+  &lt;/layout-cover&gt;
+&lt;/section&gt;</code-block>
+  </section>
+
+  <section>
+    <h2>Background Image Hero</h2>
+    <layout-text>
+      <p>Add a background image with CSS custom property and overlay.</p>
+    </layout-text>
+
+    <code-block language="html" label="Hero with background image">&lt;section class="hero hero-with-bg"&gt;
+  &lt;layout-cover data-layout-min="70vh" data-layout-padding="xl"&gt;
+    &lt;layout-center data-layout-max="normal"&gt;
+      &lt;layout-stack data-layout-gap="l" class="hero-content"&gt;
+        &lt;h1&gt;Your Headline Here&lt;/h1&gt;
+        &lt;p class="lead"&gt;Supporting text that explains the value proposition.&lt;/p&gt;
+        &lt;nav&gt;
+          &lt;ul data-layout="cluster" data-layout-justify="center" data-layout-gap="m"&gt;
+            &lt;li&gt;&lt;a href="/cta/" class="button large"&gt;Call to Action&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/nav&gt;
+      &lt;/layout-stack&gt;
+    &lt;/layout-center&gt;
+  &lt;/layout-cover&gt;
+&lt;/section&gt;</code-block>
+
+    <h3>Required CSS</h3>
+    <layout-text>
+      <p>Add these styles to support background images with overlay:</p>
+    </layout-text>
+
+    <code-block language="css" label="Hero background styles">{{ heroStylesCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Configuration</h2>
+    <layout-text>
+      <p>The <code>&lt;layout-cover&gt;</code> element accepts these data attributes:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-layout-min</code></td>
+          <td>CSS length (e.g., <code>50vh</code>, <code>400px</code>)</td>
+          <td>Minimum height of the cover area.</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-padding</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Vertical padding inside the cover.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Centering:</strong> Use <code>layout-center</code> to constrain content width and center horizontally</li>
+        <li><strong>Text alignment:</strong> Use a <code>.hero-content</code> class with <code>text-align: center;</code> for centered content</li>
+        <li><strong>CTAs:</strong> Wrap action links in <code>&lt;nav&gt;&lt;ul data-layout="cluster"&gt;</code> — these are navigation, so use semantic list markup with <code>data-layout</code> on the <code>&lt;ul&gt;</code></li>
+        <li><strong>Images:</strong> Use <code>loading="eager"</code> for hero images since they're above the fold</li>
+        <li><strong>Responsive:</strong> Split layouts automatically stack on narrow viewports</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/custom-elements/cover/" class="section-card">
+        <h3>Layout Cover</h3>
+        <p>Cover layout element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/center/" class="section-card">
+        <h3>Layout Center</h3>
+        <p>Center layout element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/sidebar/" class="section-card">
+        <h3>Layout Sidebar</h3>
+        <p>Sidebar layout element documentation</p>
+      </a>
+    </layout-grid>
+  </section>

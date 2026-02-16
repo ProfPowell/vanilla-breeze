@@ -1,0 +1,288 @@
+---
+layout: layouts/attribute.njk
+title: "data-splitter"
+description: "Add a resizable drag divider between panels with keyboard support. The lightweight attribute alternative to the full splitter-wc web component."
+attributeName: data-splitter
+category: interaction
+currentPath: /docs/attributes/data-splitter/
+permalink: /docs/attributes/data-splitter/
+---
+
+{% set basicCode %}<div data-layout="sidebar" data-splitter>
+  <nav>
+    <strong>Sidebar</strong>
+    <p>Drag the divider or use arrow keys.</p>
+  </nav>
+  <main>
+    <strong>Main Content</strong>
+  </main>
+</div>{% endset %}
+
+{% set verticalCode %}<div data-layout="stack" data-splitter="vertical" style="height: 300px;">
+  <div>Top Panel</div>
+  <div>Bottom Panel</div>
+</div>{% endset %}
+
+{% set constraintsCode %}<div data-layout="sidebar" data-splitter>
+  <nav data-min="20" data-max="60">Sidebar</nav>
+  <main>Content</main>
+</div>{% endset %}
+
+{% set eventCode %}const panel = document.querySelector('[data-splitter]');
+
+panel.addEventListener('splitter-resize', (e) => \{
+  console.log('Panel resized to:', e.detail.position + '%');
+\});{% endset %}
+
+{% set stylingCode %}/* The divider element */
+.splitter-divider \{
+  background: var(--color-border);
+  transition: background 0.15s ease;
+\}
+
+/* Hover and focus states */
+.splitter-divider:hover,
+.splitter-divider:focus-visible \{
+  background: var(--color-primary);
+\}
+
+/* Horizontal divider dimensions */
+[data-splitter]:not([data-splitter="vertical"]) > .splitter-divider \{
+  width: 4px;
+  cursor: col-resize;
+\}
+
+/* Vertical divider dimensions */
+[data-splitter="vertical"] > .splitter-divider \{
+  height: 4px;
+  cursor: row-resize;
+\}
+
+/* Grip indicator (three dots/lines) */
+.splitter-divider::after \{
+  content: '';
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+\}{% endset %}
+
+{% set dynamicCode %}// Dynamically added splitters are auto-enhanced via MutationObserver
+const container = document.createElement('div');
+container.dataset.layout = 'sidebar';
+container.dataset.splitter = '';
+container.innerHTML = '<nav>Side</nav><main>Content</main>';
+document.body.appendChild(container);
+// divider is injected and ready — no manual init needed{% endset %}
+
+{% set nestedCode %}<div data-layout="sidebar" data-splitter>
+  <nav>
+    <strong>File Tree</strong>
+  </nav>
+  <div data-layout="stack" data-splitter="vertical" style="height: 500px;">
+    <main>
+      <strong>Editor</strong>
+    </main>
+    <div>
+      <strong>Terminal</strong>
+    </div>
+  </div>
+</div>{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-splitter</code> attribute adds a resizable drag divider between two panels. It supports horizontal and vertical orientations, keyboard navigation, and min/max constraints. This is the lightweight attribute alternative to the full <code>&lt;splitter-wc&gt;</code> web component.</p>
+
+    <p><strong>For persistence, collapse, and triple-pane layouts, see the <a href="/docs/elements/web-components/splitter/">splitter-wc component page</a>.</strong></p>
+
+    <browser-window
+      src="/docs/examples/demos/splitter-basic.html"
+      url="https://vanilla-breeze.dev/splitter"
+      title="Resizable Panels"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic horizontal splitter">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-splitter</code> to a container with exactly two child elements. The init script:</p>
+    <ol>
+      <li>Injects a <code>div.splitter-divider</code> between the two children</li>
+      <li>Sets <code>role="separator"</code> on the divider with full ARIA attributes</li>
+      <li>Listens for mouse drag, touch drag, and keyboard events on the divider</li>
+      <li>Calculates the split position as a percentage and applies it to the first panel's flex-basis</li>
+      <li>Reads <code>data-min</code> and <code>data-max</code> from the first child for constraints</li>
+      <li>Sets <code>data-splitter-init</code> to prevent double-binding</li>
+    </ol>
+    <p>The container should use <code>data-layout="sidebar"</code> for horizontal splits or <code>data-layout="stack"</code> for vertical splits.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Element</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-splitter</code></td>
+          <td>Container</td>
+          <td>Enables the splitter. Empty string for horizontal, <code>"vertical"</code> for vertical.</td>
+        </tr>
+        <tr>
+          <td><code>data-min</code></td>
+          <td>First child</td>
+          <td>Minimum size of the first panel as a percentage (default: <code>10</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-max</code></td>
+          <td>First child</td>
+          <td>Maximum size of the first panel as a percentage (default: <code>90</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-splitter-init</code></td>
+          <td>Container</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Vertical Orientation</h2>
+    <p>Set <code>data-splitter="vertical"</code> for a top/bottom split. The container needs a fixed height since vertical splits rely on the container's height to calculate proportions.</p>
+
+    <code-block language="html" show-lines label="Vertical splitter">{{ verticalCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Min/Max Constraints</h2>
+    <p>Add <code>data-min</code> and <code>data-max</code> to the first child element to constrain the drag range. Values are percentages. The divider stops at these boundaries during drag and keyboard navigation.</p>
+
+    <div class="example">
+      <div data-layout="sidebar" data-splitter style="height: 150px;">
+        <nav data-min="20" data-max="60">
+          <strong>Sidebar</strong>
+          <p>Min 20%, Max 60%</p>
+        </nav>
+        <main>
+          <strong>Main Content</strong>
+        </main>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Constrained splitter">{{ constraintsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Injected Divider</h2>
+    <p>The divider is a <code>div.splitter-divider</code> injected between the two child panels with the following accessibility attributes:</p>
+    <ul>
+      <li><code>role="separator"</code> and <code>tabindex="0"</code> for keyboard focus</li>
+      <li><code>aria-orientation</code> matching the split direction</li>
+      <li><code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> tracking position</li>
+      <li><code>aria-label="Resize panels"</code> for screen readers</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <p>When the divider has focus, the following keyboard controls are available:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td>
+          <td>Move divider by 1% (horizontal)</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td>
+          <td>Move divider by 1% (vertical)</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift</kbd> + Arrow</td>
+          <td>Move divider by 10%</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          <td>Move to minimum / maximum position</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>splitter-resize</code></td>
+          <td><code>{\u200B position }\u200B</code></td>
+          <td>Fired during drag and keyboard resize. <code>position</code> is the first panel's size as a percentage.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening for resize events">{{ eventCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Nested Splitters</h2>
+    <p>Splitters can be nested for IDE-style layouts. Combine a horizontal sidebar split with a vertical editor/terminal split.</p>
+
+    <code-block language="html" show-lines label="Nested horizontal and vertical splitters">{{ nestedCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The divider is a plain <code>div.splitter-divider</code> styled via CSS. A <code>::after</code> pseudo-element provides the grip indicator. All styles are gated on <code>[data-splitter-init]</code> so panels display in normal flow without JavaScript.</p>
+
+    <code-block language="css" show-lines label="Splitter CSS selectors">{{ stylingCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Splitter containers added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added splitters">{{ dynamicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>role="separator"</code> identifies the divider as a resizable boundary to screen readers</li>
+      <li><code>aria-valuenow</code>, <code>aria-valuemin</code>, and <code>aria-valuemax</code> convey position and range</li>
+      <li><code>aria-orientation</code> indicates horizontal or vertical resize direction</li>
+      <li><code>aria-label="Resize panels"</code> provides a clear accessible name</li>
+      <li><code>tabindex="0"</code> makes the divider keyboard-focusable with a visible focus ring</li>
+      <li>Full keyboard navigation: Arrow keys, Shift+Arrow, Home, and End</li>
+      <li>The divider traps neither focus nor mouse &mdash; panel content remains fully interactive</li>
+      <li>Without JavaScript, panels render in normal flow &mdash; progressive enhancement</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/splitter/">splitter-wc</a> &mdash; full web component with persistence, collapse/expand, and triple-pane layouts</li>
+    </ul>
+  </section>

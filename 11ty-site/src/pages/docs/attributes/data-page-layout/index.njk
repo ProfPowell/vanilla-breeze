@@ -1,0 +1,151 @@
+---
+layout: layouts/attribute.njk
+title: "data-page-layout"
+description: "Full-page layouts using data-page-layout on the body element. Semantic children auto-assign to grid areas."
+attributeName: data-page-layout
+category: layout
+currentPath: /docs/attributes/data-page-layout/
+permalink: /docs/attributes/data-page-layout/
+---
+
+{% set pageLayoutExample %}<body data-page-layout="sidebar-left">
+  <header>Site header...</header>
+  <nav>Sidebar navigation...</nav>
+  <main>Page content...</main>
+  <footer>Site footer...</footer>
+</body>{% endset %}
+
+{% set dashboardExample %}<body data-page-layout="dashboard">
+  <header data-layout-sticky>Dashboard header...</header>
+  <nav data-layout-sticky>Navigation sidebar...</nav>
+  <main data-layout="stack" data-layout-gap="l">
+    Content area with nested stack layout...
+  </main>
+</body>{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-page-layout</code> attribute goes on the <code>&lt;body&gt;</code> element. Semantic children (header, nav, main, aside, footer) are automatically assigned to named grid areas.</p>
+
+    <code-block language="html" label="Page layout with sidebar">{{ pageLayoutExample | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Available Page Layouts</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>stack</code></td><td>Single column (mobile-first default)</td></tr>
+        <tr><td><code>sidebar-left</code></td><td>Two-column with left navigation</td></tr>
+        <tr><td><code>sidebar-right</code></td><td>Two-column with right sidebar</td></tr>
+        <tr><td><code>holy-grail</code></td><td>Three-column classic layout</td></tr>
+        <tr><td><code>app-shell</code></td><td>Vertical nav bar for apps</td></tr>
+        <tr><td><code>dashboard</code></td><td>Admin panel with sticky nav</td></tr>
+        <tr><td><code>article</code></td><td>Centered content for reading</td></tr>
+        <tr><td><code>landing</code></td><td>Marketing page with named sections</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Dashboard Layout</h2>
+    <code-block language="html" label="Dashboard page layout">{{ dashboardExample | safe }}</code-block>
+
+    <h3>Dashboard Modifiers</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-header-height</code></td><td><code>3rem</code>, <code>3.5rem</code>, <code>4rem</code></td><td>Override dashboard header height</td></tr>
+        <tr><td><code>data-nav-open</code></td><td>boolean</td><td>Show mobile nav overlay (toggle on small viewports)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Semantic Grid Identity</h2>
+    <p>Semantic elements automatically register to grid areas:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Grid Area</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&lt;header&gt;</code></td><td><code>body-header</code></td></tr>
+        <tr><td><code>&lt;nav&gt;</code></td><td><code>body-nav</code></td></tr>
+        <tr><td><code>&lt;main&gt;</code></td><td><code>body-main</code></td></tr>
+        <tr><td><code>&lt;aside&gt;</code></td><td><code>body-aside</code></td></tr>
+        <tr><td><code>&lt;footer&gt;</code></td><td><code>body-footer</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Content-Aware Adaptation</h2>
+    <p>Layouts automatically adapt when elements are missing:</p>
+    <ul>
+      <li><code>holy-grail</code> without <code>&lt;aside&gt;</code> becomes two-column</li>
+      <li><code>sidebar-left</code> without <code>&lt;nav&gt;</code> becomes single-column</li>
+      <li>All layouts collapse to stack on mobile (unless <code>data-layout-nowrap</code> is set)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Grid Area Override</h2>
+    <p>Use <code>data-layout-area</code> to explicitly assign elements to named areas:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>hero</code></td><td>Hero section on landing pages</td></tr>
+        <tr><td><code>banner</code></td><td>Banner or announcement area</td></tr>
+        <tr><td><code>sidebar</code></td><td>Generic sidebar area</td></tr>
+        <tr><td><code>content</code></td><td>Main content area</td></tr>
+        <tr><td><code>feature</code></td><td>Feature section</td></tr>
+        <tr><td><code>cta</code></td><td>Call-to-action section</td></tr>
+        <tr><td><code>toc</code></td><td>Table of contents</td></tr>
+      </tbody>
+    </table>
+
+    <layout-text>
+      <p>Named areas are used with the <code>landing</code> page template which defines grid rows for <code>hero</code>, <code>feature</code>, and <code>cta</code>. See the <a href="/docs/grid-identity/#named-areas">Grid Identity</a> page for details and the <a href="/docs/examples/demos/page-layout-landing.html">landing page demo</a>.</p>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Layout Utilities</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-layout-sticky</code></td><td>Make header, nav, or aside sticky</td></tr>
+        <tr><td><code>data-layout-bleed</code></td><td>Span all grid columns (full-width)</td></tr>
+        <tr><td><code>data-layout-nowrap</code></td><td>Prevent responsive stacking</td></tr>
+        <tr><td><code>data-layout-sidebar="collapsed"</code></td><td>Use collapsed sidebar width</td></tr>
+        <tr><td><code>data-layout-sidebar="hidden"</code></td><td>Hide the sidebar nav</td></tr>
+        <tr><td><code>data-layout-order="-1|1|99"</code></td><td>Reorder elements</td></tr>
+        <tr><td><code>data-layout-area</code></td><td>Explicit grid area assignment</td></tr>
+        <tr><td><code>data-container</code></td><td>Establish inline-size containment. Presets: <code>card</code>, <code>panel</code>, <code>media</code> (<a href="/docs/grid-identity/#quick-reference">details</a>)</td></tr>
+      </tbody>
+    </table>
+  </section>

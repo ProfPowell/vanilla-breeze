@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 const BASE_URL = process.env.BASE_URL;
-const DIST_DIR = 'dist';
+const DIST_DIR = process.env.DIST_DIR || 'dist';
 
 if (!BASE_URL || BASE_URL === '/') {
   console.log('No BASE_URL set or BASE_URL is "/", skipping path rewriting');

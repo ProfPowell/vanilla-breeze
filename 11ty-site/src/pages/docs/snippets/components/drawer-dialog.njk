@@ -1,0 +1,213 @@
+---
+layout: layouts/docs.njk
+title: "Drawer Dialog Snippet"
+description: "Slide-in panel using native dialog element. Side drawers for navigation, settings, or detail views."
+currentSection: examples
+currentPath: /docs/snippets/components/drawer-dialog/
+permalink: /docs/snippets/components/drawer-dialog/
+---
+
+{% set basicCode %}<button type="button" id="open-drawer">Open Drawer</button>
+
+<dialog id="drawer" class="drawer" data-position="end">
+  <layout-stack data-layout-gap="l">
+    <header>
+      <h2>Drawer Title</h2>
+      <button type="button" class="ghost" id="close-drawer" aria-label="Close">
+        &#x2715;
+      </button>
+    </header>
+
+    <div class="drawer-body">
+      <p>Drawer content slides in from the side.</p>
+    </div>
+
+    <footer>
+      <layout-cluster data-layout-justify="flex-end" data-layout-gap="m">
+        <button type="button" class="secondary" id="cancel-drawer">Cancel</button>
+        <button type="button" class="primary">Save</button>
+      </layout-cluster>
+    </footer>
+  </layout-stack>
+</dialog>
+
+<script>
+  const drawer = document.getElementById('drawer');
+  document.getElementById('open-drawer').onclick = () => drawer.showModal();
+  document.getElementById('close-drawer').onclick = () => drawer.close();
+  document.getElementById('cancel-drawer').onclick = () => drawer.close();
+<\/script>{% endset %}
+
+{% set stylesCode %}.drawer \{
+  padding: 0;
+  border: none;
+  max-width: min(90vw, 400px);
+  max-height: 100vh;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: var(--shadow-xl);
+\}
+
+/* Slide from right (end) */
+.drawer[data-position="end"] \{
+  margin-inline-start: auto;
+\}
+
+/* Slide from left (start) */
+.drawer[data-position="start"] \{
+  margin-inline-end: auto;
+\}
+
+.drawer::backdrop \{
+  background: var(--color-overlay-strong);
+  backdrop-filter: blur(4px);
+\}
+
+.drawer > layout-stack \{
+  padding: var(--size-l);
+  height: 100%;
+\}
+
+.drawer header \{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+\}
+
+.drawer header h2 \{
+  margin: 0;
+  font-size: var(--font-size-xl);
+\}
+
+.drawer-body \{
+  flex: 1;
+  overflow-y: auto;
+\}
+
+/* Animation */
+.drawer \{
+  transform: translateX(100%);
+  transition: transform var(--duration-normal, 300ms) var(--ease-out, ease-out),
+              display var(--duration-normal, 300ms) allow-discrete,
+              overlay var(--duration-normal, 300ms) allow-discrete;
+\}
+
+.drawer[data-position="start"] \{
+  transform: translateX(-100%);
+\}
+
+.drawer[open] \{
+  transform: translateX(0);
+\}
+
+@starting-style \{
+  .drawer[open] \{
+    transform: translateX(100%);
+  \}
+  .drawer[open][data-position="start"] \{
+    transform: translateX(-100%);
+  \}
+\}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) \{
+  .drawer \{
+    transition-duration: 0s;
+  \}
+\}{% endset %}
+
+{% set navCode %}<dialog id="nav-drawer" class="drawer" data-position="start">
+  <layout-stack data-layout-gap="l">
+    <header>
+      <h2>Navigation</h2>
+      <button type="button" class="ghost" aria-label="Close">&#x2715;</button>
+    </header>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </nav>
+  </layout-stack>
+</dialog>{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/docs/snippets/">Snippets</a></li>
+      <li><span aria-current="page">Drawer Dialog</span></li>
+    </ol>
+  </nav>
+
+  <h1>Drawer Dialog</h1>
+  <p class="lead">Slide-in panel using native <code>&lt;dialog&gt;</code> element. Side drawers for navigation, settings, or detail views.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>A drawer is a dialog that slides in from the side of the screen. It uses the native <code>&lt;dialog&gt;</code> element for built-in accessibility (focus trapping, escape key, backdrop). CSS handles the slide animation with <code>@starting-style</code> for entry transitions.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Native <code>&lt;dialog&gt;</code> with focus trapping and escape key</li>
+        <li>Slides from left (<code>start</code>) or right (<code>end</code>)</li>
+        <li>CSS animation with <code>@starting-style</code></li>
+        <li>Full-height panel with scrollable body</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Basic Drawer</h2>
+    <layout-text>
+      <p>A right-side drawer with header, scrollable body, and footer actions.</p>
+    </layout-text>
+
+    <code-block language="html" label="Basic drawer">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Drawer Styles</h2>
+    <layout-text>
+      <p>Add these styles to your project. The <code>data-position</code> attribute controls which side the drawer slides from.</p>
+    </layout-text>
+
+    <code-block language="css" label="Drawer styles">{{ stylesCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Navigation Drawer</h2>
+    <layout-text>
+      <p>A left-side drawer for mobile navigation. Use <code>data-position="start"</code> for conventional left-side navigation.</p>
+    </layout-text>
+
+    <code-block language="html" label="Navigation drawer">{{ navCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Position:</strong> Use <code>data-position="end"</code> for settings/details, <code>data-position="start"</code> for navigation</li>
+        <li><strong>Width:</strong> Adjust <code>max-width</code> in the CSS (default: <code>min(90vw, 400px)</code>)</li>
+        <li><strong>Scrolling:</strong> The <code>.drawer-body</code> scrolls independently with <code>overflow-y: auto</code></li>
+        <li><strong>Click outside:</strong> Add a click listener on the dialog for backdrop dismissal</li>
+        <li><strong>Animation:</strong> Uses <code>@starting-style</code> for entry animation. Respects <code>prefers-reduced-motion</code></li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/native/dialog/" class="section-card">
+        <h3>Dialog Element</h3>
+        <p>Native dialog documentation</p>
+      </a>
+      <a href="/docs/snippets/components/modal-dialog/" class="section-card">
+        <h3>Modal Dialog</h3>
+        <p>Centered modal patterns</p>
+      </a>
+    </layout-grid>
+  </section>

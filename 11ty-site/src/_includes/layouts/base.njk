@@ -1,0 +1,62 @@
+{#
+  Base layout — HTML shell shared by all pages.
+
+  Block points for child layouts:
+    extraHead    — additional <head> content (CSS links, etc.)
+    bodyAttrs    — attributes for <body> (not the tag itself)
+    pageHeader   — site header (overridable for landing pages)
+    pageContent  — main content area
+    pageFooter   — site footer
+    extraScripts — additional scripts before </body>
+
+  Variables set by child layouts or front matter:
+    dataPage      — value for data-page attribute on <html> (e.g., "docs", "lab")
+    currentSection — which header nav item is active
+    headerVariant  — "full" or "simple"
+    showSearch     — show search button (default: headerVariant == "full")
+    showTheme      — show theme toggle (default: true)
+    showMobileMenu — show mobile menu (default: headerVariant == "full")
+    includeDocs    — include docs.css
+    includeLabs    — include labs CSS
+#}
+<!DOCTYPE html>
+<html lang="en"{% if dataPage %} data-page="{{ dataPage }}"{% endif %}>
+<head>
+  {% include "partials/head.njk" %}
+  {% if includeDocs %}
+  <link rel="stylesheet" href="{{ site.docsCss }}">
+  {% endif %}
+  {% if includeLabs %}
+  <link rel="stylesheet" href="{{ site.labsCss }}">
+  {% endif %}
+  {% block extraHead %}{% endblock %}
+</head>
+<body>
+
+  {% block pageHeader %}
+  {% include "partials/header.njk" %}
+  {% endblock %}
+
+  {% block pageContent %}
+  <main>
+    {{ content | safe }}
+  </main>
+  {% endblock %}
+
+  {% block pageFooter %}
+  {% include "partials/footer.njk" %}
+  {% endblock %}
+
+  <shortcuts-wc></shortcuts-wc>
+
+  {# Main VB script — one tag replaces the 65-line import block #}
+  <script type="module" src="{{ site.js }}"></script>
+
+  {# Doc extras (code-block, browser-window) — dev: loaded by main.js or individually; prod: bundled #}
+  {% if site.docExtrasJs %}
+  <script type="module" src="{{ site.docExtrasJs }}"></script>
+  {% endif %}
+
+  {% block extraScripts %}{% endblock %}
+</body>
+</html>

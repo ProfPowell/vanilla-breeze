@@ -1,0 +1,338 @@
+---
+layout: layouts/pattern.njk
+title: "Registration Patterns"
+description: "Sign up form patterns with multi-step flows, social authentication, and password requirements. Accessible and progressively enhanced."
+patternName: "Registration"
+category: forms
+currentPath: /docs/patterns/forms/registration/
+permalink: /docs/patterns/forms/registration/
+---
+
+{% set simpleCode %}<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
+    <form action="/auth/register" method="POST" data-layout="stack" data-layout-gap="l">
+      <header data-layout="stack" data-layout-gap="s">
+        <h1>Create account</h1>
+        <p>Sign up to get started with your account.</p>
+      </header>
+
+      <form-field>
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" required
+               autocomplete="name" placeholder="John Doe"
+               aria-describedby="name-error"/>
+        <output id="name-error" class="error" for="name" aria-live="polite">
+          Please enter your name.
+        </output>
+      </form-field>
+
+      <form-field>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required
+               autocomplete="email" placeholder="you@example.com"
+               aria-describedby="email-error"/>
+        <output id="email-error" class="error" for="email" aria-live="polite">
+          Please enter a valid email address.
+        </output>
+      </form-field>
+
+      <form-field>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required
+               autocomplete="new-password" placeholder="Create a password"
+               minlength="8"
+               aria-describedby="password-hint"/>
+        <output id="password-hint" for="password" aria-live="polite">
+          Must be at least 8 characters.
+        </output>
+      </form-field>
+
+      <form-field>
+        <label for="password-confirm">Confirm password</label>
+        <input type="password" id="password-confirm" name="password_confirm" required
+               autocomplete="new-password" placeholder="Confirm your password"
+               aria-describedby="password-confirm-error"/>
+        <output id="password-confirm-error" class="error" for="password-confirm" aria-live="polite">
+          Passwords must match.
+        </output>
+      </form-field>
+
+      <fieldset class="minimal">
+        <label>
+          <input type="checkbox" name="terms" required/>
+          I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+        </label>
+      </fieldset>
+
+      <button type="submit">Create account</button>
+
+      <footer>
+        <p>Already have an account? <a href="/auth/login">Sign in</a></p>
+      </footer>
+    </form>
+  </layout-card>
+</body>{% endset %}
+
+{% set multiStepCode %}<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
+    <div data-layout="stack" data-layout-gap="l">
+      <header data-layout="stack" data-layout-gap="s">
+        <h1>Create account</h1>
+        <p>Step 1 of 3</p>
+      </header>
+
+      <!-- Step Indicator — uses nav.steps from VB core -->
+      <nav class="steps" aria-label="Registration progress">
+        <ol>
+          <li aria-current="step">Account</li>
+          <li>Profile</li>
+          <li>Preferences</li>
+        </ol>
+      </nav>
+
+      <!-- Step 1: Account Info -->
+      <form action="/auth/register/step1" method="POST" data-layout="stack" data-layout-gap="l">
+        <form-field>
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" required
+                 autocomplete="email" placeholder="you@example.com"
+                 aria-describedby="email-error"/>
+          <output id="email-error" class="error" for="email" aria-live="polite">
+            Please enter a valid email address.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required
+                 autocomplete="new-password" placeholder="Create a password"
+                 minlength="8"
+                 aria-describedby="password-hint"/>
+          <output id="password-hint" for="password" aria-live="polite">
+            Must be at least 8 characters.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="password-confirm">Confirm password</label>
+          <input type="password" id="password-confirm" name="password_confirm" required
+                 autocomplete="new-password" placeholder="Confirm your password"
+                 aria-describedby="password-confirm-error"/>
+          <output id="password-confirm-error" class="error" for="password-confirm" aria-live="polite">
+            Passwords must match.
+          </output>
+        </form-field>
+
+        <div data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
+          <button type="button" class="secondary" disabled>Back</button>
+          <button type="submit">Next</button>
+        </div>
+      </form>
+
+      <footer>
+        <p>Already have an account? <a href="/auth/login">Sign in</a></p>
+      </footer>
+    </div>
+  </layout-card>
+</body>{% endset %}
+
+{% set socialCode %}<body data-layout="cover" data-layout-min="100vh" data-layout-padding="l">
+  <layout-card data-max="narrow" data-padding="l" data-layout-principal>
+    <div data-layout="stack" data-layout-gap="l">
+      <header data-layout="stack" data-layout-gap="s">
+        <h1>Create account</h1>
+        <p>Choose your preferred sign-up method.</p>
+      </header>
+
+      <!-- Social Signup Buttons -->
+      <div data-layout="stack" data-layout-gap="s">
+        <button type="button" class="secondary">
+          <icon-wc name="brand-google"></icon-wc>
+          Sign up with Google
+        </button>
+        <button type="button" class="secondary">
+          <icon-wc name="brand-github"></icon-wc>
+          Sign up with GitHub
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <text-divider>or continue with email</text-divider>
+
+      <!-- Email/Password Form -->
+      <form action="/auth/register" method="POST" data-layout="stack" data-layout-gap="l">
+        <form-field>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required
+                 autocomplete="email" placeholder="you@example.com"
+                 aria-describedby="email-error"/>
+          <output id="email-error" class="error" for="email" aria-live="polite">
+            Please enter a valid email address.
+          </output>
+        </form-field>
+
+        <form-field>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required
+                 autocomplete="new-password" placeholder="Create a password"
+                 minlength="8"
+                 aria-describedby="password-hint"/>
+          <output id="password-hint" for="password" aria-live="polite">
+            Must be at least 8 characters.
+          </output>
+        </form-field>
+
+        <fieldset class="minimal">
+          <label>
+            <input type="checkbox" name="terms" required/>
+            I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+          </label>
+        </fieldset>
+
+        <button type="submit">Create account</button>
+      </form>
+
+      <footer>
+        <p>Already have an account? <a href="/auth/login">Sign in</a></p>
+      </footer>
+    </div>
+  </layout-card>
+</body>{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Registration forms are the gateway to your application. These patterns demonstrate best practices for collecting user information while maintaining a smooth, accessible experience using Vanilla Breeze's data-layout attributes and custom elements.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li><code>data-layout</code> attributes for layout without wrapper elements</li>
+        <li><code>&lt;form-field&gt;</code> with validation messages using <code>&lt;output&gt;</code></li>
+        <li><code>&lt;text-divider&gt;</code> for separating authentication methods</li>
+        <li>Password confirmation with matching validation</li>
+        <li>Terms of service checkbox with required validation</li>
+        <li>Proper <code>autocomplete</code> attributes for form autofill</li>
+        <li>Password toggle (auto-enhanced by JS)</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Simple Registration</h2>
+    <layout-text>
+      <p>A basic signup form using <code>data-layout="cover"</code> on the body for vertical centering, with <code>&lt;layout-card&gt;</code> constraining the width. Includes name, email, password with confirmation, and terms acceptance.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/registration-simple.html"
+      url="https://app.example.com/register"
+      title="Create Account"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="registration-simple.html" show-lines>{{ simpleCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Multi-Step Registration</h2>
+    <layout-text>
+      <p>A wizard-style registration flow with a visual step indicator. Uses the <code>nav.steps</code> CSS pattern for the progress indicator and breaks the form into manageable sections. Great for collecting more detailed information without overwhelming users.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/registration-multi-step.html"
+      url="https://app.example.com/register"
+      title="Create Account - Step 1"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="registration-multi-step.html" show-lines>{{ multiStepCode | safe }}</code-block>
+
+  </section>
+
+  <section>
+    <h2>With Social Signup</h2>
+    <layout-text>
+      <p>Registration form with social authentication buttons above traditional email/password fields. Uses the <code>&lt;text-divider&gt;</code> element to visually separate authentication methods. Reduces friction for users who prefer OAuth signup.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/patterns/demos/registration-social.html"
+      url="https://app.example.com/register"
+      title="Create Account - Social"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="registration-social.html" show-lines>{{ socialCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Form Field Features</h2>
+    <layout-text>
+      <p>All these patterns use <code>&lt;form-field&gt;</code> which provides:</p>
+      <ul>
+        <li><strong>Validation icons:</strong> Checkmark/X appear after user interaction (disable with <code>data-no-icon</code>)</li>
+        <li><strong>Password toggle:</strong> Show/hide button added automatically to password fields</li>
+        <li><strong>Error messages:</strong> Use <code>&lt;output class="error"&gt;</code> with <code>aria-live="polite"</code></li>
+        <li><strong>Hint messages:</strong> Use <code>&lt;output&gt;</code> without <code>class="error"</code> for helpful hints</li>
+        <li><strong>Required indicator:</strong> Asterisk added automatically to required field labels</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <h3>Password Requirements</h3>
+      <ul>
+        <li>Use <code>minlength="8"</code> (or your minimum) for basic validation</li>
+        <li>Provide clear requirements in a hint message using <code>&lt;output&gt;</code></li>
+        <li>Consider showing password strength indicator for better UX</li>
+        <li>Always include password confirmation for new accounts</li>
+      </ul>
+
+      <h3>Terms of Service</h3>
+      <ul>
+        <li>Make the terms checkbox <code>required</code> to prevent form submission</li>
+        <li>Link to both Terms of Service and Privacy Policy</li>
+        <li>Use clear language about what the user is agreeing to</li>
+      </ul>
+
+      <h3>Autocomplete Attributes</h3>
+      <ul>
+        <li><code>autocomplete="name"</code> for full name fields</li>
+        <li><code>autocomplete="email"</code> for email address</li>
+        <li><code>autocomplete="new-password"</code> for password creation (not <code>current-password</code>)</li>
+        <li>These help password managers and browsers autofill correctly</li>
+      </ul>
+
+      <h3>Accessibility</h3>
+      <ul>
+        <li>All inputs have associated labels</li>
+        <li>Validation messages use <code>aria-live="polite"</code> for screen reader announcements</li>
+        <li>Error messages are linked to inputs via <code>aria-describedby</code></li>
+        <li>Step indicators include <code>aria-current="step"</code> for the active step</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/forms/sign-in/" class="section-card">
+        <h3>Sign In</h3>
+        <p>Login forms with social auth and 2FA</p>
+      </a>
+      <a href="/docs/elements/custom-elements/form-field/" class="section-card">
+        <h3>Form Field</h3>
+        <p>Form field element with validation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/text-divider/" class="section-card">
+        <h3>Text Divider</h3>
+        <p>Horizontal divider with text</p>
+      </a>
+      <a href="/docs/elements/custom-elements/layout-card/" class="section-card">
+        <h3>Layout Card</h3>
+        <p>Card container element</p>
+      </a>
+    </layout-grid>
+  </section>

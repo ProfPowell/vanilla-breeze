@@ -1,0 +1,180 @@
+---
+layout: layouts/element.njk
+title: "html-include-wc"
+description: "Load remote HTML fragments with progressive enhancement. Fallback content shows until fetch completes."
+elementName: html-include-wc
+category: component
+currentPath: /docs/elements/web-components/html-include/
+permalink: /docs/elements/web-components/html-include/
+---
+
+{% set basicCode %}<html-include-wc src="/partials/header.html">
+  <p>Loading header...</p>
+</html-include-wc>{% endset %}
+
+{% set lazyCode %}<!-- Only loads when scrolled into view -->
+<html-include-wc src="/partials/comments.html" data-lazy>
+  <p>Comments loading...</p>
+</html-include-wc>{% endset %}
+
+{% set modeCode %}<!-- Replace (default) -->
+<html-include-wc src="/partials/content.html" data-mode="replace"></html-include-wc>
+
+<!-- Append to existing content -->
+<html-include-wc src="/partials/more.html" data-mode="append">
+  <p>Existing content stays.</p>
+</html-include-wc>
+
+<!-- Prepend before existing content -->
+<html-include-wc src="/partials/banner.html" data-mode="prepend">
+  <p>This moves down.</p>
+</html-include-wc>{% endset %}
+
+{% set eventsCode %}const include = document.querySelector('html-include-wc');
+
+include.addEventListener('html-include-load', (e) => \{
+  console.log('Loaded:', e.detail.src);
+\});
+
+include.addEventListener('html-include-error', (e) => \{
+  console.error('Failed:', e.detail.error);
+\});{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;html-include-wc&gt;</code> component fetches HTML from a URL and injects it. Any existing content serves as a fallback shown until the fetch completes (or if it fails).</p>
+
+    <code-block language="html" show-lines label="Basic include">{{ basicCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>URL</td>
+          <td>&mdash;</td>
+          <td>URL to fetch HTML from.</td>
+        </tr>
+        <tr>
+          <td><code>data-mode</code></td>
+          <td>string</td>
+          <td><code>replace</code></td>
+          <td>How to insert content: <code>replace</code>, <code>append</code>, or <code>prepend</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-lazy</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Defer loading until the element enters the viewport.</td>
+        </tr>
+        <tr>
+          <td><code>data-loading</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Auto-set while fetching. Can be styled with VB loading utilities.</td>
+        </tr>
+        <tr>
+          <td><code>data-loaded</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Auto-set after successful load.</td>
+        </tr>
+        <tr>
+          <td><code>data-error</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Auto-set if fetch fails.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lazy Loading</h2>
+    <p>Add <code>data-lazy</code> to defer the fetch until the element scrolls into view (with a 200px root margin).</p>
+
+    <code-block language="html" show-lines label="Lazy loading">{{ lazyCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Insert Modes</h2>
+    <p>Control how the fetched HTML is inserted with <code>data-mode</code>.</p>
+
+    <code-block language="html" show-lines label="Insert modes">{{ modeCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>html-include-load</code></td>
+          <td><code>{ src, html }</code></td>
+          <td>Fired after successful load.</td>
+        </tr>
+        <tr>
+          <td><code>html-include-error</code></td>
+          <td><code>{ src, error }</code></td>
+          <td>Fired if the fetch fails.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Event handling">{{ eventsCode | safe }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>reload()</code></td>
+          <td>Re-fetch content from the current <code>src</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, the fallback content (whatever HTML is inside the element) remains visible. The <code>src</code> URL is never fetched, so users see the fallback. This makes it safe to use for non-critical content.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Fallback content ensures content is always available.</li>
+      <li>Error state shows a message when content fails to load (unless fallback content exists).</li>
+      <li>Changing the <code>src</code> attribute triggers a re-fetch, enabling dynamic content updates.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> &mdash; Embeds an entire document (heavier, sandboxed)</li>
+    </ul>
+  </section>

@@ -1,0 +1,89 @@
+---
+layout: layouts/lab.njk
+title: "Grid Composer"
+description: "CSS Grid layout composer for placing semantic blocks and generating clean HTML + CSS."
+currentPath: /lab/experiments/grid-composer/
+permalink: /lab/experiments/grid-composer/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/lab/">Lab</a></li>
+      <li><a href="/lab/experiments/">Experiments</a></li>
+      <li><span aria-current="page">Grid Composer</span></li>
+    </ol>
+  </nav>
+
+  <vb-composer>
+    <header class="composer-toolbar">
+      <h1>Grid Composer</h1>
+      <nav aria-label="Block palette" class="palette">
+        <button type="button" data-action="add" data-tag="header">header</button>
+        <button type="button" data-action="add" data-tag="nav">nav</button>
+        <button type="button" data-action="add" data-tag="main">main</button>
+        <button type="button" data-action="add" data-tag="aside">aside</button>
+        <button type="button" data-action="add" data-tag="section">section</button>
+        <button type="button" data-action="add" data-tag="article">article</button>
+        <button type="button" data-action="add" data-tag="footer">footer</button>
+      </nav>
+      <label class="wf-toggle">
+        <input type="checkbox" data-action="wireframe" checked />
+        Wireframe
+      </label>
+      <label class="wf-toggle">
+        <input type="checkbox" data-action="show-columns" />
+        Columns
+      </label>
+      <fieldset class="grid-settings">
+        <legend class="visually-hidden">Grid settings</legend>
+        <label>Cols <input type="number" name="cols" value="12" min="1" max="24" /></label>
+        <label>Gap <input type="text" name="gap" value="0.75rem" size="6" /></label>
+        <label>Row <input type="text" name="row-size" value="3rem" size="5" /></label>
+      </fieldset>
+      <select data-action="load-template">
+        <option value="">Template...</option>
+        <option value="holy-grail">Holy Grail</option>
+        <option value="blog">Blog</option>
+        <option value="marketing">Marketing</option>
+      </select>
+    </header>
+
+    <section class="composer-body">
+      <vb-canvas data-wireframe>
+        <header style="--col:1;--cspan:12;--row:1;--rspan:2;"></header>
+        <nav style="--col:1;--cspan:2;--row:3;--rspan:6;"></nav>
+        <main style="--col:3;--cspan:10;--row:3;--rspan:6;"></main>
+        <footer style="--col:1;--cspan:12;--row:9;--rspan:2;"></footer>
+      </vb-canvas>
+
+      <vb-inspector aria-label="Block inspector">
+        <h2>Inspector</h2>
+        <p data-placeholder>Select a block to edit its properties.</p>
+      </vb-inspector>
+    </section>
+
+    <section class="composer-output">
+      <h2>Output</h2>
+      <fieldset class="export-modes">
+        <legend>Export mode</legend>
+        <label><input type="radio" name="export-mode" value="vars" checked /> Placement vars</label>
+        <label><input type="radio" name="export-mode" value="areas" /> Named areas</label>
+      </fieldset>
+      <section class="code-panels">
+        <section>
+          <h3>HTML</h3>
+          <pre><code id="out-html"></code></pre>
+        </section>
+        <section>
+          <h3>CSS</h3>
+          <pre><code id="out-css"></code></pre>
+        </section>
+      </section>
+    </section>
+
+    <div aria-live="polite" class="visually-hidden"></div>
+  </vb-composer>
+
+  <script>
+    import '/src/lib/composer/composer.js';
+  </script>
