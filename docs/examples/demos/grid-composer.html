@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Grid Composer - Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-l, 1.5rem);
+    }
+
+    /* --- Composer app shell layout --- */
+
+    vb-composer {
+      display: block;
+      max-inline-size: 1200px;
+      margin-inline: auto;
+    }
+
+    .composer-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--size-s, 0.5rem);
+      padding-block-end: var(--size-m, 1rem);
+      border-block-end: 1px solid var(--color-border, #ddd);
+      margin-block-end: var(--size-m, 1rem);
+    }
+
+    .composer-toolbar h1 {
+      font-size: var(--font-size-l, 1.25rem);
+      margin: 0;
+      margin-inline-end: auto;
+    }
+
+    .palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-2xs, 0.25rem);
+    }
+
+    .palette button {
+      font-size: var(--font-size-s, 0.8125rem);
+      padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.375rem);
+      border-radius: var(--radius-s, 4px);
+      border: 1px solid var(--color-border, #ccc);
+      background: var(--color-surface, #fff);
+      cursor: pointer;
+      font-family: ui-monospace, monospace;
+    }
+
+    .palette button:hover {
+      background: var(--color-primary, oklch(55% 0.22 260));
+      color: white;
+      border-color: transparent;
+    }
+
+    .wf-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs, 0.25rem);
+      cursor: pointer;
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    /* --- Body: canvas + inspector side by side --- */
+
+    .composer-body {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: var(--size-m, 1rem);
+      margin-block-end: var(--size-m, 1rem);
+    }
+
+    @media (max-width: 700px) {
+      .composer-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- Canvas (content layer) --- */
+
+    vb-canvas {
+      --cols: 12;
+      --gap: 0.75rem;
+      --row-size: 3rem;
+      --max-w: none;
+
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      grid-auto-rows: var(--row-size);
+      gap: var(--gap);
+      padding: var(--gap);
+      border: 1px solid var(--color-border, #ddd);
+      border-radius: var(--radius-m, 8px);
+      background: var(--color-surface, #fff);
+      position: relative;
+      min-block-size: 30rem;
+    }
+
+    vb-canvas > :is(header, main, aside, footer, section, article, nav, figure, form) {
+      grid-column: var(--col, 1) / span var(--cspan, 12);
+      grid-row: var(--row, auto) / span var(--rspan, 2);
+    }
+
+    [data-subgrid] {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-auto-rows: var(--row-size);
+      gap: var(--gap);
+    }
+
+    @supports not (grid-template-columns: subgrid) {
+      [data-subgrid] {
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      }
+    }
+
+    /* --- Editor layer (wireframe mode) --- */
+
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form) {
+      outline: 2px dashed currentColor;
+      border-radius: var(--radius-s, 4px);
+      min-block-size: calc(var(--row-size) * 2);
+      position: relative;
+      user-select: none;
+      cursor: grab;
+    }
+
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form)[data-selected] {
+      outline-style: solid;
+      outline-color: var(--color-primary, oklch(55% 0.22 260));
+      outline-width: 3px;
+    }
+
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form):focus-visible {
+      outline-color: var(--color-primary, oklch(55% 0.22 260));
+      outline-offset: 2px;
+    }
+
+    vb-canvas[data-wireframe] [data-vb-label]::before {
+      content: attr(data-vb-label);
+      position: absolute;
+      inset-block-start: 0.25rem;
+      inset-inline-start: 0.25rem;
+      font: 0.75rem/1.2 system-ui, sans-serif;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      background: color-mix(in oklch, currentColor 12%, transparent);
+      pointer-events: none;
+    }
+
+    vb-canvas[data-wireframe]::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          color-mix(in oklch, currentColor 6%, transparent) 0 1px,
+          transparent 1px calc(100% / var(--cols))
+        );
+      z-index: -1;
+    }
+
+    vb-canvas:not([data-wireframe]) > :is(header, main, aside, footer, section, article, nav, figure, form) {
+      background: color-mix(in oklch, currentColor 5%, transparent);
+      border-radius: var(--radius-s, 4px);
+    }
+
+    /* --- Inspector --- */
+
+    vb-inspector {
+      display: block;
+      padding: var(--size-s, 0.5rem);
+      border: 1px solid var(--color-border, #ddd);
+      border-radius: var(--radius-m, 8px);
+      background: var(--color-surface, #fff);
+      align-self: start;
+    }
+
+    vb-inspector h2 {
+      font-size: var(--font-size-m, 1rem);
+      margin-block-end: var(--size-s, 0.5rem);
+    }
+
+    vb-inspector [data-placeholder] {
+      color: var(--color-text-muted, #888);
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    vb-inspector form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xs, 0.375rem);
+    }
+
+    vb-inspector label {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-3xs, 0.125rem);
+      font-size: var(--font-size-s, 0.8125rem);
+      font-weight: 500;
+    }
+
+    vb-inspector .checkbox-label {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--size-2xs, 0.25rem);
+    }
+
+    vb-inspector select,
+    vb-inspector input[type="number"] {
+      padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.375rem);
+      border: 1px solid var(--color-border, #ccc);
+      border-radius: var(--radius-s, 4px);
+      font-family: ui-monospace, monospace;
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    vb-inspector [data-action="delete"] {
+      margin-block-start: var(--size-xs, 0.375rem);
+      padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.375rem);
+      background: var(--color-danger, oklch(55% 0.2 25));
+      color: white;
+      border: 0;
+      border-radius: var(--radius-s, 4px);
+      cursor: pointer;
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    /* --- Output panel --- */
+
+    .composer-output {
+      border: 1px solid var(--color-border, #ddd);
+      border-radius: var(--radius-m, 8px);
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface, #fff);
+    }
+
+    .composer-output h2 {
+      font-size: var(--font-size-m, 1rem);
+      margin-block-end: var(--size-s, 0.5rem);
+    }
+
+    .export-modes {
+      display: flex;
+      gap: var(--size-m, 1rem);
+      align-items: center;
+      border: 0;
+      padding: 0;
+      margin-block-end: var(--size-s, 0.5rem);
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    .export-modes legend {
+      font-weight: 600;
+      margin-inline-end: var(--size-s, 0.5rem);
+    }
+
+    .export-modes label {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs, 0.25rem);
+      cursor: pointer;
+    }
+
+    .code-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-m, 1rem);
+    }
+
+    @media (max-width: 700px) {
+      .code-panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .code-panels h3 {
+      font-size: var(--font-size-s, 0.8125rem);
+      margin-block-end: var(--size-2xs, 0.25rem);
+    }
+
+    .code-panels pre {
+      background: var(--color-background, #f5f5f5);
+      padding: var(--size-s, 0.5rem);
+      border-radius: var(--radius-s, 4px);
+      overflow-x: auto;
+      font-size: var(--font-size-xs, 0.75rem);
+      line-height: 1.5;
+      max-block-size: 20rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <vb-composer>
+    <header class="composer-toolbar">
+      <h1>Grid Composer</h1>
+      <nav aria-label="Block palette" class="palette">
+        <button type="button" data-action="add" data-tag="header">header</button>
+        <button type="button" data-action="add" data-tag="nav">nav</button>
+        <button type="button" data-action="add" data-tag="main">main</button>
+        <button type="button" data-action="add" data-tag="aside">aside</button>
+        <button type="button" data-action="add" data-tag="section">section</button>
+        <button type="button" data-action="add" data-tag="article">article</button>
+        <button type="button" data-action="add" data-tag="footer">footer</button>
+      </nav>
+      <label class="wf-toggle">
+        <input type="checkbox" data-action="wireframe" checked />
+        Wireframe
+      </label>
+    </header>
+
+    <section class="composer-body">
+      <vb-canvas data-wireframe>
+        <header style="--col:1;--cspan:12;--row:1;--rspan:2;"></header>
+        <nav style="--col:1;--cspan:2;--row:3;--rspan:6;"></nav>
+        <main style="--col:3;--cspan:10;--row:3;--rspan:6;"></main>
+        <footer style="--col:1;--cspan:12;--row:9;--rspan:2;"></footer>
+      </vb-canvas>
+
+      <vb-inspector aria-label="Block inspector">
+        <h2>Inspector</h2>
+        <p data-placeholder>Select a block to edit its properties.</p>
+      </vb-inspector>
+    </section>
+
+    <section class="composer-output">
+      <h2>Output</h2>
+      <fieldset class="export-modes">
+        <legend>Export mode</legend>
+        <label><input type="radio" name="export-mode" value="vars" checked /> Placement vars</label>
+        <label><input type="radio" name="export-mode" value="areas" /> Named areas</label>
+      </fieldset>
+      <section class="code-panels">
+        <section>
+          <h3>HTML</h3>
+          <pre><code id="out-html"></code></pre>
+        </section>
+        <section>
+          <h3>CSS</h3>
+          <pre><code id="out-css"></code></pre>
+        </section>
+      </section>
+    </section>
+
+    <div aria-live="polite" class="visually-hidden"></div>
+  </vb-composer>
+
+  <script type="module" src="/src/lib/composer/composer.js"></script>
+</body>
+</html>
