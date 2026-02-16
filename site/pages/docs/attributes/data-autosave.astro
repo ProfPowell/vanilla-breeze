@@ -1,0 +1,262 @@
+---
+/**
+ * data-autosave Attribute Documentation
+ *
+ * Automatically save form drafts to localStorage as the user types.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const basicCode = `<form data-autosave="contact-form">
+  <input name="name" placeholder="Name">
+  <textarea name="message" placeholder="Message"></textarea>
+  <button type="submit">Send</button>
+</form>`;
+
+const multiFormCode = `<!-- Each form needs a unique key -->
+<form data-autosave="signup-form">
+  <input name="email" type="email" placeholder="Email">
+  <input name="username" placeholder="Username">
+  <button type="submit">Sign Up</button>
+</form>
+
+<form data-autosave="feedback-form">
+  <textarea name="feedback" placeholder="Your feedback"></textarea>
+  <button type="submit">Submit</button>
+</form>`;
+
+const checkboxRadioCode = `<form data-autosave="preferences">
+  <fieldset>
+    <legend>Notifications</legend>
+    <label>
+      <input type="checkbox" name="email-notify" value="yes">
+      Email notifications
+    </label>
+    <label>
+      <input type="checkbox" name="sms-notify" value="yes">
+      SMS notifications
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Theme</legend>
+    <label>
+      <input type="radio" name="theme" value="light"> Light
+    </label>
+    <label>
+      <input type="radio" name="theme" value="dark"> Dark
+    </label>
+  </fieldset>
+
+  <button type="submit">Save</button>
+</form>`;
+
+const withValidationCode = `<form data-autosave="registration" class="stacked">
+  <form-field>
+    <label for="reg-email">Email</label>
+    <input type="email" id="reg-email" name="email" required>
+  </form-field>
+
+  <form-field>
+    <label for="reg-name">Full Name</label>
+    <input type="text" id="reg-name" name="fullname" required>
+    <small slot="help">As it appears on your ID.</small>
+  </form-field>
+
+  <form-field>
+    <label for="reg-bio">Bio</label>
+    <textarea id="reg-bio" name="bio" data-count="200" data-grow></textarea>
+  </form-field>
+
+  <button type="submit">Register</button>
+</form>`;
+
+const storageCode = `// Storage key format
+localStorage.getItem('vb-autosave:contact-form');
+
+// Stored value is a JSON object of field name/value pairs
+// \{
+//   "name": "Jane",
+//   "message": "Hello...",
+//   "_ts": 1700000000000
+// \}`;
+
+const clearCode = `// Drafts are cleared automatically on submit and reset
+form.addEventListener('submit', () => \{
+  // autosave data is cleared before the submit handler runs
+\});
+
+// You can also clear manually
+localStorage.removeItem('vb-autosave:contact-form');`;
+
+const stylingCode = `/* The toast notification uses toast-wc if available */
+/* Customize the restore notification via toast-wc styles */
+toast-wc::part(toast) \{
+  --toast-bg: var(--color-surface-raised);
+  --toast-color: var(--color-text);
+\}`;
+---
+
+<AttributeLayout
+  title="data-autosave"
+  description="Automatically save form drafts to localStorage as the user types. Restores on page reload with a toast notification. Clears on submit or reset."
+  attributeName="data-autosave"
+  category="form-behavior"
+  currentPath="/docs/attributes/data-autosave/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-autosave</code> attribute automatically persists form data to <code>localStorage</code> as the user types. If the page is accidentally closed or refreshed, the draft is restored on the next visit with a toast notification. The draft is cleared when the form is submitted or reset.</p>
+
+    <browser-window
+      src="/docs/examples/demos/autosave-basic.html"
+      url="https://vanilla-breeze.dev/autosave"
+      title="Form Autosave"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic autosave form">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-autosave</code> to any <code>&lt;form&gt;</code> element with a unique key as the value. The init script:</p>
+    <ol>
+      <li>Attaches delegated <code>input</code> and <code>change</code> event listeners on the form</li>
+      <li>On every field change, debounces for 500ms then serializes all named fields to a JSON object</li>
+      <li>Saves the object to <code>localStorage</code> with the key <code>vb-autosave:{"{\u200B"}<em>key</em>{"}\u200B"}</code> and a timestamp</li>
+      <li>On page load, checks for a non-expired draft (24-hour expiry)</li>
+      <li>If a draft exists, restores field values and fires <code>input</code> events so other enhancements update</li>
+      <li>Shows a "Draft restored" toast notification via <code>toast-wc</code> if available</li>
+      <li>Sets <code>data-autosave-init</code> to prevent double-binding</li>
+    </ol>
+    <p>Password fields (<code>type="password"</code>) and file inputs (<code>type="file"</code>) are always skipped &mdash; sensitive data and file references are never stored.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-autosave</code></td>
+          <td>string (required)</td>
+          <td>A unique storage key for this form. Used as part of the <code>localStorage</code> key: <code>vb-autosave:{"{\u200B"}<em>key</em>{"}\u200B"}</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-autosave-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Storage Format</h2>
+    <p>The draft is stored as a JSON object in <code>localStorage</code>. Each named field in the form becomes a key-value pair. A <code>_ts</code> timestamp is included for expiry checking.</p>
+
+    <code-block language="javascript" show-lines label="Storage key and format">{storageCode}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Detail</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Key format</td>
+          <td><code>vb-autosave:{"{\u200B"}<em>key</em>{"}\u200B"}</code></td>
+        </tr>
+        <tr>
+          <td>Debounce</td>
+          <td>500ms after last input</td>
+        </tr>
+        <tr>
+          <td>Expiry</td>
+          <td>24 hours from last save</td>
+        </tr>
+        <tr>
+          <td>Skipped types</td>
+          <td><code>password</code>, <code>file</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Multiple Forms</h2>
+    <p>Each form on a page must have a unique <code>data-autosave</code> key. The key is used directly in the <code>localStorage</code> key, so collisions between forms on different pages are avoided by using descriptive names.</p>
+
+    <code-block language="html" show-lines label="Multiple forms with unique keys">{multiFormCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Checkboxes and Radios</h2>
+    <p>Checkbox and radio inputs are handled correctly during both save and restore:</p>
+    <ul>
+      <li><strong>Checkboxes</strong> &mdash; stored as <code>"on"</code> when checked, <code>""</code> when unchecked. On restore, the <code>checked</code> property is set accordingly.</li>
+      <li><strong>Radio buttons</strong> &mdash; only the checked radio's value is stored for the group name. On restore, the matching radio is checked.</li>
+    </ul>
+
+    <code-block language="html" show-lines label="Checkboxes and radios with autosave">{checkboxRadioCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Other Enhancements</h2>
+    <p>When a draft is restored, <code>input</code> events are fired on each restored field. This ensures other Vanilla Breeze enhancements that listen for input events &mdash; such as <code>data-count</code>, <code>data-grow</code>, and <code>data-show-when</code> &mdash; update correctly.</p>
+
+    <code-block language="html" show-lines label="Autosave with other form enhancements">{withValidationCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Toast Notification</h2>
+    <p>When a draft is restored, a toast notification is displayed if <code>toast-wc</code> is available on the page. The toast uses the following configuration:</p>
+    <ul>
+      <li><strong>Message:</strong> "Draft restored"</li>
+      <li><strong>Variant:</strong> <code>info</code></li>
+      <li><strong>Duration:</strong> 3000ms (auto-dismisses)</li>
+    </ul>
+    <p>If <code>toast-wc</code> is not present, the draft is still restored silently without a notification.</p>
+  </section>
+
+  <section>
+    <h2>Clear Behavior</h2>
+    <p>The autosave draft is automatically cleared in two scenarios:</p>
+    <ul>
+      <li><strong>Form submit</strong> &mdash; the draft is removed from <code>localStorage</code> when the form is submitted</li>
+      <li><strong>Form reset</strong> &mdash; the draft is removed when the form is reset via a reset button or <code>form.reset()</code></li>
+    </ul>
+
+    <code-block language="javascript" show-lines label="Draft clearing behavior">{clearCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The autosave attribute itself has no visual output. The only visible indicator is the toast notification on restore, which inherits styles from <code>toast-wc</code>.</p>
+
+    <code-block language="css" show-lines label="Toast notification styling">{stylingCode}</code-block>
+
+    <p>All behavior is gated on <code>data-autosave-init</code>. Without JavaScript, the form works normally &mdash; data simply is not persisted to <code>localStorage</code>.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The "Draft restored" toast notification is announced by screen readers via <code>toast-wc</code>'s accessible live region</li>
+      <li>Restored form state preserves the user's previous work, reducing frustration from accidental navigation</li>
+      <li>No visual layout changes occur during restore &mdash; fields are populated in place</li>
+      <li>Firing <code>input</code> events on restore ensures dependent enhancements (character counts, conditional fields) are in the correct state for assistive technology</li>
+      <li>Password and file fields are excluded from storage for security &mdash; users are not given a false sense of persistence for sensitive data</li>
+      <li>Without JavaScript, the form works as a standard HTML form &mdash; progressive enhancement</li>
+    </ul>
+  </section>
+
+</AttributeLayout>

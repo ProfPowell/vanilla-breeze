@@ -1,0 +1,234 @@
+---
+/**
+ * data-color Attribute Documentation
+ *
+ * Styled color swatch enhancement for color inputs via data attributes.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const basicCode = `<form-field>\n  <label for="brand">Brand Color</label>\n  <input type="color" id="brand" value="#6366f1" data-color>\n</form-field>`;
+
+const defaultsCode = `<form-field>\n  <label for="bg">Background</label>\n  <input type="color" id="bg" value="#ffffff" data-color>\n</form-field>\n\n<form-field>\n  <label for="text">Text Color</label>\n  <input type="color" id="text" value="#1a1a2e" data-color>\n</form-field>`;
+
+const formCode = `<form class="stacked">
+  <form-field>
+    <label for="primary">Primary</label>
+    <input type="color" id="primary" value="#6366f1" data-color>
+  </form-field>
+  <form-field>
+    <label for="secondary">Secondary</label>
+    <input type="color" id="secondary" value="#ec4899" data-color>
+  </form-field>
+  <form-field>
+    <label for="accent">Accent</label>
+    <input type="color" id="accent" value="#14b8a6" data-color>
+  </form-field>
+  <button type="submit">Save palette</button>
+</form>`;
+
+const eventCode = `const input = document.querySelector('[data-color]');
+
+input.addEventListener('input', (e) => \{
+  console.log('Color changing:', e.target.value);
+\});
+
+input.addEventListener('change', (e) => \{
+  console.log('Color selected:', e.target.value);
+\});`;
+
+const stylingCode = `/* Color display button */
+.color-display \{
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-xs) var(--size-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  cursor: pointer;
+\}
+
+/* Color swatch circle */
+.color-swatch \{
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--color-border);
+\}
+
+/* Hex code text */
+.color-hex \{
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+\}`;
+
+const dynamicCode = `// Dynamically added color inputs are auto-enhanced via MutationObserver
+const input = document.createElement('input');
+input.type = 'color';
+input.value = '#ff6600';
+input.dataset.color = '';
+document.body.appendChild(input);
+// input is enhanced automatically — no manual init needed`;
+---
+
+<AttributeLayout
+  title="data-color"
+  description="Display a styled color swatch with hex code for color inputs. Clicking opens the native color picker while maintaining form value."
+  attributeName="data-color"
+  category="form-controls"
+  currentPath="/docs/attributes/data-color/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-color</code> attribute replaces the browser's default color input with a styled display showing a circular color swatch and the hex code. Clicking the display opens the native color picker. The underlying input remains functional for form submission.</p>
+
+    <browser-window
+      src="/docs/examples/demos/color-basic.html"
+      url="https://vanilla-breeze.dev/color"
+      title="Color Picker"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic color input">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-color</code> to any <code>&lt;input type="color"&gt;</code>. The init script:</p>
+    <ol>
+      <li>Wraps the input in a <code>.color-wrapper</code> container</li>
+      <li>Creates a <code>.color-display</code> button containing a <code>.color-swatch</code> span and a <code>.color-hex</code> span</li>
+      <li>Sets the swatch background color to the current input value</li>
+      <li>Displays the hex code as text (e.g., <code>#6366f1</code>)</li>
+      <li>Hides the native color input visually while keeping it in the DOM</li>
+      <li>Adds a click handler to the display button that opens the native picker</li>
+      <li>Listens for <code>input</code> events to update the swatch and hex text in real time</li>
+      <li>Sets <code>data-color-init</code> to prevent double-binding</li>
+    </ol>
+    <p>The native color input remains in the DOM and participates in form submission. The display is a visual layer on top.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-color</code></td>
+          <td>boolean</td>
+          <td>Enables the color swatch enhancement on a color input.</td>
+        </tr>
+        <tr>
+          <td><code>data-color-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>Standard HTML attribute. The hex color value (e.g., <code>#6366f1</code>). Sets the initial swatch color.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>DOM Structure</h2>
+    <p>The init script transforms the input into a richer structure. Here is what the enhanced DOM looks like:</p>
+
+    <code-block language="html" show-lines label="Generated DOM structure">{`<div class="color-wrapper">\n  <input type="color" value="#6366f1" data-color data-color-init>\n  <button type="button" class="color-display">\n    <span class="color-swatch" style="background: #6366f1;"></span>\n    <span class="color-hex">#6366f1</span>\n  </button>\n</div>`}</code-block>
+
+    <p>The <code>.color-display</code> button acts as the visual trigger. Clicking it programmatically opens the hidden native color input's picker dialog.</p>
+  </section>
+
+  <section>
+    <h2>Multiple Colors</h2>
+    <p>Use multiple <code>data-color</code> inputs for theme or palette builders. Each operates independently.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <form-field>
+          <label for="bg-demo">Background</label>
+          <input type="color" id="bg-demo" value="#ffffff" data-color>
+        </form-field>
+        <form-field>
+          <label for="text-demo">Text Color</label>
+          <input type="color" id="text-demo" value="#1a1a2e" data-color>
+        </form-field>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Multiple color inputs">{defaultsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Color Palette Form</h2>
+    <p>Combine multiple color inputs in a form for a complete palette builder. Each input submits its hex value with the form.</p>
+
+    <code-block language="html" show-lines label="Palette builder form">{formCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Live Updates</h2>
+    <p>As the user drags through the native color picker, the swatch background and hex text update in real time via the <code>input</code> event. The <code>change</code> event fires when the picker closes with a final selection.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Target</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>input</code></td>
+          <td>The <code>&lt;input&gt;</code></td>
+          <td>Fired continuously as the user drags through the picker. Swatch and hex text update in real time.</td>
+        </tr>
+        <tr>
+          <td><code>change</code></td>
+          <td>The <code>&lt;input&gt;</code></td>
+          <td>Fired once when the picker closes with a final color selection.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening for color changes">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The display button, swatch, and hex text are styled via CSS classes. All styles are gated on <code>[data-color-init]</code> so the native color input renders normally without JavaScript.</p>
+
+    <code-block language="css" show-lines label="Color display CSS">{stylingCode}</code-block>
+
+    <p>The swatch uses <code>border-radius: var(--radius-round)</code> for a circular shape. The hex text uses the monospace font stack for consistent character widths.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added color inputs">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The native <code>&lt;input type="color"&gt;</code> remains in the DOM, preserving form submission and validation</li>
+      <li>The display button is focusable and activates the native picker on click or keyboard activation</li>
+      <li>The hex code is visible text, readable by screen readers alongside the label</li>
+      <li>Color value changes are reflected immediately in both the visual swatch and the text hex code</li>
+      <li>Works with <code>&lt;form-field&gt;</code> for label association and validation feedback</li>
+      <li>Without JavaScript, the native color input renders normally (progressive enhancement)</li>
+    </ul>
+  </section>
+
+</AttributeLayout>

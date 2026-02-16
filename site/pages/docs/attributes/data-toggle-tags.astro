@@ -1,0 +1,230 @@
+---
+/**
+ * data-toggle-tags Attribute Documentation
+ *
+ * Selectable pill chips for tag-based filtering and multi-select via data attributes.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const basicCode = `<fieldset data-toggle-tags>\n  <legend>Topics</legend>\n  <label><input type="checkbox" name="topics" value="ai"> AI / ML</label>\n  <label><input type="checkbox" name="topics" value="web"> Web Dev</label>\n  <label><input type="checkbox" name="topics" value="mobile"> Mobile</label>\n</fieldset>`;
+
+const maxCode = `<fieldset data-toggle-tags data-max="3">\n  <legend>Pick up to 3</legend>\n  <label><input type="checkbox" name="skills" value="js"> JavaScript</label>\n  <label><input type="checkbox" name="skills" value="py"> Python</label>\n  <label><input type="checkbox" name="skills" value="go"> Go</label>\n  <label><input type="checkbox" name="skills" value="rust"> Rust</label>\n  <label><input type="checkbox" name="skills" value="ts"> TypeScript</label>\n  <label><input type="checkbox" name="skills" value="ruby"> Ruby</label>\n</fieldset>`;
+
+const filterCode = `<form>
+  <fieldset data-toggle-tags>
+    <legend>Filter by category</legend>
+    <label><input type="checkbox" name="cat" value="design"> Design</label>
+    <label><input type="checkbox" name="cat" value="dev"> Development</label>
+    <label><input type="checkbox" name="cat" value="marketing"> Marketing</label>
+    <label><input type="checkbox" name="cat" value="product"> Product</label>
+  </fieldset>
+  <button type="submit">Apply filters</button>
+</form>`;
+
+const precheckedCode = `<fieldset data-toggle-tags>\n  <legend>Interests</legend>\n  <label><input type="checkbox" name="interest" value="music" checked> Music</label>\n  <label><input type="checkbox" name="interest" value="film"> Film</label>\n  <label><input type="checkbox" name="interest" value="books" checked> Books</label>\n  <label><input type="checkbox" name="interest" value="sports"> Sports</label>\n</fieldset>`;
+
+const stylingCode = `/* Tags use CSS :has() — no JS needed for styling */
+[data-toggle-tags] label \{
+  display: inline-flex;
+  align-items: center;
+  padding: var(--size-2xs) var(--size-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+\}
+
+/* Checked state via :has() */
+[data-toggle-tags] label:has(:checked) \{
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+\}
+
+/* Hide the checkbox visually */
+[data-toggle-tags] input[type="checkbox"] \{
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+\}
+
+/* Disabled state when max reached */
+[data-toggle-tags] label:has(:disabled:not(:checked)) \{
+  opacity: 0.5;
+  cursor: not-allowed;
+\}`;
+
+const dynamicCode = `// Dynamically added toggle-tags fieldsets are auto-enhanced via MutationObserver
+const fieldset = document.createElement('fieldset');
+fieldset.dataset.toggleTags = '';
+fieldset.dataset.max = '2';
+fieldset.innerHTML = \`
+  <legend>Pick up to 2</legend>
+  <label><input type="checkbox" name="opt" value="a"> Option A</label>
+  <label><input type="checkbox" name="opt" value="b"> Option B</label>
+  <label><input type="checkbox" name="opt" value="c"> Option C</label>
+\`;
+document.body.appendChild(fieldset);
+// fieldset is ready — no manual init needed`;
+---
+
+<AttributeLayout
+  title="data-toggle-tags"
+  description="Style checkboxes as selectable pill chips for tag-based filtering and multi-select. Pure CSS with optional JavaScript for max selection limits."
+  attributeName="data-toggle-tags"
+  category="form-controls"
+  currentPath="/docs/attributes/data-toggle-tags/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-toggle-tags</code> attribute transforms a fieldset of checkboxes into selectable pill-shaped tags. The styling is pure CSS via <code>:has(:checked)</code> &mdash; JavaScript is only loaded when you need a max selection limit via <code>data-max</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/toggle-tags-basic.html"
+      url="https://vanilla-breeze.dev/toggle-tags"
+      title="Toggle Tags"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic toggle tags">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-toggle-tags</code> to a <code>&lt;fieldset&gt;</code> containing checkbox inputs inside labels. The mechanism is primarily CSS:</p>
+    <ol>
+      <li>Each <code>&lt;label&gt;</code> is styled as a pill chip with padding, border, and rounded corners</li>
+      <li>The checkbox inside each label is visually hidden with <code>opacity: 0</code></li>
+      <li>CSS <code>:has(:checked)</code> detects when a checkbox is selected and applies the active style</li>
+      <li>Clicking the label toggles the hidden checkbox, which toggles the visual state</li>
+      <li>No JavaScript is needed for the basic toggle behavior</li>
+    </ol>
+    <p>When <code>data-max</code> is set, a small JavaScript module is loaded. It listens for checkbox changes and disables unchecked checkboxes once the limit is reached, re-enabling them when selections are removed.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-toggle-tags</code></td>
+          <td>boolean</td>
+          <td>Placed on a <code>&lt;fieldset&gt;</code>. Enables pill chip styling for child checkbox labels.</td>
+        </tr>
+        <tr>
+          <td><code>data-max</code></td>
+          <td>number</td>
+          <td>Maximum number of selections allowed. When reached, unchecked checkboxes are disabled. Requires JavaScript.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Basic Tags</h2>
+    <p>Without <code>data-max</code>, toggle tags are entirely CSS-driven. Users can select and deselect any number of tags freely.</p>
+
+    <div class="example">
+      <fieldset data-toggle-tags>
+        <legend>Topics</legend>
+        <label><input type="checkbox" name="topics-demo" value="ai"> AI / ML</label>
+        <label><input type="checkbox" name="topics-demo" value="web"> Web Dev</label>
+        <label><input type="checkbox" name="topics-demo" value="mobile"> Mobile</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Basic toggle tags">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Max Selection Limit</h2>
+    <p>Add <code>data-max</code> to cap the number of selections. When the limit is reached, remaining unchecked tags are disabled and visually muted. Deselecting a tag re-enables the others.</p>
+
+    <div class="example">
+      <fieldset data-toggle-tags data-max="3">
+        <legend>Pick up to 3</legend>
+        <label><input type="checkbox" name="skills-demo" value="js"> JavaScript</label>
+        <label><input type="checkbox" name="skills-demo" value="py"> Python</label>
+        <label><input type="checkbox" name="skills-demo" value="go"> Go</label>
+        <label><input type="checkbox" name="skills-demo" value="rust"> Rust</label>
+        <label><input type="checkbox" name="skills-demo" value="ts"> TypeScript</label>
+        <label><input type="checkbox" name="skills-demo" value="ruby"> Ruby</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Max selection limit">{maxCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Pre-checked Tags</h2>
+    <p>Add the native <code>checked</code> attribute to pre-select tags on load. This works with or without <code>data-max</code>.</p>
+
+    <div class="example">
+      <fieldset data-toggle-tags>
+        <legend>Interests</legend>
+        <label><input type="checkbox" name="interest-demo" value="music" checked> Music</label>
+        <label><input type="checkbox" name="interest-demo" value="film"> Film</label>
+        <label><input type="checkbox" name="interest-demo" value="books" checked> Books</label>
+        <label><input type="checkbox" name="interest-demo" value="sports"> Sports</label>
+      </fieldset>
+    </div>
+
+    <code-block language="html" show-lines label="Pre-checked tags">{precheckedCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Filter UI Pattern</h2>
+    <p>Toggle tags work naturally in filter forms. The checkboxes submit as standard form values, making server-side filtering straightforward.</p>
+
+    <code-block language="html" show-lines label="Filter form with toggle tags">{filterCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Form Participation</h2>
+    <p>Because toggle tags use real checkboxes, they participate fully in form behavior without JavaScript:</p>
+    <ul>
+      <li><strong>Submission</strong> &mdash; checked tags submit as <code>name=value</code> pairs</li>
+      <li><strong>Reset</strong> &mdash; <code>&lt;button type="reset"&gt;</code> restores original checked states</li>
+      <li><strong>Validation</strong> &mdash; native <code>required</code> works on individual checkboxes</li>
+      <li><strong>FormData</strong> &mdash; <code>new FormData(form)</code> includes all selected tags</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The pill chip appearance is driven entirely by CSS. The <code>:has(:checked)</code> selector eliminates the need for JavaScript class toggling.</p>
+
+    <code-block language="css" show-lines label="Toggle tags CSS">{stylingCode}</code-block>
+
+    <p>The checked state swaps the background to <code>--color-primary</code> and the text to <code>--color-on-primary</code>. Disabled tags (from <code>data-max</code>) use reduced opacity.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Fieldsets added to the DOM after page load are automatically enhanced via a MutationObserver when <code>data-max</code> is present. No manual initialization is needed. Tags without <code>data-max</code> require no JavaScript at all.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added toggle tags">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Native <code>&lt;input type="checkbox"&gt;</code> elements provide full keyboard support &mdash; Tab to navigate, Space to toggle</li>
+      <li>The <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code> provide a group label announced by screen readers</li>
+      <li>Checked/unchecked state is conveyed natively by the checkbox semantics</li>
+      <li>Disabled state (from <code>data-max</code>) is announced via the native <code>disabled</code> attribute</li>
+      <li>Form reset restores original checked states, including visual styling</li>
+      <li>Focus indicators use <code>:focus-visible</code> on the label for clear keyboard navigation</li>
+      <li>Without JavaScript, checkboxes render as standard checkboxes with label text (progressive enhancement)</li>
+    </ul>
+  </section>
+
+</AttributeLayout>

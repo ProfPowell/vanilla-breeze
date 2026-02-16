@@ -1,0 +1,300 @@
+---
+/**
+ * data-mask Attribute Documentation
+ *
+ * Input masking for formatted text entry via data attributes.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const phoneCode = `<label for="phone">Phone number</label>
+<input type="tel" id="phone" data-mask="phone" placeholder="(555) 123-4567">`;
+
+const creditCardCode = `<label for="card">Credit card</label>
+<input type="text" id="card" data-mask="credit-card" placeholder="1234 5678 9012 3456">`;
+
+const dateCode = `<label for="dob">Date of birth</label>
+<input type="text" id="dob" data-mask="date" placeholder="MM/DD/YYYY">`;
+
+const ssnCode = `<label for="ssn">Social Security number</label>
+<input type="text" id="ssn" data-mask="ssn" placeholder="123-45-6789">`;
+
+const zipCode = `<label for="zip">ZIP code</label>
+<input type="text" id="zip" data-mask="zip" placeholder="12345">`;
+const allPresetsCode = `<label for="phone-demo">Phone</label>
+<input type="tel" id="phone-demo" data-mask="phone" placeholder="(555) 123-4567">
+
+<label for="card-demo">Credit card</label>
+<input type="text" id="card-demo" data-mask="credit-card" placeholder="1234 5678 9012 3456">
+
+<label for="date-demo">Date</label>
+<input type="text" id="date-demo" data-mask="date" placeholder="MM/DD/YYYY">
+
+<label for="ssn-demo">SSN</label>
+<input type="text" id="ssn-demo" data-mask="ssn" placeholder="123-45-6789">
+
+<label for="zip-demo">ZIP</label>
+<input type="text" id="zip-demo" data-mask="zip" placeholder="12345">`;
+
+const customCode = `<!-- License plate: ABC-1234 -->
+<label for="plate">License plate</label>
+<input type="text" id="plate" data-mask="custom" data-pattern="AAA-####"
+  placeholder="ABC-1234">
+
+<!-- Product key: A1B2-C3D4-E5F6 -->
+<label for="product-key">Product key</label>
+<input type="text" id="product-key" data-mask="custom" data-pattern="****-****-****"
+  placeholder="A1B2-C3D4-E5F6">`;
+
+const formFieldCode = `<form-field>
+  <label for="phone-field">Phone number</label>
+  <input type="tel" id="phone-field" data-mask="phone" required
+    placeholder="(555) 123-4567">
+  <small slot="help">US phone numbers only.</small>
+</form-field>`;
+
+const rawValueCode = `const input = document.querySelector('[data-mask="phone"]');
+
+// Display value: (555) 123-4567
+console.log(input.value);
+
+// Raw unformatted value: 5551234567
+console.log(input.dataset.rawValue);`;
+
+const eventCode = `const input = document.querySelector('[data-mask]');
+
+input.addEventListener('input', () => \{
+  console.log('Formatted:', input.value);
+  console.log('Raw:', input.dataset.rawValue);
+\});`;
+
+const dynamicCode = `// Dynamically added masked inputs are auto-enhanced via MutationObserver
+const input = document.createElement('input');
+input.type = 'tel';
+input.dataset.mask = 'phone';
+document.body.appendChild(input);
+// input is ready to use — no manual init needed`;
+---
+
+<AttributeLayout
+  title="data-mask"
+  description="Format input values as the user types with preset masks for phone, credit card, date, and more. Supports custom patterns with digit, letter, and wildcard tokens."
+  attributeName="data-mask"
+  category="form-controls"
+  currentPath="/docs/attributes/data-mask/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-mask</code> attribute formats input values in real time as the user types. Choose from preset masks for common formats or define custom patterns with digit, letter, and wildcard tokens.</p>
+
+    <browser-window
+      src="/docs/examples/demos/mask-basic.html"
+      url="https://vanilla-breeze.dev/mask"
+      title="Input Mask"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Phone number mask">{phoneCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-mask</code> with a preset name or <code>"custom"</code> to any text input. The init script:</p>
+    <ol>
+      <li>Resolves the mask pattern from the preset name or <code>data-pattern</code> attribute</li>
+      <li>Intercepts <code>input</code> events and reformats the value to match the pattern</li>
+      <li>Manages cursor position so the caret stays in the correct place after reformatting</li>
+      <li>Handles IME composition events (<code>compositionstart</code> / <code>compositionend</code>) to avoid interfering with multi-byte input</li>
+      <li>Sets <code>inputmode</code> automatically (<code>"numeric"</code> for digit-only masks)</li>
+      <li>Sets <code>maxlength</code> from the pattern length</li>
+      <li>Stores the raw unformatted value in <code>data-raw-value</code></li>
+    </ol>
+    <p>The underlying input remains a real form control. The displayed value includes formatting characters, while <code>data-raw-value</code> provides the clean value for submission or processing.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-mask</code></td>
+          <td>string</td>
+          <td>Preset name (<code>phone</code>, <code>credit-card</code>, <code>date</code>, <code>ssn</code>, <code>zip</code>) or <code>custom</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-pattern</code></td>
+          <td>string</td>
+          <td>Custom mask pattern. Required when <code>data-mask="custom"</code>. Uses token characters for placeholders.</td>
+        </tr>
+        <tr>
+          <td><code>data-raw-value</code></td>
+          <td>string</td>
+          <td>Set automatically. Contains the unformatted input value (digits/letters only, no separators).</td>
+        </tr>
+        <tr>
+          <td><code>data-mask-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Preset Masks</h2>
+    <p>The following presets are available out of the box:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Pattern</th>
+          <th>Example output</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>phone</code></td>
+          <td><code>(###) ###-####</code></td>
+          <td>(555) 123-4567</td>
+        </tr>
+        <tr>
+          <td><code>credit-card</code></td>
+          <td><code>#### #### #### ####</code></td>
+          <td>1234 5678 9012 3456</td>
+        </tr>
+        <tr>
+          <td><code>date</code></td>
+          <td><code>##/##/####</code></td>
+          <td>01/15/2025</td>
+        </tr>
+        <tr>
+          <td><code>ssn</code></td>
+          <td><code>###-##-####</code></td>
+          <td>123-45-6789</td>
+        </tr>
+        <tr>
+          <td><code>zip</code></td>
+          <td><code>#####</code></td>
+          <td>90210</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <div>
+          <label for="phone-ex">Phone</label>
+          <input type="tel" id="phone-ex" data-mask="phone" placeholder="(555) 123-4567">
+        </div>
+        <div>
+          <label for="card-ex">Credit card</label>
+          <input type="text" id="card-ex" data-mask="credit-card" placeholder="1234 5678 9012 3456">
+        </div>
+        <div>
+          <label for="date-ex">Date</label>
+          <input type="text" id="date-ex" data-mask="date" placeholder="MM/DD/YYYY">
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="All preset masks">{allPresetsCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Patterns</h2>
+    <p>Set <code>data-mask="custom"</code> and provide a <code>data-pattern</code> attribute with your own mask. Three token characters are supported:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Accepts</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>#</code></td>
+          <td>Digit (0&ndash;9)</td>
+          <td>Matches any single digit.</td>
+        </tr>
+        <tr>
+          <td><code>A</code></td>
+          <td>Letter (a&ndash;z, A&ndash;Z)</td>
+          <td>Matches any single letter. Output is uppercased.</td>
+        </tr>
+        <tr>
+          <td><code>*</code></td>
+          <td>Any character</td>
+          <td>Matches any single letter or digit. Output is uppercased.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Any other character in the pattern is treated as a literal separator and inserted automatically.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <div>
+          <label for="plate-ex">License plate</label>
+          <input type="text" id="plate-ex" data-mask="custom" data-pattern="AAA-####" placeholder="ABC-1234">
+        </div>
+        <div>
+          <label for="key-ex">Product key</label>
+          <input type="text" id="key-ex" data-mask="custom" data-pattern="****-****-****" placeholder="A1B2-C3D4-E5F6">
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Custom mask patterns">{customCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Form Field</h2>
+    <p>Wrap in <code>&lt;form-field&gt;</code> for validation feedback, helper text, and required indicators.</p>
+
+    <code-block language="html" show-lines label="Masked input inside form-field">{formFieldCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Raw Value</h2>
+    <p>The <code>data-raw-value</code> attribute is updated on every input event and contains the unformatted value &mdash; digits and letters only, with no separators. Use it when submitting or processing the value.</p>
+
+    <code-block language="javascript" show-lines label="Accessing the raw value">{rawValueCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <p>The masked input fires native <code>input</code> and <code>change</code> events. Access the raw value from <code>data-raw-value</code> in your event handler.</p>
+
+    <code-block language="javascript" show-lines label="Listening for input events">{eventCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Masked inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added masked inputs">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>inputmode="numeric"</code> is set automatically for digit-only masks, showing a numeric keyboard on mobile devices</li>
+      <li><code>maxlength</code> is derived from the pattern length, giving screen readers the expected input length</li>
+      <li>IME composition is handled correctly &mdash; masking pauses during <code>compositionstart</code> and resumes after <code>compositionend</code></li>
+      <li>Cursor position is managed so the caret never jumps unexpectedly during typing or deletion</li>
+      <li>A visible <code>&lt;label&gt;</code> is required for the input</li>
+      <li>The <code>placeholder</code> attribute should show the expected format as a hint</li>
+      <li>Without JavaScript, the input accepts freeform text &mdash; progressive enhancement</li>
+    </ul>
+  </section>
+
+</AttributeLayout>

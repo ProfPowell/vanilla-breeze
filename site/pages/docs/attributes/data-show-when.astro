@@ -1,0 +1,286 @@
+---
+/**
+ * data-show-when / data-hide-when Attribute Documentation
+ *
+ * Conditionally show or hide form sections based on another field's value.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const showWhenCode = `<select name="account-type">
+  <option value="personal">Personal</option>
+  <option value="business">Business</option>
+</select>
+
+<fieldset data-show-when="account-type=business">
+  <legend>Business Details</legend>
+  <input name="company" placeholder="Company name">
+</fieldset>`;
+
+const hideWhenCode = `<label>
+  <input type="checkbox" name="gift" value="yes">
+  This is a gift
+</label>
+
+<form-field data-hide-when="gift=yes">
+  <label for="receipt">Send receipt to</label>
+  <input type="email" id="receipt" name="receipt">
+</form-field>`;
+
+const radioCode = `<fieldset>
+  <legend>Delivery</legend>
+  <label><input type="radio" name="delivery" value="pickup"> Pickup</label>
+  <label><input type="radio" name="delivery" value="ship"> Ship</label>
+</fieldset>
+
+<fieldset data-show-when="delivery=ship">
+  <legend>Shipping Address</legend>
+  <input name="address" placeholder="Street address">
+</fieldset>`;
+
+const truthyCode = `<label>
+  <input type="checkbox" name="newsletter">
+  Subscribe to newsletter
+</label>
+
+<form-field data-show-when="newsletter">
+  <label for="freq">Frequency</label>
+  <select id="freq" name="frequency">
+    <option>Weekly</option>
+    <option>Monthly</option>
+  </select>
+</form-field>`;
+
+const scopeCode = `<!-- Scoped to closest <form> ancestor -->
+<form>
+  <select name="plan">
+    <option value="free">Free</option>
+    <option value="pro">Pro</option>
+  </select>
+
+  <fieldset data-show-when="plan=pro">
+    <legend>Pro Features</legend>
+    <input name="api-key" placeholder="API key">
+  </fieldset>
+</form>`;
+
+const stylingCode = `/* Hidden conditional sections use native hidden + inert */
+[data-show-when][hidden],
+[data-hide-when][hidden] \{
+  display: none;
+\}
+
+/* Optional: transition when revealing */
+[data-show-when],
+[data-hide-when] \{
+  transition: opacity 0.2s ease;
+\}`;
+---
+
+<AttributeLayout
+  title="data-show-when / data-hide-when"
+  description="Conditionally show or hide form sections based on another field's value. Hidden elements get hidden and inert attributes to bypass validation. Covers data-show-when and data-hide-when."
+  attributeName="data-show-when"
+  category="form-behavior"
+  currentPath="/docs/attributes/data-show-when/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-show-when</code> and <code>data-hide-when</code> attributes let you conditionally display form sections based on the value of another field. Hidden sections receive the <code>hidden</code> and <code>inert</code> attributes, which removes them from the tab order and bypasses any validation constraints inside. This is a combined page covering both attributes.</p>
+
+    <browser-window
+      src="/docs/examples/demos/conditional-basic.html"
+      url="https://vanilla-breeze.dev/conditional"
+      title="Conditional Fields"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Show a fieldset when a value is selected">{showWhenCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-show-when</code> or <code>data-hide-when</code> to any element inside a form. The init script:</p>
+    <ol>
+      <li>Parses the attribute value to extract the field name and optional target value</li>
+      <li>Finds the referenced field within the closest <code>&lt;form&gt;</code> ancestor (or the document if no form exists)</li>
+      <li>Attaches delegated <code>change</code> and <code>input</code> event listeners on the form</li>
+      <li>Evaluates the condition on every field change and toggles <code>hidden</code> and <code>inert</code> on the conditional element</li>
+      <li>Runs an initial evaluation on page load to set the correct visibility state</li>
+      <li>Sets <code>data-conditional-init</code> to prevent double-binding</li>
+    </ol>
+    <p>Because hidden elements receive the <code>inert</code> attribute, any <code>required</code> fields inside them will not block form submission. This lets you safely add validation to conditional sections without worrying about invisible required fields.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Format</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-show-when</code></td>
+          <td><code>"name=value"</code> or <code>"name"</code></td>
+          <td>Shows the element when the named field matches the value (equality check) or has any value (truthy check).</td>
+        </tr>
+        <tr>
+          <td><code>data-hide-when</code></td>
+          <td><code>"name=value"</code> or <code>"name"</code></td>
+          <td>Hides the element when the condition is met. The inverse of <code>data-show-when</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-conditional-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Condition Syntax</h2>
+    <p>The attribute value supports two formats:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Syntax</th>
+          <th>Meaning</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name=value</code></td>
+          <td>Equality check &mdash; the named field must have this exact value</td>
+          <td><code>data-show-when="account-type=business"</code></td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>Truthy check &mdash; the named field has any non-empty value, or the checkbox is checked</td>
+          <td><code>data-show-when="newsletter"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Hide When (Inverse)</h2>
+    <p>Use <code>data-hide-when</code> for the inverse logic &mdash; the element is visible by default and hides when the condition matches.</p>
+
+    <div class="example">
+      <form>
+        <label>
+          <input type="checkbox" name="gift-demo" value="yes">
+          This is a gift
+        </label>
+        <form-field data-hide-when="gift-demo=yes">
+          <label for="receipt-demo">Send receipt to</label>
+          <input type="email" id="receipt-demo" name="receipt-demo">
+        </form-field>
+      </form>
+    </div>
+
+    <code-block language="html" show-lines label="Hide a field when a checkbox is checked">{hideWhenCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Radio Buttons</h2>
+    <p>Conditions work with radio button groups. The condition evaluates against the currently selected radio value within the named group.</p>
+
+    <div class="example">
+      <form>
+        <fieldset>
+          <legend>Delivery</legend>
+          <label><input type="radio" name="delivery-demo" value="pickup"> Pickup</label>
+          <label><input type="radio" name="delivery-demo" value="ship"> Ship</label>
+        </fieldset>
+        <fieldset data-show-when="delivery-demo=ship">
+          <legend>Shipping Address</legend>
+          <input name="address-demo" placeholder="Street address">
+        </fieldset>
+      </form>
+    </div>
+
+    <code-block language="html" show-lines label="Show section based on radio selection">{radioCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Truthy Check (Checkbox)</h2>
+    <p>Omit the <code>=value</code> part to use a truthy check. For checkboxes, this means the element shows when the checkbox is checked. For text inputs and selects, it shows when the field has any non-empty value.</p>
+
+    <div class="example">
+      <form>
+        <label>
+          <input type="checkbox" name="newsletter-demo">
+          Subscribe to newsletter
+        </label>
+        <form-field data-show-when="newsletter-demo">
+          <label for="freq-demo">Frequency</label>
+          <select id="freq-demo" name="frequency-demo">
+            <option>Weekly</option>
+            <option>Monthly</option>
+          </select>
+        </form-field>
+      </form>
+    </div>
+
+    <code-block language="html" show-lines label="Truthy check with a checkbox">{truthyCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Supported Field Types</h2>
+    <p>Conditions can reference any of the following field types by their <code>name</code> attribute:</p>
+    <ul>
+      <li><strong>Select</strong> &mdash; matches the selected option's value</li>
+      <li><strong>Radio buttons</strong> &mdash; matches the checked radio's value within the named group</li>
+      <li><strong>Checkboxes</strong> &mdash; equality check against the checkbox value, or truthy check against checked state</li>
+      <li><strong>Text inputs</strong> &mdash; equality check against the current value, or truthy check for non-empty</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Scope</h2>
+    <p>The condition resolver looks for the referenced field within the closest <code>&lt;form&gt;</code> ancestor. If the conditional element is not inside a form, the resolver searches the entire document. This scoping prevents conflicts when multiple forms exist on the same page.</p>
+
+    <code-block language="html" show-lines label="Scoped to closest form">{scopeCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Validation Bypass</h2>
+    <p>When a section is hidden, the <code>inert</code> attribute is applied alongside <code>hidden</code>. This means:</p>
+    <ul>
+      <li>All <code>required</code> fields inside the hidden section are excluded from form validation</li>
+      <li>Users cannot tab into the hidden section</li>
+      <li>Screen readers skip the hidden content entirely</li>
+      <li>Click events inside the hidden section are blocked</li>
+    </ul>
+    <p>When the section becomes visible again, both <code>hidden</code> and <code>inert</code> are removed, restoring full interactivity and validation.</p>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>Hidden conditional elements use native <code>hidden</code> and <code>inert</code> attributes. The default browser behavior of <code>hidden</code> is <code>display: none</code>, which already works without any custom CSS.</p>
+
+    <code-block language="css" show-lines label="Optional styling for conditional sections">{stylingCode}</code-block>
+
+    <p>All behavior is gated on <code>data-conditional-init</code>. Without JavaScript, the conditional sections render in their default visible state &mdash; progressive enhancement.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The <code>hidden</code> attribute removes the element from visual display and the accessibility tree</li>
+      <li>The <code>inert</code> attribute ensures hidden content is completely non-interactive &mdash; no focus trapping in invisible fields</li>
+      <li>Required field validation is automatically bypassed for hidden sections, preventing invisible validation errors</li>
+      <li>Screen readers will not announce hidden conditional content</li>
+      <li>When content is revealed, focus order follows the natural DOM position</li>
+      <li>Event delegation on the form level avoids attaching listeners to individual fields</li>
+      <li>Without JavaScript, all sections are visible &mdash; progressive enhancement ensures no content is lost</li>
+    </ul>
+  </section>
+
+</AttributeLayout>

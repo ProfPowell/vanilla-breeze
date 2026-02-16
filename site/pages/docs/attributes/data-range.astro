@@ -1,0 +1,297 @@
+---
+/**
+ * data-range Attribute Documentation
+ *
+ * Cross-browser styled range slider with bubble, prefix/suffix, and markers.
+ */
+import AttributeLayout from '../../../layouts/AttributeLayout.astro';
+
+const basicCode = `<label for="volume">Volume</label>
+<input type="range" id="volume" data-range min="0" max="100" value="50">`;
+
+const bubbleCode = `<label for="brightness">Brightness</label>
+<input type="range" id="brightness" data-range data-bubble
+  min="0" max="100" value="75">`;
+
+const prefixSuffixCode = `<label for="price">Price</label>
+<input type="range" id="price" data-range data-bubble
+  data-prefix="$" min="0" max="500" value="150">
+
+<label for="opacity">Opacity</label>
+<input type="range" id="opacity" data-range data-bubble
+  data-suffix="%" min="0" max="100" value="80">`;
+
+const datalistCode = `<label for="rating">Rating</label>
+<input type="range" id="rating" data-range data-bubble
+  min="1" max="5" step="1" value="3" list="rating-labels">
+<datalist id="rating-labels">
+  <option value="1" label="Poor"></option>
+  <option value="2" label="Fair"></option>
+  <option value="3" label="Good"></option>
+  <option value="4" label="Great"></option>
+  <option value="5" label="Excellent"></option>
+</datalist>`;
+
+const markersCode = `<label for="temp">Temperature</label>
+<input type="range" id="temp" data-range data-bubble data-markers
+  data-suffix="°" min="60" max="90" step="5" value="72">`;
+
+const formFieldCode = `<form-field>
+  <label for="quality">Quality</label>
+  <input type="range" id="quality" data-range data-bubble
+    data-suffix="%" min="0" max="100" value="60">
+  <small slot="help">Adjust the encoding quality.</small>
+</form-field>`;
+
+const cssVarCode = `/* The --range-pct custom property is updated on every input event */
+input[data-range] \{
+  --range-pct: 50%; /* default, updated dynamically */
+\}
+
+/* Use it for a filled-track effect */
+input[data-range][data-range-init] \{
+  background: linear-gradient(
+    to right,
+    var(--color-primary) var(--range-pct),
+    var(--color-border) var(--range-pct)
+  );
+\}`;
+
+const stylingCode = `/* Track styling */
+input[data-range][data-range-init] \{
+  --range-track-height: 0.375rem;
+  --range-track-bg: var(--color-border);
+  --range-track-radius: var(--radius-pill);
+\}
+
+/* Thumb styling */
+input[data-range][data-range-init] \{
+  --range-thumb-size: 1.25rem;
+  --range-thumb-bg: var(--color-primary);
+  --range-thumb-border: 2px solid white;
+  --range-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+\}
+
+/* Bubble styling */
+.range-bubble \{
+  --range-bubble-bg: var(--color-surface-raised);
+  --range-bubble-color: var(--color-text);
+  --range-bubble-radius: var(--radius-s);
+  --range-bubble-padding: var(--size-3xs) var(--size-xs);
+\}`;
+
+const dynamicCode = `// Dynamically added range inputs are auto-enhanced via MutationObserver
+const input = document.createElement('input');
+input.type = 'range';
+input.dataset.range = '';
+input.dataset.bubble = '';
+input.min = '0';
+input.max = '100';
+input.value = '50';
+document.body.appendChild(input);
+// input is ready to use — no manual init needed`;
+---
+
+<AttributeLayout
+  title="data-range"
+  description="Cross-browser styled range slider with optional value bubble, prefix/suffix formatting, and tick markers. Covers data-range, data-bubble, and data-markers."
+  attributeName="data-range"
+  category="form-controls"
+  currentPath="/docs/attributes/data-range/"
+>
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>data-range</code> attribute enhances a native <code>&lt;input type="range"&gt;</code> with cross-browser styling, an optional value bubble, prefix/suffix formatting, and tick markers. This is a combined page covering <code>data-range</code>, <code>data-bubble</code>, and <code>data-markers</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/range-basic.html"
+      url="https://vanilla-breeze.dev/range"
+      title="Range Slider"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic range slider">{basicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-range</code> to any <code>&lt;input type="range"&gt;</code>. The init script:</p>
+    <ol>
+      <li>Wraps the input in a <code>.range-wrapper</code> div for layout control</li>
+      <li>Normalizes cross-browser track and thumb styling via <code>appearance: none</code></li>
+      <li>Sets a <code>--range-pct</code> CSS custom property (0&ndash;100%) on every <code>input</code> event</li>
+      <li>If <code>data-bubble</code> is present, creates an <code>&lt;output&gt;</code> element positioned above the thumb</li>
+      <li>If <code>data-markers</code> is present, renders tick marks along the track based on the <code>step</code> attribute</li>
+      <li>If a <code>&lt;datalist&gt;</code> is linked via <code>list</code>, renders labeled tick marks from the option elements</li>
+    </ol>
+    <p>The underlying input remains a real form control. It submits with the form and fires native <code>input</code> and <code>change</code> events.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-range</code></td>
+          <td>boolean</td>
+          <td>Enables cross-browser range styling and the <code>--range-pct</code> custom property.</td>
+        </tr>
+        <tr>
+          <td><code>data-bubble</code></td>
+          <td>boolean</td>
+          <td>Shows a floating value bubble above the thumb that updates on input.</td>
+        </tr>
+        <tr>
+          <td><code>data-prefix</code></td>
+          <td>string</td>
+          <td>Text prepended to the bubble value (e.g., <code>"$"</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-suffix</code></td>
+          <td>string</td>
+          <td>Text appended to the bubble value (e.g., <code>"%"</code>, <code>"&deg;"</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-markers</code></td>
+          <td>boolean</td>
+          <td>Renders tick marks along the track at each <code>step</code> interval.</td>
+        </tr>
+        <tr>
+          <td><code>data-range-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Value Bubble</h2>
+    <p>Add <code>data-bubble</code> to display a floating value readout above the thumb. The bubble tracks the thumb position and updates in real time as the user drags.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="l">
+        <div>
+          <label for="brightness-demo">Brightness</label>
+          <input type="range" id="brightness-demo" data-range data-bubble min="0" max="100" value="75">
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Range with value bubble">{bubbleCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Prefix and Suffix</h2>
+    <p>Use <code>data-prefix</code> and <code>data-suffix</code> to format the bubble value. The prefix appears before the number and the suffix after it.</p>
+
+    <div class="example">
+      <layout-stack data-layout-gap="l">
+        <div>
+          <label for="price-demo">Price</label>
+          <input type="range" id="price-demo" data-range data-bubble data-prefix="$" min="0" max="500" value="150">
+        </div>
+        <div>
+          <label for="opacity-demo">Opacity</label>
+          <input type="range" id="opacity-demo" data-range data-bubble data-suffix="%" min="0" max="100" value="80">
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="Prefix and suffix formatting">{prefixSuffixCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Tick Markers</h2>
+    <p>Add <code>data-markers</code> to render tick marks along the track. Ticks are generated at each <code>step</code> interval between <code>min</code> and <code>max</code>.</p>
+
+    <div class="example">
+      <div>
+        <label for="temp-demo">Temperature</label>
+        <input type="range" id="temp-demo" data-range data-bubble data-markers data-suffix="&deg;" min="60" max="90" step="5" value="72">
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Range with tick markers">{markersCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Datalist Labels</h2>
+    <p>Link a <code>&lt;datalist&gt;</code> via the native <code>list</code> attribute to render labeled tick marks. Each <code>&lt;option&gt;</code> in the datalist becomes a labeled marker on the track.</p>
+
+    <div class="example">
+      <div>
+        <label for="rating-demo">Rating</label>
+        <input type="range" id="rating-demo" data-range data-bubble min="1" max="5" step="1" value="3" list="rating-labels-demo">
+        <datalist id="rating-labels-demo">
+          <option value="1" label="Poor"></option>
+          <option value="2" label="Fair"></option>
+          <option value="3" label="Good"></option>
+          <option value="4" label="Great"></option>
+          <option value="5" label="Excellent"></option>
+        </datalist>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Range with datalist labels">{datalistCode}</code-block>
+  </section>
+
+  <section>
+    <h2>With Form Field</h2>
+    <p>Wrap in <code>&lt;form-field&gt;</code> for helper text and consistent spacing with other form controls.</p>
+
+    <code-block language="html" show-lines label="Range inside form-field">{formFieldCode}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Custom Property</h2>
+    <p>The <code>--range-pct</code> custom property is set on the input element and updated on every <code>input</code> event. Its value ranges from <code>0%</code> to <code>100%</code>, representing the thumb position relative to the track. Use it for filled-track effects or other dynamic styling.</p>
+
+    <code-block language="css" show-lines label="Using --range-pct for a filled track">{cssVarCode}</code-block>
+  </section>
+
+  <section>
+    <h2>DOM Structure</h2>
+    <p>After initialization, the following DOM structure is created:</p>
+    <ul>
+      <li><code>.range-wrapper</code> &mdash; layout container wrapping the input</li>
+      <li><code>&lt;output for="inputId"&gt;</code> &mdash; the value bubble (only with <code>data-bubble</code>)</li>
+      <li><code>.range-markers</code> &mdash; tick mark container (only with <code>data-markers</code>)</li>
+      <li><code>.range-labels</code> &mdash; label container (only with a linked <code>&lt;datalist&gt;</code>)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Styling</h2>
+    <p>The track and thumb are fully customizable via CSS custom properties. All styles are gated on <code>[data-range-init]</code> so the input renders normally without JavaScript.</p>
+
+    <code-block language="css" show-lines label="CSS custom properties">{stylingCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Range inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added range inputs">{dynamicCode}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The <code>&lt;output for="inputId"&gt;</code> element semantically links the bubble to the input for screen readers</li>
+      <li>Native keyboard support is preserved &mdash; arrow keys adjust the value, Home/End jump to min/max</li>
+      <li>A visible <code>&lt;label&gt;</code> is required for the input</li>
+      <li>Tick labels from <code>&lt;datalist&gt;</code> provide additional context for sighted users</li>
+      <li><code>prefers-reduced-motion</code>: bubble transitions are disabled when reduced motion is preferred</li>
+      <li>Without JavaScript, the range input renders as a standard browser slider &mdash; progressive enhancement</li>
+    </ul>
+  </section>
+
+</AttributeLayout>
