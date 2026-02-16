@@ -56,74 +56,21 @@
       display: none;
     }
     .setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--size-l);
       padding: var(--size-m) 0;
       border-bottom: 1px solid var(--color-border);
     }
     .setting-row:last-child {
       border-bottom: none;
     }
-    .setting-info {
-      flex: 1;
-    }
-    .setting-info h3 {
-      margin: 0;
+    .setting-row h3 {
       font-size: var(--font-size-base);
       font-weight: var(--font-weight-medium);
     }
-    .setting-info p {
-      margin: var(--size-2xs) 0 0 0;
+    .setting-row hgroup > p {
       font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
     }
-    .setting-control {
-      flex-shrink: 0;
-    }
-    /* Toggle switch */
-    .toggle {
-      position: relative;
-      width: 44px;
-      height: 24px;
-    }
-    .toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .toggle-track {
-      position: absolute;
-      inset: 0;
-      background: var(--color-surface-raised);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-full);
-      transition: background var(--duration-fast) var(--ease-default);
-      cursor: pointer;
-    }
-    .toggle-track::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 18px;
-      height: 18px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: var(--shadow-sm);
-      transition: transform var(--duration-fast) var(--ease-default);
-    }
-    .toggle input:checked + .toggle-track {
-      background: var(--color-interactive);
-      border-color: var(--color-interactive);
-    }
-    .toggle input:checked + .toggle-track::after {
-      transform: translateX(20px);
-    }
-    .toggle input:focus-visible + .toggle-track {
-      outline: 2px solid var(--color-focus);
-      outline-offset: 2px;
+    .setting-row hgroup {
+      flex: 1;
     }
   </style>
 </head>
@@ -186,47 +133,36 @@
       <!-- Security Panel -->
       <div role="tabpanel" class="tab-panel" id="panel-security" aria-labelledby="tab-security" hidden>
         <div data-layout="stack" data-layout-gap="l">
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Change password</h3>
               <p>Update your password to keep your account secure.</p>
-            </div>
-            <div class="setting-control">
-              <button class="secondary small">Change</button>
-            </div>
+            </hgroup>
+            <button class="secondary small">Change</button>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
-              <h3>Two-factor authentication</h3>
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
+            <hgroup class="tight">
+              <h3 id="two-factor-label">Two-factor authentication</h3>
               <p>Add an extra layer of security to your account.</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" name="two_factor"/>
-                <span class="toggle-track"></span>
-              </label>
-            </div>
+            </hgroup>
+            <input type="checkbox" data-switch name="two_factor" aria-labelledby="two-factor-label"/>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Active sessions</h3>
               <p>Manage devices where you're currently logged in.</p>
-            </div>
-            <div class="setting-control">
-              <button class="secondary small">View all</button>
-            </div>
+            </hgroup>
+            <button class="secondary small">View all</button>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Delete account</h3>
               <p>Permanently delete your account and all associated data.</p>
-            </div>
-            <div class="setting-control">
-              <button class="danger small">Delete</button>
-            </div>
+            </hgroup>
+            <button class="danger small">Delete</button>
           </div>
         </div>
       </div>
@@ -234,56 +170,36 @@
       <!-- Notifications Panel -->
       <div role="tabpanel" class="tab-panel" id="panel-notifications" aria-labelledby="tab-notifications" hidden>
         <div data-layout="stack" data-layout-gap="l">
-          <div class="setting-row">
-            <div class="setting-info">
-              <h3>Email notifications</h3>
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
+            <hgroup class="tight">
+              <h3 id="email-notifications-label">Email notifications</h3>
               <p>Receive email updates about your account activity.</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" name="email_notifications" checked/>
-                <span class="toggle-track"></span>
-              </label>
-            </div>
+            </hgroup>
+            <input type="checkbox" data-switch name="email_notifications" checked aria-labelledby="email-notifications-label"/>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
-              <h3>Push notifications</h3>
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
+            <hgroup class="tight">
+              <h3 id="push-notifications-label">Push notifications</h3>
               <p>Get push notifications on your devices.</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" name="push_notifications" checked/>
-                <span class="toggle-track"></span>
-              </label>
-            </div>
+            </hgroup>
+            <input type="checkbox" data-switch name="push_notifications" checked aria-labelledby="push-notifications-label"/>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
-              <h3>Weekly digest</h3>
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
+            <hgroup class="tight">
+              <h3 id="weekly-digest-label">Weekly digest</h3>
               <p>Receive a weekly summary of your activity.</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" name="weekly_digest"/>
-                <span class="toggle-track"></span>
-              </label>
-            </div>
+            </hgroup>
+            <input type="checkbox" data-switch name="weekly_digest" aria-labelledby="weekly-digest-label"/>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
-              <h3>Marketing emails</h3>
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="l">
+            <hgroup class="tight">
+              <h3 id="marketing-emails-label">Marketing emails</h3>
               <p>Receive updates about new features and promotions.</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" name="marketing_emails"/>
-                <span class="toggle-track"></span>
-              </label>
-            </div>
+            </hgroup>
+            <input type="checkbox" data-switch name="marketing_emails" aria-labelledby="marketing-emails-label"/>
           </div>
         </div>
       </div>
@@ -301,34 +217,28 @@
             </div>
           </layout-card>
 
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Payment method</h3>
               <p>Visa ending in 4242 - Expires 12/2027</p>
-            </div>
-            <div class="setting-control">
-              <button class="secondary small">Update</button>
-            </div>
+            </hgroup>
+            <button class="secondary small">Update</button>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Billing address</h3>
               <p>123 Main St, San Francisco, CA 94102</p>
-            </div>
-            <div class="setting-control">
-              <button class="secondary small">Edit</button>
-            </div>
+            </hgroup>
+            <button class="secondary small">Edit</button>
           </div>
 
-          <div class="setting-row">
-            <div class="setting-info">
+          <div class="setting-row" data-layout="cluster" data-layout-justify="between" data-layout-align="start" data-layout-gap="l">
+            <hgroup class="tight">
               <h3>Invoices</h3>
               <p>Download past invoices and billing statements.</p>
-            </div>
-            <div class="setting-control">
-              <button class="secondary small">View history</button>
-            </div>
+            </hgroup>
+            <button class="secondary small">View history</button>
           </div>
         </div>
       </div>

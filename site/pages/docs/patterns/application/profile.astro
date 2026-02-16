@@ -11,11 +11,6 @@ const profileHeaderStyles = `.profile-header {
   font-size: var(--font-size-2xl);
 }
 
-.profile-role {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-md);
-}
-
 .profile-bio {
   max-width: 50ch;
   margin-inline: auto;
@@ -35,7 +30,9 @@ const profileHeaderStyles = `.profile-header {
 .stat-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-}`;
+}
+
+dl, dd { margin: 0; }`;
 
 const profileCardStyles = `.profile-card-name {
   margin: 0;
@@ -94,10 +91,11 @@ const activityItemStyles = `.activity-item {
       <p><strong>Key features:</strong></p>
       <ul>
         <li>Avatar display with image or initials fallback</li>
-        <li>User stats (posts, followers, following) with clear visual hierarchy</li>
+        <li><code>&lt;hgroup&gt;</code> for name + role pairs with automatic muted subtitle styling</li>
+        <li><code>&lt;dl&gt;</code> / <code>&lt;dt&gt;</code> / <code>&lt;dd&gt;</code> for stat label/value pairs — semantic and accessible</li>
         <li>Activity feeds showing recent actions</li>
         <li>Action buttons for messaging, following, and editing</li>
-        <li>Responsive layouts that adapt to different screen sizes</li>
+        <li>Responsive sidebar layout that automatically stacks on smaller screens</li>
       </ul>
     </layout-text>
   </section>
@@ -116,46 +114,44 @@ const activityItemStyles = `.activity-item {
     </browser-window>
 
     <code-block language="html" label="profile-header.html">&lt;layout-card&gt;
-  &lt;div class="profile-header"&gt;
-    &lt;layout-stack data-layout-gap="l" data-layout-align="center"&gt;
-      &lt;!-- Avatar --&gt;
-      &lt;user-avatar data-size="2xl"&gt;
-        &lt;span data-fallback&gt;JD&lt;/span&gt;
-      &lt;/user-avatar&gt;
+  &lt;div class="profile-header" data-layout="stack" data-layout-gap="l" data-layout-align="center"&gt;
+    &lt;!-- Avatar --&gt;
+    &lt;user-avatar data-size="2xl"&gt;
+      &lt;span data-fallback&gt;JD&lt;/span&gt;
+    &lt;/user-avatar&gt;
 
-      &lt;!-- Name and Role --&gt;
-      &lt;layout-stack data-layout-gap="xs" data-layout-align="center"&gt;
-        &lt;h1 class="profile-name"&gt;Jane Doe&lt;/h1&gt;
-        &lt;span class="profile-role"&gt;Senior Product Designer&lt;/span&gt;
-      &lt;/layout-stack&gt;
+    &lt;!-- Name and Role --&gt;
+    &lt;hgroup class="tight"&gt;
+      &lt;h1 class="profile-name"&gt;Jane Doe&lt;/h1&gt;
+      &lt;p&gt;Senior Product Designer&lt;/p&gt;
+    &lt;/hgroup&gt;
 
-      &lt;!-- Bio --&gt;
-      &lt;p class="profile-bio"&gt;
-        Passionate about creating intuitive user experiences...
-      &lt;/p&gt;
+    &lt;!-- Bio --&gt;
+    &lt;p class="profile-bio"&gt;
+      Passionate about creating intuitive user experiences...
+    &lt;/p&gt;
 
-      &lt;!-- Stats --&gt;
-      &lt;layout-cluster data-layout-gap="xl" data-layout-justify="center"&gt;
-        &lt;div class="stat-item"&gt;
-          &lt;span class="stat-value"&gt;142&lt;/span&gt;
-          &lt;span class="stat-label"&gt;Posts&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;div class="stat-item"&gt;
-          &lt;span class="stat-value"&gt;12.4K&lt;/span&gt;
-          &lt;span class="stat-label"&gt;Followers&lt;/span&gt;
-        &lt;/div&gt;
-        &lt;div class="stat-item"&gt;
-          &lt;span class="stat-value"&gt;891&lt;/span&gt;
-          &lt;span class="stat-label"&gt;Following&lt;/span&gt;
-        &lt;/div&gt;
-      &lt;/layout-cluster&gt;
+    &lt;!-- Stats --&gt;
+    &lt;dl data-layout="cluster" data-layout-gap="xl" data-layout-justify="center"&gt;
+      &lt;div class="stat-item"&gt;
+        &lt;dd class="stat-value"&gt;142&lt;/dd&gt;
+        &lt;dt class="stat-label"&gt;Posts&lt;/dt&gt;
+      &lt;/div&gt;
+      &lt;div class="stat-item"&gt;
+        &lt;dd class="stat-value"&gt;12.4K&lt;/dd&gt;
+        &lt;dt class="stat-label"&gt;Followers&lt;/dt&gt;
+      &lt;/div&gt;
+      &lt;div class="stat-item"&gt;
+        &lt;dd class="stat-value"&gt;891&lt;/dd&gt;
+        &lt;dt class="stat-label"&gt;Following&lt;/dt&gt;
+      &lt;/div&gt;
+    &lt;/dl&gt;
 
-      &lt;!-- Edit Button --&gt;
-      &lt;button class="button secondary"&gt;
-        &lt;icon-wc name="edit" size="sm"&gt;&lt;/icon-wc&gt;
-        Edit Profile
-      &lt;/button&gt;
-    &lt;/layout-stack&gt;
+    &lt;!-- Edit Button --&gt;
+    &lt;button class="button secondary"&gt;
+      &lt;icon-wc name="edit" size="sm"&gt;&lt;/icon-wc&gt;
+      Edit Profile
+    &lt;/button&gt;
   &lt;/div&gt;
 &lt;/layout-card&gt;</code-block>
 
@@ -177,20 +173,20 @@ const activityItemStyles = `.activity-item {
     </browser-window>
 
     <code-block language="html" label="profile-card.html">&lt;layout-card data-padding="l"&gt;
-  &lt;layout-stack data-layout-gap="m"&gt;
-    &lt;layout-cluster data-layout-gap="m" data-layout-align="center"&gt;
+  &lt;div data-layout="stack" data-layout-gap="m"&gt;
+    &lt;div data-layout="cluster" data-layout-gap="m" data-layout-align="center"&gt;
       &lt;user-avatar data-size="lg"&gt;
         &lt;img src="user-photo.jpg" alt="Alex Thompson" /&gt;
       &lt;/user-avatar&gt;
-      &lt;layout-stack data-layout-gap="2xs"&gt;
+      &lt;div data-layout="stack" data-layout-gap="2xs"&gt;
         &lt;h3 class="profile-card-name"&gt;Alex Thompson&lt;/h3&gt;
-        &lt;span class="profile-card-email"&gt;alex@example.com&lt;/span&gt;
-      &lt;/layout-stack&gt;
-    &lt;/layout-cluster&gt;
+        &lt;a href="mailto:alex@example.com" class="profile-card-email"&gt;alex@example.com&lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
     &lt;p class="profile-card-description"&gt;
       Full-stack developer with 8 years of experience.
     &lt;/p&gt;
-    &lt;layout-cluster data-layout-gap="s"&gt;
+    &lt;div data-layout="cluster" data-layout-gap="s"&gt;
       &lt;button class="button small"&gt;
         &lt;icon-wc name="mail" size="sm"&gt;&lt;/icon-wc&gt;
         Message
@@ -199,8 +195,8 @@ const activityItemStyles = `.activity-item {
         &lt;icon-wc name="user-plus" size="sm"&gt;&lt;/icon-wc&gt;
         Follow
       &lt;/button&gt;
-    &lt;/layout-cluster&gt;
-  &lt;/layout-stack&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
 &lt;/layout-card&gt;</code-block>
 
     <h3>Profile Card Styles</h3>
@@ -220,59 +216,57 @@ const activityItemStyles = `.activity-item {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="profile-full.html">&lt;layout-sidebar data-layout-gap="xl" data-side-width="280px" data-layout-content-min="50%"&gt;
+    <code-block language="html" label="profile-full.html">&lt;div data-layout="sidebar" data-layout-gap="xl" data-layout-sidebar-width="wide" data-layout-content-min="50"&gt;
   &lt;!-- Profile Sidebar --&gt;
-  &lt;layout-card data-padding="l" data-layout-sticky&gt;
-    &lt;layout-stack data-layout-gap="l" data-layout-align="center"&gt;
+  &lt;layout-card data-padding="l"&gt;
+    &lt;div class="profile-sidebar" data-layout="stack" data-layout-gap="l" data-layout-align="center"&gt;
       &lt;user-avatar data-size="2xl"&gt;
         &lt;img src="user-photo.jpg" alt="Sarah Chen" /&gt;
         &lt;span data-status="online"&gt;&lt;/span&gt;
       &lt;/user-avatar&gt;
 
-      &lt;layout-stack data-layout-gap="xs" data-layout-align="center"&gt;
+      &lt;hgroup class="tight"&gt;
         &lt;h1 class="profile-name"&gt;Sarah Chen&lt;/h1&gt;
-        &lt;span class="profile-role"&gt;Engineering Manager&lt;/span&gt;
-      &lt;/layout-stack&gt;
+        &lt;p&gt;Engineering Manager&lt;/p&gt;
+      &lt;/hgroup&gt;
 
       &lt;p class="profile-bio"&gt;Leading distributed teams...&lt;/p&gt;
 
-      &lt;layout-cluster data-layout-gap="l" data-layout-justify="center"&gt;
+      &lt;dl data-layout="cluster" data-layout-gap="l" data-layout-justify="center"&gt;
         &lt;div class="stat-item"&gt;
-          &lt;span class="stat-value"&gt;89&lt;/span&gt;
-          &lt;span class="stat-label"&gt;Posts&lt;/span&gt;
+          &lt;dd class="stat-value"&gt;89&lt;/dd&gt;
+          &lt;dt class="stat-label"&gt;Posts&lt;/dt&gt;
         &lt;/div&gt;
         &lt;!-- More stats... --&gt;
-      &lt;/layout-cluster&gt;
+      &lt;/dl&gt;
 
-      &lt;layout-cluster data-layout-gap="s"&gt;
+      &lt;div data-layout="cluster" data-layout-gap="s"&gt;
         &lt;button class="button"&gt;Follow&lt;/button&gt;
         &lt;button class="button secondary"&gt;Message&lt;/button&gt;
-      &lt;/layout-cluster&gt;
-    &lt;/layout-stack&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
   &lt;/layout-card&gt;
 
   &lt;!-- Activity Feed --&gt;
-  &lt;layout-stack data-layout-gap="l"&gt;
-    &lt;header data-layout="cluster" data-layout-justify="space-between"&gt;
+  &lt;div data-layout="stack" data-layout-gap="l"&gt;
+    &lt;header data-layout="cluster" data-layout-justify="between"&gt;
       &lt;h2&gt;Recent Activity&lt;/h2&gt;
       &lt;!-- Filter buttons --&gt;
     &lt;/header&gt;
 
-    &lt;layout-stack data-layout-gap="m"&gt;
-      &lt;article class="activity-item"&gt;
-        &lt;layout-stack data-layout-gap="s"&gt;
-          &lt;layout-cluster data-layout-gap="s" data-layout-align="center"&gt;
-            &lt;icon-wc name="file-text" size="sm"&gt;&lt;/icon-wc&gt;
-            &lt;span class="activity-meta"&gt;Published a post&lt;/span&gt;
-          &lt;/layout-cluster&gt;
-          &lt;h3&gt;Building Resilient Microservices&lt;/h3&gt;
-          &lt;p&gt;Lessons learned from migrating...&lt;/p&gt;
-        &lt;/layout-stack&gt;
+    &lt;div data-layout="stack" data-layout-gap="m"&gt;
+      &lt;article class="activity-item" data-layout="stack" data-layout-gap="s"&gt;
+        &lt;div data-layout="cluster" data-layout-gap="s" data-layout-align="center"&gt;
+          &lt;icon-wc name="file-text" size="sm"&gt;&lt;/icon-wc&gt;
+          &lt;span class="activity-meta"&gt;Published a post&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;h3&gt;Building Resilient Microservices&lt;/h3&gt;
+        &lt;p&gt;Lessons learned from migrating...&lt;/p&gt;
       &lt;/article&gt;
       &lt;!-- More activity items... --&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-stack&gt;
-&lt;/layout-sidebar&gt;</code-block>
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code-block>
 
     <h3>Activity Item Styles</h3>
     <code-block language="css" label="Activity item CSS">{activityItemStyles}</code-block>
@@ -323,17 +317,17 @@ const activityItemStyles = `.activity-item {
       </thead>
       <tbody>
         <tr>
-          <td><code>data-side-width</code></td>
-          <td>CSS length</td>
-          <td>Width of the sidebar. Use <code>280px</code> for profile sidebars.</td>
+          <td><code>data-layout-sidebar-width</code></td>
+          <td><code>narrow</code> (12rem) <code>normal</code> (15rem) <code>wide</code> (20rem)</td>
+          <td>Width of the sidebar. Use <code>wide</code> for profile sidebars.</td>
         </tr>
         <tr>
-          <td><code>data-content-min</code></td>
-          <td>CSS length or percentage</td>
-          <td>Minimum width before stacking. Use <code>50%</code> for balanced layouts.</td>
+          <td><code>data-layout-content-min</code></td>
+          <td><code>40</code> <code>50</code> <code>60</code></td>
+          <td>Minimum content percentage before stacking. Use <code>50</code> for balanced layouts.</td>
         </tr>
         <tr>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
           <td>Gap between sidebar and content.</td>
         </tr>
@@ -351,12 +345,12 @@ const activityItemStyles = `.activity-item {
       </thead>
       <tbody>
         <tr>
-          <td><code>data-align</code></td>
+          <td><code>data-layout-align</code></td>
           <td><code>start</code> <code>center</code> <code>end</code></td>
           <td>Horizontal alignment. Use <code>center</code> for profile headers.</td>
         </tr>
         <tr>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>2xs</code> <code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
           <td>Vertical spacing between items.</td>
         </tr>
@@ -370,11 +364,12 @@ const activityItemStyles = `.activity-item {
       <ul>
         <li><strong>Avatar fallbacks:</strong> Always provide initials via <code>&lt;span data-fallback&gt;</code> as a fallback when images fail to load</li>
         <li><strong>Status indicators:</strong> Use <code>&lt;span data-status="online"&gt;</code> inside <code>user-avatar</code> to show user presence</li>
-        <li><strong>Responsive layouts:</strong> The sidebar layout automatically stacks on smaller screens when content-min is reached</li>
-        <li><strong>Activity loading:</strong> Consider pagination or infinite scroll for long activity feeds to improve performance</li>
+        <li><strong>Heading groups:</strong> Use <code>&lt;hgroup&gt;</code> for name + role pairs — the <code>&lt;p&gt;</code> inside automatically gets muted color styling</li>
+        <li><strong>Semantic stats:</strong> Use <code>&lt;dl&gt;</code> / <code>&lt;dt&gt;</code> / <code>&lt;dd&gt;</code> for stat label/value pairs instead of generic <code>&lt;div&gt;</code> / <code>&lt;span&gt;</code> elements</li>
+        <li><strong>Responsive layouts:</strong> The sidebar layout automatically stacks on smaller screens when <code>data-layout-content-min</code> is reached</li>
+        <li><strong>Sticky sidebar:</strong> <code>data-layout-sticky</code> works on <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> within page layouts, not on <code>&lt;layout-card&gt;</code></li>
         <li><strong>Accessibility:</strong> Ensure avatar images have meaningful <code>alt</code> text and buttons have clear labels</li>
         <li><strong>Stats formatting:</strong> Use abbreviated numbers (e.g., 12.4K) for large counts to maintain visual balance</li>
-        <li><strong>Sticky sidebar:</strong> Use <code>data-layout-sticky</code> on the sidebar card to keep profile info visible while scrolling</li>
         <li><strong>Empty states:</strong> Provide helpful messages when activity feeds are empty</li>
       </ul>
     </layout-text>
@@ -387,13 +382,17 @@ const activityItemStyles = `.activity-item {
         <h3>Dashboard</h3>
         <p>Admin dashboards with stats and data tables</p>
       </a>
-      <a href="/docs/patterns/feedback/empty-states/" class="section-card">
-        <h3>Empty States</h3>
-        <p>Helpful states when content is unavailable</p>
-      </a>
       <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
         <h3>User Avatar</h3>
         <p>Avatar element documentation and API</p>
+      </a>
+      <a href="/docs/elements/custom-elements/card/" class="section-card">
+        <h3>Layout Card</h3>
+        <p>Card container element documentation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
+        <h3>Icon</h3>
+        <p>Icon element documentation and available icons</p>
       </a>
     </layout-grid>
   </section>

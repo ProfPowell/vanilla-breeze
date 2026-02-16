@@ -2,7 +2,7 @@
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
 const testimonialStyles = `.testimonials {
-  padding: var(--size-2xl) var(--size-l);
+  padding-block: var(--size-2xl);
 }
 
 .testimonials-header {
@@ -35,6 +35,11 @@ const testimonialStyles = `.testimonials {
   border-top: 1px solid var(--color-border-subtle);
 }
 
+.testimonial footer::before,
+.testimonial cite::before {
+  content: none;
+}
+
 .testimonial cite {
   font-style: normal;
 }
@@ -51,22 +56,28 @@ const testimonialStyles = `.testimonials {
   color: var(--color-text-muted);
 }`;
 
-const carouselStyles = `.testimonial-carousel {
-  display: flex;
-  gap: var(--size-l);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding: var(--size-s) 0;
+const carouselStyles = `carousel-wc .testimonial {
+  width: min(500px, 85vw);
+  padding: var(--size-xl);
+  box-shadow: var(--shadow-md);
 }
 
-.testimonial-carousel::-webkit-scrollbar {
-  display: none;
+carousel-wc .carousel-dot {
+  min-block-size: auto;
+  min-inline-size: auto;
+  padding: 0;
 }
 
-.testimonial-carousel > * {
-  flex: 0 0 min(500px, 85vw);
-  scroll-snap-align: center;
+.testimonial-quote {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.quote-icon {
+  color: var(--color-interactive);
+  opacity: 0.3;
 }`;
 
 const starRatingStyles = `.star-rating {
@@ -84,14 +95,14 @@ const starRatingStyles = `.star-rating {
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>Testimonials are essential for building credibility on marketing pages. These patterns use semantic <code>&lt;blockquote&gt;</code> and <code>&lt;cite&gt;</code> elements for proper quote attribution, combined with <code>&lt;layout-grid&gt;</code> for responsive card layouts.</p>
+      <p>Testimonials are essential for building credibility on marketing pages. These patterns use semantic <code>&lt;blockquote&gt;</code> and <code>&lt;cite&gt;</code> elements for proper quote attribution, combined with <code>data-layout="grid"</code> for responsive card layouts.</p>
       <p><strong>Key features:</strong></p>
       <ul>
         <li>Semantic HTML with <code>blockquote</code> and <code>cite</code></li>
-        <li>Responsive grid layouts with <code>layout-grid</code></li>
+        <li>Responsive grid layouts with <code>data-layout="grid"</code></li>
         <li>Avatar integration with <code>user-avatar</code></li>
         <li>Star ratings with <code>icon-wc</code></li>
-        <li>CSS scroll-snap carousel for featured testimonials</li>
+        <li><code>carousel-wc</code> component for featured testimonials</li>
         <li>Accessible by default</li>
       </ul>
     </layout-text>
@@ -100,7 +111,7 @@ const starRatingStyles = `.star-rating {
   <section>
     <h2>Simple Quotes</h2>
     <layout-text>
-      <p>The most straightforward testimonial pattern: quote cards with author attribution. Uses <code>layout-grid</code> for a responsive layout that automatically adjusts columns based on available space.</p>
+      <p>The most straightforward testimonial pattern: quote cards with author attribution. Uses <code>data-layout="grid"</code> for a responsive layout that automatically adjusts columns based on available space.</p>
     </layout-text>
 
     <browser-window
@@ -110,46 +121,40 @@ const starRatingStyles = `.star-rating {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Simple testimonial quotes">&lt;section class="testimonials"&gt;
-  &lt;layout-center data-layout-max="wide"&gt;
-    &lt;layout-stack data-layout-gap="2xl"&gt;
-      &lt;div class="testimonials-header"&gt;
-        &lt;layout-stack data-layout-gap="s"&gt;
-          &lt;h2&gt;What our customers say&lt;/h2&gt;
-          &lt;p class="lead"&gt;Hear from teams who have transformed their development workflow.&lt;/p&gt;
-        &lt;/layout-stack&gt;
-      &lt;/div&gt;
-      &lt;layout-grid data-layout-min="300px" data-layout-gap="l"&gt;
-        &lt;blockquote class="testimonial"&gt;
-          &lt;p&gt;"This framework has completely changed how we build interfaces. We shipped our redesign in half the time."&lt;/p&gt;
-          &lt;footer&gt;
-            &lt;cite&gt;
-              &lt;span class="author-name"&gt;Sarah Chen&lt;/span&gt;
-              &lt;span class="author-role"&gt;Engineering Lead, TechCorp&lt;/span&gt;
-            &lt;/cite&gt;
-          &lt;/footer&gt;
-        &lt;/blockquote&gt;
-        &lt;blockquote class="testimonial"&gt;
-          &lt;p&gt;"The semantic HTML approach means our sites are accessible by default."&lt;/p&gt;
-          &lt;footer&gt;
-            &lt;cite&gt;
-              &lt;span class="author-name"&gt;Marcus Johnson&lt;/span&gt;
-              &lt;span class="author-role"&gt;Senior Developer, StartupXYZ&lt;/span&gt;
-            &lt;/cite&gt;
-          &lt;/footer&gt;
-        &lt;/blockquote&gt;
-        &lt;blockquote class="testimonial"&gt;
-          &lt;p&gt;"No build step, no complex configuration. We went from idea to production in record time."&lt;/p&gt;
-          &lt;footer&gt;
-            &lt;cite&gt;
-              &lt;span class="author-name"&gt;Elena Rodriguez&lt;/span&gt;
-              &lt;span class="author-role"&gt;CTO, WebAgency&lt;/span&gt;
-            &lt;/cite&gt;
-          &lt;/footer&gt;
-        &lt;/blockquote&gt;
-      &lt;/layout-grid&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-center&gt;
+    <code-block language="html" label="Simple testimonial quotes">&lt;section class="testimonials" data-layout="center" data-layout-max="wide" data-layout-gap="2xl"&gt;
+  &lt;header class="testimonials-header" data-layout="stack" data-layout-gap="s"&gt;
+    &lt;h2&gt;What our customers say&lt;/h2&gt;
+    &lt;p class="lead"&gt;Hear from teams who have transformed their development workflow.&lt;/p&gt;
+  &lt;/header&gt;
+  &lt;div data-layout="grid" data-layout-min="300px" data-layout-gap="l"&gt;
+    &lt;blockquote class="testimonial"&gt;
+      &lt;p&gt;"This framework has completely changed how we build interfaces. We shipped our redesign in half the time."&lt;/p&gt;
+      &lt;footer&gt;
+        &lt;cite&gt;
+          &lt;span class="author-name"&gt;Sarah Chen&lt;/span&gt;
+          &lt;span class="author-role"&gt;Engineering Lead, TechCorp&lt;/span&gt;
+        &lt;/cite&gt;
+      &lt;/footer&gt;
+    &lt;/blockquote&gt;
+    &lt;blockquote class="testimonial"&gt;
+      &lt;p&gt;"The semantic HTML approach means our sites are accessible by default."&lt;/p&gt;
+      &lt;footer&gt;
+        &lt;cite&gt;
+          &lt;span class="author-name"&gt;Marcus Johnson&lt;/span&gt;
+          &lt;span class="author-role"&gt;Senior Developer, StartupXYZ&lt;/span&gt;
+        &lt;/cite&gt;
+      &lt;/footer&gt;
+    &lt;/blockquote&gt;
+    &lt;blockquote class="testimonial"&gt;
+      &lt;p&gt;"No build step, no complex configuration. We went from idea to production in record time."&lt;/p&gt;
+      &lt;footer&gt;
+        &lt;cite&gt;
+          &lt;span class="author-name"&gt;Elena Rodriguez&lt;/span&gt;
+          &lt;span class="author-role"&gt;CTO, WebAgency&lt;/span&gt;
+        &lt;/cite&gt;
+      &lt;/footer&gt;
+    &lt;/blockquote&gt;
+  &lt;/div&gt;
 &lt;/section&gt;</code-block>
   </section>
 
@@ -166,31 +171,29 @@ const starRatingStyles = `.star-rating {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Testimonials with avatars and star ratings">&lt;layout-grid data-layout-min="300px" data-layout-gap="l"&gt;
-  &lt;blockquote class="testimonial"&gt;
-    &lt;layout-stack data-layout-gap="m"&gt;
-      &lt;layout-cluster class="star-rating" data-layout-gap="xs"&gt;
-        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
-        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
-        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
-        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
-        &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
-      &lt;/layout-cluster&gt;
-      &lt;p&gt;"The layout primitives are incredibly powerful. We've built complex dashboards with minimal custom CSS."&lt;/p&gt;
-      &lt;footer&gt;
-        &lt;layout-cluster data-layout-gap="s" data-layout-align="center"&gt;
-          &lt;user-avatar data-size="lg"&gt;
-            &lt;img src="user-photo.jpg" alt="" /&gt;
-          &lt;/user-avatar&gt;
-          &lt;cite&gt;
-            &lt;span class="author-name"&gt;Alex Thompson&lt;/span&gt;
-            &lt;span class="author-role"&gt;Lead Developer, DataFlow&lt;/span&gt;
-          &lt;/cite&gt;
-        &lt;/layout-cluster&gt;
-      &lt;/footer&gt;
-    &lt;/layout-stack&gt;
+    <code-block language="html" label="Testimonials with avatars and star ratings">&lt;div data-layout="grid" data-layout-min="300px" data-layout-gap="l"&gt;
+  &lt;blockquote class="testimonial" data-layout="stack" data-layout-gap="m"&gt;
+    &lt;div class="star-rating" data-layout="cluster" data-layout-gap="xs"&gt;
+      &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+      &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+      &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+      &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+      &lt;icon-wc name="star" size="sm"&gt;&lt;/icon-wc&gt;
+    &lt;/div&gt;
+    &lt;p&gt;"The layout primitives are incredibly powerful. We've built complex dashboards with minimal custom CSS."&lt;/p&gt;
+    &lt;footer&gt;
+      &lt;div data-layout="cluster" data-layout-gap="s" data-layout-align="center"&gt;
+        &lt;user-avatar data-size="lg"&gt;
+          &lt;img src="user-photo.jpg" alt="" /&gt;
+        &lt;/user-avatar&gt;
+        &lt;cite&gt;
+          &lt;span class="author-name"&gt;Alex Thompson&lt;/span&gt;
+          &lt;span class="author-role"&gt;Lead Developer, DataFlow&lt;/span&gt;
+        &lt;/cite&gt;
+      &lt;/div&gt;
+    &lt;/footer&gt;
   &lt;/blockquote&gt;
-&lt;/layout-grid&gt;</code-block>
+&lt;/div&gt;</code-block>
 
     <h3>Star Rating CSS</h3>
     <layout-text>
@@ -198,12 +201,26 @@ const starRatingStyles = `.star-rating {
     </layout-text>
 
     <code-block language="css" label="Star rating styles">{starRatingStyles}</code-block>
+
+    <layout-text>
+      <p>The avatar variant uses smaller text (<code>font-size-md</code> instead of <code>lg</code>), drops <code>font-style: italic</code> on quotes, and removes the <code>border-top</code> from footer. Override the base styles with:</p>
+    </layout-text>
+
+    <code-block language="css" label="Avatar variant overrides">{`.testimonial p {
+  font-size: var(--font-size-md);
+  font-style: normal;
+}
+
+.testimonial footer {
+  border-top: none;
+  padding-top: 0;
+}`}</code-block>
   </section>
 
   <section>
     <h2>Carousel</h2>
     <layout-text>
-      <p>A horizontally scrolling carousel with CSS scroll-snap for featured testimonials. Larger cards with more prominent quotes. The carousel scrolls naturally with touch/mouse and snaps to each testimonial.</p>
+      <p>A carousel of featured testimonials using the <code>carousel-wc</code> component. Larger cards with more prominent quotes, real prev/next buttons, clickable dot indicators, keyboard navigation, and full ARIA semantics.</p>
     </layout-text>
 
     <browser-window
@@ -213,47 +230,39 @@ const starRatingStyles = `.star-rating {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="Testimonial carousel with scroll-snap">&lt;section class="testimonials"&gt;
-  &lt;layout-center data-layout-max="wide"&gt;
-    &lt;layout-stack data-layout-gap="l"&gt;
-      &lt;div class="testimonials-header"&gt;
-        &lt;layout-stack data-layout-gap="s"&gt;
-          &lt;h2&gt;Loved by teams everywhere&lt;/h2&gt;
-          &lt;p class="lead"&gt;See what developers are saying about their experience.&lt;/p&gt;
-        &lt;/layout-stack&gt;
-      &lt;/div&gt;
-      &lt;div class="testimonial-carousel"&gt;
-        &lt;blockquote class="testimonial"&gt;
-          &lt;layout-stack data-layout-gap="m"&gt;
-            &lt;span class="quote-icon"&gt;
-              &lt;icon-wc name="quote" size="xl"&gt;&lt;/icon-wc&gt;
-            &lt;/span&gt;
-            &lt;p class="testimonial-quote"&gt;"The shift to semantic HTML has made our codebase so much cleaner. Junior developers can understand and contribute immediately."&lt;/p&gt;
-            &lt;footer&gt;
-              &lt;layout-cluster data-layout-gap="s" data-layout-align="center"&gt;
-                &lt;user-avatar data-size="xl"&gt;
-                  &lt;img src="user-photo.jpg" alt="" /&gt;
-                &lt;/user-avatar&gt;
-                &lt;cite&gt;
-                  &lt;span class="author-name"&gt;David Park&lt;/span&gt;
-                  &lt;span class="author-role"&gt;Engineering Manager, TechVenture&lt;/span&gt;
-                &lt;/cite&gt;
-              &lt;/layout-cluster&gt;
-            &lt;/footer&gt;
-          &lt;/layout-stack&gt;
-        &lt;/blockquote&gt;
-        &lt;!-- Additional testimonials... --&gt;
-      &lt;/div&gt;
-    &lt;/layout-stack&gt;
-  &lt;/layout-center&gt;
+    <code-block language="html" label="Testimonial carousel">&lt;section class="testimonials" data-layout="center" data-layout-max="wide" data-layout-gap="l"&gt;
+  &lt;header class="testimonials-header" data-layout="stack" data-layout-gap="s"&gt;
+    &lt;h2&gt;Loved by teams everywhere&lt;/h2&gt;
+    &lt;p class="lead"&gt;See what developers are saying about their experience.&lt;/p&gt;
+  &lt;/header&gt;
+  &lt;carousel-wc data-item-width="auto" data-gap="l"&gt;
+    &lt;blockquote class="testimonial" data-layout="stack" data-layout-gap="m"&gt;
+      &lt;span class="quote-icon"&gt;
+        &lt;icon-wc name="quote" size="xl"&gt;&lt;/icon-wc&gt;
+      &lt;/span&gt;
+      &lt;p class="testimonial-quote"&gt;"The shift to semantic HTML has made our codebase so much cleaner. Junior developers can understand and contribute immediately."&lt;/p&gt;
+      &lt;footer&gt;
+        &lt;div data-layout="cluster" data-layout-gap="s" data-layout-align="center"&gt;
+          &lt;user-avatar data-size="xl"&gt;
+            &lt;img src="user-photo.jpg" alt="" /&gt;
+          &lt;/user-avatar&gt;
+          &lt;cite&gt;
+            &lt;span class="author-name"&gt;David Park&lt;/span&gt;
+            &lt;span class="author-role"&gt;Engineering Manager, TechVenture&lt;/span&gt;
+          &lt;/cite&gt;
+        &lt;/div&gt;
+      &lt;/footer&gt;
+    &lt;/blockquote&gt;
+    &lt;!-- Additional testimonials... --&gt;
+  &lt;/carousel-wc&gt;
 &lt;/section&gt;</code-block>
 
     <h3>Carousel CSS</h3>
     <layout-text>
-      <p>Add these styles for the scroll-snap carousel behavior:</p>
+      <p>Add these styles for carousel testimonial card styles:</p>
     </layout-text>
 
-    <code-block language="css" label="Carousel scroll-snap styles">{carouselStyles}</code-block>
+    <code-block language="css" label="Carousel testimonial card styles">{carouselStyles}</code-block>
   </section>
 
   <section>
@@ -282,28 +291,40 @@ const starRatingStyles = `.star-rating {
       </thead>
       <tbody>
         <tr>
-          <td><code>layout-grid</code></td>
-          <td><code>data-min</code></td>
+          <td><code>data-layout="grid"</code></td>
+          <td><code>data-layout-min</code></td>
           <td>CSS length (e.g., <code>300px</code>)</td>
           <td>Minimum card width before wrapping.</td>
         </tr>
         <tr>
-          <td><code>layout-stack</code></td>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout="stack"</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
           <td>Vertical spacing between elements.</td>
         </tr>
         <tr>
-          <td><code>layout-cluster</code></td>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout="cluster"</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code></td>
           <td>Gap between avatar and cite.</td>
         </tr>
         <tr>
-          <td><code>layout-cluster</code></td>
-          <td><code>data-align</code></td>
+          <td><code>data-layout="cluster"</code></td>
+          <td><code>data-layout-align</code></td>
           <td><code>flex-start</code> <code>center</code> <code>flex-end</code></td>
           <td>Vertical alignment of items.</td>
+        </tr>
+        <tr>
+          <td><code>carousel-wc</code></td>
+          <td><code>data-item-width</code></td>
+          <td><code>full</code> <code>auto</code> CSS length</td>
+          <td>Width of each carousel slide.</td>
+        </tr>
+        <tr>
+          <td><code>carousel-wc</code></td>
+          <td><code>data-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Gap between carousel slides.</td>
         </tr>
         <tr>
           <td><code>user-avatar</code></td>
@@ -323,7 +344,7 @@ const starRatingStyles = `.star-rating {
         <li><strong>Avatar alt text:</strong> Avatar images should have empty <code>alt=""</code> since the author name is provided in text. The image is decorative.</li>
         <li><strong>Quote marks:</strong> Include quotation marks in the text content rather than using CSS <code>::before</code> pseudo-elements. This ensures quotes are read by screen readers.</li>
         <li><strong>Star ratings:</strong> Consider adding a text alternative for ratings (e.g., "5 out of 5 stars") in a visually hidden span for accessibility.</li>
-        <li><strong>Carousel UX:</strong> The scroll-snap carousel is keyboard accessible. Users can scroll with arrow keys when focused. Add visible scroll indicators or buttons for better discoverability.</li>
+        <li><strong>Carousel UX:</strong> The <code>carousel-wc</code> component provides keyboard navigation (arrow keys, Home/End), prev/next buttons, clickable dot indicators, and full ARIA semantics. It also respects <code>prefers-reduced-motion</code>.</li>
         <li><strong>Performance:</strong> Use <code>loading="lazy"</code> on avatar images that are below the fold. For above-the-fold testimonials, use <code>loading="eager"</code>.</li>
         <li><strong>Authenticity:</strong> Real testimonials with full names, titles, and company names are more credible. Consider linking to the author's profile or the company website.</li>
       </ul>
@@ -344,6 +365,10 @@ const starRatingStyles = `.star-rating {
       <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
         <h3>Icon Component</h3>
         <p>Icon element documentation</p>
+      </a>
+      <a href="/docs/elements/web-components/carousel/" class="section-card">
+        <h3>Carousel</h3>
+        <p>Scroll carousel component documentation</p>
       </a>
       <a href="/docs/patterns/marketing/cta/" class="section-card">
         <h3>Call to Action</h3>

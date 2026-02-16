@@ -2,36 +2,32 @@
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
 const skeletonTextCode = `<layout-card aria-busy="true" aria-label="Loading content">
-  <layout-stack data-layout-gap="s">
+  <div data-layout="stack" data-layout-gap="s">
     <div class="skeleton skeleton-heading"></div>
     <div class="skeleton skeleton-line"></div>
     <div class="skeleton skeleton-line"></div>
     <div class="skeleton skeleton-line"></div>
-  </layout-stack>
+  </div>
 </layout-card>`;
 
-const skeletonCardCode = `<div class="card-skeleton" aria-busy="true" aria-label="Loading card">
-  <layout-card>
-    <div class="skeleton skeleton-image"></div>
-    <div class="card-content">
-      <layout-stack data-layout-gap="m">
-        <layout-stack data-layout-gap="s">
-          <div class="skeleton skeleton-heading"></div>
-          <div class="skeleton skeleton-line full"></div>
-          <div class="skeleton skeleton-line medium"></div>
-          <div class="skeleton skeleton-line short"></div>
-        </layout-stack>
-        <div class="skeleton skeleton-button"></div>
-      </layout-stack>
+const skeletonCardCode = `<layout-card class="card-skeleton" aria-busy="true" aria-label="Loading card">
+  <div class="skeleton skeleton-image"></div>
+  <div class="card-content" data-layout="stack" data-layout-gap="m">
+    <div data-layout="stack" data-layout-gap="s">
+      <div class="skeleton skeleton-heading"></div>
+      <div class="skeleton skeleton-line full"></div>
+      <div class="skeleton skeleton-line medium"></div>
+      <div class="skeleton skeleton-line short"></div>
     </div>
-  </layout-card>
-</div>`;
+    <div class="skeleton skeleton-button"></div>
+  </div>
+</layout-card>`;
 
 const skeletonTableCode = `<layout-card data-padding="none" aria-busy="true" aria-label="Loading table data">
   <table class="data-table">
     <thead>
       <tr>
-        <th scope="col" style="width: 40px;"></th>
+        <th scope="col" class="col-checkbox"></th>
         <th scope="col">User</th>
         <th scope="col">Email</th>
         <th scope="col">Role</th>
@@ -118,7 +114,7 @@ const skeletonCssCode = `@keyframes skeleton-pulse {
         <li>Accessible loading states with <code>aria-busy="true"</code></li>
         <li>Flexible placeholder sizes matching your content dimensions</li>
         <li>Uses Vanilla Breeze CSS custom properties for consistent theming</li>
-        <li>Layout primitives like <code>&lt;layout-stack&gt;</code> for structure</li>
+        <li>Layout primitives like <code>data-layout="stack"</code> for structure</li>
       </ul>
     </layout-text>
   </section>
@@ -183,15 +179,15 @@ const skeletonCssCode = `@keyframes skeleton-pulse {
   <section>
     <h2>Configuration</h2>
     <layout-text>
-      <p>Skeleton elements are built from simple divs with CSS classes. Here are the key styling options:</p>
+      <p>Skeleton elements are built from CSS classes applied to placeholder elements. Here are the key styling options:</p>
     </layout-text>
 
     <table class="props-table">
       <thead>
         <tr>
-          <th>Class</th>
-          <th>Purpose</th>
-          <th>Customization</th>
+          <th scope="col">Class</th>
+          <th scope="col">Purpose</th>
+          <th scope="col">Customization</th>
         </tr>
       </thead>
       <tbody>
@@ -230,6 +226,25 @@ const skeletonCssCode = `@keyframes skeleton-pulse {
   </section>
 
   <section>
+    <h2>Accessibility</h2>
+    <layout-text>
+      <ul>
+        <li>Add <code>aria-busy="true"</code> to loading containers. Remove the attribute when content finishes loading.</li>
+        <li>Include an <code>aria-label</code> describing the loading state so screen readers announce meaningful context (e.g. "Loading card").</li>
+        <li>Use <code>role="status"</code> with a live region announcement when content finishes loading so assistive technology is notified.</li>
+        <li>Respect <code>prefers-reduced-motion</code> by disabling or reducing animations for users who prefer it.</li>
+      </ul>
+    </layout-text>
+
+    <code-block language="css" label="reduced-motion.css">{`@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.6;
+  }
+}`}</code-block>
+  </section>
+
+  <section>
     <h2>Animation Variants</h2>
     <layout-text>
       <p>You can customize the animation effect to match your brand or preferences:</p>
@@ -263,21 +278,11 @@ const skeletonCssCode = `@keyframes skeleton-pulse {
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
-        <li><strong>Accessibility:</strong> Always add <code>aria-busy="true"</code> to containers and an <code>aria-label</code> describing the loading state. Remove these when content loads.</li>
         <li><strong>Animation performance:</strong> The pulse animation only animates <code>opacity</code>, which is highly performant. Avoid animating layout properties.</li>
         <li><strong>Layout stability:</strong> Match skeleton dimensions to actual content to prevent layout shift (CLS) when content loads.</li>
-        <li><strong>Screen readers:</strong> Consider adding <code>role="status"</code> with a live region announcement when content finishes loading.</li>
         <li><strong>Duration:</strong> Use skeletons for loads under 3-5 seconds. For longer waits, consider progress indicators with estimated time.</li>
-        <li><strong>Reduce motion:</strong> Respect <code>prefers-reduced-motion</code> by disabling or reducing animations for users who prefer it.</li>
       </ul>
     </layout-text>
-
-    <code-block language="css" label="reduced-motion.css">{`@media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-    opacity: 0.6;
-  }
-}`}</code-block>
   </section>
 
   <section>

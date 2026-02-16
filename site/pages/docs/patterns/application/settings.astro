@@ -93,55 +93,6 @@ const tabNavStyles = `.tab-list {
 .tab-panel[hidden] {
   display: none;
 }`;
-
-const toggleSwitchStyles = `.toggle {
-  position: relative;
-  width: 44px;
-  height: 24px;
-}
-
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-track {
-  position: absolute;
-  inset: 0;
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  transition: background var(--duration-fast) var(--ease-default);
-  cursor: pointer;
-}
-
-.toggle-track::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast) var(--ease-default);
-}
-
-.toggle input:checked + .toggle-track {
-  background: var(--color-interactive);
-  border-color: var(--color-interactive);
-}
-
-.toggle input:checked + .toggle-track::after {
-  transform: translateX(20px);
-}
-
-.toggle input:focus-visible + .toggle-track {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}`;
 ---
 
 <PatternLayout
@@ -179,7 +130,7 @@ const toggleSwitchStyles = `.toggle {
       shadow>
     </browser-window>
 
-    <code-block language="html" label="settings-sections.html">&lt;layout-center data-layout-max="normal"&gt;
+    <code-block language="html" label="settings-sections.html">&lt;section data-layout="center" data-layout-max="normal"&gt;
   &lt;form action="/settings" method="POST" data-layout="stack" data-layout-gap="xl"&gt;
     &lt;header data-layout="stack" data-layout-gap="xs"&gt;
       &lt;h1&gt;Settings&lt;/h1&gt;
@@ -189,7 +140,7 @@ const toggleSwitchStyles = `.toggle {
     &lt;!-- Profile Section --&gt;
     &lt;fieldset&gt;
       &lt;legend&gt;Profile&lt;/legend&gt;
-      &lt;layout-stack data-layout-gap="l"&gt;
+      &lt;div data-layout="stack" data-layout-gap="l"&gt;
         &lt;form-field&gt;
           &lt;label for="name"&gt;Full name&lt;/label&gt;
           &lt;input type="text" id="name" name="name" value="John Doe"/&gt;
@@ -202,13 +153,13 @@ const toggleSwitchStyles = `.toggle {
           &lt;label for="bio"&gt;Bio&lt;/label&gt;
           &lt;textarea id="bio" name="bio" rows="4"&gt;&lt;/textarea&gt;
         &lt;/form-field&gt;
-      &lt;/layout-stack&gt;
+      &lt;/div&gt;
     &lt;/fieldset&gt;
 
     &lt;!-- Notifications Section --&gt;
     &lt;fieldset&gt;
       &lt;legend&gt;Notifications&lt;/legend&gt;
-      &lt;layout-stack data-layout-gap="m"&gt;
+      &lt;div data-layout="stack" data-layout-gap="m"&gt;
         &lt;label&gt;
           &lt;input type="checkbox" name="notify_comments" checked/&gt;
           &lt;span&gt;Comments on your posts&lt;/span&gt;
@@ -217,13 +168,13 @@ const toggleSwitchStyles = `.toggle {
           &lt;input type="checkbox" name="notify_mentions" checked/&gt;
           &lt;span&gt;Mentions by other users&lt;/span&gt;
         &lt;/label&gt;
-      &lt;/layout-stack&gt;
+      &lt;/div&gt;
     &lt;/fieldset&gt;
 
     &lt;!-- Privacy Section --&gt;
     &lt;fieldset&gt;
       &lt;legend&gt;Privacy&lt;/legend&gt;
-      &lt;layout-stack data-layout-gap="m"&gt;
+      &lt;div data-layout="stack" data-layout-gap="m"&gt;
         &lt;label&gt;
           &lt;input type="radio" name="visibility" value="public"/&gt;
           &lt;span&gt;Public - Anyone can view your profile&lt;/span&gt;
@@ -232,15 +183,15 @@ const toggleSwitchStyles = `.toggle {
           &lt;input type="radio" name="visibility" value="private" checked/&gt;
           &lt;span&gt;Private - Only approved followers&lt;/span&gt;
         &lt;/label&gt;
-      &lt;/layout-stack&gt;
+      &lt;/div&gt;
     &lt;/fieldset&gt;
 
-    &lt;layout-cluster data-layout-justify="end"&gt;
+    &lt;footer data-layout="cluster" data-layout-justify="end" data-layout-gap="m"&gt;
       &lt;button type="button" class="secondary"&gt;Cancel&lt;/button&gt;
       &lt;button type="submit"&gt;Save changes&lt;/button&gt;
-    &lt;/layout-cluster&gt;
+    &lt;/footer&gt;
   &lt;/form&gt;
-&lt;/layout-center&gt;</code-block>
+&lt;/section&gt;</code-block>
 
     <h3>Section Fieldset Styles</h3>
     <code-block language="css" label="Fieldset styling">{fieldsetStyles}</code-block>
@@ -262,34 +213,44 @@ const toggleSwitchStyles = `.toggle {
     <code-block language="html" label="settings-sidebar.html">&lt;body data-page-layout="sidebar-left" data-layout-gap="none" data-layout-sidebar-width="narrow"&gt;
   &lt;!-- Settings Navigation --&gt;
   &lt;nav class="settings-nav" aria-label="Settings navigation"&gt;
-    &lt;layout-stack data-layout-gap="xs"&gt;
-      &lt;h2&gt;Settings&lt;/h2&gt;
-      &lt;a href="#" aria-current="page"&gt;
-        &lt;icon-wc name="cog"&gt;&lt;/icon-wc&gt;
-        General
-      &lt;/a&gt;
-      &lt;a href="#"&gt;
-        &lt;icon-wc name="shield-check"&gt;&lt;/icon-wc&gt;
-        Security
-      &lt;/a&gt;
-      &lt;a href="#"&gt;
-        &lt;icon-wc name="bell"&gt;&lt;/icon-wc&gt;
-        Notifications
-      &lt;/a&gt;
-      &lt;a href="#"&gt;
-        &lt;icon-wc name="credit-card"&gt;&lt;/icon-wc&gt;
-        Billing
-      &lt;/a&gt;
-      &lt;a href="#"&gt;
-        &lt;icon-wc name="puzzle-piece"&gt;&lt;/icon-wc&gt;
-        Integrations
-      &lt;/a&gt;
-    &lt;/layout-stack&gt;
+    &lt;h2&gt;Settings&lt;/h2&gt;
+    &lt;ul data-layout="stack" data-layout-gap="xs"&gt;
+      &lt;li&gt;
+        &lt;a href="#" aria-current="page"&gt;
+          &lt;icon-wc name="cog"&gt;&lt;/icon-wc&gt;
+          General
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;a href="#"&gt;
+          &lt;icon-wc name="shield-check"&gt;&lt;/icon-wc&gt;
+          Security
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;a href="#"&gt;
+          &lt;icon-wc name="bell"&gt;&lt;/icon-wc&gt;
+          Notifications
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;a href="#"&gt;
+          &lt;icon-wc name="credit-card"&gt;&lt;/icon-wc&gt;
+          Billing
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;a href="#"&gt;
+          &lt;icon-wc name="puzzle-piece"&gt;&lt;/icon-wc&gt;
+          Integrations
+        &lt;/a&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
   &lt;/nav&gt;
 
   &lt;!-- Settings Content --&gt;
   &lt;main class="settings-content"&gt;
-    &lt;layout-stack data-layout-gap="xl"&gt;
+    &lt;div data-layout="stack" data-layout-gap="xl"&gt;
       &lt;header&gt;
         &lt;h1&gt;General Settings&lt;/h1&gt;
         &lt;p class="text-muted"&gt;Manage your account preferences.&lt;/p&gt;
@@ -299,7 +260,7 @@ const toggleSwitchStyles = `.toggle {
         &lt;h2&gt;Account Information&lt;/h2&gt;
         &lt;!-- Form fields --&gt;
       &lt;/section&gt;
-    &lt;/layout-stack&gt;
+    &lt;/div&gt;
   &lt;/main&gt;
 &lt;/body&gt;</code-block>
 
@@ -310,7 +271,7 @@ const toggleSwitchStyles = `.toggle {
   <section>
     <h2>Tab Navigation</h2>
     <layout-text>
-      <p>A compact settings layout using tabs for section navigation. This pattern works well when settings fit on a single page and users need to switch between a few main categories quickly.</p>
+      <p>A compact settings layout using tabs for section navigation. This pattern works well when settings fit on a single page and users need to switch between a few main categories quickly. Toggle switches use VB's built-in <code>&lt;input data-switch&gt;</code> for on/off settings.</p>
     </layout-text>
 
     <browser-window
@@ -356,8 +317,19 @@ const toggleSwitchStyles = `.toggle {
     <h3>Tab Styles</h3>
     <code-block language="css" label="Tab navigation CSS">{tabNavStyles}</code-block>
 
-    <h3>Toggle Switch Styles</h3>
-    <code-block language="css" label="Toggle switch CSS">{toggleSwitchStyles}</code-block>
+    <h3>Toggle Switches</h3>
+    <layout-text>
+      <p>Use VB's built-in <code>&lt;input type="checkbox" data-switch&gt;</code> for toggle settings — no custom CSS needed. Size variants are available with <code>data-switch="sm"</code> and <code>data-switch="lg"</code>.</p>
+    </layout-text>
+    <code-block language="html" label="Toggle switch usage">&lt;!-- Default toggle --&gt;
+&lt;input type="checkbox" data-switch name="email_notifications"
+       aria-labelledby="email-notifications-label"/&gt;
+
+&lt;!-- Small toggle --&gt;
+&lt;input type="checkbox" data-switch="sm" name="compact_toggle"/&gt;
+
+&lt;!-- Large toggle --&gt;
+&lt;input type="checkbox" data-switch="lg" name="prominent_toggle"/&gt;</code-block>
   </section>
 
   <section>
@@ -382,12 +354,12 @@ const toggleSwitchStyles = `.toggle {
           <td>Creates a sidebar + main content layout for settings navigation.</td>
         </tr>
         <tr>
-          <td><code>data-sidebar-width</code></td>
-          <td><code>narrow</code> <code>default</code> <code>wide</code></td>
+          <td><code>data-layout-sidebar-width</code></td>
+          <td><code>narrow</code> <code>normal</code> <code>wide</code></td>
           <td>Controls the width of the settings sidebar. Use <code>narrow</code> for icon + text nav.</td>
         </tr>
         <tr>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>none</code> <code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
           <td>Gap between sidebar and content. Use <code>none</code> for seamless border connection.</td>
         </tr>
@@ -420,9 +392,9 @@ const toggleSwitchStyles = `.toggle {
           <td>Wraps label, input, and validation messages.</td>
         </tr>
         <tr>
-          <td><code>&lt;layout-stack&gt;</code></td>
+          <td><code>data-layout="stack"</code></td>
           <td>Vertical spacing</td>
-          <td>Stack form fields and sections with consistent gaps.</td>
+          <td>Apply to any element for vertical spacing with consistent gaps.</td>
         </tr>
       </tbody>
     </table>
@@ -475,6 +447,8 @@ const toggleSwitchStyles = `.toggle {
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
+        <li><strong>Toggle switches:</strong> Use <code>&lt;input type="checkbox" data-switch&gt;</code> for on/off settings — VB provides complete toggle styling with size variants (<code>data-switch="sm"</code>, <code>data-switch="lg"</code>)</li>
+        <li><strong>Setting rows:</strong> Use <code>&lt;hgroup class="tight"&gt;</code> for heading + description pairs in setting rows — provides automatic muted text and margin resets</li>
         <li><strong>Form validation:</strong> Show validation errors inline near the relevant field, not at the top of the page</li>
         <li><strong>Save states:</strong> Provide clear feedback when settings are saved; consider auto-save for simple toggles</li>
         <li><strong>Section organization:</strong> Group settings logically by category; put most-used settings first</li>
@@ -501,6 +475,14 @@ const toggleSwitchStyles = `.toggle {
       <a href="/docs/patterns/forms/wizard/" class="section-card">
         <h3>Wizard</h3>
         <p>Multi-step form workflows</p>
+      </a>
+      <a href="/docs/elements/custom-elements/form-field/" class="section-card">
+        <h3>Form Field</h3>
+        <p>Form input wrapper with labels and validation</p>
+      </a>
+      <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
+        <h3>Icon</h3>
+        <p>SVG icon component with Lucide icons</p>
       </a>
     </layout-grid>
   </section>

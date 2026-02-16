@@ -1,76 +1,139 @@
 ---
 import PatternLayout from '../../../../layouts/PatternLayout.astro';
 
-const statsCode = `<layout-center data-layout-max="wide">
-  <layout-stack data-layout-gap="xl">
-    <!-- Page Header -->
-    <header data-layout="cluster" data-layout-justify="space-between" data-layout-align="center">
-      <layout-stack data-layout-gap="xs">
-        <h1>Dashboard</h1>
-        <p class="text-muted">Overview of your business metrics</p>
-      </layout-stack>
-      <layout-cluster data-layout-gap="s">
-        <button class="button secondary">
-          <icon-wc name="calendar" size="sm"></icon-wc>
-          Last 30 days
-        </button>
-        <button class="button">
-          <icon-wc name="download" size="sm"></icon-wc>
-          Export
-        </button>
-      </layout-cluster>
-    </header>
+const statsCode = `<div data-layout="center" data-layout-max="wide" data-layout-gap="xl">
+  <!-- Page Header -->
+  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+    <div data-layout="stack" data-layout-gap="xs">
+      <h1>Dashboard</h1>
+      <p class="text-muted">Overview of your business metrics</p>
+    </div>
+    <div data-layout="cluster" data-layout-gap="s">
+      <button class="button secondary">
+        <icon-wc name="calendar" size="sm"></icon-wc>
+        Last 30 days
+      </button>
+      <button class="button">
+        <icon-wc name="download" size="sm"></icon-wc>
+        Export
+      </button>
+    </div>
+  </header>
 
-    <!-- Stats Grid -->
-    <layout-grid data-layout-gap="l" data-min-width="200">
-      <layout-card>
-        <layout-cluster data-layout-justify="space-between" data-layout-align="start">
-          <layout-stack data-layout-gap="xs">
-            <span class="text-sm text-muted">Total Revenue</span>
-            <span class="stat-value">$45,231</span>
-            <span class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +12% from last month
-            </span>
-          </layout-stack>
-          <span class="stat-icon">
-            <icon-wc name="dollar-sign" size="md"></icon-wc>
-          </span>
-        </layout-cluster>
-      </layout-card>
-      <!-- Additional stat cards... -->
-    </layout-grid>
-  </layout-stack>
-</layout-center>`;
+  <!-- Stats Grid -->
+  <div data-layout="grid" data-layout-gap="l" data-layout-min="200px">
+    <layout-card>
+      <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt class="text-sm text-muted">Total Revenue</dt>
+          <dd class="stat-value">$45,231</dd>
+          <dd class="stat-change positive">
+            <icon-wc name="trending-up" size="sm"></icon-wc>
+            +12% from last month
+          </dd>
+        </dl>
+        <span class="stat-icon">
+          <icon-wc name="dollar-sign" size="md"></icon-wc>
+        </span>
+      </div>
+    </layout-card>
 
-const chartsCode = `<layout-grid data-layout-gap="l" data-min-width="400">
+    <layout-card>
+      <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt class="text-sm text-muted">Tasks Completed</dt>
+          <dd class="stat-value">89%</dd>
+          <dd class="stat-change negative">
+            <icon-wc name="trending-down" size="sm"></icon-wc>
+            -4% from last month
+          </dd>
+        </dl>
+        <progress-ring data-size="s" data-variant="success" style="--progress: 89;">
+          <span class="visually-hidden">89%</span>
+        </progress-ring>
+      </div>
+    </layout-card>
+    <!-- Additional stat cards... -->
+  </div>
+</div>`;
+
+const statsStyles = `layout-card dl, layout-card dd {
+  margin: 0;
+}
+
+.stat-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs);
+  font-size: var(--font-size-sm);
+}
+
+.stat-change.positive {
+  color: var(--color-success);
+}
+
+.stat-change.negative {
+  color: var(--color-danger);
+}
+
+.stat-icon {
+  padding: var(--size-s);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}`;
+
+const chartsCode = `<div data-layout="grid" data-layout-gap="l" data-layout-min="250px">
+  <layout-card>
+    <dl data-layout="stack" data-layout-gap="s">
+      <dt class="text-sm text-muted">Total Visitors</dt>
+      <dd data-layout="cluster" data-layout-justify="between" data-layout-align="end">
+        <span class="stat-value">24,521</span>
+        <span class="stat-change positive">
+          <icon-wc name="trending-up" size="sm"></icon-wc>
+          +12.5%
+        </span>
+      </dd>
+    </dl>
+  </layout-card>
+  <!-- Additional stat cards... -->
+</div>
+
+<div data-layout="grid" data-layout-gap="l" data-layout-min="400px">
   <!-- Main Chart -->
   <layout-card data-padding="l">
-    <layout-stack data-layout-gap="m">
-      <layout-cluster data-layout-justify="space-between" data-layout-align="center">
+    <div data-layout="stack" data-layout-gap="m">
+      <div data-layout="cluster" data-layout-justify="between" data-layout-align="center">
         <h2 class="text-lg">Traffic Overview</h2>
-        <layout-cluster data-layout-gap="s">
+        <div data-layout="cluster" data-layout-gap="s">
           <button class="button small ghost">Daily</button>
           <button class="button small secondary">Weekly</button>
           <button class="button small ghost">Monthly</button>
-        </layout-cluster>
-      </layout-cluster>
+        </div>
+      </div>
       <div class="chart-placeholder chart-main">
         <!-- Your chart library renders here -->
       </div>
-    </layout-stack>
+    </div>
   </layout-card>
 
   <!-- Secondary Chart -->
   <layout-card data-padding="l">
-    <layout-stack data-layout-gap="m">
+    <div data-layout="stack" data-layout-gap="m">
       <h2 class="text-lg">Traffic Sources</h2>
       <div class="chart-placeholder chart-secondary">
         <!-- Your chart library renders here -->
       </div>
-    </layout-stack>
+    </div>
   </layout-card>
-</layout-grid>`;
+</div>`;
 
 const chartStyles = `.chart-placeholder {
   display: flex;
@@ -95,7 +158,7 @@ const chartStyles = `.chart-placeholder {
 
 const tableCode = `<layout-card data-padding="none">
   <div class="data-table-wrapper">
-    <table class="data-table">
+    <table>
       <thead>
         <tr>
           <th scope="col">Customer</th>
@@ -109,17 +172,21 @@ const tableCode = `<layout-card data-padding="none">
       <tbody>
         <tr>
           <td>
-            <div class="user-cell">
-              <span class="user-avatar">JD</span>
+            <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+              <user-avatar data-size="sm">
+                <div data-fallback>JD</div>
+              </user-avatar>
               <span>John Doe</span>
             </div>
           </td>
           <td>john.doe@example.com</td>
-          <td><span class="status-badge completed">Completed</span></td>
+          <td>
+            <layout-badge data-color="success" data-variant="subtle" data-size="lg">Completed</layout-badge>
+          </td>
           <td>$250.00</td>
           <td>Jan 15, 2026</td>
           <td>
-            <layout-cluster data-layout-gap="xs">
+            <div data-layout="cluster" data-layout-gap="xs">
               <button class="button ghost small icon-only" aria-label="View">
                 <icon-wc name="eye" size="sm"></icon-wc>
               </button>
@@ -129,7 +196,7 @@ const tableCode = `<layout-card data-padding="none">
               <button class="button ghost small icon-only" aria-label="More">
                 <icon-wc name="more-vertical" size="sm"></icon-wc>
               </button>
-            </layout-cluster>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -137,62 +204,8 @@ const tableCode = `<layout-card data-padding="none">
   </div>
 </layout-card>`;
 
-const badgeStyles = `.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-2xs);
-  padding: var(--size-2xs) var(--size-s);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.status-badge.completed {
-  background: color-mix(in oklch, var(--color-success) 15%, transparent);
-  color: var(--color-success);
-}
-
-.status-badge.pending {
-  background: color-mix(in oklch, var(--color-warning) 15%, transparent);
-  color: var(--color-warning);
-}
-
-.status-badge.cancelled {
-  background: color-mix(in oklch, var(--color-danger) 15%, transparent);
-  color: var(--color-danger);
-}
-
-.status-badge.processing {
-  background: color-mix(in oklch, var(--color-info) 15%, transparent);
-  color: var(--color-info);
-}`;
-
 const tableStyles = `.data-table-wrapper {
   overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.data-table th,
-.data-table td {
-  padding: var(--size-m);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-}
-
-.data-table th {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.data-table tbody tr:hover {
-  background: var(--color-surface-raised);
 }`;
 ---
 
@@ -209,11 +222,12 @@ const tableStyles = `.data-table-wrapper {
       <p>Dashboard patterns combine multiple components to create data-rich interfaces. These layouts organize statistics, visualizations, and tabular data in a way that's easy to scan and understand.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Stat cards with change indicators for key metrics</li>
+        <li>Stat cards using <code>&lt;dl&gt;</code>/<code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> for semantic label/value pairs</li>
+        <li><code>&lt;progress-ring&gt;</code> for percentage metrics in stat cards</li>
         <li>Chart placeholder layouts for any visualization library</li>
-        <li>Data tables with sorting, filtering, and pagination</li>
-        <li>Responsive grid layouts that adapt to screen size</li>
-        <li>Consistent spacing and card-based organization</li>
+        <li>Native <code>&lt;table&gt;</code> styling with <code>&lt;layout-badge&gt;</code> for status and <code>&lt;user-avatar&gt;</code> for identity</li>
+        <li>Responsive grid layouts using <code>data-layout-min</code> for automatic column sizing</li>
+        <li>Consistent spacing and <code>&lt;layout-card&gt;</code>-based organization</li>
       </ul>
     </layout-text>
   </section>
@@ -221,7 +235,7 @@ const tableStyles = `.data-table-wrapper {
   <section>
     <h2>Stats Grid Dashboard</h2>
     <layout-text>
-      <p>A dashboard focused on key metrics displayed in stat cards. Includes a page header with actions and a responsive grid of metrics with trend indicators.</p>
+      <p>A dashboard focused on key metrics displayed in stat cards. Uses <code>&lt;dl&gt;</code>/<code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> for semantic markup and <code>&lt;progress-ring&gt;</code> for the completion percentage.</p>
     </layout-text>
 
     <browser-window
@@ -232,6 +246,9 @@ const tableStyles = `.data-table-wrapper {
     </browser-window>
 
     <code-block language="html" label="dashboard-stats.html">{statsCode}</code-block>
+
+    <h3>Stat Card Styles</h3>
+    <code-block language="css" label="Stat card CSS">{statsStyles}</code-block>
   </section>
 
   <section>
@@ -256,7 +273,7 @@ const tableStyles = `.data-table-wrapper {
   <section>
     <h2>Data Table Dashboard</h2>
     <layout-text>
-      <p>A dashboard centered on tabular data with a filter bar, sortable columns, status badges, and row actions. Includes pagination for large datasets.</p>
+      <p>A dashboard centered on tabular data with a filter bar, status badges via <code>&lt;layout-badge&gt;</code>, user avatars via <code>&lt;user-avatar&gt;</code>, and row actions. Uses native <code>&lt;table&gt;</code> styling from Vanilla Breeze.</p>
     </layout-text>
 
     <browser-window
@@ -268,23 +285,20 @@ const tableStyles = `.data-table-wrapper {
 
     <code-block language="html" label="dashboard-table.html">{tableCode}</code-block>
 
-    <h3>Status Badge Styles</h3>
-    <code-block language="css" label="Status badge CSS">{badgeStyles}</code-block>
-
-    <h3>Data Table Styles</h3>
-    <code-block language="css" label="Data table CSS">{tableStyles}</code-block>
+    <h3>Table Wrapper</h3>
+    <code-block language="css" label="Table wrapper CSS">{tableStyles}</code-block>
   </section>
 
   <section>
     <h2>Configuration</h2>
     <layout-text>
-      <p>Dashboard patterns use these layout elements and attributes:</p>
+      <p>Dashboard patterns use these layout attributes and components:</p>
     </layout-text>
 
-    <h3>Layout Grid</h3>
     <table class="props-table">
       <thead>
         <tr>
+          <th>Element</th>
           <th>Attribute</th>
           <th>Values</th>
           <th>Description</th>
@@ -292,60 +306,94 @@ const tableStyles = `.data-table-wrapper {
       </thead>
       <tbody>
         <tr>
-          <td><code>data-min-width</code></td>
-          <td>Number (pixels)</td>
-          <td>Minimum column width before wrapping. Use 200-250 for stat cards.</td>
+          <td><code>data-layout="grid"</code></td>
+          <td><code>data-layout-min</code></td>
+          <td>CSS length (e.g. <code>200px</code>)</td>
+          <td>Minimum column width before wrapping</td>
         </tr>
         <tr>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout="grid"</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
-          <td>Gap between grid items. Use <code>l</code> for dashboard sections.</td>
+          <td>Gap between grid items</td>
         </tr>
-      </tbody>
-    </table>
-
-    <h3>Layout Card</h3>
-    <table class="props-table">
-      <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Values</th>
-          <th>Description</th>
+          <td><code>data-layout="cluster"</code></td>
+          <td><code>data-layout-justify</code></td>
+          <td><code>start</code> <code>center</code> <code>end</code> <code>between</code></td>
+          <td>Horizontal distribution</td>
         </tr>
-      </thead>
-      <tbody>
         <tr>
+          <td><code>data-layout="cluster"</code></td>
+          <td><code>data-layout-align</code></td>
+          <td><code>start</code> <code>center</code> <code>end</code></td>
+          <td>Vertical alignment</td>
+        </tr>
+        <tr>
+          <td><code>data-layout="cluster"</code></td>
+          <td><code>data-layout-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Gap between items</td>
+        </tr>
+        <tr>
+          <td><code>data-layout="stack"</code></td>
+          <td><code>data-layout-gap</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code> <code>2xl</code></td>
+          <td>Vertical spacing</td>
+        </tr>
+        <tr>
+          <td><code>layout-card</code></td>
           <td><code>data-padding</code></td>
           <td><code>none</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
-          <td>Card padding. Use <code>none</code> for tables, <code>l</code> for charts.</td>
+          <td>Card padding</td>
         </tr>
         <tr>
+          <td><code>layout-card</code></td>
           <td><code>data-variant</code></td>
-          <td><code>outlined</code></td>
-          <td>Card style variant. Default has subtle shadow.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>Layout Cluster</h3>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-justify</code></td>
-          <td><code>start</code> <code>center</code> <code>end</code> <code>space-between</code></td>
-          <td>Horizontal distribution. Use <code>space-between</code> for headers.</td>
+          <td><code>elevated</code> <code>outlined</code> <code>ghost</code></td>
+          <td>Card style</td>
         </tr>
         <tr>
-          <td><code>data-align</code></td>
-          <td><code>start</code> <code>center</code> <code>end</code></td>
-          <td>Vertical alignment. Use <code>center</code> for header actions.</td>
+          <td><code>layout-badge</code></td>
+          <td><code>data-color</code></td>
+          <td><code>success</code> <code>warning</code> <code>error</code> <code>info</code> <code>primary</code></td>
+          <td>Badge color</td>
+        </tr>
+        <tr>
+          <td><code>layout-badge</code></td>
+          <td><code>data-variant</code></td>
+          <td><code>subtle</code> <code>outlined</code></td>
+          <td>Badge style</td>
+        </tr>
+        <tr>
+          <td><code>layout-badge</code></td>
+          <td><code>data-size</code></td>
+          <td><code>sm</code> <code>lg</code></td>
+          <td>Badge size</td>
+        </tr>
+        <tr>
+          <td><code>user-avatar</code></td>
+          <td><code>data-size</code></td>
+          <td><code>xs</code> <code>sm</code> <code>md</code> <code>lg</code> <code>xl</code></td>
+          <td>Avatar size</td>
+        </tr>
+        <tr>
+          <td><code>progress-ring</code></td>
+          <td><code>data-size</code></td>
+          <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
+          <td>Ring size</td>
+        </tr>
+        <tr>
+          <td><code>progress-ring</code></td>
+          <td><code>data-variant</code></td>
+          <td><code>success</code> <code>warning</code> <code>error</code> <code>info</code></td>
+          <td>Ring color</td>
+        </tr>
+        <tr>
+          <td><code>progress-ring</code></td>
+          <td><code>--progress</code></td>
+          <td><code>0</code>–<code>100</code> (CSS custom property)</td>
+          <td>Progress value</td>
         </tr>
       </tbody>
     </table>
@@ -355,10 +403,11 @@ const tableStyles = `.data-table-wrapper {
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
+        <li><strong>Semantic stat cards:</strong> Use <code>&lt;dl&gt;</code>/<code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> for label/value pairs — reset default margins with <code>layout-card dl, layout-card dd {"{"} margin: 0 {"}"}</code></li>
+        <li><strong>Native tables:</strong> Vanilla Breeze styles <code>&lt;table&gt;</code> elements directly — no custom classes needed. Wrap in <code>.data-table-wrapper</code> for horizontal scrolling on small screens.</li>
         <li><strong>Loading states:</strong> Show skeleton placeholders while data loads to prevent layout shift</li>
-        <li><strong>Responsive layout:</strong> The grid automatically adjusts columns; test on mobile to ensure usability</li>
+        <li><strong>Responsive layout:</strong> The grid automatically adjusts columns based on <code>data-layout-min</code>; test on mobile to ensure usability</li>
         <li><strong>Chart libraries:</strong> Chart placeholders work with any library (Chart.js, D3, ApexCharts, etc.)</li>
-        <li><strong>Table overflow:</strong> Wrap tables in <code>.data-table-wrapper</code> for horizontal scrolling on small screens</li>
         <li><strong>Semantic colors:</strong> Use <code>--color-success</code> for positive trends, <code>--color-danger</code> for negative</li>
         <li><strong>Empty states:</strong> Provide helpful empty states when no data is available</li>
         <li><strong>Accessibility:</strong> Ensure tables have proper <code>scope</code> attributes and buttons have <code>aria-label</code></li>
@@ -378,9 +427,25 @@ const tableStyles = `.data-table-wrapper {
         <h3>Stats</h3>
         <p>Stat card patterns and change indicators</p>
       </a>
-      <a href="/docs/patterns/application/settings/" class="section-card">
-        <h3>Settings</h3>
-        <p>Settings and preferences pages</p>
+      <a href="/docs/elements/custom-elements/card/" class="section-card">
+        <h3>Card</h3>
+        <p>Card component with padding and variant options</p>
+      </a>
+      <a href="/docs/elements/custom-elements/badge/" class="section-card">
+        <h3>Badge</h3>
+        <p>Status badges with semantic colors</p>
+      </a>
+      <a href="/docs/elements/custom-elements/user-avatar/" class="section-card">
+        <h3>User Avatar</h3>
+        <p>Avatar component with fallback initials</p>
+      </a>
+      <a href="/docs/elements/custom-elements/icon-wc/" class="section-card">
+        <h3>Icon</h3>
+        <p>SVG icon component with size variants</p>
+      </a>
+      <a href="/docs/elements/web-components/progress-ring/" class="section-card">
+        <h3>Progress Ring</h3>
+        <p>Circular progress indicator</p>
       </a>
     </layout-grid>
   </section>

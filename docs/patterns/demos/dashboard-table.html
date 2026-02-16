@@ -14,74 +14,9 @@
     .data-table-wrapper {
       overflow-x: auto;
     }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      background: var(--color-surface);
-      border-radius: var(--radius-l);
-      overflow: hidden;
-    }
-    .data-table th,
-    .data-table td {
-      padding: var(--size-m);
-      border-bottom: var(--border-width-thin) solid var(--color-border);
-    }
-    .data-table th {
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text-muted);
-      font-size: var(--font-size-sm);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: var(--color-surface);
-    }
-    .data-table tbody tr:hover {
-      background: var(--color-surface-raised);
-    }
-    .data-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--size-2xs);
-      padding: var(--size-2xs) var(--size-s);
-      border-radius: var(--radius-full);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-medium);
-    }
-    .status-badge.completed {
-      background: color-mix(in oklch, var(--color-success) 15%, transparent);
-      color: var(--color-success);
-    }
-    .status-badge.pending {
-      background: color-mix(in oklch, var(--color-warning) 15%, transparent);
-      color: var(--color-warning);
-    }
-    .status-badge.cancelled {
-      background: color-mix(in oklch, var(--color-danger) 15%, transparent);
-      color: var(--color-danger);
-    }
-    .status-badge.processing {
-      background: color-mix(in oklch, var(--color-info) 15%, transparent);
-      color: var(--color-info);
-    }
-    .user-cell {
-      display: flex;
-      align-items: center;
-      gap: var(--size-s);
-    }
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-full);
-      background: var(--color-surface-alt);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: var(--font-weight-medium);
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
+    [data-layout="cluster"] select,
+    [data-layout="cluster"] input {
+      inline-size: auto;
     }
     .filter-bar {
       background: var(--color-surface);
@@ -97,7 +32,7 @@
 <body>
   <div data-layout="center" data-layout-max="wide" data-layout-gap="l">
     <!-- Page Header -->
-    <header data-layout="cluster" data-layout-justify="space-between" data-layout-align="center">
+    <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
       <div data-layout="stack" data-layout-gap="xs">
         <h1>Orders</h1>
         <p class="text-muted">Manage and track customer orders</p>
@@ -109,12 +44,12 @@
     </header>
 
     <!-- Filter Bar -->
-    <div class="filter-bar" data-layout="cluster" data-layout-justify="space-between" data-layout-gap="m">
+    <div class="filter-bar" data-layout="cluster" data-layout-justify="between" data-layout-gap="m">
       <div data-layout="cluster" data-layout-gap="m">
-        <div class="input-group with-icon">
+        <search class="with-icon">
           <icon-wc name="search" size="sm"></icon-wc>
           <input type="search" class="search-input" placeholder="Search orders..." aria-label="Search orders"/>
-        </div>
+        </search>
         <select aria-label="Filter by status">
           <option value="">All Status</option>
           <option value="completed">Completed</option>
@@ -138,7 +73,7 @@
     <!-- Data Table -->
     <layout-card data-padding="none">
       <div class="data-table-wrapper">
-        <table class="data-table">
+        <table>
           <thead>
             <tr>
               <th scope="col">Customer</th>
@@ -152,13 +87,15 @@
           <tbody>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">JD</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>JD</div>
+                  </user-avatar>
                   <span>John Doe</span>
                 </div>
               </td>
               <td>john.doe@example.com</td>
-              <td><span class="status-badge completed">Completed</span></td>
+              <td><layout-badge data-color="success" data-variant="subtle" data-size="lg">Completed</layout-badge></td>
               <td>$250.00</td>
               <td>Jan 15, 2026</td>
               <td>
@@ -177,13 +114,15 @@
             </tr>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">SM</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>SM</div>
+                  </user-avatar>
                   <span>Sarah Miller</span>
                 </div>
               </td>
               <td>sarah.miller@example.com</td>
-              <td><span class="status-badge processing">Processing</span></td>
+              <td><layout-badge data-color="info" data-variant="subtle" data-size="lg">Processing</layout-badge></td>
               <td>$125.50</td>
               <td>Jan 14, 2026</td>
               <td>
@@ -202,13 +141,15 @@
             </tr>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">RJ</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>RJ</div>
+                  </user-avatar>
                   <span>Robert Johnson</span>
                 </div>
               </td>
               <td>robert.j@example.com</td>
-              <td><span class="status-badge pending">Pending</span></td>
+              <td><layout-badge data-color="warning" data-variant="subtle" data-size="lg">Pending</layout-badge></td>
               <td>$89.99</td>
               <td>Jan 14, 2026</td>
               <td>
@@ -227,13 +168,15 @@
             </tr>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">EW</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>EW</div>
+                  </user-avatar>
                   <span>Emily Wilson</span>
                 </div>
               </td>
               <td>emily.wilson@example.com</td>
-              <td><span class="status-badge completed">Completed</span></td>
+              <td><layout-badge data-color="success" data-variant="subtle" data-size="lg">Completed</layout-badge></td>
               <td>$432.00</td>
               <td>Jan 13, 2026</td>
               <td>
@@ -252,13 +195,15 @@
             </tr>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">MB</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>MB</div>
+                  </user-avatar>
                   <span>Michael Brown</span>
                 </div>
               </td>
               <td>m.brown@example.com</td>
-              <td><span class="status-badge cancelled">Cancelled</span></td>
+              <td><layout-badge data-color="error" data-variant="subtle" data-size="lg">Cancelled</layout-badge></td>
               <td>$75.00</td>
               <td>Jan 12, 2026</td>
               <td>
@@ -277,13 +222,15 @@
             </tr>
             <tr>
               <td>
-                <div class="user-cell">
-                  <span class="user-avatar">JT</span>
+                <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+                  <user-avatar data-size="sm">
+                    <div data-fallback>JT</div>
+                  </user-avatar>
                   <span>Jessica Taylor</span>
                 </div>
               </td>
               <td>j.taylor@example.com</td>
-              <td><span class="status-badge processing">Processing</span></td>
+              <td><layout-badge data-color="info" data-variant="subtle" data-size="lg">Processing</layout-badge></td>
               <td>$567.25</td>
               <td>Jan 11, 2026</td>
               <td>
@@ -306,7 +253,7 @@
     </layout-card>
 
     <!-- Pagination -->
-    <footer data-layout="cluster" data-layout-justify="space-between" data-layout-align="center">
+    <footer data-layout="cluster" data-layout-justify="between" data-layout-align="center">
       <span class="text-sm text-muted">Showing 1-6 of 48 results</span>
       <nav aria-label="Pagination" data-layout="cluster" data-layout-gap="xs">
         <button class="button ghost small" disabled aria-label="Previous page">

@@ -25,8 +25,8 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
       <ul>
         <li>Auto-fit columns based on minimum width</li>
         <li>No media queries required</li>
-        <li>Multiple card variants (default, outlined, interactive)</li>
-        <li>Built-in spacing with <code>data-gap</code></li>
+        <li>Multiple card variants (default, outlined, elevated, ghost)</li>
+        <li>Built-in spacing with <code>data-layout-gap</code></li>
         <li>Semantic structure with <code>&lt;layout-stack&gt;</code> inside cards</li>
       </ul>
     </layout-text>
@@ -86,7 +86,7 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
         &lt;h3&gt;&lt;a href="/item/2/"&gt;Another Card&lt;/a&gt;&lt;/h3&gt;
         &lt;p&gt;Uses the outlined variant for visual distinction.&lt;/p&gt;
         &lt;layout-cluster data-layout-gap="xs"&gt;
-          &lt;layout-badge data-variant="success"&gt;New&lt;/layout-badge&gt;
+          &lt;layout-badge data-color="success"&gt;New&lt;/layout-badge&gt;
         &lt;/layout-cluster&gt;
       &lt;/layout-stack&gt;
     &lt;/layout-card&gt;
@@ -98,21 +98,19 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
         &lt;h3&gt;&lt;a href="/item/3/"&gt;Card with Actions&lt;/a&gt;&lt;/h3&gt;
         &lt;p&gt;This card includes action buttons.&lt;/p&gt;
       &lt;/layout-stack&gt;
-      &lt;footer&gt;
-        &lt;layout-cluster data-layout-gap="s"&gt;
+      &lt;footer data-layout="cluster" data-layout-gap="s"&gt;
           &lt;button class="small"&gt;Learn More&lt;/button&gt;
           &lt;button class="small ghost"&gt;Share&lt;/button&gt;
-        &lt;/layout-cluster&gt;
       &lt;/footer&gt;
     &lt;/layout-card&gt;
 
-    &lt;!-- Interactive card (entire card clickable) --&gt;
-    &lt;layout-card data-interactive&gt;
+    &lt;!-- Clickable card (entire card clickable) --&gt;
+    &lt;layout-card&gt;
       &lt;a href="/item/4/" class="card-link"&gt;
         &lt;layout-stack data-layout-gap="s"&gt;
           &lt;h3&gt;Interactive Card&lt;/h3&gt;
           &lt;p&gt;The entire card is clickable.&lt;/p&gt;
-          &lt;layout-badge data-variant="info"&gt;Featured&lt;/layout-badge&gt;
+          &lt;layout-badge data-color="info"&gt;Featured&lt;/layout-badge&gt;
         &lt;/layout-stack&gt;
       &lt;/a&gt;
     &lt;/layout-card&gt;
@@ -137,19 +135,14 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
       </thead>
       <tbody>
         <tr>
-          <td><code>data-min-width</code></td>
-          <td>Number (pixels)</td>
-          <td>Minimum column width. Columns auto-fit based on this.</td>
+          <td><code>data-layout-min</code></td>
+          <td>CSS length (e.g. <code>250px</code>, <code>20ch</code>)</td>
+          <td>Minimum column width. Columns auto-fit based on this value.</td>
         </tr>
         <tr>
-          <td><code>data-gap</code></td>
+          <td><code>data-layout-gap</code></td>
           <td><code>xs</code> <code>s</code> <code>m</code> <code>l</code> <code>xl</code></td>
           <td>Gap between grid items using size tokens.</td>
-        </tr>
-        <tr>
-          <td><code>data-columns</code></td>
-          <td>Number</td>
-          <td>Fixed column count (overrides auto-fit behavior).</td>
         </tr>
       </tbody>
     </table>
@@ -182,9 +175,9 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
       shadow>
     </browser-window>
 
-    <h3>Interactive Card</h3>
+    <h3>Clickable Card</h3>
     <layout-text>
-      <p>Entire card is clickable with hover states. Wrap content in a single anchor.</p>
+      <p>Make the entire card clickable by wrapping its content in an anchor with <code>class="card-link"</code>. No special attribute needed — the <code>.card-link</code> pattern handles the clickable area.</p>
     </layout-text>
 
     <browser-window
@@ -200,9 +193,9 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
 &lt;!-- Outlined --&gt;
 &lt;layout-card data-variant="outlined"&gt;...&lt;/layout-card&gt;
 
-&lt;!-- Interactive (clickable) --&gt;
-&lt;layout-card data-interactive&gt;
-  &lt;a href="/link/"&gt;...&lt;/a&gt;
+&lt;!-- Clickable (entire card is the link) --&gt;
+&lt;layout-card&gt;
+  &lt;a href="/link/" class="card-link"&gt;...&lt;/a&gt;
 &lt;/layout-card&gt;</code-block>
   </section>
 
@@ -212,7 +205,7 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro';
       <ul>
         <li><strong>Images:</strong> Always include <code>width</code>, <code>height</code>, and <code>loading="lazy"</code> attributes for performance</li>
         <li><strong>Accessibility:</strong> Use descriptive <code>alt</code> text for images; decorative images should have <code>alt=""</code></li>
-        <li><strong>Links:</strong> Place the primary link on the heading, not the entire card (unless using <code>data-interactive</code>)</li>
+        <li><strong>Links:</strong> Place the primary link on the heading. For fully clickable cards, wrap content in an anchor with <code>class="card-link"</code></li>
         <li><strong>Structure:</strong> Use <code>&lt;layout-stack&gt;</code> inside cards for consistent vertical spacing</li>
         <li><strong>Metadata:</strong> Use <code>&lt;layout-cluster&gt;</code> for horizontal badge/date groupings</li>
       </ul>
