@@ -27,6 +27,13 @@ const { title, description, elementName, category, currentPath, nativeGroup } = 
 
 // Get elements navigation from JSON
 const elements = navigation.elements;
+
+const categoryMeta = {
+  native:    { label: elements.native.label,    href: '/docs/elements/native/' },
+  custom:    { label: elements.custom.label,     href: '/docs/elements/custom-elements/' },
+  component: { label: elements.component.label,  href: '/docs/elements/web-components/' },
+};
+const crumb = categoryMeta[category];
 ---
 
 <!DOCTYPE html>
@@ -104,6 +111,13 @@ const elements = navigation.elements;
           <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
         </aside>
         <article>
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li><a href="/docs/elements/">Elements</a></li>
+              <li><a href={crumb.href}>{crumb.label}</a></li>
+              <li><span aria-current="page">{elementName}</span></li>
+            </ol>
+          </nav>
           <h1>{elementName}</h1>
           <p class="lead">{description}</p>
 
