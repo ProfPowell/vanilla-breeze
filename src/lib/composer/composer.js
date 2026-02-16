@@ -5,11 +5,12 @@
  * Orchestrates canvas, inspector, interaction, and code output.
  */
 
-import './canvas.js';
-import './inspector.js';
+import { VbCanvas } from './canvas.js';
+import { VbInspector } from './inspector.js';
 import { CanvasInteraction } from './interaction.js';
 import { serialize } from './serialize.js';
 import { exportPlacementVars, exportNamedAreas } from './export.js';
+import { TEMPLATES } from './templates.js';
 
 class VbComposer extends HTMLElement {
   #interaction = null;
@@ -33,6 +34,18 @@ class VbComposer extends HTMLElement {
     // Wireframe toggle
     const wfToggle = this.querySelector('[data-action="wireframe"]');
     wfToggle?.addEventListener('change', this.#onWireframeToggle);
+
+    // Column overlay toggle
+    const colToggle = this.querySelector('[data-action="show-columns"]');
+    colToggle?.addEventListener('change', this.#onColumnsToggle);
+
+    // Grid settings (cols, gap, row-size)
+    const settingsFieldset = this.querySelector('.grid-settings');
+    settingsFieldset?.addEventListener('input', this.#onGridSettingsInput);
+
+    // Template select
+    const templateSelect = this.querySelector('[data-action="load-template"]');
+    templateSelect?.addEventListener('change', this.#onTemplateSelect);
 
     // Add-block palette
     this.addEventListener('click', this.#onPaletteClick);
@@ -68,6 +81,62 @@ class VbComposer extends HTMLElement {
     } else {
       this.#canvas.removeAttribute('data-wireframe');
     }
+  };
+
+  // --- Column overlay ---
+
+  #onColumnsToggle = (e) => {
+    if (e.target.checked) {
+      this.#canvas.setAttribute('data-show-columns', '');
+    } else {
+      this.#canvas.removeAttribute('data-show-columns');
+    }
+  };
+
+  // --- Grid settings ---
+
+  #onGridSettingsInput = (e) => {
+    const input = e.target;
+    if (!input.name) return;
+
+    switch (input.name) {
+      case 'cols':
+        this.#canvas.style.setProperty('--cols', Math.max(1, Math.min(24, +input.value)));
+        break;
+      case 'gap':
+        this.#canvas.style.setProperty('--gap', input.value);
+        break;
+      case 'row-size':
+        this.#canvas.style.setProperty('--row-size', input.value);
+        break;
+    }
+  };
+
+  // --- Template loading ---
+
+  #onTemplateSelect = (e) => {
+    const id = e.target.value;
+    if (!id || !TEMPLATES[id]) return;
+
+    if (!confirm('Replace current layout with template?')) {
+      e.target.value = '';
+      return;
+    }
+
+    this.#canvas.loadTemplate(TEMPLATES[id]);
+
+    // Sync toolbar grid controls with template values
+    const grid = TEMPLATES[id].grid;
+    const colsInput = this.querySelector('.grid-settings [name="cols"]');
+    const gapInput = this.querySelector('.grid-settings [name="gap"]');
+    const rowInput = this.querySelector('.grid-settings [name="row-size"]');
+    if (colsInput) colsInput.value = grid.cols;
+    if (gapInput) gapInput.value = grid.gap;
+    if (rowInput) rowInput.value = grid.rowSize;
+
+    // Reset select to placeholder
+    e.target.value = '';
+    this.#announce(`Loaded ${TEMPLATES[id].name} template`);
   };
 
   // --- Add block palette ---
@@ -121,7 +190,7 @@ class VbComposer extends HTMLElement {
     const block = this.#canvas.selected;
     if (!block) return;
 
-    const cols = 12;
+    const cols = parseInt(getComputedStyle(this.#canvas).getPropertyValue('--cols'), 10) || 12;
     const shift = e.shiftKey;
     let handled = true;
 

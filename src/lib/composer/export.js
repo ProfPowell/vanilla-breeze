@@ -3,6 +3,28 @@
  */
 
 /**
+ * Render a block to HTML with inline placement vars.
+ * Recurses into children for subgrid blocks.
+ */
+function blockToHtml(b, indent = 2) {
+  const pad = ' '.repeat(indent);
+  const vars = `--col:${b.col};--cspan:${b.cspan};--row:${b.row};--rspan:${b.rspan}`;
+  const sub = b.subgrid ? ' data-subgrid' : '';
+  if (b.children?.length) {
+    const inner = b.children.map(c => blockToHtml(c, indent + 2)).join('\n');
+    return `${pad}<${b.tag} style="${vars}"${sub}>\n${inner}\n${pad}</${b.tag}>`;
+  }
+  return `${pad}<${b.tag} style="${vars}"${sub}></${b.tag}>`;
+}
+
+/**
+ * Check if any block in the tree has children (nested blocks).
+ */
+function hasNesting(blocks) {
+  return blocks.some(b => b.children?.length);
+}
+
+/**
  * Generate HTML + CSS using inline placement vars.
  * @param {{ grid: object, blocks: object[] }} data
  * @returns {{ html: string, css: string }}
@@ -10,15 +32,10 @@
 export function exportPlacementVars(data) {
   const { grid, blocks } = data;
 
-  const htmlLines = blocks.map(b => {
-    const vars = `--col:${b.col};--cspan:${b.cspan};--row:${b.row};--rspan:${b.rspan}`;
-    const sub = b.subgrid ? ' data-subgrid' : '';
-    return `  <${b.tag} style="${vars}"${sub}></${b.tag}>`;
-  });
-
+  const htmlLines = blocks.map(b => blockToHtml(b, 2));
   const html = `<body class="layout">\n${htmlLines.join('\n')}\n</body>`;
 
-  const css = `.layout {
+  let css = `.layout {
   display: grid;
   grid-template-columns: repeat(${grid.cols}, minmax(0, 1fr));
   grid-auto-rows: ${grid.rowSize};
@@ -32,7 +49,37 @@ export function exportPlacementVars(data) {
   grid-row: var(--row) / span var(--rspan);
 }`;
 
+  if (hasNesting(blocks)) {
+    css += `
+
+[data-subgrid] {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-auto-rows: ${grid.rowSize};
+  gap: ${grid.gap};
+}
+
+[data-subgrid] > * {
+  grid-column: var(--col) / span var(--cspan);
+  grid-row: var(--row) / span var(--rspan);
+}`;
+  }
+
   return { html, css };
+}
+
+/**
+ * Render a block to HTML for named-areas export.
+ * Children use placement vars inside the subgrid (hybrid approach).
+ */
+function blockToAreasHtml(b, areaName, indent = 2) {
+  const pad = ' '.repeat(indent);
+  const sub = b.subgrid ? ' data-subgrid' : '';
+  if (b.children?.length) {
+    const inner = b.children.map(c => blockToHtml(c, indent + 2)).join('\n');
+    return `${pad}<${b.tag}${sub}>\n${inner}\n${pad}</${b.tag}>`;
+  }
+  return `${pad}<${b.tag}${sub}></${b.tag}>`;
 }
 
 /**
@@ -45,13 +92,8 @@ export function exportNamedAreas(data) {
 
   // Assign unique area names — suffix duplicates
   const tagCounts = {};
-  const names = blocks.map(b => {
-    tagCounts[b.tag] = (tagCounts[b.tag] || 0) + 1;
-    return tagCounts[b.tag] > 1 ? `${b.tag}-${tagCounts[b.tag]}` : b.tag;
-  });
-  // Second pass: if a tag appeared more than once, suffix the first occurrence too
+  blocks.forEach(b => { tagCounts[b.tag] = (tagCounts[b.tag] || 0) + 1; });
   const totalCounts = { ...tagCounts };
-  let idx = 0;
   const tagSeen = {};
   const areaNames = blocks.map(b => {
     tagSeen[b.tag] = (tagSeen[b.tag] || 0) + 1;
@@ -69,36 +111,29 @@ export function exportNamedAreas(data) {
   for (let r = 1; r <= maxRow; r++) {
     const row = new Array(grid.cols).fill('.');
     blocks.forEach((b, i) => {
-      for (let c = b.col; c < b.col + b.cspan && c <= grid.cols; c++) {
-        row[c - 1] = areaNames[i];
+      if (r >= b.row && r < b.row + b.rspan) {
+        for (let c = b.col; c < b.col + b.cspan && c <= grid.cols; c++) {
+          row[c - 1] = areaNames[i];
+        }
       }
     });
     rows.push(row);
   }
 
-  // Filter to only rows that are within a block's span
-  const areaLines = [];
-  for (let r = 1; r <= maxRow; r++) {
-    const inBlock = blocks.some(b => r >= b.row && r < b.row + b.rspan);
-    if (inBlock) {
-      // Pad area names for alignment
-      const maxLen = Math.max(...rows[r - 1].map(n => n.length));
-      areaLines.push(`    "${rows[r - 1].map(n => n.padEnd(maxLen)).join(' ')}"`);
-    }
-  }
-
-  const htmlLines = blocks.map((b, i) => {
-    const sub = b.subgrid ? ' data-subgrid' : '';
-    return `  <${b.tag}${sub}></${b.tag}>`;
+  // Build area lines for CSS output
+  const areaLines = rows.map(row => {
+    const maxLen = Math.max(...row.map(n => n.length));
+    return `    "${row.map(n => n.padEnd(maxLen)).join(' ')}"`;
   });
 
+  const htmlLines = blocks.map((b, i) => blockToAreasHtml(b, areaNames[i], 2));
   const html = `<body class="layout">\n${htmlLines.join('\n')}\n</body>`;
 
   const areaRules = blocks.map((b, i) =>
     `${b.tag === areaNames[i] ? b.tag : `${b.tag}:nth-of-type(${areaNames[i].split('-')[1]})`} { grid-area: ${areaNames[i]}; }`
   ).join('\n');
 
-  const css = `.layout {
+  let css = `.layout {
   display: grid;
   grid-template-columns: repeat(${grid.cols}, minmax(0, 1fr));
   grid-template-areas:
@@ -110,6 +145,22 @@ ${areaLines.join('\n')};
 }
 
 ${areaRules}`;
+
+  if (hasNesting(blocks)) {
+    css += `
+
+[data-subgrid] {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-auto-rows: ${grid.rowSize};
+  gap: ${grid.gap};
+}
+
+[data-subgrid] > * {
+  grid-column: var(--col) / span var(--cspan);
+  grid-row: var(--row) / span var(--rspan);
+}`;
+  }
 
   return { html, css };
 }

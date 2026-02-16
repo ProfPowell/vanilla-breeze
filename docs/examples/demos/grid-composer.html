@@ -66,6 +66,45 @@
       font-size: var(--font-size-s, 0.8125rem);
     }
 
+    .grid-settings {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s, 0.5rem);
+      border: 0;
+      padding: 0;
+      margin: 0;
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    .grid-settings label {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs, 0.25rem);
+      font-weight: 500;
+    }
+
+    .grid-settings input {
+      padding: var(--size-2xs, 0.25rem);
+      border: 1px solid var(--color-border, #ccc);
+      border-radius: var(--radius-s, 4px);
+      font-family: ui-monospace, monospace;
+      font-size: var(--font-size-s, 0.8125rem);
+      inline-size: 4rem;
+    }
+
+    .grid-settings input[type="number"] {
+      inline-size: 3.5rem;
+    }
+
+    [data-action="load-template"] {
+      padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.375rem);
+      border: 1px solid var(--color-border, #ccc);
+      border-radius: var(--radius-s, 4px);
+      font-size: var(--font-size-s, 0.8125rem);
+      background: var(--color-surface, #fff);
+      cursor: pointer;
+    }
+
     /* --- Body: canvas + inspector side by side --- */
 
     .composer-body {
@@ -101,7 +140,9 @@
       min-block-size: 30rem;
     }
 
-    vb-canvas > :is(header, main, aside, footer, section, article, nav, figure, form) {
+    /* Block placement via CSS vars (canvas direct children + nested) */
+    vb-canvas > :is(header, main, aside, footer, section, article, nav, figure, form),
+    [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form) {
       grid-column: var(--col, 1) / span var(--cspan, 12);
       grid-row: var(--row, auto) / span var(--rspan, 2);
     }
@@ -121,7 +162,8 @@
 
     /* --- Editor layer (wireframe mode) --- */
 
-    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form) {
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form),
+    vb-canvas[data-wireframe] [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form) {
       outline: 2px dashed currentColor;
       border-radius: var(--radius-s, 4px);
       min-block-size: calc(var(--row-size) * 2);
@@ -130,13 +172,15 @@
       cursor: grab;
     }
 
-    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form)[data-selected] {
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form)[data-selected],
+    vb-canvas[data-wireframe] [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form)[data-selected] {
       outline-style: solid;
       outline-color: var(--color-primary, oklch(55% 0.22 260));
       outline-width: 3px;
     }
 
-    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form):focus-visible {
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form):focus-visible,
+    vb-canvas[data-wireframe] [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form):focus-visible {
       outline-color: var(--color-primary, oklch(55% 0.22 260));
       outline-offset: 2px;
     }
@@ -168,9 +212,82 @@
       z-index: -1;
     }
 
-    vb-canvas:not([data-wireframe]) > :is(header, main, aside, footer, section, article, nav, figure, form) {
+    /* Column overlay (::after — independent of wireframe ::before) */
+    vb-canvas[data-show-columns]::after {
+      content: "";
+      position: absolute;
+      inset: var(--gap);
+      pointer-events: none;
+      z-index: -1;
+      background: repeating-linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--color-primary, oklch(55% 0.22 260)) 8%, transparent)
+          0
+          calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols)),
+        transparent
+          calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols))
+          calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols) + var(--gap))
+      );
+    }
+
+    /* Drop zone indicator */
+    [data-drop-zone] {
+      outline-color: var(--color-success, oklch(55% 0.2 145)) !important;
+      outline-style: solid !important;
+      outline-width: 3px !important;
+      outline-offset: -3px;
+    }
+
+    /* Without wireframe: plain blocks */
+    vb-canvas:not([data-wireframe]) > :is(header, main, aside, footer, section, article, nav, figure, form),
+    vb-canvas:not([data-wireframe]) [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form) {
       background: color-mix(in oklch, currentColor 5%, transparent);
       border-radius: var(--radius-s, 4px);
+    }
+
+    /* --- Resize handles --- */
+
+    vb-canvas[data-wireframe] vb-block-handle {
+      position: absolute;
+      display: block;
+      inline-size: 14px;
+      block-size: 14px;
+      border-radius: 50%;
+      background: var(--color-primary, oklch(55% 0.22 260));
+      border: 2px solid var(--color-surface, #fff);
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 1;
+    }
+
+    [data-selected] vb-block-handle,
+    vb-canvas[data-wireframe] > :is(header, main, aside, footer, section, article, nav, figure, form):hover vb-block-handle,
+    vb-canvas[data-wireframe] [data-subgrid] > :is(header, main, aside, footer, section, article, nav, figure, form):hover vb-block-handle {
+      opacity: 0.75;
+    }
+
+    vb-block-handle[data-dir="e"] {
+      inset-inline-end: -7px;
+      inset-block-start: 50%;
+      translate: 0 -50%;
+      cursor: ew-resize;
+    }
+
+    vb-block-handle[data-dir="s"] {
+      inset-block-end: -7px;
+      inset-inline-start: 50%;
+      translate: -50% 0;
+      cursor: ns-resize;
+    }
+
+    vb-block-handle[data-dir="se"] {
+      inset-inline-end: -7px;
+      inset-block-end: -7px;
+      cursor: nwse-resize;
+    }
+
+    vb-canvas:not([data-wireframe]) vb-block-handle {
+      display: none;
     }
 
     /* --- Inspector --- */
@@ -220,6 +337,30 @@
       border: 1px solid var(--color-border, #ccc);
       border-radius: var(--radius-s, 4px);
       font-family: ui-monospace, monospace;
+      font-size: var(--font-size-s, 0.8125rem);
+    }
+
+    vb-inspector .nest-info {
+      font-size: var(--font-size-s, 0.8125rem);
+      color: var(--color-text-muted, #888);
+      margin-block-end: var(--size-xs, 0.375rem);
+    }
+
+    vb-inspector .nest-info code {
+      font-family: ui-monospace, monospace;
+      background: var(--color-background, #f5f5f5);
+      padding: 0.125rem 0.25rem;
+      border-radius: var(--radius-s, 4px);
+    }
+
+    vb-inspector [data-action="unnest"] {
+      margin-block-start: var(--size-xs, 0.375rem);
+      padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.375rem);
+      background: var(--color-surface, #fff);
+      color: var(--color-text, #333);
+      border: 1px solid var(--color-border, #ccc);
+      border-radius: var(--radius-s, 4px);
+      cursor: pointer;
       font-size: var(--font-size-s, 0.8125rem);
     }
 
@@ -325,6 +466,22 @@
         <input type="checkbox" data-action="wireframe" checked />
         Wireframe
       </label>
+      <label class="wf-toggle">
+        <input type="checkbox" data-action="show-columns" />
+        Columns
+      </label>
+      <fieldset class="grid-settings">
+        <legend class="visually-hidden">Grid settings</legend>
+        <label>Cols <input type="number" name="cols" value="12" min="1" max="24" /></label>
+        <label>Gap <input type="text" name="gap" value="0.75rem" size="6" /></label>
+        <label>Row <input type="text" name="row-size" value="3rem" size="5" /></label>
+      </fieldset>
+      <select data-action="load-template">
+        <option value="">Template...</option>
+        <option value="holy-grail">Holy Grail</option>
+        <option value="blog">Blog</option>
+        <option value="marketing">Marketing</option>
+      </select>
     </header>
 
     <section class="composer-body">
