@@ -22,8 +22,9 @@ export default {
   // View transitions CSS
   viewTransitionsCss: isDev ? '/src/utils/view-transitions.css' : null,
 
-  // Doc-extras (code-block + browser-window)
-  docExtrasJs: isDev ? null : '/cdn/doc-extras.js',
+  // Doc-extras (code-block + browser-window) — always use the pre-built bundle
+  // (11ty has no bundler at dev time, so bare imports don't work)
+  docExtrasJs: '/cdn/doc-extras.js',
 
   // Docs CSS
   docsCss: '/docs/docs.css',
