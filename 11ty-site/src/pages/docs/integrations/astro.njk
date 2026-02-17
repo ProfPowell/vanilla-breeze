@@ -1,0 +1,283 @@
+---
+layout: layouts/docs.njk
+title: Astro Integration
+description: "Astro components and layouts for building content-focused sites with Vanilla Breeze."
+currentSection: integrations
+currentPath: /docs/integrations/astro/
+permalink: /docs/integrations/astro/
+---
+
+{% set copyFiles %}cp -r integrations/astro/* src/{% endset %}
+
+{% set importStyles %}---
+import '../styles/astro-overrides.css';
+---{% endset %}
+
+{% set baseHeadUsage %}---
+import BaseHead from './components/BaseHead.astro';
+---
+<head>
+  <BaseHead
+    title="Page Title"
+    description="Page description"
+    image="/og-image.png"
+  />
+</head>{% endset %}
+
+{% set themeToggleUsage %}---
+import ThemeToggle from './components/ThemeToggle.astro';
+---
+<ThemeToggle />{% endset %}
+
+{% set navTreeUsage %}---
+import NavTree from './components/NavTree.astro';
+
+const nav = [
+  { label: 'Home', href: '/' },
+  {
+    label: 'Docs',
+    href: '/docs/',
+    children: [
+      { label: 'Getting Started', href: '/docs/start/' },
+      { label: 'Components', href: '/docs/components/' }
+    ]
+  }
+];
+---
+<NavTree items={nav} />{% endset %}
+
+{% set pageTocUsage %}---
+import PageToc from './components/PageToc.astro';
+const { headings } = Astro.props;
+---
+<PageToc headings={headings} />{% endset %}
+
+{% set cardUsage %}<Card variant="outlined" interactive href="/item/">
+  <h3>Card Title</h3>
+  <p>Card content</p>
+</Card>{% endset %}
+
+{% set formFieldUsage %}<FormField
+  label="Email"
+  name="email"
+  type="email"
+  required
+  hint="We'll never share your email."
+/>{% endset %}
+
+{% set demoComponents %}<CodeBlock code={codeString} lang="javascript" filename="example.js" />
+
+<BrowserWindow
+  src="/demos/example.html"
+  url="https://example.com"
+  title="Demo"
+/>{% endset %}
+
+{% set baseLayoutUsage %}---
+import BaseLayout from './layouts/BaseLayout.astro';
+---
+<BaseLayout title="Home" description="Welcome">
+  <h1>Hello World</h1>
+</BaseLayout>{% endset %}
+
+{% set docsLayoutUsage %}---
+import DocsLayout from './layouts/DocsLayout.astro';
+---
+<DocsLayout
+  title="Getting Started"
+  description="Learn how to use Vanilla Breeze"
+  headings={headings}
+  navigation={nav}
+>
+  <slot />
+</DocsLayout>{% endset %}
+
+{% set blogLayoutUsage %}<BlogLayout
+  title="Post Title"
+  description="Post excerpt"
+  pubDate={new Date('2024-01-15')}
+  author="John Doe"
+  tags={['css', 'web']}
+>
+  <slot />
+</BlogLayout>{% endset %}
+
+{% set landingLayoutUsage %}<LandingLayout title="Product" description="Description">
+  <section class="hero">...</section>
+  <section class="features">...</section>
+</LandingLayout>{% endset %}
+
+{% set typeScriptTypes %}import type { NavItem, Heading } from './astro';
+
+const nav: NavItem[] = [
+  { label: 'Home', href: '/' }
+];{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><span aria-current="page">Astro</span></li>
+  </ol>
+</nav>
+
+<h1>Astro Integration</h1>
+<p class="lead">Astro components and layouts for building content-focused sites with Vanilla Breeze.</p>
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>The Astro integration provides typed components and layouts that follow Vanilla Breeze conventions. All components support Astro's islands architecture and work with content collections.</p>
+    <p>Location: <code>/integrations/astro/</code></p>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Installation</h2>
+  <layout-text>
+    <p>Copy the <code>astro/</code> directory into your Astro project's <code>src/</code> folder:</p>
+  </layout-text>
+  <code-block language="bash" label="Copy integration files">{{ copyFiles | safe }}</code-block>
+  <layout-text>
+    <p>Then import styles in your main CSS or layout:</p>
+  </layout-text>
+  <code-block language="astro" label="Import styles">{{ importStyles | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Components</h2>
+
+  <h3>BaseHead</h3>
+  <layout-text>
+    <p>Standard <code>&lt;head&gt;</code> setup with meta tags, OG data, and theme initialization.</p>
+  </layout-text>
+  <code-block language="astro" label="BaseHead usage">{{ baseHeadUsage | safe }}</code-block>
+  <layout-text>
+    <p><strong>Props:</strong></p>
+    <ul>
+      <li><code>title</code> - Page title (required)</li>
+      <li><code>description</code> - Meta description (required)</li>
+      <li><code>image</code> - OG image URL (optional)</li>
+      <li><code>canonicalURL</code> - Canonical URL (optional)</li>
+    </ul>
+  </layout-text>
+
+  <h3>ThemeToggle</h3>
+  <layout-text>
+    <p>Theme switcher button using the <code>theme-wc</code> web component.</p>
+  </layout-text>
+  <code-block language="astro" label="ThemeToggle usage">{{ themeToggleUsage | safe }}</code-block>
+
+  <h3>NavTree</h3>
+  <layout-text>
+    <p>Tree navigation from structured data with automatic active state detection.</p>
+  </layout-text>
+  <code-block language="astro" label="NavTree usage">{{ navTreeUsage | safe }}</code-block>
+  <layout-text>
+    <p><strong>Props:</strong></p>
+    <ul>
+      <li><code>items</code> - Navigation tree array (required)</li>
+      <li><code>currentPath</code> - Current URL path (optional, auto-detected)</li>
+      <li><code>density</code> - 'default' | 'compact' (optional)</li>
+    </ul>
+  </layout-text>
+
+  <h3>PageToc</h3>
+  <layout-text>
+    <p>Auto-generated table of contents from page headings.</p>
+  </layout-text>
+  <code-block language="astro" label="PageToc usage">{{ pageTocUsage | safe }}</code-block>
+  <layout-text>
+    <p><strong>Props:</strong></p>
+    <ul>
+      <li><code>headings</code> - Array from getHeadings() (required)</li>
+      <li><code>label</code> - Section label (optional)</li>
+      <li><code>depth</code> - Max heading depth (optional, default: 3)</li>
+    </ul>
+  </layout-text>
+
+  <h3>Card</h3>
+  <layout-text>
+    <p>Wrapper for the <code>layout-card</code> custom element.</p>
+  </layout-text>
+  <code-block language="astro" label="Card usage">{{ cardUsage | safe }}</code-block>
+  <layout-text>
+    <p><strong>Props:</strong></p>
+    <ul>
+      <li><code>variant</code> - 'default' | 'outlined' | 'elevated' (optional)</li>
+      <li><code>interactive</code> - Makes entire card clickable (optional)</li>
+      <li><code>href</code> - Link URL when interactive (optional)</li>
+    </ul>
+  </layout-text>
+
+  <h3>FormField</h3>
+  <layout-text>
+    <p>Wrapper for the <code>form-field</code> custom element.</p>
+  </layout-text>
+  <code-block language="astro" label="FormField usage">{{ formFieldUsage | safe }}</code-block>
+  <layout-text>
+    <p><strong>Props:</strong></p>
+    <ul>
+      <li><code>label</code> - Field label (required)</li>
+      <li><code>name</code> - Input name (required)</li>
+      <li><code>type</code> - Input type (optional, default: 'text')</li>
+      <li><code>required</code> - Required field (optional)</li>
+      <li><code>hint</code> - Helper text (optional)</li>
+      <li><code>error</code> - Error message (optional)</li>
+    </ul>
+  </layout-text>
+
+  <h3>CodeBlock &amp; BrowserWindow</h3>
+  <layout-text>
+    <p>Helper components for demos and documentation.</p>
+  </layout-text>
+  <code-block language="astro" label="Demo components">{{ demoComponents | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Layouts</h2>
+
+  <h3>BaseLayout</h3>
+  <layout-text>
+    <p>Minimal page structure with header and footer.</p>
+  </layout-text>
+  <code-block language="astro" label="BaseLayout usage">{{ baseLayoutUsage | safe }}</code-block>
+
+  <h3>DocsLayout</h3>
+  <layout-text>
+    <p>Documentation page with sidebar navigation and table of contents.</p>
+  </layout-text>
+  <code-block language="astro" label="DocsLayout usage">{{ docsLayoutUsage | safe }}</code-block>
+
+  <h3>BlogLayout</h3>
+  <layout-text>
+    <p>Blog post layout with metadata and author info.</p>
+  </layout-text>
+  <code-block language="astro" label="BlogLayout usage">{{ blogLayoutUsage | safe }}</code-block>
+
+  <h3>LandingLayout</h3>
+  <layout-text>
+    <p>Marketing page with hero support and multi-column footer.</p>
+  </layout-text>
+  <code-block language="astro" label="LandingLayout usage">{{ landingLayoutUsage | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Styles</h2>
+  <layout-text>
+    <p>Import <code>astro-overrides.css</code> for Astro-specific styles:</p>
+    <ul>
+      <li>View transition animations</li>
+      <li>Island loading states</li>
+      <li>Content collection styling</li>
+      <li>Light/dark code block switching</li>
+    </ul>
+  </layout-text>
+</section>
+
+<section>
+  <h2>TypeScript Support</h2>
+  <layout-text>
+    <p>The integration includes TypeScript types for all component props. Import from <code>index.ts</code>:</p>
+  </layout-text>
+  <code-block language="typescript" label="TypeScript types">{{ typeScriptTypes | safe }}</code-block>
+</section>

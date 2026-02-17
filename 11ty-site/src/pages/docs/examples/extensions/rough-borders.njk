@@ -1,0 +1,684 @@
+---
+layout: layouts/docs.njk
+title: Rough Borders
+description: "Non-standard border treatments using SVG filters and CSS techniques for sketchy themes."
+currentSection: examples
+permalink: /docs/examples/extensions/rough-borders/
+---
+
+{% set svgFilterCode %}<filter id="rough-light">
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2"/>
+  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
+</filter>
+
+.card { filter: url(#rough-light); }{% endset %}
+
+{% set borderImageCode %}.sketch-border {
+  border: 8px solid transparent;
+  border-image: url("data:image/svg+xml,...") 10 stretch;
+}{% endset %}
+
+{% set maskImageCode %}.torn-edge {
+  mask-image: url("data:image/svg+xml,...");
+  mask-size: 100% 100%;
+}{% endset %}
+
+{% set gradientBorderCode %}.dashed-border {
+  background:
+    repeating-linear-gradient(90deg,
+      var(--color-border) 0, var(--color-border) 8px,
+      transparent 8px, transparent 16px
+    ) 0 0 / 100% 3px no-repeat,
+    var(--color-surface);
+}{% endset %}
+
+{% set boxShadowCode %}.sketch-shadow {
+  box-shadow:
+    3px 3px 0 -1px var(--color-surface),
+    3px 3px 0 0 var(--color-border),
+    6px 6px 0 -1px var(--color-surface),
+    6px 6px 0 0 var(--color-border);
+}{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/examples/">Examples</a></li>
+    <li><a href="/docs/examples/extensions/">Extensions</a></li>
+    <li><span aria-current="page">Rough Borders</span></li>
+  </ol>
+</nav>
+
+<h1>Rough Borders & Textures</h1>
+<p class="lead">Exploring non-standard border treatments for wireframe, grungy, and sketchy themes using SVG filters, border-image, and CSS techniques.</p>
+
+<div class="callout callout--info" style="margin-block-end: var(--size-l);">
+  <strong>Token Reference:</strong> See <a href="/docs/themes/#extensions">Themes &gt; Extensions</a> for token documentation.
+  Source: <code>src/tokens/extensions/rough-borders.css</code>
+</div>
+
+<section>
+  <h2>Proposed Border Tokens</h2>
+  <p>New tokens to add rough/sketchy border styles to themes.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Values</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--border-style</code></td>
+        <td><code>solid | dashed | rough | sketchy | none</code></td>
+      </tr>
+      <tr>
+        <td><code>--border-roughness</code></td>
+        <td><code>0 | 1 | 2 | 3</code> (intensity level)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Technique 1: SVG Filter Displacement</h2>
+  <p>Using feTurbulence + feDisplacementMap to create organic, hand-drawn edge effects.</p>
+  <browser-window url="svg-filter-demo">
+    <div class="demo-grid">
+      <div class="demo-card rough-filter-light">
+        <h3>Light (scale: 2)</h3>
+        <p>Subtle wobble, good for subtle personality</p>
+      </div>
+      <div class="demo-card rough-filter-medium">
+        <h3>Medium (scale: 4)</h3>
+        <p>Noticeable roughness, sketchy feel</p>
+      </div>
+      <div class="demo-card rough-filter-heavy">
+        <h3>Heavy (scale: 8)</h3>
+        <p>Very rough, torn paper effect</p>
+      </div>
+    </div>
+  </browser-window>
+  <code-block language="css" label="SVG filter displacement">{{ svgFilterCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Technique 2: Border Image Patterns</h2>
+  <p>Using border-image with SVG patterns for hand-drawn border effects.</p>
+  <browser-window url="border-image-demo">
+    <div class="demo-grid">
+      <div class="demo-card border-image-sketch">
+        <h3>Sketchy Curves</h3>
+        <p>Bezier curves for wobbly edges</p>
+      </div>
+      <div class="demo-card border-image-rough">
+        <h3>Rough Dashes</h3>
+        <p>Variable dash pattern</p>
+      </div>
+      <div class="demo-card border-image-marker">
+        <h3>Marker Style</h3>
+        <p>Hand-drawn marker strokes</p>
+      </div>
+    </div>
+  </browser-window>
+  <code-block language="css" label="Border image patterns">{{ borderImageCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Technique 3: Mask Image Edges</h2>
+  <p>Using mask-image to create torn or wavy edge effects.</p>
+  <browser-window url="mask-image-demo">
+    <div class="demo-grid">
+      <div class="demo-card mask-torn">
+        <h3>Torn Edges</h3>
+        <p>Irregular top and bottom edges</p>
+      </div>
+      <div class="demo-card mask-wavy">
+        <h3>Wavy Edges</h3>
+        <p>Smooth sine wave pattern</p>
+      </div>
+    </div>
+  </browser-window>
+  <code-block language="css" label="Mask image edges">{{ maskImageCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Technique 4: CSS Gradient Borders</h2>
+  <p>Using repeating gradients for dashed and dotted border patterns.</p>
+  <browser-window url="gradient-borders-demo">
+    <div class="demo-grid">
+      <div class="demo-card gradient-dashed">
+        <h3>Gradient Dashes</h3>
+        <p>Repeating linear gradient</p>
+      </div>
+      <div class="demo-card gradient-dots-border">
+        <h3>Dot Border</h3>
+        <p>Radial gradient dots</p>
+      </div>
+    </div>
+  </browser-window>
+  <code-block language="css" label="CSS gradient borders">{{ gradientBorderCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Technique 5: Box Shadow Effects</h2>
+  <p>Using layered box-shadows for sketchy and offset effects.</p>
+  <browser-window url="box-shadow-demo">
+    <div class="demo-grid">
+      <div class="demo-card shadow-sketch">
+        <h3>Sketch Shadow</h3>
+        <p>Layered offset shadows</p>
+      </div>
+      <div class="demo-card shadow-offset">
+        <h3>Hard Offset</h3>
+        <p>Brutalist solid shadow</p>
+      </div>
+    </div>
+  </browser-window>
+  <code-block language="css" label="Box shadow effects">{{ boxShadowCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Technique 6: Pseudo-element Decorations</h2>
+  <p>Using ::before and ::after for decorative corner accents.</p>
+  <browser-window url="pseudo-element-demo">
+    <div class="demo-grid">
+      <div class="demo-card pseudo-corners">
+        <h3>Corner Accents</h3>
+        <p>Decorative L-shapes at corners</p>
+      </div>
+      <div class="demo-card pseudo-tape">
+        <h3>Tape Effect</h3>
+        <p>Simulated masking tape</p>
+      </div>
+    </div>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Interactive Border Picker</h2>
+  <p>Click a style to apply it to the preview card.</p>
+  <browser-window url="interactive-picker">
+    <div class="interactive-demo">
+      <div class="preview-area">
+        <div class="preview-card" id="preview-card">
+          <h3>Preview Card</h3>
+          <p>Select a border style</p>
+        </div>
+      </div>
+      <div class="style-options">
+        <button class="style-option" data-style="none" aria-pressed="true">
+          <strong>None</strong>
+          <span>Standard border</span>
+        </button>
+        <button class="style-option" data-style="rough-filter-light">
+          <strong>SVG Filter Light</strong>
+          <span>Subtle displacement</span>
+        </button>
+        <button class="style-option" data-style="rough-filter-medium">
+          <strong>SVG Filter Medium</strong>
+          <span>Noticeable roughness</span>
+        </button>
+        <button class="style-option" data-style="border-image-sketch">
+          <strong>Sketch Border</strong>
+          <span>Hand-drawn curves</span>
+        </button>
+        <button class="style-option" data-style="mask-torn">
+          <strong>Torn Edges</strong>
+          <span>Irregular mask</span>
+        </button>
+        <button class="style-option" data-style="shadow-offset">
+          <strong>Hard Offset</strong>
+          <span>Brutalist shadow</span>
+        </button>
+        <button class="style-option" data-style="pseudo-corners">
+          <strong>Corner Accents</strong>
+          <span>Decorative corners</span>
+        </button>
+      </div>
+    </div>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Rough Buttons</h2>
+  <p>Applying rough border techniques to interactive buttons.</p>
+  <browser-window url="buttons-demo">
+    <div class="buttons-demo">
+      <button class="btn-rough filter-rough">Filter Rough</button>
+      <button class="btn-rough shadow-offset-btn">Offset Shadow</button>
+    </div>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Rough Inputs</h2>
+  <p>Form inputs with sketchy border treatments.</p>
+  <browser-window url="inputs-demo">
+    <div class="inputs-demo">
+      <input type="text" class="input-rough filter-input" placeholder="Filter rough input">
+      <input type="text" class="input-rough sketch-input" placeholder="Sketch shadow input">
+      <input type="text" class="input-rough underline-input" placeholder="Underline only">
+    </div>
+  </browser-window>
+</section>
+
+<!-- SVG Filters (must be in DOM) -->
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+  <defs>
+    <filter id="rough-light" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rough-medium" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rough-heavy" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<style>
+  /* Demo Grid */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--size-m);
+    padding: var(--size-m);
+  }
+
+  .demo-card {
+    padding: var(--size-l);
+    background: var(--color-surface);
+    min-height: 120px;
+  }
+
+  .demo-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+    font-size: var(--font-size-lg);
+  }
+
+  .demo-card p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* SVG Filter Techniques */
+  .rough-filter-light {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-light);
+  }
+
+  .rough-filter-medium {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-medium);
+  }
+
+  .rough-filter-heavy {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    filter: url(#rough-heavy);
+  }
+
+  /* Border Image Techniques */
+  .border-image-sketch {
+    border: 8px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0,2 Q10,0 20,2 T40,2 M0,38 Q10,40 20,38 T40,38 M2,0 Q0,10 2,20 T2,40 M38,0 Q40,10 38,20 T38,40' fill='none' stroke='%23333' stroke-width='2'/%3E%3C/svg%3E") 10 stretch;
+    background: var(--color-surface);
+  }
+
+  .border-image-rough {
+    border: 12px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='2' y='2' width='44' height='44' fill='none' stroke='%23333' stroke-width='3' stroke-dasharray='8,4,2,4' stroke-linecap='round'/%3E%3C/svg%3E") 12 round;
+    background: var(--color-surface);
+  }
+
+  .border-image-marker {
+    border: 10px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M2,5 C10,2 30,8 38,3 M2,35 C8,38 32,32 38,37 M5,2 C3,12 7,28 3,38 M35,2 C38,10 33,30 37,38' fill='none' stroke='%23333' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 10 stretch;
+    background: var(--color-surface);
+  }
+
+  /* Mask Image Techniques */
+  .mask-torn {
+    border: none;
+    position: relative;
+    background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 50%, #fef3c7 100%);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,5 Q3,0 8,4 Q12,8 18,2 Q22,6 28,0 Q34,4 40,2 Q46,7 52,3 Q58,0 64,5 Q70,2 76,6 Q82,1 88,4 Q94,0 100,3 L100,95 Q96,100 90,96 Q84,92 78,98 Q72,94 66,100 Q60,95 54,98 Q48,93 42,97 Q36,100 30,95 Q24,99 18,94 Q12,100 6,96 Q2,99 0,95 Z' fill='white'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,5 Q3,0 8,4 Q12,8 18,2 Q22,6 28,0 Q34,4 40,2 Q46,7 52,3 Q58,0 64,5 Q70,2 76,6 Q82,1 88,4 Q94,0 100,3 L100,95 Q96,100 90,96 Q84,92 78,98 Q72,94 66,100 Q60,95 54,98 Q48,93 42,97 Q36,100 30,95 Q24,99 18,94 Q12,100 6,96 Q2,99 0,95 Z' fill='white'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
+
+  .mask-wavy {
+    border: none;
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,8 Q12.5,0 25,8 T50,8 T75,8 T100,8 L100,92 Q87.5,100 75,92 T50,92 T25,92 T0,92 Z' fill='white'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,8 Q12.5,0 25,8 T50,8 T75,8 T100,8 L100,92 Q87.5,100 75,92 T50,92 T25,92 T0,92 Z' fill='white'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
+
+  /* CSS Gradient Borders */
+  .gradient-dashed {
+    border: none;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 0 / 100% 3px no-repeat,
+      repeating-linear-gradient(90deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 100% / 100% 3px no-repeat,
+      repeating-linear-gradient(0deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 0 0 / 3px 100% no-repeat,
+      repeating-linear-gradient(0deg,
+        var(--color-border) 0,
+        var(--color-border) 8px,
+        transparent 8px,
+        transparent 16px
+      ) 100% 0 / 3px 100% no-repeat,
+      var(--color-surface);
+  }
+
+  .gradient-dots-border {
+    border: none;
+    background:
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 0 / 12px 12px repeat-x,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 100% / 12px 12px repeat-x,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 0 0 / 12px 12px repeat-y,
+      radial-gradient(circle, var(--color-border) 2px, transparent 2px) 100% 0 / 12px 12px repeat-y,
+      var(--color-surface);
+    background-position: 0 0, 0 calc(100% - 6px), 0 0, calc(100% - 6px) 0;
+  }
+
+  /* Box Shadow Techniques */
+  .shadow-sketch {
+    border: 2px solid var(--color-border);
+    border-radius: 2px;
+    background: var(--color-surface);
+    box-shadow:
+      3px 3px 0 -1px var(--color-surface),
+      3px 3px 0 0 var(--color-border),
+      6px 6px 0 -1px var(--color-surface),
+      6px 6px 0 0 var(--color-border);
+  }
+
+  .shadow-offset {
+    border: 3px solid var(--color-text);
+    border-radius: 0;
+    background: var(--color-surface);
+    box-shadow: 5px 5px 0 var(--color-text);
+  }
+
+  /* Pseudo-element Decorations */
+  .pseudo-corners {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-m);
+    background: var(--color-surface);
+    position: relative;
+  }
+
+  .pseudo-corners::before,
+  .pseudo-corners::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-primary);
+  }
+
+  .pseudo-corners::before {
+    top: -6px;
+    left: -6px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .pseudo-corners::after {
+    bottom: -6px;
+    right: -6px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .pseudo-tape {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    position: relative;
+  }
+
+  .pseudo-tape::before,
+  .pseudo-tape::after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 24px;
+    background: rgba(255, 220, 100, 0.7);
+    border: 1px solid rgba(200, 170, 50, 0.5);
+    transform: rotate(-5deg);
+  }
+
+  .pseudo-tape::before {
+    top: -12px;
+    left: 20px;
+  }
+
+  .pseudo-tape::after {
+    bottom: -12px;
+    right: 20px;
+    transform: rotate(3deg);
+  }
+
+  /* Interactive Demo */
+  .interactive-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-l);
+    padding: var(--size-m);
+  }
+
+  @media (width < 768px) {
+    .interactive-demo {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .preview-area {
+    padding: var(--size-2xl);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-m);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .preview-card {
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    min-width: 180px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .preview-card h3 {
+    margin: 0 0 var(--size-xs) 0;
+  }
+
+  .preview-card p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .style-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--size-xs);
+  }
+
+  @media (width < 600px) {
+    .style-options {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .style-option {
+    padding: var(--size-xs) var(--size-s);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .style-option:hover {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border-strong, var(--color-border));
+  }
+
+  .style-option[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  .style-option[aria-pressed="true"] span {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .style-option strong {
+    display: block;
+    font-size: var(--font-size-sm);
+  }
+
+  .style-option span {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  /* Buttons Demo */
+  .buttons-demo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-m);
+    justify-content: center;
+    padding: var(--size-l);
+  }
+
+  .btn-rough {
+    padding: var(--size-s) var(--size-l);
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+  }
+
+  .btn-rough.filter-rough {
+    filter: url(#rough-light);
+    border-radius: var(--radius-s);
+  }
+
+  .btn-rough.shadow-offset-btn {
+    border: 2px solid var(--color-text);
+    box-shadow: 3px 3px 0 var(--color-text);
+    background: var(--color-primary);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .btn-rough.shadow-offset-btn:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--color-text);
+  }
+
+  .btn-rough.shadow-offset-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--color-text);
+  }
+
+  /* Inputs Demo */
+  .inputs-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--size-m);
+    padding: var(--size-l);
+  }
+
+  .input-rough {
+    padding: var(--size-s);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    width: 100%;
+  }
+
+  .input-rough.filter-input {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-s);
+    filter: url(#rough-light);
+  }
+
+  .input-rough.sketch-input {
+    border: 2px solid var(--color-border);
+    box-shadow: 2px 2px 0 var(--color-border);
+  }
+
+  .input-rough.underline-input {
+    border: none;
+    border-bottom: 3px solid var(--color-border);
+    background: transparent;
+  }
+</style>
+
+<script>
+  // Interactive border picker
+  const previewCard = document.getElementById('preview-card');
+  const styleOptions = document.querySelectorAll('.style-option');
+  const allStyles = [
+    'rough-filter-light', 'rough-filter-medium', 'rough-filter-heavy',
+    'border-image-sketch', 'border-image-rough', 'border-image-marker',
+    'mask-torn', 'mask-wavy', 'gradient-dashed', 'gradient-dots-border',
+    'shadow-sketch', 'shadow-offset', 'pseudo-corners', 'pseudo-tape'
+  ];
+
+  styleOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      // Update aria-pressed
+      styleOptions.forEach(opt => opt.setAttribute('aria-pressed', 'false'));
+      option.setAttribute('aria-pressed', 'true');
+
+      // Remove all style classes
+      if (previewCard) {
+        previewCard.classList.remove(...allStyles);
+
+        // Add selected style
+        const style = option.dataset.style;
+        if (style !== 'none') {
+          previewCard.classList.add(style);
+        }
+      }
+    });
+  });
+</script>

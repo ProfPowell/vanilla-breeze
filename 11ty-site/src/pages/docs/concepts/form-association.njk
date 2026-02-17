@@ -1,0 +1,245 @@
+---
+layout: layouts/docs.njk
+title: "Form-Associated Custom Elements"
+description: "Guide to making web components participate in native HTML form submission using ElementInternals."
+currentSection: docs
+currentPath: /docs/concepts/form-association/
+permalink: /docs/concepts/form-association/
+---
+
+{% set templateCode %}class MyInput extends HTMLElement {
+  static formAssociated = true;
+
+  #internals;
+  #initialValue = '';
+
+  constructor() {
+    super();
+    this.#internals = this.attachInternals();
+  }
+
+  connectedCallback() {
+    // Set up your component's DOM and behavior
+    this.#initialValue = this.getAttribute('value') || '';
+    this.#syncFormValue(this.#initialValue);
+    this.#validate();
+  }
+
+  // Called when the parent form is reset
+  formResetCallback() {
+    this.#syncFormValue(this.#initialValue);
+    this.#validate();
+  }
+
+  // Called when the browser restores form state (back/forward)
+  formStateRestoreCallback(state) {
+    if (state) {
+      this.#syncFormValue(state);
+      this.#validate();
+    }
+  }
+
+  #syncFormValue(value) {
+    if (value) {
+      this.#internals.setFormValue(value);
+    } else {
+      this.#internals.setFormValue(null);
+    }
+  }
+
+  #validate() {
+    if (this.hasAttribute('required') && !this.value) {
+      this.#internals.setValidity(
+        { valueMissing: true },
+        'Please fill out this field',
+        this.querySelector('input') // anchor element for popup
+      );
+    } else {
+      this.#internals.setValidity({});
+    }
+  }
+
+  get value() {
+    // Return current value from your component's state
+  }
+
+  set value(val) {
+    // Update component state
+    this.#syncFormValue(val);
+    this.#validate();
+  }
+}
+
+customElements.define('my-input', MyInput);{% endset %}
+
+{% set checklistCode %}// 1. Opt in to form association
+static formAssociated = true;
+
+// 2. Attach internals in constructor
+constructor() {
+  super();
+  this.#internals = this.attachInternals();
+}
+
+// 3. Sync value to form
+this.#internals.setFormValue(value);
+
+// 4. Set validation state
+this.#internals.setValidity({ valueMissing: true }, 'Message', anchor);
+this.#internals.setValidity({}); // clear errors
+
+// 5. Implement lifecycle callbacks
+formResetCallback() { /* handle form reset */ }
+formStateRestoreCallback(state) { /* handle back/forward */ }{% endset %}
+
+{% set fallbackCode %}<!-- Progressive enhancement pattern -->
+<my-input name="color">
+  <!-- Hidden input works before JS loads -->
+  <input type="hidden" name="color" value="default">
+  <select name="color">
+    <option value="red">Red</option>
+    <option value="blue">Blue</option>
+  </select>
+</my-input>
+
+<style>
+  /* Before JS: show native fallback */
+  my-input:not(:defined) select { display: block; }
+  my-input:not(:defined) input[type="hidden"] { /* kept for form submission */ }
+
+  /* After JS: component takes over form submission via ElementInternals */
+  my-input:defined select { display: none; }
+  my-input:defined input[type="hidden"] { display: none; }
+</style>{% endset %}
+
+{% set validationCode %}// Validation flags match native constraint validation API
+this.#internals.setValidity(
+  {
+    valueMissing: true,      // required but empty
+    typeMismatch: true,      // wrong format
+    patternMismatch: true,   // doesn't match pattern
+    tooLong: true,           // exceeds maxlength
+    tooShort: true,          // below minlength
+    rangeUnderflow: true,    // below min
+    rangeOverflow: true,     // above max
+    stepMismatch: true,      // doesn't match step
+    customError: true,       // custom validation
+  },
+  'Human-readable error message',
+  anchorElement // element to position the validation popup near
+);
+
+// Clear all validation errors
+this.#internals.setValidity({});{% endset %}
+
+{% set ariaCode %}import { setRole, setAriaProperty } from '../../utils/form-internals.js';
+
+// In connectedCallback:
+setRole(this, this.#internals, 'combobox');
+setAriaProperty(this, this.#internals, 'expanded', 'false');
+setAriaProperty(this, this.#internals, 'label', 'Pick a color');{% endset %}
+
+{% set cssValidationCode %}/* VB's validation CSS works with ElementInternals */
+my-input:user-valid {
+  /* Styles when component value is valid */
+}
+
+my-input:user-invalid {
+  /* Styles when component value is invalid */
+  outline: 2px solid var(--color-danger);
+}{% endset %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Form Association</span></li>
+  </ol>
+</nav>
+
+<h1>Form-Associated Custom Elements</h1>
+<p class="lead">Make web components participate in native HTML form submission, validation, and reset using the <code>ElementInternals</code> API.</p>
+
+<section>
+  <h2>What Are Form-Associated Custom Elements?</h2>
+  <p>By default, custom elements are invisible to HTML forms. A <code>&lt;form&gt;</code> only collects data from native form controls (<code>&lt;input&gt;</code>, <code>&lt;select&gt;</code>, <code>&lt;textarea&gt;</code>). Form-Associated Custom Elements (FACE) let your web components behave like native form controls:</p>
+  <ul>
+    <li>Submit values via <code>FormData</code> without hidden inputs</li>
+    <li>Participate in native constraint validation (<code>:valid</code>, <code>:invalid</code>)</li>
+    <li>Respond to form reset and browser history restoration</li>
+    <li>Work with <code>&lt;label&gt;</code> and <code>&lt;fieldset&gt;</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Complete Template</h2>
+  <p>Here is a complete annotated template showing all the pieces needed for a form-associated web component:</p>
+  <code-block language="javascript" show-lines label="Form-associated component template">{{ templateCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Step-by-Step Checklist</h2>
+  <p>The boilerplate is intentionally small &mdash; roughly 5 lines to opt in. The rest is component-specific logic.</p>
+  <code-block language="javascript" show-lines label="Checklist">{{ checklistCode | safe }}</code-block>
+
+  <h3>1. <code>static formAssociated = true</code></h3>
+  <p>Tells the browser this element participates in forms. Without this, <code>attachInternals()</code> won't provide form-related methods.</p>
+
+  <h3>2. <code>attachInternals()</code></h3>
+  <p>Returns an <code>ElementInternals</code> object. Call this in the <code>constructor()</code>. It provides <code>setFormValue()</code>, <code>setValidity()</code>, and ARIA reflection.</p>
+
+  <h3>3. <code>setFormValue(value)</code></h3>
+  <p>Sets the value submitted with the form. Pass <code>null</code> to exclude the element from form data. The optional second argument is a "state" string used by <code>formStateRestoreCallback</code>.</p>
+
+  <h3>4. <code>setValidity()</code></h3>
+  <p>Sets constraint validation state. Pass an empty object <code>{}</code> to mark as valid.</p>
+
+  <h3>5. Lifecycle Callbacks</h3>
+  <p><code>formResetCallback()</code> fires when the parent form resets. <code>formStateRestoreCallback(state)</code> fires when the browser restores form state from navigation history.</p>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>For components that need a no-JS fallback, include a hidden input or native control that works before JavaScript loads:</p>
+  <code-block language="html" show-lines label="Progressive enhancement">{{ fallbackCode | safe }}</code-block>
+  <p>VB components like <code>&lt;combobox-wc&gt;</code> use a different strategy: the light-DOM input and list are usable before JS, and JS enhances them with filtering, keyboard navigation, and form association.</p>
+</section>
+
+<section>
+  <h2>Validation</h2>
+  <p>The <code>setValidity()</code> method accepts the same constraint flags as native inputs:</p>
+  <code-block language="javascript" show-lines label="Validation flags">{{ validationCode | safe }}</code-block>
+
+  <h3>CSS Validation Selectors</h3>
+  <p>VB's <code>:user-valid</code> and <code>:user-invalid</code> pseudo-classes work automatically with form-associated custom elements:</p>
+  <code-block language="css" show-lines label="CSS validation">{{ cssValidationCode | safe }}</code-block>
+</section>
+
+<section>
+  <h2>Firefox ARIA Caveat</h2>
+  <p>Firefox does not yet support ARIA reflection on <code>ElementInternals</code>. When you set <code>internals.role</code> or <code>internals.ariaLabel</code>, Firefox silently ignores it. VB provides a small utility to handle this cross-browser:</p>
+  <code-block language="javascript" show-lines label="ARIA helpers">{{ ariaCode | safe }}</code-block>
+  <p>These helpers check for support and fall back to setting attributes on the host element. See <code>src/utils/form-internals.js</code>.</p>
+</section>
+
+<section>
+  <h2>VB Examples</h2>
+  <p>Two VB components use this pattern:</p>
+  <ul>
+    <li><a href="/docs/elements/web-components/rating/"><code>&lt;rating-wc&gt;</code></a> &mdash; Star rating input with radio buttons internally, form value via ElementInternals</li>
+    <li><a href="/docs/elements/web-components/combobox/"><code>&lt;combobox-wc&gt;</code></a> &mdash; Autocomplete combobox with full keyboard navigation, filtering, and form association</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser Support</h2>
+  <p>Form-Associated Custom Elements are supported in all modern browsers. <code>ElementInternals</code> shipped in Chrome 77, Firefox 93, and Safari 16.4. The ARIA reflection part of <code>ElementInternals</code> is not yet supported in Firefox (use the VB utility above).</p>
+</section>
+
+<section>
+  <h2>Further Reading</h2>
+  <ul>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/ElementInternals">MDN: ElementInternals</a></li>
+    <li><a href="https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-face-example">HTML Spec: Form-Associated Custom Elements</a></li>
+    <li><a href="https://web.dev/articles/more-capable-form-controls">web.dev: More Capable Form Controls</a></li>
+  </ul>
+</section>
