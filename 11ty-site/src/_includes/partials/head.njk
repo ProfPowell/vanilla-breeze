@@ -50,6 +50,13 @@
 <meta property="twitter:description" content="{{ description }}">
 <meta property="twitter:image" content="{{ site.url }}{{ ogImage }}">
 
+<!-- Theme: prevent flash of wrong theme (must run before CSS loads) -->
+<script>
+  const theme = localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.mode = theme;
+</script>
+
 <!-- Preconnect for performance -->
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 
@@ -58,10 +65,3 @@
 {% if site.viewTransitionsCss %}
 <link rel="stylesheet" href="{{ site.viewTransitionsCss }}">
 {% endif %}
-
-<!-- Theme: prevent flash of wrong theme -->
-<script>
-  const theme = localStorage.getItem('theme') ||
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.dataset.mode = theme;
-</script>

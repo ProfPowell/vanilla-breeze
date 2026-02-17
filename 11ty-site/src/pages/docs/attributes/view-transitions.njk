@@ -28,13 +28,14 @@ permalink: /docs/attributes/view-transitions/
     <h2>Quick Start</h2>
     <p>Import the opt-in CSS utility. This single import gives you smooth crossfade transitions on all same-origin navigations:</p>
 
-    <code-block language="css" label="Import view transitions">{`@import "vanilla-breeze/utils/view-transitions.css";`}</code-block>
+    {% set _code9 %}@import "vanilla-breeze/utils/view-transitions.css";{% endset %}
+    <code-block language="css" label="Import view transitions">{{ _code9 | escape }}</code-block>
 
     <p>That&rsquo;s it for basic crossfade. The <code>&lt;main&gt;</code> element automatically gets a named transition group (<code>main-content</code>) so content fades smoothly between pages.</p>
 
     <p>For shared element morphing, add <code>data-vt-name</code> to elements that should animate between pages:</p>
 
-    <code-block language="html" label="Shared element morphing">{`<!-- Gallery page -->
+    {% set _code8 %}<!-- Gallery page -->
 <a href="/products/123">
   <img data-vt-name="product-123" src="thumb.jpg" />
   <h2 data-vt-name="title-123">Product Name</h2>
@@ -42,7 +43,8 @@ permalink: /docs/attributes/view-transitions/
 
 <!-- Detail page - matching names morph smoothly -->
 <img data-vt-name="product-123" src="hero.jpg" />
-<h1 data-vt-name="title-123">Product Name</h1>`}</code-block>
+<h1 data-vt-name="title-123">Product Name</h1>{% endset %}
+    <code-block language="html" label="Shared element morphing">{{ _code8 | escape }}</code-block>
 
     <p>The <code>data-vt-name</code> attribute requires the init script (included in all doc site layouts, or import <code>view-transition-init.js</code>).</p>
   </section>
@@ -70,13 +72,14 @@ permalink: /docs/attributes/view-transitions/
       </tbody>
     </table>
 
-    <code-block language="html" label="Named groups in layout">{`<header data-vt="header">...</header>
+    {% set _code7 %}<header data-vt="header">...</header>
 <nav data-vt="sidebar">...</nav>
 <main> <!-- auto-named as main-content -->
   <div data-vt="hero">...</div>
   ...
 </main>
-<footer data-vt="footer">...</footer>`}</code-block>
+<footer data-vt="footer">...</footer>{% endset %}
+    <code-block language="html" label="Named groups in layout">{{ _code7 | escape }}</code-block>
 
     <p>When navigating between pages with the same named group, the browser morphs the element in place rather than crossfading. This keeps headers, sidebars, and footers visually stable during navigation.</p>
   </section>
@@ -86,13 +89,14 @@ permalink: /docs/attributes/view-transitions/
     <h2>Shared Element Morphing</h2>
     <p>For unique per-element names (galleries, product cards, lists), use <code>data-vt-name</code>:</p>
 
-    <code-block language="html" label="data-vt-name usage">{`<!-- Each element gets a unique name -->
+    {% set _code6 %}<!-- Each element gets a unique name -->
 <img data-vt-name="hero-1" src="thumb-1.jpg" />
 <img data-vt-name="hero-2" src="thumb-2.jpg" />
 <img data-vt-name="hero-3" src="thumb-3.jpg" />
 
 <!-- On the detail page, the matching name morphs -->
-<img data-vt-name="hero-1" src="full-1.jpg" />`}</code-block>
+<img data-vt-name="hero-1" src="full-1.jpg" />{% endset %}
+    <code-block language="html" label="data-vt-name usage">{{ _code6 | escape }}</code-block>
 
     <p>The init script (<code>view-transition-init.js</code>) sets <code>view-transition-name</code> from the attribute value. This replaces the need for inline <code>style</code> attributes.</p>
 
@@ -104,9 +108,10 @@ permalink: /docs/attributes/view-transitions/
       <li>A <code>MutationObserver</code> handles dynamically added elements</li>
     </ol>
 
-    <code-block language="js" label="Import the init script">{`// Already included in doc site layouts
+    {% set _code5 %}// Already included in doc site layouts
 // For standalone pages:
-import 'vanilla-breeze/utils/view-transition-init.js';`}</code-block>
+import 'vanilla-breeze/utils/view-transition-init.js';{% endset %}
+    <code-block language="js" label="Import the init script">{{ _code5 | escape }}</code-block>
 
     <p><strong>Important:</strong> Each <code>view-transition-name</code> must be unique per page. Two elements with the same name on the same page will cause errors.</p>
   </section>
@@ -132,14 +137,15 @@ import 'vanilla-breeze/utils/view-transition-init.js';`}</code-block>
       </tbody>
     </table>
 
-    <code-block language="html" label="Animation presets">{`<!-- Slide main content from the left -->
+    {% set _code4 %}<!-- Slide main content from the left -->
 <main data-vt-class="slide-left">...</main>
 
 <!-- Scale the hero section -->
 <div data-vt="hero" data-vt-class="scale">...</div>
 
 <!-- No animation for footer -->
-<footer data-vt="footer" data-vt-class="none">...</footer>`}</code-block>
+<footer data-vt="footer" data-vt-class="none">...</footer>{% endset %}
+    <code-block language="html" label="Animation presets">{{ _code4 | escape }}</code-block>
   </section>
 
   <!-- Tokens -->
@@ -162,10 +168,11 @@ import 'vanilla-breeze/utils/view-transition-init.js';`}</code-block>
       </tbody>
     </table>
 
-    <code-block language="css" label="Custom duration">{`:root {
+    {% set _code3 %}:root {
   /* Slow down all transitions */
   --view-transition-duration: 0.5s;
-}`}</code-block>
+}{% endset %}
+    <code-block language="css" label="Custom duration">{{ _code3 | escape }}</code-block>
   </section>
 
   <!-- Demos -->
@@ -200,19 +207,21 @@ import 'vanilla-breeze/utils/view-transition-init.js';`}</code-block>
     <h3>Multi-Page Applications (MPA)</h3>
     <p>For traditional multi-page sites, use the CSS <code>@view-transition</code> rule. This is what the Vanilla Breeze utility provides:</p>
 
-    <code-block language="css" label="MPA transitions">{`@view-transition {
+    {% set _code2 %}@view-transition {
   navigation: auto;
-}`}</code-block>
+}{% endset %}
+    <code-block language="css" label="MPA transitions">{{ _code2 | escape }}</code-block>
 
     <p>The browser automatically triggers transitions on same-origin navigations. No JavaScript needed.</p>
 
     <h3>Single-Page Applications (SPA)</h3>
     <p>For SPA routing (client-side navigation), use the JavaScript API:</p>
 
-    <code-block language="js" label="SPA transitions">{`document.startViewTransition(() => {
+    {% set _code1 %}document.startViewTransition(() => {
   // Update the DOM here
   updateContent(newContent);
-});`}</code-block>
+});{% endset %}
+    <code-block language="js" label="SPA transitions">{{ _code1 | escape }}</code-block>
 
     <p>The same CSS transition names and animation presets work with both approaches.</p>
   </section>
