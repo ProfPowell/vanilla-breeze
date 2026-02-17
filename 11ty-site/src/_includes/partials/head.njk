@@ -52,9 +52,18 @@
 
 <!-- Theme: prevent flash of wrong theme (must run before CSS loads) -->
 <script>
-  const theme = localStorage.getItem('theme') ||
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.dataset.mode = theme;
+  try {
+    const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
+    const mode = stored.mode || 'auto';
+    if (mode !== 'auto') {
+      document.documentElement.dataset.mode = mode;
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.dataset.mode = 'dark';
+    }
+    if (stored.brand && stored.brand !== 'default') {
+      document.documentElement.dataset.theme = stored.brand;
+    }
+  } catch(e) {}
 </script>
 
 <!-- Preconnect for performance -->
