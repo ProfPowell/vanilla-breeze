@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag Surface — Basic Reorder</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    drag-surface {
+      max-inline-size: 400px;
+    }
+
+    .task-item {
+      padding: var(--size-s) var(--size-m);
+      margin-block-end: var(--size-xs);
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      user-select: none;
+    }
+
+    .event-log {
+      margin-block-start: var(--size-l);
+      max-inline-size: 400px;
+    }
+
+    .event-log h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+    }
+
+    .event-log output {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      background: var(--color-surface-sunken, var(--color-surface-raised));
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+      min-block-size: 4rem;
+      overflow-y: auto;
+      max-block-size: 10rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Sortable List</h2>
+  <p style="margin-block-end: var(--size-s); color: var(--color-text-muted); font-size: var(--font-size-s);">
+    Drag items to reorder, or use <kbd>Space</kbd> to grab, arrow keys to move, <kbd>Space</kbd> to drop, <kbd>Escape</kbd> to cancel.
+  </p>
+
+  <drag-surface id="todo-list">
+    <div class="task-item" draggable="true" data-id="task-1" data-sort-order="1">Design review</div>
+    <div class="task-item" draggable="true" data-id="task-2" data-sort-order="2">Code audit</div>
+    <div class="task-item" draggable="true" data-id="task-3" data-sort-order="3">Write tests</div>
+    <div class="task-item" draggable="true" data-id="task-4" data-sort-order="4">Deploy staging</div>
+    <div class="task-item" draggable="true" data-id="task-5" data-sort-order="5">User feedback</div>
+  </drag-surface>
+
+  <div class="event-log">
+    <h3>Event Log</h3>
+    <output id="log"></output>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+    const surface = document.getElementById('todo-list');
+
+    surface.addEventListener('items-reordered', (e) => {
+      const { itemId, oldIndex, newIndex, order } = e.detail;
+      const line = `reordered: ${itemId} (${oldIndex} → ${newIndex})\n  order: [${order.join(', ')}]\n`;
+      log.textContent = line + log.textContent;
+    });
+
+    surface.addEventListener('reorder-start', () => {
+      log.textContent = 'reorder-start\n' + log.textContent;
+    });
+
+    surface.addEventListener('reorder-end', () => {
+      log.textContent = 'reorder-end\n' + log.textContent;
+    });
+  </script>
+</body>
+</html>

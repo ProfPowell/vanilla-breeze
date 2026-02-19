@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag Surface — Kanban Board</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--size-m);
+      max-inline-size: 900px;
+    }
+
+    .column {
+      background: var(--color-surface-sunken, var(--color-surface-raised));
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .column h3 {
+      margin-block-end: var(--size-s);
+      font-size: var(--font-size-base);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .column drag-surface {
+      min-block-size: 4rem;
+    }
+
+    .card {
+      padding: var(--size-s) var(--size-m);
+      margin-block-end: var(--size-xs);
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      user-select: none;
+      cursor: grab;
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card small {
+      display: block;
+      margin-block-start: var(--size-2xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-xs);
+    }
+
+    .event-log {
+      margin-block-start: var(--size-l);
+      max-inline-size: 900px;
+    }
+
+    .event-log h3 {
+      margin-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+    }
+
+    .event-log output {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      background: var(--color-surface-sunken, var(--color-surface-raised));
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+      min-block-size: 4rem;
+      overflow-y: auto;
+      max-block-size: 10rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Kanban Board</h2>
+  <p style="margin-block-end: var(--size-m); color: var(--color-text-muted); font-size: var(--font-size-s);">
+    Drag cards between columns or reorder within a column. Keyboard: <kbd>Space</kbd> to grab, arrows to move, <kbd>Space</kbd> to drop.
+  </p>
+
+  <div class="board">
+    <div class="column">
+      <h3>To Do</h3>
+      <drag-surface data-group="tasks" aria-label="To Do">
+        <div class="card" draggable="true" data-id="task-1" data-sort-order="1">
+          Design review
+          <small>Due Friday</small>
+        </div>
+        <div class="card" draggable="true" data-id="task-2" data-sort-order="2">
+          Write documentation
+          <small>Low priority</small>
+        </div>
+        <div class="card" draggable="true" data-id="task-3" data-sort-order="3">
+          Fix login bug
+          <small>High priority</small>
+        </div>
+      </drag-surface>
+    </div>
+
+    <div class="column">
+      <h3>In Progress</h3>
+      <drag-surface data-group="tasks" aria-label="In Progress">
+        <div class="card" draggable="true" data-id="task-4" data-sort-order="1">
+          API integration
+          <small>Backend team</small>
+        </div>
+      </drag-surface>
+    </div>
+
+    <div class="column">
+      <h3>Done</h3>
+      <drag-surface data-group="tasks" aria-label="Done">
+        <div class="card" draggable="true" data-id="task-5" data-sort-order="1">
+          Set up CI/CD
+          <small>Completed Monday</small>
+        </div>
+      </drag-surface>
+    </div>
+  </div>
+
+  <div class="event-log">
+    <h3>Event Log</h3>
+    <output id="log"></output>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+
+    document.addEventListener('items-reordered', (e) => {
+      const { itemId, oldIndex, newIndex } = e.detail;
+      const surface = e.target.closest('drag-surface');
+      const label = surface?.getAttribute('aria-label') || 'unknown';
+      const line = `reordered in "${label}": ${itemId} (${oldIndex} → ${newIndex})\n`;
+      log.textContent = line + log.textContent;
+    });
+
+    document.addEventListener('item-transferred', (e) => {
+      const { itemId, fromSurface, toSurface, newIndex } = e.detail;
+      const from = fromSurface.getAttribute('aria-label') || 'unknown';
+      const to = toSurface.getAttribute('aria-label') || 'unknown';
+      const line = `transferred: ${itemId} from "${from}" → "${to}" at index ${newIndex}\n`;
+      log.textContent = line + log.textContent;
+    });
+  </script>
+</body>
+</html>

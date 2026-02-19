@@ -48,6 +48,7 @@ const elementsByLetter = {
     { name: 'div', type: 'native', href: '/docs/elements/native/div/' },
     { name: 'dl', type: 'native', href: '/docs/elements/native/dl/' },
     { name: 'dl-item', type: 'custom', href: '/docs/elements/custom-elements/dl-item/' },
+    { name: 'drag-surface', type: 'component', href: '/docs/elements/web-components/drag-surface/' },
     { name: 'dropdown-wc', type: 'component', href: '/docs/elements/web-components/dropdown/' },
     { name: 'dt', type: 'native', href: '/docs/elements/native/dt/' },
   ],

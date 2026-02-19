@@ -1,0 +1,354 @@
+---
+layout: layouts/element.njk
+title: "drag-surface"
+description: "Accessible drag-and-drop reorder surface with keyboard support, live region announcements, and cross-surface transfer."
+elementName: drag-surface
+category: component
+currentPath: /docs/elements/web-components/drag-surface/
+permalink: /docs/elements/web-components/drag-surface/
+---
+
+{% set basicUsageCode %}<drag-surface>
+  <div draggable="true" data-id="task-1">Design review</div>
+  <div draggable="true" data-id="task-2">Code audit</div>
+  <div draggable="true" data-id="task-3">Deploy staging</div>
+</drag-surface>{% endset %}
+
+{% set kanbanCode %}<div class="board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+  <div class="column">
+    <h3>To Do</h3>
+    <drag-surface data-group="tasks" aria-label="To Do">
+      <div class="card" draggable="true" data-id="task-1">Design review</div>
+      <div class="card" draggable="true" data-id="task-2">Write docs</div>
+    </drag-surface>
+  </div>
+
+  <div class="column">
+    <h3>In Progress</h3>
+    <drag-surface data-group="tasks" aria-label="In Progress">
+      <div class="card" draggable="true" data-id="task-3">API integration</div>
+    </drag-surface>
+  </div>
+
+  <div class="column">
+    <h3>Done</h3>
+    <drag-surface data-group="tasks" aria-label="Done">
+      <!-- empty, ready to receive -->
+    </drag-surface>
+  </div>
+</div>{% endset %}
+
+{% set handleCode %}<drag-surface>
+  <div draggable="true" data-id="item-1">
+    <span data-drag-handle style="cursor: grab;">&#x2630;</span>
+    Item with drag handle
+  </div>
+  <div draggable="true" data-id="item-2">
+    <span data-drag-handle style="cursor: grab;">&#x2630;</span>
+    Another item
+  </div>
+</drag-surface>{% endset %}
+
+{% set horizontalCode %}<drag-surface data-orientation="horizontal" style="display: flex; gap: 1rem;">
+  <div draggable="true" data-id="col-a">Column A</div>
+  <div draggable="true" data-id="col-b">Column B</div>
+  <div draggable="true" data-id="col-c">Column C</div>
+</drag-surface>{% endset %}
+
+{% set eventCode %}{% raw %}const surface = document.querySelector('drag-surface');
+
+surface.addEventListener('items-reordered', (e) => {
+  console.log(e.detail);
+  // {
+  //   item: HTMLElement,
+  //   itemId: "task-2",
+  //   oldIndex: 2,
+  //   newIndex: 0,
+  //   order: ["task-2", "task-1", "task-3"]
+  // }
+});
+
+// Cross-surface transfer (listen on document or a parent)
+document.addEventListener('item-transferred', (e) => {
+  console.log(e.detail);
+  // {
+  //   item: HTMLElement,
+  //   itemId: "task-1",
+  //   fromSurface: HTMLElement,
+  //   toSurface: HTMLElement,
+  //   newIndex: 1,
+  //   fromOrder: ["task-2"],
+  //   toOrder: ["task-3", "task-1"]
+  // }
+});{% endraw %}{% endset %}
+
+{% set disabledCode %}<!-- Disable the entire surface -->
+<drag-surface data-drag-disabled>
+  <div draggable="true" data-id="a">Can't drag me</div>
+  <div draggable="true" data-id="b">Or me</div>
+</drag-surface>{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;drag-surface&gt;</code> component wraps the native HTML Drag and Drop API, adding keyboard accessibility, live region announcements for screen readers, and clean custom events. It supports both single-surface reorder and cross-surface transfer between surfaces that share a <code>data-group</code> attribute.</p>
+  <p>Children just need <code>draggable="true"</code> &mdash; the component handles all event wiring, state attributes for CSS, and ARIA management.</p>
+
+  <browser-window
+    src="/docs/examples/demos/drag-surface-basic.html"
+    url="https://vanilla-breeze.dev/drag-surface"
+    title="Drag Surface Demo"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic sortable list">{{ basicUsageCode | escape }}</code-block>
+
+  <aside class="note">
+    <strong>Progressive enhancement:</strong> Without JavaScript, the content renders as a static list. The <code>draggable</code> attribute only enables drag-and-drop when the component is registered. Keyboard reorder and screen reader announcements are added automatically.
+  </aside>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <h3>On <code>&lt;drag-surface&gt;</code></h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-group</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Transfer group. Items can move between surfaces that share the same group value.</td>
+      </tr>
+      <tr>
+        <td><code>data-orientation</code></td>
+        <td>string</td>
+        <td><code>"vertical"</code></td>
+        <td>Set to <code>"horizontal"</code> to use Left/Right arrows and clientX for drop position.</td>
+      </tr>
+      <tr>
+        <td><code>data-drag-disabled</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Disables all dragging on this surface.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>On Children</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>draggable="true"</code></td>
+        <td>boolean</td>
+        <td>Native HTML &mdash; marks the element as draggable. Required.</td>
+      </tr>
+      <tr>
+        <td><code>data-id</code></td>
+        <td>string</td>
+        <td>Stable identifier for the item (survives reorder).</td>
+      </tr>
+      <tr>
+        <td><code>data-sort-order</code></td>
+        <td>number</td>
+        <td>Numeric position within the surface. Managed automatically on reorder.</td>
+      </tr>
+      <tr>
+        <td><code>data-drag-handle</code></td>
+        <td>boolean</td>
+        <td>If present on a descendant, only that element initiates the drag.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS State Attributes</h2>
+  <p>The component manages visual state entirely through data attributes, keeping all styling in CSS.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Set On</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-dragging</code></td>
+        <td>The dragged child</td>
+        <td>During a mouse drag operation</td>
+      </tr>
+      <tr>
+        <td><code>data-drag-over</code></td>
+        <td>The surface</td>
+        <td>A dragged item is hovering over a valid drop target</td>
+      </tr>
+      <tr>
+        <td><code>data-drop-target="before|after"</code></td>
+        <td>A child item</td>
+        <td>Shows where the dragged item will be inserted</td>
+      </tr>
+      <tr>
+        <td><code>data-reorder-mode</code></td>
+        <td>The surface</td>
+        <td>During keyboard reorder (item is grabbed)</td>
+      </tr>
+      <tr>
+        <td><code>aria-grabbed="true"</code></td>
+        <td>A child item</td>
+        <td>Item is grabbed for keyboard reorder</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Kanban Board</h2>
+  <p>Link multiple surfaces with <code>data-group</code> to enable cross-surface transfer. Items can be dragged between any surfaces that share the same group value.</p>
+
+  <browser-window
+    src="/docs/examples/demos/drag-surface-kanban.html"
+    url="https://vanilla-breeze.dev/kanban"
+    title="Kanban Board Demo"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Kanban board with three columns">{{ kanbanCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Drag Handles</h2>
+  <p>Add <code>data-drag-handle</code> to a descendant element to constrain where the drag can be initiated. Only clicks on the handle start a drag &mdash; clicking other parts of the item does not.</p>
+
+  <code-block language="html" show-lines label="Using a drag handle">{{ handleCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Horizontal Layout</h2>
+  <p>Set <code>data-orientation="horizontal"</code> to switch keyboard navigation to Left/Right arrows and use horizontal position for drop calculations.</p>
+
+  <code-block language="html" show-lines label="Horizontal sortable">{{ horizontalCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>items-reordered</code></td>
+        <td><code>{item, itemId, oldIndex, newIndex, order}</code></td>
+        <td>Items within this surface were reordered (mouse or keyboard).</td>
+      </tr>
+      <tr>
+        <td><code>item-transferred</code></td>
+        <td><code>{item, itemId, fromSurface, toSurface, newIndex, fromOrder, toOrder}</code></td>
+        <td>An item moved between surfaces sharing a <code>data-group</code>.</td>
+      </tr>
+      <tr>
+        <td><code>reorder-start</code></td>
+        <td>&mdash;</td>
+        <td>A drag or keyboard reorder began.</td>
+      </tr>
+      <tr>
+        <td><code>reorder-end</code></td>
+        <td>&mdash;</td>
+        <td>A drag or keyboard reorder ended.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="js" show-lines label="Listening to events">{{ eventCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Keyboard Navigation</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Key</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><kbd>Space</kbd> / <kbd>Enter</kbd></td>
+        <td>Grab the focused item (toggle). Press again to drop at current position.</td>
+      </tr>
+      <tr>
+        <td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td>
+        <td>Move the grabbed item up/down (vertical orientation).</td>
+      </tr>
+      <tr>
+        <td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td>
+        <td>Move the grabbed item left/right (horizontal orientation).</td>
+      </tr>
+      <tr>
+        <td><kbd>Escape</kbd></td>
+        <td>Cancel the reorder and return the item to its original position.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Disabled State</h2>
+  <p>Add <code>data-drag-disabled</code> to the surface to temporarily prevent all dragging.</p>
+
+  <code-block language="html" show-lines label="Disabled surface">{{ disabledCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+
+  <h3>ARIA Roles</h3>
+  <p>The surface sets <code>role="list"</code> on itself and ensures each draggable child has <code>role="listitem"</code>, <code>tabindex="0"</code>, and <code>aria-grabbed="false"</code>.</p>
+
+  <h3>Live Region</h3>
+  <p>A visually hidden <code>aria-live="polite"</code> region announces position changes during keyboard reorder (e.g., &ldquo;Position 2 of 5&rdquo;) and grab/drop actions.</p>
+
+  <h3>Keyboard Alternative</h3>
+  <p>The keyboard reorder mode is the accessible alternative to mouse drag-and-drop. Users can grab items with <kbd>Space</kbd>/<kbd>Enter</kbd>, move with arrow keys, drop with <kbd>Space</kbd>/<kbd>Enter</kbd>, and cancel with <kbd>Escape</kbd>.</p>
+
+  <h3>Reduced Motion</h3>
+  <p>When <code>prefers-reduced-motion: reduce</code> is active, the component skips any transition animations.</p>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Layer</th><th>What Works</th><th>What&rsquo;s Missing</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HTML only</td>
+        <td>Content is readable as a static list</td>
+        <td>No interactivity</td>
+      </tr>
+      <tr>
+        <td>HTML + <code>draggable</code></td>
+        <td>Browser provides native drag ghost</td>
+        <td>No drop handling, no keyboard support</td>
+      </tr>
+      <tr>
+        <td>HTML + <code>&lt;drag-surface&gt;</code> JS</td>
+        <td>Full reorder, transfer, keyboard, live announcements</td>
+        <td>No persistence (resets on reload)</td>
+      </tr>
+      <tr>
+        <td>HTML + JS + consumer code</td>
+        <td>Consumer listens to events, persists order</td>
+        <td>Full experience</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/attributes/draggable/"><code>draggable</code></a> &mdash; the native HTML attribute that makes elements draggable</li>
+    <li><a href="/docs/elements/web-components/slide-accept/"><code>&lt;slide-accept-wc&gt;</code></a> &mdash; slide-to-confirm interaction</li>
+  </ul>
+</section>
