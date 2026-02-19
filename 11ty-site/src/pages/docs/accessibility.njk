@@ -262,44 +262,113 @@ background: var(--color-interactive-hover);{% endset %}
     <p>Vanilla Breeze follows established ARIA patterns from the <a href="https://www.w3.org/WAI/ARIA/apg/">ARIA Authoring Practices Guide (APG)</a>.</p>
 
     <h3>Component ARIA Roles</h3>
+    <p>Every interactive web component in Vanilla Breeze manages its own ARIA roles and states internally. The table below shows what each component handles for you and what you need to provide yourself.</p>
+
     <table>
       <thead>
         <tr>
           <th>Component</th>
           <th>Pattern</th>
-          <th>Key ARIA Attributes</th>
+          <th>Roles &amp; States (managed internally)</th>
+          <th>Developer provides</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>tabs-wc</code></td>
+          <td><a href="/docs/elements/web-components/tabs/"><code>tabs-wc</code></a></td>
           <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tabs/">Tabs</a></td>
-          <td><code>role="tablist"</code>, <code>role="tab"</code>, <code>aria-selected</code>, <code>aria-controls</code></td>
+          <td><code>role="tablist|tab|tabpanel"</code>, <code>aria-selected</code>, <code>aria-controls</code>, <code>aria-labelledby</code></td>
+          <td>—</td>
         </tr>
         <tr>
-          <td><code>accordion-wc</code></td>
+          <td><a href="/docs/elements/web-components/accordion/"><code>accordion-wc</code></a></td>
           <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/">Accordion</a></td>
-          <td><code>aria-expanded</code>, <code>aria-controls</code></td>
+          <td><code>role="region"</code>, <code>aria-expanded</code>, <code>aria-controls</code>, <code>aria-labelledby</code></td>
+          <td>—</td>
         </tr>
         <tr>
-          <td><code>dropdown-wc</code></td>
+          <td><a href="/docs/elements/web-components/combobox/"><code>combobox-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/combobox/">Combobox</a></td>
+          <td><code>role="combobox|listbox|option"</code>, <code>aria-expanded</code>, <code>aria-autocomplete</code>, <code>aria-controls</code>, <code>aria-selected</code>, <code>aria-activedescendant</code></td>
+          <td><code>&lt;input&gt;</code> + <code>&lt;ul&gt;</code> with <code>&lt;li data-value&gt;</code> items</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/tags/"><code>tags-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/combobox/">Combobox (multi)</a></td>
+          <td><code>role="combobox|listbox|option"</code>, <code>aria-expanded</code>, <code>aria-autocomplete</code>, <code>aria-multiselectable</code>, <code>aria-activedescendant</code>, <code>aria-live</code></td>
+          <td><code>&lt;input&gt;</code> + <code>&lt;ul&gt;</code> with <code>&lt;li data-value&gt;</code> items</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/dropdown/"><code>dropdown-wc</code></a></td>
           <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">Menu Button</a></td>
-          <td><code>aria-haspopup</code>, <code>aria-expanded</code>, <code>role="menu"</code></td>
+          <td><code>role="menu|menuitem|separator"</code>, <code>aria-haspopup</code>, <code>aria-expanded</code>, <code>aria-controls</code></td>
+          <td>Trigger button + <code>&lt;menu&gt;</code> with items</td>
         </tr>
         <tr>
-          <td><code>dialog</code></td>
-          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/">Modal Dialog</a></td>
-          <td><code>role="dialog"</code>, <code>aria-modal</code>, <code>aria-labelledby</code></td>
+          <td><a href="/docs/elements/web-components/context-menu/"><code>context-menu-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu/">Menu</a></td>
+          <td><code>role="menu|menuitem|separator|presentation"</code></td>
+          <td>Element with <code>data-trigger</code> + <code>&lt;menu&gt;</code></td>
         </tr>
         <tr>
-          <td><code>tooltip-wc</code></td>
+          <td><a href="/docs/elements/web-components/tooltip/"><code>tooltip-wc</code></a></td>
           <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/">Tooltip</a></td>
-          <td><code>role="tooltip"</code>, <code>aria-describedby</code></td>
+          <td><code>role="tooltip"</code>, <code>popover="hint"</code>, <code>aria-describedby</code></td>
+          <td>Trigger element as first child</td>
         </tr>
         <tr>
-          <td><code>toast-wc</code></td>
+          <td><a href="/docs/elements/web-components/toast/"><code>toast-wc</code></a></td>
           <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/alert/">Alert</a></td>
-          <td><code>role="alert"</code>, <code>aria-live="polite"</code></td>
+          <td><code>role="region|alert"</code>, <code>aria-live="polite"</code>, <code>aria-label="Notifications"</code></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/carousel/"><code>carousel-wc</code></a></td>
+          <td>Carousel</td>
+          <td><code>role="region|group|tablist|tab"</code>, <code>aria-roledescription="carousel|slide"</code>, <code>aria-selected</code>, <code>aria-live</code>, <code>aria-label</code></td>
+          <td>Slide content as children. Optional: <code>aria-label</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/table-wc/"><code>table-wc</code></a></td>
+          <td>Grid</td>
+          <td><code>aria-sort</code>, <code>aria-expanded</code>, <code>aria-hidden</code>, <code>aria-current="page"</code></td>
+          <td>Standard <code>&lt;table&gt;</code> markup + <code>data-sort</code> on sortable headers</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/command-palette/"><code>command-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/listbox/">Listbox</a></td>
+          <td><code>role="listbox|option|presentation"</code>, <code>aria-label</code></td>
+          <td><code>&lt;command-group&gt;</code> and <code>&lt;command-item&gt;</code> elements</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/search-wc/"><code>search-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/">Dialog</a> + <a href="https://www.w3.org/WAI/ARIA/apg/patterns/listbox/">Listbox</a></td>
+          <td><code>role="dialog|listbox|option"</code>, <code>aria-haspopup</code>, <code>aria-expanded</code>, <code>aria-autocomplete</code>, <code>aria-label</code></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/splitter/"><code>splitter-wc</code></a></td>
+          <td>Window Splitter</td>
+          <td><code>role="separator"</code>, <code>aria-orientation</code>, <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, <code>aria-label</code></td>
+          <td>Two child panels</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/rating/"><code>rating-wc</code></a></td>
+          <td>Radio Group / Image</td>
+          <td><code>role="img"</code> (readonly), <code>aria-label</code> (e.g. "Rating: 4 out of 5")</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/slide-accept/"><code>slide-accept-wc</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/slider/">Slider</a></td>
+          <td><code>role="slider"</code>, <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, <code>aria-label</code></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/native/dialog/"><code>dialog</code></a></td>
+          <td><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/">Modal Dialog</a></td>
+          <td>Native <code>&lt;dialog&gt;</code> semantics via <code>showModal()</code></td>
+          <td><code>aria-labelledby</code> or <code>aria-label</code></td>
         </tr>
       </tbody>
     </table>
