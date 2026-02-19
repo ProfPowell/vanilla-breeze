@@ -11,67 +11,44 @@
       background: var(--color-surface);
     }
 
-    h2 {
-      margin-block-end: var(--size-s);
-    }
-
     drag-surface {
       max-inline-size: 400px;
     }
 
-    .task-item {
-      padding: var(--size-s) var(--size-m);
-      margin-block-end: var(--size-xs);
-      background: var(--color-surface-raised);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-radius: var(--radius-s);
+    drag-surface article {
       user-select: none;
+      cursor: grab;
     }
 
-    .event-log {
-      margin-block-start: var(--size-l);
-      max-inline-size: 400px;
+    drag-surface article:active {
+      cursor: grabbing;
     }
 
-    .event-log h3 {
-      margin-block-end: var(--size-xs);
-      color: var(--color-text-muted);
-      font-size: var(--font-size-s);
-    }
-
-    .event-log output {
-      display: block;
-      font-family: var(--font-mono, monospace);
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-      background: var(--color-surface-sunken, var(--color-surface-raised));
-      padding: var(--size-s);
-      border-radius: var(--radius-s);
-      min-block-size: 4rem;
-      overflow-y: auto;
+    section output {
       max-block-size: 10rem;
+      overflow-y: auto;
       white-space: pre-wrap;
     }
   </style>
 </head>
-<body>
-  <h2>Sortable List</h2>
-  <p style="margin-block-end: var(--size-s); color: var(--color-text-muted); font-size: var(--font-size-s);">
-    Drag items to reorder, or use <kbd>Space</kbd> to grab, arrow keys to move, <kbd>Space</kbd> to drop, <kbd>Escape</kbd> to cancel.
-  </p>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>Sortable List</h2>
+    <p><small>Drag items to reorder, or use <kbd>Space</kbd> to grab, arrow keys to move, <kbd>Space</kbd> to drop, <kbd>Escape</kbd> to cancel.</small></p>
+  </header>
 
-  <drag-surface id="todo-list">
-    <div class="task-item" draggable="true" data-id="task-1" data-sort-order="1">Design review</div>
-    <div class="task-item" draggable="true" data-id="task-2" data-sort-order="2">Code audit</div>
-    <div class="task-item" draggable="true" data-id="task-3" data-sort-order="3">Write tests</div>
-    <div class="task-item" draggable="true" data-id="task-4" data-sort-order="4">Deploy staging</div>
-    <div class="task-item" draggable="true" data-id="task-5" data-sort-order="5">User feedback</div>
+  <drag-surface id="todo-list" data-layout="stack" data-layout-gap="xs">
+    <article class="card" draggable="true" data-id="task-1" data-sort-order="1">Design review</article>
+    <article class="card" draggable="true" data-id="task-2" data-sort-order="2">Code audit</article>
+    <article class="card" draggable="true" data-id="task-3" data-sort-order="3">Write tests</article>
+    <article class="card" draggable="true" data-id="task-4" data-sort-order="4">Deploy staging</article>
+    <article class="card" draggable="true" data-id="task-5" data-sort-order="5">User feedback</article>
   </drag-surface>
 
-  <div class="event-log">
+  <section>
     <h3>Event Log</h3>
-    <output id="log"></output>
-  </div>
+    <output id="log" class="block"></output>
+  </section>
 
   <script type="module" src="/src/main.js"></script>
   <script type="module">

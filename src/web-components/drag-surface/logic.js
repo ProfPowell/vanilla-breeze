@@ -21,10 +21,10 @@
  * @fires reorder-end - When a drag/keyboard reorder ends
  *
  * @example
- * <drag-surface>
- *   <div draggable="true" data-id="a">Item A</div>
- *   <div draggable="true" data-id="b">Item B</div>
- *   <div draggable="true" data-id="c">Item C</div>
+ * <drag-surface data-layout="stack" data-layout-gap="xs">
+ *   <article class="card" draggable="true" data-id="a">Item A</article>
+ *   <article class="card" draggable="true" data-id="b">Item B</article>
+ *   <article class="card" draggable="true" data-id="c">Item C</article>
  * </drag-surface>
  */
 class DragSurface extends HTMLElement {
@@ -108,8 +108,8 @@ class DragSurface extends HTMLElement {
   }
 
   #onDragStart(e) {
-    const item = e.target.closest(':scope > [draggable="true"]');
-    if (!item || this.hasAttribute('data-drag-disabled')) return;
+    const item = e.target.closest('[draggable="true"]');
+    if (!item || item.parentElement !== this || this.hasAttribute('data-drag-disabled')) return;
 
     // Handle drag-handle constraint
     const handle = item.querySelector('[data-drag-handle]');
@@ -151,7 +151,7 @@ class DragSurface extends HTMLElement {
 
   #onDragLeave(e) {
     // Only remove if we're actually leaving the surface
-    if (!this.contains(e.relatedTarget)) {
+    if (e.relatedTarget && !this.contains(e.relatedTarget)) {
       this.removeAttribute('data-drag-over');
       this.#clearDropIndicators();
     }
@@ -223,8 +223,8 @@ class DragSurface extends HTMLElement {
   }
 
   #onKeyDown(e) {
-    const item = e.target.closest(':scope > [draggable="true"]');
-    if (!item || this.hasAttribute('data-drag-disabled')) return;
+    const item = e.target.closest('[draggable="true"]');
+    if (!item || item.parentElement !== this || this.hasAttribute('data-drag-disabled')) return;
 
     const isGrabbed = item.getAttribute('aria-grabbed') === 'true';
     const isHorizontal = this.orientation === 'horizontal';
