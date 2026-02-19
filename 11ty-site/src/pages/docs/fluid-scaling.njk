@@ -1,0 +1,173 @@
+---
+layout: layouts/docs.njk
+title: Fluid Scaling
+description: "Continuous viewport-responsive type and spacing with clamp() — no breakpoints, no jumps. Activate with a single attribute."
+currentSection: docs
+permalink: /docs/fluid-scaling/
+---
+
+{% set activateFluid %}<!-- Default preset -->
+<html data-fluid>
+
+<!-- Named presets -->
+<html data-fluid="compact">
+<html data-fluid="spacious">
+
+<!-- Combine with themes and dark mode -->
+<html data-theme="ocean" data-fluid data-mode="dark">{% endset %}
+
+{% set customFluid %}/* Custom fluid preset — paste from the Fluid Sizing tool */
+[data-fluid="custom"] {
+  /* Fluid Type Scale */
+  --font-size-xs:  clamp(0.68rem, -0.16vi + 0.82rem, 0.79rem);
+  --font-size-sm:  clamp(0.85rem, -0.06vi + 0.90rem, 0.89rem);
+  --font-size-md:  clamp(1rem, 0.09vi + 0.98rem, 1.06rem);
+  --font-size-lg:  clamp(1.13rem, 0.29vi + 1.07rem, 1.33rem);
+  --font-size-xl:  clamp(1.27rem, 0.56vi + 1.15rem, 1.66rem);
+  --font-size-2xl: clamp(1.42rem, 0.93vi + 1.24rem, 2.08rem);
+  --font-size-3xl: clamp(1.60rem, 1.42vi + 1.32rem, 2.59rem);
+  --font-size-4xl: clamp(1.80rem, 2.06vi + 1.39rem, 3.24rem);
+  --font-size-5xl: clamp(2.03rem, 2.89vi + 1.45rem, 4.05rem);
+
+  /* Fluid Space (via --size-unit — cascades to all --size-* tokens) */
+  --size-unit: clamp(0.225rem, 0.07vi + 0.21rem, 0.275rem);
+}{% endset %}
+
+{% set pointerAware %}/* These rules are always active — no opt-in needed */
+
+/* Touch devices: enforce 44px minimum targets (WCAG 2.5.8) */
+@media (pointer: coarse) {
+  button, select, input:not([type="hidden"]) {
+    min-block-size: var(--size-touch-min); /* 2.75rem = 44px */
+  }
+}
+
+/* No hover capability: disable hover-only motion affordances */
+@media (hover: none) {
+  :root {
+    --motion-hover-lift: none;
+    --motion-hover-scale: none;
+  }
+}{% endset %}
+
+<h1>Fluid Scaling</h1>
+<p class="lead">Type sizes and spacing scale continuously across viewports using <code>clamp()</code> &mdash; no breakpoints, no jumps. Pointer detection adapts interaction style to the device. Together, they make responsive design intrinsic.</p>
+
+<nav class="subnav" aria-label="Page sections">
+  <ul>
+    <li><a href="#why-fluid">Why Fluid</a></li>
+    <li><a href="#activation">Activation</a></li>
+    <li><a href="#what-changes">What Changes</a></li>
+    <li><a href="#presets">Presets</a></li>
+    <li><a href="#pointer-detection">Pointer Detection</a></li>
+    <li><a href="#with-themes">With Themes</a></li>
+    <li><a href="#custom-parameters">Custom Parameters</a></li>
+    <li><a href="#when-not-to">When Not To</a></li>
+  </ul>
+</nav>
+
+<section id="why-fluid">
+  <h2>Why Fluid</h2>
+  <p>Traditional responsive design uses breakpoints &mdash; fixed thresholds where layouts snap between states. This creates three problems:</p>
+  <ol>
+    <li><strong>Jarring jumps.</strong> A heading that's 2rem at 767px and 3rem at 768px creates a visible pop.</li>
+    <li><strong>False taxonomy.</strong> "Mobile", "tablet", "desktop" are marketing categories, not engineering primitives. A 1024px laptop in portrait mode isn't a tablet.</li>
+    <li><strong>Combinatorial explosion.</strong> Every breakpoint doubles the test matrix. Three breakpoints means eight states to verify.</li>
+  </ol>
+  <p>Fluid scaling replaces this with continuous interpolation. Values ease smoothly from a minimum (at 320px) to a maximum (at 1440px). One rule, infinite states, zero jumps.</p>
+</section>
+
+<section id="activation">
+  <h2>Activation</h2>
+  <p>Add the <code>data-fluid</code> attribute to <code>&lt;html&gt;</code>. Remove it to revert to fixed values instantly.</p>
+
+  <code-block language="html" label="Enable fluid scaling">{{ activateFluid | escape }}</code-block>
+
+  <p>Fluid scaling is opt-in so existing sites aren't affected. Once activated, it overrides the static <code>--font-size-*</code> and <code>--size-unit</code> tokens with <code>clamp()</code> values.</p>
+</section>
+
+<section id="what-changes">
+  <h2>What Changes</h2>
+
+  <h3>Typography</h3>
+  <p>Each of the nine <code>--font-size-*</code> tokens gets a <code>clamp()</code> value. Small sizes barely change (xs stays near 0.75rem); large sizes scale dramatically (5xl grows from ~2rem to ~4rem). This creates a <strong>tighter ratio at narrow viewports</strong> (more uniform hierarchy, easier to scan) and a <strong>wider ratio at wide viewports</strong> (more dramatic headings, clearer visual weight).</p>
+
+  <h3>Spacing</h3>
+  <p>All nine <code>--size-*</code> tokens (3xs through 3xl) are derived from <code>--size-unit</code> via <code>calc()</code>. Making <code>--size-unit</code> a <code>clamp()</code> value makes every spacing token fluid automatically &mdash; a single override cascades to the entire system.</p>
+
+  <h3>Content Widths</h3>
+  <p><code>--content-normal</code> and <code>--measure-normal</code> also scale, expanding reading areas on wider screens while keeping comfortable line lengths on narrow ones.</p>
+</section>
+
+<section id="presets">
+  <h2>Presets</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Type Ratio</th><th>Space Swing</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>data-fluid="compact"</code></td>
+        <td>1.067 &rarr; 1.2</td>
+        <td>&plusmn;11%</td>
+        <td>Tight, uniform hierarchy. Good for dense UIs and dashboards.</td>
+      </tr>
+      <tr>
+        <td><code>data-fluid</code></td>
+        <td>1.125 &rarr; 1.25</td>
+        <td>&plusmn;10%</td>
+        <td>Balanced, general-purpose. Works for most content sites.</td>
+      </tr>
+      <tr>
+        <td><code>data-fluid="spacious"</code></td>
+        <td>1.2 &rarr; 1.333</td>
+        <td>&plusmn;11%</td>
+        <td>Generous, dramatic headings. Marketing pages and editorial layouts.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pointer-detection">
+  <h2>Pointer Detection</h2>
+  <p>Pointer detection is <strong>always on</strong> &mdash; no opt-in attribute needed. It uses CSS media queries to adapt interaction style to the device's input capabilities.</p>
+
+  <code-block language="css" label="Pointer-aware rules (always active)">{{ pointerAware | escape }}</code-block>
+
+  <h3>What It Does</h3>
+  <dl>
+    <dt><code>@media (pointer: coarse)</code></dt>
+    <dd>Touch and stylus devices get 44px minimum target sizes on buttons, inputs, and selects &mdash; enforcing WCAG 2.5.8 target size requirements.</dd>
+
+    <dt><code>@media (hover: none)</code></dt>
+    <dd>On devices without hover (phones, tablets), hover-only motion effects like lift and scale are disabled. Content remains accessible without hover interactions.</dd>
+  </dl>
+</section>
+
+<section id="with-themes">
+  <h2>With Themes</h2>
+  <p><code>data-fluid</code> composes with <code>data-theme</code>. Most themes only customize colors and fonts, so fluid scaling works without any theme-side changes.</p>
+  <p>The <code>a11y-large-text</code> accessibility theme includes dedicated fluid compound rules &mdash; its larger base sizes (1.25rem body, 0.3125rem unit) also scale fluidly when <code>data-fluid</code> is present.</p>
+
+  <code-block language="html" label="Fluid + theme composition">{{ '<html data-theme="ocean" data-fluid>\n<!-- Ocean colors + fluid type/spacing -->\n\n<html data-theme="a11y-large-text" data-fluid>\n<!-- Large text base + fluid scaling = maximum readability -->' | escape }}</code-block>
+</section>
+
+<section id="custom-parameters">
+  <h2>Custom Parameters</h2>
+  <p>For full control over ratios and viewport ranges, use the interactive tools:</p>
+  <ul>
+    <li><a href="/docs/tools/fluid-layout/">Fluid Sizing tool</a> &mdash; visualize and export fluid type/space scales. Use the "VB-native" export mode for <code>[data-fluid="custom"]</code> output.</li>
+    <li><a href="/lab/experiments/theme-composer/">Theme Composer</a> &mdash; when fluid sizing is enabled, the exported CSS includes a <code>[data-fluid]</code> compound block scoped to your theme.</li>
+  </ul>
+  <p>Both tools produce production-ready <code>clamp()</code> CSS. Paste it into your project stylesheet:</p>
+
+  <code-block language="css" label="Custom fluid preset">{{ customFluid | escape }}</code-block>
+</section>
+
+<section id="when-not-to">
+  <h2>When Not To Use Fluid Scaling</h2>
+  <ul>
+    <li><strong>Pixel-precise dashboards</strong> &mdash; data-dense UIs where every pixel matters may prefer fixed tokens.</li>
+    <li><strong>Print stylesheets</strong> &mdash; print media has a fixed page size; fluid scaling adds no value.</li>
+    <li><strong>Embedded widgets</strong> &mdash; components that render at a known fixed size don't benefit from viewport-relative scaling. Use container queries instead.</li>
+    <li><strong>Existing breakpoint systems</strong> &mdash; if your project already has a mature breakpoint-based approach, mixing in fluid tokens can create unpredictable interactions.</li>
+  </ul>
+</section>

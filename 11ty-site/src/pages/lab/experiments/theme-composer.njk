@@ -1,0 +1,1875 @@
+---
+layout: layouts/docs.njk
+title: "Theme Composer"
+description: "Compose a complete VB theme — colors, typography, spacing, fluid sizing, shape, borders, icons, surfaces, shadows, and motion — with live preview and CSS export."
+currentSection: tools
+currentPath: /docs/tools/theme-composer/
+permalink: /docs/tools/theme-composer/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Two-panel layout ===== */
+  .composer-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: var(--size-l, 1.5rem);
+    align-items: start;
+  }
+
+  @media (max-width: 960px) {
+    .composer-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    position: sticky;
+    top: var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  .sidebar details {
+    border-block-end: 1px solid var(--color-border-subtle, #eee);
+  }
+
+  .sidebar details:last-of-type {
+    border-block-end: none;
+  }
+
+  .sidebar summary {
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sidebar .detail-body {
+    padding: 0 var(--size-m, 1rem) var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .sidebar label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+  }
+
+  .sidebar label > span {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .sidebar input[type="range"] { width: 100%; }
+  .sidebar input[type="text"],
+  .sidebar input[type="number"],
+  .sidebar select {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .sidebar input[type="number"] {
+    width: 80px;
+  }
+
+  .sidebar output {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  /* Mini swatches row in sidebar */
+  .mini-swatches {
+    display: flex;
+    gap: 3px;
+    margin-block-start: var(--size-2xs, 0.25rem);
+  }
+
+  .mini-swatch {
+    width: 32px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid oklch(0% 0 0 / 0.15);
+  }
+
+  /* Hue strip background for hue sliders */
+  input[type="range"].hue-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right,
+      oklch(65% 0.18 0), oklch(65% 0.18 30), oklch(65% 0.18 60),
+      oklch(65% 0.18 90), oklch(65% 0.18 120), oklch(65% 0.18 150),
+      oklch(65% 0.18 180), oklch(65% 0.18 210), oklch(65% 0.18 240),
+      oklch(65% 0.18 270), oklch(65% 0.18 300), oklch(65% 0.18 330),
+      oklch(65% 0.18 360));
+    outline: none;
+  }
+
+  input[type="range"].hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid oklch(0% 0 0 / 0.3);
+    cursor: pointer;
+    box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  }
+
+  input[type="range"].hue-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid oklch(0% 0 0 / 0.3);
+    cursor: pointer;
+    box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  }
+
+  /* Radio preset row */
+  .preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .preset-row label {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  .preset-row input:checked + span { font-weight: 700; }
+
+  /* Import buttons */
+  .import-row {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .import-row button {
+    flex: 1;
+    font-size: var(--font-size-xs, 0.75rem);
+    white-space: nowrap;
+  }
+
+  /* Export footer */
+  .export-footer {
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+    border-block-start: 1px solid var(--color-border, #ddd);
+  }
+
+  .export-footer button {
+    flex: 1;
+    white-space: nowrap;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* Toggle row */
+  .toggle-row {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.5rem !important;
+  }
+
+  /* Inline number row */
+  .number-row {
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+    align-items: end;
+  }
+
+  .number-row label { flex: 1; }
+
+  /* ===== Preview Panel ===== */
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m, 1rem);
+  }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+    align-self: start;
+  }
+
+  .mode-toggle label {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .mode-toggle input:checked + span { font-weight: 700; }
+
+  /* Preview container */
+  .preview-container {
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+  }
+
+  .preview-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .preview-split > .preview-pane:first-child {
+    border-inline-end: 1px solid var(--color-border, #ddd);
+  }
+
+  .preview-pane {
+    padding: var(--size-l, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m, 1rem);
+  }
+
+  /* Preview nav */
+  .p-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s, 0.75rem);
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    border-radius: var(--radius-s, 0.25rem);
+  }
+
+  .p-nav h4 { margin: 0; flex: 1; }
+
+  .p-nav span {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* Preview card */
+  .p-card {
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+  }
+
+  .p-card-header { padding: var(--size-s, 0.75rem); }
+  .p-card-header h4 { margin: 0; }
+  .p-card-body { padding: var(--size-s, 0.75rem); }
+  .p-card-footer {
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .p-btn {
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: var(--radius-s, 0.25rem);
+    font-weight: 600;
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+  }
+
+  .p-btn-outline {
+    background: transparent;
+    border: 1px solid;
+    font-weight: 500;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+  }
+
+  /* Preview form */
+  .p-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .p-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-weight: 500;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .p-form input {
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+  }
+
+  /* Badge row */
+  .p-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .p-badge {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-full, 9999px);
+    font-weight: 600;
+  }
+
+  /* Color swatches row */
+  .p-swatch-row {
+    display: flex;
+    gap: 3px;
+  }
+
+  .p-swatch-row span {
+    flex: 1;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid oklch(0% 0 0 / 0.1);
+  }
+
+  /* Preview table */
+  .p-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .p-table th, .p-table td {
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    text-align: left;
+  }
+
+  /* Blockquote */
+  .p-quote {
+    border-inline-start-width: 3px;
+    border-inline-start-style: solid;
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* Code block */
+  .p-code {
+    padding: var(--size-s, 0.75rem);
+    border-radius: var(--radius-s, 0.25rem);
+    font-size: var(--font-size-sm, 0.875rem);
+    overflow-x: auto;
+  }
+
+  /* CSS preview dialog */
+  .css-preview {
+    margin-block-start: var(--size-m, 1rem);
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface-raised, #f8f8f8);
+  }
+
+  .css-preview pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: var(--font-size-xs, 0.75rem);
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* Cross-links bar */
+  .cross-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs, 0.5rem);
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .cross-links a {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/themes/">Docs</a></li>
+    <li><a href="/docs/tools/">Tools</a></li>
+    <li><span aria-current="page">Theme Composer</span></li>
+  </ol>
+</nav>
+
+<h1>Theme Composer</h1>
+<p class="lead">Compose a complete theme from all 11 dimensions &mdash; colors, typography, spacing, fluid sizing, shape, borders, icons, surfaces, shadows, and motion &mdash; then export production-ready CSS.</p>
+
+<nav class="cross-links" aria-label="Related tools">
+  <a href="/docs/tools/color-schemer/">Color Schemer</a>
+  <a href="/docs/tools/type-explorer/">Type Explorer</a>
+  <a href="/docs/tools/fluid-layout/">Fluid Layout</a>
+  <a href="/lab/experiments/theme-lab/">Theme Lab</a>
+</nav>
+
+<div class="composer-layout">
+  <!-- ============================================
+       SIDEBAR CONTROLS
+       ============================================ -->
+  <aside class="sidebar">
+
+    <!-- A. Theme Identity -->
+    <details open>
+      <summary>Theme Identity</summary>
+      <div class="detail-body">
+        <label>Name <input type="text" id="theme-name" value="My Theme" placeholder="Theme name"></label>
+        <label>Description <input type="text" id="theme-desc" value="" placeholder="Optional description"></label>
+        <label>Starting Point
+          <select id="starting-point">
+            <optgroup label="Import">
+              <option value="from-color-schemer">From Color Schemer</option>
+              <option value="from-type-explorer">From Type Explorer</option>
+              <option value="from-fluid-layout">From Fluid Layout</option>
+            </optgroup>
+            <optgroup label="Blank">
+              <option value="blank" selected>Blank (VB defaults)</option>
+            </optgroup>
+            {% for theme in themeRegistry %}
+            {% if theme.category == 'color' and loop.first %}
+            <optgroup label="Color Themes">
+            {% endif %}
+            {% if theme.category == 'personality' and themeRegistry[loop.index0 - 1].category != 'personality' %}
+            </optgroup><optgroup label="Personality Themes">
+            {% endif %}
+            {% if theme.category == 'extreme' and themeRegistry[loop.index0 - 1].category != 'extreme' %}
+            </optgroup><optgroup label="Extreme Themes">
+            {% endif %}
+            {% if theme.category == 'accessibility' and themeRegistry[loop.index0 - 1].category != 'accessibility' %}
+            </optgroup><optgroup label="Accessibility Themes">
+            {% endif %}
+            {% if theme.category != 'accessibility' %}
+            <option value="{{ theme.id }}">{{ theme.name }}</option>
+            {% endif %}
+            {% if loop.last %}</optgroup>{% endif %}
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <!-- B. Colors -->
+    <details open>
+      <summary>Colors</summary>
+      <div class="detail-body">
+        <label>
+          <span>Primary Hue <output id="hue-pri-out">260</output></span>
+          <input type="range" class="hue-slider" id="hue-primary" min="0" max="360" step="1" value="260">
+        </label>
+        <label>
+          <span>Secondary Hue <output id="hue-sec-out">200</output></span>
+          <input type="range" class="hue-slider" id="hue-secondary" min="0" max="360" step="1" value="200">
+        </label>
+        <label>
+          <span>Accent Hue <output id="hue-acc-out">30</output></span>
+          <input type="range" class="hue-slider" id="hue-accent" min="0" max="360" step="1" value="30">
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="harmony-lock"> Harmony lock
+        </label>
+        <label>
+          <span>Harmony Mode</span>
+          <select id="harmony-mode">
+            <option value="complementary">Complementary</option>
+            <option value="analogous">Analogous</option>
+            <option value="triadic">Triadic</option>
+            <option value="split">Split-complementary</option>
+          </select>
+        </label>
+        <label>
+          <span>Primary Lightness <output id="pri-l-out">0.50</output></span>
+          <input type="range" id="pri-lightness" min="0.30" max="0.80" step="0.01" value="0.50">
+        </label>
+        <label>
+          <span>Primary Chroma <output id="pri-c-out">0.20</output></span>
+          <input type="range" id="pri-chroma" min="0.00" max="0.37" step="0.01" value="0.20">
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="surface-tint"> Tint dark surfaces
+        </label>
+        <div class="mini-swatches" id="color-swatches"></div>
+        <div class="import-row">
+          <button type="button" id="btn-import-colors">Load from Color Schemer</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- C. Typography -->
+    <details>
+      <summary>Typography</summary>
+      <div class="detail-body">
+        <label>Heading Font
+          <select id="comp-font-heading"></select>
+        </label>
+        <label>Body Font
+          <select id="comp-font-body"></select>
+        </label>
+        <label>Mono Font
+          <select id="comp-font-mono"></select>
+        </label>
+        <label>
+          <span>Scale Ratio <output id="comp-ratio-out">1.250</output></span>
+          <input type="range" id="comp-ratio" min="1.0" max="2.0" step="0.001" value="1.250">
+        </label>
+        <label>
+          <span>Base Size <output id="comp-base-out">16px</output></span>
+          <input type="range" id="comp-base" min="14" max="20" step="1" value="16">
+        </label>
+        <label>
+          <span>Body Line Height <output id="comp-body-lh-out">1.5</output></span>
+          <input type="range" id="comp-body-lh" min="1.2" max="2.0" step="0.05" value="1.5">
+        </label>
+        <label>
+          <span>Heading Line Height <output id="comp-heading-lh-out">1.2</output></span>
+          <input type="range" id="comp-heading-lh" min="1.0" max="1.6" step="0.05" value="1.2">
+        </label>
+        <label>
+          <span>Letter Spacing <output id="comp-ls-out">0em</output></span>
+          <input type="range" id="comp-letter-spacing" min="-0.05" max="0.1" step="0.005" value="0">
+        </label>
+        <div class="import-row">
+          <button type="button" id="btn-import-type">Load from Type Explorer</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- D. Spacing -->
+    <details>
+      <summary>Spacing</summary>
+      <div class="detail-body">
+        <label>
+          <span>Space Scale Ratio <output id="space-ratio-out">1.500</output></span>
+          <input type="range" id="space-ratio" min="1.0" max="2.0" step="0.001" value="1.500">
+        </label>
+      </div>
+    </details>
+
+    <!-- D2. Fluid Sizing -->
+    <details>
+      <summary>Fluid Sizing</summary>
+      <div class="detail-body">
+        <label class="toggle-row">
+          <input type="checkbox" id="fluid-enabled"> Enable fluid clamp()
+        </label>
+        <div class="number-row">
+          <label>Min Viewport <input type="number" id="fluid-min-vw" value="320" min="240" max="600"></label>
+          <label>Max Viewport <input type="number" id="fluid-max-vw" value="1440" min="800" max="2560"></label>
+        </div>
+        <label>
+          <span>Type ratio min <output id="fluid-type-min-out">1.125</output></span>
+          <input type="range" id="fluid-type-min" min="1.0" max="1.5" step="0.001" value="1.125">
+        </label>
+        <label>
+          <span>Type ratio max <output id="fluid-type-max-out">1.333</output></span>
+          <input type="range" id="fluid-type-max" min="1.0" max="2.0" step="0.001" value="1.333">
+        </label>
+        <label>
+          <span>Space ratio min <output id="fluid-space-min-out">1.333</output></span>
+          <input type="range" id="fluid-space-min" min="1.0" max="2.0" step="0.001" value="1.333">
+        </label>
+        <label>
+          <span>Space ratio max <output id="fluid-space-max-out">1.500</output></span>
+          <input type="range" id="fluid-space-max" min="1.0" max="2.0" step="0.001" value="1.500">
+        </label>
+        <div class="preset-row">
+          <label><input type="radio" name="fluid-preset" value="compact"><span>Compact</span></label>
+          <label><input type="radio" name="fluid-preset" value="default" checked><span>Default</span></label>
+          <label><input type="radio" name="fluid-preset" value="spacious"><span>Spacious</span></label>
+        </div>
+        <div class="import-row">
+          <button type="button" id="btn-import-fluid">Load from Fluid Layout</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- E. Shape -->
+    <details>
+      <summary>Shape</summary>
+      <div class="detail-body">
+        <div class="preset-row" id="radius-presets">
+          <label><input type="radio" name="radius-preset" value="none"><span>None</span></label>
+          <label><input type="radio" name="radius-preset" value="subtle"><span>Subtle</span></label>
+          <label><input type="radio" name="radius-preset" value="default" checked><span>Default</span></label>
+          <label><input type="radio" name="radius-preset" value="rounded"><span>Rounded</span></label>
+          <label><input type="radio" name="radius-preset" value="pill"><span>Pill</span></label>
+        </div>
+        <label>
+          <span>Border Width <output id="border-w-out">1px</output></span>
+          <input type="range" id="border-width" min="0" max="4" step="1" value="1">
+        </label>
+      </div>
+    </details>
+
+    <!-- E2. Border Style -->
+    <details>
+      <summary>Border Style</summary>
+      <div class="detail-body">
+        <div class="preset-row" id="border-style-presets">
+          {% set borderStyles = ["clean","sharp","soft","sketch","rough","marker","kawaii","pixel","neon","double","organic","bubbly"] %}
+          {% for bs in borderStyles %}
+          <label><input type="radio" name="border-style" value="{{ bs }}" {% if bs == "clean" %}checked{% endif %}><span>{{ bs }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+    </details>
+
+    <!-- E3. Icon Set -->
+    <details>
+      <summary>Icon Set</summary>
+      <div class="detail-body">
+        <div class="preset-row" id="icon-set-presets">
+          {% set iconSets = ["lucide","phosphor","tabler","bold","mage"] %}
+          {% for is in iconSets %}
+          <label><input type="radio" name="icon-set" value="{{ is }}" {% if is == "lucide" %}checked{% endif %}><span>{{ is }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+    </details>
+
+    <!-- E4. Surfaces & Textures -->
+    <details>
+      <summary>Surfaces</summary>
+      <div class="detail-body">
+        <label>Texture
+          <select id="surface-texture">
+            <option value="none">None</option>
+            <option value="noise">Noise</option>
+            <option value="grain">Grain</option>
+            <option value="dots">Dots</option>
+            <option value="grid">Grid</option>
+            <option value="lines">Diagonal Lines</option>
+          </select>
+        </label>
+        <label>
+          <span>Texture Opacity <output id="texture-opacity-out">0.03</output></span>
+          <input type="range" id="texture-opacity" min="0" max="0.3" step="0.01" value="0.03">
+        </label>
+        <label>
+          <span>Glass Blur <output id="glass-blur-out">0px</output></span>
+          <input type="range" id="glass-blur" min="0" max="20" step="1" value="0">
+        </label>
+        <label>Background Gradient
+          <select id="surface-gradient">
+            <option value="none">None</option>
+            <option value="subtle">Subtle</option>
+            <option value="radial">Radial</option>
+            <option value="mesh">Mesh</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <!-- F. Shadows -->
+    <details>
+      <summary>Shadows</summary>
+      <div class="detail-body">
+        <div class="preset-row" id="shadow-presets">
+          <label><input type="radio" name="shadow-preset" value="none"><span>None</span></label>
+          <label><input type="radio" name="shadow-preset" value="subtle"><span>Subtle</span></label>
+          <label><input type="radio" name="shadow-preset" value="default" checked><span>Default</span></label>
+          <label><input type="radio" name="shadow-preset" value="elevated"><span>Elevated</span></label>
+          <label><input type="radio" name="shadow-preset" value="hard"><span>Hard</span></label>
+        </div>
+      </div>
+    </details>
+
+    <!-- G. Motion -->
+    <details>
+      <summary>Motion</summary>
+      <div class="detail-body">
+        <label>
+          <span>Duration Scale <output id="motion-scale-out">1.0x</output></span>
+          <input type="range" id="motion-scale" min="0" max="3" step="0.1" value="1">
+        </label>
+        <div class="preset-row" id="easing-presets">
+          <label><input type="radio" name="easing-preset" value="default" checked><span>Default</span></label>
+          <label><input type="radio" name="easing-preset" value="ease-out"><span>Ease-out</span></label>
+          <label><input type="radio" name="easing-preset" value="linear"><span>Linear</span></label>
+          <label><input type="radio" name="easing-preset" value="bouncy"><span>Bouncy</span></label>
+          <label><input type="radio" name="easing-preset" value="snappy"><span>Snappy</span></label>
+        </div>
+        <label>Hover Lift
+          <select id="motion-hover-lift">
+            <option value="none">None</option>
+            <option value="subtle">Subtle (-2px)</option>
+            <option value="default" selected>Default (-4px)</option>
+            <option value="dramatic">Dramatic (-8px)</option>
+          </select>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="motion-hover-glow"> Hover glow
+        </label>
+        <label>Enter Animation
+          <select id="motion-enter">
+            <option value="none">None</option>
+            <option value="fade">Fade in</option>
+            <option value="slide-up">Slide up</option>
+            <option value="pop">Pop</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <!-- Export Footer -->
+    <div class="export-footer">
+      <button type="button" id="btn-preview-css">Preview CSS</button>
+      <button type="button" id="btn-copy-css">Copy CSS</button>
+      <button type="button" id="btn-download">Download</button>
+      <button type="button" id="btn-reset">Reset</button>
+    </div>
+  </aside>
+
+  <!-- ============================================
+       PREVIEW PANEL
+       ============================================ -->
+  <div class="preview-panel">
+    <div class="mode-toggle">
+      <label><input type="radio" name="preview-mode" value="light" checked><span>Light</span></label>
+      <label><input type="radio" name="preview-mode" value="dark"><span>Dark</span></label>
+      <label><input type="radio" name="preview-mode" value="split"><span>Side-by-side</span></label>
+    </div>
+
+    <div class="preview-container" id="preview-container"></div>
+
+    <details class="css-preview" id="css-preview-section">
+      <summary>Generated CSS</summary>
+      <pre id="css-output"></pre>
+    </details>
+  </div>
+</div>
+
+{% block extraScripts %}
+<script type="module">
+// ============================================================
+// A. OKLCH Math
+// ============================================================
+
+function oklchToLinearSrgb(L, C, H) {
+  const hRad = H * Math.PI / 180;
+  const a = C * Math.cos(hRad);
+  const b = C * Math.sin(hRad);
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+  return [
+    +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+  ];
+}
+
+function linearToSrgb(c) {
+  return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+}
+
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+function oklchToHex(L, C, H) {
+  const [lr, lg, lb] = oklchToLinearSrgb(L, C, H);
+  const r = Math.round(clamp01(linearToSrgb(lr)) * 255);
+  const g = Math.round(clamp01(linearToSrgb(lg)) * 255);
+  const b = Math.round(clamp01(linearToSrgb(lb)) * 255);
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function harmonyHues(primaryHue, mode) {
+  const h = primaryHue;
+  const wrap = v => ((v % 360) + 360) % 360;
+  switch (mode) {
+    case 'complementary': return { secondary: wrap(h + 180), accent: wrap(h + 90) };
+    case 'analogous': return { secondary: wrap(h + 30), accent: wrap(h - 30) };
+    case 'triadic': return { secondary: wrap(h + 120), accent: wrap(h + 240) };
+    case 'split': return { secondary: wrap(h + 150), accent: wrap(h + 210) };
+    default: return null;
+  }
+}
+
+// ============================================================
+// A2. Fluid clamp() calculator (ported from fluid-layout.njk)
+// ============================================================
+
+function roundN(n, decimals = 4) {
+  const f = Math.pow(10, decimals);
+  return Math.round(n * f) / f;
+}
+
+function calcFluidToken(step, ratioMin, ratioMax, minVw, maxVw, base = 1) {
+  const minRem = base * Math.pow(ratioMin, step);
+  const maxRem = base * Math.pow(ratioMax, step);
+  if (Math.abs(minRem - maxRem) < 0.001) {
+    return { minRem, maxRem, clamp: roundN(minRem) + 'rem' };
+  }
+  const minVwRem = minVw / 16;
+  const maxVwRem = maxVw / 16;
+  const slope = (maxRem - minRem) / (maxVwRem - minVwRem);
+  const intercept = minRem - slope * minVwRem;
+  const slopeVi = roundN(slope * 100, 4);
+  const interceptRem = roundN(intercept, 4);
+  let preferred;
+  if (interceptRem >= 0) {
+    preferred = slopeVi + 'vi + ' + interceptRem + 'rem';
+  } else {
+    preferred = slopeVi + 'vi - ' + roundN(Math.abs(intercept), 4) + 'rem';
+  }
+  const clampMin = roundN(Math.min(minRem, maxRem), 4);
+  const clampMax = roundN(Math.max(minRem, maxRem), 4);
+  return {
+    minRem, maxRem,
+    clamp: 'clamp(' + clampMin + 'rem, ' + preferred + ', ' + clampMax + 'rem)',
+  };
+}
+
+// ============================================================
+// B. Google Fonts Loader
+// ============================================================
+
+const loadedFonts = new Set();
+
+function loadGoogleFont(spec) {
+  if (!spec || loadedFonts.has(spec)) return Promise.resolve();
+  loadedFonts.add(spec);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${spec}&display=swap`;
+  document.head.appendChild(link);
+  return document.fonts.ready;
+}
+
+// ============================================================
+// C. Font Registry (curated subset)
+// ============================================================
+
+const FONTS = {
+  system: [
+    { name: 'System Sans', family: 'system-ui, -apple-system, sans-serif' },
+    { name: 'System Serif', family: 'Georgia, "Times New Roman", serif' },
+    { name: 'System Mono', family: 'ui-monospace, "Cascadia Code", monospace' },
+  ],
+  sans: [
+    { name: 'Inter', family: "'Inter'", gfont: 'Inter:wght@300;400;500;600;700' },
+    { name: 'Outfit', family: "'Outfit'", gfont: 'Outfit:wght@300;400;500;600;700' },
+    { name: 'Plus Jakarta Sans', family: "'Plus Jakarta Sans'", gfont: 'Plus+Jakarta+Sans:wght@300;400;500;600;700' },
+    { name: 'DM Sans', family: "'DM Sans'", gfont: 'DM+Sans:wght@300;400;500;600;700' },
+    { name: 'Nunito', family: "'Nunito'", gfont: 'Nunito:wght@300;400;500;600;700' },
+    { name: 'Quicksand', family: "'Quicksand'", gfont: 'Quicksand:wght@300;400;500;600;700' },
+    { name: 'Work Sans', family: "'Work Sans'", gfont: 'Work+Sans:wght@300;400;500;600;700' },
+    { name: 'Raleway', family: "'Raleway'", gfont: 'Raleway:wght@300;400;500;600;700' },
+    { name: 'Poppins', family: "'Poppins'", gfont: 'Poppins:wght@300;400;500;600;700' },
+    { name: 'Manrope', family: "'Manrope'", gfont: 'Manrope:wght@300;400;500;600;700' },
+    { name: 'Space Grotesk', family: "'Space Grotesk'", gfont: 'Space+Grotesk:wght@300;400;500;600;700' },
+    { name: 'Rubik', family: "'Rubik'", gfont: 'Rubik:wght@300;400;500;600;700' },
+  ],
+  serif: [
+    { name: 'Playfair Display', family: "'Playfair Display'", gfont: 'Playfair+Display:wght@400;500;600;700' },
+    { name: 'Merriweather', family: "'Merriweather'", gfont: 'Merriweather:wght@300;400;700' },
+    { name: 'Lora', family: "'Lora'", gfont: 'Lora:wght@400;500;600;700' },
+    { name: 'Source Serif 4', family: "'Source Serif 4'", gfont: 'Source+Serif+4:wght@300;400;500;600;700' },
+    { name: 'Cormorant Garamond', family: "'Cormorant Garamond'", gfont: 'Cormorant+Garamond:wght@300;400;500;600;700' },
+    { name: 'Crimson Pro', family: "'Crimson Pro'", gfont: 'Crimson+Pro:wght@300;400;500;600;700' },
+    { name: 'EB Garamond', family: "'EB Garamond'", gfont: 'EB+Garamond:wght@400;500;600;700' },
+  ],
+  mono: [
+    { name: 'JetBrains Mono', family: "'JetBrains Mono'", gfont: 'JetBrains+Mono:wght@300;400;500;600;700' },
+    { name: 'Fira Code', family: "'Fira Code'", gfont: 'Fira+Code:wght@300;400;500;600;700' },
+    { name: 'Source Code Pro', family: "'Source Code Pro'", gfont: 'Source+Code+Pro:wght@300;400;500;600;700' },
+    { name: 'IBM Plex Mono', family: "'IBM Plex Mono'", gfont: 'IBM+Plex+Mono:wght@300;400;500;600;700' },
+    { name: 'Space Mono', family: "'Space Mono'", gfont: 'Space+Mono:wght@400;700' },
+    { name: 'Inconsolata', family: "'Inconsolata'", gfont: 'Inconsolata:wght@300;400;500;600;700' },
+  ],
+};
+
+function findFont(name) {
+  for (const cat of Object.values(FONTS)) {
+    const f = cat.find(f => f.name === name);
+    if (f) return f;
+  }
+  return null;
+}
+
+// ============================================================
+// D. Theme Registry (from 11ty data)
+// ============================================================
+
+const THEME_REGISTRY = {{ themeRegistry | dump | safe }};
+
+// ============================================================
+// E. Default State & Presets
+// ============================================================
+
+const DEFAULTS = {
+  name: 'My Theme',
+  description: '',
+  colors: {
+    huePrimary: 260, hueSecondary: 200, hueAccent: 30,
+    primaryL: 0.50, primaryC: 0.20,
+    harmonyLock: false, harmonyMode: 'complementary',
+    surfaceTint: false,
+  },
+  typography: {
+    heading: 'System Sans', headingFamily: 'system-ui, -apple-system, sans-serif', headingGfont: null,
+    body: 'System Sans', bodyFamily: 'system-ui, -apple-system, sans-serif', bodyGfont: null,
+    mono: 'System Mono', monoFamily: 'ui-monospace, "Cascadia Code", monospace', monoGfont: null,
+    scaleRatio: 1.250, base: 16,
+    bodyLineHeight: 1.5, headingLineHeight: 1.2, letterSpacing: 0,
+  },
+  spacing: { ratio: 1.500 },
+  fluid: {
+    enabled: false, minVw: 320, maxVw: 1440,
+    typeRatioMin: 1.125, typeRatioMax: 1.333,
+    spaceRatioMin: 1.333, spaceRatioMax: 1.500,
+  },
+  shape: { radiusPreset: 'default', borderWidth: 1 },
+  borderStyle: 'clean',
+  iconSet: 'lucide',
+  surfaces: { texture: 'none', textureOpacity: 0.03, glassBlur: 0, gradient: 'none' },
+  shadows: { preset: 'default' },
+  motion: { durationScale: 1, easingPreset: 'default', hoverLift: 'default', hoverGlow: false, enterAnimation: 'none' },
+};
+
+const RADIUS_PRESETS = {
+  none:    { xs: 0, s: 0, m: 0, l: 0, xl: 0, '2xl': 0 },
+  subtle:  { xs: 0.125, s: 0.1875, m: 0.25, l: 0.375, xl: 0.5, '2xl': 0.75 },
+  default: { xs: 0.1875, s: 0.25, m: 0.5, l: 0.75, xl: 1, '2xl': 1.5 },
+  rounded: { xs: 0.25, s: 0.5, m: 0.75, l: 1, xl: 1.25, '2xl': 1.75 },
+  pill:    { xs: 0.5, s: 1, m: 1.5, l: 2, xl: 3, '2xl': 9999 },
+};
+
+const SHADOW_PRESETS = {
+  none: { xs: 'none', sm: 'none', md: 'none', lg: 'none', xl: 'none' },
+  subtle: {
+    xs: '0 1px 2px oklch(0% 0 0 / 0.04)',
+    sm: '0 1px 2px oklch(0% 0 0 / 0.06)',
+    md: '0 2px 4px oklch(0% 0 0 / 0.06)',
+    lg: '0 4px 8px oklch(0% 0 0 / 0.06)',
+    xl: '0 8px 16px oklch(0% 0 0 / 0.06)',
+  },
+  default: {
+    xs: '0 1px 2px oklch(0% 0 0 / 0.05)',
+    sm: '0 1px 3px oklch(0% 0 0 / 0.1), 0 1px 2px oklch(0% 0 0 / 0.06)',
+    md: '0 4px 6px oklch(0% 0 0 / 0.1), 0 2px 4px oklch(0% 0 0 / 0.06)',
+    lg: '0 10px 15px oklch(0% 0 0 / 0.1), 0 4px 6px oklch(0% 0 0 / 0.05)',
+    xl: '0 20px 25px oklch(0% 0 0 / 0.1), 0 10px 10px oklch(0% 0 0 / 0.04)',
+  },
+  elevated: {
+    xs: '0 1px 3px oklch(0% 0 0 / 0.08)',
+    sm: '0 2px 4px oklch(0% 0 0 / 0.1), 0 1px 2px oklch(0% 0 0 / 0.06)',
+    md: '0 6px 12px oklch(0% 0 0 / 0.12), 0 3px 6px oklch(0% 0 0 / 0.08)',
+    lg: '0 12px 24px oklch(0% 0 0 / 0.14), 0 6px 12px oklch(0% 0 0 / 0.08)',
+    xl: '0 24px 48px oklch(0% 0 0 / 0.16), 0 12px 24px oklch(0% 0 0 / 0.08)',
+  },
+  hard: {
+    xs: '2px 2px 0 oklch(0% 0 0 / 0.15)',
+    sm: '3px 3px 0 oklch(0% 0 0 / 0.15)',
+    md: '4px 4px 0 oklch(0% 0 0 / 0.15)',
+    lg: '6px 6px 0 oklch(0% 0 0 / 0.15)',
+    xl: '8px 8px 0 oklch(0% 0 0 / 0.15)',
+  },
+};
+
+const EASING_PRESETS = {
+  'default':  'cubic-bezier(0.4, 0, 0.2, 1)',
+  'ease-out': 'cubic-bezier(0, 0, 0.2, 1)',
+  'linear':   'linear',
+  'bouncy':   'cubic-bezier(0.2, 0, 0.1, 1)',
+  'snappy':   'cubic-bezier(0.1, 0, 0, 1)',
+};
+
+const FLUID_PRESETS = {
+  compact:  { typeRatioMin: 1.067, typeRatioMax: 1.200, spaceRatioMin: 1.200, spaceRatioMax: 1.333 },
+  default:  { typeRatioMin: 1.125, typeRatioMax: 1.333, spaceRatioMin: 1.333, spaceRatioMax: 1.500 },
+  spacious: { typeRatioMin: 1.200, typeRatioMax: 1.500, spaceRatioMin: 1.500, spaceRatioMax: 1.750 },
+};
+
+// ============================================================
+// F. State
+// ============================================================
+
+let state = structuredClone(DEFAULTS);
+
+function resetState() {
+  state = structuredClone(DEFAULTS);
+}
+
+// ============================================================
+// G. Build Font Selects
+// ============================================================
+
+function buildFontSelects() {
+  const slots = { 'comp-font-heading': ['system', 'sans', 'serif'], 'comp-font-body': ['system', 'sans', 'serif'], 'comp-font-mono': ['system', 'mono'] };
+  const labels = { system: 'System Stacks', sans: 'Google Sans', serif: 'Google Serif', mono: 'Google Mono' };
+
+  for (const [selectId, cats] of Object.entries(slots)) {
+    const select = document.getElementById(selectId);
+    for (const cat of cats) {
+      const group = document.createElement('optgroup');
+      group.label = labels[cat];
+      for (const font of FONTS[cat]) {
+        const opt = document.createElement('option');
+        opt.value = font.name;
+        opt.textContent = font.name;
+        if (font.gfont) opt.dataset.gfont = font.gfont;
+        opt.dataset.family = font.family;
+        group.appendChild(opt);
+      }
+      select.appendChild(group);
+    }
+  }
+}
+
+// ============================================================
+// H. Wire Controls
+// ============================================================
+
+function wireControls() {
+  // Hue sliders
+  for (const [id, prop] of [['hue-primary', 'huePrimary'], ['hue-secondary', 'hueSecondary'], ['hue-accent', 'hueAccent']]) {
+    const input = document.getElementById(id);
+    const outMap = { 'hue-primary': 'hue-pri-out', 'hue-secondary': 'hue-sec-out', 'hue-accent': 'hue-acc-out' };
+    const outEl = document.getElementById(outMap[id]);
+    input.addEventListener('input', () => {
+      state.colors[prop] = Number(input.value);
+      outEl.textContent = input.value;
+      if (state.colors.harmonyLock && prop === 'huePrimary') {
+        const derived = harmonyHues(state.colors.huePrimary, state.colors.harmonyMode);
+        if (derived) {
+          state.colors.hueSecondary = derived.secondary;
+          state.colors.hueAccent = derived.accent;
+          document.getElementById('hue-secondary').value = derived.secondary;
+          document.getElementById('hue-accent').value = derived.accent;
+          document.getElementById('hue-sec-out').textContent = Math.round(derived.secondary);
+          document.getElementById('hue-acc-out').textContent = Math.round(derived.accent);
+        }
+      }
+      updatePreview();
+    });
+  }
+
+  // L/C sliders
+  document.getElementById('pri-lightness').addEventListener('input', e => {
+    state.colors.primaryL = parseFloat(e.target.value);
+    document.getElementById('pri-l-out').textContent = state.colors.primaryL.toFixed(2);
+    updatePreview();
+  });
+  document.getElementById('pri-chroma').addEventListener('input', e => {
+    state.colors.primaryC = parseFloat(e.target.value);
+    document.getElementById('pri-c-out').textContent = state.colors.primaryC.toFixed(2);
+    updatePreview();
+  });
+
+  // Harmony
+  document.getElementById('harmony-lock').addEventListener('change', e => {
+    state.colors.harmonyLock = e.target.checked;
+    if (e.target.checked) {
+      const derived = harmonyHues(state.colors.huePrimary, state.colors.harmonyMode);
+      if (derived) {
+        state.colors.hueSecondary = derived.secondary;
+        state.colors.hueAccent = derived.accent;
+        syncControlsToState();
+      }
+    }
+    updatePreview();
+  });
+  document.getElementById('harmony-mode').addEventListener('change', e => {
+    state.colors.harmonyMode = e.target.value;
+    if (state.colors.harmonyLock) {
+      const derived = harmonyHues(state.colors.huePrimary, state.colors.harmonyMode);
+      if (derived) {
+        state.colors.hueSecondary = derived.secondary;
+        state.colors.hueAccent = derived.accent;
+        syncControlsToState();
+      }
+    }
+    updatePreview();
+  });
+
+  document.getElementById('surface-tint').addEventListener('change', e => {
+    state.colors.surfaceTint = e.target.checked;
+    updatePreview();
+  });
+
+  // Typography selects
+  for (const [selectId, stateKey, familyKey, gfontKey] of [
+    ['comp-font-heading', 'heading', 'headingFamily', 'headingGfont'],
+    ['comp-font-body', 'body', 'bodyFamily', 'bodyGfont'],
+    ['comp-font-mono', 'mono', 'monoFamily', 'monoGfont'],
+  ]) {
+    document.getElementById(selectId).addEventListener('change', e => {
+      const opt = e.target.selectedOptions[0];
+      state.typography[stateKey] = opt.value;
+      state.typography[familyKey] = opt.dataset.family;
+      state.typography[gfontKey] = opt.dataset.gfont || null;
+      if (opt.dataset.gfont) loadGoogleFont(opt.dataset.gfont).then(updatePreview);
+      else updatePreview();
+    });
+  }
+
+  // Type scale
+  document.getElementById('comp-ratio').addEventListener('input', e => {
+    state.typography.scaleRatio = parseFloat(e.target.value);
+    document.getElementById('comp-ratio-out').textContent = state.typography.scaleRatio.toFixed(3);
+    updatePreview();
+  });
+  document.getElementById('comp-base').addEventListener('input', e => {
+    state.typography.base = Number(e.target.value);
+    document.getElementById('comp-base-out').textContent = state.typography.base + 'px';
+    updatePreview();
+  });
+
+  // Typography: line-height, letter-spacing
+  document.getElementById('comp-body-lh').addEventListener('input', e => {
+    state.typography.bodyLineHeight = parseFloat(e.target.value);
+    document.getElementById('comp-body-lh-out').textContent = state.typography.bodyLineHeight.toFixed(2);
+    updatePreview();
+  });
+  document.getElementById('comp-heading-lh').addEventListener('input', e => {
+    state.typography.headingLineHeight = parseFloat(e.target.value);
+    document.getElementById('comp-heading-lh-out').textContent = state.typography.headingLineHeight.toFixed(2);
+    updatePreview();
+  });
+  document.getElementById('comp-letter-spacing').addEventListener('input', e => {
+    state.typography.letterSpacing = parseFloat(e.target.value);
+    document.getElementById('comp-ls-out').textContent = state.typography.letterSpacing.toFixed(3) + 'em';
+    updatePreview();
+  });
+
+  // Spacing
+  document.getElementById('space-ratio').addEventListener('input', e => {
+    state.spacing.ratio = parseFloat(e.target.value);
+    document.getElementById('space-ratio-out').textContent = state.spacing.ratio.toFixed(3);
+    updatePreview();
+  });
+
+  // Fluid sizing
+  document.getElementById('fluid-enabled').addEventListener('change', e => {
+    state.fluid.enabled = e.target.checked;
+    updatePreview();
+  });
+  for (const [id, key] of [['fluid-min-vw', 'minVw'], ['fluid-max-vw', 'maxVw']]) {
+    document.getElementById(id).addEventListener('change', e => {
+      state.fluid[key] = Number(e.target.value);
+      updatePreview();
+    });
+  }
+  for (const [id, key, outId] of [
+    ['fluid-type-min', 'typeRatioMin', 'fluid-type-min-out'],
+    ['fluid-type-max', 'typeRatioMax', 'fluid-type-max-out'],
+    ['fluid-space-min', 'spaceRatioMin', 'fluid-space-min-out'],
+    ['fluid-space-max', 'spaceRatioMax', 'fluid-space-max-out'],
+  ]) {
+    document.getElementById(id).addEventListener('input', e => {
+      state.fluid[key] = parseFloat(e.target.value);
+      document.getElementById(outId).textContent = state.fluid[key].toFixed(3);
+      updatePreview();
+    });
+  }
+  document.querySelectorAll('input[name="fluid-preset"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const p = FLUID_PRESETS[r.value];
+      if (p) {
+        Object.assign(state.fluid, p);
+        syncControlsToState();
+        updatePreview();
+      }
+    });
+  });
+
+  // Shape
+  document.querySelectorAll('input[name="radius-preset"]').forEach(r => {
+    r.addEventListener('change', () => { state.shape.radiusPreset = r.value; updatePreview(); });
+  });
+  document.getElementById('border-width').addEventListener('input', e => {
+    state.shape.borderWidth = Number(e.target.value);
+    document.getElementById('border-w-out').textContent = state.shape.borderWidth + 'px';
+    updatePreview();
+  });
+
+  // Border style
+  document.querySelectorAll('input[name="border-style"]').forEach(r => {
+    r.addEventListener('change', () => { state.borderStyle = r.value; updatePreview(); });
+  });
+
+  // Icon set
+  document.querySelectorAll('input[name="icon-set"]').forEach(r => {
+    r.addEventListener('change', () => { state.iconSet = r.value; updatePreview(); });
+  });
+
+  // Surfaces
+  document.getElementById('surface-texture').addEventListener('change', e => {
+    state.surfaces.texture = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('texture-opacity').addEventListener('input', e => {
+    state.surfaces.textureOpacity = parseFloat(e.target.value);
+    document.getElementById('texture-opacity-out').textContent = state.surfaces.textureOpacity.toFixed(2);
+    updatePreview();
+  });
+  document.getElementById('glass-blur').addEventListener('input', e => {
+    state.surfaces.glassBlur = Number(e.target.value);
+    document.getElementById('glass-blur-out').textContent = state.surfaces.glassBlur + 'px';
+    updatePreview();
+  });
+  document.getElementById('surface-gradient').addEventListener('change', e => {
+    state.surfaces.gradient = e.target.value;
+    updatePreview();
+  });
+
+  // Shadows
+  document.querySelectorAll('input[name="shadow-preset"]').forEach(r => {
+    r.addEventListener('change', () => { state.shadows.preset = r.value; updatePreview(); });
+  });
+
+  // Motion
+  document.getElementById('motion-scale').addEventListener('input', e => {
+    state.motion.durationScale = parseFloat(e.target.value);
+    document.getElementById('motion-scale-out').textContent = state.motion.durationScale.toFixed(1) + 'x';
+    updatePreview();
+  });
+  document.querySelectorAll('input[name="easing-preset"]').forEach(r => {
+    r.addEventListener('change', () => { state.motion.easingPreset = r.value; updatePreview(); });
+  });
+  document.getElementById('motion-hover-lift').addEventListener('change', e => {
+    state.motion.hoverLift = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('motion-hover-glow').addEventListener('change', e => {
+    state.motion.hoverGlow = e.target.checked;
+    updatePreview();
+  });
+  document.getElementById('motion-enter').addEventListener('change', e => {
+    state.motion.enterAnimation = e.target.value;
+    updatePreview();
+  });
+
+  // Preview mode
+  document.querySelectorAll('input[name="preview-mode"]').forEach(r => {
+    r.addEventListener('change', () => { updatePreview(); });
+  });
+
+  // Starting point
+  document.getElementById('starting-point').addEventListener('change', e => {
+    const v = e.target.value;
+    resetState();
+    if (v === 'from-color-schemer') importFromColorSchemer();
+    else if (v === 'from-type-explorer') importFromTypeExplorer();
+    else if (v === 'from-fluid-layout') importFromFluidLayout();
+    else if (v !== 'blank') loadFromRegistry(v);
+    syncControlsToState();
+    updatePreview();
+  });
+
+  // Theme name/desc
+  document.getElementById('theme-name').addEventListener('input', e => { state.name = e.target.value; });
+  document.getElementById('theme-desc').addEventListener('input', e => { state.description = e.target.value; });
+
+  // Import buttons
+  document.getElementById('btn-import-colors').addEventListener('click', () => {
+    importFromColorSchemer();
+    syncControlsToState();
+    updatePreview();
+  });
+  document.getElementById('btn-import-type').addEventListener('click', () => {
+    importFromTypeExplorer();
+    syncControlsToState();
+    updatePreview();
+  });
+  document.getElementById('btn-import-fluid').addEventListener('click', () => {
+    importFromFluidLayout();
+    syncControlsToState();
+    updatePreview();
+  });
+
+  // Export
+  document.getElementById('btn-preview-css').addEventListener('click', () => {
+    document.getElementById('css-output').textContent = generateThemeCSS();
+    document.getElementById('css-preview-section').open = true;
+  });
+  document.getElementById('btn-copy-css').addEventListener('click', () => {
+    navigator.clipboard.writeText(generateThemeCSS());
+    document.getElementById('btn-copy-css').textContent = 'Copied!';
+    setTimeout(() => { document.getElementById('btn-copy-css').textContent = 'Copy CSS'; }, 1500);
+  });
+  document.getElementById('btn-download').addEventListener('click', () => {
+    const slug = state.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'custom';
+    const blob = new Blob([generateThemeCSS()], { type: 'text/css' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `_brand-${slug}.css`;
+    a.click();
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    resetState();
+    syncControlsToState();
+    updatePreview();
+  });
+}
+
+// ============================================================
+// I. Load from Registry
+// ============================================================
+
+function loadFromRegistry(themeId) {
+  const entry = THEME_REGISTRY.find(t => t.id === themeId);
+  if (!entry) return;
+
+  // Colors
+  if (entry.colors) {
+    if (entry.colors.huePrimary != null) state.colors.huePrimary = entry.colors.huePrimary;
+    if (entry.colors.hueSecondary != null) state.colors.hueSecondary = entry.colors.hueSecondary;
+    if (entry.colors.hueAccent != null) state.colors.hueAccent = entry.colors.hueAccent;
+    if (entry.colors.primaryL != null) state.colors.primaryL = entry.colors.primaryL;
+    if (entry.colors.primaryC != null) state.colors.primaryC = entry.colors.primaryC;
+  }
+
+  // Hints (border style, icon set)
+  if (entry.hints) {
+    if (entry.hints.borderStyle) state.borderStyle = entry.hints.borderStyle;
+    if (entry.hints.iconSet) state.iconSet = entry.hints.iconSet;
+  }
+
+  // Shape
+  if (entry.shape && entry.shape.radiusPreset) state.shape.radiusPreset = entry.shape.radiusPreset;
+
+  // Shadows
+  if (entry.shadows && entry.shadows.preset) state.shadows.preset = entry.shadows.preset;
+
+  // Motion
+  if (entry.motion) {
+    if (entry.motion.durationScale != null) state.motion.durationScale = entry.motion.durationScale;
+    if (entry.motion.easingPreset) state.motion.easingPreset = entry.motion.easingPreset;
+  }
+
+  // Set name
+  state.name = entry.name + ' (customized)';
+}
+
+// ============================================================
+// J. Import from Other Tools
+// ============================================================
+
+function importFromColorSchemer() {
+  try {
+    const raw = localStorage.getItem('vb-color-schemer-output');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.hues) {
+      state.colors.huePrimary = data.hues.primary;
+      state.colors.hueSecondary = data.hues.secondary;
+      state.colors.hueAccent = data.hues.accent;
+    }
+    if (data.lightChroma) {
+      if (data.lightChroma.primary) {
+        state.colors.primaryL = data.lightChroma.primary.l;
+        state.colors.primaryC = data.lightChroma.primary.c;
+      }
+    }
+    if (data.harmony && data.harmony !== 'none') {
+      state.colors.harmonyLock = true;
+      state.colors.harmonyMode = data.harmony;
+    }
+  } catch (e) { /* ignore parse errors */ }
+}
+
+function importFromTypeExplorer() {
+  try {
+    const raw = localStorage.getItem('vb-type-explorer-output');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.heading) state.typography.heading = data.heading;
+    if (data.headingFamily) state.typography.headingFamily = data.headingFamily;
+    if (data.headingGfont) { state.typography.headingGfont = data.headingGfont; loadGoogleFont(data.headingGfont); }
+    if (data.body) state.typography.body = data.body;
+    if (data.bodyFamily) state.typography.bodyFamily = data.bodyFamily;
+    if (data.bodyGfont) { state.typography.bodyGfont = data.bodyGfont; loadGoogleFont(data.bodyGfont); }
+    if (data.mono) state.typography.mono = data.mono;
+    if (data.monoFamily) state.typography.monoFamily = data.monoFamily;
+    if (data.monoGfont) { state.typography.monoGfont = data.monoGfont; loadGoogleFont(data.monoGfont); }
+    if (data.scaleRatio) state.typography.scaleRatio = data.scaleRatio;
+    if (data.base) state.typography.base = data.base;
+    if (data.bodyLineHeight) state.typography.bodyLineHeight = data.bodyLineHeight;
+    if (data.headingLineHeight) state.typography.headingLineHeight = data.headingLineHeight;
+    if (data.letterSpacing != null) state.typography.letterSpacing = data.letterSpacing;
+  } catch (e) { /* ignore parse errors */ }
+}
+
+function importFromFluidLayout() {
+  try {
+    const raw = localStorage.getItem('vb-fluid-layout-output');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    state.fluid.enabled = true;
+    if (data.minVw) state.fluid.minVw = data.minVw;
+    if (data.maxVw) state.fluid.maxVw = data.maxVw;
+    if (data.typeRatioMin) state.fluid.typeRatioMin = data.typeRatioMin;
+    if (data.typeRatioMax) state.fluid.typeRatioMax = data.typeRatioMax;
+    if (data.spaceRatioMin) state.fluid.spaceRatioMin = data.spaceRatioMin;
+    if (data.spaceRatioMax) state.fluid.spaceRatioMax = data.spaceRatioMax;
+  } catch (e) { /* ignore parse errors */ }
+}
+
+// ============================================================
+// K. Sync Controls to State
+// ============================================================
+
+function syncControlsToState() {
+  document.getElementById('theme-name').value = state.name;
+  document.getElementById('theme-desc').value = state.description;
+
+  document.getElementById('hue-primary').value = state.colors.huePrimary;
+  document.getElementById('hue-pri-out').textContent = Math.round(state.colors.huePrimary);
+  document.getElementById('hue-secondary').value = state.colors.hueSecondary;
+  document.getElementById('hue-sec-out').textContent = Math.round(state.colors.hueSecondary);
+  document.getElementById('hue-accent').value = state.colors.hueAccent;
+  document.getElementById('hue-acc-out').textContent = Math.round(state.colors.hueAccent);
+  document.getElementById('pri-lightness').value = state.colors.primaryL;
+  document.getElementById('pri-l-out').textContent = state.colors.primaryL.toFixed(2);
+  document.getElementById('pri-chroma').value = state.colors.primaryC;
+  document.getElementById('pri-c-out').textContent = state.colors.primaryC.toFixed(2);
+  document.getElementById('harmony-lock').checked = state.colors.harmonyLock;
+  document.getElementById('harmony-mode').value = state.colors.harmonyMode;
+  document.getElementById('surface-tint').checked = state.colors.surfaceTint;
+
+  // Font selects
+  document.getElementById('comp-font-heading').value = state.typography.heading;
+  document.getElementById('comp-font-body').value = state.typography.body;
+  document.getElementById('comp-font-mono').value = state.typography.mono;
+  document.getElementById('comp-ratio').value = state.typography.scaleRatio;
+  document.getElementById('comp-ratio-out').textContent = state.typography.scaleRatio.toFixed(3);
+  document.getElementById('comp-base').value = state.typography.base;
+  document.getElementById('comp-base-out').textContent = state.typography.base + 'px';
+  document.getElementById('comp-body-lh').value = state.typography.bodyLineHeight;
+  document.getElementById('comp-body-lh-out').textContent = state.typography.bodyLineHeight.toFixed(2);
+  document.getElementById('comp-heading-lh').value = state.typography.headingLineHeight;
+  document.getElementById('comp-heading-lh-out').textContent = state.typography.headingLineHeight.toFixed(2);
+  document.getElementById('comp-letter-spacing').value = state.typography.letterSpacing;
+  document.getElementById('comp-ls-out').textContent = state.typography.letterSpacing.toFixed(3) + 'em';
+
+  document.getElementById('space-ratio').value = state.spacing.ratio;
+  document.getElementById('space-ratio-out').textContent = state.spacing.ratio.toFixed(3);
+
+  // Fluid
+  document.getElementById('fluid-enabled').checked = state.fluid.enabled;
+  document.getElementById('fluid-min-vw').value = state.fluid.minVw;
+  document.getElementById('fluid-max-vw').value = state.fluid.maxVw;
+  document.getElementById('fluid-type-min').value = state.fluid.typeRatioMin;
+  document.getElementById('fluid-type-min-out').textContent = state.fluid.typeRatioMin.toFixed(3);
+  document.getElementById('fluid-type-max').value = state.fluid.typeRatioMax;
+  document.getElementById('fluid-type-max-out').textContent = state.fluid.typeRatioMax.toFixed(3);
+  document.getElementById('fluid-space-min').value = state.fluid.spaceRatioMin;
+  document.getElementById('fluid-space-min-out').textContent = state.fluid.spaceRatioMin.toFixed(3);
+  document.getElementById('fluid-space-max').value = state.fluid.spaceRatioMax;
+  document.getElementById('fluid-space-max-out').textContent = state.fluid.spaceRatioMax.toFixed(3);
+
+  const radPre = document.querySelector(`input[name="radius-preset"][value="${state.shape.radiusPreset}"]`);
+  if (radPre) radPre.checked = true;
+  document.getElementById('border-width').value = state.shape.borderWidth;
+  document.getElementById('border-w-out').textContent = state.shape.borderWidth + 'px';
+
+  // Border style
+  const bsPre = document.querySelector(`input[name="border-style"][value="${state.borderStyle}"]`);
+  if (bsPre) bsPre.checked = true;
+
+  // Icon set
+  const isPre = document.querySelector(`input[name="icon-set"][value="${state.iconSet}"]`);
+  if (isPre) isPre.checked = true;
+
+  // Surfaces
+  document.getElementById('surface-texture').value = state.surfaces.texture;
+  document.getElementById('texture-opacity').value = state.surfaces.textureOpacity;
+  document.getElementById('texture-opacity-out').textContent = state.surfaces.textureOpacity.toFixed(2);
+  document.getElementById('glass-blur').value = state.surfaces.glassBlur;
+  document.getElementById('glass-blur-out').textContent = state.surfaces.glassBlur + 'px';
+  document.getElementById('surface-gradient').value = state.surfaces.gradient;
+
+  const shadPre = document.querySelector(`input[name="shadow-preset"][value="${state.shadows.preset}"]`);
+  if (shadPre) shadPre.checked = true;
+
+  document.getElementById('motion-scale').value = state.motion.durationScale;
+  document.getElementById('motion-scale-out').textContent = state.motion.durationScale.toFixed(1) + 'x';
+  const easePre = document.querySelector(`input[name="easing-preset"][value="${state.motion.easingPreset}"]`);
+  if (easePre) easePre.checked = true;
+  document.getElementById('motion-hover-lift').value = state.motion.hoverLift;
+  document.getElementById('motion-hover-glow').checked = state.motion.hoverGlow;
+  document.getElementById('motion-enter').value = state.motion.enterAnimation;
+}
+
+// ============================================================
+// L. Preview Renderer
+// ============================================================
+
+function getPreviewMode() {
+  return document.querySelector('input[name="preview-mode"]:checked')?.value || 'light';
+}
+
+function renderPreviewPane(mode) {
+  const c = state.colors;
+  const priHex = oklchToHex(c.primaryL, c.primaryC, c.huePrimary);
+  const secHex = oklchToHex(0.50, 0.08, c.hueSecondary);
+  const accHex = oklchToHex(0.65, 0.18, c.hueAccent);
+
+  const isLight = mode === 'light';
+  const bg = isLight ? '#ffffff' : (c.surfaceTint ? oklchToHex(0.12, 0.02, c.huePrimary) : '#1a1a1a');
+  const surface = isLight ? '#ffffff' : (c.surfaceTint ? oklchToHex(0.16, 0.02, c.huePrimary) : '#262626');
+  const surfaceRaised = isLight ? '#f8f8f8' : (c.surfaceTint ? oklchToHex(0.20, 0.02, c.huePrimary) : '#333333');
+  const text = isLight ? '#222' : '#f0f0f0';
+  const textMuted = isLight ? '#666' : '#999';
+  const border = isLight ? '#e0e0e0' : '#444';
+  const priColor = isLight ? priHex : oklchToHex(c.primaryL + 0.15, c.primaryC - 0.02, c.huePrimary);
+
+  const radii = RADIUS_PRESETS[state.shape.radiusPreset] || RADIUS_PRESETS.default;
+  const shadows = SHADOW_PRESETS[state.shadows.preset] || SHADOW_PRESETS.default;
+  const bw = state.shape.borderWidth;
+  const fontBody = state.typography.bodyFamily + ', system-ui, sans-serif';
+  const fontHead = state.typography.headingFamily + ', system-ui, sans-serif';
+  const fontMono = state.typography.monoFamily + ', ui-monospace, monospace';
+  const lhBody = state.typography.bodyLineHeight;
+  const lhHead = state.typography.headingLineHeight;
+  const ls = state.typography.letterSpacing;
+
+  return `<div class="preview-pane" style="
+    background:${bg};color:${text};
+    font-family:${fontBody};
+    font-size:${state.typography.base}px;
+    line-height:${lhBody};
+    ${ls ? 'letter-spacing:' + ls + 'em;' : ''}
+    --pri:${priColor};--sec:${secHex};--acc:${accHex};
+    --bg:${bg};--surface:${surface};--surface-raised:${surfaceRaised};
+    --text:${text};--text-muted:${textMuted};--border:${border};
+    --radius-s:${radii.s}rem;--radius-m:${radii.m}rem;
+    --shadow-md:${shadows.md};
+  ">
+    <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${textMuted}">${mode}${state.borderStyle !== 'clean' ? ' · ' + state.borderStyle : ''}${state.iconSet !== 'lucide' ? ' · ' + state.iconSet : ''}</span>
+
+    <!-- Nav -->
+    <nav class="p-nav" style="background:${surfaceRaised};border-radius:${radii.s}rem;border:${bw}px solid ${border}">
+      <h4 style="font-family:${fontHead};margin:0;line-height:${lhHead}">${state.name || 'Preview'}</h4>
+      <span style="background:${priColor}"></span>
+      <span style="background:${secHex}"></span>
+      <span style="background:${accHex}"></span>
+    </nav>
+
+    <!-- Hero -->
+    <h2 style="font-family:${fontHead};margin:0;font-size:1.5rem;line-height:${lhHead}">Heading Text</h2>
+    <p style="color:${textMuted};font-size:0.875rem;margin:0">Subtitle or description text in the muted color.</p>
+
+    <!-- Card -->
+    <article class="p-card" style="border:${bw}px solid ${border};border-radius:${radii.m}rem;box-shadow:${shadows.md};background:${surface}">
+      <div class="p-card-header" style="border-bottom:${bw}px solid ${border}">
+        <h4 style="font-family:${fontHead};margin:0;line-height:${lhHead}">Card Title</h4>
+      </div>
+      <div class="p-card-body">
+        <p style="margin:0">Body text showing the selected font at the base size. Good typography makes all the difference.</p>
+      </div>
+      <div class="p-card-footer" style="border-top:${bw}px solid ${border}">
+        <button class="p-btn" style="background:${priColor};color:#fff;border-radius:${radii.s}rem">Primary</button>
+        <button class="p-btn-outline" style="color:${priColor};border-color:${priColor};border-radius:${radii.s}rem">Outline</button>
+      </div>
+    </article>
+
+    <!-- Badges -->
+    <div class="p-badge-row">
+      <span class="p-badge" style="background:oklch(95% 0.05 145);color:oklch(35% 0.12 145);border-radius:${radii['2xl']}rem">Success</span>
+      <span class="p-badge" style="background:oklch(95% 0.08 70);color:oklch(40% 0.12 70);border-radius:${radii['2xl']}rem">Warning</span>
+      <span class="p-badge" style="background:oklch(95% 0.05 25);color:oklch(40% 0.15 25);border-radius:${radii['2xl']}rem">Error</span>
+      <span class="p-badge" style="background:oklch(95% 0.05 240);color:oklch(35% 0.12 240);border-radius:${radii['2xl']}rem">Info</span>
+    </div>
+
+    <!-- Form -->
+    <form class="p-form" onsubmit="return false">
+      <label style="color:${text}">Name
+        <input type="text" placeholder="Jane Doe" style="border:${bw}px solid ${border};border-radius:${radii.s}rem;background:${surface};color:${text}">
+      </label>
+      <button class="p-btn" style="background:${priColor};color:#fff;border-radius:${radii.s}rem;align-self:start">Submit</button>
+    </form>
+
+    <!-- Blockquote -->
+    <blockquote class="p-quote" style="border-color:${priColor};color:${textMuted}">
+      Good design is as little design as possible.
+    </blockquote>
+
+    <!-- Code block -->
+    <pre class="p-code" style="background:${surfaceRaised};border:${bw}px solid ${border};border-radius:${radii.s}rem;font-family:${fontMono};color:${text}">const theme = '${state.name}';</pre>
+
+    <!-- Color swatches -->
+    <div class="p-swatch-row">
+      <span style="background:${priColor}"></span>
+      <span style="background:${secHex}"></span>
+      <span style="background:${accHex}"></span>
+      <span style="background:${surface}; border: 1px solid ${border}"></span>
+      <span style="background:${surfaceRaised}; border: 1px solid ${border}"></span>
+    </div>
+  </div>`;
+}
+
+function updatePreview() {
+  const container = document.getElementById('preview-container');
+  const mode = getPreviewMode();
+
+  if (mode === 'split') {
+    container.innerHTML = `<div class="preview-split">${renderPreviewPane('light')}${renderPreviewPane('dark')}</div>`;
+  } else {
+    container.innerHTML = renderPreviewPane(mode);
+  }
+
+  // Update mini swatches
+  const swEl = document.getElementById('color-swatches');
+  const c = state.colors;
+  swEl.innerHTML = [
+    oklchToHex(c.primaryL, c.primaryC, c.huePrimary),
+    oklchToHex(0.50, 0.08, c.hueSecondary),
+    oklchToHex(0.65, 0.18, c.hueAccent),
+    oklchToHex(0.55, 0.20, 145),
+    oklchToHex(0.70, 0.18, 70),
+    oklchToHex(0.55, 0.22, 25),
+  ].map(hex => `<div class="mini-swatch" style="background:${hex}"></div>`).join('');
+
+  // Update CSS preview if open
+  if (document.getElementById('css-preview-section').open) {
+    document.getElementById('css-output').textContent = generateThemeCSS();
+  }
+}
+
+// ============================================================
+// M. CSS Generator (Production Quality)
+// ============================================================
+
+function generateThemeCSS() {
+  const slug = state.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'custom';
+  const c = state.colors;
+  const t = state.typography;
+  const sp = state.spacing;
+  const sh = state.shape;
+  const sd = state.shadows;
+  const mo = state.motion;
+  const fl = state.fluid;
+  const d = DEFAULTS;
+
+  // Detect category
+  const colorsOnly = sh.radiusPreset === 'default' && sd.preset === 'default' && mo.durationScale === 1 && mo.easingPreset === 'default' && state.borderStyle === 'clean' && state.iconSet === 'lucide';
+  const category = colorsOnly ? 'Color theme' : (state.borderStyle !== 'clean' || state.iconSet !== 'lucide' ? 'Extreme theme' : 'Personality theme');
+
+  let css = '';
+
+  // Google Fonts comment
+  const gfonts = [];
+  if (t.headingGfont) gfonts.push(t.headingGfont);
+  if (t.bodyGfont && t.bodyGfont !== t.headingGfont) gfonts.push(t.bodyGfont);
+  if (t.monoGfont) gfonts.push(t.monoGfont);
+  if (gfonts.length) {
+    const families = gfonts.map(g => `family=${g}`).join('&');
+    css += `/* Google Fonts — add to <head>:\n   <link href="https://fonts.googleapis.com/css2?${families}&display=swap" rel="stylesheet"> */\n\n`;
+  }
+
+  // Header comment
+  css += `/**\n * Brand Theme: ${state.name}\n`;
+  if (state.description) css += ` * ${state.description}\n`;
+  css += ` *\n`;
+  css += ` * Category: ${category}\n`;
+  css += ` * Primary: hue ${Math.round(c.huePrimary)}\n`;
+  css += ` * Secondary: hue ${Math.round(c.hueSecondary)}\n`;
+  css += ` * Accent: hue ${Math.round(c.hueAccent)}\n`;
+  css += ` */\n\n`;
+
+  // Installation instructions
+  css += `/* Installation:\n`;
+  css += ` * 1. Save to src/tokens/themes/_brand-${slug}.css\n`;
+  css += ` * 2. Add @import "./_brand-${slug}.css"; to src/tokens/themes/index.css\n`;
+  css += ` * 3. Apply via: <html data-theme="${slug}">\n`;
+  css += ` */\n\n`;
+
+  css += `:root[data-theme~="${slug}"],\n[data-theme~="${slug}"] {\n`;
+
+  // Colors
+  css += `  /* ===== COLORS ===== */\n`;
+  css += `  --hue-primary: ${Math.round(c.huePrimary)};\n`;
+  css += `  --hue-secondary: ${Math.round(c.hueSecondary)};\n`;
+  css += `  --hue-accent: ${Math.round(c.hueAccent)};\n\n`;
+
+  if (Math.abs(c.primaryL - d.colors.primaryL) > 0.005 || Math.abs(c.primaryC - d.colors.primaryC) > 0.005) {
+    css += `  --color-primary: oklch(${(c.primaryL * 100).toFixed(0)}% ${c.primaryC.toFixed(2)} var(--hue-primary));\n`;
+    css += `  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);\n`;
+    css += `  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);\n`;
+    css += `  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);\n\n`;
+  }
+
+  css += `  --color-interactive: var(--color-primary);\n`;
+  css += `  --color-interactive-hover: var(--color-primary-hover);\n`;
+
+  // CSS hint tokens
+  if (state.borderStyle !== 'clean') {
+    css += `\n  /* ===== HINTS ===== */\n`;
+    css += `  --theme-border-style: ${state.borderStyle};\n`;
+  }
+  if (state.iconSet !== 'lucide') {
+    if (state.borderStyle === 'clean') css += `\n  /* ===== HINTS ===== */\n`;
+    css += `  --theme-icon-set: ${state.iconSet};\n`;
+  }
+
+  // Typography
+  const bodyFontChanged = t.bodyFamily !== d.typography.bodyFamily;
+  const headingFontChanged = t.headingFamily !== d.typography.headingFamily;
+  const monoFontChanged = t.monoFamily !== d.typography.monoFamily;
+  const lhChanged = t.bodyLineHeight !== d.typography.bodyLineHeight || t.headingLineHeight !== d.typography.headingLineHeight;
+  const lsChanged = Math.abs(t.letterSpacing) > 0.001;
+
+  if (bodyFontChanged || headingFontChanged || monoFontChanged || lhChanged || lsChanged) {
+    css += `\n  /* ===== TYPOGRAPHY ===== */\n`;
+    if (bodyFontChanged) css += `  --font-sans: ${t.bodyFamily}, system-ui, sans-serif;\n`;
+    if (headingFontChanged && t.headingFamily !== t.bodyFamily) css += `  /* Heading: ${t.heading} */\n`;
+    if (monoFontChanged) css += `  --font-mono: ${t.monoFamily}, ui-monospace, monospace;\n`;
+    if (t.bodyLineHeight !== d.typography.bodyLineHeight) css += `  --line-height-normal: ${t.bodyLineHeight};\n`;
+    if (t.headingLineHeight !== d.typography.headingLineHeight) css += `  --line-height-tight: ${t.headingLineHeight};\n`;
+    if (lsChanged) css += `  --letter-spacing-normal: ${t.letterSpacing}em;\n`;
+  }
+
+  // Fluid sizing — emitted as a separate [data-fluid] compound block
+  // so it only activates when data-fluid is present on the element
+  let fluidBlock = '';
+  if (fl.enabled) {
+    const typeSteps = [
+      { name: 'xs', step: -2 }, { name: 'sm', step: -1 }, { name: 'md', step: 0 },
+      { name: 'lg', step: 1 }, { name: 'xl', step: 2 }, { name: '2xl', step: 3 },
+      { name: '3xl', step: 4 }, { name: '4xl', step: 5 }, { name: '5xl', step: 6 },
+    ];
+    fluidBlock += `\n/* Enable with: <html data-fluid> alongside data-theme="${slug}" */\n`;
+    fluidBlock += `:root[data-theme~="${slug}"][data-fluid],\n[data-theme~="${slug}"][data-fluid] {\n`;
+    fluidBlock += `  /* Fluid Type Scale */\n`;
+    for (const { name, step } of typeSteps) {
+      const token = calcFluidToken(step, fl.typeRatioMin, fl.typeRatioMax, fl.minVw, fl.maxVw);
+      fluidBlock += `  --font-size-${name}: ${token.clamp};\n`;
+    }
+    // Derive --size-unit from space ratios (VB's --size-xl = --size-unit * 8)
+    const unitToken = calcFluidToken(2, fl.spaceRatioMin, fl.spaceRatioMax, fl.minVw, fl.maxVw, 1 / 8);
+    fluidBlock += `\n  /* Fluid Space (via --size-unit — cascades to all --size-* tokens) */\n`;
+    fluidBlock += `  --size-unit: ${unitToken.clamp};\n`;
+    fluidBlock += `}\n`;
+  }
+
+  // Shape
+  const radii = RADIUS_PRESETS[sh.radiusPreset];
+  if (sh.radiusPreset !== 'default') {
+    css += `\n  /* ===== SHAPE ===== */\n`;
+    for (const [name, val] of Object.entries(radii)) {
+      if (name === '2xl' && val === 9999) css += `  --radius-${name}: 9999px;\n`;
+      else css += `  --radius-${name}: ${val}rem;\n`;
+    }
+  }
+
+  if (sh.borderWidth !== 1) {
+    css += `  --border-width-thin: ${sh.borderWidth}px;\n`;
+  }
+
+  // Shadows
+  if (sd.preset !== 'default') {
+    const shadows = SHADOW_PRESETS[sd.preset];
+    css += `\n  /* ===== SHADOWS ===== */\n`;
+    for (const [name, val] of Object.entries(shadows)) {
+      css += `  --shadow-${name}: ${val};\n`;
+    }
+  }
+
+  // Surfaces
+  const surfChanged = state.surfaces.texture !== 'none' || state.surfaces.glassBlur > 0;
+  if (surfChanged) {
+    css += `\n  /* ===== SURFACES ===== */\n`;
+    if (state.surfaces.texture !== 'none') {
+      css += `  --surface-texture: ${state.surfaces.texture};\n`;
+      css += `  --surface-texture-opacity: ${state.surfaces.textureOpacity};\n`;
+    }
+    if (state.surfaces.glassBlur > 0) {
+      css += `  --glass-blur: ${state.surfaces.glassBlur}px;\n`;
+    }
+  }
+
+  // Motion
+  const motionChanged = mo.durationScale !== 1 || mo.easingPreset !== 'default' || mo.hoverLift !== 'default' || mo.hoverGlow || mo.enterAnimation !== 'none';
+  if (motionChanged) {
+    css += `\n  /* ===== MOTION ===== */\n`;
+    if (mo.durationScale !== 1) {
+      const scale = mo.durationScale;
+      css += `  --duration-instant: ${Math.round(75 * scale)}ms;\n`;
+      css += `  --duration-fast: ${Math.round(100 * scale)}ms;\n`;
+      css += `  --duration-normal: ${Math.round(200 * scale)}ms;\n`;
+      css += `  --duration-slow: ${Math.round(350 * scale)}ms;\n`;
+      css += `  --duration-slower: ${Math.round(500 * scale)}ms;\n`;
+    }
+    if (mo.easingPreset !== 'default') {
+      css += `  --ease-default: ${EASING_PRESETS[mo.easingPreset]};\n`;
+    }
+    const liftMap = { none: '0', subtle: '-2px', default: '-4px', dramatic: '-8px' };
+    if (mo.hoverLift !== 'default') {
+      css += `  --motion-hover-lift: ${liftMap[mo.hoverLift]};\n`;
+    }
+    if (mo.hoverGlow) {
+      css += `  --motion-hover-glow: 1;\n`;
+    }
+    const enterMap = { fade: 'vb-fade-in', 'slide-up': 'vb-slide-up', pop: 'vb-pop' };
+    if (mo.enterAnimation !== 'none') {
+      css += `  --motion-enter: ${enterMap[mo.enterAnimation]};\n`;
+    }
+  }
+
+  css += `}\n`;
+
+  // Dark mode variant
+  css += `\n/* ${state.name} + Dark mode */\n`;
+  css += `:root[data-theme~="${slug}"][data-mode="dark"],\n[data-theme~="${slug}"][data-mode="dark"] {\n`;
+  css += `  color-scheme: dark;\n`;
+  css += `  --color-primary: oklch(${((c.primaryL + 0.15) * 100).toFixed(0)}% ${(c.primaryC - 0.02).toFixed(2)} var(--hue-primary));\n`;
+
+  if (c.surfaceTint) {
+    css += `\n  /* Tinted surfaces */\n`;
+    css += `  --color-background: oklch(12% 0.02 var(--hue-primary));\n`;
+    css += `  --color-surface: oklch(16% 0.02 var(--hue-primary));\n`;
+    css += `  --color-surface-raised: oklch(20% 0.02 var(--hue-primary));\n`;
+  }
+  css += `}\n`;
+
+  // Append fluid sizing block (scoped to theme + data-fluid)
+  if (fluidBlock) css += fluidBlock;
+
+  return css;
+}
+
+// ============================================================
+// Init
+// ============================================================
+
+buildFontSelects();
+wireControls();
+syncControlsToState();
+updatePreview();
+</script>
+{% endblock %}

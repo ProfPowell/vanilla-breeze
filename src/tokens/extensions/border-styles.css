@@ -1,0 +1,277 @@
+/**
+ * Border Styles Extension
+ *
+ * Attribute-driven [data-border-style] presets.
+ * Each sets a coherent group of --vb-border-* tokens that
+ * components can consume for themed border treatments.
+ *
+ * Usage:
+ *   <div data-border-style="sketch">...</div>
+ *   <html data-border-style="kawaii">
+ *
+ * Requires rough-borders.css for border-image values and SVG filters.
+ */
+
+/* ========================================
+ * Foundation tokens (defaults)
+ * ======================================== */
+:root {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: var(--border-width-thin, 1px);
+  --vb-border-style: solid;
+  --vb-border-radius-override: initial;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Clean — explicit default (no-op)
+ * ======================================== */
+[data-border-style="clean"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: var(--border-width-thin, 1px);
+  --vb-border-style: solid;
+  --vb-border-radius-override: initial;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Sharp — zero radius, crisp 2px borders
+ * Good for: Swiss, Editorial, Brutalist
+ * ======================================== */
+[data-border-style="sharp"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: 2px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Soft — large radius, thin borders
+ * Good for: Organic, Kawaii
+ * ======================================== */
+[data-border-style="soft"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: 1px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: var(--radius-xl, 1.5rem);
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Sketch — wavy hand-drawn borders
+ * Good for: Sketch themes
+ * ======================================== */
+[data-border-style="sketch"] {
+  --vb-border-image: var(--border-image-sketch);
+  --vb-border-filter: var(--filter-rough-light);
+  --vb-border-width: 2px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Rough — variable dash, heavy hand
+ * Good for: Brutalist
+ * ======================================== */
+[data-border-style="rough"] {
+  --vb-border-image: var(--border-image-rough);
+  --vb-border-filter: var(--filter-rough-medium);
+  --vb-border-width: 3px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Marker — expressive marker strokes
+ * Good for: Expressive, artistic themes
+ * ======================================== */
+[data-border-style="marker"] {
+  --vb-border-image: var(--border-image-marker);
+  --vb-border-filter: none;
+  --vb-border-width: 3px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Kawaii — scalloped cloud borders
+ * Good for: Kawaii, cute themes
+ * Dramatic scallop amplitude on a 60px canvas
+ * Uses currentColor so stroke adapts to theme
+ * ======================================== */
+[data-border-style="kawaii"] {
+  --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M4,8 Q10,-2 18,8 Q26,18 30,8 Q34,-2 42,8 Q50,18 56,8 L56,52 Q50,62 42,52 Q34,42 30,52 Q26,62 18,52 Q10,42 4,52 Z' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 14 round;
+  --vb-border-filter: none;
+  --vb-border-width: 3px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: var(--radius-xl, 1.5rem);
+  --vb-border-glow: 0 0 8px oklch(80% 0.15 350 / 0.3),
+                     0 0 16px oklch(80% 0.15 350 / 0.15);
+}
+
+/* ========================================
+ * Pixel — stepped staircase borders
+ * Good for: 8-bit, NES, Retro themes
+ * ======================================== */
+[data-border-style="pixel"] {
+  --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M0,0 h4 v1 h4 v1 h4 v4 h-1 v4 h-1 v4 h-4 v-1 h-4 v-1 h-4 v-4 h1 v-4 h1 z' fill='none' stroke='%23333' stroke-width='1'/%3E%3C/svg%3E") 4 stretch;
+  --vb-border-filter: none;
+  --vb-border-width: 4px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Neon — solid border with glowing box-shadow
+ * Good for: Cyber, Terminal themes
+ * ======================================== */
+[data-border-style="neon"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: 2px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: var(--radius-s, 0.375rem);
+  --vb-border-glow: 0 0 6px oklch(85% 0.25 145), 0 0 20px oklch(85% 0.25 145 / 0.4);
+}
+
+/* ========================================
+ * Double — classic double-line borders
+ * Good for: Classic, Editorial themes
+ * ======================================== */
+[data-border-style="double"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: 4px;
+  --vb-border-style: double;
+  --vb-border-radius-override: 0;
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Bubbly — dotted borders with big radius + glow
+ * Avoids border-image so border-radius is preserved
+ * Good for: Kawaii, playful themes
+ * ======================================== */
+[data-border-style="bubbly"] {
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: 3px;
+  --vb-border-style: dotted;
+  --vb-border-radius-override: var(--radius-xl, 1.5rem);
+  --vb-border-glow: 0 0 8px oklch(80% 0.15 350 / 0.4),
+                     0 0 16px oklch(80% 0.15 350 / 0.2);
+}
+
+/* ========================================
+ * Organic — wavy irregular borders
+ * Good for: Organic, natural themes
+ * ======================================== */
+[data-border-style="organic"] {
+  --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M3,8 C12,3 22,6 30,3 C38,0 48,5 57,8 M3,52 C10,55 22,50 30,57 C38,54 48,58 57,52 M8,3 C5,12 6,22 3,30 C0,38 5,48 8,57 M52,3 C55,10 50,22 57,30 C54,38 58,48 52,57' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 14 stretch;
+  --vb-border-filter: none;
+  --vb-border-width: 2px;
+  --vb-border-style: solid;
+  --vb-border-radius-override: var(--radius-m, 0.5rem);
+  --vb-border-glow: none;
+}
+
+/* ========================================
+ * Dark mode adjustments
+ * ======================================== */
+
+/* Kawaii dark — currentColor handles stroke adaptation, boost glow */
+[data-mode="dark"] [data-border-style="kawaii"],
+[data-mode="dark"][data-border-style="kawaii"] {
+  --vb-border-glow: 0 0 10px oklch(80% 0.18 350 / 0.5),
+                     0 0 20px oklch(80% 0.18 350 / 0.25);
+}
+
+/* Bubbly dark — brighter glow */
+[data-mode="dark"] [data-border-style="bubbly"],
+[data-mode="dark"][data-border-style="bubbly"] {
+  --vb-border-glow: 0 0 10px oklch(80% 0.18 350 / 0.5),
+                     0 0 20px oklch(80% 0.18 350 / 0.25);
+}
+
+/* Pixel dark */
+[data-mode="dark"] [data-border-style="pixel"],
+[data-mode="dark"][data-border-style="pixel"] {
+  --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M0,0 h4 v1 h4 v1 h4 v4 h-1 v4 h-1 v4 h-4 v-1 h-4 v-1 h-4 v-4 h1 v-4 h1 z' fill='none' stroke='%23ccc' stroke-width='1'/%3E%3C/svg%3E") 4 stretch;
+}
+
+/* Neon dark — brighter glow */
+[data-mode="dark"] [data-border-style="neon"],
+[data-mode="dark"][data-border-style="neon"] {
+  --vb-border-glow: 0 0 8px oklch(90% 0.3 145), 0 0 24px oklch(90% 0.3 145 / 0.5);
+}
+
+/* Organic dark */
+[data-mode="dark"] [data-border-style="organic"],
+[data-mode="dark"][data-border-style="organic"] {
+  --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M3,8 C12,3 22,6 30,3 C38,0 48,5 57,8 M3,52 C10,55 22,50 30,57 C38,54 48,58 57,52 M8,3 C5,12 6,22 3,30 C0,38 5,48 8,57 M52,3 C55,10 50,22 57,30 C54,38 58,48 52,57' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 14 stretch;
+}
+
+/* ========================================
+ * Auto-apply border tokens to common elements
+ * within a [data-border-style] context
+ * ======================================== */
+[data-border-style]:not([data-border-style="clean"]) :is(
+  article, .card, blockquote, form, table, fieldset,
+  .preview-card, .preview-form, .preview-table,
+  .border-card, .vignette
+) {
+  border-width: var(--vb-border-width);
+  border-style: var(--vb-border-style);
+  border-image: var(--vb-border-image);
+  filter: var(--vb-border-filter);
+  box-shadow: var(--vb-border-glow);
+}
+
+/* Radius override — separate because border-image disables border-radius per spec,
+   so only apply when there's no border-image in use */
+[data-border-style]:not([data-border-style="clean"]) :is(
+  article, .card, blockquote, form, table, fieldset,
+  .preview-card, .preview-form, .preview-table,
+  .border-card, .vignette
+) {
+  border-radius: var(--vb-border-radius-override);
+}
+
+/* prefers-color-scheme fallbacks */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) [data-border-style="kawaii"],
+  :root:not([data-mode="light"])[data-border-style="kawaii"] {
+    --vb-border-glow: 0 0 10px oklch(80% 0.18 350 / 0.5),
+                       0 0 20px oklch(80% 0.18 350 / 0.25);
+  }
+
+  :root:not([data-mode="light"]) [data-border-style="bubbly"],
+  :root:not([data-mode="light"])[data-border-style="bubbly"] {
+    --vb-border-glow: 0 0 10px oklch(80% 0.18 350 / 0.5),
+                       0 0 20px oklch(80% 0.18 350 / 0.25);
+  }
+
+  :root:not([data-mode="light"]) [data-border-style="pixel"],
+  :root:not([data-mode="light"])[data-border-style="pixel"] {
+    --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M0,0 h4 v1 h4 v1 h4 v4 h-1 v4 h-1 v4 h-4 v-1 h-4 v-1 h-4 v-4 h1 v-4 h1 z' fill='none' stroke='%23ccc' stroke-width='1'/%3E%3C/svg%3E") 4 stretch;
+  }
+
+  :root:not([data-mode="light"]) [data-border-style="neon"],
+  :root:not([data-mode="light"])[data-border-style="neon"] {
+    --vb-border-glow: 0 0 8px oklch(90% 0.3 145), 0 0 24px oklch(90% 0.3 145 / 0.5);
+  }
+
+  :root:not([data-mode="light"]) [data-border-style="organic"],
+  :root:not([data-mode="light"])[data-border-style="organic"] {
+    --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M3,8 C12,3 22,6 30,3 C38,0 48,5 57,8 M3,52 C10,55 22,50 30,57 C38,54 48,58 57,52 M8,3 C5,12 6,22 3,30 C0,38 5,48 8,57 M52,3 C55,10 50,22 57,30 C54,38 58,48 52,57' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 14 stretch;
+  }
+}

@@ -1,0 +1,1129 @@
+---
+layout: layouts/lab.njk
+title: "Theme Lab"
+description: "Unified playground for theme identity — type scales, spacing, border styles, icon sets, and color modes."
+currentPath: /lab/experiments/theme-lab/
+permalink: /lab/experiments/theme-lab/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Sticky Control Panel ===== */
+  .lab-controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface, #fff);
+    border-block-end: 2px solid var(--color-border, #ddd);
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-s, 0.75rem);
+    align-items: start;
+  }
+
+  .lab-controls fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+    align-items: center;
+  }
+
+  .lab-controls legend {
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-inline-end: var(--size-2xs, 0.25rem);
+    float: left;
+    line-height: 1.8;
+  }
+
+  .lab-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .lab-controls input[type="radio"]:checked + span,
+  .lab-controls input[type="checkbox"]:checked + span {
+    font-weight: 700;
+  }
+
+  .lab-controls .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 180px;
+  }
+
+  .lab-controls .slider-group label {
+    padding: 0;
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .lab-controls .slider-group input[type="range"] {
+    width: 100%;
+  }
+
+  .lab-controls .slider-group output {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    text-align: center;
+  }
+
+  .lab-controls .reset-btn {
+    margin-inline-start: auto;
+    align-self: center;
+  }
+
+  /* ===== Live Preview Playground ===== */
+  #playground {
+    padding: var(--size-l, 1.5rem);
+    border: 2px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+    margin-block-start: var(--size-l, 1.5rem);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .preview-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--size-l, 1.5rem);
+  }
+
+  /* Preview nav bar */
+  .preview-nav {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--size-m, 1rem);
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  .preview-nav h3 {
+    margin: 0;
+    margin-inline-end: auto;
+  }
+
+  .preview-nav .nav-icons {
+    display: flex;
+    gap: var(--size-s, 0.75rem);
+  }
+
+  /* Preview card */
+  .preview-card {
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+  }
+
+  .preview-card header {
+    padding: var(--size-m, 1rem);
+    border-block-end: 1px solid var(--color-border, #eee);
+  }
+
+  .preview-card header h4 { margin: 0; }
+
+  .preview-card header p {
+    margin: 0;
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  .preview-card > p {
+    padding: var(--size-m, 1rem);
+    margin: 0;
+  }
+
+  .preview-card footer {
+    padding: var(--size-m, 1rem);
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+    border-block-start: 1px solid var(--color-border, #eee);
+  }
+
+  /* Preview form */
+  .preview-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m, 1rem);
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  .preview-form label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2xs, 0.25rem);
+    font-weight: 500;
+  }
+
+  .preview-form input {
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .preview-form footer {
+    padding: 0;
+    border: none;
+  }
+
+  /* Preview blockquote */
+  .preview-blockquote {
+    border-inline-start: 3px solid var(--color-primary, #333);
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    margin: 0;
+    font-style: italic;
+    color: var(--color-text-muted, #555);
+  }
+
+  /* Preview table */
+  .preview-table {
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .preview-table th,
+  .preview-table td {
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    text-align: left;
+    border-block-end: 1px solid var(--color-border, #eee);
+  }
+
+  .preview-table th {
+    font-weight: 600;
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  /* Preview icon row */
+  .preview-icon-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--size-m, 1rem);
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--size-s, 0.75rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  .preview-icon-row span {
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+    margin-inline-end: auto;
+  }
+
+  /* ===== Comparison Galleries (in details) ===== */
+  .gallery-section {
+    margin-block-start: var(--size-xl, 2rem);
+  }
+
+  .gallery-section summary {
+    cursor: pointer;
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: 700;
+    padding: var(--size-s, 0.75rem) 0;
+  }
+
+  /* Scale comparison tables */
+  .scale-comparison {
+    overflow-x: auto;
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .scale-comparison table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .scale-comparison th,
+  .scale-comparison td {
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    border-block-end: 1px solid var(--color-border, #eee);
+    text-align: left;
+  }
+
+  .scale-comparison th {
+    font-weight: 600;
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  .token-name {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .size-value {
+    font-family: var(--font-mono, monospace);
+  }
+
+  .size-value.changed {
+    color: var(--color-warning, oklch(65% 0.2 80));
+    font-weight: 600;
+  }
+
+  .size-value.match {
+    color: var(--color-success, oklch(55% 0.15 150));
+  }
+
+  .type-sample {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+  }
+
+  .space-bar {
+    height: var(--size-s, 0.75rem);
+    background: var(--color-primary, oklch(55% 0.2 260));
+    border-radius: var(--radius-xs, 0.125rem);
+    opacity: 0.7;
+    transition: width 0.2s ease;
+  }
+
+  /* Border gallery */
+  .border-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--size-m, 1rem);
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .border-card {
+    padding: var(--size-m, 1rem);
+    background: var(--color-surface, #fff);
+    border: var(--vb-border-width, 1px) var(--vb-border-style, solid) var(--color-border, #ddd);
+    border-image: var(--vb-border-image, none);
+    border-radius: var(--vb-border-radius-override, var(--radius-m, 0.5rem));
+    filter: var(--vb-border-filter, none);
+    box-shadow: var(--vb-border-glow, none);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+    text-align: center;
+  }
+
+  .border-card h4 {
+    margin: 0;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .border-card p {
+    margin: 0;
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  /* Icon comparison */
+  .icon-compare-grid {
+    display: grid;
+    grid-template-columns: auto repeat(5, 1fr);
+    gap: 1px;
+    background: var(--color-border, #eee);
+    border: 1px solid var(--color-border, #eee);
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .icon-compare-grid > * {
+    background: var(--color-surface, #fff);
+    padding: var(--size-xs, 0.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-compare-grid .label {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    justify-content: start;
+  }
+
+  .icon-compare-grid .header {
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  /* Theme vignettes */
+  .vignettes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--size-l, 1.5rem);
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .vignette {
+    padding: var(--size-m, 1rem);
+    border: var(--vb-border-width, 1px) var(--vb-border-style, solid) var(--color-border, #ddd);
+    border-image: var(--vb-border-image, none);
+    border-radius: var(--vb-border-radius-override, var(--radius-m, 0.5rem));
+    filter: var(--vb-border-filter, none);
+    box-shadow: var(--vb-border-glow, none);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s, 0.75rem);
+  }
+
+  .vignette h4 { margin: 0; }
+
+  .vignette .icon-row {
+    display: flex;
+    gap: var(--size-s, 0.75rem);
+    flex-wrap: wrap;
+  }
+
+  .vignette blockquote {
+    margin: 0;
+    padding: var(--size-s, 0.75rem);
+    border-inline-start: 3px solid var(--color-primary, #333);
+    font-style: italic;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .vignette form {
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+    align-items: end;
+  }
+
+  .vignette input {
+    flex: 1;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .vignette .open-in-composer {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 0.25rem 0.75rem;
+    align-self: end;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
+<!-- Hidden SVG filters for rough border styles -->
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+  <defs>
+    <filter id="rough-light">
+      <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise" seed="1" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="rough-medium">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="4" result="noise" seed="2" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/lab/">Lab</a></li>
+    <li><a href="/lab/experiments/">Experiments</a></li>
+    <li><span aria-current="page">Theme Lab</span></li>
+  </ol>
+</nav>
+
+<h1>Theme Lab</h1>
+<p class="lead">Unified playground for theme identity &mdash; pick a theme, border style, icon set, and color mode, then adjust type and space scales. Everything updates live.</p>
+
+<!-- ============================================
+     STICKY CONTROL PANEL
+     ============================================ -->
+<section class="lab-controls" aria-label="Theme controls">
+  <fieldset>
+    <legend>Theme</legend>
+    <label><input type="radio" name="theme" value="" checked><span>Default</span></label>
+    {% for theme in themeRegistry %}{% if theme.category == 'extreme' %}
+    <label><input type="radio" name="theme" value="{{ theme.id }}"><span>{{ theme.name }}</span></label>
+    {% endif %}{% endfor %}
+  </fieldset>
+
+  <fieldset>
+    <legend>Border</legend>
+    <label><input type="radio" name="border-style" value="clean" checked><span>clean</span></label>
+    <label><input type="radio" name="border-style" value="sharp"><span>sharp</span></label>
+    <label><input type="radio" name="border-style" value="soft"><span>soft</span></label>
+    <label><input type="radio" name="border-style" value="sketch"><span>sketch</span></label>
+    <label><input type="radio" name="border-style" value="rough"><span>rough</span></label>
+    <label><input type="radio" name="border-style" value="marker"><span>marker</span></label>
+    <label><input type="radio" name="border-style" value="kawaii"><span>kawaii</span></label>
+    <label><input type="radio" name="border-style" value="pixel"><span>pixel</span></label>
+    <label><input type="radio" name="border-style" value="neon"><span>neon</span></label>
+    <label><input type="radio" name="border-style" value="double"><span>double</span></label>
+    <label><input type="radio" name="border-style" value="organic"><span>organic</span></label>
+    <label><input type="radio" name="border-style" value="bubbly"><span>bubbly</span></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Icons</legend>
+    <label><input type="radio" name="icon-set" value="lucide" checked><span>lucide</span></label>
+    <label><input type="radio" name="icon-set" value="phosphor"><span>phosphor</span></label>
+    <label><input type="radio" name="icon-set" value="tabler"><span>tabler</span></label>
+    <label><input type="radio" name="icon-set" value="bold"><span>bold</span></label>
+    <label><input type="radio" name="icon-set" value="mage"><span>mage</span></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Mode</legend>
+    <label><input type="radio" name="color-mode" value="light" checked><span>Light</span></label>
+    <label><input type="radio" name="color-mode" value="dark"><span>Dark</span></label>
+  </fieldset>
+
+  <div class="slider-group">
+    <label for="type-ratio">Type ratio: <output id="type-ratio-value">1.250</output></label>
+    <input type="range" id="type-ratio" min="1" max="2" step="0.001" value="1.25">
+  </div>
+
+  <div class="slider-group">
+    <label for="space-ratio">Space ratio: <output id="space-ratio-value">1.500</output></label>
+    <input type="range" id="space-ratio" min="1" max="2" step="0.001" value="1.5">
+  </div>
+
+  <button type="button" class="reset-btn" data-action="reset">Reset</button>
+</section>
+
+<!-- ============================================
+     LIVE PREVIEW
+     ============================================ -->
+<section id="playground" data-border-style="clean">
+  <div class="preview-layout">
+
+    <!-- Nav bar -->
+    <nav class="preview-nav">
+      <h3>Preview</h3>
+      <div class="nav-icons">
+        <icon-wc name="home"></icon-wc>
+        <icon-wc name="search"></icon-wc>
+        <icon-wc name="bell"></icon-wc>
+        <icon-wc name="user"></icon-wc>
+      </div>
+    </nav>
+
+    <!-- Card -->
+    <article class="preview-card">
+      <header>
+        <h4>Card Title</h4>
+        <p>Subtitle or meta text</p>
+      </header>
+      <p>Body text at the base font size. This paragraph shows how readable content looks at the current type scale.</p>
+      <footer>
+        <button type="button">Primary</button>
+        <button type="button" class="secondary">Secondary</button>
+      </footer>
+    </article>
+
+    <!-- Form -->
+    <form class="preview-form" onsubmit="return false">
+      <label>
+        Name
+        <input type="text" placeholder="Jane Doe">
+      </label>
+      <label>
+        Email
+        <input type="email" placeholder="jane@example.com">
+      </label>
+      <footer>
+        <button type="submit">Submit</button>
+      </footer>
+    </form>
+
+    <!-- Blockquote -->
+    <blockquote class="preview-blockquote">
+      Good design is as little design as possible. Less, but better.
+    </blockquote>
+
+    <!-- Table -->
+    <table class="preview-table">
+      <thead>
+        <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Alice</td><td>Engineer</td><td>Active</td></tr>
+        <tr><td>Bob</td><td>Designer</td><td>Away</td></tr>
+        <tr><td>Carol</td><td>PM</td><td>Active</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Icon row -->
+    <div class="preview-icon-row">
+      <span>Icons</span>
+      <icon-wc name="home"></icon-wc>
+      <icon-wc name="heart"></icon-wc>
+      <icon-wc name="search"></icon-wc>
+      <icon-wc name="settings"></icon-wc>
+      <icon-wc name="zap"></icon-wc>
+      <icon-wc name="star"></icon-wc>
+      <icon-wc name="mail"></icon-wc>
+      <icon-wc name="globe"></icon-wc>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================
+     COMPARISON GALLERIES (collapsed by default)
+     ============================================ -->
+
+<!-- Type & Space Scales -->
+<details class="gallery-section">
+  <summary>Type &amp; Space Scales</summary>
+
+  <h3>Type Scale</h3>
+  <div class="scale-comparison">
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Current</th>
+          <th>Calculated</th>
+          <th>Preview</th>
+        </tr>
+      </thead>
+      <tbody id="type-table-body"></tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-block-start: var(--size-l, 1.5rem);">Space Scale</h3>
+  <div class="scale-comparison">
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Current</th>
+          <th>Calculated</th>
+          <th>Visual</th>
+        </tr>
+      </thead>
+      <tbody id="space-table-body"></tbody>
+    </table>
+  </div>
+</details>
+
+<!-- Border Style Gallery -->
+<details class="gallery-section">
+  <summary>Border Style Gallery</summary>
+  <p>Each card applies its own <code>data-border-style</code> so you can compare all 12 styles at once.</p>
+  <div class="border-gallery">
+    {% set borderStyles = [
+      { name: "clean", desc: "Default" },
+      { name: "sharp", desc: "Crisp 2px, zero radius" },
+      { name: "soft", desc: "Large radius, thin" },
+      { name: "sketch", desc: "Wavy hand-drawn" },
+      { name: "rough", desc: "Heavy hand, dashed" },
+      { name: "marker", desc: "Marker strokes" },
+      { name: "kawaii", desc: "Scalloped cloud" },
+      { name: "pixel", desc: "Stepped staircase" },
+      { name: "neon", desc: "Glowing box-shadow" },
+      { name: "double", desc: "Classic double-line" },
+      { name: "organic", desc: "Wavy irregular" },
+      { name: "bubbly", desc: "Dotted + glow" }
+    ] %}
+    {% for style in borderStyles %}
+    <article class="border-card" data-border-style="{{ style.name }}">
+      <icon-wc name="star"></icon-wc>
+      <h4>{{ style.name }}</h4>
+      <p>{{ style.desc }}</p>
+    </article>
+    {% endfor %}
+  </div>
+</details>
+
+<!-- Icon Set Comparison -->
+<details class="gallery-section">
+  <summary>Icon Set Comparison</summary>
+  <p>Five representative icons across all five sets.</p>
+  <div class="icon-compare-grid">
+    <div class="header label">Name</div>
+    <div class="header">Lucide</div>
+    <div class="header">Phosphor</div>
+    <div class="header">Tabler</div>
+    <div class="header">Bold</div>
+    <div class="header">Mage</div>
+    {% set compareIcons = ["home", "heart", "search", "settings", "zap"] %}
+    {% for name in compareIcons %}
+    <div class="label">{{ name }}</div>
+    <div><icon-wc name="{{ name }}" set="lucide"></icon-wc></div>
+    <div><icon-wc name="{{ name }}" set="phosphor"></icon-wc></div>
+    <div><icon-wc name="{{ name }}" set="tabler"></icon-wc></div>
+    <div><icon-wc name="{{ name }}" set="bold"></icon-wc></div>
+    <div><icon-wc name="{{ name }}" set="mage"></icon-wc></div>
+    {% endfor %}
+  </div>
+</details>
+
+<!-- Theme Vignettes -->
+<details class="gallery-section">
+  <summary>Theme Vignettes</summary>
+  <p>Self-contained mini-layouts showing how themes, border styles, and icon sets work together. Click &ldquo;Open in Composer&rdquo; to load a theme as a starting point.</p>
+  <div class="vignettes-grid">
+    <!-- Swiss -->
+    <article class="vignette" data-theme="swiss" data-border-style="sharp">
+      <h4>Swiss</h4>
+      <div class="icon-row">
+        <icon-wc name="home" set="lucide"></icon-wc>
+        <icon-wc name="settings" set="lucide"></icon-wc>
+        <icon-wc name="search" set="lucide"></icon-wc>
+        <icon-wc name="user" set="lucide"></icon-wc>
+      </div>
+      <blockquote>Grid-based precision. Helvetica heritage. Red accent.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="Enter data...">
+        <button type="button">Submit</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="swiss">Open in Composer</button>
+    </article>
+
+    <!-- Brutalist -->
+    <article class="vignette" data-theme="brutalist" data-border-style="rough">
+      <h4>Brutalist</h4>
+      <div class="icon-row">
+        <icon-wc name="home" set="bold"></icon-wc>
+        <icon-wc name="lock" set="bold"></icon-wc>
+        <icon-wc name="zap" set="bold"></icon-wc>
+        <icon-wc name="settings" set="bold"></icon-wc>
+      </div>
+      <blockquote>Raw structure. No polish. Zero compromise.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="ENTER TEXT">
+        <button type="button">GO</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="brutalist">Open in Composer</button>
+    </article>
+
+    <!-- Cyber -->
+    <article class="vignette" data-theme="cyber" data-border-style="neon">
+      <h4>Cyber</h4>
+      <div class="icon-row">
+        <icon-wc name="zap" set="phosphor"></icon-wc>
+        <icon-wc name="globe" set="phosphor"></icon-wc>
+        <icon-wc name="lock" set="phosphor"></icon-wc>
+        <icon-wc name="settings" set="phosphor"></icon-wc>
+      </div>
+      <blockquote>Neon lights in the digital void. Future is now.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="// enter command...">
+        <button type="button">Execute</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="cyber">Open in Composer</button>
+    </article>
+
+    <!-- Terminal -->
+    <article class="vignette" data-theme="terminal" data-border-style="sharp">
+      <h4>Terminal</h4>
+      <div class="icon-row">
+        <icon-wc name="home" set="lucide"></icon-wc>
+        <icon-wc name="search" set="lucide"></icon-wc>
+        <icon-wc name="settings" set="lucide"></icon-wc>
+        <icon-wc name="mail" set="lucide"></icon-wc>
+      </div>
+      <blockquote>root@system:~# Green phosphor on CRT black.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="> type command...">
+        <button type="button">Run</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="terminal">Open in Composer</button>
+    </article>
+
+    <!-- Organic -->
+    <article class="vignette" data-theme="organic" data-border-style="organic">
+      <h4>Organic</h4>
+      <div class="icon-row">
+        <icon-wc name="globe" set="mage"></icon-wc>
+        <icon-wc name="heart" set="mage"></icon-wc>
+        <icon-wc name="calendar" set="mage"></icon-wc>
+        <icon-wc name="bell" set="mage"></icon-wc>
+      </div>
+      <blockquote>Soft curves, natural flow, warm earthy tones.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="Plant a thought...">
+        <button type="button">Grow</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="organic">Open in Composer</button>
+    </article>
+
+    <!-- Editorial -->
+    <article class="vignette" data-theme="editorial" data-border-style="sharp">
+      <h4>Editorial</h4>
+      <div class="icon-row">
+        <icon-wc name="bookmark" set="lucide"></icon-wc>
+        <icon-wc name="mail" set="lucide"></icon-wc>
+        <icon-wc name="globe" set="lucide"></icon-wc>
+        <icon-wc name="search" set="lucide"></icon-wc>
+      </div>
+      <blockquote>Clean lines, sharp edges, timeless typography.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="Search articles...">
+        <button type="button">Find</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="editorial">Open in Composer</button>
+    </article>
+
+    <!-- Kawaii -->
+    <article class="vignette" data-theme="kawaii" data-border-style="kawaii">
+      <h4>Kawaii</h4>
+      <div class="icon-row">
+        <icon-wc name="heart" set="mage"></icon-wc>
+        <icon-wc name="star" set="mage"></icon-wc>
+        <icon-wc name="music" set="mage"></icon-wc>
+        <icon-wc name="camera" set="mage"></icon-wc>
+      </div>
+      <blockquote>Everything is cuter with pastel pink and scalloped borders!</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="Type something kawaii...">
+        <button type="button">Send</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="kawaii">Open in Composer</button>
+    </article>
+
+    <!-- 8-Bit -->
+    <article class="vignette" data-theme="8bit" data-border-style="pixel">
+      <h4>8-Bit</h4>
+      <div class="icon-row">
+        <icon-wc name="star" set="bold"></icon-wc>
+        <icon-wc name="heart" set="bold"></icon-wc>
+        <icon-wc name="zap" set="bold"></icon-wc>
+        <icon-wc name="home" set="bold"></icon-wc>
+      </div>
+      <blockquote>PRESS START TO CONTINUE. Chunky pixels ahead.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="ENTER NAME...">
+        <button type="button">START</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="8bit">Open in Composer</button>
+    </article>
+
+    <!-- NES -->
+    <article class="vignette" data-theme="nes" data-border-style="pixel">
+      <h4>NES</h4>
+      <div class="icon-row">
+        <icon-wc name="star" set="bold"></icon-wc>
+        <icon-wc name="heart" set="bold"></icon-wc>
+        <icon-wc name="home" set="bold"></icon-wc>
+        <icon-wc name="settings" set="bold"></icon-wc>
+      </div>
+      <blockquote>4-color palette. Beveled frames. Console pixels.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="Player 1...">
+        <button type="button">SELECT</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="nes">Open in Composer</button>
+    </article>
+
+    <!-- Win9x -->
+    <article class="vignette" data-theme="win9x" data-border-style="sharp">
+      <h4>Win9x</h4>
+      <div class="icon-row">
+        <icon-wc name="home" set="lucide"></icon-wc>
+        <icon-wc name="search" set="lucide"></icon-wc>
+        <icon-wc name="settings" set="lucide"></icon-wc>
+        <icon-wc name="mail" set="lucide"></icon-wc>
+      </div>
+      <blockquote>Classic desktop computing. 3D bevels. System gray.</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="C:\>">
+        <button type="button">OK</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="win9x">Open in Composer</button>
+    </article>
+  </div>
+</details>
+
+{% block extraScripts %}
+<script type="module">
+  // ========================================
+  // Configuration
+  // ========================================
+
+  const HARDCODED_TYPE = {
+    'xs':  { rem: 0.75,  label: '--font-size-xs' },
+    'sm':  { rem: 0.875, label: '--font-size-sm' },
+    'md':  { rem: 1,     label: '--font-size-md' },
+    'lg':  { rem: 1.125, label: '--font-size-lg' },
+    'xl':  { rem: 1.25,  label: '--font-size-xl' },
+    '2xl': { rem: 1.5,   label: '--font-size-2xl' },
+    '3xl': { rem: 1.875, label: '--font-size-3xl' },
+    '4xl': { rem: 2.25,  label: '--font-size-4xl' },
+    '5xl': { rem: 3,     label: '--font-size-5xl' },
+  };
+
+  const TYPE_STEPS = {
+    'xs': -2, 'sm': -1, 'md': 0, 'lg': 1, 'xl': 2,
+    '2xl': 3, '3xl': 4, '4xl': 5, '5xl': 6,
+  };
+
+  const HARDCODED_SPACE = {
+    '3xs': { rem: 0.125, label: '--size-3xs' },
+    '2xs': { rem: 0.25,  label: '--size-2xs' },
+    'xs':  { rem: 0.5,   label: '--size-xs' },
+    's':   { rem: 0.75,  label: '--size-s' },
+    'm':   { rem: 1,     label: '--size-m' },
+    'l':   { rem: 1.5,   label: '--size-l' },
+    'xl':  { rem: 2,     label: '--size-xl' },
+    '2xl': { rem: 3,     label: '--size-2xl' },
+    '3xl': { rem: 4,     label: '--size-3xl' },
+  };
+
+  const SPACE_STEPS = {
+    '3xs': -4, '2xs': -3, 'xs': -2, 's': -1, 'm': 0,
+    'l': 1, 'xl': 2, '2xl': 3, '3xl': 4,
+  };
+
+  // Theme → preferred border + icon set mapping (from registry)
+  const THEME_HINTS = Object.fromEntries(
+    {{ themeRegistry | dump | safe }}
+      .filter(t => t.category === 'extreme' && t.hints)
+      .map(t => [t.id, { border: t.hints.borderStyle || 'clean', icons: t.hints.iconSet || 'lucide' }])
+  );
+
+  // ========================================
+  // Scale helpers
+  // ========================================
+
+  function calcFixed(base, ratio, step) {
+    return base * Math.pow(ratio, step);
+  }
+
+  function formatRem(rem) { return rem.toFixed(3) + 'rem'; }
+  function formatPx(rem)  { return (rem * 16).toFixed(1) + 'px'; }
+
+  // ========================================
+  // DOM refs
+  // ========================================
+
+  const playground      = document.getElementById('playground');
+  const typeRatioInput  = document.getElementById('type-ratio');
+  const typeRatioValue  = document.getElementById('type-ratio-value');
+  const spaceRatioInput = document.getElementById('space-ratio');
+  const spaceRatioValue = document.getElementById('space-ratio-value');
+  const typeTableBody   = document.getElementById('type-table-body');
+  const spaceTableBody  = document.getElementById('space-table-body');
+
+  // ========================================
+  // Type Scale Rendering
+  // ========================================
+
+  function renderTypeScale() {
+    const ratio = parseFloat(typeRatioInput.value);
+    typeRatioValue.textContent = ratio.toFixed(3);
+
+    let html = '';
+    for (const [name, step] of Object.entries(TYPE_STEPS)) {
+      const hardcoded = HARDCODED_TYPE[name].rem;
+      const calculated = calcFixed(1, ratio, step);
+      const diff = Math.abs(calculated - hardcoded);
+      const cls = diff < 0.01 ? 'match' : 'changed';
+
+      html += `<tr>
+        <td class="token-name">${HARDCODED_TYPE[name].label}</td>
+        <td class="size-value">${formatRem(hardcoded)} (${formatPx(hardcoded)})</td>
+        <td class="size-value ${cls}">${formatRem(calculated)} (${formatPx(calculated)})</td>
+        <td class="type-sample" style="font-size: ${calculated}rem">The quick brown fox</td>
+      </tr>`;
+    }
+    typeTableBody.innerHTML = html;
+
+    // Apply to playground
+    for (const [name, step] of Object.entries(TYPE_STEPS)) {
+      const val = calcFixed(1, ratio, step);
+      playground.style.setProperty(`--font-size-${name}`, `${val}rem`);
+    }
+  }
+
+  // ========================================
+  // Space Scale Rendering
+  // ========================================
+
+  function renderSpaceScale() {
+    const ratio = parseFloat(spaceRatioInput.value);
+    spaceRatioValue.textContent = ratio.toFixed(3);
+
+    let html = '';
+    for (const [name, step] of Object.entries(SPACE_STEPS)) {
+      const hardcoded = HARDCODED_SPACE[name].rem;
+      const calculated = calcFixed(1, ratio, step);
+      const diff = Math.abs(calculated - hardcoded);
+      const cls = diff < 0.01 ? 'match' : 'changed';
+      const barWidth = Math.min(calculated * 16, 200);
+
+      html += `<tr>
+        <td class="token-name">${HARDCODED_SPACE[name].label}</td>
+        <td class="size-value">${formatRem(hardcoded)} (${formatPx(hardcoded)})</td>
+        <td class="size-value ${cls}">${formatRem(calculated)} (${formatPx(calculated)})</td>
+        <td><div class="space-bar" style="width: ${barWidth}px"></div></td>
+      </tr>`;
+    }
+    spaceTableBody.innerHTML = html;
+
+    // Apply to playground
+    for (const [name, step] of Object.entries(SPACE_STEPS)) {
+      const val = calcFixed(1, ratio, step);
+      playground.style.setProperty(`--size-${name}`, `${val}rem`);
+    }
+  }
+
+  // ========================================
+  // Control Handlers
+  // ========================================
+
+  // Theme picker — auto-sets border + icons
+  document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const theme = radio.value;
+      if (theme) {
+        playground.dataset.theme = theme;
+      } else {
+        delete playground.dataset.theme;
+      }
+
+      // Auto-hint border + icons
+      const hints = THEME_HINTS[theme];
+      if (hints) {
+        // Set border
+        playground.dataset.borderStyle = hints.border;
+        const borderRadio = document.querySelector(`input[name="border-style"][value="${hints.border}"]`);
+        if (borderRadio) borderRadio.checked = true;
+
+        // Set icons
+        playground.dataset.iconSet = hints.icons;
+        const iconRadio = document.querySelector(`input[name="icon-set"][value="${hints.icons}"]`);
+        if (iconRadio) iconRadio.checked = true;
+
+        // Update icon-wc elements inside playground
+        updatePlaygroundIcons(hints.icons);
+      } else {
+        // Default theme — reset to clean/lucide
+        playground.dataset.borderStyle = 'clean';
+        document.querySelector('input[name="border-style"][value="clean"]').checked = true;
+        delete playground.dataset.iconSet;
+        document.querySelector('input[name="icon-set"][value="lucide"]').checked = true;
+        updatePlaygroundIcons('lucide');
+      }
+    });
+  });
+
+  // Border style
+  document.querySelectorAll('input[name="border-style"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      playground.dataset.borderStyle = radio.value;
+    });
+  });
+
+  // Icon set
+  document.querySelectorAll('input[name="icon-set"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const set = radio.value;
+      playground.dataset.iconSet = set;
+      updatePlaygroundIcons(set);
+    });
+  });
+
+  // Color mode
+  document.querySelectorAll('input[name="color-mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      playground.dataset.mode = radio.value;
+    });
+  });
+
+  // Type ratio slider
+  typeRatioInput.addEventListener('input', renderTypeScale);
+
+  // Space ratio slider
+  spaceRatioInput.addEventListener('input', renderSpaceScale);
+
+  // Reset
+  document.querySelector('[data-action="reset"]').addEventListener('click', () => {
+    // Clear playground attributes
+    delete playground.dataset.theme;
+    playground.dataset.borderStyle = 'clean';
+    delete playground.dataset.iconSet;
+    delete playground.dataset.mode;
+
+    // Reset radios
+    document.querySelector('input[name="theme"][value=""]').checked = true;
+    document.querySelector('input[name="border-style"][value="clean"]').checked = true;
+    document.querySelector('input[name="icon-set"][value="lucide"]').checked = true;
+    document.querySelector('input[name="color-mode"][value="light"]').checked = true;
+
+    // Reset sliders
+    typeRatioInput.value = 1.25;
+    spaceRatioInput.value = 1.5;
+
+    // Re-render scales
+    renderTypeScale();
+    renderSpaceScale();
+
+    // Reset playground inline styles (type/space overrides)
+    for (const name of Object.keys(TYPE_STEPS)) {
+      playground.style.removeProperty(`--font-size-${name}`);
+    }
+    for (const name of Object.keys(SPACE_STEPS)) {
+      playground.style.removeProperty(`--size-${name}`);
+    }
+
+    // Reset icons
+    updatePlaygroundIcons('lucide');
+  });
+
+  // ========================================
+  // Icon set update helper
+  // ========================================
+
+  function updatePlaygroundIcons(set) {
+    playground.querySelectorAll('icon-wc:not([set])').forEach(icon => {
+      icon.setAttribute('set', set);
+    });
+    // Also update ones we previously set (they now have a set attr)
+    playground.querySelectorAll('icon-wc').forEach(icon => {
+      icon.setAttribute('set', set);
+    });
+  }
+
+  // ========================================
+  // Open in Composer
+  // ========================================
+
+  document.querySelectorAll('.open-in-composer').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const themeId = btn.dataset.composerTheme;
+      localStorage.setItem('vb-composer-load-theme', themeId);
+      window.location.href = '/docs/tools/theme-composer/';
+    });
+  });
+
+  // ========================================
+  // Initial render
+  // ========================================
+
+  renderTypeScale();
+  renderSpaceScale();
+</script>
+{% endblock %}

@@ -21,7 +21,7 @@
  */
 
 const STORAGE_KEY = 'vb-theme';
-const DEFAULTS = { mode: 'auto', brand: 'default' };
+const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '' };
 
 export const ThemeManager = {
   /**
@@ -69,7 +69,7 @@ export const ThemeManager = {
    * Apply theme to document root
    * @param {{ mode?: string, brand?: string }} prefs
    */
-  apply({ mode = 'auto', brand = 'default' } = {}) {
+  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '' } = {}) {
     const root = document.documentElement;
 
     // Apply mode
@@ -79,16 +79,43 @@ export const ThemeManager = {
       root.dataset.mode = mode;
     }
 
-    // Apply brand
-    if (brand === 'default') {
-      delete root.dataset.theme;
+    // Brand — preserve a11y theme suffixes
+    const current = root.dataset.theme || '';
+    const a11yParts = current.split(' ').filter(t => t.startsWith('a11y-'));
+    const parts = brand !== 'default' ? [brand, ...a11yParts] : [...a11yParts];
+
+    if (parts.length) {
+      root.dataset.theme = parts.join(' ');
     } else {
-      root.dataset.theme = brand;
+      delete root.dataset.theme;
+    }
+
+    // Border style — read CSS hint if user hasn't explicitly set one
+    const borderPref = borderStyle || this._readCSSHint('--theme-border-style');
+    if (borderPref && borderPref !== 'clean') {
+      root.dataset.borderStyle = borderPref;
+    } else {
+      delete root.dataset.borderStyle;
+    }
+
+    // Icon set — read CSS hint if user hasn't explicitly set one
+    const iconPref = iconSet || this._readCSSHint('--theme-icon-set');
+    if (iconPref && iconPref !== 'lucide') {
+      root.dataset.iconSet = iconPref;
+    } else {
+      delete root.dataset.iconSet;
+    }
+
+    // Fluid scaling
+    if (fluid) {
+      root.dataset.fluid = fluid;
+    } else {
+      delete root.dataset.fluid;
     }
 
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('theme-change', {
-      detail: { mode, brand, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, effectiveMode: this.getEffectiveMode() }
     }));
   },
 
@@ -111,6 +138,33 @@ export const ThemeManager = {
   },
 
   /**
+   * Set border style preference
+   * @param {string} borderStyle - Border style name (e.g., 'sharp', 'sketch', 'kawaii')
+   */
+  setBorderStyle(borderStyle) {
+    const updated = this.save({ borderStyle });
+    this.apply(updated);
+  },
+
+  /**
+   * Set icon set preference
+   * @param {string} iconSet - Icon set name (e.g., 'lucide', 'phosphor', 'tabler')
+   */
+  setIconSet(iconSet) {
+    const updated = this.save({ iconSet });
+    this.apply(updated);
+  },
+
+  /**
+   * Set fluid scaling preference
+   * @param {string} fluid - Fluid preset ('' | 'default' | 'compact' | 'spacious')
+   */
+  setFluid(fluid) {
+    const updated = this.save({ fluid });
+    this.apply(updated);
+  },
+
+  /**
    * Get current effective mode (resolves 'auto' to actual mode)
    * @returns {'light' | 'dark'}
    */
@@ -125,8 +179,8 @@ export const ThemeManager = {
    * @returns {{ mode: string, brand: string, effectiveMode: string }}
    */
   getState() {
-    const { mode, brand } = this.load();
-    return { mode, brand, effectiveMode: this.getEffectiveMode() };
+    const { mode, brand, borderStyle, iconSet, fluid } = this.load();
+    return { mode, brand, borderStyle, iconSet, fluid, effectiveMode: this.getEffectiveMode() };
   },
 
   /**
@@ -149,6 +203,17 @@ export const ThemeManager = {
       // Ignore
     }
     this.apply(DEFAULTS);
+  },
+
+  /**
+   * Read a CSS custom property hint from the computed style of :root
+   * Themes declare hints like --theme-border-style: sketch
+   * @param {string} property - CSS custom property name
+   * @returns {string} Trimmed value or empty string
+   * @private
+   */
+  _readCSSHint(property) {
+    return getComputedStyle(document.documentElement).getPropertyValue(property).trim();
   },
 
   /**

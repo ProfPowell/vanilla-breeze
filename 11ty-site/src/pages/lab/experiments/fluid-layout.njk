@@ -1,0 +1,971 @@
+---
+layout: layouts/docs.njk
+title: "Fluid Layout & Sizing"
+description: "Explore viewport-responsive fluid type and space scales using clamp() — resize the preview to see tokens scale in real-time."
+currentSection: tools
+currentPath: /docs/tools/fluid-layout/
+permalink: /docs/tools/fluid-layout/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Sticky Control Panel ===== */
+  .lab-controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface, #fff);
+    border-block-end: 2px solid var(--color-border, #ddd);
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-s, 0.75rem);
+    align-items: start;
+  }
+
+  .lab-controls fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+    align-items: center;
+  }
+
+  .lab-controls legend {
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-inline-end: var(--size-2xs, 0.25rem);
+    float: left;
+    line-height: 1.8;
+  }
+
+  .lab-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .lab-controls .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 180px;
+  }
+
+  .lab-controls .slider-group label {
+    padding: 0;
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .lab-controls .slider-group input[type="range"] {
+    width: 100%;
+  }
+
+  .lab-controls .slider-group output {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    text-align: center;
+  }
+
+  .lab-controls .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .lab-controls .input-group label {
+    padding: 0;
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .lab-controls .input-group input[type="number"] {
+    width: 80px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-family: var(--font-mono, monospace);
+  }
+
+  .lab-controls .reset-btn {
+    margin-inline-start: auto;
+    align-self: center;
+  }
+
+  /* ===== Preview Section ===== */
+  .preview-section {
+    margin-block-start: var(--size-l, 1.5rem);
+  }
+
+  .preview-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-m, 1rem);
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    background: var(--color-surface-alt, #f5f5f5);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem) var(--radius-m, 0.5rem) 0 0;
+  }
+
+  .preview-header h2 {
+    margin: 0;
+    font-size: var(--font-size-md, 1rem);
+  }
+
+  .width-display {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    min-width: 6ch;
+    text-align: end;
+  }
+
+  .width-presets {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+    margin-inline-start: auto;
+  }
+
+  .width-presets button {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 0.125rem 0.5rem;
+    font-family: var(--font-mono, monospace);
+    cursor: pointer;
+  }
+
+  .resize-container {
+    position: relative;
+    border: 1px solid var(--color-border, #ddd);
+    border-top: none;
+    border-radius: 0 0 var(--radius-m, 0.5rem) var(--radius-m, 0.5rem);
+    min-width: 280px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .resize-container iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    display: block;
+  }
+
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    z-index: 2;
+  }
+
+  .resize-handle::after {
+    content: '';
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+    background: var(--color-border, #ccc);
+    transition: background 0.15s;
+  }
+
+  .resize-handle:hover,
+  .resize-handle.active {
+    background: oklch(90% 0.02 260 / 0.5);
+  }
+
+  .resize-handle:hover::after,
+  .resize-handle.active::after {
+    background: var(--color-primary, oklch(55% 0.2 260));
+  }
+
+  /* ===== Gallery Sections (details) ===== */
+  .gallery-section {
+    margin-block-start: var(--size-xl, 2rem);
+  }
+
+  .gallery-section summary {
+    cursor: pointer;
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: 700;
+    padding: var(--size-s, 0.75rem) 0;
+  }
+
+  /* Scale tables */
+  .scale-comparison {
+    overflow-x: auto;
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .scale-comparison table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .scale-comparison th,
+  .scale-comparison td {
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    border-block-end: 1px solid var(--color-border, #eee);
+    text-align: left;
+  }
+
+  .scale-comparison th {
+    font-weight: 600;
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  .token-name {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .size-value {
+    font-family: var(--font-mono, monospace);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .formula-cell {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    max-width: 300px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Chart */
+  .chart-container {
+    position: relative;
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .chart-container canvas {
+    width: 100%;
+    height: 400px;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: var(--size-m, 1rem);
+    align-items: center;
+    margin-block-end: var(--size-s, 0.75rem);
+  }
+
+  .chart-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+  }
+
+  /* Export */
+  .export-section {
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .export-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-m, 1rem);
+    margin-block-end: var(--size-s, 0.75rem);
+  }
+
+  .export-header h3 {
+    margin: 0;
+  }
+
+  .export-section pre {
+    overflow-x: auto;
+    padding: var(--size-m, 1rem);
+    background: var(--color-surface-alt, #f5f5f5);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    font-size: var(--font-size-xs, 0.75rem);
+    line-height: 1.6;
+  }
+</style>
+{% endblock %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/themes/">Docs</a></li>
+    <li><a href="/docs/tools/">Tools</a></li>
+    <li><span aria-current="page">Fluid Layout &amp; Sizing</span></li>
+  </ol>
+</nav>
+
+<h1>Fluid Layout &amp; Sizing</h1>
+<p class="lead">Explore viewport-responsive fluid type and space scales using <code>clamp()</code> &mdash; resize the preview to see tokens scale in real-time, then export production-ready CSS.</p>
+
+<!-- ============================================
+     STICKY CONTROL PANEL
+     ============================================ -->
+<section class="lab-controls" aria-label="Fluid sizing controls">
+  <fieldset>
+    <legend>Preset</legend>
+    <select id="preset-select">
+      <option value="compact">Compact</option>
+      <option value="default" selected>Default</option>
+      <option value="spacious">Spacious</option>
+      <option value="custom">Custom</option>
+    </select>
+  </fieldset>
+
+  <div class="input-group">
+    <label for="min-vw">Min viewport</label>
+    <input type="number" id="min-vw" value="320" min="200" max="800" step="10">
+  </div>
+
+  <div class="input-group">
+    <label for="max-vw">Max viewport</label>
+    <input type="number" id="max-vw" value="1440" min="800" max="2560" step="10">
+  </div>
+
+  <div class="slider-group">
+    <label for="type-ratio-min">Type ratio at min vw: <output id="type-ratio-min-value">1.125</output></label>
+    <input type="range" id="type-ratio-min" min="1" max="1.5" step="0.001" value="1.125">
+  </div>
+
+  <div class="slider-group">
+    <label for="type-ratio-max">Type ratio at max vw: <output id="type-ratio-max-value">1.333</output></label>
+    <input type="range" id="type-ratio-max" min="1" max="2" step="0.001" value="1.333">
+  </div>
+
+  <div class="slider-group">
+    <label for="space-ratio-min">Space ratio at min vw: <output id="space-ratio-min-value">1.333</output></label>
+    <input type="range" id="space-ratio-min" min="1" max="2" step="0.001" value="1.333">
+  </div>
+
+  <div class="slider-group">
+    <label for="space-ratio-max">Space ratio at max vw: <output id="space-ratio-max-value">1.500</output></label>
+    <input type="range" id="space-ratio-max" min="1" max="2" step="0.001" value="1.5">
+  </div>
+
+  <button type="button" class="reset-btn" data-action="reset">Reset</button>
+</section>
+
+<!-- ============================================
+     RESIZABLE PREVIEW
+     ============================================ -->
+<section class="preview-section">
+  <header class="preview-header">
+    <h2>Preview</h2>
+    <output class="width-display" id="width-readout">—</output>
+    <nav class="width-presets" aria-label="Width presets">
+      <button type="button" data-width="320">320</button>
+      <button type="button" data-width="768">768</button>
+      <button type="button" data-width="1024">1024</button>
+      <button type="button" data-width="1440">1440</button>
+    </nav>
+  </header>
+  <div class="resize-container" id="resize-container">
+    <iframe id="preview-iframe" title="Fluid sizing preview"></iframe>
+    <div class="resize-handle" id="resize-handle" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ============================================
+     TYPE SCALE TABLE
+     ============================================ -->
+<details class="gallery-section" open>
+  <summary>Type Scale</summary>
+  <div class="scale-comparison">
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Min (px)</th>
+          <th>Max (px)</th>
+          <th>Current (px)</th>
+          <th>clamp() formula</th>
+        </tr>
+      </thead>
+      <tbody id="type-table-body"></tbody>
+    </table>
+  </div>
+</details>
+
+<!-- ============================================
+     SPACE SCALE TABLE
+     ============================================ -->
+<details class="gallery-section" open>
+  <summary>Space Scale</summary>
+  <div class="scale-comparison">
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Min (px)</th>
+          <th>Max (px)</th>
+          <th>Current (px)</th>
+          <th>clamp() formula</th>
+        </tr>
+      </thead>
+      <tbody id="space-table-body"></tbody>
+    </table>
+  </div>
+</details>
+
+<!-- ============================================
+     INTERPOLATION CHART
+     ============================================ -->
+<details class="gallery-section">
+  <summary>Interpolation Curves</summary>
+  <div class="chart-controls">
+    <label><input type="radio" name="chart-mode" value="type" checked> Type scale</label>
+    <label><input type="radio" name="chart-mode" value="space"> Space scale</label>
+  </div>
+  <div class="chart-container">
+    <canvas id="interpolation-chart"></canvas>
+  </div>
+</details>
+
+<!-- ============================================
+     GENERATED CSS
+     ============================================ -->
+<details class="gallery-section" open>
+  <summary>Generated CSS</summary>
+  <div class="export-section">
+    <div class="export-header">
+      <h3>Fluid Token Definitions</h3>
+      <fieldset style="border:none;padding:0;margin:0;display:inline-flex;gap:0.5rem;align-items:center;">
+        <legend class="sr-only">Export mode</legend>
+        <label><input type="radio" name="export-mode" value="standalone" checked> Standalone</label>
+        <label><input type="radio" name="export-mode" value="vb-native"> VB-native</label>
+      </fieldset>
+      <button type="button" id="copy-css-btn">Copy CSS</button>
+      <button type="button" id="btn-send-composer">Send to Composer</button>
+    </div>
+    <pre><code id="export-css"></code></pre>
+  </div>
+</details>
+
+{% block extraScripts %}
+<script type="module">
+  // ========================================
+  // A. Constants
+  // ========================================
+
+  const TYPE_STEPS = [
+    { name: 'xs',  step: -2, tokenVar: '--font-size-xs' },
+    { name: 'sm',  step: -1, tokenVar: '--font-size-sm' },
+    { name: 'md',  step:  0, tokenVar: '--font-size-md' },
+    { name: 'lg',  step:  1, tokenVar: '--font-size-lg' },
+    { name: 'xl',  step:  2, tokenVar: '--font-size-xl' },
+    { name: '2xl', step:  3, tokenVar: '--font-size-2xl' },
+    { name: '3xl', step:  4, tokenVar: '--font-size-3xl' },
+    { name: '4xl', step:  5, tokenVar: '--font-size-4xl' },
+    { name: '5xl', step:  6, tokenVar: '--font-size-5xl' },
+  ];
+
+  const SPACE_STEPS = [
+    { name: '3xs', step: -4, tokenVar: '--size-3xs' },
+    { name: '2xs', step: -3, tokenVar: '--size-2xs' },
+    { name: 'xs',  step: -2, tokenVar: '--size-xs' },
+    { name: 's',   step: -1, tokenVar: '--size-s' },
+    { name: 'm',   step:  0, tokenVar: '--size-m' },
+    { name: 'l',   step:  1, tokenVar: '--size-l' },
+    { name: 'xl',  step:  2, tokenVar: '--size-xl' },
+    { name: '2xl', step:  3, tokenVar: '--size-2xl' },
+    { name: '3xl', step:  4, tokenVar: '--size-3xl' },
+  ];
+
+  const PRESETS = {
+    compact:  { minVw: 320, maxVw: 1440, typeRatioMin: 1.067, typeRatioMax: 1.200, spaceRatioMin: 1.200, spaceRatioMax: 1.333 },
+    default:  { minVw: 320, maxVw: 1440, typeRatioMin: 1.125, typeRatioMax: 1.333, spaceRatioMin: 1.333, spaceRatioMax: 1.500 },
+    spacious: { minVw: 320, maxVw: 1440, typeRatioMin: 1.200, typeRatioMax: 1.500, spaceRatioMin: 1.500, spaceRatioMax: 1.618 },
+  };
+
+  // ========================================
+  // B. Clamp Calculation Engine
+  // ========================================
+
+  function round(n, decimals = 4) {
+    const f = Math.pow(10, decimals);
+    return Math.round(n * f) / f;
+  }
+
+  function calcFluidToken(step, ratioMin, ratioMax, minVw, maxVw, base = 1) {
+    const minRem = base * Math.pow(ratioMin, step);
+    const maxRem = base * Math.pow(ratioMax, step);
+
+    if (Math.abs(minRem - maxRem) < 0.001) {
+      return { minRem, maxRem, slope: 0, intercept: minRem, clamp: round(minRem) + 'rem' };
+    }
+
+    const minVwRem = minVw / 16;
+    const maxVwRem = maxVw / 16;
+    const slope = (maxRem - minRem) / (maxVwRem - minVwRem);
+    const intercept = minRem - slope * minVwRem;
+
+    const slopeVi = round(slope * 100, 4);
+    const interceptRem = round(intercept, 4);
+
+    let preferred;
+    if (interceptRem >= 0) {
+      preferred = slopeVi + 'vi + ' + interceptRem + 'rem';
+    } else {
+      preferred = slopeVi + 'vi - ' + round(Math.abs(intercept), 4) + 'rem';
+    }
+
+    const clampMin = round(Math.min(minRem, maxRem), 4);
+    const clampMax = round(Math.max(minRem, maxRem), 4);
+
+    return {
+      minRem,
+      maxRem,
+      slope,
+      intercept,
+      clamp: 'clamp(' + clampMin + 'rem, ' + preferred + ', ' + clampMax + 'rem)',
+    };
+  }
+
+  // ========================================
+  // C. Scale Generator
+  // ========================================
+
+  function generateScale(steps, ratioMin, ratioMax, minVw, maxVw) {
+    return steps.map(({ name, step, tokenVar }) => {
+      const fluid = calcFluidToken(step, ratioMin, ratioMax, minVw, maxVw);
+      return { name, step, tokenVar, ...fluid };
+    });
+  }
+
+  // ========================================
+  // D. Iframe Content Builder
+  // ========================================
+
+  let currentBlobUrl = null;
+
+  function buildIframeHTML(typeTokens, spaceTokens) {
+    const tokenCSS = [...typeTokens, ...spaceTokens]
+      .map(t => '  ' + t.tokenVar + ': ' + t.clamp + ';')
+      .join('\n');
+
+    return '<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<style>\n:root {\n' + tokenCSS + '\n  --color-text: #222;\n  --color-text-muted: #666;\n  --color-surface: #fff;\n  --color-surface-alt: #f5f5f5;\n  --color-border: #ddd;\n  --color-primary: oklch(55% 0.2 260);\n}\n* { margin: 0; box-sizing: border-box; }\nbody {\n  font-family: system-ui, sans-serif;\n  color: var(--color-text);\n  padding: 1.5rem;\n  display: flex;\n  flex-direction: column;\n  gap: 2rem;\n}\n.type-samples { display: flex; flex-direction: column; gap: 0.5rem; }\n.type-sample { display: flex; align-items: baseline; gap: 0.75rem; }\n.type-sample .label {\n  font-family: monospace;\n  font-size: 0.7rem;\n  color: var(--color-text-muted);\n  min-width: 12ch;\n  flex-shrink: 0;\n}\n.type-sample .text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.demo-card {\n  border: 1px solid var(--color-border);\n  border-radius: 0.5rem;\n  overflow: hidden;\n}\n.demo-card header {\n  padding: var(--size-m, 1rem);\n  border-bottom: 1px solid var(--color-border);\n}\n.demo-card header h3 { font-size: var(--font-size-xl, 1.25rem); margin: 0; }\n.demo-card header p { font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-muted); margin-top: var(--size-2xs, 0.25rem); }\n.demo-card .body { padding: var(--size-m, 1rem); font-size: var(--font-size-md, 1rem); }\n.demo-card footer {\n  padding: var(--size-s, 0.75rem) var(--size-m, 1rem);\n  border-top: 1px solid var(--color-border);\n  display: flex;\n  gap: var(--size-xs, 0.5rem);\n}\n.demo-card footer button {\n  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);\n  font-size: var(--font-size-sm, 0.875rem);\n  cursor: pointer;\n}\n.demo-form {\n  display: flex;\n  flex-direction: column;\n  gap: var(--size-m, 1rem);\n  border: 1px solid var(--color-border);\n  border-radius: 0.5rem;\n  padding: var(--size-m, 1rem);\n}\n.demo-form label {\n  display: flex;\n  flex-direction: column;\n  gap: var(--size-2xs, 0.25rem);\n  font-size: var(--font-size-sm, 0.875rem);\n  font-weight: 500;\n}\n.demo-form input {\n  padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);\n  border: 1px solid var(--color-border);\n  border-radius: 0.25rem;\n  font: inherit;\n  font-size: var(--font-size-md, 1rem);\n}\n.demo-form button {\n  align-self: start;\n  padding: var(--size-xs, 0.5rem) var(--size-l, 1.5rem);\n  font-size: var(--font-size-sm, 0.875rem);\n}\nh2.section-title {\n  font-size: var(--font-size-sm, 0.875rem);\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  color: var(--color-text-muted);\n  border-bottom: 1px solid var(--color-border);\n  padding-bottom: 0.25rem;\n}\n.space-samples { display: flex; flex-direction: column; gap: 0.375rem; }\n.space-sample { display: flex; align-items: center; gap: 0.5rem; }\n.space-sample .label {\n  font-family: monospace;\n  font-size: 0.7rem;\n  color: var(--color-text-muted);\n  min-width: 8ch;\n  flex-shrink: 0;\n}\n.space-sample .bar {\n  height: 0.75rem;\n  background: var(--color-primary);\n  border-radius: 2px;\n  opacity: 0.7;\n}\n</style>\n</head><body>\n  <h2 class="section-title">Type Scale</h2>\n  <div class="type-samples">\n' +
+    typeTokens.map(t =>
+      '    <div class="type-sample">\n      <span class="label">' + t.tokenVar + '</span>\n      <span class="text" style="font-size: ' + t.clamp + '">The quick brown fox jumps</span>\n    </div>'
+    ).join('\n') +
+    '\n  </div>\n\n  <h2 class="section-title">Demo Card</h2>\n  <article class="demo-card">\n    <header>\n      <h3>Fluid Typography</h3>\n      <p>Subtitle scales with viewport width</p>\n    </header>\n    <div class="body">\n      <p>Body text at the base size. Resize this preview to watch every token scale smoothly between its minimum and maximum values.</p>\n    </div>\n    <footer>\n      <button type="button">Primary</button>\n      <button type="button">Secondary</button>\n    </footer>\n  </article>\n\n  <h2 class="section-title">Demo Form</h2>\n  <form class="demo-form" onsubmit="return false">\n    <label>Full name <input type="text" placeholder="Jane Doe"></label>\n    <label>Email <input type="email" placeholder="jane@example.com"></label>\n    <button type="submit">Submit</button>\n  </form>\n\n  <h2 class="section-title">Space Scale</h2>\n  <div class="space-samples">\n' +
+    spaceTokens.map(t => {
+      const maxPx = Math.min(round(t.maxRem * 16, 1), 300);
+      return '    <div class="space-sample">\n      <span class="label">' + t.tokenVar + '</span>\n      <div class="bar" style="width: ' + t.clamp + '; max-width: ' + maxPx + 'px"></div>\n    </div>';
+    }).join('\n') +
+    '\n  </div>\n</body>\n</html>';
+  }
+
+  function loadIframe(typeTokens, spaceTokens) {
+    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    const html = buildIframeHTML(typeTokens, spaceTokens);
+    currentBlobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    document.getElementById('preview-iframe').src = currentBlobUrl;
+  }
+
+  // ========================================
+  // E. DOM References
+  // ========================================
+
+  const presetSelect    = document.getElementById('preset-select');
+  const minVwInput      = document.getElementById('min-vw');
+  const maxVwInput      = document.getElementById('max-vw');
+  const typeRatioMinIn  = document.getElementById('type-ratio-min');
+  const typeRatioMinOut = document.getElementById('type-ratio-min-value');
+  const typeRatioMaxIn  = document.getElementById('type-ratio-max');
+  const typeRatioMaxOut = document.getElementById('type-ratio-max-value');
+  const spaceRatioMinIn = document.getElementById('space-ratio-min');
+  const spaceRatioMinOut= document.getElementById('space-ratio-min-value');
+  const spaceRatioMaxIn = document.getElementById('space-ratio-max');
+  const spaceRatioMaxOut= document.getElementById('space-ratio-max-value');
+  const widthReadout    = document.getElementById('width-readout');
+  const resizeContainer = document.getElementById('resize-container');
+  const resizeHandle    = document.getElementById('resize-handle');
+  const typeTableBody   = document.getElementById('type-table-body');
+  const spaceTableBody  = document.getElementById('space-table-body');
+  const chartCanvas     = document.getElementById('interpolation-chart');
+  const exportCode      = document.getElementById('export-css');
+  const copyCssBtn      = document.getElementById('copy-css-btn');
+  const exportModeRadios = document.querySelectorAll('input[name="export-mode"]');
+
+  // ========================================
+  // F. Resize Handle
+  // ========================================
+
+  let isResizing = false;
+
+  resizeHandle.addEventListener('pointerdown', (e) => {
+    isResizing = true;
+    resizeHandle.classList.add('active');
+    resizeHandle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  resizeHandle.addEventListener('pointermove', (e) => {
+    if (!isResizing) return;
+    const rect = resizeContainer.parentElement.getBoundingClientRect();
+    const newWidth = Math.max(280, Math.min(e.clientX - rect.left, rect.width));
+    resizeContainer.style.width = newWidth + 'px';
+  });
+
+  resizeHandle.addEventListener('pointerup', () => {
+    isResizing = false;
+    resizeHandle.classList.remove('active');
+  });
+
+  // Width preset buttons
+  document.querySelectorAll('.width-presets button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const w = parseInt(btn.dataset.width, 10);
+      resizeContainer.style.width = w + 'px';
+    });
+  });
+
+  // ========================================
+  // G. ResizeObserver
+  // ========================================
+
+  let currentWidth = 0;
+
+  const resizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      currentWidth = Math.round(entry.contentRect.width);
+      widthReadout.textContent = currentWidth + 'px';
+      renderTables();
+      drawChart();
+    }
+  });
+  resizeObserver.observe(resizeContainer);
+
+  // ========================================
+  // H. Table Rendering
+  // ========================================
+
+  let cachedTypeTokens = [];
+  let cachedSpaceTokens = [];
+
+  function currentPx(token) {
+    const minVw = getMinVw();
+    const maxVw = getMaxVw();
+    const lo = Math.min(token.minRem, token.maxRem);
+    const hi = Math.max(token.minRem, token.maxRem);
+    if (currentWidth <= minVw) return round(token.minRem * 16, 1);
+    if (currentWidth >= maxVw) return round(token.maxRem * 16, 1);
+    const val = token.slope * (currentWidth / 16) + token.intercept;
+    return round(Math.max(lo, Math.min(hi, val)) * 16, 1);
+  }
+
+  function renderTables() {
+    typeTableBody.innerHTML = cachedTypeTokens.map(t =>
+      '<tr>' +
+        '<td class="token-name">' + t.tokenVar + '</td>' +
+        '<td class="size-value">' + round(t.minRem * 16, 1) + '</td>' +
+        '<td class="size-value">' + round(t.maxRem * 16, 1) + '</td>' +
+        '<td class="size-value">' + currentPx(t) + '</td>' +
+        '<td class="formula-cell">' + t.clamp + '</td>' +
+      '</tr>'
+    ).join('');
+
+    spaceTableBody.innerHTML = cachedSpaceTokens.map(t =>
+      '<tr>' +
+        '<td class="token-name">' + t.tokenVar + '</td>' +
+        '<td class="size-value">' + round(t.minRem * 16, 1) + '</td>' +
+        '<td class="size-value">' + round(t.maxRem * 16, 1) + '</td>' +
+        '<td class="size-value">' + currentPx(t) + '</td>' +
+        '<td class="formula-cell">' + t.clamp + '</td>' +
+      '</tr>'
+    ).join('');
+  }
+
+  // ========================================
+  // I. Canvas Chart
+  // ========================================
+
+  function drawChart() {
+    const mode = document.querySelector('input[name="chart-mode"]:checked')?.value || 'type';
+    const tokens = mode === 'type' ? cachedTypeTokens : cachedSpaceTokens;
+    if (!tokens.length) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = chartCanvas.getBoundingClientRect();
+    chartCanvas.width = rect.width * dpr;
+    chartCanvas.height = rect.height * dpr;
+
+    const ctx = chartCanvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    const pad = { top: 20, right: 80, bottom: 40, left: 60 };
+    const w = rect.width - pad.left - pad.right;
+    const h = rect.height - pad.top - pad.bottom;
+
+    const minVw = getMinVw();
+    const maxVw = getMaxVw();
+    const allMaxPx = Math.max(...tokens.map(t => Math.max(t.minRem, t.maxRem) * 16));
+    const yMax = Math.ceil(allMaxPx / 4) * 4 + 4;
+
+    function xPos(vw) { return pad.left + ((vw - minVw) / (maxVw - minVw)) * w; }
+    function yPos(px) { return pad.top + h - (px / yMax) * h; }
+
+    // Grid lines
+    ctx.strokeStyle = '#e5e5e5';
+    ctx.lineWidth = 1;
+    for (let px = 0; px <= yMax; px += 8) {
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yPos(px));
+      ctx.lineTo(pad.left + w, yPos(px));
+      ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top);
+    ctx.lineTo(pad.left, pad.top + h);
+    ctx.lineTo(pad.left + w, pad.top + h);
+    ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#666';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'right';
+    for (let px = 0; px <= yMax; px += 8) {
+      ctx.fillText(px + 'px', pad.left - 6, yPos(px) + 4);
+    }
+    ctx.textAlign = 'center';
+    const vwSteps = [minVw];
+    for (let i = 1; i < 5; i++) {
+      vwSteps.push(Math.round(minVw + ((maxVw - minVw) * i) / 5));
+    }
+    vwSteps.push(maxVw);
+    for (const vw of vwSteps) {
+      ctx.fillText(vw + '', xPos(vw), pad.top + h + 20);
+    }
+
+    // Token lines
+    const hueStep = 360 / tokens.length;
+    tokens.forEach((t, i) => {
+      const hue = i * hueStep;
+      ctx.strokeStyle = 'oklch(60% 0.18 ' + hue + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const lo = Math.min(t.minRem, t.maxRem);
+      const hi = Math.max(t.minRem, t.maxRem);
+      for (let vw = minVw; vw <= maxVw; vw += 2) {
+        const rem = t.slope * (vw / 16) + t.intercept;
+        const clamped = Math.max(lo, Math.min(hi, rem));
+        const px = clamped * 16;
+        const x = xPos(vw);
+        const y = yPos(px);
+        vw === minVw ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Label at right edge
+      ctx.fillStyle = 'oklch(60% 0.18 ' + hue + ')';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'left';
+      const endPx = Math.max(t.minRem, t.maxRem) * 16;
+      ctx.fillText(t.name, xPos(maxVw) + 4, yPos(endPx) + 3);
+    });
+
+    // Current width indicator
+    if (currentWidth >= minVw && currentWidth <= maxVw) {
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = 'oklch(55% 0.25 25)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(xPos(currentWidth), pad.top);
+      ctx.lineTo(xPos(currentWidth), pad.top + h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'oklch(55% 0.25 25)';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentWidth + 'px', xPos(currentWidth), pad.top - 6);
+    }
+  }
+
+  document.querySelectorAll('input[name="chart-mode"]').forEach(r => {
+    r.addEventListener('change', drawChart);
+  });
+
+  // ========================================
+  // J. CSS Export
+  // ========================================
+
+  function getExportMode() {
+    const checked = document.querySelector('input[name="export-mode"]:checked');
+    return checked ? checked.value : 'standalone';
+  }
+
+  function generateExportCSS() {
+    const mode = getExportMode();
+
+    if (mode === 'vb-native') {
+      let css = '/* VB-native: activate with <html data-fluid="custom"> */\n';
+      css += '[data-fluid="custom"] {\n  /* Fluid Type Scale */\n';
+      for (const t of cachedTypeTokens) {
+        css += '  ' + t.tokenVar + ': ' + t.clamp + ';\n';
+      }
+      // Derive --size-unit from space ratios. VB's --size-xl = --size-unit * 8,
+      // so --size-unit ≈ ratio^2 / 8 at step 2. This gives a smooth range.
+      const unitFluid = calcFluidToken(2, getSpaceRatioMin(), getSpaceRatioMax(), getMinVw(), getMaxVw(), 1 / 8);
+      css += '\n  /* Fluid Space (via --size-unit — cascades to all --size-* tokens) */\n';
+      css += '  --size-unit: ' + unitFluid.clamp + ';\n';
+      css += '}\n';
+      return css;
+    }
+
+    let css = ':root {\n  /* Fluid Type Scale */\n';
+    for (const t of cachedTypeTokens) {
+      css += '  ' + t.tokenVar + ': ' + t.clamp + ';\n';
+    }
+    css += '\n  /* Fluid Space Scale */\n';
+    for (const t of cachedSpaceTokens) {
+      css += '  ' + t.tokenVar + ': ' + t.clamp + ';\n';
+    }
+    css += '}\n';
+    return css;
+  }
+
+  function renderExport() {
+    exportCode.textContent = generateExportCSS();
+  }
+
+  exportModeRadios.forEach(r => r.addEventListener('change', renderExport));
+
+  copyCssBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(generateExportCSS());
+      const orig = copyCssBtn.textContent;
+      copyCssBtn.textContent = 'Copied!';
+      setTimeout(() => { copyCssBtn.textContent = orig; }, 1500);
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(exportCode);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  });
+
+  // ========================================
+  // K. Master Update
+  // ========================================
+
+  function getMinVw()        { return parseInt(minVwInput.value, 10) || 320; }
+  function getMaxVw()        { return parseInt(maxVwInput.value, 10) || 1440; }
+  function getTypeRatioMin() { return parseFloat(typeRatioMinIn.value) || 1.125; }
+  function getTypeRatioMax() { return parseFloat(typeRatioMaxIn.value) || 1.333; }
+  function getSpaceRatioMin(){ return parseFloat(spaceRatioMinIn.value) || 1.333; }
+  function getSpaceRatioMax(){ return parseFloat(spaceRatioMaxIn.value) || 1.5; }
+
+  function update() {
+    typeRatioMinOut.textContent  = getTypeRatioMin().toFixed(3);
+    typeRatioMaxOut.textContent  = getTypeRatioMax().toFixed(3);
+    spaceRatioMinOut.textContent = getSpaceRatioMin().toFixed(3);
+    spaceRatioMaxOut.textContent = getSpaceRatioMax().toFixed(3);
+
+    const minVw = getMinVw();
+    const maxVw = getMaxVw();
+
+    cachedTypeTokens  = generateScale(TYPE_STEPS, getTypeRatioMin(), getTypeRatioMax(), minVw, maxVw);
+    cachedSpaceTokens = generateScale(SPACE_STEPS, getSpaceRatioMin(), getSpaceRatioMax(), minVw, maxVw);
+
+    loadIframe(cachedTypeTokens, cachedSpaceTokens);
+    renderTables();
+    drawChart();
+    renderExport();
+  }
+
+  // ========================================
+  // L. Preset Logic
+  // ========================================
+
+  function applyPreset(name) {
+    const p = PRESETS[name];
+    if (!p) return;
+    minVwInput.value      = p.minVw;
+    maxVwInput.value      = p.maxVw;
+    typeRatioMinIn.value  = p.typeRatioMin;
+    typeRatioMaxIn.value  = p.typeRatioMax;
+    spaceRatioMinIn.value = p.spaceRatioMin;
+    spaceRatioMaxIn.value = p.spaceRatioMax;
+    update();
+  }
+
+  presetSelect.addEventListener('change', () => {
+    if (presetSelect.value !== 'custom') {
+      applyPreset(presetSelect.value);
+    }
+  });
+
+  function markCustom() {
+    if (presetSelect.value !== 'custom') {
+      presetSelect.value = 'custom';
+    }
+  }
+
+  // Bind slider inputs
+  [typeRatioMinIn, typeRatioMaxIn, spaceRatioMinIn, spaceRatioMaxIn].forEach(el => {
+    el.addEventListener('input', () => { markCustom(); update(); });
+  });
+
+  // Bind number inputs
+  [minVwInput, maxVwInput].forEach(el => {
+    el.addEventListener('change', () => { markCustom(); update(); });
+  });
+
+  // Reset button
+  document.querySelector('[data-action="reset"]').addEventListener('click', () => {
+    presetSelect.value = 'default';
+    applyPreset('default');
+  });
+
+  // ========================================
+  // M. Send to Composer
+  // ========================================
+
+  const sendBtn = document.getElementById('btn-send-composer');
+  if (sendBtn) {
+    sendBtn.addEventListener('click', () => {
+      const data = {
+        minVw: getMinVw(),
+        maxVw: getMaxVw(),
+        typeRatioMin: getTypeRatioMin(),
+        typeRatioMax: getTypeRatioMax(),
+        spaceRatioMin: getSpaceRatioMin(),
+        spaceRatioMax: getSpaceRatioMax(),
+      };
+      localStorage.setItem('vb-fluid-layout-output', JSON.stringify(data));
+      sendBtn.textContent = 'Sent!';
+      setTimeout(() => { sendBtn.textContent = 'Send to Composer'; }, 1500);
+    });
+  }
+
+  // ========================================
+  // N. Initial Render
+  // ========================================
+
+  update();
+</script>
+{% endblock %}

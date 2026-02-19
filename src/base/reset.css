@@ -35,6 +35,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Re-apply text color on scoped theme/mode elements so CSS variables
+   resolve in the element's own scope rather than inheriting from body */
+[data-theme]:not(:root),
+[data-mode]:not(:root) {
+  color: var(--color-text);
+}
+
 img,
 picture,
 video,
@@ -63,4 +70,16 @@ h6 {
 
 :target {
   scroll-margin-block: 5ex;
+}
+
+/* Touch devices — enforce comfortable target sizes (WCAG 2.5.8) */
+@media (pointer: coarse) {
+  button,
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  select,
+  input:not([type="hidden"]) {
+    min-block-size: var(--size-touch-min);
+  }
 }

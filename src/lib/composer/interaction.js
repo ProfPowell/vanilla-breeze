@@ -63,7 +63,9 @@ export class CanvasInteraction {
     const contentW = canvasRect.width - padL - padR;
     this.#colWidth = (contentW - (this.#cols - 1) * this.#gapPx) / this.#cols;
 
-    const rowPx = parseFloat(cs.getPropertyValue('--row-size')) || 48;
+    // Read the computed grid-auto-rows (resolved to px) rather than the raw
+    // custom property (e.g. '3rem' → parseFloat gives 3, not 48).
+    const rowPx = parseFloat(cs.getPropertyValue('grid-auto-rows')) || 48;
     this.#rowHeight = rowPx + this.#gapPx;
   }
 

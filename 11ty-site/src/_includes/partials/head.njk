@@ -55,14 +55,28 @@
   try {
     const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
     const mode = stored.mode || 'auto';
+    const brand = stored.brand || 'default';
+
+    // Mode
     if (mode !== 'auto') {
       document.documentElement.dataset.mode = mode;
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.documentElement.dataset.mode = 'dark';
     }
-    if (stored.brand && stored.brand !== 'default') {
-      document.documentElement.dataset.theme = stored.brand;
-    }
+
+    // Compose full theme: brand + a11y themes
+    const a11y = JSON.parse(localStorage.getItem('vb-a11y-themes') || '[]');
+    const parts = [];
+    if (brand && brand !== 'default') parts.push(brand);
+    parts.push(...a11y);
+    if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
+
+    // Fluid scaling
+    if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
+
+    // Extensions: motion-reduced
+    const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
+    if (ext.motionFx === false) document.documentElement.dataset.motionReduced = '';
   } catch(e) {}
 </script>
 

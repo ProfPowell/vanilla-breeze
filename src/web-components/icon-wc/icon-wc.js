@@ -22,6 +22,29 @@ const iconCache = new Map();
  * @attr {string} label - Accessible label for functional icons
  */
 class IconWc extends HTMLElement {
+    static #instances = new Set();
+    static #globalObserver = null;
+
+    static #initGlobalObserver() {
+        if (IconWc.#globalObserver) return;
+        IconWc.#globalObserver = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                if (m.attributeName === 'data-icon-set') {
+                    for (const inst of IconWc.#instances) {
+                        if (!inst.hasAttribute('set')) {
+                            inst.render();
+                            inst.loadIcon();
+                        }
+                    }
+                }
+            }
+        });
+        IconWc.#globalObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-icon-set']
+        });
+    }
+
     /**
      * @static
      * @returns {string[]} List of attributes to observe for changes
@@ -48,10 +71,12 @@ class IconWc extends HTMLElement {
 
     /**
      * @readonly
-     * @returns {string} The icon set (lucide or custom)
+     * @returns {string} The icon set — reads from attribute, then global data-icon-set, then defaults to lucide
      */
     get set() {
-        return this.getAttribute('set') || 'lucide';
+        return this.getAttribute('set') ||
+               document.documentElement.dataset.iconSet ||
+               'lucide';
     }
 
     /**
@@ -197,8 +222,17 @@ class IconWc extends HTMLElement {
      * @description Lifecycle callback when element is added to DOM
      */
     connectedCallback() {
+        IconWc.#instances.add(this);
+        IconWc.#initGlobalObserver();
         this.render();
         this.loadIcon();
+    }
+
+    /**
+     * @description Lifecycle callback when element is removed from DOM
+     */
+    disconnectedCallback() {
+        IconWc.#instances.delete(this);
     }
 
     /**

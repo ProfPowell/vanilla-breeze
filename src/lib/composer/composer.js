@@ -5,8 +5,11 @@
  * Orchestrates canvas, inspector, interaction, and code output.
  */
 
-import { VbCanvas } from './canvas.js';
-import { VbInspector } from './inspector.js';
+// Side-effect imports — these register custom elements (vb-canvas, vb-inspector,
+// vb-block-handle). Named imports would be tree-shaken by the bundler since
+// the classes are never referenced directly in this module.
+import './canvas.js';
+import './inspector.js';
 import { CanvasInteraction } from './interaction.js';
 import { serialize } from './serialize.js';
 import { exportPlacementVars, exportNamedAreas } from './export.js';

@@ -1,0 +1,1071 @@
+---
+layout: layouts/docs.njk
+title: "Color Schemer"
+description: "OKLCH color space exploration with harmony modes, semantic derivation, and WCAG contrast checking."
+currentSection: tools
+currentPath: /docs/tools/color-schemer/
+permalink: /docs/tools/color-schemer/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Layout ===== */
+  .schemer-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--size-l, 1.5rem);
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .schemer-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Control Panel ===== */
+  .controls {
+    position: sticky;
+    top: var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m, 1rem);
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+  }
+
+  .controls h3 {
+    margin: 0;
+    font-size: var(--font-size-sm, 0.875rem);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted, #666);
+  }
+
+  /* Canvas wheel */
+  .wheel-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  #hue-wheel {
+    cursor: crosshair;
+    border-radius: 50%;
+  }
+
+  /* Harmony radios */
+  .harmony-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .harmony-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    border: 1px solid var(--color-border, #ddd);
+  }
+
+  .harmony-group input:checked + span {
+    font-weight: 700;
+  }
+
+  /* Active color radio */
+  .active-color {
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .active-color label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: 0.25rem 0.5rem;
+    border: 2px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .active-color input:checked + span {
+    font-weight: 700;
+  }
+
+  .active-color label:has(input[value="primary"]) { border-color: var(--preview-primary, oklch(50% 0.2 260)); }
+  .active-color label:has(input[value="secondary"]) { border-color: var(--preview-secondary, oklch(50% 0.08 200)); }
+  .active-color label:has(input[value="accent"]) { border-color: var(--preview-accent, oklch(65% 0.18 30)); }
+
+  /* Sliders */
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .slider-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+  }
+
+  .slider-row output {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .slider-row input[type="range"] { width: 100%; }
+
+  .lc-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+    padding: var(--size-xs, 0.5rem);
+    background: var(--color-surface-raised, #f8f8f8);
+    border-radius: var(--radius-s, 0.25rem);
+  }
+
+  .lc-group summary {
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Tint toggle */
+  .tint-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* Export buttons */
+  .export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .export-buttons button {
+    flex: 1;
+    white-space: nowrap;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* ===== Visualization Panel ===== */
+  .viz-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-l, 1.5rem);
+  }
+
+  /* Mini swatches in controls */
+  .mini-swatches {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .mini-swatch {
+    width: 40px;
+    height: 28px;
+    border-radius: var(--radius-s, 0.25rem);
+    border: 1px solid oklch(0% 0 0 / 0.15);
+  }
+
+  /* Semantic table */
+  .semantic-section {
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  .semantic-section h3 {
+    margin: 0 0 var(--size-s, 0.75rem) 0;
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .token-table th,
+  .token-table td {
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    text-align: left;
+    border-block-end: 1px solid var(--color-border-subtle, #eee);
+  }
+
+  .token-table th {
+    font-weight: 600;
+    color: var(--color-text-muted, #666);
+    font-size: var(--font-size-xs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .token-name {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .token-swatch {
+    width: 32px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid oklch(0% 0 0 / 0.1);
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .token-value {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  /* Contrast matrix */
+  .contrast-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+    text-align: center;
+  }
+
+  .contrast-matrix th,
+  .contrast-matrix td {
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    border: 1px solid var(--color-border-subtle, #eee);
+  }
+
+  .contrast-matrix th {
+    font-weight: 600;
+    font-size: var(--font-size-xs, 0.75rem);
+    background: var(--color-surface-raised, #f8f8f8);
+  }
+
+  .contrast-aaa { background: oklch(85% 0.12 145); color: oklch(25% 0.08 145); font-weight: 700; }
+  .contrast-aa { background: oklch(90% 0.08 80); color: oklch(30% 0.1 80); }
+  .contrast-fail { background: oklch(90% 0.08 25); color: oklch(35% 0.12 25); }
+
+  /* Light / Dark preview cards */
+  .preview-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-m, 1rem);
+  }
+
+  @media (max-width: 600px) {
+    .preview-pair { grid-template-columns: 1fr; }
+  }
+
+  .preview-card {
+    padding: var(--size-m, 1rem);
+    border-radius: var(--radius-m, 0.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s, 0.75rem);
+  }
+
+  .preview-card h4 { margin: 0; }
+
+  .preview-card .btn-primary {
+    display: inline-block;
+    padding: 0.375rem 1rem;
+    border-radius: var(--radius-s, 0.25rem);
+    font-weight: 600;
+    font-size: var(--font-size-sm, 0.875rem);
+    border: none;
+    cursor: pointer;
+    align-self: start;
+  }
+
+  .preview-card .text-muted {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .preview-card .badge-row {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+    flex-wrap: wrap;
+  }
+
+  .preview-card .badge {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-full, 9999px);
+    font-weight: 600;
+  }
+
+  .preview-card .surface-strip {
+    display: flex;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .preview-card .surface-chip {
+    flex: 1;
+    height: 24px;
+    border-radius: 3px;
+    border: 1px solid oklch(0% 0 0 / 0.1);
+  }
+
+  /* Presets gallery */
+  .presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .preset-card {
+    padding: var(--size-xs, 0.5rem);
+    border: 2px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, transform 0.15s;
+    background: var(--color-surface, #fff);
+  }
+
+  .preset-card:hover {
+    border-color: var(--color-primary, #333);
+    transform: translateY(-2px);
+  }
+
+  .preset-card h4 {
+    margin: 0;
+    font-size: var(--font-size-sm, 0.875rem);
+    text-transform: capitalize;
+  }
+
+  .preset-swatches {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-block-start: var(--size-2xs, 0.25rem);
+  }
+
+  .preset-swatches span {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid oklch(0% 0 0 / 0.15);
+  }
+</style>
+{% endblock %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/themes/">Docs</a></li>
+    <li><a href="/docs/tools/">Tools</a></li>
+    <li><span aria-current="page">Color Schemer</span></li>
+  </ol>
+</nav>
+
+<h1>Color Schemer</h1>
+<p class="lead">Explore OKLCH color harmonies, derive semantic tokens, and check WCAG contrast &mdash; all in real time.</p>
+<p>Send your palette to the <a href="/docs/tools/theme-composer/">Theme Composer</a> or explore <a href="/docs/tools/type-explorer/">Type Explorer</a> for font pairings.</p>
+
+<div class="schemer-layout">
+  <!-- ============================================
+       CONTROL PANEL
+       ============================================ -->
+  <aside class="controls">
+    <h3>Hue Wheel</h3>
+    <div class="wheel-wrap">
+      <canvas id="hue-wheel" width="280" height="280"></canvas>
+    </div>
+
+    <h3>Active Handle</h3>
+    <div class="active-color">
+      <label><input type="radio" name="active-handle" value="primary" checked><span>Primary</span></label>
+      <label><input type="radio" name="active-handle" value="secondary"><span>Secondary</span></label>
+      <label><input type="radio" name="active-handle" value="accent"><span>Accent</span></label>
+    </div>
+
+    <h3>Harmony Mode</h3>
+    <div class="harmony-group">
+      <label><input type="radio" name="harmony" value="none" checked><span>None</span></label>
+      <label><input type="radio" name="harmony" value="complementary"><span>Comp</span></label>
+      <label><input type="radio" name="harmony" value="analogous"><span>Analog</span></label>
+      <label><input type="radio" name="harmony" value="triadic"><span>Triad</span></label>
+      <label><input type="radio" name="harmony" value="split"><span>Split</span></label>
+    </div>
+
+    <details class="lc-group" open>
+      <summary>Primary L/C</summary>
+      <div class="slider-row">
+        <label>Lightness <output id="pri-l-out">0.50</output></label>
+        <input type="range" id="pri-l" min="0.30" max="0.80" step="0.01" value="0.50">
+      </div>
+      <div class="slider-row">
+        <label>Chroma <output id="pri-c-out">0.20</output></label>
+        <input type="range" id="pri-c" min="0.00" max="0.37" step="0.01" value="0.20">
+      </div>
+    </details>
+
+    <details class="lc-group">
+      <summary>Secondary L/C</summary>
+      <div class="slider-row">
+        <label>Lightness <output id="sec-l-out">0.50</output></label>
+        <input type="range" id="sec-l" min="0.30" max="0.80" step="0.01" value="0.50">
+      </div>
+      <div class="slider-row">
+        <label>Chroma <output id="sec-c-out">0.08</output></label>
+        <input type="range" id="sec-c" min="0.00" max="0.37" step="0.01" value="0.08">
+      </div>
+    </details>
+
+    <details class="lc-group">
+      <summary>Accent L/C</summary>
+      <div class="slider-row">
+        <label>Lightness <output id="acc-l-out">0.65</output></label>
+        <input type="range" id="acc-l" min="0.30" max="0.80" step="0.01" value="0.65">
+      </div>
+      <div class="slider-row">
+        <label>Chroma <output id="acc-c-out">0.18</output></label>
+        <input type="range" id="acc-c" min="0.00" max="0.37" step="0.01" value="0.18">
+      </div>
+    </details>
+
+    <label class="tint-toggle">
+      <input type="checkbox" id="surface-tint"> Tint dark surfaces with primary hue
+    </label>
+
+    <h3>Quick Swatches</h3>
+    <div class="mini-swatches" id="mini-swatches"></div>
+
+    <div class="export-buttons">
+      <button type="button" id="btn-copy-css">Copy CSS</button>
+      <button type="button" id="btn-copy-hues">Copy Hues</button>
+      <button type="button" id="btn-send-composer">Send to Composer</button>
+    </div>
+  </aside>
+
+  <!-- ============================================
+       VISUALIZATION PANEL
+       ============================================ -->
+  <div class="viz-panel">
+
+    <!-- Semantic Color Table -->
+    <section class="semantic-section">
+      <h3>Semantic Color Tokens</h3>
+      <table class="token-table">
+        <thead>
+          <tr><th>Token</th><th>Swatch</th><th>Value</th></tr>
+        </thead>
+        <tbody id="semantic-table"></tbody>
+      </table>
+    </section>
+
+    <!-- WCAG Contrast Matrix -->
+    <section class="semantic-section">
+      <h3>WCAG Contrast Matrix</h3>
+      <table class="contrast-matrix" id="contrast-matrix">
+        <thead>
+          <tr><th>Pair</th><th>Light</th><th>Dark</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Light/Dark Preview -->
+    <section class="semantic-section">
+      <h3>Light / Dark Preview</h3>
+      <div class="preview-pair">
+        <div class="preview-card" id="preview-light"></div>
+        <div class="preview-card" id="preview-dark"></div>
+      </div>
+    </section>
+
+    <!-- Presets Gallery -->
+    <details class="semantic-section">
+      <summary><h3 style="display:inline">Palette Presets</h3></summary>
+      <p>Click a preset to load its hue values.</p>
+      <div class="presets-grid" id="presets-grid"></div>
+    </details>
+  </div>
+</div>
+
+{% block extraScripts %}
+<script type="module">
+// ============================================================
+// A. OKLCH Math
+// ============================================================
+
+/** Convert OKLCH to linear sRGB via OKLab→LMS→linear-sRGB */
+function oklchToLinearSrgb(L, C, H) {
+  const hRad = H * Math.PI / 180;
+  const a = C * Math.cos(hRad);
+  const b = C * Math.sin(hRad);
+
+  // OKLab → LMS (cube roots)
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+
+  // LMS → linear sRGB
+  return [
+    +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+  ];
+}
+
+function linearToSrgb(c) {
+  return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+}
+
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+function oklchToHex(L, C, H) {
+  const [lr, lg, lb] = oklchToLinearSrgb(L, C, H);
+  const r = Math.round(clamp01(linearToSrgb(lr)) * 255);
+  const g = Math.round(clamp01(linearToSrgb(lg)) * 255);
+  const b = Math.round(clamp01(linearToSrgb(lb)) * 255);
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function oklchStr(L, C, H) {
+  return `oklch(${(L * 100).toFixed(0)}% ${C.toFixed(2)} ${H.toFixed(0)})`;
+}
+
+function relativeLuminance(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const toLinear = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function contrastRatio(hex1, hex2) {
+  const l1 = relativeLuminance(hex1);
+  const l2 = relativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function wcagLevel(ratio) {
+  if (ratio >= 7) return 'AAA';
+  if (ratio >= 4.5) return 'AA';
+  return 'Fail';
+}
+
+function harmonyHues(primaryHue, mode) {
+  const h = primaryHue;
+  const wrap = v => ((v % 360) + 360) % 360;
+  switch (mode) {
+    case 'complementary': return { secondary: wrap(h + 180), accent: wrap(h + 90) };
+    case 'analogous': return { secondary: wrap(h + 30), accent: wrap(h - 30) };
+    case 'triadic': return { secondary: wrap(h + 120), accent: wrap(h + 240) };
+    case 'split': return { secondary: wrap(h + 150), accent: wrap(h + 210) };
+    default: return null;
+  }
+}
+
+// ============================================================
+// B. Semantic Color Derivation
+// ============================================================
+
+function deriveSemanticColors(state) {
+  const { hues, lc } = state;
+  const hp = hues.primary, hs = hues.secondary, ha = hues.accent;
+  const pL = lc.primary.l, pC = lc.primary.c;
+  const sL = lc.secondary.l, sC = lc.secondary.c;
+  const aL = lc.accent.l, aC = lc.accent.c;
+
+  // Helper: generate light and dark variants
+  function lightDark(lightSpec, darkSpec) {
+    return { light: lightSpec, dark: darkSpec };
+  }
+
+  const tokens = {
+    // Brand colors
+    'color-primary':        { light: [pL, pC, hp],      dark: [pL + 0.15, pC - 0.02, hp] },
+    'color-primary-hover':  { light: [pL - 0.08, pC + 0.02, hp], dark: [pL + 0.07, pC, hp] },
+    'color-primary-active': { light: [pL - 0.12, pC, hp], dark: [pL + 0.03, pC, hp] },
+    'color-primary-subtle': { light: [0.95, 0.03, hp],   dark: [0.20, 0.05, hp] },
+    'color-secondary':      { light: [sL, sC, hs],      dark: [sL + 0.15, sC, hs] },
+    'color-secondary-hover':{ light: [sL - 0.08, sC, hs], dark: [sL + 0.07, sC, hs] },
+    'color-accent':         { light: [aL, aC, ha],      dark: [aL + 0.05, aC - 0.02, ha] },
+    'color-accent-hover':   { light: [aL - 0.08, aC, ha], dark: [aL - 0.03, aC, ha] },
+
+    // Surfaces
+    'color-background':     { light: [1.00, 0, 0],      dark: [0.10, 0, 0] },
+    'color-surface':        { light: [1.00, 0, 0],      dark: [0.15, 0, 0] },
+    'color-surface-raised': { light: [0.98, 0, 0],      dark: [0.20, 0, 0] },
+    'color-surface-sunken': { light: [0.96, 0, 0],      dark: [0.10, 0, 0] },
+
+    // Text
+    'color-text':           { light: [0.15, 0, 0],      dark: [0.96, 0, 0] },
+    'color-text-muted':     { light: [0.45, 0, 0],      dark: [0.70, 0, 0] },
+    'color-text-subtle':    { light: [0.55, 0, 0],      dark: [0.55, 0, 0] },
+    'color-text-inverted':  { light: [1.00, 0, 0],      dark: [0.15, 0, 0] },
+    'color-text-on-primary':{ light: [1.00, 0, 0],      dark: [1.00, 0, 0] },
+
+    // Borders
+    'color-border':         { light: [0.90, 0, 0],      dark: [0.35, 0, 0] },
+    'color-border-strong':  { light: [0.80, 0, 0],      dark: [0.45, 0, 0] },
+    'color-border-subtle':  { light: [0.96, 0, 0],      dark: [0.25, 0, 0] },
+
+    // Status
+    'color-success':        { light: [0.55, 0.20, 145], dark: [0.65, 0.18, 145] },
+    'color-success-subtle': { light: [0.95, 0.05, 145], dark: [0.25, 0.08, 145] },
+    'color-success-text':   { light: [0.35, 0.12, 145], dark: [0.75, 0.15, 145] },
+    'color-warning':        { light: [0.70, 0.18, 70],  dark: [0.75, 0.16, 70] },
+    'color-warning-subtle': { light: [0.95, 0.08, 70],  dark: [0.25, 0.10, 70] },
+    'color-warning-text':   { light: [0.40, 0.12, 70],  dark: [0.80, 0.12, 70] },
+    'color-error':          { light: [0.55, 0.22, 25],  dark: [0.65, 0.20, 25] },
+    'color-error-subtle':   { light: [0.95, 0.05, 25],  dark: [0.25, 0.08, 25] },
+    'color-error-text':     { light: [0.40, 0.15, 25],  dark: [0.75, 0.18, 25] },
+    'color-info':           { light: [0.55, 0.15, 240], dark: [0.65, 0.13, 240] },
+    'color-info-subtle':    { light: [0.95, 0.05, 240], dark: [0.25, 0.08, 240] },
+    'color-info-text':      { light: [0.35, 0.12, 240], dark: [0.75, 0.12, 240] },
+  };
+
+  // Apply surface tint if enabled
+  if (state.surfaceTint) {
+    tokens['color-background'].dark = [0.10, 0.02, hp];
+    tokens['color-surface'].dark    = [0.15, 0.02, hp];
+    tokens['color-surface-raised'].dark = [0.20, 0.02, hp];
+    tokens['color-surface-sunken'].dark = [0.10, 0.01, hp];
+  }
+
+  return tokens;
+}
+
+// ============================================================
+// C. Color Wheel (Canvas)
+// ============================================================
+
+const canvas = document.getElementById('hue-wheel');
+const ctx = canvas.getContext('2d');
+const CX = 140, CY = 140, OUTER = 130, INNER = 95;
+
+function drawWheel(state) {
+  const { width, height } = canvas;
+  ctx.clearRect(0, 0, width, height);
+
+  // Draw hue ring
+  for (let deg = 0; deg < 360; deg += 1) {
+    const rad1 = (deg - 90) * Math.PI / 180;
+    const rad2 = (deg + 1 - 90) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.arc(CX, CY, OUTER, rad1, rad2);
+    ctx.arc(CX, CY, INNER, rad2, rad1, true);
+    ctx.closePath();
+    ctx.fillStyle = oklchStr(0.65, 0.18, deg);
+    ctx.fill();
+  }
+
+  // Harmony lines
+  const harmony = state.harmony;
+  if (harmony !== 'none') {
+    const handles = [state.hues.primary, state.hues.secondary, state.hues.accent];
+    ctx.strokeStyle = 'oklch(50% 0 0 / 0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    for (let i = 0; i < handles.length; i++) {
+      const rad = (handles[i] - 90) * Math.PI / 180;
+      const x = CX + Math.cos(rad) * (OUTER + INNER) / 2;
+      const y = CY + Math.sin(rad) * (OUTER + INNER) / 2;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Draw handles
+  const roles = [
+    { key: 'primary',   color: oklchToHex(state.lc.primary.l, state.lc.primary.c, state.hues.primary) },
+    { key: 'secondary', color: oklchToHex(state.lc.secondary.l, state.lc.secondary.c, state.hues.secondary) },
+    { key: 'accent',    color: oklchToHex(state.lc.accent.l, state.lc.accent.c, state.hues.accent) },
+  ];
+
+  for (const role of roles) {
+    const hue = state.hues[role.key];
+    const rad = (hue - 90) * Math.PI / 180;
+    const r = (OUTER + INNER) / 2;
+    const x = CX + Math.cos(rad) * r;
+    const y = CY + Math.sin(rad) * r;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = role.color;
+    ctx.fill();
+    ctx.strokeStyle = state.activeHandle === role.key ? '#fff' : 'oklch(0% 0 0 / 0.4)';
+    ctx.lineWidth = state.activeHandle === role.key ? 3 : 2;
+    ctx.stroke();
+  }
+
+  // Center info
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text') || '#222';
+  ctx.font = '700 13px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(`P:${Math.round(state.hues.primary)}`, CX, CY - 12);
+  ctx.fillText(`S:${Math.round(state.hues.secondary)}`, CX, CY + 4);
+  ctx.fillText(`A:${Math.round(state.hues.accent)}`, CX, CY + 20);
+}
+
+// Wheel interaction
+let isDragging = false;
+
+function hueFromXY(x, y) {
+  const dx = x - CX, dy = y - CY;
+  let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+  return ((angle % 360) + 360) % 360;
+}
+
+function isOnRing(x, y) {
+  const d = Math.sqrt((x - CX) ** 2 + (y - CY) ** 2);
+  return d >= INNER - 10 && d <= OUTER + 10;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+  if (isOnRing(x, y)) {
+    isDragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    setHueFromEvent(x, y);
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+  setHueFromEvent(x, y);
+});
+
+canvas.addEventListener('pointerup', () => { isDragging = false; });
+
+function setHueFromEvent(x, y) {
+  const hue = hueFromXY(x, y);
+  state.hues[state.activeHandle] = hue;
+
+  // Apply harmony constraints
+  if (state.harmony !== 'none') {
+    const derived = harmonyHues(state.hues.primary, state.harmony);
+    if (derived) {
+      if (state.activeHandle === 'primary') {
+        state.hues.secondary = derived.secondary;
+        state.hues.accent = derived.accent;
+      }
+    }
+  }
+  update();
+}
+
+// ============================================================
+// D. State & App Orchestrator
+// ============================================================
+
+const state = {
+  hues: { primary: 260, secondary: 200, accent: 30 },
+  lc: {
+    primary:   { l: 0.50, c: 0.20 },
+    secondary: { l: 0.50, c: 0.08 },
+    accent:    { l: 0.65, c: 0.18 },
+  },
+  harmony: 'none',
+  surfaceTint: false,
+  activeHandle: 'primary',
+};
+
+// Wire controls
+document.querySelectorAll('input[name="active-handle"]').forEach(r => {
+  r.addEventListener('change', () => { state.activeHandle = r.value; drawWheel(state); });
+});
+
+document.querySelectorAll('input[name="harmony"]').forEach(r => {
+  r.addEventListener('change', () => {
+    state.harmony = r.value;
+    if (r.value !== 'none') {
+      const derived = harmonyHues(state.hues.primary, r.value);
+      if (derived) {
+        state.hues.secondary = derived.secondary;
+        state.hues.accent = derived.accent;
+      }
+    }
+    update();
+  });
+});
+
+// L/C sliders
+const sliderMap = {
+  'pri-l': ['primary', 'l'], 'pri-c': ['primary', 'c'],
+  'sec-l': ['secondary', 'l'], 'sec-c': ['secondary', 'c'],
+  'acc-l': ['accent', 'l'], 'acc-c': ['accent', 'c'],
+};
+for (const [id, [role, prop]] of Object.entries(sliderMap)) {
+  const input = document.getElementById(id);
+  const output = document.getElementById(id + '-out');
+  input.addEventListener('input', () => {
+    const val = parseFloat(input.value);
+    state.lc[role][prop] = val;
+    output.textContent = val.toFixed(2);
+    update();
+  });
+}
+
+document.getElementById('surface-tint').addEventListener('change', e => {
+  state.surfaceTint = e.target.checked;
+  update();
+});
+
+// ============================================================
+// E. Update Function
+// ============================================================
+
+function update() {
+  // Sync slider displays
+  for (const [id, [role, prop]] of Object.entries(sliderMap)) {
+    document.getElementById(id).value = state.lc[role][prop];
+    document.getElementById(id + '-out').textContent = state.lc[role][prop].toFixed(2);
+  }
+
+  // Draw wheel
+  drawWheel(state);
+
+  // Derive semantic colors
+  const tokens = deriveSemanticColors(state);
+
+  // Update semantic table
+  const tbody = document.getElementById('semantic-table');
+  let html = '';
+  for (const [name, { light, dark }] of Object.entries(tokens)) {
+    const hex = oklchToHex(light[0], light[1], light[2]);
+    const val = oklchStr(light[0], light[1], light[2]);
+    html += `<tr>
+      <td class="token-name">--${name}</td>
+      <td><span class="token-swatch" style="background:${hex}"></span></td>
+      <td class="token-value">${val}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+
+  // Update mini swatches
+  const miniEl = document.getElementById('mini-swatches');
+  const miniColors = ['color-primary', 'color-secondary', 'color-accent', 'color-success', 'color-warning', 'color-error'];
+  miniEl.innerHTML = miniColors.map(name => {
+    const spec = tokens[name].light;
+    return `<div class="mini-swatch" style="background:${oklchToHex(spec[0], spec[1], spec[2])}" title="--${name}"></div>`;
+  }).join('');
+
+  // CSS custom properties for active-color border colors
+  const priHex = oklchToHex(state.lc.primary.l, state.lc.primary.c, state.hues.primary);
+  const secHex = oklchToHex(state.lc.secondary.l, state.lc.secondary.c, state.hues.secondary);
+  const accHex = oklchToHex(state.lc.accent.l, state.lc.accent.c, state.hues.accent);
+  document.querySelector('.controls').style.setProperty('--preview-primary', priHex);
+  document.querySelector('.controls').style.setProperty('--preview-secondary', secHex);
+  document.querySelector('.controls').style.setProperty('--preview-accent', accHex);
+
+  // Update contrast matrix
+  updateContrastMatrix(tokens);
+
+  // Update light/dark previews
+  updatePreviews(tokens);
+}
+
+// ============================================================
+// F. Contrast Matrix
+// ============================================================
+
+function updateContrastMatrix(tokens) {
+  const pairs = [
+    ['Text / Background', 'color-text', 'color-background'],
+    ['Text / Surface', 'color-text', 'color-surface'],
+    ['Text on Primary / Primary', 'color-text-on-primary', 'color-primary'],
+    ['Muted / Surface', 'color-text-muted', 'color-surface'],
+    ['Success Text / Subtle', 'color-success-text', 'color-success-subtle'],
+    ['Error Text / Subtle', 'color-error-text', 'color-error-subtle'],
+  ];
+
+  let html = '';
+  for (const [label, fgName, bgName] of pairs) {
+    const fgToken = tokens[fgName];
+    const bgToken = tokens[bgName];
+
+    // Light mode
+    const fgLightHex = oklchToHex(fgToken.light[0], fgToken.light[1], fgToken.light[2]);
+    const bgLightHex = oklchToHex(bgToken.light[0], bgToken.light[1], bgToken.light[2]);
+    const lightRatio = contrastRatio(fgLightHex, bgLightHex);
+    const lightLevel = wcagLevel(lightRatio);
+
+    // Dark mode
+    const fgDarkHex = oklchToHex(fgToken.dark[0], fgToken.dark[1], fgToken.dark[2]);
+    const bgDarkHex = oklchToHex(bgToken.dark[0], bgToken.dark[1], bgToken.dark[2]);
+    const darkRatio = contrastRatio(fgDarkHex, bgDarkHex);
+    const darkLevel = wcagLevel(darkRatio);
+
+    const cls = level => `contrast-${level.toLowerCase()}`;
+
+    html += `<tr>
+      <th style="text-align:left">${label}</th>
+      <td class="${cls(lightLevel)}">${lightRatio.toFixed(1)}:1 ${lightLevel}</td>
+      <td class="${cls(darkLevel)}">${darkRatio.toFixed(1)}:1 ${darkLevel}</td>
+    </tr>`;
+  }
+  document.querySelector('#contrast-matrix tbody').innerHTML = html;
+}
+
+// ============================================================
+// G. Light / Dark Previews
+// ============================================================
+
+function updatePreviews(tokens) {
+  for (const mode of ['light', 'dark']) {
+    const el = document.getElementById(`preview-${mode}`);
+    const t = {};
+    for (const [name, val] of Object.entries(tokens)) {
+      const spec = val[mode];
+      t[name] = oklchToHex(spec[0], spec[1], spec[2]);
+    }
+
+    el.style.background = t['color-background'];
+    el.style.color = t['color-text'];
+    el.style.border = `1px solid ${t['color-border']}`;
+
+    el.innerHTML = `
+      <h4 style="margin:0">${mode === 'light' ? 'Light' : 'Dark'} Mode</h4>
+      <p style="color:${t['color-text-muted']}" class="text-muted">Muted text for secondary content</p>
+      <button class="btn-primary" style="background:${t['color-primary']};color:${t['color-text-on-primary']}">Primary Button</button>
+      <div class="badge-row">
+        <span class="badge" style="background:${t['color-success-subtle']};color:${t['color-success-text']}">Success</span>
+        <span class="badge" style="background:${t['color-warning-subtle']};color:${t['color-warning-text']}">Warning</span>
+        <span class="badge" style="background:${t['color-error-subtle']};color:${t['color-error-text']}">Error</span>
+        <span class="badge" style="background:${t['color-info-subtle']};color:${t['color-info-text']}">Info</span>
+      </div>
+      <div class="surface-strip">
+        <div class="surface-chip" style="background:${t['color-surface']}" title="surface"></div>
+        <div class="surface-chip" style="background:${t['color-surface-raised']}" title="raised"></div>
+        <div class="surface-chip" style="background:${t['color-surface-sunken']}" title="sunken"></div>
+        <div class="surface-chip" style="background:${t['color-primary-subtle']}" title="primary-subtle"></div>
+      </div>
+    `;
+  }
+}
+
+// ============================================================
+// H. Palette Presets
+// ============================================================
+
+const REGISTRY = {{ themeRegistry | dump | safe }};
+const PRESETS = REGISTRY
+  .filter(t => t.category === 'color' || t.category === 'personality')
+  .map(t => ({
+    name: t.name,
+    primary: t.colors.huePrimary ?? 260,
+    secondary: t.colors.hueSecondary ?? 200,
+    accent: t.colors.hueAccent ?? 30,
+    character: t.character,
+  }));
+
+function renderPresets() {
+  const grid = document.getElementById('presets-grid');
+  grid.innerHTML = PRESETS.map(p => `
+    <button type="button" class="preset-card" data-pri="${p.primary}" data-sec="${p.secondary}" data-acc="${p.accent}">
+      <h4>${p.name}</h4>
+      <div class="preset-swatches">
+        <span style="background:${oklchToHex(0.50, 0.20, p.primary)}"></span>
+        <span style="background:${oklchToHex(0.50, 0.08, p.secondary)}"></span>
+        <span style="background:${oklchToHex(0.65, 0.18, p.accent)}"></span>
+      </div>
+    </button>
+  `).join('');
+
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.preset-card');
+    if (!card) return;
+    state.hues.primary = Number(card.dataset.pri);
+    state.hues.secondary = Number(card.dataset.sec);
+    state.hues.accent = Number(card.dataset.acc);
+    // Reset L/C to defaults
+    state.lc.primary = { l: 0.50, c: 0.20 };
+    state.lc.secondary = { l: 0.50, c: 0.08 };
+    state.lc.accent = { l: 0.65, c: 0.18 };
+    // Reset harmony
+    state.harmony = 'none';
+    document.querySelector('input[name="harmony"][value="none"]').checked = true;
+    update();
+  });
+}
+
+// ============================================================
+// I. Export
+// ============================================================
+
+function generateCSS() {
+  const h = state.hues;
+  const lc = state.lc;
+  let css = ':root {\n';
+  css += `  --hue-primary: ${Math.round(h.primary)};\n`;
+  css += `  --hue-secondary: ${Math.round(h.secondary)};\n`;
+  css += `  --hue-accent: ${Math.round(h.accent)};\n`;
+
+  // Only emit L/C overrides if they differ from defaults
+  const defaults = { primary: { l: 0.50, c: 0.20 }, secondary: { l: 0.50, c: 0.08 }, accent: { l: 0.65, c: 0.18 } };
+  for (const role of ['primary', 'secondary', 'accent']) {
+    if (Math.abs(lc[role].l - defaults[role].l) > 0.005 || Math.abs(lc[role].c - defaults[role].c) > 0.005) {
+      css += `  --color-${role}: oklch(${(lc[role].l * 100).toFixed(0)}% ${lc[role].c.toFixed(2)} var(--hue-${role}));\n`;
+    }
+  }
+  css += '}\n';
+  return css;
+}
+
+document.getElementById('btn-copy-css').addEventListener('click', () => {
+  navigator.clipboard.writeText(generateCSS());
+  document.getElementById('btn-copy-css').textContent = 'Copied!';
+  setTimeout(() => { document.getElementById('btn-copy-css').textContent = 'Copy CSS'; }, 1500);
+});
+
+document.getElementById('btn-copy-hues').addEventListener('click', () => {
+  const h = state.hues;
+  const text = `Primary: ${Math.round(h.primary)}, Secondary: ${Math.round(h.secondary)}, Accent: ${Math.round(h.accent)}`;
+  navigator.clipboard.writeText(text);
+  document.getElementById('btn-copy-hues').textContent = 'Copied!';
+  setTimeout(() => { document.getElementById('btn-copy-hues').textContent = 'Copy Hues'; }, 1500);
+});
+
+document.getElementById('btn-send-composer').addEventListener('click', () => {
+  const data = {
+    hues: {
+      primary: Math.round(state.hues.primary),
+      secondary: Math.round(state.hues.secondary),
+      accent: Math.round(state.hues.accent),
+    },
+    lightChroma: state.lc,
+    harmony: state.harmony,
+  };
+  localStorage.setItem('vb-color-schemer-output', JSON.stringify(data));
+  document.getElementById('btn-send-composer').textContent = 'Sent!';
+  setTimeout(() => { document.getElementById('btn-send-composer').textContent = 'Send to Composer'; }, 1500);
+});
+
+// ============================================================
+// Init
+// ============================================================
+
+renderPresets();
+update();
+</script>
+{% endblock %}

@@ -46,33 +46,46 @@ class ThemePicker extends HTMLElement {
 
   // Color themes - override hue values only
   static #COLOR_THEMES = [
-    { id: 'default', name: 'Default', hue: 260 },
-    { id: 'ocean', name: 'Ocean', hue: 200 },
-    { id: 'forest', name: 'Forest', hue: 145 },
-    { id: 'sunset', name: 'Sunset', hue: 25 },
-    { id: 'rose', name: 'Rose', hue: 350 },
-    { id: 'lavender', name: 'Lavender', hue: 280 },
-    { id: 'coral', name: 'Coral', hue: 15 },
-    { id: 'slate', name: 'Slate', hue: 220 },
-    { id: 'emerald', name: 'Emerald', hue: 160 },
-    { id: 'amber', name: 'Amber', hue: 45 },
-    { id: 'indigo', name: 'Indigo', hue: 250 }
+    { id: 'default', name: 'Default', hue: 260, swatchBg: '#3b82f6' },
+    { id: 'ocean', name: 'Ocean', hue: 200, swatchBg: '#0891b2' },
+    { id: 'forest', name: 'Forest', hue: 145, swatchBg: '#059669' },
+    { id: 'sunset', name: 'Sunset', hue: 25, swatchBg: '#ea580c' },
+    { id: 'rose', name: 'Rose', hue: 350, swatchBg: '#e11d48' },
+    { id: 'lavender', name: 'Lavender', hue: 280, swatchBg: '#a855f7' },
+    { id: 'coral', name: 'Coral', hue: 15, swatchBg: '#f97316' },
+    { id: 'slate', name: 'Slate', hue: 220, swatchBg: '#64748b' },
+    { id: 'emerald', name: 'Emerald', hue: 160, swatchBg: '#10b981' },
+    { id: 'amber', name: 'Amber', hue: 45, swatchBg: '#f59e0b' },
+    { id: 'indigo', name: 'Indigo', hue: 250, swatchBg: '#6366f1' }
   ];
 
   // Personality themes - comprehensive design systems
   static #PERSONALITY_THEMES = [
-    { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated' },
-    { id: 'minimal', name: 'Minimal', hue: 240, shape: 'sharp', character: 'Clean & flat' },
-    { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant' }
+    { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated', swatchBg: '#6366f1' },
+    { id: 'minimal', name: 'Minimal', hue: 240, shape: 'sharp', character: 'Clean & flat', swatchBg: '#71717a' },
+    { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant', swatchBg: '#92400e' }
   ];
 
   // Extreme themes - dramatic visual transformations
   static #EXTREME_THEMES = [
-    { id: 'swiss', name: 'Swiss', icon: 'grid-3x3', character: 'Precision grid design' },
-    { id: 'brutalist', name: 'Brutalist', icon: 'square', character: 'Raw, industrial' },
-    { id: 'cyber', name: 'Cyber', icon: 'zap', character: 'Neon futuristic' },
-    { id: 'terminal', name: 'Terminal', icon: 'terminal', character: 'Retro CRT' },
-    { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted' }
+    { id: 'swiss', name: 'Swiss', icon: 'grid-3x3', character: 'Precision grid', swatchBg: '#ff3e00', swatchFg: 'white' },
+    { id: 'brutalist', name: 'Brutalist', icon: 'square', character: 'Raw, industrial', swatchBg: '#1a1a1a', swatchFg: '#f5f5f5' },
+    { id: 'cyber', name: 'Cyber', icon: 'zap', character: 'Neon futuristic', swatchBg: '#0a0a1a', swatchFg: '#00ff88' },
+    { id: 'terminal', name: 'Terminal', icon: 'terminal', character: 'Retro CRT', swatchBg: '#0d1117', swatchFg: '#00ff00' },
+    { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted', swatchBg: '#2d5016', swatchFg: '#faf5e6' },
+    { id: 'editorial', name: 'Editorial', icon: 'newspaper', character: 'Magazine elegance', swatchBg: '#1a1a1a', swatchFg: '#c9a227' },
+    { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
+    { id: '8bit', name: '8-Bit', icon: 'gamepad-2', character: 'Retro pixel art', swatchBg: '#000080', swatchFg: '#ffff00' },
+    { id: 'nes', name: 'NES', icon: 'joystick', character: 'Console pixels', swatchBg: '#bcbcbc', swatchFg: '#e40521' },
+    { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0' }
+  ];
+
+  // Fluid scaling presets
+  static #FLUID_PRESETS = [
+    { id: '', name: 'Fixed', icon: 'ruler', description: 'Static token values' },
+    { id: 'default', name: 'Fluid', icon: 'move-diagonal-2', description: 'Smooth viewport scaling' },
+    { id: 'compact', name: 'Compact', icon: 'minimize-2', description: 'Tighter fluid range' },
+    { id: 'spacious', name: 'Spacious', icon: 'maximize-2', description: 'Generous fluid range' }
   ];
 
   // Accessibility themes - composable with other themes
@@ -167,7 +180,12 @@ class ThemePicker extends HTMLElement {
   }
 
   #renderContent() {
-    const { mode, brand } = ThemeManager.getState();
+    const { mode, brand, fluid } = ThemeManager.getState();
+    const allBrands = [
+      ...ThemePicker.#COLOR_THEMES,
+      ...ThemePicker.#PERSONALITY_THEMES,
+      ...ThemePicker.#EXTREME_THEMES
+    ];
 
     return `
       <fieldset class="section">
@@ -191,65 +209,27 @@ class ThemePicker extends HTMLElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Color Themes</legend>
-        <div class="options options--themes" role="radiogroup" aria-label="Color theme">
-          ${ThemePicker.#COLOR_THEMES.map(t => `
-            <label class="option option--theme">
+        <legend>Theme</legend>
+        <div class="options options--swatch-grid" role="radiogroup" aria-label="Theme">
+          ${allBrands.map(t => {
+            const bg = t.swatchBg;
+            const fg = t.swatchFg || 'white';
+            const icon = t.icon || '';
+            const label = t.character ? `${t.name} — ${t.character}` : t.name;
+            return `
+            <label class="swatch-cell" title="${label}">
               <input
                 type="radio"
                 name="theme-brand"
                 value="${t.id}"
                 ${brand === t.id ? 'checked' : ''}
               />
-              <span class="option-content">
-                <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
-                <span>${t.name}</span>
+              <span class="swatch-visual" style="--swatch-bg: ${bg}; --swatch-fg: ${fg}">
+                ${icon ? `<x-icon name="${icon}"></x-icon>` : ''}
+                <span class="sr-only">${t.name}</span>
               </span>
             </label>
-          `).join('')}
-        </div>
-      </fieldset>
-
-      <fieldset class="section">
-        <legend>Personality Themes</legend>
-        <div class="options options--themes" role="radiogroup" aria-label="Personality theme">
-          ${ThemePicker.#PERSONALITY_THEMES.map(t => `
-            <label class="option option--theme">
-              <input
-                type="radio"
-                name="theme-brand"
-                value="${t.id}"
-                ${brand === t.id ? 'checked' : ''}
-              />
-              <span class="option-content">
-                <span class="swatch-combo">
-                  <span class="swatch" style="--swatch-hue: ${t.hue}"></span>
-                  <span class="shape-indicator" data-shape="${t.shape}"></span>
-                </span>
-                <span>${t.name}</span>
-              </span>
-            </label>
-          `).join('')}
-        </div>
-      </fieldset>
-
-      <fieldset class="section">
-        <legend>Extreme Themes</legend>
-        <div class="options options--themes" role="radiogroup" aria-label="Extreme theme">
-          ${ThemePicker.#EXTREME_THEMES.map(t => `
-            <label class="option option--theme option--extreme">
-              <input
-                type="radio"
-                name="theme-brand"
-                value="${t.id}"
-                ${brand === t.id ? 'checked' : ''}
-              />
-              <span class="option-content">
-                <x-icon name="${t.icon}"></x-icon>
-                <span>${t.name}</span>
-              </span>
-            </label>
-          `).join('')}
+          `}).join('')}
         </div>
       </fieldset>
 
@@ -274,6 +254,29 @@ class ThemePicker extends HTMLElement {
               </span>
             </label>
           `}).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Sizing</legend>
+        <div class="options options--sizing" role="radiogroup" aria-label="Fluid sizing">
+          ${ThemePicker.#FLUID_PRESETS.map(f => `
+            <label class="option option--sizing">
+              <input
+                type="radio"
+                name="theme-fluid"
+                value="${f.id}"
+                ${fluid === f.id ? 'checked' : ''}
+              />
+              <span class="option-content">
+                <x-icon name="${f.icon}"></x-icon>
+                <span class="option-text">
+                  <span>${f.name}</span>
+                  <small>${f.description}</small>
+                </span>
+              </span>
+            </label>
+          `).join('')}
         </div>
       </fieldset>
 
@@ -316,6 +319,11 @@ class ThemePicker extends HTMLElement {
     // Brand change
     this.#panel.querySelectorAll('input[name="theme-brand"]').forEach(input => {
       input.addEventListener('change', this.#handleBrandChange);
+    });
+
+    // Fluid change
+    this.#panel.querySelectorAll('input[name="theme-fluid"]').forEach(input => {
+      input.addEventListener('change', this.#handleFluidChange);
     });
 
     // Extension toggles
@@ -370,6 +378,11 @@ class ThemePicker extends HTMLElement {
     ThemeManager.setBrand(e.target.value);
     // Reapply a11y themes to combine with new brand
     this.#applyA11yThemes();
+    this.#autoDismiss();
+  };
+
+  #handleFluidChange = (e) => {
+    ThemeManager.setFluid(e.target.value);
     this.#autoDismiss();
   };
 
@@ -475,6 +488,10 @@ class ThemePicker extends HTMLElement {
       ? a11yThemes.join(' ')
       : [brand, ...a11yThemes].join(' ');
 
+    // Only update if value actually changed (avoid redundant reflows)
+    const current = root.dataset.theme || '';
+    if (themeValue === current) return;
+
     if (themeValue) {
       root.dataset.theme = themeValue;
     } else {
@@ -524,7 +541,7 @@ class ThemePicker extends HTMLElement {
   };
 
   #syncState() {
-    const { mode, brand } = ThemeManager.getState();
+    const { mode, brand, fluid } = ThemeManager.getState();
 
     // Update mode radios
     const modeInput = this.#panel.querySelector(`input[name="theme-mode"][value="${mode}"]`);
@@ -533,6 +550,10 @@ class ThemePicker extends HTMLElement {
     // Update brand radios
     const brandInput = this.#panel.querySelector(`input[name="theme-brand"][value="${brand}"]`);
     if (brandInput) brandInput.checked = true;
+
+    // Update fluid radios
+    const fluidInput = this.#panel.querySelector(`input[name="theme-fluid"][value="${fluid}"]`);
+    if (fluidInput) fluidInput.checked = true;
   }
 
   open() {

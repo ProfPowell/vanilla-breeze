@@ -1,0 +1,843 @@
+---
+layout: layouts/docs.njk
+title: "Type Explorer"
+description: "Font discovery and pairing with Google Fonts support, type specimens, and live preview."
+currentSection: tools
+currentPath: /docs/tools/type-explorer/
+permalink: /docs/tools/type-explorer/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Layout ===== */
+  .explorer-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--size-l, 1.5rem);
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .explorer-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Control Panel ===== */
+  .controls {
+    position: sticky;
+    top: var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-m, 1rem);
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+  }
+
+  .controls h3 {
+    margin: 0;
+    font-size: var(--font-size-sm, 0.875rem);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted, #666);
+  }
+
+  .font-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .font-slot label {
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+  }
+
+  .font-slot select {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  /* Pairing presets */
+  .pairings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .pairing-card {
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    cursor: pointer;
+    font-size: var(--font-size-xs, 0.75rem);
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .pairing-card:hover {
+    border-color: var(--color-primary, #333);
+    background: var(--color-surface-raised, #f8f8f8);
+  }
+
+  .pairing-card strong {
+    display: block;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* Scale controls */
+  .scale-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .slider-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+  }
+
+  .slider-row output {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .slider-row input[type="range"] { width: 100%; }
+
+  .export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .export-buttons button {
+    flex: 1;
+    white-space: nowrap;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* ===== Visualization ===== */
+  .viz-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-l, 1.5rem);
+  }
+
+  .viz-section {
+    padding: var(--size-m, 1rem);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  .viz-section h3 {
+    margin: 0 0 var(--size-s, 0.75rem) 0;
+  }
+
+  /* Scale table */
+  .scale-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .scale-table th,
+  .scale-table td {
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    text-align: left;
+    border-block-end: 1px solid var(--color-border-subtle, #eee);
+  }
+
+  .scale-table th {
+    font-weight: 600;
+    font-size: var(--font-size-xs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted, #666);
+  }
+
+  .scale-table .token {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .scale-table .size-val {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  /* Iframe preview */
+  .preview-frame-wrap {
+    position: relative;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+    resize: horizontal;
+    min-width: 320px;
+  }
+
+  .preview-frame-wrap iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    display: block;
+  }
+
+  /* Font comparison */
+  .font-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+  }
+
+  .font-compare-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--size-s, 0.75rem);
+    padding: var(--size-2xs, 0.25rem) 0;
+    border-block-end: 1px solid var(--color-border-subtle, #eee);
+  }
+
+  .font-compare-row .font-label {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .font-compare-row .font-sample {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+
+  /* Loading indicator */
+  .font-loading {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+    font-style: italic;
+  }
+</style>
+{% endblock %}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/themes/">Docs</a></li>
+    <li><a href="/docs/tools/">Tools</a></li>
+    <li><span aria-current="page">Type Explorer</span></li>
+  </ol>
+</nav>
+
+<h1>Type Explorer</h1>
+<p class="lead">Discover font pairings, explore type specimens, and preview live typography with Google Fonts support.</p>
+<p>Send your fonts to the <a href="/docs/tools/theme-composer/">Theme Composer</a> or design a palette in the <a href="/docs/tools/color-schemer/">Color Schemer</a>.</p>
+
+<div class="explorer-layout">
+  <!-- ============================================
+       CONTROL PANEL
+       ============================================ -->
+  <aside class="controls">
+    <h3>Font Slots</h3>
+
+    <div class="font-slot">
+      <label for="font-heading">Heading</label>
+      <select id="font-heading"></select>
+    </div>
+
+    <div class="font-slot">
+      <label for="font-body">Body</label>
+      <select id="font-body"></select>
+    </div>
+
+    <div class="font-slot">
+      <label for="font-mono">Monospace</label>
+      <select id="font-mono"></select>
+    </div>
+
+    <span class="font-loading" id="font-status"></span>
+
+    <h3>Pairing Presets</h3>
+    <div class="pairings-grid" id="pairings-grid"></div>
+
+    <h3>Scale Controls</h3>
+    <div class="scale-controls">
+      <div class="slider-row">
+        <label>Type Ratio <output id="ratio-out">1.250</output></label>
+        <input type="range" id="type-ratio" min="1.0" max="2.0" step="0.001" value="1.250">
+      </div>
+      <div class="slider-row">
+        <label>Base Size <output id="base-out">16px</output></label>
+        <input type="range" id="base-size" min="14" max="20" step="1" value="16">
+      </div>
+      <div class="slider-row">
+        <label>Body Line Height <output id="body-lh-out">1.6</output></label>
+        <input type="range" id="body-lh" min="1.2" max="2.0" step="0.05" value="1.6">
+      </div>
+      <div class="slider-row">
+        <label>Heading Line Height <output id="heading-lh-out">1.2</output></label>
+        <input type="range" id="heading-lh" min="1.0" max="1.6" step="0.05" value="1.2">
+      </div>
+      <div class="slider-row">
+        <label>Letter Spacing <output id="ls-out">normal</output></label>
+        <input type="range" id="letter-spacing" min="-0.05" max="0.1" step="0.005" value="0">
+      </div>
+    </div>
+
+    <div class="export-buttons">
+      <button type="button" id="btn-copy-css">Copy CSS</button>
+      <button type="button" id="btn-send-composer">Send to Composer</button>
+    </div>
+  </aside>
+
+  <!-- ============================================
+       VISUALIZATION PANEL
+       ============================================ -->
+  <div class="viz-panel">
+
+    <!-- Type Specimens -->
+    <section class="viz-section">
+      <h3>Type Specimens</h3>
+      <type-specimen-wc id="specimen-heading" show-characters show-weights></type-specimen-wc>
+      <hr style="margin: var(--size-m, 1rem) 0; border: none; border-top: 1px solid var(--color-border-subtle, #eee);">
+      <type-specimen-wc id="specimen-body" show-characters show-weights></type-specimen-wc>
+      <hr style="margin: var(--size-m, 1rem) 0; border: none; border-top: 1px solid var(--color-border-subtle, #eee);">
+      <type-specimen-wc id="specimen-mono" show-characters></type-specimen-wc>
+    </section>
+
+    <!-- VB Scale Table -->
+    <section class="viz-section">
+      <h3>VB Type Scale</h3>
+      <table class="scale-table">
+        <thead>
+          <tr><th>Token</th><th>Size</th><th>Sample</th></tr>
+        </thead>
+        <tbody id="scale-table-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Live Preview Iframe -->
+    <section class="viz-section">
+      <h3>Live Page Preview</h3>
+      <div class="preview-frame-wrap">
+        <iframe id="preview-iframe" title="Typography preview"></iframe>
+      </div>
+    </section>
+
+    <!-- Font Comparison -->
+    <details class="viz-section">
+      <summary><h3 style="display:inline">Font Comparison</h3></summary>
+      <div class="font-comparison" id="font-comparison"></div>
+    </details>
+  </div>
+</div>
+
+{% block extraScripts %}
+<script type="module">
+// ============================================================
+// A. Font Registry
+// ============================================================
+
+const FONTS = {
+  system: [
+    { name: 'System Sans', family: 'system-ui, -apple-system, sans-serif', category: 'sans' },
+    { name: 'System Serif', family: 'Georgia, "Times New Roman", serif', category: 'serif' },
+    { name: 'System Mono', family: 'ui-monospace, "Cascadia Code", monospace', category: 'mono' },
+  ],
+  sans: [
+    { name: 'Inter', family: "'Inter'", gfont: 'Inter:wght@300;400;500;600;700' },
+    { name: 'Outfit', family: "'Outfit'", gfont: 'Outfit:wght@300;400;500;600;700' },
+    { name: 'Plus Jakarta Sans', family: "'Plus Jakarta Sans'", gfont: 'Plus+Jakarta+Sans:wght@300;400;500;600;700' },
+    { name: 'DM Sans', family: "'DM Sans'", gfont: 'DM+Sans:wght@300;400;500;600;700' },
+    { name: 'Nunito', family: "'Nunito'", gfont: 'Nunito:wght@300;400;500;600;700' },
+    { name: 'Quicksand', family: "'Quicksand'", gfont: 'Quicksand:wght@300;400;500;600;700' },
+    { name: 'Work Sans', family: "'Work Sans'", gfont: 'Work+Sans:wght@300;400;500;600;700' },
+    { name: 'Raleway', family: "'Raleway'", gfont: 'Raleway:wght@300;400;500;600;700' },
+    { name: 'Poppins', family: "'Poppins'", gfont: 'Poppins:wght@300;400;500;600;700' },
+    { name: 'Manrope', family: "'Manrope'", gfont: 'Manrope:wght@300;400;500;600;700' },
+    { name: 'Space Grotesk', family: "'Space Grotesk'", gfont: 'Space+Grotesk:wght@300;400;500;600;700' },
+    { name: 'Rubik', family: "'Rubik'", gfont: 'Rubik:wght@300;400;500;600;700' },
+  ],
+  serif: [
+    { name: 'Playfair Display', family: "'Playfair Display'", gfont: 'Playfair+Display:wght@400;500;600;700' },
+    { name: 'Merriweather', family: "'Merriweather'", gfont: 'Merriweather:wght@300;400;700' },
+    { name: 'Lora', family: "'Lora'", gfont: 'Lora:wght@400;500;600;700' },
+    { name: 'Source Serif 4', family: "'Source Serif 4'", gfont: 'Source+Serif+4:wght@300;400;500;600;700' },
+    { name: 'Libre Baskerville', family: "'Libre Baskerville'", gfont: 'Libre+Baskerville:wght@400;700' },
+    { name: 'Bitter', family: "'Bitter'", gfont: 'Bitter:wght@300;400;500;600;700' },
+    { name: 'Fraunces', family: "'Fraunces'", gfont: 'Fraunces:wght@300;400;500;600;700' },
+    { name: 'Cormorant Garamond', family: "'Cormorant Garamond'", gfont: 'Cormorant+Garamond:wght@300;400;500;600;700' },
+    { name: 'Crimson Pro', family: "'Crimson Pro'", gfont: 'Crimson+Pro:wght@300;400;500;600;700' },
+    { name: 'EB Garamond', family: "'EB Garamond'", gfont: 'EB+Garamond:wght@400;500;600;700' },
+  ],
+  mono: [
+    { name: 'JetBrains Mono', family: "'JetBrains Mono'", gfont: 'JetBrains+Mono:wght@300;400;500;600;700' },
+    { name: 'Fira Code', family: "'Fira Code'", gfont: 'Fira+Code:wght@300;400;500;600;700' },
+    { name: 'Source Code Pro', family: "'Source Code Pro'", gfont: 'Source+Code+Pro:wght@300;400;500;600;700' },
+    { name: 'IBM Plex Mono', family: "'IBM Plex Mono'", gfont: 'IBM+Plex+Mono:wght@300;400;500;600;700' },
+    { name: 'Space Mono', family: "'Space Mono'", gfont: 'Space+Mono:wght@400;700' },
+    { name: 'Inconsolata', family: "'Inconsolata'", gfont: 'Inconsolata:wght@300;400;500;600;700' },
+  ],
+};
+
+const PAIRINGS = [
+  { name: 'Classic Editorial', heading: 'Playfair Display', body: 'Source Serif 4', mono: 'JetBrains Mono' },
+  { name: 'Modern Minimal', heading: 'Inter', body: 'Inter', mono: 'JetBrains Mono' },
+  { name: 'Tech Forward', heading: 'Space Grotesk', body: 'DM Sans', mono: 'Fira Code' },
+  { name: 'Friendly Rounded', heading: 'Nunito', body: 'Quicksand', mono: 'IBM Plex Mono' },
+  { name: 'Swiss Precision', heading: 'Raleway', body: 'Work Sans', mono: 'Source Code Pro' },
+  { name: 'Elegant Contrast', heading: 'Cormorant Garamond', body: 'Crimson Pro', mono: 'Space Mono' },
+  { name: 'Bold Geometric', heading: 'Outfit', body: 'Plus Jakarta Sans', mono: 'JetBrains Mono' },
+  { name: 'Serif Warmth', heading: 'Lora', body: 'Merriweather', mono: 'Inconsolata' },
+];
+
+// ============================================================
+// B. Google Fonts Loader
+// ============================================================
+
+const loadedFonts = new Set();
+
+function loadGoogleFont(spec) {
+  if (!spec || loadedFonts.has(spec)) return Promise.resolve();
+  loadedFonts.add(spec);
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${spec}&display=swap`;
+  document.head.appendChild(link);
+
+  const statusEl = document.getElementById('font-status');
+  statusEl.textContent = 'Loading font...';
+
+  return document.fonts.ready.then(() => {
+    statusEl.textContent = '';
+  });
+}
+
+// ============================================================
+// C. Type Scale
+// ============================================================
+
+const TYPE_STEPS = [
+  { name: 'xs', step: -2 },
+  { name: 'sm', step: -1 },
+  { name: 'md', step: 0 },
+  { name: 'lg', step: 1 },
+  { name: 'xl', step: 2 },
+  { name: '2xl', step: 3 },
+  { name: '3xl', step: 4 },
+  { name: '4xl', step: 5 },
+  { name: '5xl', step: 6 },
+];
+
+function computeScale(base, ratio) {
+  const map = {};
+  for (const { name, step } of TYPE_STEPS) {
+    map[name] = base * Math.pow(ratio, step);
+  }
+  return map;
+}
+
+// ============================================================
+// D. State & DOM
+// ============================================================
+
+const state = {
+  fonts: {
+    heading: { name: 'System Sans', family: 'system-ui, -apple-system, sans-serif', gfont: null },
+    body:    { name: 'System Sans', family: 'system-ui, -apple-system, sans-serif', gfont: null },
+    mono:    { name: 'System Mono', family: 'ui-monospace, "Cascadia Code", monospace', gfont: null },
+  },
+  scale: {
+    ratio: 1.250,
+    base: 16,
+    bodyLineHeight: 1.6,
+    headingLineHeight: 1.2,
+    letterSpacing: 0,
+  },
+};
+
+// Build select options
+function buildSelects() {
+  const categories = {
+    heading: ['system', 'sans', 'serif'],
+    body: ['system', 'sans', 'serif'],
+    mono: ['system', 'mono'],
+  };
+
+  const labels = { system: 'System Stacks', sans: 'Google Sans', serif: 'Google Serif', mono: 'Google Mono' };
+
+  for (const [slot, cats] of Object.entries(categories)) {
+    const select = document.getElementById(`font-${slot}`);
+    for (const cat of cats) {
+      const group = document.createElement('optgroup');
+      group.label = labels[cat];
+      for (const font of FONTS[cat]) {
+        const opt = document.createElement('option');
+        opt.value = font.name;
+        opt.textContent = font.name;
+        if (font.gfont) opt.dataset.gfont = font.gfont;
+        opt.dataset.family = font.family;
+        group.appendChild(opt);
+      }
+      select.appendChild(group);
+    }
+
+    select.addEventListener('change', () => {
+      const opt = select.selectedOptions[0];
+      state.fonts[slot] = {
+        name: opt.value,
+        family: opt.dataset.family,
+        gfont: opt.dataset.gfont || null,
+      };
+      if (opt.dataset.gfont) loadGoogleFont(opt.dataset.gfont).then(updateAll);
+      else updateAll();
+    });
+  }
+}
+
+// Build pairing presets
+function buildPairings() {
+  const grid = document.getElementById('pairings-grid');
+  grid.innerHTML = PAIRINGS.map((p, i) => `
+    <button type="button" class="pairing-card" data-index="${i}">
+      <strong>${p.name}</strong>
+      <span>${p.heading} / ${p.body}</span>
+    </button>
+  `).join('');
+
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.pairing-card');
+    if (!card) return;
+    const p = PAIRINGS[Number(card.dataset.index)];
+    applyPairing(p);
+  });
+}
+
+function findFont(name) {
+  for (const cat of Object.values(FONTS)) {
+    const f = cat.find(f => f.name === name);
+    if (f) return f;
+  }
+  return null;
+}
+
+function applyPairing(pairing) {
+  for (const [slot, fontName] of [['heading', pairing.heading], ['body', pairing.body], ['mono', pairing.mono]]) {
+    const font = findFont(fontName);
+    if (!font) continue;
+    state.fonts[slot] = { name: font.name, family: font.family, gfont: font.gfont || null };
+    document.getElementById(`font-${slot}`).value = font.name;
+    if (font.gfont) loadGoogleFont(font.gfont);
+  }
+  document.fonts.ready.then(updateAll);
+}
+
+// Scale sliders
+const scaleSliders = {
+  'type-ratio':      { prop: 'ratio', output: 'ratio-out', fmt: v => v.toFixed(3) },
+  'base-size':       { prop: 'base', output: 'base-out', fmt: v => v + 'px' },
+  'body-lh':         { prop: 'bodyLineHeight', output: 'body-lh-out', fmt: v => v.toFixed(2) },
+  'heading-lh':      { prop: 'headingLineHeight', output: 'heading-lh-out', fmt: v => v.toFixed(2) },
+  'letter-spacing':  { prop: 'letterSpacing', output: 'ls-out', fmt: v => v === 0 ? 'normal' : v.toFixed(3) + 'em' },
+};
+
+for (const [id, cfg] of Object.entries(scaleSliders)) {
+  const input = document.getElementById(id);
+  input.addEventListener('input', () => {
+    state.scale[cfg.prop] = parseFloat(input.value);
+    document.getElementById(cfg.output).textContent = cfg.fmt(state.scale[cfg.prop]);
+    updateAll();
+  });
+}
+
+// ============================================================
+// E. Update Functions
+// ============================================================
+
+function updateAll() {
+  updateSpecimens();
+  updateScaleTable();
+  updateIframe();
+  updateComparison();
+}
+
+function updateSpecimens() {
+  const h = document.getElementById('specimen-heading');
+  const b = document.getElementById('specimen-body');
+  const m = document.getElementById('specimen-mono');
+
+  h.setAttribute('font-family', state.fonts.heading.family);
+  h.setAttribute('label', state.fonts.heading.name + ' (Heading)');
+  h.setAttribute('weights', '300,400,500,600,700');
+
+  b.setAttribute('font-family', state.fonts.body.family);
+  b.setAttribute('label', state.fonts.body.name + ' (Body)');
+  b.setAttribute('weights', '300,400,500,600,700');
+
+  m.setAttribute('font-family', state.fonts.mono.family);
+  m.setAttribute('label', state.fonts.mono.name + ' (Mono)');
+  m.setAttribute('weights', '400,700');
+}
+
+function updateScaleTable() {
+  const scale = computeScale(state.scale.base, state.scale.ratio);
+  const tbody = document.getElementById('scale-table-body');
+  let html = '';
+  for (const { name } of TYPE_STEPS) {
+    const px = scale[name];
+    const rem = px / 16;
+    html += `<tr>
+      <td class="token">--font-size-${name}</td>
+      <td class="size-val">${rem.toFixed(3)}rem (${px.toFixed(1)}px)</td>
+      <td style="font-family:${state.fonts.body.family};font-size:${rem}rem">The quick brown fox</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function updateIframe() {
+  const s = state.scale;
+  const scale = computeScale(s.base, s.ratio);
+
+  // Build Google Font links for iframe
+  const gfonts = [];
+  for (const slot of ['heading', 'body', 'mono']) {
+    if (state.fonts[slot].gfont) gfonts.push(state.fonts[slot].gfont);
+  }
+  const gfontLinks = gfonts.map(spec =>
+    `<link href="https://fonts.googleapis.com/css2?family=${spec}&display=swap" rel="stylesheet">`
+  ).join('\n');
+
+  const scaleVars = TYPE_STEPS.map(({ name }) => {
+    const rem = scale[name] / 16;
+    return `--font-size-${name}: ${rem.toFixed(3)}rem;`;
+  }).join('\n    ');
+
+  const ls = s.letterSpacing === 0 ? 'normal' : s.letterSpacing + 'em';
+
+  const doc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  ${gfontLinks}
+  <style>
+    :root {
+      --font-sans: ${state.fonts.body.family}, system-ui, sans-serif;
+      --font-heading: ${state.fonts.heading.family}, system-ui, sans-serif;
+      --font-mono: ${state.fonts.mono.family}, ui-monospace, monospace;
+      ${scaleVars}
+    }
+    * { margin: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-sans);
+      font-size: ${s.base}px;
+      line-height: ${s.bodyLineHeight};
+      letter-spacing: ${ls};
+      color: #222;
+      padding: 2rem;
+      max-width: 640px;
+    }
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      line-height: ${s.headingLineHeight};
+      margin-block-end: 0.5em;
+    }
+    h1 { font-size: var(--font-size-4xl); }
+    h2 { font-size: var(--font-size-2xl); }
+    h3 { font-size: var(--font-size-xl); }
+    h4 { font-size: var(--font-size-lg); }
+    p { margin-block-end: 1em; }
+    code, pre {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      overflow-x: auto;
+      margin-block-end: 1em;
+    }
+    blockquote {
+      border-inline-start: 3px solid #999;
+      padding: 0.75rem 1rem;
+      margin: 0 0 1em 0;
+      font-style: italic;
+      color: #555;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-block-end: 1em;
+      font-size: var(--font-size-sm);
+    }
+    th, td {
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th { font-weight: 600; background: #f8f8f8; }
+    form { display: flex; flex-direction: column; gap: 0.75rem; margin-block-end: 1em; }
+    label { font-weight: 500; display: flex; flex-direction: column; gap: 0.25rem; }
+    input, textarea { padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.25rem; font: inherit; }
+    button { padding: 0.5rem 1rem; background: #333; color: #fff; border: none; border-radius: 0.25rem; font: inherit; cursor: pointer; }
+    .small-text { font-size: var(--font-size-sm); color: #666; }
+    hr { border: none; border-top: 1px solid #eee; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Typography Preview</h1>
+  <p>This preview shows how your selected fonts and scale settings render across various content types.</p>
+
+  <h2>Headings &amp; Paragraphs</h2>
+  <h3>Third-level heading</h3>
+  <p>Body text in <strong>bold</strong> and <em>italic</em>. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <h4>Fourth-level heading</h4>
+  <p class="small-text">Smaller secondary text for captions and metadata.</p>
+
+  <hr>
+
+  <h2>Code Block</h2>
+  <pre><code>function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+console.log(greet('World'));</code></pre>
+
+  <h2>Blockquote</h2>
+  <blockquote>Good design is as little design as possible. Less, but better &mdash; because it concentrates on the essential aspects.</blockquote>
+
+  <h2>Table</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Alice</td><td>Engineer</td><td>Active</td></tr>
+      <tr><td>Bob</td><td>Designer</td><td>Away</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Form</h2>
+  <form onsubmit="return false">
+    <label>Full Name <input type="text" placeholder="Jane Doe"></label>
+    <label>Email <input type="email" placeholder="jane@example.com"></label>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>`;
+
+  const iframe = document.getElementById('preview-iframe');
+  const blob = new Blob([doc], { type: 'text/html' });
+  iframe.src = URL.createObjectURL(blob);
+}
+
+function updateComparison() {
+  const container = document.getElementById('font-comparison');
+  // Show all fonts from the same category as the body font
+  const bodyName = state.fonts.body.name;
+  let category = 'sans';
+  for (const [cat, fonts] of Object.entries(FONTS)) {
+    if (fonts.find(f => f.name === bodyName)) { category = cat; break; }
+  }
+  const fonts = category === 'system'
+    ? [...FONTS.system, ...FONTS.sans]
+    : FONTS[category] || FONTS.sans;
+
+  container.innerHTML = fonts.map(f => {
+    if (f.gfont) loadGoogleFont(f.gfont);
+    return `<div class="font-compare-row">
+      <span class="font-label">${f.name}</span>
+      <span class="font-sample" style="font-family:${f.family}">The quick brown fox jumps over the lazy dog</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// F. Export
+// ============================================================
+
+function generateCSS() {
+  const f = state.fonts;
+  const s = state.scale;
+  const scale = computeScale(s.base, s.ratio);
+
+  // Google font link comment
+  const gfonts = [];
+  for (const slot of ['heading', 'body', 'mono']) {
+    if (f[slot].gfont) gfonts.push(f[slot].gfont);
+  }
+
+  let css = '';
+  if (gfonts.length) {
+    const families = gfonts.map(g => `family=${g}`).join('&');
+    css += `/* Google Fonts — add to <head>:\n   <link href="https://fonts.googleapis.com/css2?${families}&display=swap" rel="stylesheet"> */\n\n`;
+  }
+
+  css += ':root {\n';
+  css += `  --font-sans: ${f.body.family}, system-ui, sans-serif;\n`;
+  if (f.heading.family !== f.body.family) {
+    css += `  --font-serif: ${f.heading.family}, Georgia, serif;\n`;
+  }
+  css += `  --font-mono: ${f.mono.family}, ui-monospace, monospace;\n`;
+
+  // Only emit scale if ratio changed
+  if (Math.abs(s.ratio - 1.250) > 0.002) {
+    for (const { name } of TYPE_STEPS) {
+      const rem = scale[name] / 16;
+      css += `  --font-size-${name}: ${rem.toFixed(3)}rem;\n`;
+    }
+  }
+  css += '}\n';
+  return css;
+}
+
+document.getElementById('btn-copy-css').addEventListener('click', () => {
+  navigator.clipboard.writeText(generateCSS());
+  document.getElementById('btn-copy-css').textContent = 'Copied!';
+  setTimeout(() => { document.getElementById('btn-copy-css').textContent = 'Copy CSS'; }, 1500);
+});
+
+document.getElementById('btn-send-composer').addEventListener('click', () => {
+  const data = {
+    heading: state.fonts.heading.name,
+    headingFamily: state.fonts.heading.family,
+    headingGfont: state.fonts.heading.gfont,
+    body: state.fonts.body.name,
+    bodyFamily: state.fonts.body.family,
+    bodyGfont: state.fonts.body.gfont,
+    mono: state.fonts.mono.name,
+    monoFamily: state.fonts.mono.family,
+    monoGfont: state.fonts.mono.gfont,
+    scaleRatio: state.scale.ratio,
+    base: state.scale.base,
+    bodyLineHeight: state.scale.bodyLineHeight,
+    headingLineHeight: state.scale.headingLineHeight,
+    letterSpacing: state.scale.letterSpacing,
+  };
+  localStorage.setItem('vb-type-explorer-output', JSON.stringify(data));
+  document.getElementById('btn-send-composer').textContent = 'Sent!';
+  setTimeout(() => { document.getElementById('btn-send-composer').textContent = 'Send to Composer'; }, 1500);
+});
+
+// ============================================================
+// Init
+// ============================================================
+
+buildSelects();
+buildPairings();
+updateAll();
+</script>
+{% endblock %}

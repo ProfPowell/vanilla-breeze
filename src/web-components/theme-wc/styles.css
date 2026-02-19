@@ -93,10 +93,6 @@ theme-wc {
   .options {
     display: flex;
     gap: var(--size-xs);
-
-    &--themes {
-      flex-wrap: wrap;
-    }
   }
 
   /* --- Option (radio button wrapper) --- */
@@ -105,10 +101,6 @@ theme-wc {
     flex: 1;
     min-inline-size: 0;
     cursor: pointer;
-
-    &--theme {
-      flex: 0 0 calc(50% - var(--size-xs) / 2);
-    }
 
     /* Hide native radio */
     & input[type="radio"] {
@@ -168,65 +160,111 @@ theme-wc {
     }
   }
 
-  /* --- Color Swatch --- */
-  .swatch {
-    display: block;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
-    border-radius: var(--radius-round);
-    background: oklch(50% 0.15 var(--swatch-hue));
-    box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.1);
+  /* --- Sizing grid (2×2 with descriptions) --- */
+  .options--sizing {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
-  /* --- Swatch Combo (color + shape) --- */
-  .swatch-combo {
+  .option--sizing .option-content {
+    flex-direction: row;
+    align-items: start;
+    gap: var(--size-xs);
+    text-align: start;
+    padding: var(--size-xs) var(--size-s);
+
+    & x-icon {
+      flex-shrink: 0;
+      margin-block-start: 0.15em;
+    }
+  }
+
+  .option-text {
     display: flex;
-    align-items: center;
-    gap: var(--size-3xs);
-  }
+    flex-direction: column;
 
-  /* --- Shape Indicator --- */
-  .shape-indicator {
-    display: block;
-    inline-size: 0.75rem;
-    block-size: 0.75rem;
-    background: var(--color-text-muted);
-
-    /* Shape variants based on theme personality */
-    &[data-shape="rounded"] {
-      border-radius: var(--radius-m);
-    }
-
-    &[data-shape="sharp"] {
-      border-radius: 0;
-    }
-
-    &[data-shape="subtle"] {
-      border-radius: var(--radius-xs);
-    }
-  }
-
-  /* --- Extreme Theme Options --- */
-  .option--extreme .option-content {
-    background: var(--color-surface-alt);
-    border-style: dashed;
-
-    & x-icon {
-      font-size: 1.25em;
+    & small {
+      font-size: var(--font-size-xs);
       color: var(--color-text-muted);
+      line-height: 1.3;
     }
   }
 
-  .option--extreme:hover .option-content {
-    border-style: solid;
+  .option--sizing input:checked + .option-content .option-text small {
+    color: var(--color-primary);
   }
 
-  .option--extreme input:checked + .option-content {
-    border-style: solid;
+  /* --- Swatch Grid (compact theme selection) --- */
+  .options--swatch-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-xs);
+  }
 
-    & x-icon {
-      color: var(--color-primary);
+  .swatch-cell {
+    cursor: pointer;
+
+    /* Hide native radio */
+    & input[type="radio"] {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
+
+    & .swatch-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border-radius: var(--radius-s);
+      background: var(--swatch-bg);
+      color: var(--swatch-fg, white);
+      border: var(--border-width-thin) solid oklch(0 0 0 / 0.15);
+      transition:
+        transform var(--duration-fast) var(--ease-default),
+        border-color var(--duration-fast) var(--ease-default);
+
+      & x-icon {
+        font-size: 1rem;
+      }
+    }
+
+    &:hover .swatch-visual {
+      transform: scale(1.1);
+      border-color: var(--color-text-muted);
+    }
+
+    /* Focus state */
+    & input:focus-visible + .swatch-visual {
+      outline: var(--focus-ring-width) solid var(--focus-ring-color);
+      outline-offset: var(--focus-ring-offset);
+    }
+
+    /* Selected state */
+    & input:checked + .swatch-visual {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-color: transparent;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* --- Extensions Section --- */
@@ -447,14 +485,6 @@ theme-wc {
     & input:checked + .option-content x-icon {
       color: var(--color-primary);
     }
-  }
-}
-
-/* Dark mode swatch adjustment */
-:root[data-mode="dark"] theme-wc .swatch,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) theme-wc .swatch {
-    background: oklch(60% 0.12 var(--swatch-hue));
   }
 }
 
