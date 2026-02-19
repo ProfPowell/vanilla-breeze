@@ -1,0 +1,131 @@
+---
+layout: layouts/attribute.njk
+title: "contenteditable"
+description: "Make any element editable by the user. Supports rich text or plaintext-only modes for inline editing experiences."
+attributeName: contenteditable
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/contenteditable/
+permalink: /docs/attributes/contenteditable/
+---
+
+{% set basicExample %}<!-- Make a paragraph editable -->
+<p contenteditable="true">Click to edit this text.</p>
+
+<!-- Editable heading -->
+<h2 contenteditable="true">Editable Title</h2>{% endset %}
+
+{% set plaintextExample %}<!-- Plaintext only: strips formatting on paste -->
+<div contenteditable="plaintext-only">
+  Type here. Pasted content loses all formatting.
+</div>{% endset %}
+
+{% set blockquoteExample %}<!-- Editable blockquote -->
+<blockquote contenteditable="true">
+  Click here to edit this quote. You can use <strong>bold</strong>
+  and <em>italic</em> formatting.
+</blockquote>{% endset %}
+
+{% set eventsExample %}{% raw %}const el = document.querySelector('[contenteditable]');
+
+// Fires when content changes
+el.addEventListener('input', (e) => {
+  console.log('New content:', el.textContent);
+});
+
+// Read the content
+const text = el.textContent;       // Plain text
+const html = el.innerHTML;         // With formatting
+
+// Set the content
+el.textContent = 'New plain text';
+el.innerHTML = '<strong>New</strong> formatted text';{% endraw %}{% endset %}
+
+{% set noteExample %}<article>
+  <h3 contenteditable="true">Note Title</h3>
+  <div contenteditable="plaintext-only">
+    Click to start writing your note...
+  </div>
+</article>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>contenteditable</code> attribute makes any HTML element editable by the user. It turns the element into a free-form text input without needing a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code>.</p>
+<p>This is the foundation for inline editing, note-taking interfaces, and rich text editors.</p>
+<p><strong>Applies to:</strong> Any HTML element</p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>true</code></td><td>Element is editable with rich text support (bold, italic, links via keyboard shortcuts)</td></tr>
+    <tr><td><code>plaintext-only</code></td><td>Element is editable but strips all formatting. Paste operations lose rich text.</td></tr>
+    <tr><td><code>false</code></td><td>Not editable (the default)</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<div class="example">
+  <p contenteditable="true">Click to edit this text. Try typing, selecting, and using keyboard shortcuts.</p>
+</div>
+
+<h2>Plaintext-Only Mode</h2>
+<p>The <code>plaintext-only</code> value is ideal when you want editable text without formatting. Pasted content is stripped of all HTML, and keyboard shortcuts like <kbd>Ctrl+B</kbd> have no effect.</p>
+
+<code-block language="html" label="Plaintext-only editing">{{ plaintextExample | escape }}</code-block>
+
+<div class="example">
+  <div contenteditable="plaintext-only" style="padding: var(--size-s); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); min-block-size: 3lh;">Type here. Paste strips formatting.</div>
+</div>
+
+<h2>Rich Text Editing</h2>
+<p>With <code>contenteditable="true"</code>, the browser provides built-in formatting:</p>
+<ul>
+  <li><kbd>Ctrl+B</kbd> / <kbd>Cmd+B</kbd> for bold</li>
+  <li><kbd>Ctrl+I</kbd> / <kbd>Cmd+I</kbd> for italic</li>
+  <li><kbd>Ctrl+U</kbd> / <kbd>Cmd+U</kbd> for underline</li>
+</ul>
+
+<code-block language="html" label="Rich text blockquote">{{ blockquoteExample | escape }}</code-block>
+
+<h2>JavaScript API</h2>
+<p>Listen for <code>input</code> events to react to changes, and read content via <code>textContent</code> or <code>innerHTML</code>.</p>
+
+<code-block language="js" label="Events and reading content">{{ eventsExample | escape }}</code-block>
+
+<h2>Practical Example</h2>
+<p>An editable note card with a plaintext body:</p>
+
+<code-block language="html" label="Editable note">{{ noteExample | escape }}</code-block>
+
+<div class="example">
+  <article style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s);">
+    <h3 contenteditable="true" style="margin-block-end: var(--size-s);">Note Title</h3>
+    <div contenteditable="plaintext-only" style="min-block-size: 3lh; color: var(--color-text-muted);">Click to start writing your note...</div>
+  </article>
+</div>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Contenteditable elements are automatically focusable and receive an implicit <code>role="textbox"</code></li>
+  <li>Screen readers announce them as editable regions</li>
+  <li>Add <code>aria-label</code> or <code>aria-labelledby</code> if the editable region has no visible label</li>
+  <li>Use <code>aria-multiline="true"</code> for multi-line editable regions</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>No form participation:</strong> contenteditable elements are not form controls. Their content is not included in form submissions. Use a hidden <code>&lt;input&gt;</code> or JavaScript to bridge the gap.</li>
+  <li><strong>No validation:</strong> Unlike <code>&lt;input&gt;</code> and <code>&lt;textarea&gt;</code>, there is no built-in constraint validation.</li>
+  <li><strong>Browser differences:</strong> Rich text editing behavior varies across browsers, especially for line breaks and formatting commands.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> for standard multi-line text input</li>
+    <li><a href="/docs/attributes/data-grow/"><code>data-grow</code></a> for auto-expanding textareas</li>
+  </ul>
+</section>

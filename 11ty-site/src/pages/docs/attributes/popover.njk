@@ -1,0 +1,148 @@
+---
+layout: layouts/attribute.njk
+title: "popover"
+description: "Zero-JavaScript popovers, menus, and tooltips via the native Popover API. VB provides styling for popovers and tooltip variants."
+attributeName: popover
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/popover/
+permalink: /docs/attributes/popover/
+---
+
+{% set basicExample %}<!-- Auto popover: light-dismiss (click outside or press Escape) -->
+<button popovertarget="my-popover">Open Popover</button>
+<div id="my-popover" popover>
+  <p>This pops over everything.</p>
+  <p>Click outside or press <kbd>Escape</kbd> to close.</p>
+</div>{% endset %}
+
+{% set manualExample %}<!-- Manual popover: stays open until explicitly closed -->
+<button popovertarget="info-panel">Show Info</button>
+<div id="info-panel" popover="manual">
+  <p>This stays open until you close it.</p>
+  <button popovertarget="info-panel" popovertargetaction="hide">Close</button>
+</div>{% endset %}
+
+{% set actionsExample %}<!-- Toggle (default) -->
+<button popovertarget="demo">Toggle</button>
+
+<!-- Show only -->
+<button popovertarget="demo" popovertargetaction="show">Show</button>
+
+<!-- Hide only -->
+<button popovertarget="demo" popovertargetaction="hide">Hide</button>
+
+<div id="demo" popover>Popover content</div>{% endset %}
+
+{% set tooltipExample %}<!-- VB styles [role="tooltip"][popover] as a tooltip -->
+<button popovertarget="tip" popovertargetaction="toggle">
+  What's this?
+</button>
+<div id="tip" role="tooltip" popover>
+  A brief explanation of the feature.
+</div>{% endset %}
+
+{% set menuExample %}<nav>
+  <button popovertarget="menu">
+    <icon-wc name="menu"></icon-wc>
+    Menu
+  </button>
+  <ul id="menu" popover>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/settings">Settings</a></li>
+    <li><a href="/logout">Sign out</a></li>
+  </ul>
+</nav>{% endset %}
+
+{% set nestedExample %}<!-- Nested popovers: opening a child doesn't close the parent -->
+<button popovertarget="parent-pop">Open menu</button>
+<div id="parent-pop" popover>
+  <p>Main menu</p>
+  <button popovertarget="child-pop">More options</button>
+  <div id="child-pop" popover>
+    <p>Submenu content</p>
+  </div>
+</div>{% endset %}
+
+<h2>Overview</h2>
+<p>The Popover API lets you create overlay content with zero JavaScript. Elements with the <code>popover</code> attribute are hidden by default, appear in the browser's top layer when shown, and get light-dismiss behavior (click outside or press <kbd>Escape</kbd> to close).</p>
+<p>VB provides styling for popovers and a tooltip variant. The Popover API replaces many cases that previously required JavaScript modal/dropdown libraries.</p>
+
+<h2>The popover Attribute</h2>
+<p>Add <code>popover</code> to any element to make it a popover. The element is hidden by default and shown when triggered.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>popover</code> (or <code>popover="auto"</code>)</td><td>Light-dismiss: closes when clicking outside or pressing Escape. Only one auto popover is visible at a time.</td></tr>
+    <tr><td><code>popover="manual"</code></td><td>No light-dismiss. Must be closed explicitly via button or JavaScript. Multiple manual popovers can be open simultaneously.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Auto popover">{{ basicExample | escape }}</code-block>
+<code-block language="html" label="Manual popover">{{ manualExample | escape }}</code-block>
+
+<div class="example">
+  <button popovertarget="demo-popover">Open Popover</button>
+  <div id="demo-popover" popover>
+    <p><strong>Live demo</strong></p>
+    <p>Click outside or press <kbd>Escape</kbd> to close.</p>
+  </div>
+</div>
+
+<h2>Trigger Attributes</h2>
+<p>Any button can control a popover using these attributes.</p>
+
+<table>
+  <thead><tr><th>Attribute</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>popovertarget="id"</code></td><td>References the popover element's <code>id</code></td></tr>
+    <tr><td><code>popovertargetaction</code></td><td>Controls what happens: <code>toggle</code> (default), <code>show</code>, or <code>hide</code></td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Trigger actions">{{ actionsExample | escape }}</code-block>
+
+<h2>Tooltip Variant</h2>
+<p>VB styles <code>[role="tooltip"][popover]</code> as a compact tooltip. This combines the Popover API's positioning and dismiss behavior with ARIA's tooltip semantics.</p>
+
+<code-block language="html" label="Tooltip popover">{{ tooltipExample | escape }}</code-block>
+
+<p>For more advanced tooltip behavior (hover triggers, arrow positioning), see the <a href="/docs/elements/web-components/tooltip/"><code>&lt;tooltip-wc&gt;</code></a> web component.</p>
+
+<h2>Menu Pattern</h2>
+<p>A navigation menu built entirely with native HTML:</p>
+
+<code-block language="html" label="Popover menu">{{ menuExample | escape }}</code-block>
+
+<h2>Nested Popovers</h2>
+<p>Auto popovers can nest. When a child popover opens, its parent stays open. Clicking outside closes all of them.</p>
+
+<code-block language="html" label="Nested popovers">{{ nestedExample | escape }}</code-block>
+
+<h2>Styling</h2>
+<p>VB provides base styles for <code>[popover]</code> elements including padding, border, border-radius, and box-shadow. The <code>::backdrop</code> pseudo-element is available for manual popovers.</p>
+<p>Popovers render in the browser's <strong>top layer</strong>, which means they appear above all other content regardless of <code>z-index</code>. No z-index wars.</p>
+
+<h2>Comparison</h2>
+<table>
+  <thead><tr><th>Feature</th><th>Popover API</th><th><code>&lt;dialog&gt;</code></th></tr></thead>
+  <tbody>
+    <tr><td>Light dismiss</td><td>Auto popovers only</td><td>No</td></tr>
+    <tr><td>Top layer</td><td>Yes</td><td>Only with <code>showModal()</code></td></tr>
+    <tr><td>Backdrop</td><td>Yes</td><td>Yes (modal only)</td></tr>
+    <tr><td>Focus trapping</td><td>No</td><td>Yes (modal only)</td></tr>
+    <tr><td>JavaScript required</td><td>No</td><td>Yes (<code>showModal()</code>)</td></tr>
+    <tr><td>Best for</td><td>Menus, tooltips, dropdowns</td><td>Modal dialogs, confirmations</td></tr>
+  </tbody>
+</table>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> for modal dialogs</li>
+    <li><a href="/docs/elements/web-components/tooltip/"><code>&lt;tooltip-wc&gt;</code></a> for hover-triggered tooltips</li>
+    <li><a href="/docs/elements/web-components/dropdown/"><code>&lt;dropdown-wc&gt;</code></a> for rich dropdown menus</li>
+  </ul>
+</section>

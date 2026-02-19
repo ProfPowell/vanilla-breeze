@@ -1,0 +1,136 @@
+---
+layout: layouts/attribute.njk
+title: "loading"
+description: "Lazy loading, fetch priority, and image decoding hints. Three attributes that work as a set to control how and when the browser loads resources."
+attributeName: loading
+attributeType: native
+nativeGroup: Performance
+category: native
+currentPath: /docs/attributes/loading/
+permalink: /docs/attributes/loading/
+---
+
+{% set lazyExample %}<img src="hero.jpg" alt="Hero banner" />
+
+<!-- Below the fold: defer loading until the user scrolls near -->
+<img src="gallery-1.jpg" alt="Gallery photo 1" loading="lazy" />
+<img src="gallery-2.jpg" alt="Gallery photo 2" loading="lazy" />
+
+<!-- Lazy-load an iframe -->
+<iframe src="/embed/widget" loading="lazy"></iframe>{% endset %}
+
+{% set priorityExample %}<!-- LCP image: fetch as fast as possible -->
+<img src="hero.jpg" alt="Hero" fetchpriority="high" />
+
+<!-- Carousel images not initially visible: lower priority -->
+<img src="slide-2.jpg" alt="Slide 2" fetchpriority="low" loading="lazy" />
+<img src="slide-3.jpg" alt="Slide 3" fetchpriority="low" loading="lazy" />
+
+<!-- Preload a critical font -->
+<link rel="preload" href="/fonts/body.woff2" as="font"
+  type="font/woff2" crossorigin fetchpriority="high" />
+
+<!-- Lower priority for non-critical script -->
+<script src="/analytics.js" fetchpriority="low"></script>{% endset %}
+
+{% set decodingExample %}<!-- Let the browser decode off the main thread -->
+<img src="photo.jpg" alt="Large photo" decoding="async" />
+
+<!-- Must render immediately (rare: icons, inline SVG replacements) -->
+<img src="icon.svg" alt="" decoding="sync" />{% endset %}
+
+{% set combinedExample %}<!-- Hero image: load immediately, high priority, async decode -->
+<img src="hero.jpg" alt="Hero banner"
+  fetchpriority="high"
+  decoding="async" />
+
+<!-- Below-fold content image: lazy load, async decode -->
+<img src="content-photo.jpg" alt="Content photo"
+  loading="lazy"
+  decoding="async" />
+
+<!-- Below-fold iframe: lazy load -->
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  loading="lazy"
+  title="Video embed"></iframe>{% endset %}
+
+<h2>Overview</h2>
+<p>Three native attributes control when and how the browser fetches resources. Used together, they form a performance strategy:</p>
+<ul>
+  <li><strong><code>loading</code></strong> controls <em>when</em> a resource starts loading</li>
+  <li><strong><code>fetchpriority</code></strong> controls <em>how urgently</em> a resource is fetched relative to others</li>
+  <li><strong><code>decoding</code></strong> controls <em>whether</em> image decoding blocks rendering</li>
+</ul>
+
+<h2>loading</h2>
+<p>Defers resource loading until the element is near the viewport. Use <code>loading="lazy"</code> on images and iframes below the fold.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>eager</code></td><td>Load immediately (the default)</td></tr>
+    <tr><td><code>lazy</code></td><td>Defer loading until near the viewport</td></tr>
+  </tbody>
+</table>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+
+<code-block language="html" label="Lazy loading">{{ lazyExample | escape }}</code-block>
+
+<h3>When Not to Lazy Load</h3>
+<ul>
+  <li><strong>Above-the-fold images</strong> should load immediately. Lazy-loading your LCP image delays it.</li>
+  <li><strong>Small images</strong> (icons, avatars) have little to gain from lazy loading.</li>
+  <li><strong>Background images</strong> in CSS are not affected by the <code>loading</code> attribute.</li>
+</ul>
+
+<h2>fetchpriority</h2>
+<p>Tells the browser how important a resource is relative to others of the same type. The browser already assigns default priorities; this attribute lets you override them.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>high</code></td><td>Fetch at higher priority than normal</td></tr>
+    <tr><td><code>low</code></td><td>Fetch at lower priority than normal</td></tr>
+    <tr><td><code>auto</code></td><td>Let the browser decide (the default)</td></tr>
+  </tbody>
+</table>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+
+<code-block language="html" label="Fetch priority">{{ priorityExample | escape }}</code-block>
+
+<h3>LCP Optimization</h3>
+<p>The most common use: add <code>fetchpriority="high"</code> to your Largest Contentful Paint image. This tells the browser to prioritize that image over other resources discovered at the same time.</p>
+
+<h2>decoding</h2>
+<p>Hints whether image decoding should block rendering. Decoding converts the compressed image data into pixels. For large images, this can take noticeable time.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>async</code></td><td>Decode off the main thread (non-blocking)</td></tr>
+    <tr><td><code>sync</code></td><td>Decode synchronously (blocks rendering)</td></tr>
+    <tr><td><code>auto</code></td><td>Let the browser decide (the default)</td></tr>
+  </tbody>
+</table>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a></p>
+
+<code-block language="html" label="Decoding hints">{{ decodingExample | escape }}</code-block>
+
+<h2>Putting It All Together</h2>
+<p>A typical page uses all three attributes as a system:</p>
+<ol>
+  <li>Hero/LCP image: <code>fetchpriority="high"</code> + <code>decoding="async"</code></li>
+  <li>Below-fold images: <code>loading="lazy"</code> + <code>decoding="async"</code></li>
+  <li>Third-party embeds: <code>loading="lazy"</code></li>
+</ol>
+
+<code-block language="html" label="Combined usage">{{ combinedExample | escape }}</code-block>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> for preload and prefetch</li>
+  </ul>
+</section>

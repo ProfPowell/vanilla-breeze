@@ -1,13 +1,15 @@
 {#
   Attribute layout — for attribute documentation pages.
-  Includes sidebar navigation (all attribute categories) and TOC.
+  Includes sidebar navigation (native + data attribute categories) and TOC.
 
   Front matter variables:
-    attributeName — attribute name (e.g., "data-layout")
-    category      — attribute category key (e.g., 'layout', 'formatting', 'form-controls')
-    currentPath   — current page path for aria-current
-    title         — page title
-    description   — attribute description
+    attributeName  — attribute name (e.g., "data-layout" or "loading")
+    attributeType  — 'native' or 'data'
+    category       — attribute category key (e.g., 'layout', 'formatting', 'form-controls')
+    nativeGroup    — which native group to open (e.g., 'Global', 'Performance')
+    currentPath    — current page path for aria-current
+    title          — page title
+    description    — attribute description
 #}
 {% extends "layouts/base.njk" %}
 
@@ -15,7 +17,13 @@
 {% set currentSection = "api" %}
 {% set includeDocs = true %}
 
-{%- set attributes = navigation.attributes -%}
+{%- set attrs = navigation.attributes -%}
+
+{%- set categoryMap = {
+  "native": { "label": "Native Attributes", "href": "/docs/attributes/" },
+  "data": { "label": "Data Attributes", "href": "/docs/attributes/" }
+} -%}
+{%- set crumb = categoryMap[attributeType] -%}
 
 {% block pageContent %}
 <main data-pagefind-body>
@@ -27,20 +35,43 @@
         <icon-wc name="x"></icon-wc>
       </label>
 
-      {% for key, cat in attributes %}
-      <details{% if category == key %} open{% endif %}>
-        <summary>{{ cat.label }}</summary>
-        <ul>
-          {% for item in cat.items %}
-          <li>
-            <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
-              {{ item.name }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
+      <!-- Native Attributes -->
+      <details{% if attributeType == 'native' %} open{% endif %}>
+        <summary>{{ attrs.native.label }}</summary>
+        {% for group in attrs.native.groups %}
+        <details{% if nativeGroup == group.label %} open{% endif %}>
+          <summary>{{ group.label }}</summary>
+          <ul>
+            {% for item in group.items %}
+            <li>
+              <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
+                {{ item.name }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endfor %}
       </details>
-      {% endfor %}
+
+      <!-- Data Attributes -->
+      <details{% if attributeType == 'data' %} open{% endif %}>
+        <summary>{{ attrs.data.label }}</summary>
+        {% for key, cat in attrs.data.groups %}
+        <details{% if category == key %} open{% endif %}>
+          <summary>{{ cat.label }}</summary>
+          <ul>
+            {% for item in cat.items %}
+            <li>
+              <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
+                {{ item.name }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endfor %}
+      </details>
     </nav>
 
     <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
@@ -51,6 +82,9 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <ol>
             <li><a href="/docs/attributes/">Attributes</a></li>
+            {% if crumb %}
+            <li><span>{{ crumb.label }}</span></li>
+            {% endif %}
             <li><span aria-current="page">{{ attributeName }}</span></li>
           </ol>
         </nav>

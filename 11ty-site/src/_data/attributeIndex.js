@@ -1,4 +1,33 @@
-const attributes = {
+const nativeAttributes = {
+  global: {
+    label: 'Global',
+    items: [
+      { name: 'class', type: 'native', href: '/docs/attributes/class/', description: 'CSS class variants for buttons, navigation, forms, tables, and more' },
+    ],
+  },
+  performance: {
+    label: 'Performance',
+    items: [
+      { name: 'loading', type: 'native', href: '/docs/attributes/loading/', description: 'Lazy loading, fetch priority, and image decoding hints for performance' },
+    ],
+  },
+  forms: {
+    label: 'Forms',
+    items: [
+      { name: 'autocomplete', type: 'native', href: '/docs/attributes/autocomplete/', description: 'Browser autofill hints for one-tap form completion on mobile' },
+    ],
+  },
+  interactivity: {
+    label: 'Interactivity',
+    items: [
+      { name: 'popover', type: 'native', href: '/docs/attributes/popover/', description: 'Zero-JS popovers, menus, and tooltips via the Popover API' },
+      { name: 'contenteditable', type: 'native', href: '/docs/attributes/contenteditable/', description: 'Make any element editable with optional plaintext-only mode' },
+      { name: 'hidden', type: 'native', href: '/docs/attributes/hidden/', description: 'Hide elements, collapse searchable content, or disable interaction with inert' },
+    ],
+  },
+};
+
+const dataAttributes = {
   layout: {
     label: 'Layout',
     items: [
@@ -70,12 +99,17 @@ const attributes = {
   },
 };
 
-const allItems = Object.values(attributes).flatMap(cat => cat.items);
+const nativeItems = Object.values(nativeAttributes).flatMap(cat => cat.items);
+const dataItems = Object.values(dataAttributes).flatMap(cat => cat.items);
+const allItems = [...nativeItems, ...dataItems];
 
 export default {
-  categories: attributes,
-  layoutCount: allItems.filter(i => i.type === 'layout').length,
-  behaviorCount: allItems.filter(i => i.type === 'behavior').length,
-  formattingCount: allItems.filter(i => i.type === 'formatting').length,
+  nativeCategories: nativeAttributes,
+  dataCategories: dataAttributes,
+  nativeCount: nativeItems.length,
+  layoutCount: dataItems.filter(i => i.type === 'layout').length,
+  behaviorCount: dataItems.filter(i => i.type === 'behavior').length,
+  formattingCount: dataItems.filter(i => i.type === 'formatting').length,
+  dataCount: dataItems.length,
   totalCount: allItems.length,
 };

@@ -1,7 +1,7 @@
 ---
 layout: layouts/docs.njk
 title: "Attribute Index"
-description: "Complete listing of all data attributes organized by category with type badges."
+description: "Complete listing of all attributes — native HTML attributes and VB data attributes — organized by category."
 currentSection: api
 currentPath: /docs/attributes/
 permalink: /docs/attributes/
@@ -55,9 +55,14 @@ permalink: /docs/attributes/
       letter-spacing: 0.02em;
     }
 
-    .attribute-badge[data-type="layout"] {
-      background: oklch(85% 0.1 145);
+    .attribute-badge[data-type="native"] {
+      background: oklch(85% 0.15 145);
       color: oklch(30% 0.1 145);
+    }
+
+    .attribute-badge[data-type="layout"] {
+      background: oklch(85% 0.1 200);
+      color: oklch(30% 0.1 200);
     }
 
     .attribute-badge[data-type="behavior"] {
@@ -89,6 +94,7 @@ permalink: /docs/attributes/
 
     .stats {
       display: flex;
+      flex-wrap: wrap;
       gap: var(--size-xl);
       margin-block: var(--size-m);
       color: var(--color-text-muted);
@@ -97,6 +103,15 @@ permalink: /docs/attributes/
 
     .stats strong {
       color: var(--color-text);
+    }
+
+    .section-heading {
+      grid-column: 1 / -1;
+      margin-block-start: var(--size-xl);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-medium) solid var(--color-border);
+      font-size: var(--font-size-xl);
+      font-weight: 700;
     }
 
     .category-heading {
@@ -117,9 +132,10 @@ permalink: /docs/attributes/
 
 
 <h1>Attribute Index</h1>
-  <p class="lead">Complete listing of all data attributes organized by category.</p>
+  <p class="lead">Complete listing of all attributes — native HTML attributes and VB's <code>data-*</code> enhancers — organized by category.</p>
 
   <div class="stats">
+    <span><strong>{{ attributeIndex.nativeCount }}</strong> native</span>
     <span><strong>{{ attributeIndex.layoutCount }}</strong> layout</span>
     <span><strong>{{ attributeIndex.behaviorCount }}</strong> behavior</span>
     <span><strong>{{ attributeIndex.formattingCount }}</strong> formatting</span>
@@ -127,6 +143,10 @@ permalink: /docs/attributes/
   </div>
 
   <div class="legend">
+    <div class="legend-item">
+      <span class="attribute-badge" data-type="native">native</span>
+      <span>Standard HTML attributes</span>
+    </div>
     <div class="legend-item">
       <span class="attribute-badge" data-type="layout">layout</span>
       <span>CSS-only structural attributes</span>
@@ -142,8 +162,21 @@ permalink: /docs/attributes/
   </div>
 
   <nav class="attribute-index" aria-label="All attributes">
-    {% for key, category in attributeIndex.categories %}
-    <h2 class="category-heading">{{ category.label }}</h2>
+    <h2 class="section-heading">Native Attributes</h2>
+    {% for key, category in attributeIndex.nativeCategories %}
+    <h3 class="category-heading">{{ category.label }}</h3>
+    {% for item in category.items %}
+    <a href="{{ item.href }}" class="attribute-entry">
+      <code>{{ item.name }}</code>
+      <span class="attribute-badge" data-type="{{ item.type }}">{{ item.type }}</span>
+      <p class="description">{{ item.description }}</p>
+    </a>
+    {% endfor %}
+    {% endfor %}
+
+    <h2 class="section-heading">Data Attributes</h2>
+    {% for key, category in attributeIndex.dataCategories %}
+    <h3 class="category-heading">{{ category.label }}</h3>
     {% for item in category.items %}
     <a href="{{ item.href }}" class="attribute-entry">
       <code>{{ item.name }}</code>

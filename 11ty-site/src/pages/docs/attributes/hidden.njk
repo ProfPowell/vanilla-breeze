@@ -1,0 +1,155 @@
+---
+layout: layouts/attribute.njk
+title: "hidden"
+description: "Control element visibility and interactivity. Covers hidden, hidden='until-found', and inert — three levels of removing content from the user experience."
+attributeName: hidden
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/hidden/
+permalink: /docs/attributes/hidden/
+---
+
+{% set hiddenExample %}<!-- Completely hidden: removed from rendering and accessibility tree -->
+<div hidden>
+  This content is invisible, unfocusable, and ignored by screen readers.
+</div>
+
+<!-- Conditionally show/hide with JavaScript -->
+<div id="details" hidden>
+  <p>Additional details appear here.</p>
+</div>
+<button onclick="document.getElementById('details').hidden = !document.getElementById('details').hidden">
+  Toggle Details
+</button>{% endset %}
+
+{% set untilFoundExample %}<!-- Hidden until browser find-in-page reveals it -->
+<details>
+  <summary>FAQ: How do I reset my password?</summary>
+  <div hidden="until-found">
+    <p>Go to Settings, then Security, then click "Reset Password".</p>
+  </div>
+</details>{% endset %}
+
+{% set inertExample %}<!-- Visible but completely non-interactive -->
+<form inert>
+  <label for="name">Name</label>
+  <input type="text" id="name" value="Read-only form" />
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set modalExample %}<!-- Disable page content while a modal is open -->
+<main id="page-content">
+  <h1>Page Content</h1>
+  <p>This becomes inert when the modal opens.</p>
+</main>
+
+<dialog id="my-dialog">
+  <p>Modal content here. The page behind is inert.</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>{% endset %}
+
+{% set loadingExample %}<!-- Disable a form section while submitting -->
+<form>
+  <fieldset id="form-fields">
+    <label for="email">Email</label>
+    <input type="email" id="email" />
+    <button type="submit">Subscribe</button>
+  </fieldset>
+</form>{% endset %}
+
+{% set jsExample %}{% raw %}// Toggle hidden
+element.hidden = true;   // hide
+element.hidden = false;  // show
+
+// Toggle inert
+element.inert = true;    // disable interaction
+element.inert = false;   // re-enable
+
+// Check state
+if (element.hidden) { /* ... */ }
+if (element.inert) { /* ... */ }{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>Three native attributes control whether and how users can see and interact with content. They represent three levels of removal from the user experience:</p>
+
+<table>
+  <thead><tr><th>Attribute</th><th>Visible</th><th>Interactive</th><th>In Accessibility Tree</th><th>Find-in-Page</th></tr></thead>
+  <tbody>
+    <tr><td><code>hidden</code></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td><code>hidden="until-found"</code></td><td>No</td><td>No</td><td>Yes</td><td>Yes (reveals on find)</td></tr>
+    <tr><td><code>inert</code></td><td>Yes</td><td>No</td><td>No</td><td>Yes</td></tr>
+    <tr><td>(none)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
+<h2>hidden</h2>
+<p>The <code>hidden</code> attribute removes an element from rendering entirely. It behaves like <code>display: none</code> but is semantic — it declares that the content is not relevant to the current state of the page.</p>
+
+<code-block language="html" label="Hidden elements">{{ hiddenExample | escape }}</code-block>
+
+<h3>When to Use hidden</h3>
+<ul>
+  <li><strong>Conditional UI:</strong> Content that should appear only in certain states (logged in, feature enabled, etc.)</li>
+  <li><strong>Template content:</strong> Fragments cloned by JavaScript</li>
+  <li><strong>Deferred content:</strong> Content loaded after user interaction</li>
+</ul>
+
+<h2>hidden="until-found"</h2>
+<p>A newer value that collapses content visually but allows the browser to reveal it during find-in-page (<kbd>Ctrl+F</kbd>) searches. When a match is found inside, the browser fires a <code>beforematch</code> event and removes the <code>hidden</code> attribute.</p>
+<p>This is useful for long FAQ pages, accordions, or collapsed sections where users should be able to search for content without expanding every section manually.</p>
+
+<code-block language="html" label="Hidden until found">{{ untilFoundExample | escape }}</code-block>
+
+<h2>inert</h2>
+<p>The <code>inert</code> attribute keeps content visible but makes it completely non-interactive. Inert elements cannot be clicked, focused, selected, or found by assistive technology. The browser applies a visual dimming effect.</p>
+
+<code-block language="html" label="Inert elements">{{ inertExample | escape }}</code-block>
+
+<div class="example">
+  <form inert style="opacity: 0.5;">
+    <label for="demo-name">Name</label>
+    <input type="text" id="demo-name" value="Cannot interact" />
+    <button type="submit">Submit</button>
+  </form>
+  <p><small>The form above is inert — try clicking or tabbing into it.</small></p>
+</div>
+
+<h3>When to Use inert</h3>
+<ul>
+  <li><strong>Behind modals:</strong> Prevent interaction with page content while a dialog is open. Note: <code>&lt;dialog&gt;</code> with <code>showModal()</code> applies inert automatically.</li>
+  <li><strong>Loading states:</strong> Disable a form section while a submission is in progress</li>
+  <li><strong>Preview mode:</strong> Show content that shouldn't be interacted with yet</li>
+  <li><strong>Step-by-step flows:</strong> Disable future steps until the current step is complete</li>
+</ul>
+
+<code-block language="html" label="Inert behind modal">{{ modalExample | escape }}</code-block>
+
+<h2>JavaScript API</h2>
+<p>Both <code>hidden</code> and <code>inert</code> are reflected as boolean properties on the element.</p>
+
+<code-block language="js" label="JavaScript control">{{ jsExample | escape }}</code-block>
+
+<h2>Comparison with CSS</h2>
+<table>
+  <thead><tr><th>Approach</th><th>Visual</th><th>Accessibility</th><th>Semantic</th></tr></thead>
+  <tbody>
+    <tr><td><code>hidden</code></td><td>Removed from layout</td><td>Removed from tree</td><td>Yes — declares irrelevance</td></tr>
+    <tr><td><code>display: none</code></td><td>Removed from layout</td><td>Removed from tree</td><td>No — only visual</td></tr>
+    <tr><td><code>visibility: hidden</code></td><td>Invisible but occupies space</td><td>Removed from tree</td><td>No</td></tr>
+    <tr><td><code>.visually-hidden</code></td><td>Invisible, no space</td><td>Still in tree</td><td>No — screen reader only</td></tr>
+    <tr><td><code>inert</code></td><td>Visible (dimmed)</td><td>Removed from tree</td><td>Yes — declares non-interactivity</td></tr>
+  </tbody>
+</table>
+
+<p>Prefer <code>hidden</code> over <code>display: none</code> when the content is semantically irrelevant. Prefer <code>inert</code> when content should remain visible but non-interactive.</p>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — automatically manages inert on the rest of the page</li>
+    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> — native collapsible content</li>
+    <li><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> — conditional visibility based on form field values</li>
+    <li><a href="/docs/attributes/class/">class: <code>.visually-hidden</code></a> — hide visually but keep accessible</li>
+  </ul>
+</section>
