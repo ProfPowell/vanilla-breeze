@@ -28,46 +28,46 @@ permalink: /docs/attributes/data-grow/
 
 {% set minRowsCode %}<form-field>\n  <label for="description">Description</label>\n  <textarea id="description" data-grow rows="4" data-max-rows="12"></textarea>\n</form-field>{% endset %}
 
-{% set stylingCode %}/* Modern browsers: CSS field-sizing */
-textarea[data-grow][data-grow-init] \{
+{% set stylingCode %}{% raw %}/* Modern browsers: CSS field-sizing */
+textarea[data-grow][data-grow-init] {
   field-sizing: content;
-\}
+}
 
 /* Max height via max-rows */
-textarea[data-grow][data-grow-init][data-max-rows] \{
+textarea[data-grow][data-grow-init][data-max-rows] {
   max-block-size: calc(var(--max-rows) * 1lh);
   overflow-y: auto;
-\}
+}
 
 /* Fallback browsers: JS-driven sizing */
-textarea[data-grow][data-grow-init].grow-fallback \{
+textarea[data-grow][data-grow-init].grow-fallback {
   resize: none;
   overflow: hidden;
-\}
+}
 
-textarea[data-grow][data-grow-init].grow-fallback.grow-scrollable \{
+textarea[data-grow][data-grow-init].grow-fallback.grow-scrollable {
   overflow-y: auto;
-\}{% endset %}
+}{% endraw %}{% endset %}
 
-{% set howItWorksCode %}/* Modern approach — single CSS property */
-textarea \{
+{% set howItWorksCode %}{% raw %}/* Modern approach — single CSS property */
+textarea {
   field-sizing: content;
   max-block-size: 10lh; /* from data-max-rows */
-\}
+}
 
 /* Fallback approach — JavaScript measurement */
-function resize(textarea) \{
+function resize(textarea) {
   textarea.style.height = 'auto';
   textarea.style.height = textarea.scrollHeight + 'px';
-\}{% endset %}
+}{% endraw %}{% endset %}
 
-{% set eventCode %}const textarea = document.querySelector('[data-grow]');
+{% set eventCode %}{% raw %}const textarea = document.querySelector('[data-grow]');
 
 // The textarea fires standard events — no custom events needed
-textarea.addEventListener('input', () => \{
+textarea.addEventListener('input', () => {
   console.log('Height:', textarea.style.height || 'auto (CSS field-sizing)');
   console.log('Scroll height:', textarea.scrollHeight);
-\});{% endset %}
+});{% endraw %}{% endset %}
 
 {% set dynamicCode %}// Dynamically added textareas are auto-enhanced via MutationObserver
 const textarea = document.createElement('textarea');

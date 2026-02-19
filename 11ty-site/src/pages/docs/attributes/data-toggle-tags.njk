@@ -25,8 +25,8 @@ permalink: /docs/attributes/data-toggle-tags/
 
 {% set precheckedCode %}<fieldset data-toggle-tags>\n  <legend>Interests</legend>\n  <label><input type="checkbox" name="interest" value="music" checked> Music</label>\n  <label><input type="checkbox" name="interest" value="film"> Film</label>\n  <label><input type="checkbox" name="interest" value="books" checked> Books</label>\n  <label><input type="checkbox" name="interest" value="sports"> Sports</label>\n</fieldset>{% endset %}
 
-{% set stylingCode %}/* Tags use CSS :has() — no JS needed for styling */
-[data-toggle-tags] label \{
+{% set stylingCode %}{% raw %}/* Tags use CSS :has() — no JS needed for styling */
+[data-toggle-tags] label {
   display: inline-flex;
   align-items: center;
   padding: var(--size-2xs) var(--size-s);
@@ -34,28 +34,28 @@ permalink: /docs/attributes/data-toggle-tags/
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: background-color 0.15s, border-color 0.15s;
-\}
+}
 
 /* Checked state via :has() */
-[data-toggle-tags] label:has(:checked) \{
+[data-toggle-tags] label:has(:checked) {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-on-primary);
-\}
+}
 
 /* Hide the checkbox visually */
-[data-toggle-tags] input[type="checkbox"] \{
+[data-toggle-tags] input[type="checkbox"] {
   position: absolute;
   opacity: 0;
   width: 0;
   height: 0;
-\}
+}
 
 /* Disabled state when max reached */
-[data-toggle-tags] label:has(:disabled:not(:checked)) \{
+[data-toggle-tags] label:has(:disabled:not(:checked)) {
   opacity: 0.5;
   cursor: not-allowed;
-\}{% endset %}
+}{% endraw %}{% endset %}
 
 {% set dynamicCode %}// Dynamically added toggle-tags fieldsets are auto-enhanced via MutationObserver
 const fieldset = document.createElement('fieldset');

@@ -72,30 +72,30 @@ permalink: /docs/attributes/data-autosave/
   <button type="submit">Register</button>
 </form>{% endset %}
 
-{% set storageCode %}// Storage key format
+{% set storageCode %}{% raw %}// Storage key format
 localStorage.getItem('vb-autosave:contact-form');
 
 // Stored value is a JSON object of field name/value pairs
-// \{
+// {
 //   "name": "Jane",
 //   "message": "Hello...",
 //   "_ts": 1700000000000
-// \}{% endset %}
+// }{% endraw %}{% endset %}
 
-{% set clearCode %}// Drafts are cleared automatically on submit and reset
-form.addEventListener('submit', () => \{
+{% set clearCode %}{% raw %}// Drafts are cleared automatically on submit and reset
+form.addEventListener('submit', () => {
   // autosave data is cleared before the submit handler runs
-\});
+});
 
 // You can also clear manually
-localStorage.removeItem('vb-autosave:contact-form');{% endset %}
+localStorage.removeItem('vb-autosave:contact-form');{% endraw %}{% endset %}
 
-{% set stylingCode %}/* The toast notification uses toast-wc if available */
+{% set stylingCode %}{% raw %}/* The toast notification uses toast-wc if available */
 /* Customize the restore notification via toast-wc styles */
-toast-wc::part(toast) \{
+toast-wc::part(toast) {
   --toast-bg: var(--color-surface-raised);
   --toast-color: var(--color-text);
-\}{% endset %}
+}{% endraw %}{% endset %}
 
 <section>
     <h2>Overview</h2>
@@ -117,7 +117,7 @@ toast-wc::part(toast) \{
     <ol>
       <li>Attaches delegated <code>input</code> and <code>change</code> event listeners on the form</li>
       <li>On every field change, debounces for 500ms then serializes all named fields to a JSON object</li>
-      <li>Saves the object to <code>localStorage</code> with the key <code>vb-autosave:{\u200B<em>key</em>}\u200B</code> and a timestamp</li>
+      <li>Saves the object to <code>localStorage</code> with the key <code>vb-autosave:{<em>key</em>}</code> and a timestamp</li>
       <li>On page load, checks for a non-expired draft (24-hour expiry)</li>
       <li>If a draft exists, restores field values and fires <code>input</code> events so other enhancements update</li>
       <li>Shows a "Draft restored" toast notification via <code>toast-wc</code> if available</li>
@@ -140,7 +140,7 @@ toast-wc::part(toast) \{
         <tr>
           <td><code>data-autosave</code></td>
           <td>string (required)</td>
-          <td>A unique storage key for this form. Used as part of the <code>localStorage</code> key: <code>vb-autosave:{\u200B<em>key</em>}\u200B</code>.</td>
+          <td>A unique storage key for this form. Used as part of the <code>localStorage</code> key: <code>vb-autosave:{<em>key</em>}</code>.</td>
         </tr>
         <tr>
           <td><code>data-autosave-init</code></td>
@@ -167,7 +167,7 @@ toast-wc::part(toast) \{
       <tbody>
         <tr>
           <td>Key format</td>
-          <td><code>vb-autosave:{\u200B<em>key</em>}\u200B</code></td>
+          <td><code>vb-autosave:{<em>key</em>}</code></td>
         </tr>
         <tr>
           <td>Debounce</td>

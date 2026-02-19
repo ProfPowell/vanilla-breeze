@@ -21,7 +21,8 @@
   ],
   "sideEffects": [
     "*.css",
-    "./dist/cdn/vanilla-breeze.js"
+    "./dist/cdn/vanilla-breeze.js",
+    "./src/lib/composer/*.js"
   ],
   "repository": {
     "type": "git",
@@ -29,21 +30,14 @@
   },
   "homepage": "https://profpowell.github.io/vanilla-breeze/",
   "scripts": {
-    "dev": "astro dev",
-    "dev:vite": "vite",
-    "build": "astro build && npm run build:copy-icons && npm run build:copy-src && npm run build:cdn && npm run search:index && npm run search:copy",
-    "build:vite": "vite build && npm run build:copy-icons && npm run build:fix-paths && npm run build:cdn",
-    "build:site": "astro build && npm run build:copy-icons && npm run build:cdn",
+    "dev": "cd 11ty-site && npm run dev",
+    "build": "cd 11ty-site && npm run build:doc-extras && npx @11ty/eleventy && cd .. && npm run build:cdn && npm run search:index",
+    "build:site": "cd 11ty-site && npm run build:doc-extras && npx @11ty/eleventy",
     "build:cdn": "node scripts/build-cdn.js",
     "build:copy-icons": "mkdir -p dist/src && cp -r src/icons dist/src/icons",
-    "build:copy-src": "cp -r src/base src/tokens src/native-elements src/custom-elements src/web-components src/utils src/lib src/charts src/*.css src/*.js dist/src/",
-    "build:fix-paths": "node scripts/fix-paths.js",
-    "search:index": "pagefind --site dist",
-    "search:copy": "cp -r dist/pagefind public/",
-    "search:dev": "pagefind --site . --output-path public/pagefind",
-    "preview": "astro preview",
-    "preview:vite": "vite preview",
-    "lint:html": "html-validate 'docs/**/*.html' 'dist/**/*.html'",
+    "search:index": "pagefind --site 11ty-site/_site",
+    "preview": "cd 11ty-site && npm run preview",
+    "lint:html": "html-validate 'docs/**/*.html'",
     "lint": "npm run lint:html",
     "test": "node --test '.claude/test/**/*.test.js'",
     "health": "node .claude/scripts/health-check.js",
@@ -52,10 +46,8 @@
     "prepublishOnly": "npm run build:cdn"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.6",
-    "@profpowell/browser-window": "github:ProfPowell/browser-window",
-    "@profpowell/code-block": "github:ProfPowell/code-block",
-    "astro": "^5.16.15",
+    "@profpowell/browser-window": "^1.1.0",
+    "@profpowell/code-block": "^2.4.0",
     "html-validate": "^8.24.0",
     "interestfor": "^1.0.7",
     "lucide-static": "^0.562.0",

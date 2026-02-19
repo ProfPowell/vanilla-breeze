@@ -41,30 +41,30 @@ permalink: /docs/attributes/data-strength/
     data-show-password required>
 </form-field>{% endset %}
 
-{% set stylingCode %}/* Meter track */
-[data-strength][data-strength-init] ~ .strength-meter \{
+{% set stylingCode %}{% raw %}/* Meter track */
+[data-strength][data-strength-init] ~ .strength-meter {
   --strength-track-height: 0.375rem;
   --strength-track-bg: var(--color-border);
   --strength-track-radius: var(--radius-pill);
-\}
+}
 
 /* Meter fill — color changes per level */
-.strength-fill[data-level="weak"]   \{ background: var(--color-danger);  width: 25%;  \}
-.strength-fill[data-level="fair"]   \{ background: var(--color-warning); width: 50%;  \}
-.strength-fill[data-level="good"]   \{ background: var(--color-info);    width: 75%;  \}
-.strength-fill[data-level="strong"] \{ background: var(--color-success); width: 100%; \}
+.strength-fill[data-level="weak"]   { background: var(--color-danger);  width: 25%;  }
+.strength-fill[data-level="fair"]   { background: var(--color-warning); width: 50%;  }
+.strength-fill[data-level="good"]   { background: var(--color-info);    width: 75%;  }
+.strength-fill[data-level="strong"] { background: var(--color-success); width: 100%; }
 
 /* Rules checklist */
-.strength-rules \{
+.strength-rules {
   list-style: none;
   padding: 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-\}
+}
 
-.strength-rules li[data-met] \{
+.strength-rules li[data-met] {
   color: var(--color-success);
-\}{% endset %}
+}{% endraw %}{% endset %}
 
 {% set domStructureCode %}<!-- After init, the following structure is generated after the input -->
 <div class="strength-meter" role="meter"
@@ -81,14 +81,14 @@ permalink: /docs/attributes/data-strength/
   <li data-rule="special">One special character</li>
 </ul>{% endset %}
 
-{% set eventCode %}const input = document.querySelector('[data-strength]');
+{% set eventCode %}{% raw %}const input = document.querySelector('[data-strength]');
 
-input.addEventListener('input', () => \{
+input.addEventListener('input', () => {
   const meter = input.parentElement.querySelector('.strength-meter');
   const level = meter.querySelector('.strength-fill').dataset.level;
   const score = meter.getAttribute('aria-valuenow');
   console.log('Level:', level, 'Score:', score + '%');
-\});{% endset %}
+});{% endraw %}{% endset %}
 
 {% set dynamicCode %}// Dynamically added strength inputs are auto-enhanced via MutationObserver
 const input = document.createElement('input');
