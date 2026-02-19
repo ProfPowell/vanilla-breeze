@@ -1,0 +1,208 @@
+---
+layout: layouts/attribute.njk
+title: "tabindex"
+description: "Controls whether and in what order an element can receive keyboard focus. Essential for custom widgets, focus management, and accessible single-page applications."
+attributeName: tabindex
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/tabindex/
+permalink: /docs/attributes/tabindex/
+---
+
+{% set basicExample %}<!-- Make a non-interactive element focusable in normal tab order -->
+<div tabindex="0" role="button" onclick="handleClick()">
+  Custom Button
+</div>
+
+<!-- Focusable programmatically, but NOT via Tab key -->
+<div id="modal-container" tabindex="-1">
+  <p>This panel can receive focus via JavaScript, but the user can't Tab to it.</p>
+</div>{% endset %}
+
+{% set skipLinkExample %}<!-- Skip link: first focusable element on the page -->
+<a href="#main-content" class="visually-hidden">Skip to main content</a>
+
+<!-- ... site header and navigation ... -->
+
+<!-- Target: tabindex="-1" so the skip link can move focus here -->
+<main id="main-content" tabindex="-1">
+  <h1>Page Title</h1>
+  <p>Content starts here.</p>
+</main>{% endset %}
+
+{% set focusAfterActionExample %}{% raw %}<!-- Move focus after a delete action -->
+<ul id="task-list">
+  <li>
+    <span>Task A</span>
+    <button onclick="deleteTask(this)">Delete</button>
+  </li>
+  <li>
+    <span>Task B</span>
+    <button onclick="deleteTask(this)">Delete</button>
+  </li>
+</ul>
+
+<script>
+function deleteTask(button) {
+  const item = button.closest('li');
+  const next = item.nextElementSibling || item.previousElementSibling;
+  item.remove();
+
+  // Move focus to the next item's button, or a fallback
+  if (next) {
+    next.querySelector('button').focus();
+  } else {
+    document.getElementById('task-list').focus();
+  }
+}
+</script>{% endraw %}{% endset %}
+
+{% set customWidgetExample %}<!-- Custom toolbar with roving tabindex -->
+<div role="toolbar" aria-label="Formatting">
+  <button tabindex="0" aria-pressed="false">Bold</button>
+  <button tabindex="-1" aria-pressed="false">Italic</button>
+  <button tabindex="-1" aria-pressed="false">Underline</button>
+</div>{% endset %}
+
+{% set rovingExample %}{% raw %}<div role="toolbar" aria-label="Text formatting">
+  <button tabindex="0">Bold</button>
+  <button tabindex="-1">Italic</button>
+  <button tabindex="-1">Underline</button>
+</div>
+
+<script>
+const toolbar = document.querySelector('[role="toolbar"]');
+const buttons = toolbar.querySelectorAll('button');
+
+toolbar.addEventListener('keydown', (e) => {
+  const current = document.activeElement;
+  let next;
+
+  if (e.key === 'ArrowRight') {
+    next = current.nextElementSibling || buttons[0];
+  } else if (e.key === 'ArrowLeft') {
+    next = current.previousElementSibling || buttons[buttons.length - 1];
+  }
+
+  if (next) {
+    buttons.forEach(b => b.tabIndex = -1);
+    next.tabIndex = 0;
+    next.focus();
+  }
+});
+</script>{% endraw %}{% endset %}
+
+{% set spaExample %}{% raw %}<!-- After a client-side route change, move focus to the new page heading -->
+<main>
+  <h1 id="page-heading" tabindex="-1">Dashboard</h1>
+  <p>Welcome back.</p>
+</main>
+
+<script>
+// After SPA navigation completes:
+function onRouteChange() {
+  const heading = document.getElementById('page-heading');
+  heading.focus();
+}
+</script>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>tabindex</code> attribute controls whether an element can receive keyboard focus and where it sits in the sequential tab order. It is a global attribute — it can be placed on any HTML element.</p>
+<p>Interactive elements like <code>&lt;button&gt;</code>, <code>&lt;a href&gt;</code>, <code>&lt;input&gt;</code>, <code>&lt;select&gt;</code>, and <code>&lt;textarea&gt;</code> are already focusable without <code>tabindex</code>. You only need this attribute when working with non-interactive elements or managing focus programmatically.</p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th><th>When to Use</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>0</code></td>
+      <td>Element is focusable and included in the natural tab order (based on DOM position)</td>
+      <td>Custom interactive widgets built from non-interactive elements</td>
+    </tr>
+    <tr>
+      <td><code>-1</code></td>
+      <td>Element is focusable via JavaScript (<code>element.focus()</code>) but excluded from the tab order</td>
+      <td>Focus management targets: modals, headings after route changes, error summaries</td>
+    </tr>
+    <tr>
+      <td><code>1+</code> (positive)</td>
+      <td>Element is focusable and placed before all <code>tabindex="0"</code> elements in tab order</td>
+      <td><strong>Avoid.</strong> Breaks the natural document order and creates maintenance nightmares.</td>
+    </tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h3>Why Avoid Positive Values</h3>
+<p>Positive <code>tabindex</code> values (1, 2, 3, etc.) force elements to the front of the tab order, regardless of their position in the document. This creates several problems:</p>
+<ul>
+  <li><strong>Unpredictable navigation:</strong> Focus jumps around the page instead of following the visual flow</li>
+  <li><strong>Maintenance burden:</strong> Every new focusable element requires re-numbering to maintain order</li>
+  <li><strong>Conflicts at scale:</strong> Third-party widgets and your own code compete for tab positions</li>
+  <li><strong>Confusing for all users:</strong> Sighted keyboard users and screen reader users alike expect Tab to follow visual order</li>
+</ul>
+<p>Instead of adjusting <code>tabindex</code> values, reorder elements in the DOM to match the desired focus sequence.</p>
+
+<h2>Native Focusability</h2>
+<p>These elements are focusable by default and do not need <code>tabindex</code>:</p>
+<ul>
+  <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a></li>
+  <li><a href="/docs/elements/native/a/"><code>&lt;a href="..."&gt;</code></a> (links with an <code>href</code>)</li>
+  <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></li>
+  <li><code>&lt;details&gt;</code> (via its <code>&lt;summary&gt;</code>)</li>
+  <li>Elements with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></li>
+</ul>
+<p>Adding <code>tabindex="0"</code> to these elements is harmless but redundant. Adding <code>tabindex="-1"</code> to them <em>removes</em> them from the tab order while keeping them programmatically focusable — useful for temporarily disabling keyboard access without using <code>disabled</code>.</p>
+
+<h2>Common Patterns</h2>
+
+<h3>Skip Links</h3>
+<p>A skip link lets keyboard users bypass navigation and jump to the main content. The target needs <code>tabindex="-1"</code> so the skip link can move focus to it.</p>
+
+<code-block language="html" label="Skip link pattern">{{ skipLinkExample | escape }}</code-block>
+
+<h3>Focus After Action</h3>
+<p>When an action removes the currently focused element (deleting a list item, closing a panel), focus must be moved somewhere logical. Use <code>tabindex="-1"</code> on the target and call <code>.focus()</code>.</p>
+
+<code-block language="js" label="Focus management after delete">{{ focusAfterActionExample | escape }}</code-block>
+
+<h3>SPA Route Changes</h3>
+<p>In single-page applications, after a client-side navigation the browser does not move focus. Add <code>tabindex="-1"</code> to the new page heading and focus it after the route change so screen reader users know the page has changed.</p>
+
+<code-block language="html" label="SPA focus management">{{ spaExample | escape }}</code-block>
+
+<h3>Custom Widgets</h3>
+<p>When building custom interactive components from non-interactive elements, <code>tabindex="0"</code> makes the element reachable via Tab. Always pair it with the appropriate ARIA <code>role</code> and keyboard event handlers.</p>
+
+<code-block language="html" label="Custom widget">{{ customWidgetExample | escape }}</code-block>
+
+<h3>Roving Tabindex</h3>
+<p>For composite widgets like toolbars, tab lists, and menus, the roving tabindex pattern allows only one child to be in the tab order at a time. Arrow keys move focus between children.</p>
+
+<code-block language="html" label="Roving tabindex">{{ rovingExample | escape }}</code-block>
+
+<p>This pattern keeps the Tab key for moving <em>between</em> widgets while arrow keys navigate <em>within</em> a widget — matching the behavior users expect from native controls.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Prefer native interactive elements.</strong> A <code>&lt;button&gt;</code> is always better than a <code>&lt;div tabindex="0" role="button"&gt;</code>. Native elements provide keyboard interaction, focus styling, and screen reader announcements for free.</li>
+  <li><strong>If you add <code>tabindex="0"</code>, add a role.</strong> Screen readers need an ARIA role to announce what the element is. A focusable <code>&lt;div&gt;</code> without a role is announced as "group" — meaningless to users.</li>
+  <li><strong>If you add <code>tabindex="0"</code>, add keyboard handlers.</strong> Focusable elements must respond to <kbd>Enter</kbd> and (for buttons) <kbd>Space</kbd>. Click handlers alone are not enough.</li>
+  <li><strong>Manage focus intentionally.</strong> When content changes (modals open, items are deleted, routes change), always move focus to a logical location.</li>
+  <li><strong>Visible focus styles are required.</strong> VB provides default <code>:focus-visible</code> outlines. Never remove them without providing an alternative.</li>
+  <li><strong>Test with keyboard only.</strong> Put the mouse away and Tab through the page. If you can't reach or operate every interactive element, something is missing.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> — remove elements from rendering and focus order entirely</li>
+    <li><a href="/docs/accessibility/">Accessibility Guide</a> — overview of VB's accessibility patterns</li>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> — overlay content with built-in focus management</li>
+    <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> — the preferred element for interactive controls</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — modal dialogs with automatic focus trapping</li>
+  </ul>
+</section>

@@ -1,0 +1,182 @@
+---
+layout: layouts/attribute.njk
+title: "lang"
+description: "Declare the language of content. Screen readers use it to switch pronunciation, and browsers use it for hyphenation, spell-checking, and font selection."
+attributeName: lang
+attributeType: native
+nativeGroup: Accessibility
+category: native
+currentPath: /docs/attributes/lang/
+permalink: /docs/attributes/lang/
+---
+
+{% set basicExample %}<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>My Page</title>
+  </head>
+  <body>
+    <p>This page is declared as English.</p>
+  </body>
+</html>{% endset %}
+
+{% set inlineExample %}<p>The French word <span lang="fr">bonjour</span> means "hello".</p>
+
+<p>In Japanese, thank you is <span lang="ja">ありがとう</span>.</p>
+
+<blockquote lang="de">
+  <p>Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.</p>
+  <footer>— Ludwig Wittgenstein</footer>
+</blockquote>{% endset %}
+
+{% set codeExample %}<!-- Code should not be read as natural language -->
+<pre><code lang="">const greeting = "Hello, world!";</code></pre>
+
+<!-- Or use translate="no" alongside lang -->
+<p>Run <code lang="" translate="no">npm install</code> to install dependencies.</p>{% endset %}
+
+{% set hyphenationExample %}{% raw %}<style>
+  .hyphenated {
+    hyphens: auto;
+    max-width: 20ch;
+  }
+</style>{% endraw %}
+
+<!-- hyphens: auto requires the correct lang to know where to break -->
+<p lang="en" class="hyphenated">
+  This paragraph demonstrates automatic hyphenation.
+</p>
+
+<p lang="de" class="hyphenated">
+  Donaudampfschifffahrtsgesellschaftskapitän
+</p>{% endset %}
+
+{% set cssLangExample %}{% raw %}<style>
+  /* Style quotes differently by language */
+  :lang(en) > q { quotes: "\201C" "\201D" "\2018" "\2019"; }
+  :lang(fr) > q { quotes: "\00AB\00A0" "\00A0\00BB"; }
+  :lang(de) > q { quotes: "\201E" "\201C"; }
+
+  /* Different font for CJK languages */
+  :lang(ja), :lang(zh), :lang(ko) {
+    font-family: "Noto Sans CJK", sans-serif;
+  }
+
+  /* Increase line height for scripts that need more vertical space */
+  :lang(ar), :lang(hi), :lang(th) {
+    line-height: 1.8;
+  }
+</style>{% endraw %}{% endset %}
+
+{% set quotesExample %}<p lang="en">She said, <q>Hello!</q></p>
+<p lang="fr">Elle a dit, <q lang="fr">Bonjour!</q></p>
+<p lang="de">Sie sagte, <q lang="de">Hallo!</q></p>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>lang</code> attribute declares the language of an element's content. It is one of the most impactful accessibility attributes — screen readers use it to switch pronunciation engines, and browsers use it for hyphenation, spell-checking, quote marks, and font selection.</p>
+<p>Set <code>lang</code> on the <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> element for the page's primary language, and on inline elements when the language changes mid-content.</p>
+
+<h2>Language Codes</h2>
+<p>The value is a <a href="https://en.wikipedia.org/wiki/IETF_language_tag">BCP 47 language tag</a>. The most common codes:</p>
+
+<table>
+  <thead><tr><th>Code</th><th>Language</th></tr></thead>
+  <tbody>
+    <tr><td><code>en</code></td><td>English</td></tr>
+    <tr><td><code>es</code></td><td>Spanish</td></tr>
+    <tr><td><code>fr</code></td><td>French</td></tr>
+    <tr><td><code>de</code></td><td>German</td></tr>
+    <tr><td><code>ja</code></td><td>Japanese</td></tr>
+    <tr><td><code>zh</code></td><td>Chinese</td></tr>
+    <tr><td><code>ar</code></td><td>Arabic</td></tr>
+    <tr><td><code>hi</code></td><td>Hindi</td></tr>
+    <tr><td><code>ko</code></td><td>Korean</td></tr>
+    <tr><td><code>pt</code></td><td>Portuguese</td></tr>
+    <tr><td><code>ru</code></td><td>Russian</td></tr>
+    <tr><td><code>it</code></td><td>Italian</td></tr>
+  </tbody>
+</table>
+
+<h3>Regional Variants</h3>
+<p>Add a region subtag to distinguish dialects. The browser inherits the base language, so <code>en-GB</code> still matches <code>:lang(en)</code> in CSS.</p>
+
+<table>
+  <thead><tr><th>Code</th><th>Variant</th></tr></thead>
+  <tbody>
+    <tr><td><code>en-US</code></td><td>American English</td></tr>
+    <tr><td><code>en-GB</code></td><td>British English</td></tr>
+    <tr><td><code>pt-BR</code></td><td>Brazilian Portuguese</td></tr>
+    <tr><td><code>pt-PT</code></td><td>European Portuguese</td></tr>
+    <tr><td><code>zh-Hans</code></td><td>Simplified Chinese</td></tr>
+    <tr><td><code>zh-Hant</code></td><td>Traditional Chinese</td></tr>
+    <tr><td><code>es-MX</code></td><td>Mexican Spanish</td></tr>
+    <tr><td><code>fr-CA</code></td><td>Canadian French</td></tr>
+  </tbody>
+</table>
+
+<h2>Page Language</h2>
+<p>Every page should declare its primary language on the <code>&lt;html&gt;</code> element. This is the single most important use of <code>lang</code>.</p>
+
+<code-block language="html" label="Page language">{{ basicExample | escape }}</code-block>
+
+<h2>Inline Language Switches</h2>
+<p>When content in a different language appears inside the page, wrap it in an element with the appropriate <code>lang</code>. This tells screen readers to switch pronunciation — without it, a screen reader using English rules will mangle French, Japanese, or any other language.</p>
+
+<code-block language="html" label="Inline language switches">{{ inlineExample | escape }}</code-block>
+
+<div class="example">
+  <p>The French word <span lang="fr">bonjour</span> means "hello".</p>
+  <p>In Japanese, thank you is <span lang="ja">ありがとう</span>.</p>
+  <blockquote lang="de">
+    <p>Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.</p>
+    <footer>— Ludwig Wittgenstein</footer>
+  </blockquote>
+</div>
+
+<h2>Effects of lang</h2>
+<p>Setting the correct <code>lang</code> value affects more than you might expect:</p>
+
+<h3>Hyphenation</h3>
+<p>The CSS <code>hyphens: auto</code> property requires a correct <code>lang</code> attribute to know where words can be broken. Without it, automatic hyphenation will not work.</p>
+
+<code-block language="html" label="Hyphenation">{{ hyphenationExample | escape }}</code-block>
+
+<h3>Screen Reader Pronunciation</h3>
+<p>Screen readers maintain pronunciation dictionaries for each language. When <code>lang</code> changes, the screen reader switches to the appropriate voice and pronunciation rules. Without this, "bonjour" would be read with English phonetics.</p>
+
+<h3>Spell-Checking</h3>
+<p>Browsers use <code>lang</code> to select the correct spell-check dictionary. A <code>&lt;textarea lang="fr"&gt;</code> will check spelling against French, not the page's default language.</p>
+
+<h3>Font Selection</h3>
+<p>When the primary font lacks glyphs for a language's characters, the browser uses <code>lang</code> to select the best fallback. This is especially important for CJK (Chinese, Japanese, Korean) text, where the same Unicode codepoint can render differently depending on language.</p>
+
+<h3>Quote Marks</h3>
+<p>The <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> element generates language-appropriate quotation marks based on the inherited <code>lang</code> value.</p>
+
+<code-block language="html" label="Language-aware quotes">{{ quotesExample | escape }}</code-block>
+
+<div class="example">
+  <p lang="en">She said, <q>Hello!</q></p>
+  <p lang="fr">Elle a dit, <q lang="fr">Bonjour!</q></p>
+  <p lang="de">Sie sagte, <q lang="de">Hallo!</q></p>
+</div>
+
+<h2>CSS :lang() Pseudo-Class</h2>
+<p>The <code>:lang()</code> pseudo-class matches elements by their computed language, including inherited values. It is more reliable than <code>[lang="..."]</code> attribute selectors because it accounts for inheritance.</p>
+
+<code-block language="css" label="Language-specific styles">{{ cssLangExample | escape }}</code-block>
+
+<h2>Code and Non-Language Content</h2>
+<p>Programming code is not natural language. Setting <code>lang=""</code> (empty string) signals that the content has no linguistic meaning, preventing screen readers from attempting to pronounce variable names as words.</p>
+
+<code-block language="html" label="Code with no language">{{ codeExample | escape }}</code-block>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction for RTL languages</li>
+    <li><a href="/docs/attributes/translate/"><code>translate</code></a> — control whether content should be translated</li>
+    <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> — where to set the page language</li>
+    <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> — inline quotations with language-aware quote marks</li>
+  </ul>
+</section>

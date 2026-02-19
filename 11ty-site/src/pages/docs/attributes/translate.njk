@@ -1,0 +1,132 @@
+---
+layout: layouts/attribute.njk
+title: "translate"
+description: "Tell translation tools whether content should be translated. Use translate='no' for brand names, code snippets, and technical terms."
+attributeName: translate
+attributeType: native
+nativeGroup: Accessibility
+category: native
+currentPath: /docs/attributes/translate/
+permalink: /docs/attributes/translate/
+---
+
+{% set basicExample %}<!-- Brand names should not be translated -->
+<p>Built with <span translate="no">Vanilla Breeze</span>.</p>
+
+<!-- Code should not be translated -->
+<p>Run <code translate="no">npm install vanilla-breeze</code> to get started.</p>
+
+<!-- Regular prose is translatable by default (no attribute needed) -->
+<p>This paragraph will be translated normally.</p>{% endset %}
+
+{% set codeDocExample %}<article>
+  <h2>Getting Started</h2>
+  <p>Install the package using your preferred package manager:</p>
+
+  <pre><code translate="no">npm install vanilla-breeze</code></pre>
+
+  <p>Then import the stylesheet in your HTML:</p>
+
+  <pre><code translate="no">&lt;link rel="stylesheet" href="vanilla-breeze.css" /&gt;</code></pre>
+
+  <p>The framework provides native element styling out of the box.</p>
+</article>{% endset %}
+
+{% set brandExample %}<header>
+  <h1><span translate="no">Vanilla Breeze</span> Documentation</h1>
+  <p>A lightweight CSS framework built on native HTML.</p>
+</header>
+
+<footer>
+  <p>Powered by <span translate="no">Vanilla Breeze</span>.
+    Hosted on <span translate="no">GitHub Pages</span>.
+    Built with <span translate="no">Eleventy</span>.</p>
+</footer>{% endset %}
+
+{% set formExample %}<form>
+  <label for="name">Name</label>
+  <input type="text" id="name" />
+
+  <label for="api-key">API Key</label>
+  <input type="text" id="api-key" translate="no" />
+
+  <label for="endpoint">Endpoint</label>
+  <input type="url" id="endpoint" translate="no"
+    value="https://api.example.com/v1/users" />
+
+  <button type="submit">Save Settings</button>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>translate</code> attribute tells translation tools — Google Translate, browser auto-translate, and machine translation APIs — whether an element's content should be translated. By default, all content is translatable. Set <code>translate="no"</code> on content that should remain in its original language.</p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>yes</code></td><td>Content should be translated (the default). No attribute needed.</td></tr>
+    <tr><td><code>no</code></td><td>Content should not be translated. Inherited by child elements.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>When to Use translate="no"</h2>
+<p>Mark content as non-translatable when translation would break meaning or functionality:</p>
+<ul>
+  <li><strong>Brand names:</strong> Vanilla Breeze, GitHub, Eleventy</li>
+  <li><strong>Code snippets:</strong> <code>npm install</code>, <code>&lt;div class="example"&gt;</code></li>
+  <li><strong>Technical terms:</strong> API endpoints, CSS property names, HTML attribute names</li>
+  <li><strong>Proper nouns:</strong> personal names, place names that should not be localized</li>
+  <li><strong>Identifiers:</strong> API keys, order numbers, serial numbers</li>
+  <li><strong>Command-line instructions:</strong> terminal commands, file paths</li>
+  <li><strong>Programming keywords:</strong> <code>function</code>, <code>return</code>, <code>const</code></li>
+</ul>
+
+<h2>When to Keep the Default</h2>
+<p>Regular content is translatable by default — you do not need to add <code>translate="yes"</code>. Leave the attribute off for:</p>
+<ul>
+  <li>Regular prose and paragraphs</li>
+  <li>UI labels and button text</li>
+  <li>Error messages and help text</li>
+  <li>Navigation links</li>
+  <li>Headings and descriptions</li>
+</ul>
+
+<h2>Code Documentation</h2>
+<p>Technical documentation frequently mixes translatable prose with non-translatable code. Use <code>translate="no"</code> on code blocks to protect them.</p>
+
+<code-block language="html" label="Code in documentation">{{ codeDocExample | escape }}</code-block>
+
+<h3>The code Element</h3>
+<p>Many translation tools already treat <code>&lt;code&gt;</code> content as non-translatable, but this is a heuristic, not a guarantee. Adding <code>translate="no"</code> is the explicit, standards-based declaration.</p>
+
+<h2>Brand Names</h2>
+<p>Wrap brand names in <code>&lt;span translate="no"&gt;</code> so they survive translation intact. This is especially important when brand names contain common words that a translator might convert.</p>
+
+<code-block language="html" label="Brand names">{{ brandExample | escape }}</code-block>
+
+<h2>Forms with Mixed Content</h2>
+<p>Form labels should be translated, but values like API keys and endpoints should not.</p>
+
+<code-block language="html" label="Form with mixed content">{{ formExample | escape }}</code-block>
+
+<h2>Legacy: class="notranslate"</h2>
+<p>Before the <code>translate</code> attribute was standardized, the convention was <code>class="notranslate"</code> — a class recognized by Google Translate. The <code>translate="no"</code> attribute is the standard approach and is supported by all modern browsers and translation tools. There is no need to use both.</p>
+
+<table>
+  <thead><tr><th>Approach</th><th>Standard</th><th>Google Translate</th><th>Browser Translate</th></tr></thead>
+  <tbody>
+    <tr><td><code>translate="no"</code></td><td>Yes (HTML spec)</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td><code>class="notranslate"</code></td><td>No (convention)</td><td>Yes</td><td>Varies</td></tr>
+  </tbody>
+</table>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction for RTL languages</li>
+  </ul>
+</section>

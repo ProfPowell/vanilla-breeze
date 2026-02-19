@@ -1,0 +1,355 @@
+---
+layout: layouts/attribute.njk
+title: "pattern"
+description: "Native form validation attributes that reduce JavaScript. Covers pattern, min/max/step, minlength/maxlength, required, validation pseudo-classes, and form association."
+attributeName: pattern
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/pattern/
+permalink: /docs/attributes/pattern/
+---
+
+{% set patternBasic %}<form class="stacked">
+  <label for="zip">ZIP Code</label>
+  <input type="text" id="zip"
+    pattern="[0-9]{5}"
+    title="Five-digit ZIP code"
+    required />
+
+  <label for="phone">Phone Number</label>
+  <input type="tel" id="phone"
+    pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+    title="Format: 123-456-7890"
+    placeholder="123-456-7890" />
+
+  <label for="username">Username</label>
+  <input type="text" id="username"
+    pattern="[a-zA-Z][a-zA-Z0-9_-]{2,15}"
+    title="3-16 characters, starting with a letter. Letters, numbers, hyphens, and underscores only."
+    required />
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set minMaxExample %}<form class="stacked">
+  <label for="qty">Quantity (1-10)</label>
+  <input type="number" id="qty" min="1" max="10" step="1" value="1" />
+
+  <label for="price">Price (increments of 0.01)</label>
+  <input type="number" id="price" min="0" max="9999.99" step="0.01" />
+
+  <label for="volume">Volume</label>
+  <input type="range" id="volume" min="0" max="100" step="5" value="50" />
+
+  <label for="appt">Appointment Date</label>
+  <input type="date" id="appt" min="2025-01-01" max="2025-12-31" />
+
+  <label for="meeting">Meeting Time</label>
+  <input type="time" id="meeting" min="09:00" max="17:00" step="900" />
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set lengthExample %}<form class="stacked">
+  <label for="tweet">Short Message (max 280 characters)</label>
+  <textarea id="tweet" maxlength="280" rows="3"></textarea>
+
+  <label for="pw">Password (8-64 characters)</label>
+  <input type="password" id="pw" minlength="8" maxlength="64" required />
+
+  <label for="code">Invite Code (exactly 6 characters)</label>
+  <input type="text" id="code" minlength="6" maxlength="6" required />
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set countExample %}<form-field>
+  <label for="bio">Bio</label>
+  <textarea id="bio" maxlength="200" data-count rows="3"></textarea>
+</form-field>{% endset %}
+
+{% set requiredExample %}<form class="stacked">
+  <label for="email">Email <span aria-hidden="true">*</span></label>
+  <input type="email" id="email" required />
+
+  <label for="name">Full Name <span aria-hidden="true">*</span></label>
+  <input type="text" id="name" required />
+
+  <label for="notes">Notes (optional)</label>
+  <textarea id="notes" rows="3"></textarea>
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set pseudoClassExample %}/* Turns green border when valid */
+input:valid {
+  border-color: var(--color-success);
+}
+
+/* Turns red border when invalid */
+input:invalid {
+  border-color: var(--color-danger);
+}
+
+/* Only shows invalid styles AFTER user interaction */
+input:user-invalid {
+  border-color: var(--color-danger);
+  outline-color: var(--color-danger);
+}
+
+/* Style the submit button when the entire form is valid */
+form:valid button[type="submit"] {
+  opacity: 1;
+}
+
+form:invalid button[type="submit"] {
+  opacity: 0.5;
+}{% endset %}
+
+{% set formAttrExample %}<!-- Input associated with a form elsewhere on the page -->
+<form id="search-form" action="/search" method="get">
+  <label for="q">Search</label>
+  <input type="search" id="q" name="q" />
+</form>
+
+<!-- This button is outside the form but submits it -->
+<button type="submit" form="search-form">Search</button>
+
+<!-- This input is outside the form but belongs to it -->
+<input type="hidden" name="source" value="header" form="search-form" />{% endset %}
+
+{% set formactionExample %}<form action="/save" method="post" class="stacked">
+  <label for="doc">Document</label>
+  <textarea id="doc" name="content" rows="4"></textarea>
+
+  <!-- Default action: /save -->
+  <footer class="actions end">
+    <button type="submit">Save</button>
+
+    <!-- Override: submit to /save-draft instead -->
+    <button type="submit" formaction="/save-draft">Save as Draft</button>
+
+    <!-- Override: submit to /preview with GET -->
+    <button type="submit" formaction="/preview" formmethod="get">Preview</button>
+  </footer>
+</form>{% endset %}
+
+{% set combinedExample %}<form class="stacked">
+  <label for="reg-user">Username</label>
+  <input type="text" id="reg-user"
+    pattern="[a-zA-Z][a-zA-Z0-9_]{2,19}"
+    title="3-20 characters, starting with a letter"
+    minlength="3"
+    maxlength="20"
+    required />
+
+  <label for="reg-email">Email</label>
+  <input type="email" id="reg-email" required />
+
+  <label for="reg-pw">Password</label>
+  <input type="password" id="reg-pw"
+    minlength="8"
+    maxlength="128"
+    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}"
+    title="At least 8 characters with one uppercase letter, one lowercase letter, and one number"
+    required />
+
+  <label for="reg-age">Age</label>
+  <input type="number" id="reg-age" min="13" max="150" required />
+
+  <button type="submit">Create Account</button>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>HTML provides a family of attributes for client-side form validation that work without any JavaScript. The browser checks these constraints on submit and shows native error messages when values do not match.</p>
+<ul>
+  <li><strong><code>pattern</code></strong> validates against a regular expression</li>
+  <li><strong><code>min</code>, <code>max</code>, <code>step</code></strong> constrain numeric and date values</li>
+  <li><strong><code>minlength</code>, <code>maxlength</code></strong> constrain text length</li>
+  <li><strong><code>required</code></strong> prevents empty submissions</li>
+</ul>
+<p>These attributes complement each other. Use them together for robust validation that works even when JavaScript fails.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+
+<h2>pattern</h2>
+<p>The <code>pattern</code> attribute specifies a regular expression that the input value must match for the form to submit. The regex is matched against the entire value (anchored with implicit <code>^</code> and <code>$</code>), so you do not need to add anchors.</p>
+<p>Always pair <code>pattern</code> with a <code>title</code> attribute that describes the expected format in plain language. The browser includes the title text in the validation error tooltip.</p>
+
+<table>
+  <thead><tr><th>Pattern</th><th>Purpose</th><th>Title text</th></tr></thead>
+  <tbody>
+    <tr><td><code>[0-9]{5}</code></td><td>US ZIP code</td><td>"Five-digit ZIP code"</td></tr>
+    <tr><td><code>[0-9]{5}(-[0-9]{4})?</code></td><td>ZIP+4</td><td>"ZIP code (12345 or 12345-6789)"</td></tr>
+    <tr><td><code>[0-9]{3}-[0-9]{3}-[0-9]{4}</code></td><td>US phone</td><td>"Format: 123-456-7890"</td></tr>
+    <tr><td><code>[a-zA-Z][a-zA-Z0-9_-]{2,15}</code></td><td>Username</td><td>"3-16 characters, starts with a letter"</td></tr>
+    <tr><td><code>[A-Z]{2}[0-9]{6}</code></td><td>Document ID</td><td>"Two uppercase letters followed by six digits"</td></tr>
+    <tr><td><code>#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})</code></td><td>Hex color</td><td>"Hex color (e.g., #ff0 or #ff0000)"</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Pattern validation">{{ patternBasic | escape }}</code-block>
+
+<div class="example">
+  <form class="stacked">
+    <label for="demo-zip">ZIP Code</label>
+    <input type="text" id="demo-zip"
+      pattern="[0-9]{5}"
+      title="Five-digit ZIP code"
+      placeholder="e.g., 90210"
+      required />
+    <label for="demo-username">Username</label>
+    <input type="text" id="demo-username"
+      pattern="[a-zA-Z][a-zA-Z0-9_-]{2,15}"
+      title="3-16 characters, starting with a letter"
+      placeholder="e.g., jan_doe"
+      required />
+    <button type="submit">Validate</button>
+  </form>
+  <p><small>Try submitting with invalid values to see native validation messages.</small></p>
+</div>
+
+<h3>Pattern Tips</h3>
+<ul>
+  <li>The pattern is implicitly anchored: <code>[0-9]{5}</code> means <code>^[0-9]{5}$</code>.</li>
+  <li>Patterns are only checked when the field has a value. An empty optional field with a pattern is valid. Add <code>required</code> if the field must be filled.</li>
+  <li><code>pattern</code> works on <code>text</code>, <code>tel</code>, <code>email</code>, <code>url</code>, <code>password</code>, and <code>search</code> input types. It does not apply to <code>number</code>, <code>date</code>, or <code>range</code> types.</li>
+</ul>
+
+<h2>min, max, step</h2>
+<p>These attributes constrain numeric, date, time, and range inputs. The browser rejects values outside the range or misaligned with the step.</p>
+
+<table>
+  <thead><tr><th>Attribute</th><th>Purpose</th><th>Applies to</th></tr></thead>
+  <tbody>
+    <tr><td><code>min</code></td><td>Minimum allowed value</td><td><code>number</code>, <code>range</code>, <code>date</code>, <code>time</code>, <code>datetime-local</code>, <code>month</code>, <code>week</code></td></tr>
+    <tr><td><code>max</code></td><td>Maximum allowed value</td><td>Same as min</td></tr>
+    <tr><td><code>step</code></td><td>Legal increment from the min value</td><td>Same as min</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Numeric and date constraints">{{ minMaxExample | escape }}</code-block>
+
+<div class="example">
+  <form class="stacked">
+    <label for="demo-qty">Quantity (1-10, whole numbers)</label>
+    <input type="number" id="demo-qty" min="1" max="10" step="1" value="1" />
+    <label for="demo-range">Volume (steps of 5)</label>
+    <input type="range" id="demo-range" min="0" max="100" step="5" value="50" />
+    <button type="submit">Validate</button>
+  </form>
+</div>
+
+<h3>Step Mismatch</h3>
+<p>If a value does not align with the step, the browser shows a "step mismatch" error on submit. For example, with <code>min="0" step="5"</code>, the value <code>3</code> is invalid because it is not a multiple of 5 from the minimum. Use <code>step="any"</code> to accept any value within the min/max range.</p>
+
+<h2>minlength and maxlength</h2>
+<p>These attributes constrain the number of characters in text inputs and textareas.</p>
+
+<table>
+  <thead><tr><th>Attribute</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>maxlength</code></td><td>Prevents typing beyond the limit. The browser silently stops accepting characters.</td></tr>
+    <tr><td><code>minlength</code></td><td>Validates on submit. The browser shows an error if the value is too short.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+
+<code-block language="html" label="Character limits">{{ lengthExample | escape }}</code-block>
+
+<h3>Visible Character Counter</h3>
+<p>The VB <a href="/docs/attributes/data-count/"><code>data-count</code></a> attribute adds a visible "X / Y" character counter when used alongside <code>maxlength</code>. No JavaScript setup required.</p>
+
+<code-block language="html" label="Character counter with data-count">{{ countExample | escape }}</code-block>
+
+<h2>required</h2>
+<p>The <code>required</code> attribute prevents form submission when a field is empty. It is part of the same constraint validation system as <code>pattern</code> and <code>min</code>/<code>max</code>.</p>
+
+<code-block language="html" label="Required fields">{{ requiredExample | escape }}</code-block>
+
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+<p>For checkboxes, <code>required</code> means the checkbox must be checked. For radio buttons, at least one radio in the group must be selected. For <code>&lt;select&gt;</code>, the first option must have an empty value (<code>value=""</code>) to serve as the placeholder.</p>
+
+<h2>Validation Pseudo-Classes</h2>
+<p>CSS pseudo-classes let you style fields based on their validation state. No JavaScript needed.</p>
+
+<table>
+  <thead><tr><th>Pseudo-class</th><th>Matches when</th></tr></thead>
+  <tbody>
+    <tr><td><code>:valid</code></td><td>The field's value satisfies all constraints</td></tr>
+    <tr><td><code>:invalid</code></td><td>The field's value violates a constraint</td></tr>
+    <tr><td><code>:user-valid</code></td><td>Valid, and the user has interacted with the field</td></tr>
+    <tr><td><code>:user-invalid</code></td><td>Invalid, and the user has interacted with the field</td></tr>
+    <tr><td><code>:required</code></td><td>The field has the <code>required</code> attribute</td></tr>
+    <tr><td><code>:optional</code></td><td>The field does not have <code>required</code></td></tr>
+    <tr><td><code>:in-range</code></td><td>The value is within <code>min</code>/<code>max</code> bounds</td></tr>
+    <tr><td><code>:out-of-range</code></td><td>The value is outside <code>min</code>/<code>max</code> bounds</td></tr>
+  </tbody>
+</table>
+
+<code-block language="css" label="Validation styling">{{ pseudoClassExample | escape }}</code-block>
+
+<h3>Prefer :user-invalid Over :invalid</h3>
+<p>The <code>:invalid</code> pseudo-class applies immediately on page load, which means required fields show error styles before the user has done anything. Use <code>:user-invalid</code> instead to only show error styles after the user has interacted with the field (typed, blurred, or submitted). This provides a much better user experience.</p>
+
+<h2>form and formaction</h2>
+<p>Two association attributes let you break out of normal form boundaries.</p>
+
+<h3>The form Attribute</h3>
+<p>The <code>form</code> attribute associates a control with a <code>&lt;form&gt;</code> element elsewhere on the page by referencing its <code>id</code>. The control does not need to be a descendant of the form.</p>
+
+<code-block language="html" label="Associate controls with a remote form">{{ formAttrExample | escape }}</code-block>
+
+<h3>The formaction Attribute</h3>
+<p>The <code>formaction</code> attribute on a submit button overrides the form's <code>action</code> URL for that specific submission. Similarly, <code>formmethod</code>, <code>formenctype</code>, and <code>formnovalidate</code> override their counterparts on the form element.</p>
+
+<table>
+  <thead><tr><th>Button attribute</th><th>Overrides</th></tr></thead>
+  <tbody>
+    <tr><td><code>formaction</code></td><td>The form's <code>action</code> URL</td></tr>
+    <tr><td><code>formmethod</code></td><td>The form's <code>method</code> (GET/POST)</td></tr>
+    <tr><td><code>formenctype</code></td><td>The form's <code>enctype</code></td></tr>
+    <tr><td><code>formnovalidate</code></td><td>Skips constraint validation for this submission</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Override form action per button">{{ formactionExample | escape }}</code-block>
+
+<h2>Combining Constraints</h2>
+<p>Validation attributes work together. A single input can use <code>required</code>, <code>pattern</code>, <code>minlength</code>, and <code>maxlength</code> simultaneously. The browser checks all constraints and reports the first failure.</p>
+
+<code-block language="html" label="Multiple constraints on a registration form">{{ combinedExample | escape }}</code-block>
+
+<div class="example">
+  <form class="stacked">
+    <label for="demo-reg-user">Username</label>
+    <input type="text" id="demo-reg-user"
+      pattern="[a-zA-Z][a-zA-Z0-9_]{2,19}"
+      title="3-20 characters, starting with a letter"
+      minlength="3"
+      maxlength="20"
+      required />
+    <label for="demo-reg-pw">Password</label>
+    <input type="password" id="demo-reg-pw"
+      minlength="8"
+      maxlength="128"
+      required />
+    <label for="demo-reg-age">Age</label>
+    <input type="number" id="demo-reg-age" min="13" max="150" required />
+    <button type="submit">Create Account</button>
+  </form>
+  <p><small>Try submitting to see how multiple constraints are validated together.</small></p>
+</div>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> for browser autofill hints</li>
+    <li><a href="/docs/attributes/data-count/"><code>data-count</code></a> for visible character counters</li>
+    <li><a href="/docs/attributes/data-mask/"><code>data-mask</code></a> for input masking</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a> element reference</li>
+  </ul>
+</section>

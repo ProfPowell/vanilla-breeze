@@ -1,0 +1,157 @@
+---
+layout: layouts/attribute.njk
+title: "inputmode"
+description: "Controls which virtual keyboard appears on mobile devices. Critical for fields where the input type doesn't match the keyboard you need."
+attributeName: inputmode
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/inputmode/
+permalink: /docs/attributes/inputmode/
+---
+
+{% set pinExample %}<label for="pin">PIN code</label>
+<input type="text" id="pin"
+  inputmode="numeric"
+  pattern="[0-9]{4}"
+  maxlength="4"
+  autocomplete="off" />{% endset %}
+
+{% set priceExample %}<label for="price">Price</label>
+<input type="text" id="price"
+  inputmode="decimal"
+  pattern="[0-9]*\.?[0-9]{0,2}"
+  placeholder="0.00" />{% endset %}
+
+{% set searchExample %}<label for="site-search">Search</label>
+<input type="search" id="site-search"
+  inputmode="search"
+  placeholder="Search articles..." />{% endset %}
+
+{% set zipExample %}<label for="zip">ZIP code</label>
+<input type="text" id="zip"
+  inputmode="numeric"
+  pattern="[0-9]{5}"
+  maxlength="5"
+  autocomplete="postal-code" />{% endset %}
+
+{% set phoneExample %}<label for="phone">Phone number</label>
+<input type="tel" id="phone"
+  inputmode="tel"
+  autocomplete="tel" />{% endset %}
+
+{% set contenteditableExample %}<div contenteditable="true" inputmode="numeric">
+  Tap to enter a number...
+</div>{% endset %}
+
+{% set combinedExample %}<!-- PIN: numeric keyboard, no spinner arrows, no validation quirks -->
+<input type="text" inputmode="numeric" pattern="[0-9]*" />
+
+<!-- Price: decimal keyboard with period key -->
+<input type="text" inputmode="decimal" />
+
+<!-- Quantity: use type="number" when you WANT the number behavior -->
+<input type="number" min="1" max="99" />{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>inputmode</code> attribute controls which virtual keyboard appears on mobile devices. It is essential for fields where the <code>type</code> attribute doesn't match the keyboard you want.</p>
+<p>The key distinction: <code>type</code> controls <em>validation and behavior</em> (spinners, step arrows, format enforcement), while <code>inputmode</code> controls <em>only the keyboard</em>. You can combine them independently.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Keyboard</th><th>Use When</th></tr></thead>
+  <tbody>
+    <tr><td><code>text</code></td><td>Standard text keyboard</td><td>Default. General text input.</td></tr>
+    <tr><td><code>numeric</code></td><td>Number keys only (0-9)</td><td>PINs, ZIP codes, OTPs, credit card numbers — numeric data that isn't a "number" you'd increment.</td></tr>
+    <tr><td><code>decimal</code></td><td>Numbers with a decimal point key</td><td>Prices, measurements, percentages — numbers that may contain a decimal.</td></tr>
+    <tr><td><code>tel</code></td><td>Telephone keypad (0-9, *, #, +)</td><td>Phone numbers. Similar to <code>numeric</code> but includes phone-specific characters.</td></tr>
+    <tr><td><code>email</code></td><td>Text keyboard with <code>@</code> and <code>.</code> easily accessible</td><td>Email addresses. Usually paired with <code>type="email"</code>.</td></tr>
+    <tr><td><code>url</code></td><td>Text keyboard with <code>/</code> and <code>.</code> easily accessible</td><td>URLs. Usually paired with <code>type="url"</code>.</td></tr>
+    <tr><td><code>search</code></td><td>Text keyboard with a search/submit key</td><td>Search fields. Pairs well with <code>type="search"</code>.</td></tr>
+    <tr><td><code>none</code></td><td>No virtual keyboard</td><td>Custom input UIs (datepickers, color pickers) where you provide your own input mechanism.</td></tr>
+  </tbody>
+</table>
+
+<h2>inputmode vs type</h2>
+<p>This is the most important concept to understand. Consider a PIN field:</p>
+<ul>
+  <li><code>type="number"</code> gives you a numeric keyboard but also adds spinner arrows, allows scientific notation (<code>1e5</code>), and strips leading zeros.</li>
+  <li><code>type="text" inputmode="numeric"</code> gives you the same numeric keyboard with none of those side effects.</li>
+</ul>
+<p>Use <code>type="number"</code> when the value is a <em>quantity</em> that can be incremented (age, item count). Use <code>type="text" inputmode="numeric"</code> when the value is a <em>code</em> or <em>identifier</em> that happens to be digits (PIN, ZIP, credit card number).</p>
+
+<code-block language="html" label="type vs inputmode">{{ combinedExample | escape }}</code-block>
+
+<h2>Practical Examples</h2>
+
+<h3>PIN Entry</h3>
+<p>A 4-digit PIN needs a numeric keyboard but should preserve leading zeros and avoid spinner arrows.</p>
+
+<code-block language="html" label="PIN input">{{ pinExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-pin">PIN code</label>
+  <input type="text" id="demo-pin"
+    inputmode="numeric"
+    pattern="[0-9]{4}"
+    maxlength="4"
+    autocomplete="off"
+    placeholder="0000" />
+</div>
+
+<h3>Price Input</h3>
+<p>Prices need a decimal point but shouldn't have spinner arrows or allow scientific notation.</p>
+
+<code-block language="html" label="Price input">{{ priceExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-price">Price</label>
+  <input type="text" id="demo-price"
+    inputmode="decimal"
+    pattern="[0-9]*\.?[0-9]{0,2}"
+    placeholder="0.00" />
+</div>
+
+<h3>ZIP Code</h3>
+<p>US ZIP codes are five digits. Leading zeros matter (<code>01234</code>), so <code>type="number"</code> would break them.</p>
+
+<code-block language="html" label="ZIP code">{{ zipExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-zip">ZIP code</label>
+  <input type="text" id="demo-zip"
+    inputmode="numeric"
+    pattern="[0-9]{5}"
+    maxlength="5"
+    autocomplete="postal-code"
+    placeholder="12345" />
+</div>
+
+<h3>Search Field</h3>
+<p>The <code>search</code> value ensures the virtual keyboard shows a search action key.</p>
+
+<code-block language="html" label="Search field">{{ searchExample | escape }}</code-block>
+
+<h3>Contenteditable Element</h3>
+<p>The <code>inputmode</code> attribute also works on contenteditable elements, giving you keyboard control outside of form fields.</p>
+
+<code-block language="html" label="Contenteditable with inputmode">{{ contenteditableExample | escape }}</code-block>
+
+<h2>Suppressing the Keyboard</h2>
+<p>Use <code>inputmode="none"</code> when your UI provides its own input mechanism. The field can still receive focus and programmatic input, but the virtual keyboard will not appear.</p>
+<p>Common use cases include custom datepickers, emoji pickers, or calculator UIs where tapping buttons fills the field.</p>
+
+<h2>Browser Support</h2>
+<p>The <code>inputmode</code> attribute is supported in all modern browsers. On desktop, it has no visible effect since there is no virtual keyboard — it is purely a mobile optimization. This means you can add it to any field without affecting the desktop experience.</p>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/enterkeyhint/"><code>enterkeyhint</code></a> to control the Enter key label on virtual keyboards</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> for browser autofill hints</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> element reference</li>
+  </ul>
+</section>

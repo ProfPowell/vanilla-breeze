@@ -1,0 +1,158 @@
+---
+layout: layouts/attribute.njk
+title: "referrerpolicy"
+description: "Controls how much referrer information is sent with requests. Prevents leaking URL paths to third parties."
+attributeName: referrerpolicy
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/referrerpolicy/
+permalink: /docs/attributes/referrerpolicy/
+---
+
+{% set privacyImageExample %}<!-- Don't send any referrer info when loading third-party images -->
+<img src="https://cdn.example.com/photo.jpg"
+  alt="User avatar"
+  referrerpolicy="no-referrer" />
+
+<!-- Send only the origin (not the full URL path) -->
+<img src="https://analytics.example.com/pixel.gif"
+  alt=""
+  referrerpolicy="origin" />{% endset %}
+
+{% set linkExample %}<!-- Analytics-friendly: send full referrer to same-origin, origin-only to cross-origin -->
+<a href="https://partner-site.com/landing"
+  referrerpolicy="strict-origin-when-cross-origin">
+  Visit our partner
+</a>
+
+<!-- Maximum privacy: send no referrer at all -->
+<a href="https://external-tool.com/login"
+  referrerpolicy="no-referrer">
+  Open external tool
+</a>{% endset %}
+
+{% set metaExample %}<!-- Set a page-wide referrer policy via meta tag -->
+<head>
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+</head>
+
+<!-- Individual elements can still override the page-wide policy -->
+<a href="https://trusted-partner.com"
+  referrerpolicy="unsafe-url">
+  Trusted partner (sends full URL)
+</a>
+
+<img src="https://untrusted-cdn.com/image.jpg"
+  alt="Stock photo"
+  referrerpolicy="no-referrer" />{% endset %}
+
+{% set iframeExample %}<!-- Embedded content should not know the embedding page's full URL -->
+<iframe src="https://embed.example.com/widget"
+  referrerpolicy="origin"
+  loading="lazy"
+  title="Third-party widget"></iframe>
+
+<!-- Strict: only send origin on HTTPS-to-HTTPS, nothing on downgrade -->
+<iframe src="https://maps.example.com/embed"
+  referrerpolicy="strict-origin"
+  title="Map embed"></iframe>{% endset %}
+
+{% set scriptLinkExample %}<!-- CDN stylesheet: no referrer needed -->
+<link rel="stylesheet"
+  href="https://cdn.example.com/styles.css"
+  referrerpolicy="no-referrer" />
+
+<!-- CDN script: send origin only -->
+<script src="https://cdn.example.com/lib.js"
+  referrerpolicy="origin"></script>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>referrerpolicy</code> attribute controls how much referrer information the browser sends when making requests for a resource or following a link. By default, browsers send the full URL of the current page in the <code>Referer</code> header, which can leak sensitive URL paths (user IDs, search queries, internal routes) to third parties.</p>
+<p>You can set the policy per-element or page-wide using a <code>&lt;meta&gt;</code> tag. Per-element policies override the page-wide policy.</p>
+
+<h2>Policy Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>Referrer Sent</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>no-referrer</code></td><td>Nothing</td><td>Maximum privacy. No <code>Referer</code> header sent at all.</td></tr>
+    <tr><td><code>no-referrer-when-downgrade</code></td><td>Full URL on HTTPS&rarr;HTTPS, nothing on HTTPS&rarr;HTTP</td><td>Was the old browser default. Protects against protocol downgrade only.</td></tr>
+    <tr><td><code>origin</code></td><td>Origin only (e.g. <code>https://example.com</code>)</td><td>Strips the path and query. Good balance of utility and privacy.</td></tr>
+    <tr><td><code>origin-when-cross-origin</code></td><td>Full URL for same-origin, origin only for cross-origin</td><td>Keeps internal analytics intact, protects paths from third parties.</td></tr>
+    <tr><td><code>same-origin</code></td><td>Full URL for same-origin, nothing for cross-origin</td><td>Cross-origin requests get no referrer at all.</td></tr>
+    <tr><td><code>strict-origin</code></td><td>Origin only on HTTPS&rarr;HTTPS, nothing on downgrade</td><td>Like <code>origin</code> but also protects against protocol downgrade.</td></tr>
+    <tr><td><code>strict-origin-when-cross-origin</code></td><td>Full URL same-origin, origin cross-origin, nothing on downgrade</td><td><strong>Browser default.</strong> The best general-purpose policy.</td></tr>
+    <tr><td><code>unsafe-url</code></td><td>Full URL always (including to HTTP)</td><td>Not recommended. Exposes the full URL path to all destinations.</td></tr>
+  </tbody>
+</table>
+
+<h2>Which Policy to Use</h2>
+<h3>Sensible Default</h3>
+<p>For most sites, <code>strict-origin-when-cross-origin</code> is the right choice. It is the browser default and provides a good balance: your own analytics see full URLs, third parties see only the origin, and nothing is sent on protocol downgrade.</p>
+
+<h3>Maximum Privacy</h3>
+<p>Use <code>no-referrer</code> on individual elements that load resources from untrusted third parties, or when the current page URL contains sensitive information (user tokens, internal paths).</p>
+
+<h3>Analytics-Friendly</h3>
+<p>Use <code>origin-when-cross-origin</code> if partner sites need to know your origin for attribution but should not see the full URL path.</p>
+
+<h2>Applies To</h2>
+<p>The <code>referrerpolicy</code> attribute works on elements that make network requests:</p>
+<ul>
+  <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; navigation links</li>
+  <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> &mdash; image loads</li>
+  <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> &mdash; embedded documents</li>
+  <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> &mdash; script loads</li>
+  <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> &mdash; stylesheets, preloads, etc.</li>
+</ul>
+
+<h2>Per-Element Policy</h2>
+<h3>Privacy-Sensitive Image Loads</h3>
+<p>Third-party images (avatars, CDN assets, tracking pixels) should not receive your full page URL.</p>
+
+<code-block language="html" label="Images with referrerpolicy">{{ privacyImageExample | escape }}</code-block>
+
+<h3>Links</h3>
+<p>Control what information partner sites or external tools see about your pages.</p>
+
+<code-block language="html" label="Links with referrerpolicy">{{ linkExample | escape }}</code-block>
+
+<h3>Iframes</h3>
+<p>Embedded third-party content should generally receive minimal referrer information.</p>
+
+<code-block language="html" label="Iframes with referrerpolicy">{{ iframeExample | escape }}</code-block>
+
+<h3>Scripts and Stylesheets</h3>
+<p>CDN resources rarely need referrer information at all.</p>
+
+<code-block language="html" label="Scripts and stylesheets">{{ scriptLinkExample | escape }}</code-block>
+
+<h2>Page-Wide Policy</h2>
+<p>Set a default policy for the entire page using a <code>&lt;meta&gt;</code> tag. Individual elements can still override it with their own <code>referrerpolicy</code> attribute.</p>
+
+<code-block language="html" label="Page-wide policy with overrides">{{ metaExample | escape }}</code-block>
+
+<h3>Policy Resolution Order</h3>
+<ol>
+  <li>Per-element <code>referrerpolicy</code> attribute (highest priority)</li>
+  <li><code>&lt;meta name="referrer"&gt;</code> page-wide policy</li>
+  <li><code>Referrer-Policy</code> HTTP header</li>
+  <li>Browser default (<code>strict-origin-when-cross-origin</code>)</li>
+</ol>
+
+<h2>Common Mistakes</h2>
+<ul>
+  <li><strong>Lazy-loading every page to <code>no-referrer</code></strong> breaks analytics and affiliate attribution. Use a targeted approach instead.</li>
+  <li><strong>Using <code>unsafe-url</code></strong> sends the full URL including query strings, even over HTTP. Avoid unless you have a specific need and trust the destination.</li>
+  <li><strong>Forgetting protocol downgrade:</strong> Policies without "strict" in the name may still send referrers on HTTPS-to-HTTP requests. Prefer <code>strict-*</code> variants.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; verify that fetched resources have not been tampered with</li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> element reference</li>
+  </ul>
+</section>

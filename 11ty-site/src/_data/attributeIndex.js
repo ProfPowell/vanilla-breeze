@@ -3,6 +3,7 @@ const nativeAttributes = {
     label: 'Global',
     items: [
       { name: 'class', type: 'native', href: '/docs/attributes/class/', description: 'CSS class variants for buttons, navigation, forms, tables, and more' },
+      { name: 'tabindex', type: 'native', href: '/docs/attributes/tabindex/', description: 'Control keyboard focus order and programmatic focusability' },
     ],
   },
   performance: {
@@ -15,6 +16,9 @@ const nativeAttributes = {
     label: 'Forms',
     items: [
       { name: 'autocomplete', type: 'native', href: '/docs/attributes/autocomplete/', description: 'Browser autofill hints for one-tap form completion on mobile' },
+      { name: 'inputmode', type: 'native', href: '/docs/attributes/inputmode/', description: 'Control which virtual keyboard appears on mobile devices' },
+      { name: 'enterkeyhint', type: 'native', href: '/docs/attributes/enterkeyhint/', description: 'Customize the Enter key label on mobile virtual keyboards' },
+      { name: 'pattern', type: 'native', href: '/docs/attributes/pattern/', description: 'Regex validation, numeric constraints, and character limits for form inputs' },
     ],
   },
   interactivity: {
@@ -23,6 +27,23 @@ const nativeAttributes = {
       { name: 'popover', type: 'native', href: '/docs/attributes/popover/', description: 'Zero-JS popovers, menus, and tooltips via the Popover API' },
       { name: 'contenteditable', type: 'native', href: '/docs/attributes/contenteditable/', description: 'Make any element editable with optional plaintext-only mode' },
       { name: 'hidden', type: 'native', href: '/docs/attributes/hidden/', description: 'Hide elements, collapse searchable content, or disable interaction with inert' },
+      { name: 'draggable', type: 'native', href: '/docs/attributes/draggable/', description: 'Enable native drag-and-drop on any element with the HTML Drag and Drop API' },
+    ],
+  },
+  'links-security': {
+    label: 'Links & Security',
+    items: [
+      { name: 'rel', type: 'native', href: '/docs/attributes/rel/', description: 'Link relationships for security, performance, SEO, and resource hints' },
+      { name: 'referrerpolicy', type: 'native', href: '/docs/attributes/referrerpolicy/', description: 'Control how much referrer information is sent with requests' },
+      { name: 'integrity', type: 'native', href: '/docs/attributes/integrity/', description: 'Subresource integrity — verify CDN files have not been tampered with' },
+    ],
+  },
+  accessibility: {
+    label: 'Accessibility',
+    items: [
+      { name: 'lang', type: 'native', href: '/docs/attributes/lang/', description: 'Declare content language for screen readers, hyphenation, and spell-checking' },
+      { name: 'dir', type: 'native', href: '/docs/attributes/dir/', description: 'Set text direction for right-to-left languages and bidirectional content' },
+      { name: 'translate', type: 'native', href: '/docs/attributes/translate/', description: 'Mark content as translatable or non-translatable for translation tools' },
     ],
   },
 };

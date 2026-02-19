@@ -1,0 +1,167 @@
+---
+layout: layouts/attribute.njk
+title: "integrity"
+description: "Subresource Integrity (SRI) lets the browser verify that files fetched from CDNs haven't been tampered with."
+attributeName: integrity
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/integrity/
+permalink: /docs/attributes/integrity/
+---
+
+{% set scriptExample %}<!-- Load a script from a CDN with integrity verification -->
+<script
+  src="https://cdn.example.com/lib@3.2.1/lib.min.js"
+  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
+  crossorigin="anonymous"></script>{% endset %}
+
+{% set stylesheetExample %}<!-- Load a stylesheet from a CDN with integrity verification -->
+<link
+  rel="stylesheet"
+  href="https://cdn.example.com/framework@2.0/styles.min.css"
+  integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+  crossorigin="anonymous" />{% endset %}
+
+{% set multiHashExample %}<!-- Provide multiple hashes for stronger verification -->
+<script
+  src="https://cdn.example.com/app.js"
+  integrity="sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
+  crossorigin="anonymous"></script>{% endset %}
+
+{% set generateExample %}{% raw %}# Generate a SHA-384 hash (most common for SRI)
+openssl dgst -sha384 -binary script.js | openssl base64 -A
+
+# Using shasum (macOS / Linux)
+shasum -b -a 384 script.js | awk '{ print $1 }' | xxd -r -p | base64
+
+# Using curl to hash a remote file
+curl -s https://cdn.example.com/lib.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+
+# Full integrity attribute value (prefix the hash with the algorithm)
+# sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj{% endraw %}{% endset %}
+
+{% set sameOriginExample %}<!-- Same-origin resources do NOT need integrity or crossorigin -->
+<script src="/js/app.js"></script>
+<link rel="stylesheet" href="/css/styles.css" />
+
+<!-- Cross-origin resources NEED both integrity and crossorigin -->
+<script
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
+  crossorigin="anonymous"></script>{% endset %}
+
+{% set crossoriginExample %}<!-- anonymous: no credentials sent (most common for CDN resources) -->
+<script
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxAh6VgnSY2E3t0BvIQIYh4mC/b2Dj"
+  crossorigin="anonymous"></script>
+
+<!-- use-credentials: sends cookies/auth (rare, for authenticated CDNs) -->
+<script
+  src="https://private-cdn.example.com/internal.js"
+  integrity="sha384-abc123..."
+  crossorigin="use-credentials"></script>{% endset %}
+
+<h2>Overview</h2>
+<p>Subresource Integrity (SRI) lets the browser verify that files fetched from CDNs or other third-party servers have not been tampered with. You provide a cryptographic hash of the expected file contents, and the browser checks the downloaded file against that hash before executing or applying it.</p>
+<p>If a CDN is compromised and serves a modified file, the browser will refuse to use it rather than running potentially malicious code. SRI is a critical defense-in-depth measure for any site that loads resources from third-party origins.</p>
+
+<h2>How It Works</h2>
+<ol>
+  <li>You generate a cryptographic hash of the resource file.</li>
+  <li>You add the hash to the <code>integrity</code> attribute, prefixed with the algorithm name.</li>
+  <li>You add <code>crossorigin="anonymous"</code> (required for cross-origin resources).</li>
+  <li>When the browser downloads the file, it computes the hash and compares it to your value.</li>
+  <li>If the hashes match, the resource loads normally. If they do not match, the browser <strong>refuses to execute or apply the resource</strong> and reports a network error.</li>
+</ol>
+
+<h2>Hash Format</h2>
+<p>The integrity value is an algorithm prefix followed by a base64-encoded hash, separated by a hyphen:</p>
+<table>
+  <thead><tr><th>Algorithm</th><th>Prefix</th><th>Strength</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td>SHA-256</td><td><code>sha256-</code></td><td>Good</td><td>Minimum acceptable</td></tr>
+    <tr><td>SHA-384</td><td><code>sha384-</code></td><td>Better</td><td><strong>Recommended default</strong></td></tr>
+    <tr><td>SHA-512</td><td><code>sha512-</code></td><td>Strongest</td><td>Maximum security</td></tr>
+  </tbody>
+</table>
+<p>SHA-384 is the most common choice. It offers strong security with reasonable hash length.</p>
+
+<h2>Applies To</h2>
+<p>The <code>integrity</code> attribute is supported on two elements:</p>
+<ul>
+  <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> &mdash; verify JavaScript files</li>
+  <li><a href="/docs/elements/native/link/"><code>&lt;link rel="stylesheet"&gt;</code></a> &mdash; verify CSS files</li>
+</ul>
+
+<h2>Examples</h2>
+<h3>Script with SRI</h3>
+<code-block language="html" label="Script integrity check">{{ scriptExample | escape }}</code-block>
+
+<h3>Stylesheet with SRI</h3>
+<code-block language="html" label="Stylesheet integrity check">{{ stylesheetExample | escape }}</code-block>
+
+<h3>Multiple Hashes</h3>
+<p>You can provide multiple hashes separated by spaces. The browser will accept the resource if <strong>any</strong> of the hashes match. This is useful when migrating between hash algorithms or when a resource may be served in different valid forms.</p>
+
+<code-block language="html" label="Multiple integrity hashes">{{ multiHashExample | escape }}</code-block>
+
+<p>When multiple hashes with different algorithms are provided, the browser uses the strongest algorithm it supports for verification.</p>
+
+<h2>The crossorigin Attribute</h2>
+<p>For cross-origin resources, <code>integrity</code> <strong>must</strong> be paired with the <code>crossorigin</code> attribute. Without it, the browser cannot read the response to verify the hash (due to CORS restrictions) and will skip the integrity check.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th><th>Use When</th></tr></thead>
+  <tbody>
+    <tr><td><code>anonymous</code></td><td>Sends request without credentials (cookies, auth headers)</td><td>Public CDN resources (most common)</td></tr>
+    <tr><td><code>use-credentials</code></td><td>Sends credentials with the request</td><td>Authenticated/private CDN resources (rare)</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="crossorigin values">{{ crossoriginExample | escape }}</code-block>
+
+<h3>Same-Origin Resources</h3>
+<p>For resources served from the same origin, <code>crossorigin</code> is not required. SRI still works, but since you control both the page and the resource, it is less commonly needed.</p>
+
+<code-block language="html" label="Same-origin vs cross-origin">{{ sameOriginExample | escape }}</code-block>
+
+<h2>Generating Integrity Hashes</h2>
+<p>You can generate hashes from the command line or use the online tool at <strong>srihash.org</strong>.</p>
+
+<code-block language="bash" label="Generating hashes from the command line">{{ generateExample | escape }}</code-block>
+
+<h3>Workflow Tips</h3>
+<ul>
+  <li><strong>Pin to exact versions:</strong> SRI hashes are tied to exact file contents. Always use versioned URLs (e.g. <code>lib@3.2.1</code>) rather than <code>latest</code> or unversioned paths.</li>
+  <li><strong>Regenerate on update:</strong> When you update a dependency version, regenerate the hash.</li>
+  <li><strong>Build tools:</strong> Bundlers like Webpack, Vite, and Parcel can generate integrity hashes automatically.</li>
+</ul>
+
+<h2>What Happens on Mismatch</h2>
+<p>When the downloaded file does not match the expected hash:</p>
+<ul>
+  <li>The browser <strong>refuses to execute</strong> the script or <strong>refuses to apply</strong> the stylesheet.</li>
+  <li>A network error is reported (visible in DevTools console).</li>
+  <li>The element fires an <code>error</code> event, which you can handle to show a fallback or alert the user.</li>
+  <li>No partial execution occurs &mdash; the resource is completely blocked.</li>
+</ul>
+<p>This is intentional. A mismatched hash means the file has been modified, and it is safer to break functionality than to run potentially malicious code.</p>
+
+<h2>Common Mistakes</h2>
+<ul>
+  <li><strong>Forgetting <code>crossorigin</code></strong> on cross-origin resources. Without it, the integrity check is silently skipped.</li>
+  <li><strong>Using unversioned CDN URLs</strong> (e.g. <code>lib/latest/lib.js</code>). When the CDN updates the file, the hash breaks. Always pin to a specific version.</li>
+  <li><strong>Whitespace or encoding differences:</strong> The hash must match the exact bytes served. If a CDN minifies or re-encodes a file differently, the hash will fail.</li>
+  <li><strong>Copying hashes from untrusted sources:</strong> Generate hashes yourself from a known-good copy of the file, not from the same CDN you are verifying.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent with requests</li>
+    <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> element reference</li>
+  </ul>
+</section>

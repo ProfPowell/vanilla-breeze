@@ -1,0 +1,164 @@
+---
+layout: layouts/attribute.njk
+title: "enterkeyhint"
+description: "Controls the label on the Enter key of the virtual keyboard, giving users a visual cue about what pressing Enter will do."
+attributeName: enterkeyhint
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/enterkeyhint/
+permalink: /docs/attributes/enterkeyhint/
+---
+
+{% set chatExample %}<label for="message">Message</label>
+<input type="text" id="message"
+  enterkeyhint="send"
+  placeholder="Type a message..." />{% endset %}
+
+{% set searchExample %}<label for="search">Search</label>
+<input type="search" id="search"
+  enterkeyhint="search"
+  inputmode="search"
+  placeholder="Search articles..." />{% endset %}
+
+{% set multiFieldExample %}<form class="stacked">
+  <label for="first-name">First name</label>
+  <input type="text" id="first-name"
+    enterkeyhint="next"
+    autocomplete="given-name" />
+
+  <label for="last-name">Last name</label>
+  <input type="text" id="last-name"
+    enterkeyhint="next"
+    autocomplete="family-name" />
+
+  <label for="user-email">Email</label>
+  <input type="email" id="user-email"
+    enterkeyhint="done"
+    autocomplete="email" />
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set navigateExample %}<label for="url-bar">Go to URL</label>
+<input type="url" id="url-bar"
+  enterkeyhint="go"
+  inputmode="url"
+  placeholder="https://..." />{% endset %}
+
+{% set textareaExample %}<label for="notes">Notes</label>
+<textarea id="notes" enterkeyhint="done"
+  rows="4"
+  placeholder="Write your notes..."></textarea>{% endset %}
+
+{% set jsExample %}{% raw %}const input = document.querySelector('#message');
+
+// enterkeyhint is cosmetic — you still need a handler
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMessage(input.value);
+    input.value = '';
+  }
+});{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>enterkeyhint</code> attribute controls the label displayed on the Enter key of the virtual keyboard. It gives users a visual cue about what pressing Enter will do — "Search", "Send", "Next", and so on.</p>
+<p>This is a <em>cosmetic hint only</em>. It changes the label on the key but does <strong>not</strong> change what Enter actually does. You still need JavaScript event handlers if you want custom behavior when the user presses Enter.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Key Label</th><th>Use When</th></tr></thead>
+  <tbody>
+    <tr><td><code>enter</code></td><td>Generic Enter / Return</td><td>Default behavior. No specific action implied.</td></tr>
+    <tr><td><code>done</code></td><td>Done</td><td>The user is finishing input. Typically closes the keyboard or submits a single-field form.</td></tr>
+    <tr><td><code>go</code></td><td>Go</td><td>Navigating to a URL or taking the user somewhere. URL bars, navigation inputs.</td></tr>
+    <tr><td><code>next</code></td><td>Next</td><td>Moving to the next field in a multi-step form. Mid-form fields.</td></tr>
+    <tr><td><code>previous</code></td><td>Previous</td><td>Moving to the previous field. Rare, but useful in wizard-style forms with back navigation.</td></tr>
+    <tr><td><code>search</code></td><td>Search</td><td>Executing a search query. Search boxes and filter fields.</td></tr>
+    <tr><td><code>send</code></td><td>Send</td><td>Sending a message. Chat inputs, comment fields, email compose.</td></tr>
+  </tbody>
+</table>
+
+<h2>Practical Examples</h2>
+
+<h3>Chat Input</h3>
+<p>A messaging input where Enter should visually suggest "Send".</p>
+
+<code-block language="html" label="Chat input">{{ chatExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-message">Message</label>
+  <input type="text" id="demo-message"
+    enterkeyhint="send"
+    placeholder="Type a message..." />
+</div>
+
+<h3>Search Box</h3>
+<p>Pair <code>enterkeyhint="search"</code> with <code>inputmode="search"</code> for the full mobile search experience.</p>
+
+<code-block language="html" label="Search box">{{ searchExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-search">Search</label>
+  <input type="search" id="demo-search"
+    enterkeyhint="search"
+    inputmode="search"
+    placeholder="Search articles..." />
+</div>
+
+<h3>Multi-Field Form</h3>
+<p>Use <code>next</code> on intermediate fields and <code>done</code> on the last field. This tells the user whether there are more fields to fill or if they are finished.</p>
+
+<code-block language="html" label="Multi-field form">{{ multiFieldExample | escape }}</code-block>
+
+<div class="example">
+  <form class="stacked" onsubmit="return false;">
+    <label for="demo-first">First name</label>
+    <input type="text" id="demo-first" enterkeyhint="next" />
+
+    <label for="demo-last">Last name</label>
+    <input type="text" id="demo-last" enterkeyhint="next" />
+
+    <label for="demo-email">Email</label>
+    <input type="email" id="demo-email" enterkeyhint="done" />
+
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
+<h3>URL Navigation</h3>
+<p>For an address bar or any input that navigates the user somewhere, <code>go</code> is the right label.</p>
+
+<code-block language="html" label="URL bar">{{ navigateExample | escape }}</code-block>
+
+<h3>Textarea</h3>
+<p>The attribute works on <code>&lt;textarea&gt;</code> too, though note that Enter typically inserts a newline in textareas. The hint helps users understand what a special submit action (like Ctrl+Enter) might do.</p>
+
+<code-block language="html" label="Textarea with enterkeyhint">{{ textareaExample | escape }}</code-block>
+
+<h2>You Still Need JavaScript</h2>
+<p>The <code>enterkeyhint</code> attribute is purely cosmetic. Changing the label to "Send" does not make Enter send anything. You must attach your own event handler to implement the action.</p>
+
+<code-block language="js" label="Handling the Enter key">{{ jsExample | escape }}</code-block>
+
+<p>For forms, this is less of an issue — pressing Enter in an input inside a <code>&lt;form&gt;</code> already triggers form submission natively. The <code>enterkeyhint</code> just makes the button label match the user's expectation.</p>
+
+<h2>Platform Differences</h2>
+<ul>
+  <li><strong>iOS Safari:</strong> Displays the exact label text ("Send", "Search", etc.) on the return key. Well-supported.</li>
+  <li><strong>Android:</strong> Shows an icon or label depending on the keyboard app. Most major keyboards (Gboard, Samsung Keyboard) support all values.</li>
+  <li><strong>Desktop:</strong> No visible effect. The attribute is ignored since there is no virtual keyboard. It is safe to use everywhere.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> to control which virtual keyboard appears</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> for browser autofill hints</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> element reference</li>
+  </ul>
+</section>

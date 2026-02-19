@@ -1,0 +1,200 @@
+---
+layout: layouts/attribute.njk
+title: "dir"
+description: "Set the text direction for content. Required for right-to-left languages like Arabic, Hebrew, Persian, and Urdu."
+attributeName: dir
+attributeType: native
+nativeGroup: Accessibility
+category: native
+currentPath: /docs/attributes/dir/
+permalink: /docs/attributes/dir/
+---
+
+{% set basicExample %}<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>صفحة عربية</title>
+  </head>
+  <body>
+    <h1>مرحبا بالعالم</h1>
+    <p>هذه الصفحة تُعرض من اليمين إلى اليسار.</p>
+  </body>
+</html>{% endset %}
+
+{% set mixedExample %}<article dir="ltr">
+  <h2>International Greetings</h2>
+  <p>In English, we say "Hello".</p>
+  <p>In Arabic: <span dir="rtl" lang="ar">مرحبا</span></p>
+  <p>In Hebrew: <span dir="rtl" lang="he">שלום</span></p>
+</article>{% endset %}
+
+{% set bdiExample %}<!-- Without bdi: usernames can break sentence order -->
+<p>User <bdi>إيمان</bdi> left a comment.</p>
+<p>User <bdi>Alice</bdi> left a comment.</p>
+<p>User <bdi>מירב</bdi> left a comment.</p>{% endset %}
+
+{% set bdiProblemExample %}<!-- Without bdi, RTL names can reorder the sentence -->
+<p>User إيمان left 3 comments.</p>
+
+<!-- With bdi, the name is isolated from surrounding text -->
+<p>User <bdi>إيمان</bdi> left 3 comments.</p>{% endset %}
+
+{% set bdoExample %}<!-- Force left-to-right rendering regardless of content -->
+<p><bdo dir="ltr">مرحبا</bdo></p>
+
+<!-- Force right-to-left rendering -->
+<p><bdo dir="rtl">Hello</bdo></p>
+
+<!-- Useful for displaying reversed text, reference numbers, etc. -->
+<p>Order number: <bdo dir="ltr">12345-أب</bdo></p>{% endset %}
+
+{% set autoExample %}<!-- Let the browser detect direction from content -->
+<input type="text" dir="auto" placeholder="Type in any language..." />
+
+<!-- Useful for user-generated content with unknown direction -->
+<div dir="auto">{{ "{{ userComment }}" | escape }}</div>{% endset %}
+
+{% set logicalExample %}{% raw %}<style>
+  /* These work correctly in both LTR and RTL */
+  .card {
+    margin-inline-start: 1rem;    /* not margin-left */
+    padding-inline-end: 1rem;     /* not padding-right */
+    border-inline-start: 3px solid blue; /* not border-left */
+    text-align: start;            /* not text-align: left */
+  }
+
+  .icon-label {
+    display: flex;
+    gap: 0.5rem;
+    /* flex-direction: row works in both directions automatically */
+  }
+
+  /* Float to the "end" side of the text */
+  .pull-end {
+    float: inline-end;  /* not float: right */
+  }
+</style>{% endraw %}{% endset %}
+
+{% set cssDirExample %}{% raw %}<style>
+  /* Attribute vs property: prefer the attribute */
+
+  /* This only affects CSS rendering */
+  .rtl-css { direction: rtl; }
+
+  /* This affects everything: CSS, copy-paste order,
+     form submission, screen readers */
+  /* <div dir="rtl"> is always the better choice */
+</style>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>dir</code> attribute sets the text direction for an element's content. It is essential for right-to-left (RTL) languages including Arabic, Hebrew, Persian (Farsi), and Urdu. Without the correct <code>dir</code> value, text, punctuation, and layout will render incorrectly for these languages.</p>
+<p>Set <code>dir</code> on the <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> element for the page's overall direction, and on inline elements when direction changes within the page.</p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>ltr</code></td><td>Left-to-right. The default for most languages. Text flows from left to right.</td></tr>
+    <tr><td><code>rtl</code></td><td>Right-to-left. Text flows from right to left. Layout mirrors accordingly.</td></tr>
+    <tr><td><code>auto</code></td><td>Browser detects direction from the first strong directional character in the content. Ideal for user-generated content.</td></tr>
+  </tbody>
+</table>
+
+<h2>RTL Page</h2>
+<p>For a fully right-to-left page, set both <code>dir="rtl"</code> and the appropriate <a href="/docs/attributes/lang/"><code>lang</code></a> on <code>&lt;html&gt;</code>.</p>
+
+<code-block language="html" label="RTL page">{{ basicExample | escape }}</code-block>
+
+<h2>Mixed LTR and RTL Content</h2>
+<p>When a page mixes left-to-right and right-to-left content, use <code>dir</code> on individual elements to set the correct direction for each section.</p>
+
+<code-block language="html" label="Mixed directions">{{ mixedExample | escape }}</code-block>
+
+<div class="example">
+  <article dir="ltr">
+    <p>In English, we say "Hello".</p>
+    <p>In Arabic: <span dir="rtl" lang="ar">مرحبا</span></p>
+    <p>In Hebrew: <span dir="rtl" lang="he">שלום</span></p>
+  </article>
+</div>
+
+<h2>The bdi Element</h2>
+<p>The <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> element (Bidirectional Isolate) isolates a span of text from its surrounding content so the bidirectional algorithm treats it independently. This is essential when inserting user-generated content with unknown direction into a sentence.</p>
+
+<code-block language="html" label="bdi for user-generated names">{{ bdiExample | escape }}</code-block>
+
+<div class="example">
+  <p>User <bdi>Alice</bdi> left a comment.</p>
+  <p>User <bdi>إيمان</bdi> left a comment.</p>
+  <p>User <bdi>מירב</bdi> left a comment.</p>
+</div>
+
+<h3>Why bdi Matters</h3>
+<p>Without <code>&lt;bdi&gt;</code>, an RTL name in an LTR sentence can cause the browser's bidirectional algorithm to reorder the surrounding text. The result is broken, unreadable sentences.</p>
+
+<code-block language="html" label="The bdi problem">{{ bdiProblemExample | escape }}</code-block>
+
+<p><strong>Rule of thumb:</strong> Always wrap user-provided names, labels, or any text of unknown direction in <code>&lt;bdi&gt;</code>.</p>
+
+<h2>The bdo Element</h2>
+<p>The <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> element (Bidirectional Override) forces a specific direction on its content, overriding the browser's bidirectional algorithm entirely. Use it sparingly — it is meant for cases where the algorithm produces the wrong result.</p>
+
+<code-block language="html" label="bdo direction override">{{ bdoExample | escape }}</code-block>
+
+<h2>dir="auto"</h2>
+<p>The <code>auto</code> value tells the browser to detect direction from the first strong directional character in the content. This is the best choice for user-generated content where you do not know the language in advance.</p>
+
+<code-block language="html" label="Automatic direction detection">{{ autoExample | escape }}</code-block>
+
+<div class="example">
+  <label for="demo-input">Type in any language:</label>
+  <input type="text" id="demo-input" dir="auto" placeholder="Try English or Arabic..." />
+</div>
+
+<h2>CSS direction vs the dir Attribute</h2>
+<p>CSS has a <code>direction</code> property, but the <code>dir</code> HTML attribute is almost always the correct choice.</p>
+
+<table>
+  <thead><tr><th>Approach</th><th>Affects CSS</th><th>Affects Copy/Paste</th><th>Affects Accessibility</th><th>Semantic</th></tr></thead>
+  <tbody>
+    <tr><td><code>dir="rtl"</code> (attribute)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td><code>direction: rtl</code> (CSS)</td><td>Yes</td><td>No</td><td>No</td><td>No</td></tr>
+  </tbody>
+</table>
+
+<code-block language="css" label="Attribute vs CSS property">{{ cssDirExample | escape }}</code-block>
+
+<p>The <code>dir</code> attribute affects the browser's bidirectional algorithm, text selection order, copy-paste behavior, form submission, and assistive technology. The CSS property only changes visual rendering.</p>
+
+<h2>CSS Logical Properties</h2>
+<p>When building layouts that need to work in both LTR and RTL, use CSS logical properties instead of physical ones. VB uses logical properties throughout so that components work correctly regardless of text direction.</p>
+
+<code-block language="css" label="Logical properties">{{ logicalExample | escape }}</code-block>
+
+<table>
+  <thead><tr><th>Physical (LTR-only)</th><th>Logical (works in both)</th></tr></thead>
+  <tbody>
+    <tr><td><code>margin-left</code></td><td><code>margin-inline-start</code></td></tr>
+    <tr><td><code>margin-right</code></td><td><code>margin-inline-end</code></td></tr>
+    <tr><td><code>padding-left</code></td><td><code>padding-inline-start</code></td></tr>
+    <tr><td><code>padding-right</code></td><td><code>padding-inline-end</code></td></tr>
+    <tr><td><code>border-left</code></td><td><code>border-inline-start</code></td></tr>
+    <tr><td><code>text-align: left</code></td><td><code>text-align: start</code></td></tr>
+    <tr><td><code>text-align: right</code></td><td><code>text-align: end</code></td></tr>
+    <tr><td><code>float: left</code></td><td><code>float: inline-start</code></td></tr>
+    <tr><td><code>float: right</code></td><td><code>float: inline-end</code></td></tr>
+    <tr><td><code>width</code></td><td><code>inline-size</code></td></tr>
+    <tr><td><code>height</code></td><td><code>block-size</code></td></tr>
+  </tbody>
+</table>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
+    <li><a href="/docs/attributes/translate/"><code>translate</code></a> — control whether content should be translated</li>
+    <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> — bidirectional isolate element</li>
+    <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> — bidirectional override element</li>
+  </ul>
+</section>

@@ -1,0 +1,256 @@
+---
+layout: layouts/attribute.njk
+title: "rel"
+description: "Defines the relationship between the current document and a linked resource. Controls security, performance, SEO, and resource loading."
+attributeName: rel
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/rel/
+permalink: /docs/attributes/rel/
+---
+
+{% set securityExample %}<!-- External link: prevent window.opener and Referer leaks -->
+<a href="https://example.com" rel="noopener noreferrer" target="_blank">
+  Visit Example
+</a>
+
+<!-- Multiple external links with security defaults -->
+<nav>
+  <a href="https://github.com/you" rel="noopener noreferrer" target="_blank">GitHub</a>
+  <a href="https://twitter.com/you" rel="noopener noreferrer" target="_blank">Twitter</a>
+</nav>{% endset %}
+
+{% set preloadExample %}<!-- Preload a critical font (must be fetched before first paint) -->
+<link rel="preload" href="/fonts/body.woff2" as="font"
+  type="font/woff2" crossorigin />
+
+<!-- Preload the LCP image -->
+<link rel="preload" href="/images/hero.webp" as="image" />
+
+<!-- Prefetch a page the user is likely to visit next -->
+<link rel="prefetch" href="/checkout" />
+
+<!-- Preconnect to a third-party origin (DNS + TCP + TLS) -->
+<link rel="preconnect" href="https://api.example.com" />
+
+<!-- DNS-prefetch only (lighter than preconnect) -->
+<link rel="dns-prefetch" href="https://analytics.example.com" />
+
+<!-- Modulepreload for ES modules -->
+<link rel="modulepreload" href="/js/app.js" />{% endset %}
+
+{% set canonicalExample %}<!-- Canonical URL: tell search engines which URL is authoritative -->
+<link rel="canonical" href="https://example.com/blog/my-post" />
+
+<!-- Alternate language versions -->
+<link rel="alternate" hreflang="es" href="https://example.com/es/blog/mi-post" />
+<link rel="alternate" hreflang="fr" href="https://example.com/fr/blog/mon-article" />
+<link rel="alternate" hreflang="x-default" href="https://example.com/blog/my-post" />
+
+<!-- RSS/Atom feed -->
+<link rel="alternate" type="application/rss+xml" title="Blog Feed"
+  href="/feed.xml" />{% endset %}
+
+{% set paginationExample %}<!-- Pagination hints for search engines -->
+<link rel="prev" href="/blog/page/2" />
+<link rel="next" href="/blog/page/4" />{% endset %}
+
+{% set stylesheetExample %}<!-- Standard stylesheet -->
+<link rel="stylesheet" href="/css/main.css" />
+
+<!-- Print-only stylesheet -->
+<link rel="stylesheet" href="/css/print.css" media="print" />
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+
+<!-- Apple touch icon -->
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<!-- Web app manifest -->
+<link rel="manifest" href="/site.webmanifest" />{% endset %}
+
+{% set nofollowExample %}<!-- Tell search engines not to follow this link -->
+<a href="https://example.com/promo" rel="nofollow">Sponsored link</a>
+
+<!-- User-generated content: nofollow prevents SEO spam -->
+<a href="https://user-submitted-link.com" rel="nofollow ugc">
+  User's website
+</a>
+
+<!-- Sponsored/paid link -->
+<a href="https://advertiser.com" rel="sponsored">Our sponsor</a>{% endset %}
+
+{% set formRelExample %}<!-- Form with rel for security -->
+<form action="https://external-service.com/submit"
+  method="post"
+  rel="noopener noreferrer">
+  <label for="feedback">Feedback</label>
+  <textarea id="feedback" name="feedback" rows="3"></textarea>
+  <button type="submit">Send</button>
+</form>{% endset %}
+
+{% set combinedHeadExample %}<!-- A typical <head> using multiple rel values -->
+<head>
+  <meta charset="utf-8" />
+  <title>My Page</title>
+
+  <!-- Security & performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="/fonts/heading.woff2" as="font"
+    type="font/woff2" crossorigin />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css" />
+
+  <!-- SEO -->
+  <link rel="canonical" href="https://example.com/current-page" />
+  <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
+
+  <!-- Icons -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+</head>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>rel</code> attribute defines the relationship between the current document and a linked resource. It is used on <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a>, and <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> elements.</p>
+<p>The value is a space-separated list of link types. Multiple values can be combined: <code>rel="noopener noreferrer"</code>.</p>
+
+<h2>Security</h2>
+<p>Two values protect your site when linking to external origins.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Effect</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>noopener</code></td>
+      <td>The opened page cannot access <code>window.opener</code></td>
+      <td>Prevents the external page from navigating your tab to a phishing page or reading properties of your window</td>
+    </tr>
+    <tr>
+      <td><code>noreferrer</code></td>
+      <td>The browser does not send a <code>Referer</code> header</td>
+      <td>Prevents leaking the current page URL (which may contain tokens, user IDs, or private paths) to the external site</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Best practice:</strong> Always use <code>rel="noopener noreferrer"</code> on external links with <code>target="_blank"</code>. Modern browsers apply <code>noopener</code> by default for <code>target="_blank"</code>, but adding it explicitly ensures consistent behavior across all browsers and clearly communicates intent.</p>
+
+<code-block language="html" label="Secure external links">{{ securityExample | escape }}</code-block>
+
+<h2>Resource Hints</h2>
+<p>Resource hints tell the browser to prepare for future navigations or fetch critical resources early. They go on <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> elements in the <code>&lt;head&gt;</code>.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>What it does</th><th>When to use</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>preload</code></td>
+      <td>Fetches a resource with high priority for the current page. Requires the <code>as</code> attribute.</td>
+      <td>Fonts, hero images, critical scripts that the browser would discover late</td>
+    </tr>
+    <tr>
+      <td><code>prefetch</code></td>
+      <td>Fetches a resource at low priority for a future navigation</td>
+      <td>Next page the user is likely to visit, non-critical assets</td>
+    </tr>
+    <tr>
+      <td><code>preconnect</code></td>
+      <td>Performs DNS lookup, TCP handshake, and TLS negotiation to an origin</td>
+      <td>Third-party APIs, font providers, CDNs you will fetch from soon</td>
+    </tr>
+    <tr>
+      <td><code>dns-prefetch</code></td>
+      <td>Performs only the DNS lookup for an origin</td>
+      <td>Origins you might connect to. Lighter than preconnect, broader browser support.</td>
+    </tr>
+    <tr>
+      <td><code>modulepreload</code></td>
+      <td>Preloads an ES module and its dependencies, parsing the module graph</td>
+      <td>JavaScript modules critical to page rendering</td>
+    </tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Resource hints">{{ preloadExample | escape }}</code-block>
+
+<h3>preload vs prefetch</h3>
+<ul>
+  <li><strong>preload</strong> is for resources needed on <em>this</em> page. The browser fetches them with high priority immediately.</li>
+  <li><strong>prefetch</strong> is for resources needed on a <em>future</em> page. The browser fetches them at idle time with low priority.</li>
+  <li>Do not preload resources you will not use on the current page. The browser logs a console warning if a preloaded resource goes unused within a few seconds.</li>
+</ul>
+
+<h2>SEO and Navigation</h2>
+<p>Search engines use these values to understand site structure and content relationships.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Purpose</th><th>Used on</th></tr></thead>
+  <tbody>
+    <tr><td><code>canonical</code></td><td>Declares the authoritative URL when a page is accessible at multiple URLs</td><td><code>&lt;link&gt;</code></td></tr>
+    <tr><td><code>alternate</code></td><td>Points to an alternative version (different language, format, or media)</td><td><code>&lt;link&gt;</code></td></tr>
+    <tr><td><code>prev</code></td><td>Previous page in a paginated series</td><td><code>&lt;link&gt;</code></td></tr>
+    <tr><td><code>next</code></td><td>Next page in a paginated series</td><td><code>&lt;link&gt;</code></td></tr>
+    <tr><td><code>nofollow</code></td><td>Tells search engines not to follow the link for ranking purposes</td><td><code>&lt;a&gt;</code></td></tr>
+    <tr><td><code>ugc</code></td><td>Marks a link as user-generated content</td><td><code>&lt;a&gt;</code></td></tr>
+    <tr><td><code>sponsored</code></td><td>Marks a link as paid or sponsored</td><td><code>&lt;a&gt;</code></td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Canonical and alternate URLs">{{ canonicalExample | escape }}</code-block>
+<code-block language="html" label="Pagination">{{ paginationExample | escape }}</code-block>
+<code-block language="html" label="Nofollow and UGC links">{{ nofollowExample | escape }}</code-block>
+
+<h2>Stylesheets and Icons</h2>
+<p>The most common <code>rel</code> values you will use daily.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>stylesheet</code></td><td>Links an external CSS file. The most common <code>rel</code> value.</td></tr>
+    <tr><td><code>icon</code></td><td>Favicon for the browser tab. SVG favicons support dark mode via <code>prefers-color-scheme</code>.</td></tr>
+    <tr><td><code>apple-touch-icon</code></td><td>Home screen icon on iOS devices</td></tr>
+    <tr><td><code>manifest</code></td><td>Web app manifest for PWA metadata</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Stylesheets and icons">{{ stylesheetExample | escape }}</code-block>
+
+<h2>rel on Forms</h2>
+<p>The <code>rel</code> attribute also works on <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> elements. When a form submits to an external origin, <code>rel="noopener noreferrer"</code> provides the same security protections as on links.</p>
+
+<code-block language="html" label="Form with rel">{{ formRelExample | escape }}</code-block>
+
+<h2>Combining Values</h2>
+<p>The <code>rel</code> attribute accepts multiple space-separated values. This is how you combine security, SEO, or other relationship types on a single element.</p>
+
+<table>
+  <thead><tr><th>Combination</th><th>When to use</th></tr></thead>
+  <tbody>
+    <tr><td><code>rel="noopener noreferrer"</code></td><td>External links with <code>target="_blank"</code></td></tr>
+    <tr><td><code>rel="nofollow ugc"</code></td><td>User-generated external links</td></tr>
+    <tr><td><code>rel="nofollow sponsored"</code></td><td>Paid or sponsored external links</td></tr>
+    <tr><td><code>rel="noopener noreferrer nofollow"</code></td><td>Untrusted external links (open in new tab, no referrer, no SEO value)</td></tr>
+  </tbody>
+</table>
+
+<h2>Practical Head Example</h2>
+<p>A well-structured <code>&lt;head&gt;</code> uses several <code>rel</code> values together to handle performance, styling, SEO, and icons.</p>
+
+<code-block language="html" label="Complete head example">{{ combinedHeadExample | escape }}</code-block>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> element reference</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> for lazy loading and fetch priority</li>
+  </ul>
+</section>
