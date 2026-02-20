@@ -105,6 +105,8 @@ document.addEventListener('item-transferred', (e) => {
   <aside class="note">
     <strong>Progressive enhancement:</strong> Without JavaScript, the content renders as a static list. The <code>draggable</code> attribute only enables drag-and-drop when the component is registered. Keyboard reorder and screen reader announcements are added automatically.
   </aside>
+
+  <p><code>&lt;drag-surface&gt;</code> uses <code>flex: 1</code> to fill available space when placed inside a flex container (such as a kanban column using <code>data-layout="stack"</code>). This ensures the full column area is a valid drop target, not just the space occupied by cards.</p>
 </section>
 
 <section>
@@ -199,6 +201,11 @@ document.addEventListener('item-transferred', (e) => {
         <td>A child item</td>
         <td>Item is grabbed for keyboard reorder</td>
       </tr>
+      <tr>
+        <td><code>data-just-dropped</code></td>
+        <td>A child item</td>
+        <td>Briefly set after a drop (mouse or keyboard) to trigger a flash animation. Removed automatically after the animation ends.</td>
+      </tr>
     </tbody>
   </table>
 </section>
@@ -221,12 +228,26 @@ document.addEventListener('item-transferred', (e) => {
   <h2>Drag Handles</h2>
   <p>Add <code>data-drag-handle</code> to a descendant element to constrain where the drag can be initiated. Only clicks on the handle start a drag &mdash; clicking other parts of the item does not.</p>
 
+  <browser-window
+    src="/docs/examples/demos/drag-surface-handles.html"
+    url="https://vanilla-breeze.dev/drag-handles"
+    title="Drag Handles Demo"
+    shadow>
+  </browser-window>
+
   <code-block language="html" show-lines label="Using a drag handle">{{ handleCode | escape }}</code-block>
 </section>
 
 <section>
   <h2>Horizontal Layout</h2>
   <p>Set <code>data-orientation="horizontal"</code> to switch keyboard navigation to Left/Right arrows and use horizontal position for drop calculations.</p>
+
+  <browser-window
+    src="/docs/examples/demos/drag-surface-horizontal.html"
+    url="https://vanilla-breeze.dev/horizontal"
+    title="Horizontal Layout Demo"
+    shadow>
+  </browser-window>
 
   <code-block language="html" show-lines label="Horizontal sortable">{{ horizontalCode | escape }}</code-block>
 </section>
@@ -281,14 +302,25 @@ document.addEventListener('item-transferred', (e) => {
       </tr>
       <tr>
         <td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td>
-        <td>Move the grabbed item left/right (horizontal orientation).</td>
+        <td>Move the grabbed item left/right (horizontal orientation), or transfer between grouped surfaces (vertical orientation).</td>
       </tr>
       <tr>
         <td><kbd>Escape</kbd></td>
-        <td>Cancel the reorder and return the item to its original position.</td>
+        <td>Cancel the reorder and return the item to its original position. Does not undo cross-surface transfers.</td>
       </tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Keyboard Transfer</h2>
+  <p>When surfaces share a <code>data-group</code>, grabbed items can move between them using the <strong>perpendicular</strong> arrow keys:</p>
+  <ul>
+    <li><strong>Vertical surfaces</strong> (default): <kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> transfer to the adjacent surface</li>
+    <li><strong>Horizontal surfaces</strong>: <kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> transfer to the adjacent surface</li>
+  </ul>
+  <p>Adjacent surfaces are determined by visual position (left-to-right, top-to-bottom). The transfer is committed immediately &mdash; pressing <kbd>Escape</kbd> afterwards will not undo a cross-surface transfer, only cancel further reordering within the new surface.</p>
+  <p>After transfer, the item receives focus in the new surface and a <code>data-just-dropped</code> flash animation plays. The <code>item-transferred</code> event fires on the receiving surface.</p>
 </section>
 
 <section>

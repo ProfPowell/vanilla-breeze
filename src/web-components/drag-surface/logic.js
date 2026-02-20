@@ -31,6 +31,7 @@ class DragSurface extends HTMLElement {
   #liveRegion = null;
   #keyboardOriginalIndex = null;
   #reducedMotion = false;
+  #lastPointerTarget = null;
 
   connectedCallback() {
     this.setAttribute('role', 'list');
@@ -100,6 +101,7 @@ class DragSurface extends HTMLElement {
   // --- Drag Events ---
 
   #setupDragListeners() {
+    this.addEventListener('pointerdown', (e) => { this.#lastPointerTarget = e.target; });
     this.addEventListener('dragstart', this.#onDragStart.bind(this));
     this.addEventListener('dragover', this.#onDragOver.bind(this));
     this.addEventListener('dragleave', this.#onDragLeave.bind(this));
@@ -111,9 +113,10 @@ class DragSurface extends HTMLElement {
     const item = e.target.closest('[draggable="true"]');
     if (!item || item.parentElement !== this || this.hasAttribute('data-drag-disabled')) return;
 
-    // Handle drag-handle constraint
+    // Handle drag-handle constraint — check the original pointerdown target,
+    // not e.target (which is always the draggable element in dragstart)
     const handle = item.querySelector('[data-drag-handle]');
-    if (handle && !handle.contains(e.target)) {
+    if (handle && !handle.contains(this.#lastPointerTarget)) {
       e.preventDefault();
       return;
     }
@@ -174,6 +177,7 @@ class DragSurface extends HTMLElement {
       this.#insertAtIndex(item, dropIndex);
       this.#updateSortOrders();
       const newIndex = this.#indexOf(item);
+      this.#flashDrop(item);
       this.dispatchEvent(new CustomEvent('items-reordered', {
         bubbles: true,
         detail: {
@@ -189,6 +193,7 @@ class DragSurface extends HTMLElement {
       this.#insertAtIndex(item, dropIndex);
       this.#updateSortOrders();
       source.#updateSortOrders();
+      this.#flashDrop(item);
 
       this.dispatchEvent(new CustomEvent('item-transferred', {
         bubbles: true,
@@ -238,6 +243,7 @@ class DragSurface extends HTMLElement {
         item.setAttribute('aria-grabbed', 'false');
         this.removeAttribute('data-reorder-mode');
         this.#updateSortOrders();
+        this.#flashDrop(item);
 
         const newIndex = this.#indexOf(item);
         const children = this.draggableChildren;
@@ -272,6 +278,21 @@ class DragSurface extends HTMLElement {
       return;
     }
 
+    // Arrow navigation between items (not grabbed)
+    if (!isGrabbed && (e.key === prevKey || e.key === nextKey)) {
+      e.preventDefault();
+      const children = this.draggableChildren;
+      const currentIndex = children.indexOf(item);
+      const newIndex = e.key === prevKey
+        ? Math.max(0, currentIndex - 1)
+        : Math.min(children.length - 1, currentIndex + 1);
+      if (newIndex !== currentIndex) {
+        children[newIndex].focus();
+      }
+      return;
+    }
+
+    // Reorder grabbed item
     if (isGrabbed && (e.key === prevKey || e.key === nextKey)) {
       e.preventDefault();
       const children = this.draggableChildren;
@@ -285,6 +306,50 @@ class DragSurface extends HTMLElement {
         item.focus();
         this.#announce(`Position ${newIndex + 1} of ${children.length}`);
       }
+      return;
+    }
+
+    // Perpendicular arrows = cross-surface transfer
+    const transferPrev = isHorizontal ? 'ArrowUp' : 'ArrowLeft';
+    const transferNext = isHorizontal ? 'ArrowDown' : 'ArrowRight';
+
+    if (isGrabbed && (e.key === transferPrev || e.key === transferNext)) {
+      e.preventDefault();
+      if (!this.group) return;
+      const direction = e.key === transferNext ? 1 : -1;
+      const target = this.#findAdjacentSurface(direction);
+      if (!target) return;
+
+      // Transfer item
+      target.appendChild(item);
+      target.#updateSortOrders();
+      this.#updateSortOrders();
+      target.#flashDrop(item);
+      item.focus();
+
+      // Announce
+      const label = target.getAttribute('aria-label') || 'next surface';
+      target.#announce(`Moved to ${label}`);
+
+      // Dispatch transfer event
+      target.dispatchEvent(new CustomEvent('item-transferred', {
+        bubbles: true,
+        detail: {
+          item,
+          itemId: item.dataset.id,
+          fromSurface: this,
+          toSurface: target,
+          newIndex: target.draggableChildren.indexOf(item),
+          fromOrder: this.sortedOrder,
+          toOrder: target.sortedOrder,
+        }
+      }));
+
+      // Hand off reorder mode to the target surface
+      this.removeAttribute('data-reorder-mode');
+      target.setAttribute('data-reorder-mode', '');
+      this.#keyboardOriginalIndex = null;
+      // Cross-surface transfer is committed immediately — Escape won't undo it
       return;
     }
 
@@ -302,7 +367,44 @@ class DragSurface extends HTMLElement {
       this.#announce('Reorder cancelled');
       this.dispatchEvent(new CustomEvent('reorder-end', { bubbles: true }));
       this.#keyboardOriginalIndex = null;
+      return;
     }
+
+    // Escape when not grabbed — leave the surface
+    if (!isGrabbed && e.key === 'Escape') {
+      e.preventDefault();
+      item.blur();
+    }
+  }
+
+  // --- Visual Feedback ---
+
+  #flashDrop(item) {
+    item.setAttribute('data-just-dropped', '');
+    item.addEventListener('animationend', () => {
+      item.removeAttribute('data-just-dropped');
+    }, { once: true });
+    // Fallback removal if animation doesn't fire (reduced motion)
+    setTimeout(() => item.removeAttribute('data-just-dropped'), 500);
+  }
+
+  // --- Cross-Surface ---
+
+  #findAdjacentSurface(direction) {
+    if (!this.group) return null;
+    const all = [...document.querySelectorAll(`drag-surface[data-group="${this.group}"]`)];
+    if (all.length < 2) return null;
+
+    // Sort by visual position (left-to-right, top-to-bottom)
+    all.sort((a, b) => {
+      const ar = a.getBoundingClientRect();
+      const br = b.getBoundingClientRect();
+      return ar.left - br.left || ar.top - br.top;
+    });
+
+    const index = all.indexOf(this);
+    const target = all[index + direction];
+    return target || null;
   }
 
   // --- Helpers ---

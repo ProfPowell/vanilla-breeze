@@ -1,9 +1,22 @@
 /* Grab cursor on draggable items */
-[draggable="true"] { cursor: grab; }
+[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
 [draggable="true"]:active { cursor: grabbing; }
 
+/* Focus ring on draggable items for keyboard navigation */
+[draggable="true"]:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
 /* Item being dragged */
-[data-dragging] { opacity: 0.4; }
+[data-dragging] {
+  opacity: 0.4;
+  transform: scale(0.97);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
 
 /* Valid drop target highlight */
 [data-drag-over] {
@@ -13,14 +26,38 @@
 }
 
 /* Drop position indicators */
+[data-drop-target] {
+  position: relative;
+}
+
 [data-drop-target="before"]::before,
 [data-drop-target="after"]::after {
   content: "";
-  display: block;
-  height: 3px;
+  position: absolute;
+  inset-inline: 0;
+  block-size: 3px;
   background: var(--color-interactive);
   border-radius: 2px;
-  margin-block: 0.25rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-drop-target="before"]::before {
+  inset-block-start: 0;
+}
+
+[data-drop-target="after"]::after {
+  inset-block-end: 0;
+}
+
+/* Drop flash — brief highlight on landing */
+@keyframes vb-drop-flash {
+  0%   { box-shadow: 0 0 0 3px var(--color-interactive); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+[data-just-dropped] {
+  animation: vb-drop-flash 0.4s var(--motion-snappy, ease) forwards;
 }
 
 /* Keyboard reorder mode */
@@ -34,4 +71,22 @@
 [data-drag-disabled] [draggable] {
   cursor: default;
   opacity: 0.7;
+}
+
+/* Empty surface drop indicator — appears when no child has a position indicator */
+drag-surface[data-drag-over]:not(:has([data-drop-target]))::after {
+  content: "";
+  display: block;
+  flex: 1;
+  min-block-size: 3rem;
+  border: 2px dashed color-mix(in oklab, var(--color-interactive) 40%, transparent);
+  border-radius: var(--radius-s, 4px);
+  background: color-mix(in oklab, var(--color-interactive) 8%, transparent);
+  pointer-events: none;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-dragging] { transform: none; transition: none; }
+  [data-just-dropped] { animation: none; }
 }
