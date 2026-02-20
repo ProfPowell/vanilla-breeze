@@ -1,0 +1,120 @@
+---
+layout: layouts/attribute.njk
+title: "spellcheck"
+description: "Enable or disable browser spell-checking on editable content. Disable it for code editors, technical identifiers, and fields where red underlines create noise."
+attributeName: spellcheck
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/spellcheck/
+permalink: /docs/attributes/spellcheck/
+---
+
+{% set basicExample %}<!-- Enable spell-checking (the default for most text inputs) -->
+<textarea spellcheck="true" rows="4">Check my speling here.</textarea>
+
+<!-- Disable spell-checking -->
+<textarea spellcheck="false" rows="4">const x = myFunc();</textarea>{% endset %}
+
+{% set codeEditorExample %}<!-- Code input: disable spellcheck to avoid red underlines on syntax -->
+<label for="css-input">Custom CSS</label>
+<textarea id="css-input" spellcheck="false" rows="6"
+  placeholder=".my-class { color: rebeccapurple; }"></textarea>
+
+<!-- Username field: proper nouns and handles are not dictionary words -->
+<label for="handle">Username</label>
+<input type="text" id="handle" spellcheck="false" autocomplete="username" />{% endset %}
+
+{% set contenteditableExample %}<!-- Spellcheck on a contenteditable region -->
+<div contenteditable="true" spellcheck="true">
+  Type here and misspelled wrods will be underlined.
+</div>
+
+<!-- Code block: no spell-checking -->
+<pre contenteditable="true" spellcheck="false"><code>function greet(name) {
+  return `Hello, ${name}!`;
+}</code></pre>{% endset %}
+
+{% set inheritanceExample %}<!-- Parent sets spellcheck="false", children inherit it -->
+<form spellcheck="false">
+  <label for="sku">Product SKU</label>
+  <input type="text" id="sku" />
+
+  <label for="serial">Serial Number</label>
+  <input type="text" id="serial" />
+
+  <!-- Override: enable spellcheck on just the description -->
+  <label for="desc">Description</label>
+  <textarea id="desc" spellcheck="true" rows="3"></textarea>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>spellcheck</code> attribute controls whether the browser runs its built-in spell-checker on editable content. When enabled, misspelled words are underlined (typically with a red wavy line), and the user can right-click to see suggestions.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>true</code></td><td>Spell-checking is enabled. Misspelled words are underlined.</td></tr>
+    <tr><td><code>false</code></td><td>Spell-checking is disabled. No underlines appear.</td></tr>
+    <tr><td>(not set)</td><td>Inherits from the parent element. If no ancestor sets it, the browser uses its default (typically enabled for textareas and contenteditable, varies for inputs).</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>When to Disable Spell-Checking</h2>
+<p>The default spell-checker works well for prose, but it creates visual noise on content that is not natural language. Disable it for:</p>
+<ul>
+  <li><strong>Code editors:</strong> Programming syntax triggers false positives on nearly every line</li>
+  <li><strong>Username and handle fields:</strong> User-created names are not dictionary words</li>
+  <li><strong>Product codes and SKUs:</strong> Alphanumeric identifiers like <code>WX-4829-BLK</code></li>
+  <li><strong>Technical identifiers:</strong> API keys, serial numbers, license keys</li>
+  <li><strong>URL and path fields:</strong> File paths and URLs are not prose</li>
+  <li><strong>Email address fields:</strong> Addresses like <code>j.smith@example.com</code> trigger underlines</li>
+</ul>
+
+<code-block language="html" label="Disabling for technical fields">{{ codeEditorExample | escape }}</code-block>
+
+<h2>Inheritance</h2>
+<p>The <code>spellcheck</code> attribute inherits from parent elements. Set it on a container to control all editable descendants at once, then override on individual fields as needed.</p>
+
+<code-block language="html" label="Inheritance and overrides">{{ inheritanceExample | escape }}</code-block>
+
+<h2>Contenteditable Elements</h2>
+<p>Spell-checking also works on elements with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a>. This is particularly useful for rich text editors where you want spell-checking on prose but not on embedded code blocks.</p>
+
+<code-block language="html" label="Contenteditable with spellcheck">{{ contenteditableExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Leave it enabled for prose fields.</strong> Spell-checking helps all users, including those with dyslexia, catch errors before submission.</li>
+  <li><strong>Screen readers do not announce spell-check underlines.</strong> Users relying on assistive technology will not know a word is flagged unless they use the context menu.</li>
+  <li><strong>Avoid disabling globally.</strong> Only disable on fields where the content is inherently non-prose. A blanket <code>spellcheck="false"</code> on the entire page removes a useful writing aid.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Browser dictionaries vary:</strong> Each browser ships its own dictionary. A word flagged in Chrome may be accepted in Firefox and vice versa.</li>
+  <li><strong>No custom dictionary API:</strong> There is no standard way to add domain-specific terms (medical, legal, technical) to the browser dictionary. Users must add words one at a time via the context menu.</li>
+  <li><strong>Timing varies:</strong> Some browsers check on focus, others on blur, and others continuously while typing. The attribute controls whether checking happens, not when.</li>
+  <li><strong>Suggestion UI is browser-controlled:</strong> You cannot customize the appearance of underlines or the suggestion popup.</li>
+  <li><strong>No programmatic access:</strong> JavaScript cannot read which words are flagged or trigger a spell-check pass.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>For applications that need domain-specific vocabulary — medical terminology, legal terms, or internal product names — <code>data-spellcheck</code> could provide custom dictionary support, visual correction UI with inline suggestions, and domain vocabulary that supplements the browser's built-in checker.</p>
+</aside>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a> — make any element editable</li>
+    <li><a href="/docs/attributes/autocorrect/"><code>autocorrect</code></a> — control automatic text correction on mobile</li>
+    <li><a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> — control automatic capitalization on mobile keyboards</li>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language so the browser uses the correct dictionary</li>
+  </ul>
+</section>

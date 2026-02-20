@@ -1,0 +1,134 @@
+---
+layout: layouts/attribute.njk
+title: "poster"
+description: "Video placeholder image displayed before playback begins. Prevents blank frames, reduces layout shift, and pairs with preload for bandwidth savings."
+attributeName: poster
+attributeType: native
+nativeGroup: Media
+category: native
+currentPath: /docs/attributes/poster/
+permalink: /docs/attributes/poster/
+---
+
+{% set basicExample %}<!-- Basic poster: show a frame before playback -->
+<video
+  src="product-demo.mp4"
+  poster="product-demo-poster.jpg"
+  controls
+  width="640"
+  height="360">
+</video>{% endset %}
+
+{% set bandwidthExample %}<!-- Maximum bandwidth savings: poster + no preload -->
+<video
+  src="hero-video.mp4"
+  poster="hero-poster.jpg"
+  preload="none"
+  controls
+  width="1280"
+  height="720">
+</video>{% endset %}
+
+{% set clsExample %}<!-- Prevent layout shift: always set width and height -->
+<video
+  src="tutorial.mp4"
+  poster="tutorial-poster.jpg"
+  controls
+  width="1920"
+  height="1080"
+  style="max-width: 100%; height: auto;">
+</video>{% endset %}
+
+{% set sourceExample %}<!-- Poster with multiple sources -->
+<video poster="interview-poster.jpg" controls width="640" height="360">
+  <source src="interview.webm" type="video/webm" />
+  <source src="interview.mp4" type="video/mp4" />
+  <p>Your browser does not support HTML video.
+    <a href="interview.mp4">Download the video</a>.</p>
+</video>{% endset %}
+
+{% set responsivePosterExample %}<!-- Responsive poster with picture-like approach -->
+<video
+  src="showcase.mp4"
+  poster="showcase-poster-1280.jpg"
+  controls
+  width="1280"
+  height="720"
+  style="max-width: 100%; height: auto;">
+</video>
+
+<!-- For different poster images at different sizes,
+     generate the poster at the video's intrinsic resolution.
+     The browser scales it to fit the video element. -->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>poster</code> attribute specifies an image to display in the video player before the user starts playback. Without a poster, the browser shows either a blank rectangle or attempts to display the first frame of the video, which may be a black screen or a loading artifact.</p>
+<p>A well-chosen poster image communicates the video's content, encourages users to play, and prevents visual jank during page load.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>URL string</td><td>Display this image before playback begins</td></tr>
+    <tr><td>(absent)</td><td>Browser shows the first frame once available, or a blank area</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic poster usage">{{ basicExample | escape }}</code-block>
+
+<h2>Bandwidth Savings</h2>
+<p>Pair <code>poster</code> with <code>preload="none"</code> for maximum bandwidth savings. The browser loads only the poster image and does not download any video data until the user clicks play. This is ideal for pages with multiple videos or hero sections where the video is decorative.</p>
+
+<code-block language="html" label="Poster with preload none">{{ bandwidthExample | escape }}</code-block>
+
+<p>Without a poster, <code>preload="none"</code> shows a completely blank video element, which gives users no indication that a video exists.</p>
+
+<h2>Preventing Layout Shift</h2>
+<p>Always set explicit <code>width</code> and <code>height</code> attributes on the <code>&lt;video&gt;</code> element alongside the poster. This lets the browser reserve the correct space before the poster image loads, preventing Cumulative Layout Shift (CLS).</p>
+
+<code-block language="html" label="Layout shift prevention">{{ clsExample | escape }}</code-block>
+
+<h3>Aspect Ratio Match</h3>
+<p>The poster image should match the video's aspect ratio. If the poster has a different aspect ratio, the browser letterboxes or pillarboxes it within the video element, which can look awkward and misrepresent the content.</p>
+
+<h2>Multiple Sources</h2>
+<p>When using <code>&lt;source&gt;</code> elements for format fallback, the <code>poster</code> attribute goes on the <code>&lt;video&gt;</code> element itself, not on the individual sources.</p>
+
+<code-block language="html" label="Poster with source elements">{{ sourceExample | escape }}</code-block>
+
+<h2>Poster Image Tips</h2>
+<ul>
+  <li><strong>Use a representative frame</strong> that accurately reflects the video content. Avoid generic thumbnails.</li>
+  <li><strong>Optimize the poster image</strong> with WebP or AVIF format and appropriate compression. A 200KB poster defeats the purpose of <code>preload="none"</code>.</li>
+  <li><strong>Add a play button overlay</strong> in the poster image if the native controls do not make it obvious the element is a video.</li>
+  <li><strong>Generate posters at the video's intrinsic resolution.</strong> The browser scales the image to fill the video element.</li>
+</ul>
+
+<code-block language="html" label="Responsive poster">{{ responsivePosterExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The poster image is purely visual. It has no <code>alt</code> attribute mechanism. Ensure the surrounding content (heading, caption, or <code>aria-label</code>) describes the video for screen reader users.</li>
+  <li>Do not embed critical text information solely in the poster image. If the poster contains a title or call-to-action, provide that text in HTML as well.</li>
+  <li>The poster is replaced once playback begins, so it does not need to remain accessible during playback.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>There is no <code>srcset</code> equivalent for poster images. The browser loads a single poster URL regardless of screen size or pixel density.</li>
+  <li>On some mobile browsers, the poster may not display if <code>autoplay</code> is set, since the video begins playing immediately.</li>
+  <li>If the poster URL fails to load, the browser falls back to showing the first video frame (or a blank area if <code>preload="none"</code>).</li>
+  <li>The poster is not displayed after the video has played and been paused. Once playback starts, the current frame is shown instead.</li>
+  <li>Safari on iOS may show its own play button overlay on top of the poster, which can conflict with play buttons baked into the poster image.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/preload/"><code>preload</code></a> &mdash; media loading strategy for bandwidth control</li>
+    <li><a href="/docs/attributes/controls/"><code>controls</code></a> &mdash; show native media playback controls</li>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> element reference</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes</li>
+  </ul>
+</section>

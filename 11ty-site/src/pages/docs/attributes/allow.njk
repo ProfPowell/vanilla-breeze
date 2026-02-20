@@ -1,0 +1,165 @@
+---
+layout: layouts/attribute.njk
+title: "allow"
+description: "Iframe permissions policy for camera, microphone, fullscreen, geolocation, and other powerful APIs. Controls which features embedded content can access."
+attributeName: allow
+attributeType: native
+nativeGroup: Media
+category: native
+currentPath: /docs/attributes/allow/
+permalink: /docs/attributes/allow/
+---
+
+{% set basicExample %}<!-- Allow fullscreen for a video embed -->
+<iframe
+  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  allow="fullscreen"
+  width="560"
+  height="315"
+  title="Video embed"></iframe>
+
+<!-- Allow camera and microphone for a video call widget -->
+<iframe
+  src="https://meet.example.com/room/abc"
+  allow="camera; microphone"
+  width="800"
+  height="600"
+  title="Video call"></iframe>{% endset %}
+
+{% set originExample %}<!-- Restrict permissions to specific origins -->
+<iframe
+  src="https://maps.example.com/embed"
+  allow="geolocation https://maps.example.com"
+  width="600"
+  height="400"
+  title="Map embed"></iframe>
+
+<!-- Allow autoplay only from the embedded origin -->
+<iframe
+  src="https://player.example.com/video/123"
+  allow="autoplay https://player.example.com; fullscreen"
+  width="640"
+  height="360"
+  title="Video player"></iframe>{% endset %}
+
+{% set commonExample %}<!-- YouTube / Vimeo embed -->
+<iframe
+  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+  width="560"
+  height="315"
+  title="YouTube video"></iframe>
+
+<!-- Payment form in iframe -->
+<iframe
+  src="https://checkout.stripe.com/pay/cs_live_abc123"
+  allow="payment"
+  width="400"
+  height="600"
+  title="Payment form"></iframe>{% endset %}
+
+{% set sandboxExample %}<!-- sandbox restricts broadly; allow enables specific APIs -->
+<iframe
+  src="https://widget.example.com"
+  sandbox="allow-scripts allow-same-origin"
+  allow="clipboard-write"
+  width="400"
+  height="300"
+  title="Widget"></iframe>
+
+<!-- Strict sandbox + targeted permissions -->
+<iframe
+  src="https://tool.example.com"
+  sandbox="allow-scripts allow-forms"
+  allow="fullscreen"
+  width="600"
+  height="400"
+  title="Interactive tool"></iframe>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>allow</code> attribute controls which browser APIs an embedded <code>&lt;iframe&gt;</code> can access. By default, most powerful features (camera, microphone, geolocation, payment) are blocked in iframes. The <code>allow</code> attribute explicitly grants permission for specific capabilities.</p>
+<p>This is part of the Permissions Policy specification (formerly known as Feature Policy). It operates as an allowlist: only the features you name are enabled for the embedded content.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+
+<h2>Values</h2>
+<p>The attribute takes a semicolon-separated list of permission directives. Each directive is a feature name, optionally followed by an origin allowlist.</p>
+
+<table>
+  <thead><tr><th>Directive</th><th>Grants Access To</th></tr></thead>
+  <tbody>
+    <tr><td><code>camera</code></td><td>Video capture via <code>getUserMedia()</code></td></tr>
+    <tr><td><code>microphone</code></td><td>Audio capture via <code>getUserMedia()</code></td></tr>
+    <tr><td><code>fullscreen</code></td><td>Fullscreen API (<code>requestFullscreen()</code>)</td></tr>
+    <tr><td><code>geolocation</code></td><td>Location access via Geolocation API</td></tr>
+    <tr><td><code>payment</code></td><td>Payment Request API</td></tr>
+    <tr><td><code>autoplay</code></td><td>Media autoplay without user gesture</td></tr>
+    <tr><td><code>picture-in-picture</code></td><td>Picture-in-Picture API</td></tr>
+    <tr><td><code>clipboard-write</code></td><td>Write to the system clipboard</td></tr>
+    <tr><td><code>clipboard-read</code></td><td>Read from the system clipboard</td></tr>
+    <tr><td><code>encrypted-media</code></td><td>Encrypted Media Extensions (DRM playback)</td></tr>
+    <tr><td><code>gyroscope</code></td><td>Gyroscope sensor API</td></tr>
+    <tr><td><code>accelerometer</code></td><td>Accelerometer sensor API</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic allow usage">{{ basicExample | escape }}</code-block>
+
+<h2>Origin Restrictions</h2>
+<p>By default, a directive grants the permission to the iframe's own origin. You can restrict it further by specifying an explicit origin after the directive name.</p>
+
+<code-block language="html" label="Origin-restricted permissions">{{ originExample | escape }}</code-block>
+
+<h3>Syntax Patterns</h3>
+<table>
+  <thead><tr><th>Syntax</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>allow="camera"</code></td><td>Allow camera for the iframe's origin</td></tr>
+    <tr><td><code>allow="camera *"</code></td><td>Allow camera for any origin (broad)</td></tr>
+    <tr><td><code>allow="camera https://a.com"</code></td><td>Allow camera only for <code>https://a.com</code></td></tr>
+    <tr><td><code>allow="camera 'self'"</code></td><td>Allow camera only for the embedding page's origin</td></tr>
+    <tr><td><code>allow="camera 'none'"</code></td><td>Explicitly deny camera access</td></tr>
+  </tbody>
+</table>
+
+<h2>Common Embed Patterns</h2>
+
+<code-block language="html" label="Common embed patterns">{{ commonExample | escape }}</code-block>
+
+<h3>Principle of Least Privilege</h3>
+<p>Only grant the permissions the embed actually needs. Copy-pasting a long allow string from an embed provider without understanding each directive is a security risk. Review each permission and remove those your embed does not require.</p>
+
+<h2>Relationship to sandbox</h2>
+<p>The <a href="/docs/attributes/sandbox/"><code>sandbox</code></a> attribute and <code>allow</code> serve different purposes:</p>
+<ul>
+  <li><strong><code>sandbox</code></strong> restricts broad capabilities: scripts, forms, navigation, popups, same-origin access</li>
+  <li><strong><code>allow</code></strong> controls specific browser APIs: camera, microphone, fullscreen, payment</li>
+</ul>
+<p>They can be used together for defense in depth. The <code>sandbox</code> handles structural restrictions while <code>allow</code> gates individual API access.</p>
+
+<code-block language="html" label="Sandbox with allow">{{ sandboxExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The <code>allow</code> attribute itself has no direct accessibility impact, but the features it gates do. For example, denying <code>fullscreen</code> on a video embed prevents users who rely on enlarged video from using fullscreen mode.</li>
+  <li>Always include a <code>title</code> attribute on iframes. This is the primary way screen readers identify the iframe's purpose, regardless of permissions.</li>
+  <li>If an embed requires camera or microphone access, ensure the surrounding page explains why before the user encounters the permission prompt.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>The <code>allow</code> attribute only works on <code>&lt;iframe&gt;</code> elements. It has no effect on other embedded content like <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>.</li>
+  <li>Permissions granted via <code>allow</code> still require the user to approve the browser's permission prompt (for camera, microphone, geolocation, etc.). The attribute enables the prompt; it does not bypass consent.</li>
+  <li>Some directives are not yet supported in all browsers. Check compatibility for newer permissions like <code>clipboard-read</code> and sensor APIs.</li>
+  <li>Permissions cannot be granted at a more permissive level than the parent page. If the top-level page has denied camera via a <code>Permissions-Policy</code> HTTP header, no iframe can enable it.</li>
+  <li>The older <code>allowfullscreen</code> and <code>allowpaymentrequest</code> boolean attributes still work but are superseded by the <code>allow</code> syntax. Prefer <code>allow="fullscreen"</code> over <code>allowfullscreen</code>.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; iframe security sandbox with granular tokens</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent to iframes</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> element reference</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for iframes</li>
+  </ul>
+</section>

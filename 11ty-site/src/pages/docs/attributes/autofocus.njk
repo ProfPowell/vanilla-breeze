@@ -1,0 +1,126 @@
+---
+layout: layouts/attribute.njk
+title: "autofocus"
+description: "Automatically focuses an element when the page loads or a dialog opens. Use sparingly — unexpected focus changes can disorient users."
+attributeName: autofocus
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/autofocus/
+permalink: /docs/attributes/autofocus/
+---
+
+{% set basicExample %}<!-- Focus the search box on page load -->
+<label for="search">Search</label>
+<input type="search" id="search" autofocus placeholder="Search..." />
+
+<!-- Focus a select menu -->
+<label for="priority">Priority</label>
+<select id="priority" autofocus>
+  <option>Low</option>
+  <option>Medium</option>
+  <option>High</option>
+</select>{% endset %}
+
+{% set dialogExample %}{% raw %}<dialog id="confirm-dialog">
+  <h2>Confirm Deletion</h2>
+  <p>This action cannot be undone.</p>
+  <footer>
+    <button autofocus>Cancel</button>
+    <button class="danger">Delete</button>
+  </footer>
+</dialog>
+
+<script>
+document.getElementById('confirm-dialog').showModal();
+// The "Cancel" button receives focus when the dialog opens,
+// not when the page loads.
+</script>{% endraw %}{% endset %}
+
+{% set popoverExample %}<button popovertarget="settings-panel">Settings</button>
+
+<div id="settings-panel" popover>
+  <h3>Quick Settings</h3>
+  <label for="theme">Theme</label>
+  <select id="theme" autofocus>
+    <option>Light</option>
+    <option>Dark</option>
+    <option>System</option>
+  </select>
+</div>{% endset %}
+
+{% set loginExample %}<form class="stacked" action="/login" method="post">
+  <label for="username">Username</label>
+  <input type="text" id="username" autofocus autocomplete="username" />
+
+  <label for="password">Password</label>
+  <input type="password" id="password" autocomplete="current-password" />
+
+  <button type="submit">Log In</button>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>autofocus</code> attribute automatically moves keyboard focus to an element when the page loads, or when a <a href="/docs/attributes/popover/"><code>popover</code></a> or <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> opens. It is a boolean attribute — its presence activates the behavior.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, and any element with <a href="/docs/attributes/tabindex/"><code>tabindex</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>autofocus</code> (present)</td><td>Element receives focus automatically when the page loads or its dialog/popover opens</td></tr>
+    <tr><td>(absent)</td><td>No automatic focus. The default.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<p><strong>Only one per page.</strong> If multiple elements have <code>autofocus</code>, the browser focuses the <em>last</em> one in DOM order. This is rarely intentional — use it on exactly one element.</p>
+
+<h2>Dialog Interaction</h2>
+<p>Inside a <code>&lt;dialog&gt;</code>, the <code>autofocus</code> attribute fires when the dialog opens via <code>showModal()</code> or <code>show()</code>, not on page load. This is the recommended way to control initial focus inside modals.</p>
+<p>If no element inside the dialog has <code>autofocus</code>, the dialog itself receives focus. For confirmation dialogs, place <code>autofocus</code> on the least-destructive action (typically "Cancel").</p>
+
+<code-block language="html" label="Dialog with autofocus">{{ dialogExample | escape }}</code-block>
+
+<h2>Popover Interaction</h2>
+<p>The same deferred behavior applies to <code>popover</code> elements. The <code>autofocus</code> fires when the popover is shown, giving you control over which element receives initial focus inside the popover.</p>
+
+<code-block language="html" label="Popover with autofocus">{{ popoverExample | escape }}</code-block>
+
+<h2>Practical Example</h2>
+<p>A login page where the username field is focused on load, letting the user start typing immediately.</p>
+
+<code-block language="html" label="Login form">{{ loginExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Use sparingly.</strong> Autofocus moves the reading position past all content before the focused element. Screen reader users may miss page headings, instructions, or error messages above the field.</li>
+  <li><strong>Search pages are a good fit.</strong> When the entire purpose of a page is to enter a search query, autofocusing the search input matches user expectations.</li>
+  <li><strong>Forms mid-page are risky.</strong> If a form sits below introductory content, autofocus will scroll past that content. Users who need the context before filling in the form are left disoriented.</li>
+  <li><strong>Dialogs are a natural fit.</strong> Autofocus inside a dialog is expected behavior — the user just triggered the dialog and anticipates interacting with it.</li>
+  <li><strong>Mobile impact:</strong> On mobile devices, autofocus may trigger the virtual keyboard immediately, obscuring half the viewport before the user has oriented themselves.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Scrolls the page:</strong> If the autofocused element is below the fold, the browser scrolls to it. Use <code>preventScroll</code> with <code>element.focus({ preventScroll: true })</code> in JavaScript if you need focus without scrolling.</li>
+  <li><strong>No dynamic re-focus:</strong> The attribute only fires once — on page load or dialog/popover open. Changing the attribute via JavaScript after load has no effect. Use <code>element.focus()</code> instead.</li>
+  <li><strong>Browser UI may override:</strong> Some browsers restore focus to the address bar or a previously focused field when the user navigates back, overriding <code>autofocus</code>.</li>
+  <li><strong>Multiple autofocus:</strong> The spec says only the first element should receive focus, but browsers use the last one. Do not rely on either behavior — use it on exactly one element.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>For dynamic content scenarios where native <code>autofocus</code> falls short — such as focus trapping within a region, restoring focus after removal, or managing focus across dynamically loaded content — consider <code>data-focus-trap</code>. It provides trap boundaries, focus restoration on close, and programmatic focus management without the one-shot limitation of the native attribute.</p>
+</aside>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — control focus order and programmatic focusability</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — modal dialogs with built-in focus management</li>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> — overlay content with deferred autofocus behavior</li>
+    <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> — remove elements from the focus order entirely</li>
+  </ul>
+</section>

@@ -1,0 +1,141 @@
+---
+layout: layouts/attribute.njk
+title: "preload"
+description: "Media loading strategy for audio and video elements. Balance bandwidth savings against playback responsiveness with none, metadata, or auto."
+attributeName: preload
+attributeType: native
+nativeGroup: Media
+category: native
+currentPath: /docs/attributes/preload/
+permalink: /docs/attributes/preload/
+---
+
+{% set basicExample %}<!-- Don't preload anything: saves bandwidth, delays playback -->
+<video src="interview.mp4" preload="none" controls
+  poster="interview-poster.jpg"
+  width="640" height="360">
+</video>
+
+<!-- Load metadata only: duration, dimensions, first frame -->
+<audio src="podcast-ep12.mp3" preload="metadata" controls></audio>
+
+<!-- Let the browser decide (usually buffers the whole file) -->
+<video src="tutorial.mp4" preload="auto" controls
+  width="640" height="360">
+</video>{% endset %}
+
+{% set heroExample %}<!-- Hero video: poster + no preload = optimal for above-the-fold -->
+<video
+  src="hero-background.mp4"
+  poster="hero-poster.jpg"
+  preload="none"
+  controls
+  width="1280"
+  height="720"
+  style="max-width: 100%; height: auto;">
+</video>{% endset %}
+
+{% set audioExample %}<!-- Podcast player: metadata preload shows duration immediately -->
+<audio src="episode-42.mp3" preload="metadata" controls></audio>
+
+<!-- Sound effect that must play instantly on interaction -->
+<audio src="notification.mp3" preload="auto"></audio>{% endset %}
+
+{% set autoplayExample %}<!-- autoplay overrides preload: the browser must load to play -->
+<video
+  src="background-loop.mp4"
+  autoplay
+  muted
+  loop
+  playsinline
+  preload="auto"
+  width="1280"
+  height="720">
+</video>{% endset %}
+
+{% set multipleExample %}<!-- Page with several videos: preload none on all but the first -->
+<section>
+  <h2>Featured</h2>
+  <video src="featured.mp4" preload="metadata" controls
+    poster="featured-poster.jpg" width="640" height="360">
+  </video>
+</section>
+
+<section>
+  <h2>More Videos</h2>
+  <video src="extra-1.mp4" preload="none" controls
+    poster="extra-1-poster.jpg" width="640" height="360">
+  </video>
+  <video src="extra-2.mp4" preload="none" controls
+    poster="extra-2-poster.jpg" width="640" height="360">
+  </video>
+</section>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>preload</code> attribute hints to the browser how much of a media file to download before the user presses play. It controls the tradeoff between bandwidth usage and playback responsiveness.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a>, <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>What Loads</th><th>Tradeoff</th></tr></thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nothing until play is triggered</td><td>Maximum bandwidth savings; playback starts with a delay</td></tr>
+    <tr><td><code>metadata</code></td><td>Duration, dimensions, first frame (small download)</td><td>Good balance; UI shows duration and timeline immediately</td></tr>
+    <tr><td><code>auto</code></td><td>Browser decides, often buffers the entire file</td><td>Fastest playback start; highest bandwidth cost</td></tr>
+    <tr><td><code>""</code> (empty string)</td><td>Same as <code>auto</code></td><td>Equivalent to <code>auto</code> per the spec</td></tr>
+  </tbody>
+</table>
+<p>The default when the attribute is absent varies by browser, but most treat it as <code>metadata</code>.</p>
+
+<code-block language="html" label="Preload values">{{ basicExample | escape }}</code-block>
+
+<h2>Choosing a Strategy</h2>
+<h3>preload="none" + poster</h3>
+<p>Best for pages with multiple videos or hero sections. The browser downloads zero video data, showing only the poster image. Pair with <a href="/docs/attributes/poster/"><code>poster</code></a> to avoid a blank rectangle.</p>
+
+<code-block language="html" label="Hero video pattern">{{ heroExample | escape }}</code-block>
+
+<h3>preload="metadata"</h3>
+<p>Best for audio players and single-video pages. The browser fetches just enough data to display the duration, timeline scrubber, and first video frame. This is typically a few hundred kilobytes.</p>
+
+<code-block language="html" label="Audio preload patterns">{{ audioExample | escape }}</code-block>
+
+<h3>preload="auto"</h3>
+<p>Best when instant playback is critical (e.g., a short sound effect, a video that users are very likely to play). The browser may buffer the entire file, so use sparingly on pages with multiple media elements.</p>
+
+<h2>Interaction with autoplay</h2>
+<p>The <code>autoplay</code> attribute overrides <code>preload</code>. The browser must download the media to begin playback, regardless of the preload value. Setting <code>preload="none"</code> alongside <code>autoplay</code> has no practical effect.</p>
+
+<code-block language="html" label="Autoplay overrides preload">{{ autoplayExample | escape }}</code-block>
+
+<h2>Multiple Media on One Page</h2>
+<p>On pages with several videos, set <code>preload="none"</code> on all but the primary video. This prevents the browser from downloading gigabytes of data the user may never watch.</p>
+
+<code-block language="html" label="Multiple videos">{{ multipleExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><code>preload="none"</code> with no <code>poster</code> renders a blank box, which gives sighted users no indication a video exists. Always pair with a poster or surrounding descriptive text.</li>
+  <li>When <code>preload="metadata"</code> loads the duration, screen readers can announce the media length, improving the user's ability to decide whether to play.</li>
+  <li>Preload does not affect whether <a href="/docs/attributes/controls/"><code>controls</code></a> are shown. Ensure controls are present (or a custom UI is provided) regardless of preload strategy.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>It is a hint, not a command.</strong> Browsers may ignore <code>preload</code> based on network conditions, data saver mode, or internal heuristics. Chrome on Android with Data Saver forces <code>preload="none"</code>.</li>
+  <li>There is no event to confirm which preload strategy the browser actually used.</li>
+  <li><code>preload</code> does not apply to <code>&lt;source&gt;</code> elements. It goes on the parent <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code> element.</li>
+  <li>Changing <code>preload</code> via JavaScript after the media element is in the DOM may have no effect if the browser has already started loading.</li>
+  <li>On iOS Safari, video preloading behavior is heavily restricted. The browser often treats all values as <code>none</code> until a user gesture triggers playback.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; placeholder image before video playback</li>
+    <li><a href="/docs/attributes/controls/"><code>controls</code></a> &mdash; show native media playback controls</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes</li>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> element reference</li>
+  </ul>
+</section>

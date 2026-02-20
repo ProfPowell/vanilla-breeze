@@ -1,0 +1,130 @@
+---
+layout: layouts/attribute.njk
+title: "cite"
+description: "Provide a source URL for quoted or edited content. A semantic attribute on blockquote, del, and ins that is invisible to users but available to machines."
+attributeName: cite
+attributeType: native
+nativeGroup: Structure
+category: native
+currentPath: /docs/attributes/cite/
+permalink: /docs/attributes/cite/
+---
+
+{% set blockquoteExample %}<!-- cite attribute: machine-readable source URL -->
+<blockquote cite="https://www.w3.org/TR/html52/grouping-content.html#the-blockquote-element">
+  <p>Content inside a blockquote must be quoted from another source,
+  whose address, if it has one, may be cited in the cite attribute.</p>
+</blockquote>
+
+<!-- Pair with visible attribution for humans -->
+<figure>
+  <blockquote cite="https://example.com/article">
+    <p>The only way to do great work is to love what you do.</p>
+  </blockquote>
+  <figcaption>
+    — Steve Jobs,
+    <cite><a href="https://example.com/article">Stanford Commencement Speech</a></cite>
+  </figcaption>
+</figure>{% endset %}
+
+{% set editExample %}<!-- Source explaining why the change was made -->
+<p>Our hours are
+  <del cite="https://example.com/changelog#hours-update"
+       datetime="2024-06-01">9 AM to 5 PM</del>
+  <ins cite="https://example.com/changelog#hours-update"
+       datetime="2024-06-01">8 AM to 6 PM</ins>.
+</p>{% endset %}
+
+{% set visibleExample %}<!-- The cite ATTRIBUTE is hidden; make attribution visible too -->
+<blockquote cite="https://example.com/interview">
+  <p>Simplicity is the ultimate sophistication.</p>
+</blockquote>
+<p>
+  — Attributed to Leonardo da Vinci, from
+  <a href="https://example.com/interview">The Design of Everyday Things</a>
+</p>{% endset %}
+
+{% set distinctionExample %}<!-- cite ATTRIBUTE: invisible URL on blockquote -->
+<blockquote cite="https://example.com/paper.pdf">
+  <p>Research indicates a 40% improvement in outcomes.</p>
+</blockquote>
+
+<!-- cite ELEMENT: visible reference to a creative work -->
+<p>As discussed in <cite>The Design of Everyday Things</cite>,
+affordances shape user behavior.</p>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>cite</code> <strong>attribute</strong> provides a URL pointing to the source document for quoted or edited content. It is a purely semantic annotation — browsers do not display the URL, and no link is created. The value is intended for search engines, content scrapers, and other tooling that processes structured content.</p>
+<p><strong>Important:</strong> This page documents the <code>cite</code> <em>attribute</em>, not the <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a>. They serve different purposes.</p>
+<p><strong>Applies to:</strong></p>
+<ul>
+  <li><code>&lt;blockquote&gt;</code> — URL of the original source being quoted</li>
+  <li><code>&lt;del&gt;</code> — URL of the document explaining the deletion</li>
+  <li><code>&lt;ins&gt;</code> — URL of the document explaining the insertion</li>
+</ul>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Element</th><th>cite Value</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>&lt;blockquote&gt;</code></td><td>URL</td><td>The source of the quoted text</td></tr>
+    <tr><td><code>&lt;del&gt;</code></td><td>URL</td><td>A document explaining the removal</td></tr>
+    <tr><td><code>&lt;ins&gt;</code></td><td>URL</td><td>A document explaining the addition</td></tr>
+  </tbody>
+</table>
+
+<h2>Blockquote Attribution</h2>
+<p>Use the <code>cite</code> attribute to record where a quote came from. Since browsers do not display it, always pair it with visible attribution for human readers.</p>
+
+<code-block language="html" label="Blockquote with cite">{{ blockquoteExample | escape }}</code-block>
+
+<p>The <code>&lt;figure&gt;</code> + <code>&lt;figcaption&gt;</code> pattern is the recommended way to add visible attribution to a blockquote, with the <code>&lt;cite&gt;</code> element wrapping the work title inside the caption.</p>
+
+<h2>Edit Documentation</h2>
+<p>On <code>&lt;del&gt;</code> and <code>&lt;ins&gt;</code>, the <code>cite</code> attribute points to a changelog, ticket, or document explaining why the edit was made. Pair it with <a href="/docs/attributes/datetime/"><code>datetime</code></a> for a complete edit record.</p>
+
+<code-block language="html" label="Edit sources">{{ editExample | escape }}</code-block>
+
+<h2>Visible vs Hidden Attribution</h2>
+<p>The <code>cite</code> attribute is not rendered by any browser. If attribution matters to your users, you must provide it as visible content. The attribute alone is not enough for humans.</p>
+
+<code-block language="html" label="Visible attribution">{{ visibleExample | escape }}</code-block>
+
+<h2>Attribute vs Element</h2>
+<p>HTML has both a <code>cite</code> attribute and a <code>&lt;cite&gt;</code> element. They are related but different.</p>
+
+<table>
+  <thead><tr><th>Feature</th><th><code>cite</code> Attribute</th><th><code>&lt;cite&gt;</code> Element</th></tr></thead>
+  <tbody>
+    <tr><td>What it holds</td><td>A URL</td><td>The title of a work</td></tr>
+    <tr><td>Visible</td><td>No</td><td>Yes (rendered in italics by default)</td></tr>
+    <tr><td>Used on</td><td><code>&lt;blockquote&gt;</code>, <code>&lt;del&gt;</code>, <code>&lt;ins&gt;</code></td><td>Inline, anywhere</td></tr>
+    <tr><td>Purpose</td><td>Machine-readable source link</td><td>Human-readable work title</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Attribute vs element">{{ distinctionExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers do not announce the <code>cite</code> attribute. It provides no direct benefit to assistive technology users.</li>
+  <li>Always include visible attribution (a link, author name, or work title) alongside the <code>cite</code> attribute so all users can identify the source.</li>
+  <li>The <code>&lt;cite&gt;</code> element is announced by screen readers as part of the normal text flow, making it the better choice for user-facing attribution.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>No browser renders the <code>cite</code> attribute value. It is completely invisible in the default rendering.</li>
+  <li>There is no built-in way for users to access the URL without inspecting the source code.</li>
+  <li>The value is not validated — any string is accepted, even invalid URLs.</li>
+  <li>The <code>cite</code> attribute is rarely used in practice because most developers are unaware of it or find its invisibility unhelpful.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> — block-level quotations</li>
+    <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code> element</a> — visible title of a creative work</li>
+    <li><a href="/docs/attributes/datetime/"><code>datetime</code></a> — machine-readable timestamps on del and ins</li>
+  </ul>
+</section>

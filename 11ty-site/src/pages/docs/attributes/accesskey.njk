@@ -1,0 +1,146 @@
+---
+layout: layouts/attribute.njk
+title: "accesskey"
+description: "Assigns a keyboard shortcut to activate or focus an element. Useful for power-user interfaces, but comes with significant discoverability and conflict challenges."
+attributeName: accesskey
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/accesskey/
+permalink: /docs/attributes/accesskey/
+---
+
+{% set basicExample %}<!-- Keyboard shortcut to focus the search field -->
+<label for="search">Search</label>
+<input type="text" id="search" accesskey="s" placeholder="Press Alt+S to focus" />
+
+<!-- Shortcut to activate a button -->
+<button accesskey="n">New Item</button>
+
+<!-- Shortcut on a link -->
+<a href="/dashboard" accesskey="d">Dashboard</a>{% endset %}
+
+{% set adminExample %}<nav aria-label="Admin shortcuts">
+  <a href="/admin/orders" accesskey="o">Orders</a>
+  <a href="/admin/products" accesskey="p">Products</a>
+  <a href="/admin/users" accesskey="u">Users</a>
+  <a href="/admin/settings" accesskey="t">Settings</a>
+</nav>
+
+<main>
+  <label for="admin-search">Search</label>
+  <input type="search" id="admin-search" accesskey="s" />
+
+  <button accesskey="n">New Order</button>
+</main>{% endset %}
+
+{% set discoverExample %}{% raw %}<footer>
+  <p>Keyboard shortcuts: press
+    <kbd>Alt+S</kbd> to search,
+    <kbd>Alt+N</kbd> for new item,
+    <kbd>Alt+D</kbd> for dashboard.
+  </p>
+</footer>{% endraw %}{% endset %}
+
+{% set multipleKeysExample %}<!-- Multiple keys: browser picks the first available one -->
+<button accesskey="s n">Save</button>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>accesskey</code> attribute assigns a keyboard shortcut to an element. When the user presses the platform-specific modifier key combination plus the assigned key, the browser either activates the element (buttons, links) or focuses it (inputs, textareas).</p>
+<p><strong>Applies to:</strong> Any HTML element, though it is most useful on interactive elements like <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, and <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Single character</td><td>A case-insensitive letter or digit that serves as the shortcut key</td></tr>
+    <tr><td>Space-separated characters</td><td>Multiple fallback keys. The browser picks the first one it can use without conflict.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>Platform Modifiers</h2>
+<p>The modifier key combination varies by platform and browser. For an <code>accesskey="s"</code>:</p>
+
+<table>
+  <thead><tr><th>Platform</th><th>Modifier</th><th>Full Shortcut</th></tr></thead>
+  <tbody>
+    <tr><td>Windows (Chrome, Edge)</td><td><kbd>Alt</kbd></td><td><kbd>Alt+S</kbd></td></tr>
+    <tr><td>Windows (Firefox)</td><td><kbd>Alt+Shift</kbd></td><td><kbd>Alt+Shift+S</kbd></td></tr>
+    <tr><td>macOS (Chrome, Edge)</td><td><kbd>Ctrl+Alt</kbd></td><td><kbd>Ctrl+Alt+S</kbd></td></tr>
+    <tr><td>macOS (Firefox)</td><td><kbd>Ctrl+Alt</kbd></td><td><kbd>Ctrl+Alt+S</kbd></td></tr>
+    <tr><td>macOS (Safari)</td><td><kbd>Ctrl+Alt</kbd></td><td><kbd>Ctrl+Alt+S</kbd></td></tr>
+    <tr><td>Linux (Chrome)</td><td><kbd>Alt</kbd></td><td><kbd>Alt+S</kbd></td></tr>
+    <tr><td>Linux (Firefox)</td><td><kbd>Alt+Shift</kbd></td><td><kbd>Alt+Shift+S</kbd></td></tr>
+  </tbody>
+</table>
+
+<p>This inconsistency is one of the biggest challenges with <code>accesskey</code>. Users must know their platform's modifier, and documentation must account for all variants.</p>
+
+<h2>Practical Example</h2>
+
+<h3>Admin Dashboard</h3>
+<p>Internal tools and admin dashboards are the strongest use case. Users interact with the same interface daily and benefit from keyboard shortcuts to common actions.</p>
+
+<code-block language="html" label="Admin dashboard shortcuts">{{ adminExample | escape }}</code-block>
+
+<h3>Documenting Shortcuts</h3>
+<p>Because there is no standard browser UI to show available access keys, you must document them yourself. A footer, help dialog, or tooltip can list the available shortcuts.</p>
+
+<code-block language="html" label="Shortcut documentation">{{ discoverExample | escape }}</code-block>
+
+<h3>Multiple Fallback Keys</h3>
+<p>You can provide space-separated characters. The browser uses the first one that does not conflict with an existing shortcut.</p>
+
+<code-block language="html" label="Multiple keys">{{ multipleKeysExample | escape }}</code-block>
+
+<h2>Conflict Risks</h2>
+<p>Access keys share keyboard shortcut space with the browser and the operating system. Common conflicts include:</p>
+<ul>
+  <li><kbd>Alt+D</kbd> — focuses the address bar in most browsers on Windows</li>
+  <li><kbd>Alt+F</kbd> — opens the File menu in many applications</li>
+  <li><kbd>Alt+E</kbd> — opens the Edit menu</li>
+  <li><kbd>Ctrl+Alt+</kbd> combinations — used for special characters on some keyboard layouts (European layouts in particular)</li>
+</ul>
+<p>When a conflict occurs, browser behavior varies: some prioritize the access key, others prioritize the browser shortcut, and some require pressing the key twice. Test thoroughly on target platforms.</p>
+
+<h2>Best Suited For</h2>
+<ul>
+  <li><strong>Internal admin tools:</strong> Power users who learn the shortcuts and use them daily</li>
+  <li><strong>Power-user applications:</strong> Data entry, content management, or workflow tools</li>
+  <li><strong>Kiosk or single-purpose UIs:</strong> Controlled environments where browser shortcut conflicts are manageable</li>
+</ul>
+<p>For public-facing websites, the discoverability gap and conflict risks typically outweigh the benefits. Consider visible keyboard hints or a dedicated shortcut system instead.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Discoverability is the core problem.</strong> There is no standard, universal way to surface available access keys. Screen readers can announce them, but sighted keyboard users have no built-in way to discover them.</li>
+  <li><strong>Screen reader interaction:</strong> Most screen readers announce the access key when the element receives focus (e.g., "Search, edit, Alt+S"). However, screen readers often use their own keyboard shortcuts that may conflict.</li>
+  <li><strong>Do not rely on access keys as the only way to reach content.</strong> They are a convenience shortcut, not a replacement for logical tab order and visible navigation.</li>
+  <li><strong>Avoid overriding screen reader shortcuts.</strong> JAWS and NVDA use <kbd>Alt</kbd> and <kbd>Ctrl</kbd> combinations extensively. Test with actual screen readers.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>No standard modifier:</strong> The activation key combination varies across platforms and browsers. You cannot control which modifier is used.</li>
+  <li><strong>No discoverability UI:</strong> Unlike macOS menu shortcuts or Windows underlined letters, browsers provide no visual indication that access keys exist.</li>
+  <li><strong>Conflicts are unavoidable:</strong> Some keys will conflict with browser, OS, or assistive technology shortcuts on some platforms.</li>
+  <li><strong>Single characters only:</strong> You cannot assign multi-key sequences (like <kbd>G</kbd> then <kbd>D</kbd>) using <code>accesskey</code>.</li>
+  <li><strong>Locale issues:</strong> The assigned character must be on the user's physical keyboard. Letters from one locale may not exist on keyboards in another.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>The <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> attribute provides a more robust keyboard shortcut system: multi-key sequences, conflict detection, and a discoverable shortcuts dialog activated with <kbd>Ctrl+/</kbd>. Use <code>data-hotkey</code> when you need reliable, cross-platform keyboard shortcuts without the limitations of native <code>accesskey</code>.</p>
+</aside>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a> — VB keyboard shortcut system with conflict detection</li>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — control focus order for keyboard navigation</li>
+    <li><a href="/docs/accessibility/">Accessibility Guide</a> — overview of VB's accessibility patterns</li>
+  </ul>
+</section>

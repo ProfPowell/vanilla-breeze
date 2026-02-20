@@ -1,0 +1,124 @@
+---
+layout: layouts/attribute.njk
+title: "download"
+description: "Triggers a file download instead of navigating to the URL. Optionally suggests a filename for the saved file."
+attributeName: download
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/download/
+permalink: /docs/attributes/download/
+---
+
+{% set basicExample %}<!-- Download instead of navigating (uses the URL's filename) -->
+<a href="/files/annual-report.pdf" download>Download Report</a>
+
+<!-- Suggest a custom filename -->
+<a href="/files/report-2024-q4-final-v3.pdf" download="annual-report.pdf">
+  Download Report
+</a>
+
+<!-- Works on <area> elements too -->
+<map name="downloads">
+  <area shape="rect" coords="0,0,100,50"
+    href="/files/brochure.pdf" download="brochure.pdf" alt="Download brochure" />
+</map>{% endset %}
+
+{% set crossOriginExample %}<!-- Same-origin: download works as expected -->
+<a href="/files/data.csv" download="export.csv">Export CSV</a>
+
+<!-- Cross-origin: browser IGNORES the download attribute and navigates instead -->
+<a href="https://other-site.com/files/data.csv" download="export.csv">
+  This will navigate, not download
+</a>{% endset %}
+
+{% set blobExample %}{% raw %}<button id="export-btn">Export Data as JSON</button>
+
+<script>
+document.getElementById('export-btn').addEventListener('click', () => {
+  const data = { users: 142, active: 98, date: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'export.json';
+  link.click();
+
+  URL.revokeObjectURL(url);
+});
+</script>{% endraw %}{% endset %}
+
+{% set canvasExample %}{% raw %}<canvas id="chart" width="400" height="300"></canvas>
+<a id="save-chart" download="chart.png">Save Chart as PNG</a>
+
+<script>
+const canvas = document.getElementById('chart');
+const link = document.getElementById('save-chart');
+// After drawing on the canvas...
+link.href = canvas.toDataURL('image/png');
+</script>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>download</code> attribute on <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> and <code>&lt;area&gt;</code> elements tells the browser to download the linked resource as a file instead of navigating to it. Without this attribute, the browser decides based on the MIME type — PDFs might open in a viewer, images display inline, and HTML navigates.</p>
+<p>When a value is provided, it serves as the suggested filename for the download. The user can still change the name in the save dialog.</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Usage</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>download</code> (no value)</td><td>Download the file using the filename from the URL</td></tr>
+    <tr><td><code>download="name.ext"</code></td><td>Suggest a custom filename for the download</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a>, <code>&lt;area&gt;</code></p>
+
+<code-block language="html" label="Basic download links">{{ basicExample | escape }}</code-block>
+
+<h2>Cross-Origin Limitation</h2>
+<p>For security reasons, the <code>download</code> attribute is <strong>ignored on cross-origin URLs</strong>. If the link points to a different origin, the browser navigates to the URL instead of downloading. This prevents a malicious page from silently downloading files from other domains onto the user's device.</p>
+
+<code-block language="html" label="Cross-origin behavior">{{ crossOriginExample | escape }}</code-block>
+
+<p>To enable cross-origin downloads, the server must set the <code>Content-Disposition: attachment</code> HTTP header. This is a server-side solution that works regardless of the <code>download</code> attribute.</p>
+
+<h2>Generated Content with Blob URLs</h2>
+<p>The most powerful use of <code>download</code> is with Blob URLs for client-generated content. Create the data in JavaScript, wrap it in a Blob, generate a temporary URL, and trigger a download — no server round-trip required.</p>
+
+<code-block language="html" label="Download generated JSON">{{ blobExample | escape }}</code-block>
+
+<h3>Canvas to Image Download</h3>
+<p>Combine <code>download</code> with <code>canvas.toDataURL()</code> to let users save canvas drawings as image files.</p>
+
+<code-block language="html" label="Save canvas as PNG">{{ canvasExample | escape }}</code-block>
+
+<h2>Filename Behavior</h2>
+<ul>
+  <li>If <code>download</code> has no value, the browser derives the filename from the URL path (e.g. <code>/files/report.pdf</code> saves as <code>report.pdf</code>).</li>
+  <li>If a value is provided, it overrides the URL-derived name but the server's <code>Content-Disposition</code> header takes priority over both.</li>
+  <li>The browser may sanitize the suggested filename, stripping path separators and other unsafe characters.</li>
+  <li>For Blob URLs, there is no URL-derived name, so providing a <code>download</code> value is essential.</li>
+</ul>
+
+<h2>Security Considerations</h2>
+<p>The cross-origin restriction exists to prevent drive-by downloads from untrusted origins. Even for same-origin resources, browsers may prompt the user before downloading executable file types (<code>.exe</code>, <code>.bat</code>, <code>.sh</code>). Some browsers block downloads entirely from sandboxed iframes unless <code>allow-downloads</code> is present.</p>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Cross-origin URLs ignored:</strong> The attribute has no effect when the href points to a different origin. Use server-side <code>Content-Disposition</code> headers instead.</li>
+  <li><strong>No progress feedback:</strong> There is no built-in way to show download progress for <code>download</code>-triggered downloads. Large files start downloading silently.</li>
+  <li><strong>Content-Disposition wins:</strong> If the server sends a <code>Content-Disposition</code> header, its filename takes priority over the <code>download</code> attribute value.</li>
+  <li><strong>Data URL size limits:</strong> Very large data URLs may fail in some browsers. Prefer Blob URLs for generated content over a few megabytes.</li>
+  <li><strong>Mobile behavior varies:</strong> Some mobile browsers open files in a viewer app rather than saving to the filesystem, even with the <code>download</code> attribute.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/target/"><code>target</code></a> &mdash; where links open (download overrides navigation)</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; link relationship types</li>
+    <li><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a> &mdash; CORS mode for cross-origin resources</li>
+  </ul>
+</section>

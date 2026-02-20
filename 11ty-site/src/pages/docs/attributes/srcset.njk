@@ -1,0 +1,137 @@
+---
+layout: layouts/attribute.njk
+title: "srcset"
+description: "Responsive images: provide multiple image sources for different screen sizes and pixel densities. Works with sizes for resolution switching and picture for art direction."
+attributeName: srcset
+attributeType: native
+nativeGroup: Media
+category: native
+currentPath: /docs/attributes/srcset/
+permalink: /docs/attributes/srcset/
+---
+
+{% set widthExample %}<!-- Width descriptors: browser picks the best file based on viewport -->
+<img
+  src="photo-400.jpg"
+  srcset="photo-400.jpg 400w,
+          photo-800.jpg 800w,
+          photo-1200.jpg 1200w"
+  sizes="(min-width: 768px) 50vw, 100vw"
+  alt="Landscape photo" />{% endset %}
+
+{% set densityExample %}<!-- Density descriptors: match device pixel ratio -->
+<img
+  src="logo.png"
+  srcset="logo.png 1x,
+          logo@2x.png 2x,
+          logo@3x.png 3x"
+  alt="Company logo" />{% endset %}
+
+{% set pictureExample %}<!-- Art direction: different crops for different breakpoints -->
+<picture>
+  <source
+    media="(min-width: 1024px)"
+    srcset="hero-wide-800.jpg 800w,
+            hero-wide-1600.jpg 1600w"
+    sizes="100vw" />
+  <source
+    media="(min-width: 640px)"
+    srcset="hero-medium-600.jpg 600w,
+            hero-medium-1200.jpg 1200w"
+    sizes="100vw" />
+  <img
+    src="hero-narrow-400.jpg"
+    srcset="hero-narrow-400.jpg 400w,
+            hero-narrow-800.jpg 800w"
+    sizes="100vw"
+    alt="Mountain landscape" />
+</picture>{% endset %}
+
+{% set formatExample %}<!-- Modern formats with fallback -->
+<picture>
+  <source
+    type="image/avif"
+    srcset="photo-400.avif 400w,
+            photo-800.avif 800w" />
+  <source
+    type="image/webp"
+    srcset="photo-400.webp 400w,
+            photo-800.webp 800w" />
+  <img
+    src="photo-400.jpg"
+    srcset="photo-400.jpg 400w,
+            photo-800.jpg 800w"
+    sizes="(min-width: 768px) 50vw, 100vw"
+    alt="Vacation photo" />
+</picture>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>srcset</code> attribute lets you provide multiple image files at different sizes or resolutions so the browser can pick the best one for the current viewport and device pixel ratio. It replaces the old pattern of serving a single oversized image to every device.</p>
+<p>There are two approaches: <strong>width descriptors</strong> (with the <code>sizes</code> attribute) for resolution switching, and <strong>density descriptors</strong> for fixed-size images at different pixel ratios. For entirely different crops at different breakpoints, use the <code>&lt;picture&gt;</code> element for art direction.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <code>&lt;source&gt;</code> (inside <code>&lt;picture&gt;</code>)</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Descriptor</th><th>Syntax</th><th>Use Case</th></tr></thead>
+  <tbody>
+    <tr><td>Width (<code>w</code>)</td><td><code>photo-800.jpg 800w</code></td><td>Browser picks based on viewport width + <code>sizes</code></td></tr>
+    <tr><td>Density (<code>x</code>)</td><td><code>logo@2x.png 2x</code></td><td>Fixed-size images at different pixel ratios (icons, logos)</td></tr>
+  </tbody>
+</table>
+<p>You cannot mix <code>w</code> and <code>x</code> descriptors in the same <code>srcset</code>.</p>
+
+<h2>Width Descriptors + sizes</h2>
+<p>For content images that scale with the layout, use width descriptors. The <code>sizes</code> attribute tells the browser how wide the image will render at each breakpoint, so it can calculate which file to download before CSS is parsed.</p>
+
+<code-block language="html" label="Width descriptors with sizes">{{ widthExample | escape }}</code-block>
+
+<p>The <code>sizes</code> value <code>(min-width: 768px) 50vw, 100vw</code> means: above 768px the image occupies 50% of the viewport; below that, 100%. The browser multiplies this by the device pixel ratio to pick a file.</p>
+
+<h3>Common Mistake</h3>
+<p>Using <code>srcset</code> with width descriptors but omitting <code>sizes</code> causes the browser to assume <code>sizes="100vw"</code>. On a page where the image is only 50% wide, the browser downloads a file twice as large as needed.</p>
+
+<h2>Density Descriptors</h2>
+<p>For fixed-size images (logos, icons, avatars), density descriptors are simpler. The browser matches the descriptor to the device pixel ratio.</p>
+
+<code-block language="html" label="Density descriptors">{{ densityExample | escape }}</code-block>
+
+<h2>Art Direction with picture</h2>
+<p>When you need different crops or aspect ratios at different breakpoints (not just different resolutions of the same image), use <code>&lt;picture&gt;</code> with <code>&lt;source media="..."&gt;</code> elements. The browser picks the first <code>&lt;source&gt;</code> whose <code>media</code> query matches.</p>
+
+<code-block language="html" label="Art direction">{{ pictureExample | escape }}</code-block>
+
+<h2>Format Negotiation</h2>
+<p>Combine <code>&lt;picture&gt;</code> with <code>type</code> to serve modern formats (AVIF, WebP) with JPEG fallback. The browser picks the first format it supports.</p>
+
+<code-block language="html" label="Format fallback">{{ formatExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The <code>alt</code> attribute is still required on the <code>&lt;img&gt;</code> element. It applies regardless of which source the browser selects.</li>
+  <li>Screen readers announce the same alt text no matter which resolution loads, so ensure it describes the content, not the file size.</li>
+  <li>Art direction changes (e.g., cropping out context at mobile sizes) may lose information relevant to the alt text. Review alt descriptions for all crops.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>The browser's source selection is a hint, not a guarantee. It may cache a higher-resolution image from a previous visit and reuse it.</li>
+  <li>You cannot control which image the browser selects via JavaScript; the selection algorithm is internal.</li>
+  <li><code>srcset</code> does not work on CSS <code>background-image</code>. Use <code>image-set()</code> in CSS for similar resolution switching.</li>
+  <li>Width descriptors require accurate <code>sizes</code> values. If your layout changes via CSS later, the <code>sizes</code> may become stale.</li>
+  <li>Density descriptors are limited to fixed-size images. For fluid layouts, width descriptors are the correct choice.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>A future <code>data-responsive</code> attribute could simplify srcset authoring by generating width descriptors and sizes from a single base URL pattern, plus provide a dev overlay showing which source the browser selected and why.</p>
+</aside>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and fetch priority for images</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> element reference</li>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; placeholder images for video elements</li>
+  </ul>
+</section>

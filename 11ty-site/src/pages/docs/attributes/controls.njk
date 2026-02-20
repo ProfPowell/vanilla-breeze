@@ -1,0 +1,148 @@
+---
+layout: layouts/attribute.njk
+title: "controls"
+description: "Show native media controls on audio and video elements. Boolean attribute with controlslist for selective button removal."
+attributeName: controls
+attributeType: native
+nativeGroup: Media
+category: native
+currentPath: /docs/attributes/controls/
+permalink: /docs/attributes/controls/
+---
+
+{% set basicExample %}<!-- Video with native controls -->
+<video src="demo.mp4" controls width="640" height="360">
+</video>
+
+<!-- Audio with native controls -->
+<audio src="podcast.mp3" controls></audio>
+
+<!-- No controls attribute = no visible UI -->
+<video src="background.mp4" autoplay muted loop playsinline
+  width="1280" height="720">
+</video>{% endset %}
+
+{% set controlslistExample %}<!-- Hide the download button -->
+<video src="training.mp4" controls controlslist="nodownload"
+  width="640" height="360">
+</video>
+
+<!-- Hide download and fullscreen -->
+<video src="preview.mp4" controls controlslist="nodownload nofullscreen"
+  width="640" height="360">
+</video>
+
+<!-- Hide remote playback (Chromecast / AirPlay) -->
+<audio src="music.mp3" controls controlslist="noremoteplayback"></audio>
+
+<!-- Combine all restrictions -->
+<video src="confidential.mp4" controls
+  controlslist="nodownload nofullscreen noremoteplayback"
+  width="640" height="360">
+</video>{% endset %}
+
+{% set keyboardExample %}<!-- All keyboard shortcuts work when the media element has focus -->
+<video src="lecture.mp4" controls width="640" height="360">
+</video>
+
+<!-- Keyboard controls (browser-dependent):
+  Space / K      Play / Pause
+  Left arrow     Seek backward 5-10 seconds
+  Right arrow    Seek forward 5-10 seconds
+  Up arrow       Volume up
+  Down arrow     Volume down
+  M              Toggle mute
+  F              Toggle fullscreen (video only)
+  Home           Jump to beginning
+  End            Jump to end
+-->{% endset %}
+
+{% set toggleExample %}{% raw %}<video id="player" src="demo.mp4" width="640" height="360"></video>
+<button id="toggle-controls">Show controls</button>
+
+<script>
+const video = document.getElementById('player');
+const btn = document.getElementById('toggle-controls');
+
+btn.addEventListener('click', () => {
+  video.controls = !video.controls;
+  btn.textContent = video.controls ? 'Hide controls' : 'Show controls';
+});
+</script>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>controls</code> attribute tells the browser to display its built-in media controls: play/pause button, progress bar, volume slider, time display, and (for video) a fullscreen button. Without this attribute, the media element renders with no visible interface.</p>
+<p>This is a boolean attribute. Its presence enables controls; its absence disables them. There is no <code>controls="false"</code> — remove the attribute entirely to hide controls.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a>, <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>State</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>controls</code> (present)</td><td>Browser renders native play, pause, seek, volume, and fullscreen UI</td></tr>
+    <tr><td>(absent)</td><td>No visible controls. Media can only be controlled via JavaScript or autoplay.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic controls">{{ basicExample | escape }}</code-block>
+
+<h2>controlslist</h2>
+<p>The <code>controlslist</code> attribute selectively removes specific buttons from the native controls. It accepts a space-separated list of tokens.</p>
+
+<table>
+  <thead><tr><th>Token</th><th>Hides</th></tr></thead>
+  <tbody>
+    <tr><td><code>nodownload</code></td><td>Download button</td></tr>
+    <tr><td><code>nofullscreen</code></td><td>Fullscreen button (video only)</td></tr>
+    <tr><td><code>noremoteplayback</code></td><td>Cast / AirPlay button</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Selective button removal">{{ controlslistExample | escape }}</code-block>
+
+<p><code>controlslist</code> is supported in Chromium-based browsers. Firefox and Safari may ignore it.</p>
+
+<h2>Keyboard Controls</h2>
+<p>When the media element has focus, native controls respond to keyboard shortcuts. The exact keys vary by browser, but the common set is consistent.</p>
+
+<code-block language="html" label="Keyboard shortcuts">{{ keyboardExample | escape }}</code-block>
+
+<p>These keyboard shortcuts only work when the media element (or its controls) has focus. Use <a href="/docs/attributes/tabindex/"><code>tabindex</code></a> if you need to ensure the element is reachable via tab navigation in a custom layout.</p>
+
+<h2>Toggling Controls with JavaScript</h2>
+<p>The <code>controls</code> property can be set via JavaScript to show or hide controls dynamically. This is useful for custom players that reveal native controls on hover or as a fallback.</p>
+
+<code-block language="html" label="Toggle controls via JS">{{ toggleExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Media without controls and without custom UI is an accessibility violation.</strong> If you omit <code>controls</code>, you must provide a fully keyboard-accessible custom player. Users who cannot use a mouse have no way to play, pause, seek, or adjust volume otherwise.</li>
+  <li>Native controls are inherently accessible: they have proper ARIA roles, keyboard support, and focus management built in by the browser.</li>
+  <li>If you build a custom player, replicate all native keyboard shortcuts (space for play/pause, arrows for seek, M for mute) and provide <code>aria-label</code> values on all interactive elements.</li>
+  <li>The <code>&lt;audio&gt;</code> element without <code>controls</code> is invisible and takes up no space. Screen reader users may not know it exists. Always include <code>controls</code> on audio elements unless you provide a visible custom player.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>A future <code>&lt;media-controls&gt;</code> web component could wrap native <code>&lt;audio&gt;</code> and <code>&lt;video&gt;</code> elements with fully styled, keyboard-accessible, theme-aware controls. It would match VB's design tokens, support custom layouts, and provide consistent behavior across browsers while falling back to native controls if JavaScript fails.</p>
+</aside>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Native control styling is browser-specific and cannot be fully customized with CSS. Pseudo-elements like <code>::-webkit-media-controls-panel</code> are non-standard and may break across versions.</li>
+  <li><code>controlslist</code> hides buttons from the UI but does not prevent the underlying functionality. Users can still download the video via right-click or browser dev tools.</li>
+  <li>On iOS Safari, video controls always include a fullscreen button and an AirPlay button. <code>controlslist</code> has no effect.</li>
+  <li>The <code>controls</code> attribute is boolean. Writing <code>controls="false"</code> still shows controls because the attribute is present. Remove the attribute to hide them.</li>
+  <li>Audio elements without <code>controls</code> collapse to zero height with no visible indication of their existence.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/preload/"><code>preload</code></a> &mdash; media loading strategy for bandwidth control</li>
+    <li><a href="/docs/attributes/poster/"><code>poster</code></a> &mdash; placeholder image before video playback</li>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> element reference</li>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> &mdash; manage keyboard focus order</li>
+  </ul>
+</section>

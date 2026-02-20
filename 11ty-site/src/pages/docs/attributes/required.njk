@@ -1,0 +1,203 @@
+---
+layout: layouts/attribute.njk
+title: "required"
+description: "Prevents form submission when a field is empty. Integrates with constraint validation, CSS pseudo-classes, and screen reader announcements."
+attributeName: required
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/required/
+permalink: /docs/attributes/required/
+---
+
+{% set basicExample %}<form class="stacked">
+  <label for="name">Full Name <span aria-hidden="true">*</span></label>
+  <input type="text" id="name" name="name" required />
+
+  <label for="email">Email <span aria-hidden="true">*</span></label>
+  <input type="email" id="email" name="email" required />
+
+  <label for="bio">Bio (optional)</label>
+  <textarea id="bio" name="bio" rows="3"></textarea>
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set selectExample %}<label for="country">Country <span aria-hidden="true">*</span></label>
+<select id="country" name="country" required>
+  <option value="">-- Select a country --</option>
+  <option value="US">United States</option>
+  <option value="CA">Canada</option>
+  <option value="GB">United Kingdom</option>
+</select>{% endset %}
+
+{% set radioExample %}<fieldset>
+  <legend>Subscription Plan <span aria-hidden="true">*</span></legend>
+
+  <label>
+    <input type="radio" name="plan" value="free" required />
+    Free
+  </label>
+  <label>
+    <input type="radio" name="plan" value="pro" />
+    Pro
+  </label>
+  <label>
+    <input type="radio" name="plan" value="enterprise" />
+    Enterprise
+  </label>
+</fieldset>{% endset %}
+
+{% set checkboxExample %}<form class="stacked">
+  <label>
+    <input type="checkbox" name="terms" required />
+    I agree to the Terms of Service <span aria-hidden="true">*</span>
+  </label>
+
+  <button type="submit">Create Account</button>
+</form>{% endset %}
+
+{% set cssExample %}/* Visual indicator for required fields */
+input:required,
+select:required,
+textarea:required {
+  border-left: 3px solid var(--color-primary);
+}
+
+/* Valid required field */
+input:required:valid {
+  border-left-color: var(--color-success);
+}
+
+/* Invalid after user interaction */
+input:required:user-invalid {
+  border-left-color: var(--color-danger);
+}
+
+/* Optional fields get no special treatment */
+input:optional {
+  border-left: 3px solid transparent;
+}{% endset %}
+
+{% set customValidityExample %}{% raw %}const email = document.querySelector('#email');
+
+email.addEventListener('input', () => {
+  if (email.validity.valueMissing) {
+    email.setCustomValidity('We need your email to send the confirmation.');
+  } else if (email.validity.typeMismatch) {
+    email.setCustomValidity('This does not look like an email address.');
+  } else {
+    email.setCustomValidity(''); // Clear — field is valid
+  }
+});{% endraw %}{% endset %}
+
+{% set novalidateExample %}<form class="stacked">
+  <label for="draft-title">Title</label>
+  <input type="text" id="draft-title" name="title" required />
+
+  <label for="draft-body">Body</label>
+  <textarea id="draft-body" name="body" rows="4" required></textarea>
+
+  <footer class="actions end">
+    <!-- This button validates -->
+    <button type="submit">Publish</button>
+
+    <!-- This button skips validation -->
+    <button type="submit" formnovalidate>Save Draft</button>
+  </footer>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>required</code> attribute prevents form submission when a field is empty. The browser checks the constraint on submit and shows a native error message if the field has no value.</p>
+<p>This is the foundation of client-side form validation. It works without JavaScript, integrates with CSS pseudo-classes for styling, and is announced by screen readers.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Element</th><th>What "empty" means</th></tr></thead>
+  <tbody>
+    <tr><td>Text input</td><td>Value is an empty string</td></tr>
+    <tr><td><code>&lt;textarea&gt;</code></td><td>Value is an empty string</td></tr>
+    <tr><td><code>&lt;select&gt;</code></td><td>Selected option has <code>value=""</code></td></tr>
+    <tr><td>Checkbox</td><td>Not checked</td></tr>
+    <tr><td>Radio group</td><td>No radio in the group is selected</td></tr>
+    <tr><td>File input</td><td>No file selected</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Required text fields">{{ basicExample | escape }}</code-block>
+
+<h2>Select Elements</h2>
+<p>For <code>&lt;select required&gt;</code>, the first option must have an empty <code>value</code> attribute. This serves as the placeholder. The browser considers the field invalid as long as the empty-value option is selected.</p>
+
+<code-block language="html" label="Required select">{{ selectExample | escape }}</code-block>
+
+<h2>Radio Groups</h2>
+<p>Adding <code>required</code> to any radio button in a group makes the entire group required — at least one radio must be selected. You only need <code>required</code> on one radio, but adding it to the first one is a common convention for readability.</p>
+
+<code-block language="html" label="Required radio group">{{ radioExample | escape }}</code-block>
+
+<h2>Checkboxes</h2>
+<p>A required checkbox must be checked for the form to submit. This is the standard pattern for "I agree to the terms" checkboxes.</p>
+
+<code-block language="html" label="Required checkbox">{{ checkboxExample | escape }}</code-block>
+
+<h2>CSS Pseudo-Classes</h2>
+<p>The <code>required</code> attribute activates several CSS pseudo-classes for validation styling.</p>
+
+<table>
+  <thead><tr><th>Pseudo-class</th><th>Matches when</th></tr></thead>
+  <tbody>
+    <tr><td><code>:required</code></td><td>Field has the <code>required</code> attribute</td></tr>
+    <tr><td><code>:optional</code></td><td>Field does not have <code>required</code></td></tr>
+    <tr><td><code>:valid</code></td><td>Field satisfies all constraints</td></tr>
+    <tr><td><code>:invalid</code></td><td>Field violates a constraint (including required)</td></tr>
+    <tr><td><code>:user-invalid</code></td><td>Invalid after user has interacted with the field</td></tr>
+  </tbody>
+</table>
+
+<code-block language="css" label="Validation styling">{{ cssExample | escape }}</code-block>
+
+<p>Prefer <code>:user-invalid</code> over <code>:invalid</code>. The <code>:invalid</code> pseudo-class applies immediately on page load, which means empty required fields show error styles before the user has done anything. The <code>:user-invalid</code> pseudo-class waits until the user has interacted with the field.</p>
+
+<h2>Custom Validation Messages</h2>
+<p>Native validation messages are functional but generic. Use <code>setCustomValidity()</code> to provide context-specific messages.</p>
+
+<code-block language="js" label="Custom messages">{{ customValidityExample | escape }}</code-block>
+
+<p>Call <code>setCustomValidity('')</code> (empty string) to mark the field as valid. Forgetting this step is a common bug — the field stays invalid even after the user corrects the value.</p>
+
+<h2>Bypassing Validation</h2>
+<p>Use <code>formnovalidate</code> on a submit button to bypass all constraint validation for that specific submission. This is ideal for "Save Draft" buttons where incomplete data is acceptable.</p>
+
+<code-block language="html" label="Save draft bypasses validation">{{ novalidateExample | escape }}</code-block>
+
+<p>See <a href="/docs/attributes/novalidate/"><code>novalidate</code></a> for more on validation bypass patterns.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers announce required fields as "required". You do not need <code>aria-required="true"</code> when the native <code>required</code> attribute is present — it is redundant.</li>
+  <li>Always pair the <code>required</code> attribute with a visible indicator (like an asterisk <code>*</code>) so sighted users can identify required fields without submitting first.</li>
+  <li>Use <code>aria-hidden="true"</code> on decorative asterisks so screen readers do not announce "star" alongside "required".</li>
+  <li>Native validation messages are automatically announced by screen readers when the form is submitted with invalid fields.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><code>required</code> is a boolean attribute. <code>required="false"</code> still makes the field required. Remove the attribute entirely to make it optional.</li>
+  <li>Constraint validation does not run on <a href="/docs/attributes/disabled/"><code>disabled</code></a> or <a href="/docs/attributes/readonly/"><code>readonly</code></a> fields, even if they have the <code>required</code> attribute.</li>
+  <li>Validation only runs on form submit (or when you call <code>checkValidity()</code> / <code>reportValidity()</code> in JavaScript). Typing in a field does not trigger it.</li>
+  <li>The <a href="/docs/attributes/novalidate/"><code>novalidate</code></a> attribute on the form or <code>formnovalidate</code> on a button bypasses all constraint validation, including <code>required</code>.</li>
+  <li>Native validation tooltips cannot be styled with CSS. If you need custom styling, use <code>novalidate</code> on the form and build your own validation UI.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> — regex-based validation</li>
+    <li><a href="/docs/attributes/novalidate/"><code>novalidate</code></a> — bypass validation per form or per button</li>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> — disabling skips validation entirely</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+  </ul>
+</section>

@@ -1,0 +1,156 @@
+---
+layout: layouts/attribute.njk
+title: "open"
+description: "Toggle visibility of details disclosure widgets and dialog elements. A boolean attribute that controls whether expandable or overlay content is currently shown."
+attributeName: open
+attributeType: native
+nativeGroup: Interactivity
+category: native
+currentPath: /docs/attributes/open/
+permalink: /docs/attributes/open/
+---
+
+{% set detailsExample %}<!-- Basic disclosure widget -->
+<details>
+  <summary>System requirements</summary>
+  <ul>
+    <li>64-bit processor</li>
+    <li>4 GB RAM minimum</li>
+    <li>2 GB free disk space</li>
+  </ul>
+</details>
+
+<!-- Pre-opened on page load -->
+<details open>
+  <summary>Getting started</summary>
+  <p>Follow these steps to set up your account.</p>
+</details>{% endset %}
+
+{% set accordionExample %}<!-- Exclusive accordion: only one open at a time -->
+<details name="faq">
+  <summary>How do I reset my password?</summary>
+  <p>Go to Settings, then Security, then click "Reset Password".</p>
+</details>
+<details name="faq">
+  <summary>Can I change my username?</summary>
+  <p>Usernames can be changed once every 30 days from your profile page.</p>
+</details>
+<details name="faq">
+  <summary>How do I cancel my subscription?</summary>
+  <p>Visit Billing and click "Cancel Plan" at the bottom of the page.</p>
+</details>{% endset %}
+
+{% set dialogExample %}<!-- Dialog: open attribute makes it visible but non-modal -->
+<dialog open>
+  <p>This dialog is visible on page load, but is not modal.</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<!-- Prefer showModal() for modal behavior -->
+<dialog id="confirm-dialog">
+  <p>Are you sure?</p>
+  <button onclick="this.closest('dialog').close()">Cancel</button>
+  <button onclick="this.closest('dialog').close('confirmed')">Confirm</button>
+</dialog>
+<button onclick="document.getElementById('confirm-dialog').showModal()">
+  Delete Item
+</button>{% endset %}
+
+{% set stylingExample %}{% raw %}<style>
+  /* Style open vs closed details */
+  details[open] summary {
+    font-weight: bold;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.5rem;
+  }
+
+  /* Rotate the marker when open */
+  details[open] > summary::marker {
+    color: var(--color-primary);
+  }
+</style>{% endraw %}{% endset %}
+
+{% set jsExample %}{% raw %}<script>
+const details = document.querySelector('details');
+
+// Listen for open/close changes
+details.addEventListener('toggle', () => {
+  console.log(details.open ? 'Opened' : 'Closed');
+});
+
+// Programmatic control
+details.open = true;  // expand
+details.open = false; // collapse
+</script>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>open</code> attribute is a boolean attribute that controls the visibility of expandable content. It applies to two elements:</p>
+<ul>
+  <li><strong><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a></strong> — controls whether the disclosure widget is expanded or collapsed</li>
+  <li><strong><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a></strong> — controls whether the dialog is visible (non-modal)</li>
+</ul>
+<p>When <code>open</code> is present, the content is shown. When absent, it is hidden.</p>
+
+<h2>Details Element</h2>
+<p>On <code>&lt;details&gt;</code>, the <code>open</code> attribute determines whether the content below the <code>&lt;summary&gt;</code> is visible. Users can toggle it by clicking the summary. Add <code>open</code> in markup to have the section expanded on page load.</p>
+
+<code-block language="html" label="Details with open">{{ detailsExample | escape }}</code-block>
+
+<h2>Exclusive Accordions with name</h2>
+<p>The <code>name</code> attribute on <code>&lt;details&gt;</code> creates an exclusive accordion group. When multiple <code>&lt;details&gt;</code> elements share the same <code>name</code>, opening one automatically closes the others — no JavaScript required.</p>
+
+<code-block language="html" label="Accordion group">{{ accordionExample | escape }}</code-block>
+
+<h2>Dialog Element</h2>
+<p>On <code>&lt;dialog&gt;</code>, the <code>open</code> attribute makes the dialog visible as a non-modal overlay. However, for modal dialogs you should use <code>showModal()</code> instead, which adds the <code>open</code> attribute automatically and also provides backdrop, focus trapping, and Escape-to-close behavior.</p>
+
+<code-block language="html" label="Dialog open vs showModal">{{ dialogExample | escape }}</code-block>
+
+<table>
+  <thead><tr><th>Approach</th><th>Backdrop</th><th>Focus Trap</th><th>Escape to Close</th><th>Top Layer</th></tr></thead>
+  <tbody>
+    <tr><td><code>open</code> attribute</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td><code>showModal()</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td><code>show()</code></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+  </tbody>
+</table>
+
+<h2>Styling Open State</h2>
+<p>Use the <code>[open]</code> attribute selector to style expanded details or visible dialogs.</p>
+
+<code-block language="css" label="Styling open state">{{ stylingExample | escape }}</code-block>
+
+<h2>JavaScript Events</h2>
+<p>The <code>toggle</code> event fires on <code>&lt;details&gt;</code> when its open state changes, whether by user interaction or script. The <code>open</code> property reflects the current state.</p>
+
+<code-block language="js" label="Toggle event">{{ jsExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers announce <code>&lt;details&gt;</code> as a disclosure widget with its expanded/collapsed state.</li>
+  <li>The <code>&lt;summary&gt;</code> element is focusable and activatable via keyboard (Enter and Space).</li>
+  <li>For <code>&lt;dialog&gt;</code>, always prefer <code>showModal()</code> over the <code>open</code> attribute — it ensures proper focus management and keyboard behavior.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>The <code>name</code> attribute for exclusive accordion groups is relatively new. Older browsers will treat each <code>&lt;details&gt;</code> independently.</li>
+  <li>There is no built-in animation for <code>&lt;details&gt;</code> open/close transitions. CSS transitions on height require workarounds.</li>
+  <li>Setting <code>open</code> directly on a <code>&lt;dialog&gt;</code> in markup creates a non-modal dialog with no backdrop or focus trapping, which is rarely what you want.</li>
+  <li>The <code>toggle</code> event is not cancellable — you cannot prevent the state change from within the handler.</li>
+</ul>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>A future <code>data-accordion</code> attribute could add smooth open/close animations to <code>&lt;details&gt;</code> elements using the Web Animations API, and polyfill <code>name</code>-based exclusivity for browsers that do not yet support it.</p>
+</aside>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> — the disclosure widget element</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — the dialog element</li>
+    <li><a href="/docs/attributes/hidden/"><code>hidden</code></a> — hide elements entirely from rendering</li>
+    <li><a href="/docs/attributes/popover/"><code>popover</code></a> — overlay content with light-dismiss behavior</li>
+  </ul>
+</section>

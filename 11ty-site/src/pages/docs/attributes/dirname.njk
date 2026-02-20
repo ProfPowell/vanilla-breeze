@@ -1,0 +1,120 @@
+---
+layout: layouts/attribute.njk
+title: "dirname"
+description: "Submit the text directionality (ltr or rtl) of a form field alongside its value. Essential for multilingual applications that need to render user-generated content correctly."
+attributeName: dirname
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/dirname/
+permalink: /docs/attributes/dirname/
+---
+
+{% set basicExample %}<!-- Submits both "comment=Hello" and "comment.dir=ltr" -->
+<form method="post" action="/submit" class="stacked">
+  <label for="comment">Comment</label>
+  <input type="text" id="comment" name="comment" dirname="comment.dir" />
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set textareaExample %}<!-- Also works on textarea -->
+<form method="post" action="/submit" class="stacked">
+  <label for="review">Write your review</label>
+  <textarea id="review" name="review" dirname="review.dir" rows="4"></textarea>
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set autoExample %}<!-- Combine with dir="auto" for automatic direction detection -->
+<form method="post" action="/submit" class="stacked">
+  <label for="message">Message (type in any language)</label>
+  <input type="text" id="message" name="message" dirname="message.dir"
+    dir="auto" placeholder="English or Arabic..." />
+  <button type="submit">Submit</button>
+</form>
+
+<!-- If user types "مرحبا", submits: message=مرحبا&message.dir=rtl -->
+<!-- If user types "Hello", submits: message=Hello&message.dir=ltr -->{% endset %}
+
+{% set serverExample %}{% raw %}<!-- The server receives two fields per input -->
+<!-- For a POST request, the body might be: -->
+<!-- comment=مرحبا+بالعالم&comment.dir=rtl -->
+
+<!-- Server-side rendering (pseudocode): -->
+<p dir="{{ comment_dir }}">{{ comment }}</p>
+
+<!-- Without dirname, you'd have to guess the direction or detect
+     it server-side — both are unreliable -->{% endraw %}{% endset %}
+
+{% set multipleExample %}<form method="post" action="/submit" class="stacked">
+  <label for="title">Title</label>
+  <input type="text" id="title" name="title" dirname="title.dir" dir="auto" />
+
+  <label for="body">Body</label>
+  <textarea id="body" name="body" dirname="body.dir" dir="auto" rows="5"></textarea>
+
+  <label for="author">Author name</label>
+  <input type="text" id="author" name="author" dirname="author.dir" dir="auto" />
+
+  <button type="submit">Publish</button>
+</form>
+
+<!-- Submits up to 6 fields: title, title.dir, body, body.dir, author, author.dir -->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>dirname</code> attribute tells the browser to submit an additional form field containing the text directionality (<code>ltr</code> or <code>rtl</code>) of the input's content. This is one of the least-known HTML attributes, but it solves a real problem: when storing and redisplaying user-generated text, the server needs to know the text direction to render it correctly.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text-like types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Value</th><th>Submitted Field</th></tr></thead>
+  <tbody>
+    <tr><td><code>dirname</code></td><td>Any name (conventionally <code>fieldname.dir</code>)</td><td>Contains <code>ltr</code> or <code>rtl</code></td></tr>
+  </tbody>
+</table>
+<p>The value of <code>dirname</code> becomes the name of the extra form field. The convention is to append <code>.dir</code> to the original field name, but any name works.</p>
+
+<h2>Basic Usage</h2>
+<p>Add <code>dirname</code> to an input and the browser automatically submits the text direction alongside the value.</p>
+
+<code-block language="html" label="dirname on input">{{ basicExample | escape }}</code-block>
+
+<code-block language="html" label="dirname on textarea">{{ textareaExample | escape }}</code-block>
+
+<h2>Automatic Direction Detection</h2>
+<p>Combine <code>dirname</code> with <code>dir="auto"</code> to let the browser detect the text direction from the content the user types. This is the most powerful combination for multilingual forms.</p>
+
+<code-block language="html" label="Auto direction detection">{{ autoExample | escape }}</code-block>
+
+<h2>Server-Side Usage</h2>
+<p>The server receives the direction value and can use it when rendering the stored content back to users. This ensures that RTL text is displayed correctly even on LTR pages.</p>
+
+<code-block language="html" label="Server-side rendering">{{ serverExample | escape }}</code-block>
+
+<h2>Multiple Fields</h2>
+<p>Each field with <code>dirname</code> submits its own direction value. A form with three dirname fields submits up to six name/value pairs.</p>
+
+<code-block language="html" label="Multiple dirname fields">{{ multipleExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The <code>dirname</code> attribute itself has no direct impact on accessibility. It is a data submission mechanism.</li>
+  <li>The real accessibility benefit is downstream: when the server uses the submitted direction to set <code>dir</code> on rendered content, RTL users see their text displayed correctly.</li>
+  <li>Pair <code>dirname</code> with <code>dir="auto"</code> on the input so RTL users see their text flowing correctly as they type.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Only works on <code>&lt;input&gt;</code> and <code>&lt;textarea&gt;</code>. It is not available on <code>&lt;select&gt;</code>, <code>&lt;contenteditable&gt;</code>, or other form-like controls.</li>
+  <li>The direction reported is for the <em>entire</em> field value. If the user types mixed-direction text (e.g., Arabic with embedded English), only the overall direction is submitted.</li>
+  <li>Very few developers know about <code>dirname</code>. Most multilingual applications detect text direction on the server or client with JavaScript instead, even though <code>dirname</code> is simpler.</li>
+  <li>The extra field name must not conflict with other form field names. Using the <code>.dir</code> suffix convention avoids this.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/dir/"><code>dir</code></a> — set text direction on any element</li>
+    <li><a href="/docs/attributes/lang/"><code>lang</code></a> — declare the language of content</li>
+    <li><a href="/docs/attributes/wrap/"><code>wrap</code></a> — control textarea line-wrapping behavior</li>
+  </ul>
+</section>

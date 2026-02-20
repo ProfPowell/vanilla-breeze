@@ -1,0 +1,132 @@
+---
+layout: layouts/attribute.njk
+title: "async / defer"
+description: "Control when external scripts download and execute relative to HTML parsing. Three strategies for balancing page load speed with script execution order."
+attributeName: async-defer
+attributeType: native
+nativeGroup: Performance
+category: native
+currentPath: /docs/attributes/async-defer/
+permalink: /docs/attributes/async-defer/
+---
+
+{% set normalExample %}<!-- Normal (no attribute): blocks HTML parsing -->
+<!-- Parser stops, downloads script, executes it, then resumes parsing -->
+<script src="/js/blocking.js"></script>{% endset %}
+
+{% set asyncExample %}<!-- async: downloads in parallel, executes as soon as ready -->
+<!-- Execution order is NOT guaranteed between multiple async scripts -->
+<script src="/js/analytics.js" async></script>
+<script src="/js/ads.js" async></script>{% endset %}
+
+{% set deferExample %}<!-- defer: downloads in parallel, executes after parsing in document order -->
+<!-- Guaranteed to execute in the order they appear -->
+<script src="/js/framework.js" defer></script>
+<script src="/js/app.js" defer></script>{% endset %}
+
+{% set moduleExample %}<!-- type="module" scripts are deferred by default -->
+<script type="module" src="/js/app.js"></script>
+
+<!-- You can add async to a module to make it execute as soon as ready -->
+<script type="module" src="/js/analytics.js" async></script>
+
+<!-- Modules support top-level await -->
+<script type="module">
+  const data = await fetch('/api/config').then(r => r.json());
+  console.log(data);
+</script>{% endset %}
+
+{% set practicalExample %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Loading Strategy Example</title>
+
+  <!-- Critical CSS: render-blocking (intentional) -->
+  <link rel="stylesheet" href="/css/main.css" />
+
+  <!-- Framework: defer ensures it runs before app.js, after parsing -->
+  <script src="/js/framework.js" defer></script>
+  <script src="/js/app.js" defer></script>
+
+  <!-- Analytics: independent, order does not matter -->
+  <script src="/js/analytics.js" async></script>
+</head>
+<body>
+  <h1>Content is visible before scripts execute</h1>
+</body>
+</html>{% endset %}
+
+<h2>Overview</h2>
+<p>By default, when the browser encounters a <code>&lt;script&gt;</code> tag, it <strong>stops parsing HTML</strong>, downloads the script, executes it, and only then resumes parsing. For large scripts, this creates a visible delay before the page renders. The <code>async</code> and <code>defer</code> attributes change this behavior by allowing the download to happen in parallel with parsing.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> with a <code>src</code> attribute (external scripts only). These attributes have no effect on inline scripts.</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Strategy</th><th>Downloads</th><th>Executes</th><th>Execution Order</th></tr></thead>
+  <tbody>
+    <tr><td>(none)</td><td>Blocks parsing during download</td><td>Immediately after download</td><td>In document order</td></tr>
+    <tr><td><code>async</code></td><td>In parallel with parsing</td><td>As soon as download finishes (pauses parser)</td><td>Not guaranteed</td></tr>
+    <tr><td><code>defer</code></td><td>In parallel with parsing</td><td>After HTML is fully parsed, before <code>DOMContentLoaded</code></td><td>In document order</td></tr>
+    <tr><td><code>type="module"</code></td><td>In parallel with parsing (deferred by default)</td><td>After HTML is fully parsed</td><td>In document order</td></tr>
+  </tbody>
+</table>
+
+<h2>Normal Loading (No Attribute)</h2>
+<p>The parser stops at each script tag, fetches the file, executes it, then continues. This guarantees execution order but delays rendering.</p>
+
+<code-block language="html" label="Blocking script">{{ normalExample | escape }}</code-block>
+
+<h2>async</h2>
+<p>The script downloads in the background while parsing continues. As soon as the script finishes downloading, the parser pauses to execute it. If multiple async scripts are present, they execute in <strong>whichever order they finish downloading</strong>, not document order.</p>
+
+<code-block language="html" label="Async scripts">{{ asyncExample | escape }}</code-block>
+
+<p><strong>Best for:</strong> Independent scripts that do not depend on other scripts or DOM state — analytics, ad tags, monitoring, A/B testing.</p>
+
+<h2>defer</h2>
+<p>The script downloads in the background like async, but execution is postponed until HTML parsing is complete. Multiple deferred scripts execute in the <strong>order they appear in the document</strong>, and all run before the <code>DOMContentLoaded</code> event fires.</p>
+
+<code-block language="html" label="Deferred scripts">{{ deferExample | escape }}</code-block>
+
+<p><strong>Best for:</strong> Application scripts that need the full DOM and depend on each other's execution order — frameworks, UI code, form handlers.</p>
+
+<h2>type="module"</h2>
+<p>ES module scripts are <strong>deferred by default</strong> without needing the <code>defer</code> attribute. They also support top-level <code>await</code>, strict mode is always on, and each module has its own scope (no global variable pollution).</p>
+<p>Adding <code>async</code> to a module script makes it execute as soon as it and its dependencies are ready, similar to async on classic scripts.</p>
+
+<code-block language="html" label="Module scripts">{{ moduleExample | escape }}</code-block>
+
+<h2>Decision Table</h2>
+<table>
+  <thead><tr><th>Scenario</th><th>Use</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td>Analytics, ads, third-party widgets</td><td><code>async</code></td><td>Independent; order does not matter; should not delay page</td></tr>
+    <tr><td>App scripts, UI initialization</td><td><code>defer</code></td><td>Needs the DOM; depends on load order</td></tr>
+    <tr><td>Framework/library followed by app code</td><td><code>defer</code> (both)</td><td>Guarantees library loads before app code</td></tr>
+    <tr><td>Modern ES modules</td><td><code>type="module"</code></td><td>Deferred by default; supports import/export</td></tr>
+    <tr><td>Script that must run before any rendering</td><td>(none)</td><td>Rare; only for critical inline polyfills or theme detection</td></tr>
+  </tbody>
+</table>
+
+<h2>Practical Example</h2>
+<code-block language="html" label="Combined loading strategy">{{ practicalExample | escape }}</code-block>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Inline scripts ignore async/defer:</strong> These attributes only work on scripts with a <code>src</code> attribute. Inline scripts always execute immediately (except <code>type="module"</code> inline scripts, which are deferred).</li>
+  <li><strong>async order is unpredictable:</strong> If script B depends on script A, do not use async on both. Use defer to preserve order.</li>
+  <li><strong>defer and DOMContentLoaded:</strong> Deferred scripts delay the <code>DOMContentLoaded</code> event. A slow deferred script holds up any code waiting for that event.</li>
+  <li><strong>Both attributes together:</strong> If both <code>async</code> and <code>defer</code> are present, <code>async</code> takes precedence in browsers that support it. <code>defer</code> acts as a fallback for very old browsers.</li>
+  <li><strong>Dynamic script injection:</strong> Scripts added via <code>document.createElement('script')</code> are async by default. Set <code>script.async = false</code> to preserve insertion order.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/blocking/"><code>blocking</code></a> &mdash; explicit render-blocking control for scripts and styles</li>
+    <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; CSP allowlisting for inline scripts</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading for images and iframes</li>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; verify external script contents</li>
+  </ul>
+</section>

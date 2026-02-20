@@ -1,0 +1,183 @@
+---
+layout: layouts/attribute.njk
+title: "list"
+description: "Connects an input to a datalist of suggestions. The browser provides autocomplete-style filtering without any JavaScript."
+attributeName: list
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/list/
+permalink: /docs/attributes/list/
+---
+
+{% set basicExample %}<label for="fruit">Favorite Fruit</label>
+<input type="text" id="fruit" name="fruit" list="fruit-options" />
+
+<datalist id="fruit-options">
+  <option value="Apple" />
+  <option value="Banana" />
+  <option value="Cherry" />
+  <option value="Grape" />
+  <option value="Mango" />
+  <option value="Orange" />
+  <option value="Peach" />
+  <option value="Strawberry" />
+</datalist>{% endset %}
+
+{% set labeledExample %}<label for="browser">Browser</label>
+<input type="text" id="browser" name="browser" list="browsers" />
+
+<datalist id="browsers">
+  <option value="chrome">Google Chrome</option>
+  <option value="firefox">Mozilla Firefox</option>
+  <option value="safari">Apple Safari</option>
+  <option value="edge">Microsoft Edge</option>
+</datalist>
+<!-- The inner text is shown as a label; the value is submitted -->{% endset %}
+
+{% set emailExample %}<label for="contact-email">Email</label>
+<input type="email" id="contact-email" name="email"
+  list="email-suggestions" />
+
+<datalist id="email-suggestions">
+  <option value="work@company.com" />
+  <option value="personal@gmail.com" />
+  <option value="shared@team.io" />
+</datalist>{% endset %}
+
+{% set urlExample %}<label for="website">Website</label>
+<input type="url" id="website" name="url"
+  list="url-suggestions"
+  placeholder="https://..." />
+
+<datalist id="url-suggestions">
+  <option value="https://github.com" />
+  <option value="https://stackoverflow.com" />
+  <option value="https://developer.mozilla.org" />
+</datalist>{% endset %}
+
+{% set numberExample %}<label for="rating">Rating (1-10)</label>
+<input type="number" id="rating" name="rating"
+  min="1" max="10"
+  list="rating-options" />
+
+<datalist id="rating-options">
+  <option value="1" />
+  <option value="5" />
+  <option value="10" />
+</datalist>{% endset %}
+
+{% set rangeExample %}<label for="volume">Volume</label>
+<input type="range" id="volume" name="volume"
+  min="0" max="100" step="1"
+  list="volume-ticks" />
+
+<datalist id="volume-ticks">
+  <option value="0" label="Mute" />
+  <option value="25" label="Low" />
+  <option value="50" label="Medium" />
+  <option value="75" label="High" />
+  <option value="100" label="Max" />
+</datalist>{% endset %}
+
+{% set dynamicExample %}{% raw %}<label for="city">City</label>
+<input type="text" id="city" name="city" list="city-suggestions" />
+<datalist id="city-suggestions"></datalist>{% endraw %}{% endset %}
+
+{% set dynamicJsExample %}{% raw %}const input = document.querySelector('#city');
+const datalist = document.querySelector('#city-suggestions');
+
+input.addEventListener('input', async () => {
+  if (input.value.length < 2) return;
+
+  const response = await fetch(`/api/cities?q=${input.value}`);
+  const cities = await response.json();
+
+  datalist.innerHTML = cities
+    .map(city => `<option value="${city.name}" />`)
+    .join('');
+});{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>list</code> attribute connects an <code>&lt;input&gt;</code> to a <code>&lt;datalist&gt;</code> element that provides a set of suggested values. The browser shows these suggestions as a dropdown that filters as the user types. Unlike a <code>&lt;select&gt;</code>, the user can still type a value that is not in the list.</p>
+<p>This is the native HTML autocomplete/typeahead — no JavaScript required for the basic behavior.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (most types)</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Component</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>list="id"</code> on input</td><td>Points to the <code>&lt;datalist&gt;</code> by its <code>id</code></td></tr>
+    <tr><td><code>&lt;datalist id="id"&gt;</code></td><td>Contains <code>&lt;option&gt;</code> elements with suggested values</td></tr>
+    <tr><td><code>&lt;option value="..."&gt;</code></td><td>Each suggestion. The <code>value</code> is what gets filled in.</td></tr>
+  </tbody>
+</table>
+
+<h2>Basic Text Suggestions</h2>
+<p>The simplest pattern: a text input with a list of suggestions. The browser filters options as the user types, matching against the <code>value</code> attribute.</p>
+
+<code-block language="html" label="Text input with datalist">{{ basicExample | escape }}</code-block>
+
+<p>The user can select from the list or type any value they want. The list is a suggestion, not a constraint.</p>
+
+<h3>Labels and Values</h3>
+<p>Options can have inner text that serves as a visible label. The <code>value</code> attribute is what gets submitted. Some browsers show both the label and value in the dropdown.</p>
+
+<code-block language="html" label="Labeled suggestions">{{ labeledExample | escape }}</code-block>
+
+<h2>Email Suggestions</h2>
+<p>On <code>type="email"</code>, the datalist provides email address suggestions. This is useful for fields where the user frequently enters the same addresses.</p>
+
+<code-block language="html" label="Email suggestions">{{ emailExample | escape }}</code-block>
+
+<h2>URL Suggestions</h2>
+<p>On <code>type="url"</code>, the datalist can suggest common URLs. The browser still validates that the final value is a valid URL.</p>
+
+<code-block language="html" label="URL suggestions">{{ urlExample | escape }}</code-block>
+
+<h2>Number Suggestions</h2>
+<p>On <code>type="number"</code>, the datalist suggests specific numeric values. The user can still type any number within the <code>min</code>/<code>max</code> range.</p>
+
+<code-block language="html" label="Number suggestions">{{ numberExample | escape }}</code-block>
+
+<h2>Range Tick Marks</h2>
+<p>On <code>type="range"</code>, the datalist creates visible tick marks on the slider track. The <code>label</code> attribute on options may be displayed as tick labels (browser support varies).</p>
+
+<code-block language="html" label="Range with tick marks">{{ rangeExample | escape }}</code-block>
+
+<p>This is one of the most underused native features. Tick marks turn a plain slider into a meaningful control with visible reference points — no JavaScript needed.</p>
+
+<h2>Dynamic Suggestions</h2>
+<p>Populate the datalist dynamically with JavaScript for server-driven autocomplete. The browser automatically picks up new options added to the datalist.</p>
+
+<code-block language="html" label="Dynamic datalist">{{ dynamicExample | escape }}</code-block>
+
+<code-block language="js" label="Populate from API">{{ dynamicJsExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers announce datalist-connected inputs as having suggestions. Users can arrow through options.</li>
+  <li>The datalist does not replace a <code>&lt;label&gt;</code>. Always provide a visible label for the input.</li>
+  <li>Since the user can type values not in the list, datalist is better for suggestions than for constrained choices. Use <code>&lt;select&gt;</code> when the user must pick from a fixed set.</li>
+  <li>Keyboard navigation: Arrow Down opens the suggestion list, arrow keys navigate, Enter selects.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Datalist rendering varies significantly across browsers. Chrome shows a dropdown below the input, Firefox shows inline suggestions, and Safari has historically had limited support.</li>
+  <li>You cannot style the datalist dropdown with CSS. The appearance is entirely controlled by the browser.</li>
+  <li>The <code>list</code> attribute does not work on <code>type="hidden"</code>, <code>type="password"</code>, <code>type="checkbox"</code>, <code>type="radio"</code>, <code>type="file"</code>, or <code>type="image"</code>.</li>
+  <li>There is no event fired when the user selects an option from the datalist. You must listen for <code>input</code> or <code>change</code> events on the input itself.</li>
+  <li>Filtering logic is browser-controlled. You cannot customize whether matching is case-sensitive, starts-with, or contains.</li>
+  <li>On mobile browsers, datalist support and UX can be inconsistent. Test on your target devices.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> — browser autofill for personal data</li>
+    <li><a href="/docs/attributes/multiple/"><code>multiple</code></a> — accept multiple values in one field</li>
+    <li><a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a> — constrained choice from a fixed set</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+  </ul>
+</section>

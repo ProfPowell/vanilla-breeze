@@ -1,0 +1,128 @@
+---
+layout: layouts/attribute.njk
+title: "is"
+description: "Extend native HTML elements with custom behavior via customized built-in elements. Inherits all native semantics, accessibility, and form participation for free."
+attributeName: is
+attributeType: native
+nativeGroup: Structure
+category: native
+currentPath: /docs/attributes/is/
+permalink: /docs/attributes/is/
+---
+
+{% set basicExample %}<!-- Use a customized built-in button -->
+<button is="confirm-button">Delete Account</button>
+
+<!-- The element is still a <button> with all native behavior:
+     - Form participation
+     - Keyboard activation (Enter/Space)
+     - Default button styling
+     - Screen reader announces "button"
+     But with custom behavior added by the class -->{% endset %}
+
+{% set defineExample %}{% raw %}<script>
+class ConfirmButton extends HTMLButtonElement {
+  connectedCallback() {
+    this.addEventListener('click', (e) => {
+      if (!confirm(`Are you sure you want to: ${this.textContent}?`)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  }
+}
+
+// Third argument { extends } tells the registry which element is being extended
+customElements.define('confirm-button', ConfirmButton, { extends: 'button' });
+</script>{% endraw %}{% endset %}
+
+{% set inputExample %}{% raw %}<script>
+class AutoFormatInput extends HTMLInputElement {
+  connectedCallback() {
+    this.addEventListener('input', () => {
+      // Auto-format as phone number: (123) 456-7890
+      const digits = this.value.replace(/\D/g, '').slice(0, 10);
+      if (digits.length >= 6) {
+        this.value = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+      } else if (digits.length >= 3) {
+        this.value = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+      }
+    });
+  }
+}
+
+customElements.define('auto-format-input', AutoFormatInput, { extends: 'input' });
+</script>
+
+<label for="phone">Phone</label>
+<input is="auto-format-input" type="tel" id="phone" name="phone" />{% endraw %}{% endset %}
+
+{% set autonomousExample %}<!-- Customized built-in: extends <button>, inherits everything -->
+<button is="fancy-button">Click Me</button>
+
+<!-- Autonomous custom element: starts from scratch -->
+<fancy-button>Click Me</fancy-button>{% endset %}
+
+{% set comparisonTable %}<!-- See the comparison table below -->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>is</code> attribute creates <strong>customized built-in elements</strong> — native HTML elements enhanced with custom JavaScript behavior. Unlike autonomous custom elements (e.g., <code>&lt;my-component&gt;</code>), customized built-ins inherit all native behavior: semantics, accessibility, form participation, and default styles.</p>
+<p>The syntax is <code>&lt;element is="custom-name"&gt;</code>, where the custom element class extends the native element's interface (e.g., <code>HTMLButtonElement</code>, <code>HTMLInputElement</code>).</p>
+
+<h2>Usage</h2>
+<p>Add the <code>is</code> attribute to a native element to activate the custom behavior registered for that name.</p>
+
+<code-block language="html" label="Customized built-in button">{{ basicExample | escape }}</code-block>
+
+<h2>Registration</h2>
+<p>The custom element class must extend the specific element interface, and the <code>define()</code> call must include the <code>extends</code> option.</p>
+
+<code-block language="js" label="Defining a customized built-in">{{ defineExample | escape }}</code-block>
+
+<h2>Example: Auto-Format Input</h2>
+<p>A text input that automatically formats phone numbers as the user types. It inherits all native input behavior — form submission, validation, labels, autofill.</p>
+
+<code-block language="js" label="Auto-format input">{{ inputExample | escape }}</code-block>
+
+<h2>Customized vs Autonomous</h2>
+<p>There are two types of custom elements. The <code>is</code> attribute is for the customized built-in type.</p>
+
+<code-block language="html" label="Two approaches">{{ autonomousExample | escape }}</code-block>
+
+<table>
+  <thead><tr><th>Feature</th><th>Customized Built-in (<code>is</code>)</th><th>Autonomous (<code>&lt;my-el&gt;</code>)</th></tr></thead>
+  <tbody>
+    <tr><td>Syntax</td><td><code>&lt;button is="x"&gt;</code></td><td><code>&lt;my-button&gt;</code></td></tr>
+    <tr><td>Extends</td><td>Specific element interface</td><td><code>HTMLElement</code></td></tr>
+    <tr><td>Native semantics</td><td>Inherited</td><td>Must be added manually</td></tr>
+    <tr><td>Form participation</td><td>Inherited</td><td>Requires <code>ElementInternals</code></td></tr>
+    <tr><td>Default styles</td><td>Inherited</td><td>None</td></tr>
+    <tr><td>Safari support</td><td>No</td><td>Yes</td></tr>
+    <tr><td>Browser support</td><td>Chrome, Firefox, Edge</td><td>All modern browsers</td></tr>
+  </tbody>
+</table>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The primary advantage of customized built-in elements is accessibility. A <code>&lt;button is="fancy-button"&gt;</code> is announced as "button" by screen readers, participates in tab order, and responds to Enter and Space — with zero extra work.</li>
+  <li>An autonomous <code>&lt;fancy-button&gt;</code> would need <code>role="button"</code>, <code>tabindex="0"</code>, and keyboard event handlers to achieve the same accessibility.</li>
+  <li>For form controls, the <code>is</code> approach inherits native validation, labels, and error messages automatically.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Safari does not support the <code>is</code> attribute.</strong> This is the most significant limitation. Safari's WebKit team has explicitly declined to implement it, citing architectural concerns. This makes customized built-ins unreliable for production use without a polyfill.</li>
+  <li>A <a href="https://github.com/nicolo-ribaudo/tc39-proposal-is-attribute">polyfill</a> exists but adds bundle size and complexity. It works by detecting <code>is</code> attributes and manually upgrading elements.</li>
+  <li>Each customized built-in can only extend one specific element type. A class extending <code>HTMLButtonElement</code> cannot be used on an <code>&lt;input&gt;</code>.</li>
+  <li>Server-rendered HTML with <code>is</code> attributes works in Chrome and Firefox before JavaScript loads (the native element renders normally). In Safari, the <code>is</code> attribute is simply ignored.</li>
+  <li>Due to the Safari limitation, the web platform has largely moved toward autonomous custom elements instead. Most component libraries use <code>&lt;my-element&gt;</code> syntax for universal compatibility.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/">Web Components</a> — VB's custom elements (using autonomous syntax for browser compatibility)</li>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — manage focus order for custom interactive elements</li>
+    <li><a href="/docs/attributes/disabled/"><code>disabled</code></a> — inherited by customized built-in form controls</li>
+  </ul>
+</section>

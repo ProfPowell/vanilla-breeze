@@ -1,0 +1,127 @@
+---
+layout: layouts/attribute.njk
+title: "nonce"
+description: "Allowlists inline scripts and styles under Content Security Policy. A unique server-generated token per request that prevents unauthorized code injection."
+attributeName: nonce
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/nonce/
+permalink: /docs/attributes/nonce/
+---
+
+{% set basicExample %}<!-- Server generates a unique nonce for each HTTP response -->
+<!-- CSP header: Content-Security-Policy: script-src 'nonce-abc123random' -->
+
+<!-- This inline script is allowed because its nonce matches the CSP header -->
+<script nonce="abc123random">
+  document.title = 'Page loaded securely';
+</script>
+
+<!-- This inline style is allowed for the same reason -->
+<!-- CSP header: Content-Security-Policy: style-src 'nonce-abc123random' -->
+<style nonce="abc123random">
+  body { font-family: system-ui; }
+</style>{% endset %}
+
+{% set cspHeaderExample %}# CSP header allowing nonce-based inline scripts and styles
+Content-Security-Policy: script-src 'nonce-rAnd0mV4luE' 'strict-dynamic'; style-src 'nonce-rAnd0mV4luE'
+
+# Combined with other directives
+Content-Security-Policy: default-src 'self'; script-src 'nonce-rAnd0mV4luE' 'strict-dynamic'; style-src 'nonce-rAnd0mV4luE'; img-src 'self' https:{% endset %}
+
+{% set serverExample %}# Express.js — generate nonce per request
+import crypto from 'crypto';
+
+app.use((req, res, next) => {
+  const nonce = crypto.randomBytes(16).toString('base64');
+  res.locals.nonce = nonce;
+  res.setHeader(
+    'Content-Security-Policy',
+    `script-src 'nonce-${nonce}' 'strict-dynamic'; style-src 'nonce-${nonce}'`
+  );
+  next();
+});
+
+# In your template:
+# <script nonce="<%= nonce %>">...</script>{% endset %}
+
+{% set strictDynamicExample %}<!-- With 'strict-dynamic' in the CSP, scripts loaded BY a nonced script -->
+<!-- are automatically trusted, even without their own nonce. -->
+
+<!-- CSP: script-src 'nonce-abc123' 'strict-dynamic' -->
+<script nonce="abc123">
+  // This dynamically added script is trusted because the parent has a nonce
+  const s = document.createElement('script');
+  s.src = '/js/analytics.js';
+  document.head.appendChild(s);
+</script>{% endset %}
+
+{% set metaExample %}<!-- CSP can also be set via a meta tag (but HTTP header is preferred) -->
+<meta http-equiv="Content-Security-Policy"
+  content="script-src 'nonce-abc123random'; style-src 'nonce-abc123random'" />
+
+<script nonce="abc123random">
+  console.log('Allowed by meta CSP');
+</script>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>nonce</code> attribute allows specific inline <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> and <code>&lt;style&gt;</code> elements to execute under a Content Security Policy (CSP) that otherwise blocks all inline code. The server generates a unique, unpredictable token for each HTTP response, places it in both the CSP header and the allowed elements, and the browser only executes inline code whose nonce matches.</p>
+<p>Without nonces (or hashes), a strict CSP must either block all inline scripts — breaking many applications — or use <code>'unsafe-inline'</code>, which defeats the purpose of CSP entirely.</p>
+
+<h2>How It Works</h2>
+<ol>
+  <li>The server generates a cryptographically random nonce value for each request.</li>
+  <li>The server includes the nonce in the <code>Content-Security-Policy</code> header: <code>script-src 'nonce-VALUE'</code>.</li>
+  <li>The server adds <code>nonce="VALUE"</code> to every trusted inline <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> tag in the response.</li>
+  <li>The browser compares each inline script/style nonce against the CSP header.</li>
+  <li>Matching elements execute. Non-matching or nonce-less inline code is blocked.</li>
+  <li>After parsing, the browser <strong>clears the nonce from the DOM</strong> so JavaScript cannot read it via <code>element.getAttribute('nonce')</code>.</li>
+</ol>
+
+<code-block language="html" label="Nonce on inline scripts and styles">{{ basicExample | escape }}</code-block>
+
+<h2>CSP Header Format</h2>
+<p>The nonce value in the CSP header must be prefixed with <code>nonce-</code> and wrapped in single quotes.</p>
+
+<code-block language="text" label="CSP header examples">{{ cspHeaderExample | escape }}</code-block>
+
+<h2>Server-Side Generation</h2>
+<p>The nonce must be generated server-side and must be unique per request. Use a cryptographically secure random number generator.</p>
+
+<code-block language="text" label="Server-side nonce generation">{{ serverExample | escape }}</code-block>
+
+<h2>strict-dynamic</h2>
+<p>The <code>'strict-dynamic'</code> CSP directive works with nonces to create a trust chain. Scripts loaded dynamically by a nonced script are automatically trusted, even without their own nonce attribute. This simplifies CSP for applications that load third-party scripts at runtime.</p>
+
+<code-block language="html" label="Trust propagation with strict-dynamic">{{ strictDynamicExample | escape }}</code-block>
+
+<h2>CSP via Meta Tag</h2>
+<p>CSP can be set via a <code>&lt;meta&gt;</code> tag instead of an HTTP header. However, the HTTP header is preferred because it cannot be bypassed by injected HTML before the meta tag.</p>
+
+<code-block language="html" label="CSP via meta tag">{{ metaExample | escape }}</code-block>
+
+<h2>Security Considerations</h2>
+<ul>
+  <li><strong>Never hardcode nonces.</strong> A static nonce defeats the purpose — an attacker who discovers it can inject their own nonced scripts. Generate a new one per request.</li>
+  <li><strong>Never cache pages with nonces.</strong> If a CDN or browser cache serves a stale page, the nonce in the HTML will not match the nonce in the fresh CSP header, blocking all inline code. Use <code>Cache-Control: no-store</code> on pages with nonces.</li>
+  <li><strong>DOM clearing protects you.</strong> After page load, <code>element.nonce</code> returns the value via the IDL property, but <code>element.getAttribute('nonce')</code> returns an empty string. This prevents injected scripts from reading the nonce out of existing elements.</li>
+  <li><strong>Nonces do not protect external scripts.</strong> The <code>nonce</code> attribute only affects inline code. Use <code>'strict-dynamic'</code> or explicit URL allowlists for external script sources.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Requires server-side rendering:</strong> Static sites served from a CDN cannot use nonces because there is no server to generate a unique value per request. Use CSP hashes instead.</li>
+  <li><strong>Caching conflicts:</strong> Pages with nonces must not be cached, since the nonce changes on every request.</li>
+  <li><strong>Not for event handlers:</strong> Nonces do not apply to inline event handler attributes like <code>onclick</code>. Move event handling to nonced script blocks.</li>
+  <li><strong>Debugging difficulty:</strong> CSP violations are logged in the console, but the error messages do not always clearly indicate a nonce mismatch versus a missing nonce.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; verify external script and stylesheet contents</li>
+    <li><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a> &mdash; CORS mode required alongside SRI</li>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> &mdash; iframe restrictions that complement CSP</li>
+  </ul>
+</section>

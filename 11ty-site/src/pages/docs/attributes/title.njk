@@ -1,0 +1,141 @@
+---
+layout: layouts/attribute.njk
+title: "title"
+description: "Advisory text shown as a tooltip on hover. Often misused — understand when it helps and when visible text or ARIA attributes are better alternatives."
+attributeName: title
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/title/
+permalink: /docs/attributes/title/
+---
+
+{% set basicExample %}<!-- Tooltip on hover (mouse only) -->
+<button title="Save the current document">Save</button>
+
+<!-- Abbreviation expansion — the best use case -->
+<p>The <abbr title="World Health Organization">WHO</abbr> published new guidelines.</p>
+
+<!-- Tooltip on any element -->
+<p title="This paragraph has advisory text">Hover over this text.</p>{% endset %}
+
+{% set abbrExample %}<p>
+  Use <abbr title="Cascading Style Sheets">CSS</abbr> for styling and
+  <abbr title="Hypertext Markup Language">HTML</abbr> for structure.
+  The <abbr title="World Wide Web Consortium">W3C</abbr> maintains both standards.
+</p>{% endset %}
+
+{% set iframeExample %}<!-- title on iframes provides an accessible name -->
+<iframe
+  src="https://example.com/map"
+  title="Interactive map showing office locations"
+  width="600"
+  height="400">
+</iframe>{% endset %}
+
+{% set linkStylesheetExample %}<!-- title on <link> designates alternate stylesheets -->
+<link rel="stylesheet" href="default.css" title="Default Theme" />
+<link rel="alternate stylesheet" href="high-contrast.css" title="High Contrast" />
+<link rel="alternate stylesheet" href="large-text.css" title="Large Text" />{% endset %}
+
+{% set alternativesExample %}<!-- Instead of title, use visible text -->
+<button>
+  <span aria-hidden="true">&#x1f4be;</span>
+  Save Document
+</button>
+
+<!-- Or use aria-label for icon-only buttons -->
+<button aria-label="Save document">
+  <span aria-hidden="true">&#x1f4be;</span>
+</button>
+
+<!-- Or use aria-describedby for supplementary info -->
+<label for="tax-id">Tax ID</label>
+<input type="text" id="tax-id" aria-describedby="tax-help" />
+<p id="tax-help">Your 9-digit federal tax identification number.</p>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>title</code> attribute provides advisory text about an element. On desktop browsers, hovering the mouse over the element displays a tooltip after a short delay. This is the <code>title</code> <em>attribute</em> on HTML elements — not the <code>&lt;title&gt;</code> element used in <code>&lt;head&gt;</code> for the page title.</p>
+<p><strong>Applies to:</strong> Any HTML element (it is a global attribute)</p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Any string</td><td>Displayed as a tooltip on mouse hover. Inherited by child elements unless they have their own <code>title</code>.</td></tr>
+    <tr><td><code>""</code> (empty string)</td><td>Explicitly suppresses an inherited tooltip. The element shows no tooltip.</td></tr>
+    <tr><td>(not set)</td><td>Inherits the nearest ancestor's <code>title</code> value, if any.</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>Good Uses</h2>
+
+<h3>Abbreviation Expansion</h3>
+<p>The strongest use case for <code>title</code> is on <code>&lt;abbr&gt;</code> elements. It provides the full expansion of an abbreviation, which browsers display on hover and screen readers may announce.</p>
+
+<code-block language="html" label="Abbreviation expansion">{{ abbrExample | escape }}</code-block>
+
+<h3>iframe Labeling</h3>
+<p>The <code>title</code> attribute on <code>&lt;iframe&gt;</code> provides an accessible name for the embedded content. Screen readers announce this title so users know what the iframe contains without entering it.</p>
+
+<code-block language="html" label="iframe accessible name">{{ iframeExample | escape }}</code-block>
+
+<h3>Alternate Stylesheets</h3>
+<p>On <code>&lt;link rel="stylesheet"&gt;</code> and <code>&lt;link rel="alternate stylesheet"&gt;</code>, the <code>title</code> attribute names the stylesheet for the browser's style-switching UI. This is a different behavior from the tooltip — it identifies the stylesheet rather than providing advisory text.</p>
+
+<code-block language="html" label="Alternate stylesheets">{{ linkStylesheetExample | escape }}</code-block>
+
+<h2>Why title Is Usually the Wrong Choice</h2>
+<p>Despite being a global attribute available on every element, <code>title</code> has significant usability problems that make it unsuitable for important information:</p>
+<ul>
+  <li><strong>Keyboard users never see it.</strong> The tooltip only appears on mouse hover. Keyboard-only users have no way to trigger it.</li>
+  <li><strong>Touch devices never show it.</strong> There is no hover on phones and tablets. The text is completely hidden from mobile users.</li>
+  <li><strong>Screen reader support is inconsistent.</strong> Some screen readers announce the <code>title</code>, some ignore it, and some require specific settings to read it.</li>
+  <li><strong>Tooltips disappear.</strong> The tooltip vanishes when the mouse moves away, making it hard to read long text or refer back to it.</li>
+  <li><strong>No styling control.</strong> You cannot change the font, size, position, or timing of the native tooltip.</li>
+</ul>
+
+<h2>Better Alternatives</h2>
+<p>For any information users need to see, use visible text or ARIA attributes instead of <code>title</code>.</p>
+
+<code-block language="html" label="Alternatives to title">{{ alternativesExample | escape }}</code-block>
+
+<table>
+  <thead><tr><th>Need</th><th>Use Instead of title</th></tr></thead>
+  <tbody>
+    <tr><td>Button description</td><td>Visible label text or <code>aria-label</code></td></tr>
+    <tr><td>Field help text</td><td>Visible helper text with <code>aria-describedby</code></td></tr>
+    <tr><td>Supplementary info</td><td>Visible text, a tooltip component, or a <code>&lt;details&gt;</code> element</td></tr>
+    <tr><td>Image description</td><td>The <code>alt</code> attribute (always preferred over <code>title</code> on images)</td></tr>
+    <tr><td>Abbreviation</td><td><code>&lt;abbr title="..."&gt;</code> is acceptable, or spell it out on first use</td></tr>
+  </tbody>
+</table>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Never put essential information in <code>title</code>.</strong> If users need the text to understand or use the interface, make it visible.</li>
+  <li><strong>The <code>title</code> on <code>&lt;iframe&gt;</code> is an accessibility requirement.</strong> WCAG requires iframes to have an accessible name, and <code>title</code> is the standard way to provide one.</li>
+  <li><strong>Redundant titles create noise.</strong> If an element already has visible text, adding a <code>title</code> with the same text causes screen readers to announce it twice.</li>
+  <li><strong>Keep it short.</strong> If you must use <code>title</code>, keep the text brief. Long tooltips are cut off or disappear before the user finishes reading.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Not keyboard-accessible:</strong> No keyboard shortcut triggers the tooltip. Only mouse hover works.</li>
+  <li><strong>Not touch-accessible:</strong> Mobile browsers do not display <code>title</code> tooltips at all.</li>
+  <li><strong>Hover delay is browser-controlled:</strong> You cannot change how long the user must hover before the tooltip appears.</li>
+  <li><strong>No HTML in tooltips:</strong> The <code>title</code> value is plain text only. Line breaks work with <code>&#10;</code> in some browsers, but no rich formatting.</li>
+  <li><strong>Inheritance can surprise:</strong> A <code>title</code> on a parent element creates tooltips on all descendants, which may not be intended.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> — make elements keyboard-focusable</li>
+    <li><a href="/docs/accessibility/">Accessibility Guide</a> — overview of VB's accessibility patterns</li>
+    <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> — a native disclosure widget for supplementary information</li>
+  </ul>
+</section>

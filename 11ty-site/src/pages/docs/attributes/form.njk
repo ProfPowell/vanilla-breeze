@@ -1,0 +1,202 @@
+---
+layout: layouts/attribute.njk
+title: "form"
+description: "Associates a form control with a form element by ID, even when the control is outside the form's DOM tree. Enables complex layouts without nesting constraints."
+attributeName: form
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/form/
+permalink: /docs/attributes/form/
+---
+
+{% set basicExample %}<form id="checkout" action="/checkout" method="post" class="stacked">
+  <label for="item">Item</label>
+  <input type="text" id="item" name="item" />
+
+  <label for="qty">Quantity</label>
+  <input type="number" id="qty" name="qty" min="1" value="1" />
+
+  <button type="submit">Purchase</button>
+</form>
+
+<!-- This input is outside the form's DOM tree but belongs to it -->
+<label for="promo">Promo Code</label>
+<input type="text" id="promo" name="promo_code" form="checkout" />{% endset %}
+
+{% set stickyFooterExample %}<!-- Form in the main content area -->
+<form id="editor" action="/save" method="post" class="stacked">
+  <label for="title">Title</label>
+  <input type="text" id="title" name="title" required />
+
+  <label for="content">Content</label>
+  <textarea id="content" name="content" rows="10" required></textarea>
+</form>
+
+<!-- Sticky footer is outside the form -->
+<footer style="position: sticky; bottom: 0; background: var(--color-surface-raised); padding: 1rem;">
+  <button type="submit" form="editor">Save</button>
+  <button type="submit" form="editor" formaction="/preview" formmethod="get">
+    Preview
+  </button>
+</footer>{% endset %}
+
+{% set multiFormExample %}<!-- Two forms on the same page -->
+<form id="search-form" action="/search" method="get">
+  <label for="q">Search</label>
+  <input type="search" id="q" name="q" />
+  <button type="submit">Search</button>
+</form>
+
+<form id="filter-form" action="/search" method="get">
+  <fieldset>
+    <legend>Filters</legend>
+    <label><input type="checkbox" name="type" value="article" /> Articles</label>
+    <label><input type="checkbox" name="type" value="video" /> Videos</label>
+  </fieldset>
+  <button type="submit">Apply Filters</button>
+</form>
+
+<!-- This field submits with the search form, not the filter form -->
+<label for="sort">Sort by</label>
+<select id="sort" name="sort" form="search-form">
+  <option value="relevance">Relevance</option>
+  <option value="date">Date</option>
+  <option value="title">Title</option>
+</select>{% endset %}
+
+{% set elementsExample %}<!-- All these element types support the form attribute -->
+<form id="profile" action="/profile" method="post">
+  <button type="submit">Save Profile</button>
+</form>
+
+<!-- input -->
+<input type="text" name="display_name" form="profile" />
+
+<!-- select -->
+<select name="timezone" form="profile">
+  <option value="UTC">UTC</option>
+  <option value="EST">Eastern</option>
+  <option value="PST">Pacific</option>
+</select>
+
+<!-- textarea -->
+<textarea name="bio" rows="3" form="profile"></textarea>
+
+<!-- button -->
+<button type="reset" form="profile">Reset</button>
+
+<!-- output -->
+<output name="char_count" form="profile">0</output>
+
+<!-- fieldset (associates all its children) -->
+<fieldset form="profile">
+  <legend>Notifications</legend>
+  <label><input type="checkbox" name="notify_email" /> Email</label>
+  <label><input type="checkbox" name="notify_sms" /> SMS</label>
+</fieldset>{% endset %}
+
+{% set jsExample %}{% raw %}// Check which form an element belongs to
+const input = document.querySelector('#promo');
+console.log(input.form);        // → <form id="checkout">
+console.log(input.form.id);     // → "checkout"
+
+// FormData includes elements associated via the form attribute
+const form = document.querySelector('#checkout');
+const data = new FormData(form);
+console.log(data.get('promo_code'));  // → value of the #promo input{% endraw %}{% endset %}
+
+{% set dialogExample %}<form id="settings" action="/settings" method="post" class="stacked">
+  <label for="name">Display Name</label>
+  <input type="text" id="name" name="name" />
+  <button type="submit">Save</button>
+</form>
+
+<!-- Dialog is a separate DOM subtree, but controls belong to the form -->
+<dialog id="advanced-dialog">
+  <h2>Advanced Settings</h2>
+
+  <label for="api-key">API Key</label>
+  <input type="text" id="api-key" name="api_key" form="settings" />
+
+  <label for="webhook">Webhook URL</label>
+  <input type="url" id="webhook" name="webhook_url" form="settings" />
+
+  <button onclick="this.closest('dialog').close()">Done</button>
+</dialog>
+
+<button onclick="document.querySelector('#advanced-dialog').showModal()">
+  Advanced Settings
+</button>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>form</code> attribute associates a form control with a <code>&lt;form&gt;</code> element by referencing the form's <code>id</code>. The control does not need to be a descendant of the form — it can be anywhere in the document. When the form is submitted, all associated controls (both nested and remote) are included in the form data.</p>
+<p>This solves a real layout problem: sometimes the visual design requires form controls to be placed outside the form's DOM tree. Sticky footers, sidebar filters, dialog-based settings, and split-panel editors all benefit from this attribute.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, <code>&lt;output&gt;</code>, <a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Value</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>form="form-id"</code></td><td>The <code>id</code> of a <code>&lt;form&gt;</code></td><td>Associates the control with that form</td></tr>
+    <tr><td>(no <code>form</code> attribute)</td><td>—</td><td>Control belongs to its nearest ancestor <code>&lt;form&gt;</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Basic Association</h2>
+<p>Place a control anywhere on the page and point it at a form with the <code>form</code> attribute. The value must exactly match the form's <code>id</code>.</p>
+
+<code-block language="html" label="Remote form control">{{ basicExample | escape }}</code-block>
+
+<h2>Sticky Footer Buttons</h2>
+<p>A common layout: the form is in the content area and the submit/action buttons are in a sticky footer outside the form. The <code>form</code> attribute on the buttons connects them to the form.</p>
+
+<code-block language="html" label="Buttons in sticky footer">{{ stickyFooterExample | escape }}</code-block>
+
+<p>The <code>formaction</code> and <code>formmethod</code> attributes work on remote buttons just as they do on nested buttons. See <a href="/docs/attributes/novalidate/"><code>novalidate</code></a> for the <code>formnovalidate</code> pattern.</p>
+
+<h2>Multiple Forms on One Page</h2>
+<p>When a page has multiple forms, the <code>form</code> attribute lets you assign shared controls to the correct form without nesting them.</p>
+
+<code-block language="html" label="Shared control across forms">{{ multiFormExample | escape }}</code-block>
+
+<h2>Supported Elements</h2>
+<p>The <code>form</code> attribute works on every form-associated element.</p>
+
+<code-block language="html" label="All supported element types">{{ elementsExample | escape }}</code-block>
+
+<h2>Dialog Pattern</h2>
+<p>When advanced settings live inside a <code>&lt;dialog&gt;</code>, the fields are in a separate DOM subtree. The <code>form</code> attribute lets them contribute to the main form's submission data.</p>
+
+<code-block language="html" label="Form controls in a dialog">{{ dialogExample | escape }}</code-block>
+
+<h2>JavaScript API</h2>
+<p>The <code>.form</code> property on form controls returns the associated <code>&lt;form&gt;</code> element, whether the association is via nesting or the <code>form</code> attribute. <code>FormData</code> automatically includes remote controls.</p>
+
+<code-block language="js" label="JavaScript form association">{{ jsExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers associate controls with their form regardless of DOM position when the <code>form</code> attribute is used. The accessibility tree respects the attribute.</li>
+  <li>Tab order follows DOM order, not form association. If a remote control is far from the form in the DOM, it may be reached much earlier or later during keyboard navigation. Place associated controls near the form when possible.</li>
+  <li>Ensure remote controls are visually connected to their form through layout and proximity. Users should understand which form a control belongs to without inspecting the HTML.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>The <code>form</code> attribute value must be an <code>id</code>, not a selector. It must exactly match the <code>id</code> attribute of a <code>&lt;form&gt;</code> element on the page.</li>
+  <li>A control can only be associated with one form. If it has a <code>form</code> attribute and is also nested inside a different <code>&lt;form&gt;</code>, the <code>form</code> attribute wins.</li>
+  <li>Constraint validation applies to remote controls just like nested ones. A remote <a href="/docs/attributes/required/"><code>required</code></a> field will block submission if empty.</li>
+  <li>The <code>form</code> attribute does not work across documents. The form and the control must be in the same document (not in different iframes).</li>
+  <li>Some older JavaScript form libraries may not account for remote controls. If you use <code>form.elements</code> or <code>new FormData(form)</code>, remote controls are included — but manual DOM traversal (e.g., <code>form.querySelectorAll('input')</code>) will miss them.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/novalidate/"><code>novalidate</code> / <code>formnovalidate</code></a> — validation bypass on remote buttons</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> — group controls (also supports the <code>form</code> attribute)</li>
+    <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — modal dialogs where remote controls are useful</li>
+  </ul>
+</section>

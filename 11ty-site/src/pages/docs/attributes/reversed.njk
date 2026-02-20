@@ -1,0 +1,147 @@
+---
+layout: layouts/attribute.njk
+title: "reversed"
+description: "Control ordered list numbering direction and start value. Covers reversed, start, and value attributes on ol and li elements."
+attributeName: reversed
+attributeType: native
+nativeGroup: Structure
+category: native
+currentPath: /docs/attributes/reversed/
+permalink: /docs/attributes/reversed/
+---
+
+{% set reversedExample %}<!-- Countdown list: 5, 4, 3, 2, 1 -->
+<ol reversed>
+  <li>Launch the application</li>
+  <li>Run final checks</li>
+  <li>Load test data</li>
+  <li>Configure the server</li>
+  <li>Set up the environment</li>
+</ol>{% endset %}
+
+{% set startExample %}<!-- Start numbering from 6 (continuing a split list) -->
+<h3>Steps 1-5</h3>
+<ol>
+  <li>Open your terminal</li>
+  <li>Navigate to the project directory</li>
+  <li>Install dependencies</li>
+  <li>Copy the example config</li>
+  <li>Edit the config file</li>
+</ol>
+
+<h3>Steps 6-10</h3>
+<ol start="6">
+  <li>Start the dev server</li>
+  <li>Open the browser</li>
+  <li>Log in with test credentials</li>
+  <li>Verify the dashboard loads</li>
+  <li>Run the test suite</li>
+</ol>{% endset %}
+
+{% set combinedExample %}<!-- Top 10 countdown starting at 10 -->
+<h3>Top 10 Programming Languages</h3>
+<ol reversed start="10">
+  <li>Ruby</li>
+  <li>Go</li>
+  <li>Swift</li>
+  <li>TypeScript</li>
+  <li>Rust</li>
+  <li>C++</li>
+  <li>C#</li>
+  <li>Java</li>
+  <li>JavaScript</li>
+  <li>Python</li>
+</ol>{% endset %}
+
+{% set valueExample %}<!-- Override specific item numbers -->
+<ol>
+  <li>Introduction</li>
+  <li>Background</li>
+  <li value="5">Main argument</li>
+  <li>Supporting evidence</li>
+  <li>Conclusion</li>
+</ol>
+<!-- Renders as: 1, 2, 5, 6, 7 -->{% endset %}
+
+{% set styleExample %}<!-- reversed works with any list-style-type -->
+<ol reversed style="list-style-type: upper-roman;">
+  <li>Final act</li>
+  <li>Intermission</li>
+  <li>Opening act</li>
+</ol>
+<!-- Renders as: III, II, I -->
+
+<ol reversed style="list-style-type: lower-alpha;">
+  <li>Third choice</li>
+  <li>Second choice</li>
+  <li>First choice</li>
+</ol>
+<!-- Renders as: c, b, a -->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>reversed</code> attribute on <code>&lt;ol&gt;</code> reverses the numbering direction so the list counts down instead of up. Combined with <code>start</code> (on <code>&lt;ol&gt;</code>) and <code>value</code> (on <code>&lt;li&gt;</code>), you have full control over ordered list numbering.</p>
+<p><strong>Applies to:</strong></p>
+<ul>
+  <li><code>reversed</code> — <code>&lt;ol&gt;</code> only</li>
+  <li><code>start</code> — <code>&lt;ol&gt;</code> only</li>
+  <li><code>value</code> — <code>&lt;li&gt;</code> within an <code>&lt;ol&gt;</code></li>
+</ul>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Element</th><th>Value</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>reversed</code></td><td><code>&lt;ol&gt;</code></td><td>Boolean (no value)</td><td>Numbers count down from the total number of items</td></tr>
+    <tr><td><code>start</code></td><td><code>&lt;ol&gt;</code></td><td>Integer</td><td>Sets the starting number for the first item</td></tr>
+    <tr><td><code>value</code></td><td><code>&lt;li&gt;</code></td><td>Integer</td><td>Overrides the counter for that specific item; subsequent items continue from this value</td></tr>
+  </tbody>
+</table>
+
+<h2>Reversed Lists</h2>
+<p>A reversed list counts down from the number of items. A list with 5 items numbers them 5, 4, 3, 2, 1.</p>
+
+<code-block language="html" label="Reversed list">{{ reversedExample | escape }}</code-block>
+
+<h2>Custom Start Value</h2>
+<p>The <code>start</code> attribute sets the first number. This is useful when a list is split across sections and the second part should continue the numbering.</p>
+
+<code-block language="html" label="Start attribute">{{ startExample | escape }}</code-block>
+
+<h2>Combined: Countdown from a Number</h2>
+<p>Use <code>reversed</code> and <code>start</code> together for top-N countdown lists. Set <code>start</code> to the highest number you want.</p>
+
+<code-block language="html" label="Top 10 countdown">{{ combinedExample | escape }}</code-block>
+
+<h2>Overriding Individual Items</h2>
+<p>The <code>value</code> attribute on a <code>&lt;li&gt;</code> overrides the counter for that item. Subsequent items continue incrementing (or decrementing, if reversed) from the new value.</p>
+
+<code-block language="html" label="Value override">{{ valueExample | escape }}</code-block>
+
+<h2>List Style Types</h2>
+<p>The <code>reversed</code> and <code>start</code> attributes work with any <code>list-style-type</code> — Roman numerals, letters, and other numbering systems all reverse correctly.</p>
+
+<code-block language="html" label="Styled list types">{{ styleExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Screen readers announce the list item numbers correctly, regardless of <code>reversed</code> or <code>start</code> values.</li>
+  <li>The semantic ordering is communicated to assistive technology — a reversed list is read in its visual order (top to bottom), with the descending numbers.</li>
+  <li>Do not use CSS <code>counter-reset</code>/<code>counter-increment</code> to fake reversed numbering — it does not communicate the correct semantics to assistive technology.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>The <code>reversed</code> attribute only applies to <code>&lt;ol&gt;</code>. It has no effect on <code>&lt;ul&gt;</code>.</li>
+  <li>The <code>start</code> attribute accepts only integers. It does not accept Roman numerals or letters even when <code>list-style-type</code> uses them.</li>
+  <li>When <code>reversed</code> is used without <code>start</code>, the count begins at the total number of <code>&lt;li&gt;</code> elements. Dynamically adding items changes the starting number, which can be unexpected.</li>
+  <li>The <code>value</code> attribute on <code>&lt;li&gt;</code> resets the counter, which affects all subsequent items. There is no way to override a single item without affecting the ones after it.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> — the ordered list element</li>
+    <li><a href="/docs/elements/native/li/"><code>&lt;li&gt;</code></a> — list item element</li>
+    <li><a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> — unordered list element</li>
+  </ul>
+</section>

@@ -1,0 +1,147 @@
+---
+layout: layouts/attribute.njk
+title: "autocapitalize"
+description: "Controls automatic capitalization on mobile virtual keyboards. Pair with inputmode for complete mobile keyboard control."
+attributeName: autocapitalize
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/autocapitalize/
+permalink: /docs/attributes/autocapitalize/
+---
+
+{% set basicExample %}<!-- Default: capitalize the first letter of each sentence -->
+<label for="bio">Bio</label>
+<textarea id="bio" autocapitalize="sentences" rows="3"></textarea>
+
+<!-- Capitalize the first letter of each word (name fields) -->
+<label for="full-name">Full Name</label>
+<input type="text" id="full-name" autocapitalize="words" autocomplete="name" />
+
+<!-- No capitalization (usernames, codes) -->
+<label for="handle">Username</label>
+<input type="text" id="handle" autocapitalize="none" />{% endset %}
+
+{% set allCapsExample %}<!-- All characters uppercase (license plates, country codes) -->
+<label for="plate">License Plate</label>
+<input type="text" id="plate"
+  autocapitalize="characters"
+  maxlength="8"
+  placeholder="ABC 1234" />
+
+<!-- Airline booking reference -->
+<label for="booking">Booking Reference</label>
+<input type="text" id="booking"
+  autocapitalize="characters"
+  maxlength="6"
+  pattern="[A-Z0-9]{6}"
+  placeholder="XK49BT" />{% endset %}
+
+{% set formExample %}<form class="stacked">
+  <label for="first-name">First Name</label>
+  <input type="text" id="first-name"
+    autocapitalize="words"
+    autocomplete="given-name" />
+
+  <label for="last-name">Last Name</label>
+  <input type="text" id="last-name"
+    autocapitalize="words"
+    autocomplete="family-name" />
+
+  <label for="email">Email</label>
+  <input type="email" id="email"
+    autocomplete="email" />
+
+  <label for="username">Username</label>
+  <input type="text" id="username"
+    autocapitalize="none"
+    autocomplete="username" />
+
+  <label for="notes">Notes</label>
+  <textarea id="notes" autocapitalize="sentences" rows="3"></textarea>
+
+  <button type="submit">Create Account</button>
+</form>{% endset %}
+
+{% set contenteditableExample %}<!-- Contenteditable with autocapitalize -->
+<div contenteditable="true" autocapitalize="sentences">
+  Start typing here. The first letter of each sentence will be capitalized.
+</div>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>autocapitalize</code> attribute controls whether and how the virtual keyboard automatically capitalizes text as the user types. It affects only mobile and tablet virtual keyboards — physical keyboards and desktop browsers are unaffected.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th><th>Use Case</th></tr></thead>
+  <tbody>
+    <tr><td><code>none</code> / <code>off</code></td><td>No automatic capitalization</td><td>Usernames, email addresses, URLs, codes</td></tr>
+    <tr><td><code>sentences</code></td><td>Capitalize the first letter of each sentence (the default)</td><td>General prose, comments, descriptions</td></tr>
+    <tr><td><code>words</code></td><td>Capitalize the first letter of each word</td><td>Name fields, titles, headings</td></tr>
+    <tr><td><code>characters</code></td><td>All characters uppercase</td><td>License plates, booking references, country codes</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>Practical Examples</h2>
+
+<h3>All-Caps Input</h3>
+<p>Use <code>characters</code> for fields where the value is always uppercase. The keyboard shifts to caps lock mode so the user does not need to toggle it manually.</p>
+
+<code-block language="html" label="Uppercase fields">{{ allCapsExample | escape }}</code-block>
+
+<h3>Registration Form</h3>
+<p>A complete form demonstrating appropriate <code>autocapitalize</code> values for different field types.</p>
+
+<code-block language="html" label="Registration form">{{ formExample | escape }}</code-block>
+
+<h3>Contenteditable</h3>
+<p>The attribute also works on <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a> elements, providing the same keyboard behavior outside of form fields.</p>
+
+<code-block language="html" label="Contenteditable">{{ contenteditableExample | escape }}</code-block>
+
+<h2>Pairing with inputmode</h2>
+<p>For complete mobile keyboard control, combine <code>autocapitalize</code> with <a href="/docs/attributes/inputmode/"><code>inputmode</code></a>. Together they determine both the keyboard layout and the capitalization behavior:</p>
+<ul>
+  <li><code>inputmode="text" autocapitalize="words"</code> — text keyboard with title-case capitalization for name fields</li>
+  <li><code>inputmode="text" autocapitalize="none"</code> — text keyboard with no auto-caps for usernames</li>
+  <li><code>inputmode="url"</code> — URL keyboard (autocapitalize has no effect since URLs are case-insensitive in practice)</li>
+</ul>
+
+<h2>Automatic Handling</h2>
+<p>Some input types ignore <code>autocapitalize</code> because the browser already knows the correct behavior:</p>
+<ul>
+  <li><code>type="email"</code> — no capitalization (email addresses are lowercase)</li>
+  <li><code>type="url"</code> — no capitalization</li>
+  <li><code>type="password"</code> — no capitalization</li>
+</ul>
+<p>For these types, setting <code>autocapitalize</code> has no effect. The browser does the right thing automatically.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>No impact on assistive technology.</strong> The <code>autocapitalize</code> attribute does not change how screen readers announce the field or its content.</li>
+  <li><strong>Reduces input friction.</strong> Correct capitalization settings prevent mobile users from needing to manually toggle Shift, which is especially helpful for users with motor impairments.</li>
+  <li><strong>Pair with <code>autocomplete</code>.</strong> Fields like names benefit from both <code>autocapitalize="words"</code> and <code>autocomplete="name"</code> — the former helps manual entry while the latter enables autofill.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Desktop has no effect:</strong> Physical keyboards and desktop browsers ignore this attribute entirely. It is purely a mobile optimization.</li>
+  <li><strong>Keyboard-app dependent:</strong> Virtual keyboard apps may interpret values differently. Most major keyboards (iOS, Gboard, Samsung Keyboard) support all four values, but third-party keyboards may not.</li>
+  <li><strong>Suggestion only:</strong> The attribute is a hint, not a constraint. Users can still manually change capitalization. It does not validate or transform the submitted value.</li>
+  <li><strong>No mid-word control:</strong> You cannot capitalize specific characters within a word (e.g., camelCase). The attribute operates at the sentence, word, or character level only.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> — control which virtual keyboard layout appears</li>
+    <li><a href="/docs/attributes/enterkeyhint/"><code>enterkeyhint</code></a> — control the Enter key label on virtual keyboards</li>
+    <li><a href="/docs/attributes/autocorrect/"><code>autocorrect</code></a> — control automatic text correction on mobile</li>
+    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a> — enable or disable browser spell-checking</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> — browser autofill hints</li>
+  </ul>
+</section>

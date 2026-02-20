@@ -1,0 +1,132 @@
+---
+layout: layouts/attribute.njk
+title: "ping"
+description: "Send tracking pings to specified URLs when a link is clicked. A transparent, declarative alternative to redirect-based or JavaScript click tracking."
+attributeName: ping
+attributeType: native
+nativeGroup: Structure
+category: native
+currentPath: /docs/attributes/ping/
+permalink: /docs/attributes/ping/
+---
+
+{% set basicExample %}<!-- Single tracking URL -->
+<a href="/products/widget" ping="/analytics/click">Widget Product Page</a>
+
+<!-- Multiple tracking URLs (space-separated) -->
+<a href="/products/widget"
+   ping="/analytics/click /third-party/track">
+  Widget Product Page
+</a>{% endset %}
+
+{% set practicalExample %}<!-- Track outbound link clicks -->
+<nav>
+  <a href="https://github.com/example/repo"
+     ping="/track/outbound">
+    GitHub Repository
+  </a>
+  <a href="https://docs.example.com"
+     ping="/track/outbound">
+    Documentation
+  </a>
+</nav>
+
+<!-- Track CTA clicks in a marketing page -->
+<a href="/signup"
+   ping="/analytics/cta-click?source=hero">
+  Start Free Trial
+</a>{% endset %}
+
+{% set requestExample %}<!-- When the user clicks this link: -->
+<a href="/destination" ping="/track">Click me</a>
+
+<!-- The browser sends a POST to /track with these headers:
+     Content-Type: text/ping
+     Ping-From: https://example.com/current-page
+     Ping-To: https://example.com/destination
+
+     The body is the string "PING"
+
+     The user navigates directly to /destination without delay -->{% endset %}
+
+{% set comparisonExample %}<!-- Redirect tracking (common but slower) -->
+<a href="/redirect?url=https://example.com&id=123">Example</a>
+<!-- User goes to /redirect first, then gets redirected to example.com -->
+
+<!-- JavaScript tracking (common but fragile) -->
+<a href="https://example.com" onclick="track('click', 123)">Example</a>
+<!-- Depends on JS loading; may miss clicks -->
+
+<!-- ping attribute (fastest, declarative) -->
+<a href="https://example.com" ping="/track?id=123">Example</a>
+<!-- User goes directly to example.com; ping is sent in background -->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>ping</code> attribute on <code>&lt;a&gt;</code> elements sends background POST requests to one or more URLs when the link is clicked. The user navigates directly to the link's <code>href</code> destination while the tracking requests are sent asynchronously — no redirect delay, no JavaScript required.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Single URL</td><td>Sends one POST request on click</td></tr>
+    <tr><td>Space-separated URLs</td><td>Sends a POST to each URL on click</td></tr>
+  </tbody>
+</table>
+
+<h2>Basic Usage</h2>
+<p>Add one or more tracking URLs to the <code>ping</code> attribute. The browser sends POST requests to each URL when the link is clicked.</p>
+
+<code-block language="html" label="Ping attribute">{{ basicExample | escape }}</code-block>
+
+<h2>Practical Examples</h2>
+<p>Common use cases include tracking outbound links, measuring CTA effectiveness, and notifying analytics services of navigation events.</p>
+
+<code-block language="html" label="Real-world usage">{{ practicalExample | escape }}</code-block>
+
+<h2>What the Browser Sends</h2>
+<p>The POST request includes headers that identify both the page the user was on and the destination they are navigating to.</p>
+
+<code-block language="text" label="Ping request details">{{ requestExample | escape }}</code-block>
+
+<h2>Comparison with Other Tracking</h2>
+<p>The <code>ping</code> attribute competes with two established tracking patterns: redirect URLs and JavaScript click handlers. It has advantages over both.</p>
+
+<code-block language="html" label="Tracking approaches">{{ comparisonExample | escape }}</code-block>
+
+<table>
+  <thead><tr><th>Approach</th><th>User Delay</th><th>Requires JS</th><th>Visible in Source</th><th>Works if JS Fails</th></tr></thead>
+  <tbody>
+    <tr><td>Redirect tracking</td><td>Yes (extra hop)</td><td>No</td><td>URL is obscured</td><td>Yes</td></tr>
+    <tr><td>JS click handler</td><td>Minimal</td><td>Yes</td><td>Buried in scripts</td><td>No</td></tr>
+    <tr><td><code>ping</code> attribute</td><td>None</td><td>No</td><td>Yes (in HTML)</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
+<h2>Transparency Advantage</h2>
+<p>Unlike JavaScript-based tracking, the <code>ping</code> attribute is visible in the page source. Privacy-conscious users, browser extensions, and auditing tools can see exactly which URLs receive tracking pings. This transparency was an intentional design goal of the specification.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>The <code>ping</code> attribute has no effect on accessibility. Screen readers announce the link normally based on its text content and <code>href</code>.</li>
+  <li>The attribute does not change the link's visible destination or behavior from the user's perspective.</li>
+  <li>Keyboard activation (Enter) triggers the ping just as a mouse click does.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Firefox disables <code>ping</code> by default.</strong> The <code>browser.send_pings</code> preference is <code>false</code> in Firefox, making the attribute unreliable for cross-browser analytics.</li>
+  <li>Privacy-focused browsers and extensions (uBlock Origin, Brave) may block ping requests entirely.</li>
+  <li>The POST body is just the string <code>PING</code> — you cannot send custom data. Any context must be encoded in the URL query string.</li>
+  <li>Only works on <code>&lt;a&gt;</code> elements. It does not apply to <code>&lt;button&gt;</code>, <code>&lt;form&gt;</code>, or programmatic navigation.</li>
+  <li>The <code>Ping-From</code> header is omitted in cross-origin requests when the referring page uses HTTPS and the ping URL uses HTTP (downgrade scenario).</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control what referrer information is sent with requests</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> — link relationship types including <code>noopener</code> and <code>noreferrer</code></li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> — the anchor element</li>
+  </ul>
+</section>

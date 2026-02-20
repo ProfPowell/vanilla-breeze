@@ -1,0 +1,145 @@
+---
+layout: layouts/attribute.njk
+title: "autocorrect"
+description: "Controls automatic text correction on mobile devices. Disable it for usernames, product codes, and technical content where correction would alter intended input."
+attributeName: autocorrect
+attributeType: native
+nativeGroup: Global
+category: native
+currentPath: /docs/attributes/autocorrect/
+permalink: /docs/attributes/autocorrect/
+---
+
+{% set basicExample %}<!-- Disable autocorrect for a username field -->
+<label for="username">Username</label>
+<input type="text" id="username"
+  autocorrect="off"
+  autocapitalize="none"
+  autocomplete="username" />
+
+<!-- Leave autocorrect enabled for prose (the default) -->
+<label for="comment">Comment</label>
+<textarea id="comment" autocorrect="on" rows="4"></textarea>{% endset %}
+
+{% set technicalExample %}<!-- Product code: autocorrect would change valid codes to dictionary words -->
+<label for="sku">Product Code</label>
+<input type="text" id="sku"
+  autocorrect="off"
+  spellcheck="false"
+  placeholder="WX-4829-BLK" />
+
+<!-- API endpoint: correction would break URLs -->
+<label for="endpoint">API Endpoint</label>
+<input type="url" id="endpoint"
+  autocorrect="off"
+  placeholder="https://api.example.com/v1" />
+
+<!-- Code snippet input -->
+<label for="selector">CSS Selector</label>
+<input type="text" id="selector"
+  autocorrect="off"
+  spellcheck="false"
+  placeholder=".nav > .item:first-child" />{% endset %}
+
+{% set fullControlExample %}<form class="stacked">
+  <!-- Name: autocorrect on, capitalize words -->
+  <label for="name">Full Name</label>
+  <input type="text" id="name"
+    autocorrect="on"
+    autocapitalize="words"
+    autocomplete="name" />
+
+  <!-- Username: all text assistance off -->
+  <label for="handle">Username</label>
+  <input type="text" id="handle"
+    autocorrect="off"
+    autocapitalize="none"
+    spellcheck="false"
+    autocomplete="username" />
+
+  <!-- Bio: all text assistance on -->
+  <label for="bio">Bio</label>
+  <textarea id="bio"
+    autocorrect="on"
+    autocapitalize="sentences"
+    spellcheck="true"
+    rows="3"></textarea>
+
+  <!-- Invite code: all text assistance off -->
+  <label for="invite">Invite Code</label>
+  <input type="text" id="invite"
+    autocorrect="off"
+    autocapitalize="characters"
+    spellcheck="false" />
+
+  <button type="submit">Save Profile</button>
+</form>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>autocorrect</code> attribute controls whether the browser or operating system automatically corrects text as the user types. When enabled, the system silently replaces what it believes are typos with dictionary words — helpful for prose, but destructive for technical content, codes, or identifiers.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, and any element with <a href="/docs/attributes/contenteditable/"><code>contenteditable</code></a></p>
+
+<h2>Values</h2>
+
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>on</code></td><td>Automatic text correction is enabled (the default)</td></tr>
+    <tr><td><code>off</code></td><td>Automatic text correction is disabled</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Basic usage">{{ basicExample | escape }}</code-block>
+
+<h2>When to Disable Autocorrect</h2>
+<p>Autocorrect is designed for natural language. It actively harms input accuracy when the field expects non-dictionary content:</p>
+<ul>
+  <li><strong>Usernames and handles:</strong> <code>xKoder99</code> gets corrected to <code>Coder</code></li>
+  <li><strong>Product codes and SKUs:</strong> <code>WX-4829</code> gets broken by insertion of spaces or corrections</li>
+  <li><strong>Technical terms:</strong> Programming keywords, CSS selectors, shell commands</li>
+  <li><strong>URLs and paths:</strong> File paths and API endpoints contain non-word segments</li>
+  <li><strong>Abbreviations:</strong> Domain-specific abbreviations are not in the system dictionary</li>
+  <li><strong>Invite codes and tokens:</strong> Random alphanumeric strings that must be entered exactly</li>
+</ul>
+
+<code-block language="html" label="Technical input fields">{{ technicalExample | escape }}</code-block>
+
+<h2>Complete Text Input Control</h2>
+<p>For full control over mobile text input behavior, combine <code>autocorrect</code> with <a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> and <a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a>. Each controls a different aspect of the text assistance pipeline:</p>
+
+<table>
+  <thead><tr><th>Attribute</th><th>Controls</th><th>Visual Indicator</th></tr></thead>
+  <tbody>
+    <tr><td><code>autocorrect</code></td><td>Silent replacement of "typos" with dictionary words</td><td>None (corrections happen automatically)</td></tr>
+    <tr><td><code>autocapitalize</code></td><td>Automatic uppercase on the first letter of sentences, words, or all characters</td><td>Keyboard Shift state</td></tr>
+    <tr><td><code>spellcheck</code></td><td>Red underlines on words not in the dictionary</td><td>Wavy underlines</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Complete text input control">{{ fullControlExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li><strong>Autocorrect helps with typos.</strong> For prose fields, leaving autocorrect enabled helps users — including those with motor impairments or dyslexia — produce accurate text with less effort.</li>
+  <li><strong>Unwanted corrections create frustration.</strong> When autocorrect changes a deliberately entered value, the user must notice the change and undo it. This is especially burdensome for users who cannot easily see the correction happening.</li>
+  <li><strong>No impact on screen readers.</strong> The attribute does not change how assistive technology announces the field.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Browser support is limited:</strong> Safari (iOS and macOS) is the primary browser that implements <code>autocorrect</code>. Chrome and Firefox on Android rely on OS-level autocorrect settings and largely ignore this attribute.</li>
+  <li><strong>OS-level correction may override:</strong> Even with <code>autocorrect="off"</code>, some mobile operating systems apply their own correction at the input method level, which the browser cannot control.</li>
+  <li><strong>No granular control:</strong> You cannot selectively correct some words while leaving others alone. It is all or nothing per field.</li>
+  <li><strong>Not in the HTML spec (historically):</strong> The <code>autocorrect</code> attribute was a non-standard Safari extension for years. It has since been proposed for standardization, but browser support remains uneven.</li>
+  <li><strong>No desktop effect:</strong> Desktop browsers do not perform autocorrection, so the attribute has no visible impact on desktop.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/autocapitalize/"><code>autocapitalize</code></a> — control automatic capitalization on mobile keyboards</li>
+    <li><a href="/docs/attributes/spellcheck/"><code>spellcheck</code></a> — enable or disable browser spell-checking</li>
+    <li><a href="/docs/attributes/inputmode/"><code>inputmode</code></a> — control which virtual keyboard layout appears</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> — browser autofill hints</li>
+  </ul>
+</section>

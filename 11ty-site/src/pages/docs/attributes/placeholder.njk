@@ -1,0 +1,156 @@
+---
+layout: layouts/attribute.njk
+title: "placeholder"
+description: "A short hint displayed inside a form field before the user types. Useful for format hints, but never a replacement for labels."
+attributeName: placeholder
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/placeholder/
+permalink: /docs/attributes/placeholder/
+---
+
+{% set basicExample %}<label for="email">Email</label>
+<input type="email" id="email"
+  placeholder="e.g., jane@example.com" />
+
+<label for="phone">Phone Number</label>
+<input type="tel" id="phone"
+  placeholder="123-456-7890" />
+
+<label for="dob">Date of Birth</label>
+<input type="text" id="dob"
+  placeholder="MM/DD/YYYY" />{% endset %}
+
+{% set antiPatternExample %}<!-- BAD: placeholder used as a label -->
+<input type="email" placeholder="Email address" />
+
+<!-- BAD: critical instructions in placeholder disappear on type -->
+<input type="text" placeholder="Enter code from your authenticator app" />
+
+<!-- GOOD: visible label with placeholder as format hint -->
+<label for="code">Authenticator Code</label>
+<input type="text" id="code"
+  placeholder="e.g., 123 456"
+  autocomplete="one-time-code" />{% endset %}
+
+{% set helperTextExample %}<form class="stacked">
+  <form-field>
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username"
+      pattern="[a-zA-Z][a-zA-Z0-9_]{2,15}"
+      required />
+    <small>3-16 characters. Letters, numbers, and underscores.</small>
+  </form-field>
+
+  <form-field>
+    <label for="amount">Transfer Amount</label>
+    <input type="number" id="amount" name="amount"
+      min="1" max="10000" step="0.01"
+      placeholder="0.00" required />
+    <small>Minimum $1.00, maximum $10,000.00</small>
+  </form-field>
+</form>{% endset %}
+
+{% set textareaExample %}<label for="message">Message</label>
+<textarea id="message" rows="4"
+  placeholder="Write your message here..."></textarea>{% endset %}
+
+{% set cssExample %}/* Style placeholder text */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1; /* Firefox defaults to lower opacity */
+}
+
+/* Style the input when placeholder is visible (empty) */
+input:placeholder-shown {
+  font-style: italic;
+}
+
+/* Show helper text only when placeholder is NOT visible */
+input:not(:placeholder-shown) + small {
+  visibility: visible;
+}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>placeholder</code> attribute displays a short hint inside a form field when it is empty. The text disappears as soon as the user starts typing. It is meant for brief format hints — not labels, instructions, or anything the user might need to reference while filling out the field.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> (text-like types), <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Input Type</th><th>Good Placeholder</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><code>email</code></td><td><code>e.g., jane@example.com</code></td><td>Shows expected format</td></tr>
+    <tr><td><code>tel</code></td><td><code>123-456-7890</code></td><td>Clarifies separator style</td></tr>
+    <tr><td><code>url</code></td><td><code>https://example.com</code></td><td>Reminds to include protocol</td></tr>
+    <tr><td><code>text</code> (date)</td><td><code>MM/DD/YYYY</code></td><td>Shows date format</td></tr>
+    <tr><td><code>search</code></td><td><code>Search articles...</code></td><td>Clarifies scope</td></tr>
+    <tr><td><code>number</code></td><td><code>0.00</code></td><td>Shows decimal precision</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Format hint placeholders">{{ basicExample | escape }}</code-block>
+
+<h2>Placeholder Is Not a Label</h2>
+<p>This is the single most common accessibility mistake in form design. A placeholder is not a label. It fails as a label in several ways:</p>
+<ul>
+  <li><strong>It disappears.</strong> Once the user starts typing, the hint is gone. They cannot verify what the field is asking for.</li>
+  <li><strong>Low contrast.</strong> Placeholder text is intentionally muted. It often fails WCAG contrast requirements.</li>
+  <li><strong>No guaranteed accessibility.</strong> Not all screen readers announce placeholder text consistently. The <code>&lt;label&gt;</code> element is the only reliable way to name a field.</li>
+  <li><strong>Confuses autofill.</strong> Users with cognitive disabilities may mistake placeholder text for a pre-filled value and skip the field.</li>
+</ul>
+
+<code-block language="html" label="Anti-patterns vs correct usage">{{ antiPatternExample | escape }}</code-block>
+
+<h2>Better Alternatives to Placeholder</h2>
+<p>For instructions, validation hints, or anything the user needs to see while typing, use persistent helper text below the field.</p>
+
+<code-block language="html" label="Helper text pattern">{{ helperTextExample | escape }}</code-block>
+
+<p>Helper text is always visible, always accessible, and does not disappear. Use <code>placeholder</code> for short format hints (like <code>MM/DD/YYYY</code>) and helper text for everything else.</p>
+
+<h2>Textarea</h2>
+<p>The <code>placeholder</code> attribute works on <code>&lt;textarea&gt;</code> as well. It disappears when the user types any content.</p>
+
+<code-block language="html" label="Textarea placeholder">{{ textareaExample | escape }}</code-block>
+
+<h2>Styling</h2>
+<p>Use the <code>::placeholder</code> pseudo-element to style placeholder text, and <code>:placeholder-shown</code> to style the input when the placeholder is visible (i.e., the field is empty).</p>
+
+<code-block language="css" label="Placeholder CSS">{{ cssExample | escape }}</code-block>
+
+<p><strong>Firefox note:</strong> Firefox renders placeholders at reduced opacity by default. Add <code>opacity: 1</code> to <code>::placeholder</code> if you want consistent appearance across browsers.</p>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>The VB <code>data-floating-label</code> attribute provides an animated floating label that starts inside the field (like a placeholder) and animates up to a label position when the user focuses or types. This gives the compact look of placeholder-as-label without the accessibility problems — the label is always visible and always associated with the field.</p>
+</aside>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Always provide a visible <code>&lt;label&gt;</code> element. Never use <code>placeholder</code> as the only field label.</li>
+  <li>Placeholder text should meet WCAG 1.4.3 contrast requirements (4.5:1 ratio for normal text), though in practice most default browser styles fall short. Test your placeholder color.</li>
+  <li>Keep placeholder text short. Screen readers that do announce it will read the entire string, and long placeholders are disruptive.</li>
+  <li>Do not put instructions or validation rules in the placeholder. Use <code>&lt;small&gt;</code> helper text or <code>aria-describedby</code> instead.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Placeholder text is not submitted with the form. If the user leaves the field empty, the placeholder is not sent as the value.</li>
+  <li><code>placeholder</code> does not work on <code>&lt;select&gt;</code>. Use an empty-value first option instead: <code>&lt;option value=""&gt;Choose...&lt;/option&gt;</code>.</li>
+  <li>Placeholder text cannot contain HTML. Line breaks and formatting are ignored.</li>
+  <li>The <code>::placeholder</code> pseudo-element only accepts a subset of CSS properties (color, font, text-related). You cannot add borders, backgrounds, or pseudo-content to it.</li>
+  <li>Password managers may not correctly identify fields that rely on placeholder instead of <code>&lt;label&gt;</code> for context.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> — mark fields as mandatory</li>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> — validate input format</li>
+    <li><a href="/docs/attributes/autocomplete/"><code>autocomplete</code></a> — browser autofill hints</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> element reference</li>
+  </ul>
+</section>

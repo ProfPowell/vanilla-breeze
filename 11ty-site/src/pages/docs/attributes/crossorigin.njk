@@ -1,0 +1,117 @@
+---
+layout: layouts/attribute.njk
+title: "crossorigin"
+description: "Controls CORS mode for external resources. Required for fonts, enables full error reporting for scripts, and prevents canvas tainting from cross-origin images."
+attributeName: crossorigin
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/crossorigin/
+permalink: /docs/attributes/crossorigin/
+---
+
+{% set fontExample %}<!-- Fonts MUST have crossorigin="anonymous" to load cross-origin -->
+<link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/Inter.woff2"
+  as="font" type="font/woff2" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter" />{% endset %}
+
+{% set scriptExample %}<!-- Without crossorigin: errors from this script show as "Script error." -->
+<script src="https://cdn.example.com/app.js"></script>
+
+<!-- With crossorigin: full stack traces are available in window.onerror -->
+<script src="https://cdn.example.com/app.js" crossorigin="anonymous"></script>{% endset %}
+
+{% set imgExample %}<!-- Without crossorigin: drawing this image taints the canvas -->
+<img src="https://cdn.example.com/photo.jpg" alt="Photo" />
+
+<!-- With crossorigin: canvas can read pixel data from this image -->
+<img src="https://cdn.example.com/photo.jpg" alt="Photo"
+  crossorigin="anonymous" />{% endset %}
+
+{% set credentialExample %}<!-- Public CDN: no cookies or auth needed -->
+<script src="https://cdn.example.com/lib.js"
+  crossorigin="anonymous"></script>
+
+<!-- Authenticated CDN: send cookies with the request -->
+<script src="https://private-cdn.example.com/internal.js"
+  crossorigin="use-credentials"></script>
+
+<!-- Boolean shorthand: equivalent to crossorigin="anonymous" -->
+<img src="https://cdn.example.com/photo.jpg" alt="Photo" crossorigin />{% endset %}
+
+{% set canvasExample %}{% raw %}<img id="photo" src="https://cdn.example.com/photo.jpg"
+  alt="Photo" crossorigin="anonymous" />
+
+<script>
+const img = document.getElementById('photo');
+img.addEventListener('load', () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+
+  // Without crossorigin, this line throws a SecurityError
+  const dataUrl = canvas.toDataURL('image/png');
+});
+</script>{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>crossorigin</code> attribute sets the CORS (Cross-Origin Resource Sharing) mode for requests to external origins. It controls whether the browser sends credentials with the request and whether the response data is accessible to JavaScript.</p>
+<p>Without this attribute, cross-origin resources load in "no-cors" mode: the browser fetches them but restricts access to their contents. With it, the browser makes a CORS request and the remote server must respond with appropriate <code>Access-Control-Allow-Origin</code> headers.</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>Credentials Sent</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>anonymous</code></td><td>No</td><td>CORS request without cookies, client certs, or auth headers</td></tr>
+    <tr><td><code>use-credentials</code></td><td>Yes</td><td>CORS request with cookies and auth headers. Server must respond with <code>Access-Control-Allow-Credentials: true</code>.</td></tr>
+    <tr><td><code>""</code> (empty / boolean)</td><td>No</td><td>Same as <code>anonymous</code>. Writing just <code>crossorigin</code> is equivalent.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a>, <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a>, <code>&lt;audio&gt;</code>, <code>&lt;video&gt;</code></p>
+
+<h2>Why Fonts Require crossorigin</h2>
+<p>The CSS <code>@font-face</code> specification requires CORS for cross-origin font files. Unlike images or scripts, fonts <strong>will not load at all</strong> from another origin unless the request uses CORS mode. This means <code>crossorigin="anonymous"</code> is mandatory on any <code>&lt;link rel="preload" as="font"&gt;</code> or stylesheet that loads cross-origin fonts.</p>
+
+<code-block language="html" label="Font preloading requires crossorigin">{{ fontExample | escape }}</code-block>
+
+<p>If you forget <code>crossorigin</code>, the preloaded font and the stylesheet's font request will be treated as separate fetches (one CORS, one no-cors), wasting bandwidth and delaying text rendering.</p>
+
+<h2>Error Reporting for Scripts</h2>
+<p>Cross-origin scripts loaded without <code>crossorigin</code> report errors as the generic message <code>"Script error."</code> with no filename, line number, or stack trace. This is a browser security measure to prevent information leakage. Adding <code>crossorigin="anonymous"</code> unlocks full error details.</p>
+
+<code-block language="html" label="Script error reporting">{{ scriptExample | escape }}</code-block>
+
+<h2>Canvas Tainting</h2>
+<p>When a cross-origin image is drawn onto a <code>&lt;canvas&gt;</code>, the canvas becomes "tainted" and you can no longer read its pixel data. Adding <code>crossorigin="anonymous"</code> to the image prevents tainting, provided the server sends the correct CORS headers.</p>
+
+<code-block language="html" label="Cross-origin images on canvas">{{ imgExample | escape }}</code-block>
+<code-block language="html" label="Canvas pixel access">{{ canvasExample | escape }}</code-block>
+
+<h2>anonymous vs use-credentials</h2>
+<p>Almost all use cases call for <code>anonymous</code>. Use <code>use-credentials</code> only when the server requires authentication (cookies, client certificates) to serve the resource and is configured to accept credentialed CORS requests.</p>
+
+<code-block language="html" label="Credential modes">{{ credentialExample | escape }}</code-block>
+
+<h2>Security Considerations</h2>
+<p>The <code>crossorigin</code> attribute does not bypass the same-origin policy on its own. The remote server must opt in by sending <code>Access-Control-Allow-Origin</code> headers. If the server does not support CORS, adding <code>crossorigin</code> will cause the resource to fail to load entirely — the browser blocks the response rather than falling back to no-cors mode.</p>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Server must support CORS:</strong> Adding <code>crossorigin</code> to a resource whose server does not send CORS headers will break the load, not fix it.</li>
+  <li><strong>Caching mismatch:</strong> A resource fetched with and without CORS mode produces different cache entries. Preloading a font with <code>crossorigin</code> but loading the stylesheet without it causes a double fetch.</li>
+  <li><strong>use-credentials is strict:</strong> The server cannot respond with <code>Access-Control-Allow-Origin: *</code> when credentials are used — it must echo the exact origin.</li>
+  <li><strong>Same-origin resources ignore it:</strong> The attribute has no effect on resources served from the same origin.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/integrity/"><code>integrity</code></a> &mdash; SRI requires <code>crossorigin</code> on cross-origin resources</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent with requests</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; preload and preconnect resource hints</li>
+  </ul>
+</section>

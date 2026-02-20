@@ -1,0 +1,163 @@
+---
+layout: layouts/attribute.njk
+title: "disabled"
+description: "Prevents interaction with form controls. Disabled elements are skipped by tab order, excluded from form submission, and grayed out by default."
+attributeName: disabled
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/disabled/
+permalink: /docs/attributes/disabled/
+---
+
+{% set basicExample %}<form class="stacked">
+  <label for="email">Email</label>
+  <input type="email" id="email" value="user@example.com" disabled />
+
+  <label for="plan">Plan</label>
+  <select id="plan" disabled>
+    <option>Free</option>
+    <option selected>Pro</option>
+  </select>
+
+  <button type="submit" disabled>Submit</button>
+</form>{% endset %}
+
+{% set fieldsetExample %}<form class="stacked">
+  <fieldset disabled>
+    <legend>Billing Address</legend>
+
+    <label for="street">Street</label>
+    <input type="text" id="street" value="123 Main St" />
+
+    <label for="city">City</label>
+    <input type="text" id="city" value="Portland" />
+
+    <label for="state">State</label>
+    <select id="state">
+      <option selected>Oregon</option>
+    </select>
+  </fieldset>
+
+  <button type="submit">Continue</button>
+</form>{% endset %}
+
+{% set submissionExample %}<form class="stacked">
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" value="jdoe" disabled />
+
+  <label for="role">Role</label>
+  <input type="text" id="role" name="role" value="Admin" />
+
+  <button type="submit">Save</button>
+</form>
+<!-- On submit, only "role=Admin" is sent. "username" is excluded. -->{% endset %}
+
+{% set cssExample %}/* Default browser styling dims disabled controls */
+input:disabled,
+select:disabled,
+textarea:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Style the enabled state explicitly */
+button:enabled {
+  cursor: pointer;
+}
+
+/* Target inputs within a disabled fieldset */
+fieldset:disabled input {
+  background: var(--color-surface-raised);
+  border-color: var(--color-border);
+}{% endset %}
+
+{% set jsToggleExample %}{% raw %}const form = document.querySelector('#payment-form');
+const submitBtn = form.querySelector('button[type="submit"]');
+
+// Disable while processing
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Processing...';
+
+  fetch('/api/pay', { method: 'POST', body: new FormData(form) })
+    .then(() => { submitBtn.textContent = 'Done'; })
+    .catch(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Retry';
+    });
+});{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>disabled</code> attribute prevents all interaction with a form control. A disabled element cannot be focused, clicked, or edited. It is skipped by keyboard tab order and excluded from form submission data.</p>
+<p>This is the strongest way to deactivate a form control. If you need the value to still submit with the form, use <a href="/docs/attributes/readonly/"><code>readonly</code></a> instead.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/input/"><code>&lt;input&gt;</code></a>, <a href="/docs/elements/native/select/"><code>&lt;select&gt;</code></a>, <a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a>, <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a>, <a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>State</th><th>Focusable</th><th>Editable</th><th>Submitted</th><th>Tab Order</th></tr></thead>
+  <tbody>
+    <tr><td><code>disabled</code></td><td>No</td><td>No</td><td>No</td><td>Skipped</td></tr>
+    <tr><td><a href="/docs/attributes/readonly/"><code>readonly</code></a></td><td>Yes</td><td>No</td><td>Yes</td><td>Included</td></tr>
+    <tr><td><code>inert</code></td><td>No</td><td>No</td><td>Yes (if in form)</td><td>Skipped</td></tr>
+    <tr><td>(normal)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Included</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Disabled controls">{{ basicExample | escape }}</code-block>
+
+<h2>Fieldset Cascade</h2>
+<p>Adding <code>disabled</code> to a <code>&lt;fieldset&gt;</code> disables every form control inside it, regardless of nesting depth. This is the cleanest way to disable an entire section of a form with a single attribute.</p>
+
+<code-block language="html" label="Disabled fieldset">{{ fieldsetExample | escape }}</code-block>
+
+<p>The <code>&lt;legend&gt;</code> element inside a disabled fieldset remains interactive. Any form controls inside the <code>&lt;legend&gt;</code> are not disabled by the fieldset cascade. This is intentional — the legend is considered a label, not a form control.</p>
+
+<h2>Form Submission</h2>
+<p>Disabled controls are excluded from <code>FormData</code> entirely. Their name/value pairs are not sent to the server. This catches developers off guard when they disable a field to make it "read-only" and then wonder why the value is missing.</p>
+
+<code-block language="html" label="Submission exclusion">{{ submissionExample | escape }}</code-block>
+
+<p>If you need the value submitted but non-editable, use <a href="/docs/attributes/readonly/"><code>readonly</code></a> or pair the disabled field with a <code>&lt;input type="hidden"&gt;</code> that carries the value.</p>
+
+<h2>Styling</h2>
+<p>Browsers apply a default dimmed appearance to disabled controls. Use the <code>:disabled</code> and <code>:enabled</code> pseudo-classes for custom styling.</p>
+
+<code-block language="css" label="Disabled styling">{{ cssExample | escape }}</code-block>
+
+<h2>Disabling During Submission</h2>
+<p>A common pattern is disabling the submit button while an async request is in flight. This prevents double-submission.</p>
+
+<code-block language="js" label="Disable during submit">{{ jsToggleExample | escape }}</code-block>
+
+<aside>
+  <h3>VB Enhancement</h3>
+  <p>The VB <code>data-loading</code> attribute provides a button loading state with a spinner animation, <code>aria-busy="true"</code>, and automatic revert on completion. It handles the disabled state, visual feedback, and accessibility in one attribute — no manual JavaScript toggling needed.</p>
+</aside>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Disabled controls are removed from the tab order and announced as "dimmed" or "unavailable" by screen readers.</li>
+  <li>Do not rely on the default opacity alone to communicate the disabled state — the contrast may be insufficient. Consider adding a text indicator (e.g., "Currently unavailable") near the control.</li>
+  <li>For content that should remain visible and readable but non-interactive, prefer <code>inert</code> or <a href="/docs/attributes/readonly/"><code>readonly</code></a> over <code>disabled</code>, since disabled controls may be skipped entirely by assistive technology.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><code>disabled</code> does not work on <code>&lt;a&gt;</code> elements. Links have no disabled state — use <code>aria-disabled="true"</code> with JavaScript to prevent navigation, or replace the link with a <code>&lt;span&gt;</code>.</li>
+  <li><code>disabled</code> does not work on <code>&lt;div&gt;</code> or other non-form elements. Use <code>inert</code> for that.</li>
+  <li>Some CSS frameworks override <code>:disabled</code> styles with high-specificity selectors. Check your cascade if custom disabled styles are not applying.</li>
+  <li>The <code>disabled</code> attribute is a boolean attribute. Writing <code>disabled="false"</code> still disables the element — the attribute's presence alone activates it. Remove the attribute entirely to re-enable.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/readonly/"><code>readonly</code></a> — non-editable but still focusable and submitted</li>
+    <li><a href="/docs/attributes/hidden/"><code>hidden</code> / <code>inert</code></a> — hide or deactivate non-form content</li>
+    <li><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> — group and disable controls together</li>
+    <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> element reference</li>
+  </ul>
+</section>

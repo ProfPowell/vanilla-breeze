@@ -1,0 +1,190 @@
+---
+layout: layouts/attribute.njk
+title: "novalidate"
+description: "Bypasses native constraint validation on form submission. Use on the form element or per-button with formnovalidate."
+attributeName: novalidate
+attributeType: native
+nativeGroup: Forms
+category: native
+currentPath: /docs/attributes/novalidate/
+permalink: /docs/attributes/novalidate/
+---
+
+{% set basicExample %}<!-- All constraint validation is skipped on submit -->
+<form novalidate class="stacked">
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" required />
+
+  <label for="age">Age</label>
+  <input type="number" id="age" name="age" min="18" max="120" required />
+
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set formnovalidateExample %}<form action="/articles" method="post" class="stacked">
+  <label for="title">Title</label>
+  <input type="text" id="title" name="title" required />
+
+  <label for="body">Body</label>
+  <textarea id="body" name="body" rows="6" required></textarea>
+
+  <footer class="actions end">
+    <!-- Validates: title and body must be filled -->
+    <button type="submit">Publish</button>
+
+    <!-- Skips validation: saves incomplete drafts -->
+    <button type="submit" formnovalidate formaction="/articles/draft">
+      Save Draft
+    </button>
+  </footer>
+</form>{% endset %}
+
+{% set customValidationExample %}{% raw %}<form novalidate class="stacked" id="signup-form">
+  <form-field>
+    <label for="signup-email">Email</label>
+    <input type="email" id="signup-email" name="email" required />
+    <small class="error" hidden></small>
+  </form-field>
+
+  <form-field>
+    <label for="signup-pw">Password</label>
+    <input type="password" id="signup-pw" name="password"
+      minlength="8" required />
+    <small class="error" hidden></small>
+  </form-field>
+
+  <button type="submit">Create Account</button>
+</form>{% endraw %}{% endset %}
+
+{% set customValidationJsExample %}{% raw %}const form = document.querySelector('#signup-form');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  // Clear previous errors
+  form.querySelectorAll('.error').forEach(el => {
+    el.hidden = true;
+    el.textContent = '';
+  });
+
+  let isValid = true;
+
+  // Check each field using the native validity API
+  for (const field of form.elements) {
+    if (field.validity && !field.validity.valid) {
+      isValid = false;
+      const error = field.closest('form-field')?.querySelector('.error');
+      if (error) {
+        error.textContent = getCustomMessage(field);
+        error.hidden = false;
+      }
+    }
+  }
+
+  if (isValid) {
+    form.submit();
+  }
+});
+
+function getCustomMessage(field) {
+  if (field.validity.valueMissing) return 'This field is required.';
+  if (field.validity.typeMismatch) return 'Please enter a valid value.';
+  if (field.validity.tooShort) return `Must be at least ${field.minLength} characters.`;
+  return field.validationMessage; // Fallback to browser default
+}{% endraw %}{% endset %}
+
+{% set progressiveExample %}<!-- Server validates everything. Client validation is a bonus. -->
+<form action="/register" method="post" class="stacked">
+  <label for="pe-email">Email</label>
+  <input type="email" id="pe-email" name="email" required />
+
+  <label for="pe-pw">Password</label>
+  <input type="password" id="pe-pw" name="password"
+    minlength="8" required />
+
+  <button type="submit">Register</button>
+</form>{% endset %}
+
+{% set progressiveJsExample %}{% raw %}// Upgrade the form to use custom validation UI
+const form = document.querySelector('form');
+
+// Only disable native validation if JS is running
+form.noValidate = true;
+
+form.addEventListener('submit', (e) => {
+  if (!form.checkValidity()) {
+    e.preventDefault();
+    // Show custom error UI...
+  }
+});{% endraw %}{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>novalidate</code> attribute on a <code>&lt;form&gt;</code> element bypasses all native constraint validation when the form is submitted. Fields with <a href="/docs/attributes/required/"><code>required</code></a>, <a href="/docs/attributes/pattern/"><code>pattern</code></a>, <code>min</code>/<code>max</code>, <code>type="email"</code>, and other constraints will not be checked. No native error tooltips will appear.</p>
+<p>The <code>formnovalidate</code> attribute does the same thing but on a per-button basis — only submissions triggered by that specific button skip validation.</p>
+<p><strong>Applies to:</strong> <code>novalidate</code> on <a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a>; <code>formnovalidate</code> on <a href="/docs/elements/native/button/"><code>&lt;button type="submit"&gt;</code></a> and <code>&lt;input type="submit"&gt;</code></p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>On Element</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>novalidate</code></td><td><code>&lt;form&gt;</code></td><td>Skips all validation for every submission</td></tr>
+    <tr><td><code>formnovalidate</code></td><td>Submit button</td><td>Skips validation for this button only</td></tr>
+  </tbody>
+</table>
+
+<h2>Form-Level: novalidate</h2>
+<p>Adding <code>novalidate</code> to a form disables constraint validation entirely. The form will submit regardless of whether fields are empty, malformed, or out of range.</p>
+
+<code-block language="html" label="Form-level novalidate">{{ basicExample | escape }}</code-block>
+
+<p>The validation attributes (<code>required</code>, <code>pattern</code>, etc.) remain in the HTML. They still provide meaning and can still be checked programmatically via JavaScript — they just do not block submission.</p>
+
+<h2>Button-Level: formnovalidate</h2>
+<p>The <code>formnovalidate</code> attribute on a submit button skips validation only for that button. Other submit buttons on the same form still validate normally. This is the standard pattern for "Save Draft" alongside "Publish".</p>
+
+<code-block language="html" label="Per-button validation bypass">{{ formnovalidateExample | escape }}</code-block>
+
+<p>This is more useful than form-level <code>novalidate</code> in most cases. You get full validation for the primary action and a bypass for secondary actions.</p>
+
+<h2>Custom Validation UI</h2>
+<p>The most common reason to use <code>novalidate</code> is to replace native validation tooltips with a custom error display. Native tooltips cannot be styled and vary across browsers. With <code>novalidate</code>, you suppress them and build your own.</p>
+
+<code-block language="html" label="Custom validation form">{{ customValidationExample | escape }}</code-block>
+
+<code-block language="js" label="Custom validation handler">{{ customValidationJsExample | escape }}</code-block>
+
+<p>The native validity API (<code>field.validity</code>, <code>checkValidity()</code>, <code>reportValidity()</code>) still works even with <code>novalidate</code>. You are suppressing the browser's automatic checking on submit, not disabling the validation engine itself.</p>
+
+<h2>Progressive Enhancement</h2>
+<p>The best pattern: write the form with native validation attributes, let it work without JavaScript, then upgrade it with custom validation UI when JavaScript is available.</p>
+
+<code-block language="html" label="Form with native validation">{{ progressiveExample | escape }}</code-block>
+
+<code-block language="js" label="Upgrade to custom validation">{{ progressiveJsExample | escape }}</code-block>
+
+<p>Set <code>noValidate</code> via JavaScript (not in the HTML) so that the form still validates natively when JavaScript fails to load. The server handles validation either way.</p>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Native validation messages are automatically announced by screen readers. If you suppress them with <code>novalidate</code>, your custom error UI must be equally accessible — use <code>aria-describedby</code>, <code>aria-invalid="true"</code>, and <code>role="alert"</code> or live regions.</li>
+  <li>Custom validation gives you more control over the timing and wording of error messages, which can be an accessibility improvement over the terse native messages.</li>
+  <li>Ensure custom error messages are visible and adjacent to the field they describe. Do not only rely on color to indicate errors.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><code>novalidate</code> is a boolean attribute. Writing <code>novalidate="false"</code> still disables validation. Remove the attribute entirely to re-enable native validation.</li>
+  <li><code>novalidate</code> only affects constraint validation on submit. It does not prevent <code>&lt;input type="number"&gt;</code> from rejecting non-numeric keystrokes or <code>maxlength</code> from limiting input length.</li>
+  <li><code>novalidate</code> does not affect server-side validation. Always validate on the server regardless of client-side settings.</li>
+  <li>The JavaScript property is <code>form.noValidate</code> (camelCase with capital V), not <code>form.novalidate</code>.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/required/"><code>required</code></a> — prevent empty submissions</li>
+    <li><a href="/docs/attributes/pattern/"><code>pattern</code></a> — regex-based input validation</li>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> element reference</li>
+    <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> element reference</li>
+  </ul>
+</section>

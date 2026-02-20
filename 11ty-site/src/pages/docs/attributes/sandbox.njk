@@ -1,0 +1,114 @@
+---
+layout: layouts/attribute.njk
+title: "sandbox"
+description: "Restricts iframe capabilities by default, then selectively re-enables permissions. Essential for embedding untrusted third-party content safely."
+attributeName: sandbox
+attributeType: native
+nativeGroup: Links & Security
+category: native
+currentPath: /docs/attributes/sandbox/
+permalink: /docs/attributes/sandbox/
+---
+
+{% set basicExample %}<!-- Maximum restriction: no scripts, no forms, no popups, no navigation -->
+<iframe src="https://untrusted-widget.com/embed"
+  sandbox
+  title="Third-party widget"></iframe>
+
+<!-- Allow scripts and form submission only -->
+<iframe src="https://forms.example.com/survey"
+  sandbox="allow-scripts allow-forms"
+  title="Survey form"></iframe>{% endset %}
+
+{% set commonExample %}<!-- Embedded video player: needs scripts and same-origin access -->
+<iframe src="https://player.example.com/embed/abc123"
+  sandbox="allow-scripts allow-same-origin"
+  title="Video player"></iframe>
+
+<!-- Payment form: needs scripts, forms, and top-level navigation for redirect -->
+<iframe src="https://pay.example.com/checkout"
+  sandbox="allow-scripts allow-forms allow-top-navigation"
+  title="Payment checkout"></iframe>
+
+<!-- Ad embed: scripts only, no escape from the iframe -->
+<iframe src="https://ads.example.com/banner"
+  sandbox="allow-scripts allow-popups"
+  title="Advertisement"></iframe>{% endset %}
+
+{% set dangerExample %}<!-- DANGEROUS: allow-scripts + allow-same-origin together -->
+<!-- The iframe can run JavaScript AND access same-origin APIs, -->
+<!-- which means it can call frameElement.removeAttribute('sandbox') -->
+<!-- to remove ALL restrictions on itself. -->
+<iframe src="https://example.com/untrusted"
+  sandbox="allow-scripts allow-same-origin"
+  title="This can escape its sandbox"></iframe>{% endset %}
+
+{% set srdocExample %}<!-- Inline sandboxed content using srcdoc -->
+<iframe sandbox="allow-scripts"
+  srcdoc="<p>Hello from a sandboxed inline document.</p>"
+  title="Sandboxed inline content"></iframe>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>sandbox</code> attribute on <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> applies a strict security policy to embedded content. When present with no value, it enables <strong>all restrictions</strong>: no scripts, no form submission, no popups, no navigation, no plugins, and the content is treated as a unique origin (blocking same-origin API access).</p>
+<p>You then selectively re-enable capabilities by adding space-separated permission tokens. This "deny by default, allow by exception" model makes it far harder for embedded content to do something unexpected.</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Token</th><th>Permission Granted</th></tr></thead>
+  <tbody>
+    <tr><td><code>allow-scripts</code></td><td>Run JavaScript inside the iframe</td></tr>
+    <tr><td><code>allow-same-origin</code></td><td>Treat content as same-origin (access cookies, localStorage, DOM APIs)</td></tr>
+    <tr><td><code>allow-forms</code></td><td>Submit forms</td></tr>
+    <tr><td><code>allow-popups</code></td><td>Open new windows/tabs via <code>window.open()</code> or <code>target="_blank"</code></td></tr>
+    <tr><td><code>allow-popups-to-escape-sandbox</code></td><td>Opened popups are not sandboxed themselves</td></tr>
+    <tr><td><code>allow-top-navigation</code></td><td>Navigate the top-level browsing context</td></tr>
+    <tr><td><code>allow-top-navigation-by-user-activation</code></td><td>Navigate the top-level context only after a user gesture</td></tr>
+    <tr><td><code>allow-top-navigation-to-custom-protocols</code></td><td>Navigate to non-HTTP protocols (e.g. <code>mailto:</code>)</td></tr>
+    <tr><td><code>allow-modals</code></td><td>Use <code>alert()</code>, <code>confirm()</code>, <code>prompt()</code></td></tr>
+    <tr><td><code>allow-orientation-lock</code></td><td>Lock screen orientation</td></tr>
+    <tr><td><code>allow-pointer-lock</code></td><td>Use the Pointer Lock API</td></tr>
+    <tr><td><code>allow-presentation</code></td><td>Use the Presentation API</td></tr>
+    <tr><td><code>allow-downloads</code></td><td>Trigger file downloads</td></tr>
+  </tbody>
+</table>
+
+<p>When <code>sandbox</code> is present with <strong>no value</strong>, all of the above are denied. The attribute value is a space-separated list of tokens to allow.</p>
+
+<h2>Examples</h2>
+<h3>Basic Sandboxing</h3>
+<code-block language="html" label="Sandboxed iframes">{{ basicExample | escape }}</code-block>
+
+<h3>Common Configurations</h3>
+<code-block language="html" label="Practical sandbox configurations">{{ commonExample | escape }}</code-block>
+
+<h3>Inline Content with srcdoc</h3>
+<p>Combine <code>sandbox</code> with <code>srcdoc</code> to sandbox inline HTML without needing an external URL.</p>
+<code-block language="html" label="Sandboxed srcdoc">{{ srdocExample | escape }}</code-block>
+
+<h2>Security Considerations</h2>
+<h3>The allow-scripts + allow-same-origin Escape</h3>
+<p><strong>Warning:</strong> Combining <code>allow-scripts</code> and <code>allow-same-origin</code> on content from your own origin allows the iframe to remove its own sandbox attribute via JavaScript. The embedded page can access <code>frameElement</code> and call <code>removeAttribute('sandbox')</code>, effectively escaping all restrictions.</p>
+
+<code-block language="html" label="Dangerous combination">{{ dangerExample | escape }}</code-block>
+
+<p>This combination is safe only when the iframe content is from a <strong>different origin</strong> (the browser's same-origin policy blocks <code>frameElement</code> access). For same-origin content, avoid granting both tokens.</p>
+
+<h3>Silent Failure</h3>
+<p>Sandboxed actions fail silently. A blocked form submission, popup, or navigation simply does not happen — no error is thrown, no console warning appears. This makes debugging difficult. If embedded content seems broken, check whether a missing sandbox token is the cause.</p>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Silent failures:</strong> Blocked actions produce no errors, making it hard to diagnose issues during development.</li>
+  <li><strong>No granular script control:</strong> <code>allow-scripts</code> is all-or-nothing. You cannot allow specific scripts or APIs while blocking others.</li>
+  <li><strong>Unique origin side effects:</strong> Without <code>allow-same-origin</code>, the iframe gets a unique opaque origin. This breaks localStorage, cookies, service workers, and any API that depends on origin.</li>
+  <li><strong>Not a substitute for CSP:</strong> Sandbox restricts what the iframe can do; Content Security Policy restricts what resources it can load. Use both for defense in depth.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; control referrer information sent to iframed content</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy-load iframes for performance</li>
+    <li><a href="/docs/attributes/nonce/"><code>nonce</code></a> &mdash; CSP nonces for inline scripts and styles</li>
+  </ul>
+</section>

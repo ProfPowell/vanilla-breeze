@@ -1,0 +1,132 @@
+---
+layout: layouts/attribute.njk
+title: "blocking"
+description: "Explicitly marks resources as render-blocking, preventing the browser from painting until they load. Gives developers direct control over what was previously an implicit browser behavior."
+attributeName: blocking
+attributeType: native
+nativeGroup: Performance
+category: native
+currentPath: /docs/attributes/blocking/
+permalink: /docs/attributes/blocking/
+---
+
+{% set basicExample %}<!-- Explicitly render-blocking: browser will not paint until this loads -->
+<link rel="stylesheet" href="/css/critical.css" blocking="render" />
+
+<!-- Render-blocking script: page waits for this before first paint -->
+<script src="/js/theme-init.js" blocking="render"></script>
+
+<!-- Render-blocking inline style -->
+<style blocking="render">
+  :root { --brand-color: #0066cc; }
+  body { font-family: system-ui; }
+</style>{% endset %}
+
+{% set contrastExample %}<!-- RENDER-BLOCKING: controls when the page first paints -->
+<link rel="stylesheet" href="/css/critical.css" blocking="render" />
+
+<!-- DEFER: controls when a script executes (after parsing) -->
+<!-- But the page CAN paint before this script runs -->
+<script src="/js/app.js" defer></script>
+
+<!-- ASYNC: controls when a script executes (as soon as ready) -->
+<!-- But the page CAN paint before this script runs -->
+<script src="/js/analytics.js" async></script>
+
+<!-- BOTH: render-blocking AND deferred execution -->
+<!-- Page waits for download, then defers execution until after parsing -->
+<script src="/js/framework.js" defer blocking="render"></script>{% endset %}
+
+{% set practicalExample %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Blocking Strategy</title>
+
+  <!-- Critical: must load before first paint to avoid FOUC -->
+  <link rel="stylesheet" href="/css/tokens.css" blocking="render" />
+  <link rel="stylesheet" href="/css/layout.css" blocking="render" />
+  <script src="/js/theme-detect.js" blocking="render"></script>
+
+  <!-- Non-critical: can load after first paint -->
+  <link rel="stylesheet" href="/css/components.css" />
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+  <h1>Visible only after critical resources load</h1>
+</body>
+</html>{% endset %}
+
+{% set preloadExample %}<!-- Preload + blocking: fetch early AND block rendering -->
+<link rel="preload" href="/css/critical.css" as="style" />
+<link rel="stylesheet" href="/css/critical.css" blocking="render" />
+
+<!-- Preload a font that must be ready before first paint -->
+<link rel="preload" href="/fonts/heading.woff2" as="font"
+  type="font/woff2" crossorigin />
+<style blocking="render">
+  @font-face {
+    font-family: 'Heading';
+    src: url('/fonts/heading.woff2') format('woff2');
+    font-display: block;
+  }
+</style>{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>blocking</code> attribute gives developers explicit control over which resources must load before the browser performs its first paint. Previously, render-blocking behavior was implicit and varied by element type and position: stylesheets in <code>&lt;head&gt;</code> were render-blocking, scripts without <code>async</code> or <code>defer</code> were parser-blocking. The <code>blocking</code> attribute makes this behavior explicit and intentional.</p>
+<p>The only supported value is <code>render</code>, which prevents the browser from rendering any content until the resource has loaded.</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>render</code></td><td>Block rendering until this resource has loaded and been processed</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a>, <code>&lt;style&gt;</code>, <a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a></p>
+
+<h2>Examples</h2>
+<h3>Basic Usage</h3>
+<code-block language="html" label="Render-blocking resources">{{ basicExample | escape }}</code-block>
+
+<h3>When to Use blocking="render"</h3>
+<ul>
+  <li><strong>Critical CSS:</strong> Stylesheets defining layout, colors, and typography that prevent a flash of unstyled content (FOUC) if missing.</li>
+  <li><strong>Theme initialization:</strong> A small script that reads the user's theme preference and sets CSS custom properties before paint.</li>
+  <li><strong>Design tokens:</strong> CSS custom property definitions that all other styles depend on.</li>
+  <li><strong>Critical font faces:</strong> Font declarations that must be available before text renders to avoid layout shift.</li>
+</ul>
+
+<h2>blocking vs async/defer</h2>
+<p>These attributes control different things. <code>async</code> and <code>defer</code> control <em>when scripts execute</em> relative to HTML parsing. <code>blocking</code> controls <em>whether the browser can paint</em> before a resource loads. They can be combined.</p>
+
+<code-block language="html" label="blocking vs async/defer">{{ contrastExample | escape }}</code-block>
+
+<h2>Practical Loading Strategy</h2>
+<p>Mark only the minimum set of resources as render-blocking. Every render-blocking resource adds to the time before first paint. Non-critical styles and scripts should load without <code>blocking</code>.</p>
+
+<code-block language="html" label="Selective render blocking">{{ practicalExample | escape }}</code-block>
+
+<h2>Combining with Preload</h2>
+<p>Pair <code>blocking="render"</code> with <code>&lt;link rel="preload"&gt;</code> to start fetching critical resources as early as possible. The preload hint begins the download; the blocking attribute ensures the page waits for it.</p>
+
+<code-block language="html" label="Preload and blocking">{{ preloadExample | escape }}</code-block>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>Browser support:</strong> The <code>blocking</code> attribute is relatively new (Chrome 105+, Edge 105+). Firefox and Safari do not yet support it as of early 2026. In unsupported browsers, the attribute is ignored and the browser falls back to its default render-blocking heuristics.</li>
+  <li><strong>Only "render" is defined:</strong> The spec allows for future blocking tokens, but currently only <code>render</code> is supported.</li>
+  <li><strong>Performance tradeoff:</strong> Every render-blocking resource delays first paint. Overusing <code>blocking="render"</code> hurts Core Web Vitals (FCP, LCP). Only block rendering for resources that truly must be ready before the user sees anything.</li>
+  <li><strong>Does not control execution order:</strong> For scripts, <code>blocking="render"</code> prevents painting but does not change execution timing. Combine with <code>defer</code> if you also need ordered execution after parsing.</li>
+  <li><strong>No effect on body resources:</strong> Resources in <code>&lt;body&gt;</code> with <code>blocking="render"</code> may behave inconsistently. Place render-blocking resources in <code>&lt;head&gt;</code>.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/async-defer/"><code>async / defer</code></a> &mdash; control script execution timing</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> &mdash; lazy loading and fetch priority</li>
+    <li><a href="/docs/attributes/rel/"><code>rel</code></a> &mdash; preload and preconnect resource hints</li>
+  </ul>
+</section>

@@ -1,0 +1,158 @@
+---
+layout: layouts/attribute.njk
+title: "srcdoc"
+description: "Embed inline HTML content in an iframe without a separate document. Useful for sandboxed previews, user-generated content isolation, and self-contained examples."
+attributeName: srcdoc
+attributeType: native
+nativeGroup: Structure
+category: native
+currentPath: /docs/attributes/srcdoc/
+permalink: /docs/attributes/srcdoc/
+---
+
+{% set basicExample %}<!-- Inline HTML content inside an iframe -->
+<iframe srcdoc="&lt;h1&gt;Hello&lt;/h1&gt;&lt;p&gt;This is inline content.&lt;/p&gt;"
+  title="Inline content example"
+  width="400" height="200"></iframe>{% endset %}
+
+{% set escapingExample %}<!-- HTML must be escaped in the attribute value -->
+<iframe srcdoc="
+  &lt;style&gt;
+    body { font-family: system-ui; padding: 1rem; }
+    h1 { color: #333; }
+  &lt;/style&gt;
+  &lt;h1&gt;Styled Content&lt;/h1&gt;
+  &lt;p&gt;This includes its own &lt;code&gt;style&lt;/code&gt; block.&lt;/p&gt;
+" title="Styled inline content" width="400" height="200"></iframe>
+
+<!-- Character escaping rules:
+     < becomes &lt;
+     > becomes &gt;
+     & becomes &amp;
+     " becomes &quot; (if using double-quoted attribute)
+-->{% endset %}
+
+{% set sandboxExample %}<!-- Sandboxed preview: no scripts, no forms, no navigation -->
+<iframe srcdoc="&lt;h2&gt;User Post&lt;/h2&gt;&lt;p&gt;This content is isolated.&lt;/p&gt;"
+  sandbox
+  title="User post preview"
+  width="100%" height="150"></iframe>
+
+<!-- Allow scripts but nothing else -->
+<iframe srcdoc="&lt;script&gt;document.write('Dynamic content')&lt;/script&gt;"
+  sandbox="allow-scripts"
+  title="Scripted preview"
+  width="100%" height="100"></iframe>{% endset %}
+
+{% set priorityExample %}<!-- srcdoc takes priority over src -->
+<iframe src="https://example.com"
+  srcdoc="&lt;p&gt;This content is shown instead of example.com.&lt;/p&gt;"
+  title="srcdoc priority demo"
+  width="400" height="100"></iframe>
+
+<!-- The src acts as a fallback for browsers that don't support srcdoc
+     (all modern browsers support it, so this is mainly historical) -->{% endset %}
+
+{% set previewExample %}{% raw %}<label for="html-input">Enter HTML:</label>
+<textarea id="html-input" rows="6" cols="50">&lt;h1&gt;Hello&lt;/h1&gt;
+&lt;p&gt;Edit me!&lt;/p&gt;</textarea>
+
+<iframe id="preview" sandbox="allow-scripts" title="Live preview"
+  width="100%" height="200"></iframe>
+
+<script>
+const textarea = document.getElementById('html-input');
+const preview = document.getElementById('preview');
+
+textarea.addEventListener('input', () => {
+  preview.srcdoc = textarea.value;
+});
+
+// Initial render
+preview.srcdoc = textarea.value;
+</script>{% endraw %}{% endset %}
+
+{% set emailExample %}<!-- Render email HTML safely in an isolated context -->
+<iframe srcdoc="&lt;!-- email HTML content here --&gt;"
+  sandbox
+  title="Email preview"
+  width="100%" height="400"
+  style="border: 1px solid #ccc;"></iframe>
+
+<!-- The sandbox attribute without any allow-* tokens prevents:
+     - JavaScript execution
+     - Form submission
+     - Link navigation to parent
+     - Popups
+     - Plugin content
+-->{% endset %}
+
+<h2>Overview</h2>
+<p>The <code>srcdoc</code> attribute on <code>&lt;iframe&gt;</code> lets you embed inline HTML content directly in the attribute value, without pointing to a separate URL. The iframe renders the provided HTML as a complete document in its own browsing context.</p>
+<p><strong>Applies to:</strong> <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a></p>
+<p>When both <code>srcdoc</code> and <code>src</code> are present, <code>srcdoc</code> takes priority. The <code>src</code> serves as a fallback for browsers that do not support <code>srcdoc</code> (all modern browsers do).</p>
+
+<h2>Values</h2>
+<table>
+  <thead><tr><th>Attribute</th><th>Value</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><code>srcdoc</code></td><td>HTML string (escaped)</td><td>Renders the HTML as the iframe's content</td></tr>
+    <tr><td><code>src</code></td><td>URL</td><td>Fallback if <code>srcdoc</code> is absent or unsupported</td></tr>
+  </tbody>
+</table>
+
+<h2>Basic Usage</h2>
+<p>Provide HTML content as the attribute value. All HTML special characters must be escaped since they are inside an attribute.</p>
+
+<code-block language="html" label="Inline iframe content">{{ basicExample | escape }}</code-block>
+
+<h2>Escaping Requirements</h2>
+<p>Because <code>srcdoc</code> content lives inside an HTML attribute, you must escape HTML entities. This is the most common pain point with <code>srcdoc</code>.</p>
+
+<code-block language="html" label="Escaped HTML content">{{ escapingExample | escape }}</code-block>
+
+<h2>Sandboxed Content</h2>
+<p>Pair <code>srcdoc</code> with the <a href="/docs/attributes/sandbox/"><code>sandbox</code></a> attribute for secure content isolation. The content runs in a unique origin, completely separated from the parent page.</p>
+
+<code-block language="html" label="Sandboxed srcdoc">{{ sandboxExample | escape }}</code-block>
+
+<h2>Priority over src</h2>
+<p>When both attributes are present, <code>srcdoc</code> wins. This originally allowed for graceful degradation to a server-rendered URL in older browsers.</p>
+
+<code-block language="html" label="srcdoc takes priority">{{ priorityExample | escape }}</code-block>
+
+<h2>Live Preview Pattern</h2>
+<p>A common use case is a live HTML preview that updates as the user types. Set the iframe's <code>srcdoc</code> property via JavaScript for dynamic content.</p>
+
+<code-block language="html" label="Live HTML preview">{{ previewExample | escape }}</code-block>
+
+<h2>Email Rendering</h2>
+<p>Email clients often render HTML emails in iframes to isolate the email's styles and scripts from the application UI. The <code>srcdoc</code> + <code>sandbox</code> combination is ideal for this.</p>
+
+<code-block language="html" label="Safe email rendering">{{ emailExample | escape }}</code-block>
+
+<h2>Accessibility</h2>
+<ul>
+  <li>Always provide a <code>title</code> attribute on iframes using <code>srcdoc</code>. Screen readers announce the title to help users understand the iframe's purpose.</li>
+  <li>The content inside the iframe is a separate document with its own accessibility tree. Ensure the inline HTML is well-structured with headings and landmarks.</li>
+  <li>Sandboxed iframes that prevent keyboard navigation can trap focus. Test keyboard flow into and out of the iframe.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>HTML escaping makes complex content hard to read in source code. For longer content, setting <code>iframe.srcdoc</code> via JavaScript avoids the escaping burden.</li>
+  <li>The content has a unique, opaque origin. It cannot access the parent page's cookies, localStorage, or DOM (and the parent cannot access the iframe's DOM when sandboxed).</li>
+  <li>There is no way to link to a specific anchor within a <code>srcdoc</code> iframe from the parent page.</li>
+  <li>Very large <code>srcdoc</code> values can bloat the HTML document size, since the content is inline rather than loaded on demand.</li>
+  <li>The <code>srcdoc</code> content does not have a URL, so it cannot be bookmarked, shared, or opened in a new tab.</li>
+</ul>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/sandbox/"><code>sandbox</code></a> — restrict iframe capabilities for security</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> — the iframe element</li>
+    <li><a href="/docs/attributes/loading/"><code>loading</code></a> — lazy-load iframes below the fold</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control referrer for iframe requests</li>
+  </ul>
+</section>
