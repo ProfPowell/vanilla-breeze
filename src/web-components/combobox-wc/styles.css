@@ -191,6 +191,40 @@ combobox-wc:not(:defined) {
   }
 }
 
+/* --- Popover mode (progressive enhancement) --- */
+
+combobox-wc > [popover] {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow: visible;
+
+  position: fixed;
+  inset: unset;
+  top: var(--combobox-top, 0);
+  left: var(--combobox-left, 0);
+  inline-size: var(--combobox-width, auto);
+}
+
+combobox-wc > [popover]:popover-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  combobox-wc > [popover]:popover-open {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   @scope (combobox-wc) {
@@ -199,5 +233,9 @@ combobox-wc:not(:defined) {
       transition: none;
       transform: none;
     }
+  }
+
+  combobox-wc > [popover]:popover-open {
+    transition: none;
   }
 }

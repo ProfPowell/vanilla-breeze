@@ -123,6 +123,25 @@
 [data-layout="grid"][data-layout-gap="l"]    { --_gap: var(--size-l); }
 [data-layout="grid"][data-layout-gap="xl"]   { --_gap: var(--size-xl); }
 
+/* Subgrid: align child internals (header/content/footer) across grid siblings */
+[data-layout="grid"][data-layout-subgrid] > * {
+  display: grid;
+  grid-row: span 3;             /* header + content + footer */
+  grid-template-rows: subgrid;  /* inherit parent row tracks */
+}
+
+/* layout-card subgrid: override card's own grid-template when in subgrid parent */
+[data-layout="grid"][data-layout-subgrid] > layout-card:has(> :is(header, section, footer)) {
+  grid-template-rows: subgrid;
+}
+
+/* Fallback: browsers without subgrid revert to independent sizing */
+@supports not (grid-template-rows: subgrid) {
+  [data-layout="grid"][data-layout-subgrid] > * {
+    grid-row: auto;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Center: Centered content container
    -------------------------------------------------------------------------- */
@@ -618,6 +637,8 @@
    Layout Template Tokens
    Grid templates stored as CSS custom properties for easy reuse
    -------------------------------------------------------------------------- */
+@property --sidebar-width { syntax: "<length>"; inherits: true; initial-value: 280px; }
+
 :root {
   /* Sidebar width token */
   --_sidebar-width: var(--sidebar-width, 280px);
@@ -1266,4 +1287,54 @@ main, article, section, aside:not(.float):not(.sidenote) {
   --size-2xl: 64px;
   --size-3xl: 96px;
   line-height: 1.8;
+}
+
+
+/* ==========================================================================
+   SCROLL-DRIVEN ANIMATIONS
+   Opt-in via data-scroll-shrink on sticky headers within page layouts.
+   ========================================================================== */
+
+@supports (animation-timeline: scroll()) {
+  @keyframes shrink-header {
+    to {
+      padding-block: var(--size-2xs);
+      font-size: var(--font-size-sm);
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
+    }
+  }
+
+  [data-page-layout] > header[data-layout-sticky][data-scroll-shrink],
+  [data-layout^="body-"] > header[data-layout-sticky][data-scroll-shrink] {
+    animation: shrink-header linear both;
+    animation-timeline: scroll();
+    animation-range: 0 200px;
+  }
+}
+
+
+/* ==========================================================================
+   CONTAINER QUERY EXPANSION
+   Additional container-based adaptations for page regions.
+   ========================================================================== */
+
+/* Sidebar nav stacks at narrow widths */
+@container region-main (width < 40rem) {
+  [data-layout="sidebar"] {
+    flex-direction: column;
+  }
+}
+
+/* Micro-card mode for very narrow card containers */
+@container card (width < 200px) {
+  [data-layout="grid"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Prose adaptation: tighten line length at narrow container widths */
+@container (width < 30rem) {
+  [data-layout="prose"] {
+    max-inline-size: 100%;
+  }
 }

@@ -157,6 +157,41 @@ dropdown-wc {
   }
 }
 
+/* --- Popover mode (progressive enhancement) --- */
+
+dropdown-wc > [popover] {
+  /* Reset popover defaults */
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow: visible;
+
+  /* Fixed positioning via CSS custom properties */
+  position: fixed;
+  inset: unset;
+  top: var(--dropdown-top, 0);
+  left: var(--dropdown-left, 0);
+}
+
+dropdown-wc > [popover]:popover-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  dropdown-wc > [popover]:popover-open {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   @scope (dropdown-wc) {
@@ -165,5 +200,9 @@ dropdown-wc {
       transition: none;
       transform: none;
     }
+  }
+
+  dropdown-wc > [popover]:popover-open {
+    transition: none;
   }
 }

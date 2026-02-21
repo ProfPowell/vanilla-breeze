@@ -143,6 +143,39 @@ context-menu {
   }
 }
 
+/* --- Popover mode (progressive enhancement) --- */
+
+context-menu > [popover] {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow: visible;
+
+  position: fixed;
+  inset: unset;
+  top: var(--ctx-top, 0);
+  left: var(--ctx-left, 0);
+}
+
+context-menu > [popover]:popover-open {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  context-menu > [popover]:popover-open {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   @scope (context-menu) {
@@ -151,5 +184,9 @@ context-menu {
       transition: none;
       transform: none;
     }
+  }
+
+  context-menu > [popover]:popover-open {
+    transition: none;
   }
 }

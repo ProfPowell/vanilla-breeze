@@ -26,11 +26,19 @@
  * </article>
  */
 
+import { startSwapTransition } from '../../utils/swap-transition.js';
+
+let swapInstanceId = 0;
+
 /**
  * Shared behavior mixin — used by both the <content-swap> element
  * and [data-swap] attribute auto-init.
  */
 function initSwapBehavior(el) {
+  // Assign unique view-transition-name per instance (avoids conflicts with multiple swaps)
+  if (!el.style.viewTransitionName) {
+    el.style.viewTransitionName = `content-swap-${++swapInstanceId}`;
+  }
   const front = el.querySelector(':scope > [data-face="front"]');
   const back = el.querySelector(':scope > [data-face="back"]');
 
@@ -86,15 +94,19 @@ function swapTo(el, show) {
   if (show && el.hasAttribute('data-swapped')) return;
   if (!show && !el.hasAttribute('data-swapped')) return;
 
-  if (show) {
-    el.setAttribute('data-swapped', '');
-  } else {
-    el.removeAttribute('data-swapped');
-  }
+  const applySwap = () => {
+    if (show) {
+      el.setAttribute('data-swapped', '');
+    } else {
+      el.removeAttribute('data-swapped');
+    }
 
-  syncState(el, front, back);
-  dispatchSwapEvent(el);
-  moveFocus(show ? back : front);
+    syncState(el, front, back);
+    dispatchSwapEvent(el);
+    moveFocus(show ? back : front);
+  };
+
+  startSwapTransition(applySwap);
 }
 
 function toggleSwap(el) {

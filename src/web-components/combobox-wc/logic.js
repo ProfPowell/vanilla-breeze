@@ -34,6 +34,7 @@
  */
 
 import { setRole } from '../../utils/form-internals.js';
+import { supportsPopover } from '../../utils/popover-support.js';
 
 class ComboboxWc extends HTMLElement {
   static formAssociated = true;
@@ -45,6 +46,7 @@ class ComboboxWc extends HTMLElement {
   #filteredOptions = [];
   #activeIndex = -1;
   #isOpen = false;
+  #usePopover = false;
 
   // Single mode state
   #selectedValue = '';
@@ -81,6 +83,12 @@ class ComboboxWc extends HTMLElement {
     // Find listbox
     this.#listbox = this.querySelector(':scope > ul, :scope > ol');
     if (!this.#listbox) return;
+
+    // Progressive enhancement: use Popover API when available
+    this.#usePopover = supportsPopover;
+    if (this.#usePopover) {
+      this.#listbox.setAttribute('popover', 'manual');
+    }
 
     // Multi mode: wrap input in tags-input-area
     if (this.#isMultiple) {
@@ -143,6 +151,10 @@ class ComboboxWc extends HTMLElement {
     this.#listbox.addEventListener('pointerdown', this.#handleOptionPointerDown);
     document.addEventListener('click', this.#handleOutsideClick);
 
+    if (this.#usePopover) {
+      this.#listbox.addEventListener('toggle', this.#handlePopoverToggle);
+    }
+
     // Initial form sync
     this.#syncFormValue();
     this.#validate();
@@ -161,6 +173,7 @@ class ComboboxWc extends HTMLElement {
     if (this.#listbox) {
       this.#listbox.removeEventListener('click', this.#handleOptionClick);
       this.#listbox.removeEventListener('pointerdown', this.#handleOptionPointerDown);
+      this.#listbox.removeEventListener('toggle', this.#handlePopoverToggle);
     }
     document.removeEventListener('click', this.#handleOutsideClick);
   }
@@ -532,6 +545,11 @@ class ComboboxWc extends HTMLElement {
     this.#input.setAttribute('aria-expanded', 'true');
     this.#listbox.hidden = false;
 
+    if (this.#usePopover) {
+      this.#positionListbox();
+      try { this.#listbox.showPopover(); } catch { /* already open */ }
+    }
+
     this.dispatchEvent(new CustomEvent('combobox-open', { bubbles: true }));
   }
 
@@ -545,8 +563,32 @@ class ComboboxWc extends HTMLElement {
     this.#activeIndex = -1;
     this.#clearActiveDescendant();
 
+    if (this.#usePopover) {
+      try { this.#listbox.hidePopover(); } catch { /* already closed */ }
+    }
+
     this.dispatchEvent(new CustomEvent('combobox-close', { bubbles: true }));
   }
+
+  #positionListbox() {
+    if (!this.#usePopover || !this.#input) return;
+    const rect = this.#input.getBoundingClientRect();
+    this.#listbox.style.setProperty('--combobox-top', `${rect.bottom + 2}px`);
+    this.#listbox.style.setProperty('--combobox-left', `${rect.left}px`);
+    this.#listbox.style.setProperty('--combobox-width', `${rect.width}px`);
+  }
+
+  #handlePopoverToggle = (e) => {
+    if (e.newState === 'closed' && this.#isOpen) {
+      this.#isOpen = false;
+      this.removeAttribute('data-open');
+      this.#input.setAttribute('aria-expanded', 'false');
+      this.#listbox.hidden = true;
+      this.#activeIndex = -1;
+      this.#clearActiveDescendant();
+      this.dispatchEvent(new CustomEvent('combobox-close', { bubbles: true }));
+    }
+  };
 
   // --- Form integration ---
 

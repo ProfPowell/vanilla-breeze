@@ -255,6 +255,30 @@ content-swap:not(:defined) > [data-face="back"],
   margin-block-start: var(--size-m);
 }
 
+/* --- View Transition (same-document, Chrome 111+, Safari 18+) --- */
+
+::view-transition-old(content-swap-*),
+::view-transition-new(content-swap-*) {
+  animation-duration: var(--motion-enter-duration, 300ms);
+  animation-timing-function: var(--ease-default, ease);
+}
+
+::view-transition-old(content-swap-*) {
+  animation-name: vt-swap-out;
+}
+
+::view-transition-new(content-swap-*) {
+  animation-name: vt-swap-in;
+}
+
+@keyframes vt-swap-out {
+  to { opacity: 0; }
+}
+
+@keyframes vt-swap-in {
+  from { opacity: 0; }
+}
+
 /* --- Reduced motion --- */
 
 @media (prefers-reduced-motion: reduce) {

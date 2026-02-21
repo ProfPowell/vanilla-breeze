@@ -4,6 +4,9 @@
  * Provides a trigger button with a dropdown menu. Handles keyboard
  * navigation, focus management, and click-outside-to-close.
  *
+ * Progressive enhancement: uses Popover API when available for native
+ * top-layer positioning and light-dismiss. Falls back to visibility/z-index.
+ *
  * @attr {string} data-position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
  * @attr {boolean} data-open - Whether menu is open (reflected)
  * @attr {boolean} data-no-flip - Disable automatic flip when menu doesn't fit
@@ -29,6 +32,9 @@
  *   </menu>
  * </dropdown-wc>
  */
+
+import { supportsPopover } from '../../utils/popover-support.js';
+
 class DropdownWc extends HTMLElement {
   #trigger;
   #menu;
@@ -37,6 +43,7 @@ class DropdownWc extends HTMLElement {
   #isOpen = false;
   #hoverMode = false;
   #closeTimeout = null;
+  #usePopover = false;
 
   connectedCallback() {
     this.#setup();
@@ -60,6 +67,12 @@ class DropdownWc extends HTMLElement {
 
     // Check for hover mode
     this.#hoverMode = this.hasAttribute('data-hover');
+
+    // Progressive enhancement: use Popover API when available (not for hover mode)
+    this.#usePopover = supportsPopover && !this.#hoverMode;
+    if (this.#usePopover) {
+      this.#menu.setAttribute('popover', 'auto');
+    }
 
     // Set up ARIA
     this.#trigger.setAttribute('aria-haspopup', 'menu');
@@ -87,8 +100,15 @@ class DropdownWc extends HTMLElement {
     }
     this.#trigger.addEventListener('keydown', this.#handleTriggerKeyDown);
     this.#menu.addEventListener('keydown', this.#handleMenuKeyDown);
-    document.addEventListener('click', this.#handleOutsideClick);
-    document.addEventListener('keydown', this.#handleEscape);
+
+    if (this.#usePopover) {
+      // Sync internal state when popover is dismissed natively (light-dismiss, Escape)
+      this.#menu.addEventListener('toggle', this.#handlePopoverToggle);
+    } else {
+      // Legacy: manual outside-click and Escape handling
+      document.addEventListener('click', this.#handleOutsideClick);
+      document.addEventListener('keydown', this.#handleEscape);
+    }
   }
 
   #cleanup() {
@@ -103,6 +123,7 @@ class DropdownWc extends HTMLElement {
     }
     if (this.#menu) {
       this.#menu.removeEventListener('keydown', this.#handleMenuKeyDown);
+      this.#menu.removeEventListener('toggle', this.#handlePopoverToggle);
     }
     this.removeEventListener('mouseenter', this.#handleMouseEnter);
     this.removeEventListener('mouseleave', this.#handleMouseLeave);
@@ -235,6 +256,17 @@ class DropdownWc extends HTMLElement {
     }
   };
 
+  #handlePopoverToggle = (e) => {
+    // Sync internal state when popover is dismissed natively (light-dismiss)
+    if (e.newState === 'closed' && this.#isOpen) {
+      this.#isOpen = false;
+      this.removeAttribute('data-open');
+      this.#trigger?.setAttribute('aria-expanded', 'false');
+      this.#activeIndex = -1;
+      this.dispatchEvent(new CustomEvent('dropdown-close', { bubbles: true }));
+    }
+  };
+
   #handleItemClick = (e) => {
     // Close menu after item click (unless item prevents default)
     if (!e.defaultPrevented) {
@@ -265,6 +297,11 @@ class DropdownWc extends HTMLElement {
     // Position menu
     this.#positionMenu();
 
+    // Show via Popover API if available
+    if (this.#usePopover) {
+      try { this.#menu.showPopover(); } catch { /* already open */ }
+    }
+
     this.dispatchEvent(new CustomEvent('dropdown-open', { bubbles: true }));
   }
 
@@ -275,6 +312,11 @@ class DropdownWc extends HTMLElement {
     this.removeAttribute('data-open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
+
+    // Hide via Popover API if available
+    if (this.#usePopover) {
+      try { this.#menu.hidePopover(); } catch { /* already closed */ }
+    }
 
     this.dispatchEvent(new CustomEvent('dropdown-close', { bubbles: true }));
   }
@@ -296,42 +338,65 @@ class DropdownWc extends HTMLElement {
     const menuRect = this.#menu.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-
-    let top, left;
     const gap = 4;
 
-    // Vertical position
-    if (position.startsWith('top')) {
-      top = -menuRect.height - gap;
-      // Flip to bottom if not enough space above (unless noFlip)
-      if (!noFlip && triggerRect.top + top < 0) {
-        top = triggerRect.height + gap;
+    if (this.#usePopover) {
+      // Popover: position with fixed viewport coordinates (top-layer)
+      let top, left;
+
+      if (position.startsWith('top')) {
+        top = triggerRect.top - menuRect.height - gap;
+        if (!noFlip && top < 0) {
+          top = triggerRect.bottom + gap;
+        }
+      } else {
+        top = triggerRect.bottom + gap;
+        if (!noFlip && top + menuRect.height > viewportHeight) {
+          top = triggerRect.top - menuRect.height - gap;
+        }
       }
+
+      if (position.endsWith('end')) {
+        left = triggerRect.right - menuRect.width;
+        if (left < 0) left = triggerRect.left;
+      } else {
+        left = triggerRect.left;
+        if (left + menuRect.width > viewportWidth) {
+          left = triggerRect.right - menuRect.width;
+        }
+      }
+
+      this.#menu.style.setProperty('--dropdown-top', `${Math.max(0, top)}px`);
+      this.#menu.style.setProperty('--dropdown-left', `${Math.max(0, left)}px`);
     } else {
-      top = triggerRect.height + gap;
-      // Flip to top if not enough space below (unless noFlip)
-      if (!noFlip && triggerRect.bottom + menuRect.height + gap > viewportHeight) {
+      // Legacy: position relative to trigger
+      let top, left;
+
+      if (position.startsWith('top')) {
         top = -menuRect.height - gap;
+        if (!noFlip && triggerRect.top + top < 0) {
+          top = triggerRect.height + gap;
+        }
+      } else {
+        top = triggerRect.height + gap;
+        if (!noFlip && triggerRect.bottom + menuRect.height + gap > viewportHeight) {
+          top = -menuRect.height - gap;
+        }
       }
-    }
 
-    // Horizontal position
-    if (position.endsWith('end')) {
-      left = triggerRect.width - menuRect.width;
-      // Shift if overflows left
-      if (triggerRect.left + left < 0) {
-        left = 0;
-      }
-    } else {
-      left = 0;
-      // Shift if overflows right
-      if (triggerRect.left + menuRect.width > viewportWidth) {
+      if (position.endsWith('end')) {
         left = triggerRect.width - menuRect.width;
+        if (triggerRect.left + left < 0) left = 0;
+      } else {
+        left = 0;
+        if (triggerRect.left + menuRect.width > viewportWidth) {
+          left = triggerRect.width - menuRect.width;
+        }
       }
-    }
 
-    this.#menu.style.setProperty('--dropdown-top', `${top}px`);
-    this.#menu.style.setProperty('--dropdown-left', `${left}px`);
+      this.#menu.style.setProperty('--dropdown-top', `${top}px`);
+      this.#menu.style.setProperty('--dropdown-left', `${left}px`);
+    }
   }
 
   get isOpen() {

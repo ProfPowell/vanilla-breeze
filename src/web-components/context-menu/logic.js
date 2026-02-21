@@ -22,6 +22,7 @@
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
+import { supportsPopover } from '../../utils/popover-support.js';
 
 class ContextMenuWc extends HTMLElement {
   #trigger;
@@ -30,6 +31,7 @@ class ContextMenuWc extends HTMLElement {
   #activeIndex = -1;
   #isOpen = false;
   #unbindFns = [];
+  #usePopover = false;
 
   connectedCallback() {
     this.#setup();
@@ -43,6 +45,12 @@ class ContextMenuWc extends HTMLElement {
     this.#trigger = this.querySelector(':scope > [data-trigger]');
     this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
     if (!this.#trigger || !this.#menu) return;
+
+    // Progressive enhancement: use Popover API when available
+    this.#usePopover = supportsPopover;
+    if (this.#usePopover) {
+      this.#menu.setAttribute('popover', 'auto');
+    }
 
     // ARIA setup
     this.#menu.setAttribute('role', 'menu');
@@ -87,10 +95,15 @@ class ContextMenuWc extends HTMLElement {
     // Event listeners
     this.#trigger.addEventListener('contextmenu', this.#handleContextMenu);
     this.#menu.addEventListener('keydown', this.#handleMenuKeyDown);
-    document.addEventListener('click', this.#handleOutsideClick);
-    document.addEventListener('contextmenu', this.#handleOutsideContext);
-    document.addEventListener('keydown', this.#handleEscape);
     window.addEventListener('scroll', this.#handleScroll, true);
+
+    if (this.#usePopover) {
+      this.#menu.addEventListener('toggle', this.#handlePopoverToggle);
+    } else {
+      document.addEventListener('click', this.#handleOutsideClick);
+      document.addEventListener('contextmenu', this.#handleOutsideContext);
+      document.addEventListener('keydown', this.#handleEscape);
+    }
   }
 
   #cleanup() {
@@ -99,6 +112,7 @@ class ContextMenuWc extends HTMLElement {
     }
     if (this.#menu) {
       this.#menu.removeEventListener('keydown', this.#handleMenuKeyDown);
+      this.#menu.removeEventListener('toggle', this.#handlePopoverToggle);
     }
     this.#items.forEach(item => {
       item.removeEventListener('click', this.#handleItemClick);
@@ -120,12 +134,14 @@ class ContextMenuWc extends HTMLElement {
     this.#isOpen = true;
     this.setAttribute('data-open', '');
 
-    // Position at cursor, then adjust for viewport bounds
-    const menuRect = this.#menu.getBoundingClientRect();
-
-    // Need to show first to measure
+    // Position at cursor
     this.#menu.style.setProperty('--ctx-top', `${y}px`);
     this.#menu.style.setProperty('--ctx-left', `${x}px`);
+
+    // Show via Popover API if available
+    if (this.#usePopover) {
+      try { this.#menu.showPopover(); } catch { /* already open */ }
+    }
 
     // After render, check bounds
     requestAnimationFrame(() => {
@@ -152,6 +168,11 @@ class ContextMenuWc extends HTMLElement {
     this.#isOpen = false;
     this.removeAttribute('data-open');
     this.#activeIndex = -1;
+
+    if (this.#usePopover) {
+      try { this.#menu.hidePopover(); } catch { /* already closed */ }
+    }
+
     this.dispatchEvent(new CustomEvent('context-menu-close', { bubbles: true }));
   }
 
@@ -212,6 +233,15 @@ class ContextMenuWc extends HTMLElement {
     if (e.key === 'Escape' && this.#isOpen) {
       e.preventDefault();
       this.close();
+    }
+  };
+
+  #handlePopoverToggle = (e) => {
+    if (e.newState === 'closed' && this.#isOpen) {
+      this.#isOpen = false;
+      this.removeAttribute('data-open');
+      this.#activeIndex = -1;
+      this.dispatchEvent(new CustomEvent('context-menu-close', { bubbles: true }));
     }
   };
 

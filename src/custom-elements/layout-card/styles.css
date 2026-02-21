@@ -36,4 +36,106 @@ layout-card {
   layout-card {
     background: var(--color-surface-raised);
   }
+
+  /* Smart grid mode: activates when semantic children detected */
+  &:has(> :is(header, section, footer)) {
+    display: grid;
+    grid-template:
+      "header" auto
+      "content" 1fr
+      "footer" auto / 1fr;
+    overflow: hidden;
+    padding: 0; /* Children own their padding in grid mode */
+  }
+}
+
+/* --- Grid-mode child styles --- */
+
+layout-card:has(> :is(header, section, footer)) {
+  > :is(header, [slot="header"]) {
+    grid-area: header;
+    padding: var(--size-m) var(--size-l);
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  > :is(section, [slot="content"]) {
+    grid-area: content;
+    padding: var(--size-l);
+  }
+
+  > :is(footer, [slot="footer"]) {
+    grid-area: footer;
+    padding: var(--size-m) var(--size-l);
+    border-block-start: 1px solid var(--color-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-s);
+    justify-content: flex-end;
+  }
+
+  > :not(:is(header, section, footer, [slot])) {
+    grid-area: content;
+    padding: var(--size-l);
+  }
+
+  /* Header heading reset */
+  > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
+    margin: 0;
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* --- Grid-mode padding variants --- */
+
+layout-card:has(> :is(header, section, footer)) {
+  &[data-padding="none"] {
+    > :is(header, [slot="header"]) { padding: 0; border: none; }
+    > :is(section, [slot="content"]) { padding: 0; }
+    > :is(footer, [slot="footer"]) { padding: 0; border: none; }
+    > :not(:is(header, section, footer, [slot])) { padding: 0; }
+  }
+
+  &[data-padding="s"] {
+    > :is(header, [slot="header"]) { padding: var(--size-xs) var(--size-s); }
+    > :is(section, [slot="content"]) { padding: var(--size-s); }
+    > :is(footer, [slot="footer"]) { padding: var(--size-xs) var(--size-s); }
+    > :not(:is(header, section, footer, [slot])) { padding: var(--size-s); }
+  }
+
+  &[data-padding="l"] {
+    > :is(header, [slot="header"]) { padding: var(--size-l) var(--size-xl); }
+    > :is(section, [slot="content"]) { padding: var(--size-xl); }
+    > :is(footer, [slot="footer"]) { padding: var(--size-l) var(--size-xl); }
+    > :not(:is(header, section, footer, [slot])) { padding: var(--size-xl); }
+  }
+
+  &[data-padding="xl"] {
+    > :is(header, [slot="header"]) { padding: var(--size-xl) var(--size-2xl); }
+    > :is(section, [slot="content"]) { padding: var(--size-2xl); }
+    > :is(footer, [slot="footer"]) { padding: var(--size-xl) var(--size-2xl); }
+    > :not(:is(header, section, footer, [slot])) { padding: var(--size-2xl); }
+  }
+}
+
+/* --- Subgrid: align header/content/footer across sibling cards --- */
+
+[data-layout-subgrid] > layout-card:has(> :is(header, section, footer)) {
+  grid-template-rows: subgrid;
+}
+
+/* --- Container query: compact mode for narrow grid cards --- */
+
+layout-card:has(> :is(header, section, footer)) {
+  @container (max-width: 300px) {
+    > :is(header, [slot="header"]) { padding: var(--size-s); }
+    > :is(section, [slot="content"]),
+    > :not(:is(header, section, footer, [slot])) { padding: var(--size-s); }
+    > :is(footer, [slot="footer"]) {
+      padding: var(--size-s);
+      flex-direction: column;
+    }
+    > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
+      font-size: var(--font-size-base);
+    }
+  }
 }

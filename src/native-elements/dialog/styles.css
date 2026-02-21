@@ -50,7 +50,7 @@ dialog:focus {
   outline: none;
 }
 
-/* Animation for opening */
+/* Entry animation (keyframe fallback for non-@starting-style browsers) */
 dialog[open] {
   animation: vb-scale-in var(--motion-enter-duration) var(--ease-out);
 }
@@ -59,13 +59,45 @@ dialog[open]::backdrop {
   animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
 }
 
+/* @starting-style entry transition — replaces animation in supporting browsers */
+dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   dialog[open] {
     animation: none;
+    transition: none;
   }
 
   dialog[open]::backdrop {
     animation: none;
+    transition: none;
   }
 }
 
