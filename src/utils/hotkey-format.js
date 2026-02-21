@@ -2,7 +2,7 @@
  * hotkey-format: Shared hotkey formatting and matching utilities
  *
  * Pure functions for parsing, formatting, and matching keyboard shortcuts.
- * Used by hotkey-init.js, command-wc, context-menu-wc, and hotkey-bind.js.
+ * Used by hotkey-init.js, command-wc, context-menu, and hotkey-bind.js.
  *
  * @example
  * import { formatHotkey, parseHotkey, matchesHotkey } from './hotkey-format.js';

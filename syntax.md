@@ -947,7 +947,7 @@ Dropdown menu/popover triggered by a button.
 
 Children: `<button>` trigger + `<menu>` or `<ul>` items.
 
-### `<context-menu-wc>`
+### `<context-menu>`
 Right-click context menu.
 
 | Events | Detail |
@@ -1154,7 +1154,7 @@ SVG icon component.
 | `size` | `xs`, `sm`, `md`, `lg`, `xl` | Icon size |
 | `label` | string | Accessible label |
 
-### `<qr-code-wc>`
+### `<qr-code>`
 QR code generator.
 
 | Attribute | Values | Description |
@@ -1564,7 +1564,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-empty` | `<output>` — empty state content |
 | `data-enhanced` | `<form-field>` — enhancement type |
 | `data-error` | `<output>` — error state content |
-| `data-error-correction` | `<qr-code-wc>` — QR error level |
+| `data-error-correction` | `<qr-code>` — QR error level |
 | `data-expand-content` | Table row — expandable content |
 | `data-face` | `<flip-card-wc>` child — front/back |
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
@@ -1582,7 +1582,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-gradient-text` | Text — gradient coloring |
 | `data-gradient-text-animate` | Text — animated gradient |
 | `data-grid` | Chart — show grid lines |
-| `data-group` | `<context-menu-wc>` — group label |
+| `data-group` | `<context-menu>` — group label |
 | `data-grouped` | Column chart — side-by-side |
 | `data-grow` | `<textarea>` — auto-expand |
 | `data-half` | Pie chart — semi-circle |

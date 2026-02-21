@@ -1,12 +1,12 @@
 /**
- * context-menu-wc: Right-click context menu with keyboard navigation
+ * context-menu: Right-click context menu with keyboard navigation
  *
  * Provides a custom right-click menu that opens at cursor position.
  * Shares keyboard navigation patterns with dropdown-wc.
  * Items with data-shortcut get real keyboard shortcut bindings.
  *
  * @example
- * <context-menu-wc>
+ * <context-menu>
  *   <div data-trigger>
  *     <p>Right-click anywhere here</p>
  *   </div>
@@ -17,7 +17,7 @@
  *     <li role="separator"></li>
  *     <li><button class="danger">Delete</button></li>
  *   </menu>
- * </context-menu-wc>
+ * </context-menu>
  */
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
@@ -232,6 +232,6 @@ class ContextMenuWc extends HTMLElement {
   }
 }
 
-customElements.define('context-menu-wc', ContextMenuWc);
+customElements.define('context-menu', ContextMenuWc);
 
 export { ContextMenuWc };
