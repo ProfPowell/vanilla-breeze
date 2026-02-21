@@ -59,8 +59,8 @@ class HeadingLinks extends HTMLElement {
   }
 
   #enhanceHeading(heading) {
-    // Skip headings inside dialogs - they shouldn't have anchor links
-    if (heading.closest('dialog')) return;
+    // Skip headings that are opted out or inside non-document contexts
+    if (heading.closest('dialog, [data-toc-ignore]') || heading.hasAttribute('data-toc-ignore')) return;
 
     // Ensure heading has an ID
     if (!heading.id) {

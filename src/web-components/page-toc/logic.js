@@ -184,7 +184,8 @@ class PageToc extends HTMLElement {
 
     const selector = levels.split(',').map(l => l.trim()).join(',');
     this.#headings = Array.from(container.querySelectorAll(selector))
-      .filter(h => h.id); // Only headings with IDs
+      .filter(h => h.id) // Only headings with IDs
+      .filter(h => !h.hasAttribute('data-toc-ignore') && !h.closest('[data-toc-ignore]'));
 
     if (this.#headings.length === 0) return;
 

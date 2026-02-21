@@ -1,0 +1,497 @@
+---
+layout: layouts/element.njk
+title: "content-swap"
+description: "Two-face content toggle with flip, fade, slide, and scale transitions. Theme-driven motion via design tokens."
+elementName: content-swap
+category: component
+currentPath: /docs/elements/web-components/content-swap/
+permalink: /docs/elements/web-components/content-swap/
+---
+
+{% set basicFlipCode %}<content-swap data-transition="flip">
+  <div data-face="front">
+    <p>Front content visible by default.</p>
+  </div>
+  <div data-face="back">
+    <p>Back content revealed on swap.</p>
+  </div>
+</content-swap>{% endset %}
+
+{% set fadeCode %}<content-swap data-transition="fade">
+  <div data-face="front">Front</div>
+  <div data-face="back">Back</div>
+</content-swap>{% endset %}
+
+{% set slideCode %}<content-swap data-transition="slide-left">
+  <div data-face="front">Front</div>
+  <div data-face="back">Back</div>
+</content-swap>{% endset %}
+
+{% set triggerCode %}<content-swap data-transition="fade">
+  <div data-face="front">
+    <p>What does inert do?</p>
+    <button data-swap>Show answer</button>
+  </div>
+  <div data-face="back">
+    <p>It makes an element non-interactive.</p>
+    <button data-swap>Back to question</button>
+  </div>
+</content-swap>{% endset %}
+
+{% set cardCode %}<content-swap data-transition="flip" data-card>
+  <div data-face="front">
+    <h3>Product</h3>
+    <p>Flip to see details.</p>
+  </div>
+  <div data-face="back">
+    <h3>Details</h3>
+    <p>Price, specs, and more.</p>
+  </div>
+</content-swap>{% endset %}
+
+{% set compositionCode %}<content-swap data-transition="flip">
+  <layout-card data-face="front">
+    <header><h3>Front</h3></header>
+    <section><p>Full card structure per face.</p></section>
+    <footer><button data-swap>See back</button></footer>
+  </layout-card>
+  <layout-card data-face="back">
+    <header><h3>Back</h3></header>
+    <section><p>Each face is a layout-card.</p></section>
+    <footer><button data-swap>See front</button></footer>
+  </layout-card>
+</content-swap>{% endset %}
+
+{% set attrFormCode %}<article data-swap data-transition="fade">
+  <div data-face="front">Front content</div>
+  <div data-face="back">Back content</div>
+</article>{% endset %}
+
+{% set autocardCode %}{% raw %}<body data-swap-autocard>
+  <content-swap data-transition="slide-left">
+    <div data-face="front">Auto-styled as card</div>
+    <div data-face="back">Auto-styled as card</div>
+  </content-swap>
+</body>{% endraw %}{% endset %}
+
+{% set eventCode %}{% raw %}const el = document.querySelector('content-swap');
+
+el.addEventListener('content-swap', (event) => {
+  console.log('Swapped:', event.detail.swapped);
+});{% endraw %}{% endset %}
+
+{% set apiCode %}const el = document.querySelector('content-swap');
+
+// Swap to back face
+el.flip();
+
+// Swap to front face
+el.unflip();
+
+// Toggle current state
+el.toggle();
+
+// Check state
+console.log(el.swapped); // true or false{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;content-swap&gt;</code> component toggles between two content faces with configurable transition effects. It manages <code>inert</code> on the hidden face so screen readers only announce visible content.</p>
+    <p>The transition type is a styling concern (<code>data-transition</code>), while duration and easing come from VB motion tokens &mdash; so themes automatically control the personality of every swap.</p>
+
+    <browser-window
+      src="/docs/examples/demos/content-swap-basic.html"
+      url="https://vanilla-breeze.dev/content-swap"
+      title="Content Swap Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic content swap (flip)">{{ basicFlipCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>Why a web component?</strong> CSS <code>backface-visibility: hidden</code> is visual only &mdash; screen readers still read the hidden face. JavaScript is required to toggle <code>inert</code> on the hidden face.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-transition</code></td>
+          <td>string</td>
+          <td><code>flip</code></td>
+          <td>Transition effect: <code>flip</code>, <code>flip-vertical</code>, <code>fade</code>, <code>slide-left</code>, <code>slide-up</code>, <code>scale</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-swapped</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Reflects the current swap state. Can be set to start swapped.</td>
+        </tr>
+        <tr>
+          <td><code>data-card</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Applies layout-card visual shell (background, radius, shadow).</td>
+        </tr>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Card variant when using <code>data-card</code>: <code>elevated</code>, <code>outlined</code>, <code>ghost</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Child Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Where</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-face="front"</code></td>
+          <td>Direct child</td>
+          <td>Marks the front face.</td>
+        </tr>
+        <tr>
+          <td><code>data-face="back"</code></td>
+          <td>Direct child</td>
+          <td>Marks the back face.</td>
+        </tr>
+        <tr>
+          <td><code>data-swap</code></td>
+          <td>Any descendant</td>
+          <td>Marks an element as a swap trigger button.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Transition Effects</h2>
+    <p>Each transition reads from VB motion tokens, so themes automatically control personality.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Animation</th>
+          <th>Kawaii</th>
+          <th>Brutalist</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>flip</code></td>
+          <td>3D rotateY</td>
+          <td>Bouncy easing, 300ms</td>
+          <td>Instant cut</td>
+        </tr>
+        <tr>
+          <td><code>flip-vertical</code></td>
+          <td>3D rotateX</td>
+          <td>Bouncy easing</td>
+          <td>Instant cut</td>
+        </tr>
+        <tr>
+          <td><code>fade</code></td>
+          <td>Crossfade opacity</td>
+          <td>300ms fade</td>
+          <td>Hard opacity toggle</td>
+        </tr>
+        <tr>
+          <td><code>slide-left</code></td>
+          <td>Horizontal slide</td>
+          <td>Slide with bounce</td>
+          <td>Hard slide, linear</td>
+        </tr>
+        <tr>
+          <td><code>slide-up</code></td>
+          <td>Vertical slide</td>
+          <td>Slide with bounce</td>
+          <td>Hard slide, linear</td>
+        </tr>
+        <tr>
+          <td><code>scale</code></td>
+          <td>Scale + opacity</td>
+          <td>Pop with bounce</td>
+          <td>Linear scale</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <layout-grid data-min-item-size="200px" data-layout-gap="m">
+        <content-swap data-transition="fade">
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Fade</strong></p>
+            <small>Click to swap</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Faded in</p>
+          </div>
+        </content-swap>
+
+        <content-swap data-transition="slide-left">
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Slide Left</strong></p>
+            <small>Click to swap</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Slid in</p>
+          </div>
+        </content-swap>
+
+        <content-swap data-transition="scale">
+          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+            <p><strong>Scale</strong></p>
+            <small>Click to swap</small>
+          </div>
+          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+            <p>Scaled in</p>
+          </div>
+        </content-swap>
+      </layout-grid>
+    </div>
+
+    <code-block language="html" show-lines label="Fade transition">{{ fadeCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Slide transition">{{ slideCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Trigger Buttons</h2>
+    <p>By default, clicking anywhere on the element triggers the swap. Add <code>data-swap</code> to specific buttons for explicit trigger controls. When triggers exist, the container is no longer clickable.</p>
+
+    <div class="example">
+      <content-swap data-transition="fade">
+        <div data-face="front" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface);">
+          <p><strong>Question:</strong> What does <code>inert</code> do?</p>
+          <button data-swap>Show answer</button>
+        </div>
+        <div data-face="back" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
+          <p><strong>Answer:</strong> It makes an element and its descendants non-interactive and hidden from assistive technology.</p>
+          <button data-swap>Back to question</button>
+        </div>
+      </content-swap>
+    </div>
+
+    <code-block language="html" show-lines label="Trigger buttons">{{ triggerCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Card Mode</h2>
+    <p>Add <code>data-card</code> to apply layout-card's visual shell directly on the swap element. Supports <code>data-variant</code> for elevated, outlined, and ghost styles.</p>
+
+    <div class="example">
+      <layout-grid data-min-item-size="200px" data-layout-gap="m">
+        <content-swap data-transition="flip" data-card>
+          <div data-face="front">
+            <p><strong>Product</strong></p>
+            <p>Flip to see details.</p>
+          </div>
+          <div data-face="back">
+            <p><strong>Details</strong></p>
+            <p>Price, specs, and more.</p>
+          </div>
+        </content-swap>
+
+        <content-swap data-transition="fade" data-card data-variant="outlined">
+          <div data-face="front">
+            <p><strong>Outlined</strong></p>
+            <p>Card mode with outlined variant.</p>
+          </div>
+          <div data-face="back">
+            <p><strong>Back</strong></p>
+            <p>Still outlined.</p>
+          </div>
+        </content-swap>
+      </layout-grid>
+    </div>
+
+    <code-block language="html" show-lines label="Card mode shorthand">{{ cardCode | escape }}</code-block>
+
+    <h3>Page-level auto-card</h3>
+    <p>Add <code>data-swap-autocard</code> to a container or <code>&lt;body&gt;</code> to automatically apply card chrome to all content-swap elements that don't already wrap <code>&lt;layout-card&gt;</code> children.</p>
+
+    <code-block language="html" show-lines label="Auto-card opt-in">{{ autocardCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Composition</h2>
+    <p>Wrap <code>&lt;layout-card&gt;</code> elements as faces for full card structure (header, section, footer) on each side.</p>
+
+    <div class="example">
+      <content-swap data-transition="flip" style="max-inline-size: 400px;">
+        <layout-card data-face="front" data-toc-ignore>
+          <header><h3>Front Card</h3></header>
+          <section><p>Full card structure with header, section, and footer.</p></section>
+          <footer><button data-swap>See back</button></footer>
+        </layout-card>
+        <layout-card data-face="back" data-toc-ignore>
+          <header><h3>Back Card</h3></header>
+          <section><p>Each face is an independent layout-card.</p></section>
+          <footer><button data-swap>See front</button></footer>
+        </layout-card>
+      </content-swap>
+    </div>
+
+    <code-block language="html" show-lines label="Composition with layout-card">{{ compositionCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attribute Form</h2>
+    <p>For authors who want swap behavior on an existing element, add <code>data-swap</code> as an attribute on any element with <code>data-face</code> children. The behavior auto-initializes via JavaScript.</p>
+
+    <div class="example">
+      <article data-swap data-transition="fade" style="border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
+        <div data-face="front" style="padding: var(--size-l);">
+          <p><strong>Native article</strong></p>
+          <p>This is a regular <code>&lt;article&gt;</code> with <code>data-swap</code>.</p>
+        </div>
+        <div data-face="back" style="padding: var(--size-l); background: var(--color-surface-raised);">
+          <p><strong>Still an article</strong></p>
+          <p>Same swap behavior, no custom element wrapper needed.</p>
+        </div>
+      </article>
+    </div>
+
+    <code-block language="html" show-lines label="Attribute form">{{ attrFormCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Toggle swap (when element or trigger is focused)</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus to next interactive element</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>content-swap</code></td>
+          <td><code>{ swapped: boolean }</code></td>
+          <td>Fired after the content swaps.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening to swap events">{{ eventCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method / Property</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>flip()</code></td>
+          <td>Swap to show the back face.</td>
+        </tr>
+        <tr>
+          <td><code>unflip()</code></td>
+          <td>Swap to show the front face.</td>
+        </tr>
+        <tr>
+          <td><code>toggle()</code></td>
+          <td>Toggle between front and back.</td>
+        </tr>
+        <tr>
+          <td><code>swapped</code></td>
+          <td>Boolean property reflecting the current state.</td>
+        </tr>
+        <tr>
+          <td><code>flipped</code></td>
+          <td>Alias for <code>swapped</code> (backward compatibility).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Programmatic control">{{ apiCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Theme Integration</h2>
+    <p>Content-swap reads from VB motion tokens. Themes override these tokens, so personality comes for free:</p>
+    <ul>
+      <li><strong>Default</strong>: <code>--motion-enter-duration: 300ms</code>, <code>--ease-default: var(--ease-3)</code></li>
+      <li><strong>Kawaii</strong>: Bouncy easing (<code>cubic-bezier(0.34, 1.56, 0.64, 1)</code>), 300ms</li>
+      <li><strong>Brutalist</strong>: Linear easing, 0ms (instant cut)</li>
+    </ul>
+    <p>No extra theme CSS needed &mdash; the token bridge handles it.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Inert Toggling</h3>
+    <p>The hidden face is always marked <code>inert</code>. Screen readers only announce the currently visible face, and interactive elements on the hidden face cannot receive focus.</p>
+
+    <h3>Trigger Modes</h3>
+    <ul>
+      <li><strong>Whole-element trigger</strong> (no <code>data-swap</code> children): The element gets <code>role="button"</code>, <code>tabindex="0"</code>, and <code>aria-label="Toggle content"</code>.</li>
+      <li><strong>Explicit triggers</strong> (<code>data-swap</code> children): The trigger buttons are the keyboard targets. No role is added to the container.</li>
+    </ul>
+
+    <h3>Focus Management</h3>
+    <p>When swapping, focus moves to the first interactive element on the newly visible face (buttons, links, inputs, or elements with <code>autofocus</code>).</p>
+
+    <h3>Reduced Motion</h3>
+    <p>When <code>prefers-reduced-motion: reduce</code> is active, the swap animation duration is set to <code>0s</code>. The state still toggles instantly without animation.</p>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, both faces display stacked in natural document flow. The <code>:not(:defined)</code> selector ensures transforms only apply once the component is registered.</p>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> &mdash; Card visual shell (compose with content-swap)</li>
+      <li><a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a> &mdash; Collapsible content panels</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tabs-wc&gt;</code></a> &mdash; Tab panels for content switching</li>
+    </ul>
+  </section>

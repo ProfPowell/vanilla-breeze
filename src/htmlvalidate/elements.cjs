@@ -25,18 +25,6 @@ module.exports = {
     }
   },
 
-  "semantic-card": {
-    flow: true,
-    permittedContent: ["header", "section", "footer", "@flow"],
-    attributes: {
-      "data-variant": {
-        enum: ["elevated", "outlined", "ghost"]
-      },
-      "data-padding": {
-        enum: ["none", "s", "m", "l"]
-      }
-    }
-  },
 
   "layout-grid": {
     flow: true,
@@ -274,6 +262,25 @@ module.exports = {
       "data-key": {},
       "data-layout": {
         enum: ["grid", "stack", "reel"]
+      }
+    }
+  },
+
+  "content-swap": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-transition": {
+        enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"]
+      },
+      "data-swapped": {
+        boolean: true
+      },
+      "data-card": {
+        boolean: true
+      },
+      "data-variant": {
+        enum: ["elevated", "outlined", "ghost"]
       }
     }
   }

@@ -36,6 +36,7 @@ const elementsByLetter = {
     { name: 'colgroup', type: 'native', href: '/docs/elements/native/colgroup/' },
     { name: 'combobox-wc', type: 'component', href: '/docs/elements/web-components/combobox/' },
     { name: 'comparison-wc', type: 'component', href: '/docs/elements/web-components/comparison/' },
+    { name: 'content-swap', type: 'component', href: '/docs/elements/web-components/content-swap/' },
   ],
   D: [
     { name: 'data', type: 'native', href: '/docs/elements/native/data/' },
@@ -55,12 +56,12 @@ const elementsByLetter = {
   E: [
     { name: 'em', type: 'native', href: '/docs/elements/native/em/' },
     { name: 'embed', type: 'native', href: '/docs/elements/native/embed/' },
+    { name: 'emoji-picker', type: 'component', href: '/docs/elements/web-components/emoji-picker/' },
   ],
   F: [
     { name: 'fieldset', type: 'native', href: '/docs/elements/native/fieldset/' },
     { name: 'figcaption', type: 'native', href: '/docs/elements/native/figcaption/' },
     { name: 'figure', type: 'native', href: '/docs/elements/native/figure/' },
-    { name: 'flip-card-wc', type: 'component', href: '/docs/elements/web-components/flip-card/' },
     { name: 'footer', type: 'native', href: '/docs/elements/native/footer/' },
     { name: 'footnotes-wc', type: 'component', href: '/docs/elements/web-components/footnotes/' },
     { name: 'form', type: 'native', href: '/docs/elements/native/form/' },
@@ -160,7 +161,6 @@ const elementsByLetter = {
     { name: 'search-wc', type: 'component', href: '/docs/elements/web-components/search-wc/' },
     { name: 'section', type: 'native', href: '/docs/elements/native/section/' },
     { name: 'select', type: 'native', href: '/docs/elements/native/select/' },
-    { name: 'semantic-card', type: 'custom', href: '/docs/elements/custom-elements/semantic-card/' },
     { name: 'shortcuts-wc', type: 'component', href: '/docs/elements/web-components/shortcuts/' },
     { name: 'slide-accept-wc', type: 'component', href: '/docs/elements/web-components/slide-accept/' },
     { name: 'slot', type: 'native', href: '/docs/elements/native/slot/' },

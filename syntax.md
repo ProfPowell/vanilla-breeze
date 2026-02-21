@@ -801,22 +801,15 @@ No data attributes — applies typographic spacing rules automatically.
 ### Card Elements
 
 #### `<layout-card>`
+Block container by default. Add `<header>`, `<section>`, or `<footer>` children to activate grid mode with named areas.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-variant` | `elevated`, `outlined`, `ghost` | Visual style |
-| `data-padding` | `none`, `s`, `m`, `l`, `xl` | Internal padding |
+| `data-padding` | `none`, `s`, `m`, `l`, `xl` | Internal padding (applies to grid area children in grid mode) |
 | `data-max` | `narrow`, `content`, `wide` | Max-width constraint |
 
-#### `<semantic-card>`
-Card with semantic header/content/footer grid areas.
-
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `data-variant` | `elevated`, `outlined`, `ghost` | Visual style |
-| `data-padding` | `none`, `s`, `l` | Padding preset |
-
-Children: `<header>`, `<section>`, `<footer>` map to grid areas.
+Grid mode children: `<header>`, `<section>`, `<footer>` map to grid areas. Use `slot="content"` for non-semantic elements.
 
 ### UI Elements
 
@@ -947,6 +940,22 @@ Dropdown menu/popover triggered by a button.
 
 Children: `<button>` trigger + `<menu>` or `<ul>` items.
 
+### `<emoji-picker>`
+Accessible emoji picker with search, categories, and insertion.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `for` | element ID | Target input/textarea/contenteditable |
+| `recent-limit` | number | Max recent emoji (default: 24) |
+
+| Events | Detail |
+|--------|--------|
+| `emoji-select` | `{ shortcode, emoji, name, keywords }` |
+| `emoji-picker-open` | — |
+| `emoji-picker-close` | — |
+
+Children: `<button data-trigger>` (auto-created if absent).
+
 ### `<context-menu>`
 Right-click context menu.
 
@@ -1016,19 +1025,24 @@ Slideshow/carousel with autoplay.
 | `carousel-change` | `{ index }` |
 | `carousel-play`, `carousel-pause` | — |
 
-### `<flip-card-wc>`
-Card with flip animation on click.
+### `<content-swap>`
+Two-face content toggle with configurable transitions.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-flip` | `hover`, `click` | Trigger mode |
-| `data-orientation` | `horizontal`, `vertical` | Flip axis |
+| `data-transition` | `flip` (default), `flip-vertical`, `fade`, `slide-left`, `slide-up`, `scale` | Transition effect |
+| `data-swapped` | (boolean) | Reflects swap state |
+| `data-card` | (boolean) | Apply layout-card visual shell |
 
 | Events | Detail |
 |--------|--------|
-| `flip-card-flip` | `{ flipped }` |
+| `content-swap` | `{ swapped: boolean }` |
 
 Children: `[data-face="front"]` + `[data-face="back"]`
+
+Attribute form: `<article data-swap data-transition="fade">` — same behavior on any element via auto-init.
+
+Page-level auto-card: `<body data-swap-autocard>` applies card chrome to bare content-swap elements.
 
 ### `<comparison-wc>`
 Before/after image comparison slider.
@@ -1471,6 +1485,9 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-highlight` | (default/underline), `box`, `circle` | Draw-in highlight effect |
 | `data-typewriter` | text content | Character-by-character typing |
 | `data-scramble` | text content | Decode/unscramble effect |
+| `data-emoji` | any container | Replace `:shortcode:` with Unicode emoji |
+| `data-emoji-scan` | `once`, `observe` | Scan mode (default: `once`) |
+| `data-emoji-unknown` | `keep`, `strip` | Unresolved shortcode handling |
 
 ### Interactive Enhancers
 
@@ -1533,6 +1550,9 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-copy` | `<button>` — clipboard copy |
 | `data-copy-target` | `<button>` — copy source selector |
 | `data-count` | `<textarea>` — character counter |
+| `data-emoji` | Any container — replace `:shortcode:` with emoji |
+| `data-emoji-scan` | `[data-emoji]` — scan mode (`once`, `observe`) |
+| `data-emoji-unknown` | `[data-emoji]` — unknown handling (`keep`, `strip`) |
 | `data-debug` | `<html>` — debug mode |
 | `data-debug-invalid` | Any — mark invalid structure |
 | `data-debug-message` | Any — debug hover message |
@@ -1554,13 +1574,13 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-error` | `<output>` — error state content |
 | `data-error-correction` | `<qr-code>` — QR error level |
 | `data-expand-content` | Table row — expandable content |
-| `data-face` | `<flip-card-wc>` child — front/back |
+| `data-face` | `<content-swap>` child — front/back |
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
 | `data-feedback` | State container — presentation mode |
 | `data-filled` | `<status-message>` — solid fill |
 | `data-filter` | `<combobox-wc>` — filter mode |
 | `data-fit` | `[data-media]` — object-fit |
-| `data-flip` | `<flip-card-wc>` — trigger mode |
+| `data-swap` | `<content-swap>` trigger or any element — swap behavior |
 | `data-flush` | Accordion — no borders |
 | `data-format-bytes` | `<data>` — byte formatting |
 | `data-format-date` | `<time>` — date formatting |
@@ -1608,7 +1628,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
-| `data-orientation` | `<splitter-wc>`, `<flip-card-wc>` — axis |
+| `data-orientation` | `<splitter-wc>` — axis |
 | `data-overlay` | `<loading-spinner>` — overlay mode |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |

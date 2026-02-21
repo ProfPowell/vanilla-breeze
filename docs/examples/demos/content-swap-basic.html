@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Swap Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+    }
+
+    h2 {
+      margin-block-end: var(--size-s);
+    }
+
+    .demo-section {
+      margin-block-end: var(--size-2xl);
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--size-l);
+    }
+
+    .face-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-s);
+      padding: var(--size-l);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      min-block-size: 180px;
+    }
+
+    .face-content h3,
+    .face-content p { margin: 0; }
+
+    [data-face="back"] .face-content {
+      background: var(--color-surface-raised);
+    }
+  </style>
+</head>
+<body>
+  <h1>Content Swap</h1>
+  <p>Two-face content toggle with multiple transition effects.</p>
+
+  <section class="demo-section">
+    <h2>Transition Types</h2>
+    <div class="demo-grid">
+      <!-- Flip (default) -->
+      <content-swap data-transition="flip">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Flip</h3>
+            <p>3D horizontal flip (default).</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Flipped!</h3>
+            <p>Uses rotateY with perspective.</p>
+          </div>
+        </div>
+      </content-swap>
+
+      <!-- Flip Vertical -->
+      <content-swap data-transition="flip-vertical">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Flip Vertical</h3>
+            <p>3D vertical flip along X axis.</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Flipped!</h3>
+            <p>Uses rotateX for top-to-bottom.</p>
+          </div>
+        </div>
+      </content-swap>
+
+      <!-- Fade -->
+      <content-swap data-transition="fade">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Fade</h3>
+            <p>Crossfade between faces.</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Faded in</h3>
+            <p>Smooth opacity transition.</p>
+          </div>
+        </div>
+      </content-swap>
+
+      <!-- Slide Left -->
+      <content-swap data-transition="slide-left">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Slide Left</h3>
+            <p>Slide horizontally to reveal.</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Slid in</h3>
+            <p>Content slides from the right.</p>
+          </div>
+        </div>
+      </content-swap>
+
+      <!-- Slide Up -->
+      <content-swap data-transition="slide-up">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Slide Up</h3>
+            <p>Slide vertically to reveal.</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Slid in</h3>
+            <p>Content slides from below.</p>
+          </div>
+        </div>
+      </content-swap>
+
+      <!-- Scale -->
+      <content-swap data-transition="scale">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Scale</h3>
+            <p>Scale down and fade to swap.</p>
+            <small>Click to swap</small>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Scaled in</h3>
+            <p>Content scales up with opacity.</p>
+          </div>
+        </div>
+      </content-swap>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>Trigger Buttons</h2>
+    <div class="demo-grid">
+      <content-swap data-transition="fade">
+        <div data-face="front">
+          <div class="face-content">
+            <h3>Question</h3>
+            <p>What does the <code>inert</code> attribute do?</p>
+            <button data-swap>Show answer</button>
+          </div>
+        </div>
+        <div data-face="back">
+          <div class="face-content">
+            <h3>Answer</h3>
+            <p>It makes an element and its descendants non-interactive and hidden from assistive technology.</p>
+            <button data-swap>Back to question</button>
+          </div>
+        </div>
+      </content-swap>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>Card Mode (<code>data-card</code>)</h2>
+    <div class="demo-grid">
+      <content-swap data-transition="flip" data-card>
+        <div data-face="front">
+          <h3>Product</h3>
+          <p>Flip to see details.</p>
+        </div>
+        <div data-face="back">
+          <h3>Details</h3>
+          <p>Price, specs, and more.</p>
+        </div>
+      </content-swap>
+
+      <content-swap data-transition="fade" data-card data-variant="outlined">
+        <div data-face="front">
+          <h3>Outlined Card</h3>
+          <p>Card mode with outlined variant.</p>
+        </div>
+        <div data-face="back">
+          <h3>Back Side</h3>
+          <p>Still outlined on the back.</p>
+        </div>
+      </content-swap>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>Composition with <code>&lt;layout-card&gt;</code></h2>
+    <div class="demo-grid">
+      <content-swap data-transition="flip">
+        <layout-card data-face="front">
+          <header><h3>Composed Front</h3></header>
+          <section><p>Using layout-card inside content-swap for full card structure.</p></section>
+          <footer><button data-swap>See back</button></footer>
+        </layout-card>
+        <layout-card data-face="back">
+          <header><h3>Composed Back</h3></header>
+          <section><p>Each face is a full layout-card with header, section, footer.</p></section>
+          <footer><button data-swap>See front</button></footer>
+        </layout-card>
+      </content-swap>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>Attribute Form (<code>data-swap</code>)</h2>
+    <div class="demo-grid">
+      <article data-swap data-transition="fade" class="face-content" style="min-block-size: auto; padding: 0;">
+        <div data-face="front" style="padding: var(--size-l);">
+          <h3>Native article</h3>
+          <p>This is a regular <code>&lt;article&gt;</code> with <code>data-swap</code>.</p>
+        </div>
+        <div data-face="back" style="padding: var(--size-l);">
+          <h3>Still an article</h3>
+          <p>Same swap behavior, no custom element needed.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
