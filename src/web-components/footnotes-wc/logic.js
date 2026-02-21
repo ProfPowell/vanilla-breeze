@@ -30,7 +30,12 @@ class FootnotesWc extends HTMLElement {
 
     // Find all foot-note elements in the document before this element
     this.#collectRefs();
-    this.#render();
+
+    if (this.getAttribute('data-mode') === 'sidenotes') {
+      this.#renderSidenotes();
+    } else {
+      this.#render();
+    }
   }
 
   #collectRefs() {
@@ -84,6 +89,63 @@ class FootnotesWc extends HTMLElement {
     ref.innerHTML = '';
     ref.appendChild(contentSpan);
     ref.appendChild(link);
+  }
+
+  #renderSidenotes() {
+    if (this.#refs.length === 0) return;
+
+    const footnoteRefs = [];
+
+    this.#refs.forEach((ref, index) => {
+      const num = index + 1;
+      const refId = `fnref-${this.#instanceId}-${num}`;
+      const noteId = `fn-${this.#instanceId}-${num}`;
+
+      if (ref.getAttribute('data-side') === 'false') {
+        // Opt-out: enhance as standard footnote, collect for list
+        this.#enhanceRef(ref, num, refId, noteId);
+        footnoteRefs.push({ ref, num, refId, noteId });
+      } else {
+        // Sidenote: create margin aside at the reference point
+        this.#enhanceSidenoteRef(ref, num, refId, noteId);
+      }
+    });
+
+    if (footnoteRefs.length > 0) {
+      // Render collected footnote list for opt-out notes
+      const ol = document.createElement('ol');
+      for (const { ref, num, refId, noteId } of footnoteRefs) {
+        ol.appendChild(this.#createFootnoteItem(ref, num, refId, noteId));
+      }
+      this.appendChild(ol);
+    } else {
+      this.hidden = true;
+    }
+  }
+
+  #enhanceSidenoteRef(ref, num, refId, noteId) {
+    const content = ref.innerHTML;
+
+    ref.setAttribute('data-enhanced', '');
+    ref.setAttribute('data-side', '');
+    ref.id = refId;
+
+    // Superscript link
+    const link = document.createElement('a');
+    link.href = `#${noteId}`;
+    link.setAttribute('aria-describedby', noteId);
+    link.textContent = `[${num}]`;
+
+    // Sidenote aside
+    const aside = document.createElement('aside');
+    aside.className = 'sidenote';
+    aside.id = noteId;
+    aside.setAttribute('role', 'note');
+    aside.innerHTML = `<span class="sidenote-number">${num}.</span> ${content}`;
+
+    ref.innerHTML = '';
+    ref.appendChild(link);
+    ref.appendChild(aside);
   }
 
   #createFootnoteItem(ref, num, refId, noteId) {

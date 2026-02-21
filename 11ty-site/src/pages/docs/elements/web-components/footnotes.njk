@@ -81,6 +81,20 @@ footnotes-wc .fn-backref {
   text-decoration: none;
 }{% endset %}
 
+{% set sidenoteUsageCode %}<layout-text>
+  <p>
+    Gutenberg's printing press transformed European
+    society.<foot-note>Johannes Gutenberg developed movable type
+    around 1440 in Mainz, Germany.</foot-note> Before its
+    invention, books were copied by hand in monasteries.
+  </p>
+
+  <footnotes-wc data-mode="sidenotes"></footnotes-wc>
+</layout-text>{% endset %}
+
+{% set sidenoteOptOutCode %}<foot-note data-side="false">This note always goes to the
+footnote list, even in sidenote mode.</foot-note>{% endset %}
+
 {% set academicCode %}<p>Research shows significant improvements<foot-note>Smith et al.,
 "Progressive Enhancement Study," Journal of Web Development,
 2024.</foot-note> in user experience.</p>{% endset %}
@@ -292,6 +306,74 @@ class fields and top-level await.</foot-note> support.</p>{% endset %}
 
     <aside class="note">
       <strong>Note:</strong> Each <code>&lt;footnotes-wc&gt;</code> element only collects <code>&lt;foot-note&gt;</code> elements that appear before it in the document. This allows for multiple independent footnote sections.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Sidenote Mode</h2>
+    <p>Add <code>data-mode="sidenotes"</code> to <code>&lt;footnotes-wc&gt;</code> to place footnotes as margin annotations alongside the text instead of collecting them at the bottom. The authored markup is identical to regular footnotes.</p>
+
+    <browser-window
+      src="/docs/examples/demos/sidenote-auto.html"
+      url="https://vanilla-breeze.dev/footnotes/sidenotes"
+      title="Sidenote Mode"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Sidenote mode usage">{{ sidenoteUsageCode | escape }}</code-block>
+
+    <h3>Three-Layer Degradation</h3>
+    <ol>
+      <li><strong>No JS:</strong> <code>&lt;foot-note&gt;</code> content appears inline in parentheses — the standard progressive enhancement fallback.</li>
+      <li><strong>JS + narrow viewport:</strong> Falls back to numbered sidenotes that collapse to bordered blocks via CSS responsive rules.</li>
+      <li><strong>JS + wide viewport:</strong> Superscript numbered links at each reference point, with note content floated into the margin alongside the text.</li>
+    </ol>
+
+    <h3>Per-Note Opt-Out</h3>
+    <p>Individual footnotes can opt out of sidenote placement with <code>data-side="false"</code>. These notes are collected into the footnote list instead. Useful for longer notes that would overwhelm the margin.</p>
+
+    <code-block language="html" show-lines label="Opt out of sidenote placement">{{ sidenoteOptOutCode | escape }}</code-block>
+
+    <h3>Sidenote Mode Attributes</h3>
+
+    <h4>On <code>&lt;footnotes-wc&gt;</code></h4>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-mode</code></td>
+          <td><code>"sidenotes"</code></td>
+          <td>Enables sidenote mode — notes are placed as margin annotations instead of collected at the bottom.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>On <code>&lt;foot-note&gt;</code></h4>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-side</code></td>
+          <td><code>"false"</code></td>
+          <td>Opts this note out of sidenote placement. It will appear in the collected footnote list instead.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <aside class="note">
+      <strong>CSS-only sidenotes:</strong> For manual margin annotations without numbering or JavaScript, use <a href="/docs/elements/native/aside/"><code>&lt;aside class="sidenote"&gt;</code></a> directly in your markup.
     </aside>
   </section>
 
