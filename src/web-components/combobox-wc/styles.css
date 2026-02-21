@@ -39,8 +39,8 @@ combobox-wc:not(:defined) {
 }
 
 @scope (combobox-wc) {
-  /* Input */
-  input {
+  /* Input — single mode only */
+  :scope:not([data-multiple]) > input {
     inline-size: 100%;
   }
 
@@ -104,6 +104,88 @@ combobox-wc:not(:defined) {
 
     /* Hidden (filtered out) */
     &[hidden] {
+      display: none;
+    }
+  }
+}
+
+/* Multi-select mode */
+@scope (combobox-wc[data-multiple]) {
+  /* Input area — flex-wrap container styled like standard VB input */
+  .tags-input-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-2xs);
+    padding: var(--size-2xs) var(--size-xs);
+    min-block-size: var(--size-touch-min);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    background: var(--color-surface);
+    cursor: text;
+    transition: border-color var(--duration-fast);
+
+    &:focus-within {
+      border-color: var(--color-interactive);
+      box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+    }
+  }
+
+  /* Tag chip */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-3xs);
+    padding: var(--size-3xs) var(--size-xs);
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-pill, 999px);
+    font-size: var(--font-size-s);
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--color-text);
+
+    /* Remove button */
+    & button {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.1em;
+      block-size: 1.1em;
+      border-radius: 50%;
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      transition: color var(--duration-fast), background var(--duration-fast);
+
+      &:hover {
+        color: var(--color-error, oklch(55% 0.2 25));
+        background: oklch(from var(--color-error, oklch(55% 0.2 25)) l c h / 0.1);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-interactive);
+        outline-offset: 1px;
+      }
+    }
+  }
+
+  /* Input inside area */
+  input {
+    all: unset;
+    flex: 1;
+    min-inline-size: 6rem;
+    padding: var(--size-3xs) 0;
+    font: inherit;
+    color: var(--color-text);
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    &:disabled {
       display: none;
     }
   }

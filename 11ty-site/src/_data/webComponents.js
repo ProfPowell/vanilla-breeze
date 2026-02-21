@@ -1,7 +1,7 @@
 export default [
   { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/', desc: 'Collapsible content sections' },
   { name: 'carousel-wc', href: '/docs/elements/web-components/carousel/', desc: 'Scroll carousel with controls and autoplay' },
-  { name: 'combobox-wc', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with form association' },
+  { name: 'combobox-wc', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with single-select and multi-select tag modes' },
   { name: 'command-wc', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
   { name: 'comparison-wc', href: '/docs/elements/web-components/comparison/', desc: 'Before/after image comparison slider with drag handle and keyboard support' },
   { name: 'context-menu', href: '/docs/elements/web-components/context-menu/', desc: 'Right-click context menu with keyboard navigation' },
@@ -13,7 +13,6 @@ export default [
   { name: 'shortcuts-wc', href: '/docs/elements/web-components/shortcuts/', desc: 'Keyboard shortcuts help overlay' },
   { name: 'slide-accept-wc', href: '/docs/elements/web-components/slide-accept/', desc: 'Slide-to-confirm interaction with drag handle and spring-back' },
   { name: 'tabs-wc', href: '/docs/elements/web-components/tabs/', desc: 'Tabbed interface component' },
-  { name: 'tags-wc', href: '/docs/elements/web-components/tags/', desc: 'Multi-select tag input with dropdown filtering and form association' },
   { name: 'toast-wc', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
   { name: 'tooltip-wc', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   { name: 'footnotes-wc', href: '/docs/elements/web-components/footnotes/', desc: 'Inline footnotes with popup' },

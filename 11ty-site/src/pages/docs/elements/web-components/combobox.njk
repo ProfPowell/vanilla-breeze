@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "combobox-wc"
-description: "Autocomplete combobox with filtering, keyboard navigation, and native form association via ElementInternals."
+description: "Autocomplete combobox with filtering, keyboard navigation, and native form association. Supports single-select and multi-select tag modes."
 elementName: combobox-wc
 category: component
 currentPath: /docs/elements/web-components/combobox/
@@ -49,7 +49,38 @@ permalink: /docs/elements/web-components/combobox/
   ...
 </combobox-wc>{% endset %}
 
-{% set eventCode %}{% raw %}const combo = document.querySelector('combobox-wc');
+{% set multiCode %}<combobox-wc name="topics" data-multiple>
+  <input type="text" placeholder="Search topics...">
+  <ul>
+    <li data-value="js">JavaScript</li>
+    <li data-value="css">CSS</li>
+    <li data-value="html">HTML</li>
+  </ul>
+</combobox-wc>{% endset %}
+
+{% set multiFormCode %}{% raw %}<form id="my-form">
+  <combobox-wc name="skills" data-multiple data-required data-max="5" data-allow-custom>
+    <input type="text" placeholder="Add skills...">
+    <ul>
+      <li data-value="design">Design</li>
+      <li data-value="frontend">Frontend</li>
+      <li data-value="backend">Backend</li>
+    </ul>
+  </combobox-wc>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  document.getElementById('my-form')
+    .addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      // Multiple values under same name
+      console.log('skills:', data.getAll('skills'));
+    });
+</script>{% endraw %}{% endset %}
+
+{% set eventCodeSingle %}{% raw %}const combo = document.querySelector('combobox-wc');
 
 combo.addEventListener('combobox-change', (e) => {
   console.log('Selected:', e.detail.value, e.detail.label);
@@ -63,7 +94,14 @@ combo.addEventListener('combobox-close', () => {
   console.log('Listbox closed');
 });{% endraw %}{% endset %}
 
-{% set apiCode %}const el = document.querySelector('combobox-wc');
+{% set eventCodeMulti %}{% raw %}const combo = document.querySelector('combobox-wc[data-multiple]');
+
+combo.addEventListener('combobox-change', (e) => {
+  console.log('Values:', e.detail.values);
+  console.log('Labels:', e.detail.labels);
+});{% endraw %}{% endset %}
+
+{% set apiCodeSingle %}const el = document.querySelector('combobox-wc');
 
 // Read current value and label
 console.log(el.value);   // "us"
@@ -74,6 +112,12 @@ el.value = 'gb';
 
 // Clear selection
 el.value = '';{% endset %}
+
+{% set apiCodeMulti %}const el = document.querySelector('combobox-wc[data-multiple]');
+
+// Read current values and labels
+console.log(el.values);  // ["js", "css"]
+console.log(el.labels);  // ["JavaScript", "CSS"]{% endset %}
 
 {% set fallbackCode %}{% raw %}/* Without JS: plain text input + visible list */
 combobox-wc:not(:defined) {
@@ -103,11 +147,24 @@ combobox-wc li[data-active] {
 combobox-wc li[aria-selected="true"] {
   font-weight: 500;
   color: var(--color-interactive);
+}
+
+/* Multi-select tag chip styling */
+combobox-wc[data-multiple] .tag {
+  background: var(--color-surface-raised);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+/* Remove button hover */
+combobox-wc[data-multiple] .tag button:hover {
+  color: var(--color-error);
 }{% endraw %}{% endset %}
 
 <section>
     <h2>Overview</h2>
     <p>An autocomplete combobox following the W3C ARIA combobox pattern. Users type to filter a list of options, navigate with arrow keys, and select with Enter or click. The selected value participates in native form submission via <code>ElementInternals</code>.</p>
+    <p>Add <code>data-multiple</code> to enable multi-select tag mode, where users can select multiple items as tag chips.</p>
 
     <browser-window
       src="/docs/examples/demos/combobox-basic.html"
@@ -133,6 +190,17 @@ combobox-wc li[aria-selected="true"] {
   </section>
 
   <section>
+    <h2>Multi-Select Mode</h2>
+    <p>Add <code>data-multiple</code> to switch to multi-select tag mode. Users select multiple items which appear as removable tag chips. Selected options are hidden from the dropdown to prevent duplicates.</p>
+
+    <code-block language="html" show-lines label="Multi-select tags">{{ multiCode | escape }}</code-block>
+
+    <h3>Multi-Select Options</h3>
+    <p>In multi mode, use <code>data-max</code> to limit the number of selections and <code>data-allow-custom</code> to let users type custom entries (press Enter or comma to add). Each selected tag is submitted as a separate <code>FormData</code> entry (like multiple checkboxes with the same name).</p>
+    <code-block language="html" show-lines label="Multi-select with options">{{ multiFormCode | escape }}</code-block>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -142,9 +210,12 @@ combobox-wc li[aria-selected="true"] {
         <tr><td><code>name</code></td><td>string</td><td>&mdash;</td><td>Form field name (standard HTML attribute)</td></tr>
         <tr><td><code>data-required</code></td><td>boolean</td><td>&mdash;</td><td>Require a selection for form validation</td></tr>
         <tr><td><code>data-filter</code></td><td><code>"contains"</code>, <code>"startsWith"</code></td><td><code>"contains"</code></td><td>How typing filters the options</td></tr>
-        <tr><td><code>data-value</code></td><td>string</td><td>&mdash;</td><td>Get/set selected value (reflected)</td></tr>
+        <tr><td><code>data-value</code></td><td>string</td><td>&mdash;</td><td>Get/set selected value (reflected, single mode)</td></tr>
         <tr><td><code>data-placeholder</code></td><td>string</td><td>&mdash;</td><td>Input placeholder text</td></tr>
         <tr><td><code>data-open</code></td><td>boolean</td><td>&mdash;</td><td>Reflected when the listbox is open</td></tr>
+        <tr><td><code>data-multiple</code></td><td>boolean</td><td>&mdash;</td><td>Enable multi-select tag mode</td></tr>
+        <tr><td><code>data-max</code></td><td>number</td><td>&mdash;</td><td>Maximum number of tags (multi mode)</td></tr>
+        <tr><td><code>data-allow-custom</code></td><td>boolean</td><td>&mdash;</td><td>Allow typed entries via Enter/comma (multi mode)</td></tr>
       </tbody>
     </table>
   </section>
@@ -156,28 +227,39 @@ combobox-wc li[aria-selected="true"] {
         <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>combobox-change</code></td><td><code>{ value, label }</code></td><td>Fired when a new option is selected.</td></tr>
+        <tr><td><code>combobox-change</code></td><td><code>{ value, label }</code></td><td>Fired when an option is selected (single mode).</td></tr>
+        <tr><td><code>combobox-change</code></td><td><code>{ values: string[], labels: string[] }</code></td><td>Fired when tags are added or removed (multi mode).</td></tr>
         <tr><td><code>combobox-open</code></td><td>&mdash;</td><td>Fired when the listbox opens.</td></tr>
         <tr><td><code>combobox-close</code></td><td>&mdash;</td><td>Fired when the listbox closes.</td></tr>
       </tbody>
     </table>
 
-    <code-block language="javascript" show-lines label="Event listeners">{{ eventCode | escape }}</code-block>
+    <h3>Single Mode</h3>
+    <code-block language="javascript" show-lines label="Single mode events">{{ eventCodeSingle | escape }}</code-block>
+
+    <h3>Multi Mode</h3>
+    <code-block language="javascript" show-lines label="Multi mode events">{{ eventCodeMulti | escape }}</code-block>
   </section>
 
   <section>
     <h2>JavaScript API</h2>
     <table class="props-table">
       <thead>
-        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+        <tr><th>Property</th><th>Type</th><th>Mode</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>element.value</code></td><td>string</td><td>Current selected value (read/write)</td></tr>
-        <tr><td><code>element.label</code></td><td>string</td><td>Current selected label (read-only)</td></tr>
+        <tr><td><code>element.value</code></td><td>string</td><td>Single</td><td>Current selected value (read/write)</td></tr>
+        <tr><td><code>element.label</code></td><td>string</td><td>Single</td><td>Current selected label (read-only)</td></tr>
+        <tr><td><code>element.values</code></td><td>string[]</td><td>Multi</td><td>Array of selected tag values (read-only)</td></tr>
+        <tr><td><code>element.labels</code></td><td>string[]</td><td>Multi</td><td>Array of selected tag labels (read-only)</td></tr>
       </tbody>
     </table>
 
-    <code-block language="javascript" show-lines label="JS API">{{ apiCode | escape }}</code-block>
+    <h3>Single Mode</h3>
+    <code-block language="javascript" show-lines label="Single mode API">{{ apiCodeSingle | escape }}</code-block>
+
+    <h3>Multi Mode</h3>
+    <code-block language="javascript" show-lines label="Multi mode API">{{ apiCodeMulti | escape }}</code-block>
   </section>
 
   <section>
@@ -191,9 +273,11 @@ combobox-wc li[aria-selected="true"] {
         <tr><td><kbd>ArrowUp</kbd></td><td>Open listbox / move to previous option</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Jump to first option</td></tr>
         <tr><td><kbd>End</kbd></td><td>Jump to last option</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>Select the active option</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Select option (single) or add tag (multi). With <code>data-allow-custom</code>: add typed text.</td></tr>
         <tr><td><kbd>Escape</kbd></td><td>Close listbox</td></tr>
         <tr><td><kbd>Tab</kbd></td><td>Close listbox and move focus</td></tr>
+        <tr><td><kbd>Backspace</kbd></td><td>Remove last tag when input is empty (multi mode)</td></tr>
+        <tr><td><kbd>,</kbd> (comma)</td><td>Add custom tag (multi mode with <code>data-allow-custom</code>)</td></tr>
       </tbody>
     </table>
   </section>
@@ -208,6 +292,7 @@ combobox-wc li[aria-selected="true"] {
       <li>List has <code>role="listbox"</code> with an auto-generated ID</li>
       <li>Options have <code>role="option"</code> and <code>aria-selected</code></li>
       <li>Active option announced via <code>aria-activedescendant</code></li>
+      <li>Multi mode adds <code>aria-multiselectable="true"</code> and an <code>aria-live</code> region for tag add/remove announcements</li>
     </ul>
 
     <h3>Form Validation</h3>
@@ -218,17 +303,17 @@ combobox-wc li[aria-selected="true"] {
     <h2>Form Association</h2>
     <p>This component is a <a href="/docs/elements/web-components/form-association/">Form-Associated Custom Element</a>. It uses <code>ElementInternals</code> to:</p>
     <ul>
-      <li>Submit the selected <code>data-value</code> via <code>FormData</code></li>
+      <li>Submit the selected <code>data-value</code> via <code>FormData</code> (single mode: one value; multi mode: one entry per tag)</li>
       <li>Validate with <code>setValidity()</code> for required fields</li>
       <li>Reset on form reset via <code>formResetCallback()</code></li>
-      <li>Restore state from browser history via <code>formStateRestoreCallback()</code></li>
+      <li>Restore state from browser history via <code>formStateRestoreCallback()</code> (single mode)</li>
     </ul>
     <p>No hidden inputs needed. The component name is set via the standard <code>name</code> attribute.</p>
   </section>
 
   <section>
     <h2>Styling</h2>
-    <p>The component uses <code>@scope (combobox-wc)</code> for CSS encapsulation with VB design tokens. Override option states using the standard selectors:</p>
+    <p>The component uses <code>@scope (combobox-wc)</code> for shared CSS encapsulation and <code>@scope (combobox-wc[data-multiple])</code> for tag-specific styles. Override option states and tag chip appearance using standard selectors:</p>
     <code-block language="css" show-lines label="Custom styling">{{ stylingCode | escape }}</code-block>
   </section>
 

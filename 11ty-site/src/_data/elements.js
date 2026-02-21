@@ -144,7 +144,7 @@ const elementsByLetter = {
   ],
   Q: [
     { name: 'q', type: 'native', href: '/docs/elements/native/q/' },
-    { name: 'qr-code-wc', type: 'component', href: '/docs/elements/web-components/qr-code/' },
+    { name: 'qr-code', type: 'component', href: '/docs/elements/web-components/qr-code/' },
   ],
   R: [
     { name: 'rating-wc', type: 'component', href: '/docs/elements/web-components/rating/' },
@@ -180,7 +180,6 @@ const elementsByLetter = {
     { name: 'table', type: 'native', href: '/docs/elements/native/table/' },
     { name: 'table-wc', type: 'component', href: '/docs/elements/web-components/table-wc/' },
     { name: 'tabs-wc', type: 'component', href: '/docs/elements/web-components/tabs/' },
-    { name: 'tags-wc', type: 'component', href: '/docs/elements/web-components/tags/' },
     { name: 'tbody', type: 'native', href: '/docs/elements/native/tbody/' },
     { name: 'td', type: 'native', href: '/docs/elements/native/td/' },
     { name: 'template', type: 'native', href: '/docs/elements/native/template/' },

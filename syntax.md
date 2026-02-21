@@ -1062,34 +1062,22 @@ Interactive star rating (form-associated).
 | `data-size` | `sm`, `lg` | Size |
 
 ### `<combobox-wc>`
-Form-associated combobox/autocomplete (single-select).
+Form-associated combobox/autocomplete. Single-select by default; add `data-multiple` for multi-select tag mode.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-value` | string | Selected value |
+| `data-value` | string | Selected value (single mode) |
 | `data-filter` | `startsWith`, `contains` | Filter mode |
 | `data-required` | (boolean) | Required validation |
-
-| Events |
-|--------|
-| `combobox-change`, `combobox-open`, `combobox-close` |
-
-Children: `<input>` + `<ul>` with `<li data-value="...">` options.
-
-### `<tags-wc>`
-Form-associated multi-select tag input.
-
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `name` | string | Form field name |
-| `data-required` | (boolean) | Require at least one |
-| `data-max` | number | Maximum tags |
-| `data-allow-custom` | (boolean) | Allow custom entries |
-| `data-filter` | `startsWith`, `contains` | Filter mode |
+| `data-multiple` | (boolean) | Multi-select tag mode |
+| `data-max` | number | Maximum tags (multi mode) |
+| `data-allow-custom` | (boolean) | Allow custom entries (multi mode) |
 
 | Events | Detail |
 |--------|--------|
-| `tags-change` | `{ values, labels }` |
+| `combobox-change` | `{ value, label }` (single) or `{ values, labels }` (multi) |
+| `combobox-open` | — |
+| `combobox-close` | — |
 
 Children: `<input>` + `<ul>` with `<li data-value="...">` options.
 
@@ -1523,7 +1511,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 |-----------|------------|
 | `data-a11y-theme` | `<html>` — accessibility theme |
 | `data-align` | Table cells — text alignment |
-| `data-allow-custom` | `<tags-wc>` — allow typed entries |
+| `data-allow-custom` | `<combobox-wc>` — allow typed entries (multi mode) |
 | `data-anchor` | Tooltip — CSS anchor positioning |
 | `data-animate-image` | `<img>` — play/pause control |
 | `data-attention` | UI elements — attention indicator |
@@ -1570,7 +1558,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
 | `data-feedback` | State container — presentation mode |
 | `data-filled` | `<status-message>` — solid fill |
-| `data-filter` | `<combobox-wc>`, `<tags-wc>` — filter mode |
+| `data-filter` | `<combobox-wc>` — filter mode |
 | `data-fit` | `[data-media]` — object-fit |
 | `data-flip` | `<flip-card-wc>` — trigger mode |
 | `data-flush` | Accordion — no borders |
@@ -1608,7 +1596,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-loading` | Any — loading state |
 | `data-loop` | `<carousel-wc>` — loop slides |
 | `data-mask` | `<input>` — input masking |
-| `data-max` | `<toast-wc>`, `<tags-wc>` — maximum count |
+| `data-max` | `<toast-wc>`, `<combobox-wc>` — maximum count |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |
@@ -1635,7 +1623,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating-readonly` | Rating — read-only |
 | `data-ratio` | `[data-media]` — aspect ratio |
 | `data-readonly` | `<rating-wc>` — read-only |
-| `data-required` | `<combobox-wc>`, `<tags-wc>` — validation |
+| `data-required` | `<combobox-wc>` — validation |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
 | `data-ring` | `<user-avatar>` — border ring |

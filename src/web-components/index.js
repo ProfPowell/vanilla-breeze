@@ -17,7 +17,6 @@ import './splitter-wc/logic.js';
 import './carousel-wc/logic.js';
 import './rating-wc/logic.js';
 import './combobox-wc/logic.js';
-import './tags-wc/logic.js';
 import './context-menu/logic.js';
 import './command-wc/logic.js';
 import './shortcuts-wc/logic.js';

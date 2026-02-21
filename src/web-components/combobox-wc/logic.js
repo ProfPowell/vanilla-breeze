@@ -3,19 +3,32 @@
  *
  * Light DOM combobox following the W3C ARIA combobox pattern.
  * Participates in native form submission via ElementInternals.
+ * Supports single-select (default) and multi-select (data-multiple) modes.
  *
  * @attr {string} name - Form field name
  * @attr {boolean} data-required - Makes selection required
  * @attr {string} data-filter - Filter mode: "startsWith" | "contains" (default: "contains")
- * @attr {string} data-value - Get/set selected value programmatically
+ * @attr {string} data-value - Get/set selected value programmatically (single mode)
  * @attr {string} data-placeholder - Input placeholder text
+ * @attr {boolean} data-multiple - Enable multi-select tag mode
+ * @attr {number} data-max - Maximum number of tags (multi mode)
+ * @attr {boolean} data-allow-custom - Allow typed entries (multi mode)
  *
- * @example
+ * @example Single select
  * <combobox-wc name="country" data-required>
  *   <input type="text" placeholder="Search countries...">
  *   <ul>
  *     <li data-value="us">United States</li>
  *     <li data-value="gb">United Kingdom</li>
+ *   </ul>
+ * </combobox-wc>
+ *
+ * @example Multi select
+ * <combobox-wc name="topics" data-multiple data-max="5">
+ *   <input type="text" placeholder="Search topics...">
+ *   <ul>
+ *     <li data-value="js">JavaScript</li>
+ *     <li data-value="css">CSS</li>
  *   </ul>
  * </combobox-wc>
  */
@@ -32,13 +45,24 @@ class ComboboxWc extends HTMLElement {
   #filteredOptions = [];
   #activeIndex = -1;
   #isOpen = false;
+
+  // Single mode state
   #selectedValue = '';
   #selectedLabel = '';
   #initialValue = '';
 
+  // Multi mode state
+  #inputArea;
+  #liveRegion;
+  #selectedTags = []; // { value, label }
+
   constructor() {
     super();
     this.#internals = this.attachInternals();
+  }
+
+  get #isMultiple() {
+    return this.hasAttribute('data-multiple');
   }
 
   connectedCallback() {
@@ -57,6 +81,21 @@ class ComboboxWc extends HTMLElement {
     // Find listbox
     this.#listbox = this.querySelector(':scope > ul, :scope > ol');
     if (!this.#listbox) return;
+
+    // Multi mode: wrap input in tags-input-area
+    if (this.#isMultiple) {
+      this.#inputArea = document.createElement('div');
+      this.#inputArea.className = 'tags-input-area';
+      this.insertBefore(this.#inputArea, this.#listbox);
+      this.#inputArea.appendChild(this.#input);
+
+      // Live region for announcements
+      this.#liveRegion = document.createElement('div');
+      this.#liveRegion.setAttribute('aria-live', 'polite');
+      this.#liveRegion.setAttribute('aria-atomic', 'true');
+      this.#liveRegion.className = 'sr-only';
+      this.appendChild(this.#liveRegion);
+    }
 
     // Apply placeholder from attribute
     const placeholder = this.getAttribute('data-placeholder');
@@ -79,16 +118,21 @@ class ComboboxWc extends HTMLElement {
 
     // Set up listbox
     this.#listbox.setAttribute('role', 'listbox');
+    if (this.#isMultiple) {
+      this.#listbox.setAttribute('aria-multiselectable', 'true');
+    }
 
     // Collect and set up options
     this.#collectOptions();
 
-    // Read initial value
-    const initialDataValue = this.getAttribute('data-value');
-    if (initialDataValue) {
-      this.#selectByValue(initialDataValue, false);
+    // Read initial value (single mode only)
+    if (!this.#isMultiple) {
+      const initialDataValue = this.getAttribute('data-value');
+      if (initialDataValue) {
+        this.#selectByValue(initialDataValue, false);
+      }
+      this.#initialValue = this.#selectedValue;
     }
-    this.#initialValue = this.#selectedValue;
 
     // Bind events
     this.#input.addEventListener('input', this.#handleInput);
@@ -133,13 +177,109 @@ class ComboboxWc extends HTMLElement {
     this.#filteredOptions = [...this.#options];
   }
 
+  // --- Multi mode: Tag management ---
+
+  #addTag(value, label) {
+    if (this.#selectedTags.some(t => t.value === value)) return;
+
+    const max = this.#getMax();
+    if (max && this.#selectedTags.length >= max) return;
+
+    this.#selectedTags.push({ value, label });
+
+    // Create tag element
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.dataset.value = value;
+    tag.textContent = label + ' ';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.setAttribute('aria-label', `Remove ${label}`);
+    removeBtn.innerHTML = '&times;';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.#removeTag(value);
+    });
+    tag.appendChild(removeBtn);
+
+    this.#inputArea.insertBefore(tag, this.#input);
+
+    // Mark option as selected
+    const option = this.#options.find(o => o.getAttribute('data-value') === value);
+    if (option) {
+      option.setAttribute('aria-selected', 'true');
+    }
+
+    // Announce
+    this.#announce(`${label} added`);
+
+    // Clear input and update
+    this.#input.value = '';
+    this.#filterOptions('');
+    this.#syncFormValue();
+    this.#validate();
+    this.#fireChange();
+
+    // Disable input if max reached
+    if (max && this.#selectedTags.length >= max) {
+      this.#input.disabled = true;
+      this.#close();
+    }
+  }
+
+  #removeTag(value) {
+    const index = this.#selectedTags.findIndex(t => t.value === value);
+    if (index === -1) return;
+
+    const removed = this.#selectedTags.splice(index, 1)[0];
+
+    // Remove tag element
+    const tagEl = this.#inputArea.querySelector(`.tag[data-value="${CSS.escape(value)}"]`);
+    if (tagEl) tagEl.remove();
+
+    // Unmark option
+    const option = this.#options.find(o => o.getAttribute('data-value') === value);
+    if (option) {
+      option.setAttribute('aria-selected', 'false');
+    }
+
+    // Announce
+    this.#announce(`${removed.label} removed`);
+
+    // Re-enable input if was at max
+    const max = this.#getMax();
+    if (max && this.#input.disabled) {
+      this.#input.disabled = false;
+    }
+
+    this.#filterOptions(this.#input.value.trim());
+    this.#syncFormValue();
+    this.#validate();
+    this.#fireChange();
+    this.#input.focus();
+  }
+
+  #getMax() {
+    const val = this.getAttribute('data-max');
+    return val ? parseInt(val, 10) : 0;
+  }
+
+  #announce(message) {
+    if (!this.#liveRegion) return;
+    this.#liveRegion.textContent = '';
+    requestAnimationFrame(() => {
+      this.#liveRegion.textContent = message;
+    });
+  }
+
   // --- Event handlers ---
 
   #handleInput = () => {
     const query = this.#input.value.trim();
 
-    // Clear selection when user types
-    if (this.#selectedValue) {
+    // Single mode: clear selection when user types
+    if (!this.#isMultiple && this.#selectedValue) {
       this.#selectedValue = '';
       this.#selectedLabel = '';
       this.#syncFormValue();
@@ -185,7 +325,30 @@ class ComboboxWc extends HTMLElement {
       case 'Enter':
         e.preventDefault();
         if (this.#isOpen && this.#activeIndex >= 0 && this.#filteredOptions[this.#activeIndex]) {
-          this.#selectOption(this.#filteredOptions[this.#activeIndex]);
+          const option = this.#filteredOptions[this.#activeIndex];
+          if (this.#isMultiple) {
+            this.#addTag(option.getAttribute('data-value'), option.textContent.trim());
+          } else {
+            this.#selectOption(option);
+          }
+        } else if (this.#isMultiple && this.hasAttribute('data-allow-custom') && this.#input.value.trim()) {
+          const text = this.#input.value.trim();
+          this.#addTag(text, text);
+        }
+        break;
+
+      case 'Backspace':
+        if (this.#isMultiple && !this.#input.value && this.#selectedTags.length > 0) {
+          const lastTag = this.#selectedTags[this.#selectedTags.length - 1];
+          this.#removeTag(lastTag.value);
+        }
+        break;
+
+      case ',':
+        if (this.#isMultiple && this.hasAttribute('data-allow-custom') && this.#input.value.trim()) {
+          e.preventDefault();
+          const text = this.#input.value.trim();
+          this.#addTag(text, text);
         }
         break;
 
@@ -207,9 +370,16 @@ class ComboboxWc extends HTMLElement {
   };
 
   #handleFocus = () => {
-    if (this.#input.value || !this.#selectedValue) {
+    if (this.#isMultiple) {
+      // Multi mode: always open on focus
       this.#filterOptions(this.#input.value.trim());
       this.#open();
+    } else {
+      // Single mode: open unless value already selected and input empty
+      if (this.#input.value || !this.#selectedValue) {
+        this.#filterOptions(this.#input.value.trim());
+        this.#open();
+      }
     }
   };
 
@@ -223,7 +393,11 @@ class ComboboxWc extends HTMLElement {
   #handleOptionClick = (e) => {
     const option = e.target.closest('li[data-value]');
     if (option && this.#filteredOptions.includes(option)) {
-      this.#selectOption(option);
+      if (this.#isMultiple) {
+        this.#addTag(option.getAttribute('data-value'), option.textContent.trim());
+      } else {
+        this.#selectOption(option);
+      }
     }
   };
 
@@ -243,13 +417,23 @@ class ComboboxWc extends HTMLElement {
   #filterOptions(query) {
     const mode = this.getAttribute('data-filter') || 'contains';
     const lowerQuery = query.toLowerCase();
+    const selectedValues = this.#isMultiple
+      ? new Set(this.#selectedTags.map(t => t.value))
+      : null;
 
     this.#filteredOptions = [];
 
     this.#options.forEach(option => {
+      const value = option.getAttribute('data-value');
       const text = option.textContent.trim().toLowerCase();
-      let matches;
 
+      // Multi mode: hide already-selected options
+      if (selectedValues && selectedValues.has(value)) {
+        option.hidden = true;
+        return;
+      }
+
+      let matches;
       if (!query) {
         matches = true;
       } else if (mode === 'startsWith') {
@@ -296,7 +480,7 @@ class ComboboxWc extends HTMLElement {
     this.#input.removeAttribute('aria-activedescendant');
   }
 
-  // --- Selection ---
+  // --- Selection (single mode) ---
 
   #selectOption(option) {
     const value = option.getAttribute('data-value');
@@ -367,57 +551,101 @@ class ComboboxWc extends HTMLElement {
   // --- Form integration ---
 
   #syncFormValue() {
-    if (this.#selectedValue) {
-      this.#internals.setFormValue(this.#selectedValue, this.#selectedLabel);
+    if (this.#isMultiple) {
+      if (this.#selectedTags.length > 0) {
+        const formData = new FormData();
+        const name = this.getAttribute('name') || '';
+        for (const tag of this.#selectedTags) {
+          formData.append(name, tag.value);
+        }
+        this.#internals.setFormValue(formData);
+      } else {
+        this.#internals.setFormValue(null);
+      }
     } else {
-      this.#internals.setFormValue(null);
+      if (this.#selectedValue) {
+        this.#internals.setFormValue(this.#selectedValue, this.#selectedLabel);
+      } else {
+        this.#internals.setFormValue(null);
+      }
     }
   }
 
   #validate() {
     if (this.hasAttribute('data-required')) {
-      if (!this.#selectedValue) {
-        this.#internals.setValidity(
-          { valueMissing: true },
-          'Please select an option',
-          this.#input
-        );
+      if (this.#isMultiple) {
+        if (this.#selectedTags.length === 0) {
+          this.#internals.setValidity(
+            { valueMissing: true },
+            'Please select at least one option',
+            this.#input
+          );
+        } else {
+          this.#internals.setValidity({});
+        }
       } else {
-        this.#internals.setValidity({});
+        if (!this.#selectedValue) {
+          this.#internals.setValidity(
+            { valueMissing: true },
+            'Please select an option',
+            this.#input
+          );
+        } else {
+          this.#internals.setValidity({});
+        }
       }
     } else {
       this.#internals.setValidity({});
     }
   }
 
+  #fireChange() {
+    this.dispatchEvent(new CustomEvent('combobox-change', {
+      bubbles: true,
+      detail: {
+        values: this.#selectedTags.map(t => t.value),
+        labels: this.#selectedTags.map(t => t.label),
+      }
+    }));
+  }
+
   formResetCallback() {
-    // Clear selection
+    if (this.#isMultiple) {
+      // Remove all tag elements
+      this.#inputArea.querySelectorAll('.tag').forEach(t => t.remove());
+      this.#selectedTags = [];
+      this.#input.value = '';
+      this.#input.disabled = false;
+    } else {
+      this.#selectedValue = '';
+      this.#selectedLabel = '';
+      this.#input.value = '';
+      this.removeAttribute('data-value');
+    }
+
+    // Reset options
     this.#options.forEach(opt => {
       opt.setAttribute('aria-selected', 'false');
       opt.hidden = false;
     });
     this.#filteredOptions = [...this.#options];
-
-    this.#selectedValue = '';
-    this.#selectedLabel = '';
-    this.#input.value = '';
-    this.removeAttribute('data-value');
     this.#activeIndex = -1;
     this.#clearActiveDescendant();
     this.#close();
 
-    // Restore initial value if set
-    if (this.#initialValue) {
+    // Restore initial value if set (single mode)
+    if (!this.#isMultiple && this.#initialValue) {
       this.#selectByValue(this.#initialValue, false);
-      this.#syncFormValue();
-    } else {
-      this.#syncFormValue();
     }
+
+    this.#syncFormValue();
     this.#validate();
   }
 
   formStateRestoreCallback(state) {
     if (!state) return;
+    // FormData restore not supported for multi mode
+    if (this.#isMultiple) return;
     this.#selectByValue(state, false);
     this.#syncFormValue();
     this.#validate();
@@ -445,6 +673,14 @@ class ComboboxWc extends HTMLElement {
 
   get label() {
     return this.#selectedLabel;
+  }
+
+  get values() {
+    return this.#selectedTags.map(t => t.value);
+  }
+
+  get labels() {
+    return this.#selectedTags.map(t => t.label);
   }
 
   static get observedAttributes() {

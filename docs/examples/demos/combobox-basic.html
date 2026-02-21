@@ -148,11 +148,60 @@
         </ul>
       </combobox-wc>
     </section>
+
+    <!-- Multi-Select Tags -->
+    <section>
+      <h2>Multi-Select Mode</h2>
+      <h3>data-multiple — select multiple items as tags</h3>
+      <form id="multi-form">
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="topics-input">Topics</label>
+            <combobox-wc name="topics" data-multiple>
+              <input type="text" id="topics-input" placeholder="Search topics...">
+              <ul>
+                <li data-value="js">JavaScript</li>
+                <li data-value="ts">TypeScript</li>
+                <li data-value="css">CSS</li>
+                <li data-value="html">HTML</li>
+                <li data-value="react">React</li>
+                <li data-value="vue">Vue</li>
+                <li data-value="svelte">Svelte</li>
+                <li data-value="node">Node.js</li>
+                <li data-value="python">Python</li>
+                <li data-value="rust">Rust</li>
+              </ul>
+            </combobox-wc>
+          </form-field>
+
+          <form-field>
+            <label for="skills-input">Skills (max 3, custom allowed)</label>
+            <combobox-wc name="skills" data-multiple data-required data-max="3" data-allow-custom>
+              <input type="text" id="skills-input" placeholder="Add skills...">
+              <ul>
+                <li data-value="design">Design</li>
+                <li data-value="frontend">Frontend</li>
+                <li data-value="backend">Backend</li>
+                <li data-value="devops">DevOps</li>
+                <li data-value="testing">Testing</li>
+              </ul>
+            </combobox-wc>
+            <span class="help">Select up to 3 skills. Type and press Enter to add custom skills.</span>
+          </form-field>
+
+          <layout-cluster data-layout-gap="s">
+            <button type="submit">Submit</button>
+            <button type="reset" data-variant="outline">Reset</button>
+          </layout-cluster>
+        </layout-stack>
+      </form>
+      <div class="form-output" id="multi-output">Submit the form to see data here</div>
+    </section>
   </div>
 
   <script type="module" src="/src/main.js"></script>
   <script type="module">
-    // Form submission demo
+    // Form submission demos
     document.getElementById('demo-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(e.target);
@@ -165,6 +214,13 @@
       const data = new FormData(e.target);
       const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
       document.getElementById('required-output').textContent = entries || '(no data)';
+    });
+
+    document.getElementById('multi-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      document.getElementById('multi-output').textContent = entries || '(no data)';
     });
   </script>
 </body>
