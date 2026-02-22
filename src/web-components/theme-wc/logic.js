@@ -77,7 +77,8 @@ class ThemePicker extends HTMLElement {
     { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
     { id: '8bit', name: '8-Bit', icon: 'gamepad-2', character: 'Retro pixel art', swatchBg: '#000080', swatchFg: '#ffff00' },
     { id: 'nes', name: 'NES', icon: 'joystick', character: 'Console pixels', swatchBg: '#bcbcbc', swatchFg: '#e40521' },
-    { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0' }
+    { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0' },
+    { id: 'rough', name: 'Rough', icon: 'pencil', character: 'Hand-drawn sketch', swatchBg: '#f5f0e8', swatchFg: '#3a3a3a' }
   ];
 
   // Fluid scaling presets

@@ -178,7 +178,7 @@ export default [
     colors: {},
     swatchBg: '#1a1a1a',
     swatchFg: '#f5f5f5',
-    hints: { borderStyle: 'rough', iconSet: 'bold' },
+    hints: { borderStyle: 'sharp', iconSet: 'bold' },
     typography: { fontSans: "'Courier New', Courier, monospace" },
     shape: { radiusPreset: 'none' },
     shadows: { preset: 'hard' },
@@ -294,6 +294,21 @@ export default [
     shape: { radiusPreset: 'none' },
     shadows: { preset: 'default' },
     motion: { durationScale: 0, easingPreset: 'linear' },
+  },
+
+  {
+    id: 'rough',
+    name: 'Rough',
+    category: 'extreme',
+    character: 'Hand-drawn sketchbook — pencil lines on warm paper',
+    colors: {},
+    swatchBg: '#f5f0e8',
+    swatchFg: '#3a3a3a',
+    hints: { borderStyle: 'sketch', iconSet: 'lucide' },
+    typography: { fontSans: "'Caveat', 'Segoe Print', cursive" },
+    shape: { radiusPreset: 'subtle' },
+    shadows: { preset: 'subtle' },
+    motion: { durationScale: 1, easingPreset: 'default' },
   },
 
   // ─── Accessibility Themes ─────────────────────────────────

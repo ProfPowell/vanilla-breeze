@@ -1,0 +1,482 @@
+/**
+ * Extreme Theme: Rough
+ * Hand-drawn sketchbook — pencil lines on warm paper
+ *
+ * Character: Sketchy, imperfect, warm, playful
+ * - Handwriting font (Caveat with system fallbacks)
+ * - Wavy sketch borders via border-styles.css
+ * - Slight rotation on cards/buttons for hand-placed feel
+ * - Paper texture overlay (SVG feTurbulence)
+ *
+ * Light: Cream paper, pencil-gray text, ink-blue primary, red-pen accent
+ * Dark: Chalkboard — dark green-gray, chalk-white text, blue/yellow chalk
+ */
+
+:root[data-theme~="rough"],
+[data-theme~="rough"] {
+  color-scheme: light;
+
+  /* Theme hints for ThemeManager */
+  --theme-border-style: sketch;
+  --theme-icon-set: lucide;
+
+  /* ===== COLORS ===== */
+  --color-surface: oklch(96% 0.015 80);        /* Warm cream paper */
+  --color-surface-alt: oklch(93% 0.02 75);     /* Slightly darker cream */
+  --color-surface-raised: oklch(98% 0.01 80);  /* Near-white paper */
+  --color-surface-sunken: oklch(90% 0.025 70); /* Aged paper */
+  --color-background: oklch(96% 0.015 80);
+
+  --color-text: oklch(25% 0.01 60);            /* Pencil gray */
+  --color-text-muted: oklch(40% 0.01 60);
+  --color-text-subtle: oklch(55% 0.01 60);
+
+  --color-primary: oklch(45% 0.15 250);        /* Ink blue */
+  --color-primary-hover: oklch(40% 0.18 250);
+  --color-primary-subtle: oklch(92% 0.04 250);
+
+  --color-accent: oklch(55% 0.2 25);           /* Red pen */
+  --color-accent-hover: oklch(48% 0.22 25);
+  --color-accent-subtle: oklch(93% 0.04 25);
+
+  --color-border: oklch(70% 0.01 60);          /* Pencil line */
+  --color-border-muted: oklch(82% 0.01 60);
+  --color-border-strong: oklch(45% 0.01 60);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --font-mono: "Courier New", Courier, monospace;
+
+  --text-heading-1: 3rem;
+  --text-heading-2: 2.25rem;
+  --text-heading-3: 1.75rem;
+  --text-heading-4: 1.375rem;
+  --text-body: 1.125rem;
+
+  --weight-normal: 400;
+  --weight-bold: 700;
+  --line-height-normal: 1.6;
+  --line-height-tight: 1.2;
+
+  /* ===== SHAPE ===== */
+  /* Slightly imperfect, not perfectly round */
+  --radius-xs: 2px;
+  --radius-s: 3px;
+  --radius-m: 4px;
+  --radius-l: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-full: 8px;
+
+  /* ===== SHADOWS ===== */
+  /* Pencil-like offsets, no blur */
+  --shadow-xs: 1px 1px 0 oklch(25% 0.01 60 / 0.1);
+  --shadow-sm: 2px 2px 0 oklch(25% 0.01 60 / 0.12);
+  --shadow-md: 3px 3px 0 oklch(25% 0.01 60 / 0.15);
+  --shadow-lg: 4px 4px 0 oklch(25% 0.01 60 / 0.15);
+  --shadow-xl: 5px 5px 0 oklch(25% 0.01 60 / 0.18);
+  --shadow-2xl: 6px 6px 0 oklch(25% 0.01 60 / 0.2);
+
+  /* ===== BORDERS ===== */
+  --border-width: 2px;
+  --border-width-thick: 3px;
+
+  /* ===== MOTION ===== */
+  --duration-instant: 50ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ===== EXTENSION OVERRIDES ===== */
+  --motion-hover-lift: translateY(-2px) rotate(-0.5deg);
+  --motion-hover-scale: scale(1.02) rotate(0.5deg);
+  --motion-stagger-delay: 60ms;
+  --motion-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-elastic: cubic-bezier(0.68, -0.2, 0.32, 1.2);
+  --motion-enter-duration: 300ms;
+  --motion-exit-duration: 200ms;
+
+  /* Rough borders: Enable sketch filter */
+  --filter-rough: var(--filter-rough-light);
+  --border-roughness: 1;
+}
+
+/* Paper texture overlay - only on :root */
+:root[data-theme~="rough"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
+  z-index: 500;
+}
+
+/* Rough component overrides */
+:root[data-theme~="rough"],
+[data-theme~="rough"] {
+  & :is(main, article) {
+  /* Wobbly hand-drawn HR */
+  & hr {
+    border: none;
+    height: 3px;
+    margin-block: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='6' viewBox='0 0 400 6'%3E%3Cpath d='M0,3 C20,1 40,5 60,3 C80,1 100,5 120,3 C140,1 160,5 180,3 C200,1 220,5 240,3 C260,1 280,5 300,3 C320,1 340,5 360,3 C380,1 400,5 400,3' fill='none' stroke='oklch(45%25 0.01 60)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+  }
+
+  /* Headings */
+  & h1 {
+    color: var(--color-primary);
+    position: relative;
+    padding-block-end: 0.5rem;
+
+    /* Wavy SVG underline */
+    &::after {
+      content: "";
+      display: block;
+      width: 80%;
+      height: 4px;
+      margin-block-start: 0.25rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='6' viewBox='0 0 200 6'%3E%3Cpath d='M0,3 Q25,0 50,3 Q75,6 100,3 Q125,0 150,3 Q175,6 200,3' fill='none' stroke='oklch(45%25 0.15 250)' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+  }
+
+  & h2 {
+    border-block-end: 2px dashed var(--color-border);
+    padding-block-end: 0.5rem;
+  }
+
+  & h3 {
+    font-style: italic;
+  }
+
+  /* Links with wavy underline */
+  & a:not([class]) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-accent);
+      text-decoration-color: var(--color-accent);
+    }
+  }
+
+  /* Buttons with slight rotation for hand-placed feel */
+  & button,
+  & .button {
+    border-width: 2px;
+    box-shadow: var(--shadow-sm);
+    transform: rotate(-0.5deg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: rotate(0.5deg) translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    &:active {
+      transform: rotate(0deg) translateY(1px);
+      box-shadow: var(--shadow-xs);
+    }
+  }
+
+  /* Cards with alternating rotation (sticky-note feel) */
+  & .card {
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:nth-child(odd) {
+      transform: rotate(-0.5deg);
+    }
+
+    &:nth-child(even) {
+      transform: rotate(0.5deg);
+    }
+
+    &:hover {
+      transform: rotate(0deg) translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  /* Blockquote as speech bubble */
+  & blockquote {
+    position: relative;
+    padding: 1.5rem 2rem;
+    background: var(--color-surface-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-l);
+
+    /* Speech bubble tail */
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      left: 2rem;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 12px solid var(--color-border);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -9px;
+      left: calc(2rem + 2px);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 10px solid var(--color-surface-alt);
+    }
+  }
+
+  /* Inputs */
+  & input,
+  & textarea {
+    border: 2px solid var(--color-border);
+    background: var(--color-surface-raised);
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+      outline: none;
+    }
+  }
+
+  /* Code blocks - graph paper background */
+  & pre {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 19px,
+        oklch(70% 0.1 250 / 0.12) 19px,
+        oklch(70% 0.1 250 / 0.12) 20px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        oklch(70% 0.1 250 / 0.12) 19px,
+        oklch(70% 0.1 250 / 0.12) 20px
+      ),
+      oklch(96% 0.015 80);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text);
+  }
+
+  & code {
+    background: oklch(93% 0.02 75);
+    border: 1px solid var(--color-border-muted);
+  }
+
+  }
+
+  /* Article — explicit sketch border with breathing room */
+  & article {
+    border: 2px solid var(--color-border);
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0,2 Q10,0 20,2 T40,2 M0,38 Q10,40 20,38 T40,38 M2,0 Q0,10 2,20 T2,40 M38,0 Q40,10 38,20 T38,40' fill='none' stroke='oklch(45%25 0.01 60)' stroke-width='2'/%3E%3C/svg%3E") 10 stretch;
+    padding: var(--size-xl);
+    filter: var(--filter-rough-light);
+  }
+
+  /* page-toc — borderless, loose feel like margin notes */
+  & page-toc {
+    border: none;
+    filter: none;
+  }
+
+  /* code-block web component overrides */
+  & :is(main, article) code-block {
+    --cb-bg:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 19px,
+        oklch(70% 0.1 250 / 0.1) 19px,
+        oklch(70% 0.1 250 / 0.1) 20px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        oklch(70% 0.1 250 / 0.1) 19px,
+        oklch(70% 0.1 250 / 0.1) 20px
+      ),
+      oklch(96% 0.015 80);
+    --cb-code-bg: transparent;
+    --cb-header-bg: oklch(93% 0.02 75);
+    --cb-text-color: var(--color-text);
+    --cb-border-color: var(--color-border);
+    --cb-comment: var(--color-text-subtle);
+    --cb-keyword: var(--color-primary);
+    --cb-string: var(--color-accent);
+    --cb-function: oklch(40% 0.12 180);
+    --cb-number: oklch(50% 0.15 25);
+    --cb-button-bg: oklch(93% 0.02 75);
+    --cb-button-color: var(--color-text-muted);
+    --cb-button-hover-bg: var(--color-primary-subtle);
+    --cb-scrollbar-track: oklch(93% 0.02 75);
+    --cb-scrollbar-thumb: oklch(75% 0.01 60);
+  }
+
+  /* browser-window web component overrides */
+  & :is(main, article) browser-window {
+    --browser-window-bg: oklch(96% 0.015 80);
+    --browser-window-header-bg: oklch(93% 0.02 75);
+    --browser-window-content-bg: oklch(96% 0.015 80);
+    --browser-window-border-color: var(--color-border);
+    --browser-window-text-color: var(--color-text);
+    --browser-window-text-muted: var(--color-text-muted);
+    --browser-window-url-bg: oklch(98% 0.01 80);
+  }
+
+  /* Selection */
+  & ::selection {
+    background: var(--color-primary);
+    color: oklch(98% 0.01 80);
+  }
+
+  /* Scrollbar */
+  --scrollbar-thumb: oklch(70% 0.01 60);
+  --scrollbar-track: oklch(93% 0.02 75);
+}
+
+/* ===== Dark mode: Chalkboard ===== */
+:root[data-theme~="rough"][data-mode="dark"],
+[data-theme~="rough"][data-mode="dark"] {
+  color-scheme: dark;
+
+  --color-surface: oklch(20% 0.02 160);        /* Dark green-gray chalkboard */
+  --color-surface-alt: oklch(24% 0.025 155);
+  --color-surface-raised: oklch(28% 0.02 160);
+  --color-surface-sunken: oklch(15% 0.015 160);
+  --color-background: oklch(18% 0.02 160);
+
+  --color-text: oklch(92% 0.01 80);            /* Chalk white */
+  --color-text-muted: oklch(72% 0.01 80);
+  --color-text-subtle: oklch(58% 0.01 80);
+
+  --color-primary: oklch(70% 0.12 230);        /* Blue chalk */
+  --color-primary-hover: oklch(75% 0.14 230);
+  --color-primary-subtle: oklch(30% 0.05 230);
+
+  --color-accent: oklch(78% 0.14 85);          /* Yellow chalk */
+  --color-accent-hover: oklch(83% 0.16 85);
+  --color-accent-subtle: oklch(30% 0.05 85);
+
+  --color-border: oklch(45% 0.02 160);
+  --color-border-muted: oklch(35% 0.015 160);
+  --color-border-strong: oklch(60% 0.02 160);
+
+  --shadow-xs: 1px 1px 0 oklch(10% 0 0 / 0.2);
+  --shadow-sm: 2px 2px 0 oklch(10% 0 0 / 0.25);
+  --shadow-md: 3px 3px 0 oklch(10% 0 0 / 0.3);
+  --shadow-lg: 4px 4px 0 oklch(10% 0 0 / 0.3);
+  --shadow-xl: 5px 5px 0 oklch(10% 0 0 / 0.35);
+  --shadow-2xl: 6px 6px 0 oklch(10% 0 0 / 0.4);
+
+  --scrollbar-thumb: oklch(50% 0.02 160);
+  --scrollbar-track: oklch(22% 0.02 160);
+
+  /* Dark article — lighter sketch stroke for chalkboard */
+  & article {
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0,2 Q10,0 20,2 T40,2 M0,38 Q10,40 20,38 T40,38 M2,0 Q0,10 2,20 T2,40 M38,0 Q40,10 38,20 T38,40' fill='none' stroke='oklch(50%25 0.02 160)' stroke-width='2'/%3E%3C/svg%3E") 10 stretch;
+  }
+
+  /* Dark h1 underline needs lighter color */
+  & :is(main, article) h1::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='6' viewBox='0 0 200 6'%3E%3Cpath d='M0,3 Q25,0 50,3 Q75,6 100,3 Q125,0 150,3 Q175,6 200,3' fill='none' stroke='oklch(70%25 0.12 230)' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  /* Dark HR needs lighter stroke */
+  & :is(main, article) hr {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='6' viewBox='0 0 400 6'%3E%3Cpath d='M0,3 C20,1 40,5 60,3 C80,1 100,5 120,3 C140,1 160,5 180,3 C200,1 220,5 240,3 C260,1 280,5 300,3 C320,1 340,5 360,3 C380,1 400,5 400,3' fill='none' stroke='oklch(60%25 0.02 160)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  /* Dark code blocks - chalkboard graph paper */
+  & :is(main, article) pre {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 19px,
+        oklch(40% 0.05 160 / 0.15) 19px,
+        oklch(40% 0.05 160 / 0.15) 20px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        oklch(40% 0.05 160 / 0.15) 19px,
+        oklch(40% 0.05 160 / 0.15) 20px
+      ),
+      oklch(20% 0.02 160);
+  }
+
+  & :is(main, article) code-block {
+    --cb-bg:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 19px,
+        oklch(40% 0.05 160 / 0.12) 19px,
+        oklch(40% 0.05 160 / 0.12) 20px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        oklch(40% 0.05 160 / 0.12) 19px,
+        oklch(40% 0.05 160 / 0.12) 20px
+      ),
+      oklch(20% 0.02 160);
+    --cb-code-bg: transparent;
+    --cb-header-bg: oklch(24% 0.025 155);
+    --cb-text-color: var(--color-text);
+    --cb-border-color: var(--color-border);
+    --cb-comment: var(--color-text-subtle);
+    --cb-keyword: var(--color-primary);
+    --cb-string: var(--color-accent);
+    --cb-function: oklch(70% 0.1 180);
+    --cb-number: oklch(78% 0.14 85);
+    --cb-button-bg: oklch(28% 0.02 160);
+    --cb-button-color: var(--color-text-muted);
+    --cb-button-hover-bg: var(--color-primary-subtle);
+    --cb-scrollbar-track: oklch(22% 0.02 160);
+    --cb-scrollbar-thumb: oklch(40% 0.02 160);
+  }
+
+  & :is(main, article) browser-window {
+    --browser-window-bg: oklch(20% 0.02 160);
+    --browser-window-header-bg: oklch(24% 0.025 155);
+    --browser-window-content-bg: oklch(20% 0.02 160);
+    --browser-window-border-color: var(--color-border);
+    --browser-window-text-color: var(--color-text);
+    --browser-window-text-muted: var(--color-text-muted);
+    --browser-window-url-bg: oklch(28% 0.02 160);
+  }
+}
+
+/* Dark mode paper texture adjustment */
+:root[data-theme~="rough"][data-mode="dark"]::before {
+  opacity: 0.03;
+}
