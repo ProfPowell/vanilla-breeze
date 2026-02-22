@@ -127,12 +127,12 @@
       gap: var(--size-xs) var(--size-m);
     }
 
-    & a {
+    & a:not(.button) {
       color: var(--color-text-muted);
       text-decoration: none;
     }
 
-    & a:hover {
+    & a:not(.button):hover {
       color: var(--color-interactive);
       text-decoration: underline;
     }
@@ -179,6 +179,31 @@
       & > ol {
         margin-block-end: var(--size-m);
       }
+    }
+
+    /* Bare headings in heading-links (pages without section wrappers) */
+    & heading-links > h2 {
+      margin-block-start: var(--size-2xl);
+      padding-block-start: var(--size-xl);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+      margin-block-end: var(--size-m);
+
+      &:first-child {
+        margin-block-start: 0;
+        padding-block-start: 0;
+        border-block-start: none;
+      }
+    }
+
+    & heading-links > h3 {
+      margin-block-start: var(--size-xl);
+      margin-block-end: var(--size-s);
+    }
+
+    & heading-links > p,
+    & heading-links > ul,
+    & heading-links > ol {
+      margin-block-end: var(--size-m);
     }
   }
 }
@@ -351,6 +376,119 @@ browser-window {
 
 browser-window + code-block {
   margin-block-start: var(--size-s);
+}
+
+/* ===========================================
+   Theme Token Mappings for Web Components
+   =========================================== */
+
+code-block {
+  /* Surface & text */
+  --cb-bg: var(--color-surface-sunken);
+  --cb-code-bg: var(--color-surface-sunken);
+  --cb-header-bg: var(--color-surface-raised);
+  --cb-text-color: var(--color-text);
+  --cb-label-color: var(--color-text-muted);
+  --cb-filename-color: var(--color-text);
+  --cb-comment: var(--color-text-muted);
+
+  /* Chrome */
+  --cb-border-color: var(--color-border);
+  --cb-border-radius: var(--radius-m);
+  --cb-font-family: var(--font-mono);
+
+  /* Line numbers */
+  --cb-line-numbers-bg: var(--color-surface-raised);
+  --cb-line-numbers-color: var(--color-text-subtle, var(--color-text-muted));
+
+  /* Interactive */
+  --cb-button-bg: var(--color-surface-raised);
+  --cb-button-border: var(--color-border);
+  --cb-button-color: var(--color-text-muted);
+  --cb-button-hover-bg: var(--color-interactive);
+  --cb-button-hover-color: white;
+  --cb-focus-color: var(--color-interactive);
+
+  /* Expand / collapse */
+  --cb-expand-bg: var(--color-surface-raised);
+  --cb-expand-color: var(--color-interactive);
+
+  /* Syntax — use accent colors */
+  --cb-keyword: var(--color-primary);
+  --cb-string: var(--color-accent);
+  --cb-function: var(--color-primary);
+  --cb-number: var(--color-accent);
+  --cb-tag: var(--color-accent);
+  --cb-attribute: var(--color-primary);
+  --cb-meta: var(--color-accent);
+  --cb-builtin: var(--color-primary);
+
+  /* Highlight */
+  --cb-highlight-bg: var(--color-primary-subtle, oklch(80% 0.1 250 / 0.15));
+  --cb-highlight-border: var(--color-interactive);
+
+  /* Scrollbar */
+  --cb-scrollbar-track: var(--color-surface-sunken);
+  --cb-scrollbar-thumb: var(--color-border);
+  --cb-scrollbar-thumb-hover: var(--color-border-strong, var(--color-text-muted));
+}
+
+browser-window {
+  --browser-window-bg: var(--color-surface);
+  --browser-window-header-bg: var(--color-surface-raised);
+  --browser-window-content-bg: var(--color-surface);
+  --browser-window-border-color: var(--color-border);
+  --browser-window-border-radius: var(--radius-m);
+  --browser-window-text-color: var(--color-text);
+  --browser-window-text-muted: var(--color-text-muted);
+  --browser-window-url-color: var(--color-text-muted);
+  --browser-window-url-bg: var(--color-surface);
+  --browser-window-hover-bg: var(--color-surface-alt, var(--color-surface-raised));
+  --browser-window-accent-color: var(--color-interactive);
+  --browser-window-font-family: var(--font-sans);
+  --browser-window-mono-font: var(--font-mono);
+  --browser-window-close-color: var(--color-danger, oklch(65% 0.25 25));
+  --browser-window-minimize-color: var(--color-warning, oklch(80% 0.18 85));
+  --browser-window-maximize-color: var(--color-success, oklch(65% 0.2 145));
+}
+
+/* ===========================================
+   Protect structural components from theme heading overrides.
+   Theme selectors [data-theme~="X"] :is(main, article) h3
+   have specificity (0,1,2). The [data-theme] prefix here
+   gives (0,2,1+) so these resets always win.
+   =========================================== */
+
+[data-theme] :is(.feature-card, .section-card, .feature-box) :is(h1, h2, h3, h4) {
+  text-decoration: none;
+  text-transform: none;
+  background: transparent;
+  color: inherit;
+  text-shadow: none;
+  border: none;
+  padding: 0;
+  font-style: normal;
+  letter-spacing: normal;
+  width: auto;
+}
+
+[data-theme] :is(.feature-card, .section-card, .feature-box) :is(h1, h2, h3, h4)::before,
+[data-theme] :is(.feature-card, .section-card, .feature-box) :is(h1, h2, h3, h4)::after {
+  content: none;
+  animation: none;
+}
+
+/* Protect breadcrumb from theme list overrides */
+[data-theme] .breadcrumb ol,
+[data-theme] .breadcrumb ul {
+  list-style: none;
+  counter-reset: none;
+  text-transform: none;
+}
+
+[data-theme] .breadcrumb li::before {
+  content: none;
+  counter-increment: none;
 }
 
 /* ===========================================

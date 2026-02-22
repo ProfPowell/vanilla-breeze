@@ -226,6 +226,16 @@ class IconWc extends HTMLElement {
         IconWc.#initGlobalObserver();
         this.render();
         this.loadIcon();
+
+        // Force SVG repaint when theme changes (shadow DOM may not re-resolve currentColor)
+        this._onThemeChange = () => {
+            const svg = this.shadowRoot?.querySelector('svg');
+            if (svg) {
+                svg.style.stroke = 'none';
+                requestAnimationFrame(() => { svg.style.stroke = ''; });
+            }
+        };
+        window.addEventListener('theme-change', this._onThemeChange);
     }
 
     /**
@@ -233,6 +243,9 @@ class IconWc extends HTMLElement {
      */
     disconnectedCallback() {
         IconWc.#instances.delete(this);
+        if (this._onThemeChange) {
+            window.removeEventListener('theme-change', this._onThemeChange);
+        }
     }
 
     /**

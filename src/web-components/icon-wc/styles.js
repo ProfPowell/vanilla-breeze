@@ -10,6 +10,7 @@ const styles = `
   block-size: 1.5em;
   vertical-align: middle;
   line-height: 1;
+  color: inherit;
 }
 
 :host([size="xs"]) {
