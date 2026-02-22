@@ -16,6 +16,8 @@
  * <data value="1500000" data-format-number="compact">1.5M</data>
  */
 
+import { getLocale } from '../lib/i18n.js';
+
 const SELECTOR = 'data[data-format-number]';
 
 /**
@@ -46,7 +48,7 @@ function enhanceNumber(el) {
   }
 
   const style = el.getAttribute('data-format-number') || 'decimal';
-  const locale = el.getAttribute('data-locale') || undefined;
+  const locale = el.getAttribute('data-locale') || getLocale();
 
   const opts = {};
 

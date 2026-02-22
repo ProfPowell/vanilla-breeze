@@ -1,0 +1,199 @@
+---
+layout: layouts/docs.njk
+title: "Internationalization"
+description: "How Vanilla Breeze handles script-specific typography, ruby visibility, locale-aware quotes, translate conventions, and locale resolution."
+currentPath: /docs/i18n/
+permalink: /docs/i18n/
+toc: true
+---
+
+{% set typographyExample %}<html lang="ja">
+  <!-- CJK font, line-height: 1.8, word-break: break-all -->
+</html>
+
+<section lang="ar" dir="rtl">
+  <!-- Arabic font, line-height: 1.9, RTL layout -->
+</section>{% endset %}
+
+{% set fontTokens %}:root {
+  --font-cjk: "Noto Sans CJK SC", "PingFang SC", system-ui, sans-serif;
+  --font-arabic: "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+  --font-hebrew: "Noto Sans Hebrew", "Segoe UI", system-ui, sans-serif;
+  --font-thai: "Noto Sans Thai", "Leelawadee UI", system-ui, sans-serif;
+  --font-devanagari: "Noto Sans Devanagari", system-ui, sans-serif;
+}{% endset %}
+
+{% set rubyExample %}<html lang="ja" data-ruby="auto">
+<body>
+  <!-- Ruby visible because lang="ja" -->
+  <ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>
+
+  <!-- English section: ruby hidden in auto mode -->
+  <section lang="en">
+    <ruby>ruby<rt>annotation</rt></ruby>
+  </section>
+</body>
+</html>{% endset %}
+
+{% set quotesExample %}<p lang="de">Sie sagte <q>hallo</q>.</p>
+<p lang="fr">Elle a dit <q>bonjour</q>.</p>
+<p lang="ja">彼女は<q>こんにちは</q>と言いました。</p>{% endset %}
+
+{% set translateExample %}<p>Install <span translate="no">Vanilla Breeze</span> via npm.</p>
+<p>Your username is <span translate="no">tpowell42</span>.</p>{% endset %}
+
+{% set localeExample %}<html lang="de">
+  <!-- All format utilities use German locale by default -->
+  <data value="1234.56" data-format-number>1.234,56</data>
+
+  <!-- Override for this specific element -->
+  <data value="1234.56" data-format-number data-locale="en-US">1,234.56</data>
+</html>{% endset %}
+
+{% set jsUtilExample %}import { getLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
+
+getLocale();           // 'en-US' (from html[lang] or navigator)
+isRTL('ar');           // true
+usesRuby('ja');        // true
+primarySubtag('zh-TW'); // 'zh'{% endset %}
+
+{% set i18nJsExample %}import { VbI18n } from './lib/i18n.js';
+
+const i18n = new VbI18n({
+  locale: 'fr',
+  messages: {
+    en: { 'nav.home': 'Home', 'actions.close': 'Close' },
+    fr: { 'nav.home': 'Accueil', 'actions.close': 'Fermer' },
+  }
+});
+
+// Swap all [data-i18n] elements
+i18n.apply();
+
+// Listen for locale changes
+i18n.watch();{% endset %}
+
+{% set i18nHtmlExample %}<nav>
+  <a href="/" data-i18n="nav.home">Home</a>
+</nav>
+<button data-i18n="actions.close">Close</button>
+
+<!-- Attribute targeting -->
+<input data-i18n="form.search" data-i18n-attr="placeholder" placeholder="Search...">
+
+<!-- Variable interpolation -->
+<p data-i18n="welcome" data-i18n-vars='{"name":"World"}'>Hello, World!</p>{% endset %}
+
+{% set logicalExample %}/* VB never writes this: */
+.card { padding-left: 1rem; margin-right: auto; }
+
+/* VB always writes this: */
+.card { padding-inline-start: 1rem; margin-inline-end: auto; }{% endset %}
+
+<h2>Philosophy</h2>
+<p>Internationalization is not a feature you add — it is a constraint you respect from the start. VB treats i18n the same way it treats semantic HTML: build it in, don't bolt it on.</p>
+<p>The web platform already has most of what you need: the <code>lang</code> attribute, CSS <code>:lang()</code>, logical properties, the <code>Intl</code> API, the <code>translate</code> attribute, and ruby HTML elements. VB uses them correctly and consistently.</p>
+
+<h2>Script-Specific Typography</h2>
+<p>Set <code>lang</code> on any element and VB automatically applies the right font family, line height, letter spacing, and word-breaking rules. This works via CSS <code>:lang()</code> which inherits through the subtree.</p>
+
+<code-block language="html" label="lang-based typography">{{ typographyExample | escape }}</code-block>
+
+<h3>Supported Scripts</h3>
+<table>
+  <thead>
+    <tr><th>Script</th><th>Languages</th><th>Token</th><th>Line Height</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>CJK</td><td><code>zh</code>, <code>ja</code>, <code>ko</code></td><td><code>--font-cjk</code></td><td>1.8</td></tr>
+    <tr><td>Arabic</td><td><code>ar</code>, <code>fa</code>, <code>ur</code>, <code>ps</code></td><td><code>--font-arabic</code></td><td>1.9</td></tr>
+    <tr><td>Hebrew</td><td><code>he</code>, <code>yi</code></td><td><code>--font-hebrew</code></td><td>1.75</td></tr>
+    <tr><td>Thai</td><td><code>th</code></td><td><code>--font-thai</code></td><td>2.0</td></tr>
+    <tr><td>Devanagari</td><td><code>hi</code>, <code>mr</code>, <code>sa</code>, <code>ne</code></td><td><code>--font-devanagari</code></td><td>1.75</td></tr>
+  </tbody>
+</table>
+
+<h3>Font Token Slots</h3>
+<p>VB provides custom properties for each script family. Override them to load your preferred fonts:</p>
+
+<code-block language="css" label="Font token overrides">{{ fontTokens | escape }}</code-block>
+
+<h2>Ruby Visibility</h2>
+<p>Control ruby annotation display with <code>data-ruby</code> on <code>&lt;html&gt;</code>:</p>
+
+<table>
+  <thead>
+    <tr><th>Value</th><th>Behavior</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>show</code></td><td>Always visible</td></tr>
+    <tr><td><code>hide</code></td><td>Visually hidden, kept in DOM for accessibility</td></tr>
+    <tr><td><code>auto</code></td><td>Visible for CJK languages, hidden otherwise</td></tr>
+    <tr><td>(absent)</td><td>Browser default</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Ruby visibility control">{{ rubyExample | escape }}</code-block>
+
+<h2>Locale-Aware Quotes</h2>
+<p>The <code>&lt;q&gt;</code> element renders locale-appropriate quotation marks via CSS <code>quotes</code>:</p>
+
+<table>
+  <thead>
+    <tr><th>Language</th><th>Outer</th><th>Inner</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>English</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>German</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
+    <tr><td>French</td><td>&laquo;...&raquo;</td><td>&lsaquo;...&rsaquo;</td></tr>
+    <tr><td>Japanese / Chinese</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+    <tr><td>Russian</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Locale quotes">{{ quotesExample | escape }}</code-block>
+
+<h2>Translate Conventions</h2>
+<p>VB automatically sets <code>translate: no</code> on elements that should never be machine-translated: <code>&lt;code&gt;</code>, <code>&lt;kbd&gt;</code>, <code>&lt;samp&gt;</code>, <code>&lt;pre&gt;</code>, and <code>&lt;var&gt;</code>.</p>
+<p>For your own content, use the HTML <code>translate</code> attribute on brand names, identifiers, and technical terms:</p>
+
+<code-block language="html" label="translate attribute">{{ translateExample | escape }}</code-block>
+
+<h2>Locale Resolution (JS)</h2>
+<p>VB provides a centralized <code>getLocale()</code> function that all format utilities share. The priority chain:</p>
+<ol>
+  <li><code>&lt;html lang&gt;</code> attribute</li>
+  <li><code>navigator.language</code></li>
+  <li><code>'en'</code> fallback</li>
+</ol>
+<p>Individual elements can override via <code>data-locale</code>:</p>
+
+<code-block language="html" label="Locale fallback chain">{{ localeExample | escape }}</code-block>
+
+<h3>JS Utilities</h3>
+<p>Import locale utilities for custom components:</p>
+
+<code-block language="js" label="Locale utility functions">{{ jsUtilExample | escape }}</code-block>
+
+<h2>VbI18n String Swap</h2>
+<p>For application-level translation, VB exports a <code>VbI18n</code> class. It is <strong>not</strong> auto-initialized — you instantiate and configure it with your own message maps.</p>
+
+<code-block language="js" label="VbI18n setup">{{ i18nJsExample | escape }}</code-block>
+
+<code-block language="html" label="data-i18n markup">{{ i18nHtmlExample | escape }}</code-block>
+
+<h2>Logical Properties</h2>
+<p>VB uses CSS logical properties throughout (465+ instances). RTL layout works automatically when you set <code>dir="rtl"</code> on <code>&lt;html&gt;</code>. No additional CSS is needed.</p>
+
+<code-block language="css" label="Logical vs physical properties">{{ logicalExample | escape }}</code-block>
+
+<h2>Demo</h2>
+<p><a href="/docs/examples/demos/i18n-typography.html">i18n Typography Demo</a> — live examples of all features on this page.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="/docs/elements/native/ruby/">ruby element</a></li>
+  <li><a href="/docs/attributes/lang/">lang attribute</a></li>
+  <li><a href="/docs/attributes/dir/">dir attribute</a></li>
+  <li><a href="/docs/attributes/translate/">translate attribute</a></li>
+</ul>

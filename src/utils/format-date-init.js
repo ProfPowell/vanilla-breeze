@@ -17,6 +17,8 @@
  * <time datetime="2026-02-09T10:00:00Z" data-format-date="relative">February 9, 2026</time>
  */
 
+import { getLocale } from '../lib/i18n.js';
+
 const SELECTOR = 'time[data-format-date]';
 const intervals = new Map();
 
@@ -48,7 +50,7 @@ function enhanceDate(el) {
   }
 
   const style = el.getAttribute('data-format-date') || 'medium';
-  const locale = el.getAttribute('data-locale') || undefined;
+  const locale = el.getAttribute('data-locale') || getLocale();
 
   if (style === 'relative') {
     el.textContent = formatRelative(datetime, locale);

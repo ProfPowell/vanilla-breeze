@@ -15,6 +15,8 @@
  * <data value="1000000" data-format-bytes data-unit="decimal">1 MB</data>
  */
 
+import { getLocale } from '../lib/i18n.js';
+
 const SELECTOR = 'data[data-format-bytes]';
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
@@ -47,7 +49,7 @@ function enhanceBytes(el) {
 
   const precision = parseInt(el.getAttribute('data-format-bytes'), 10) || 0;
   const isDecimal = el.getAttribute('data-unit') === 'decimal';
-  const locale = el.getAttribute('data-locale') || undefined;
+  const locale = el.getAttribute('data-locale') || getLocale();
   const divisor = isDecimal ? 1000 : 1024;
 
   if (bytes === 0) {

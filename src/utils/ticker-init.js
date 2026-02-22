@@ -17,6 +17,8 @@
  * <data value="99.99" data-ticker data-ticker-decimals="2">99.99</data>
  */
 
+import { getLocale } from '../lib/i18n.js';
+
 const SELECTOR = 'data[data-ticker]';
 
 /**
@@ -46,7 +48,7 @@ function detectDecimals(value) {
  * @returns {Intl.NumberFormat|null} Formatter or null if no formatting needed
  */
 function buildFormatter(el, decimals) {
-  const locale = el.getAttribute('data-locale') || undefined;
+  const locale = el.getAttribute('data-locale') || getLocale();
   const formatStyle = el.getAttribute('data-format-number');
 
   // If data-format-number is present, mirror its Intl.NumberFormat options
