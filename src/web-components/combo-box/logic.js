@@ -514,7 +514,7 @@ class ComboBox extends HTMLElement {
     this.#close();
     this.#input.focus();
 
-    this.dispatchEvent(new CustomEvent('combobox-change', {
+    this.dispatchEvent(new CustomEvent('combo-box:change', {
       bubbles: true,
       detail: { value, label }
     }));
@@ -550,7 +550,7 @@ class ComboBox extends HTMLElement {
       try { this.#listbox.showPopover(); } catch { /* already open */ }
     }
 
-    this.dispatchEvent(new CustomEvent('combobox-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('combo-box:open', { bubbles: true }));
   }
 
   #close() {
@@ -567,7 +567,7 @@ class ComboBox extends HTMLElement {
       try { this.#listbox.hidePopover(); } catch { /* already closed */ }
     }
 
-    this.dispatchEvent(new CustomEvent('combobox-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('combo-box:close', { bubbles: true }));
   }
 
   #positionListbox() {
@@ -586,7 +586,7 @@ class ComboBox extends HTMLElement {
       this.#listbox.hidden = true;
       this.#activeIndex = -1;
       this.#clearActiveDescendant();
-      this.dispatchEvent(new CustomEvent('combobox-close', { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('combo-box:close', { bubbles: true }));
     }
   };
 
@@ -642,7 +642,7 @@ class ComboBox extends HTMLElement {
   }
 
   #fireChange() {
-    this.dispatchEvent(new CustomEvent('combobox-change', {
+    this.dispatchEvent(new CustomEvent('combo-box:change', {
       bubbles: true,
       detail: {
         values: this.#selectedTags.map(t => t.value),

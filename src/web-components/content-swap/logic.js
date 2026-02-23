@@ -114,7 +114,7 @@ function toggleSwap(el) {
 }
 
 function dispatchSwapEvent(el) {
-  el.dispatchEvent(new CustomEvent('content-swap', {
+  el.dispatchEvent(new CustomEvent('content-swap:swap', {
     detail: { swapped: el.hasAttribute('data-swapped') },
     bubbles: true,
   }));

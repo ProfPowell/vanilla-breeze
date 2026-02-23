@@ -110,7 +110,7 @@ class TabsWc extends HTMLElement {
 
     this.#updateAriaStates();
 
-    this.dispatchEvent(new CustomEvent('tab-change', {
+    this.dispatchEvent(new CustomEvent('tabs-wc:change', {
       detail: { index },
       bubbles: true
     }));

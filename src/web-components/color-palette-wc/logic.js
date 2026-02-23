@@ -11,7 +11,7 @@
  * @attr {boolean} show-names - Show name labels above swatches
  * @attr {string} size - Swatch size: "sm", "md" (default), "lg"
  *
- * @fires color-selected - When a swatch is clicked, detail: { color, name, index }
+ * @fires color-palette-wc:select - When a swatch is clicked, detail: { color, name, index }
  *
  * @example
  * <color-palette-wc colors="#ff6b6b,#4ecdc4,#45b7d1" names="Red,Teal,Sky"></color-palette-wc>
@@ -65,7 +65,7 @@ class ColorPaletteWc extends HTMLElement {
         const name = names[idx] || '';
 
         navigator.clipboard?.writeText(color);
-        this.dispatchEvent(new CustomEvent('color-selected', {
+        this.dispatchEvent(new CustomEvent('color-palette-wc:select', {
           bubbles: true, detail: { color, name, index: idx }
         }));
 

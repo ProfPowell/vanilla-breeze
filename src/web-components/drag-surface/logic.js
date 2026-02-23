@@ -15,10 +15,10 @@
  * @attr {string} data-sort-order - Numeric position (managed automatically)
  * @attr {boolean} data-drag-handle - If present on a descendant, only that element initiates drag
  *
- * @fires items-reordered - When items within this surface are reordered
- * @fires item-transferred - When an item moves between surfaces
- * @fires reorder-start - When a drag/keyboard reorder begins
- * @fires reorder-end - When a drag/keyboard reorder ends
+ * @fires drag-surface:reorder - When items within this surface are reordered
+ * @fires drag-surface:transfer - When an item moves between surfaces
+ * @fires drag-surface:reorder-start - When a drag/keyboard reorder begins
+ * @fires drag-surface:reorder-end - When a drag/keyboard reorder ends
  *
  * @example
  * <drag-surface data-layout="stack" data-layout-gap="xs">
@@ -131,7 +131,7 @@ class DragSurface extends HTMLElement {
     const originalIndex = this.#indexOf(item);
     DragSurface.#activeDrag = { item, source: this, originalIndex };
 
-    this.dispatchEvent(new CustomEvent('reorder-start', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('drag-surface:reorder-start', { bubbles: true }));
   }
 
   #onDragOver(e) {
@@ -178,7 +178,7 @@ class DragSurface extends HTMLElement {
       this.#updateSortOrders();
       const newIndex = this.#indexOf(item);
       this.#flashDrop(item);
-      this.dispatchEvent(new CustomEvent('items-reordered', {
+      this.dispatchEvent(new CustomEvent('drag-surface:reorder', {
         bubbles: true,
         detail: {
           item,
@@ -195,7 +195,7 @@ class DragSurface extends HTMLElement {
       source.#updateSortOrders();
       this.#flashDrop(item);
 
-      this.dispatchEvent(new CustomEvent('item-transferred', {
+      this.dispatchEvent(new CustomEvent('drag-surface:transfer', {
         bubbles: true,
         detail: {
           item,
@@ -218,7 +218,7 @@ class DragSurface extends HTMLElement {
     this.removeAttribute('data-drag-over');
     this.#clearDropIndicators();
     DragSurface.#activeDrag = null;
-    this.dispatchEvent(new CustomEvent('reorder-end', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('drag-surface:reorder-end', { bubbles: true }));
   }
 
   // --- Keyboard Reorder ---
@@ -251,7 +251,7 @@ class DragSurface extends HTMLElement {
           `${this.#itemLabel(item)}, dropped at position ${newIndex + 1} of ${children.length}`
         );
 
-        this.dispatchEvent(new CustomEvent('items-reordered', {
+        this.dispatchEvent(new CustomEvent('drag-surface:reorder', {
           bubbles: true,
           detail: {
             item,
@@ -261,7 +261,7 @@ class DragSurface extends HTMLElement {
             order: this.sortedOrder,
           }
         }));
-        this.dispatchEvent(new CustomEvent('reorder-end', { bubbles: true }));
+        this.dispatchEvent(new CustomEvent('drag-surface:reorder-end', { bubbles: true }));
         this.#keyboardOriginalIndex = null;
       } else {
         // Grab
@@ -273,7 +273,7 @@ class DragSurface extends HTMLElement {
         this.#announce(
           `${this.#itemLabel(item)}, grabbed. Position ${this.#keyboardOriginalIndex + 1} of ${children.length}. Use arrow keys to move, Enter to drop, Escape to cancel.`
         );
-        this.dispatchEvent(new CustomEvent('reorder-start', { bubbles: true }));
+        this.dispatchEvent(new CustomEvent('drag-surface:reorder-start', { bubbles: true }));
       }
       return;
     }
@@ -332,7 +332,7 @@ class DragSurface extends HTMLElement {
       target.#announce(`Moved to ${label}`);
 
       // Dispatch transfer event
-      target.dispatchEvent(new CustomEvent('item-transferred', {
+      target.dispatchEvent(new CustomEvent('drag-surface:transfer', {
         bubbles: true,
         detail: {
           item,
@@ -365,7 +365,7 @@ class DragSurface extends HTMLElement {
       }
 
       this.#announce('Reorder cancelled');
-      this.dispatchEvent(new CustomEvent('reorder-end', { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('drag-surface:reorder-end', { bubbles: true }));
       this.#keyboardOriginalIndex = null;
       return;
     }

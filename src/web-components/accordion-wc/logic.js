@@ -111,7 +111,7 @@ class AccordionWc extends HTMLElement {
       });
     }
 
-    this.dispatchEvent(new CustomEvent('accordion-toggle', {
+    this.dispatchEvent(new CustomEvent('accordion-wc:toggle', {
       detail: { index, open: toggledDetail.open },
       bubbles: true
     }));

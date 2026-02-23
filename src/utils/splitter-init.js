@@ -61,7 +61,7 @@ function enhanceSplitter(container) {
     const clamped = Math.min(max, Math.max(min, percent));
     first.style.flexBasis = `${clamped}%`;
     divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
-    container.dispatchEvent(new CustomEvent('split-resize', {
+    container.dispatchEvent(new CustomEvent('split-surface:resize', {
       detail: { position: clamped }, bubbles: true
     }));
   }

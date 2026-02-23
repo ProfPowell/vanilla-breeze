@@ -185,7 +185,7 @@ class CardList extends HTMLElement {
     this.appendChild(fragment);
 
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('card-list-render', {
+    this.dispatchEvent(new CustomEvent('card-list:render', {
       detail: { count: this.#items.length },
       bubbles: true
     }));

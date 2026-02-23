@@ -89,7 +89,7 @@ class CompareSurface extends HTMLElement {
     this.#divider.setAttribute('aria-valuenow', String(Math.round(percent)));
     this.#divider.style.left = `${percent}%`;
 
-    this.dispatchEvent(new CustomEvent('comparison-change', {
+    this.dispatchEvent(new CustomEvent('compare-surface:change', {
       detail: { position: percent },
       bubbles: true
     }));

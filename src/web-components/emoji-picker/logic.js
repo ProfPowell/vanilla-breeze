@@ -14,9 +14,9 @@
  *   <button data-trigger type="button">😀</button>
  * </emoji-picker>
  *
- * @fires emoji-select - When an emoji is selected. Detail: { shortcode, emoji, name, keywords }
- * @fires emoji-picker-open - When picker opens
- * @fires emoji-picker-close - When picker closes
+ * @fires emoji-picker:select - When an emoji is selected. Detail: { shortcode, emoji, name, keywords }
+ * @fires emoji-picker:open - When picker opens
+ * @fires emoji-picker:close - When picker closes
  */
 
 import {
@@ -328,7 +328,7 @@ class EmojiPicker extends HTMLElement {
     this.#insertEmoji(entry);
 
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('emoji-select', {
+    this.dispatchEvent(new CustomEvent('emoji-picker:select', {
       bubbles: true,
       detail: {
         shortcode: entry.shortcode,
@@ -428,7 +428,7 @@ class EmojiPicker extends HTMLElement {
       this.#searchInput.focus();
     });
 
-    this.dispatchEvent(new CustomEvent('emoji-picker-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('emoji-picker:open', { bubbles: true }));
   }
 
   close() {
@@ -439,7 +439,7 @@ class EmojiPicker extends HTMLElement {
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#picker.hidden = true;
 
-    this.dispatchEvent(new CustomEvent('emoji-picker-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('emoji-picker:close', { bubbles: true }));
   }
 
   toggle() {

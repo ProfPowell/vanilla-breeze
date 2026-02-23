@@ -904,7 +904,7 @@ Accessible tabbed interface. Wraps `<button role="tab">` + `<div role="tabpanel"
 
 | Events | Detail |
 |--------|--------|
-| `tab-change` | `{ index, tab, panel }` |
+| `tabs-wc:change` | `{ index, tab, panel }` |
 
 ### `<accordion-wc>`
 Enhanced `<details>`/`<summary>` accordion.
@@ -915,7 +915,7 @@ Enhanced `<details>`/`<summary>` accordion.
 
 | Events | Detail |
 |--------|--------|
-| `accordion-toggle` | `{ open, summary, details }` |
+| `accordion-wc:toggle` | `{ open, summary, details }` |
 
 ### `<tooltip-wc>`
 Rich tooltip/popover container.
@@ -929,14 +929,14 @@ Rich tooltip/popover container.
 
 | Events |
 |--------|
-| `tooltip-show`, `tooltip-hide` |
+| `tooltip-wc:show`, `tooltip-wc:hide` |
 
 ### `<drop-down>`
 Dropdown menu/popover triggered by a button.
 
 | Events |
 |--------|
-| `dropdown-open`, `dropdown-close` |
+| `drop-down:open`, `drop-down:close` |
 
 Children: `<button>` trigger + `<menu>` or `<ul>` items.
 
@@ -950,9 +950,9 @@ Accessible emoji picker with search, categories, and insertion.
 
 | Events | Detail |
 |--------|--------|
-| `emoji-select` | `{ shortcode, emoji, name, keywords }` |
-| `emoji-picker-open` | — |
-| `emoji-picker-close` | — |
+| `emoji-picker:select` | `{ shortcode, emoji, name, keywords }` |
+| `emoji-picker:open` | — |
+| `emoji-picker:close` | — |
 
 Children: `<button data-trigger>` (auto-created if absent).
 
@@ -961,9 +961,9 @@ Right-click context menu.
 
 | Events | Detail |
 |--------|--------|
-| `context-menu-open` | — |
-| `context-menu-close` | — |
-| `context-select` | `{ value, label }` |
+| `context-menu:open` | — |
+| `context-menu:close` | — |
+| `context-menu:select` | `{ value, label }` |
 
 Children: `<menu>` with `<button data-command="...">` items.
 
@@ -977,8 +977,8 @@ Toast notification container.
 
 | Events | Detail |
 |--------|--------|
-| `toast-show` | `{ message, variant }` |
-| `toast-hide` | `{ message, variant }` |
+| `toast-wc:show` | `{ message, variant }` |
+| `toast-wc:hide` | `{ message, variant }` |
 
 JS API: `document.querySelector('toast-wc').show({ message, variant, duration })`
 
@@ -989,26 +989,26 @@ Full-text search overlay with keyboard navigation.
 
 | Events |
 |--------|
-| `site-search-open`, `site-search-close` |
+| `site-search:open`, `site-search:close` |
 
 ### `<command-wc>` / `<command-group>` / `<command-item>`
 Command palette (Cmd+K).
 
 | Events | Detail |
 |--------|--------|
-| `command-select` | `{ value, label }` |
-| `command-open`, `command-close` | — |
+| `command-palette:select` | `{ value, label }` |
+| `command-palette:open`, `command-palette:close` | — |
 
 ### `<data-table>`
 Enhanced data table with sort, filter, pagination, selection.
 
 | Events | Detail |
 |--------|--------|
-| `table:sort` | `{ column, direction }` |
-| `table:filter` | `{ column, value }` |
-| `table:expand` | `{ row, expanded }` |
-| `table:selection` | `{ selected }` |
-| `table:page` | `{ page, pageSize }` |
+| `data-table:sort` | `{ column, direction }` |
+| `data-table:filter` | `{ column, value }` |
+| `data-table:expand` | `{ row, expanded }` |
+| `data-table:selection` | `{ selected }` |
+| `data-table:page` | `{ page, pageSize }` |
 
 ### `<carousel-wc>`
 Slideshow/carousel with autoplay.
@@ -1022,8 +1022,8 @@ Slideshow/carousel with autoplay.
 
 | Events | Detail |
 |--------|--------|
-| `carousel-change` | `{ index }` |
-| `carousel-play`, `carousel-pause` | — |
+| `carousel-wc:change` | `{ index }` |
+| `carousel-wc:play`, `carousel-wc:pause` | — |
 
 ### `<content-swap>`
 Two-face content toggle with configurable transitions.
@@ -1036,7 +1036,7 @@ Two-face content toggle with configurable transitions.
 
 | Events | Detail |
 |--------|--------|
-| `content-swap` | `{ swapped: boolean }` |
+| `content-swap:swap` | `{ swapped: boolean }` |
 
 Children: `[data-face="front"]` + `[data-face="back"]`
 
@@ -1049,7 +1049,7 @@ Before/after image comparison slider.
 
 | Events | Detail |
 |--------|--------|
-| `comparison-change` | `{ position }` |
+| `compare-surface:change` | `{ position }` |
 
 ### `<split-surface>`
 Resizable split panes.
@@ -1063,8 +1063,8 @@ Resizable split panes.
 
 | Events | Detail |
 |--------|--------|
-| `split-resize` | `{ position }` |
-| `split-collapse` | `{ collapsed }` |
+| `split-surface:resize` | `{ position }` |
+| `split-surface:collapse` | `{ collapsed }` |
 
 ### `<star-rating>`
 Interactive star rating (form-associated).
@@ -1089,9 +1089,9 @@ Form-associated combobox/autocomplete. Single-select by default; add `data-multi
 
 | Events | Detail |
 |--------|--------|
-| `combobox-change` | `{ value, label }` (single) or `{ values, labels }` (multi) |
-| `combobox-open` | — |
-| `combobox-close` | — |
+| `combo-box:change` | `{ value, label }` (single) or `{ values, labels }` (multi) |
+| `combo-box:open` | — |
+| `combo-box:close` | — |
 
 Children: `<input>` + `<ul>` with `<li data-value="...">` options.
 
@@ -1100,7 +1100,7 @@ Theme picker UI (mode, theme, extensions).
 
 | Events | Detail |
 |--------|--------|
-| `theme-picker-open`, `theme-picker-close` | — |
+| `theme-picker:open`, `theme-picker:close` | — |
 | `extensions-change` (on window) | `{ extension, value }` |
 
 ### `<foot-notes>` / `<foot-note>`
@@ -1117,7 +1117,7 @@ Adds anchor links to headings.
 
 | Events | Detail |
 |--------|--------|
-| `heading-navigate` | `{ id, heading }` |
+| `heading-links:navigate` | `{ id, heading }` |
 
 ### `<page-toc>`
 Auto-generated table of contents from headings.
@@ -1129,7 +1129,7 @@ Auto-generated table of contents from headings.
 
 | Events | Detail |
 |--------|--------|
-| `toc-navigate` | `{ id, heading }` |
+| `page-toc:navigate` | `{ id, heading }` |
 
 ### `<card-list>`
 Data-driven card list from JSON.
@@ -1142,7 +1142,7 @@ Data-driven card list from JSON.
 
 | Events | Detail |
 |--------|--------|
-| `card-list-render` | `{ count }` |
+| `card-list:render` | `{ count }` |
 
 Uses `<template>` child for card layout with `data-field="..."` bindings.
 
@@ -1204,7 +1204,7 @@ Slide-to-confirm action.
 
 | Events |
 |--------|
-| `slide-accept`, `slide-reset` |
+| `slide-accept:accept`, `slide-accept:reset` |
 
 ### `<shortcuts-wc>`
 Keyboard shortcut overlay display.

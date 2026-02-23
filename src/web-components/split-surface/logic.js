@@ -178,7 +178,7 @@ class SplitSurface extends HTMLElement {
     this.#first.style.overflow = 'hidden';
     this.#divider.setAttribute('aria-valuenow', '0');
     this.#position = 0;
-    this.dispatchEvent(new CustomEvent('split-collapse', {
+    this.dispatchEvent(new CustomEvent('split-surface:collapse', {
       detail: { collapsed: true }, bubbles: true
     }));
   }
@@ -187,7 +187,7 @@ class SplitSurface extends HTMLElement {
     this.#collapsed = false;
     this.#first.style.overflow = 'auto';
     this.#setPosition(this.#preCollapsePosition);
-    this.dispatchEvent(new CustomEvent('split-collapse', {
+    this.dispatchEvent(new CustomEvent('split-surface:collapse', {
       detail: { collapsed: false }, bubbles: true
     }));
   }
@@ -205,7 +205,7 @@ class SplitSurface extends HTMLElement {
 
     this.#divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
 
-    this.dispatchEvent(new CustomEvent('split-resize', {
+    this.dispatchEvent(new CustomEvent('split-surface:resize', {
       detail: { position: clamped }, bubbles: true
     }));
   }

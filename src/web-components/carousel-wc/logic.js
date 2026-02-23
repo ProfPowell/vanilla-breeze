@@ -239,14 +239,14 @@ class CarouselWc extends HTMLElement {
     if (this.#autoplayTimer || this.#reducedMotion) return;
     const delay = Number(this.dataset.autoplayDelay) || 5000;
     this.#autoplayTimer = setInterval(() => this.next(), delay);
-    this.dispatchEvent(new CustomEvent('carousel-play', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('carousel-wc:play', { bubbles: true }));
   }
 
   pause() {
     if (!this.#autoplayTimer) return;
     clearInterval(this.#autoplayTimer);
     this.#autoplayTimer = null;
-    this.dispatchEvent(new CustomEvent('carousel-pause', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('carousel-wc:pause', { bubbles: true }));
   }
 
   reset() {
@@ -263,7 +263,7 @@ class CarouselWc extends HTMLElement {
     // Update live region
     this.#liveRegion.textContent = `Slide ${index + 1} of ${this.#slides.length}`;
 
-    this.dispatchEvent(new CustomEvent('carousel-change', {
+    this.dispatchEvent(new CustomEvent('carousel-wc:change', {
       detail: { index, slide: this.#slides[index] },
       bubbles: true,
     }));

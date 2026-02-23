@@ -263,7 +263,7 @@ class DropDown extends HTMLElement {
       this.removeAttribute('data-open');
       this.#trigger?.setAttribute('aria-expanded', 'false');
       this.#activeIndex = -1;
-      this.dispatchEvent(new CustomEvent('dropdown-close', { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
     }
   };
 
@@ -302,7 +302,7 @@ class DropDown extends HTMLElement {
       try { this.#menu.showPopover(); } catch { /* already open */ }
     }
 
-    this.dispatchEvent(new CustomEvent('dropdown-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('drop-down:open', { bubbles: true }));
   }
 
   close() {
@@ -318,7 +318,7 @@ class DropDown extends HTMLElement {
       try { this.#menu.hidePopover(); } catch { /* already closed */ }
     }
 
-    this.dispatchEvent(new CustomEvent('dropdown-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
   }
 
   toggle() {

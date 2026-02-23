@@ -214,11 +214,11 @@ toasts.dismissAll();
 The component dispatches events for lifecycle tracking:
 
 ```javascript
-toasts.addEventListener('toast-show', (e) => {
+toasts.addEventListener('toast-wc:show', (e) => {
   console.log('Toast shown:', e.detail.toast);
 });
 
-toasts.addEventListener('toast-hide', (e) => {
+toasts.addEventListener('toast-wc:hide', (e) => {
   console.log('Toast hidden:', e.detail.toast);
 });
 ```

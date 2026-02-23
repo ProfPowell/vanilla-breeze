@@ -160,7 +160,7 @@ class ContextMenuWc extends HTMLElement {
     this.#activeIndex = -1;
     this.#focusItem(0);
 
-    this.dispatchEvent(new CustomEvent('context-menu-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('context-menu:open', { bubbles: true }));
   }
 
   close() {
@@ -173,7 +173,7 @@ class ContextMenuWc extends HTMLElement {
       try { this.#menu.hidePopover(); } catch { /* already closed */ }
     }
 
-    this.dispatchEvent(new CustomEvent('context-menu-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('context-menu:close', { bubbles: true }));
   }
 
   #handleMenuKeyDown = (e) => {
@@ -211,7 +211,7 @@ class ContextMenuWc extends HTMLElement {
 
   #handleItemClick = () => {
     this.close();
-    this.dispatchEvent(new CustomEvent('context-select', {
+    this.dispatchEvent(new CustomEvent('context-menu:select', {
       bubbles: true,
       detail: { item: this.#items[this.#activeIndex] }
     }));
@@ -241,7 +241,7 @@ class ContextMenuWc extends HTMLElement {
       this.#isOpen = false;
       this.removeAttribute('data-open');
       this.#activeIndex = -1;
-      this.dispatchEvent(new CustomEvent('context-menu-close', { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('context-menu:close', { bubbles: true }));
     }
   };
 

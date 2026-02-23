@@ -156,56 +156,56 @@ Expandable rows require a toggle button and content row:
 
 The component dispatches these custom events (bubble up the DOM):
 
-### `table:sort`
+### `data-table:sort`
 
 Fired when a column is sorted.
 
 ```js
-tableWc.addEventListener('table:sort', (e) => {
+tableWc.addEventListener('data-table:sort', (e) => {
   console.log(e.detail);
   // { column: 0, direction: 'asc', columnName: 'Name' }
 });
 ```
 
-### `table:filter`
+### `data-table:filter`
 
 Fired when the filter query changes.
 
 ```js
-tableWc.addEventListener('table:filter', (e) => {
+tableWc.addEventListener('data-table:filter', (e) => {
   console.log(e.detail);
   // { query: 'search term', count: 5 }
 });
 ```
 
-### `table:page`
+### `data-table:page`
 
 Fired when the page changes.
 
 ```js
-tableWc.addEventListener('table:page', (e) => {
+tableWc.addEventListener('data-table:page', (e) => {
   console.log(e.detail);
   // { page: 2 }
 });
 ```
 
-### `table:expand`
+### `data-table:expand`
 
 Fired when a row is expanded or collapsed.
 
 ```js
-tableWc.addEventListener('table:expand', (e) => {
+tableWc.addEventListener('data-table:expand', (e) => {
   console.log(e.detail);
   // { row: HTMLTableRowElement, expanded: true }
 });
 ```
 
-### `table:selection`
+### `data-table:selection`
 
 Fired when row selection changes.
 
 ```js
-tableWc.addEventListener('table:selection', (e) => {
+tableWc.addEventListener('data-table:selection', (e) => {
   console.log(e.detail);
   // { count: 3, rows: [HTMLTableRowElement, ...] }
 });

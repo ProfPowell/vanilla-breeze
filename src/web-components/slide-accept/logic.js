@@ -10,8 +10,8 @@
  * @attr {string}  data-attention       - Attention animation: "shimmer" | "pulse"
  * @attr {number}  data-threshold       - Activation threshold 0-100 (default: 90)
  *
- * @fires slide-accept - Handle reached threshold
- * @fires slide-reset  - After reset() called
+ * @fires slide-accept:accept - Handle reached threshold
+ * @fires slide-accept:reset  - After reset() called
  *
  * @example
  * <slide-accept data-label="Slide to confirm">
@@ -83,7 +83,7 @@ class SlideAccept extends HTMLElement {
     this.#label.textContent = this.dataset.label || 'Slide to confirm';
     this.#handle.disabled = false;
     this.#setPosition(0);
-    this.dispatchEvent(new CustomEvent('slide-reset', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('slide-accept:reset', { bubbles: true }));
   }
 
   #onPointerDown = (e) => {
@@ -171,7 +171,7 @@ class SlideAccept extends HTMLElement {
     this.setAttribute('data-activated', '');
     this.#label.textContent = this.dataset.activatedLabel || 'Confirmed!';
     this.#handle.disabled = true;
-    this.dispatchEvent(new CustomEvent('slide-accept', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('slide-accept:accept', { bubbles: true }));
   }
 
   #springBack() {

@@ -11,8 +11,8 @@
  * @attr {boolean} data-error - Added if fetch fails
  * @attr {boolean} data-lazy - If present, defers loading until element is in viewport
  *
- * @fires include-file-load - Dispatched after successful load
- * @fires include-file-error - Dispatched if fetch fails
+ * @fires include-file:load - Dispatched after successful load
+ * @fires include-file:error - Dispatched if fetch fails
  *
  * @example
  * <include-file src="/partials/header.html">
@@ -106,7 +106,7 @@ class IncludeFile extends HTMLElement {
       this.removeAttribute('data-loading');
       this.setAttribute('data-loaded', '');
 
-      this.dispatchEvent(new CustomEvent('include-file-load', {
+      this.dispatchEvent(new CustomEvent('include-file:load', {
         bubbles: true,
         detail: { src, html }
       }));
@@ -116,7 +116,7 @@ class IncludeFile extends HTMLElement {
       this.removeAttribute('data-loading');
       this.setAttribute('data-error', '');
 
-      this.dispatchEvent(new CustomEvent('include-file-error', {
+      this.dispatchEvent(new CustomEvent('include-file:error', {
         bubbles: true,
         detail: { src, error: err.message }
       }));

@@ -580,7 +580,7 @@ class ThemePicker extends HTMLElement {
       firstInput?.focus();
     });
 
-    this.dispatchEvent(new CustomEvent('theme-picker-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('theme-picker:open', { bubbles: true }));
   }
 
   #positionPanel() {
@@ -640,7 +640,7 @@ class ThemePicker extends HTMLElement {
     this.removeAttribute('data-open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
 
-    this.dispatchEvent(new CustomEvent('theme-picker-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('theme-picker:close', { bubbles: true }));
   }
 
   toggle() {

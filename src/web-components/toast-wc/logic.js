@@ -121,7 +121,7 @@ class ToastWc extends HTMLElement {
       }, duration);
     }
 
-    this.dispatchEvent(new CustomEvent('toast-show', {
+    this.dispatchEvent(new CustomEvent('toast-wc:show', {
       bubbles: true,
       detail: { toast }
     }));
@@ -154,7 +154,7 @@ class ToastWc extends HTMLElement {
         this.#showToast(nextToast, duration);
       }
 
-      this.dispatchEvent(new CustomEvent('toast-hide', {
+      this.dispatchEvent(new CustomEvent('toast-wc:hide', {
         bubbles: true,
         detail: { toast }
       }));

@@ -18,11 +18,11 @@
  * @attr {string} data-state-sorted - Sort direction: "asc" or "desc"
  * @attr {boolean} data-state-hidden - Row is hidden (filtered or paginated)
  *
- * @fires table:sort - When a column is sorted { column, direction, columnName }
- * @fires table:filter - When filter query changes { query, count }
- * @fires table:page - When page changes { page }
- * @fires table:expand - When row is expanded/collapsed { row, expanded }
- * @fires table:selection - When row selection changes { count, rows }
+ * @fires data-table:sort - When a column is sorted { column, direction, columnName }
+ * @fires data-table:filter - When filter query changes { query, count }
+ * @fires data-table:page - When page changes { page }
+ * @fires data-table:expand - When row is expanded/collapsed { row, expanded }
+ * @fires data-table:selection - When row selection changes { count, rows }
  *
  * @example
  * <data-table>
@@ -212,7 +212,7 @@ class DataTable extends HTMLElement {
     this.#render();
 
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('table:sort', {
+    this.dispatchEvent(new CustomEvent('data-table:sort', {
       detail: {
         column: columnIndex,
         direction,
@@ -337,7 +337,7 @@ class DataTable extends HTMLElement {
     this.#render();
 
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('table:filter', {
+    this.dispatchEvent(new CustomEvent('data-table:filter', {
       detail: {
         query: this.#filterQuery,
         count: this.#filteredRows.length
@@ -394,7 +394,7 @@ class DataTable extends HTMLElement {
     }
 
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('table:expand', {
+    this.dispatchEvent(new CustomEvent('data-table:expand', {
       detail: {
         row: expandableRow,
         expanded: !isExpanded
@@ -500,7 +500,7 @@ class DataTable extends HTMLElement {
   #dispatchSelectionEvent() {
     const selectedRows = [...this.#tbody.querySelectorAll('tr[data-selectable][data-state-selected]')];
 
-    this.dispatchEvent(new CustomEvent('table:selection', {
+    this.dispatchEvent(new CustomEvent('data-table:selection', {
       detail: {
         count: selectedRows.length,
         rows: selectedRows
@@ -658,7 +658,7 @@ class DataTable extends HTMLElement {
     this.#currentPage = newPage;
     this.#render();
 
-    this.dispatchEvent(new CustomEvent('table:page', {
+    this.dispatchEvent(new CustomEvent('data-table:page', {
       detail: { page: this.#currentPage },
       bubbles: true
     }));

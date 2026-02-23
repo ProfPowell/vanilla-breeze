@@ -327,7 +327,7 @@ class SiteSearch extends HTMLElement {
     // Initialize pagefind in background
     this.#initPagefind();
 
-    this.dispatchEvent(new CustomEvent('site-search-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('site-search:open', { bubbles: true }));
   }
 
   close() {
@@ -350,7 +350,7 @@ class SiteSearch extends HTMLElement {
     // Return focus to trigger
     this.#trigger?.focus();
 
-    this.dispatchEvent(new CustomEvent('site-search-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('site-search:close', { bubbles: true }));
   }
 
   get isOpen() {

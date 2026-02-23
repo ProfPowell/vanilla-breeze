@@ -227,10 +227,10 @@ class TooltipWc extends HTMLElement {
       } else if (this.#useJsPositioning) {
         this.#updatePosition();
       }
-      const eventName = this.#isCard ? 'hover-card-show' : 'tooltip-show';
+      const eventName = this.#isCard ? 'tooltip-wc:hover-show' : 'tooltip-wc:show';
       this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
     } else {
-      const eventName = this.#isCard ? 'hover-card-hide' : 'tooltip-hide';
+      const eventName = this.#isCard ? 'tooltip-wc:hover-hide' : 'tooltip-wc:hide';
       this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
     }
   };
@@ -279,7 +279,7 @@ class TooltipWc extends HTMLElement {
       this.#updatePosition();
     }
 
-    const eventName = this.#isCard ? 'hover-card-show' : 'tooltip-show';
+    const eventName = this.#isCard ? 'tooltip-wc:hover-show' : 'tooltip-wc:show';
     this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 
@@ -288,7 +288,7 @@ class TooltipWc extends HTMLElement {
 
     this.#tooltip.hidePopover();
 
-    const eventName = this.#isCard ? 'hover-card-hide' : 'tooltip-hide';
+    const eventName = this.#isCard ? 'tooltip-wc:hover-hide' : 'tooltip-wc:hide';
     this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 

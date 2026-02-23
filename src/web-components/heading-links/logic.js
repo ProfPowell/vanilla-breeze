@@ -136,7 +136,7 @@ class HeadingLinks extends HTMLElement {
       // Clipboard failed, but navigation still works
     }
 
-    this.dispatchEvent(new CustomEvent('heading-navigate', {
+    this.dispatchEvent(new CustomEvent('heading-links:navigate', {
       bubbles: true,
       detail: { id: heading.id, url: url.href }
     }));

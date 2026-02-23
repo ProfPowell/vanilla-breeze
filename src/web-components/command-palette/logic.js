@@ -222,7 +222,7 @@ class CommandPalette extends HTMLElement {
 
   #select(value) {
     this.close();
-    this.dispatchEvent(new CustomEvent('command-select', {
+    this.dispatchEvent(new CustomEvent('command-palette:select', {
       bubbles: true,
       detail: { value }
     }));
@@ -360,13 +360,13 @@ class CommandPalette extends HTMLElement {
     this.#input.value = '';
     this.#handleInput(); // Reset filter
     this.#input.focus();
-    this.dispatchEvent(new CustomEvent('command-open', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('command-palette:open', { bubbles: true }));
   }
 
   close() {
     if (!this.#dialog.open) return;
     this.#dialog.close();
-    this.dispatchEvent(new CustomEvent('command-close', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('command-palette:close', { bubbles: true }));
   }
 
   get isOpen() {
