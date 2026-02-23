@@ -1,5 +1,5 @@
 /**
- * html-include-wc: Load HTML fragments from URLs
+ * include-file: Load HTML fragments from URLs
  *
  * Fetches remote HTML and injects it into the element. Progressive enhancement:
  * any existing content is shown as a fallback until the fetch completes.
@@ -11,16 +11,16 @@
  * @attr {boolean} data-error - Added if fetch fails
  * @attr {boolean} data-lazy - If present, defers loading until element is in viewport
  *
- * @fires html-include-load - Dispatched after successful load
- * @fires html-include-error - Dispatched if fetch fails
+ * @fires include-file-load - Dispatched after successful load
+ * @fires include-file-error - Dispatched if fetch fails
  *
  * @example
- * <html-include-wc src="/partials/header.html">
+ * <include-file src="/partials/header.html">
  *   <p>Loading...</p>
- * </html-include-wc>
+ * </include-file>
  */
 
-class HtmlIncludeWc extends HTMLElement {
+class IncludeFile extends HTMLElement {
   #observer;
   #abortController;
 
@@ -106,7 +106,7 @@ class HtmlIncludeWc extends HTMLElement {
       this.removeAttribute('data-loading');
       this.setAttribute('data-loaded', '');
 
-      this.dispatchEvent(new CustomEvent('html-include-load', {
+      this.dispatchEvent(new CustomEvent('include-file-load', {
         bubbles: true,
         detail: { src, html }
       }));
@@ -116,7 +116,7 @@ class HtmlIncludeWc extends HTMLElement {
       this.removeAttribute('data-loading');
       this.setAttribute('data-error', '');
 
-      this.dispatchEvent(new CustomEvent('html-include-error', {
+      this.dispatchEvent(new CustomEvent('include-file-error', {
         bubbles: true,
         detail: { src, error: err.message }
       }));
@@ -130,6 +130,6 @@ class HtmlIncludeWc extends HTMLElement {
   }
 }
 
-customElements.define('html-include-wc', HtmlIncludeWc);
+customElements.define('include-file', IncludeFile);
 
-export { HtmlIncludeWc };
+export { IncludeFile };
