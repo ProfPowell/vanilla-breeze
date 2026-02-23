@@ -85,7 +85,27 @@ class ThemePicker extends HTMLElement {
     { id: 'catppuccin-mocha', name: 'Catppuccin', icon: 'coffee', character: 'Warm pastels', swatchBg: '#1E1E2E', swatchFg: '#CBA6F7' },
     { id: 'glassmorphism', name: 'Glass', icon: 'glass-water', character: 'Frosted surfaces', swatchBg: '#667eea', swatchFg: '#ffffff' },
     { id: 'art-deco', name: 'Art Deco', icon: 'crown', character: '1920s luxury', swatchBg: '#1A1A1A', swatchFg: '#C9A84C' },
-    { id: 'genai', name: 'GenAI', icon: 'sparkles', character: 'AI aesthetic', swatchBg: '#1a0a2e', swatchFg: '#a855f7' }
+    { id: 'genai', name: 'GenAI', icon: 'sparkles', character: 'AI aesthetic', swatchBg: '#1a0a2e', swatchFg: '#a855f7' },
+    { id: 'gruvbox', name: 'Gruvbox', icon: 'palette', character: 'Retro warmth', swatchBg: '#282828', swatchFg: '#ebdbb2' },
+    { id: 'tokyo-night', name: 'Tokyo Night', icon: 'moon', character: 'Night-owl vibes', swatchBg: '#1a1b26', swatchFg: '#7aa2f7' },
+    { id: 'rose-pine', name: 'Rosé Pine', icon: 'flower-2', character: 'Muted elegance', swatchBg: '#191724', swatchFg: '#ebbcba' },
+    { id: 'vaporwave', name: 'Vaporwave', icon: 'radio', character: 'Neon dreamy', swatchBg: '#2b0040', swatchFg: '#ff6ad5' },
+    { id: 'neumorphism', name: 'Neumorph', icon: 'circle', character: 'Soft embossed', swatchBg: '#e0e0e0', swatchFg: '#a0a0a0' },
+    { id: 'catppuccin-latte', name: 'Ctp Latte', icon: 'coffee', character: 'Cozy daytime', swatchBg: '#eff1f5', swatchFg: '#8839ef' },
+    { id: 'catppuccin-frappe', name: 'Ctp Frappé', icon: 'coffee', character: 'Cool twilight', swatchBg: '#303446', swatchFg: '#ca9ee6' },
+    { id: 'catppuccin-macchiato', name: 'Ctp Macchiato', icon: 'coffee', character: 'Deep blue', swatchBg: '#24273a', swatchFg: '#c6a0f6' },
+    { id: 'bauhaus', name: 'Bauhaus', icon: 'shapes', character: 'Geometric', swatchBg: '#F1FAEE', swatchFg: '#E63946' },
+    { id: 'memphis', name: 'Memphis', icon: 'star', character: 'Bold playful', swatchBg: '#FFF8F0', swatchFg: '#FF6B9D' },
+    { id: 'cottagecore', name: 'Cottagecore', icon: 'flower-2', character: 'Pastoral', swatchBg: '#fdf8f0', swatchFg: '#7d8c6d' },
+    { id: 'claymorphism', name: 'Clay', icon: 'circle-dot', character: 'Puffy 3D', swatchBg: '#f0f0f5', swatchFg: '#FF6B9D' },
+    { id: 'clinical', name: 'Clinical', icon: 'heart-pulse', character: 'Sterile precision', swatchBg: '#ffffff', swatchFg: '#0077b6' },
+    { id: 'financial', name: 'Financial', icon: 'landmark', character: 'Navy + gold', swatchBg: '#1b2a4a', swatchFg: '#c9a84c' },
+    { id: 'government', name: 'Government', icon: 'shield', character: 'Official', swatchBg: '#002868', swatchFg: '#bf0a30' },
+    { id: 'startup', name: 'Startup', icon: 'rocket', character: 'SaaS energy', swatchBg: '#4f46e5', swatchFg: '#ffffff' },
+    { id: 'dawn', name: 'Dawn', icon: 'sunrise', character: 'Golden morning', swatchBg: '#fef3e2', swatchFg: '#d4a574' },
+    { id: 'dusk', name: 'Dusk', icon: 'sunset', character: 'Twilight', swatchBg: '#1a1b2e', swatchFg: '#e5a858' },
+    { id: 'midnight', name: 'Midnight', icon: 'moon', character: 'Deep night', swatchBg: '#0d1117', swatchFg: '#58a6ff' },
+    { id: 'high-noon', name: 'High Noon', icon: 'sun', character: 'Maximum bright', swatchBg: '#ffffff', swatchFg: '#e63946' }
   ];
 
   // Fluid scaling presets

@@ -188,6 +188,26 @@ class SettingsPanel extends HTMLElement {
                 <option value="glassmorphism" ${selectValue === 'glassmorphism' ? 'selected' : ''}>Glassmorphism</option>
                 <option value="art-deco" ${selectValue === 'art-deco' ? 'selected' : ''}>Art Deco</option>
                 <option value="genai" ${selectValue === 'genai' ? 'selected' : ''}>GenAI</option>
+                <option value="gruvbox" ${selectValue === 'gruvbox' ? 'selected' : ''}>Gruvbox</option>
+                <option value="tokyo-night" ${selectValue === 'tokyo-night' ? 'selected' : ''}>Tokyo Night</option>
+                <option value="rose-pine" ${selectValue === 'rose-pine' ? 'selected' : ''}>Rosé Pine</option>
+                <option value="vaporwave" ${selectValue === 'vaporwave' ? 'selected' : ''}>Vaporwave</option>
+                <option value="neumorphism" ${selectValue === 'neumorphism' ? 'selected' : ''}>Neumorphism</option>
+                <option value="catppuccin-latte" ${selectValue === 'catppuccin-latte' ? 'selected' : ''}>Catppuccin Latte</option>
+                <option value="catppuccin-frappe" ${selectValue === 'catppuccin-frappe' ? 'selected' : ''}>Catppuccin Frappé</option>
+                <option value="catppuccin-macchiato" ${selectValue === 'catppuccin-macchiato' ? 'selected' : ''}>Catppuccin Macchiato</option>
+                <option value="bauhaus" ${selectValue === 'bauhaus' ? 'selected' : ''}>Bauhaus</option>
+                <option value="memphis" ${selectValue === 'memphis' ? 'selected' : ''}>Memphis</option>
+                <option value="cottagecore" ${selectValue === 'cottagecore' ? 'selected' : ''}>Cottagecore</option>
+                <option value="claymorphism" ${selectValue === 'claymorphism' ? 'selected' : ''}>Claymorphism</option>
+                <option value="clinical" ${selectValue === 'clinical' ? 'selected' : ''}>Clinical</option>
+                <option value="financial" ${selectValue === 'financial' ? 'selected' : ''}>Financial</option>
+                <option value="government" ${selectValue === 'government' ? 'selected' : ''}>Government</option>
+                <option value="startup" ${selectValue === 'startup' ? 'selected' : ''}>Startup</option>
+                <option value="dawn" ${selectValue === 'dawn' ? 'selected' : ''}>Dawn</option>
+                <option value="dusk" ${selectValue === 'dusk' ? 'selected' : ''}>Dusk</option>
+                <option value="midnight" ${selectValue === 'midnight' ? 'selected' : ''}>Midnight</option>
+                <option value="high-noon" ${selectValue === 'high-noon' ? 'selected' : ''}>High Noon</option>
               </optgroup>
             </select>
 
