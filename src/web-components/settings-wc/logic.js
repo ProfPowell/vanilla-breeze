@@ -181,6 +181,12 @@ class SettingsPanel extends HTMLElement {
                 <option value="nes" ${selectValue === 'nes' ? 'selected' : ''}>NES</option>
                 <option value="win9x" ${selectValue === 'win9x' ? 'selected' : ''}>Win9x</option>
                 <option value="rough" ${selectValue === 'rough' ? 'selected' : ''}>Rough</option>
+                <option value="nord" ${selectValue === 'nord' ? 'selected' : ''}>Nord</option>
+                <option value="solarized" ${selectValue === 'solarized' ? 'selected' : ''}>Solarized</option>
+                <option value="dracula" ${selectValue === 'dracula' ? 'selected' : ''}>Dracula</option>
+                <option value="catppuccin-mocha" ${selectValue === 'catppuccin-mocha' ? 'selected' : ''}>Catppuccin Mocha</option>
+                <option value="glassmorphism" ${selectValue === 'glassmorphism' ? 'selected' : ''}>Glassmorphism</option>
+                <option value="art-deco" ${selectValue === 'art-deco' ? 'selected' : ''}>Art Deco</option>
               </optgroup>
             </select>
 
