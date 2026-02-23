@@ -194,8 +194,8 @@ function initReferencedTooltip(trigger, id) {
 function initTooltips(root = document) {
   // --- [data-tooltip] discovery (Tier 1 + Tier 2) ---
   root.querySelectorAll('[data-tooltip]').forEach(trigger => {
-    // Skip triggers inside tooltip-wc (they have their own handling)
-    if (trigger.closest('tooltip-wc')) return;
+    // Skip triggers inside tool-tip (they have their own handling)
+    if (trigger.closest('tool-tip')) return;
 
     // Skip if already initialized
     if (trigger.hasAttribute('data-tooltip-init')) return;
@@ -220,8 +220,8 @@ function initTooltips(root = document) {
     // Only init if it's a popover tooltip
     if (!tip?.hasAttribute('popover') || !tip.matches('[role="tooltip"]')) return;
 
-    // Skip triggers inside tooltip-wc (they have their own event handling)
-    if (trigger.closest('tooltip-wc')) return;
+    // Skip triggers inside tool-tip (they have their own event handling)
+    if (trigger.closest('tool-tip')) return;
 
     // Skip if already initialized (by data-tooltip path or previous run)
     if (trigger.hasAttribute('data-tooltip-init')) return;

@@ -1,5 +1,5 @@
 /**
- * shortcuts-wc: Keyboard shortcuts help overlay
+ * short-cuts: Keyboard shortcuts help overlay
  *
  * Press ? to open a dialog listing all currently bound keyboard shortcuts.
  * Similar to GitHub's ? or Gmail's shortcut overlay.
@@ -8,13 +8,13 @@
  * and displays them grouped with formatted shortcut badges.
  *
  * @example
- * <shortcuts-wc></shortcuts-wc>
+ * <short-cuts></short-cuts>
  */
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 
-class ShortcutsWc extends HTMLElement {
+class ShortCuts extends HTMLElement {
   #dialog;
   #unbindHotkey = null;
 
@@ -35,7 +35,7 @@ class ShortcutsWc extends HTMLElement {
 
   #build() {
     this.#dialog = document.createElement('dialog');
-    this.#dialog.className = 'shortcuts-dialog';
+    this.#dialog.className = 'shortcut-dialog';
     this.#dialog.addEventListener('click', (e) => {
       if (e.target === this.#dialog) this.#dialog.close();
     });
@@ -47,12 +47,12 @@ class ShortcutsWc extends HTMLElement {
     this.#dialog.innerHTML = '';
 
     const header = document.createElement('div');
-    header.className = 'shortcuts-header';
+    header.className = 'shortcut-header';
     header.innerHTML = '<h2>Keyboard Shortcuts</h2>';
     this.#dialog.appendChild(header);
 
     const body = document.createElement('div');
-    body.className = 'shortcuts-body';
+    body.className = 'shortcut-body';
 
     // Gather shortcuts from the command registry
     const { getRegisteredCommands } = window.__commandRegistry || {};
@@ -76,23 +76,23 @@ class ShortcutsWc extends HTMLElement {
 
     for (const [groupName, entries] of grouped) {
       const section = document.createElement('div');
-      section.className = 'shortcuts-group';
+      section.className = 'shortcut-group';
 
       const groupHeader = document.createElement('div');
-      groupHeader.className = 'shortcuts-group-header';
+      groupHeader.className = 'shortcut-group-header';
       groupHeader.textContent = groupName;
       section.appendChild(groupHeader);
 
       for (const entry of entries) {
         const row = document.createElement('div');
-        row.className = 'shortcuts-row';
+        row.className = 'shortcut-row';
 
         const label = document.createElement('span');
-        label.className = 'shortcuts-label';
+        label.className = 'shortcut-label';
         label.textContent = entry.label;
 
         const badge = document.createElement('kbd');
-        badge.className = 'shortcuts-kbd';
+        badge.className = 'shortcut-kbd';
         badge.textContent = formatHotkey(entry.shortcut);
 
         row.appendChild(label);
@@ -108,6 +108,6 @@ class ShortcutsWc extends HTMLElement {
   }
 }
 
-customElements.define('shortcuts-wc', ShortcutsWc);
+customElements.define('short-cuts', ShortCuts);
 
-export { ShortcutsWc };
+export { ShortCuts };

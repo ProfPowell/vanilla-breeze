@@ -1,5 +1,5 @@
 /**
- * tooltip-wc: Enhanced tooltip with Popover API + interestfor
+ * tool-tip: Enhanced tooltip with Popover API + interestfor
  *
  * Wraps a trigger element and provides a tooltip on hover/focus.
  * Primary mechanism: sets `interestfor` attribute on trigger, letting
@@ -12,26 +12,26 @@
  * @attr {string} data-variant - Variant: omit for tooltip (default), 'card' for hover card
  *
  * @example Simple text tooltip
- * <tooltip-wc data-content="Save your changes">
+ * <tool-tip data-content="Save your changes">
  *   <button>Save</button>
- * </tooltip-wc>
+ * </tool-tip>
  *
  * @example Rich content tooltip (use template for HTML)
- * <tooltip-wc data-tooltip-position="top">
+ * <tool-tip data-tooltip-position="top">
  *   <button>Hover me</button>
  *   <template data-tooltip>
  *     <strong>Formatted</strong> content with <kbd>Ctrl+S</kbd>
  *   </template>
- * </tooltip-wc>
+ * </tool-tip>
  *
  * @example Card variant (rich hover card)
- * <tooltip-wc data-variant="card">
+ * <tool-tip data-variant="card">
  *   <a href="/user/jane" data-trigger>Jane Smith</a>
  *   <div data-content>
  *     <h4>Jane Smith</h4>
  *     <p>Senior Developer</p>
  *   </div>
- * </tooltip-wc>
+ * </tool-tip>
  */
 
 // Check CSS Anchor Positioning support once
@@ -52,7 +52,7 @@ function canUseInterestFor(trigger) {
   return false;
 }
 
-class TooltipWc extends HTMLElement {
+class ToolTip extends HTMLElement {
   #trigger;
   #tooltip;
   #showTimer;
@@ -227,10 +227,10 @@ class TooltipWc extends HTMLElement {
       } else if (this.#useJsPositioning) {
         this.#updatePosition();
       }
-      const eventName = this.#isCard ? 'tooltip-wc:hover-show' : 'tooltip-wc:show';
+      const eventName = this.#isCard ? 'tool-tip:hover-show' : 'tool-tip:show';
       this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
     } else {
-      const eventName = this.#isCard ? 'tooltip-wc:hover-hide' : 'tooltip-wc:hide';
+      const eventName = this.#isCard ? 'tool-tip:hover-hide' : 'tool-tip:hide';
       this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
     }
   };
@@ -279,7 +279,7 @@ class TooltipWc extends HTMLElement {
       this.#updatePosition();
     }
 
-    const eventName = this.#isCard ? 'tooltip-wc:hover-show' : 'tooltip-wc:show';
+    const eventName = this.#isCard ? 'tool-tip:hover-show' : 'tool-tip:show';
     this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 
@@ -288,7 +288,7 @@ class TooltipWc extends HTMLElement {
 
     this.#tooltip.hidePopover();
 
-    const eventName = this.#isCard ? 'tooltip-wc:hover-hide' : 'tooltip-wc:hide';
+    const eventName = this.#isCard ? 'tool-tip:hover-hide' : 'tool-tip:hide';
     this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
   }
 
@@ -377,6 +377,6 @@ class TooltipWc extends HTMLElement {
   }
 }
 
-customElements.define('tooltip-wc', TooltipWc);
+customElements.define('tool-tip', ToolTip);
 
-export { TooltipWc };
+export { ToolTip };

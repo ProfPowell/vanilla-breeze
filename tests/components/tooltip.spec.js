@@ -2,20 +2,20 @@
  * Tooltip Web Component Behavior Tests
  *
  * Tests hover/focus show/hide behavior and positioning
- * for the tooltip-wc component.
+ * for the tool-tip component.
  */
 
 import { test, expect } from 'playwright/test';
 
 const demoPage = '/docs/examples/demos/tooltip-basic.html';
 
-test.describe('tooltip-wc', () => {
+test.describe('tool-tip', () => {
 
   test('renders tooltip triggers', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const tooltips = page.locator('tooltip-wc');
+    const tooltips = page.locator('tool-tip');
     const count = await tooltips.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -24,7 +24,7 @@ test.describe('tooltip-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const tooltip = page.locator('tooltip-wc').first();
+    const tooltip = page.locator('tool-tip').first();
     // Tooltip content should not be visible initially
     const popover = tooltip.locator('[popover], [role="tooltip"]');
     const count = await popover.count();
@@ -37,7 +37,7 @@ test.describe('tooltip-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const tooltip = page.locator('tooltip-wc').first();
+    const tooltip = page.locator('tool-tip').first();
     await tooltip.hover();
 
     // Wait for tooltip to appear

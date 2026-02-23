@@ -917,7 +917,7 @@ Enhanced `<details>`/`<summary>` accordion.
 |--------|--------|
 | `accordion-wc:toggle` | `{ open, summary, details }` |
 
-### `<tooltip-wc>`
+### `<tool-tip>`
 Rich tooltip/popover container.
 
 | Attribute | Values | Description |
@@ -929,7 +929,7 @@ Rich tooltip/popover container.
 
 | Events |
 |--------|
-| `tooltip-wc:show`, `tooltip-wc:hide` |
+| `tool-tip:show`, `tool-tip:hide` |
 
 ### `<drop-down>`
 Dropdown menu/popover triggered by a button.
@@ -1206,7 +1206,7 @@ Slide-to-confirm action.
 |--------|
 | `slide-accept:accept`, `slide-accept:reset` |
 
-### `<shortcuts-wc>`
+### `<short-cuts>`
 Keyboard shortcut overlay display.
 
 Reads `data-hotkey` and `data-shortcut` attributes from page elements.
@@ -1624,7 +1624,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-name` | Token elements — token name |
 | `data-nav-open` | `<body>` — mobile nav state |
 | `data-next` | Pagination button — next page |
-| `data-no-flip` | `<tooltip-wc>` — disable auto-flip |
+| `data-no-flip` | `<tool-tip>` — disable auto-flip |
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
@@ -1682,9 +1682,9 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-title` | Various — title text |
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
-| `data-tooltip-delay` | `<tooltip-wc>` — show delay |
+| `data-tooltip-delay` | `<tool-tip>` — show delay |
 | `data-tooltip-position` | Tooltip — position |
-| `data-trigger` | `<tooltip-wc>` — trigger mode |
+| `data-trigger` | `<tool-tip>` — trigger mode |
 | `data-truncated` | Breadcrumb li — truncate text |
 | `data-type` | Chart, `<form-field>` — type variant |
 | `data-typewriter` | Text — typing animation |

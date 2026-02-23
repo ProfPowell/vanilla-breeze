@@ -189,7 +189,7 @@ module.exports = {
     }
   },
 
-  "tooltip-wc": {
+  "tool-tip": {
     flow: true,
     permittedContent: ["@flow", "template"],
     attributes: {
