@@ -931,7 +931,7 @@ Rich tooltip/popover container.
 |--------|
 | `tooltip-show`, `tooltip-hide` |
 
-### `<dropdown-wc>`
+### `<drop-down>`
 Dropdown menu/popover triggered by a button.
 
 | Events |
@@ -984,12 +984,12 @@ JS API: `document.querySelector('toast-wc').show({ message, variant, duration })
 
 Toast variants: `data-variant="info|success|warning|error"` on `.toast` child.
 
-### `<search-wc>`
+### `<site-search>`
 Full-text search overlay with keyboard navigation.
 
 | Events |
 |--------|
-| `search-wc-open`, `search-wc-close` |
+| `site-search-open`, `site-search-close` |
 
 ### `<command-wc>` / `<command-group>` / `<command-item>`
 Command palette (Cmd+K).
@@ -999,7 +999,7 @@ Command palette (Cmd+K).
 | `command-select` | `{ value, label }` |
 | `command-open`, `command-close` | — |
 
-### `<table-wc>`
+### `<data-table>`
 Enhanced data table with sort, filter, pagination, selection.
 
 | Events | Detail |
@@ -1066,7 +1066,7 @@ Resizable split panes.
 | `split-resize` | `{ position }` |
 | `split-collapse` | `{ collapsed }` |
 
-### `<rating-wc>`
+### `<star-rating>`
 Interactive star rating (form-associated).
 
 | Attribute | Values | Description |
@@ -1095,15 +1095,15 @@ Form-associated combobox/autocomplete. Single-select by default; add `data-multi
 
 Children: `<input>` + `<ul>` with `<li data-value="...">` options.
 
-### `<theme-wc>`
+### `<theme-picker>`
 Theme picker UI (mode, theme, extensions).
 
 | Events | Detail |
 |--------|--------|
-| `theme-wc-open`, `theme-wc-close` | — |
+| `theme-picker-open`, `theme-picker-close` | — |
 | `extensions-change` (on window) | `{ extension, value }` |
 
-### `<footnotes-wc>` / `<foot-note>`
+### `<foot-notes>` / `<foot-note>`
 Sidenote/footnote system.
 
 Children: `<foot-note>` elements with content. Auto-generates numbers and back-references.
@@ -1562,7 +1562,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-dismiss` | `<status-message>` child — dismiss button |
 | `data-action` | Table button — `toggle-expand` action |
 | `data-animate` | `<icon-wc>` — `spin` animation |
-| `data-bulk-actions` | `<table-wc>` — bulk action bar for selected rows |
+| `data-bulk-actions` | `<data-table>` — bulk action bar for selected rows |
 | `data-content` | `<status-message>` child — content wrapper |
 | `data-description` | `<status-message>` child — description text |
 | `data-donut` | Pie chart — hollow center |
@@ -1642,7 +1642,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating-half` | Rating — half-star precision |
 | `data-rating-readonly` | Rating — read-only |
 | `data-ratio` | `[data-media]` — aspect ratio |
-| `data-readonly` | `<rating-wc>` — read-only |
+| `data-readonly` | `<star-rating>` — read-only |
 | `data-required` | `<combo-box>` — validation |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
@@ -1651,7 +1651,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-scramble` | Text — decode effect |
 | `data-select-all` | Checkbox — select-all toggle |
 | `data-selected` | Table row — row highlight |
-| `data-selected-count` | `<table-wc>` — selection count display |
+| `data-selected-count` | `<data-table>` — selection count display |
 | `data-separator` | Breadcrumb — separator char |
 | `data-series` | Chart elements — series color |
 | `data-shape` | Badge, avatar — shape variant |
@@ -1676,7 +1676,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-sticky` | Table — sticky header/column |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |
-| `data-table-filter` | `<table-wc>` — filter input container |
+| `data-table-filter` | `<data-table>` — filter input container |
 | `data-theme` | `<html>` — active theme |
 | `data-ticker` | `<data>` — count-up animation |
 | `data-title` | Various — title text |

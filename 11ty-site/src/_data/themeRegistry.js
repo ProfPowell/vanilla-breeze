@@ -2,7 +2,7 @@
  * Theme Registry — Single source of truth for all VB themes.
  *
  * Used by: Color Schemer presets, Theme Lab hints, Theme Composer starting points,
- *          theme-wc swatch data, and the /docs/tools/ index page.
+ *          theme-picker swatch data, and the /docs/tools/ index page.
  *
  * Categories:
  *   color        — Override hue values only (ocean, forest, sunset, etc.)

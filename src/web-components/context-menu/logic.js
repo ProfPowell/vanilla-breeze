@@ -2,7 +2,7 @@
  * context-menu: Right-click context menu with keyboard navigation
  *
  * Provides a custom right-click menu that opens at cursor position.
- * Shares keyboard navigation patterns with dropdown-wc.
+ * Shares keyboard navigation patterns with drop-down.
  * Items with data-shortcut get real keyboard shortcut bindings.
  *
  * @example

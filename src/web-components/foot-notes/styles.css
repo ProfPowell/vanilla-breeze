@@ -1,0 +1,109 @@
+/* foot-notes: Progressive enhancement for footnotes */
+
+/* foot-note: Inline footnote reference */
+/* Without JS: displays content inline in parentheses */
+foot-note {
+  &::before {
+    content: " (";
+  }
+  &::after {
+    content: ")";
+  }
+}
+
+/* With JS: foot-note becomes a superscript link */
+foot-note[data-enhanced] {
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+foot-note[data-enhanced] > a {
+  font-size: var(--font-size-xs);
+  vertical-align: super;
+  line-height: 0;
+  text-decoration: none;
+  color: var(--color-interactive);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: 2px;
+    border-radius: var(--radius-s);
+  }
+}
+
+/* Hide the original text content when enhanced (exclude sidenote asides) */
+foot-note[data-enhanced]:not([data-side]) > :not(a) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Sidenote number prefix */
+.sidenote-number {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Hide foot-notes container when all notes are sidenotes */
+foot-notes[hidden] {
+  display: none;
+}
+
+/* foot-notes: Container for collected footnotes */
+foot-notes {
+  display: block;
+  margin-block-start: var(--size-2xl);
+  padding-block-start: var(--size-l);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+foot-notes > ol {
+  padding-inline-start: var(--size-l);
+  margin: 0;
+}
+
+foot-notes > ol > li {
+  margin-block-start: var(--size-s);
+}
+
+foot-notes > ol > li:first-child {
+  margin-block-start: 0;
+}
+
+/* Back-reference link */
+foot-notes [data-backref] {
+  margin-inline-start: var(--size-xs);
+  text-decoration: none;
+  color: var(--color-interactive);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: 2px;
+    border-radius: var(--radius-s);
+  }
+}
+
+/* Target highlighting when jumping to footnote */
+foot-notes > ol > li:target {
+  background: oklch(from var(--color-interactive) l c h / 0.1);
+  margin-inline: calc(var(--size-s) * -1);
+  padding-inline: var(--size-s);
+  border-radius: var(--radius-s);
+}

@@ -212,7 +212,7 @@ module.exports = {
     }
   },
 
-  "dropdown-wc": {
+  "drop-down": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
@@ -222,7 +222,7 @@ module.exports = {
     }
   },
 
-  "footnotes-wc": {
+  "foot-notes": {
     flow: true,
     permittedContent: ["ol"],
     attributes: {

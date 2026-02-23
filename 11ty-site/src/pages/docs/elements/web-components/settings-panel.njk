@@ -1,0 +1,253 @@
+---
+layout: layouts/element.njk
+title: "settings-panel"
+description: "Compact settings panel with gear trigger, details accordion sections, and theme/accessibility/layout/effects controls."
+elementName: settings-panel
+category: component
+currentPath: /docs/elements/web-components/settings-panel/
+permalink: /docs/elements/web-components/settings-panel/
+---
+
+{% set basicCode %}<settings-panel></settings-panel>{% endset %}
+
+{% set customTriggerCode %}<settings-panel>
+  <button data-trigger>
+    <x-icon name="settings" label="Settings"></x-icon>
+    Settings
+  </button>
+</settings-panel>{% endset %}
+
+{% set footerCode %}{% raw %}<footer>
+  <p class="footer-legal">
+    <span>&copy; 2026 Your Name</span>
+    <a href="/about">About</a>
+    <settings-panel></settings-panel>
+  </p>
+</footer>{% endraw %}{% endset %}
+
+{% set jsApiCode %}{% raw %}const settings = document.querySelector('settings-panel');
+
+// Open/close programmatically
+settings.open();
+settings.close();
+settings.toggle();{% endraw %}{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>A compact settings panel triggered by a gear icon. Uses native <code>&lt;details name="settings"&gt;</code> for exclusive accordion sections with theme selection, accessibility toggles, layout options, and effects controls.</p>
+
+  <p>Runs in parallel with <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; both share state through <code>ThemeManager</code> and localStorage events. Changes in one component are reflected in the other.</p>
+
+  <browser-window
+    src="/docs/examples/demos/settings-panel-basic.html"
+    url="https://vanilla-breeze.dev/settings"
+    title="Settings Panel Demo"
+    style="min-height: 32rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage (auto-generates gear trigger)">{{ basicCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-open</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Reflected attribute indicating the panel is open.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Panel Sections</h2>
+  <p>The panel contains four collapsible <code>&lt;details&gt;</code> sections with exclusive accordion behavior (one open at a time).</p>
+
+  <h3>Appearance</h3>
+  <ul>
+    <li><strong>Color Mode</strong> &mdash; Segmented control: Auto / Light / Dark</li>
+    <li><strong>Theme</strong> &mdash; <code>&lt;select&gt;</code> with optgroups: Base (Default), Personality (Modern, Minimal, Classic), and Extreme (Swiss, Brutalist, Cyber, Terminal, Organic, Editorial, Kawaii, 8-Bit, NES, Win9x, Rough)</li>
+    <li><strong>Accent Color</strong> &mdash; Row of circular swatches, only visible when "Default" theme is selected. The 10 color themes (Ocean, Forest, Sunset, etc.) are hue variants of Default and are presented here instead of as separate top-level themes.</li>
+  </ul>
+
+  <h3>Accessibility</h3>
+  <p>Toggle switches (<code>input[data-switch="sm"]</code>) for:</p>
+  <ul>
+    <li>High Contrast</li>
+    <li>Large Text</li>
+    <li>Dyslexia-Friendly</li>
+  </ul>
+
+  <h3>Layout</h3>
+  <ul>
+    <li><strong>Fluid Scaling</strong> &mdash; Toggle switch (on/off). When off, static token values are used.</li>
+    <li><strong>Density</strong> &mdash; Segmented control (Compact / Default / Spacious), only visible when fluid scaling is enabled.</li>
+  </ul>
+
+  <h3>Effects</h3>
+  <p>Toggle switches for:</p>
+  <ul>
+    <li>Motion Effects (default: on)</li>
+    <li>Sound Effects (default: off)</li>
+  </ul>
+
+  <p>A <strong>Reset to Defaults</strong> button in the footer clears all preferences.</p>
+
+  <browser-window
+    src="/docs/examples/demos/settings-panel-panels.html"
+    url="https://vanilla-breeze.dev/settings/panels"
+    title="Settings Panel Sections"
+    style="min-height: 32rem;"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Custom Trigger</h2>
+  <p>Provide your own trigger button as a child element with <code>data-trigger</code>. If no trigger is found, a gear icon is auto-generated.</p>
+
+  <browser-window
+    src="/docs/examples/demos/settings-panel-custom-trigger.html"
+    url="https://vanilla-breeze.dev/settings/trigger"
+    title="Custom Trigger"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Custom trigger button">{{ customTriggerCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Footer Integration</h2>
+  <p>The typical placement is inline with footer legal links. The panel opens <strong>upward</strong> from the trigger.</p>
+
+  <browser-window
+    src="/docs/examples/demos/settings-panel-footer.html"
+    url="https://vanilla-breeze.dev/settings/footer"
+    title="Footer Integration"
+    style="min-height: 20rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Footer placement">{{ footerCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Returns</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>open()</code></td>
+        <td><code>void</code></td>
+        <td>Open the settings panel.</td>
+      </tr>
+      <tr>
+        <td><code>close()</code></td>
+        <td><code>void</code></td>
+        <td>Close the settings panel.</td>
+      </tr>
+      <tr>
+        <td><code>toggle()</code></td>
+        <td><code>void</code></td>
+        <td>Toggle the panel open/closed.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="javascript" show-lines label="Programmatic control">{{ jsApiCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>State Sharing</h2>
+  <p>Both <code>&lt;settings-panel&gt;</code> and <code>&lt;theme-picker&gt;</code> share state through three channels:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Channel</th>
+        <th>Storage Key</th>
+        <th>Window Event</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Theme (mode, brand, fluid)</td>
+        <td><code>vb-theme</code></td>
+        <td><code>theme-change</code></td>
+      </tr>
+      <tr>
+        <td>Extensions (motion, sound)</td>
+        <td><code>vb-extensions</code></td>
+        <td><code>extensions-change</code></td>
+      </tr>
+      <tr>
+        <td>Accessibility themes</td>
+        <td><code>vb-a11y-themes</code></td>
+        <td><code>a11y-themes-change</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Keyboard Navigation</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><kbd>Escape</kbd></td>
+        <td>Close panel, return focus to trigger</td>
+      </tr>
+      <tr>
+        <td><kbd>Tab</kbd></td>
+        <td>Navigate through controls within the panel</td>
+      </tr>
+      <tr>
+        <td><kbd>Space</kbd> / <kbd>Enter</kbd></td>
+        <td>Toggle trigger, activate controls</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Panel uses <code>role="dialog"</code> with <code>aria-label="Site settings"</code>.</li>
+    <li>Trigger has <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code> reflecting state.</li>
+    <li>Color mode uses a radio group with <code>role="radiogroup"</code>.</li>
+    <li>Accent swatches use a radio group with descriptive <code>title</code> on each swatch.</li>
+    <li>Toggle switches use native <code>&lt;input type="checkbox" data-switch="sm"&gt;</code>.</li>
+    <li>Focus trap: <kbd>Escape</kbd> closes panel and returns focus to trigger.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; Full theme picker with swatch grid (runs in parallel)</li>
+    <li><a href="/docs/themes/">Themes</a> &mdash; Available theme documentation</li>
+  </ul>
+</section>

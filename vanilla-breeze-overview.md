@@ -202,8 +202,8 @@ Located in `/src/web-components/` (10 components). JavaScript-enhanced component
 | `tabs-wc` | Tabbed interface | ARIA tablist/tab/tabpanel, keyboard nav |
 | `toast-wc` | Toast notifications | Auto-dismiss, positioning |
 | `tooltip-wc` | Tooltip overlays | Positioned with arrow |
-| `dropdown-wc` | Dropdown menus | Click/keyboard triggered |
-| `footnotes-wc` | Footnote references | Modal/popover display |
+| `drop-down` | Dropdown menus | Click/keyboard triggered |
+| `foot-notes` | Footnote references | Modal/popover display |
 | `icon-wc` | SVG icon wrapper | Lucide integration, size variants |
 | `theme-picker` | Theme selection | Mode switching, brand themes |
 | `heading-links` | Heading anchors | Auto-generates linkable IDs |

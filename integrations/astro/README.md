@@ -21,7 +21,7 @@ import BaseHead from './components/BaseHead.astro';
 ```
 
 ### ThemeToggle
-Theme switcher button using `theme-wc`.
+Theme switcher button using `theme-picker`.
 
 ```astro
 ---

@@ -2,20 +2,20 @@
  * Dropdown Web Component Behavior Tests
  *
  * Tests open/close, keyboard navigation, and focus management
- * for the dropdown-wc component.
+ * for the drop-down component.
  */
 
 import { test, expect } from 'playwright/test';
 
 const demoPage = '/docs/examples/demos/dropdown-basic.html';
 
-test.describe('dropdown-wc', () => {
+test.describe('drop-down', () => {
 
   test('renders dropdown trigger', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const dropdown = page.locator('dropdown-wc');
+    const dropdown = page.locator('drop-down');
     await expect(dropdown).toBeVisible();
   });
 
@@ -23,7 +23,7 @@ test.describe('dropdown-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const dropdown = page.locator('dropdown-wc').first();
+    const dropdown = page.locator('drop-down').first();
     const isOpen = await dropdown.evaluate(el => el.hasAttribute('open') || el.matches('[data-open]'));
     expect(isOpen).toBe(false);
   });
@@ -32,7 +32,7 @@ test.describe('dropdown-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const dropdown = page.locator('dropdown-wc').first();
+    const dropdown = page.locator('drop-down').first();
     const trigger = dropdown.locator('button, summary').first();
 
     // Open
