@@ -118,7 +118,7 @@ class PageToc extends HTMLElement {
    * Handle responsive behavior: details open on wide screens, hash sync on resize
    */
   #setupResponsive() {
-    this.#mediaQuery = window.matchMedia('(min-width: 1024px)');
+    this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-lg */
     this.#handleMediaChange = this.#handleMediaChange.bind(this);
     this.#handleResize = this.#handleResize.bind(this);
     this.#mediaQuery.addEventListener('change', this.#handleMediaChange);
@@ -263,7 +263,7 @@ class PageToc extends HTMLElement {
     // Focus heading for accessibility
     heading.focus();
 
-    this.dispatchEvent(new CustomEvent('toc-navigate', {
+    this.dispatchEvent(new CustomEvent('page-toc:navigate', {
       bubbles: true,
       detail: { id: heading.id }
     }));
