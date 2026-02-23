@@ -15,7 +15,7 @@ const themes = [
   'modern', 'minimal', 'classic',
   // Extreme themes
   'brutalist', 'swiss', 'cyber', 'organic', 'editorial', 'terminal', 'kawaii', '8bit', 'nes', 'win9x', 'rough',
-  'nord', 'solarized', 'dracula', 'catppuccin-mocha', 'glassmorphism', 'art-deco',
+  'nord', 'solarized', 'dracula', 'catppuccin-mocha', 'glassmorphism', 'art-deco', 'genai',
 ];
 
 const testPage = '/docs/examples/demos/form-validation.html';

@@ -84,7 +84,8 @@ class ThemePicker extends HTMLElement {
     { id: 'dracula', name: 'Dracula', icon: 'moon-star', character: 'Dark elegance', swatchBg: '#282A36', swatchFg: '#BD93F9' },
     { id: 'catppuccin-mocha', name: 'Catppuccin', icon: 'coffee', character: 'Warm pastels', swatchBg: '#1E1E2E', swatchFg: '#CBA6F7' },
     { id: 'glassmorphism', name: 'Glass', icon: 'glass-water', character: 'Frosted surfaces', swatchBg: '#667eea', swatchFg: '#ffffff' },
-    { id: 'art-deco', name: 'Art Deco', icon: 'crown', character: '1920s luxury', swatchBg: '#1A1A1A', swatchFg: '#C9A84C' }
+    { id: 'art-deco', name: 'Art Deco', icon: 'crown', character: '1920s luxury', swatchBg: '#1A1A1A', swatchFg: '#C9A84C' },
+    { id: 'genai', name: 'GenAI', icon: 'sparkles', character: 'AI aesthetic', swatchBg: '#1a0a2e', swatchFg: '#a855f7' }
   ];
 
   // Fluid scaling presets

@@ -187,6 +187,7 @@ class SettingsPanel extends HTMLElement {
                 <option value="catppuccin-mocha" ${selectValue === 'catppuccin-mocha' ? 'selected' : ''}>Catppuccin Mocha</option>
                 <option value="glassmorphism" ${selectValue === 'glassmorphism' ? 'selected' : ''}>Glassmorphism</option>
                 <option value="art-deco" ${selectValue === 'art-deco' ? 'selected' : ''}>Art Deco</option>
+                <option value="genai" ${selectValue === 'genai' ? 'selected' : ''}>GenAI</option>
               </optgroup>
             </select>
 

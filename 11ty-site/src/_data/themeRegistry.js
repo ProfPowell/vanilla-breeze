@@ -391,6 +391,19 @@ export default [
     shadows: { preset: 'hard' },
     motion: { durationScale: 1, easingPreset: 'default' },
   },
+  {
+    id: 'genai',
+    name: 'GenAI',
+    category: 'extreme',
+    character: 'AI startup aesthetic — purple gradients, glow, sparkle',
+    colors: {},
+    swatchBg: '#1a0a2e',
+    swatchFg: '#a855f7',
+    hints: { borderStyle: 'soft', iconSet: 'lucide' },
+    shape: { radiusPreset: 'rounded' },
+    shadows: { preset: 'elevated' },
+    motion: { durationScale: 1.2, easingPreset: 'default' },
+  },
 
   // ─── Accessibility Themes ─────────────────────────────────
   {
