@@ -4,13 +4,15 @@ import './web-components/index.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
-import './lib/debug-content-model.js';
-import './lib/wizard.js';
+// Lazy-load wizard only when [data-wizard] is present (~15 KB deferred)
+if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 import { initFormValidation } from './lib/form-validation.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
+import './lib/sw-register.js';
 
 // Initialize theme system early to prevent FOUC
-ThemeManager.init();
+// init() is async — loads saved theme CSS before applying
+await ThemeManager.init();
 
 // Sync external components (browser-window, code-block) with theme
 initExternalThemeSync();

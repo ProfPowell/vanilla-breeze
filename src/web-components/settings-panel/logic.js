@@ -365,22 +365,35 @@ class SettingsPanel extends HTMLElement {
     ThemeManager.setMode(e.target.value);
   };
 
-  #handleThemeChange = (e) => {
-    const theme = e.target.value;
-    if (theme === 'default') {
-      const accentInput = this.#panel.querySelector('input[name="settings-accent"]:checked');
-      const accent = accentInput?.value || '';
-      ThemeManager.setBrand(accent || 'default');
-    } else {
-      ThemeManager.setBrand(theme);
+  #handleThemeChange = async (e) => {
+    const select = e.target;
+    select.disabled = true;
+
+    try {
+      const theme = select.value;
+      if (theme === 'default') {
+        const accentInput = this.#panel.querySelector('input[name="settings-accent"]:checked');
+        const accent = accentInput?.value || '';
+        await ThemeManager.setBrand(accent || 'default');
+      } else {
+        await ThemeManager.setBrand(theme);
+      }
+      this.#updateAccentVisibility(select.value === 'default');
+      this.#reapplyA11yThemes();
+    } catch {
+      console.warn('[VB] Theme load failed, using default');
+    } finally {
+      select.disabled = false;
     }
-    this.#updateAccentVisibility(theme === 'default');
-    this.#reapplyA11yThemes();
   };
 
-  #handleAccentChange = (e) => {
+  #handleAccentChange = async (e) => {
     const accent = e.target.value;
-    ThemeManager.setBrand(accent || 'default');
+    try {
+      await ThemeManager.setBrand(accent || 'default');
+    } catch {
+      console.warn('[VB] Theme load failed');
+    }
     this.#reapplyA11yThemes();
   };
 

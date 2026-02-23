@@ -13,11 +13,23 @@ export default {
   url: 'https://profpowell.github.io/vanilla-breeze',
   isDev,
 
-  // CSS entry point
-  css: isDev ? '/src/main.css' : '/cdn/vanilla-breeze.css',
+  // CSS entry point (core — no decorative themes, no charts, no dev utils)
+  css: isDev ? '/src/main.css' : '/cdn/vanilla-breeze-core.css',
 
-  // JS entry point
-  js: isDev ? '/src/main.js' : '/cdn/vanilla-breeze.js',
+  // JS entry point (core components + extras)
+  js: isDev ? '/src/main.js' : '/cdn/vanilla-breeze-core.js',
+
+  // Extras JS (niche/heavy components — geo-map, emoji-picker, etc.)
+  extrasJs: isDev ? null : '/cdn/vanilla-breeze-extras.js',
+
+  // Charts CSS add-on (per-page via includeCharts front matter)
+  chartsCss: isDev ? '/src/charts-standalone.css' : '/cdn/vanilla-breeze-charts.css',
+
+  // Dev CSS add-on (debug overlays, wireframe)
+  devCss: isDev ? '/src/dev.css' : '/cdn/vanilla-breeze-dev.css',
+
+  // Dev JS add-on (content model validation)
+  devJs: isDev ? '/src/dev.js' : '/cdn/vanilla-breeze-dev.js',
 
   // View transitions CSS
   viewTransitionsCss: isDev ? '/src/utils/view-transitions.css' : null,

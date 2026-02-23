@@ -18,6 +18,8 @@
     showMobileMenu — show mobile menu (default: headerVariant == "full")
     includeDocs    — include docs.css
     includeLabs    — include labs CSS
+    includeCharts  — include charts CSS add-on
+    includeDev     — include dev utilities (debug, wireframe)
 #}
 <!DOCTYPE html>
 <html lang="en"{% if dataPage %} data-page="{{ dataPage }}"{% endif %} data-fluid>
@@ -29,6 +31,13 @@
   {% if includeLabs %}
   <link rel="stylesheet" href="{{ site.labsCss }}">
   {% endif %}
+  {% if includeCharts %}
+  <link rel="stylesheet" href="{{ site.chartsCss }}">
+  {% endif %}
+  {% if includeDev %}
+  <link rel="stylesheet" href="{{ site.devCss }}">
+  {% endif %}
+  <meta name="vb-service-worker" content="true">
   {% block extraHead %}{% endblock %}
 </head>
 <body>
@@ -49,8 +58,18 @@
 
   <short-cuts></short-cuts>
 
-  {# Main VB script — one tag replaces the 65-line import block #}
+  {# Main VB script — core components #}
   <script type="module" src="{{ site.js }}"></script>
+
+  {# Extras — niche/heavy components (geo-map, emoji-picker, etc.) #}
+  {% if site.extrasJs %}
+  <script type="module" src="{{ site.extrasJs }}"></script>
+  {% endif %}
+
+  {# Dev utilities — debug content model validation #}
+  {% if includeDev and site.devJs %}
+  <script type="module" src="{{ site.devJs }}"></script>
+  {% endif %}
 
   {# Doc extras (code-block, browser-window) — dev: loaded by main.js or individually; prod: bundled #}
   {% if site.docExtrasJs %}

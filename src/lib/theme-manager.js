@@ -1,18 +1,21 @@
 /**
  * Theme Manager
- * Handles theme persistence, application, and system preference detection
+ * Handles theme persistence, application, and system preference detection.
+ *
+ * Integrates with ThemeLoader for on-demand CSS loading of externalized themes.
+ * init() and setBrand() are async — they ensure theme CSS is loaded before applying.
  *
  * @example
  * import { ThemeManager } from './lib/theme-manager.js';
  *
- * // Initialize on page load
- * ThemeManager.init();
+ * // Initialize on page load (loads saved theme CSS)
+ * await ThemeManager.init();
  *
  * // Change mode
  * ThemeManager.setMode('dark');
  *
- * // Change brand theme
- * ThemeManager.setBrand('ocean');
+ * // Change brand theme (loads CSS if needed)
+ * await ThemeManager.setBrand('ocean');
  *
  * // Listen for changes
  * window.addEventListener('theme-change', (e) => {
@@ -20,17 +23,29 @@
  * });
  */
 
+import { ensureThemeLoaded } from './theme-loader.js';
+
 const STORAGE_KEY = 'vb-theme';
 const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '' };
 
 export const ThemeManager = {
   /**
    * Initialize theme from storage or defaults
-   * Should be called early in page load
-   * @returns {{ mode: string, brand: string }}
+   * Loads saved brand CSS before applying (prevents FOUC for returning visitors)
+   * Falls back to default on network error.
+   * @returns {Promise<{ mode: string, brand: string }>}
    */
-  init() {
+  async init() {
     const saved = this.load();
+
+    // Load saved brand CSS before applying
+    try {
+      await ensureThemeLoaded(saved.brand);
+    } catch {
+      // Network error — fall back to default
+      saved.brand = 'default';
+    }
+
     this.apply(saved);
     this._watchSystemPreference();
     return saved;
@@ -130,9 +145,17 @@ export const ThemeManager = {
 
   /**
    * Set brand theme
+   * Loads theme CSS if needed before applying.
    * @param {string} brand - Theme name (e.g., 'ocean', 'forest', 'sunset')
+   * @returns {Promise<void>}
    */
-  setBrand(brand) {
+  async setBrand(brand) {
+    try {
+      await ensureThemeLoaded(brand);
+    } catch (err) {
+      console.warn(`[VB] Theme "${brand}" failed to load, using default`, err);
+      brand = 'default';
+    }
     const updated = this.save({ brand });
     this.apply(updated);
   },

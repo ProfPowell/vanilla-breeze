@@ -402,8 +402,19 @@ class ThemePicker extends HTMLElement {
     this.#autoDismiss();
   };
 
-  #handleBrandChange = (e) => {
-    ThemeManager.setBrand(e.target.value);
+  #handleBrandChange = async (e) => {
+    const cell = e.target.closest('.swatch-cell');
+    if (cell) cell.setAttribute('aria-busy', 'true');
+
+    try {
+      await ThemeManager.setBrand(e.target.value);
+    } catch {
+      // Graceful degradation — page renders with default colors
+      console.warn('[VB] Theme load failed, using default');
+    } finally {
+      if (cell) cell.removeAttribute('aria-busy');
+    }
+
     // Reapply a11y themes to combine with new brand
     this.#applyA11yThemes();
     this.#autoDismiss();
