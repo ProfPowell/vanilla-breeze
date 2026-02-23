@@ -1,5 +1,5 @@
 /**
- * combobox-wc: Form-associated autocomplete combobox
+ * combo-box: Form-associated autocomplete combobox
  *
  * Light DOM combobox following the W3C ARIA combobox pattern.
  * Participates in native form submission via ElementInternals.
@@ -15,28 +15,28 @@
  * @attr {boolean} data-allow-custom - Allow typed entries (multi mode)
  *
  * @example Single select
- * <combobox-wc name="country" data-required>
+ * <combo-box name="country" data-required>
  *   <input type="text" placeholder="Search countries...">
  *   <ul>
  *     <li data-value="us">United States</li>
  *     <li data-value="gb">United Kingdom</li>
  *   </ul>
- * </combobox-wc>
+ * </combo-box>
  *
  * @example Multi select
- * <combobox-wc name="topics" data-multiple data-max="5">
+ * <combo-box name="topics" data-multiple data-max="5">
  *   <input type="text" placeholder="Search topics...">
  *   <ul>
  *     <li data-value="js">JavaScript</li>
  *     <li data-value="css">CSS</li>
  *   </ul>
- * </combobox-wc>
+ * </combo-box>
  */
 
 import { setRole } from '../../utils/form-internals.js';
 import { supportsPopover } from '../../utils/popover-support.js';
 
-class ComboboxWc extends HTMLElement {
+class ComboBox extends HTMLElement {
   static formAssociated = true;
 
   #internals;
@@ -740,6 +740,6 @@ class ComboboxWc extends HTMLElement {
   }
 }
 
-customElements.define('combobox-wc', ComboboxWc);
+customElements.define('combo-box', ComboBox);
 
-export { ComboboxWc };
+export { ComboBox };

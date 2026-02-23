@@ -13,7 +13,7 @@ import './search-wc/logic.js';
 import './card-list/logic.js';
 import './content-swap/logic.js';
 import './compare-surface/logic.js';
-import './splitter-wc/logic.js';
+import './split-surface/logic.js';
 import './carousel-wc/logic.js';
 import './rating-wc/logic.js';
 import './combo-box/logic.js';

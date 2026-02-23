@@ -1044,27 +1044,27 @@ Attribute form: `<article data-swap data-transition="fade">` — same behavior o
 
 Page-level auto-card: `<body data-swap-autocard>` applies card chrome to bare content-swap elements.
 
-### `<comparison-wc>`
+### `<compare-surface>`
 Before/after image comparison slider.
 
 | Events | Detail |
 |--------|--------|
 | `comparison-change` | `{ position }` |
 
-### `<splitter-wc>`
+### `<split-surface>`
 Resizable split panes.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-orientation` | `horizontal`, `vertical` | Split direction |
+| `data-direction` | `horizontal`, `vertical` | Split direction |
 | `data-collapsible` | (boolean) | Allow panel collapse |
-| `data-persist` | (boolean) | Remember size in localStorage |
-| `data-min` | px value | Minimum panel size |
+| `data-persist` | (string key) | Remember size in localStorage |
+| `data-min` | 0-100 | Minimum panel size % |
 
 | Events | Detail |
 |--------|--------|
-| `splitter-resize` | `{ sizes }` |
-| `splitter-collapse` | `{ panel, collapsed }` |
+| `split-resize` | `{ position }` |
+| `split-collapse` | `{ collapsed }` |
 
 ### `<rating-wc>`
 Interactive star rating (form-associated).
@@ -1075,7 +1075,7 @@ Interactive star rating (form-associated).
 | `data-readonly` | (boolean) | Read-only mode |
 | `data-size` | `sm`, `lg` | Size |
 
-### `<combobox-wc>`
+### `<combo-box>`
 Form-associated combobox/autocomplete. Single-select by default; add `data-multiple` for multi-select tag mode.
 
 | Attribute | Values | Description |
@@ -1199,7 +1199,7 @@ Interactive map component.
 | `geo-map:activate` | — |
 | `geo-map:error` | `{ error }` |
 
-### `<slide-accept-wc>`
+### `<slide-accept>`
 Slide-to-confirm action.
 
 | Events |
@@ -1528,7 +1528,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 |-----------|------------|
 | `data-a11y-theme` | `<html>` — accessibility theme |
 | `data-align` | Table cells — text alignment |
-| `data-allow-custom` | `<combobox-wc>` — allow typed entries (multi mode) |
+| `data-allow-custom` | `<combo-box>` — allow typed entries (multi mode) |
 | `data-anchor` | Tooltip — CSS anchor positioning |
 | `data-animate-image` | `<img>` — play/pause control |
 | `data-attention` | UI elements — attention indicator |
@@ -1541,7 +1541,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-bordered` | Various — border variant |
 | `data-center-label` | Pie chart — donut center text |
 | `data-collapsed` | Breadcrumb — hide middle items |
-| `data-collapsible` | `<splitter-wc>` — allow panel collapse |
+| `data-collapsible` | `<split-surface>` — allow panel collapse |
 | `data-color` | `<input type="color">` — enhanced picker |
 | `data-command` | `<button>` — command palette trigger |
 | `data-compact` | Various — reduced spacing |
@@ -1578,7 +1578,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
 | `data-feedback` | State container — presentation mode |
 | `data-filled` | `<status-message>` — solid fill |
-| `data-filter` | `<combobox-wc>` — filter mode |
+| `data-filter` | `<combo-box>` — filter mode |
 | `data-fit` | `[data-media]` — object-fit |
 | `data-swap` | `<content-swap>` trigger or any element — swap behavior |
 | `data-flush` | Accordion — no borders |
@@ -1616,7 +1616,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-loading` | Any — loading state |
 | `data-loop` | `<carousel-wc>` — loop slides |
 | `data-mask` | `<input>` — input masking |
-| `data-max` | `<toast-wc>`, `<combobox-wc>` — maximum count |
+| `data-max` | `<toast-wc>`, `<combo-box>` — maximum count |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |
@@ -1628,12 +1628,12 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
-| `data-orientation` | `<splitter-wc>` — axis |
+| `data-direction` | `<split-surface>` — axis |
 | `data-overlay` | `<loading-spinner>` — overlay mode |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |
 | `data-pattern` | `[data-mask]` — mask format |
-| `data-persist` | `<splitter-wc>` — remember size |
+| `data-persist` | `<split-surface>` — remember size |
 | `data-position` | Various — positioning |
 | `data-prev` | Pagination button — previous page |
 | `data-radius` | `[data-media]` — border radius |
@@ -1643,7 +1643,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating-readonly` | Rating — read-only |
 | `data-ratio` | `[data-media]` — aspect ratio |
 | `data-readonly` | `<rating-wc>` — read-only |
-| `data-required` | `<combobox-wc>` — validation |
+| `data-required` | `<combo-box>` — validation |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
 | `data-ring` | `<user-avatar>` — border ring |

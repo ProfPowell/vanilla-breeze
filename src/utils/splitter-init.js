@@ -37,7 +37,7 @@ function enhanceSplitter(container) {
 
   // Inject divider
   const divider = document.createElement('div');
-  divider.className = 'splitter-divider';
+  divider.className = 'split-divider';
   divider.setAttribute('role', 'separator');
   divider.setAttribute('aria-orientation', vertical ? 'vertical' : 'horizontal');
   divider.setAttribute('aria-valuenow', '50');
@@ -61,6 +61,9 @@ function enhanceSplitter(container) {
     const clamped = Math.min(max, Math.max(min, percent));
     first.style.flexBasis = `${clamped}%`;
     divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    container.dispatchEvent(new CustomEvent('split-resize', {
+      detail: { position: clamped }, bubbles: true
+    }));
   }
 
   divider.addEventListener('pointerdown', (e) => {

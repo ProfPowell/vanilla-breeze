@@ -23,7 +23,7 @@ export default [
   { name: 'page-toc', href: '/docs/elements/web-components/page-toc/', desc: 'Table of contents generator' },
   { name: 'search-wc', href: '/docs/elements/web-components/search-wc/', desc: 'Search dialog component' },
   { name: 'settings-wc', href: '/docs/elements/web-components/settings-wc/', desc: 'Compact settings panel with gear trigger and details accordion' },
-  { name: 'splitter-wc', href: '/docs/elements/web-components/splitter/', desc: 'Resizable panel splitter with drag divider' },
+  { name: 'split-surface', href: '/docs/elements/web-components/splitter/', desc: 'Resizable panel splitter with drag divider' },
   { name: 'table-wc', href: '/docs/elements/web-components/table-wc/', desc: 'Enhanced data tables' },
   { name: 'theme-wc', href: '/docs/elements/web-components/theme-wc/', desc: 'Theme picker component' },
 ];

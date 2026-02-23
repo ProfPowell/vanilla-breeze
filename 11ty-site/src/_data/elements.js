@@ -168,7 +168,7 @@ const elementsByLetter = {
     { name: 'small', type: 'native', href: '/docs/elements/native/small/' },
     { name: 'source', type: 'native', href: '/docs/elements/native/source/' },
     { name: 'span', type: 'native', href: '/docs/elements/native/span/' },
-    { name: 'splitter-wc', type: 'component', href: '/docs/elements/web-components/splitter/' },
+    { name: 'split-surface', type: 'component', href: '/docs/elements/web-components/splitter/' },
     { name: 'status-message', type: 'custom', href: '/docs/elements/custom-elements/status-message/' },
     { name: 'strong', type: 'native', href: '/docs/elements/native/strong/' },
     { name: 'style', type: 'native', href: '/docs/elements/native/style/' },

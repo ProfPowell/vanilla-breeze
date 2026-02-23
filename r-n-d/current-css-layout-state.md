@@ -207,7 +207,7 @@ Extensively used throughout — ~1,027 instances of `&` selectors across 65+ fil
 ### `@scope` for Light DOM Encapsulation
 
 10 web components use `@scope` for scoped styling without Shadow DOM:
-- `combobox-wc`, `dropdown-wc`, `theme-wc`, `command-wc`, `context-menu`
+- `combo-box`, `dropdown-wc`, `theme-wc`, `command-wc`, `context-menu`
 - `search-wc`, `page-toc`, `toast-wc`, `shortcuts-wc`, `emoji-picker`
 
 ---

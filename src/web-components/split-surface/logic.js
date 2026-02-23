@@ -1,5 +1,5 @@
 /**
- * splitter-wc: Resizable panel splitter
+ * split-surface: Resizable panel splitter
  *
  * Two-panel container with a draggable divider. Supports persistence,
  * collapsible panels, keyboard navigation, and full ARIA.
@@ -12,12 +12,12 @@
  * @attr {boolean} data-collapsible - Double-click divider to collapse first panel
  *
  * @example
- * <splitter-wc>
+ * <split-surface>
  *   <nav>Sidebar</nav>
  *   <main>Content</main>
- * </splitter-wc>
+ * </split-surface>
  */
-class SplitterWc extends HTMLElement {
+class SplitSurface extends HTMLElement {
   #divider;
   #first;
   #second;
@@ -75,7 +75,7 @@ class SplitterWc extends HTMLElement {
 
     // Create divider
     this.#divider = document.createElement('div');
-    this.#divider.className = 'splitter-divider';
+    this.#divider.className = 'split-divider';
     this.#divider.setAttribute('role', 'separator');
     this.#divider.setAttribute('aria-orientation', this.#vertical ? 'vertical' : 'horizontal');
     this.#divider.setAttribute('aria-valuenow', String(Math.round(initial)));
@@ -178,7 +178,7 @@ class SplitterWc extends HTMLElement {
     this.#first.style.overflow = 'hidden';
     this.#divider.setAttribute('aria-valuenow', '0');
     this.#position = 0;
-    this.dispatchEvent(new CustomEvent('splitter-collapse', {
+    this.dispatchEvent(new CustomEvent('split-collapse', {
       detail: { collapsed: true }, bubbles: true
     }));
   }
@@ -187,7 +187,7 @@ class SplitterWc extends HTMLElement {
     this.#collapsed = false;
     this.#first.style.overflow = 'auto';
     this.#setPosition(this.#preCollapsePosition);
-    this.dispatchEvent(new CustomEvent('splitter-collapse', {
+    this.dispatchEvent(new CustomEvent('split-collapse', {
       detail: { collapsed: false }, bubbles: true
     }));
   }
@@ -205,7 +205,7 @@ class SplitterWc extends HTMLElement {
 
     this.#divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
 
-    this.dispatchEvent(new CustomEvent('splitter-resize', {
+    this.dispatchEvent(new CustomEvent('split-resize', {
       detail: { position: clamped }, bubbles: true
     }));
   }
@@ -214,7 +214,7 @@ class SplitterWc extends HTMLElement {
     const key = this.dataset.persist;
     if (!key) return null;
     try {
-      const val = localStorage.getItem(`splitter:${key}`);
+      const val = localStorage.getItem(`split-surface:${key}`);
       return val !== null ? Number(val) : null;
     } catch { return null; }
   }
@@ -223,17 +223,17 @@ class SplitterWc extends HTMLElement {
     const key = this.dataset.persist;
     if (!key) return;
     try {
-      localStorage.setItem(`splitter:${key}`, String(Math.round(this.#position)));
+      localStorage.setItem(`split-surface:${key}`, String(Math.round(this.#position)));
     } catch { /* storage full or blocked */ }
   }
 
   #clearPersist() {
     const key = this.dataset.persist;
     if (!key) return;
-    try { localStorage.removeItem(`splitter:${key}`); } catch {}
+    try { localStorage.removeItem(`split-surface:${key}`); } catch {}
   }
 }
 
-customElements.define('splitter-wc', SplitterWc);
+customElements.define('split-surface', SplitSurface);
 
-export { SplitterWc };
+export { SplitSurface };

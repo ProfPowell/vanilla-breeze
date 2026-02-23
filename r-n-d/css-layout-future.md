@@ -172,7 +172,7 @@ Components opt-in by wrapping their DOM mutations in this helper.
 | `toast-wc` | Slide-in from edge | toast-wc/styles.css |
 | `dropdown-wc` | Scale-fade from trigger | dropdown-wc/styles.css |
 | `command-wc` | Fade-scale from center | command-wc/styles.css |
-| `combobox-wc` | Listbox appear | combobox-wc/styles.css |
+| `combo-box` | Listbox appear | combo-box/styles.css |
 | `context-menu` | Scale-fade from cursor | context-menu/styles.css |
 
 **Pattern** (same as tooltip):

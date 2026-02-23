@@ -1,5 +1,5 @@
 /**
- * comparison-wc: Before/after image comparison slider
+ * compare-surface: Before/after image comparison slider
  *
  * Two children overlay each other. CSS clip-path reveals one side.
  * JS adds the drag handle and pointer events.
@@ -8,12 +8,12 @@
  * @attr {number} data-position - Initial slider position (0-100), default 50
  *
  * @example
- * <comparison-wc>
+ * <compare-surface>
  *   <img src="before.jpg" alt="Before" />
  *   <img src="after.jpg" alt="After" />
- * </comparison-wc>
+ * </compare-surface>
  */
-class ComparisonWc extends HTMLElement {
+class CompareSurface extends HTMLElement {
   #divider;
   #dragging = false;
 
@@ -96,6 +96,6 @@ class ComparisonWc extends HTMLElement {
   }
 }
 
-customElements.define('comparison-wc', ComparisonWc);
+customElements.define('compare-surface', CompareSurface);
 
-export { ComparisonWc };
+export { CompareSurface };

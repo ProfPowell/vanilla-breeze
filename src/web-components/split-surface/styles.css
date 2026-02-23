@@ -1,37 +1,37 @@
-/* splitter-wc: Resizable panel splitter */
+/* split-surface: Resizable panel splitter */
 
 /* --- Progressive enhancement: no-JS fallback --- */
-splitter-wc:not(:defined) {
+split-surface:not(:defined) {
   display: flex;
   gap: var(--size-s);
 }
 
-splitter-wc:not(:defined) > * {
+split-surface:not(:defined) > * {
   flex: 1;
   min-width: 0;
 }
 
-splitter-wc:not(:defined)[data-direction="vertical"] {
+split-surface:not(:defined)[data-direction="vertical"] {
   flex-direction: column;
 }
 
 /* --- Defined state --- */
-splitter-wc:defined {
+split-surface:defined {
   display: flex;
   min-height: 0;
 }
 
-splitter-wc:defined[data-direction="vertical"] {
+split-surface:defined[data-direction="vertical"] {
   flex-direction: column;
 }
 
-splitter-wc:defined > :not(.splitter-divider) {
+split-surface:defined > :not(.split-divider) {
   min-width: 0;
   min-height: 0;
 }
 
-/* --- Shared divider styles (used by both splitter-init and splitter-wc) --- */
-.splitter-divider {
+/* --- Shared divider styles (used by both splitter-init and split-surface) --- */
+.split-divider {
   flex: 0 0 auto;
   width: 5px;
   background: var(--color-border, oklch(80% 0 0));
@@ -42,21 +42,21 @@ splitter-wc:defined > :not(.splitter-divider) {
   transition: background 0.15s ease;
 }
 
-.splitter-divider:hover,
-.splitter-divider:active {
+.split-divider:hover,
+.split-divider:active {
   background: var(--color-interactive, oklch(55% 0.15 250));
 }
 
 /* Vertical divider */
-[data-direction="vertical"] > .splitter-divider,
-[data-splitter="vertical"] > .splitter-divider {
+[data-direction="vertical"] > .split-divider,
+[data-splitter="vertical"] > .split-divider {
   width: auto;
   height: 5px;
   cursor: row-resize;
 }
 
 /* Grip handle indicator */
-.splitter-divider::after {
+.split-divider::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -70,26 +70,37 @@ splitter-wc:defined > :not(.splitter-divider) {
   transition: opacity 0.15s ease;
 }
 
-.splitter-divider:hover::after {
+.split-divider:hover::after {
   opacity: 0.8;
 }
 
 /* Vertical grip handle */
-[data-direction="vertical"] > .splitter-divider::after,
-[data-splitter="vertical"] > .splitter-divider::after {
+[data-direction="vertical"] > .split-divider::after,
+[data-splitter="vertical"] > .split-divider::after {
   width: 24px;
   height: 4px;
 }
 
 /* Focus visible */
-.splitter-divider:focus-visible {
+.split-divider:focus-visible {
   outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
   outline-offset: -1px;
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .splitter-divider {
+  .split-divider {
     transition-duration: 0s;
   }
+}
+
+/* --- Fix: Override sidebar layout wrapping when splitter is active --- */
+[data-splitter-init] {
+  flex-wrap: nowrap;
+}
+
+[data-splitter-init] > main,
+[data-splitter-init] > article,
+[data-splitter-init] > section:not([data-layout]) {
+  min-inline-size: 0;
 }

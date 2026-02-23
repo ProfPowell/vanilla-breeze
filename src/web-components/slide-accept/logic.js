@@ -1,5 +1,5 @@
 /**
- * slide-accept-wc: Slide-to-confirm interaction
+ * slide-accept: Slide-to-confirm interaction
  *
  * A draggable handle users slide across a track to confirm an action.
  * Uses pointer capture for reliable drag, springs back if released early,
@@ -14,11 +14,11 @@
  * @fires slide-reset  - After reset() called
  *
  * @example
- * <slide-accept-wc data-label="Slide to confirm">
+ * <slide-accept data-label="Slide to confirm">
  *   Slide to confirm
- * </slide-accept-wc>
+ * </slide-accept>
  */
-class SlideAcceptWc extends HTMLElement {
+class SlideAccept extends HTMLElement {
   #handle;
   #label;
   #track;
@@ -186,6 +186,6 @@ class SlideAcceptWc extends HTMLElement {
   }
 }
 
-customElements.define('slide-accept-wc', SlideAcceptWc);
+customElements.define('slide-accept', SlideAccept);
 
-export { SlideAcceptWc };
+export { SlideAccept };
