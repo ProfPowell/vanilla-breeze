@@ -6,6 +6,7 @@
  *
  * @attr {boolean} data-single - Only allow one panel open at a time
  * @attr {boolean} data-bordered - Add borders between items
+ * @attr {string}  data-transition - View Transition type: "fade" (default), "slide", "scale"
  *
  * @example
  * <accordion-wc data-single>
@@ -19,9 +20,14 @@
  *   </details>
  * </accordion-wc>
  */
+import { startSwapTransition } from '../../utils/swap-transition.js';
+
+let accordionVtId = 0;
+
 class AccordionWc extends HTMLElement {
   #details;
   #summaries;
+  #vtEnabled = false;
 
   connectedCallback() {
     this.#details = [...this.querySelectorAll(':scope > details')];
@@ -30,6 +36,29 @@ class AccordionWc extends HTMLElement {
     if (this.#details.length === 0) return;
 
     this.#setup();
+    this.#initVT();
+  }
+
+  #initVT() {
+    if (!this.hasAttribute('data-transition') || !document.startViewTransition) return;
+
+    this.#vtEnabled = true;
+    const id = ++accordionVtId;
+    const type = this.dataset.transition || 'fade';
+    const vtClass = type === 'slide' ? 'vt-accordion-slide' : type === 'scale' ? 'vt-accordion-scale' : 'vt-accordion';
+
+    this.#details.forEach((detail, i) => {
+      const panel = detail.querySelector(':scope > :not(summary)');
+      if (!panel) return;
+      panel.style.viewTransitionName = `accordion-${id}-${i}`;
+      panel.style.viewTransitionClass = vtClass;
+    });
+  }
+
+  #vtToggle(detail) {
+    startSwapTransition(() => {
+      detail.open = !detail.open;
+    });
   }
 
   #setup() {
@@ -51,6 +80,13 @@ class AccordionWc extends HTMLElement {
       summary.setAttribute('aria-controls', panelId);
       panel.setAttribute('aria-labelledby', headingId);
       panel.setAttribute('role', 'region');
+
+      // VT click interception
+      summary.addEventListener('click', (e) => {
+        if (!this.#vtEnabled) return;
+        e.preventDefault();
+        this.#vtToggle(detail);
+      });
 
       // Keyboard navigation
       summary.addEventListener('keydown', (e) => this.#handleKey(e, i));
@@ -111,7 +147,10 @@ class AccordionWc extends HTMLElement {
    * @param {number} index - Panel index (0-based)
    */
   open(index) {
-    if (index >= 0 && index < this.#details.length) {
+    if (index < 0 || index >= this.#details.length) return;
+    if (this.#vtEnabled && !this.#details[index].open) {
+      startSwapTransition(() => { this.#details[index].open = true; });
+    } else {
       this.#details[index].open = true;
     }
   }
@@ -121,7 +160,10 @@ class AccordionWc extends HTMLElement {
    * @param {number} index - Panel index (0-based)
    */
   close(index) {
-    if (index >= 0 && index < this.#details.length) {
+    if (index < 0 || index >= this.#details.length) return;
+    if (this.#vtEnabled && this.#details[index].open) {
+      startSwapTransition(() => { this.#details[index].open = false; });
+    } else {
       this.#details[index].open = false;
     }
   }
@@ -131,7 +173,10 @@ class AccordionWc extends HTMLElement {
    * @param {number} index - Panel index (0-based)
    */
   toggle(index) {
-    if (index >= 0 && index < this.#details.length) {
+    if (index < 0 || index >= this.#details.length) return;
+    if (this.#vtEnabled) {
+      this.#vtToggle(this.#details[index]);
+    } else {
       this.#details[index].open = !this.#details[index].open;
     }
   }

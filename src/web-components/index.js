@@ -59,4 +59,5 @@ import './geo-map/logic.js';
 import './color-palette-wc/logic.js';
 import './type-specimen-wc/logic.js';
 import './emoji-picker/logic.js';
+import './settings-wc/logic.js';
 import '../utils/emoji-init.js';

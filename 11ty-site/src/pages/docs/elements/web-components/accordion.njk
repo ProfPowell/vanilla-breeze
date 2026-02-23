@@ -147,6 +147,12 @@ accordion.closeAll();{% endset %}
           <td><code>chevron</code></td>
           <td>Indicator style: <code>chevron</code>, <code>plus-minus</code>, <code>custom</code>, or <code>none</code>.</td>
         </tr>
+        <tr>
+          <td><code>data-transition</code></td>
+          <td>string</td>
+          <td><code>fade</code></td>
+          <td>Enable View Transition animations on open/close. Values: <code>fade</code>, <code>slide</code>, <code>scale</code>.</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -464,6 +470,43 @@ accordion.closeAll();{% endset %}
 
     <h3>Focus Management</h3>
     <p>Focus remains on the summary element when toggling, and arrow key navigation moves focus between summaries without changing the open state.</p>
+  </section>
+
+  <section>
+    <h2>View Transitions</h2>
+    <p>Add <code>data-transition</code> to animate panel content when opening and closing using the View Transitions API. The content fade composes with the existing CSS <code>::details-content</code> height animation — height animates via CSS, content appearance via VT.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fade</code> (default)</td><td>Crossfade panel content</td></tr>
+        <tr><td><code>slide</code></td><td>Slide panel content in from the side</td></tr>
+        <tr><td><code>scale</code></td><td>Scale panel content in/out</td></tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <accordion-wc data-transition="fade" data-bordered>
+        <details>
+          <summary>What makes this different?</summary>
+          <div><p>The View Transition API animates the content appearance while native CSS handles the height. Both work together seamlessly.</p></div>
+        </details>
+        <details>
+          <summary>Does it work with single mode?</summary>
+          <div><p>Yes — combine <code>data-transition</code> with <code>data-single</code> for animated exclusive panels.</p></div>
+        </details>
+        <details>
+          <summary>What about reduced motion?</summary>
+          <div><p>Animations are disabled when <code>prefers-reduced-motion</code> is active or <code>data-motion-reduced</code> is set on the root element.</p></div>
+        </details>
+      </accordion-wc>
+    </div>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> View Transitions require Chrome 111+, Safari 18+, or Firefox 131+. In unsupported browsers, panels open and close with the existing CSS height animation only.
+    </aside>
   </section>
 
   <section>

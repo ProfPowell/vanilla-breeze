@@ -100,33 +100,39 @@ const styles = `
   top: 0;
 }
 
-/* Activate button — full overlay, appears on hover */
-[part="activate"] {
+/* Overlay — full surface, appears on hover/focus */
+[part="overlay"] {
   position: absolute;
   inset: 0;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
+  background: var(--geo-map-overlay-bg, rgba(0, 0, 0, 0.35));
+  color: var(--geo-map-overlay-color, #fff);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-[part="activate"]:hover,
-[part="activate"]:focus-visible {
+[part="overlay"]:hover,
+[part="overlay"]:focus-within {
   opacity: 1;
+}
+
+/* Activate button inside overlay */
+[part="activate"] {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 [part="activate"]:focus-visible {
   outline: 2px solid #fff;
-  outline-offset: -4px;
+  outline-offset: 4px;
 }
 
 /* Interactive mode — tiles become absolutely positioned for panning */
@@ -144,18 +150,18 @@ const styles = `
   cursor: grabbing;
 }
 
-:host([data-interactive-active]) [part="activate"] {
+:host([data-interactive-active]) [part="overlay"] {
   display: none;
 }
 
-/* Static-only — hide activate button entirely */
-:host([static-only]) [part="activate"] {
+/* Static-only — hide overlay entirely */
+:host([static-only]) [part="overlay"] {
   display: none;
 }
 
 /* Reduced motion — disable transitions */
 @media (prefers-reduced-motion: reduce) {
-  [part="activate"] {
+  [part="overlay"] {
     transition: none;
   }
 }

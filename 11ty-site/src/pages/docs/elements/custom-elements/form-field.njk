@@ -172,6 +172,105 @@ form-field:has(input:user-invalid) {
   </layout-stack>
 </form>{% endset %}
 
+{% set customMessageCode %}<form data-validate>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email"
+           required minlength="5"
+           data-message-required="Email is required"
+           data-message-type="Please enter a valid email address"
+           data-message-minlength="Email seems too short"
+           aria-describedby="email-error" />
+    <output id="email-error" class="error" for="email"
+            aria-live="polite"></output>
+  </form-field>
+  <button type="submit">Submit</button>
+</form>{% endset %}
+
+{% set passwordMatchCode %}<form data-validate>
+  <form-field>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password"
+           required minlength="8"
+           data-message-required="Password is required"
+           data-message-minlength="At least 8 characters"
+           autocomplete="new-password"
+           aria-describedby="password-error" />
+    <output id="password-error" class="error" for="password"
+            aria-live="polite"></output>
+  </form-field>
+
+  <form-field>
+    <label for="confirm">Confirm Password</label>
+    <input type="password" id="confirm" name="confirm"
+           required
+           data-match="password"
+           data-message-required="Please confirm your password"
+           data-message-match="Passwords do not match"
+           autocomplete="new-password"
+           aria-describedby="confirm-error" />
+    <output id="confirm-error" class="error" for="confirm"
+            aria-live="polite"></output>
+  </form-field>
+  <button type="submit">Create Account</button>
+</form>{% endset %}
+
+{% set checkboxGroupCode %}<form data-validate>
+  <fieldset data-min-checked="1" data-max-checked="3"
+            data-message-min-checked="Select at least one"
+            data-message-max-checked="Maximum 3 allowed">
+    <legend>Interests</legend>
+    <form-field data-type="checkbox">
+      <label><input type="checkbox" name="interests" value="music" /> Music</label>
+    </form-field>
+    <form-field data-type="checkbox">
+      <label><input type="checkbox" name="interests" value="sport" /> Sport</label>
+    </form-field>
+    <form-field data-type="checkbox">
+      <label><input type="checkbox" name="interests" value="art" /> Art</label>
+    </form-field>
+    <form-field data-type="checkbox">
+      <label><input type="checkbox" name="interests" value="tech" /> Tech</label>
+    </form-field>
+    <output aria-live="polite"></output>
+  </fieldset>
+  <button type="submit">Save</button>
+</form>{% endset %}
+
+{% set errorSummaryCode %}<!-- Summary + field-level errors (both) -->
+<form data-validate>
+  <output class="error-summary" role="alert"
+          aria-live="polite" tabindex="-1"></output>
+
+  <form-field>
+    <label for="name">Name</label>
+    <input id="name" type="text" required
+           data-message-required="Name is required"
+           aria-describedby="name-error" />
+    <output id="name-error" class="error" for="name"
+            aria-live="polite"></output>
+  </form-field>
+
+  <form-field>
+    <label for="email">Email</label>
+    <input id="email" type="email" required
+           data-message-required="Email is required"
+           data-message-type="Enter a valid email"
+           aria-describedby="email-error" />
+    <output id="email-error" class="error" for="email"
+            aria-live="polite"></output>
+  </form-field>
+
+  <button type="submit">Submit</button>
+</form>
+
+<!-- Summary only (field-level errors hidden) -->
+<form data-validate="summary">
+  <output class="error-summary" role="alert"
+          aria-live="polite" tabindex="-1"></output>
+  <!-- ... fields ... -->
+</form>{% endset %}
+
 {% set cssImplementation %}form-field {
   display: flex;
   flex-direction: column;
@@ -725,6 +824,226 @@ form-field[data-type="radio"] label {
 
     <h3>How It Works</h3>
     <code-block language="css" show-lines label="CSS-only validation states">{{ validationCssCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>JS-Enhanced Validation</h2>
+    <p>Add <code>data-validate</code> to a <code>&lt;form&gt;</code> to layer JS validation on top of the CSS foundation. This enables features CSS can't handle: custom error messages, cross-field validation, checkbox group constraints, and error summaries.</p>
+    <p>Without <code>data-validate</code>, everything works exactly as before &mdash; pure CSS validation via <code>:user-valid</code>/<code>:user-invalid</code>.</p>
+
+    <h3>JS Validation Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-validate</code></td>
+          <td><code>&lt;form&gt;</code></td>
+          <td>Opt-in. No value = field-level errors (+ summary if present). <code>"summary"</code> = summary only.</td>
+        </tr>
+        <tr>
+          <td><code>data-message-required</code></td>
+          <td>input / textarea / select</td>
+          <td>Custom "required" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-message-type</code></td>
+          <td>input</td>
+          <td>Custom "type mismatch" error text (email, url, etc.)</td>
+        </tr>
+        <tr>
+          <td><code>data-message-minlength</code></td>
+          <td>input / textarea</td>
+          <td>Custom "too short" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-message-maxlength</code></td>
+          <td>input / textarea</td>
+          <td>Custom "too long" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-message-min</code></td>
+          <td>input</td>
+          <td>Custom "range underflow" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-message-max</code></td>
+          <td>input</td>
+          <td>Custom "range overflow" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-message-pattern</code></td>
+          <td>input</td>
+          <td>Custom "pattern mismatch" error text</td>
+        </tr>
+        <tr>
+          <td><code>data-match</code></td>
+          <td>input</td>
+          <td>ID of field that must have the same value</td>
+        </tr>
+        <tr>
+          <td><code>data-message-match</code></td>
+          <td>input</td>
+          <td>Custom message when <code>data-match</code> fails</td>
+        </tr>
+        <tr>
+          <td><code>data-min-checked</code></td>
+          <td>fieldset</td>
+          <td>Minimum number of checked checkboxes</td>
+        </tr>
+        <tr>
+          <td><code>data-max-checked</code></td>
+          <td>fieldset</td>
+          <td>Maximum number of checked checkboxes</td>
+        </tr>
+        <tr>
+          <td><code>data-state="validating"</code></td>
+          <td>form-field</td>
+          <td>CSS hook for async validation spinner (CSS-only, no JS)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Custom Error Messages</h2>
+    <p>Use <code>data-message-*</code> attributes on inputs to specify per-constraint error messages. The right message appears for the right validation failure.</p>
+
+    <div class="example" style="max-inline-size: 30rem;">
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="msg-email">Email</label>
+            <input type="email" id="msg-email" name="email"
+                   required="" minlength="5"
+                   data-message-required="Email is required"
+                   data-message-type="That's not a valid email"
+                   data-message-minlength="Email seems too short"
+                   aria-describedby="msg-email-error"/>
+            <output id="msg-email-error" class="error" for="msg-email" aria-live="polite"></output>
+          </form-field>
+          <button type="submit">Submit</button>
+        </layout-stack>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Custom error messages with data-message-*">{{ customMessageCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Password Confirmation</h2>
+    <p>Use <code>data-match</code> to require two fields to have the same value. The most common use case is password confirmation.</p>
+
+    <div class="example" style="max-inline-size: 30rem;">
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="match-pw">Password</label>
+            <input type="password" id="match-pw" name="password"
+                   required="" minlength="8"
+                   data-message-required="Password is required"
+                   data-message-minlength="At least 8 characters"
+                   autocomplete="new-password"
+                   aria-describedby="match-pw-error"/>
+            <output id="match-pw-error" class="error" for="match-pw" aria-live="polite"></output>
+          </form-field>
+          <form-field>
+            <label for="match-confirm">Confirm Password</label>
+            <input type="password" id="match-confirm" name="confirm"
+                   required=""
+                   data-match="match-pw"
+                   data-message-required="Please confirm your password"
+                   data-message-match="Passwords do not match"
+                   autocomplete="new-password"
+                   aria-describedby="match-confirm-error"/>
+            <output id="match-confirm-error" class="error" for="match-confirm" aria-live="polite"></output>
+          </form-field>
+          <button type="submit">Create Account</button>
+        </layout-stack>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Password confirmation with data-match">{{ passwordMatchCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Checkbox Group Constraints</h2>
+    <p>Use <code>data-min-checked</code> and <code>data-max-checked</code> on a <code>&lt;fieldset&gt;</code> to constrain how many checkboxes can be checked.</p>
+
+    <div class="example" style="max-inline-size: 30rem;">
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <fieldset data-min-checked="1" data-max-checked="2"
+                    data-message-min-checked="Pick at least one"
+                    data-message-max-checked="Maximum 2 allowed">
+            <legend>Favorite Seasons (1-2)</legend>
+            <layout-stack data-layout-gap="xs">
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="spring"/> Spring</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="summer"/> Summer</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="fall"/> Fall</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="winter"/> Winter</label>
+              </form-field>
+            </layout-stack>
+            <output aria-live="polite"></output>
+          </fieldset>
+          <button type="submit">Save</button>
+        </layout-stack>
+      </form>
+    </div>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Checkbox group constraints">{{ checkboxGroupCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Error Summary</h2>
+    <p>Add an <code>&lt;output class="error-summary"&gt;</code> inside your form for a consolidated list of all errors on submit. Three display modes:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Attribute</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Field-level only</td>
+          <td><code>data-validate</code> (no summary output)</td>
+          <td>Errors appear inline next to each field</td>
+        </tr>
+        <tr>
+          <td>Summary only</td>
+          <td><code>data-validate="summary"</code></td>
+          <td>Summary at top, field-level errors hidden</td>
+        </tr>
+        <tr>
+          <td>Both</td>
+          <td><code>data-validate</code> + summary output present</td>
+          <td>Summary at top AND inline errors on each field</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>On submit failure, the summary lists all errors as links. Clicking a link scrolls to and focuses the relevant field. The summary auto-clears when all errors are fixed.</p>
+
+    <h3>Code</h3>
+    <code-block language="html" show-lines label="Error summary patterns">{{ errorSummaryCode | escape }}</code-block>
   </section>
 
   <section>

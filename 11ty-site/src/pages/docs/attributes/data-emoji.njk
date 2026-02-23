@@ -1,0 +1,194 @@
+---
+layout: layouts/attribute.njk
+title: "data-emoji"
+description: "Replace :shortcode: text with Unicode emoji characters. Progressive enhancement for any container element — without JS, shortcodes stay as readable text."
+attributeName: data-emoji
+category: text-effects
+attributeType: data
+currentPath: /docs/attributes/data-emoji/
+permalink: /docs/attributes/data-emoji/
+---
+
+{% set basicCode %}<p data-emoji>Hello :wave: welcome :rocket:</p>{% endset %}
+
+{% set blockCode %}<article data-emoji>
+  <h2>Release Notes :tada:</h2>
+  <p>We shipped :rocket: the new feature. Thanks :heart: to all contributors :clap:</p>
+  <p>Bug fixes :wrench: and performance improvements :zap:</p>
+</article>{% endset %}
+
+{% set observeCode %}<div data-emoji data-emoji-scan="observe">
+  <!-- Dynamically added content gets emoji replaced automatically -->
+</div>{% endset %}
+
+{% set stripCode %}<!-- Unresolved shortcodes are removed -->
+<p data-emoji data-emoji-unknown="strip">
+  Hello :wave: and :nonexistent_code: world
+</p>
+<!-- Renders: Hello 👋 and  world -->{% endset %}
+
+{% set dynamicCode %}// Dynamically added [data-emoji] elements are auto-enhanced
+const el = document.createElement('p');
+el.dataset.emoji = '';
+el.textContent = 'Dynamic :fire: content :sparkles:';
+document.body.appendChild(el);
+// Auto-enhanced — no manual init needed{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-emoji</code> attribute enables automatic replacement of <code>:shortcode:</code> patterns with Unicode emoji characters inside any container element. It scans text nodes using a <code>TreeWalker</code> and performs pure text replacement &mdash; no wrapping elements are added.</p>
+
+    <browser-window
+      src="/docs/examples/demos/emoji-basic.html"
+      url="https://vanilla-breeze.dev/data-emoji"
+      title="Emoji Enhancement Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage">{{ basicCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement.</strong> Without JavaScript, shortcodes like <code>:wave:</code> remain as readable text &mdash; perfectly understandable to humans.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-emoji</code></td>
+          <td>&mdash;</td>
+          <td>&mdash;</td>
+          <td>Enables emoji enhancement on the container.</td>
+        </tr>
+        <tr>
+          <td><code>data-emoji-scan</code></td>
+          <td><code>once</code>, <code>observe</code></td>
+          <td><code>once</code></td>
+          <td>Scan mode. <code>observe</code> watches for dynamic content changes via MutationObserver.</td>
+        </tr>
+        <tr>
+          <td><code>data-emoji-unknown</code></td>
+          <td><code>keep</code>, <code>strip</code></td>
+          <td><code>keep</code></td>
+          <td>How to handle unresolved shortcodes. <code>keep</code> leaves them as-is; <code>strip</code> removes the colon markers.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Block-Level Usage</h2>
+    <p>Apply <code>data-emoji</code> to any container. All text nodes within are scanned, including nested elements. Elements like <code>code</code>, <code>pre</code>, <code>script</code>, <code>style</code>, and <code>textarea</code> are skipped automatically.</p>
+
+    <code-block language="html" show-lines label="Article with emoji">{{ blockCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Observe Mode</h2>
+    <p>Set <code>data-emoji-scan="observe"</code> to watch for dynamically added or changed content. A <code>MutationObserver</code> watches the subtree and debounces rescans (100ms).</p>
+
+    <code-block language="html" show-lines label="Observe mode">{{ observeCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Unknown Shortcodes</h2>
+    <p>By default, unresolved shortcodes are left as-is. Set <code>data-emoji-unknown="strip"</code> to remove the colon markers from unrecognized codes.</p>
+
+    <code-block language="html" show-lines label="Strip unknown codes">{{ stripCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Dynamic Content</h2>
+    <p>Elements with <code>data-emoji</code> added to the page after load are automatically enhanced via a global <code>MutationObserver</code>.</p>
+
+    <code-block language="javascript" show-lines label="Dynamic enhancement">{{ dynamicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Live Input Replacement</h2>
+    <p>Add <code>data-emoji</code> directly to a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code> to enable live shortcode replacement as the user types. When the closing <code>:</code> completes a valid shortcode, it's instantly replaced with the emoji character.</p>
+
+{% set inputCode %}<textarea data-emoji rows="3" placeholder="Try typing :wave: hello :fire:"></textarea>
+
+<input type="text" data-emoji placeholder="Type :heart: here">{% endset %}
+
+    <code-block language="html" show-lines label="Input/textarea usage">{{ inputCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>Cursor position is preserved.</strong> After replacement, the cursor stays in the right place — even when pasting text with multiple shortcodes.
+    </aside>
+
+    <aside class="note">
+      <strong>IME composition safe.</strong> Replacement is paused during active IME composition (e.g., CJK input) to avoid interfering with multi-keystroke character entry.
+    </aside>
+
+    <p>Unknown shortcodes are always kept as-is in inputs (the <code>data-emoji-unknown="strip"</code> option only applies to container elements, not inputs — stripping text while typing would be jarring).</p>
+  </section>
+
+  <section>
+    <h2>Skipped Elements</h2>
+    <p>When <code>data-emoji</code> is on a container, text inside these child elements is never processed:</p>
+    <ul>
+      <li><code>&lt;script&gt;</code></li>
+      <li><code>&lt;style&gt;</code></li>
+      <li><code>&lt;code&gt;</code></li>
+      <li><code>&lt;pre&gt;</code></li>
+      <li><code>&lt;textarea&gt;</code> (use <code>data-emoji</code> directly on the textarea for live replacement)</li>
+      <li>Any element with <code>contenteditable</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Supported Shortcodes</h2>
+    <p>The core set includes approximately 200 curated emoji across 9 categories: Smileys, People, Animals &amp; Nature, Food &amp; Drink, Travel &amp; Places, Activities, Objects, Symbols, and Flags. Common aliases are supported (e.g., <code>:heart:</code> for <code>:red_heart:</code>, <code>:+1:</code> for <code>:thumbsup:</code>).</p>
+    <p>See the <a href="/docs/elements/web-components/emoji-picker/">emoji-picker</a> component for a visual browser of all available emoji. Use <strong>data-emoji</strong> when users know the shortcode; use <strong>emoji-picker</strong> when they need to browse and discover. Both share the same dataset and work well together.</p>
+  </section>
+
+  <section>
+    <h2>Extended Emoji Set</h2>
+    <p>Need the full GitHub/Slack shortcode library? Load the extended emoji file to add ~1,700 more shortcodes (the complete <a href="https://github.com/github/gemoji">gemoji</a> set). It supplements the core set &mdash; no configuration needed.</p>
+
+{% set extendedCode %}<!-- Add after vanilla-breeze.js (load order doesn't matter) -->
+<script type="module" src="/cdn/emoji-extended.js"></script>{% endset %}
+
+    <code-block language="html" show-lines label="Load extended emoji">{{ extendedCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Set</th>
+          <th>Shortcodes</th>
+          <th>Size (gzipped)</th>
+          <th>Loaded</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Core (default)</td>
+          <td>~200</td>
+          <td>Included in main bundle</td>
+          <td>Always</td>
+        </tr>
+        <tr>
+          <td>Extended (opt-in)</td>
+          <td>~1,700 additional</td>
+          <td>~23 KB</td>
+          <td>Separate script tag</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <aside class="note">
+      <strong>Works everywhere.</strong> Extended emoji are available to <code>data-emoji</code> containers, <code>data-emoji</code> inputs, and the <code>&lt;emoji-picker&gt;</code> component automatically once loaded.
+    </aside>
+  </section>

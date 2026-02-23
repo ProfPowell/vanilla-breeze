@@ -140,6 +140,7 @@ carousel-wc:not(:defined) > * {
         <tr><td><code>data-gap</code></td><td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td>&mdash;</td><td>Gap between slides</td></tr>
         <tr><td><code>data-start</code></td><td>number</td><td><code>0</code></td><td>Initial slide index</td></tr>
         <tr><td><code>data-persist</code></td><td>string key</td><td>&mdash;</td><td>localStorage key for slide persistence</td></tr>
+        <tr><td><code>data-transition</code></td><td><code>fade</code>, <code>slide</code>, <code>scale</code></td><td>&mdash;</td><td>Enable View Transition animations (switches to stacked-grid layout)</td></tr>
       </tbody>
     </table>
   </section>
@@ -221,6 +222,46 @@ carousel-wc:not(:defined) > * {
     <h2>Progressive Enhancement</h2>
     <p>Without JavaScript, <code>&lt;carousel-wc&gt;</code> renders as a horizontal scrollable row using the <code>:not(:defined)</code> fallback. Once JS registers the component, controls and indicators appear.</p>
     <code-block language="css" show-lines label="No-JS fallback">{{ fallbackCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>View Transitions</h2>
+    <p>Add <code>data-transition</code> to switch from scroll-snap to View Transition animations. When active, the carousel uses a stacked-grid layout and animates between slides using the View Transitions API.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fade</code> (default)</td><td>Crossfade between slides</td></tr>
+        <tr><td><code>slide</code></td><td>Directional slide — forward when advancing, backward when retreating</td></tr>
+        <tr><td><code>scale</code></td><td>Scale down old slide, scale up new slide</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Dual-Mode Behavior</h3>
+    <p>Without <code>data-transition</code>, the carousel uses scroll-snap with IntersectionObserver — slides are arranged in a horizontal row and the user scrolls between them. With <code>data-transition</code>, the carousel switches to a stacked CSS Grid layout where slides occupy the same grid cell and are shown/hidden with View Transition animations.</p>
+
+    <div class="example">
+      <carousel-wc data-transition="slide" data-loop>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 250), oklch(65% 0.15 290)); color: white; border-radius: var(--radius-m); text-align: center;">
+          <strong style="font-size: var(--font-size-xl);">Slide 1</strong>
+          <p>Directional slide transitions</p>
+        </div>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 160), oklch(65% 0.15 190)); color: white; border-radius: var(--radius-m); text-align: center;">
+          <strong style="font-size: var(--font-size-xl);">Slide 2</strong>
+          <p>Forward and backward animations</p>
+        </div>
+        <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 30), oklch(65% 0.15 50)); color: white; border-radius: var(--radius-m); text-align: center;">
+          <strong style="font-size: var(--font-size-xl);">Slide 3</strong>
+          <p>Keyboard navigation works too</p>
+        </div>
+      </carousel-wc>
+    </div>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> View Transitions require Chrome 111+, Safari 18+, or Firefox 131+. In unsupported browsers, the carousel falls back to scroll-snap behavior automatically.
+    </aside>
   </section>
 
   <section>

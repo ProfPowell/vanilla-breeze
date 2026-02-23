@@ -93,3 +93,61 @@ tabs-wc > details:first-of-type > summary {
     transition: none;
   }
 }
+
+/* --- View Transitions --- */
+
+/* Fade (default) */
+::view-transition-old(*.vt-tabs) {
+  animation: vt-fade-out var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+::view-transition-new(*.vt-tabs) {
+  animation: vt-fade-in var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* Directional slide */
+:root[data-vt-direction="forward"] ::view-transition-old(*.vt-tabs-slide) {
+  animation: vt-slide-out-left var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+:root[data-vt-direction="forward"] ::view-transition-new(*.vt-tabs-slide) {
+  animation: vt-slide-in-left var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+:root[data-vt-direction="backward"] ::view-transition-old(*.vt-tabs-slide) {
+  animation: vt-slide-out-right var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+:root[data-vt-direction="backward"] ::view-transition-new(*.vt-tabs-slide) {
+  animation: vt-slide-in-right var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* Scale */
+::view-transition-old(*.vt-tabs-scale) {
+  animation: vt-scale-down var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+::view-transition-new(*.vt-tabs-scale) {
+  animation: vt-scale-up var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* VT reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*.vt-tabs),
+  ::view-transition-new(*.vt-tabs),
+  ::view-transition-old(*.vt-tabs-slide),
+  ::view-transition-new(*.vt-tabs-slide),
+  ::view-transition-old(*.vt-tabs-scale),
+  ::view-transition-new(*.vt-tabs-scale) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+:root[data-motion-reduced] ::view-transition-old(*.vt-tabs),
+:root[data-motion-reduced] ::view-transition-new(*.vt-tabs),
+:root[data-motion-reduced] ::view-transition-old(*.vt-tabs-slide),
+:root[data-motion-reduced] ::view-transition-new(*.vt-tabs-slide),
+:root[data-motion-reduced] ::view-transition-old(*.vt-tabs-scale),
+:root[data-motion-reduced] ::view-transition-new(*.vt-tabs-scale) {
+  animation-duration: 0.01ms !important;
+}

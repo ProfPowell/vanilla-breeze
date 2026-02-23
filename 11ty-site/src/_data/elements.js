@@ -160,6 +160,7 @@ const elementsByLetter = {
     { name: 'search', type: 'native', href: '/docs/elements/native/search/' },
     { name: 'search-wc', type: 'component', href: '/docs/elements/web-components/search-wc/' },
     { name: 'section', type: 'native', href: '/docs/elements/native/section/' },
+    { name: 'settings-wc', type: 'component', href: '/docs/elements/web-components/settings-wc/' },
     { name: 'select', type: 'native', href: '/docs/elements/native/select/' },
     { name: 'shortcuts-wc', type: 'component', href: '/docs/elements/web-components/shortcuts/' },
     { name: 'slide-accept-wc', type: 'component', href: '/docs/elements/web-components/slide-accept/' },

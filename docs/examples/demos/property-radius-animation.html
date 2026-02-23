@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@property Radius Animation Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    h2 { margin-block-end: var(--size-m); }
+    section + section { margin-block-start: var(--size-2xl); }
+
+    /* Hover cards: animate border-radius via the registered custom property */
+    .radius-hover {
+      border-radius: var(--radius-s);
+      transition: border-radius 0.4s ease, box-shadow 0.3s ease;
+    }
+    .radius-hover:hover {
+      border-radius: var(--radius-2xl);
+      box-shadow: 0 8px 24px oklch(0% 0 0 / 0.12);
+    }
+
+    /* Pill toggle buttons */
+    .pill-group {
+      display: flex;
+      gap: var(--size-s);
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      border-radius: var(--radius-m);
+      transition: border-radius 0.4s ease, background-color 0.2s ease, color 0.2s ease;
+      padding: var(--size-s) var(--size-xl);
+      border: none;
+      background: var(--color-primary, oklch(0.55 0.2 250));
+      color: var(--color-on-primary, #fff);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
+    .pill-btn:hover {
+      border-radius: var(--radius-full);
+      background: var(--color-primary-hover, oklch(0.48 0.2 250));
+    }
+    .pill-btn:focus-visible {
+      border-radius: var(--radius-full);
+      outline: 2px solid var(--color-primary, oklch(0.55 0.2 250));
+      outline-offset: 2px;
+    }
+
+    /* Comparison: snap vs smooth */
+    .snap-demo {
+      --demo-radius: 4px;
+      border-radius: var(--demo-radius);
+      transition: --demo-radius 0.4s ease, border-radius 0.4s ease;
+      border: 2px dashed var(--color-border);
+      padding: var(--size-l);
+      text-align: center;
+    }
+    .snap-demo:hover {
+      --demo-radius: 24px;
+      border-radius: var(--demo-radius);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+    <h1>@property Radius Animation</h1>
+    <p>CSS <code>@property</code> registers custom properties with a syntax type, enabling the browser to interpolate them. Without registration, custom property transitions snap instantly because the browser treats them as opaque strings.</p>
+
+    <section>
+      <h2>Hover Cards</h2>
+      <p>Hover over these cards to see <code>border-radius</code> animate smoothly from <code>var(--radius-s)</code> to <code>var(--radius-2xl)</code>. The transition works because <code>--radius-s</code> and related tokens are registered as <code>&lt;length&gt;</code> values.</p>
+
+      <div data-layout="grid" data-layout-min="15rem" data-layout-gap="l">
+        <layout-card class="radius-hover">
+          <header><h3>Design Tokens</h3></header>
+          <section>
+            <p>A unified set of CSS custom properties for spacing, color, and typography that drive the entire system.</p>
+          </section>
+          <footer><button type="button">Learn More</button></footer>
+        </layout-card>
+
+        <layout-card class="radius-hover">
+          <header><h3>Layout Primitives</h3></header>
+          <section>
+            <p>Stack, cluster, grid, sidebar, and more — composable layout patterns via data attributes.</p>
+          </section>
+          <footer><button type="button">Explore</button></footer>
+        </layout-card>
+
+        <layout-card class="radius-hover">
+          <header><h3>Web Components</h3></header>
+          <section>
+            <p>Encapsulated interactive elements that enhance semantic HTML without framework dependencies.</p>
+          </section>
+          <footer><button type="button">Browse</button></footer>
+        </layout-card>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pill Toggle</h2>
+      <p>These buttons transition from <code>var(--radius-m)</code> to <code>var(--radius-full)</code> on hover and focus — morphing from rounded rectangle to pill shape.</p>
+
+      <div class="pill-group">
+        <button type="button" class="pill-btn">Overview</button>
+        <button type="button" class="pill-btn">Features</button>
+        <button type="button" class="pill-btn">Pricing</button>
+        <button type="button" class="pill-btn">Contact</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why @property Matters</h2>
+      <div data-layout="grid" data-layout-min="18rem" data-layout-gap="l">
+        <layout-card data-variant="outlined">
+          <header><h3>With @property</h3></header>
+          <section>
+            <p>Vanilla Breeze registers <code>--radius-s</code>, <code>--radius-m</code>, and <code>--radius-l</code> with <code>syntax: "&lt;length&gt;"</code>. The browser knows these are numeric lengths, so it can interpolate between values during transitions.</p>
+            <pre style="font-size: var(--font-size-sm); background: var(--color-surface-raised); padding: var(--size-s); border-radius: var(--radius-s); overflow-x: auto;">@property --radius-s {
+  syntax: "&lt;length&gt;";
+  inherits: true;
+  initial-value: 0.25rem;
+}</pre>
+          </section>
+        </layout-card>
+
+        <layout-card data-variant="outlined">
+          <header><h3>Without @property</h3></header>
+          <section>
+            <p>Unregistered custom properties are treated as strings by the browser. Transitioning from one string to another produces an instant snap — there are no intermediate values to interpolate.</p>
+            <div class="snap-demo">
+              <strong>Hover me</strong>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-block-start: var(--size-xs);">This uses an unregistered <code>--demo-radius</code> property. The radius change may snap instead of animating.</p>
+            </div>
+          </section>
+        </layout-card>
+      </div>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

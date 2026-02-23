@@ -8,7 +8,7 @@
  */
 
 const CONTENT_MODELS = {
-  'semantic-card': {
+  'layout-card': {
     validChildren: ['header', 'section', 'footer'],
     validSlots: ['header', 'content', 'footer'],
     rules: {

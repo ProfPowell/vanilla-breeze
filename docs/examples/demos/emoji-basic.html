@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+    .demo-section {
+      margin-block-end: var(--size-xl);
+    }
+    .demo-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--size-xl);
+      margin-block-end: var(--size-l);
+      flex-wrap: wrap;
+    }
+    textarea {
+      inline-size: 100%;
+      max-inline-size: 30rem;
+    }
+    .picker-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--size-s);
+    }
+  </style>
+</head>
+<body>
+  <h3>Content Enhancement</h3>
+  <div class="demo-section">
+    <article data-emoji>
+      <p>Hello :wave: welcome to Vanilla Breeze :rocket:</p>
+      <p>We :heart: open source :sparkles: and great developer experience :nerd_face:</p>
+      <p>Ship fast :zap: celebrate :tada: and have fun :smile:</p>
+    </article>
+  </div>
+
+  <h3>Observe Mode</h3>
+  <div class="demo-section">
+    <div id="observe-target" data-emoji data-emoji-scan="observe">
+      <p>This container watches for new content. Click the button below.</p>
+    </div>
+    <button type="button" id="add-content">Add dynamic content with :shortcodes:</button>
+  </div>
+
+  <h3>Live Input Replacement</h3>
+  <div class="demo-section">
+    <p>Type a shortcode like <code>:smile:</code> or <code>:rocket:</code> into the textarea and watch it replace on the closing colon.</p>
+    <label for="live-input">Message with emoji</label>
+    <textarea id="live-input" data-emoji rows="3" placeholder="Try typing :wave: hello :fire:"></textarea>
+
+    <label for="live-text">Single-line input</label>
+    <input id="live-text" type="text" data-emoji placeholder="Type :heart: here">
+  </div>
+
+  <h3>Emoji Picker</h3>
+  <div class="demo-section">
+    <label for="msg">Message</label>
+    <div class="picker-row">
+      <textarea id="msg" rows="3" placeholder="Type a message..."></textarea>
+      <emoji-picker for="msg">
+        <button data-trigger type="button" aria-label="Insert emoji">😀</button>
+      </emoji-picker>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <!-- Extended emoji set (opt-in, adds ~1700 more shortcodes) -->
+  <script type="module" src="/src/data/emoji-data-extended.js"></script>
+  <script>
+    document.getElementById('add-content').addEventListener('click', () => {
+      const p = document.createElement('p');
+      p.textContent = 'Dynamic content: :thumbsup: nice work :fire: keep going :rocket:';
+      document.getElementById('observe-target').appendChild(p);
+    });
+  </script>
+</body>
+</html>

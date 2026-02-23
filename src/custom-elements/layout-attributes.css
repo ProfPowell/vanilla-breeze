@@ -1014,6 +1014,18 @@ main[data-layout="sidebar-left"] > article { container-name: region-main-content
 main[data-layout="sidebar-right"] > article { container-name: region-main-content; }
 main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; }
 
+/* Responsive: collapse main-level sidebars to stack on mobile */
+@media (width < 768px) {
+  main[data-layout="sidebar-left"]:not([data-layout-nowrap]),
+  main[data-layout="sidebar-right"]:not([data-layout-nowrap]) {
+    grid-template:
+      "main-article" 1fr
+      "main-aside"   auto
+      "main-nav"     auto
+      / 1fr;
+  }
+}
+
 
 /* ==========================================================================
    LEGACY: data-layout="body-*" (backwards compatibility)
@@ -1122,8 +1134,9 @@ body[data-layout^="body-"] {
   grid-template: var(--tpl-stack);
 }
 
-/* Main adapts when aside is present - only for main elements with data-layout */
-main[data-layout]:has(> aside) {
+/* Main adapts when aside is present - only for legacy body-* layouts */
+main[data-layout^="body-"]:has(> aside),
+[data-layout^="body-"] > main:has(> aside) {
   display: grid;
   grid-template-columns: 1fr var(--_sidebar-width);
   gap: var(--size-m);

@@ -299,3 +299,83 @@ form-field .strength-rules li[data-met]::before {
 form-field .strength-rules li[data-met] {
   color: var(--color-success, oklch(60% 0.18 145));
 }
+
+/* --------------------------------------------------------------------------
+   Async validation spinner (CSS-only hook via data-state="validating")
+   -------------------------------------------------------------------------- */
+form-field[data-state="validating"] input,
+form-field[data-state="validating"] textarea,
+form-field[data-state="validating"] select {
+  border-color: var(--color-warning, oklch(75% 0.15 80));
+}
+
+form-field:not([data-no-icon])[data-state="validating"]::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: var(--size-s);
+  inset-block-start: calc(1lh + var(--size-s) + 0.625rem);
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border: 2px solid var(--color-warning, oklch(75% 0.15 80));
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  animation: vb-spin 0.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes vb-spin {
+  to { rotate: 1turn; }
+}
+
+/* --------------------------------------------------------------------------
+   Error summary (form-level <output class="error-summary">)
+   -------------------------------------------------------------------------- */
+output.error-summary {
+  display: block;
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-m);
+  padding: var(--size-m);
+  background: color-mix(in oklab, var(--color-error) 6%, transparent);
+}
+
+output.error-summary:empty {
+  display: none;
+}
+
+output.error-summary:focus {
+  outline: 3px solid var(--color-error);
+  outline-offset: 2px;
+}
+
+output.error-summary p {
+  font-weight: var(--font-weight-medium, 500);
+  margin: 0 0 var(--size-xs);
+}
+
+output.error-summary ul {
+  margin: 0;
+  padding-inline-start: var(--size-m);
+}
+
+output.error-summary a {
+  color: var(--color-error);
+}
+
+/* Summary-only mode: hide field-level error outputs */
+form[data-validate="summary"] form-field output.error {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Fieldset group error state (checkbox group constraints)
+   -------------------------------------------------------------------------- */
+fieldset[data-invalid] {
+  border-color: var(--color-error);
+}
+
+fieldset[data-invalid] > output {
+  display: block;
+  font-size: var(--font-size-s);
+  color: var(--color-error);
+  margin-block-start: var(--size-xs);
+}

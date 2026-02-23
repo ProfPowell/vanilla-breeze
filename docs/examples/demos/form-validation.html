@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Form Validation Demo - CSS-Only :user-valid/:user-invalid</title>
+  <title>Form Validation Demo - CSS-Only + JS Enhanced</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
@@ -36,6 +36,11 @@
       border-radius: var(--radius-s);
       font-size: 0.9em;
     }
+    hr {
+      border: none;
+      border-block-start: 1px solid var(--color-border);
+      margin-block: var(--size-2xl);
+    }
   </style>
 </head>
 <body>
@@ -43,16 +48,21 @@
     <layout-stack data-layout-gap="xl">
       <header>
         <h1>Form Validation</h1>
-        <p>CSS-only validation using modern <code>:user-valid</code> and <code>:user-invalid</code> pseudo-classes. Validation feedback appears only after user interaction.</p>
+        <p>CSS-only validation using <code>:user-valid</code> / <code>:user-invalid</code>, plus JS-enhanced features via <code>data-validate</code> on forms.</p>
       </header>
 
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 1: CSS-ONLY (existing — no data-validate)
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>CSS-Only Validation</h2>
+
       <div class="info-box">
-        <p><strong>Try it:</strong> Tab through fields without entering values, or enter invalid data, then move focus away. Validation appears only after you've interacted with each field.</p>
+        <p><strong>Try it:</strong> Tab through fields without entering values, or enter invalid data, then move focus away. Validation appears only after you've interacted with each field. No JavaScript needed.</p>
       </div>
 
       <!-- Registration Form Example -->
       <section class="demo-section">
-        <h3>Registration Form</h3>
+        <h3>Registration Form (CSS-only)</h3>
         <layout-card>
           <form>
             <layout-stack data-layout-gap="l">
@@ -120,22 +130,6 @@
                 <output id="country-error" class="error" for="country" aria-live="polite">Please select your country.</output>
               </form-field>
 
-              <form-field>
-                <label for="bio">Bio</label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  rows="3"
-                  required=""
-                  minlength="10"
-                  maxlength="500"
-                  placeholder="Tell us about yourself..."
-                  aria-describedby="bio-hint bio-error"
-                ></textarea>
-                <output id="bio-hint" class="hint" for="bio">10-500 characters.</output>
-                <output id="bio-error" class="error" for="bio" aria-live="polite">Bio must be at least 10 characters.</output>
-              </form-field>
-
               <form-field data-type="checkbox">
                 <label>
                   <input type="checkbox" name="terms" required=""/>
@@ -152,7 +146,402 @@
         </layout-card>
       </section>
 
-      <!-- Pattern Validation Examples -->
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 2: CUSTOM ERROR MESSAGES (data-message-*)
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Custom Error Messages</h2>
+
+      <div class="info-box">
+        <p><strong>data-message-*</strong> attributes let you specify per-constraint error messages. The right message appears for the right validation failure — <code>valueMissing</code> vs <code>typeMismatch</code> vs <code>tooShort</code> get different text.</p>
+      </div>
+
+      <section class="demo-section">
+        <h3>Custom Messages Form</h3>
+        <layout-card>
+          <form data-validate>
+            <layout-stack data-layout-gap="l">
+              <form-field>
+                <label for="cm-name">Full Name</label>
+                <input
+                  type="text"
+                  id="cm-name"
+                  name="name"
+                  required=""
+                  minlength="2"
+                  autocomplete="name"
+                  data-message-required="We need your name to proceed"
+                  data-message-minlength="Name must be at least 2 characters"
+                  aria-describedby="cm-name-error"
+                />
+                <output id="cm-name-error" class="error" for="cm-name" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="cm-email">Email</label>
+                <input
+                  type="email"
+                  id="cm-email"
+                  name="email"
+                  required=""
+                  minlength="5"
+                  autocomplete="email"
+                  data-message-required="Email address is required"
+                  data-message-type="That doesn't look like a valid email"
+                  data-message-minlength="Email seems too short"
+                  aria-describedby="cm-email-error"
+                />
+                <output id="cm-email-error" class="error" for="cm-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="cm-age">Age</label>
+                <input
+                  type="number"
+                  id="cm-age"
+                  name="age"
+                  required=""
+                  min="13"
+                  max="120"
+                  data-message-required="Please enter your age"
+                  data-message-min="You must be at least 13 years old"
+                  data-message-max="Please enter a valid age"
+                  aria-describedby="cm-age-error"
+                />
+                <output id="cm-age-error" class="error" for="cm-age" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="cm-code">Invite Code</label>
+                <input
+                  type="text"
+                  id="cm-code"
+                  name="code"
+                  required=""
+                  pattern="[A-Z]{3}-[0-9]{4}"
+                  data-message-required="An invite code is required"
+                  data-message-pattern="Code must be in format ABC-1234"
+                  aria-describedby="cm-code-hint cm-code-error"
+                />
+                <output id="cm-code-hint" class="hint" for="cm-code">Format: ABC-1234</output>
+                <output id="cm-code-error" class="error" for="cm-code" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Submit</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 3: PASSWORD CONFIRM (data-match)
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Password Confirmation</h2>
+
+      <div class="info-box">
+        <p><strong>data-match</strong> links a field to another field's ID. The values must be equal. This is impossible with CSS/HTML alone.</p>
+      </div>
+
+      <section class="demo-section">
+        <h3>Create Account with Password Confirm</h3>
+        <layout-card>
+          <form data-validate>
+            <layout-stack data-layout-gap="l">
+              <form-field>
+                <label for="pw-email">Email</label>
+                <input
+                  type="email"
+                  id="pw-email"
+                  name="email"
+                  required=""
+                  autocomplete="email"
+                  data-message-required="Email is required"
+                  data-message-type="Please enter a valid email"
+                  aria-describedby="pw-email-error"
+                />
+                <output id="pw-email-error" class="error" for="pw-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="pw-password">Password</label>
+                <input
+                  type="password"
+                  id="pw-password"
+                  name="password"
+                  required=""
+                  minlength="8"
+                  autocomplete="new-password"
+                  data-message-required="Password is required"
+                  data-message-minlength="At least 8 characters"
+                  aria-describedby="pw-password-error"
+                />
+                <output id="pw-password-error" class="error" for="pw-password" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="pw-confirm">Confirm Password</label>
+                <input
+                  type="password"
+                  id="pw-confirm"
+                  name="confirm"
+                  required=""
+                  autocomplete="new-password"
+                  data-match="pw-password"
+                  data-message-required="Please confirm your password"
+                  data-message-match="Passwords do not match"
+                  aria-describedby="pw-confirm-error"
+                />
+                <output id="pw-confirm-error" class="error" for="pw-confirm" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Create Account</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 4: CHECKBOX GROUP CONSTRAINTS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Checkbox Group Constraints</h2>
+
+      <div class="info-box">
+        <p><strong>data-min-checked</strong> and <strong>data-max-checked</strong> on a fieldset enforce how many checkboxes must be checked. Native HTML has no equivalent.</p>
+      </div>
+
+      <section class="demo-section">
+        <h3>Select 1-3 Interests</h3>
+        <layout-card>
+          <form data-validate>
+            <layout-stack data-layout-gap="l">
+              <fieldset data-min-checked="1" data-max-checked="3"
+                        data-message-min-checked="Please select at least one interest"
+                        data-message-max-checked="Maximum 3 interests allowed">
+                <legend>Interests</legend>
+                <layout-stack data-layout-gap="s">
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="interests" value="music"/> Music</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="interests" value="sports"/> Sports</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="interests" value="cooking"/> Cooking</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="interests" value="travel"/> Travel</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="interests" value="reading"/> Reading</label>
+                  </form-field>
+                </layout-stack>
+                <output aria-live="polite"></output>
+              </fieldset>
+
+              <button type="submit">Save Interests</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 5: ERROR SUMMARY — SUMMARY-ONLY MODE
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Error Summary — Summary Only</h2>
+
+      <div class="info-box">
+        <p><strong>data-validate="summary"</strong> shows errors only in a top-level summary. Field-level <code>&lt;output class="error"&gt;</code> elements are hidden via CSS. Good for compact forms.</p>
+      </div>
+
+      <section class="demo-section">
+        <h3>Compact Registration (Summary Only)</h3>
+        <layout-card>
+          <form data-validate="summary">
+            <layout-stack data-layout-gap="l">
+              <output class="error-summary" role="alert" aria-live="polite" tabindex="-1"></output>
+
+              <form-field>
+                <label for="so-name">Name</label>
+                <input
+                  type="text"
+                  id="so-name"
+                  name="name"
+                  required=""
+                  minlength="2"
+                  autocomplete="name"
+                  data-message-required="Name is required"
+                  data-message-minlength="Name must be at least 2 characters"
+                  aria-describedby="so-name-error"
+                />
+                <output id="so-name-error" class="error" for="so-name" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="so-email">Email</label>
+                <input
+                  type="email"
+                  id="so-email"
+                  name="email"
+                  required=""
+                  autocomplete="email"
+                  data-message-required="Email is required"
+                  data-message-type="Please enter a valid email"
+                  aria-describedby="so-email-error"
+                />
+                <output id="so-email-error" class="error" for="so-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="so-phone">Phone</label>
+                <input
+                  type="tel"
+                  id="so-phone"
+                  name="phone"
+                  required=""
+                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                  autocomplete="tel"
+                  data-message-required="Phone number is required"
+                  data-message-pattern="Use format: 123-456-7890"
+                  aria-describedby="so-phone-error"
+                />
+                <output id="so-phone-error" class="error" for="so-phone" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Register</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 6: ERROR SUMMARY — BOTH MODE
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Error Summary — Summary + Field-Level</h2>
+
+      <div class="info-box">
+        <p><strong>data-validate</strong> (no value, or <code>"both"</code>) with an <code>&lt;output class="error-summary"&gt;</code> present shows both: a summary at the top AND inline errors on each field. Best for long forms.</p>
+      </div>
+
+      <section class="demo-section">
+        <h3>Full Registration (Both Modes)</h3>
+        <layout-card>
+          <form data-validate>
+            <layout-stack data-layout-gap="l">
+              <output class="error-summary" role="alert" aria-live="polite" tabindex="-1"></output>
+
+              <form-field>
+                <label for="both-name">Full Name</label>
+                <input
+                  type="text"
+                  id="both-name"
+                  name="name"
+                  required=""
+                  minlength="2"
+                  autocomplete="name"
+                  data-message-required="Full name is required"
+                  data-message-minlength="Name must be at least 2 characters"
+                  aria-describedby="both-name-error"
+                />
+                <output id="both-name-error" class="error" for="both-name" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="both-email">Email</label>
+                <input
+                  type="email"
+                  id="both-email"
+                  name="email"
+                  required=""
+                  autocomplete="email"
+                  data-message-required="Email is required"
+                  data-message-type="Please enter a valid email address"
+                  aria-describedby="both-email-error"
+                />
+                <output id="both-email-error" class="error" for="both-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="both-password">Password</label>
+                <input
+                  type="password"
+                  id="both-password"
+                  name="password"
+                  required=""
+                  minlength="8"
+                  autocomplete="new-password"
+                  data-message-required="Password is required"
+                  data-message-minlength="Password must be at least 8 characters"
+                  aria-describedby="both-password-error"
+                />
+                <output id="both-password-error" class="error" for="both-password" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="both-confirm">Confirm Password</label>
+                <input
+                  type="password"
+                  id="both-confirm"
+                  name="confirm"
+                  required=""
+                  autocomplete="new-password"
+                  data-match="both-password"
+                  data-message-required="Please confirm your password"
+                  data-message-match="Passwords do not match"
+                  aria-describedby="both-confirm-error"
+                />
+                <output id="both-confirm-error" class="error" for="both-confirm" aria-live="polite"></output>
+              </form-field>
+
+              <fieldset data-min-checked="1" data-max-checked="3"
+                        data-message-min-checked="Select at least one topic"
+                        data-message-max-checked="Maximum 3 topics">
+                <legend>Topics of Interest</legend>
+                <layout-stack data-layout-gap="s">
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="topics" value="tech"/> Technology</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="topics" value="design"/> Design</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="topics" value="science"/> Science</label>
+                  </form-field>
+                  <form-field data-type="checkbox">
+                    <label><input type="checkbox" name="topics" value="business"/> Business</label>
+                  </form-field>
+                </layout-stack>
+                <output aria-live="polite"></output>
+              </fieldset>
+
+              <form-field data-type="checkbox">
+                <label>
+                  <input type="checkbox" name="terms" required=""/>
+                  I agree to the Terms of Service
+                </label>
+              </form-field>
+
+              <button type="submit">Create Account</button>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 7: PATTERN + OPTIONAL (existing patterns still work)
+           ═══════════════════════════════════════════════════════════ -->
+      <h2>Pattern Validation (CSS-Only)</h2>
+
       <section class="demo-section">
         <h3>Pattern Validation</h3>
         <layout-card>
@@ -204,130 +593,6 @@
               </form-field>
 
               <button type="submit">Submit</button>
-            </layout-stack>
-          </form>
-        </layout-card>
-      </section>
-
-      <!-- Checkbox and Radio Groups -->
-      <section class="demo-section">
-        <h3>Checkbox and Radio Groups</h3>
-        <layout-card>
-          <form>
-            <layout-stack data-layout-gap="l">
-              <fieldset>
-                <legend>Notification Preferences</legend>
-                <layout-stack data-layout-gap="s">
-                  <form-field data-type="checkbox">
-                    <label>
-                      <input type="checkbox" name="notify-email" checked=""/>
-                      Email notifications
-                    </label>
-                  </form-field>
-                  <form-field data-type="checkbox">
-                    <label>
-                      <input type="checkbox" name="notify-sms"/>
-                      SMS notifications
-                    </label>
-                  </form-field>
-                  <form-field data-type="checkbox">
-                    <label>
-                      <input type="checkbox" name="notify-push"/>
-                      Push notifications
-                    </label>
-                  </form-field>
-                </layout-stack>
-              </fieldset>
-
-              <fieldset>
-                <legend>Subscription Plan</legend>
-                <layout-stack data-layout-gap="s">
-                  <form-field data-type="radio">
-                    <label>
-                      <input type="radio" name="plan" value="free" required=""/>
-                      Free - Basic features
-                    </label>
-                  </form-field>
-                  <form-field data-type="radio">
-                    <label>
-                      <input type="radio" name="plan" value="pro"/>
-                      Pro - $9/month
-                    </label>
-                  </form-field>
-                  <form-field data-type="radio">
-                    <label>
-                      <input type="radio" name="plan" value="enterprise"/>
-                      Enterprise - Custom pricing
-                    </label>
-                  </form-field>
-                </layout-stack>
-              </fieldset>
-
-              <button type="submit">Save Preferences</button>
-            </layout-stack>
-          </form>
-        </layout-card>
-      </section>
-
-      <!-- Optional Fields -->
-      <section class="demo-section">
-        <h3>Optional vs Required</h3>
-        <layout-card>
-          <form>
-            <layout-stack data-layout-gap="l">
-              <p style="margin: 0; color: var(--color-text-muted); font-size: var(--font-size-s);">Fields marked with * are required.</p>
-
-              <form-field>
-                <label for="fullname">Full Name</label>
-                <input
-                  type="text"
-                  id="fullname"
-                  name="fullname"
-                  required=""
-                  placeholder="Jane Smith"
-                  autocomplete="name"
-                  aria-describedby="fullname-error"
-                />
-                <output id="fullname-error" class="error" for="fullname" aria-live="polite">Please enter your full name.</output>
-              </form-field>
-
-              <form-field>
-                <label for="company">Company</label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  placeholder="Acme Corp"
-                  autocomplete="organization"
-                />
-              </form-field>
-
-              <form-field>
-                <label for="jobtitle">Job Title</label>
-                <input
-                  type="text"
-                  id="jobtitle"
-                  name="jobtitle"
-                  placeholder="Software Engineer"
-                  autocomplete="organization-title"
-                />
-              </form-field>
-
-              <form-field>
-                <label for="workemail">Work Email</label>
-                <input
-                  type="email"
-                  id="workemail"
-                  name="workemail"
-                  required=""
-                  placeholder="jane@company.com"
-                  autocomplete="email"
-                  aria-describedby="workemail-error"
-                />
-                <output id="workemail-error" class="error" for="workemail" aria-live="polite">Please enter a valid work email.</output>
-              </form-field>
-
-              <button type="submit">Continue</button>
             </layout-stack>
           </form>
         </layout-card>

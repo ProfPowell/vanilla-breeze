@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subgrid Card Alignment Demo - Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    h2 { margin-block-end: var(--size-m); }
+    section + section { margin-block-start: var(--size-2xl); }
+    .label {
+      display: inline-block;
+      padding: var(--size-2xs) var(--size-s);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+    }
+    .label-without {
+      background: oklch(0.9 0.05 25);
+      color: oklch(0.4 0.1 25);
+    }
+    .label-with {
+      background: oklch(0.9 0.05 145);
+      color: oklch(0.35 0.1 145);
+    }
+
+    /* Plain card styling — no layout-card, so subgrid effect is visible */
+    .card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .card-header {
+      padding: var(--size-s) var(--size-m);
+      background: oklch(0.92 0.03 250);
+      border-block-end: 1px solid oklch(0.85 0.05 250);
+      font-weight: 700;
+    }
+    .card-body {
+      padding: var(--size-m);
+    }
+    .card-footer {
+      padding: var(--size-s) var(--size-m);
+      background: oklch(0.95 0.02 250);
+      border-block-start: 1px solid oklch(0.88 0.04 250);
+    }
+
+    /* Without subgrid: plain auto-fit grid, cards manage their own rows */
+    .grid-no-subgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      gap: var(--size-l);
+    }
+
+    /* With subgrid: parent defines shared row tracks */
+    .grid-with-subgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      gap: var(--size-l);
+    }
+    .grid-with-subgrid > .card {
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+    }
+
+    /* Guide lines to highlight alignment */
+    .guide-overlay {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+    <h1>Subgrid Card Alignment</h1>
+    <p>When cards in a grid have different content lengths, their internal regions (header, body, footer) sit at different heights. <code>data-layout-subgrid</code> shares row tracks across siblings so regions align. Compare the blue header bands and grey footer bands below.</p>
+
+    <section>
+      <h2><span class="label label-without">Without</span> Subgrid</h2>
+      <p>Each card sizes its header, body, and footer independently. The blue header bands end at different heights. The grey footer bands start at different heights.</p>
+
+      <div class="grid-no-subgrid">
+        <article class="card">
+          <div class="card-header">Setup</div>
+          <div class="card-body">
+            <p>Drop a single stylesheet link into your HTML and start building immediately. No bundler, no config, no JavaScript framework required. Works with any backend.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button">Get Started</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Responsive Grid with Fluid Typography and Container Queries Built In</div>
+          <div class="card-body">
+            <p>Reflows automatically.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button" class="secondary">Docs</button>
+            <button type="button">Try It</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Theming</div>
+          <div class="card-body">
+            <p>Design token control:</p>
+            <ul>
+              <li>Color palettes</li>
+              <li>Spacing scale</li>
+              <li>Typography presets</li>
+              <li>Border radius tokens</li>
+              <li>Shadow layers</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <button type="button">Customize</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Accessible by Default with Semantic HTML and ARIA</div>
+          <div class="card-body">
+            <p>Screen readers just work.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button">Learn More</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="label label-with">With</span> Subgrid</h2>
+      <p>Same cards, but children share the parent's row tracks. All blue header bands end at the same line. All grey footer bands start at the same line. Content areas fill the middle uniformly.</p>
+
+      <div class="grid-with-subgrid">
+        <article class="card">
+          <div class="card-header">Setup</div>
+          <div class="card-body">
+            <p>Drop a single stylesheet link into your HTML and start building immediately. No bundler, no config, no JavaScript framework required. Works with any backend.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button">Get Started</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Responsive Grid with Fluid Typography and Container Queries Built In</div>
+          <div class="card-body">
+            <p>Reflows automatically.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button" class="secondary">Docs</button>
+            <button type="button">Try It</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Theming</div>
+          <div class="card-body">
+            <p>Design token control:</p>
+            <ul>
+              <li>Color palettes</li>
+              <li>Spacing scale</li>
+              <li>Typography presets</li>
+              <li>Border radius tokens</li>
+              <li>Shadow layers</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <button type="button">Customize</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">Accessible by Default with Semantic HTML and ARIA</div>
+          <div class="card-body">
+            <p>Screen readers just work.</p>
+          </div>
+          <div class="card-footer">
+            <button type="button">Learn More</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

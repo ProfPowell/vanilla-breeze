@@ -1,0 +1,226 @@
+---
+layout: layouts/element.njk
+title: "emoji-picker"
+description: "Accessible emoji picker with search, category tabs, and target insertion. Browse, search, or select emoji and insert directly into inputs, textareas, or contenteditable elements."
+elementName: emoji-picker
+category: component
+currentPath: /docs/elements/web-components/emoji-picker/
+permalink: /docs/elements/web-components/emoji-picker/
+---
+
+{% set basicCode %}<textarea id="msg" rows="3"></textarea>
+<emoji-picker for="msg">
+  <button data-trigger type="button">😀</button>
+</emoji-picker>{% endset %}
+
+{% set customTriggerCode %}<emoji-picker for="comment">
+  <button data-trigger type="button" aria-label="Add emoji">
+    Add Emoji
+  </button>
+</emoji-picker>{% endset %}
+
+{% set eventCode %}{% raw %}const picker = document.querySelector('emoji-picker');
+
+picker.addEventListener('emoji-select', (e) => {
+  console.log(e.detail.emoji);      // "🚀"
+  console.log(e.detail.shortcode);  // "rocket"
+  console.log(e.detail.name);       // "Rocket"
+});{% endraw %}{% endset %}
+
+{% set noTargetCode %}{% raw %}<!-- No "for" attribute — handle insertion yourself -->
+<emoji-picker>
+  <button data-trigger type="button">😀</button>
+</emoji-picker>
+
+<script>
+document.querySelector('emoji-picker')
+  .addEventListener('emoji-select', (e) => {
+    // Insert wherever you want
+    myEditor.insert(e.detail.emoji);
+  });
+</script>{% endraw %}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;emoji-picker&gt;</code> component provides an accessible popup for browsing, searching, and selecting emoji. It can insert directly into a target <code>input</code>, <code>textarea</code>, or <code>contenteditable</code> element, or dispatch events for custom handling.</p>
+
+    <browser-window
+      src="/docs/examples/demos/emoji-basic.html"
+      url="https://vanilla-breeze.dev/emoji-picker"
+      title="Emoji Picker Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic emoji picker">{{ basicCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>~200 curated emoji by default.</strong> A focused core subset organized into 9 categories. Load <a href="/docs/attributes/data-emoji/#extended-emoji-set"><code>emoji-extended.js</code></a> to add ~1,700 more (the full GitHub/Slack shortcode set). The same dataset powers the <a href="/docs/attributes/data-emoji/"><code>data-emoji</code></a> attribute for shortcode replacement.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>for</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>ID of target input, textarea, or contenteditable element for insertion.</td>
+        </tr>
+        <tr>
+          <td><code>data-open</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reflected attribute indicating open state.</td>
+        </tr>
+        <tr>
+          <td><code>recent-limit</code></td>
+          <td>number</td>
+          <td><code>24</code></td>
+          <td>Maximum number of recently used emoji to store.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>emoji-select</code></td>
+          <td><code>{ shortcode, emoji, name, keywords }</code></td>
+          <td>Fired when an emoji is selected.</td>
+        </tr>
+        <tr>
+          <td><code>emoji-picker-open</code></td>
+          <td>&mdash;</td>
+          <td>Fired when the picker panel opens.</td>
+        </tr>
+        <tr>
+          <td><code>emoji-picker-close</code></td>
+          <td>&mdash;</td>
+          <td>Fired when the picker panel closes.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening to emoji selection">{{ eventCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Trigger</h2>
+    <p>Provide your own trigger button as a child element with <code>data-trigger</code>. If no trigger is found, one is auto-created.</p>
+
+    <code-block language="html" show-lines label="Custom trigger button">{{ customTriggerCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Without Target</h2>
+    <p>Omit the <code>for</code> attribute to use the picker without auto-insertion. Listen for the <code>emoji-select</code> event and handle insertion yourself.</p>
+
+    <code-block language="html" show-lines label="Event-only mode">{{ noTargetCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Context</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Trigger</td>
+          <td>Toggle picker open/close</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Any</td>
+          <td>Close picker, return focus to trigger</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Down</kbd></td>
+          <td>Search input</td>
+          <td>Move focus to first emoji in grid</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd></td>
+          <td>Grid (first row)</td>
+          <td>Return focus to search input</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow keys</kbd></td>
+          <td>Grid</td>
+          <td>Navigate between emoji (8-column grid)</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          <td>Grid</td>
+          <td>Jump to first/last emoji</td>
+        </tr>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Grid</td>
+          <td>Select focused emoji</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Grid</td>
+          <td>Close picker</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recents</h2>
+    <p>Selected emoji are stored in <code>localStorage</code> (key: <code>vb-emoji-recent</code>) and shown as a &ldquo;Recently Used&rdquo; section at the top of the grid. The <code>recent-limit</code> attribute controls how many are kept.</p>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, the trigger button remains visible but non-functional. The picker panel is hidden by default. Users can still type emoji directly using their OS emoji keyboard (<kbd>Cmd+Ctrl+Space</kbd> on macOS, <kbd>Win+.</kbd> on Windows).</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The picker panel uses <code>role="dialog"</code> with a descriptive label.</li>
+      <li>Category tabs use <code>role="tablist"</code> / <code>role="tab"</code>.</li>
+      <li>The emoji grid uses <code>role="grid"</code> / <code>role="gridcell"</code>.</li>
+      <li>Full keyboard navigation with arrow keys, Home/End, and Escape.</li>
+      <li>Focus is managed: search input on open, trigger on close.</li>
+      <li>Each emoji button has a <code>title</code> with the emoji name and shortcode.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related: <code>data-emoji</code> Attribute</h2>
+    <p>The <a href="/docs/attributes/data-emoji/"><code>data-emoji</code></a> attribute provides a complementary approach &mdash; replacing <code>:shortcode:</code> text patterns with emoji characters:</p>
+    <ul>
+      <li><strong>Static content:</strong> Add <code>data-emoji</code> to any container to replace shortcodes in text nodes on load.</li>
+      <li><strong>Live input:</strong> Add <code>data-emoji</code> to a <code>&lt;textarea&gt;</code> or <code>&lt;input&gt;</code> for live replacement as the user types.</li>
+    </ul>
+    <p>Use <strong>emoji-picker</strong> when users need to browse and discover emoji. Use <strong>data-emoji</strong> when users already know the shortcode they want to type.</p>
+  </section>

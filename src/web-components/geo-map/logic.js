@@ -34,7 +34,7 @@ function markerSvg(color) {
  */
 class GeoMap extends HTMLElement {
     static get observedAttributes() {
-        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'interactive', 'static-only'];
+        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'interactive', 'static-only', 'src', 'place'];
     }
 
     /** @type {import('./interact.js').MapInteraction|null} */
@@ -81,6 +81,118 @@ class GeoMap extends HTMLElement {
         return this.hasAttribute('static-only');
     }
 
+    /**
+     * Resolve coordinates from 6 sources in priority order.
+     * @returns {{ lat: number, lng: number } | null}
+     */
+    #resolveCoordinates() {
+        // 1. Explicit lat/lng attributes
+        const attrLat = parseFloat(this.getAttribute('lat'));
+        const attrLng = parseFloat(this.getAttribute('lng'));
+        if (!isNaN(attrLat) && !isNaN(attrLng)) return { lat: attrLat, lng: attrLng };
+
+        // 2–3. src ID reference (address or JSON-LD)
+        const srcId = this.getAttribute('src');
+        if (srcId) {
+            const fromSrc = this.#resolveFromSrc(srcId);
+            if (fromSrc) return fromSrc;
+        }
+
+        // 4. Slotted <address data-lat data-lng>
+        const addr = this.querySelector('address[data-lat][data-lng]');
+        if (addr) {
+            const lat = parseFloat(addr.dataset.lat);
+            const lng = parseFloat(addr.dataset.lng);
+            if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+        }
+
+        // 5. place attr → scan all JSON-LD scripts
+        const placeName = this.getAttribute('place');
+        if (placeName) {
+            const fromLd = this.#resolveFromJsonLd(placeName);
+            if (fromLd) return fromLd;
+        }
+
+        // 6. <meta name="geo.position"> fallback
+        const meta = document.querySelector('meta[name="geo.position"]');
+        if (meta) {
+            const content = meta.getAttribute('content') || '';
+            const parts = content.split(';');
+            if (parts.length === 2) {
+                const lat = parseFloat(parts[0]);
+                const lng = parseFloat(parts[1]);
+                if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve from a src ID — checks for address[data-lat/lng] or JSON-LD script.
+     * @param {string} id
+     * @returns {{ lat: number, lng: number } | null}
+     */
+    #resolveFromSrc(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+
+        // Address element with data attributes
+        if (el.tagName === 'ADDRESS' && el.dataset.lat && el.dataset.lng) {
+            const lat = parseFloat(el.dataset.lat);
+            const lng = parseFloat(el.dataset.lng);
+            if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+        }
+
+        // JSON-LD script element
+        if (el.tagName === 'SCRIPT' && el.type === 'application/ld+json') {
+            return this.#parseJsonLdGeo(el);
+        }
+
+        return null;
+    }
+
+    /**
+     * Scan all JSON-LD scripts for a matching place name, extract geo.
+     * @param {string} placeName
+     * @returns {{ lat: number, lng: number } | null}
+     */
+    #resolveFromJsonLd(placeName) {
+        const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+        for (const script of scripts) {
+            try {
+                const data = JSON.parse(script.textContent);
+                if (data.name === placeName) {
+                    const geo = data.geo;
+                    if (geo) {
+                        const lat = parseFloat(geo.latitude);
+                        const lng = parseFloat(geo.longitude);
+                        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+                    }
+                }
+            } catch { /* malformed JSON — skip */ }
+        }
+        return null;
+    }
+
+    /**
+     * Parse a single JSON-LD script element for geo coordinates.
+     * @param {HTMLScriptElement} scriptEl
+     * @returns {{ lat: number, lng: number } | null}
+     */
+    #parseJsonLdGeo(scriptEl) {
+        try {
+            const data = JSON.parse(scriptEl.textContent);
+            const geo = data.geo;
+            if (geo) {
+                const lat = parseFloat(geo.latitude);
+                const lng = parseFloat(geo.longitude);
+                if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+            }
+        } catch { /* malformed JSON — skip */ }
+        return null;
+    }
+
     connectedCallback() {
         this.render();
         this.loadTiles();
@@ -110,8 +222,9 @@ class GeoMap extends HTMLElement {
      * Build the shadow DOM structure
      */
     render() {
-        const lat = this.lat;
-        const lng = this.lng;
+        const coords = this.#resolveCoordinates();
+        const lat = coords?.lat ?? NaN;
+        const lng = coords?.lng ?? NaN;
         const hasCoords = !isNaN(lat) && !isNaN(lng);
 
         // Check if there's slotted content
@@ -132,7 +245,7 @@ class GeoMap extends HTMLElement {
 
         const showActivate = hasCoords && this.interactive !== 'none' && !this.staticOnly;
         const activateHtml = showActivate
-            ? `<button part="activate" aria-label="Activate interactive map" tabindex="0">Click to interact</button>`
+            ? `<div part="overlay"><button part="activate" aria-label="Activate interactive map" tabindex="0">Click to interact</button></div>`
             : '';
 
         this.shadowRoot.innerHTML = `
@@ -153,8 +266,9 @@ class GeoMap extends HTMLElement {
      * Calculate tile positions and load tile images
      */
     loadTiles() {
-        const lat = this.lat;
-        const lng = this.lng;
+        const coords = this.#resolveCoordinates();
+        const lat = coords?.lat ?? NaN;
+        const lng = coords?.lng ?? NaN;
 
         if (isNaN(lat) || isNaN(lng)) {
             this.handleError('Missing or invalid lat/lng coordinates');
@@ -234,12 +348,14 @@ class GeoMap extends HTMLElement {
      * Wire up the activate button with hover preconnect and click/eager activation.
      */
     #wireActivation() {
-        const btn = this.shadowRoot.querySelector('[part="activate"]');
-        if (!btn) return;
+        const overlay = this.shadowRoot.querySelector('[part="overlay"]');
+        if (!overlay) return;
 
-        btn.addEventListener('mouseenter', () => this.#preconnect(), { once: true });
-        btn.addEventListener('focus', () => this.#preconnect(), { once: true });
-        btn.addEventListener('click', () => this.#activate());
+        const btn = overlay.querySelector('[part="activate"]');
+
+        overlay.addEventListener('mouseenter', () => this.#preconnect(), { once: true });
+        if (btn) btn.addEventListener('focus', () => this.#preconnect(), { once: true });
+        if (btn) btn.addEventListener('click', () => this.#activate());
 
         if (this.interactive === 'eager') {
             // Activate on next frame so tiles render first
@@ -274,8 +390,9 @@ class GeoMap extends HTMLElement {
      */
     async #activate() {
         if (this.#interaction) return;
-        const lat = this.lat;
-        const lng = this.lng;
+        const coords = this.#resolveCoordinates();
+        const lat = coords?.lat ?? NaN;
+        const lng = coords?.lng ?? NaN;
         if (isNaN(lat) || isNaN(lng)) return;
 
         const { MapInteraction } = await import('./interact.js');

@@ -176,3 +176,78 @@ carousel-wc[data-gap="xl"] { --_gap: var(--size-xl); }
     transition-duration: 0s;
   }
 }
+
+/* --- View Transition mode: stacked layout --- */
+
+carousel-wc[data-transition]:defined .carousel-track {
+  display: grid;
+  grid-template-areas: "slide";
+  overflow: visible;
+  scroll-snap-type: none;
+}
+
+carousel-wc[data-transition]:defined .carousel-track > [role="group"] {
+  grid-area: slide;
+}
+
+carousel-wc[data-transition]:defined .carousel-track > [hidden] {
+  display: none;
+}
+
+/* --- View Transition animations --- */
+
+/* Fade (default) */
+::view-transition-old(*.vt-carousel) {
+  animation: vt-fade-out var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+::view-transition-new(*.vt-carousel) {
+  animation: vt-fade-in var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* Directional slide */
+:root[data-vt-direction="forward"] ::view-transition-old(*.vt-carousel-slide) {
+  animation: vt-slide-out-left var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+:root[data-vt-direction="forward"] ::view-transition-new(*.vt-carousel-slide) {
+  animation: vt-slide-in-left var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+:root[data-vt-direction="backward"] ::view-transition-old(*.vt-carousel-slide) {
+  animation: vt-slide-out-right var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+:root[data-vt-direction="backward"] ::view-transition-new(*.vt-carousel-slide) {
+  animation: vt-slide-in-right var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* Scale */
+::view-transition-old(*.vt-carousel-scale) {
+  animation: vt-scale-down var(--motion-exit-duration, 200ms) var(--ease-out);
+}
+
+::view-transition-new(*.vt-carousel-scale) {
+  animation: vt-scale-up var(--motion-enter-duration, 300ms) var(--ease-out);
+}
+
+/* VT reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*.vt-carousel),
+  ::view-transition-new(*.vt-carousel),
+  ::view-transition-old(*.vt-carousel-slide),
+  ::view-transition-new(*.vt-carousel-slide),
+  ::view-transition-old(*.vt-carousel-scale),
+  ::view-transition-new(*.vt-carousel-scale) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+:root[data-motion-reduced] ::view-transition-old(*.vt-carousel),
+:root[data-motion-reduced] ::view-transition-new(*.vt-carousel),
+:root[data-motion-reduced] ::view-transition-old(*.vt-carousel-slide),
+:root[data-motion-reduced] ::view-transition-new(*.vt-carousel-slide),
+:root[data-motion-reduced] ::view-transition-old(*.vt-carousel-scale),
+:root[data-motion-reduced] ::view-transition-new(*.vt-carousel-scale) {
+  animation-duration: 0.01ms !important;
+}

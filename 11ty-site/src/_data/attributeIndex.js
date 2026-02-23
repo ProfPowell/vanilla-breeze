@@ -111,6 +111,12 @@ const dataAttributes = {
       { name: 'data-ticker', type: 'behavior', href: '/docs/attributes/data-ticker/', description: 'Animated number count-up on scroll' },
     ],
   },
+  math: {
+    label: 'Math',
+    items: [
+      { name: 'data-math', type: 'behavior', href: '/docs/attributes/data-math/', description: 'Enhance code elements with precompiled MathML rendering, numbering, and copy-to-clipboard' },
+    ],
+  },
   clipboard: {
     label: 'Clipboard & Selection',
     items: [
@@ -122,6 +128,7 @@ const dataAttributes = {
     label: 'Text Effects',
     items: [
       { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'Gradient, shimmer, glitch, reveal, highlight, typewriter, and scramble effects' },
+      { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters' },
     ],
   },
   interaction: {

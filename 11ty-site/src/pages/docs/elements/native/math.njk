@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "math"
-description: "Container for MathML mathematical notation."
+description: "Native MathML rendering with consistent styling, display/inline modes, numbered equations, and dark mode support."
 elementName: math
 category: native
 nativeGroup: Embedded
@@ -9,34 +9,350 @@ currentPath: /docs/elements/native/math/
 permalink: /docs/elements/native/math/
 ---
 
-{% set basicExample %}<math>...</math>{% endset %}
+{% set inlineExample %}<p>The area of a circle is
+  <math>
+    <mi>A</mi><mo>=</mo><mi>&pi;</mi><msup><mi>r</mi><mn>2</mn></msup>
+  </math>.
+</p>{% endset %}
+
+{% set displayExample %}<math display="block">
+  <mi>x</mi><mo>=</mo>
+  <mfrac>
+    <mrow>
+      <mo>-</mo><mi>b</mi><mo>&pm;</mo>
+      <msqrt>
+        <msup><mi>b</mi><mn>2</mn></msup>
+        <mo>-</mo><mn>4</mn><mi>a</mi><mi>c</mi>
+      </msqrt>
+    </mrow>
+    <mrow><mn>2</mn><mi>a</mi></mrow>
+  </mfrac>
+</math>{% endset %}
+
+{% set numberedExample %}<div class="equation">
+  <math display="block">
+    <mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup>
+  </math>
+</div>
+
+<div class="equation">
+  <math display="block">
+    <mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi>
+  </math>
+</div>{% endset %}
+
+{% set fractionExample %}<math display="block">
+  <mfrac>
+    <mrow><mi>d</mi><mi>y</mi></mrow>
+    <mrow><mi>d</mi><mi>x</mi></mrow>
+  </mfrac>
+  <mo>=</mo>
+  <mfrac><mn>1</mn><msup><mi>x</mi><mn>2</mn></msup></mfrac>
+</math>{% endset %}
+
+{% set radicalExample %}<math display="block">
+  <msqrt>
+    <msup><mi>a</mi><mn>2</mn></msup>
+    <mo>+</mo>
+    <msup><mi>b</mi><mn>2</mn></msup>
+  </msqrt>
+  <mo>=</mo>
+  <mi>c</mi>
+</math>{% endset %}
+
+{% set subsupExample %}<math display="block">
+  <munderover>
+    <mo>&sum;</mo>
+    <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+    <mi>n</mi>
+  </munderover>
+  <msub><mi>a</mi><mi>i</mi></msub>
+</math>{% endset %}
+
+{% set matrixExample %}<math display="block">
+  <mi>A</mi><mo>=</mo>
+  <mrow>
+    <mo>[</mo>
+    <mtable>
+      <mtr>
+        <mtd><mn>1</mn></mtd>
+        <mtd><mn>2</mn></mtd>
+        <mtd><mn>3</mn></mtd>
+      </mtr>
+      <mtr>
+        <mtd><mn>4</mn></mtd>
+        <mtd><mn>5</mn></mtd>
+        <mtd><mn>6</mn></mtd>
+      </mtr>
+      <mtr>
+        <mtd><mn>7</mn></mtd>
+        <mtd><mn>8</mn></mtd>
+        <mtd><mn>9</mn></mtd>
+      </mtr>
+    </mtable>
+    <mo>]</mo>
+  </mrow>
+</math>{% endset %}
+
+{% set figureMathExample %}<figure class="math">
+  <math display="block">
+    <msubsup>
+      <mo>&int;</mo>
+      <mn>0</mn>
+      <mo>&infin;</mo>
+    </msubsup>
+    <msup><mi>e</mi>
+      <mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow>
+    </msup>
+    <mi>d</mi><mi>x</mi>
+    <mo>=</mo>
+    <mfrac>
+      <msqrt><mi>&pi;</mi></msqrt>
+      <mn>2</mn>
+    </mfrac>
+  </math>
+  <figcaption>The Gaussian integral</figcaption>
+</figure>{% endset %}
+
+{% set fontExample %}<link rel="stylesheet" href="/fonts/math-fonts.css">{% endset %}
 
 <section>
-    <h2>Description</h2>
-    <p>The <code>&lt;math&gt;</code> element is part of the Embedded category in HTML.</p>
+    <h2>Overview</h2>
+    <p>The <code>&lt;math&gt;</code> element renders MathML notation natively in the browser. MathML Core is supported in all major engines: Chrome 109+, Firefox, and Safari. No JavaScript or external libraries required.</p>
+    <p>Vanilla Breeze provides consistent styling across browsers: a math font stack, display and inline modes, numbered equations via CSS counters, and dark mode normalization.</p>
+
+    <browser-window
+      src="/docs/examples/demos/math-native.html"
+      url="https://vanilla-breeze.dev/math"
+      title="Native MathML"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
+    <h2>Inline Math</h2>
+    <p>Inline math flows naturally within paragraph text. The element aligns to the text baseline.</p>
+
     <div class="example">
-      <p>The math element contains MathML notation.</p>
+      <p>The area of a circle is
+        <math>
+          <mi>A</mi><mo>=</mo><mi>&pi;</mi><msup><mi>r</mi><mn>2</mn></msup>
+        </math>.
+      </p>
     </div>
-    <code-block language="html" label="Basic math example">{{ basicExample | escape }}</code-block>
+
+    <code-block language="html" show-lines label="Inline math in a paragraph">{{ inlineExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Display Math</h2>
+    <p>Use <code>display="block"</code> for centered, standalone equations with vertical margins.</p>
+
+    <div class="example">
+      <math display="block">
+        <mi>x</mi><mo>=</mo>
+        <mfrac>
+          <mrow>
+            <mo>-</mo><mi>b</mi><mo>&pm;</mo>
+            <msqrt>
+              <msup><mi>b</mi><mn>2</mn></msup>
+              <mo>-</mo><mn>4</mn><mi>a</mi><mi>c</mi>
+            </msqrt>
+          </mrow>
+          <mrow><mn>2</mn><mi>a</mi></mrow>
+        </mfrac>
+      </math>
+    </div>
+
+    <code-block language="html" show-lines label="Display math (quadratic formula)">{{ displayExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Numbered Equations</h2>
+    <p>Wrap <code>math[display="block"]</code> in a <code>div.equation</code> for auto-incrementing equation numbers. Numbering uses CSS counters, so it works without JavaScript and respects DOM order.</p>
+
+    <div class="example">
+      <div class="equation">
+        <math display="block">
+          <mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup>
+        </math>
+      </div>
+
+      <div class="equation">
+        <math display="block">
+          <mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi>
+        </math>
+      </div>
+    </div>
+
+    <code-block language="html" show-lines label="Numbered equations">{{ numberedExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Common Patterns</h2>
+
+    <h3>Fractions</h3>
+    <div class="example">
+      <math display="block">
+        <mfrac>
+          <mrow><mi>d</mi><mi>y</mi></mrow>
+          <mrow><mi>d</mi><mi>x</mi></mrow>
+        </mfrac>
+        <mo>=</mo>
+        <mfrac><mn>1</mn><msup><mi>x</mi><mn>2</mn></msup></mfrac>
+      </math>
+    </div>
+    <code-block language="html" show-lines label="Fractions">{{ fractionExample | escape }}</code-block>
+
+    <h3>Radicals</h3>
+    <div class="example">
+      <math display="block">
+        <msqrt>
+          <msup><mi>a</mi><mn>2</mn></msup>
+          <mo>+</mo>
+          <msup><mi>b</mi><mn>2</mn></msup>
+        </msqrt>
+        <mo>=</mo>
+        <mi>c</mi>
+      </math>
+    </div>
+    <code-block language="html" show-lines label="Radicals (Pythagorean theorem)">{{ radicalExample | escape }}</code-block>
+
+    <h3>Summation</h3>
+    <div class="example">
+      <math display="block">
+        <munderover>
+          <mo>&sum;</mo>
+          <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+          <mi>n</mi>
+        </munderover>
+        <msub><mi>a</mi><mi>i</mi></msub>
+      </math>
+    </div>
+    <code-block language="html" show-lines label="Summation notation">{{ subsupExample | escape }}</code-block>
+
+    <h3>Matrices</h3>
+    <div class="example">
+      <math display="block">
+        <mi>A</mi><mo>=</mo>
+        <mrow>
+          <mo>[</mo>
+          <mtable>
+            <mtr>
+              <mtd><mn>1</mn></mtd>
+              <mtd><mn>2</mn></mtd>
+              <mtd><mn>3</mn></mtd>
+            </mtr>
+            <mtr>
+              <mtd><mn>4</mn></mtd>
+              <mtd><mn>5</mn></mtd>
+              <mtd><mn>6</mn></mtd>
+            </mtr>
+            <mtr>
+              <mtd><mn>7</mn></mtd>
+              <mtd><mn>8</mn></mtd>
+              <mtd><mn>9</mn></mtd>
+            </mtr>
+          </mtable>
+          <mo>]</mo>
+        </mrow>
+      </math>
+    </div>
+    <code-block language="html" show-lines label="Matrix">{{ matrixExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Captioned Equations</h2>
+    <p>Use <code>figure.math</code> to wrap an equation with a <code>&lt;figcaption&gt;</code>.</p>
+
+    <div class="example">
+      <figure class="math">
+        <math display="block">
+          <msubsup>
+            <mo>&int;</mo>
+            <mn>0</mn>
+            <mo>&infin;</mo>
+          </msubsup>
+          <msup><mi>e</mi>
+            <mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow>
+          </msup>
+          <mi>d</mi><mi>x</mi>
+          <mo>=</mo>
+          <mfrac>
+            <msqrt><mi>&pi;</mi></msqrt>
+            <mn>2</mn>
+          </mfrac>
+        </math>
+        <figcaption>The Gaussian integral</figcaption>
+      </figure>
+    </div>
+
+    <code-block language="html" show-lines label="Figure with caption">{{ figureMathExample | escape }}</code-block>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>display</code></td>
+          <td><code>"block"</code></td>
+          <td>Renders as centered block equation. Without this attribute, math renders inline.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This element also supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+
+    <h3>VB Classes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>equation</code></td>
+          <td>Wrapper div that adds auto-incrementing equation number via CSS counters. Contains a <code>math[display="block"]</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Font Loading</h2>
+    <p>MathML rendering quality depends on a math-capable font. Vanilla Breeze defaults to <code>Latin Modern Math</code>, falling back to <code>STIX Two Math</code> and <code>Cambria Math</code>.</p>
+    <p>For best results, load the math font explicitly:</p>
+
+    <code-block language="html" label="Load math font">{{ fontExample | escape }}</code-block>
+
+    <p>When using the <a href="/docs/attributes/data-math/"><code>data-math</code></a> attribute, the font is loaded automatically when math elements are detected.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;math&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Native MathML is natively understood by screen readers including VoiceOver (Safari) and NVDA with MathPlayer</li>
+      <li>No ARIA hacks required &mdash; the browser exposes math semantics directly to the accessibility tree</li>
+      <li>Use <code>&lt;semantics&gt;</code> and <code>&lt;annotation&gt;</code> for additional accessible descriptions when needed</li>
+      <li>Equation numbers assist navigation for sighted and non-sighted users</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Related Elements</h2>
+    <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> - Scalable vector graphics</li>
+      <li><a href="/docs/attributes/data-math/"><code>data-math</code></a> &mdash; enhance <code>&lt;code&gt;</code> elements with precompiled MathML</li>
+      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> &mdash; scalable vector graphics</li>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; inline code</li>
+      <li><a href="/docs/elements/native/var/"><code>&lt;var&gt;</code></a> &mdash; variable name</li>
     </ul>
   </section>

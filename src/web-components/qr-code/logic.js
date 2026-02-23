@@ -1,5 +1,5 @@
 /**
- * qr-code-wc: QR code generator web component
+ * qr-code: QR code generator web component
  *
  * Generates a QR code from text content or a URL. Progressive enhancement:
  * the text content is visible before JS loads, then replaced with a QR code.
@@ -11,7 +11,7 @@
  * @attr {number} data-error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M)
  *
  * @example
- * <qr-code-wc data-value="https://example.com">https://example.com</qr-code-wc>
+ * <qr-code data-value="https://example.com">https://example.com</qr-code>
  */
 
 class QrCodeWc extends HTMLElement {
@@ -485,6 +485,6 @@ function applyBestMask(matrix, reserved, size, ecl) {
   return bestResult;
 }
 
-customElements.define('qr-code-wc', QrCodeWc);
+customElements.define('qr-code', QrCodeWc);
 
 export { QrCodeWc };

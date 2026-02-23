@@ -114,6 +114,63 @@ map.addEventListener('geo-map:error', (e) => {
   console.error('Map error:', e.detail.message);
 });{% endset %}
 
+{% set srcAddressCode %}<!-- External address element with data-lat/data-lng -->
+<address id="office" data-lat="40.7484" data-lng="-73.9857">
+  <strong>Empire State Building</strong><br/>
+  20 W 34th St, New York, NY 10001
+</address>
+
+<!-- Map resolves coordinates from the address -->
+<geo-map src="office" zoom="15"></geo-map>{% endset %}
+
+{% set srcJsonLdCode %}<!-- JSON-LD with geo coordinates -->
+<script type="application/ld+json" id="place-data">
+{
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "name": "Eiffel Tower",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 48.8584,
+    "longitude": 2.2945
+  }
+}
+</script>
+
+<!-- Map resolves coordinates from the JSON-LD script -->
+<geo-map src="place-data" zoom="16"></geo-map>{% endset %}
+
+{% set slottedAddressCode %}<!-- Slotted address with data-lat/data-lng -->
+<geo-map zoom="15">
+  <address data-lat="51.5007" data-lng="-0.1246">
+    <strong>Big Ben</strong><br/>
+    Westminster, London SW1A 0AA
+  </address>
+</geo-map>{% endset %}
+
+{% set placeCode %}<!-- JSON-LD somewhere on the page -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "name": "The Hi-Dive",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 39.7316,
+    "longitude": -104.9878
+  }
+}
+</script>
+
+<!-- Map finds JSON-LD by matching the place name -->
+<geo-map place="The Hi-Dive" zoom="16"></geo-map>{% endset %}
+
+{% set metaCode %}<!-- In the document <head> -->
+<meta name="geo.position" content="40.7484;-73.9857"/>
+
+<!-- Map with no explicit coordinates falls back to meta -->
+<geo-map zoom="15"></geo-map>{% endset %}
+
 {% set contactCode %}<section>
   <layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="wide">
     <!-- Contact Form -->
@@ -223,6 +280,18 @@ map.addEventListener('geo-map:error', (e) => {
           <td><code>osm</code></td>
           <td>Tile source: <code>osm</code>, <code>carto-light</code>, <code>carto-dark</code></td>
         </tr>
+        <tr>
+          <td><code>src</code></td>
+          <td>String</td>
+          <td>&mdash;</td>
+          <td>ID of an external <code>&lt;address data-lat data-lng&gt;</code> or <code>&lt;script type="application/ld+json"&gt;</code> element to resolve coordinates from</td>
+        </tr>
+        <tr>
+          <td><code>place</code></td>
+          <td>String</td>
+          <td>&mdash;</td>
+          <td>Name to match against JSON-LD <code>Place</code> scripts on the page (matches <code>data.name</code>)</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -289,6 +358,51 @@ map.addEventListener('geo-map:error', (e) => {
   </section>
 
   <section>
+    <h2>Data Binding</h2>
+    <layout-text>
+      <p>Coordinates can come from 6 sources, checked in priority order. The first match wins:</p>
+      <ol>
+        <li><strong>Explicit <code>lat</code>/<code>lng</code> attributes</strong> &mdash; highest priority</li>
+        <li><strong><code>src</code> &rarr; <code>&lt;address data-lat data-lng&gt;</code></strong> &mdash; reference an external address element by ID</li>
+        <li><strong><code>src</code> &rarr; <code>&lt;script type="application/ld+json"&gt;</code></strong> &mdash; reference a JSON-LD script by ID</li>
+        <li><strong>Slotted <code>&lt;address data-lat data-lng&gt;</code></strong> &mdash; address inside the component</li>
+        <li><strong><code>place</code> attribute</strong> &mdash; scans all JSON-LD scripts for a matching <code>name</code></li>
+        <li><strong><code>&lt;meta name="geo.position"&gt;</code></strong> &mdash; page-level fallback</li>
+      </ol>
+    </layout-text>
+
+    <h3><code>src</code> &rarr; address element</h3>
+    <layout-text>
+      <p>Point <code>src</code> to the ID of an <code>&lt;address&gt;</code> element with <code>data-lat</code> and <code>data-lng</code> attributes. The address stays visible as semantic content while the map reads its coordinates.</p>
+    </layout-text>
+    <code-block language="html" show-lines label="src → address">{{ srcAddressCode | escape }}</code-block>
+
+    <h3><code>src</code> &rarr; JSON-LD script</h3>
+    <layout-text>
+      <p>Point <code>src</code> to the ID of a <code>&lt;script type="application/ld+json"&gt;</code> element. The component reads <code>geo.latitude</code> and <code>geo.longitude</code> from the parsed JSON.</p>
+    </layout-text>
+    <code-block language="html" show-lines label="src → JSON-LD">{{ srcJsonLdCode | escape }}</code-block>
+
+    <h3>Slotted <code>&lt;address&gt;</code> with coordinates</h3>
+    <layout-text>
+      <p>Slot an <code>&lt;address&gt;</code> with <code>data-lat</code> and <code>data-lng</code> directly inside the component. The address appears as a caption and also provides the coordinates.</p>
+    </layout-text>
+    <code-block language="html" show-lines label="Slotted address">{{ slottedAddressCode | escape }}</code-block>
+
+    <h3><code>place</code> attribute</h3>
+    <layout-text>
+      <p>Set <code>place</code> to a name that matches the <code>name</code> field in a JSON-LD <code>Place</code> script anywhere on the page. Useful when structured data already exists for SEO.</p>
+    </layout-text>
+    <code-block language="html" show-lines label="place attribute">{{ placeCode | escape }}</code-block>
+
+    <h3><code>&lt;meta&gt;</code> fallback</h3>
+    <layout-text>
+      <p>As a last resort, the component checks for a <code>&lt;meta name="geo.position"&gt;</code> tag in the document. The content format is <code>"lat;lng"</code>.</p>
+    </layout-text>
+    <code-block language="html" show-lines label="Meta fallback">{{ metaCode | escape }}</code-block>
+  </section>
+
+  <section>
     <h2>CSS Custom Properties</h2>
 
     <table class="props-table">
@@ -331,6 +445,16 @@ map.addEventListener('geo-map:error', (e) => {
           <td>Caption padding</td>
         </tr>
         <tr>
+          <td><code>--geo-map-overlay-bg</code></td>
+          <td><code>rgba(0,0,0,0.35)</code></td>
+          <td>Overlay background on hover/focus</td>
+        </tr>
+        <tr>
+          <td><code>--geo-map-overlay-color</code></td>
+          <td><code>#fff</code></td>
+          <td>Overlay text color</td>
+        </tr>
+        <tr>
           <td><code>--geo-map-attribution-font-size</code></td>
           <td><code>0.625rem</code></td>
           <td>Attribution text size</td>
@@ -369,9 +493,14 @@ map.addEventListener('geo-map:error', (e) => {
           <td>Marker styling</td>
         </tr>
         <tr>
+          <td><code>overlay</code></td>
+          <td>Overlay wrapper</td>
+          <td>Full-surface hover overlay containing the activate button</td>
+        </tr>
+        <tr>
           <td><code>activate</code></td>
-          <td>Button overlay</td>
-          <td>Click-to-interact trigger (hidden when static-only)</td>
+          <td>Button</td>
+          <td>Click-to-interact trigger inside the overlay</td>
         </tr>
         <tr>
           <td><code>caption</code></td>

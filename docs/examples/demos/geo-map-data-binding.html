@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="geo.position" content="39.7392;-104.9903"/>
+  <title>Geo Map - Data Binding Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-l);
+    }
+    h2 {
+      margin-block: var(--size-l) var(--size-s);
+    }
+    h2:first-child {
+      margin-block-start: 0;
+    }
+  </style>
+
+  <script type="application/ld+json" id="eiffel-tower">
+  {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "name": "Eiffel Tower",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 48.8584,
+      "longitude": 2.2945
+    }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "name": "The Hi-Dive",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 39.7316,
+      "longitude": -104.9878
+    }
+  }
+  </script>
+</head>
+<body>
+  <h2>1. Explicit lat/lng (baseline)</h2>
+  <geo-map lat="40.7484" lng="-73.9857" zoom="15">
+    <address>
+      <strong>Empire State Building</strong><br/>
+      Explicit lat/lng attributes
+    </address>
+  </geo-map>
+
+  <h2>2. src &rarr; address element</h2>
+  <address id="office" data-lat="51.5007" data-lng="-0.1246">
+    <strong>Big Ben</strong><br/>
+    Westminster, London SW1A 0AA
+  </address>
+  <geo-map src="office" zoom="15">
+    <address>Resolved from #office address element</address>
+  </geo-map>
+
+  <h2>3. src &rarr; JSON-LD script</h2>
+  <geo-map src="eiffel-tower" zoom="16">
+    <address>Resolved from #eiffel-tower JSON-LD script</address>
+  </geo-map>
+
+  <h2>4. Slotted address with data-lat/data-lng</h2>
+  <geo-map zoom="14">
+    <address data-lat="35.6762" data-lng="139.6503">
+      <strong>Tokyo</strong><br/>
+      Coordinates from slotted address
+    </address>
+  </geo-map>
+
+  <h2>5. place attribute &rarr; JSON-LD scan</h2>
+  <geo-map place="The Hi-Dive" zoom="16">
+    <address>Resolved by matching place name in JSON-LD</address>
+  </geo-map>
+
+  <h2>6. meta fallback</h2>
+  <geo-map zoom="13">
+    <address>Resolved from &lt;meta name="geo.position"&gt; (Denver, CO)</address>
+  </geo-map>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

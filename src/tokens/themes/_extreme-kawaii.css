@@ -10,6 +10,16 @@
  * - Decorative sparkle elements
  */
 
+/* ===== FONT FACE: Nunito ===== */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/nunito/v32/XRXV3I6Li01BKofINeaBTMnFcQ.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root[data-theme~="kawaii"],
 [data-theme~="kawaii"] {
   color-scheme: light;
@@ -237,7 +247,10 @@
     }
   }
 
-  /* Cute cards */
+  /* Scallop mask SVG — used on cards and blockquotes */
+  --kawaii-scallop-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' rx='24' fill='white'/%3E%3Ccircle cx='14' cy='0' r='10' fill='white'/%3E%3Ccircle cx='38' cy='0' r='10' fill='white'/%3E%3Ccircle cx='62' cy='0' r='10' fill='white'/%3E%3Ccircle cx='86' cy='0' r='10' fill='white'/%3E%3Ccircle cx='110' cy='0' r='10' fill='white'/%3E%3Ccircle cx='134' cy='0' r='10' fill='white'/%3E%3Ccircle cx='158' cy='0' r='10' fill='white'/%3E%3Ccircle cx='182' cy='0' r='10' fill='white'/%3E%3Ccircle cx='14' cy='200' r='10' fill='white'/%3E%3Ccircle cx='38' cy='200' r='10' fill='white'/%3E%3Ccircle cx='62' cy='200' r='10' fill='white'/%3E%3Ccircle cx='86' cy='200' r='10' fill='white'/%3E%3Ccircle cx='110' cy='200' r='10' fill='white'/%3E%3Ccircle cx='134' cy='200' r='10' fill='white'/%3E%3Ccircle cx='158' cy='200' r='10' fill='white'/%3E%3Ccircle cx='182' cy='200' r='10' fill='white'/%3E%3C/svg%3E");
+
+  /* Cute cards with scalloped/cloud mask */
   & .card {
     border-radius: var(--radius-xl);
     background: var(--color-surface-raised);
@@ -246,6 +259,13 @@
     position: relative;
     overflow: visible;
     transition: all 0.3s var(--ease-default);
+
+    mask-image: var(--kawaii-scallop-mask);
+    mask-size: cover;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: var(--kawaii-scallop-mask);
+    -webkit-mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
 
     /* Decorative corner */
     &::before {
@@ -262,12 +282,23 @@
       align-items: center;
       justify-content: center;
       font-size: 0.75rem;
+      z-index: 1;
     }
 
     &:hover {
       transform: translateY(-5px) rotate(1deg);
       box-shadow: var(--shadow-lg);
     }
+  }
+
+  /* Thought-bubble blockquotes with scallop mask */
+  & blockquote {
+    mask-image: var(--kawaii-scallop-mask);
+    mask-size: cover;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: var(--kawaii-scallop-mask);
+    -webkit-mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
   }
 
   /* Cute inputs */
@@ -325,7 +356,10 @@
     border: 2px solid var(--color-accent);
   }
 
-  /* Lists with cute markers */
+  }
+
+  /* Lists with cute markers — scoped to article to avoid nav sidebar */
+  & article {
   & ul:not([class]) {
     list-style: none;
 
@@ -351,6 +385,12 @@
       }
     }
   }
+  }
+
+  /* Soften doc section borders for kawaii */
+  & section {
+    border-radius: var(--radius-l);
+    border-color: var(--color-border-muted);
   }
 
   & :is(main, article) code-block {
@@ -383,6 +423,7 @@
     background: var(--color-primary);
     color: white;
   }
+
 }
 
 /* Dark mode - night kawaii */

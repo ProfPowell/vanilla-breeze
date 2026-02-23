@@ -75,12 +75,25 @@ async function buildCDN() {
     });
   }
 
+  // Build extended emoji dataset (opt-in, separate file)
+  const emojiExtPath = join(SRC, 'data', 'emoji-data-extended.js');
+  if (existsSync(emojiExtPath)) {
+    await esbuild.build({
+      entryPoints: [emojiExtPath],
+      bundle: true,
+      minify: true,
+      format: 'esm',
+      outfile: join(CDN, 'emoji-extended.js'),
+      logLevel: 'info',
+    });
+  }
+
   console.log('\nCDN files ready at dist/cdn/');
   console.log('After deployment, reference via:');
-  console.log('  CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
-  console.log('  JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
-  console.log('  Labs CSS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-labs.css');
-  console.log('  Labs JS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-labs.js');
+  console.log('  CSS:    https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
+  console.log('  JS:     https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
+  console.log('  Labs:   https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-labs.js');
+  console.log('  Emoji+: https://profpowell.github.io/vanilla-breeze/cdn/emoji-extended.js');
 }
 
 buildCDN().catch(e => {

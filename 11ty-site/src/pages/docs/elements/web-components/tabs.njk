@@ -48,6 +48,21 @@ tabs.addEventListener('tab-change', (e) => {
   console.log('New tab:', e.detail.index);
 });{% endset %}
 
+{% set vtCode %}<tabs-wc data-transition="slide" aria-label="Feature tour">
+  <details name="tour" open>
+    <summary>Design</summary>
+    <div><p>Slides forward to the next tab, backward to previous.</p></div>
+  </details>
+  <details name="tour">
+    <summary>Build</summary>
+    <div><p>Direction is computed automatically from tab index.</p></div>
+  </details>
+  <details name="tour">
+    <summary>Ship</summary>
+    <div><p>Works with both mouse clicks and keyboard navigation.</p></div>
+  </details>
+</tabs-wc>{% endset %}
+
 {% set stylingCode %}/* Style the tab list */
 tabs-wc {
   display: block;
@@ -104,6 +119,12 @@ tabs-wc details > div {
           <td>string</td>
           <td>-</td>
           <td>Accessible label for the tab list (required for accessibility).</td>
+        </tr>
+        <tr>
+          <td><code>data-transition</code></td>
+          <td>string</td>
+          <td><code>fade</code></td>
+          <td>Enable View Transition animations when switching tabs. Values: <code>fade</code>, <code>slide</code>, <code>scale</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -311,6 +332,45 @@ tabs-wc details > div {
     <p>The component manages its state internally but you can programmatically control tabs by manipulating the underlying <code>&lt;details&gt;</code> elements.</p>
 
     <code-block language="javascript" show-lines label="JavaScript API">{{ jsApiCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>View Transitions</h2>
+    <p>Add <code>data-transition</code> to enable animated tab switches using the View Transitions API. Three animation types are available:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fade</code> (default)</td><td>Crossfade between panels</td></tr>
+        <tr><td><code>slide</code></td><td>Directional slide — forward when moving right, backward when moving left</td></tr>
+        <tr><td><code>scale</code></td><td>Scale down old panel, scale up new panel</td></tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <tabs-wc data-transition="slide" aria-label="Feature tour">
+        <details name="vt-demo" open>
+          <summary>Design</summary>
+          <div><p>Slides forward to the next tab, backward to previous.</p></div>
+        </details>
+        <details name="vt-demo">
+          <summary>Build</summary>
+          <div><p>Direction is computed automatically from tab index.</p></div>
+        </details>
+        <details name="vt-demo">
+          <summary>Ship</summary>
+          <div><p>Works with both mouse clicks and keyboard navigation.</p></div>
+        </details>
+      </tabs-wc>
+    </div>
+
+    <code-block language="html" show-lines label="Tabs with slide transition">{{ vtCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> View Transitions require Chrome 111+, Safari 18+, or Firefox 131+. In unsupported browsers, tabs switch instantly — no animation, no errors.
+    </aside>
   </section>
 
   <section>

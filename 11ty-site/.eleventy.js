@@ -21,6 +21,9 @@ export default function(eleventyConfig) {
   // Doc-specific CSS and demo HTML files
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'docs')]: 'docs' });
 
+  // Math font CSS (loaded on demand by math-init.js)
+  eleventyConfig.addPassthroughCopy({ [join(ROOT, 'fonts')]: 'fonts' });
+
   // Static assets (favicons, etc.) — copy specific files to avoid
   // conflicts with the docs/ passthrough copy above
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'public/favicon.svg')]: 'favicon.svg' });

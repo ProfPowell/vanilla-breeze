@@ -1,6 +1,12 @@
+import { startSwapTransition } from '../../utils/swap-transition.js';
+
+let tabsVtId = 0;
+
 class TabsWc extends HTMLElement {
   #details;
   #summaries;
+  #vtEnabled = false;
+  #previousIndex = 0;
 
   connectedCallback() {
     this.#details = [...this.querySelectorAll(':scope > details')];
@@ -10,6 +16,41 @@ class TabsWc extends HTMLElement {
 
     this.#setup();
     this.#ensureOneOpen();
+    this.#initVT();
+  }
+
+  #initVT() {
+    if (!this.hasAttribute('data-transition') || !document.startViewTransition) return;
+
+    this.#vtEnabled = true;
+    const id = ++tabsVtId;
+    const type = this.dataset.transition || 'fade';
+    const vtClass = type === 'slide' ? 'vt-tabs-slide' : type === 'scale' ? 'vt-tabs-scale' : 'vt-tabs';
+
+    this.#details.forEach((detail) => {
+      const panel = detail.querySelector(':scope > :not(summary)');
+      if (!panel) return;
+      panel.style.viewTransitionName = `tabs-${id}`;
+      panel.style.viewTransitionClass = vtClass;
+    });
+
+    this.#previousIndex = this.#details.findIndex(d => d.open);
+    if (this.#previousIndex === -1) this.#previousIndex = 0;
+  }
+
+  #switchTab(newIndex) {
+    if (newIndex === this.#previousIndex) return;
+
+    const direction = newIndex > this.#previousIndex ? 'forward' : 'backward';
+    document.documentElement.dataset.vtDirection = direction;
+
+    const vt = startSwapTransition(() => {
+      this.#details[newIndex].open = true;
+    });
+
+    vt.finished?.then(() => {
+      delete document.documentElement.dataset.vtDirection;
+    });
   }
 
   #setup() {
@@ -38,6 +79,13 @@ class TabsWc extends HTMLElement {
       panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('aria-labelledby', tabId);
 
+      // VT click interception — intercepts only when VT is active
+      summary.addEventListener('click', (e) => {
+        if (!this.#vtEnabled) return;
+        e.preventDefault();
+        this.#switchTab(i);
+      });
+
       // Keyboard navigation
       summary.addEventListener('keydown', (e) => this.#handleKey(e, i));
 
@@ -56,8 +104,10 @@ class TabsWc extends HTMLElement {
   }
 
   #handleToggle(index) {
-    // When a details opens, update ARIA states
-    // The name attribute handles closing others automatically
+    if (this.#details[index].open) {
+      this.#previousIndex = index;
+    }
+
     this.#updateAriaStates();
 
     this.dispatchEvent(new CustomEvent('tab-change', {
@@ -98,8 +148,11 @@ class TabsWc extends HTMLElement {
 
     e.preventDefault();
 
-    // Open the new tab (name attribute closes the current one)
-    this.#details[newIndex].open = true;
+    if (this.#vtEnabled) {
+      this.#switchTab(newIndex);
+    } else {
+      this.#details[newIndex].open = true;
+    }
     this.#summaries[newIndex].focus();
   }
 }

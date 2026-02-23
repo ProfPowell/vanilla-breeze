@@ -10,6 +10,16 @@
  * - CRT glow effects
  */
 
+/* ===== FONT FACE: Press Start 2P ===== */
+@font-face {
+  font-family: "Press Start 2P";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nVivNm4I81.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root[data-theme~="8bit"],
 [data-theme~="8bit"] {
   /* ===== COLORS ===== */
@@ -333,7 +343,10 @@
     }
   }
 
-  /* Pixel lists */
+  }
+
+  /* Pixel lists — scoped to article to avoid nav sidebar */
+  & article {
   & ul:not([class]) {
     list-style: none;
 
@@ -402,22 +415,38 @@
     background: var(--color-accent);
     color: var(--color-text);
   }
+
 }
 
 /* Light mode (Game Boy inspired) */
 :root[data-theme~="8bit"][data-mode="light"],
 [data-theme~="8bit"][data-mode="light"] {
+  color-scheme: light;
+
   --color-surface: oklch(85% 0.05 115); /* GB green-ish */
   --color-surface-alt: oklch(75% 0.06 115);
   --color-surface-raised: oklch(90% 0.04 115);
   --color-background: oklch(88% 0.05 115);
 
-  --color-text: oklch(15% 0.05 115); /* Darker for better contrast */
+  --color-text: oklch(15% 0.05 115);
   --color-text-muted: oklch(30% 0.05 115);
 
-  --color-primary: oklch(30% 0.1 115); /* Darker for better contrast */
+  --color-primary: oklch(30% 0.1 115);
   --color-border-strong: oklch(15% 0.05 115);
+
+  /* Fix heading contrast: dark values for light Game Boy surface */
+  --color-yellow: oklch(40% 0.15 90);     /* Dark gold for h1 */
+  --color-cyan: oklch(30% 0.12 200);      /* Dark teal for h2 */
+  --color-accent: oklch(45% 0.2 25);      /* Darker red */
+  --color-magenta: oklch(40% 0.18 320);   /* Darker magenta */
+  --color-orange: oklch(45% 0.18 50);     /* Darker orange */
+  --color-blue: oklch(35% 0.15 250);      /* Darker blue */
 
   --shadow-sm: 4px 4px 0 oklch(15% 0.05 115 / 0.6);
   --shadow-md: 4px 4px 0 oklch(15% 0.05 115 / 0.6);
+}
+
+/* Light mode: suppress CRT scanlines */
+:root[data-theme~="8bit"][data-mode="light"]::before {
+  opacity: 0.05;
 }

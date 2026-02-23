@@ -5,6 +5,9 @@
  * keyboard navigation, and full ARIA. Progressive enhancement: renders
  * as a simple flex scroll without JS.
  *
+ * When data-transition is set and View Transitions API is supported,
+ * switches to stacked-grid layout with animated slide transitions.
+ *
  * @attr {boolean} data-autoplay       - Enable autoplay
  * @attr {number}  data-autoplay-delay - Autoplay interval in ms (default: 5000)
  * @attr {boolean} data-loop           - Wrap around at ends
@@ -13,6 +16,7 @@
  * @attr {string}  data-gap            - Gap token: xs, s, m, l, xl
  * @attr {number}  data-start          - Initial slide index (default: 0)
  * @attr {string}  data-persist        - localStorage key for slide persistence
+ * @attr {string}  data-transition     - VT type: "fade" (default), "slide", "scale"
  *
  * @example
  * <carousel-wc>
@@ -21,6 +25,10 @@
  *   <div>Slide 3</div>
  * </carousel-wc>
  */
+import { startSwapTransition } from '../../utils/swap-transition.js';
+
+let carouselVtId = 0;
+
 class CarouselWc extends HTMLElement {
   #track;
   #slides = [];
@@ -32,6 +40,7 @@ class CarouselWc extends HTMLElement {
   #autoplayTimer = null;
   #currentIndex = 0;
   #reducedMotion = false;
+  #vtMode = false;
 
   get currentIndex() {
     return this.#currentIndex;
@@ -50,6 +59,7 @@ class CarouselWc extends HTMLElement {
     if (children.length === 0) return;
 
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.#vtMode = this.hasAttribute('data-transition') && !!document.startViewTransition;
 
     // Region ARIA
     this.setAttribute('role', 'region');
@@ -123,17 +133,36 @@ class CarouselWc extends HTMLElement {
     this.#nextBtn.addEventListener('click', () => this.next());
     this.#track.addEventListener('keydown', this.#onKeyDown);
 
-    // IntersectionObserver to detect current slide
-    this.#observer = new IntersectionObserver(this.#onIntersect, {
-      root: this.#track,
-      threshold: 0.5,
-    });
-    this.#slides.forEach(slide => this.#observer.observe(slide));
+    // VT mode: assign view-transition-name/class to track
+    if (this.#vtMode) {
+      const id = ++carouselVtId;
+      const type = this.dataset.transition || 'fade';
+      const vtClass = type === 'slide' ? 'vt-carousel-slide' : type === 'scale' ? 'vt-carousel-scale' : 'vt-carousel';
+      this.#track.style.viewTransitionName = `carousel-${id}`;
+      this.#track.style.viewTransitionClass = vtClass;
+    }
+
+    // Non-VT mode: IntersectionObserver to detect current slide
+    if (!this.#vtMode) {
+      this.#observer = new IntersectionObserver(this.#onIntersect, {
+        root: this.#track,
+        threshold: 0.5,
+      });
+      this.#slides.forEach(slide => this.#observer.observe(slide));
+    }
 
     // Initial slide (persisted > attribute > 0)
     const persisted = this.#readPersist();
     const start = persisted ?? (Number(this.dataset.start) || 0);
-    if (start > 0 && start < this.#slides.length) {
+
+    if (this.#vtMode) {
+      // VT mode: hide all but starting slide
+      const startIdx = (start > 0 && start < this.#slides.length) ? start : 0;
+      this.#slides.forEach((slide, i) => {
+        slide.hidden = i !== startIdx;
+      });
+      this.#setCurrentIndex(startIdx);
+    } else if (start > 0 && start < this.#slides.length) {
       this.goTo(start, false);
     }
 
@@ -176,11 +205,34 @@ class CarouselWc extends HTMLElement {
   goTo(index, smooth = true) {
     if (index < 0 || index >= this.#slides.length) return;
 
-    const target = this.#slides[index].offsetLeft - this.#track.offsetLeft;
-    const behavior = smooth && !this.#reducedMotion ? 'smooth' : 'instant';
-    this.#track.scrollTo({ left: target, behavior });
+    if (this.#vtMode) {
+      if (smooth && index !== this.#currentIndex) {
+        const direction = index > this.#currentIndex ? 'forward' : 'backward';
+        document.documentElement.dataset.vtDirection = direction;
+
+        const vt = startSwapTransition(() => {
+          this.#showSlide(index);
+        });
+
+        vt.finished?.then(() => {
+          delete document.documentElement.dataset.vtDirection;
+        });
+      } else {
+        this.#showSlide(index);
+      }
+    } else {
+      const target = this.#slides[index].offsetLeft - this.#track.offsetLeft;
+      const behavior = smooth && !this.#reducedMotion ? 'smooth' : 'instant';
+      this.#track.scrollTo({ left: target, behavior });
+    }
 
     this.#setCurrentIndex(index);
+  }
+
+  #showSlide(index) {
+    this.#slides.forEach((slide, i) => {
+      slide.hidden = i !== index;
+    });
   }
 
   play() {

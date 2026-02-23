@@ -1,0 +1,250 @@
+---
+layout: layouts/attribute.njk
+title: "data-math"
+description: "Enhance code elements with precompiled MathML rendering. Add data-math to any code element for automatic MathML injection with numbering, copy, and Markdown integration."
+attributeName: data-math
+category: formatting
+attributeType: data
+currentPath: /docs/attributes/data-math/
+permalink: /docs/attributes/data-math/
+---
+
+{% set blockExample %}<code data-math
+  data-mathml="<math display='block'><mi>x</mi><mo>=</mo><mfrac><mrow><mo>-</mo><mi>b</mi><mo>&pm;</mo><msqrt><msup><mi>b</mi><mn>2</mn></msup><mo>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math>">
+  x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+</code>{% endset %}
+
+{% set inlineExample %}<p>The area is
+  <code data-math="inline"
+    data-mathml="<math><mi>&pi;</mi><msup><mi>r</mi><mn>2</mn></msup></math>">
+    \pi r^2
+  </code>.
+</p>{% endset %}
+
+{% set numberedExample %}<code data-math="numbered" id="eq-energy"
+  data-mathml="<math display='block'><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>">
+  E = mc^2
+</code>
+
+<p>See <a href="#eq-energy">Equation 1</a>.</p>{% endset %}
+
+{% set copyableExample %}<code data-math="copyable"
+  data-mathml="<math display='block'><msubsup><mo>&int;</mo><mn>0</mn><mo>&infin;</mo></msubsup><msup><mi>e</mi><mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><msqrt><mi>&pi;</mi></msqrt><mn>2</mn></mfrac></math>">
+  \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+</code>{% endset %}
+
+{% set markdownExample %}{% raw %}```math
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+```{% endraw %}{% endset %}
+
+{% set markdownOutputExample %}<pre><code class="language-math">
+  x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+</code></pre>{% endset %}
+
+{% set eventExample %}{% raw %}const el = document.querySelector('[data-math]');
+
+el.addEventListener('math:rendered', (e) => {
+  console.log('LaTeX:', e.detail.latex);
+  console.log('Inline:', e.detail.inline);
+  console.log('Number:', e.detail.number);
+});{% endraw %}{% endset %}
+
+{% set dynamicExample %}const code = document.createElement('code');
+code.dataset.math = 'inline';
+code.dataset.mathml = '<math><mi>x</mi></math>';
+code.textContent = 'x';
+document.body.appendChild(code);
+// Auto-enhanced via MutationObserver{% endset %}
+
+{% set noJsExample %}<code data-math>E = mc^2</code>
+<!-- Without data-mathml, the LaTeX source displays as readable code -->{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-math</code> attribute enhances <code>&lt;code&gt;</code> elements with precompiled MathML. The original LaTeX source stays readable without JavaScript, and when JS runs, it is replaced by rendered MathML.</p>
+
+    <browser-window
+      src="/docs/examples/demos/data-math-basic.html"
+      url="https://vanilla-breeze.dev/data-math"
+      title="data-math Enhancement"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Block math with precompiled MathML">{{ blockExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li>Add <code>data-math</code> to a <code>&lt;code&gt;</code> element with LaTeX source as its text content</li>
+      <li>Add <code>data-mathml</code> with the precompiled MathML string</li>
+      <li>On page load, the script reads <code>data-mathml</code>, injects a <code>&lt;math&gt;</code> element, and hides the original <code>&lt;code&gt;</code></li>
+      <li>Without <code>data-mathml</code>, the LaTeX source displays as-is &mdash; readable fallback with no JS dependency</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-math</code></td>
+          <td>token list</td>
+          <td>Space-separated tokens: <code>inline</code>, <code>numbered</code>, <code>copyable</code>. An empty value defaults to block rendering.</td>
+        </tr>
+        <tr>
+          <td><code>data-mathml</code></td>
+          <td>string</td>
+          <td>Precompiled MathML string to inject. Without this, the element shows the raw LaTeX source.</td>
+        </tr>
+        <tr>
+          <td><code>data-math-state</code></td>
+          <td>string</td>
+          <td>Set automatically: <code>"rendered"</code> when MathML injected, <code>"source"</code> when showing raw LaTeX.</td>
+        </tr>
+        <tr>
+          <td><code>data-math-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Tokens</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>inline</code></td>
+          <td>Renders inline math, wrapping in a <code>&lt;span&gt;</code> instead of a <code>&lt;div&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>numbered</code></td>
+          <td>Auto-increments the equation counter and displays a number. Registers in <code>window.VBMath.equations</code> if the element has an <code>id</code>.</td>
+        </tr>
+        <tr>
+          <td><code>copyable</code></td>
+          <td>Clicking the rendered math copies the original LaTeX source to the clipboard with a screen reader announcement.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Inline Math</h2>
+    <p>Use the <code>inline</code> token for math that flows within paragraph text.</p>
+
+    <div class="example">
+      <p>The area is
+        <code data-math="inline"
+          data-mathml="<math><mi>&pi;</mi><msup><mi>r</mi><mn>2</mn></msup></math>">
+          \pi r^2
+        </code>.
+      </p>
+    </div>
+
+    <code-block language="html" show-lines label="Inline math">{{ inlineExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Numbered Equations</h2>
+    <p>Combine <code>numbered</code> with an <code>id</code> for linkable, numbered equations.</p>
+
+    <div class="example">
+      <code data-math="numbered" id="eq-energy-demo"
+        data-mathml="<math display='block'><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>">
+        E = mc^2
+      </code>
+    </div>
+
+    <code-block language="html" show-lines label="Numbered equation">{{ numberedExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Copyable Math</h2>
+    <p>The <code>copyable</code> token adds a click-to-copy interaction. Clicking copies the LaTeX source to the clipboard and announces it to screen readers.</p>
+
+    <div class="example">
+      <code data-math="copyable"
+        data-mathml="<math display='block'><msubsup><mo>&int;</mo><mn>0</mn><mo>&infin;</mo></msubsup><msup><mi>e</mi><mrow><mo>-</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><msqrt><mi>&pi;</mi></msqrt><mn>2</mn></mfrac></math>">
+        \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+      </code>
+    </div>
+
+    <code-block language="html" show-lines label="Copyable math">{{ copyableExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Markdown Integration</h2>
+    <p>Markdown processors emit <code>code.language-math</code> for fenced math blocks. The enhancement script auto-detects these &mdash; no extra configuration needed.</p>
+
+    <code-block language="markdown" show-lines label="Markdown source">{{ markdownExample | escape }}</code-block>
+
+    <p>This produces the standard HTML output:</p>
+
+    <code-block language="html" show-lines label="Emitted HTML">{{ markdownOutputExample | escape }}</code-block>
+
+    <p>The <code>code.language-math</code> selector is matched automatically alongside <code>[data-math]</code>. For precompiled MathML, add <code>data-mathml</code> to the element at build time via a Remark or Markdown-it plugin.</p>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>math:rendered</code></td>
+          <td><code>{ latex, inline, number }</code></td>
+          <td>Fired after MathML is injected. <code>latex</code> is the source text, <code>inline</code> is a boolean, <code>number</code> is the equation number (or null).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening for math:rendered">{{ eventExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without <code>data-mathml</code>, the LaTeX source displays as a readable <code>&lt;code&gt;</code> block. This is the no-JS fallback:</p>
+
+    <code-block language="html" show-lines label="No-JS fallback">{{ noJsExample | escape }}</code-block>
+
+    <p>The element receives <code>data-math-state="source"</code> so you can style the fallback state differently if needed.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Content</h2>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added math">{{ dynamicExample | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The injected <code>&lt;math&gt;</code> element is natively understood by screen readers (VoiceOver, NVDA)</li>
+      <li>The original LaTeX source is preserved in the DOM as hidden fallback content</li>
+      <li>Copy confirmation uses <code>aria-live="polite"</code> for screen reader announcements</li>
+      <li>Numbered equations are linkable via <code>id</code> and standard <code>&lt;a href&gt;</code></li>
+    </ul>
+  </section>
