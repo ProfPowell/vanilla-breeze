@@ -1,76 +1,224 @@
 ---
 layout: layouts/docs.njk
-title: Configure
+title: "Bundle Configurator"
 description: "Build a custom Vanilla Breeze loading snippet for your project."
-currentSection: docs
+currentSection: tools
 currentPath: /docs/configure/
 permalink: /docs/configure/
 ---
 
-<h1>Configure</h1>
-<p class="lead">Select the bundles you need and get a ready-to-paste HTML snippet with estimated download size.</p>
+{% block extraHead %}
+<style>
+  .configurator-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--size-l, 1.5rem);
+    align-items: start;
+  }
 
-<form id="vb-configurator" aria-label="Bundle configurator">
+  @media (max-width: 860px) {
+    .configurator-layout { grid-template-columns: 1fr; }
+  }
 
-  <fieldset>
-    <legend>CSS Bundle</legend>
-    <label><input type="radio" name="css-bundle" value="core" checked /> Core <small>(base styles, layout, native elements)</small></label>
-    <label><input type="radio" name="css-bundle" value="full" /> Full <small>(includes all themes)</small></label>
-    <label><input type="radio" name="css-bundle" value="none" /> None <small>(bring your own CSS)</small></label>
-  </fieldset>
+  .controls {
+    position: sticky;
+    top: var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
 
-  <fieldset>
-    <legend>Theme</legend>
-    <label for="vb-theme-select">Optional theme overlay</label>
-    <select id="vb-theme-select" name="theme">
-      <option value="">No theme</option>
-    </select>
-    <p><small>Themes load as a separate CSS file alongside the core bundle.</small></p>
-  </fieldset>
+  .controls details {
+    border-block-end: 1px solid var(--color-border-subtle, #eee);
+  }
 
-  <fieldset>
-    <legend>JS Bundle</legend>
-    <label><input type="radio" name="js-bundle" value="core" checked /> Core <small>(essential web components)</small></label>
-    <label><input type="radio" name="js-bundle" value="core-extras" /> Core + Extras <small>(all components)</small></label>
-    <label><input type="radio" name="js-bundle" value="full" /> Full <small>(single bundle, all components)</small></label>
-    <label><input type="radio" name="js-bundle" value="autoloader" /> Autoloader <small>(loads on demand)</small></label>
-    <label><input type="radio" name="js-bundle" value="none" /> None <small>(CSS only)</small></label>
-  </fieldset>
+  .controls details:last-of-type {
+    border-block-end: none;
+  }
 
-  <fieldset>
-    <legend>Add-ons</legend>
-    <label><input type="checkbox" name="addon-charts" /> Charts CSS <small>(data visualization)</small></label>
-    <label><input type="checkbox" name="addon-dev-css" /> Dev CSS <small>(debug overlays)</small></label>
-    <label><input type="checkbox" name="addon-dev-js" /> Dev JS <small>(content validation)</small></label>
-  </fieldset>
+  .controls summary {
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+    user-select: none;
+  }
 
-  <fieldset>
-    <legend>Service Worker</legend>
-    <label><input type="checkbox" name="enable-sw" /> Enable caching <small>(adds meta tag for SW opt-in)</small></label>
-  </fieldset>
+  .detail-body {
+    padding: 0 var(--size-m, 1rem) var(--size-m, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s, 0.75rem);
+  }
 
-</form>
+  .detail-body label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+  }
 
-<section>
-  <h2>Your Snippet</h2>
-  <p>Estimated download: <strong><output id="vb-total-size">0 KB</output></strong> gzip</p>
-  <pre><code id="vb-snippet-output"><!-- Snippet will appear here --></code></pre>
-  <p><button type="button" id="vb-copy-btn">Copy to clipboard</button></p>
+  .detail-body select {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-s, 0.75rem);
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+  }
+
+  .toggle-row small {
+    display: block;
+    font-weight: 400;
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  .size-badge {
+    display: inline-block;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 700;
+    padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
+    background: var(--color-surface-alt, oklch(95% 0 0));
+    border-radius: var(--radius-s, 0.25rem);
+    color: var(--color-text-muted, #666);
+    min-width: 4.5em;
+    text-align: center;
+  }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--size-s, 0.75rem);
+    margin-block-end: var(--size-s, 0.75rem);
+  }
+
+  .output-header h2 {
+    margin: 0;
+  }
+
+  #vb-snippet-output {
+    min-height: 6rem;
+  }
+</style>
+{% endblock %}
+
+<h1>Bundle Configurator</h1>
+<p class="lead">Select the bundles you need and get a ready-to-paste HTML snippet.</p>
+
+<section class="configurator-layout">
+  <form id="vb-configurator" class="controls" aria-label="Bundle configurator">
+
+    <details open name="configurator">
+      <summary>CSS</summary>
+      <fieldset class="detail-body">
+        <label>
+          Bundle
+          <select name="css-bundle">
+            <option value="core">Core (base styles, layout)</option>
+            <option value="full">Full (includes all themes)</option>
+            <option value="none">None (bring your own)</option>
+          </select>
+        </label>
+        <label>
+          Theme
+          <select id="vb-theme-select" name="theme">
+            <option value="">No theme</option>
+          </select>
+        </label>
+      </fieldset>
+    </details>
+
+    <details open name="configurator">
+      <summary>JavaScript</summary>
+      <fieldset class="detail-body">
+        <label>
+          Bundle
+          <select name="js-bundle">
+            <option value="core">Core (essential components)</option>
+            <option value="core-extras">Core + Extras (all components)</option>
+            <option value="full">Full (single bundle)</option>
+            <option value="autoloader">Autoloader (on demand)</option>
+            <option value="none">None (CSS only)</option>
+          </select>
+        </label>
+      </fieldset>
+    </details>
+
+    <details name="configurator">
+      <summary>Add-ons</summary>
+      <fieldset class="detail-body">
+        <label class="toggle-row">
+          <span>Charts CSS<small>Data visualization</small></span>
+          <input type="checkbox" data-switch="sm" name="addon-charts" />
+        </label>
+        <label class="toggle-row">
+          <span>Dev CSS<small>Debug overlays</small></span>
+          <input type="checkbox" data-switch="sm" name="addon-dev-css" />
+        </label>
+        <label class="toggle-row">
+          <span>Dev JS<small>Content validation</small></span>
+          <input type="checkbox" data-switch="sm" name="addon-dev-js" />
+        </label>
+      </fieldset>
+    </details>
+
+    <details name="configurator">
+      <summary>Options</summary>
+      <fieldset class="detail-body">
+        <label class="toggle-row">
+          <span>Service Worker<small>Offline caching</small></span>
+          <input type="checkbox" data-switch="sm" name="enable-sw" />
+        </label>
+      </fieldset>
+    </details>
+
+  </form>
+
+  <article>
+    <header class="output-header">
+      <h2>Your Snippet</h2>
+      <span class="size-badge" id="vb-total-size">0 KB</span>
+    </header>
+
+    <code-block language="html" label="HTML head" id="vb-snippet-output">&lt;!-- Select bundles to generate --&gt;</code-block>
+
+    <footer>
+      <button type="button" id="vb-copy-btn">Copy to clipboard</button>
+    </footer>
+  </article>
 </section>
 
 <script type="module">
   const CDN_BASE = '/cdn';
   const form = document.getElementById('vb-configurator');
-  const output = document.getElementById('vb-snippet-output');
+  const codeBlock = document.getElementById('vb-snippet-output');
   const sizeOutput = document.getElementById('vb-total-size');
   const copyBtn = document.getElementById('vb-copy-btn');
   const themeSelect = document.getElementById('vb-theme-select');
 
-  // Data loaded from build artifacts
   let themeManifest = {};
   let budgetReport = {};
 
-  // Load manifests
   async function loadData() {
     try {
       const [themes, report] = await Promise.allSettled([
@@ -81,23 +229,35 @@ permalink: /docs/configure/
       budgetReport = report.status === 'fulfilled' ? report.value : {};
     } catch { /* use defaults */ }
 
-    // Populate theme dropdown
-    for (const [id, meta] of Object.entries(themeManifest)) {
-      const opt = document.createElement('option');
-      opt.value = id;
-      opt.textContent = id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
-      themeSelect.appendChild(opt);
-    }
+    // Group themes: accent colors first, then personality, then extreme
+    const accents = ['ocean','forest','sunset','rose','lavender','coral','slate','emerald','amber','indigo'];
+    const personality = ['modern','minimal','classic'];
+    const sorted = Object.keys(themeManifest).sort((a, b) => a.localeCompare(b));
+
+    const addGroup = (label, ids) => {
+      const group = document.createElement('optgroup');
+      group.label = label;
+      for (const id of ids) {
+        if (!themeManifest[id]) continue;
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+        group.appendChild(opt);
+      }
+      if (group.children.length) themeSelect.appendChild(group);
+    };
+
+    addGroup('Accent Colors', accents);
+    addGroup('Personality', personality);
+    addGroup('Extreme', sorted.filter(id => !accents.includes(id) && !personality.includes(id)));
 
     updateSnippet();
   }
 
-  // Get gzip size from budget report (in bytes)
-  function getSize(artifactName) {
-    return budgetReport.artifacts?.[artifactName]?.gzip ?? 0;
+  function getSize(name) {
+    return budgetReport.artifacts?.[name]?.gzip ?? 0;
   }
 
-  // Generate the snippet
   function updateSnippet() {
     const data = new FormData(form);
     const cssBundle = data.get('css-bundle');
@@ -111,14 +271,11 @@ permalink: /docs/configure/
     const lines = [];
     let totalSize = 0;
 
-    // SW meta tag first
     if (enableSW) {
       lines.push('<meta name="vb-service-worker" content="true">');
+      lines.push('');
     }
 
-    lines.push('');
-
-    // CSS
     if (cssBundle === 'core') {
       lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze-core.css">`);
       totalSize += getSize('vanilla-breeze-core.css');
@@ -127,13 +284,11 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze.css');
     }
 
-    // Theme
-    if (theme && cssBundle !== 'full') {
+    if (theme && cssBundle !== 'full' && cssBundle !== 'none') {
       lines.push(`<link rel="stylesheet" href="${CDN_BASE}/themes/${theme}.css">`);
       totalSize += getSize(`themes/${theme}.css`);
     }
 
-    // Add-ons CSS
     if (chartsCss) {
       lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze-charts.css">`);
       totalSize += getSize('vanilla-breeze-charts.css');
@@ -143,9 +298,10 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze-dev.css');
     }
 
-    lines.push('');
+    if (jsBundle !== 'none' && (cssBundle !== 'none' || jsBundle !== 'none')) {
+      if (lines.length) lines.push('');
+    }
 
-    // JS
     if (jsBundle === 'core') {
       lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-core.js"><\/script>`);
       totalSize += getSize('vanilla-breeze-core.js');
@@ -162,49 +318,35 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze-autoload.js');
     }
 
-    // Add-on JS
     if (devJs) {
       lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-dev.js"><\/script>`);
       totalSize += getSize('vanilla-breeze-dev.js');
     }
 
-    // Clean up empty lines at start/end
-    const snippet = lines.filter((line, i) => {
-      if (line === '' && (i === 0 || i === lines.length - 1)) return false;
-      if (line === '' && lines[i - 1] === '') return false;
-      return true;
-    }).join('\n');
+    const snippet = lines.filter((l, i) => !(l === '' && (!lines[i - 1] || lines[i - 1] === ''))).join('\n').trim();
 
-    output.textContent = snippet || '<!-- Select at least one bundle above -->';
+    // Update code-block content
+    codeBlock.textContent = snippet || '<!-- Select at least one bundle -->';
 
-    // Format size
-    if (totalSize > 0) {
-      sizeOutput.textContent = `${(totalSize / 1024).toFixed(1)} KB`;
-    } else {
-      sizeOutput.textContent = '0 KB';
-    }
+    sizeOutput.textContent = totalSize > 0 ? `${(totalSize / 1024).toFixed(1)} KB gzip` : '0 KB';
   }
 
-  // Bind events
-  form.addEventListener('change', updateSnippet);
+  form.addEventListener('change', () => {
+    const cssBundle = new FormData(form).get('css-bundle');
+    themeSelect.disabled = cssBundle === 'full' || cssBundle === 'none';
+    if (themeSelect.disabled) themeSelect.value = '';
+    updateSnippet();
+  });
 
-  // Copy button
   copyBtn.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText(output.textContent);
+      await navigator.clipboard.writeText(codeBlock.textContent);
       copyBtn.textContent = 'Copied!';
       setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
     } catch {
       copyBtn.textContent = 'Copy failed';
       setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
     }
-  });
-
-  // Theme select: disable when full CSS is selected (themes are included)
-  form.addEventListener('change', () => {
-    const cssBundle = new FormData(form).get('css-bundle');
-    themeSelect.disabled = cssBundle === 'full' || cssBundle === 'none';
-    if (themeSelect.disabled) themeSelect.value = '';
   });
 
   loadData();
