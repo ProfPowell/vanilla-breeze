@@ -77,12 +77,12 @@ describe('Site Infrastructure Checker', () => {
       const result = runSiteCheck('test/fixtures/valid/site-check/');
       assert.ok(result.output.includes('robots.txt exists'));
       assert.ok(result.output.includes('Has User-agent directive'));
-      assert.ok(result.output.includes('References sitemap'));
+      assert.ok(result.output.includes('Valid Sitemap directive'));
     });
 
     it('detects AI/LLM crawler directives in robots.txt', () => {
       const result = runSiteCheck('test/fixtures/valid/site-check/');
-      assert.ok(result.output.includes('Contains AI/LLM crawler directives'));
+      assert.ok(result.output.includes('Contains AI/LLM bot directives'));
     });
 
     it('validates sitemap.xml', () => {

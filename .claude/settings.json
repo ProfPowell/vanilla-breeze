@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(html|xhtml|htm)$'; then (echo '=== html-validate ===' ; npx html-validate \"$file_path\" 2>&1 ; echo '=== htmlhint ===' ; npx htmlhint \"$file_path\" 2>&1 ; echo '=== pa11y (WCAG2AA) ===' ; npx pa11y \"$file_path\" 2>&1 ; node .claude/scripts/semantic-check.js \"$file_path\" 2>&1) | node .claude/scripts/fix-suggestions.js --type=html ; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(html|xhtml|htm)$'; then (echo '=== html-validate ===' ; npx html-validate \"$file_path\" 2>&1 ; echo '=== htmlhint ===' ; npx htmlhint \"$file_path\" 2>&1 ; echo '=== pa11y (WCAG2AA) ===' ; npx pa11y \"$file_path\" 2>&1 ; node .claude/scripts/semantic-check.js \"$file_path\" 2>&1 ; node .claude/scripts/vb-conformance.js \"$file_path\" 2>&1) | node .claude/scripts/fix-suggestions.js --type=html ; fi"
           },
           {
             "type": "command",
