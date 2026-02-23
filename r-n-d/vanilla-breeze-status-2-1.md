@@ -87,13 +87,13 @@ JavaScript-enhanced components for interactivity:
 | `accordion-wc` | Collapsible sections | Exclusive mode, animations |
 | `toast-wc` | Notifications | Auto-dismiss, stacking |
 | `tooltip-wc` | Hover tooltips | Positioning, delays |
-| `dropdown-wc` | Dropdown menus | Click-outside close |
+| `drop-down` | Dropdown menus | Click-outside close |
 | `icon-wc` | Icon rendering | Lucide integration |
 | `theme-wc` | Theme switching | Persistence, system detection |
-| `footnotes-wc` | Footnote management | Auto-numbering |
+| `foot-notes` | Footnote management | Auto-numbering |
 | `heading-links` | Anchor links | Auto-generation |
 | `page-toc` | Table of contents | Auto from headings |
-| `table-wc` | Enhanced tables | Sorting, filtering |
+| `data-table` | Enhanced tables | Sorting, filtering |
 | `search-wc` | Search interface | Pagefind integration |
 
 ### Design Tokens

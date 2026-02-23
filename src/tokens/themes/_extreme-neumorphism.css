@@ -1,0 +1,405 @@
+/**
+ * Extreme Theme: Neumorphism
+ * Single-hue surfaces, double shadow — embossed/debossed soft UI
+ *
+ * Character: Soft embossed — monochromatic, tactile, squishy
+ * - Rounded sans-serif (Nunito or system)
+ * - Large radius (0.75-1.5rem)
+ * - Double shadow: light highlight top-left + dark shadow bottom-right
+ * - Default motion, smooth easing
+ *
+ * Palette DNA: base #e0e0e0, light shadow #ffffff, dark shadow #c8c8c8,
+ *              primary hue 220 (subtle blue tint)
+ *
+ * All surfaces same base color, differentiated only by shadow direction.
+ * No visible borders — borders are replaced by shadows.
+ *
+ * Light: #e0e0e0 base, white/gray double shadow
+ * Dark: #2a2a2e base, dark double shadow with subtle highlight
+ */
+
+/* ===== FONT FACE: Nunito ===== */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/nunito/v32/XRXV3I6Li01BKofINeaBTMnFcQ.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root[data-theme~="neumorphism"],
+[data-theme~="neumorphism"] {
+  color-scheme: light;
+
+  /* Theme hints for ThemeManager */
+  --theme-border-style: soft;
+  --theme-icon-set: lucide;
+
+  /* ===== COLORS ===== */
+  --color-background: oklch(90% 0.005 220);            /* #e0e0e0 */
+  --color-surface: oklch(90% 0.005 220);                /* Same as bg — neumorphic */
+  --color-surface-alt: oklch(88% 0.005 220);
+  --color-surface-raised: oklch(91% 0.005 220);
+  --color-surface-sunken: oklch(87% 0.005 220);
+
+  --color-text: oklch(25% 0.01 220);
+  --color-text-muted: oklch(42% 0.01 220);
+  --color-text-subtle: oklch(58% 0.008 220);
+
+  --color-primary: oklch(55% 0.12 220);                /* Subtle blue primary */
+  --color-primary-hover: oklch(50% 0.13 220);
+  --color-primary-subtle: oklch(87% 0.02 220);
+
+  --color-accent: oklch(60% 0.1 270);                  /* Subtle purple accent */
+  --color-accent-hover: oklch(55% 0.11 270);
+
+  --color-border: oklch(90% 0.005 220 / 0);            /* Invisible — neumorphic */
+  --color-border-muted: oklch(90% 0.005 220 / 0);
+  --color-border-strong: oklch(78% 0.008 220);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  --color-success: oklch(60% 0.12 145);
+  --color-warning: oklch(72% 0.12 80);
+  --color-danger: oklch(55% 0.15 20);
+  --color-info: oklch(55% 0.12 220);
+
+  /* Neumorphic shadow pairs */
+  --neu-dark: oklch(78% 0.005 220);
+  --neu-light: oklch(100% 0 0);
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+
+  --text-heading-1: 2.5rem;
+  --text-heading-2: 1.875rem;
+  --text-heading-3: 1.5rem;
+  --text-heading-4: 1.25rem;
+
+  --weight-normal: 400;
+  --weight-bold: 600;
+  --line-height-normal: 1.6;
+  --line-height-tight: 1.2;
+
+  /* ===== SHAPE ===== */
+  --radius-xs: 0.25rem;
+  --radius-s: 0.5rem;
+  --radius-m: 0.75rem;
+  --radius-l: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ===== SHADOWS — Neumorphic double shadow ===== */
+  --shadow-xs:
+    3px 3px 6px var(--neu-dark),
+    -3px -3px 6px var(--neu-light);
+  --shadow-sm:
+    4px 4px 8px var(--neu-dark),
+    -4px -4px 8px var(--neu-light);
+  --shadow-md:
+    6px 6px 12px var(--neu-dark),
+    -6px -6px 12px var(--neu-light);
+  --shadow-lg:
+    8px 8px 16px var(--neu-dark),
+    -8px -8px 16px var(--neu-light);
+  --shadow-xl:
+    12px 12px 24px var(--neu-dark),
+    -12px -12px 24px var(--neu-light);
+  --shadow-2xl:
+    16px 16px 32px var(--neu-dark),
+    -16px -16px 32px var(--neu-light);
+
+  /* ===== MOTION ===== */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Neumorphism component overrides */
+:root[data-theme~="neumorphism"],
+[data-theme~="neumorphism"] {
+  & :is(main, article) {
+    /* Neumorphic groove HR */
+    & hr {
+      border: none;
+      height: 4px;
+      border-radius: var(--radius-full);
+      background: var(--color-background);
+      box-shadow:
+        inset 2px 2px 4px var(--neu-dark),
+        inset -2px -2px 4px var(--neu-light);
+      margin-block: 2rem;
+    }
+
+    /* Embossed headings */
+    & h1, & h2 {
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: oklch(25% 0.01 220);
+      text-shadow: 1px 1px 0 oklch(100% 0 0 / 0.7);
+    }
+
+    /* Shadow-based link emphasis */
+    & a:not([class]) {
+      color: var(--color-primary);
+      text-decoration: none;
+      box-shadow: 0 2px 0 var(--color-primary);
+      transition: box-shadow 0.2s var(--ease-default);
+
+      &:hover {
+        box-shadow: 0 3px 0 var(--color-primary-hover);
+      }
+    }
+
+    /* Enhanced embossed blockquote with quote badge */
+    & blockquote {
+      border-inline-start: none;
+      padding: 1.25rem 1.5rem 1.25rem 2.5rem;
+      color: oklch(42% 0.01 220);
+      box-shadow:
+        inset 3px 3px 6px var(--neu-dark),
+        inset -3px -3px 6px var(--neu-light);
+      border-radius: var(--radius-l);
+      background: var(--color-background);
+      position: relative;
+
+      &::before {
+        content: "\201C";
+        position: absolute;
+        top: -0.5rem;
+        left: 1rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: var(--radius-full);
+        background: var(--color-background);
+        box-shadow:
+          3px 3px 6px var(--neu-dark),
+          -3px -3px 6px var(--neu-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--color-primary);
+        font-weight: 700;
+        line-height: 1;
+      }
+    }
+
+    /* Raised buttons with press interaction */
+    & button,
+    & .button {
+      background: var(--color-background);
+      border: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow:
+        4px 4px 8px var(--neu-dark),
+        -4px -4px 8px var(--neu-light);
+      transition: box-shadow 0.2s var(--ease-default), transform 0.2s var(--ease-default);
+
+      &:hover {
+        box-shadow:
+          6px 6px 12px var(--neu-dark),
+          -6px -6px 12px var(--neu-light);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        box-shadow:
+          inset 3px 3px 6px var(--neu-dark),
+          inset -3px -3px 6px var(--neu-light);
+        transform: translateY(0);
+      }
+    }
+
+    /* Neumorphic raised cards */
+    & .card {
+      border: none;
+      background: var(--color-background);
+      transition: box-shadow 0.2s var(--ease-default), transform 0.2s var(--ease-default);
+
+      &:hover {
+        box-shadow:
+          8px 8px 16px var(--neu-dark),
+          -8px -8px 16px var(--neu-light);
+        transform: translateY(-2px);
+      }
+    }
+
+    /* Sunken inputs */
+    & input,
+    & textarea,
+    & select {
+      background: var(--color-background);
+      border: none;
+      box-shadow:
+        inset 3px 3px 6px var(--neu-dark),
+        inset -3px -3px 6px var(--neu-light);
+      border-radius: var(--radius-l);
+      transition: box-shadow 0.2s var(--ease-default);
+
+      &:focus {
+        box-shadow:
+          4px 4px 8px var(--neu-dark),
+          -4px -4px 8px var(--neu-light);
+        outline: 2px solid oklch(55% 0.12 220 / 0.3);
+        outline-offset: 2px;
+      }
+
+      &::placeholder {
+        color: var(--color-text-subtle);
+      }
+    }
+
+    /* Sunken code block */
+    & pre {
+      box-shadow:
+        inset 3px 3px 6px var(--neu-dark),
+        inset -3px -3px 6px var(--neu-light);
+      border: none;
+      border-radius: var(--radius-l);
+    }
+  }
+
+  & :is(main, article) code-block {
+    --cb-bg: oklch(90% 0.005 220);
+    --cb-code-bg: oklch(90% 0.005 220);
+    --cb-header-bg: oklch(88% 0.005 220);
+    --cb-text-color: oklch(25% 0.01 220);
+    --cb-border-color: oklch(90% 0.005 220 / 0);
+    --cb-comment: oklch(58% 0.008 220);
+    --cb-keyword: oklch(55% 0.12 220);
+    --cb-string: oklch(60% 0.12 145);
+    --cb-function: oklch(60% 0.1 270);
+    --cb-number: oklch(65% 0.12 45);
+    --cb-button-bg: oklch(90% 0.005 220);
+    --cb-button-color: oklch(42% 0.01 220);
+    --cb-scrollbar-track: oklch(88% 0.005 220);
+    --cb-scrollbar-thumb: oklch(75% 0.008 220);
+  }
+
+  & :is(main, article) browser-window {
+    --browser-window-bg: oklch(90% 0.005 220);
+    --browser-window-header-bg: oklch(88% 0.005 220);
+    --browser-window-content-bg: oklch(90% 0.005 220);
+    --browser-window-border-color: oklch(90% 0.005 220 / 0);
+    --browser-window-text-color: oklch(25% 0.01 220);
+    --browser-window-text-muted: oklch(58% 0.008 220);
+    --browser-window-url-bg: oklch(88% 0.005 220);
+  }
+
+  & ::selection {
+    background: oklch(55% 0.12 220 / 0.2);
+    color: oklch(25% 0.01 220);
+  }
+}
+
+/* Dark variant — Dark Neumorphism */
+:root[data-theme~="neumorphism"][data-mode="dark"],
+[data-theme~="neumorphism"][data-mode="dark"] {
+  color-scheme: dark;
+
+  --color-background: oklch(22% 0.005 220);            /* #2a2a2e */
+  --color-surface: oklch(22% 0.005 220);
+  --color-surface-alt: oklch(20% 0.005 220);
+  --color-surface-raised: oklch(24% 0.005 220);
+  --color-surface-sunken: oklch(18% 0.005 220);
+
+  --color-text: oklch(90% 0.005 220);
+  --color-text-muted: oklch(72% 0.005 220);
+  --color-text-subtle: oklch(55% 0.005 220);
+
+  --color-primary: oklch(68% 0.12 220);
+  --color-primary-hover: oklch(73% 0.13 220);
+  --color-primary-subtle: oklch(28% 0.04 220);
+
+  --color-accent: oklch(72% 0.1 270);
+  --color-accent-hover: oklch(77% 0.11 270);
+
+  --color-border: oklch(22% 0.005 220 / 0);
+  --color-border-muted: oklch(22% 0.005 220 / 0);
+  --color-border-strong: oklch(40% 0.005 220);
+
+  --color-success: oklch(68% 0.12 145);
+  --color-warning: oklch(78% 0.12 80);
+  --color-danger: oklch(62% 0.15 20);
+  --color-info: oklch(68% 0.12 220);
+
+  /* Dark neumorphic shadow pairs */
+  --neu-dark: oklch(12% 0.005 220);
+  --neu-light: oklch(30% 0.005 220);
+
+  /* Dark neumorphic shadows */
+  --shadow-xs:
+    3px 3px 6px var(--neu-dark),
+    -3px -3px 6px var(--neu-light);
+  --shadow-sm:
+    4px 4px 8px var(--neu-dark),
+    -4px -4px 8px var(--neu-light);
+  --shadow-md:
+    6px 6px 12px var(--neu-dark),
+    -6px -6px 12px var(--neu-light);
+  --shadow-lg:
+    8px 8px 16px var(--neu-dark),
+    -8px -8px 16px var(--neu-light);
+  --shadow-xl:
+    12px 12px 24px var(--neu-dark),
+    -12px -12px 24px var(--neu-light);
+  --shadow-2xl:
+    16px 16px 32px var(--neu-dark),
+    -16px -16px 32px var(--neu-light);
+
+  & :is(main, article) {
+    & h1, & h2 {
+      color: oklch(90% 0.005 220);
+      text-shadow: 1px 1px 0 oklch(30% 0.005 220 / 0.5);
+    }
+
+    & blockquote {
+      color: oklch(72% 0.005 220);
+      background: var(--color-background);
+
+      &::before {
+        background: var(--color-background);
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  & :is(main, article) code-block {
+    --cb-bg: oklch(22% 0.005 220);
+    --cb-code-bg: oklch(22% 0.005 220);
+    --cb-header-bg: oklch(20% 0.005 220);
+    --cb-text-color: oklch(90% 0.005 220);
+    --cb-border-color: oklch(22% 0.005 220 / 0);
+    --cb-comment: oklch(55% 0.005 220);
+    --cb-keyword: oklch(68% 0.12 220);
+    --cb-string: oklch(68% 0.12 145);
+    --cb-function: oklch(72% 0.1 270);
+    --cb-number: oklch(75% 0.12 45);
+  }
+
+  & :is(main, article) browser-window {
+    --browser-window-bg: oklch(22% 0.005 220);
+    --browser-window-header-bg: oklch(20% 0.005 220);
+    --browser-window-content-bg: oklch(22% 0.005 220);
+    --browser-window-border-color: oklch(22% 0.005 220 / 0);
+    --browser-window-text-color: oklch(90% 0.005 220);
+    --browser-window-text-muted: oklch(55% 0.005 220);
+    --browser-window-url-bg: oklch(20% 0.005 220);
+  }
+
+  & ::selection {
+    background: oklch(68% 0.12 220 / 0.3);
+    color: oklch(90% 0.005 220);
+  }
+}

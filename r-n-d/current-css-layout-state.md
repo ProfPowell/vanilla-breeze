@@ -192,7 +192,7 @@ From `r-n-d/container-queries-fluidity/container-queries-expansion.md`:
 2. **reset** — Browser reset styles
 3. **native-elements** — HTML semantic element styling (headings, forms, tables, etc.)
 4. **custom-elements** — Layout attributes, form-field, brand-mark, etc.
-5. **web-components** — Interactive components (dropdown-wc, command-wc, etc.)
+5. **web-components** — Interactive components (drop-down, command-wc, etc.)
 6. **charts** — Chart/visualization styles
 7. **utils** — Utility helpers (gradient text, shimmer, etc.)
 8. **labs** — Experimental features in isolation (`src/labs/labs.css:14`)
@@ -207,7 +207,7 @@ Extensively used throughout — ~1,027 instances of `&` selectors across 65+ fil
 ### `@scope` for Light DOM Encapsulation
 
 10 web components use `@scope` for scoped styling without Shadow DOM:
-- `combo-box`, `dropdown-wc`, `theme-wc`, `command-wc`, `context-menu`
+- `combo-box`, `drop-down`, `theme-wc`, `command-wc`, `context-menu`
 - `search-wc`, `page-toc`, `toast-wc`, `shortcuts-wc`, `emoji-picker`
 
 ---
@@ -341,5 +341,5 @@ Features often missed in audits because they're already shipped:
 | Same-document View Transitions | 0 | Only cross-document via `@view-transition { navigation: auto }` |
 | `interpolate-size: allow-keywords` | 0 | Would enable `height: auto` animation |
 | `@starting-style` expansion | Limited | Only tooltips — not yet on dropdown, toast, dialog, combobox, command, context-menu |
-| Popover API expansion | Limited | Only tooltips — not yet on dropdown-wc, command-wc, context-menu |
+| Popover API expansion | Limited | Only tooltips — not yet on drop-down, command-wc, context-menu |
 | `@property` expansion | Limited | Only 4 hue/angle properties — not yet for layout tokens like `--sidebar-width` |

@@ -170,7 +170,7 @@ Components opt-in by wrapping their DOM mutations in this helper.
 | Component | Entry Animation | File |
 |:---|:---|:---|
 | `toast-wc` | Slide-in from edge | toast-wc/styles.css |
-| `dropdown-wc` | Scale-fade from trigger | dropdown-wc/styles.css |
+| `drop-down` | Scale-fade from trigger | drop-down/styles.css |
 | `command-wc` | Fade-scale from center | command-wc/styles.css |
 | `combo-box` | Listbox appear | combo-box/styles.css |
 | `context-menu` | Scale-fade from cursor | context-menu/styles.css |
@@ -207,7 +207,7 @@ Components opt-in by wrapping their DOM mutations in this helper.
 
 | Component | Popover Type | Benefit |
 |:---|:---|:---|
-| `dropdown-wc` | `popover="auto"` | Light-dismiss (click outside closes), top-layer stacking |
+| `drop-down` | `popover="auto"` | Light-dismiss (click outside closes), top-layer stacking |
 | `command-wc` | `popover="auto"` | Modal behavior, focus trapping |
 | `context-menu` | `popover="auto"` | Light-dismiss, proper z-index stacking |
 
