@@ -1,0 +1,211 @@
+---
+layout: layouts/docs.njk
+title: Configure
+description: "Build a custom Vanilla Breeze loading snippet for your project."
+currentSection: docs
+currentPath: /docs/configure/
+permalink: /docs/configure/
+---
+
+<h1>Configure</h1>
+<p class="lead">Select the bundles you need and get a ready-to-paste HTML snippet with estimated download size.</p>
+
+<form id="vb-configurator" aria-label="Bundle configurator">
+
+  <fieldset>
+    <legend>CSS Bundle</legend>
+    <label><input type="radio" name="css-bundle" value="core" checked /> Core <small>(base styles, layout, native elements)</small></label>
+    <label><input type="radio" name="css-bundle" value="full" /> Full <small>(includes all themes)</small></label>
+    <label><input type="radio" name="css-bundle" value="none" /> None <small>(bring your own CSS)</small></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Theme</legend>
+    <label for="vb-theme-select">Optional theme overlay</label>
+    <select id="vb-theme-select" name="theme">
+      <option value="">No theme</option>
+    </select>
+    <p><small>Themes load as a separate CSS file alongside the core bundle.</small></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>JS Bundle</legend>
+    <label><input type="radio" name="js-bundle" value="core" checked /> Core <small>(essential web components)</small></label>
+    <label><input type="radio" name="js-bundle" value="core-extras" /> Core + Extras <small>(all components)</small></label>
+    <label><input type="radio" name="js-bundle" value="full" /> Full <small>(single bundle, all components)</small></label>
+    <label><input type="radio" name="js-bundle" value="autoloader" /> Autoloader <small>(loads on demand)</small></label>
+    <label><input type="radio" name="js-bundle" value="none" /> None <small>(CSS only)</small></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Add-ons</legend>
+    <label><input type="checkbox" name="addon-charts" /> Charts CSS <small>(data visualization)</small></label>
+    <label><input type="checkbox" name="addon-dev-css" /> Dev CSS <small>(debug overlays)</small></label>
+    <label><input type="checkbox" name="addon-dev-js" /> Dev JS <small>(content validation)</small></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Service Worker</legend>
+    <label><input type="checkbox" name="enable-sw" /> Enable caching <small>(adds meta tag for SW opt-in)</small></label>
+  </fieldset>
+
+</form>
+
+<section>
+  <h2>Your Snippet</h2>
+  <p>Estimated download: <strong><output id="vb-total-size">0 KB</output></strong> gzip</p>
+  <pre><code id="vb-snippet-output"><!-- Snippet will appear here --></code></pre>
+  <p><button type="button" id="vb-copy-btn">Copy to clipboard</button></p>
+</section>
+
+<script type="module">
+  const CDN_BASE = '/cdn';
+  const form = document.getElementById('vb-configurator');
+  const output = document.getElementById('vb-snippet-output');
+  const sizeOutput = document.getElementById('vb-total-size');
+  const copyBtn = document.getElementById('vb-copy-btn');
+  const themeSelect = document.getElementById('vb-theme-select');
+
+  // Data loaded from build artifacts
+  let themeManifest = {};
+  let budgetReport = {};
+
+  // Load manifests
+  async function loadData() {
+    try {
+      const [themes, report] = await Promise.allSettled([
+        fetch(`${CDN_BASE}/themes/manifest.json`).then(r => r.ok ? r.json() : {}),
+        fetch(`${CDN_BASE}/budget-report.json`).then(r => r.ok ? r.json() : {}),
+      ]);
+      themeManifest = themes.status === 'fulfilled' ? themes.value : {};
+      budgetReport = report.status === 'fulfilled' ? report.value : {};
+    } catch { /* use defaults */ }
+
+    // Populate theme dropdown
+    for (const [id, meta] of Object.entries(themeManifest)) {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+      themeSelect.appendChild(opt);
+    }
+
+    updateSnippet();
+  }
+
+  // Get gzip size from budget report (in bytes)
+  function getSize(artifactName) {
+    return budgetReport.artifacts?.[artifactName]?.gzip ?? 0;
+  }
+
+  // Generate the snippet
+  function updateSnippet() {
+    const data = new FormData(form);
+    const cssBundle = data.get('css-bundle');
+    const jsBundle = data.get('js-bundle');
+    const theme = data.get('theme');
+    const chartsCss = data.get('addon-charts');
+    const devCss = data.get('addon-dev-css');
+    const devJs = data.get('addon-dev-js');
+    const enableSW = data.get('enable-sw');
+
+    const lines = [];
+    let totalSize = 0;
+
+    // SW meta tag first
+    if (enableSW) {
+      lines.push('<meta name="vb-service-worker" content="true">');
+    }
+
+    lines.push('');
+
+    // CSS
+    if (cssBundle === 'core') {
+      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze-core.css">`);
+      totalSize += getSize('vanilla-breeze-core.css');
+    } else if (cssBundle === 'full') {
+      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze.css">`);
+      totalSize += getSize('vanilla-breeze.css');
+    }
+
+    // Theme
+    if (theme && cssBundle !== 'full') {
+      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/themes/${theme}.css">`);
+      totalSize += getSize(`themes/${theme}.css`);
+    }
+
+    // Add-ons CSS
+    if (chartsCss) {
+      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze-charts.css">`);
+      totalSize += getSize('vanilla-breeze-charts.css');
+    }
+    if (devCss) {
+      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/vanilla-breeze-dev.css">`);
+      totalSize += getSize('vanilla-breeze-dev.css');
+    }
+
+    lines.push('');
+
+    // JS
+    if (jsBundle === 'core') {
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-core.js"><\/script>`);
+      totalSize += getSize('vanilla-breeze-core.js');
+    } else if (jsBundle === 'core-extras') {
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-core.js"><\/script>`);
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-extras.js"><\/script>`);
+      totalSize += getSize('vanilla-breeze-core.js');
+      totalSize += getSize('vanilla-breeze-extras.js');
+    } else if (jsBundle === 'full') {
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze.js"><\/script>`);
+      totalSize += getSize('vanilla-breeze.js');
+    } else if (jsBundle === 'autoloader') {
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-autoload.js"><\/script>`);
+      totalSize += getSize('vanilla-breeze-autoload.js');
+    }
+
+    // Add-on JS
+    if (devJs) {
+      lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-dev.js"><\/script>`);
+      totalSize += getSize('vanilla-breeze-dev.js');
+    }
+
+    // Clean up empty lines at start/end
+    const snippet = lines.filter((line, i) => {
+      if (line === '' && (i === 0 || i === lines.length - 1)) return false;
+      if (line === '' && lines[i - 1] === '') return false;
+      return true;
+    }).join('\n');
+
+    output.textContent = snippet || '<!-- Select at least one bundle above -->';
+
+    // Format size
+    if (totalSize > 0) {
+      sizeOutput.textContent = `${(totalSize / 1024).toFixed(1)} KB`;
+    } else {
+      sizeOutput.textContent = '0 KB';
+    }
+  }
+
+  // Bind events
+  form.addEventListener('change', updateSnippet);
+
+  // Copy button
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(output.textContent);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
+    } catch {
+      copyBtn.textContent = 'Copy failed';
+      setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
+    }
+  });
+
+  // Theme select: disable when full CSS is selected (themes are included)
+  form.addEventListener('change', () => {
+    const cssBundle = new FormData(form).get('css-bundle');
+    themeSelect.disabled = cssBundle === 'full' || cssBundle === 'none';
+    if (themeSelect.disabled) themeSelect.value = '';
+  });
+
+  loadData();
+</script>

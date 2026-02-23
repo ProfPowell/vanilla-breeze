@@ -24,12 +24,37 @@ import * as esbuild from 'esbuild';
 import { mkdirSync, existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
+import { gzipSync } from 'zlib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const SRC = join(ROOT, 'src');
 const DIST = join(ROOT, 'dist');
 const CDN = join(DIST, 'cdn');
+
+// Read version from package.json for build injection
+const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'));
+const VERSION = pkg.version;
+
+// Common esbuild options for JS builds
+const JS_DEFAULTS = {
+  bundle: true,
+  minify: true,
+  format: 'esm',
+  target: ['es2022'],
+  legalComments: 'none',
+  sourcemap: 'linked',
+  define: {
+    '__VB_VERSION__': JSON.stringify(VERSION),
+  },
+};
+
+// Common esbuild options for CSS builds
+const CSS_DEFAULTS = {
+  bundle: true,
+  minify: true,
+  sourcemap: 'linked',
+};
 
 // Ensure directories exist
 for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components')]) {
@@ -65,9 +90,8 @@ async function buildThemes() {
     const themeId = name.replace('.css', '');
 
     const result = await esbuild.build({
+      ...CSS_DEFAULTS,
       entryPoints: [join(themesDir, file)],
-      bundle: true,
-      minify: true,
       outfile: join(outDir, name),
       write: true,
       logLevel: 'silent',
@@ -115,10 +139,8 @@ async function buildComponents() {
 
     try {
       await esbuild.build({
+        ...JS_DEFAULTS,
         entryPoints: [logicPath],
-        bundle: true,
-        minify: true,
-        format: 'esm',
         outfile: join(outDir, `${dir}.js`),
         logLevel: 'silent',
         ignoreAnnotations: true,
@@ -139,10 +161,8 @@ async function buildComponents() {
   if (existsSync(iconPath) && !manifest['x-icon']) {
     try {
       await esbuild.build({
+        ...JS_DEFAULTS,
         entryPoints: [iconPath],
-        bundle: true,
-        minify: true,
-        format: 'esm',
         outfile: join(outDir, 'icon-wc.js'),
         logLevel: 'silent',
         ignoreAnnotations: true,
@@ -176,18 +196,16 @@ async function buildCDN() {
 
   // Build full CSS bundle (backwards compat — includes all themes)
   await esbuild.build({
+    ...CSS_DEFAULTS,
     entryPoints: [join(SRC, 'main-full.css')],
-    bundle: true,
-    minify: true,
     outfile: join(CDN, 'vanilla-breeze.css'),
     logLevel: 'info',
   });
 
   // Build core CSS bundle (slim — no decorative themes)
   await esbuild.build({
+    ...CSS_DEFAULTS,
     entryPoints: [join(SRC, 'main.css')],
-    bundle: true,
-    minify: true,
     outfile: join(CDN, 'vanilla-breeze-core.css'),
     logLevel: 'info',
   });
@@ -196,9 +214,8 @@ async function buildCDN() {
   const chartsPath = join(SRC, 'charts-standalone.css');
   if (existsSync(chartsPath)) {
     await esbuild.build({
+      ...CSS_DEFAULTS,
       entryPoints: [chartsPath],
-      bundle: true,
-      minify: true,
       outfile: join(CDN, 'vanilla-breeze-charts.css'),
       logLevel: 'info',
     });
@@ -208,9 +225,8 @@ async function buildCDN() {
   const devCssPath = join(SRC, 'dev.css');
   if (existsSync(devCssPath)) {
     await esbuild.build({
+      ...CSS_DEFAULTS,
       entryPoints: [devCssPath],
-      bundle: true,
-      minify: true,
       outfile: join(CDN, 'vanilla-breeze-dev.css'),
       logLevel: 'info',
     });
@@ -218,10 +234,8 @@ async function buildCDN() {
 
   // Build full JS bundle (backwards compat)
   await esbuild.build({
+    ...JS_DEFAULTS,
     entryPoints: [join(SRC, 'main.js')],
-    bundle: true,
-    minify: true,
-    format: 'esm',
     outfile: join(CDN, 'vanilla-breeze.js'),
     logLevel: 'info',
     ignoreAnnotations: true,
@@ -231,10 +245,8 @@ async function buildCDN() {
   const coreJsPath = join(SRC, 'main-core.js');
   if (existsSync(coreJsPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [coreJsPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'vanilla-breeze-core.js'),
       logLevel: 'info',
       ignoreAnnotations: true,
@@ -245,10 +257,8 @@ async function buildCDN() {
   const extrasJsPath = join(SRC, 'web-components', 'extras.js');
   if (existsSync(extrasJsPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [extrasJsPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'vanilla-breeze-extras.js'),
       logLevel: 'info',
       ignoreAnnotations: true,
@@ -259,10 +269,8 @@ async function buildCDN() {
   const devJsPath = join(SRC, 'dev.js');
   if (existsSync(devJsPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [devJsPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'vanilla-breeze-dev.js'),
       logLevel: 'info',
       ignoreAnnotations: true,
@@ -273,9 +281,8 @@ async function buildCDN() {
   const labsCssPath = join(SRC, 'labs', 'labs.css');
   if (existsSync(labsCssPath)) {
     await esbuild.build({
+      ...CSS_DEFAULTS,
       entryPoints: [labsCssPath],
-      bundle: true,
-      minify: true,
       outfile: join(CDN, 'vanilla-breeze-labs.css'),
       logLevel: 'info',
     });
@@ -285,10 +292,8 @@ async function buildCDN() {
   const labsJsPath = join(SRC, 'labs', 'labs.js');
   if (existsSync(labsJsPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [labsJsPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'vanilla-breeze-labs.js'),
       logLevel: 'info',
     });
@@ -298,16 +303,21 @@ async function buildCDN() {
   const emojiExtPath = join(SRC, 'data', 'emoji-data-extended.js');
   if (existsSync(emojiExtPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [emojiExtPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'emoji-extended.js'),
       logLevel: 'info',
     });
   }
 
-  // Build service worker
+  // Build precache manifest for service worker
+  const precacheManifest = [
+    '/cdn/vanilla-breeze-core.css',
+    '/cdn/vanilla-breeze-core.js',
+    '/cdn/themes/manifest.json',
+  ];
+
+  // Build service worker (IIFE format, no sourcemap for SW)
   const swPath = join(SRC, 'sw.js');
   if (existsSync(swPath)) {
     await esbuild.build({
@@ -315,8 +325,14 @@ async function buildCDN() {
       bundle: true,
       minify: true,
       format: 'iife',
+      target: ['es2022'],
+      legalComments: 'none',
       outfile: join(CDN, 'sw.js'),
       logLevel: 'info',
+      define: {
+        '__VB_VERSION__': JSON.stringify(VERSION),
+        '__VB_PRECACHE__': JSON.stringify(precacheManifest),
+      },
     });
   }
 
@@ -324,10 +340,8 @@ async function buildCDN() {
   const autoloadPath = join(SRC, 'main-autoload.js');
   if (existsSync(autoloadPath)) {
     await esbuild.build({
+      ...JS_DEFAULTS,
       entryPoints: [autoloadPath],
-      bundle: true,
-      minify: true,
-      format: 'esm',
       outfile: join(CDN, 'vanilla-breeze-autoload.js'),
       logLevel: 'info',
       ignoreAnnotations: true,
@@ -338,15 +352,29 @@ async function buildCDN() {
   await buildThemes();
   await buildComponents();
 
-  console.log('\nCDN files ready at dist/cdn/');
-  console.log('After deployment, reference via:');
-  console.log('  Full CSS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.css');
-  console.log('  Core CSS:  https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-core.css');
-  console.log('  Full JS:   https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze.js');
-  console.log('  Core JS:   https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-core.js');
-  console.log('  Extras JS: https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-extras.js');
-  console.log('  Charts:    https://profpowell.github.io/vanilla-breeze/cdn/vanilla-breeze-charts.css');
-  console.log('  Themes:    https://profpowell.github.io/vanilla-breeze/cdn/themes/{name}.css');
+  // --- Size summary ---
+  console.log(`\nCDN build complete (v${VERSION})`);
+  console.log('─'.repeat(50));
+
+  const coreBundles = ['vanilla-breeze-core.css', 'vanilla-breeze-core.js'];
+  const fullBundles = ['vanilla-breeze.css', 'vanilla-breeze.js'];
+
+  for (const [label, files] of [['Core', coreBundles], ['Full', fullBundles]]) {
+    let rawTotal = 0;
+    let gzipTotal = 0;
+    for (const file of files) {
+      const p = join(CDN, file);
+      if (existsSync(p)) {
+        const content = readFileSync(p);
+        rawTotal += content.length;
+        gzipTotal += gzipSync(content, { level: 9 }).length;
+      }
+    }
+    console.log(`  ${label}: ${(rawTotal / 1024).toFixed(1)} KB raw, ${(gzipTotal / 1024).toFixed(1)} KB gzip`);
+  }
+
+  console.log('─'.repeat(50));
+  console.log('  Files at: dist/cdn/');
 }
 
 buildCDN().catch(e => {

@@ -2,18 +2,21 @@
  * Vanilla Breeze Service Worker
  *
  * Caching strategy:
- *   - Install: precache core CSS/JS + themes manifest
+ *   - Install: precache from build-injected manifest
  *   - Theme CSS (/cdn/themes/*.css): stale-while-revalidate
  *   - Optional modules (/cdn/vanilla-breeze-*.css|js): stale-while-revalidate
- *   - Activate: prune old cache versions
+ *   - Activate: prune all caches not matching current version
+ *   - Message channel: GET_STATUS, CLEAR_CACHE, SKIP_WAITING
  *
  * Opt-in only — consumers must register via:
  *   <meta name="vb-service-worker" content="true">
  *   or: window.__VB_SERVICE_WORKER = true
  */
 
-const CACHE_VERSION = 'vb-v1';
-const PRECACHE_URLS = [
+/* global __VB_VERSION__, __VB_PRECACHE__ */
+
+const CACHE_NAME = `vb-${typeof __VB_VERSION__ !== 'undefined' ? __VB_VERSION__ : 'dev'}`;
+const PRECACHE_URLS = typeof __VB_PRECACHE__ !== 'undefined' ? __VB_PRECACHE__ : [
   '/cdn/vanilla-breeze-core.css',
   '/cdn/vanilla-breeze-core.js',
   '/cdn/themes/manifest.json',
@@ -23,13 +26,13 @@ const PRECACHE_URLS = [
 const SWR_PATTERNS = [
   /\/cdn\/themes\/[^/]+\.css$/,
   /\/cdn\/vanilla-breeze-[^/]+\.(css|js)$/,
+  /\/cdn\/components\/[^/]+\.js$/,
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION)
+    caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -38,7 +41,7 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(key => key !== CACHE_VERSION)
+          .filter(key => key.startsWith('vb-') && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
@@ -47,8 +50,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-
-  // Only handle matching patterns
   const isSWR = SWR_PATTERNS.some(p => p.test(url.pathname));
   if (!isSWR) return;
 
@@ -56,15 +57,52 @@ self.addEventListener('fetch', (event) => {
 });
 
 /**
+ * Message handler for client communication
+ *
+ * Supported messages:
+ *   GET_STATUS  → { version, cacheName, cachedURLs }
+ *   CLEAR_CACHE → { cleared: true }
+ *   SKIP_WAITING → calls self.skipWaiting()
+ */
+self.addEventListener('message', (event) => {
+  const { type } = event.data || {};
+
+  if (type === 'GET_STATUS') {
+    handleGetStatus(event);
+  } else if (type === 'CLEAR_CACHE') {
+    handleClearCache(event);
+  } else if (type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+async function handleGetStatus(event) {
+  const version = typeof __VB_VERSION__ !== 'undefined' ? __VB_VERSION__ : 'dev';
+  const cacheNames = (await caches.keys()).filter(k => k.startsWith('vb-'));
+  let cachedURLs = [];
+
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const keys = await cache.keys();
+    cachedURLs = keys.map(req => new URL(req.url).pathname);
+  } catch { /* empty cache */ }
+
+  event.ports[0]?.postMessage({ version, cacheName: CACHE_NAME, cacheNames, cachedURLs });
+}
+
+async function handleClearCache(event) {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter(k => k.startsWith('vb-')).map(k => caches.delete(k)));
+  event.ports[0]?.postMessage({ cleared: true });
+}
+
+/**
  * Stale-while-revalidate: return cached immediately, fetch fresh in background
- * @param {Request} request
- * @returns {Promise<Response>}
  */
 async function staleWhileRevalidate(request) {
-  const cache = await caches.open(CACHE_VERSION);
+  const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
-  // Fetch fresh copy in background (don't await)
   const fetchPromise = fetch(request)
     .then(response => {
       if (response.ok) {
@@ -72,8 +110,7 @@ async function staleWhileRevalidate(request) {
       }
       return response;
     })
-    .catch(() => cached); // Network error — fall back to cached
+    .catch(() => cached);
 
-  // Return cached immediately if available, otherwise wait for fetch
   return cached || fetchPromise;
 }

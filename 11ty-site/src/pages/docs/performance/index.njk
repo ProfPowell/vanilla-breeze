@@ -1,0 +1,217 @@
+---
+layout: layouts/docs.njk
+title: Performance
+description: "Bundle sizes, loading strategies, and caching for Vanilla Breeze."
+currentSection: docs
+currentPath: /docs/performance/
+permalink: /docs/performance/
+---
+
+<h1>Performance</h1>
+<p class="lead">Bundle inventory, loading strategies, budget policy, and service worker caching.</p>
+
+<section>
+  <h2>Architecture Overview</h2>
+  <p>Vanilla Breeze uses a modular loading architecture. Instead of shipping one monolithic bundle, the framework splits into focused layers that load on demand:</p>
+
+  <pre><code>Core CSS + Core JS          ← every page (88 KB gzip)
+├── Extras JS               ← on demand (niche components)
+├── Theme CSS               ← on demand (one at a time)
+├── Charts CSS              ← on demand (data viz pages)
+├── Dev CSS + Dev JS        ← on demand (debug only)
+└── Service Worker          ← opt-in caching layer
+
+Full CSS + Full JS          ← backwards-compat single bundle</code></pre>
+
+  <p>The <strong>core</strong> bundles contain the base styles, layout primitives, native element styles, custom elements, and essential web components. The <strong>full</strong> bundles include everything (all themes, all components) for zero-config setups.</p>
+</section>
+
+<section>
+  <h2>Bundle Inventory</h2>
+  <p>Every CDN artifact with raw, gzip, and brotli sizes. Data from the latest build.</p>
+
+  {% if budgetReport.artifacts | length %}
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Raw</th>
+        <th>Gzip</th>
+        <th>Brotli</th>
+        <th>Budget</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for name, data in budgetReport.artifacts %}
+      {%- if not name.startsWith('themes/') and not name.startsWith('components/') %}
+      <tr>
+        <td><code>{{ name }}</code></td>
+        <td>{{ (data.raw / 1024) | round(1) }} KB</td>
+        <td>{{ (data.gzip / 1024) | round(1) }} KB</td>
+        <td>{{ (data.brotli / 1024) | round(1) }} KB</td>
+        <td>{% if data.budget %}{{ (data.budget / 1024) | round(1) }} KB{% else %}--{% endif %}</td>
+        <td>{% if data.status == 'ok' %}OK{% elif data.status == 'exceeded' %}<strong>OVER</strong>{% else %}--{% endif %}</td>
+      </tr>
+      {%- endif %}
+      {%- endfor %}
+    </tbody>
+    {% if budgetReport.totals %}
+    <tfoot>
+      <tr>
+        <th>Total</th>
+        <td>{{ (budgetReport.totals.raw / 1024) | round(1) }} KB</td>
+        <td>{{ (budgetReport.totals.gzip / 1024) | round(1) }} KB</td>
+        <td>{{ (budgetReport.totals.brotli / 1024) | round(1) }} KB</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+  {% else %}
+  <p><em>Budget report not available. Run <code>npm run build:cdn &amp;&amp; npm run budget</code> to generate.</em></p>
+  {% endif %}
+
+  <details>
+    <summary>Theme sizes</summary>
+    {% if budgetReport.artifacts | length %}
+    <table>
+      <thead>
+        <tr>
+          <th>Theme</th>
+          <th>Gzip</th>
+          <th>Brotli</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for name, data in budgetReport.artifacts %}
+        {%- if name.startsWith('themes/') %}
+        <tr>
+          <td><code>{{ name }}</code></td>
+          <td>{{ (data.gzip / 1024) | round(1) }} KB</td>
+          <td>{{ (data.brotli / 1024) | round(1) }} KB</td>
+        </tr>
+        {%- endif %}
+        {%- endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p><em>No data available.</em></p>
+    {% endif %}
+  </details>
+
+  <details>
+    <summary>Individual component sizes</summary>
+    {% if budgetReport.artifacts | length %}
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Gzip</th>
+          <th>Brotli</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for name, data in budgetReport.artifacts %}
+        {%- if name.startsWith('components/') %}
+        <tr>
+          <td><code>{{ name }}</code></td>
+          <td>{{ (data.gzip / 1024) | round(1) }} KB</td>
+          <td>{{ (data.brotli / 1024) | round(1) }} KB</td>
+        </tr>
+        {%- endif %}
+        {%- endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p><em>No data available.</em></p>
+    {% endif %}
+  </details>
+</section>
+
+<section>
+  <h2>Loading Strategies</h2>
+
+  <h3>Core only (recommended)</h3>
+  <p>The smallest footprint. Includes base styles, layout, native element styles, and core web components.</p>
+  <pre><code>&lt;link rel="stylesheet" href="/cdn/vanilla-breeze-core.css"&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-core.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>Core + Extras</h3>
+  <p>Adds niche components (emoji picker, geo map, data table, etc.) as a separate bundle.</p>
+  <pre><code>&lt;link rel="stylesheet" href="/cdn/vanilla-breeze-core.css"&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-core.js"&gt;&lt;/script&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-extras.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>Full bundle</h3>
+  <p>Everything in one file. Simplest to set up, largest download.</p>
+  <pre><code>&lt;link rel="stylesheet" href="/cdn/vanilla-breeze.css"&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>Autoloader</h3>
+  <p>Only loads components as they appear in the DOM. Best for pages that use few components.</p>
+  <pre><code>&lt;link rel="stylesheet" href="/cdn/vanilla-breeze-core.css"&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-autoload.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>Add-ons</h3>
+  <p>Charts, dev tools, and themes are loaded separately when needed.</p>
+  <pre><code>&lt;!-- Charts (data visualization) --&gt;
+&lt;link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"&gt;
+
+&lt;!-- Dev tools (debug overlays, wireframe) --&gt;
+&lt;link rel="stylesheet" href="/cdn/vanilla-breeze-dev.css"&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-dev.js"&gt;&lt;/script&gt;
+
+&lt;!-- Individual theme --&gt;
+&lt;link rel="stylesheet" href="/cdn/themes/ocean.css"&gt;</code></pre>
+</section>
+
+<section>
+  <h2>Budget Policy</h2>
+  <p>Every CDN artifact has a gzip size budget defined in <code>scripts/bundle-budget.config.json</code>. The <code>npm run budget</code> script checks all artifacts against their budgets and fails with exit code 1 if any are exceeded.</p>
+  <p>This check runs in CI as part of the quality gate, blocking deployment if bundle sizes regress beyond their budgets.</p>
+
+  <h3>Current budgets</h3>
+  <dl>
+    <dt>Core CSS</dt><dd>48 KB gzip</dd>
+    <dt>Core JS</dt><dd>50 KB gzip</dd>
+    <dt>Full CSS</dt><dd>90 KB gzip</dd>
+    <dt>Full JS</dt><dd>76 KB gzip</dd>
+    <dt>Extras JS</dt><dd>29 KB gzip</dd>
+    <dt>Individual themes</dt><dd>4 KB gzip each</dd>
+    <dt>Individual components</dt><dd>10 KB gzip each</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Service Worker</h2>
+  <p>Vanilla Breeze includes an opt-in service worker for offline caching. It uses stale-while-revalidate for theme CSS and optional modules, and precaches core bundles on install.</p>
+
+  <h3>Opt in</h3>
+  <p>Add a meta tag to enable caching:</p>
+  <pre><code>&lt;meta name="vb-service-worker" content="true"&gt;</code></pre>
+
+  <p>Or set a global flag before importing:</p>
+  <pre><code>&lt;script&gt;window.__VB_SERVICE_WORKER = true;&lt;/script&gt;
+&lt;script type="module" src="/cdn/vanilla-breeze-core.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>Cache versioning</h3>
+  <p>The service worker names its cache using the build version (e.g., <code>vb-0.1.0</code>). When a new version deploys, the old cache is automatically pruned during activation.</p>
+
+  <h3>Cache management</h3>
+  <p>The service worker supports a message channel for programmatic cache control:</p>
+  <pre><code>import { getSWStatus, clearSWCache, checkForUpdate } from 'vanilla-breeze/lib/sw-register.js';
+
+// Get cache status
+const status = await getSWStatus();
+// { version: '0.1.0', cacheName: 'vb-0.1.0', cachedURLs: [...] }
+
+// Clear all VB caches
+await clearSWCache();
+
+// Check for updates
+const { updated } = await checkForUpdate();</code></pre>
+
+  <p>The settings panel includes a System section with cache management controls when the service worker is active.</p>
+</section>

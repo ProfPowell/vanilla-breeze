@@ -15,6 +15,7 @@
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
+import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
@@ -287,6 +288,19 @@ class SettingsPanel extends HTMLElement {
             </label>
           </div>
         </details>
+
+        <!-- System -->
+        <details name="settings">
+          <summary>System</summary>
+          <div class="settings-section system-info">
+            <p class="system-version">Vanilla Breeze <code>v${getVBVersion()}</code></p>
+            <p class="system-sw-status" data-sw-status>Service Worker: <span>checking…</span></p>
+            <footer class="system-actions">
+              <button type="button" data-action="clear-cache">Clear Cache</button>
+              <button type="button" data-action="check-update">Check for Updates</button>
+            </footer>
+          </div>
+        </details>
       </div>
 
       <footer class="settings-footer">
@@ -339,6 +353,11 @@ class SettingsPanel extends HTMLElement {
 
     // Reset button
     this.#panel.querySelector('.settings-reset')?.addEventListener('click', this.#handleReset);
+
+    // System section
+    this.#panel.querySelector('[data-action="clear-cache"]')?.addEventListener('click', this.#handleClearCache);
+    this.#panel.querySelector('[data-action="check-update"]')?.addEventListener('click', this.#handleCheckUpdate);
+    this.#refreshSWStatus();
   }
 
   // --- Event handlers ---
@@ -579,6 +598,55 @@ class SettingsPanel extends HTMLElement {
 
     window.dispatchEvent(new CustomEvent('extensions-change', { detail: prefs }));
   }
+
+  // --- System section ---
+
+  async #refreshSWStatus() {
+    const statusEl = this.#panel.querySelector('[data-sw-status] span');
+    if (!statusEl) return;
+
+    if (!('serviceWorker' in navigator)) {
+      statusEl.textContent = 'Not supported';
+      return;
+    }
+
+    try {
+      const status = await getSWStatus();
+      const count = status.cachedURLs?.length ?? 0;
+      statusEl.textContent = `Active (${count} cached files)`;
+    } catch {
+      statusEl.textContent = 'Not registered';
+    }
+  }
+
+  #handleClearCache = async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Clearing…';
+    try {
+      await clearSWCache();
+      btn.textContent = 'Cleared!';
+      this.#refreshSWStatus();
+      setTimeout(() => { btn.textContent = 'Clear Cache'; btn.disabled = false; }, 2000);
+    } catch {
+      btn.textContent = 'Failed';
+      setTimeout(() => { btn.textContent = 'Clear Cache'; btn.disabled = false; }, 2000);
+    }
+  };
+
+  #handleCheckUpdate = async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+    try {
+      const { updated } = await checkForUpdate();
+      btn.textContent = updated ? 'Update available!' : 'Up to date';
+      setTimeout(() => { btn.textContent = 'Check for Updates'; btn.disabled = false; }, 2000);
+    } catch {
+      btn.textContent = 'Failed';
+      setTimeout(() => { btn.textContent = 'Check for Updates'; btn.disabled = false; }, 2000);
+    }
+  };
 
   // --- Open/close ---
 

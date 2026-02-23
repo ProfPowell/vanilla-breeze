@@ -13,3 +13,4 @@ var t=class extends HTMLElement{static observedAttributes=["font-family","label"
           <span class="scale-label">${i.name}</span>
           <span class="scale-text">${l.substring(0,30)}</span>
         </div>`;e+="</div>"}this.innerHTML=e}};customElements.define("type-specimen-wc",t);
+//# sourceMappingURL=type-specimen-wc.js.map
