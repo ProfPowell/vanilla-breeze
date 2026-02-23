@@ -3,7 +3,7 @@
  *
  * Follows the established *-init.js pattern: auto-init on DOMContentLoaded,
  * MutationObserver for dynamic changes. Maintains a live registry of
- * discoverable commands that command-wc can consume via data-discover.
+ * discoverable commands that command-palette can consume via data-discover.
  *
  * @attr {string} data-command - Label in the command palette (required to opt in)
  * @attr {string} data-command-group - Group name (default: "Page Actions")
@@ -146,7 +146,7 @@ observer.observe(document.documentElement, {
 
 /**
  * Scan for auto-discoverable elements (nav links, headings)
- * Only called when a command-wc[data-discover="auto"] exists.
+ * Only called when a command-palette[data-discover="auto"] exists.
  * @returns {{ element: Element, label: string, group: string, icon: string|null, shortcut: string|null, auto: boolean, action: Function|null }[]}
  */
 function scanAutoDiscoverable() {
@@ -191,7 +191,7 @@ function scanAutoDiscoverable() {
   return items;
 }
 
-// Expose for command-wc lazy access (avoids circular imports)
+// Expose for command-palette lazy access (avoids circular imports)
 window.__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
 
 export { getRegisteredCommands, scanAutoDiscoverable, initCommands };

@@ -1,5 +1,5 @@
 /**
- * command-wc: Command palette / Cmd+K launcher
+ * command-palette: Command palette / Cmd+K launcher
  *
  * Searchable, keyboard-navigable list of commands in a modal dialog.
  * Supports groups, keyboard shortcuts, and fuzzy filtering.
@@ -10,18 +10,18 @@
  * @attr {boolean} data-discover - When present, auto-populate from [data-command] registry
  *
  * @example
- * <command-wc data-hotkey="meta+k" data-discover>
+ * <command-palette data-hotkey="meta+k" data-discover>
  *   <command-group label="Navigation">
  *     <command-item value="home">Go Home</command-item>
  *     <command-item value="settings">Settings</command-item>
  *   </command-group>
- * </command-wc>
+ * </command-palette>
  */
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 
-class CommandWc extends HTMLElement {
+class CommandPalette extends HTMLElement {
   #dialog;
   #input;
   #list;
@@ -264,7 +264,7 @@ class CommandWc extends HTMLElement {
       this.#discoveredHeaders.push(header);
 
       for (const entry of entries) {
-        // Skip if the element is inside this command-wc (avoid duplicating declarative items)
+        // Skip if the element is inside this command-palette (avoid duplicating declarative items)
         if (this.contains(entry.element)) continue;
 
         const btn = this.#createOptionButton(entry.label, entry.icon, entry.shortcut);
@@ -378,8 +378,8 @@ class CommandWc extends HTMLElement {
 class CommandGroup extends HTMLElement {}
 class CommandItem extends HTMLElement {}
 
-customElements.define('command-wc', CommandWc);
+customElements.define('command-palette', CommandPalette);
 customElements.define('command-group', CommandGroup);
 customElements.define('command-item', CommandItem);
 
-export { CommandWc };
+export { CommandPalette };

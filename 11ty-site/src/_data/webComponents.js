@@ -2,7 +2,7 @@ export default [
   { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/', desc: 'Collapsible content sections' },
   { name: 'carousel-wc', href: '/docs/elements/web-components/carousel/', desc: 'Scroll carousel with controls and autoplay' },
   { name: 'combo-box', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with single-select and multi-select tag modes' },
-  { name: 'command-wc', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
+  { name: 'command-palette', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
   { name: 'compare-surface', href: '/docs/elements/web-components/comparison/', desc: 'Before/after image comparison slider with drag handle and keyboard support' },
   { name: 'content-swap', href: '/docs/elements/web-components/content-swap/', desc: 'Two-face content toggle with flip, fade, slide, and scale transitions' },
   { name: 'context-menu', href: '/docs/elements/web-components/context-menu/', desc: 'Right-click context menu with keyboard navigation' },

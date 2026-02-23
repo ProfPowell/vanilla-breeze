@@ -18,7 +18,7 @@ import './carousel-wc/logic.js';
 import './rating-wc/logic.js';
 import './combo-box/logic.js';
 import './context-menu/logic.js';
-import './command-wc/logic.js';
+import './command-palette/logic.js';
 import './shortcuts-wc/logic.js';
 import '../utils/interest-polyfill.js';
 import '../utils/copy-init.js';

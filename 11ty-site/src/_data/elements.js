@@ -35,6 +35,7 @@ const elementsByLetter = {
     { name: 'col', type: 'native', href: '/docs/elements/native/col/' },
     { name: 'colgroup', type: 'native', href: '/docs/elements/native/colgroup/' },
     { name: 'combo-box', type: 'component', href: '/docs/elements/web-components/combobox/' },
+    { name: 'command-palette', type: 'component', href: '/docs/elements/web-components/command-palette/' },
     { name: 'compare-surface', type: 'component', href: '/docs/elements/web-components/comparison/' },
     { name: 'content-swap', type: 'component', href: '/docs/elements/web-components/content-swap/' },
   ],
