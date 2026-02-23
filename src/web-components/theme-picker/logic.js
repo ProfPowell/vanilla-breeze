@@ -28,7 +28,8 @@
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
-import { SoundManager } from '../../lib/sound-manager.js';
+// SoundManager is lazy-loaded when sounds are enabled
+let _SoundManager = null;
 
 // Extension preferences storage key
 const EXTENSIONS_KEY = 'vb-extensions';
@@ -463,7 +464,7 @@ class ThemePicker extends HTMLElement {
   /**
    * Apply extension preferences to the page
    */
-  #applyExtensions() {
+  async #applyExtensions() {
     const prefs = this.#loadExtensions();
     const root = document.documentElement;
 
@@ -474,12 +475,16 @@ class ThemePicker extends HTMLElement {
       root.dataset.motionReduced = '';
     }
 
-    // Sound effects - toggle via SoundManager
+    // Sound effects - lazy-load SoundManager only when needed
     if (prefs.sounds) {
-      SoundManager.init();
-      SoundManager.enable();
-    } else {
-      SoundManager.disable();
+      if (!_SoundManager) {
+        const mod = await import('../../lib/sound-manager.js');
+        _SoundManager = mod.SoundManager;
+      }
+      _SoundManager.init();
+      _SoundManager.enable();
+    } else if (_SoundManager) {
+      _SoundManager.disable();
     }
 
     // Dispatch event for listeners

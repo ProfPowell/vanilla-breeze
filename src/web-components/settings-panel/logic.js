@@ -15,7 +15,8 @@
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
-import { SoundManager } from '../../lib/sound-manager.js';
+// SoundManager is lazy-loaded when sounds are enabled
+let _SoundManager = null;
 
 const EXTENSIONS_KEY = 'vb-extensions';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
@@ -554,7 +555,7 @@ class SettingsPanel extends HTMLElement {
     } catch { /* ignore */ }
   }
 
-  #applyExtensions() {
+  async #applyExtensions() {
     const prefs = this.#loadExtensions();
     const root = document.documentElement;
 
@@ -564,11 +565,16 @@ class SettingsPanel extends HTMLElement {
       root.dataset.motionReduced = '';
     }
 
+    // Sound effects - lazy-load SoundManager only when needed
     if (prefs.sounds) {
-      SoundManager.init();
-      SoundManager.enable();
-    } else {
-      SoundManager.disable();
+      if (!_SoundManager) {
+        const mod = await import('../../lib/sound-manager.js');
+        _SoundManager = mod.SoundManager;
+      }
+      _SoundManager.init();
+      _SoundManager.enable();
+    } else if (_SoundManager) {
+      _SoundManager.disable();
     }
 
     window.dispatchEvent(new CustomEvent('extensions-change', { detail: prefs }));

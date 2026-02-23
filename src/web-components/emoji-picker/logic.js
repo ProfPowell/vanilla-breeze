@@ -19,14 +19,14 @@
  * @fires emoji-picker:close - When picker closes
  */
 
-import {
-  EMOJI_MAP,
-  EMOJI_GROUPS,
-  EMOJI_GROUP_LABELS,
-  EMOJI_GROUP_ICONS,
-  getByGroup,
-  searchEmoji,
-} from '../../data/emoji-data.js';
+// Lazy-loaded: emoji data is only imported when picker is first connected
+let emojiModule = null;
+
+async function loadEmojiModule() {
+  if (emojiModule) return emojiModule;
+  emojiModule = await import('../../data/emoji-data.js');
+  return emojiModule;
+}
 
 const COLUMNS = 8;
 const SEARCH_DEBOUNCE = 150;
@@ -43,8 +43,10 @@ class EmojiPicker extends HTMLElement {
   #activeGridIndex = -1;
   #searchTimer = null;
   #currentQuery = '';
+  #emojiData = null;
 
-  connectedCallback() {
+  async connectedCallback() {
+    this.#emojiData = await loadEmojiModule();
     this.#setup();
   }
 
@@ -109,15 +111,15 @@ class EmojiPicker extends HTMLElement {
     this.#categoryNav.setAttribute('role', 'tablist');
     this.#categoryNav.setAttribute('aria-label', 'Emoji categories');
 
-    for (const group of EMOJI_GROUPS) {
+    for (const group of this.#emojiData.EMOJI_GROUPS) {
       const tab = document.createElement('button');
       tab.type = 'button';
       tab.setAttribute('role', 'tab');
-      tab.setAttribute('aria-selected', group === EMOJI_GROUPS[0] ? 'true' : 'false');
+      tab.setAttribute('aria-selected', group === this.#emojiData.EMOJI_GROUPS[0] ? 'true' : 'false');
       tab.setAttribute('data-group', group);
-      tab.setAttribute('aria-label', EMOJI_GROUP_LABELS[group]);
-      tab.title = EMOJI_GROUP_LABELS[group];
-      tab.textContent = EMOJI_GROUP_ICONS[group];
+      tab.setAttribute('aria-label', this.#emojiData.EMOJI_GROUP_LABELS[group]);
+      tab.title = this.#emojiData.EMOJI_GROUP_LABELS[group];
+      tab.textContent = this.#emojiData.EMOJI_GROUP_ICONS[group];
       tab.addEventListener('click', this.#handleCategoryClick);
       this.#categoryNav.appendChild(tab);
     }
@@ -153,7 +155,7 @@ class EmojiPicker extends HTMLElement {
       this.#grid.appendChild(heading);
 
       for (const shortcode of recents) {
-        const entry = EMOJI_MAP.get(shortcode);
+        const entry = this.#emojiData.EMOJI_MAP.get(shortcode);
         if (entry) this.#addCell(entry);
       }
     }
@@ -174,14 +176,14 @@ class EmojiPicker extends HTMLElement {
       }
     } else {
       // Full grid by group
-      for (const group of EMOJI_GROUPS) {
+      for (const group of this.#emojiData.EMOJI_GROUPS) {
         const heading = document.createElement('div');
         heading.classList.add('group-label');
-        heading.textContent = EMOJI_GROUP_LABELS[group];
+        heading.textContent = this.#emojiData.EMOJI_GROUP_LABELS[group];
         heading.setAttribute('data-group-heading', group);
         this.#grid.appendChild(heading);
 
-        const groupEntries = getByGroup(group);
+        const groupEntries = this.#emojiData.getByGroup(group);
         for (const entry of groupEntries) {
           this.#addCell(entry);
         }
@@ -228,7 +230,7 @@ class EmojiPicker extends HTMLElement {
     this.#searchTimer = setTimeout(() => {
       this.#currentQuery = this.#searchInput.value.trim();
       if (this.#currentQuery) {
-        const results = searchEmoji(this.#currentQuery);
+        const results = this.#emojiData.searchEmoji(this.#currentQuery);
         this.#renderGrid(results);
       } else {
         this.#renderGrid();
@@ -318,7 +320,7 @@ class EmojiPicker extends HTMLElement {
 
   #handleEmojiClick = (e) => {
     const shortcode = e.currentTarget.getAttribute('data-shortcode');
-    const entry = EMOJI_MAP.get(shortcode);
+    const entry = this.#emojiData.EMOJI_MAP.get(shortcode);
     if (!entry) return;
 
     // Save to recents

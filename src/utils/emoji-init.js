@@ -23,7 +23,14 @@
  * <textarea data-emoji>Type :smile: and it becomes 😄</textarea>
  */
 
-import { resolveEmoji } from '../data/emoji-data.js';
+// Lazy-loaded: emoji data (~31 KB) is only imported when [data-emoji] elements exist
+let resolveEmoji = null;
+
+async function loadEmojiData() {
+  if (resolveEmoji) return;
+  const mod = await import('../data/emoji-data.js');
+  resolveEmoji = mod.resolveEmoji;
+}
 
 const SELECTOR = '[data-emoji]';
 const SHORTCODE_RE = /:([a-z0-9_+-]+):/g;
@@ -35,8 +42,11 @@ const DEBOUNCE_MS = 100;
  * Initialize emoji enhancement within a root element
  * @param {Element|Document} root - Root element to search within
  */
-function initEmoji(root = document) {
-  root.querySelectorAll(SELECTOR).forEach(enhanceEmoji);
+async function initEmoji(root = document) {
+  const targets = root.querySelectorAll(SELECTOR);
+  if (targets.length === 0) return;
+  await loadEmojiData();
+  targets.forEach(enhanceEmoji);
 }
 
 /**
@@ -251,17 +261,17 @@ if (document.readyState === 'loading') {
 
 // Watch for dynamically added [data-emoji] containers
 const observer = new MutationObserver((mutations) => {
+  const pending = [];
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceEmoji(node);
-      }
-
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceEmoji);
+      if (node.matches?.(SELECTOR)) pending.push(node);
+      node.querySelectorAll?.(SELECTOR).forEach(el => pending.push(el));
     }
   }
+  if (pending.length === 0) return;
+  loadEmojiData().then(() => pending.forEach(enhanceEmoji));
 });
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
