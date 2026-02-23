@@ -49,14 +49,17 @@ permalink: /docs/configure/
     user-select: none;
   }
 
+  /* Reset fieldset inside details */
   .detail-body {
+    border: none;
+    margin: 0;
     padding: 0 var(--size-m, 1rem) var(--size-m, 1rem);
     display: flex;
     flex-direction: column;
     gap: var(--size-s, 0.75rem);
   }
 
-  .detail-body label {
+  .detail-body > label:not(.toggle-row) {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -74,18 +77,23 @@ permalink: /docs/configure/
     color: var(--color-text, #222);
   }
 
+  .detail-body select[multiple] {
+    min-height: 5.5rem;
+  }
+
   .toggle-row {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: var(--size-s, 0.75rem);
     font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 400;
     cursor: pointer;
   }
 
   .toggle-row small {
     display: block;
-    font-weight: 400;
     font-size: var(--font-size-xs, 0.75rem);
     color: var(--color-text-muted, #666);
   }
@@ -115,10 +123,6 @@ permalink: /docs/configure/
   .output-header h2 {
     margin: 0;
   }
-
-  #vb-snippet-output {
-    min-height: 6rem;
-  }
 </style>
 {% endblock %}
 
@@ -141,9 +145,10 @@ permalink: /docs/configure/
         </label>
         <label>
           Theme
-          <select id="vb-theme-select" name="theme">
-            <option value="">No theme</option>
+          <select id="vb-theme-select" name="theme" multiple>
+            <option value="" selected>Base theme (default)</option>
           </select>
+          <small>Hold Ctrl/Cmd to select multiple themes.</small>
         </label>
       </fieldset>
     </details>
@@ -201,10 +206,6 @@ permalink: /docs/configure/
     </header>
 
     <code-block language="html" label="HTML head" id="vb-snippet-output">&lt;!-- Select bundles to generate --&gt;</code-block>
-
-    <footer>
-      <button type="button" id="vb-copy-btn">Copy to clipboard</button>
-    </footer>
   </article>
 </section>
 
@@ -213,7 +214,6 @@ permalink: /docs/configure/
   const form = document.getElementById('vb-configurator');
   const codeBlock = document.getElementById('vb-snippet-output');
   const sizeOutput = document.getElementById('vb-total-size');
-  const copyBtn = document.getElementById('vb-copy-btn');
   const themeSelect = document.getElementById('vb-theme-select');
 
   let themeManifest = {};
@@ -229,7 +229,6 @@ permalink: /docs/configure/
       budgetReport = report.status === 'fulfilled' ? report.value : {};
     } catch { /* use defaults */ }
 
-    // Group themes: accent colors first, then personality, then extreme
     const accents = ['ocean','forest','sunset','rose','lavender','coral','slate','emerald','amber','indigo'];
     const personality = ['modern','minimal','classic'];
     const sorted = Object.keys(themeManifest).sort((a, b) => a.localeCompare(b));
@@ -258,11 +257,17 @@ permalink: /docs/configure/
     return budgetReport.artifacts?.[name]?.gzip ?? 0;
   }
 
+  function getSelectedThemes() {
+    return Array.from(themeSelect.selectedOptions)
+      .map(opt => opt.value)
+      .filter(v => v !== '');
+  }
+
   function updateSnippet() {
     const data = new FormData(form);
     const cssBundle = data.get('css-bundle');
     const jsBundle = data.get('js-bundle');
-    const theme = data.get('theme');
+    const themes = getSelectedThemes();
     const chartsCss = data.get('addon-charts');
     const devCss = data.get('addon-dev-css');
     const devJs = data.get('addon-dev-js');
@@ -284,9 +289,12 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze.css');
     }
 
-    if (theme && cssBundle !== 'full' && cssBundle !== 'none') {
-      lines.push(`<link rel="stylesheet" href="${CDN_BASE}/themes/${theme}.css">`);
-      totalSize += getSize(`themes/${theme}.css`);
+    // Theme links (only for core CSS — full already includes all themes)
+    if (cssBundle !== 'full' && cssBundle !== 'none') {
+      for (const theme of themes) {
+        lines.push(`<link rel="stylesheet" href="${CDN_BASE}/themes/${theme}.css">`);
+        totalSize += getSize(`themes/${theme}.css`);
+      }
     }
 
     if (chartsCss) {
@@ -298,9 +306,9 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze-dev.css');
     }
 
-    if (jsBundle !== 'none' && (cssBundle !== 'none' || jsBundle !== 'none')) {
-      if (lines.length) lines.push('');
-    }
+    // Blank line between CSS and JS
+    const hasJS = jsBundle !== 'none' || devJs;
+    if (lines.length && hasJS) lines.push('');
 
     if (jsBundle === 'core') {
       lines.push(`<script type="module" src="${CDN_BASE}/vanilla-breeze-core.js"><\/script>`);
@@ -323,30 +331,28 @@ permalink: /docs/configure/
       totalSize += getSize('vanilla-breeze-dev.js');
     }
 
-    const snippet = lines.filter((l, i) => !(l === '' && (!lines[i - 1] || lines[i - 1] === ''))).join('\n').trim();
+    const snippet = lines.join('\n').trim();
 
-    // Update code-block content
-    codeBlock.textContent = snippet || '<!-- Select at least one bundle -->';
+    // Use setCode() API for live update of code-block
+    if (typeof codeBlock.setCode === 'function') {
+      codeBlock.setCode(snippet || '<!-- Select at least one bundle -->');
+    } else {
+      // Fallback: replace element
+      codeBlock.textContent = snippet || '<!-- Select at least one bundle -->';
+    }
 
     sizeOutput.textContent = totalSize > 0 ? `${(totalSize / 1024).toFixed(1)} KB gzip` : '0 KB';
   }
 
   form.addEventListener('change', () => {
     const cssBundle = new FormData(form).get('css-bundle');
-    themeSelect.disabled = cssBundle === 'full' || cssBundle === 'none';
-    if (themeSelect.disabled) themeSelect.value = '';
-    updateSnippet();
-  });
-
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(codeBlock.textContent);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
-    } catch {
-      copyBtn.textContent = 'Copy failed';
-      setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 2000);
+    const isDisabled = cssBundle === 'full' || cssBundle === 'none';
+    themeSelect.disabled = isDisabled;
+    if (isDisabled) {
+      // Deselect all themes, reselect base
+      for (const opt of themeSelect.options) opt.selected = (opt.value === '');
     }
+    updateSnippet();
   });
 
   loadData();
