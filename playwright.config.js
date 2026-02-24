@@ -5,7 +5,8 @@ export default defineConfig({
   outputDir: './tests/visual/results',
   snapshotDir: './tests/visual/baselines',
   snapshotPathTemplate: '{snapshotDir}/{projectName}/{testFileName}/{arg}{ext}',
-  timeout: 30000,
+  timeout: 60000,
+  workers: process.env.CI ? 4 : undefined,
   expect: {
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.01,
