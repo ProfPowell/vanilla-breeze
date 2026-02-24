@@ -967,7 +967,7 @@ Right-click context menu.
 
 Children: `<menu>` with `<button data-command="...">` items.
 
-### `<toast-wc>`
+### `<toast-msg>`
 Toast notification container.
 
 | Attribute | Values | Description |
@@ -977,10 +977,10 @@ Toast notification container.
 
 | Events | Detail |
 |--------|--------|
-| `toast-wc:show` | `{ message, variant }` |
-| `toast-wc:hide` | `{ message, variant }` |
+| `toast-msg:show` | `{ message, variant }` |
+| `toast-msg:hide` | `{ message, variant }` |
 
-JS API: `document.querySelector('toast-wc').show({ message, variant, duration })`
+JS API: `document.querySelector('toast-msg').show({ message, variant, duration })`
 
 Toast variants: `data-variant="info|success|warning|error"` on `.toast` child.
 
@@ -1616,7 +1616,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-loading` | Any — loading state |
 | `data-loop` | `<carousel-wc>` — loop slides |
 | `data-mask` | `<input>` — input masking |
-| `data-max` | `<toast-wc>`, `<combo-box>` — maximum count |
+| `data-max` | `<toast-msg>`, `<combo-box>` — maximum count |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |

@@ -1,5 +1,5 @@
 /**
- * toast-wc: Toast notification container
+ * toast-msg: Toast notification container
  *
  * A container for displaying non-modal notifications. Toasts appear in a
  * fixed position and auto-dismiss after a configurable duration.
@@ -9,16 +9,16 @@
  * @attr {number} data-max - Maximum number of visible toasts (default: 5)
  *
  * @example
- * <toast-wc data-position="bottom-end"></toast-wc>
+ * <toast-msg data-position="bottom-end"></toast-msg>
  *
  * // Show a toast programmatically:
- * document.querySelector('toast-wc').show({
+ * document.querySelector('toast-msg').show({
  *   message: 'File saved successfully',
  *   variant: 'success',
  *   duration: 3000
  * });
  */
-class ToastWc extends HTMLElement {
+class ToastMsg extends HTMLElement {
   #queue = [];
   #visible = [];
 
@@ -121,7 +121,7 @@ class ToastWc extends HTMLElement {
       }, duration);
     }
 
-    this.dispatchEvent(new CustomEvent('toast-wc:show', {
+    this.dispatchEvent(new CustomEvent('toast-msg:show', {
       bubbles: true,
       detail: { toast }
     }));
@@ -154,7 +154,7 @@ class ToastWc extends HTMLElement {
         this.#showToast(nextToast, duration);
       }
 
-      this.dispatchEvent(new CustomEvent('toast-wc:hide', {
+      this.dispatchEvent(new CustomEvent('toast-msg:hide', {
         bubbles: true,
         detail: { toast }
       }));
@@ -195,6 +195,6 @@ class ToastWc extends HTMLElement {
   }
 }
 
-customElements.define('toast-wc', ToastWc);
+customElements.define('toast-msg', ToastMsg);
 
-export { ToastWc };
+export { ToastMsg };

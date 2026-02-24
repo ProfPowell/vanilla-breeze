@@ -2,11 +2,11 @@
 
 ## Description
 
-Temporary notification that appears and auto-dismisses. Used for non-critical feedback about completed actions. Uses the `<toast-wc>` Web Component for consistent behavior.
+Temporary notification that appears and auto-dismisses. Used for non-critical feedback about completed actions. Uses the `<toast-msg>` Web Component for consistent behavior.
 
 ## Anatomy
 
-- **container**: Toast region (`<toast-wc>`)
+- **container**: Toast region (`<toast-msg>`)
 - **toast**: Individual toast notification (`.toast` div)
 - **icon**: Status indicator icon (`.icon`)
 - **message**: Notification text (`.message`)
@@ -41,16 +41,16 @@ Toasts require JavaScript to function. Provide an empty container:
 
 ```html
 <!-- Toast container -->
-<toast-wc data-position="bottom-end"></toast-wc>
+<toast-msg data-position="bottom-end"></toast-msg>
 ```
 
 ## JavaScript API
 
-The `<toast-wc>` component provides a programmatic API:
+The `<toast-msg>` component provides a programmatic API:
 
 ```javascript
 // Get the toast container
-const toasts = document.querySelector('toast-wc');
+const toasts = document.querySelector('toast-msg');
 
 // Show a toast
 toasts.show({
@@ -100,7 +100,7 @@ toasts.show({
 ```css
 @layer components {
   /* Toast container positioning */
-  toast-wc {
+  toast-msg {
     position: fixed;
     z-index: var(--z-toast, 1100);
     display: flex;
@@ -214,11 +214,11 @@ toasts.dismissAll();
 The component dispatches events for lifecycle tracking:
 
 ```javascript
-toasts.addEventListener('toast-wc:show', (e) => {
+toasts.addEventListener('toast-msg:show', (e) => {
   console.log('Toast shown:', e.detail.toast);
 });
 
-toasts.addEventListener('toast-wc:hide', (e) => {
+toasts.addEventListener('toast-msg:hide', (e) => {
   console.log('Toast hidden:', e.detail.toast);
 });
 ```

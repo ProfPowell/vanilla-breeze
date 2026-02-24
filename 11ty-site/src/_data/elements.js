@@ -193,7 +193,7 @@ const elementsByLetter = {
     { name: 'theme-picker', type: 'component', href: '/docs/elements/web-components/theme-picker/' },
     { name: 'time', type: 'native', href: '/docs/elements/native/time/' },
     { name: 'title', type: 'native', href: '/docs/elements/native/title/' },
-    { name: 'toast-wc', type: 'component', href: '/docs/elements/web-components/toast/' },
+    { name: 'toast-msg', type: 'component', href: '/docs/elements/web-components/toast/' },
     { name: 'tool-tip', type: 'component', href: '/docs/elements/web-components/tooltip/' },
     { name: 'tr', type: 'native', href: '/docs/elements/native/tr/' },
     { name: 'track', type: 'native', href: '/docs/elements/native/track/' },

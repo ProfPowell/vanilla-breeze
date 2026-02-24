@@ -14,7 +14,7 @@ export default [
   { name: 'short-cuts', href: '/docs/elements/web-components/shortcuts/', desc: 'Keyboard shortcuts help overlay' },
   { name: 'slide-accept', href: '/docs/elements/web-components/slide-accept/', desc: 'Slide-to-confirm interaction with drag handle and spring-back' },
   { name: 'tabs-wc', href: '/docs/elements/web-components/tabs/', desc: 'Tabbed interface component' },
-  { name: 'toast-wc', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
+  { name: 'toast-msg', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
   { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   { name: 'foot-notes', href: '/docs/elements/web-components/footnotes/', desc: 'Inline footnotes with popup' },
   { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },

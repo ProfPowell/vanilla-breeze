@@ -1,7 +1,7 @@
 import './tabs-wc/logic.js';
 import './foot-notes/logic.js';
 import './accordion-wc/logic.js';
-import './toast-wc/logic.js';
+import './toast-msg/logic.js';
 import './tool-tip/logic.js';
 import './drop-down/logic.js';
 import './icon-wc/icon-wc.js';

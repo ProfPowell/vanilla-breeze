@@ -93,7 +93,7 @@ Custom elements and web components are NOT void elements. They must always have 
 <icon-wc name="home"></icon-wc>
 <layout-stack></layout-stack>
 <accordion-wc></accordion-wc>
-<toast-wc></toast-wc>
+<toast-msg></toast-msg>
 
 <!-- Wrong - custom elements cannot be self-closing -->
 <icon-wc name="home"/>

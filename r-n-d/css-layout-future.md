@@ -169,7 +169,7 @@ Components opt-in by wrapping their DOM mutations in this helper.
 
 | Component | Entry Animation | File |
 |:---|:---|:---|
-| `toast-wc` | Slide-in from edge | toast-wc/styles.css |
+| `toast-msg` | Slide-in from edge | toast-msg/styles.css |
 | `drop-down` | Scale-fade from trigger | drop-down/styles.css |
 | `command-wc` | Fade-scale from center | command-wc/styles.css |
 | `combo-box` | Listbox appear | combo-box/styles.css |

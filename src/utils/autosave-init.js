@@ -109,11 +109,11 @@ function enhanceForm(form) {
   }
 
   /**
-   * Show a "Draft restored" notification via toast-wc if available
+   * Show a "Draft restored" notification via toast-msg if available
    */
   function notifyRestored() {
-    if (customElements.get('toast-wc')) {
-      const toast = document.createElement('toast-wc');
+    if (customElements.get('toast-msg')) {
+      const toast = document.createElement('toast-msg');
       toast.setAttribute('variant', 'info');
       toast.setAttribute('duration', '3000');
       toast.textContent = 'Draft restored';

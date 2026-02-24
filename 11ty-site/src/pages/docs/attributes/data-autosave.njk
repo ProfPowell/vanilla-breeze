@@ -91,9 +91,9 @@ form.addEventListener('submit', () => {
 // You can also clear manually
 localStorage.removeItem('vb-autosave:contact-form');{% endraw %}{% endset %}
 
-{% set stylingCode %}{% raw %}/* The toast notification uses toast-wc if available */
-/* Customize the restore notification via toast-wc styles */
-toast-wc::part(toast) {
+{% set stylingCode %}{% raw %}/* The toast notification uses toast-msg if available */
+/* Customize the restore notification via toast-msg styles */
+toast-msg::part(toast) {
   --toast-bg: var(--color-surface-raised);
   --toast-color: var(--color-text);
 }{% endraw %}{% endset %}
@@ -121,7 +121,7 @@ toast-wc::part(toast) {
       <li>Saves the object to <code>localStorage</code> with the key <code>vb-autosave:{<em>key</em>}</code> and a timestamp</li>
       <li>On page load, checks for a non-expired draft (24-hour expiry)</li>
       <li>If a draft exists, restores field values and fires <code>input</code> events so other enhancements update</li>
-      <li>Shows a "Draft restored" toast notification via <code>toast-wc</code> if available</li>
+      <li>Shows a "Draft restored" toast notification via <code>toast-msg</code> if available</li>
       <li>Sets <code>data-autosave-init</code> to prevent double-binding</li>
     </ol>
     <p>Password fields (<code>type="password"</code>) and file inputs (<code>type="file"</code>) are always skipped &mdash; sensitive data and file references are never stored.</p>
@@ -213,13 +213,13 @@ toast-wc::part(toast) {
 
   <section>
     <h2>Toast Notification</h2>
-    <p>When a draft is restored, a toast notification is displayed if <code>toast-wc</code> is available on the page. The toast uses the following configuration:</p>
+    <p>When a draft is restored, a toast notification is displayed if <code>toast-msg</code> is available on the page. The toast uses the following configuration:</p>
     <ul>
       <li><strong>Message:</strong> "Draft restored"</li>
       <li><strong>Variant:</strong> <code>info</code></li>
       <li><strong>Duration:</strong> 3000ms (auto-dismisses)</li>
     </ul>
-    <p>If <code>toast-wc</code> is not present, the draft is still restored silently without a notification.</p>
+    <p>If <code>toast-msg</code> is not present, the draft is still restored silently without a notification.</p>
   </section>
 
   <section>
@@ -235,7 +235,7 @@ toast-wc::part(toast) {
 
   <section>
     <h2>Styling</h2>
-    <p>The autosave attribute itself has no visual output. The only visible indicator is the toast notification on restore, which inherits styles from <code>toast-wc</code>.</p>
+    <p>The autosave attribute itself has no visual output. The only visible indicator is the toast notification on restore, which inherits styles from <code>toast-msg</code>.</p>
 
     <code-block language="css" show-lines label="Toast notification styling">{{ stylingCode | escape }}</code-block>
 
@@ -245,7 +245,7 @@ toast-wc::part(toast) {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The "Draft restored" toast notification is announced by screen readers via <code>toast-wc</code>'s accessible live region</li>
+      <li>The "Draft restored" toast notification is announced by screen readers via <code>toast-msg</code>'s accessible live region</li>
       <li>Restored form state preserves the user's previous work, reducing frustration from accidental navigation</li>
       <li>No visual layout changes occur during restore &mdash; fields are populated in place</li>
       <li>Firing <code>input</code> events on restore ensures dependent enhancements (character counts, conditional fields) are in the correct state for assistive technology</li>

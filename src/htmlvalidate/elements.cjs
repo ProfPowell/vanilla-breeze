@@ -200,7 +200,7 @@ module.exports = {
     }
   },
 
-  "toast-wc": {
+  "toast-msg": {
     flow: true,
     permittedContent: [],
     attributes: {

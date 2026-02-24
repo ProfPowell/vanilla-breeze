@@ -200,7 +200,7 @@ Located in `/src/web-components/` (10 components). JavaScript-enhanced component
 |-----------|---------|--------------|
 | `accordion-wc` | Collapsible panels | Built on details/summary, single-open mode, keyboard nav |
 | `tabs-wc` | Tabbed interface | ARIA tablist/tab/tabpanel, keyboard nav |
-| `toast-wc` | Toast notifications | Auto-dismiss, positioning |
+| `toast-msg` | Toast notifications | Auto-dismiss, positioning |
 | `tooltip-wc` | Tooltip overlays | Positioned with arrow |
 | `drop-down` | Dropdown menus | Click/keyboard triggered |
 | `foot-notes` | Footnote references | Modal/popover display |
