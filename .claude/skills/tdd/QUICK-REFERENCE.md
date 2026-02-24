@@ -23,7 +23,7 @@ RED -> GREEN -> REFACTOR -> REPEAT
 | `src/utils/format.js` | `test/utils/format.test.js` |
 | `src/components/Button.ts` | `test/components/Button.test.ts` |
 | `src/services/auth.js` | `test/services/auth.test.js` |
-| `.claude/scripts/tool.js` | `.claude/test/validators/tool.test.js` |
+| `scripts/quality/tool.js` | `tests/unit/validators/tool.test.js` |
 
 ## Quick Test Template
 
@@ -70,7 +70,7 @@ describe('ModuleName', () => {
 | `src/services/*` | backend-testing |
 | `src/api/*` | backend-testing |
 | `src/components/*` | unit-testing |
-| `.claude/scripts/*` | unit-testing |
+| `scripts/quality/*` | unit-testing |
 | Vite project | vitest |
 
 ## Checklist Before Proceeding

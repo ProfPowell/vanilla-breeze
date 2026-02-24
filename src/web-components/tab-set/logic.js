@@ -2,7 +2,7 @@ import { startSwapTransition } from '../../utils/swap-transition.js';
 
 let tabsVtId = 0;
 
-class TabsWc extends HTMLElement {
+class TabSet extends HTMLElement {
   #details;
   #summaries;
   #vtEnabled = false;
@@ -110,7 +110,7 @@ class TabsWc extends HTMLElement {
 
     this.#updateAriaStates();
 
-    this.dispatchEvent(new CustomEvent('tabs-wc:change', {
+    this.dispatchEvent(new CustomEvent('tab-set:change', {
       detail: { index },
       bubbles: true
     }));
@@ -157,6 +157,6 @@ class TabsWc extends HTMLElement {
   }
 }
 
-customElements.define('tabs-wc', TabsWc);
+customElements.define('tab-set', TabSet);
 
-export { TabsWc };
+export { TabSet };

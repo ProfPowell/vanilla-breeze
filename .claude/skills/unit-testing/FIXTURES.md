@@ -5,7 +5,7 @@ Organization and management of test fixture files.
 ## Directory Structure
 
 ```
-.claude/test/
+tests/unit/
 ├── fixtures/
 │   ├── valid/                    # Files that should PASS validation
 │   │   ├── minimal.html          # Minimal valid HTML
@@ -91,7 +91,7 @@ export function example() {
 Organize by the validator or rule they trigger:
 
 ```
-.claude/test/fixtures/invalid/
+tests/unit/fixtures/invalid/
 ├── html-validate/
 │   ├── missing-doctype.html      # No <!doctype>
 │   ├── duplicate-id.html         # Repeated IDs

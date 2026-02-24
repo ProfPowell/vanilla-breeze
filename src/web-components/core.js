@@ -6,7 +6,7 @@
  */
 
 // Core components
-import './tabs-wc/logic.js';
+import './tab-set/logic.js';
 import './foot-notes/logic.js';
 import './accordion-wc/logic.js';
 import './toast-msg/logic.js';

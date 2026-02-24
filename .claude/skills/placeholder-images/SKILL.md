@@ -109,10 +109,10 @@ Uses design tokens for brand-consistent placeholders. The script automatically l
 
 ```bash
 # Auto-detect CSS file
-node .claude/scripts/generate-placeholder.js --type brand --label "Product" --preset product
+node scripts/quality/generate-placeholder.js --type brand --label "Product" --preset product
 
 # Specify CSS file explicitly
-node .claude/scripts/generate-placeholder.js --type brand --label "Hero" --size 1200x400 --tokens src/styles/main.css
+node scripts/quality/generate-placeholder.js --type brand --label "Hero" --size 1200x400 --tokens src/styles/main.css
 ```
 
 **Example output:**
@@ -172,25 +172,25 @@ Use these labels for semantic clarity:
 
 ```bash
 # Simple placeholder
-node .claude/scripts/generate-placeholder.js --type simple --size 400x400
+node scripts/quality/generate-placeholder.js --type simple --size 400x400
 
 # Labeled placeholder
-node .claude/scripts/generate-placeholder.js --type labeled --label "Hero Image" --size 1200x400
+node scripts/quality/generate-placeholder.js --type labeled --label "Hero Image" --size 1200x400
 
 # Brand placeholder (auto-detects CSS tokens)
-node .claude/scripts/generate-placeholder.js --type brand --label "Product" --preset product
+node scripts/quality/generate-placeholder.js --type brand --label "Product" --preset product
 
 # Brand placeholder with specific CSS file
-node .claude/scripts/generate-placeholder.js --type brand --label "Hero" --size 1200x400 \
+node scripts/quality/generate-placeholder.js --type brand --label "Hero" --size 1200x400 \
   --tokens src/styles/main.css
 
 # Output to file
-node .claude/scripts/generate-placeholder.js --type labeled --label "Product" --size 400x400 \
+node scripts/quality/generate-placeholder.js --type labeled --label "Product" --size 400x400 \
   --output .assets/images/placeholder/product-400x400.svg
 
 # Generate preset
-node .claude/scripts/generate-placeholder.js --preset product
-node .claude/scripts/generate-placeholder.js --preset hero --label "Welcome Banner"
+node scripts/quality/generate-placeholder.js --preset product
+node scripts/quality/generate-placeholder.js --preset hero --label "Welcome Banner"
 ```
 
 ---
@@ -206,7 +206,7 @@ For quick prototyping, use inline data URIs:
 Generate with:
 
 ```bash
-node .claude/scripts/generate-placeholder.js --type simple --size 200x200 --inline
+node scripts/quality/generate-placeholder.js --type simple --size 200x200 --inline
 ```
 
 ---

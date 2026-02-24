@@ -11,15 +11,15 @@ Scaffold a test file for a JavaScript script using Node.js native test runner.
 ## Arguments
 
 - `$ARGUMENTS` - Path to the script to test
-  - Examples: `.claude/scripts/my-script.js`
-  - Examples: `.claude/scripts/validators/html-check.js`
+  - Examples: `scripts/quality/my-script.js`
+  - Examples: `scripts/quality/validators/html-check.js`
 
 ## Examples
 
 ```
-/add-test .claude/scripts/config-validator.js
-/add-test .claude/scripts/skill-injector.js
-/add-test .claude/scripts/metadata-check.js
+/add-test scripts/quality/config-validator.js
+/add-test scripts/quality/skill-injector.js
+/add-test scripts/quality/metadata-check.js
 ```
 
 ## Steps to Execute
@@ -45,8 +45,8 @@ Read the script to understand:
 ### 4. Determine Test File Path
 
 ```
-.claude/scripts/foo-bar.js      → .claude/test/validators/foo-bar.test.js
-.claude/scripts/utils/helper.js → .claude/test/validators/helper.test.js
+scripts/quality/foo-bar.js      → tests/unit/validators/foo-bar.test.js
+scripts/quality/utils/helper.js → tests/unit/validators/helper.test.js
 ```
 
 ### 5. Generate Test File
@@ -86,7 +86,7 @@ describe('[Script Name]', () => {
   describe('Valid Cases', () => {
     it('should succeed with valid input', () => {
       // TODO: Test with valid fixture or input
-      // const result = runScript('.claude/test/fixtures/valid/example.html');
+      // const result = runScript('tests/unit/fixtures/valid/example.html');
       // assert.ok(result.success, 'Expected script to succeed');
     });
   });
@@ -94,7 +94,7 @@ describe('[Script Name]', () => {
   describe('Invalid Cases', () => {
     it('should report errors for invalid input', () => {
       // TODO: Test with invalid fixture or input
-      // const result = runScript('.claude/test/fixtures/invalid/example.html');
+      // const result = runScript('tests/unit/fixtures/invalid/example.html');
       // assert.ok(!result.success || result.output.includes('error'));
     });
   });
@@ -119,17 +119,17 @@ describe('[Script Name]', () => {
 If the script validates files, suggest creating fixtures:
 
 ```
-.claude/test/fixtures/valid/[script-name]/
-.claude/test/fixtures/invalid/[script-name]/
+tests/unit/fixtures/valid/[script-name]/
+tests/unit/fixtures/invalid/[script-name]/
 ```
 
 ## Generated Files
 
-For `/add-test .claude/scripts/config-validator.js`:
+For `/add-test scripts/quality/config-validator.js`:
 
-1. `.claude/test/validators/config-validator.test.js` - Test file with template
-2. Suggests: `.claude/test/fixtures/valid/config-validator/` - Valid test fixtures
-3. Suggests: `.claude/test/fixtures/invalid/config-validator/` - Invalid test fixtures
+1. `tests/unit/validators/config-validator.test.js` - Test file with template
+2. Suggests: `tests/unit/fixtures/valid/config-validator/` - Valid test fixtures
+3. Suggests: `tests/unit/fixtures/invalid/config-validator/` - Invalid test fixtures
 
 ## Template Variations
 
@@ -140,7 +140,7 @@ For `/add-test .claude/scripts/config-validator.js`:
 
 **For Module Exports:**
 ```javascript
-import { functionToTest } from '../../.claude/scripts/my-module.js';
+import { functionToTest } from '../../scripts/quality/my-module.js';
 
 it('should return expected value', () => {
   const result = functionToTest(input);
@@ -169,7 +169,7 @@ Every generated test file should include placeholders for:
 
 ## After Generation
 
-1. Run the test to verify it executes: `node --test .claude/test/validators/[name].test.js`
+1. Run the test to verify it executes: `node --test tests/unit/validators/[name].test.js`
 2. Fill in TODO placeholders with actual test logic
 3. Add appropriate fixtures if testing file validation
 4. Ensure all three test categories have real assertions

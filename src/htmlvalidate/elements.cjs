@@ -165,7 +165,7 @@ module.exports = {
     }
   },
 
-  "tabs-wc": {
+  "tab-set": {
     flow: true,
     permittedContent: ["details"],
     attributes: {

@@ -13,9 +13,9 @@
 import { test, expect } from 'playwright/test';
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import themeRegistry from '../../11ty-site/src/_data/themeRegistry.js';
+import themeRegistry from '../../site/src/_data/themeRegistry.js';
 
-const surfacesDir = join(import.meta.dirname, '../../docs/tools/theme-lab/surfaces');
+const surfacesDir = join(import.meta.dirname, '../../demos/tools/theme-lab/surfaces');
 const surfaces = readdirSync(surfacesDir)
   .filter(f => f.endsWith('.html') && !f.startsWith('_'))
   .sort();

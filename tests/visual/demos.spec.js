@@ -10,7 +10,7 @@ import { test, expect } from 'playwright/test';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 
-const demosDir = join(import.meta.dirname, '../../docs/examples/demos');
+const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
 
 const demos = readdirSync(demosDir)
   .filter(f => f.endsWith('.html') && !f.startsWith('_'))

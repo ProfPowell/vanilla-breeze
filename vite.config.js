@@ -23,8 +23,8 @@ function findHtmlFiles(dir, baseDir = dir) {
   return files;
 }
 
-// Get all HTML files from docs directory
-const docsHtmlFiles = findHtmlFiles(resolve(__dirname, 'docs'));
+// Get all HTML files from demos directory
+const docsHtmlFiles = findHtmlFiles(resolve(__dirname, 'demos'));
 
 export default defineConfig({
   // Serve from project root
@@ -35,7 +35,7 @@ export default defineConfig({
 
   // Dev server configuration
   server: {
-    open: '/docs/',
+    open: '/demos/',
     port: 5173,
   },
 

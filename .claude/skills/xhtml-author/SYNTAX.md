@@ -102,7 +102,7 @@ Custom elements and web components are NOT void elements. They must always have 
 
 This applies to all custom elements including:
 - Layout elements: `<layout-stack>`, `<layout-grid>`, `<layout-card>`, etc.
-- Web components: `<icon-wc>`, `<tabs-wc>`, `<accordion-wc>`, `<drop-down>`, etc.
+- Web components: `<icon-wc>`, `<tab-set>`, `<accordion-wc>`, `<drop-down>`, etc.
 - Any element with a hyphen in its name
 
 ## Nesting

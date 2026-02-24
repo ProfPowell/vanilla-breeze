@@ -71,7 +71,7 @@ Custom elements use data-attributes for all configuration. This provides a clear
 <!-- Correct -->
 <layout-card data-variant="elevated" data-padding="l">
 <layout-stack data-gap="m" data-align="center">
-<tabs-wc data-orientation="vertical">
+<tab-set data-orientation="vertical">
 
 <!-- Wrong -->
 <layout-card class="elevated" class="padding-large">

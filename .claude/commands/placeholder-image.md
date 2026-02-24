@@ -37,16 +37,16 @@ Run the generator script:
 
 ```bash
 # Simple placeholder
-node .claude/scripts/generate-placeholder.js --type simple --size 400x400 --output .assets/images/placeholder/
+node scripts/quality/generate-placeholder.js --type simple --size 400x400 --output .assets/images/placeholder/
 
 # Labeled placeholder
-node .claude/scripts/generate-placeholder.js --type labeled --label "Hero Image" --size 1200x400 --output .assets/images/placeholder/
+node scripts/quality/generate-placeholder.js --type labeled --label "Hero Image" --size 1200x400 --output .assets/images/placeholder/
 
 # Using preset
-node .claude/scripts/generate-placeholder.js --preset hero --output .assets/images/placeholder/
+node scripts/quality/generate-placeholder.js --preset hero --output .assets/images/placeholder/
 
 # Preset with custom label
-node .claude/scripts/generate-placeholder.js --preset product --label "Product Shot" --output .assets/images/placeholder/
+node scripts/quality/generate-placeholder.js --preset product --label "Product Shot" --output .assets/images/placeholder/
 ```
 
 ### 3. Return HTML

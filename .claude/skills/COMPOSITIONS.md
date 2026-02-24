@@ -133,9 +133,9 @@ Common multi-skill patterns for complex features. When building these features, 
 | **unit-testing** | CLI testing patterns with execSync |
 
 **Workflow:**
-1. Create `.claude/test/validators/my-script.test.js`
+1. Create `tests/unit/validators/my-script.test.js`
 2. Write test using execSync pattern
-3. Create `.claude/scripts/my-script.js`
+3. Create `scripts/quality/my-script.js`
 4. Implement until tests pass
 
 ---

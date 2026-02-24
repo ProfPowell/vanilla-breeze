@@ -72,6 +72,13 @@ function enhanceElement(el) {
   wrapper.setAttribute('data-math-rendered', '');
   wrapper.innerHTML = mathml;
 
+  // Move source id to the rendered wrapper so hash links target visible math.
+  const sourceId = el.id || null;
+  if (sourceId) {
+    wrapper.id = sourceId;
+    el.removeAttribute('id');
+  }
+
   // Ensure correct display attribute on the <math> element
   const mathEl = wrapper.querySelector('math');
   if (mathEl && !isInline) {
@@ -86,8 +93,8 @@ function enhanceElement(el) {
     wrapper.setAttribute('data-math-numbered', '');
     wrapper.setAttribute('data-equation-number', eqNumber);
 
-    if (el.id) {
-      window.VBMath.equations.push({ id: el.id, number: eqNumber, latex });
+    if (sourceId) {
+      window.VBMath.equations.push({ id: sourceId, number: eqNumber, latex });
     }
   }
 

@@ -59,19 +59,19 @@ When you add or edit HTML files, existing hooks check for:
 
 ```bash
 # Generate WebP/AVIF for all images in directory
-node .claude/scripts/optimize-images.js src/images
+node scripts/quality/optimize-images.js src/images
 
 # Also generate srcset variants (400w, 800w, 1200w)
-node .claude/scripts/optimize-images.js src/images --sizes
+node scripts/quality/optimize-images.js src/images --sizes
 
 # Preview what would be done
-node .claude/scripts/optimize-images.js src/images --dry-run
+node scripts/quality/optimize-images.js src/images --dry-run
 
 # Validate image file sizes and dimensions
-node .claude/scripts/image-check.js src/images
+node scripts/quality/image-check.js src/images
 
 # Validate HTML image markup
-node .claude/scripts/image-html-check.js src/**/*.html
+node scripts/quality/image-html-check.js src/**/*.html
 ```
 
 ---
@@ -83,7 +83,7 @@ node .claude/scripts/image-html-check.js src/**/*.html
 1. **Add source image** (JPEG or PNG) to appropriate directory
 2. **Hook auto-generates** WebP and AVIF variants
 3. **Write HTML** using `<picture>` pattern from responsive-images skill
-4. **Validate** with `node .claude/scripts/image-html-check.js`
+4. **Validate** with `node scripts/quality/image-html-check.js`
 
 ### Example Flow
 
@@ -112,10 +112,10 @@ node .claude/scripts/image-html-check.js src/**/*.html
 
 ```bash
 # Generate modern formats only
-node .claude/scripts/optimize-images.js src/images
+node scripts/quality/optimize-images.js src/images
 
 # Generate srcset variants too
-node .claude/scripts/optimize-images.js src/images --sizes
+node scripts/quality/optimize-images.js src/images --sizes
 ```
 
 ---
@@ -168,7 +168,7 @@ src/
 | Gallery images | 220, 330, 440 |
 | Avatars | 48, 96, 128 |
 
-Generate with: `node .claude/scripts/optimize-images.js --sizes`
+Generate with: `node scripts/quality/optimize-images.js --sizes`
 
 ---
 
@@ -202,7 +202,7 @@ Check that:
 
 Run the check script:
 ```bash
-node .claude/scripts/image-check.js src/images
+node scripts/quality/image-check.js src/images
 ```
 
 Recommended maximums:
@@ -214,7 +214,7 @@ Recommended maximums:
 
 Generate manually:
 ```bash
-node .claude/scripts/optimize-images.js src/images --sizes
+node scripts/quality/optimize-images.js src/images --sizes
 ```
 
 ---

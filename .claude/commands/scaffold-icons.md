@@ -35,7 +35,7 @@ If `icons:sync` script doesn't exist, add it to package.json:
 ```json
 {
   "scripts": {
-    "icons:sync": "node .claude/scripts/sync-icons.js"
+    "icons:sync": "node scripts/quality/sync-icons.js"
   }
 }
 ```

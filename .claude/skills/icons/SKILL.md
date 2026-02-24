@@ -228,7 +228,7 @@ To use a different icon library:
 
 1. Remove lucide-static: `npm uninstall lucide-static`
 2. Install alternative: `npm install [other-library]`
-3. Update `.claude/scripts/sync-icons.js` source path
+3. Update `scripts/quality/sync-icons.js` source path
 4. Run `npm run icons:sync`
 5. Or manually copy SVGs to `.assets/icons/[set-name]/`
 

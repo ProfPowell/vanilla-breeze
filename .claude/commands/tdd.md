@@ -73,7 +73,7 @@ When this command is invoked, parse the action from the arguments.
 
    Files being watched:
    - src/**/*.{js,ts} -> test/**/*.test.{js,ts}
-   - .claude/scripts/*.js -> .claude/test/validators/*.test.js
+   - scripts/quality/*.js -> tests/unit/validators/*.test.js
 
    Currently skipped:
    - Config files, type definitions, generated code

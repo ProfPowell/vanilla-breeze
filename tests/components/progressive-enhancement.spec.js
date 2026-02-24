@@ -33,7 +33,7 @@ test.describe('Progressive Enhancement', () => {
     await page.goto('/docs/examples/demos/tabs-basic.html');
     await page.waitForLoadState('domcontentloaded');
 
-    // Without JS, tabs-wc falls back to details/summary
+    // Without JS, tab-set falls back to details/summary
     const details = page.locator('details');
     const count = await details.count();
     expect(count).toBeGreaterThan(0);

@@ -1,0 +1,333 @@
+---
+layout: layouts/lab.njk
+title: "Dashboard"
+description: "Dashboard layout with collapsible sidebar and responsive panels."
+currentPath: /lab/experiments/dashboard/
+permalink: /lab/experiments/dashboard/
+---
+
+<style>
+  /* Let the dashboard fill the layout area */
+  [data-page="lab"] > main {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* Sidebar nav links */
+  .dash-nav a {
+    display: flex;
+    align-items: center;
+    gap: var(--size-s);
+    padding: var(--size-xs) var(--size-s);
+    border-radius: var(--radius-s);
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+  }
+
+  .dash-nav a:hover {
+    background: var(--color-surface-raised);
+  }
+
+  .dash-nav a[aria-current="page"] {
+    background: var(--color-interactive-subtle);
+    color: var(--color-interactive);
+    font-weight: 500;
+  }
+
+  /* Stat values */
+  .stat-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+  }
+
+  /* Sparkline SVGs */
+  .sparkline { display: block; }
+
+  .sparkline path.line {
+    fill: none;
+    stroke: var(--spark-color, var(--color-interactive));
+    stroke-width: 1.5;
+  }
+
+  .sparkline path.area {
+    fill: var(--spark-color, var(--color-interactive));
+    opacity: 0.15;
+  }
+
+  /* Progress rows */
+  .progress-row {
+    display: grid;
+    grid-template-columns: 8rem 1fr 3rem;
+    align-items: center;
+    gap: var(--size-s);
+  }
+
+  .progress-row span:last-child {
+    text-align: end;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+</style>
+
+<div data-layout="dashboard" data-layout-sidebar-width="narrow" id="dash-shell">
+  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center"
+          style="padding: var(--size-s) var(--size-m); border-block-end: var(--border-width-thin) solid var(--color-border); background: var(--color-surface);">
+    <div data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+      <button id="menu-toggle" aria-label="Toggle sidebar" hidden>
+        <icon-wc name="menu" size="sm"></icon-wc>
+      </button>
+      <h1 style="font-size: var(--font-size-lg); margin: 0;">Analytics Dashboard</h1>
+    </div>
+    <div data-layout="cluster" data-layout-gap="s">
+      <button>
+        <icon-wc name="download" size="sm"></icon-wc>
+        Export
+      </button>
+      <button class="btn-primary">
+        <icon-wc name="plus" size="sm"></icon-wc>
+        Add Widget
+      </button>
+    </div>
+  </header>
+
+  <nav style="padding: var(--size-m); border-inline-end: var(--border-width-thin) solid var(--color-border); background: var(--color-surface);"
+       aria-label="Dashboard navigation">
+    <strong style="font-size: var(--font-size-sm); color: var(--color-text-muted); display: block; margin-block-end: var(--size-s);">Navigation</strong>
+    <ul role="list" class="dash-nav" data-layout="stack" data-layout-gap="2xs">
+      <li><a href="#" aria-current="page"><icon-wc name="bar-chart-2" size="sm"></icon-wc> Analytics</a></li>
+      <li><a href="#"><icon-wc name="users" size="sm"></icon-wc> Users</a></li>
+      <li><a href="#"><icon-wc name="file-text" size="sm"></icon-wc> Reports</a></li>
+      <li><a href="#"><icon-wc name="settings" size="sm"></icon-wc> Settings</a></li>
+    </ul>
+  </nav>
+
+  <section style="grid-area: main; padding: var(--size-l); overflow-y: auto;" data-layout="stack" data-layout-gap="xl">
+
+    {# ── Stat Cards ── #}
+    <div data-layout="grid" data-layout-min="200px" data-layout-gap="m">
+      <layout-card>
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+            <icon-wc name="users" size="sm"></icon-wc> Total Users
+          </dt>
+          <dd class="stat-value">12,543</dd>
+          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+            <layout-badge data-variant="success">+12.5%</layout-badge>
+            <svg class="sparkline" style="--spark-color: var(--color-success);" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true">
+              <path class="area" d="M0,20 L11,14 L22,17 L33,10 L44,15 L55,6 L66,4 L77,0 L80,0 L80,24 L0,24Z"/>
+              <path class="line" d="M0,20 L11,14 L22,17 L33,10 L44,15 L55,6 L66,4 L77,0"/>
+            </svg>
+          </dd>
+        </dl>
+      </layout-card>
+
+      <layout-card>
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+            <icon-wc name="eye" size="sm"></icon-wc> Page Views
+          </dt>
+          <dd class="stat-value">89,234</dd>
+          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+            <layout-badge data-variant="success">+8.3%</layout-badge>
+            <svg class="sparkline" style="--spark-color: var(--color-success);" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true">
+              <path class="area" d="M0,14 L11,17 L22,10 L33,12 L44,5 L55,8 L66,2 L77,0 L80,0 L80,24 L0,24Z"/>
+              <path class="line" d="M0,14 L11,17 L22,10 L33,12 L44,5 L55,8 L66,2 L77,0"/>
+            </svg>
+          </dd>
+        </dl>
+      </layout-card>
+
+      <layout-card>
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+            <icon-wc name="shopping-cart" size="sm"></icon-wc> Conversions
+          </dt>
+          <dd class="stat-value">3,421</dd>
+          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+            <layout-badge data-variant="danger">-2.1%</layout-badge>
+            <svg class="sparkline" style="--spark-color: var(--color-danger);" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true">
+              <path class="area" d="M0,2 L11,0 L22,5 L33,8 L44,12 L55,10 L66,18 L77,20 L80,20 L80,24 L0,24Z"/>
+              <path class="line" d="M0,2 L11,0 L22,5 L33,8 L44,12 L55,10 L66,18 L77,20"/>
+            </svg>
+          </dd>
+        </dl>
+      </layout-card>
+
+      <layout-card>
+        <dl data-layout="stack" data-layout-gap="xs">
+          <dt style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+            <icon-wc name="dollar-sign" size="sm"></icon-wc> Revenue
+          </dt>
+          <dd class="stat-value">$147,500</dd>
+          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+            <layout-badge data-variant="success">+15.7%</layout-badge>
+            <svg class="sparkline" style="--spark-color: var(--color-success);" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true">
+              <path class="area" d="M0,20 L11,18 L22,15 L33,16 L44,12 L55,9 L66,4 L77,0 L80,0 L80,24 L0,24Z"/>
+              <path class="line" d="M0,20 L11,18 L22,15 L33,16 L44,12 L55,9 L66,4 L77,0"/>
+            </svg>
+          </dd>
+        </dl>
+      </layout-card>
+    </div>
+
+    {# ── Activity + Sprint Progress ── #}
+    <div data-layout="grid" data-layout-min="300px" data-layout-gap="m">
+
+      {# Activity Overview #}
+      <layout-card>
+        <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+          <h2 style="margin: 0; font-size: var(--font-size-base);">Activity Overview</h2>
+        </header>
+        <tab-set aria-label="Activity timeframes">
+          <details name="activity-tabs" open>
+            <summary>Weekly</summary>
+            <figure style="margin: var(--size-m) 0 0;">
+              <svg class="sparkline" style="--spark-color: var(--color-interactive);" width="100%" height="100" viewBox="0 0 300 100" preserveAspectRatio="none" role="img" aria-label="Weekly activity chart showing upward trend">
+                <path class="area" d="M0,80 L50,50 L100,85 L150,30 L200,45 L250,8 L300,25 L300,100 L0,100Z"/>
+                <path class="line" d="M0,80 L50,50 L100,85 L150,30 L200,45 L250,8 L300,25"/>
+              </svg>
+              <figcaption data-layout="cluster" data-layout-justify="between" style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </figcaption>
+            </figure>
+          </details>
+          <details name="activity-tabs">
+            <summary>Monthly</summary>
+            <figure style="margin: var(--size-m) 0 0;">
+              <svg class="sparkline" style="--spark-color: var(--color-interactive);" width="100%" height="100" viewBox="0 0 550 100" preserveAspectRatio="none" role="img" aria-label="Monthly activity chart showing steady growth">
+                <path class="area" d="M0,85 L50,70 L100,78 L150,55 L200,60 L250,38 L300,45 L350,32 L400,22 L450,28 L500,15 L550,4 L550,100 L0,100Z"/>
+                <path class="line" d="M0,85 L50,70 L100,78 L150,55 L200,60 L250,38 L300,45 L350,32 L400,22 L450,28 L500,15 L550,4"/>
+              </svg>
+              <figcaption data-layout="cluster" data-layout-justify="between" style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+              </figcaption>
+            </figure>
+          </details>
+        </tab-set>
+      </layout-card>
+
+      {# Sprint Progress #}
+      <layout-card>
+        <header>
+          <h2 style="margin: 0; font-size: var(--font-size-base);">Sprint Progress</h2>
+        </header>
+        <div data-layout="stack" data-layout-gap="s">
+          <div class="progress-row">
+            <span>Frontend</span>
+            <progress value="85" max="100">85%</progress>
+            <span>85%</span>
+          </div>
+          <div class="progress-row">
+            <span>Backend API</span>
+            <progress value="62" max="100">62%</progress>
+            <span>62%</span>
+          </div>
+          <div class="progress-row">
+            <span>Database</span>
+            <progress value="93" max="100">93%</progress>
+            <span>93%</span>
+          </div>
+          <div class="progress-row">
+            <span>Testing</span>
+            <progress value="41" max="100">41%</progress>
+            <span>41%</span>
+          </div>
+          <div class="progress-row">
+            <span>Documentation</span>
+            <progress value="28" max="100">28%</progress>
+            <span>28%</span>
+          </div>
+        </div>
+        <footer style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+          <icon-wc name="clock" size="sm"></icon-wc>
+          Updated <time data-format-date="relative" datetime="2026-02-20T10:00:00">Feb 20</time>
+        </footer>
+      </layout-card>
+    </div>
+
+    {# ── Quick Actions + Recent Activity ── #}
+    <div data-layout="grid" data-layout-min="300px" data-layout-gap="m">
+
+      {# Quick Actions #}
+      <layout-card>
+        <header>
+          <h2 style="margin: 0; font-size: var(--font-size-base);">Quick Actions</h2>
+        </header>
+        <div data-layout="cluster" data-layout-gap="xs">
+          <button class="btn-primary">
+            <icon-wc name="plus" size="sm"></icon-wc>
+            New Project
+          </button>
+          <drop-down>
+            <button type="button" data-trigger>
+              <icon-wc name="file-output" size="sm"></icon-wc>
+              Export
+              <icon-wc name="chevron-down" size="sm"></icon-wc>
+            </button>
+            <menu>
+              <li><button type="button"><icon-wc name="file-text" size="sm"></icon-wc> CSV</button></li>
+              <li><button type="button"><icon-wc name="file-type" size="sm"></icon-wc> PDF</button></li>
+              <li><button type="button"><icon-wc name="table" size="sm"></icon-wc> Excel</button></li>
+            </menu>
+          </drop-down>
+          <button>
+            <icon-wc name="bell" size="sm"></icon-wc>
+            Notify Team
+          </button>
+        </div>
+      </layout-card>
+
+      {# Recent Activity #}
+      <layout-card>
+        <header>
+          <h2 style="margin: 0; font-size: var(--font-size-base);">Recent Activity</h2>
+        </header>
+        <ul role="list" data-layout="stack" data-layout-gap="s" style="font-size: var(--font-size-sm);">
+          <li data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+            <icon-wc name="user-plus" size="sm" style="color: var(--color-success);"></icon-wc>
+            <span>New user <strong>Alex</strong> signed up</span>
+            <time data-format-date="relative" datetime="2026-02-22T09:30:00" style="margin-inline-start: auto; color: var(--color-text-muted);">9:30 AM</time>
+          </li>
+          <li data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+            <icon-wc name="file-text" size="sm" style="color: var(--color-interactive);"></icon-wc>
+            <span>Report <strong>Q1 Summary</strong> generated</span>
+            <time data-format-date="relative" datetime="2026-02-22T08:15:00" style="margin-inline-start: auto; color: var(--color-text-muted);">8:15 AM</time>
+          </li>
+          <li data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+            <icon-wc name="settings" size="sm" style="color: var(--color-warning);"></icon-wc>
+            <span>Permissions updated for <strong>Editors</strong></span>
+            <time data-format-date="relative" datetime="2026-02-21T16:45:00" style="margin-inline-start: auto; color: var(--color-text-muted);">Yesterday</time>
+          </li>
+          <li data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+            <icon-wc name="message-square" size="sm" style="color: var(--color-info);"></icon-wc>
+            <span>New comment on <strong>Sprint Review</strong></span>
+            <time data-format-date="relative" datetime="2026-02-21T14:20:00" style="margin-inline-start: auto; color: var(--color-text-muted);">Yesterday</time>
+          </li>
+        </ul>
+      </layout-card>
+    </div>
+
+  </section>
+</div>
+
+<script type="module">
+  // Mobile sidebar toggle — show hamburger below --bp-md (48rem)
+  const shell = document.getElementById('dash-shell');
+  const toggle = document.getElementById('menu-toggle');
+  const mq = window.matchMedia('(min-width: 48rem)'); /* --bp-md */
+
+  function onBreakpoint(e) {
+    toggle.hidden = e.matches;
+    if (e.matches) shell.removeAttribute('data-nav-open');
+  }
+
+  toggle.addEventListener('click', () => {
+    shell.toggleAttribute('data-nav-open');
+  });
+
+  mq.addEventListener('change', onBreakpoint);
+  onBreakpoint(mq);
+</script>

@@ -73,7 +73,7 @@ RED -> GREEN -> REFACTOR -> REPEAT
 | `src/utils/bar.ts` | `test/utils/bar.test.ts` |
 | `src/components/Card.js` | `test/components/Card.test.js` |
 | `src/services/user.js` | `test/services/user.test.js` |
-| `.claude/scripts/tool.js` | `.claude/test/validators/tool.test.js` |
+| `scripts/quality/tool.js` | `tests/unit/validators/tool.test.js` |
 
 ## Compose With Testing Skills
 
@@ -84,7 +84,7 @@ Based on file location, auto-compose with appropriate testing skill:
 | `src/components/*` | unit-testing | Component logic tests |
 | `src/services/*` | backend-testing | Service layer tests |
 | `src/api/*`, `src/routes/*` | backend-testing | API endpoint tests |
-| `.claude/scripts/*` | unit-testing | CLI tool tests |
+| `scripts/quality/*` | unit-testing | CLI tool tests |
 | `e2e/*`, `tests/*` | e2e-testing | Browser tests |
 | Vite project detected | vitest | Vite-native testing |
 
