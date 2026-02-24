@@ -80,7 +80,6 @@ permalink: /
 
   /* Reset docs.css footer overrides for homepage sections */
   .hero footer,
-  .theme-card footer,
   .pe-section footer {
     padding: 0;
     border-block-start: none;
@@ -101,33 +100,48 @@ permalink: /
     margin-block-end: var(--size-xl);
   }
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--size-l);
+  .features-section ul,
+  .quicknav-section ul {
     max-inline-size: var(--content-wide);
     margin-inline: auto;
     list-style: none;
     padding: 0;
   }
 
-  .feature-card {
-    padding: var(--size-l);
-    background: var(--color-surface);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    height: 100%;
+  /* Subgrid: align card headings/bodies across rows regardless of font */
+  .features-section [data-layout="grid"] > li {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
   }
 
-  .feature-card h3 {
+  .features-section [data-layout="grid"] > li > article {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+  }
+
+  @supports not (grid-template-rows: subgrid) {
+    .features-section [data-layout="grid"] > li {
+      grid-row: auto;
+    }
+    .features-section [data-layout="grid"] > li > article {
+      grid-row: auto;
+    }
+  }
+
+  .features-section article {
+    padding: var(--size-l);
+  }
+
+  .features-section article h3 {
     display: flex;
     align-items: center;
     gap: var(--size-s);
-    font-size: var(--font-size-lg);
     margin-block-end: var(--size-xs);
   }
 
-  .feature-card p {
+  .features-section article p {
     color: var(--color-text-muted);
     margin: 0;
   }
@@ -181,9 +195,7 @@ permalink: /
     text-align: center;
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    margin-block-start: var(--size-l);
-    padding-block-start: var(--size-l);
-    border-block-start: var(--border-width-thin) solid var(--color-border);
+    margin-block-start: var(--size-m);
   }
 
   .pe-unstyled,
@@ -216,41 +228,91 @@ permalink: /
     margin-block-end: var(--size-xl);
   }
 
-  .theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--size-l);
-    max-inline-size: var(--content-wide);
-    margin-inline: auto;
-    list-style: none;
-    padding: 0;
-  }
-
-  .theme-card {
-    padding: var(--size-m);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    background: var(--color-surface);
-    color: var(--color-text);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .theme-card header {
-    margin-block-end: var(--size-xs);
-  }
-
-  .theme-card p {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    margin-block-end: var(--size-s);
-    flex: 1;
-  }
-
-  .theme-card[data-theme~="cyber"],
-  .theme-card[data-theme~="terminal"] {
+  /* Scope dark color-scheme to preview content only (not the theme select) */
+  .theme-lab[data-theme~="terminal"] > :is(layout-card, .theme-lab-wide),
+  .theme-lab[data-theme~="8bit"] > :is(layout-card, .theme-lab-wide) {
     color-scheme: dark;
+  }
+
+  /* Explicit default reset — re-assert VB base tokens so the preview
+     is isolated from whatever theme the page carries on <html>. */
+  .theme-lab[data-theme~="default"] {
+    color-scheme: light dark;
+    --hue-primary: 260;
+    --hue-secondary: 200;
+    --hue-accent: 30;
+    --color-primary: oklch(50% 0.2 var(--hue-primary));
+    --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+    --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+    --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+    --color-accent: oklch(65% 0.18 var(--hue-accent));
+    --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+    --color-interactive: var(--color-primary);
+    --color-interactive-hover: var(--color-primary-hover);
+    --color-background: light-dark(var(--color-white), var(--color-gray-950));
+    --color-surface: light-dark(var(--color-white), var(--color-gray-900));
+    --color-surface-raised: light-dark(var(--color-gray-50), var(--color-gray-800));
+    --color-surface-sunken: light-dark(var(--color-gray-100), var(--color-gray-950));
+    --color-text: light-dark(var(--color-gray-900), var(--color-gray-100));
+    --color-text-muted: light-dark(var(--color-gray-600), var(--color-gray-400));
+    --color-text-subtle: light-dark(var(--color-gray-500), var(--color-gray-500));
+    --color-border: light-dark(var(--color-gray-200), var(--color-gray-700));
+    --color-border-strong: light-dark(var(--color-gray-300), var(--color-gray-600));
+    --color-border-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+    --radius-xs: 0.125rem;
+    --radius-s: 0.25rem;
+    --radius-m: 0.5rem;
+    --radius-l: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --duration-instant: 50ms;
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0, 0, 0.3, 1);
+    --line-height-normal: 1.5;
+    --line-height-tight: 1.25;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+  }
+
+  .theme-lab {
+    max-inline-size: 32rem;
+    margin-inline: auto;
+  }
+
+  .theme-lab figcaption {
+    margin-block-end: var(--size-m);
+  }
+
+  .theme-lab-wide {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .theme-lab {
+      max-inline-size: 56rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-l);
+    }
+
+    .theme-lab figcaption {
+      grid-column: 1 / -1;
+    }
+
+    .theme-lab-wide {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-m);
+    }
   }
 
   /* Demo result content styling */
@@ -300,17 +362,7 @@ permalink: /
     margin-block-end: var(--size-xl);
   }
 
-  .quicknav-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--size-m);
-    max-inline-size: var(--content-wide);
-    margin-inline: auto;
-    list-style: none;
-    padding: 0;
-  }
-
-  .quicknav-grid a {
+  .quicknav-section a {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -325,12 +377,12 @@ permalink: /
     transition: border-color 0.15s, box-shadow 0.15s;
   }
 
-  .quicknav-grid a:hover {
+  .quicknav-section a:hover {
     border-color: var(--color-interactive);
     box-shadow: 0 4px 12px oklch(0% 0 0 / 0.1);
   }
 
-  .quicknav-grid a span {
+  .quicknav-section a span {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
@@ -341,7 +393,7 @@ permalink: /
 <main data-pagefind-body>
   <!-- Hero Section -->
   <section class="hero">
-    <h1>Vanilla Breeze</h1>
+    <h1 data-gradient-text data-gradient-text-animate>Vanilla Breeze</h1>
     <p class="tagline">A layered HTML component system. Build with native HTML, enhance with CSS, add interactivity with JavaScript - each layer optional.</p>
 
     <figure class="hero-demo">
@@ -411,7 +463,7 @@ permalink: /
     </figure>
 
     <p class="catchphrase">
-      <span class="highlight">Native HTML</span>
+      <span class="highlight" data-shimmer>Native HTML</span>
       <span class="muted">&gt;</span>
       <code>&lt;div&gt;</code> Soup
     </p>
@@ -430,19 +482,19 @@ permalink: /
   <dl data-layout="cluster" class="stats-bar" data-layout-justify="center" data-layout-gap="2xl">
     <div class="stat">
       <dt class="stat-label">Native Elements</dt>
-      <dd class="stat-number">114</dd>
+      <dd class="stat-number"><data value="114" data-ticker>114</data></dd>
     </div>
     <div class="stat">
       <dt class="stat-label">Custom Elements</dt>
-      <dd class="stat-number">21</dd>
+      <dd class="stat-number"><data value="21" data-ticker>21</data></dd>
     </div>
     <div class="stat">
       <dt class="stat-label">Web Components</dt>
-      <dd class="stat-number">30</dd>
+      <dd class="stat-number"><data value="30" data-ticker>30</data></dd>
     </div>
     <div class="stat">
       <dt class="stat-label">Dependencies</dt>
-      <dd class="stat-number">0</dd>
+      <dd class="stat-number"><data value="0" data-ticker data-ticker-start="99">0</data></dd>
     </div>
   </dl>
 
@@ -664,10 +716,10 @@ permalink: /
 
   <!-- Features Section -->
   <section class="features-section">
-    <h2>Built Different</h2>
-    <ul class="features-grid">
+    <h2 data-reveal>Built Different</h2>
+    <ul data-layout="grid" data-layout-min="280px" data-layout-gap="l">
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="file-code" size="sm"></icon-wc>
             HTML-First
@@ -676,7 +728,7 @@ permalink: /
         </article>
       </li>
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="layers" size="sm"></icon-wc>
             Progressive Enhancement
@@ -685,7 +737,7 @@ permalink: /
         </article>
       </li>
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="package" size="sm"></icon-wc>
             Zero Dependencies
@@ -694,7 +746,7 @@ permalink: /
         </article>
       </li>
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="palette" size="sm"></icon-wc>
             OKLCH Theming
@@ -703,7 +755,7 @@ permalink: /
         </article>
       </li>
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="layout-grid" size="sm"></icon-wc>
             Layout Attributes
@@ -712,7 +764,7 @@ permalink: /
         </article>
       </li>
       <li>
-        <article class="feature-card">
+        <article class="card">
           <h3>
             <icon-wc name="accessibility" size="sm"></icon-wc>
             Accessible
@@ -723,84 +775,99 @@ permalink: /
     </ul>
   </section>
 
-  <!-- Theme Showcase -->
+  <!-- Theme Lab -->
   <section class="theme-section">
-    <h2>One Attribute, 30+ Themes</h2>
-    <p class="theme-lead">Add <code>data-theme</code> to any element. Colors, typography, and personality adapt instantly.</p>
+    <h2 data-blur-reveal>One Attribute, 30+ Themes</h2>
+    <p class="theme-lead">Pick a theme. Watch everything transform.</p>
 
-    <ul class="theme-grid">
-      <li>
-        <article class="theme-card" data-theme="default">
-          <header><strong>Default</strong></header>
-          <p>Clean and balanced.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-      <li>
-        <article class="theme-card" data-theme="ocean">
-          <header><strong>Ocean</strong></header>
-          <p>Calm coastal blues.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-      <li>
-        <article class="theme-card" data-theme="classic">
-          <header><strong>Classic</strong></header>
-          <p>Refined serif elegance.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-      <li>
-        <article class="theme-card" data-theme="brutalist">
-          <header><strong>Brutalist</strong></header>
-          <p>Raw and unapologetic.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-      <li>
-        <article class="theme-card" data-theme="cyber">
-          <header><strong>Cyber</strong></header>
-          <p>Neon-lit darkness.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-      <li>
-        <article class="theme-card" data-theme="terminal">
-          <header><strong>Terminal</strong></header>
-          <p>Green phosphor glow.</p>
-          <footer data-layout="cluster" data-layout-gap="xs">
-            <button type="button" class="small">Action</button>
-            <button type="button" class="small secondary">Cancel</button>
-          </footer>
-        </article>
-      </li>
-    </ul>
+    <figure class="theme-lab" id="theme-lab-preview" data-theme="default">
+      <figcaption>
+        <label>Theme
+          <select id="theme-lab-select">
+            <option value="default">Default</option>
+            <option value="swiss">Swiss</option>
+            <option value="organic">Organic</option>
+            <option value="brutalist">Brutalist</option>
+            <option value="kawaii">Kawaii</option>
+            <option value="terminal">Terminal (Dark)</option>
+            <option value="8bit">8‑bit (Dark)</option>
+          </select>
+        </label>
+      </figcaption>
+
+      <layout-card data-variant="outlined">
+        <header><h3>Sample Card</h3></header>
+        <section data-layout="stack" data-layout-gap="s">
+          <p>See how themes transform typography, colors, and components.</p>
+          <label>Name <input type="text" value="Jane Doe"></label>
+          <progress value="70" max="100">70%</progress>
+          <p><kbd>Ctrl</kbd>+<kbd>S</kbd> to save</p>
+        </section>
+        <footer data-layout="cluster" data-layout-gap="xs">
+          <button type="button" class="small">Save</button>
+          <button type="button" class="small secondary">Cancel</button>
+          <button type="button" class="small ghost">Reset</button>
+        </footer>
+      </layout-card>
+
+      <aside class="theme-lab-wide" data-layout="stack" data-layout-gap="m">
+        <details open>
+          <summary>Settings</summary>
+          <form class="stacked">
+            <label>Role
+              <select id="theme-lab-role">
+                <option>Admin</option>
+                <option>Editor</option>
+                <option>Viewer</option>
+              </select>
+            </label>
+            <label><input type="checkbox" checked> Email notifications</label>
+          </form>
+        </details>
+        <table>
+          <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Search</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+          </tbody>
+        </table>
+      </aside>
+    </figure>
 
     <footer data-layout="cluster" data-layout-justify="center">
       <a href="/docs/themes/" class="button secondary">Browse All Themes</a>
     </footer>
   </section>
 
+  <script type="module">
+    const select = document.querySelector('#theme-lab-select');
+    const preview = document.querySelector('#theme-lab-preview');
+    if (select && preview) {
+      // Import theme loader to ensure CSS is available before switching
+      const base = document.querySelector('script[src*="main"]')?.src.replace(/\/[^/]+$/, '')
+        || '/src';
+      let ensureThemeLoaded;
+      try {
+        const loader = await import(`${base}/lib/theme-loader.js`);
+        ensureThemeLoaded = loader.ensureThemeLoaded;
+      } catch {
+        // Fallback: theme CSS may already be loaded via CDN
+        ensureThemeLoaded = () => Promise.resolve();
+      }
+
+      select.addEventListener('change', async () => {
+        await ensureThemeLoaded(select.value);
+        preview.dataset.theme = select.value;
+      });
+    }
+  </script>
+
   <!-- Quick Navigation -->
   <section class="quicknav-section">
     <h2>Explore the Docs</h2>
     <nav aria-label="Documentation sections">
-      <ul class="quicknav-grid">
+      <ul data-layout="grid" data-layout-min="200px" data-layout-gap="m">
         <li><a href="/docs/quick-start/"><icon-wc name="rocket" size="lg"></icon-wc>Quick Start<span>Get up and running fast</span></a></li>
         <li><a href="/docs/tutorial/"><icon-wc name="book-open" size="lg"></icon-wc>Tutorial<span>Step-by-step guide</span></a></li>
         <li><a href="/docs/themes/"><icon-wc name="palette" size="lg"></icon-wc>Themes<span>Customize the look</span></a></li>

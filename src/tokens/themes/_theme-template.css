@@ -15,6 +15,26 @@
  * Not all themes need to override all categories.
  * "Color themes" like Ocean/Forest/Sunset only override colors.
  * "Personality themes" like Modern/Minimal/Classic override multiple categories.
+ *
+ * ─── Complete Override Principle ───────────────────────────────────────
+ *
+ * Any theme that provides a dark mode variant MUST include complete
+ * overrides for all surface, text, and border tokens in that variant.
+ * The same applies for light mode variants on dark-first themes.
+ *
+ * Required tokens in every mode variant:
+ *   --color-surface, --color-surface-raised, --color-surface-sunken,
+ *   --color-background, --color-text, --color-text-muted,
+ *   --color-border, --color-border-strong, --shadow-sm, --shadow-md
+ *
+ * Why: theme-tinted color values (e.g. oklch(12% 0.02 280)) clash
+ * with the base neutral grays when a mode variant only partially
+ * overrides the palette. You cannot rely on light-dark() fallback
+ * because theme hues differ from the base neutral tokens.
+ *
+ * Enforcement: `npm run lint:theme-tokens` checks all themes for
+ * complete variant coverage. Run before committing theme changes.
+ * ──────────────────────────────────────────────────────────────────────
  */
 
 /* ============================================================
