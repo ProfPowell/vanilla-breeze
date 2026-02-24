@@ -28,7 +28,7 @@
  * - Enter: Go to selected result
  */
 
-import { bindHotkey } from '../../utils/hotkey-bind.js';
+import { bindHotkey, getBoundHotkeys } from '../../utils/hotkey-bind.js';
 
 class SiteSearch extends HTMLElement {
   static #DEBOUNCE_MS = 150;
@@ -126,14 +126,16 @@ class SiteSearch extends HTMLElement {
     // Trigger click
     this.#trigger.addEventListener('click', this.#handleTriggerClick);
 
-    // Global keyboard shortcut (Cmd/Ctrl+K) via centralized hotkey-bind
-    this.#unbindHotkey = bindHotkey('meta+k', () => {
-      if (this.#isOpen) {
-        this.close();
-      } else {
-        this.open();
-      }
-    }, { global: true });
+    // Global keyboard shortcut (Cmd/Ctrl+K) — skip if another instance already bound
+    if (!getBoundHotkeys().includes('meta+k')) {
+      this.#unbindHotkey = bindHotkey('meta+k', () => {
+        if (this.#isOpen) {
+          this.close();
+        } else {
+          this.open();
+        }
+      }, { global: true });
+    }
 
     // Escape to close (not a global hotkey — only when open)
     document.addEventListener('keydown', this.#handleEscape);
