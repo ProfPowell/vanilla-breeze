@@ -1,0 +1,647 @@
+---
+layout: layouts/docs.njk
+title: "Theme Lab"
+description: "Unified playground for theme identity — border styles, icon sets, and color modes with comprehensive component previews."
+currentSection: tools
+currentPath: /docs/tools/theme-lab/
+permalink: /docs/tools/theme-lab/
+---
+
+{% block extraHead %}
+<style>
+  /* ===== Toolbar Controls ===== */
+  .lab-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-m, 1rem);
+    align-items: end;
+    padding: var(--size-m, 1rem);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-border, #ddd);
+    border-radius: var(--radius-m, 0.5rem);
+    background: var(--color-surface, #fff);
+    margin-block-end: var(--size-l, 1.5rem);
+  }
+
+  .lab-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .lab-controls select {
+    padding: 0.375rem 0.5rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    font: inherit;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .lab-controls button {
+    font-size: var(--font-size-sm, 0.875rem);
+    align-self: end;
+  }
+
+  .theme-character {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+    margin: 0;
+    flex-basis: 100%;
+  }
+
+  /* ===== Surface Picker + Iframe ===== */
+  .surface-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .surface-picker button {
+    padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+    border: none;
+    border-block-end: 2px solid transparent;
+    margin-block-end: -1px;
+    background: none;
+    font: inherit;
+    font-weight: 500;
+    color: var(--color-text-muted, #666);
+    cursor: pointer;
+  }
+
+  .surface-picker button:hover {
+    color: var(--color-text, #222);
+  }
+
+  .surface-picker button[aria-pressed="true"] {
+    color: var(--color-interactive, #2563eb);
+    border-block-end-color: var(--color-interactive, #2563eb);
+  }
+
+  .surface-frame {
+    width: 100%;
+    border-width: 0;
+    display: block;
+    min-height: 400px;
+    transition: height 0.2s ease;
+  }
+
+  /* ===== Comparison Galleries ===== */
+  .gallery-section {
+    margin-block-start: var(--size-xl, 2rem);
+  }
+
+  .gallery-section summary {
+    cursor: pointer;
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: 700;
+    padding: var(--size-s, 0.75rem) 0;
+  }
+
+  .border-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--size-m, 1rem);
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .border-card {
+    padding: var(--size-m, 1rem);
+    background: var(--color-surface, #fff);
+    border: var(--vb-border-width, 1px) var(--vb-border-style, solid) var(--color-border, #ddd);
+    border-image: var(--vb-border-image, none);
+    border-radius: var(--vb-border-radius-override, var(--radius-m, 0.5rem));
+    filter: var(--vb-border-filter, none);
+    box-shadow: var(--vb-border-glow, none);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs, 0.5rem);
+    text-align: center;
+  }
+
+  .border-card h3 {
+    margin: 0;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .border-card p {
+    margin: 0;
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+  }
+
+  .icon-compare-grid {
+    display: grid;
+    grid-template-columns: auto repeat(5, 1fr);
+    gap: 1px;
+    background: var(--color-border, #eee);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-border, #eee);
+    border-radius: var(--radius-m, 0.5rem);
+    overflow: hidden;
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .icon-compare-grid > * {
+    background: var(--color-surface, #fff);
+    padding: var(--size-xs, 0.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-compare-grid .label {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    justify-content: start;
+  }
+
+  .icon-compare-grid .header {
+    font-weight: 700;
+    font-size: var(--font-size-sm, 0.875rem);
+    background: var(--color-surface-alt, #f5f5f5);
+  }
+
+  .vignettes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--size-l, 1.5rem);
+    margin-block-start: var(--size-m, 1rem);
+  }
+
+  .vignette {
+    padding: var(--size-m, 1rem);
+    border: var(--vb-border-width, 1px) var(--vb-border-style, solid) var(--color-border, #ddd);
+    border-image: var(--vb-border-image, none);
+    border-radius: var(--vb-border-radius-override, var(--radius-m, 0.5rem));
+    filter: var(--vb-border-filter, none);
+    box-shadow: var(--vb-border-glow, none);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s, 0.75rem);
+  }
+
+  .vignette h3 { margin: 0; }
+
+  .vignette .icon-row {
+    display: flex;
+    gap: var(--size-s, 0.75rem);
+    flex-wrap: wrap;
+  }
+
+  .vignette blockquote {
+    margin: 0;
+    padding: var(--size-s, 0.75rem);
+    border-inline-start: 3px solid var(--color-primary, #333);
+    font-style: italic;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .vignette form {
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+    align-items: end;
+  }
+
+  .vignette input {
+    flex: 1;
+    padding: 0.375rem 0.5rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-border, #ddd);
+    border-radius: var(--radius-s, 0.25rem);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+  }
+
+  .vignette .open-in-composer {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 0.25rem 0.75rem;
+    align-self: end;
+    cursor: pointer;
+  }
+
+  /* Hidden SVG filter container */
+  .svg-filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+<!-- Hidden SVG filters for rough border styles -->
+<svg class="svg-filters" aria-hidden="true">
+  <defs>
+    <filter id="rough-light">
+      <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise" seed="1" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="rough-medium">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="4" result="noise" seed="2" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/quick-start/">Docs</a></li>
+    <li><a href="/docs/tools/">Tools</a></li>
+    <li><span aria-current="page">Theme Lab</span></li>
+  </ol>
+</nav>
+
+<h1>Theme Lab</h1>
+<p class="lead">Unified playground for theme identity &mdash; pick a theme, border style, icon set, and color mode, then preview components across six test surfaces.</p>
+
+<!-- ===== Controls Toolbar ===== -->
+<form id="lab-controls" class="lab-controls" aria-label="Theme controls">
+  <label>
+    Theme
+    <select name="theme" id="lab-theme-select">
+      <option value="">Default</option>
+      <optgroup label="Extreme">
+        {% for theme in themeRegistry %}{% if theme.category == 'extreme' %}
+        <option value="{{ theme.id }}">{{ theme.name }}</option>
+        {% endif %}{% endfor %}
+      </optgroup>
+    </select>
+  </label>
+  <label>
+    Border Style
+    <select name="border-style">
+      <option value="clean">Clean (default)</option>
+      <option value="sharp">Sharp</option>
+      <option value="soft">Soft</option>
+      <option value="sketch">Sketch</option>
+      <option value="rough">Rough</option>
+      <option value="marker">Marker</option>
+      <option value="kawaii">Kawaii</option>
+      <option value="pixel">Pixel</option>
+      <option value="neon">Neon</option>
+      <option value="double">Double</option>
+      <option value="organic">Organic</option>
+      <option value="bubbly">Bubbly</option>
+    </select>
+  </label>
+  <label>
+    Icon Set
+    <select name="icon-set">
+      <option value="lucide">Lucide (default)</option>
+      <option value="phosphor">Phosphor</option>
+      <option value="tabler">Tabler</option>
+      <option value="bold">Bold</option>
+      <option value="mage">Mage</option>
+    </select>
+  </label>
+  <label>
+    Color Mode
+    <select name="color-mode">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </label>
+  <button type="button" data-action="reset">Reset All</button>
+  <p class="theme-character" id="lab-theme-character">The VB default theme</p>
+</form>
+
+<!-- ===== Surface Previews ===== -->
+<nav class="surface-picker" aria-label="Surface picker">
+  <button type="button" data-surface="typography-prose" aria-pressed="true">Typography</button>
+  <button type="button" data-surface="forms-inputs">Forms</button>
+  <button type="button" data-surface="navigation-layout">Navigation</button>
+  <button type="button" data-surface="data-display">Data</button>
+  <button type="button" data-surface="feedback-status">Feedback</button>
+  <button type="button" data-surface="interactive-components">Interactive</button>
+</nav>
+<iframe class="surface-frame" id="surface-frame" title="Theme preview surface"></iframe>
+
+<!-- Comparison Galleries -->
+<details class="gallery-section">
+  <summary>Border Style Gallery</summary>
+  <p>Each card applies its own <code>data-border-style</code> so you can compare all 12 styles at once.</p>
+  <section class="border-gallery">
+    {% set borderStyles = [
+      { name: "clean", desc: "Default" },
+      { name: "sharp", desc: "Crisp 2px, zero radius" },
+      { name: "soft", desc: "Large radius, thin" },
+      { name: "sketch", desc: "Wavy hand-drawn" },
+      { name: "rough", desc: "Heavy hand, dashed" },
+      { name: "marker", desc: "Marker strokes" },
+      { name: "kawaii", desc: "Scalloped cloud" },
+      { name: "pixel", desc: "Stepped staircase" },
+      { name: "neon", desc: "Glowing box-shadow" },
+      { name: "double", desc: "Classic double-line" },
+      { name: "organic", desc: "Wavy irregular" },
+      { name: "bubbly", desc: "Dotted + glow" }
+    ] %}
+    {% for style in borderStyles %}
+    <article class="border-card" data-border-style="{{ style.name }}">
+      <icon-wc name="star"></icon-wc>
+      <h3>{{ style.name }}</h3>
+      <p>{{ style.desc }}</p>
+    </article>
+    {% endfor %}
+  </section>
+</details>
+
+<details class="gallery-section">
+  <summary>Icon Set Comparison</summary>
+  <p>Five representative icons across all five sets.</p>
+  <section class="icon-compare-grid">
+    <span class="header label">Name</span>
+    <span class="header">Lucide</span>
+    <span class="header">Phosphor</span>
+    <span class="header">Tabler</span>
+    <span class="header">Bold</span>
+    <span class="header">Mage</span>
+    {% set compareIcons = ["home", "heart", "search", "settings", "zap"] %}
+    {% for name in compareIcons %}
+    <span class="label">{{ name }}</span>
+    <span><icon-wc name="{{ name }}" set="lucide"></icon-wc></span>
+    <span><icon-wc name="{{ name }}" set="phosphor"></icon-wc></span>
+    <span><icon-wc name="{{ name }}" set="tabler"></icon-wc></span>
+    <span><icon-wc name="{{ name }}" set="bold"></icon-wc></span>
+    <span><icon-wc name="{{ name }}" set="mage"></icon-wc></span>
+    {% endfor %}
+  </section>
+</details>
+
+<details class="gallery-section" id="vignettes-section">
+  <summary>Theme Vignettes</summary>
+  <p>Self-contained mini-layouts showing how themes, border styles, and icon sets work together. Click &ldquo;Open in Composer&rdquo; to load a theme as a starting point.</p>
+  <section class="vignettes-grid">
+    {% set vignettes = [
+      { id: "swiss", name: "Swiss", border: "sharp", icons: "lucide",
+        quote: "Grid-based precision. Helvetica heritage. Red accent.",
+        iconNames: ["home", "settings", "search", "user"],
+        placeholder: "Enter data...", button: "Submit" },
+      { id: "brutalist", name: "Brutalist", border: "rough", icons: "bold",
+        quote: "Raw structure. No polish. Zero compromise.",
+        iconNames: ["home", "lock", "zap", "settings"],
+        placeholder: "ENTER TEXT", button: "GO" },
+      { id: "cyber", name: "Cyber", border: "neon", icons: "phosphor",
+        quote: "Neon lights in the digital void. Future is now.",
+        iconNames: ["zap", "globe", "lock", "settings"],
+        placeholder: "// enter command...", button: "Execute" },
+      { id: "terminal", name: "Terminal", border: "sharp", icons: "lucide",
+        quote: "root@system:~# Green phosphor on CRT black.",
+        iconNames: ["home", "search", "settings", "mail"],
+        placeholder: "> type command...", button: "Run" },
+      { id: "organic", name: "Organic", border: "organic", icons: "mage",
+        quote: "Soft curves, natural flow, warm earthy tones.",
+        iconNames: ["globe", "heart", "calendar", "bell"],
+        placeholder: "Plant a thought...", button: "Grow" },
+      { id: "editorial", name: "Editorial", border: "sharp", icons: "lucide",
+        quote: "Clean lines, sharp edges, timeless typography.",
+        iconNames: ["bookmark", "mail", "globe", "search"],
+        placeholder: "Search articles...", button: "Find" },
+      { id: "kawaii", name: "Kawaii", border: "kawaii", icons: "mage",
+        quote: "Everything is cuter with pastel pink and scalloped borders!",
+        iconNames: ["heart", "star", "music", "camera"],
+        placeholder: "Type something kawaii...", button: "Send" },
+      { id: "8bit", name: "8-Bit", border: "pixel", icons: "bold",
+        quote: "PRESS START TO CONTINUE. Chunky pixels ahead.",
+        iconNames: ["star", "heart", "zap", "home"],
+        placeholder: "ENTER NAME...", button: "START" },
+      { id: "nes", name: "NES", border: "pixel", icons: "bold",
+        quote: "4-color palette. Beveled frames. Console pixels.",
+        iconNames: ["star", "heart", "home", "settings"],
+        placeholder: "Player 1...", button: "SELECT" },
+      { id: "win9x", name: "Win9x", border: "sharp", icons: "lucide",
+        quote: "Classic desktop computing. 3D bevels. System gray.",
+        iconNames: ["home", "search", "settings", "mail"],
+        placeholder: "C:\\>", button: "OK" }
+    ] %}
+    {% for v in vignettes %}
+    <article class="vignette" data-theme="{{ v.id }}" data-border-style="{{ v.border }}">
+      <h3>{{ v.name }}</h3>
+      <span class="icon-row">
+        {% for iconName in v.iconNames %}
+        <icon-wc name="{{ iconName }}" set="{{ v.icons }}"></icon-wc>
+        {% endfor %}
+      </span>
+      <blockquote>{{ v.quote }}</blockquote>
+      <form onsubmit="return false">
+        <input type="text" placeholder="{{ v.placeholder }}">
+        <button type="button">{{ v.button }}</button>
+      </form>
+      <button type="button" class="open-in-composer" data-composer-theme="{{ v.id }}">Open in Composer</button>
+    </article>
+    {% endfor %}
+  </section>
+</details>
+
+{% block extraScripts %}
+<script type="module">
+  // ========================================
+  // Theme CSS Loader (for vignettes section)
+  // ========================================
+
+  const CDN_BASE = '/cdn';
+  const loadedThemes = new Set();
+
+  async function ensureThemeCSS(themeName) {
+    if (!themeName || loadedThemes.has(themeName)) return;
+
+    if (document.querySelector(`link[data-vb-theme="${themeName}"]`)) {
+      loadedThemes.add(themeName);
+      return;
+    }
+
+    loadedThemes.add(themeName);
+
+    return new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `${CDN_BASE}/themes/${themeName}.css`;
+      link.setAttribute('data-vb-theme', themeName);
+      link.onload = resolve;
+      link.onerror = () => {
+        link.remove();
+        loadedThemes.delete(themeName);
+        reject(new Error(`Failed to load theme: ${themeName}`));
+      };
+      document.head.appendChild(link);
+    });
+  }
+
+  // ========================================
+  // Configuration
+  // ========================================
+
+  // Theme hints from registry (border + icon set recommendations)
+  const THEME_HINTS = Object.fromEntries(
+    {{ themeRegistry | dump | safe }}
+      .filter(t => t.category === 'extreme' && t.hints)
+      .map(t => [t.id, { border: t.hints.borderStyle || 'clean', icons: t.hints.iconSet || 'lucide' }])
+  );
+
+  // Theme character descriptions
+  const THEME_CHARS = Object.fromEntries(
+    {{ themeRegistry | dump | safe }}
+      .filter(t => t.category === 'extreme')
+      .map(t => [t.id, t.character || ''])
+  );
+
+  // ========================================
+  // DOM refs
+  // ========================================
+
+  const form            = document.getElementById('lab-controls');
+  const themeSelect     = form.querySelector('[name="theme"]');
+  const borderSelect    = form.querySelector('[name="border-style"]');
+  const iconSelect      = form.querySelector('[name="icon-set"]');
+  const modeSelect      = form.querySelector('[name="color-mode"]');
+  const themeCharacter  = document.getElementById('lab-theme-character');
+
+  // ========================================
+  // Surface iframe management
+  // ========================================
+
+  const SURFACE_BASE = '/docs/tools/theme-lab/surfaces/';
+  const frame = document.getElementById('surface-frame');
+  const pickerButtons = document.querySelectorAll('.surface-picker button');
+  let activeSurface = 'typography-prose';
+
+  function buildSurfaceUrl(surface) {
+    const params = new URLSearchParams();
+    if (themeSelect.value) params.set('theme', themeSelect.value);
+    params.set('border', borderSelect.value);
+    params.set('mode', modeSelect.value);
+    params.set('icons', iconSelect.value);
+    return `${SURFACE_BASE}${surface}.html?${params}`;
+  }
+
+  function loadSurface(surface) {
+    activeSurface = surface;
+    frame.style.height = '';
+    frame.src = buildSurfaceUrl(surface);
+    pickerButtons.forEach(btn => {
+      btn.setAttribute('aria-pressed', btn.dataset.surface === surface);
+    });
+  }
+
+  function reloadSurface() {
+    frame.src = buildSurfaceUrl(activeSurface);
+  }
+
+  // Surface picker button clicks
+  pickerButtons.forEach(btn => {
+    btn.addEventListener('click', () => loadSurface(btn.dataset.surface));
+  });
+
+  // Listen for surface height reports
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'surface-height' && e.source === frame.contentWindow) {
+      frame.style.height = e.data.height + 'px';
+    }
+  });
+
+  // ========================================
+  // Control Handlers
+  // ========================================
+
+  // Theme picker — loads CSS for vignettes and auto-sets border + icons
+  themeSelect.addEventListener('change', async () => {
+    const theme = themeSelect.value;
+
+    if (theme) {
+      try { await ensureThemeCSS(theme); } catch { /* continue without CSS */ }
+    }
+
+    // Show theme character description
+    themeCharacter.textContent = THEME_CHARS[theme] || 'The VB default theme';
+
+    // Auto-hint border + icons from registry
+    const hints = THEME_HINTS[theme];
+    if (hints) {
+      borderSelect.value = hints.border;
+      iconSelect.value = hints.icons;
+    } else {
+      borderSelect.value = 'clean';
+      iconSelect.value = 'lucide';
+    }
+
+    reloadSurface();
+  });
+
+  // Border style
+  borderSelect.addEventListener('change', () => {
+    reloadSurface();
+  });
+
+  // Icon set
+  iconSelect.addEventListener('change', () => {
+    reloadSurface();
+  });
+
+  // Color mode
+  modeSelect.addEventListener('change', () => {
+    reloadSurface();
+  });
+
+  // Reset
+  document.querySelector('[data-action="reset"]').addEventListener('click', () => {
+    themeSelect.value = '';
+    borderSelect.value = 'clean';
+    iconSelect.value = 'lucide';
+    modeSelect.value = 'light';
+    themeCharacter.textContent = 'The VB default theme';
+
+    reloadSurface();
+  });
+
+  // ========================================
+  // Vignette theme preloading
+  // ========================================
+
+  const vignettesSection = document.getElementById('vignettes-section');
+  let vignettesLoaded = false;
+
+  vignettesSection.addEventListener('toggle', async () => {
+    if (!vignettesSection.open || vignettesLoaded) return;
+    vignettesLoaded = true;
+
+    const vignetteThemes = [...vignettesSection.querySelectorAll('[data-theme]')]
+      .map(el => el.dataset.theme)
+      .filter(Boolean);
+
+    await Promise.allSettled(vignetteThemes.map(t => ensureThemeCSS(t)));
+  });
+
+  // ========================================
+  // Open in Composer
+  // ========================================
+
+  document.querySelectorAll('.open-in-composer').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const themeId = btn.dataset.composerTheme;
+      localStorage.setItem('vb-composer-load-theme', themeId);
+      window.location.href = '/docs/tools/theme-composer/';
+    });
+  });
+
+  // ========================================
+  // Initial render — load first surface
+  // ========================================
+
+  loadSurface(activeSurface);
+</script>
+{% endblock %}
