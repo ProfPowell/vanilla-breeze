@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home Preview — Theme Lab Surface</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+body { padding: var(--size-l); }
+
+.preview { max-inline-size: 56rem; margin-inline: auto; }
+.wide-panel { display: none; }
+
+@media (min-width: 50rem) {
+  .preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-l);
+  }
+  .wide-panel { display: flex; flex-direction: column; gap: var(--size-m); }
+}
+  </style>
+</head>
+<body>
+<main>
+  <section class="preview">
+    <layout-card data-variant="outlined">
+      <header><h3>Sample Card</h3></header>
+      <section data-layout="stack" data-layout-gap="s">
+        <p>See how themes transform typography, colors, and components.</p>
+        <label>Name <input type="text" value="Jane Doe"></label>
+        <progress value="70" max="100">70%</progress>
+        <p><kbd>Ctrl</kbd>+<kbd>S</kbd> to save</p>
+      </section>
+      <footer data-layout="cluster" data-layout-gap="xs">
+        <button type="button" class="small">Save</button>
+        <button type="button" class="small secondary">Cancel</button>
+        <button type="button" class="small ghost">Reset</button>
+      </footer>
+    </layout-card>
+
+    <aside class="wide-panel" data-layout="stack" data-layout-gap="m">
+      <details open>
+        <summary>Settings</summary>
+        <form class="stacked">
+          <label>Role
+            <select><option>Admin</option><option>Editor</option><option>Viewer</option></select>
+          </label>
+          <label><input type="checkbox" checked> Email notifications</label>
+        </form>
+      </details>
+      <table>
+        <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Search</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+        </tbody>
+      </table>
+    </aside>
+  </section>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  // Apply URL-param overrides AFTER ThemeManager.init() (which runs in main.js)
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  const mode = params.get('mode');
+  if (theme || mode) {
+    if (theme) await ensureThemeLoaded(theme);
+    ThemeManager.apply({
+      brand: theme || 'default',
+      mode: mode || 'auto',
+    });
+  }
+</script>
+<script>
+  // Report height to parent iframe host
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage(
+      { type: 'surface-height', height: document.documentElement.scrollHeight },
+      '*'
+    );
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

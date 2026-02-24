@@ -5,7 +5,7 @@ description: "Build with native HTML elements, enhance progressively with CSS cu
 dataPage: docs
 currentSection: home
 includeDocs: true
-permalink: /
+permalink: /home-compare/
 ---
 
 {% block extraHead %}
@@ -31,29 +31,29 @@ permalink: /
 
   .hero-demo {
     margin-block: var(--size-xl);
-    max-inline-size: var(--content-wide);
+    max-inline-size: 90rem;
     margin-inline: auto;
+    text-align: start;
+  }
+
+  .hero-demo compare-surface {
+    margin: 0;
+  }
+
+  .hero-demo compare-surface code-block {
+    margin: 0;
+    block-size: 100%;
+  }
+
+  /* No-JS fallback: show side-by-side */
+  compare-surface:not(:defined) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--size-l);
-    align-items: stretch;
   }
 
-  .hero-demo code-block {
+  compare-surface:not(:defined) code-block {
     margin: 0;
-    text-align: start;
-    block-size: 100%;
-  }
-
-  .hero-demo browser-window {
-    margin: 0;
-    resize: none;
-    text-align: start;
-    block-size: 100%;
-  }
-
-  .demo-result {
-    padding: var(--size-l);
   }
 
   .catchphrase {
@@ -72,7 +72,7 @@ permalink: /
   }
 
   @media (max-width: 900px) {
-    .hero-demo,
+    compare-surface:not(:defined),
     .pe-section .pe-panel {
       grid-template-columns: 1fr;
     }
@@ -106,28 +106,6 @@ permalink: /
     margin-inline: auto;
     list-style: none;
     padding: 0;
-  }
-
-  /* Subgrid: align card headings/bodies across rows regardless of font */
-  .features-section [data-layout="grid"] > li {
-    display: grid;
-    grid-row: span 2;
-    grid-template-rows: subgrid;
-  }
-
-  .features-section [data-layout="grid"] > li > article {
-    display: grid;
-    grid-row: span 2;
-    grid-template-rows: subgrid;
-  }
-
-  @supports not (grid-template-rows: subgrid) {
-    .features-section [data-layout="grid"] > li {
-      grid-row: auto;
-    }
-    .features-section [data-layout="grid"] > li > article {
-      grid-row: auto;
-    }
   }
 
   .features-section article {
@@ -245,16 +223,6 @@ permalink: /
     transition: height var(--duration-normal) var(--ease-default);
   }
 
-  /* Demo result content styling */
-  .demo-result h1 {
-    margin: 0;
-  }
-
-  .demo-result p {
-    margin: 0;
-    color: var(--color-text-muted);
-  }
-
   /* Stats Bar */
   .stats-bar {
     padding: var(--size-l);
@@ -316,104 +284,51 @@ permalink: /
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
-
-  .quicknav-section [data-layout="grid"] > li {
-    display: grid;
-    grid-row: span 3;
-    grid-template-rows: subgrid;
-  }
-
-  .quicknav-section [data-layout="grid"] > li > a {
-    display: grid;
-    grid-row: span 3;
-    grid-template-rows: subgrid;
-  }
-
-  @supports not (grid-template-rows: subgrid) {
-    .quicknav-section [data-layout="grid"] > li {
-      grid-row: auto;
-    }
-  }
 </style>
 {% endblock %}
 
 {% block pageContent %}
 <main data-pagefind-body>
-  <!-- Hero Section -->
+  <!-- Hero Section: Compare Surface variant -->
   <section class="hero">
     <h1 data-gradient-text data-gradient-text-animate>Vanilla Breeze</h1>
     <p class="tagline">A layered HTML component system. Build with native HTML, enhance with CSS, add interactivity with JavaScript - each layer optional.</p>
 
     <figure class="hero-demo">
-      <code-block language="html" label="Write this...">&lt;section data-layout="stack"&gt;
-  &lt;h1&gt;Dashboard&lt;/h1&gt;
-
-  &lt;nav data-layout="cluster"&gt;
+      <compare-surface data-position="100">
+ <code-block language="html" label="Before: &lt;div&gt;-itis">&lt;div class="max-w-sm mx-auto rounded-lg shadow-lg bg-white p-6"&gt;
+  &lt;div class="flex flex-col gap-4"&gt;
+    &lt;div class="text-xl font-bold text-gray-900"&gt;
+      Dashboard
+    &lt;/div&gt;
+    &lt;div class="text-sm text-gray-600"&gt;
+      Manage your projects.
+    &lt;/div&gt;
+    &lt;div class="flex gap-2 mt-4"&gt;
+      &lt;button class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 focus:ring-2 focus:ring-blue-300"&gt;
+        New Project
+      &lt;/button&gt;
+      &lt;button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200"&gt;
+        Import
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code-block>
+<code-block language="html" label="After: Semantic HTML">&lt;article class="card"&gt;
+  &lt;h2&gt;Dashboard&lt;/h2&gt;
+  &lt;p&gt;Manage your projects.&lt;/p&gt;
+  &lt;footer data-layout="cluster"&gt;
     &lt;button&gt;New Project&lt;/button&gt;
     &lt;button class="secondary"&gt;Import&lt;/button&gt;
-  &lt;/nav&gt;
-
-  &lt;table&gt;
-    &lt;thead&gt;
-      &lt;tr&gt;&lt;th&gt;Project&lt;/th&gt;&lt;th&gt;Tasks&lt;/th&gt;&lt;/tr&gt;
-    &lt;/thead&gt;
-    &lt;tbody&gt;
-      &lt;tr&gt;&lt;td&gt;Website Redesign&lt;/td&gt;&lt;td&gt;12&lt;/td&gt;&lt;/tr&gt;
-      &lt;tr&gt;&lt;td&gt;Mobile App&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;/tr&gt;
-    &lt;/tbody&gt;
-  &lt;/table&gt;
-
-  &lt;details&gt;
-    &lt;summary&gt;Filters&lt;/summary&gt;
-    &lt;form class="stacked"&gt;
-      &lt;label&gt;Status
-        &lt;select&gt;
-          &lt;option&gt;All&lt;/option&gt;
-          &lt;option&gt;Active&lt;/option&gt;
-        &lt;/select&gt;
-      &lt;/label&gt;
-      &lt;button&gt;Apply&lt;/button&gt;
-    &lt;/form&gt;
-  &lt;/details&gt;
-&lt;/section&gt;</code-block>
-      <browser-window url="...get this">
-        <output class="demo-result">
-          <section data-layout="stack">
-            <h1>Dashboard</h1>
-            <nav data-layout="cluster">
-              <button type="button">New Project</button>
-              <button type="button" class="secondary">Import</button>
-            </nav>
-            <table>
-              <thead>
-                <tr><th>Project</th><th>Tasks</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Website Redesign</td><td>12</td></tr>
-                <tr><td>Mobile App</td><td>8</td></tr>
-              </tbody>
-            </table>
-            <details>
-              <summary>Filters</summary>
-              <form class="stacked">
-                <label>Status
-                  <select id="demo-hero-status" name="status">
-                    <option>All</option>
-                    <option>Active</option>
-                  </select>
-                </label>
-                <button type="button">Apply</button>
-              </form>
-            </details>
-          </section>
-        </output>
-      </browser-window>
+  &lt;/footer&gt;
+&lt;/article&gt;</code-block>
+      </compare-surface>
     </figure>
 
     <p class="catchphrase">
-      <span class="highlight" data-shimmer>Native HTML</span>
-      <span class="muted">&gt;</span>
-      <code>&lt;div&gt;</code> Soup
+      <span class="muted">Before:</span> <code>&lt;div&gt;</code>-itis
+      <span class="muted">&rarr;</span>
+      <span class="highlight" data-shimmer>After: Semantic HTML</span>
     </p>
 
     <footer data-layout="cluster" data-layout-justify="center" data-layout-gap="m">
@@ -452,7 +367,7 @@ permalink: /
     <p class="pe-lead">The same HTML, enhanced layer by layer. Each layer is optional — the previous one always works on its own.</p>
 
     <tab-set>
-      <details name="pe-demo" open>
+      <details name="pe-demo-compare" open>
         <summary>1. HTML</summary>
         <figure class="pe-panel">
           <code-block language="html" label="Source HTML">&lt;section data-layout="stack"&gt;
@@ -505,22 +420,22 @@ permalink: /
             <output class="pe-unstyled">
               <section>
                 <h3>Settings</h3>
-                <details name="settings-html">
+                <details name="settings-compare-html">
                   <summary>Appearance</summary>
                   <form class="stacked">
                     <label>Theme
-                      <select id="demo-html-theme" name="theme">
+                      <select id="demo-compare-html-theme" name="theme">
                         <option>Default</option>
                         <option>Ocean</option>
                         <option>Forest</option>
                       </select>
                     </label>
                     <label>
-                      <input type="checkbox" id="demo-html-dark" checked> Dark mode
+                      <input type="checkbox" id="demo-compare-html-dark" checked> Dark mode
                     </label>
                   </form>
                 </details>
-                <details name="settings-html">
+                <details name="settings-compare-html">
                   <summary>Keyboard Shortcuts</summary>
                   <dl>
                     <div><dt>Search</dt> <dd><kbd>Ctrl</kbd>+<kbd>K</kbd></dd></div>
@@ -528,18 +443,18 @@ permalink: /
                     <div><dt>Shortcuts</dt> <dd><kbd>Shift</kbd>+<kbd>?</kbd></dd></div>
                   </dl>
                 </details>
-                <details name="settings-html">
+                <details name="settings-compare-html">
                   <summary>Notifications</summary>
-                  <label><input type="checkbox" id="demo-html-email" checked> Email notifications</label>
+                  <label><input type="checkbox" id="demo-compare-html-email" checked> Email notifications</label>
                 </details>
                 <footer>
                   <button type="button">Save Changes</button>
-                  <button type="button" popovertarget="confirm-reset-html">Reset</button>
+                  <button type="button" popovertarget="confirm-reset-compare-html">Reset</button>
                 </footer>
-                <div id="confirm-reset-html" popover>
+                <div id="confirm-reset-compare-html" popover>
                   <p>Reset all settings to defaults?</p>
                   <footer>
-                    <button type="button" popovertarget="confirm-reset-html">Cancel</button>
+                    <button type="button" popovertarget="confirm-reset-compare-html">Cancel</button>
                     <button type="button">Confirm</button>
                   </footer>
                 </div>
@@ -550,7 +465,7 @@ permalink: /
         </figure>
       </details>
 
-      <details name="pe-demo">
+      <details name="pe-demo-compare">
         <summary>2. + CSS</summary>
         <figure class="pe-panel">
           <code-block language="html" label="Add one stylesheet">&lt;link rel="stylesheet" href="vanilla-breeze.css"&gt;</code-block>
@@ -558,22 +473,22 @@ permalink: /
             <output>
               <section data-layout="stack">
                 <h3>Settings</h3>
-                <details name="settings-css">
+                <details name="settings-compare-css">
                   <summary>Appearance</summary>
                   <form class="stacked">
                     <label>Theme
-                      <select id="demo-css-theme" name="theme">
+                      <select id="demo-compare-css-theme" name="theme">
                         <option>Default</option>
                         <option>Ocean</option>
                         <option>Forest</option>
                       </select>
                     </label>
                     <label>
-                      <input type="checkbox" id="demo-css-dark" checked> Dark mode
+                      <input type="checkbox" id="demo-compare-css-dark" checked> Dark mode
                     </label>
                   </form>
                 </details>
-                <details name="settings-css">
+                <details name="settings-compare-css">
                   <summary>Keyboard Shortcuts</summary>
                   <dl>
                     <div><dt>Search</dt> <dd><kbd>Ctrl</kbd>+<kbd>K</kbd></dd></div>
@@ -581,18 +496,18 @@ permalink: /
                     <div><dt>Shortcuts</dt> <dd><kbd>Shift</kbd>+<kbd>?</kbd></dd></div>
                   </dl>
                 </details>
-                <details name="settings-css">
+                <details name="settings-compare-css">
                   <summary>Notifications</summary>
-                  <label><input type="checkbox" id="demo-css-email" checked> Email notifications</label>
+                  <label><input type="checkbox" id="demo-compare-css-email" checked> Email notifications</label>
                 </details>
                 <footer data-layout="cluster" data-layout-gap="s">
                   <button type="button">Save Changes</button>
-                  <button type="button" class="secondary" popovertarget="confirm-reset-css">Reset</button>
+                  <button type="button" class="secondary" popovertarget="confirm-reset-compare-css">Reset</button>
                 </footer>
-                <div id="confirm-reset-css" popover>
+                <div id="confirm-reset-compare-css" popover>
                   <p>Reset all settings to defaults?</p>
                   <footer data-layout="cluster" data-layout-gap="s">
-                    <button type="button" popovertarget="confirm-reset-css">Cancel</button>
+                    <button type="button" popovertarget="confirm-reset-compare-css">Cancel</button>
                     <button type="button" class="ghost">Confirm</button>
                   </footer>
                 </div>
@@ -603,7 +518,7 @@ permalink: /
         </figure>
       </details>
 
-      <details name="pe-demo">
+      <details name="pe-demo-compare">
         <summary>3. + JavaScript</summary>
         <figure class="pe-panel">
           <code-block language="html" label="Add one script">&lt;script type="module" src="vanilla-breeze.js"&gt;&lt;/script&gt;</code-block>
@@ -612,22 +527,22 @@ permalink: /
               <section data-layout="stack">
                 <h3>Settings</h3>
                 <accordion-wc>
-                  <details name="settings-js">
+                  <details name="settings-compare-js">
                     <summary>Appearance</summary>
                     <form class="stacked">
                       <label>Theme
-                        <select id="demo-js-theme" name="theme">
+                        <select id="demo-compare-js-theme" name="theme">
                           <option>Default</option>
                           <option>Ocean</option>
                           <option>Forest</option>
                         </select>
                       </label>
                       <label>
-                        <input type="checkbox" id="demo-js-dark" checked> Dark mode
+                        <input type="checkbox" id="demo-compare-js-dark" checked> Dark mode
                       </label>
                     </form>
                   </details>
-                  <details name="settings-js">
+                  <details name="settings-compare-js">
                     <summary>Keyboard Shortcuts</summary>
                     <dl>
                       <div><dt>Search</dt> <dd><kbd>Ctrl</kbd>+<kbd>K</kbd></dd></div>
@@ -635,26 +550,26 @@ permalink: /
                       <div><dt>Shortcuts</dt> <dd><kbd>Shift</kbd>+<kbd>?</kbd></dd></div>
                     </dl>
                   </details>
-                  <details name="settings-js">
+                  <details name="settings-compare-js">
                     <summary>Notifications</summary>
-                    <label><input type="checkbox" id="demo-js-email" checked> Email notifications</label>
+                    <label><input type="checkbox" id="demo-compare-js-email" checked> Email notifications</label>
                   </details>
                 </accordion-wc>
                 <footer data-layout="cluster" data-layout-gap="s">
                   <button type="button">Save Changes</button>
-                  <button type="button" class="secondary" popovertarget="confirm-reset-js">Reset</button>
+                  <button type="button" class="secondary" popovertarget="confirm-reset-compare-js">Reset</button>
                 </footer>
-                <div id="confirm-reset-js" popover>
+                <div id="confirm-reset-compare-js" popover>
                   <p>Reset all settings to defaults?</p>
                   <footer data-layout="cluster" data-layout-gap="s">
-                    <button type="button" popovertarget="confirm-reset-js">Cancel</button>
+                    <button type="button" popovertarget="confirm-reset-compare-js">Cancel</button>
                     <button type="button" class="ghost">Confirm</button>
                   </footer>
                 </div>
               </section>
             </output>
           </browser-window>
-          <figcaption class="pe-caption">One script adds keyboard navigation (<kbd>↑</kbd><kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd>), ARIA roles, command palette, and 30 interactive components.</figcaption>
+          <figcaption class="pe-caption">One script adds keyboard navigation (<kbd>&uarr;</kbd><kbd>&darr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>), ARIA roles, command palette, and 30 interactive components.</figcaption>
         </figure>
       </details>
     </tab-set>
