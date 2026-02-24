@@ -9,7 +9,7 @@
  * @example Basic usage
  * <site-search>
  *   <button data-trigger>
- *     <x-icon name="search"></x-icon>
+ *     <icon-wc name="search"></icon-wc>
  *     Search
  *   </button>
  * </site-search>
@@ -17,7 +17,7 @@
  * @example Icon-only trigger
  * <site-search>
  *   <button data-trigger aria-label="Search">
- *     <x-icon name="search"></x-icon>
+ *     <icon-wc name="search"></icon-wc>
  *   </button>
  * </site-search>
  *
@@ -66,7 +66,7 @@ class SiteSearch extends HTMLElement {
       this.#trigger = document.createElement('button');
       this.#trigger.setAttribute('data-trigger', '');
       this.#trigger.innerHTML = `
-        <x-icon name="search" label="Search"></x-icon>
+        <icon-wc name="search" label="Search"></icon-wc>
       `;
       this.prepend(this.#trigger);
     }
@@ -87,9 +87,10 @@ class SiteSearch extends HTMLElement {
       <div class="backdrop"></div>
       <div class="panel">
         <div class="input-wrapper">
-          <x-icon name="search" class="icon"></x-icon>
+          <icon-wc name="search" class="icon"></icon-wc>
           <input
             type="search"
+            name="search"
             class="input"
             placeholder="Search documentation..."
             autocomplete="off"

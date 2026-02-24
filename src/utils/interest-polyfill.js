@@ -361,7 +361,7 @@ function registerCustomProperties() {
   style.textContent = [
     '@property --interest-delay-start { syntax: "normal | <time>"; inherits: false; initial-value: normal; }',
     '@property --interest-delay-end { syntax: "normal | <time>"; inherits: false; initial-value: normal; }',
-    '@property --interest-delay { syntax: "[ normal | <time> ]{1,2}"; inherits: false; initial-value: normal; }'
+    '@property --interest-delay { syntax: "*"; inherits: false; initial-value: normal; }'
   ].join('\n');
   document.head.appendChild(style);
 }

@@ -54,29 +54,24 @@ class TabSet extends HTMLElement {
   }
 
   #setup() {
-    // Add ARIA roles
-    this.setAttribute('role', 'tablist');
-
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
       const panel = detail.querySelector(':scope > :not(summary)');
 
       if (!summary || !panel) return;
 
-      // Generate IDs
+      // Generate IDs for programmatic relationships
       const tabId = summary.id || `tab-${crypto.randomUUID().slice(0, 8)}`;
       const panelId = panel.id || `panel-${crypto.randomUUID().slice(0, 8)}`;
 
-      // Set up summary as tab
+      // Link summary ↔ panel (no ARIA role overrides — <summary> already
+      // has implicit button role; <details name="..."> provides accessible
+      // exclusive-accordion behavior natively)
       summary.id = tabId;
-      summary.setAttribute('role', 'tab');
       summary.setAttribute('aria-controls', panelId);
-      summary.setAttribute('aria-selected', detail.open ? 'true' : 'false');
       summary.setAttribute('tabindex', detail.open ? '0' : '-1');
 
-      // Set up panel
       panel.id = panelId;
-      panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('aria-labelledby', tabId);
 
       // VT click interception — intercepts only when VT is active
@@ -119,9 +114,7 @@ class TabSet extends HTMLElement {
   #updateAriaStates() {
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
-      const isOpen = detail.open;
-      summary.setAttribute('aria-selected', String(isOpen));
-      summary.setAttribute('tabindex', isOpen ? '0' : '-1');
+      summary.setAttribute('tabindex', detail.open ? '0' : '-1');
     });
   }
 

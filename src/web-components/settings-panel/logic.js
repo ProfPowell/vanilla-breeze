@@ -151,7 +151,7 @@ class SettingsPanel extends HTMLElement {
         <details name="settings" open>
           <summary>Appearance</summary>
           <div class="settings-section">
-            <label class="settings-label">Color Mode</label>
+            <span class="settings-label">Color Mode</span>
             <div class="segmented-control" role="radiogroup" aria-label="Color mode">
               ${['auto', 'light', 'dark'].map(m => `
                 <label class="segment">
@@ -214,7 +214,7 @@ class SettingsPanel extends HTMLElement {
             </select>
 
             <div class="accent-row" ${showAccents ? '' : 'hidden'}>
-              <label class="settings-label">Accent Color</label>
+              <span class="settings-label">Accent Color</span>
               <div class="accent-swatches" role="radiogroup" aria-label="Accent color">
                 <label class="accent-swatch accent-swatch--none" title="None (default blue)">
                   <input type="radio" name="settings-accent" value="" ${accent === '' ? 'checked' : ''} />
@@ -239,15 +239,15 @@ class SettingsPanel extends HTMLElement {
           <div class="settings-section">
             <label class="toggle-row">
               <span>High Contrast</span>
-              <input type="checkbox" data-switch="sm" data-a11y="a11y-high-contrast" ${a11yThemes.includes('a11y-high-contrast') ? 'checked' : ''} />
+              <input type="checkbox" name="a11y-high-contrast" data-switch="sm" data-a11y="a11y-high-contrast" ${a11yThemes.includes('a11y-high-contrast') ? 'checked' : ''} />
             </label>
             <label class="toggle-row">
               <span>Large Text</span>
-              <input type="checkbox" data-switch="sm" data-a11y="a11y-large-text" ${a11yThemes.includes('a11y-large-text') ? 'checked' : ''} />
+              <input type="checkbox" name="a11y-large-text" data-switch="sm" data-a11y="a11y-large-text" ${a11yThemes.includes('a11y-large-text') ? 'checked' : ''} />
             </label>
             <label class="toggle-row">
               <span>Dyslexia-Friendly</span>
-              <input type="checkbox" data-switch="sm" data-a11y="a11y-dyslexia" ${a11yThemes.includes('a11y-dyslexia') ? 'checked' : ''} />
+              <input type="checkbox" name="a11y-dyslexia" data-switch="sm" data-a11y="a11y-dyslexia" ${a11yThemes.includes('a11y-dyslexia') ? 'checked' : ''} />
             </label>
           </div>
         </details>
@@ -258,10 +258,10 @@ class SettingsPanel extends HTMLElement {
           <div class="settings-section">
             <label class="toggle-row">
               <span>Fluid Scaling</span>
-              <input type="checkbox" data-switch="sm" data-fluid-toggle ${fluidOn ? 'checked' : ''} />
+              <input type="checkbox" name="fluid-scaling" data-switch="sm" data-fluid-toggle ${fluidOn ? 'checked' : ''} />
             </label>
             <div class="density-row" ${fluidOn ? '' : 'hidden'}>
-              <label class="settings-label">Density</label>
+              <span class="settings-label">Density</span>
               <div class="segmented-control" role="radiogroup" aria-label="Density">
                 ${['compact', 'default', 'spacious'].map(d => `
                   <label class="segment">
@@ -280,11 +280,11 @@ class SettingsPanel extends HTMLElement {
           <div class="settings-section">
             <label class="toggle-row">
               <span>Motion Effects</span>
-              <input type="checkbox" data-switch="sm" data-ext="motionFx" ${extensions.motionFx ? 'checked' : ''} />
+              <input type="checkbox" name="ext-motionFx" data-switch="sm" data-ext="motionFx" ${extensions.motionFx ? 'checked' : ''} />
             </label>
             <label class="toggle-row">
               <span>Sound Effects</span>
-              <input type="checkbox" data-switch="sm" data-ext="sounds" ${extensions.sounds ? 'checked' : ''} />
+              <input type="checkbox" name="ext-sounds" data-switch="sm" data-ext="sounds" ${extensions.sounds ? 'checked' : ''} />
             </label>
           </div>
         </details>

@@ -11,7 +11,7 @@
  * @example Popover variant (default)
  * <theme-picker>
  *   <button data-trigger>
- *     <x-icon name="palette"></x-icon>
+ *     <icon-wc name="palette"></icon-wc>
  *     Theme
  *   </button>
  * </theme-picker>
@@ -22,7 +22,7 @@
  * @example Icon-only trigger
  * <theme-picker>
  *   <button data-trigger aria-label="Change theme">
- *     <x-icon name="sun" label="Theme"></x-icon>
+ *     <icon-wc name="sun" label="Theme"></icon-wc>
  *   </button>
  * </theme-picker>
  */
@@ -183,7 +183,7 @@ class ThemePicker extends HTMLElement {
         this.#trigger = document.createElement('button');
         this.#trigger.setAttribute('data-trigger', '');
         this.#trigger.innerHTML = `
-          <x-icon name="palette" label="Theme settings"></x-icon>
+          <icon-wc name="palette" label="Theme settings"></icon-wc>
         `;
         this.prepend(this.#trigger);
       }
@@ -229,7 +229,7 @@ class ThemePicker extends HTMLElement {
                 ${mode === m.id ? 'checked' : ''}
               />
               <span class="option-content">
-                <x-icon name="${m.icon}"></x-icon>
+                <icon-wc name="${m.icon}"></icon-wc>
                 <span>${m.name}</span>
               </span>
             </label>
@@ -254,7 +254,7 @@ class ThemePicker extends HTMLElement {
                 ${brand === t.id ? 'checked' : ''}
               />
               <span class="swatch-visual" style="--swatch-bg: ${bg}; --swatch-fg: ${fg}">
-                ${icon ? `<x-icon name="${icon}"></x-icon>` : ''}
+                ${icon ? `<icon-wc name="${icon}"></icon-wc>` : ''}
                 <span class="sr-only">${t.name}</span>
               </span>
             </label>
@@ -278,7 +278,7 @@ class ThemePicker extends HTMLElement {
                 ${isChecked ? 'checked' : ''}
               />
               <span class="option-content">
-                <x-icon name="${t.icon}"></x-icon>
+                <icon-wc name="${t.icon}"></icon-wc>
                 <span class="option-label">${t.name}</span>
               </span>
             </label>
@@ -298,7 +298,7 @@ class ThemePicker extends HTMLElement {
                 ${fluid === f.id ? 'checked' : ''}
               />
               <span class="option-content">
-                <x-icon name="${f.icon}"></x-icon>
+                <icon-wc name="${f.icon}"></icon-wc>
                 <span class="option-text">
                   <span>${f.name}</span>
                   <small>${f.description}</small>
@@ -311,9 +311,9 @@ class ThemePicker extends HTMLElement {
 
       <details class="section section--extensions" ${this.#extensionsExpanded ? 'open' : ''}>
         <summary class="extensions-toggle">
-          <x-icon name="sliders-horizontal"></x-icon>
+          <icon-wc name="sliders-horizontal"></icon-wc>
           <span>Extensions</span>
-          <x-icon name="chevron-down" class="chevron"></x-icon>
+          <icon-wc name="chevron-down" class="chevron"></icon-wc>
         </summary>
         <div class="extensions-content">
           ${ThemePicker.#EXTENSIONS.map(ext => {
@@ -322,7 +322,7 @@ class ThemePicker extends HTMLElement {
             return `
             <label class="extension-toggle">
               <span class="extension-info">
-                <x-icon name="${ext.icon}"></x-icon>
+                <icon-wc name="${ext.icon}"></icon-wc>
                 <span class="extension-name">${ext.name}</span>
               </span>
               <input

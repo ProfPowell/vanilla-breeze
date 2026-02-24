@@ -64,6 +64,21 @@ for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components')]) {
 }
 
 /**
+ * Fix esbuild stripping leading zeros in @property initial-value declarations.
+ * Chrome's @property parser strictly requires leading zeros (e.g., 0.25rem not .25rem).
+ */
+function fixAtPropertyLeadingZeros(filePath) {
+  const css = readFileSync(filePath, 'utf-8');
+  const fixed = css.replace(
+    /(@property\s+[^{]+\{[^}]*initial-value:\s*)\.(\d)/g,
+    '$10.$2'
+  );
+  if (fixed !== css) {
+    writeFileSync(filePath, fixed);
+  }
+}
+
+/**
  * Build individual theme CSS files and manifest
  */
 async function buildThemes() {
@@ -201,6 +216,7 @@ async function buildCDN() {
     outfile: join(CDN, 'vanilla-breeze.css'),
     logLevel: 'info',
   });
+  fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze.css'));
 
   // Build core CSS bundle (slim — no decorative themes)
   await esbuild.build({
@@ -209,6 +225,7 @@ async function buildCDN() {
     outfile: join(CDN, 'vanilla-breeze-core.css'),
     logLevel: 'info',
   });
+  fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze-core.css'));
 
   // Build charts CSS add-on
   const chartsPath = join(SRC, 'charts-standalone.css');
