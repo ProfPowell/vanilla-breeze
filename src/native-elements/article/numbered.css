@@ -1,0 +1,90 @@
+/* article[data-numbered]: Academic-style auto-numbering for headings, figures, tables, and subfigures */
+
+/* Counter initialization */
+article[data-numbered] {
+  counter-reset: vb-h2 vb-h3 vb-h4 vb-fig vb-tab vb-lst;
+
+  /* i18n-friendly labels — themes/locales can override */
+  --label-figure: "Figure";
+  --label-table: "Table";
+  --label-listing: "Listing";
+}
+
+/* --- Heading Numbering --- */
+
+article[data-numbered] h2 {
+  counter-increment: vb-h2;
+  counter-reset: vb-h3 vb-h4;
+}
+
+article[data-numbered] h2::before {
+  content: counter(vb-h2) ".\00a0";
+  color: var(--color-text-muted);
+}
+
+article[data-numbered] h3 {
+  counter-increment: vb-h3;
+  counter-reset: vb-h4;
+}
+
+article[data-numbered] h3::before {
+  content: counter(vb-h2) "." counter(vb-h3) ".\00a0";
+  color: var(--color-text-muted);
+}
+
+article[data-numbered] h4 {
+  counter-increment: vb-h4;
+}
+
+article[data-numbered] h4::before {
+  content: counter(vb-h2) "." counter(vb-h3) "." counter(vb-h4) ".\00a0";
+  color: var(--color-text-muted);
+}
+
+/* --- Figure Numbering --- */
+
+article[data-numbered] figure {
+  counter-increment: vb-fig;
+  counter-reset: vb-subfig;
+}
+
+article[data-numbered] figure > figcaption::before {
+  content: var(--label-figure) "\00a0" counter(vb-fig) ":\00a0";
+  font-weight: 600;
+}
+
+/* --- Table Numbering --- */
+
+article[data-numbered] table {
+  counter-increment: vb-tab;
+}
+
+article[data-numbered] table caption::before {
+  content: var(--label-table) "\00a0" counter(vb-tab) ":\00a0";
+  font-weight: 600;
+}
+
+/* --- Listing Numbering (code figures) --- */
+
+article[data-numbered] figure.code {
+  counter-increment: vb-lst;
+}
+
+article[data-numbered] figure.code > figcaption::before {
+  content: var(--label-listing) "\00a0" counter(vb-lst) ":\00a0";
+  font-weight: 600;
+}
+
+/* --- Subfigure Support --- */
+
+article[data-numbered] figure > figure {
+  counter-increment: vb-subfig;
+  display: inline-block;
+  vertical-align: top;
+  margin: var(--size-s);
+}
+
+article[data-numbered] figure > figure > figcaption::before {
+  content: "(" counter(vb-subfig, lower-alpha) ")\00a0";
+  font-weight: 500;
+}
