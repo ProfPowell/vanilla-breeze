@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Figure with Canvas</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <figure>
+    <canvas id="chart" width="500" height="260"></canvas>
+    <figcaption>Figure 1: Quarterly revenue (thousands).</figcaption>
+  </figure>
+
+  <script>
+    const ctx = document.getElementById('chart').getContext('2d');
+    const data = [
+      { label: 'Q1', value: 42 },
+      { label: 'Q2', value: 68 },
+      { label: 'Q3', value: 55 },
+      { label: 'Q4', value: 81 },
+    ];
+    const max = Math.max(...data.map(d => d.value));
+    const barW = 60;
+    const gap = 40;
+    const left = 60;
+    const bottom = 230;
+    const chartH = 190;
+    const style = getComputedStyle(document.documentElement);
+    const accent = style.getPropertyValue('--color-interactive').trim() || '#3b82f6';
+    const muted = style.getPropertyValue('--color-text-muted').trim() || '#6b7280';
+    const text = style.getPropertyValue('--color-text').trim() || '#1f2937';
+
+    /* Y-axis labels */
+    ctx.fillStyle = muted;
+    ctx.font = '12px system-ui';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const y = bottom - (chartH / 4) * i;
+      const val = Math.round((max / 4) * i);
+      ctx.fillText(val, left - 10, y + 4);
+      ctx.strokeStyle = muted;
+      ctx.globalAlpha = 0.2;
+      ctx.beginPath();
+      ctx.moveTo(left, y);
+      ctx.lineTo(left + data.length * (barW + gap), y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    /* Bars */
+    data.forEach((d, i) => {
+      const x = left + i * (barW + gap) + gap / 2;
+      const h = (d.value / max) * chartH;
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.roundRect(x, bottom - h, barW, h, [4, 4, 0, 0]);
+      ctx.fill();
+
+      /* Value */
+      ctx.fillStyle = text;
+      ctx.font = 'bold 13px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.value, x + barW / 2, bottom - h - 8);
+
+      /* Label */
+      ctx.fillStyle = muted;
+      ctx.font = '13px system-ui';
+      ctx.fillText(d.label, x + barW / 2, bottom + 18);
+    });
+  </script>
+</body>
+</html>
