@@ -163,11 +163,23 @@ const dataAttributes = {
       { name: 'data-wizard', type: 'behavior', href: '/docs/attributes/data-wizard/', description: 'Multi-step form wizard with per-step validation and progress tracking' },
     ],
   },
+  styling: {
+    label: 'Styling',
+    items: [
+      { name: 'data-numbered', type: 'styling', href: '/docs/elements/native/article/', description: 'Auto-number article headings with CSS counters' },
+      { name: 'data-drop-cap', type: 'styling', href: '/docs/elements/native/article/', description: 'Large decorative first letter for article opening paragraphs' },
+      { name: 'data-prose', type: 'styling', href: '/docs/elements/native/article/', description: 'Optimized typography for long-form article content' },
+      { name: 'data-ornament', type: 'styling', href: '/docs/elements/native/hr/', description: 'Custom symbol or text ornament for horizontal rules' },
+      { name: 'data-badge', type: 'styling', href: '/docs/elements/native/time/', description: 'Pill-shaped badge styling for time elements' },
+      { name: 'data-striped', type: 'styling', href: '/docs/elements/native/dl/', description: 'Alternating row backgrounds for definition lists' },
+    ],
+  },
   infrastructure: {
     label: 'Infrastructure',
     items: [
       { name: 'hide-until-ready', type: 'layout', href: '/docs/attributes/hide-until-ready/', description: 'Prevent FOUC by hiding elements until custom elements are defined' },
       { name: 'view-transitions', type: 'layout', href: '/docs/attributes/view-transitions/', description: 'CSS View Transitions with named groups, shared elements, and presets' },
+      { name: 'data-toc-ignore', type: 'behavior', href: '/docs/elements/web-components/page-toc/', description: 'Exclude headings or containers from page-toc generation' },
     ],
   },
 };
@@ -183,6 +195,7 @@ export default {
   layoutCount: dataItems.filter(i => i.type === 'layout').length,
   behaviorCount: dataItems.filter(i => i.type === 'behavior').length,
   formattingCount: dataItems.filter(i => i.type === 'formatting').length,
+  stylingCount: dataItems.filter(i => i.type === 'styling').length,
   dataCount: dataItems.length,
   totalCount: allItems.length,
 };
