@@ -1,0 +1,411 @@
+/* ==========================================================================
+   Print Styles
+   ==========================================================================
+   Opt-in print optimization for Vanilla Breeze. Loaded via @layer utils.
+
+   Design decisions:
+   - Token reset handles color overrides — no per-element color hacking
+   - !important only for display:none hiding and max-width enforcement
+   - @page rules for proper margins, not body padding
+   - data-print attribute for page-level control:
+     "article"  — long-form reading (page numbers, section breaks)
+     "invoice"  — A4 portrait, tight margins
+     "report"   — left/right page awareness, binding margin
+     "none"     — suppress printing entirely
+   - data-print-raw on <html> disables all VB print optimization
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   Phase 1: Core Print Reset
+   -------------------------------------------------------------------------- */
+
+@media print {
+
+  /* ---- 1.1 Global reset ---- */
+
+  html:not([data-print-raw]) {
+
+    *,
+    *::before,
+    *::after {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+    /* Force readable contrast via token override */
+    --color-text: #000;
+    --color-text-muted: #444;
+    --color-background: #fff;
+    --color-surface: #fff;
+    --color-surface-raised: #f5f5f5;
+    --color-surface-sunken: #eee;
+    --color-border: #666;
+    --color-interactive: #000;
+    --color-primary: #000;
+    --color-secondary: #444;
+    --color-accent: #222;
+    --color-success: #000;
+    --color-warning: #000;
+    --color-error: #000;
+    color-scheme: light;
+    forced-color-adjust: none;
+    font-size: 12pt;
+
+    body {
+      background: #fff;
+      color: #000;
+    }
+
+
+    /* ---- 1.2 Hide non-print elements ---- */
+
+    /* Interactive elements that make no sense on paper */
+    nav:not([data-print-keep]),
+    dialog,
+    [data-print="none"],
+    button:not([type="submit"]),
+    input[type="range"],
+    input[data-switch],
+    [role="toolbar"],
+    [aria-hidden="true"],
+    search {
+      display: none !important;
+    }
+
+    /* VB web components that are screen-only */
+    theme-picker,
+    site-search,
+    command-palette,
+    page-toc,
+    tool-tip,
+    toast-msg,
+    short-cuts,
+    settings-panel,
+    drop-down,
+    context-menu,
+    emoji-picker,
+    print-page {
+      display: none !important;
+    }
+
+
+    /* ---- 1.3 Page break control ---- */
+
+    /* Prevent breaking inside these */
+    table, blockquote, pre, code, figure, li, hr, ul, ol, tr,
+    img, picture, video, details, fieldset {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* Orphan/widow protection */
+    h1, h2, h3, h4, h5, h6, p, a, figcaption, caption, dt {
+      orphans: 3;
+      widows: 3;
+    }
+
+    /* Keep headings with their content */
+    h1, h2, h3, h4, h5, h6 {
+      break-after: avoid;
+      page-break-after: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* Don't split heading from following paragraph */
+    :is(h1, h2, h3, h4, h5, h6) + p {
+      break-before: avoid;
+      page-break-before: avoid;
+    }
+
+
+    /* ---- 1.4 Typography adjustments ---- */
+
+    /* Ensure pre blocks don't overflow the page */
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #999;
+    }
+
+    /* Repeat table headers on every page */
+    thead {
+      display: table-header-group;
+    }
+
+    /* Repeat table footers on every page */
+    tfoot {
+      display: table-footer-group;
+    }
+
+    /* Images: prevent overflow */
+    img, picture, video, canvas, svg, iframe {
+      max-width: 100% !important;
+    }
+
+    /* Links: show URL for external links */
+    a[href^="http"]::after,
+    a[href^="ftp"]::after {
+      content: " (" attr(href) ")";
+      font-size: 80%;
+      color: #444;
+      word-break: break-all;
+    }
+
+    /* Suppress URL display for image links, internal anchors, and JS links */
+    a[href^="#"]::after,
+    a[href$=".jpg"]::after,
+    a[href$=".jpeg"]::after,
+    a[href$=".png"]::after,
+    a[href$=".svg"]::after,
+    a[href$=".webp"]::after,
+    a[href$=".gif"]::after {
+      content: none;
+    }
+
+    /* Abbreviations: expand title */
+    abbr[title]::after {
+      content: " (" attr(title) ")";
+      font-size: 80%;
+    }
+
+
+    /* ---- 1.5 Layout linearization ---- */
+
+    /* Flatten to single column */
+    main {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Sidebars collapse into flow */
+    aside:not([data-print-keep]) {
+      float: none;
+      width: 100%;
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Reset VB layout attributes for print */
+    [data-layout="sidebar"] {
+      display: block;
+    }
+
+
+    /* ---- Phase 3: Per-element print adjustments ---- */
+
+    /* Force all details open for print */
+    details:not([open]) > *:not(summary) {
+      display: block;
+    }
+
+    /* Hide toggle indicators */
+    summary::marker {
+      content: "";
+    }
+
+    summary::after {
+      display: none;
+    }
+
+    /* Dialog — already hidden above */
+
+    /* Progress and meter: ensure visible border */
+    progress, meter {
+      border: 1px solid #666;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    /* Table adjustments */
+    table.striped {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    table[data-sticky] thead th,
+    table[data-sticky] :is(td, th):first-child {
+      position: static;
+    }
+
+    table[data-responsive="scroll"] {
+      display: table;
+      overflow: visible;
+    }
+
+    /* Form elements */
+    input, textarea, select {
+      border: 1px solid #666;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    ::placeholder {
+      color: transparent;
+    }
+
+    /* Text effects: disable all animated/decorative effects */
+    [data-gradient-text],
+    [data-shimmer],
+    [data-glitch],
+    [data-reveal],
+    [data-blur-reveal],
+    [data-typewriter],
+    [data-scramble] {
+      background-image: none !important;
+      -webkit-text-fill-color: currentColor !important;
+      animation: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+    }
+
+    [data-glitch]::before,
+    [data-glitch]::after {
+      display: none !important;
+    }
+
+    [data-spoiler] > [data-spoiler-content] {
+      filter: none !important;
+      opacity: 1 !important;
+      user-select: auto !important;
+    }
+
+    [data-spoiler] > [data-spoiler-trigger],
+    [data-spoiler] > [data-spoiler-hide] {
+      display: none !important;
+    }
+
+
+    /* ---- Phase 4: Utility attributes ---- */
+
+    /* Hide from print */
+    [data-no-print],
+    [data-screen-only] {
+      display: none !important;
+    }
+
+    /* Show only in print */
+    [data-print-only] {
+      display: block !important;
+    }
+
+    /* Page break control */
+    [data-break-before] {
+      break-before: page;
+      page-break-before: always;
+    }
+
+    [data-break-after] {
+      break-after: page;
+      page-break-after: always;
+    }
+
+    [data-break-avoid] {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* Force background printing for specific elements */
+    [data-print-background] {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+  } /* end html:not([data-print-raw]) */
+} /* end @media print */
+
+/* Screen-only: hide print-only content */
+@media screen {
+  [data-print-only] {
+    display: none !important;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Phase 2: @page Rules
+   --------------------------------------------------------------------------
+   These apply regardless of data-print-raw — page margins are always fine.
+   -------------------------------------------------------------------------- */
+
+@page {
+  margin: 2cm;
+  size: auto;
+}
+
+@page :first {
+  margin-top: 3cm;
+}
+
+
+/* Article mode — optimized for long-form reading */
+
+@page vb-article {
+  margin: 2.5cm 2cm;
+
+  @bottom-center {
+    content: counter(page);
+    font-size: 9pt;
+    color: #666;
+  }
+}
+
+@page vb-article:first {
+  margin-top: 4cm;
+
+  @bottom-center {
+    content: none;
+  }
+}
+
+
+/* Invoice mode — tighter margins, portrait */
+
+@page vb-invoice {
+  margin: 1.5cm 2cm;
+  size: A4 portrait;
+}
+
+
+/* Report mode — left/right page awareness */
+
+@page vb-report {
+  margin: 2cm;
+}
+
+@page vb-report:left {
+  margin-left: 3cm;
+  margin-right: 2cm;
+
+  @bottom-left {
+    content: counter(page);
+    font-size: 9pt;
+  }
+}
+
+@page vb-report:right {
+  margin-left: 2cm;
+  margin-right: 3cm;
+
+  @bottom-right {
+    content: counter(page);
+    font-size: 9pt;
+  }
+}
+
+
+/* Named page mapping */
+
+@media print {
+  [data-print="article"] { page: vb-article; }
+  [data-print="invoice"] { page: vb-invoice; }
+  [data-print="report"]  { page: vb-report; }
+
+  /* Force page break between major sections in article mode */
+  [data-print="article"] > section + section {
+    break-before: page;
+  }
+}

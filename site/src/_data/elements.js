@@ -142,6 +142,7 @@ const elementsByLetter = {
     { name: 'page-toc', type: 'component', href: '/docs/elements/web-components/page-toc/' },
     { name: 'picture', type: 'native', href: '/docs/elements/native/picture/' },
     { name: 'pre', type: 'native', href: '/docs/elements/native/pre/' },
+    { name: 'print-page', type: 'component', href: '/docs/elements/web-components/print-page/' },
     { name: 'progress', type: 'native', href: '/docs/elements/native/progress/' },
     { name: 'progress-ring', type: 'custom', href: '/docs/elements/custom-elements/progress-ring/' },
   ],

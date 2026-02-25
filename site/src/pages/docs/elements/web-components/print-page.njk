@@ -1,0 +1,109 @@
+---
+layout: layouts/element.njk
+title: "print-page"
+description: "A print button with optional toggle to disable VB print style optimizations."
+elementName: print-page
+category: component
+currentPath: /docs/elements/web-components/print-page/
+permalink: /docs/elements/web-components/print-page/
+---
+
+{% set basicCode %}<print-page>Print this page</print-page>{% endset %}
+
+{% set toggleCode %}<!-- With checkbox to disable VB print optimizations -->
+<print-page data-raw-toggle>Print this page</print-page>{% endset %}
+
+{% set labelCode %}<print-page data-label="Save as PDF"></print-page>{% endset %}
+
+{% set inContextCode %}<article>
+  <h1>Quarterly Report</h1>
+  <p>...</p>
+
+  <footer>
+    <print-page data-raw-toggle data-no-print>Print report</print-page>
+  </footer>
+</article>{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;print-page&gt;</code> component wraps <code>window.print()</code> in a progressive enhancement button. It auto-hides itself when printing and optionally lets users toggle VB&rsquo;s print style optimizations on or off.</p>
+
+  <code-block language="html" label="Basic print button">{{ basicCode | escape }}</code-block>
+
+  <p>Without JavaScript, the element renders as inert text. With JavaScript, it becomes a functional print button.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-raw-toggle</code></td>
+        <td>Boolean</td>
+        <td>&mdash;</td>
+        <td>If present, shows a checkbox labeled &ldquo;Print without VB styles&rdquo;</td>
+      </tr>
+      <tr>
+        <td><code>data-label</code></td>
+        <td>String</td>
+        <td>Element text or &ldquo;Print this page&rdquo;</td>
+        <td>Custom button label</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Raw Mode Toggle</h2>
+  <p>When <code>data-raw-toggle</code> is present, the component adds a checkbox. If checked, it sets <code>data-print-raw</code> on the <code>&lt;html&gt;</code> element before opening the print dialog, which disables all VB print optimizations. The attribute is removed after printing.</p>
+
+  <code-block language="html" label="With raw-mode toggle">{{ toggleCode | escape }}</code-block>
+
+  <p>This is useful for users who want to see the page print exactly as it appears on screen &mdash; with theme colors, shadows, and layout intact.</p>
+</section>
+
+<section>
+  <h2>Custom Label</h2>
+  <p>Set the button text via <code>data-label</code> or as the element&rsquo;s text content.</p>
+
+  <code-block language="html" label="Custom label">{{ labelCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Usage in Context</h2>
+  <p>Place the component wherever makes sense. It hides itself during printing automatically. Adding <code>data-no-print</code> is redundant but makes intent explicit.</p>
+
+  <code-block language="html" label="Typical placement">{{ inContextCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>This article demo includes a <code>&lt;print-page data-raw-toggle&gt;</code>. Use the print button or <kbd>Ctrl</kbd>+<kbd>P</kbd> / <kbd>Cmd</kbd>+<kbd>P</kbd>.</p>
+  <browser-window src="/docs/examples/demos/print-article.html" url="https://vanilla-breeze.dev/print/article" title="Article print demo" shadow></browser-window>
+  <p>More demos: <a href="/docs/examples/demos/print-invoice.html">Invoice</a>, <a href="/docs/examples/demos/print-report.html">Report</a></p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The component renders a native <code>&lt;button&gt;</code> &mdash; fully keyboard accessible.</li>
+    <li>The raw-mode toggle uses a native <code>&lt;input type="checkbox"&gt;</code> inside a <code>&lt;label&gt;</code>.</li>
+    <li>The component sets <code>role="group"</code> on itself when both button and toggle are present.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/printing/">Printing guide</a> &mdash; conceptual overview of VB&rsquo;s print support</li>
+    <li><a href="/docs/attributes/data-print/">Print attributes reference</a> &mdash; full reference for all print attributes</li>
+  </ul>
+</section>

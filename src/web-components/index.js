@@ -61,3 +61,4 @@ import './type-specimen-wc/logic.js';
 import './emoji-picker/logic.js';
 import './settings-panel/logic.js';
 import '../utils/emoji-init.js';
+import './print-page/logic.js';

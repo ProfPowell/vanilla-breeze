@@ -177,6 +177,7 @@ const dataAttributes = {
   infrastructure: {
     label: 'Infrastructure',
     items: [
+      { name: 'data-print', type: 'layout', href: '/docs/attributes/data-print/', description: 'Print optimization modes, visibility control, page breaks, and opt-out for printed output' },
       { name: 'hide-until-ready', type: 'layout', href: '/docs/attributes/hide-until-ready/', description: 'Prevent FOUC by hiding elements until custom elements are defined' },
       { name: 'view-transitions', type: 'layout', href: '/docs/attributes/view-transitions/', description: 'CSS View Transitions with named groups, shared elements, and presets' },
       { name: 'data-toc-ignore', type: 'behavior', href: '/docs/elements/web-components/page-toc/', description: 'Exclude headings or containers from page-toc generation' },

@@ -1,0 +1,325 @@
+---
+layout: layouts/docs.njk
+title: "Printing - Vanilla Breeze"
+description: "How Vanilla Breeze handles print output: automatic optimizations, page modes, visibility control, page breaks, and the print button component."
+currentPath: /docs/printing/
+permalink: /docs/printing/
+---
+
+<h1>Printing</h1>
+<p class="lead">VB makes pages print-ready by default. When you need more control, a small set of attributes unlocks page modes, visibility toggles, and break control &mdash; no separate print stylesheet required.</p>
+
+<nav class="subnav" aria-label="Printing guide sections">
+  <ul>
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#automatic">Automatic</a></li>
+    <li><a href="#page-modes">Page Modes</a></li>
+    <li><a href="#visibility">Visibility</a></li>
+    <li><a href="#page-breaks">Page Breaks</a></li>
+    <li><a href="#print-button">Print Button</a></li>
+    <li><a href="#opt-out">Opt-Out</a></li>
+    <li><a href="#browser-support">Support</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+
+<!-- Philosophy -->
+<section id="philosophy">
+  <h2>Philosophy</h2>
+  <p>Most CSS frameworks ignore print entirely, leaving you to write a separate print stylesheet. VB takes the opposite approach: the print layer ships inside <code>main.css</code> and activates automatically via <code>@media print</code>.</p>
+
+  <p>The design principle is <strong>works by default, enhance when needed</strong>:</p>
+  <ul>
+    <li><strong>Default</strong> &mdash; every page gets a clean print reset (black text, no shadows, linearized layout). No attributes required.</li>
+    <li><strong>Enhanced</strong> &mdash; pages <em>intended</em> for print (articles, invoices, reports) add <code>data-print</code> on <code>&lt;body&gt;</code> to unlock <code>@page</code> rules, page numbers, and section breaks.</li>
+    <li><strong>Granular</strong> &mdash; individual elements can be shown, hidden, or protected from page breaks with data attributes.</li>
+  </ul>
+
+  <p>Because VB&rsquo;s design tokens drive all colors and spacing, the print layer only needs to reset the tokens &mdash; every element using them automatically adapts to paper.</p>
+</section>
+
+
+<!-- What Happens Automatically -->
+<section id="automatic">
+  <h2>What Happens Automatically</h2>
+  <p>When a VB page is printed, the following optimizations apply with no extra markup:</p>
+
+  <ul>
+    <li><strong>Color reset</strong> &mdash; design tokens switch to black-on-white. No per-element overrides needed.</li>
+    <li><strong>Shadows removed</strong> &mdash; <code>box-shadow</code> and <code>text-shadow</code> are stripped from all elements.</li>
+    <li><strong>Link expansion</strong> &mdash; external URLs are printed after link text, e.g. <code>Example (https://example.com)</code>. Image links and anchor links are suppressed.</li>
+    <li><strong>Abbreviation expansion</strong> &mdash; <code>&lt;abbr&gt;</code> titles are printed inline, e.g. <code>CSS (Cascading Style Sheets)</code>.</li>
+    <li><strong>Layout linearization</strong> &mdash; sidebars collapse to single-column. Sticky positioning is disabled.</li>
+    <li><strong>Element hiding</strong> &mdash; <code>&lt;nav&gt;</code>, <code>&lt;dialog&gt;</code>, <code>&lt;search&gt;</code>, non-submit buttons, range inputs, and interactive VB components are hidden.</li>
+    <li><strong>Page break protection</strong> &mdash; tables, blockquotes, figures, code blocks, and list items avoid breaking mid-element. Headings stay with their following paragraph.</li>
+    <li><strong>Details forced open</strong> &mdash; collapsed <code>&lt;details&gt;</code> content is made visible.</li>
+    <li><strong>Text effects disabled</strong> &mdash; gradients, shimmer, glitch, reveal, typewriter, scramble, and spoiler effects revert to plain text.</li>
+    <li><strong>Table headers repeat</strong> &mdash; <code>&lt;thead&gt;</code> rows repeat on every printed page.</li>
+    <li><strong>Typography</strong> &mdash; base font size set to 12pt. <code>&lt;pre&gt;</code> wraps instead of overflowing.</li>
+  </ul>
+</section>
+
+
+<!-- Page Modes -->
+<section id="page-modes">
+  <h2>Page Modes</h2>
+  <p>For pages designed to be printed, set <code>data-print</code> on <code>&lt;body&gt;</code> to activate a named mode with CSS <code>@page</code> rules.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Effect</th>
+        <th>Use case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>article</code></td>
+        <td>Wide margins, page numbers (bottom center), no number on first page, section breaks</td>
+        <td>Blog posts, documentation</td>
+      </tr>
+      <tr>
+        <td><code>invoice</code></td>
+        <td>Tight margins, A4 portrait</td>
+        <td>Invoices, receipts</td>
+      </tr>
+      <tr>
+        <td><code>report</code></td>
+        <td>Left/right page awareness, binding margin, page numbers in outer corners</td>
+        <td>Multi-page reports, booklets</td>
+      </tr>
+      <tr>
+        <td><code>none</code></td>
+        <td>Hides the entire page from printing</td>
+        <td>Dashboards, app shells</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Article</h3>
+  <p>Long-form content with page numbers and section breaks. Each direct <code>&lt;section&gt;</code> starts on a new page.</p>
+  <browser-window src="/docs/examples/demos/print-article.html" url="https://vanilla-breeze.dev/print/article" title="Article print mode" shadow></browser-window>
+
+  <h3>Invoice</h3>
+  <p>Tight margins optimized for A4 portrait paper.</p>
+  <browser-window src="/docs/examples/demos/print-invoice.html" url="https://vanilla-breeze.dev/print/invoice" title="Invoice print mode" shadow></browser-window>
+
+  <h3>Report</h3>
+  <p>Left/right page awareness with binding margin for double-sided printing.</p>
+  <browser-window src="/docs/examples/demos/print-report.html" url="https://vanilla-breeze.dev/print/report" title="Report print mode" shadow></browser-window>
+</section>
+
+
+<!-- Visibility Control -->
+<section id="visibility">
+  <h2>Visibility Control</h2>
+  <p>Control what appears on screen vs. paper with data attributes.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-no-print</code></td>
+        <td>Hidden when printed, visible on screen</td>
+      </tr>
+      <tr>
+        <td><code>data-print-only</code></td>
+        <td>Visible when printed, hidden on screen</td>
+      </tr>
+      <tr>
+        <td><code>data-print-keep</code></td>
+        <td>Prevents auto-hiding (e.g. keep a table-of-contents <code>&lt;nav&gt;</code> in print)</td>
+      </tr>
+      <tr>
+        <td><code>data-print-background</code></td>
+        <td>Forces background colors/images to print</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeVis %}<!-- Timestamp only visible on paper -->
+<p data-print-only>Printed on Feb 24, 2026</p>
+
+<!-- Hide site footer from print -->
+<footer data-no-print>...</footer>
+
+<!-- Keep this nav visible in print -->
+<nav aria-label="Table of contents" data-print-keep>
+  <ol>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#methods">Methods</a></li>
+  </ol>
+</nav>
+
+<!-- Force background to print -->
+<mark data-print-background>Highlighted</mark>{% endset %}
+  <code-block language="html" label="Visibility examples">{{ _codeVis | escape }}</code-block>
+</section>
+
+
+<!-- Page Breaks -->
+<section id="page-breaks">
+  <h2>Page Breaks</h2>
+  <p>VB automatically protects tables, figures, blockquotes, code blocks, and list items from splitting across pages. For manual control:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>CSS effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-break-before</code></td>
+        <td><code>break-before: page</code></td>
+      </tr>
+      <tr>
+        <td><code>data-break-after</code></td>
+        <td><code>break-after: page</code></td>
+      </tr>
+      <tr>
+        <td><code>data-break-avoid</code></td>
+        <td><code>break-inside: avoid</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeBreak %}<!-- Start chapter on a new page -->
+<section data-break-before>
+  <h2>Chapter 2: Methods</h2>
+  ...
+</section>
+
+<!-- Keep figure intact across pages -->
+<figure data-break-avoid>
+  <img src="chart.svg" alt="Results chart">
+  <figcaption>Figure 1: Quarterly results</figcaption>
+</figure>{% endset %}
+  <code-block language="html" label="Page break examples">{{ _codeBreak | escape }}</code-block>
+</section>
+
+
+<!-- Print Button -->
+<section id="print-button">
+  <h2>The Print Button</h2>
+  <p>The <code>&lt;print-page&gt;</code> web component provides a print button that auto-hides itself when printing. It optionally lets users toggle VB&rsquo;s print optimizations off.</p>
+
+  {% set _codePrint %}<print-page>Print this page</print-page>
+
+<!-- With raw-mode toggle -->
+<print-page data-raw-toggle>Print this page</print-page>{% endset %}
+  <code-block language="html" label="Print button component">{{ _codePrint | escape }}</code-block>
+
+  <p>See the full <a href="/docs/elements/web-components/print-page/">print-page component docs</a> for all attributes and accessibility details.</p>
+</section>
+
+
+<!-- Opt-Out -->
+<section id="opt-out">
+  <h2>Opting Out</h2>
+  <p>To print a page exactly as it appears on screen &mdash; with theme colors, shadows, and layout intact &mdash; add <code>data-print-raw</code> to the <code>&lt;html&gt;</code> element:</p>
+
+  {% set _codeRaw %}<html lang="en" data-print-raw>{% endset %}
+  <code-block language="html" label="Disable VB print styles">{{ _codeRaw | escape }}</code-block>
+
+  <p>This disables all VB print optimizations. The <code>@page</code> margin rules still apply (they cannot be scoped to a selector), but everything else is skipped.</p>
+
+  <p>The <code>&lt;print-page data-raw-toggle&gt;</code> component exposes this as a user-facing checkbox.</p>
+</section>
+
+
+<!-- Browser Support -->
+<section id="browser-support">
+  <h2>Browser Support</h2>
+  <p>The core print reset works in all browsers. Enhanced <code>@page</code> features degrade gracefully.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Chrome</th>
+        <th>Firefox</th>
+        <th>Safari</th>
+        <th>Edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>@media print</code></td>
+        <td>All</td>
+        <td>All</td>
+        <td>All</td>
+        <td>All</td>
+      </tr>
+      <tr>
+        <td><code>@page { margin }</code></td>
+        <td>All</td>
+        <td>All</td>
+        <td>All</td>
+        <td>All</td>
+      </tr>
+      <tr>
+        <td><code>@page :first</code></td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>@page :left/:right</code></td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>Partial</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Named pages</td>
+        <td>85+</td>
+        <td>110+</td>
+        <td>No</td>
+        <td>85+</td>
+      </tr>
+      <tr>
+        <td>Margin boxes</td>
+        <td>131+</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>131+</td>
+      </tr>
+      <tr>
+        <td><code>break-*</code></td>
+        <td>50+</td>
+        <td>65+</td>
+        <td>10+</td>
+        <td>79+</td>
+      </tr>
+      <tr>
+        <td><code>print-color-adjust</code></td>
+        <td>17+</td>
+        <td>97+</td>
+        <td>15.4+</td>
+        <td>79+</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>If the browser doesn&rsquo;t support named pages or margin boxes, printing still works &mdash; it just uses default page margins without page numbers.</p>
+</section>
+
+
+<!-- Related -->
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-print/">Print attributes reference</a> &mdash; full API for <code>data-print</code>, visibility, and break attributes</li>
+    <li><a href="/docs/elements/web-components/print-page/">print-page component</a> &mdash; the print button web component</li>
+  </ul>
+</section>
