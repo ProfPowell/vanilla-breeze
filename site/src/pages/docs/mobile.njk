@@ -1,0 +1,449 @@
+---
+layout: layouts/docs.njk
+title: "Mobile - Vanilla Breeze"
+description: "How to build mobile-native experiences with Vanilla Breeze: safe areas, app shells, bottom sheets, touch targets, forms, and horizontal scroll."
+currentPath: /docs/mobile/
+permalink: /docs/mobile/
+---
+
+{% set codeViewport %}<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">{% endset %}
+
+{% set codeSafeArea %}/* VB exposes these tokens automatically */
+:root {
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+}
+
+/* Use them on edge-touching elements */
+.my-fixed-bar {
+  padding-block-end: calc(var(--size-m) + var(--safe-bottom));
+}{% endset %}
+
+{% set codeAppShell %}<body data-page-layout="app-shell" data-layout-gap="none">
+  <header data-layout="cluster" data-layout-justify="between" data-layout-sticky>
+    <brand-mark>AppName</brand-mark>
+    <button class="icon-only ghost" aria-label="Notifications">
+      <icon-wc name="bell"></icon-wc>
+    </button>
+  </header>
+
+  <main data-layout="stack" data-layout-gap="l">
+    <!-- scrollable content -->
+  </main>
+
+  <nav aria-label="Main navigation">
+    <ul>
+      <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
+      <li><a href="#"><icon-wc name="search"></icon-wc> Search</a></li>
+      <li><a href="#"><icon-wc name="folder"></icon-wc> Projects</a></li>
+      <li><a href="#"><icon-wc name="user"></icon-wc> Profile</a></li>
+    </ul>
+  </nav>
+</body>{% endset %}
+
+{% set codeBottomSheet %}<button commandfor="my-sheet" command="show-modal">
+  Show Options
+</button>
+
+<dialog id="my-sheet" data-position="bottom">
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Options</h2>
+    <button commandfor="my-sheet" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
+    <nav aria-label="Actions">
+      <ul>
+        <li><a href="#"><icon-wc name="share"></icon-wc> Share</a></li>
+        <li><a href="#"><icon-wc name="bookmark"></icon-wc> Save</a></li>
+      </ul>
+    </nav>
+  </section>
+</dialog>{% endset %}
+
+{% set codeFormMobile %}<form class="stacked" novalidate>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" required
+           autocomplete="email"
+           enterkeyhint="next">
+  </form-field>
+
+  <form-field>
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone"
+           autocomplete="tel"
+           inputmode="tel"
+           enterkeyhint="next">
+  </form-field>
+
+  <form-field>
+    <label for="zip">ZIP Code</label>
+    <input type="text" id="zip"
+           autocomplete="postal-code"
+           inputmode="numeric"
+           pattern="[0-9]{5}"
+           enterkeyhint="send">
+  </form-field>
+
+  <button type="submit" class="full-width">Submit</button>
+</form>{% endset %}
+
+{% set codeHero %}<!-- Hero that fits in one mobile screen (browser chrome visible) -->
+<section data-layout="cover" data-layout-min="100svh" data-layout-centered>
+  <h1>Big Headline</h1>
+  <p>Fits without scrolling.</p>
+</section>
+
+<!-- Full-height app panel (dynamic, updates as chrome hides) -->
+<section data-layout="cover" data-layout-min="100dvh">
+  ...
+</section>{% endset %}
+
+{% set codeReel %}<section data-layout="reel" data-layout-gap="m" data-layout-item-width="m">
+  <layout-card>Card 1</layout-card>
+  <layout-card>Card 2</layout-card>
+  <layout-card>Card 3</layout-card>
+  <layout-card>Card 4</layout-card>
+</section>{% endset %}
+
+<h1>Mobile</h1>
+<p class="lead">VB makes pages mobile-ready by default. Touch targets, responsive layouts, dynamic viewport units, and scroll snap are built in. This guide covers the remaining 10%: safe areas, app shells, bottom sheets, and form optimization.</p>
+
+<nav class="subnav" aria-label="Mobile guide sections">
+  <ul>
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#viewport-fit">Viewport Fit</a></li>
+    <li><a href="#already-works">What Works</a></li>
+    <li><a href="#app-shell">App Shell</a></li>
+    <li><a href="#bottom-sheet">Bottom Sheet</a></li>
+    <li><a href="#forms">Forms</a></li>
+    <li><a href="#hero-scroll">Hero &amp; Scroll</a></li>
+    <li><a href="#browser-support">Support</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+
+<!-- Philosophy -->
+<section id="philosophy">
+  <h2>Philosophy</h2>
+  <p>Most CSS frameworks ignore mobile-specific concerns, leaving you to bolt on safe areas, touch targets, and viewport fixes. VB takes the opposite approach: mobile support ships inside the core.</p>
+
+  <ul>
+    <li><strong>Default</strong> &mdash; every page gets 44px touch targets on coarse pointers, <code>100dvh</code> body height, smooth scrolling, and responsive layout collapse. No attributes required.</li>
+    <li><strong>Enhanced</strong> &mdash; pages designed for mobile add <code>viewport-fit=cover</code> to unlock safe-area tokens, use <code>data-page-layout="app-shell"</code> for bottom-nav shells, and use <code>&lt;dialog data-position="bottom"&gt;</code> for action sheets.</li>
+    <li><strong>Granular</strong> &mdash; individual inputs get the right virtual keyboard via <code>inputmode</code>, <code>autocomplete</code>, and <code>enterkeyhint</code>.</li>
+  </ul>
+
+  <p>Because VB&rsquo;s design tokens drive all sizing and spacing, the <code>@media (pointer: coarse)</code> query only needs to set <code>--size-touch-min: 2.75rem</code> &mdash; every button, input, and select automatically adapts.</p>
+</section>
+
+
+<!-- Viewport Fit -->
+<section id="viewport-fit">
+  <h2>The viewport-fit Unlock</h2>
+  <p>Modern phones have notches, Dynamic Islands, and home indicators that occupy real pixels. To respect these areas, add <code>viewport-fit=cover</code> to your viewport meta tag:</p>
+
+  <code-block language="html" label="Enable safe areas">{{ codeViewport | escape }}</code-block>
+
+  <p>This activates VB&rsquo;s safe-area tokens, which are defined automatically in the token layer:</p>
+
+  <code-block language="css" label="Safe-area tokens">{{ codeSafeArea | escape }}</code-block>
+
+  <h3>What auto-consumes safe areas</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Element</th>
+        <th>Token used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>dialog[data-position="bottom"]</code></td>
+        <td><code>--safe-bottom</code> (padding)</td>
+      </tr>
+      <tr>
+        <td><code>data-page-layout="app-shell"</code> nav (mobile)</td>
+        <td><code>--safe-bottom</code> (padding)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>For custom fixed bars or sticky footers, apply safe-area tokens manually using <code>calc()</code>.</p>
+</section>
+
+
+<!-- What Works Already -->
+<section id="already-works">
+  <h2>What Works Already</h2>
+  <p>These mobile features are built into VB&rsquo;s core &mdash; no extra attributes or configuration needed.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Concern</th>
+        <th>VB solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Touch targets</td>
+        <td><code>@media (pointer: coarse)</code> enforces 44px min on buttons, inputs, selects</td>
+      </tr>
+      <tr>
+        <td>Full-height pages</td>
+        <td><code>body { min-block-size: 100dvh }</code></td>
+      </tr>
+      <tr>
+        <td>Tap highlight</td>
+        <td><code>-webkit-tap-highlight-color: transparent</code> in reset</td>
+      </tr>
+      <tr>
+        <td>iOS text zoom</td>
+        <td><code>text-size-adjust: none</code> in reset</td>
+      </tr>
+      <tr>
+        <td>Smooth scrolling</td>
+        <td><code>scroll-behavior: smooth</code> (respects reduced-motion)</td>
+      </tr>
+      <tr>
+        <td>Sidebar collapse</td>
+        <td><code>data-layout="sidebar"</code> wraps naturally (intrinsic CSS, no media query)</td>
+      </tr>
+      <tr>
+        <td>Column &harr; row flip</td>
+        <td><code>data-layout="switcher"</code> flips at configurable threshold</td>
+      </tr>
+      <tr>
+        <td>Split stack</td>
+        <td><code>data-layout="split"</code> stacks at &lt; 48rem</td>
+      </tr>
+      <tr>
+        <td>Hover-only motion</td>
+        <td><code>@media (hover: none)</code> disables hover lift/scale</td>
+      </tr>
+      <tr>
+        <td>Scroll snap</td>
+        <td>Built into <code>data-layout="reel"</code> and <code>&lt;carousel-wc&gt;</code></td>
+      </tr>
+      <tr>
+        <td>Scroll containment</td>
+        <td><code>overscroll-behavior: contain</code> on dialogs and sticky nav/aside</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- App Shell -->
+<section id="app-shell">
+  <h2>App Shell Pattern</h2>
+  <p>The <code>data-page-layout="app-shell"</code> layout creates a header/main/nav grid. On screens narrower than 48rem, the nav automatically moves below main &mdash; becoming a bottom navigation bar. Safe-area bottom padding is applied automatically.</p>
+
+  <code-block language="html" label="App shell layout">{{ codeAppShell | escape }}</code-block>
+
+  <browser-window src="/docs/examples/demos/mobile-app-shell.html" url="https://vanilla-breeze.dev/mobile/app-shell" title="Mobile app shell demo" shadow></browser-window>
+
+  <p>See also: <a href="/docs/patterns/application/shells/">Application Shells pattern</a></p>
+</section>
+
+
+<!-- Bottom Sheet -->
+<section id="bottom-sheet">
+  <h2>Bottom Sheet</h2>
+  <p>VB&rsquo;s native <code>&lt;dialog&gt;</code> styling includes a bottom drawer variant. It slides up from the bottom, has rounded top corners, respects safe areas, and prevents scroll chaining &mdash; all with zero JavaScript beyond the native <code>showModal()</code> API.</p>
+
+  <code-block language="html" label="Bottom sheet with Invokers API">{{ codeBottomSheet | escape }}</code-block>
+
+  <p>The <code>commandfor</code> / <code>command</code> attributes use the Invokers API to open and close the dialog declaratively. In browsers that don&rsquo;t support Invokers yet, fall back to <code>document.getElementById('my-sheet').showModal()</code>.</p>
+
+  <browser-window src="/docs/examples/demos/mobile-bottom-sheet.html" url="https://vanilla-breeze.dev/mobile/bottom-sheet" title="Bottom sheet demo" shadow></browser-window>
+
+  <p>See also: <a href="/docs/elements/native/dialog/">Dialog element docs</a></p>
+</section>
+
+
+<!-- Mobile Forms -->
+<section id="forms">
+  <h2>Mobile Forms</h2>
+  <p>The single biggest mobile form improvement is using the right HTML attributes. These are native HTML &mdash; not VB features &mdash; but VB&rsquo;s <code>&lt;form-field&gt;</code> component makes them easy to use correctly.</p>
+
+  <h3>The attributes that matter</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>What it does on mobile</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>type="email"</code></td>
+        <td>Shows keyboard with <kbd>@</kbd> key prominent</td>
+      </tr>
+      <tr>
+        <td><code>type="tel"</code></td>
+        <td>Shows numeric dialpad</td>
+      </tr>
+      <tr>
+        <td><code>inputmode="numeric"</code></td>
+        <td>Numeric keyboard without spinners (use for credit cards, ZIP codes)</td>
+      </tr>
+      <tr>
+        <td><code>autocomplete="email"</code></td>
+        <td>Enables one-tap autofill from saved contacts</td>
+      </tr>
+      <tr>
+        <td><code>autocomplete="cc-number"</code></td>
+        <td>iOS shows camera to scan physical card; Android offers Google Pay</td>
+      </tr>
+      <tr>
+        <td><code>autocomplete="one-time-code"</code></td>
+        <td>iOS shows SMS suggestion bar above keyboard</td>
+      </tr>
+      <tr>
+        <td><code>enterkeyhint="next"</code></td>
+        <td>Shows &ldquo;Next&rdquo; on the Enter key (guides user through the form)</td>
+      </tr>
+      <tr>
+        <td><code>enterkeyhint="send"</code></td>
+        <td>Shows &ldquo;Send&rdquo; on the last field</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" label="Mobile-optimized form">{{ codeFormMobile | escape }}</code-block>
+
+  <browser-window src="/docs/examples/demos/mobile-form.html" url="https://vanilla-breeze.dev/mobile/form" title="Mobile form demo" shadow></browser-window>
+
+  <p>See also: <a href="/docs/attributes/autocomplete/">autocomplete reference</a>, <a href="/docs/attributes/inputmode/">inputmode reference</a>, <a href="/docs/attributes/enterkeyhint/">enterkeyhint reference</a></p>
+</section>
+
+
+<!-- Hero & Horizontal Scroll -->
+<section id="hero-scroll">
+  <h2>Hero and Horizontal Scroll</h2>
+
+  <h3>Viewport height units</h3>
+  <p>VB&rsquo;s cover layout supports three viewport height units:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Use when</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-layout-min="100svh"</code></td>
+        <td>Small viewport height</td>
+        <td>Hero sections &mdash; always fits when browser chrome is visible</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-min="100dvh"</code></td>
+        <td>Dynamic viewport height</td>
+        <td>Full-screen app panels &mdash; updates as chrome hides on scroll</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-min="100vh"</code></td>
+        <td>Legacy viewport height</td>
+        <td>Fallback &mdash; broken on mobile (ignores browser chrome)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" label="Hero with svh and dvh">{{ codeHero | escape }}</code-block>
+
+  <h3>Horizontal card reel</h3>
+  <p>The <code>data-layout="reel"</code> provides a horizontal scroll-snap container. It includes <code>scroll-snap-type: x mandatory</code>, momentum scrolling, and hidden scrollbars. Use it for card feeds, feature showcases, and image galleries.</p>
+
+  <code-block language="html" label="Horizontal reel">{{ codeReel | escape }}</code-block>
+
+  <browser-window src="/docs/examples/demos/mobile-hero.html" url="https://vanilla-breeze.dev/mobile/hero" title="Hero and reel demo" shadow></browser-window>
+</section>
+
+
+<!-- Browser Support -->
+<section id="browser-support">
+  <h2>Browser Support</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Chrome</th>
+        <th>Firefox</th>
+        <th>Safari</th>
+        <th>Edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>env(safe-area-inset-*)</code></td>
+        <td>69+</td>
+        <td>65+</td>
+        <td>11.2+</td>
+        <td>79+</td>
+      </tr>
+      <tr>
+        <td><code>dvh</code> / <code>svh</code></td>
+        <td>108+</td>
+        <td>101+</td>
+        <td>15.4+</td>
+        <td>108+</td>
+      </tr>
+      <tr>
+        <td><code>overscroll-behavior</code></td>
+        <td>63+</td>
+        <td>59+</td>
+        <td>16+</td>
+        <td>18+</td>
+      </tr>
+      <tr>
+        <td><code>scroll-snap-type</code></td>
+        <td>69+</td>
+        <td>68+</td>
+        <td>11+</td>
+        <td>79+</td>
+      </tr>
+      <tr>
+        <td><code>@media (pointer: coarse)</code></td>
+        <td>41+</td>
+        <td>64+</td>
+        <td>9+</td>
+        <td>12+</td>
+      </tr>
+      <tr>
+        <td>Invokers API (<code>commandfor</code>)</td>
+        <td>135+</td>
+        <td>No</td>
+        <td>No</td>
+        <td>135+</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>All core features have 95%+ support on current mobile browsers. The Invokers API is the newest; for broader support, use <code>element.showModal()</code> as a JavaScript fallback.</p>
+</section>
+
+
+<!-- Related -->
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/patterns/application/shells/">Application Shells pattern</a> &mdash; app-shell, dashboard, sidebar layouts</li>
+    <li><a href="/docs/elements/native/dialog/">Dialog element</a> &mdash; full reference for dialogs, drawers, and bottom sheets</li>
+    <li><a href="/docs/elements/web-components/carousel/">Carousel component</a> &mdash; touch-friendly image and content carousel</li>
+    <li><a href="/docs/attributes/autocomplete/">autocomplete reference</a> &mdash; all autofill token values</li>
+    <li><a href="/docs/attributes/inputmode/">inputmode reference</a> &mdash; virtual keyboard control</li>
+    <li><a href="/docs/printing/">Printing guide</a> &mdash; a sister infrastructure guide for print optimization</li>
+  </ul>
+</section>

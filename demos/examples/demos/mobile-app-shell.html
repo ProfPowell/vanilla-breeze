@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mobile App Shell</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    /* Bottom nav styling for the app-shell layout */
+    body > nav {
+      background: var(--color-surface);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    body > nav ul {
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    body > nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-3xs);
+      padding: var(--size-xs) var(--size-s);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+
+    body > nav a[aria-current="page"] {
+      color: var(--color-primary);
+    }
+
+    /* Hero card styling */
+    .hero-card {
+      background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-surface));
+      border-radius: var(--radius-l);
+      padding: var(--size-xl);
+    }
+
+    .hero-card h2 {
+      font-size: var(--font-size-2xl);
+      margin-block-end: var(--size-xs);
+    }
+  </style>
+</head>
+<body data-page-layout="app-shell" data-layout-gap="none">
+
+  <header data-layout="cluster" data-layout-justify="between" data-layout-sticky style="padding: var(--size-s) var(--size-m); background: var(--color-surface); border-block-end: 1px solid var(--color-border);">
+    <brand-mark>AppName</brand-mark>
+    <button class="icon-only ghost" aria-label="Notifications">
+      <icon-wc name="bell"></icon-wc>
+    </button>
+  </header>
+
+  <main data-layout="stack" data-layout-gap="l" style="padding: var(--size-m); overflow-y: auto; overscroll-behavior: contain;">
+
+    <section class="hero-card">
+      <h2>Good morning</h2>
+      <p style="color: var(--color-text-muted);">You have 3 tasks due today.</p>
+    </section>
+
+    <section data-layout="stack" data-layout-gap="s">
+      <h3>Recent Activity</h3>
+      <section data-layout="reel" data-layout-gap="m" data-layout-item-width="m">
+        <layout-card>
+          <header><h4>Project Alpha</h4></header>
+          <section><p style="color: var(--color-text-muted);">Updated 2 hours ago</p></section>
+          <footer><layout-badge data-color="success">Active</layout-badge></footer>
+        </layout-card>
+        <layout-card>
+          <header><h4>Design System</h4></header>
+          <section><p style="color: var(--color-text-muted);">Updated yesterday</p></section>
+          <footer><layout-badge data-color="warning">Review</layout-badge></footer>
+        </layout-card>
+        <layout-card>
+          <header><h4>API Docs</h4></header>
+          <section><p style="color: var(--color-text-muted);">Updated 3 days ago</p></section>
+          <footer><layout-badge data-color="info">Draft</layout-badge></footer>
+        </layout-card>
+        <layout-card>
+          <header><h4>Mobile App</h4></header>
+          <section><p style="color: var(--color-text-muted);">Updated last week</p></section>
+          <footer><layout-badge>Planned</layout-badge></footer>
+        </layout-card>
+      </section>
+    </section>
+
+    <section data-layout="stack" data-layout-gap="m">
+      <h3>Tasks</h3>
+      <layout-card data-variant="outlined">
+        <section data-layout="cluster" data-layout-justify="between">
+          <p>Review pull request #42</p>
+          <layout-badge data-color="error" data-variant="subtle">Urgent</layout-badge>
+        </section>
+      </layout-card>
+      <layout-card data-variant="outlined">
+        <section data-layout="cluster" data-layout-justify="between">
+          <p>Update component docs</p>
+          <layout-badge data-color="warning" data-variant="subtle">Medium</layout-badge>
+        </section>
+      </layout-card>
+      <layout-card data-variant="outlined">
+        <section data-layout="cluster" data-layout-justify="between">
+          <p>Write unit tests</p>
+          <layout-badge data-variant="subtle">Low</layout-badge>
+        </section>
+      </layout-card>
+    </section>
+
+    <section>
+      <button commandfor="action-sheet" command="show-modal" class="full-width secondary">
+        <icon-wc name="plus"></icon-wc> Quick Action
+      </button>
+    </section>
+
+  </main>
+
+  <nav aria-label="Main navigation">
+    <ul>
+      <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
+      <li><a href="#"><icon-wc name="search"></icon-wc> Search</a></li>
+      <li><a href="#"><icon-wc name="folder"></icon-wc> Projects</a></li>
+      <li><a href="#"><icon-wc name="user"></icon-wc> Profile</a></li>
+    </ul>
+  </nav>
+
+  <dialog id="action-sheet" data-position="bottom">
+    <header data-layout="cluster" data-layout-justify="between">
+      <h2>Quick Actions</h2>
+      <button commandfor="action-sheet" command="close" class="ghost icon-only" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <nav aria-label="Actions" style="padding: var(--size-m);">
+      <ul data-layout="stack" data-layout-gap="xs" style="list-style: none; padding: 0;">
+        <li><a href="#" data-layout="cluster" data-layout-gap="s" style="padding: var(--size-s); text-decoration: none; border-radius: var(--radius-m);"><icon-wc name="plus"></icon-wc> New Project</a></li>
+        <li><a href="#" data-layout="cluster" data-layout-gap="s" style="padding: var(--size-s); text-decoration: none; border-radius: var(--radius-m);"><icon-wc name="upload"></icon-wc> Import</a></li>
+        <li><a href="#" data-layout="cluster" data-layout-gap="s" style="padding: var(--size-s); text-decoration: none; border-radius: var(--radius-m);"><icon-wc name="users"></icon-wc> Invite Team</a></li>
+      </ul>
+    </nav>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

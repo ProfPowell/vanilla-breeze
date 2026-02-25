@@ -59,6 +59,12 @@ dialog[open]::backdrop {
   animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
 }
 
+/* Prevent scroll chaining — scrolling inside a dialog should not
+   scroll the page behind the backdrop */
+dialog[open] {
+  overscroll-behavior: contain;
+}
+
 /* @starting-style entry transition — replaces animation in supporting browsers */
 dialog[open] {
   opacity: 1;
@@ -187,6 +193,7 @@ dialog[data-position="bottom"] {
   inline-size: 100vw;
   max-inline-size: 100vw;
   border-radius: var(--radius-l) var(--radius-l) 0 0;
+  padding-block-end: var(--safe-bottom, 0px);
 }
 
 dialog[data-position="bottom"][open] {
@@ -238,5 +245,6 @@ dialog[data-position="top"][open] {
 dialog[data-position] > section,
 dialog[data-position] > form {
   overflow-y: auto;
+  overscroll-behavior: contain;
   max-block-size: calc(100dvh - 8rem);
 }
