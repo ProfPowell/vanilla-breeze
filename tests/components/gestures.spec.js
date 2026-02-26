@@ -1,8 +1,8 @@
 // @ts-check
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright/test';
 
-const PLAYGROUND_URL = '/docs/examples/demos/gesture-playground.html';
-const NOTIFICATIONS_URL = '/docs/examples/demos/gesture-notifications.html';
+const PLAYGROUND_URL = '/demos/examples/demos/gesture-playground.html';
+const NOTIFICATIONS_URL = '/demos/examples/demos/gesture-notifications.html';
 
 test.describe('Gesture Playground', () => {
 
