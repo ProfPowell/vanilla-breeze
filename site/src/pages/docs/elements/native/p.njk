@@ -9,8 +9,77 @@ currentPath: /docs/elements/native/p/
 permalink: /docs/elements/native/p/
 ---
 
+{% set defaultCode %}<p>This is a paragraph of text. Paragraphs have proper
+text wrapping that avoids orphaned words at the end
+of lines when possible.</p>
+
+<p>A second paragraph shows the vertical rhythm between
+adjacent paragraphs.</p>{% endset %}
+
+{% set leadCode %}<p class="lead">This is a lead paragraph that introduces
+the main content. It has larger text and muted color
+to distinguish it from regular body text.</p>
+
+<p>This is a regular paragraph that follows.</p>{% endset %}
+
+{% set balanceCode %}<h2>Welcome to Vanilla Breeze</h2>
+<p class="balance">A design system built on native HTML
+elements, semantic CSS, and zero JavaScript
+dependencies.</p>{% endset %}
+
+{% set indentCode %}<p class="indent">The morning light crept through the
+shutters, casting thin stripes across the wooden
+floor.</p>
+<p class="indent">Outside, the first birds had begun to
+call. It was the kind of quiet that felt intentional.</p>
+<p class="indent">She stood, finally, and crossed to the
+window. The garden was still wet with dew.</p>{% endset %}
+
+{% set justifyCode %}<p class="justify">Typography is the art and technique
+of arranging type to make written language legible,
+readable, and appealing when displayed.</p>{% endset %}
+
+{% set emphasisCode %}<p>Use <strong>strong</strong> for importance.
+Use <b>bold</b> for stylistic emphasis.</p>
+
+<p>Use <em>em</em> for stress emphasis.
+Use <i>italic</i> for alternative voice.</p>
+
+<p>Price: $99.99 <small>(plus tax)</small>.</p>
+
+<p>Search results can <mark>highlight</mark>
+matching terms.</p>{% endset %}
+
 {% set cssPropertiesCode %}p {
   text-wrap: pretty;
+}
+
+p + p {
+  margin-block-start: var(--size-m);
+}
+
+p.lead {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-muted);
+}
+
+p.balance {
+  text-wrap: balance;
+}
+
+p.indent {
+  text-indent: 1.5em;
+}
+
+p.indent + p.indent {
+  margin-block-start: 0;
+}
+
+p.justify {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 strong, b {
@@ -31,27 +100,23 @@ mark {
   border-radius: var(--radius-s);
 }{% endset %}
 
-{% set leadParagraphCode %}<p class="lead">Introduction text...</p>{% endset %}
-
 <!-- Overview Section -->
   <section>
     <h2 id="overview">Overview</h2>
     <p>The <code>&lt;p&gt;</code> element is used for blocks of text content. It automatically creates vertical spacing between adjacent paragraphs and uses modern CSS text-wrap features for optimal readability.</p>
 
-    <div class="example">
-      <p>This is a paragraph of text demonstrating the default styling. Paragraphs have proper text wrapping that avoids orphaned words at the end of lines when possible. The text flows naturally and maintains readability across different viewport sizes.</p>
-      <p>A second paragraph shows the vertical rhythm between adjacent paragraphs. Consistent spacing helps readers follow the content and creates a comfortable reading experience.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/p-default.html" url="https://vanilla-breeze.dev/p/default" title="Default paragraphs" shadow></browser-window>
+    <code-block language="html" label="Default paragraphs">{{ defaultCode | escape }}</code-block>
   </section>
 
   <!-- When to Use Section -->
   <section>
     <h2 id="when-to-use">When to Use</h2>
     <ul>
-      <li><strong>Body text</strong> - For regular prose and explanatory content</li>
-      <li><strong>Descriptions</strong> - Product descriptions, summaries, introductions</li>
-      <li><strong>Lead paragraphs</strong> - Opening text that introduces a section</li>
-      <li><strong>Form help text</strong> - Explanatory text near form controls</li>
+      <li><strong>Body text</strong> — For regular prose and explanatory content</li>
+      <li><strong>Descriptions</strong> — Product descriptions, summaries, introductions</li>
+      <li><strong>Lead paragraphs</strong> — Opening text that introduces a section</li>
+      <li><strong>Form help text</strong> — Explanatory text near form controls</li>
     </ul>
 
     <h3>When Not to Use</h3>
@@ -63,28 +128,44 @@ mark {
     </ul>
   </section>
 
-  <!-- Basic Examples Section -->
+  <!-- Lead Paragraph Section -->
   <section>
-    <h2 id="basic-examples">Basic Examples</h2>
+    <h2 id="lead">Lead Paragraph</h2>
+    <p>Use the <code>.lead</code> class to create an introductory paragraph with larger, muted text. Commonly used as the opening paragraph of an article or section.</p>
 
-    <h3>Standard Paragraph</h3>
-    <div class="example">
-      <p>A standard paragraph contains one or more sentences that form a cohesive unit of thought. Browsers automatically add margins above and below paragraphs to separate them from other content.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/p-lead.html" url="https://vanilla-breeze.dev/p/lead" title="Lead paragraph" shadow></browser-window>
+    <code-block language="html" label="Lead paragraph">{{ leadCode | escape }}</code-block>
+  </section>
 
-    <h3>Multiple Paragraphs</h3>
-    <div class="example">
-      <p>The first paragraph introduces a topic. It sets the context for what follows and draws the reader into the content.</p>
-      <p>Subsequent paragraphs develop the ideas further. Each paragraph should focus on a single main idea or point.</p>
-      <p>The final paragraph in a section often summarizes or transitions to the next topic.</p>
-    </div>
+  <!-- Balance Section -->
+  <section>
+    <h2 id="balance">Balanced Text</h2>
+    <p>The <code>.balance</code> class applies <code>text-wrap: balance</code>, which distributes text evenly across lines. Ideal for short, centered text like hero subtitles or card descriptions.</p>
 
-    <h3>Short Paragraphs</h3>
-    <div class="example">
-      <p>Short paragraphs are easier to scan.</p>
-      <p>They improve readability on screens.</p>
-      <p>Use them for key points or calls to action.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/p-balance.html" url="https://vanilla-breeze.dev/p/balance" title="Balanced text" shadow></browser-window>
+    <code-block language="html" label="Balanced text">{{ balanceCode | escape }}</code-block>
+
+    <p><strong>Note:</strong> Browsers limit <code>text-wrap: balance</code> to roughly 6 lines of text. For longer paragraphs, the default <code>text-wrap: pretty</code> is more appropriate.</p>
+  </section>
+
+  <!-- Indent Section -->
+  <section>
+    <h2 id="indent">Indented Paragraphs</h2>
+    <p>The <code>.indent</code> class adds a book-style first-line indent. When consecutive indented paragraphs follow each other, the inter-paragraph margin collapses to zero, creating traditional prose formatting.</p>
+
+    <browser-window src="/docs/snippets/demos/p-indent.html" url="https://vanilla-breeze.dev/p/indent" title="Indented paragraphs" shadow></browser-window>
+    <code-block language="html" label="Indented paragraphs">{{ indentCode | escape }}</code-block>
+  </section>
+
+  <!-- Justify Section -->
+  <section>
+    <h2 id="justify">Justified Text</h2>
+    <p>The <code>.justify</code> class aligns text to both edges and enables automatic hyphenation. This produces the polished look seen in books and newspapers. Works best in narrow columns (40-60ch).</p>
+
+    <browser-window src="/docs/snippets/demos/p-justify.html" url="https://vanilla-breeze.dev/p/justify" title="Justified text" shadow></browser-window>
+    <code-block language="html" label="Justified text">{{ justifyCode | escape }}</code-block>
+
+    <p><strong>Accessibility note:</strong> The <code>a11y-dyslexia</code> theme automatically overrides <code>p.justify</code> to left-aligned text with no hyphenation, ensuring readability for users with dyslexia.</p>
   </section>
 
   <!-- Text Emphasis Section -->
@@ -92,29 +173,51 @@ mark {
     <h2 id="text-emphasis">Text Emphasis</h2>
     <p>Paragraphs can contain inline elements for emphasis and semantic meaning.</p>
 
-    <h3>Strong and Bold</h3>
-    <div class="example">
-      <p>Use <strong>strong</strong> to indicate importance, seriousness, or urgency.</p>
-      <p>Use <b>bold</b> for stylistic emphasis without semantic importance (like keywords in a summary).</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/p-emphasis.html" url="https://vanilla-breeze.dev/p/emphasis" title="Inline emphasis elements" shadow></browser-window>
+    <code-block language="html" label="Inline emphasis elements">{{ emphasisCode | escape }}</code-block>
 
-    <h3>Emphasis and Italic</h3>
-    <div class="example">
-      <p>Use <em>em</em> for stress emphasis - text that would be spoken differently.</p>
-      <p>Use <i>italic</i> for alternative voice or mood (like technical terms, foreign words, or thoughts).</p>
-    </div>
-
-    <h3>Small Text</h3>
-    <div class="example">
-      <p>Use <small>small</small> for side comments, fine print, or legal disclaimers.</p>
-      <p>The price is $99.99 <small>(plus tax and shipping)</small>.</p>
-    </div>
-
-    <h3>Mark (Highlight)</h3>
-    <div class="example">
-      <p>Use <mark>mark</mark> to highlight text for reference purposes, like search results.</p>
-      <p>Variants: <mark class="success">success</mark>, <mark class="warning">warning</mark>, <mark class="error">error</mark>.</p>
-    </div>
+    <h3>Choosing the Right Element</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Meaning</th>
+          <th>Screen Reader</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;strong&gt;</code></td>
+          <td>Importance, seriousness, urgency</td>
+          <td>Announced differently</td>
+        </tr>
+        <tr>
+          <td><code>&lt;b&gt;</code></td>
+          <td>Stylistic bold (keywords, product names)</td>
+          <td>Not announced</td>
+        </tr>
+        <tr>
+          <td><code>&lt;em&gt;</code></td>
+          <td>Stress emphasis (spoken differently)</td>
+          <td>Announced differently</td>
+        </tr>
+        <tr>
+          <td><code>&lt;i&gt;</code></td>
+          <td>Alternative voice (terms, thoughts)</td>
+          <td>Not announced</td>
+        </tr>
+        <tr>
+          <td><code>&lt;small&gt;</code></td>
+          <td>Side comments, fine print</td>
+          <td>Normal reading</td>
+        </tr>
+        <tr>
+          <td><code>&lt;mark&gt;</code></td>
+          <td>Highlighted for reference</td>
+          <td>Some readers announce</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- CSS Properties Section -->
@@ -123,26 +226,33 @@ mark {
 
     <code-block language="css" label="Paragraph CSS styling">{{ cssPropertiesCode | escape }}</code-block>
 
-    <h3>Key Features</h3>
-    <ul>
-      <li><strong>text-wrap: pretty</strong> - Optimizes line breaks to avoid orphaned words and improve typography</li>
-      <li><strong>Semantic weights</strong> - <code>strong</code> and <code>b</code> use 600 weight for visual distinction</li>
-      <li><strong>Mark highlighting</strong> - Uses the interactive color with transparency for highlighting</li>
-    </ul>
-  </section>
-
-  <!-- Lead Paragraph Section -->
-  <section>
-    <h2 id="lead-paragraph">Lead Paragraph</h2>
-    <p>Use the <code>.lead</code> class to create an introductory paragraph with larger, muted text.</p>
-
-    <div class="example">
-      <h2>Article Title</h2>
-      <p class="lead">This is a lead paragraph that introduces the main content. It has larger text and muted color to distinguish it from regular body text.</p>
-      <p>This is a regular paragraph that follows. Notice how it contrasts with the lead paragraph above.</p>
-    </div>
-
-    <code-block language="html" label="Lead paragraph">{{ leadParagraphCode | escape }}</code-block>
+    <h3>Variant Summary</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>p.lead</code></td>
+          <td>Larger, muted intro paragraph</td>
+        </tr>
+        <tr>
+          <td><code>p.balance</code></td>
+          <td>Even line distribution for short, centered text</td>
+        </tr>
+        <tr>
+          <td><code>p.indent</code></td>
+          <td>Book-style first-line indent with collapsed margins</td>
+        </tr>
+        <tr>
+          <td><code>p.justify</code></td>
+          <td>Justified alignment with auto-hyphenation</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- Accessibility Section -->
@@ -151,35 +261,26 @@ mark {
 
     <h3>Best Practices</h3>
     <ul>
-      <li><strong>Semantic structure</strong> - Use paragraphs for actual paragraph content, not for layout spacing</li>
-      <li><strong>Reading level</strong> - Write at an appropriate reading level for your audience</li>
-      <li><strong>Line length</strong> - Keep lines to 45-75 characters for optimal readability</li>
-      <li><strong>Contrast</strong> - Ensure sufficient color contrast with the background</li>
+      <li><strong>Semantic structure</strong> — Use paragraphs for actual paragraph content, not for layout spacing</li>
+      <li><strong>Reading level</strong> — Write at an appropriate reading level for your audience</li>
+      <li><strong>Line length</strong> — Keep lines to 45-75 characters for optimal readability</li>
+      <li><strong>Contrast</strong> — Ensure sufficient color contrast with the background</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>Screen readers treat paragraphs as distinct blocks of content. Users can:</p>
-    <ul>
-      <li>Navigate between paragraphs using keyboard shortcuts</li>
-      <li>Hear a pause between paragraphs to indicate the break</li>
-      <li>Get a count of paragraphs on the page</li>
-    </ul>
+    <p>Screen readers treat paragraphs as distinct blocks of content. Users can navigate between paragraphs using keyboard shortcuts and hear a pause between them to indicate the break.</p>
 
-    <h3>Emphasis and Screen Readers</h3>
-    <ul>
-      <li><code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code> are announced differently by some screen readers</li>
-      <li><code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> are purely visual and not announced</li>
-      <li>Choose the appropriate element based on whether the emphasis is meaningful or decorative</li>
-    </ul>
+    <h3>Dyslexia Theme</h3>
+    <p>The <code>a11y-dyslexia</code> theme overrides <code>p.justify</code> to use left-aligned text and disables hyphenation. The <code>.lead</code>, <code>.balance</code>, and <code>.indent</code> classes remain unaffected since they don't interfere with readability.</p>
   </section>
 
   <!-- Related Elements Section -->
   <section>
     <h2 id="related">Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/headings/"><code>&lt;h1&gt;-&lt;h6&gt;</code></a> - Headings that introduce paragraph content</li>
-      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> - For quoted text blocks</li>
-      <li><a href="/docs/elements/native/lists/"><code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code></a> - For lists of items</li>
-      <li><a href="/docs/elements/native/text/">Inline semantics</a> - Elements like <code>&lt;abbr&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code></li>
+      <li><a href="/docs/elements/native/headings/"><code>&lt;h1&gt;-&lt;h6&gt;</code></a> — Headings that introduce paragraph content</li>
+      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> — For quoted text blocks</li>
+      <li><a href="/docs/elements/native/lists/"><code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code></a> — For lists of items</li>
+      <li><a href="/docs/elements/native/text/">Inline semantics</a> — Elements like <code>&lt;abbr&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code></li>
     </ul>
   </section>
