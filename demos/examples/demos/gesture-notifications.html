@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Gesture Notifications</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: 0;
+      background: var(--color-surface-alt);
+      max-inline-size: 28rem;
+      margin-inline: auto;
+    }
+
+    /* Header */
+    .inbox-header {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      padding: var(--size-m) var(--size-l);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inbox-header h1 { font-size: var(--font-size-l); margin: 0; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: 1.5rem;
+      padding-inline: var(--size-3xs);
+      block-size: 1.5rem;
+      border-radius: var(--radius-full);
+      background: var(--color-danger, #e53e3e);
+      color: #fff;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Card list */
+    .card-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Each card has a reveal layer behind it */
+    .card-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-reveal {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      padding-inline: var(--size-l);
+      font-weight: var(--font-weight-bold);
+      color: #fff;
+    }
+
+    .card-reveal[data-action="archive"] {
+      background: var(--color-success, #38a169);
+      justify-content: flex-start;
+    }
+
+    .card-reveal[data-action="delete"] {
+      background: var(--color-danger, #e53e3e);
+      justify-content: flex-end;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 2.5rem 1fr auto;
+      gap: var(--size-s);
+      align-items: start;
+      padding: var(--size-m) var(--size-l);
+      background: var(--color-surface);
+      border-block-end: 1px solid var(--color-border);
+      cursor: grab;
+      touch-action: pan-y;
+    }
+
+    .card-content:active { cursor: grabbing; }
+
+    .card-avatar {
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border-radius: var(--radius-full);
+      background: var(--color-surface-alt);
+      display: grid;
+      place-items: center;
+      color: var(--color-text-muted);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .card-body { min-inline-size: 0; }
+    .card-sender {
+      font-weight: var(--font-weight-bold);
+      margin-block-end: var(--size-3xs);
+    }
+    .card-preview {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-s);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-time {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    /* Empty state */
+    .inbox-empty {
+      text-align: center;
+      padding: var(--size-2xl) var(--size-l);
+      color: var(--color-text-muted);
+    }
+
+    .inbox-empty[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <header class="inbox-header">
+    <h1>Inbox</h1>
+    <output class="badge" id="unread-badge">8</output>
+  </header>
+
+  <ul class="card-list" id="card-list">
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">AS</span>
+        <section class="card-body">
+          <p class="card-sender">Alice Smith</p>
+          <p class="card-preview">Hey, are you free for lunch tomorrow? I was thinking we could try that new place.</p>
+        </section>
+        <time class="card-time">2m</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">BJ</span>
+        <section class="card-body">
+          <p class="card-sender">Bob Johnson</p>
+          <p class="card-preview">The quarterly report is attached. Please review before Friday meeting.</p>
+        </section>
+        <time class="card-time">15m</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">CD</span>
+        <section class="card-body">
+          <p class="card-sender">Carol Davis</p>
+          <p class="card-preview">PR #247 has been approved. Ready to merge when you are.</p>
+        </section>
+        <time class="card-time">1h</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">DW</span>
+        <section class="card-body">
+          <p class="card-sender">Dan Wilson</p>
+          <p class="card-preview">Can you take a look at the staging deployment? Something seems off with the API.</p>
+        </section>
+        <time class="card-time">2h</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">EM</span>
+        <section class="card-body">
+          <p class="card-sender">Eve Martinez</p>
+          <p class="card-preview">Team standup moved to 10:30 AM starting next week.</p>
+        </section>
+        <time class="card-time">3h</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">FK</span>
+        <section class="card-body">
+          <p class="card-sender">Frank Kim</p>
+          <p class="card-preview">Great work on the design system update! The new tokens look fantastic.</p>
+        </section>
+        <time class="card-time">5h</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">GL</span>
+        <section class="card-body">
+          <p class="card-sender">Grace Lee</p>
+          <p class="card-preview">Reminder: team retrospective is scheduled for Thursday at 3 PM.</p>
+        </section>
+        <time class="card-time">1d</time>
+      </article>
+    </li>
+    <li class="card-wrapper">
+      <aside class="card-reveal" data-action="archive"><icon-wc name="archive"></icon-wc> Archive</aside>
+      <aside class="card-reveal" data-action="delete"><icon-wc name="trash-2"></icon-wc> Delete</aside>
+      <article class="card-content" data-gesture="dismiss">
+        <span class="card-avatar">HT</span>
+        <section class="card-body">
+          <p class="card-sender">Henry Thompson</p>
+          <p class="card-preview">Updated the onboarding docs. Let me know if I missed anything.</p>
+        </section>
+        <time class="card-time">1d</time>
+      </article>
+    </li>
+  </ul>
+
+  <section class="inbox-empty" id="empty-state" hidden>
+    <icon-wc name="inbox" size="xl"></icon-wc>
+    <p>All caught up!</p>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const cardList = document.getElementById('card-list');
+    const badge = document.getElementById('unread-badge');
+    const emptyState = document.getElementById('empty-state');
+
+    cardList.addEventListener('swipe-dismiss', (e) => {
+      const wrapper = e.target.closest('.card-wrapper');
+      if (wrapper) {
+        wrapper.style.transition = 'max-height 0.3s ease, opacity 0.2s ease';
+        wrapper.style.maxHeight = wrapper.offsetHeight + 'px';
+        requestAnimationFrame(() => {
+          wrapper.style.maxHeight = '0';
+          wrapper.style.opacity = '0';
+          wrapper.style.overflow = 'hidden';
+        });
+        wrapper.addEventListener('transitionend', () => {
+          wrapper.remove();
+          updateBadge();
+        }, { once: true });
+      }
+    });
+
+    function updateBadge() {
+      const count = cardList.querySelectorAll('.card-wrapper').length;
+      badge.textContent = count;
+      if (count === 0) {
+        emptyState.hidden = false;
+        badge.hidden = true;
+      }
+    }
+  </script>
+</body>
+</html>

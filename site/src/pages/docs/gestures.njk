@@ -1,0 +1,383 @@
+---
+layout: layouts/docs.njk
+title: "Gestures - Vanilla Breeze"
+description: "Touch gesture library for swipe detection, swipe-to-dismiss, pull-to-refresh, long-press, and haptic feedback. Pointer-event based, works on touch, mouse, and pen."
+currentPath: /docs/gestures/
+permalink: /docs/gestures/
+---
+
+{% set codeInstall %}<!-- Auto-loads when data-gesture attributes are present -->
+<article data-gesture="swipe">Swipe me</article>
+<article data-gesture="dismiss">Dismiss me</article>
+<figure data-gesture="long-press">Hold me</figure>{% endset %}
+
+{% set codeManual %}import {
+  addSwipeListener,
+  makeSwipeable,
+  addPullToRefresh,
+  addLongPress,
+  haptic
+} from '/src/lib/vb-gestures.js';
+
+// Each returns a cleanup function
+const cleanup = addSwipeListener(element, { threshold: 50 });
+
+// Later: cleanup();{% endset %}
+
+{% set codeSwipe %}const cleanup = addSwipeListener(element, {
+  threshold: 50,   // min distance (px)
+  restraint: 100,  // max perpendicular distance (px)
+  timeout: 300     // max duration (ms)
+});
+
+element.addEventListener('swipe-left', (e) => {
+  console.log('Swiped left!', e.detail.distance, e.detail.duration);
+});
+
+element.addEventListener('swipe-right', (e) => {
+  console.log('Swiped right!', e.detail);
+});{% endset %}
+
+{% set codeDismiss %}const cleanup = makeSwipeable(card, {
+  threshold: 100,           // distance to trigger dismiss
+  direction: 'horizontal',  // 'horizontal' or 'vertical'
+  removeOnDismiss: true      // remove element from DOM
+});
+
+card.addEventListener('swipe-dismiss', (e) => {
+  console.log('Dismissed:', e.detail.direction);
+});{% endset %}
+
+{% set codePull %}const cleanup = addPullToRefresh(scrollContainer, async () => {
+  const data = await fetch('/api/items');
+  const items = await data.json();
+  renderItems(items);
+}, {
+  threshold: 70,   // pull distance to trigger
+  maxPull: 120     // maximum pull distance
+});{% endset %}
+
+{% set codeLongPress %}const cleanup = addLongPress(element, (e) => {
+  // Enter select mode, show context menu, etc.
+  element.toggleAttribute('data-selected');
+}, {
+  duration: 500,          // hold time in ms
+  hapticFeedback: true,   // vibrate on trigger (Android)
+  blockContextMenu: true  // prevent native context menu
+});{% endset %}
+
+{% set codeHaptic %}import { haptic } from '/src/lib/vb-gestures.js';
+
+haptic.tap();       // selection, toggle — 8ms
+haptic.confirm();   // confirmation — double pulse
+haptic.error();     // validation failure — heavy pulse
+haptic.dismiss();   // destructive action — 15ms{% endset %}
+
+{% set codeCss %}/* Applied automatically by the gesture module */
+[data-swiping]  { user-select: none; will-change: transform, opacity; cursor: grabbing; }
+[data-dismissed] { pointer-events: none; }
+
+/* Touch-action hints (add to your elements) */
+[data-gesture="swipe"],
+[data-gesture="dismiss"] { touch-action: pan-y; }
+
+/* Pull-to-refresh container */
+[data-gesture="pull-refresh"] {
+  touch-action: pan-x;
+  overscroll-behavior-y: contain;
+  position: relative;
+}{% endset %}
+
+{% set codeCarousel %}<!-- VT carousels automatically get swipe navigation -->
+<carousel-wc data-transition="slide" data-loop>
+  <article>Slide 1</article>
+  <article>Slide 2</article>
+  <article>Slide 3</article>
+</carousel-wc>
+
+<!-- Normal scroll-snap carousels already handle touch natively -->
+<carousel-wc>
+  <article>Slide 1</article>
+  <article>Slide 2</article>
+</carousel-wc>{% endset %}
+
+<h1>Gestures</h1>
+<p class="lead">A lightweight gesture library for mobile interactions. Swipe, dismiss, pull-to-refresh, and long-press &mdash; all built on <code>PointerEvent</code> so they work with touch, mouse, and pen input.</p>
+
+<nav class="subnav" aria-label="Gestures guide sections">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#swipe">Swipe Detection</a></li>
+    <li><a href="#dismiss">Swipe-to-Dismiss</a></li>
+    <li><a href="#pull-refresh">Pull-to-Refresh</a></li>
+    <li><a href="#long-press">Long Press</a></li>
+    <li><a href="#haptic">Haptic Feedback</a></li>
+    <li><a href="#css">CSS Utilities</a></li>
+    <li><a href="#carousel">Carousel Integration</a></li>
+    <li><a href="#browser-support">Support</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+
+<!-- Overview -->
+<section id="overview">
+  <h2>Overview</h2>
+  <p>The gesture module (<code>src/lib/vb-gestures.js</code>) provides five named exports:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Export</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>addSwipeListener</code></td>
+        <td>Detect swipe direction on an element</td>
+      </tr>
+      <tr>
+        <td><code>makeSwipeable</code></td>
+        <td>Drag-to-dismiss with visual feedback</td>
+      </tr>
+      <tr>
+        <td><code>addPullToRefresh</code></td>
+        <td>Pull-down spinner with async callback</td>
+      </tr>
+      <tr>
+        <td><code>addLongPress</code></td>
+        <td>Timer-based long-press detection</td>
+      </tr>
+      <tr>
+        <td><code>haptic</code></td>
+        <td>Vibration patterns for feedback (Android)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Every function returns a <strong>cleanup function</strong> for teardown. All use <code>PointerEvent</code> (not <code>TouchEvent</code>) and check <code>e.isPrimary</code> to ignore multi-touch.</p>
+</section>
+
+
+<!-- Installation -->
+<section id="installation">
+  <h2>Installation</h2>
+  <p>The module lazy-loads automatically when any <code>data-gesture</code> attribute exists on the page. Just add the attribute and gestures work:</p>
+
+  <code-block language="html" label="Declarative usage">{{ codeInstall | escape }}</code-block>
+
+  <p>For programmatic use (like pull-to-refresh which requires a callback), import the module directly:</p>
+
+  <code-block language="js" label="Programmatic usage">{{ codeManual | escape }}</code-block>
+</section>
+
+
+<!-- Swipe Detection -->
+<section id="swipe">
+  <h2>Swipe Detection</h2>
+  <p>Detects directional swipes by comparing <code>pointerdown</code> and <code>pointerup</code> positions. Dispatches <code>swipe-left</code>, <code>swipe-right</code>, <code>swipe-up</code>, or <code>swipe-down</code> events on the element.</p>
+
+  <code-block language="js" label="addSwipeListener">{{ codeSwipe | escape }}</code-block>
+
+  <h3>Options</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>threshold</code></td>
+        <td>50px</td>
+        <td>Minimum distance to qualify as a swipe</td>
+      </tr>
+      <tr>
+        <td><code>restraint</code></td>
+        <td>100px</td>
+        <td>Maximum perpendicular distance</td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td>300ms</td>
+        <td>Maximum time between down and up</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The 50px default threshold avoids conflict with iOS Safari&rsquo;s edge-swipe back gesture, which activates from the left ~20px.</p>
+</section>
+
+
+<!-- Swipe-to-Dismiss -->
+<section id="dismiss">
+  <h2>Swipe-to-Dismiss</h2>
+  <p>Full drag tracking with pointer capture. The element translates and fades as you drag, then either snaps back or slides off screen.</p>
+
+  <code-block language="js" label="makeSwipeable">{{ codeDismiss | escape }}</code-block>
+
+  <p>State is managed via data attributes: <code>data-swiping</code> during drag, <code>data-dismissed</code> after dismiss. The snap-back uses a spring easing for a natural feel.</p>
+
+  <browser-window src="/docs/examples/demos/gesture-notifications.html" url="https://vanilla-breeze.dev/gestures/notifications" title="Swipe-to-dismiss notification inbox" shadow></browser-window>
+</section>
+
+
+<!-- Pull-to-Refresh -->
+<section id="pull-refresh">
+  <h2>Pull-to-Refresh</h2>
+  <p>Creates a spinner indicator inside a scroll container. The spinner appears when pulled past threshold; your async callback runs while the spinner shows.</p>
+
+  <code-block language="js" label="addPullToRefresh">{{ codePull | escape }}</code-block>
+
+  <h3>Requirements</h3>
+  <ul>
+    <li>Container must have <code>overflow-y: auto</code> or <code>scroll</code></li>
+    <li>Add <code>overscroll-behavior-y: contain</code> on the container to disable Chrome&rsquo;s native pull-to-refresh</li>
+    <li>Add <code>position: relative</code> on the container for indicator positioning</li>
+  </ul>
+
+  <p>All listeners use <code>{ passive: true }</code> for best scroll performance.</p>
+</section>
+
+
+<!-- Long Press -->
+<section id="long-press">
+  <h2>Long Press</h2>
+  <p>Timer-based detection: starts a <code>setTimeout</code> on <code>pointerdown</code>, cancels on <code>pointermove</code>, <code>pointerup</code>, or <code>pointercancel</code>.</p>
+
+  <code-block language="js" label="addLongPress">{{ codeLongPress | escape }}</code-block>
+
+  <p>Use <code>data-gesture="long-press"</code> for declarative usage &mdash; the element dispatches a <code>long-press</code> custom event that you can listen for.</p>
+</section>
+
+
+<!-- Haptic Feedback -->
+<section id="haptic">
+  <h2>Haptic Feedback</h2>
+  <p>Four vibration patterns for tactile feedback. Uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API">Vibration API</a>, which is Android-only &mdash; calls no-op silently on iOS and desktop.</p>
+
+  <code-block language="js" label="haptic patterns">{{ codeHaptic | escape }}</code-block>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Pattern</th>
+        <th>Use case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>haptic.tap()</code></td>
+        <td>8ms</td>
+        <td>Selection, toggle, checkbox</td>
+      </tr>
+      <tr>
+        <td><code>haptic.confirm()</code></td>
+        <td>8-40-8ms</td>
+        <td>Form submit, save, success</td>
+      </tr>
+      <tr>
+        <td><code>haptic.error()</code></td>
+        <td>30-60-30ms</td>
+        <td>Validation failure, error</td>
+      </tr>
+      <tr>
+        <td><code>haptic.dismiss()</code></td>
+        <td>15ms</td>
+        <td>Delete, dismiss, destructive</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- CSS Utilities -->
+<section id="css">
+  <h2>CSS Utilities</h2>
+  <p>The gesture module includes a companion CSS file that styles gesture states. It&rsquo;s imported into the <code>utils</code> layer automatically.</p>
+
+  <code-block language="css" label="Gesture CSS (automatic)">{{ codeCss | escape }}</code-block>
+
+  <p>Reduced-motion users see no spinner animation, and <code>will-change</code> is removed to avoid unnecessary compositing.</p>
+</section>
+
+
+<!-- Carousel Integration -->
+<section id="carousel">
+  <h2>Carousel Integration</h2>
+  <p>View Transition carousels (<code>data-transition</code>) automatically load the gesture module and add swipe navigation. Normal scroll-snap carousels handle touch natively and don&rsquo;t use gestures.</p>
+
+  <code-block language="html" label="Carousel with gestures">{{ codeCarousel | escape }}</code-block>
+
+  <p>The gesture module is dynamically imported only when a VT carousel is present, so it adds no overhead to pages without one.</p>
+</section>
+
+
+<!-- Browser Support -->
+<section id="browser-support">
+  <h2>Browser Support</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Chrome</th>
+        <th>Firefox</th>
+        <th>Safari</th>
+        <th>Edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>PointerEvent</td>
+        <td>55+</td>
+        <td>59+</td>
+        <td>13+</td>
+        <td>12+</td>
+      </tr>
+      <tr>
+        <td><code>setPointerCapture</code></td>
+        <td>55+</td>
+        <td>59+</td>
+        <td>13+</td>
+        <td>12+</td>
+      </tr>
+      <tr>
+        <td><code>touch-action</code></td>
+        <td>36+</td>
+        <td>52+</td>
+        <td>10+</td>
+        <td>12+</td>
+      </tr>
+      <tr>
+        <td>Vibration API</td>
+        <td>32+</td>
+        <td>16+</td>
+        <td>No</td>
+        <td>79+</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>All gesture features work in all modern browsers. Haptic feedback is Android-only; the <code>haptic</code> object no-ops silently on platforms without Vibration API support.</p>
+</section>
+
+
+<!-- Related -->
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/mobile/">Mobile guide</a> &mdash; safe areas, app shells, bottom sheets, and form optimization</li>
+    <li><a href="/docs/elements/web-components/carousel/">Carousel component</a> &mdash; touch-friendly carousel with VT swipe support</li>
+    <li><a href="/docs/elements/web-components/slide-accept/">Slide Accept</a> &mdash; pointer-capture slide-to-confirm pattern</li>
+    <li><a href="/docs/elements/web-components/drag-surface/">Drag Surface</a> &mdash; drag-and-drop reordering</li>
+    <li><a href="/docs/accessibility/">Accessibility guide</a> &mdash; reduced-motion and alternative interactions</li>
+  </ul>
+</section>
+
+<browser-window src="/docs/examples/demos/gesture-playground.html" url="https://vanilla-breeze.dev/gestures/playground" title="Gesture playground demo" shadow></browser-window>

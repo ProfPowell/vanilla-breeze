@@ -6,6 +6,8 @@ import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
 // Lazy-load wizard only when [data-wizard] is present (~15 KB deferred)
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
+// Lazy-load gestures only when [data-gesture] is present
+if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
 import { initFormValidation } from './lib/form-validation.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import './lib/sw-register.js';

@@ -41,6 +41,7 @@ class CarouselWc extends HTMLElement {
   #currentIndex = 0;
   #reducedMotion = false;
   #vtMode = false;
+  #cleanupSwipe = null;
 
   get currentIndex() {
     return this.#currentIndex;
@@ -142,6 +143,15 @@ class CarouselWc extends HTMLElement {
       this.#track.style.viewTransitionClass = vtClass;
     }
 
+    // VT mode: add swipe navigation via gesture module
+    if (this.#vtMode) {
+      import('../../lib/vb-gestures.js').then(({ addSwipeListener }) => {
+        this.#cleanupSwipe = addSwipeListener(this.#track, { threshold: 40 });
+        this.#track.addEventListener('swipe-left', () => this.next());
+        this.#track.addEventListener('swipe-right', () => this.prev());
+      });
+    }
+
     // Non-VT mode: IntersectionObserver to detect current slide
     if (!this.#vtMode) {
       this.#observer = new IntersectionObserver(this.#onIntersect, {
@@ -176,6 +186,7 @@ class CarouselWc extends HTMLElement {
 
   disconnectedCallback() {
     this.pause();
+    this.#cleanupSwipe?.();
     if (this.#observer) {
       this.#observer.disconnect();
     }

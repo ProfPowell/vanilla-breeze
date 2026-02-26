@@ -1,0 +1,61 @@
+/* Gesture state styles — imported into utils layer */
+
+[data-swiping] {
+  user-select: none;
+  will-change: transform, opacity;
+  cursor: grabbing;
+}
+
+[data-dismissed] {
+  pointer-events: none;
+}
+
+[data-pull-indicator] {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 3rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-pull-spinner] {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: 2px solid var(--color-border, #ccc);
+  border-block-start-color: var(--color-primary, #333);
+  border-radius: 50%;
+}
+
+[data-pull-loading] [data-pull-spinner] {
+  animation: vb-spin 0.6s linear infinite;
+}
+
+[data-gesture="swipe"],
+[data-gesture="dismiss"] {
+  touch-action: pan-y;
+}
+
+[data-gesture="pull-refresh"] {
+  touch-action: pan-x;
+  overscroll-behavior-y: contain;
+  position: relative;
+}
+
+@keyframes vb-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-pull-loading] [data-pull-spinner] {
+    animation: none;
+  }
+
+  [data-swiping] {
+    will-change: auto;
+  }
+}

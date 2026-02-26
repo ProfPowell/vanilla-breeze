@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Gesture Playground</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+    }
+
+    h1 { margin-block-end: var(--size-l); }
+
+    /* Swipe Carousel */
+    .swipe-deck {
+      position: relative;
+      block-size: 12rem;
+      border-radius: var(--radius-m);
+      overflow: hidden;
+      background: var(--color-surface-alt);
+    }
+
+    .swipe-deck article {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+
+    .swipe-deck article[hidden] { display: none; }
+
+    .swipe-counter {
+      text-align: center;
+      margin-block-start: var(--size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Dismiss Cards */
+    .dismiss-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .dismiss-list li {
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s);
+      margin-block-end: var(--size-xs);
+      cursor: grab;
+    }
+
+    .dismiss-list li:active { cursor: grabbing; }
+
+    /* Pull-to-Refresh */
+    .pull-container {
+      block-size: 15rem;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      position: relative;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+    }
+
+    .pull-container ul {
+      list-style: none;
+      padding: var(--size-s);
+      margin: 0;
+    }
+
+    .pull-container li {
+      padding: var(--size-xs) 0;
+      border-block-end: 1px solid var(--color-border);
+    }
+
+    /* Long Press Grid */
+    .lp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+      gap: var(--size-s);
+    }
+
+    .lp-grid figure {
+      aspect-ratio: 1;
+      border-radius: var(--radius-s);
+      background: var(--color-surface-alt);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.15s ease;
+      margin: 0;
+    }
+
+    .lp-grid figure[data-selected] {
+      border-color: var(--color-primary);
+      background: color-mix(in oklch, var(--color-primary) 10%, transparent);
+    }
+
+    .select-bar {
+      display: none;
+      padding: var(--size-xs) var(--size-s);
+      background: var(--color-primary);
+      color: var(--color-on-primary, #fff);
+      border-radius: var(--radius-s);
+      margin-block-end: var(--size-s);
+    }
+
+    .select-bar[data-active] { display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+  <h1>Gesture Playground</h1>
+  <p>Interactive demos for swipe detection, swipe-to-dismiss, pull-to-refresh, and long-press gestures.</p>
+
+  <section data-layout="stack" data-layout-gap="xl">
+
+    <!-- 1. Swipe Carousel -->
+    <section>
+      <h2>Swipe Carousel</h2>
+      <p>Swipe left or right to navigate between cards.</p>
+      <nav aria-label="Swipe carousel" id="swipe-carousel" data-gesture="swipe">
+        <article>Card 1</article>
+        <article hidden>Card 2</article>
+        <article hidden>Card 3</article>
+        <article hidden>Card 4</article>
+        <article hidden>Card 5</article>
+      </nav>
+      <p class="swipe-counter" aria-live="polite"><output id="swipe-pos">1</output> / 5</p>
+    </section>
+
+    <!-- 2. Swipe-to-Dismiss -->
+    <section>
+      <h2>Swipe to Dismiss</h2>
+      <p>Drag any notification card horizontally to dismiss it.</p>
+      <ul class="dismiss-list" id="dismiss-list">
+        <li data-gesture="dismiss">Meeting reminder at 2:00 PM</li>
+        <li data-gesture="dismiss">New comment on your post</li>
+        <li data-gesture="dismiss">Package delivered to front door</li>
+        <li data-gesture="dismiss">Security alert: new login detected</li>
+        <li data-gesture="dismiss">Weekly report is ready</li>
+      </ul>
+      <footer>
+        <button type="button" id="undo-btn" disabled>Undo last</button>
+      </footer>
+    </section>
+
+    <!-- 3. Pull-to-Refresh -->
+    <section>
+      <h2>Pull to Refresh</h2>
+      <p>Pull down inside the list to load new items (1s simulated delay).</p>
+      <section class="pull-container" id="pull-container">
+        <ul id="pull-list">
+          <li>Item 1 &mdash; loaded at start</li>
+          <li>Item 2 &mdash; loaded at start</li>
+          <li>Item 3 &mdash; loaded at start</li>
+          <li>Item 4 &mdash; loaded at start</li>
+          <li>Item 5 &mdash; loaded at start</li>
+          <li>Item 6 &mdash; loaded at start</li>
+          <li>Item 7 &mdash; loaded at start</li>
+          <li>Item 8 &mdash; loaded at start</li>
+        </ul>
+      </section>
+    </section>
+
+    <!-- 4. Long Press -->
+    <section>
+      <h2>Long Press</h2>
+      <p>Long-press (hold for 500ms) on any tile to enter select mode. Tap to toggle selection.</p>
+      <aside class="select-bar" id="select-bar">
+        <span><output id="select-count">0</output> selected</span>
+        <button type="button" id="clear-select">Clear</button>
+      </aside>
+      <section class="lp-grid" id="lp-grid">
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+        <figure data-gesture="long-press"><icon-wc name="image" size="lg"></icon-wc></figure>
+      </section>
+    </section>
+
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import { addSwipeListener, addPullToRefresh } from '/src/lib/vb-gestures.js';
+
+    // --- Swipe Carousel ---
+    const carousel = document.getElementById('swipe-carousel');
+    const cards = carousel.querySelectorAll('article');
+    const posOutput = document.getElementById('swipe-pos');
+    let current = 0;
+
+    carousel.addEventListener('swipe-left', () => {
+      if (current < cards.length - 1) {
+        cards[current].hidden = true;
+        current++;
+        cards[current].hidden = false;
+        posOutput.textContent = current + 1;
+      }
+    });
+
+    carousel.addEventListener('swipe-right', () => {
+      if (current > 0) {
+        cards[current].hidden = true;
+        current--;
+        cards[current].hidden = false;
+        posOutput.textContent = current + 1;
+      }
+    });
+
+    // --- Undo dismiss ---
+    const dismissList = document.getElementById('dismiss-list');
+    const undoBtn = document.getElementById('undo-btn');
+    let lastDismissed = null;
+
+    dismissList.addEventListener('swipe-dismiss', (e) => {
+      lastDismissed = { text: e.target.textContent, el: e.target };
+      undoBtn.disabled = false;
+    });
+
+    undoBtn.addEventListener('click', () => {
+      if (!lastDismissed) return;
+      const li = document.createElement('li');
+      li.textContent = lastDismissed.text;
+      li.setAttribute('data-gesture', 'dismiss');
+      dismissList.prepend(li);
+      // Re-initialize gesture on new element
+      import('/src/lib/vb-gestures.js').then(({ makeSwipeable }) => {
+        makeSwipeable(li);
+      });
+      lastDismissed = null;
+      undoBtn.disabled = true;
+    });
+
+    // --- Pull-to-Refresh ---
+    let pullCount = 0;
+    const pullList = document.getElementById('pull-list');
+
+    addPullToRefresh(document.getElementById('pull-container'), () => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          pullCount++;
+          const li = document.createElement('li');
+          li.textContent = `New item ${pullCount} — pulled at ${new Date().toLocaleTimeString()}`;
+          pullList.prepend(li);
+          resolve();
+        }, 1000);
+      });
+    });
+
+    // --- Long Press select mode ---
+    const grid = document.getElementById('lp-grid');
+    const selectBar = document.getElementById('select-bar');
+    const selectCount = document.getElementById('select-count');
+    const clearBtn = document.getElementById('clear-select');
+    let selectMode = false;
+
+    grid.addEventListener('long-press', (e) => {
+      const fig = e.target.closest('figure');
+      if (!fig) return;
+      selectMode = true;
+      selectBar.setAttribute('data-active', '');
+      fig.toggleAttribute('data-selected');
+      updateCount();
+    });
+
+    grid.addEventListener('click', (e) => {
+      if (!selectMode) return;
+      const fig = e.target.closest('figure');
+      if (!fig) return;
+      fig.toggleAttribute('data-selected');
+      updateCount();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      selectMode = false;
+      selectBar.removeAttribute('data-active');
+      grid.querySelectorAll('[data-selected]').forEach(el => el.removeAttribute('data-selected'));
+      updateCount();
+    });
+
+    function updateCount() {
+      selectCount.textContent = grid.querySelectorAll('[data-selected]').length;
+    }
+  </script>
+</body>
+</html>
