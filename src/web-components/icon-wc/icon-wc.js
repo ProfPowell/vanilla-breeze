@@ -144,26 +144,49 @@ class IconWc extends HTMLElement {
         }
 
         try {
-            const response = await fetch(this.iconPath);
-
-            if (!response.ok) {
-                throw new Error(`Icon not found: ${this.name}`);
-            }
-
-            const svgText = await response.text();
-
-            // Validate it's actually SVG
-            if (!svgText.includes('<svg')) {
-                throw new Error(`Invalid SVG: ${this.name}`);
-            }
-
-            // Cache the SVG
+            const svgText = await this.#fetchIcon(this.set);
             iconCache.set(cacheKey, svgText);
-
             this.displayIcon(svgText);
         } catch (error) {
+            // Fallback to lucide if the requested set fails
+            const fallbackSet = 'lucide';
+            if (this.set !== fallbackSet) {
+                const fallbackKey = `${fallbackSet}/${this.name}`;
+                if (iconCache.has(fallbackKey)) {
+                    this.displayIcon(iconCache.get(fallbackKey));
+                    return;
+                }
+                try {
+                    const svgText = await this.#fetchIcon(fallbackSet);
+                    iconCache.set(fallbackKey, svgText);
+                    this.displayIcon(svgText);
+                    return;
+                } catch { /* fall through to error */ }
+            }
             this.setError(error.message);
         }
+    }
+
+    /**
+     * @private
+     * @param {string} set - Icon set name
+     * @returns {Promise<string>} SVG text
+     */
+    async #fetchIcon(set) {
+        const path = `${this.basePath}/${set}/${this.name}.svg`;
+        const response = await fetch(path);
+
+        if (!response.ok) {
+            throw new Error(`Icon not found: ${this.name}`);
+        }
+
+        const svgText = await response.text();
+
+        if (!svgText.includes('<svg')) {
+            throw new Error(`Invalid SVG: ${this.name}`);
+        }
+
+        return svgText;
     }
 
     /**
