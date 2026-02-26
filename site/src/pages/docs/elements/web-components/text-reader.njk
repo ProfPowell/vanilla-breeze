@@ -1,0 +1,220 @@
+---
+layout: layouts/element.njk
+title: "text-reader"
+description: "Text-to-speech reader with word-level highlighting. Uses the Web Speech API for synthesis and the CSS Custom Highlight API for word tracking."
+elementName: text-reader
+category: component
+currentPath: /docs/elements/web-components/text-reader/
+permalink: /docs/elements/web-components/text-reader/
+---
+
+{% set basicCode %}<text-reader for="my-article" speed="1"></text-reader>
+
+<article id="my-article">
+  <p>The web platform has evolved dramatically over the past decade.
+     Modern browsers now support features that previously required
+     complex JavaScript libraries or plugins.</p>
+  <p>Progressive enhancement remains the most resilient approach
+     to building for the web.</p>
+</article>{% endset %}
+
+{% set customIconCode %}<text-reader for="my-article">
+  <icon-wc slot="icon-play" name="play" aria-hidden="true"></icon-wc>
+  <icon-wc slot="icon-pause" name="pause" aria-hidden="true"></icon-wc>
+  <icon-wc slot="icon-stop" name="square" aria-hidden="true"></icon-wc>
+</text-reader>{% endset %}
+
+{% set themingCode %}text-reader {
+  --text-reader-bg: var(--color-surface-raised);
+  --text-reader-gap: 0.75rem;
+  --text-reader-button-size: 2.5rem;
+  --text-reader-highlight: oklch(85% 0.15 90);
+  --text-reader-highlight-text: oklch(20% 0 0);
+}{% endset %}
+
+{% set apiCode %}const reader = document.querySelector('text-reader');
+
+reader.play();     // Begin or resume playback
+reader.pause();    // Pause mid-sentence
+reader.resume();   // Resume from pause
+reader.stop();     // Cancel and reset
+
+// Read-only properties
+reader.speaking;   // boolean
+reader.paused;     // boolean
+reader.progress;   // 0–1 (charIndex / fullText.length)
+
+// Get available voices
+const voices = await reader.voices;{% endset %}
+
+{% set eventCode %}const reader = document.querySelector('text-reader');
+
+reader.addEventListener('text-reader:play', e => {
+  console.log('Playing at speed:', e.detail.speed);
+});
+
+reader.addEventListener('text-reader:word', e => {
+  console.log('Word:', e.detail.word);
+});
+
+reader.addEventListener('text-reader:end', e => {
+  console.log('Finished in', e.detail.duration, 'ms');
+});{% endset %}
+
+  <section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;text-reader&gt;</code> component attaches a text-to-speech control bar to any element. It uses the <strong>Web Speech API</strong> for synthesis and the <strong>CSS Custom Highlight API</strong> for real-time word tracking. Progressive enhancement &mdash; the component hides itself if the browser lacks <code>speechSynthesis</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/text-reader-basic.html"
+      url="https://vanilla-breeze.dev/text-reader"
+      title="Text Reader Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage">{{ basicCode | escape }}</code-block>
+
+    <aside class="note">
+      <strong>Zero dependencies.</strong> Uses built-in browser APIs only &mdash; no external TTS service or library required.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>for</code></td><td>string</td><td>&mdash;</td><td>ID of the element to read. <strong>Required.</strong></td></tr>
+        <tr><td><code>selectors</code></td><td>string</td><td><code>p,li</code></td><td>Comma-separated CSS selectors for text extraction within the target</td></tr>
+        <tr><td><code>speed</code></td><td>number</td><td><code>1</code></td><td>Initial playback rate (0.5&ndash;2)</td></tr>
+        <tr><td><code>voice</code></td><td>string</td><td>&mdash;</td><td><code>voiceURI</code> to pre-select on load</td></tr>
+        <tr><td><code>highlight</code></td><td>string</td><td>&mdash;</td><td>Set to <code>"false"</code> to disable word highlighting</td></tr>
+        <tr><td><code>scroll</code></td><td>string</td><td>&mdash;</td><td>Set to <code>"false"</code> to disable auto-scroll to active word</td></tr>
+        <tr><td><code>label-play</code></td><td>string</td><td><code>Play</code></td><td>Accessible label for the play button</td></tr>
+        <tr><td><code>label-pause</code></td><td>string</td><td><code>Pause</code></td><td>Accessible label for the pause button</td></tr>
+        <tr><td><code>label-stop</code></td><td>string</td><td><code>Stop</code></td><td>Accessible label for the stop button</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Observed Attributes</h2>
+    <p>These attributes are reactive &mdash; changing them at runtime triggers an update:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Behavior on Change</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>speed</code></td><td>Restarts speech from the current word at the new rate</td></tr>
+        <tr><td><code>voice</code></td><td>Restarts speech from the current word with the new voice</td></tr>
+        <tr><td><code>for</code></td><td>Stops current speech, re-resolves target element</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <code-block language="js" show-lines label="Public methods and properties">{{ apiCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Method / Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>play()</code></td><td>method</td><td>Begin playback (or resume if paused)</td></tr>
+        <tr><td><code>pause()</code></td><td>method</td><td>Pause mid-sentence</td></tr>
+        <tr><td><code>resume()</code></td><td>method</td><td>Resume from paused state</td></tr>
+        <tr><td><code>stop()</code></td><td>method</td><td>Cancel speech and reset position</td></tr>
+        <tr><td><code>voices</code></td><td>Promise&lt;SpeechSynthesisVoice[]&gt;</td><td>Available TTS voices</td></tr>
+        <tr><td><code>speaking</code></td><td>boolean</td><td>Whether speech is currently active</td></tr>
+        <tr><td><code>paused</code></td><td>boolean</td><td>Whether speech is paused</td></tr>
+        <tr><td><code>progress</code></td><td>number (0&ndash;1)</td><td>Current position as fraction of total text</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <code-block language="js" show-lines label="Event listeners">{{ eventCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>text-reader:play</code></td><td><code>{ voice, speed }</code></td><td>Speech starts</td></tr>
+        <tr><td><code>text-reader:pause</code></td><td>&mdash;</td><td>Speech paused</td></tr>
+        <tr><td><code>text-reader:resume</code></td><td>&mdash;</td><td>Speech resumed</td></tr>
+        <tr><td><code>text-reader:stop</code></td><td>&mdash;</td><td>Stopped or cancelled</td></tr>
+        <tr><td><code>text-reader:end</code></td><td><code>{ duration }</code></td><td>Reached end of text</td></tr>
+        <tr><td><code>text-reader:word</code></td><td><code>{ word, charIndex, element }</code></td><td>Each word boundary</td></tr>
+        <tr><td><code>text-reader:error</code></td><td><code>{ error }</code></td><td>SpeechSynthesis error</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <code-block language="css" show-lines label="Theming">{{ themingCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--text-reader-bg</code></td><td><code>var(--color-surface-raised)</code></td><td>Control bar background</td></tr>
+        <tr><td><code>--text-reader-gap</code></td><td><code>0.5rem</code></td><td>Gap between controls</td></tr>
+        <tr><td><code>--text-reader-button-size</code></td><td><code>2rem</code></td><td>Button width and height</td></tr>
+        <tr><td><code>--text-reader-highlight</code></td><td><code>Mark</code></td><td>Word highlight background color</td></tr>
+        <tr><td><code>--text-reader-highlight-text</code></td><td><code>MarkText</code></td><td>Word highlight text color</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Custom Icons</h2>
+    <p>Replace the default text symbols with custom icons using slot attributes:</p>
+    <code-block language="html" show-lines label="Custom icons">{{ customIconCode | escape }}</code-block>
+    <p>Any element with <code>slot="icon-play"</code>, <code>slot="icon-pause"</code>, or <code>slot="icon-stop"</code> will be moved into the corresponding button.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Controls are wrapped in a <code>role="group"</code> with <code>aria-label="Article reader"</code></li>
+      <li>Each button has an <code>aria-label</code> (customizable via <code>label-*</code> attributes)</li>
+      <li>All controls are keyboard-focusable and operable</li>
+      <li>Voice select and speed slider have accessible labels</li>
+      <li>Highlighting uses system colors (<code>Mark</code> / <code>MarkText</code>) by default, respecting user contrast preferences</li>
+      <li>Speech is cancelled on page unload to prevent orphaned audio</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Browser Support</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Feature</th><th>Chrome</th><th>Firefox</th><th>Safari</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Web Speech API</td><td>33+</td><td>49+</td><td>7+</td><td>Core feature</td></tr>
+        <tr><td>CSS Custom Highlight API</td><td>105+</td><td>117+</td><td>17.2+</td><td>Word highlighting only</td></tr>
+        <tr><td>Custom Elements</td><td>67+</td><td>63+</td><td>10.1+</td><td>Baseline</td></tr>
+        <tr><td><code>adoptedStyleSheets</code></td><td>73+</td><td>101+</td><td>16.4+</td><td>Highlight injection</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Graceful Degradation</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Condition</th><th>Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>No <code>speechSynthesis</code></td><td>Element hides itself (<code>display: none</code>)</td></tr>
+        <tr><td>No <code>CSS.highlights</code></td><td>Speech works normally, highlighting skipped</td></tr>
+        <tr><td>No target found</td><td>Console warning, controls disabled</td></tr>
+      </tbody>
+    </table>
+  </section>
