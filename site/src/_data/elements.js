@@ -29,6 +29,7 @@ const elementsByLetter = {
   C: [
     { name: 'canvas', type: 'native', href: '/docs/elements/native/canvas/' },
     { name: 'caption', type: 'native', href: '/docs/elements/native/caption/' },
+    { name: 'card-list', type: 'component', href: '/docs/elements/web-components/card-list/' },
     { name: 'carousel-wc', type: 'component', href: '/docs/elements/web-components/carousel/' },
     { name: 'cite', type: 'native', href: '/docs/elements/native/cite/' },
     { name: 'code', type: 'native', href: '/docs/elements/native/code/' },
@@ -38,6 +39,7 @@ const elementsByLetter = {
     { name: 'command-palette', type: 'component', href: '/docs/elements/web-components/command-palette/' },
     { name: 'compare-surface', type: 'component', href: '/docs/elements/web-components/comparison/' },
     { name: 'content-swap', type: 'component', href: '/docs/elements/web-components/content-swap/' },
+    { name: 'context-menu', type: 'component', href: '/docs/elements/web-components/context-menu/' },
   ],
   D: [
     { name: 'data', type: 'native', href: '/docs/elements/native/data/' },
@@ -187,6 +189,7 @@ const elementsByLetter = {
     { name: 'td', type: 'native', href: '/docs/elements/native/td/' },
     { name: 'template', type: 'native', href: '/docs/elements/native/template/' },
     { name: 'text-divider', type: 'custom', href: '/docs/elements/custom-elements/text-divider/' },
+    { name: 'text-reader', type: 'component', href: '/docs/elements/web-components/text-reader/' },
     { name: 'textarea', type: 'native', href: '/docs/elements/native/textarea/' },
     { name: 'tfoot', type: 'native', href: '/docs/elements/native/tfoot/' },
     { name: 'th', type: 'native', href: '/docs/elements/native/th/' },
