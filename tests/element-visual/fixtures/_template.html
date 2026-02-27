@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{elementId}} / {{variantName}}</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body { padding: var(--size-l); min-height: auto; }
+    [data-fixture-label] {
+      font-size: 11px; font-family: system-ui; color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: var(--size-2xs); margin-bottom: var(--size-s);
+    }
+    [data-fixture-target] { max-inline-size: 480px; }
+    [data-fixture-target][data-fixture-width="wide"] { max-inline-size: 720px; }
+  </style>
+</head>
+<body>
+  <p data-fixture-label>{{elementId}} / {{variantName}}</p>
+  <div data-fixture-target>
+    {{html}}
+  </div>
+  <!-- JS loaded conditionally: main.js for web components, theme script always -->
+  <script type="module">
+    import { ThemeManager } from '/src/lib/theme-manager.js';
+    import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+    const params = new URLSearchParams(location.search);
+    const theme = params.get('theme');
+    const mode = params.get('mode');
+    if (theme || mode) {
+      if (theme) await ensureThemeLoaded(theme);
+      ThemeManager.apply({
+        brand: theme || 'default',
+        mode: mode || 'light',
+      });
+    }
+    {{setup}}
+  </script>
+</body>
+</html>

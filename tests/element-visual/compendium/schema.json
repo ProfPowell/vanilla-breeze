@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VB Element Compendium",
+  "description": "Machine-readable catalog of every Vanilla Breeze element and its variants",
+  "type": "object",
+  "required": ["version", "generated", "elements"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "elements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/element" }
+    }
+  },
+  "$defs": {
+    "element": {
+      "type": "object",
+      "required": ["id", "tag", "type", "category", "cssFile", "variants"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique element identifier (kebab-case)"
+        },
+        "tag": {
+          "type": "string",
+          "description": "HTML tag name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["native", "custom", "web-component"]
+        },
+        "category": {
+          "type": "string",
+          "enum": ["forms", "navigation", "data", "feedback", "layout", "text", "interactive", "media"]
+        },
+        "cssFile": {
+          "type": "string",
+          "description": "Path to primary CSS file relative to project root"
+        },
+        "jsRequired": {
+          "type": "boolean",
+          "default": false
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/variant" }
+        }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "required": ["id", "name", "html"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique variant identifier within element (kebab-case)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable variant label"
+        },
+        "classes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "default": {}
+        },
+        "states": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "CSS pseudo-states for documentation (e.g. :disabled)"
+        },
+        "html": {
+          "type": "string",
+          "description": "Complete self-contained HTML snippet"
+        },
+        "interactive": {
+          "type": "boolean",
+          "default": false
+        },
+        "setup": {
+          "type": "string",
+          "description": "JS to run before screenshot (e.g. dialog.showModal())"
+        },
+        "fixtureWidth": {
+          "type": "string",
+          "enum": ["default", "wide"],
+          "default": "default",
+          "description": "Fixture container width hint"
+        }
+      }
+    }
+  }
+}
