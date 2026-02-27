@@ -59,20 +59,28 @@ test.describe('Element visual regression', () => {
           await page.addStyleTag({ content: FREEZE_CSS });
           await page.waitForTimeout(200);
 
-          // Interactive fixtures (e.g. dialogs) render in the top layer,
-          // so screenshot the dialog element itself rather than the container
-          if (fixture.interactive) {
+          // Choose screenshot target based on fixture metadata
+          const screenshotOpts = { maxDiffPixelRatio: 0.02 };
+
+          if (fixture.screenshotTarget === 'page') {
+            // Full page screenshot for components with top-layer popovers
+            await page.waitForTimeout(300);
+            await expect(page).toHaveScreenshot(`${testName}.png`, screenshotOpts);
+          } else if (fixture.screenshotTarget === 'dialog' || (fixture.interactive && !fixture.screenshotTarget)) {
+            // Dialog screenshot (backward compat: interactive without screenshotTarget)
             const dialog = page.locator('dialog[open]');
             await expect(dialog).toBeVisible({ timeout: 5000 });
-            await expect(dialog).toHaveScreenshot(`${testName}.png`, {
-              maxDiffPixelRatio: 0.02,
-            });
+            await expect(dialog).toHaveScreenshot(`${testName}.png`, screenshotOpts);
+          } else if (fixture.screenshotTarget) {
+            // Custom selector screenshot
+            const custom = page.locator(fixture.screenshotTarget);
+            await expect(custom).toBeVisible({ timeout: 5000 });
+            await expect(custom).toHaveScreenshot(`${testName}.png`, screenshotOpts);
           } else {
+            // Default: screenshot the fixture target container
             const target = page.locator('[data-fixture-target]');
             await expect(target).toBeVisible();
-            await expect(target).toHaveScreenshot(`${testName}.png`, {
-              maxDiffPixelRatio: 0.02,
-            });
+            await expect(target).toHaveScreenshot(`${testName}.png`, screenshotOpts);
           }
         });
       }

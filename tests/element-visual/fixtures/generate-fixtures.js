@@ -87,6 +87,7 @@ ${mainJsTag}  <script type="module">
       variantName: variant.name,
       interactive: variant.interactive || false,
       setup: variant.setup || null,
+      screenshotTarget: variant.screenshotTarget || null,
       fixtureWidth,
     });
   }
