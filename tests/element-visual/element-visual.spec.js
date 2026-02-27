@@ -59,13 +59,21 @@ test.describe('Element visual regression', () => {
           await page.addStyleTag({ content: FREEZE_CSS });
           await page.waitForTimeout(200);
 
-          // Screenshot just the fixture target element
-          const target = page.locator('[data-fixture-target]');
-          await expect(target).toBeVisible();
-
-          await expect(target).toHaveScreenshot(`${testName}.png`, {
-            maxDiffPixelRatio: 0.02,
-          });
+          // Interactive fixtures (e.g. dialogs) render in the top layer,
+          // so screenshot the dialog element itself rather than the container
+          if (fixture.interactive) {
+            const dialog = page.locator('dialog[open]');
+            await expect(dialog).toBeVisible({ timeout: 5000 });
+            await expect(dialog).toHaveScreenshot(`${testName}.png`, {
+              maxDiffPixelRatio: 0.02,
+            });
+          } else {
+            const target = page.locator('[data-fixture-target]');
+            await expect(target).toBeVisible();
+            await expect(target).toHaveScreenshot(`${testName}.png`, {
+              maxDiffPixelRatio: 0.02,
+            });
+          }
         });
       }
     }
