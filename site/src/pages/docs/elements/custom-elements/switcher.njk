@@ -67,28 +67,6 @@ permalink: /docs/elements/custom-elements/switcher/
   </layout-card>
 </layout-switcher>{% endset %}
 
-{% set cssImplementation %}layout-switcher {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--_gap, var(--size-m));
-}
-
-layout-switcher > * {
-  flex-grow: 1;
-  flex-basis: calc((var(--_threshold, 30rem) - 100%) * 999);
-}
-
-/* Threshold variants */
-layout-switcher[data-layout-threshold="20rem"] { --_threshold: 20rem; }
-layout-switcher[data-layout-threshold="30rem"] { --_threshold: 30rem; }
-layout-switcher[data-layout-threshold="40rem"] { --_threshold: 40rem; }
-
-/* Limit variants */
-layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3),
-layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
-  flex-basis: 100%;
-}{% endset %}
-
 <browser-window
     src="/docs/examples/demos/switcher-basic.html"
     url="https://vanilla-breeze.dev/switcher"
@@ -140,20 +118,13 @@ layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
     <h2>Basic Usage</h2>
     <p>Items display side-by-side when space allows, then stack vertically.</p>
 
-    <div class="example">
-      <layout-switcher data-layout-gap="m">
-        <layout-card data-variant="outlined" data-padding="m">
-          <p style="margin: 0;"><strong>Item 1</strong></p>
-          <p style="margin: 0;">Content that shares space horizontally when there's room.</p>
-        </layout-card>
-        <layout-card data-variant="outlined" data-padding="m">
-          <p style="margin: 0;"><strong>Item 2</strong></p>
-          <p style="margin: 0;">Stacks vertically when the container is narrow.</p>
-        </layout-card>
-      </layout-switcher>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/switcher-basic.html"
+      url="https://vanilla-breeze.dev/switcher/basic"
+      title="Basic switcher usage"
+      shadow>
+    </browser-window>
 
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Basic layout-switcher usage">{{ basicUsageCode | escape }}</code-block>
   </section>
 
@@ -161,33 +132,13 @@ layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
     <h2>Threshold Variants</h2>
     <p>The <code>data-layout-threshold</code> attribute controls when the switch happens.</p>
 
-    <h3>Lower Threshold (20rem)</h3>
-    <p>Stays horizontal longer, only stacks on very narrow containers.</p>
-    <div class="example">
-      <layout-switcher data-layout-gap="m" data-layout-threshold="20rem">
-        <layout-card data-variant="outlined" data-padding="s">
-          <p style="margin: 0;">Card A</p>
-        </layout-card>
-        <layout-card data-variant="outlined" data-padding="s">
-          <p style="margin: 0;">Card B</p>
-        </layout-card>
-      </layout-switcher>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/switcher-threshold.html"
+      url="https://vanilla-breeze.dev/switcher/threshold"
+      title="Threshold variants"
+      shadow>
+    </browser-window>
 
-    <h3>Higher Threshold (40rem)</h3>
-    <p>Switches to vertical layout earlier, at wider container widths.</p>
-    <div class="example">
-      <layout-switcher data-layout-gap="m" data-layout-threshold="40rem">
-        <layout-card data-variant="outlined" data-padding="s">
-          <p style="margin: 0;">Card A</p>
-        </layout-card>
-        <layout-card data-variant="outlined" data-padding="s">
-          <p style="margin: 0;">Card B</p>
-        </layout-card>
-      </layout-switcher>
-    </div>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Threshold variants">{{ thresholdCode | escape }}</code-block>
   </section>
 
@@ -195,16 +146,13 @@ layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
     <h2>Item Limit</h2>
     <p>The <code>data-layout-limit</code> attribute forces vertical layout when there are more items than the limit.</p>
 
-    <h3>Limit of 2</h3>
-    <div class="example">
-      <layout-switcher data-layout-gap="m" data-layout-limit="2">
-        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 1</p></layout-card>
-        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 2</p></layout-card>
-        <layout-card data-variant="outlined" data-padding="s"><p style="margin: 0;">Item 3 (forces stack)</p></layout-card>
-      </layout-switcher>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/switcher-limit.html"
+      url="https://vanilla-breeze.dev/switcher/limit"
+      title="Item limit forcing vertical layout"
+      shadow>
+    </browser-window>
 
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Item limit forcing vertical layout">{{ limitCode | escape }}</code-block>
   </section>
 
@@ -212,73 +160,44 @@ layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
     <h2>Usage Examples</h2>
 
     <h3>Form Actions</h3>
-    <div class="example">
-      <layout-switcher data-layout-gap="s" data-layout-threshold="25rem">
-        <button type="button" class="secondary">Cancel</button>
-        <button type="submit">Save Changes</button>
-      </layout-switcher>
-    </div>
+
+    <browser-window
+      src="/docs/snippets/demos/switcher-form-actions.html"
+      url="https://vanilla-breeze.dev/switcher/form-actions"
+      title="Form action buttons"
+      shadow>
+    </browser-window>
+
     <code-block language="html" show-lines label="Form action buttons">{{ formActionsCode | escape }}</code-block>
 
     <h3>Card Header</h3>
-    <div class="example">
-      <layout-card data-variant="outlined" data-padding="m">
-        <layout-switcher data-layout-gap="m" data-layout-threshold="30rem">
-          <layout-stack data-layout-gap="xs">
-            <strong>Project Name</strong>
-            <p style="margin: 0; color: var(--color-text-muted);">Last updated 2 hours ago</p>
-          </layout-stack>
-          <layout-cluster data-layout-gap="s">
-            <button type="button" class="small secondary">Edit</button>
-            <button type="button" class="small">View</button>
-          </layout-cluster>
-        </layout-switcher>
-      </layout-card>
-    </div>
+
+    <browser-window
+      src="/docs/snippets/demos/switcher-card-header.html"
+      url="https://vanilla-breeze.dev/switcher/card-header"
+      title="Card with header switcher"
+      shadow>
+    </browser-window>
+
     <code-block language="html" show-lines label="Card with header switcher">{{ cardHeaderCode | escape }}</code-block>
 
     <h3>Feature Comparison</h3>
-    <div class="example">
-      <layout-switcher data-layout-gap="l" data-layout-threshold="35rem">
-        <layout-card data-variant="outlined" data-padding="l">
-          <layout-stack data-layout-gap="m" data-layout-align="center">
-            <strong style="font-size: var(--font-size-lg);">Basic</strong>
-            <p style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">$9/mo</p>
-            <ul style="margin: 0; padding-inline-start: var(--size-l);">
-              <li>5 Projects</li>
-              <li>10GB Storage</li>
-              <li>Email Support</li>
-            </ul>
-            <button type="button" class="secondary">Choose Basic</button>
-          </layout-stack>
-        </layout-card>
-        <layout-card data-variant="elevated" data-padding="l">
-          <layout-stack data-layout-gap="m" data-layout-align="center">
-            <strong style="font-size: var(--font-size-lg);">Pro</strong>
-            <p style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">$29/mo</p>
-            <ul style="margin: 0; padding-inline-start: var(--size-l);">
-              <li>Unlimited Projects</li>
-              <li>100GB Storage</li>
-              <li>Priority Support</li>
-            </ul>
-            <button type="button">Choose Pro</button>
-          </layout-stack>
-        </layout-card>
-      </layout-switcher>
-    </div>
-    <code-block language="html" show-lines label="Pricing comparison cards">{{ pricingCode | escape }}</code-block>
-  </section>
 
-  <section>
-    <h2>CSS Implementation</h2>
-    <code-block language="css" show-lines label="layout-switcher CSS implementation">{{ cssImplementation | escape }}</code-block>
+    <browser-window
+      src="/docs/snippets/demos/switcher-pricing.html"
+      url="https://vanilla-breeze.dev/switcher/pricing"
+      title="Pricing comparison cards"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Pricing comparison cards">{{ pricingCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/custom-elements/sidebar/">layout-sidebar</a> - Two-column layout with sidebar</li>
-      <li><a href="/docs/elements/custom-elements/grid/">layout-grid</a> - Auto-fit grid layout</li>
-      <li><a href="/docs/elements/custom-elements/cluster/">layout-cluster</a> - Horizontal grouping with wrapping</li>
+      <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> — Two-column layout with sidebar</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>
     </ul>
   </section>

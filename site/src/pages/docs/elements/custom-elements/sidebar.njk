@@ -99,52 +99,6 @@ permalink: /docs/elements/custom-elements/sidebar/
   </main>
 </layout-sidebar>{% endset %}
 
-{% set cssImplementation %}layout-sidebar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--_gap, var(--size-m));
-}
-
-/* Sidebar (first child by default) */
-layout-sidebar > :first-child {
-  flex-basis: var(--_sidebar-width, 15rem);
-  flex-grow: 1;
-}
-
-/* Main content (last child by default) */
-layout-sidebar > :last-child {
-  flex-basis: 0;
-  flex-grow: 999;
-  min-inline-size: var(--_content-min, 50%);
-}
-
-/* Gap variants */
-layout-sidebar[data-layout-gap="xs"] { --_gap: var(--size-xs); }
-layout-sidebar[data-layout-gap="s"] { --_gap: var(--size-s); }
-layout-sidebar[data-layout-gap="m"] { --_gap: var(--size-m); }
-layout-sidebar[data-layout-gap="l"] { --_gap: var(--size-l); }
-layout-sidebar[data-layout-gap="xl"] { --_gap: var(--size-xl); }
-
-/* Sidebar on the end (right in LTR) */
-layout-sidebar[data-layout-side="end"] {
-  flex-direction: row-reverse;
-}
-
-/* Sidebar width variants */
-layout-sidebar[data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
-layout-sidebar[data-layout-sidebar-width="normal"] { --_sidebar-width: 15rem; }
-layout-sidebar[data-layout-sidebar-width="wide"] { --_sidebar-width: 20rem; }
-
-/* Content minimum width variants */
-layout-sidebar[data-layout-content-min="40"] { --_content-min: 40%; }
-layout-sidebar[data-layout-content-min="50"] { --_content-min: 50%; }
-layout-sidebar[data-layout-content-min="60"] { --_content-min: 60%; }
-
-/* No wrap - sidebar always visible */
-layout-sidebar[data-layout-nowrap] {
-  flex-wrap: nowrap;
-}{% endset %}
-
 <browser-window
     src="/docs/examples/demos/sidebar-responsive.html"
     url="https://vanilla-breeze.dev/sidebar"
@@ -202,49 +156,13 @@ layout-sidebar[data-layout-nowrap] {
     <h2>Side Variants</h2>
     <p>The <code>data-layout-side</code> attribute controls which side the sidebar appears on.</p>
 
-    <h3>Sidebar on Start (default)</h3>
-    <div class="example">
-      <layout-sidebar data-layout-gap="m">
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="s">
-            <strong>Sidebar</strong>
-            <nav class="vertical" aria-label="Demo navigation">
-              <ul>
-                <li><a href="#" aria-current="page">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Profile</a></li>
-              </ul>
-            </nav>
-          </layout-stack>
-        </layout-card>
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="s">
-            <strong>Main Content</strong>
-            <p style="margin: 0;">This area grows to fill available space while the sidebar maintains its width. The layout automatically stacks on narrow screens.</p>
-          </layout-stack>
-        </layout-card>
-      </layout-sidebar>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/sidebar-side.html"
+      url="https://vanilla-breeze.dev/sidebar/side"
+      title="Sidebar side variants"
+      shadow>
+    </browser-window>
 
-    <h3>Sidebar on End</h3>
-    <div class="example">
-      <layout-sidebar data-layout-gap="m" data-layout-side="end">
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="s">
-            <strong>Main Content</strong>
-            <p style="margin: 0;">The main content area appears first in the markup but is positioned based on flex direction.</p>
-          </layout-stack>
-        </layout-card>
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="s">
-            <strong>Sidebar</strong>
-            <p style="margin: 0; color: var(--color-text-muted);">Related links, filters, or supplementary information.</p>
-          </layout-stack>
-        </layout-card>
-      </layout-sidebar>
-    </div>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Sidebar side variants">{{ sideVariantsCode | escape }}</code-block>
   </section>
 
@@ -252,37 +170,13 @@ layout-sidebar[data-layout-nowrap] {
     <h2>Width Variants</h2>
     <p>The <code>data-layout-sidebar-width</code> attribute controls the sidebar width.</p>
 
-    <layout-stack data-layout-gap="l">
-      <div>
-        <p><strong>data-layout-sidebar-width="narrow"</strong> (12rem)</p>
-        <div class="example">
-          <layout-sidebar data-layout-gap="m" data-layout-sidebar-width="narrow">
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Narrow sidebar</p>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Main content area with more space.</p>
-            </layout-card>
-          </layout-sidebar>
-        </div>
-      </div>
+    <browser-window
+      src="/docs/snippets/demos/sidebar-width.html"
+      url="https://vanilla-breeze.dev/sidebar/width"
+      title="Sidebar width variants"
+      shadow>
+    </browser-window>
 
-      <div>
-        <p><strong>data-layout-sidebar-width="wide"</strong> (20rem)</p>
-        <div class="example">
-          <layout-sidebar data-layout-gap="m" data-layout-sidebar-width="wide">
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Wide sidebar with more room for navigation or filters.</p>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Main content area.</p>
-            </layout-card>
-          </layout-sidebar>
-        </div>
-      </div>
-    </layout-stack>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Sidebar width variants">{{ widthVariantsCode | escape }}</code-block>
   </section>
 
@@ -290,37 +184,13 @@ layout-sidebar[data-layout-nowrap] {
     <h2>Gap Variants</h2>
     <p>The <code>data-layout-gap</code> attribute controls spacing between sidebar and main content.</p>
 
-    <layout-stack data-layout-gap="l">
-      <div>
-        <p><strong>data-layout-gap="xs"</strong></p>
-        <div class="example">
-          <layout-sidebar data-layout-gap="xs">
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Sidebar</p>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Main content with extra-small gap.</p>
-            </layout-card>
-          </layout-sidebar>
-        </div>
-      </div>
+    <browser-window
+      src="/docs/snippets/demos/sidebar-gap.html"
+      url="https://vanilla-breeze.dev/sidebar/gap"
+      title="Sidebar gap variants"
+      shadow>
+    </browser-window>
 
-      <div>
-        <p><strong>data-layout-gap="l"</strong></p>
-        <div class="example">
-          <layout-sidebar data-layout-gap="l">
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Sidebar</p>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="s">
-              <p style="margin: 0;">Main content with large gap.</p>
-            </layout-card>
-          </layout-sidebar>
-        </div>
-      </div>
-    </layout-stack>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Sidebar gap variants">{{ gapVariantsCode | escape }}</code-block>
   </section>
 
@@ -328,119 +198,44 @@ layout-sidebar[data-layout-nowrap] {
     <h2>Usage Examples</h2>
 
     <h3>Dashboard Layout</h3>
-    <div class="example">
-      <layout-sidebar data-layout-gap="l" data-layout-sidebar-width="normal">
-        <layout-card data-variant="outlined">
-          <layout-stack data-layout-gap="m">
-            <strong style="font-size: var(--font-size-lg);">Dashboard</strong>
-            <nav class="vertical" aria-label="Dashboard navigation">
-              <ul>
-                <li><a href="#" aria-current="page">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
-                <li><a href="#">Reports</a></li>
-                <li><a href="#">Settings</a></li>
-              </ul>
-            </nav>
-          </layout-stack>
-        </layout-card>
-        <layout-stack data-layout-gap="m">
-          <h2 style="margin: 0;">Overview</h2>
-          <layout-grid data-layout-min="12rem" data-layout-gap="m">
-            <layout-card data-variant="outlined" data-padding="m">
-              <layout-stack data-layout-gap="xs" data-layout-align="center">
-                <span style="font-size: var(--font-size-xl); font-weight: 700;">1,234</span>
-                <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Users</span>
-              </layout-stack>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="m">
-              <layout-stack data-layout-gap="xs" data-layout-align="center">
-                <span style="font-size: var(--font-size-xl); font-weight: 700;">567</span>
-                <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Orders</span>
-              </layout-stack>
-            </layout-card>
-            <layout-card data-variant="outlined" data-padding="m">
-              <layout-stack data-layout-gap="xs" data-layout-align="center">
-                <span style="font-size: var(--font-size-xl); font-weight: 700;">$12.3k</span>
-                <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">Revenue</span>
-              </layout-stack>
-            </layout-card>
-          </layout-grid>
-        </layout-stack>
-      </layout-sidebar>
-    </div>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-dashboard.html"
+      url="https://vanilla-breeze.dev/sidebar/dashboard"
+      title="Dashboard with sidebar navigation"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Dashboard with sidebar navigation">{{ dashboardCode | escape }}</code-block>
 
     <h3>Article with Related Content</h3>
-    <div class="example">
-      <layout-sidebar data-layout-gap="l" data-layout-side="end">
-        <layout-text>
-          <h2>Article Title</h2>
-          <p>Main article content goes here. The sidebar provides space for related links, author info, or supplementary content that enhances the reading experience.</p>
-          <p>The flexible layout ensures the main content always gets priority width while the sidebar maintains its fixed width.</p>
-        </layout-text>
-        <layout-card data-variant="outlined">
-          <layout-stack data-layout-gap="m">
-            <strong>Related Articles</strong>
-            <layout-stack data-layout-gap="xs">
-              <a href="#">Getting Started Guide</a>
-              <a href="#">Advanced Techniques</a>
-              <a href="#">Best Practices</a>
-            </layout-stack>
-          </layout-stack>
-        </layout-card>
-      </layout-sidebar>
-    </div>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-article.html"
+      url="https://vanilla-breeze.dev/sidebar/article"
+      title="Article with related content sidebar"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Article with sidebar for related content">{{ articleRelatedCode | escape }}</code-block>
 
     <h3>Filters Layout</h3>
-    <div class="example">
-      <layout-sidebar data-layout-gap="m" data-layout-sidebar-width="narrow">
-        <layout-card data-variant="outlined" data-padding="m">
-          <layout-stack data-layout-gap="m">
-            <strong>Filters</strong>
-            <layout-stack data-layout-gap="xs">
-              <label for="filter-category">Category</label>
-              <select id="filter-category">
-                <option>All</option>
-                <option>Electronics</option>
-                <option>Clothing</option>
-              </select>
-            </layout-stack>
-            <layout-stack data-layout-gap="xs">
-              <label for="filter-price">Price Range</label>
-              <select id="filter-price">
-                <option>Any</option>
-                <option>$0 - $50</option>
-                <option>$50 - $100</option>
-              </select>
-            </layout-stack>
-            <button type="button" class="small">Apply Filters</button>
-          </layout-stack>
-        </layout-card>
-        <layout-grid data-layout-min="10rem" data-layout-gap="m">
-          <layout-card data-variant="outlined" data-padding="s"><p>Product 1</p></layout-card>
-          <layout-card data-variant="outlined" data-padding="s"><p>Product 2</p></layout-card>
-          <layout-card data-variant="outlined" data-padding="s"><p>Product 3</p></layout-card>
-          <layout-card data-variant="outlined" data-padding="s"><p>Product 4</p></layout-card>
-        </layout-grid>
-      </layout-sidebar>
-    </div>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-filters.html"
+      url="https://vanilla-breeze.dev/sidebar/filters"
+      title="Product listing with filters sidebar"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Product listing with filters sidebar">{{ filtersCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>CSS Implementation</h2>
-    <code-block language="css" show-lines label="layout-sidebar CSS implementation">{{ cssImplementation | escape }}</code-block>
-  </section>
-
-  <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/custom-elements/stack/">layout-stack</a> - Vertical stacking layout</li>
-      <li><a href="/docs/elements/custom-elements/grid/">layout-grid</a> - Auto-fit grid layout</li>
-      <li><a href="/docs/elements/custom-elements/switcher/">layout-switcher</a> - Responsive row/column switcher</li>
+      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> - Vertical stacking layout</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> - Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/switcher/"><code>&lt;layout-switcher&gt;</code></a> - Responsive row/column switcher</li>
     </ul>
   </section>
