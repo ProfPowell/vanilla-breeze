@@ -1,4 +1,6 @@
 module.exports = {
+  // ── Layout Custom Elements ────────────────────────────────────────
+
   "layout-stack": {
     flow: true,
     permittedContent: ["@flow"],
@@ -24,7 +26,6 @@ module.exports = {
       }
     }
   },
-
 
   "layout-grid": {
     flow: true,
@@ -165,50 +166,207 @@ module.exports = {
     }
   },
 
-  "tab-set": {
+  // ── Other Custom Elements ─────────────────────────────────────────
+
+  "brand-mark": {
     flow: true,
-    permittedContent: ["details"],
+    permittedContent: ["@flow"],
     attributes: {
-      "aria-label": {}
+      "data-size": { enum: ["s", "l", "xl"] },
+      "data-stack": { boolean: true }
     }
   },
+
+  "dl-item": {
+    flow: true,
+    permittedContent: ["dt", "dd"]
+  },
+
+  "form-field": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "layout-badge": {
+    phrasing: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "data-size": { enum: ["sm", "lg"] },
+      "data-color": { enum: ["primary", "success", "warning", "danger", "info"] },
+      "data-variant": {}
+    }
+  },
+
+  "loading-spinner": {
+    phrasing: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "data-size": { enum: ["xs", "s", "m", "l", "xl"] },
+      "data-variant": {},
+      "data-overlay": { boolean: true }
+    }
+  },
+
+  "progress-ring": {
+    phrasing: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "data-size": {},
+      "data-indeterminate": { boolean: true }
+    }
+  },
+
+  "status-message": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "text-divider": {
+    flow: true,
+    permittedContent: ["@phrasing"]
+  },
+
+  "user-avatar": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  // ── Web Components ────────────────────────────────────────────────
 
   "accordion-wc": {
     flow: true,
     permittedContent: ["details"],
     attributes: {
-      "data-single": {
-        boolean: true
-      },
-      "data-bordered": {
-        boolean: true
-      },
-      "data-compact": {
-        boolean: true
-      }
+      "data-single": { boolean: true },
+      "data-bordered": { boolean: true },
+      "data-compact": { boolean: true }
     }
   },
 
-  "tool-tip": {
+  "card-list": {
     flow: true,
-    permittedContent: ["@flow", "template"],
+    permittedContent: ["template", "@flow"],
     attributes: {
-      "data-tooltip-position": {
-        enum: ["top", "bottom", "left", "right"]
-      },
-      "data-tooltip-delay": {}
+      "src": {},
+      "data-items": {},
+      "data-key": {},
+      "data-layout": { enum: ["grid", "stack", "reel"] }
     }
   },
 
-  "toast-msg": {
+  "carousel-wc": {
     flow: true,
-    permittedContent: [],
+    permittedContent: ["@flow"],
     attributes: {
-      "data-position": {
-        enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"]
+      "data-autoplay": { boolean: true },
+      "data-autoplay-delay": {},
+      "data-loop": { boolean: true },
+      "data-indicators": {},
+      "data-item-width": {},
+      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
+      "data-start": {},
+      "data-persist": {},
+      "data-transition": { enum: ["fade", "slide", "scale"] }
+    }
+  },
+
+  "color-palette": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "colors": {},
+      "names": {},
+      "layout": { enum: ["inline", "grid", "list"] },
+      "show-values": { boolean: true },
+      "show-names": { boolean: true },
+      "size": { enum: ["sm", "md", "lg"] }
+    }
+  },
+
+  "combo-box": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "data-required": { boolean: true },
+      "data-filter": { enum: ["startsWith", "contains"] },
+      "data-value": {},
+      "data-placeholder": {},
+      "data-multiple": { boolean: true },
+      "data-max": {},
+      "data-allow-custom": { boolean: true }
+    }
+  },
+
+  "command-palette": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-hotkey": {},
+      "data-placeholder": {},
+      "data-discover": { boolean: true }
+    }
+  },
+
+  "command-group": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "label": {}
+    }
+  },
+
+  "command-item": {
+    flow: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "value": {},
+      "data-shortcut": {}
+    }
+  },
+
+  "compare-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-position": {}
+    }
+  },
+
+  "content-swap": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-transition": {
+        enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"]
       },
-      "data-duration": {},
-      "data-max": {}
+      "data-swapped": { boolean: true },
+      "data-card": { boolean: true },
+      "data-variant": { enum: ["elevated", "outlined", "ghost"] }
+    }
+  },
+
+  "context-menu": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "data-table": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-filterable": { boolean: true },
+      "data-paginate": {}
+    }
+  },
+
+  "drag-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-group": {},
+      "data-orientation": { enum: ["horizontal"] },
+      "data-drag-disabled": { boolean: true }
     }
   },
 
@@ -219,6 +377,16 @@ module.exports = {
       "data-position": {
         enum: ["bottom-start", "bottom-end", "top-start", "top-end"]
       }
+    }
+  },
+
+  "emoji-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {},
+      "data-open": { boolean: true },
+      "recent-limit": {}
     }
   },
 
@@ -235,53 +403,230 @@ module.exports = {
     permittedContent: ["@phrasing"]
   },
 
+  "geo-map": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "lat": {},
+      "lng": {},
+      "zoom": {}
+    }
+  },
+
+  "heading-links": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-levels": {}
+    }
+  },
+
   "icon-wc": {
     phrasing: true,
-    void: true,
+    permittedContent: [],
     attributes: {
-      "name": {
-        required: true
-      },
-      "set": {
-        enum: ["lucide", "custom"]
-      },
-      "size": {
-        enum: ["xs", "sm", "md", "lg", "xl", "2xl"]
-      },
+      "name": { required: true },
+      "set": { enum: ["lucide", "custom"] },
+      "size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
       "label": {},
       "base-path": {}
     }
   },
 
-  "card-list": {
-    flow: true,
-    permittedContent: ["template", "@flow"],
-    attributes: {
-      "src": {},
-      "data-items": {},
-      "data-key": {},
-      "data-layout": {
-        enum: ["grid", "stack", "reel"]
-      }
-    }
-  },
-
-  "content-swap": {
+  "include-file": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-transition": {
-        enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"]
+      "src": {},
+      "data-mode": { enum: ["replace", "append", "prepend"] },
+      "data-lazy": { boolean: true }
+    }
+  },
+
+  "page-toc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-levels": {},
+      "data-scope": {},
+      "data-title": {}
+    }
+  },
+
+  "print-page": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-raw-toggle": { boolean: true },
+      "data-label": {}
+    }
+  },
+
+  "qr-code": {
+    flow: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "data-value": {},
+      "data-size": {},
+      "data-color": {},
+      "data-background": {},
+      "data-error-correction": {}
+    }
+  },
+
+  "settings-panel": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "short-cuts": {
+    flow: true,
+    permittedContent: []
+  },
+
+  "site-search": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-open": { boolean: true }
+    }
+  },
+
+  "slide-accept": {
+    flow: true,
+    permittedContent: ["@phrasing"],
+    attributes: {
+      "data-label": {},
+      "data-activated-label": {},
+      "data-attention": { enum: ["shimmer", "pulse"] },
+      "data-threshold": {}
+    }
+  },
+
+  "split-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-direction": { enum: ["horizontal", "vertical"] },
+      "data-position": {},
+      "data-min": {},
+      "data-max": {},
+      "data-persist": {},
+      "data-collapsible": { boolean: true }
+    }
+  },
+
+  "star-rating": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "tab-set": {
+    flow: true,
+    permittedContent: ["details"],
+    attributes: {
+      "aria-label": {}
+    }
+  },
+
+  "text-reader": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {},
+      "selectors": {},
+      "speed": {},
+      "voice": {},
+      "highlight": { boolean: true },
+      "scroll": { boolean: true }
+    }
+  },
+
+  "theme-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-variant": { enum: ["popover", "inline"] },
+      "data-open": { boolean: true }
+    }
+  },
+
+  "toast-msg": {
+    flow: true,
+    permittedContent: [],
+    attributes: {
+      "data-position": {
+        enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"]
       },
-      "data-swapped": {
-        boolean: true
-      },
-      "data-card": {
-        boolean: true
-      },
-      "data-variant": {
-        enum: ["elevated", "outlined", "ghost"]
-      }
+      "data-duration": {},
+      "data-max": {}
+    }
+  },
+
+  "tool-tip": {
+    flow: true,
+    permittedContent: ["@flow", "template"],
+    attributes: {
+      "data-tooltip-position": { enum: ["top", "bottom", "left", "right"] },
+      "data-tooltip-delay": {}
+    }
+  },
+
+  "type-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "font-family": {},
+      "label": {},
+      "sample": {},
+      "show-scale": { boolean: true },
+      "show-weights": { boolean: true },
+      "show-characters": { boolean: true },
+      "weights": {}
+    }
+  },
+
+  // ── Doc-Site Components ───────────────────────────────────────────
+
+  "browser-window": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "src": {},
+      "url": {},
+      "title": {},
+      "shadow": { boolean: true }
+    }
+  },
+
+  "code-block": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "language": {},
+      "show-lines": { boolean: true },
+      "label": {}
+    }
+  },
+
+  "vb-composer": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "vb-canvas": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-wireframe": { boolean: true }
+    }
+  },
+
+  "vb-inspector": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "aria-label": {}
     }
   }
 };
