@@ -1,5 +1,6 @@
 export default [
   { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/', desc: 'Collapsible content sections' },
+  { name: 'card-list', href: '/docs/elements/web-components/card-list/', desc: 'Template-based list rendering with safe data binding' },
   { name: 'carousel-wc', href: '/docs/elements/web-components/carousel/', desc: 'Scroll carousel with controls and autoplay' },
   { name: 'color-palette', href: '/docs/elements/web-components/color-palette/', desc: 'Interactive color swatch display with click-to-copy' },
   { name: 'combo-box', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with single-select and multi-select tag modes' },

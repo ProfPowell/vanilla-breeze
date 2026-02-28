@@ -1,0 +1,369 @@
+---
+layout: layouts/element.njk
+title: "card-list"
+description: "Template-based list rendering with safe data binding. Fetch or inline JSON, bind to templates, and render lists with grid, stack, or reel layouts."
+elementName: card-list
+category: component
+currentPath: /docs/elements/web-components/card-list/
+permalink: /docs/elements/web-components/card-list/
+---
+
+{% set basicCode %}<card-list data-layout="grid" data-items='[
+  {"id": 1, "name": "Headphones", "price": "$249", "inStock": true},
+  {"id": 2, "name": "Keyboard", "price": "$159", "inStock": true},
+  {"id": 3, "name": "Monitor", "price": "$449", "inStock": false}
+]' data-key="id">
+  <template>
+    <layout-card>
+      <header><h3 data-field="name"></h3></header>
+      <section>
+        <p data-field="price"></p>
+      </section>
+      <footer>
+        <button data-field-if="inStock">Add to Cart</button>
+        <span data-field-unless="inStock">Out of Stock</span>
+      </footer>
+    </layout-card>
+  </template>
+</card-list>{% endset %}
+
+{% set fetchCode %}<card-list src="/api/products.json" data-layout="grid" data-key="id">
+  <template>
+    <layout-card>
+      <header><h3 data-field="name"></h3></header>
+      <section><p data-field="description"></p></section>
+    </layout-card>
+  </template>
+</card-list>{% endset %}
+
+{% set nestedCode %}<card-list data-layout="stack" data-items='[
+  {"id": 1, "user": {"name": "Alice", "email": "alice@example.com"}},
+  {"id": 2, "user": {"name": "Bob", "email": "bob@example.com"}}
+]' data-key="id">
+  <template>
+    <layout-card data-variant="outlined">
+      <layout-cluster data-layout-justify="between" data-layout-align="center">
+        <strong data-field="user.name"></strong>
+        <small data-field="user.email"></small>
+      </layout-cluster>
+    </layout-card>
+  </template>
+</card-list>{% endset %}
+
+{% set attrBindCode %}<card-list data-layout="grid" data-items='[
+  {"id": 1, "title": "Getting Started", "url": "#start", "desc": "Learn the basics."},
+  {"id": 2, "title": "API Reference", "url": "#api", "desc": "Full documentation."}
+]' data-key="id">
+  <template>
+    <layout-card data-variant="outlined">
+      <h3><a data-field="title" data-field-attr="href: url, title: desc"></a></h3>
+      <p data-field="desc"></p>
+    </layout-card>
+  </template>
+</card-list>{% endset %}
+
+{% set conditionalCode %}<card-list data-layout="grid" data-items='[
+  {"id": 1, "name": "Free", "price": "$0/mo", "featured": false},
+  {"id": 2, "name": "Pro", "price": "$29/mo", "featured": true}
+]' data-key="id">
+  <template>
+    <layout-card>
+      <header>
+        <h3 data-field="name"></h3>
+        <layout-badge data-field-if="featured">Popular</layout-badge>
+      </header>
+      <section><p data-field="price"></p></section>
+      <footer>
+        <button class="primary" data-field-if="featured">Get Started</button>
+        <button data-field-unless="featured">Learn More</button>
+      </footer>
+    </layout-card>
+  </template>
+</card-list>{% endset %}
+
+{% set htmlCode %}<card-list data-items='[
+  {"id": 1, "title": "Bold", "content": "<strong>Rich</strong> HTML content"}
+]' data-key="id">
+  <template>
+    <article>
+      <h3 data-field="title"></h3>
+      <div data-field-html="content"></div>
+    </article>
+  </template>
+</card-list>{% endset %}
+
+{% set eventCode %}const list = document.querySelector('card-list');
+
+list.addEventListener('card-list:render', (e) => {
+  console.log(`Rendered ${e.detail.count} items`);
+});{% endset %}
+
+{% set apiCode %}const list = document.querySelector('card-list');
+
+// Set items programmatically
+list.setItems([
+  { id: 1, name: 'Item A' },
+  { id: 2, name: 'Item B' },
+]);
+
+// Read current items
+const items = list.getItems(); // returns a copy{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;card-list&gt;</code> component renders a list of items from JSON data using an HTML <code>&lt;template&gt;</code>. Data binding uses <code>data-field</code> attributes &mdash; only safe property paths are allowed, no expressions or method calls.</p>
+    <p>Supply data inline via <code>data-items</code> or fetch from a URL via <code>src</code>. Choose a layout with <code>data-layout</code>: grid, stack, or reel.</p>
+
+    <browser-window
+      src="/docs/examples/demos/card-list-basic.html"
+      url="https://vanilla-breeze.dev/card-list"
+      title="Card List"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic card list with inline data">{{ basicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>URL</td>
+          <td>&mdash;</td>
+          <td>URL to fetch JSON data from. Expects an array or an object with <code>items</code> or <code>data</code> property.</td>
+        </tr>
+        <tr>
+          <td><code>data-items</code></td>
+          <td>JSON string</td>
+          <td>&mdash;</td>
+          <td>Inline JSON array of items. Takes priority over <code>src</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-key</code></td>
+          <td>string</td>
+          <td><code>id</code></td>
+          <td>Property name to use as the unique key for each item.</td>
+        </tr>
+        <tr>
+          <td><code>data-layout</code></td>
+          <td>string</td>
+          <td><code>block</code></td>
+          <td>Layout mode: <code>grid</code> (auto-fit columns), <code>stack</code> (vertical), or <code>reel</code> (horizontal scroll).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Binding Attributes</h3>
+    <p>These go on elements inside the <code>&lt;template&gt;</code> to bind item data.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-field="path"</code></td>
+          <td>Set the element's text content from a property path (e.g. <code>user.name</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-field-attr="href: url, title: name"</code></td>
+          <td>Set one or more HTML attributes from property paths. Comma-separated pairs of <code>attribute: path</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-field-html="path"</code></td>
+          <td>Set innerHTML from a property path. Content is sanitized (scripts, iframes, and event handlers are stripped).</td>
+        </tr>
+        <tr>
+          <td><code>data-field-if="path"</code></td>
+          <td>Keep element only if the property value is truthy. Removed from DOM otherwise.</td>
+        </tr>
+        <tr>
+          <td><code>data-field-unless="path"</code></td>
+          <td>Keep element only if the property value is falsy. Removed from DOM otherwise.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Data Sources</h2>
+
+    <h3>Inline Data</h3>
+    <p>Pass a JSON array directly in the <code>data-items</code> attribute. Good for small, static datasets.</p>
+
+    <h3>Remote Data</h3>
+    <p>Set <code>src</code> to fetch JSON from a URL. The component shows a loading state while fetching and an error state on failure.</p>
+
+    <code-block language="html" show-lines label="Fetch from URL">{{ fetchCode | escape }}</code-block>
+
+    <p>The response can be a plain array, or an object with an <code>items</code> or <code>data</code> property containing the array.</p>
+  </section>
+
+  <section>
+    <h2>Nested Properties</h2>
+    <p>Access nested data with dot notation. Array indices are also supported: <code>items[0].title</code>.</p>
+
+    <code-block language="html" show-lines label="Nested property access">{{ nestedCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Attribute Binding</h2>
+    <p>Use <code>data-field-attr</code> to set HTML attributes from item properties. Comma-separated pairs map attributes to property paths.</p>
+
+    <code-block language="html" show-lines label="Attribute binding">{{ attrBindCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Conditional Rendering</h2>
+    <p>Use <code>data-field-if</code> and <code>data-field-unless</code> to conditionally include or exclude elements based on item data. Elements are removed from the DOM, not hidden.</p>
+
+    <code-block language="html" show-lines label="Conditional elements">{{ conditionalCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Rich HTML Content</h2>
+    <p>Use <code>data-field-html</code> to render HTML content from a property. Content is sanitized &mdash; <code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>, <code>&lt;form&gt;</code>, event handlers, and <code>javascript:</code> URIs are all stripped.</p>
+
+    <code-block language="html" show-lines label="HTML content binding">{{ htmlCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Modes</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Display</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>grid</code></td>
+          <td>CSS Grid</td>
+          <td>Auto-fit columns with <code>minmax(280px, 1fr)</code>. Responsive by default.</td>
+        </tr>
+        <tr>
+          <td><code>stack</code></td>
+          <td>Flex column</td>
+          <td>Vertical stack with gap.</td>
+        </tr>
+        <tr>
+          <td><code>reel</code></td>
+          <td>Flex row</td>
+          <td>Horizontal scroll with snap points.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>States</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>When</th>
+          <th>Visual</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-loading</code></td>
+          <td>During <code>src</code> fetch</td>
+          <td>Reduced opacity with "Loading..." message.</td>
+        </tr>
+        <tr>
+          <td><code>data-error</code></td>
+          <td>Fetch failure</td>
+          <td>Error message banner with the HTTP status.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>card-list:render</code></td>
+          <td><code>{ count: number }</code></td>
+          <td>Fired after items are rendered. Bubbles.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Listening to render events">{{ eventCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method / Property</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>setItems(items)</code></td>
+          <td>Replace the item list and re-render.</td>
+        </tr>
+        <tr>
+          <td><code>getItems()</code></td>
+          <td>Returns a shallow copy of the current items array.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Programmatic control">{{ apiCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Security</h2>
+    <p>All <code>data-field</code> paths are validated against a strict regex. Only simple property access is allowed:</p>
+    <ul>
+      <li><strong>Allowed:</strong> <code>name</code>, <code>user.email</code>, <code>items[0].title</code></li>
+      <li><strong>Rejected:</strong> <code>price.toFixed(2)</code>, <code>`${price}`</code>, <code>price * 1.1</code>, <code>stock > 0 ? 'yes' : 'no'</code></li>
+    </ul>
+    <p>Invalid paths log a console warning and resolve to empty content.</p>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Without JavaScript, the <code>&lt;template&gt;</code> is hidden by default. Consider providing a <code>&lt;noscript&gt;</code> fallback or static content before the template for no-JS contexts.</p>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> &mdash; Card visual shell for list items</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> &mdash; CSS grid layout primitive</li>
+      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; Vertical stack layout</li>
+      <li><a href="/docs/elements/custom-elements/reel/"><code>&lt;layout-reel&gt;</code></a> &mdash; Horizontal scroll layout</li>
+      <li><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> &mdash; For tabular data display</li>
+    </ul>
+  </section>
