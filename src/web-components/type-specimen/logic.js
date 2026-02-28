@@ -1,5 +1,5 @@
 /**
- * type-specimen-wc: Typography specimen display
+ * type-specimen: Typography specimen display
  *
  * Renders a font specimen with sample text, character grid, weight scale,
  * and optional type scale display using VB's 9-step system.
@@ -13,10 +13,10 @@
  * @attr {string} weights - Comma-separated available weights (default: "400,700")
  *
  * @example
- * <type-specimen-wc font-family="Georgia" label="Georgia" show-characters show-weights></type-specimen-wc>
- * <type-specimen-wc font-family="'Inter', sans-serif" show-scale></type-specimen-wc>
+ * <type-specimen font-family="Georgia" label="Georgia" show-characters show-weights></type-specimen>
+ * <type-specimen font-family="'Inter', sans-serif" show-scale></type-specimen>
  */
-class TypeSpecimenWc extends HTMLElement {
+class TypeSpecimen extends HTMLElement {
   static observedAttributes = ['font-family', 'label', 'sample', 'show-scale', 'show-weights', 'show-characters', 'weights'];
 
   connectedCallback() {
@@ -94,4 +94,4 @@ class TypeSpecimenWc extends HTMLElement {
   }
 }
 
-customElements.define('type-specimen-wc', TypeSpecimenWc);
+customElements.define('type-specimen', TypeSpecimen);

@@ -31,6 +31,7 @@ const elementsByLetter = {
     { name: 'caption', type: 'native', href: '/docs/elements/native/caption/' },
     { name: 'card-list', type: 'component', href: '/docs/elements/web-components/card-list/' },
     { name: 'carousel-wc', type: 'component', href: '/docs/elements/web-components/carousel/' },
+    { name: 'color-palette', type: 'component', href: '/docs/elements/web-components/color-palette/' },
     { name: 'cite', type: 'native', href: '/docs/elements/native/cite/' },
     { name: 'code', type: 'native', href: '/docs/elements/native/code/' },
     { name: 'col', type: 'native', href: '/docs/elements/native/col/' },
@@ -185,6 +186,7 @@ const elementsByLetter = {
   T: [
     { name: 'table', type: 'native', href: '/docs/elements/native/table/' },
     { name: 'tab-set', type: 'component', href: '/docs/elements/web-components/tabs/' },
+    { name: 'type-specimen', type: 'component', href: '/docs/elements/web-components/type-specimen/' },
     { name: 'tbody', type: 'native', href: '/docs/elements/native/tbody/' },
     { name: 'td', type: 'native', href: '/docs/elements/native/td/' },
     { name: 'template', type: 'native', href: '/docs/elements/native/template/' },

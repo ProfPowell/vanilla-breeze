@@ -1,6 +1,7 @@
 export default [
   { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/', desc: 'Collapsible content sections' },
   { name: 'carousel-wc', href: '/docs/elements/web-components/carousel/', desc: 'Scroll carousel with controls and autoplay' },
+  { name: 'color-palette', href: '/docs/elements/web-components/color-palette/', desc: 'Interactive color swatch display with click-to-copy' },
   { name: 'combo-box', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with single-select and multi-select tag modes' },
   { name: 'command-palette', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
   { name: 'compare-surface', href: '/docs/elements/web-components/comparison/', desc: 'Before/after image comparison slider with drag handle and keyboard support' },
@@ -16,6 +17,7 @@ export default [
   { name: 'tab-set', href: '/docs/elements/web-components/tabs/', desc: 'Tabbed interface component' },
   { name: 'text-reader', href: '/docs/elements/web-components/text-reader/', desc: 'Text-to-speech reader with word-level highlighting' },
   { name: 'toast-msg', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
+  { name: 'type-specimen', href: '/docs/elements/web-components/type-specimen/', desc: 'Typography specimen with character grid, weight scale, and type scale' },
   { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   { name: 'foot-notes', href: '/docs/elements/web-components/footnotes/', desc: 'Inline footnotes with popup' },
   { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },

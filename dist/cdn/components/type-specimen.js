@@ -12,5 +12,5 @@ var t=class extends HTMLElement{static observedAttributes=["font-family","label"
         </div>`;e+="</div>"}if(c){let s=[{name:"xs",rem:.75},{name:"sm",rem:.875},{name:"md",rem:1},{name:"lg",rem:1.125},{name:"xl",rem:1.25},{name:"2xl",rem:1.5},{name:"3xl",rem:1.875},{name:"4xl",rem:2.25},{name:"5xl",rem:3}];e+='<div class="specimen-scale">';for(let i of s)e+=`<div class="scale-step" style="font-family:${a};font-size:${i.rem}rem">
           <span class="scale-label">${i.name}</span>
           <span class="scale-text">${l.substring(0,30)}</span>
-        </div>`;e+="</div>"}this.innerHTML=e}};customElements.define("type-specimen-wc",t);
-//# sourceMappingURL=type-specimen-wc.js.map
+        </div>`;e+="</div>"}this.innerHTML=e}};customElements.define("type-specimen",t);
+//# sourceMappingURL=type-specimen.js.map

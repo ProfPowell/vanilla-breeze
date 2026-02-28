@@ -1,0 +1,167 @@
+---
+layout: layouts/element.njk
+title: "color-palette"
+description: "Interactive color swatch display web component with click-to-copy and multiple layout modes."
+elementName: color-palette
+category: component
+currentPath: /docs/elements/web-components/color-palette/
+permalink: /docs/elements/web-components/color-palette/
+---
+
+{% set basicCode %}<color-palette
+  colors="#ff6b6b,#4ecdc4,#45b7d1,#f7dc6f,#bb8fce"
+  names="Red,Teal,Sky,Gold,Purple"
+  show-names>
+</color-palette>{% endset %}
+
+{% set gridCode %}<color-palette
+  colors="#2d3436,#636e72,#b2bec3,#dfe6e9,#ffffff"
+  names="Dark,Gray,Silver,Light,White"
+  layout="grid"
+  size="lg"
+  show-values
+  show-names>
+</color-palette>{% endset %}
+
+{% set listCode %}<color-palette
+  colors="#1a5276,#2e86c1,#85c1e9"
+  names="Navy,Blue,Sky"
+  layout="list"
+  show-values
+  show-names>
+</color-palette>{% endset %}
+
+{% set oklchCode %}<color-palette
+  colors="oklch(50% 0.2 260),oklch(65% 0.18 30),oklch(75% 0.15 140),oklch(85% 0.12 80)"
+  names="Indigo,Orange,Green,Gold"
+  show-values
+  show-names>
+</color-palette>{% endset %}
+
+{% set eventCode %}document.querySelector('color-palette')
+  .addEventListener('color-palette:select', (e) => {
+    console.log(e.detail);
+    // { color: '#ff6b6b', name: 'Red', index: 0 }
+  });{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;color-palette&gt;</code> component renders interactive color swatches from a comma-separated list. Click any swatch to copy its value to the clipboard. Supports hex, rgb, hsl, and oklch color formats.</p>
+
+  <div class="example">
+    <color-palette colors="#ff6b6b,#4ecdc4,#45b7d1,#f7dc6f,#bb8fce" names="Red,Teal,Sky,Gold,Purple" show-names></color-palette>
+  </div>
+
+  <code-block language="html" show-lines label="Basic palette">{{ basicCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>colors</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Comma-separated color values (hex, rgb, oklch, etc.).</td>
+      </tr>
+      <tr>
+        <td><code>names</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Comma-separated swatch labels.</td>
+      </tr>
+      <tr>
+        <td><code>layout</code></td>
+        <td>string</td>
+        <td><code>inline</code></td>
+        <td>Display mode: <code>inline</code>, <code>grid</code>, or <code>list</code>.</td>
+      </tr>
+      <tr>
+        <td><code>show-values</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Show color value text on each swatch.</td>
+      </tr>
+      <tr>
+        <td><code>show-names</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Show name labels on each swatch.</td>
+      </tr>
+      <tr>
+        <td><code>size</code></td>
+        <td>string</td>
+        <td><code>md</code></td>
+        <td>Swatch size: <code>sm</code> (32px), <code>md</code> (48px), or <code>lg</code> (72px).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Layout Modes</h2>
+
+  <h3>Grid</h3>
+  <p>Auto-filling grid that wraps responsively.</p>
+  <div class="example">
+    <color-palette colors="#2d3436,#636e72,#b2bec3,#dfe6e9,#ffffff" names="Dark,Gray,Silver,Light,White" layout="grid" size="lg" show-values show-names></color-palette>
+  </div>
+  <code-block language="html" show-lines label="Grid layout">{{ gridCode | escape }}</code-block>
+
+  <h3>List</h3>
+  <p>Vertical list with color values alongside.</p>
+  <div class="example">
+    <color-palette colors="#1a5276,#2e86c1,#85c1e9" names="Navy,Blue,Sky" layout="list" show-values show-names></color-palette>
+  </div>
+  <code-block language="html" show-lines label="List layout">{{ listCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>oklch Colors</h2>
+  <p>The parser handles functional color notation that contains commas, such as <code>oklch()</code>.</p>
+
+  <div class="example">
+    <color-palette colors="oklch(50% 0.2 260),oklch(65% 0.18 30),oklch(75% 0.15 140),oklch(85% 0.12 80)" names="Indigo,Orange,Green,Gold" show-values show-names></color-palette>
+  </div>
+  <code-block language="html" show-lines label="oklch colors">{{ oklchCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>color-palette:select</code></td>
+        <td><code>{ color, name, index }</code></td>
+        <td>Fired when a swatch is clicked. The color value is also copied to the clipboard.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="javascript" show-lines label="Listening for selections">{{ eventCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The palette uses <code>role="group"</code> with <code>aria-label="Color palette"</code>.</li>
+    <li>Each swatch is a <code>&lt;button&gt;</code> with an <code>aria-label</code> including the color name and value.</li>
+    <li>Full keyboard navigation &mdash; Tab between swatches, Enter/Space to copy.</li>
+  </ul>
+</section>

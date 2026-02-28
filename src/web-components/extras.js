@@ -16,8 +16,8 @@ import './compare-surface/logic.js';
 import './split-surface/logic.js';
 import './qr-code/logic.js';
 import './slide-accept/logic.js';
-import './color-palette-wc/logic.js';
-import './type-specimen-wc/logic.js';
+import './color-palette/logic.js';
+import './type-specimen/logic.js';
 
 // Specialty utility inits
 import '../utils/command-init.js';
