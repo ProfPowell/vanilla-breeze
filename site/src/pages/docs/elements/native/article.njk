@@ -58,6 +58,18 @@ permalink: /docs/elements/native/article/
     <h3>data-prose</h3>
     <p>Automatically floats images that appear inside paragraphs to the inline-end, sized to half the content width. Ideal for markdown or CMS-generated content where images are placed directly within paragraph text.</p>
     <browser-window src="/docs/snippets/demos/article-prose.html" url="https://vanilla-breeze.dev/article/prose" title="Prose mode article" shadow></browser-window>
+
+    <h3>data-highlights</h3>
+    <p>Enables Medium-style text highlighting and private notes. Select text to see a floating toolbar with color swatches. Click an existing highlight to change color, add a note, or remove it. Highlights persist in localStorage.</p>
+    <browser-window src="/docs/snippets/demos/article-highlights.html" url="https://vanilla-breeze.dev/article/highlights" title="Article with highlights" shadow></browser-window>
+
+    <h3>data-highlights (custom colors)</h3>
+    <p>Use <code>data-highlights-colors</code> to provide a custom palette and define matching <code>--highlight-{name}</code> custom properties.</p>
+    <browser-window src="/docs/snippets/demos/article-highlights-colors.html" url="https://vanilla-breeze.dev/article/highlights/colors" title="Custom highlight colors" shadow></browser-window>
+
+    <h3>data-highlights (readonly)</h3>
+    <p>Add <code>data-highlights-readonly</code> to render stored highlights without allowing new ones.</p>
+    <browser-window src="/docs/snippets/demos/article-highlights-readonly.html" url="https://vanilla-breeze.dev/article/highlights/readonly" title="Readonly highlights" shadow></browser-window>
   </section>
 
   <section>
@@ -102,6 +114,10 @@ permalink: /docs/elements/native/article/
           <td><code>data-prose</code></td>
           <td>Auto-float images inside paragraphs for markdown/CMS content</td>
         </tr>
+        <tr>
+          <td><code>data-highlights</code></td>
+          <td>Text highlighting and private notes with localStorage persistence</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -114,6 +130,131 @@ permalink: /docs/elements/native/article/
       <li>Use <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code> within articles for structured metadata</li>
       <li>Include <code>&lt;time&gt;</code> elements with <code>datetime</code> attributes for publication dates</li>
       <li>Nested articles maintain proper heading hierarchy (avoid skipping levels)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Highlights API</h2>
+    <p>The <code>data-highlights</code> attribute activates a JavaScript controller that provides a programmatic API for managing highlights.</p>
+
+    <h3>Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-highlights</code></td>
+          <td>Enables highlighting. Optional string value becomes the localStorage key suffix (default: page pathname).</td>
+        </tr>
+        <tr>
+          <td><code>data-highlights-colors</code></td>
+          <td>Comma-separated color names. Each maps to a <code>--highlight-{name}</code> CSS custom property. Default: <code>yellow,green,blue,pink</code></td>
+        </tr>
+        <tr>
+          <td><code>data-highlights-readonly</code></td>
+          <td>Renders stored highlights but disables creating new ones.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>highlights:added</code></td>
+          <td><code>{ id, text, color, note }</code></td>
+          <td>Fired when a new highlight is created</td>
+        </tr>
+        <tr>
+          <td><code>highlights:removed</code></td>
+          <td><code>{ id }</code></td>
+          <td>Fired when a highlight is deleted</td>
+        </tr>
+        <tr>
+          <td><code>highlights:note-changed</code></td>
+          <td><code>{ id, note }</code></td>
+          <td>Fired when a note is added or edited</td>
+        </tr>
+        <tr>
+          <td><code>highlights:clicked</code></td>
+          <td><code>{ id }</code></td>
+          <td>Fired when an existing highlight is clicked</td>
+        </tr>
+      </tbody>
+    </table>
+
+{% set jsApiExample %}import { initHighlights } from 'vanilla-breeze';
+
+const ctrl = initHighlights(document.querySelector('[data-highlights]'));
+ctrl.getHighlights();        // Array of highlight objects
+ctrl.removeHighlight(id);    // Remove by ID
+ctrl.clearAll();             // Remove all
+ctrl.exportHighlights();     // JSON string
+ctrl.importHighlights(json); // Restore from backup
+ctrl.destroy();              // Cleanup listeners{% endset %}
+
+    <h3>JavaScript API</h3>
+    <code-block language="js" label="Programmatic control">{{ jsApiExample | escape }}</code-block>
+
+    <h3>CSS Custom Properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--highlight-yellow</code></td>
+          <td><code>#fef08a</code></td>
+          <td>Yellow highlight color</td>
+        </tr>
+        <tr>
+          <td><code>--highlight-green</code></td>
+          <td><code>#bbf7d0</code></td>
+          <td>Green highlight color</td>
+        </tr>
+        <tr>
+          <td><code>--highlight-blue</code></td>
+          <td><code>#bfdbfe</code></td>
+          <td>Blue highlight color</td>
+        </tr>
+        <tr>
+          <td><code>--highlight-pink</code></td>
+          <td><code>#fbcfe8</code></td>
+          <td>Pink highlight color</td>
+        </tr>
+        <tr>
+          <td><code>--highlight-toolbar-bg</code></td>
+          <td><code>var(--color-surface-raised)</code></td>
+          <td>Toolbar background</td>
+        </tr>
+        <tr>
+          <td><code>--highlight-toolbar-shadow</code></td>
+          <td><code>var(--shadow-m)</code></td>
+          <td>Toolbar box shadow</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Progressive Enhancement</h3>
+    <ul>
+      <li><strong>No JS</strong> — <code>data-highlights</code> is inert; article renders normally</li>
+      <li><strong>No CSS Highlight API</strong> — falls back to <code>&lt;mark&gt;</code> wrapping</li>
+      <li><strong>No localStorage</strong> — highlights work for the current session but are not persisted</li>
     </ul>
   </section>
 

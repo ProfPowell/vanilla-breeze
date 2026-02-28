@@ -2,6 +2,7 @@ import { ThemeManager } from './lib/theme-manager.js';
 import './custom-elements/register.js';
 import './web-components/index.js';
 import './utils/tooltip-init.js';
+import './utils/highlights-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
 // Lazy-load wizard only when [data-wizard] is present (~15 KB deferred)

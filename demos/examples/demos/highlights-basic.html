@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Highlights &amp; Notes — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    #log { font-size: var(--font-size-s); font-family: monospace; max-height: 200px; overflow-y: auto; display: block; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>Highlights &amp; Notes</h2>
+    <p><small>Select text to highlight it. Click a highlight to change its color, add a note, or remove it. Highlights persist across page reloads via localStorage.</small></p>
+  </header>
+
+  <article class="blog" data-highlights>
+    <header>
+      <h1>The Evolution of Digital Reading</h1>
+      <p><time datetime="2026-02-28">February 28, 2026</time></p>
+    </header>
+
+    <p>The way we read has changed dramatically over the past two decades. From physical books to e-readers to web articles, each medium has brought its own affordances and limitations. Yet one thing remains constant: readers want to engage with text, not just consume it passively.</p>
+
+    <p>Highlighting and annotating have been fundamental reading activities since the invention of writing. Medieval scholars filled manuscript margins with glosses. Students have long wielded highlighter pens. And in the digital age, tools like Medium, Kindle, and Hypothesis have brought these practices online.</p>
+
+    <p>The CSS Custom Highlight API represents a significant advancement for web-based annotation. Unlike earlier approaches that required wrapping text in <code>&lt;span&gt;</code> or <code>&lt;mark&gt;</code> elements — which could break the DOM structure and interfere with other page functionality — the Highlight API paints directly over existing text nodes without modifying the document.</p>
+
+    <p>This non-destructive approach means highlights can coexist peacefully with other text enhancements: links, emphasis, code snippets, and interactive widgets all remain fully functional. The browser composites the highlight layer on top during painting, much like a physical highlighter pen works on printed paper.</p>
+
+    <p>Local storage provides a natural home for personal annotations. Unlike server-side solutions that raise privacy concerns and require authentication, localStorage keeps notes private to the user and device. The trade-off — no cross-device sync — is acceptable for many use cases, especially documentation sites and study materials.</p>
+
+    <footer>
+      <p>Written for the Vanilla Breeze documentation</p>
+    </footer>
+  </article>
+
+  <section>
+    <h2>Event Log</h2>
+    <output id="log" data-layout="stack" data-layout-gap="xs"></output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const article = document.querySelector('[data-highlights]');
+    const log = document.getElementById('log');
+
+    function logEvent(e) {
+      const entry = document.createElement('div');
+      entry.textContent = `${e.type}: ${JSON.stringify(e.detail)}`;
+      log.prepend(entry);
+    }
+
+    article.addEventListener('highlights:added', logEvent);
+    article.addEventListener('highlights:removed', logEvent);
+    article.addEventListener('highlights:note-changed', logEvent);
+    article.addEventListener('highlights:clicked', logEvent);
+  </script>
+</body>
+</html>
