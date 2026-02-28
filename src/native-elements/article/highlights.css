@@ -1,12 +1,16 @@
-/* article highlights: floating toolbar + highlight rendering */
+/* article highlights: floating toolbar + highlight rendering + margin annotations */
 
-/* --- Custom Properties (defaults) --- */
+/* --- Custom Properties (on :root so toolbar inherits too) --- */
 
-[data-highlights] {
+:root {
   --highlight-yellow: #fef08a;
   --highlight-green: #bbf7d0;
   --highlight-blue: #bfdbfe;
   --highlight-pink: #fbcfe8;
+}
+
+/* Allow per-article overrides */
+[data-highlights] {
   --highlight-toolbar-bg: var(--color-surface-raised, var(--color-surface, #fff));
   --highlight-toolbar-shadow: var(--shadow-m, 0 4px 12px rgb(0 0 0 / 0.15));
 }
@@ -14,15 +18,21 @@
 /* --- Mark fallback (when CSS Highlight API unavailable) --- */
 
 mark[data-hn-id] {
-  background: var(--swatch-color, #fef08a);
+  background-color: var(--highlight-yellow);
   color: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--swatch-color, #fef08a);
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   cursor: pointer;
   border-radius: 2px;
   padding-inline: 0;
 }
+
+mark[data-hn-color="green"]  { background-color: var(--highlight-green); }
+mark[data-hn-color="blue"]   { background-color: var(--highlight-blue); }
+mark[data-hn-color="pink"]   { background-color: var(--highlight-pink); }
+mark[data-hn-color="yellow"] { background-color: var(--highlight-yellow); }
 
 /* --- Screen-reader-only utility --- */
 
@@ -38,23 +48,23 @@ mark[data-hn-id] {
   border: 0;
 }
 
-/* --- Toolbar (popover) --- */
+/* --- Toolbar (popover, fixed in viewport) --- */
 
 .hn-toolbar {
   position: fixed;
   inset: unset;
+  margin: 0;
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: var(--size-2xs, 4px);
-  padding: var(--size-2xs, 4px) var(--size-xs, 8px);
-  background: var(--highlight-toolbar-bg);
+  gap: var(--size-2xs, 6px);
+  padding: var(--size-2xs, 6px) var(--size-xs, 10px);
+  background: var(--color-surface-raised, var(--color-surface, #fff));
   border: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
-  border-radius: var(--radius-m, 6px);
-  box-shadow: var(--highlight-toolbar-shadow);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-m, 0 4px 12px rgb(0 0 0 / 0.15));
   font-size: var(--font-size-s, 0.875rem);
   white-space: nowrap;
-  margin: 0;
 }
 
 .hn-toolbar:popover-open {
@@ -69,33 +79,43 @@ mark[data-hn-id] {
 
 .hn-swatches {
   display: flex;
-  gap: 2px;
+  gap: 4px;
 }
 
 .hn-swatch {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border: 2px solid transparent;
   border-radius: 50%;
-  background: var(--swatch-color);
   cursor: pointer;
   padding: 0;
-  transition: border-color var(--duration-fast, 150ms) ease;
+  transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .hn-swatch:hover,
 .hn-swatch:focus-visible {
   border-color: var(--color-text, #333);
+  transform: scale(1.1);
 }
 
 .hn-swatch[aria-pressed="true"] {
   border-color: var(--color-interactive, #0066cc);
-  box-shadow: 0 0 0 1px var(--color-interactive, #0066cc);
+  box-shadow: 0 0 0 2px var(--color-interactive, #0066cc);
 }
 
 .hn-swatch:focus-visible {
   outline: 2px solid var(--color-focus, var(--color-interactive, #0066cc));
   outline-offset: 2px;
+}
+
+/* --- Separator --- */
+
+.hn-separator {
+  display: block;
+  width: 1px;
+  height: 18px;
+  background: var(--color-border, #e0e0e0);
+  flex-shrink: 0;
 }
 
 /* --- Action buttons --- */
@@ -109,6 +129,7 @@ mark[data-hn-id] {
   cursor: pointer;
   font: inherit;
   font-size: var(--font-size-s, 0.875rem);
+  white-space: nowrap;
 }
 
 .hn-action:hover {
@@ -120,27 +141,108 @@ mark[data-hn-id] {
   outline-offset: 2px;
 }
 
+.hn-action-save {
+  color: var(--color-interactive, #16a34a);
+  font-weight: 600;
+}
+
 .hn-action-remove {
   color: var(--color-error, #dc2626);
 }
 
 .hn-action-remove:hover {
-  background: var(--color-error-surface, rgba(220, 38, 38, 0.08));
+  background: rgba(220, 38, 38, 0.08);
 }
 
-/* --- Note editor --- */
+/* --- Margin annotations (Medium-style "You highlighted") --- */
 
-.hn-note-editor {
+.hn-margin-annotation {
+  position: absolute;
+  right: -180px;
+  width: 160px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #888);
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.hn-margin-annotation:hover {
+  color: var(--color-text, #333);
+}
+
+.hn-note-indicator {
+  color: var(--color-interactive, #16a34a);
+  font-weight: 700;
+}
+
+/* Hide margin annotations when article is narrow (overlap risk) */
+@media (max-width: 900px) {
+  .hn-margin-annotation {
+    display: none;
+  }
+}
+
+/* --- Note panel (right-side card, Medium-style) --- */
+
+.hn-note-panel {
+  position: absolute;
+  right: -340px;
+  width: 320px;
+  background: var(--color-surface-raised, var(--color-surface, #fff));
+  border: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-m, 0 4px 12px rgb(0 0 0 / 0.15));
+  padding: var(--size-s, 12px) var(--size-m, 16px);
+  z-index: 100;
+  font-size: var(--font-size-s, 0.875rem);
+}
+
+/* Stack below on narrow screens */
+@media (max-width: 900px) {
+  .hn-note-panel {
+    position: fixed;
+    right: var(--size-m, 16px);
+    left: var(--size-m, 16px);
+    bottom: var(--size-m, 16px);
+    top: auto;
+    width: auto;
+    max-width: 400px;
+    margin-inline: auto;
+    box-shadow: 0 -4px 24px rgb(0 0 0 / 0.2);
+  }
+}
+
+.hn-note-header {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #888);
+  margin-block-end: var(--size-xs, 8px);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--size-2xs, 4px);
-  min-width: 240px;
+}
+
+.hn-note-header::before {
+  content: "\1F512";
+  font-size: 0.75rem;
+}
+
+.hn-note-quote {
+  font-style: italic;
+  color: var(--color-text-muted, #666);
+  border-inline-start: 3px solid var(--highlight-green);
+  padding-inline-start: var(--size-xs, 8px);
+  margin: 0 0 var(--size-s, 12px);
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 .hn-note-textarea {
   width: 100%;
   min-height: 60px;
-  padding: var(--size-2xs, 4px) var(--size-xs, 8px);
+  padding: var(--size-xs, 8px);
   border: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-m, 6px);
   font: inherit;
@@ -158,8 +260,9 @@ mark[data-hn-id] {
 
 .hn-note-actions {
   display: flex;
-  gap: var(--size-2xs, 4px);
-  justify-content: flex-end;
+  gap: var(--size-xs, 8px);
+  justify-content: flex-start;
+  margin-block-start: var(--size-xs, 8px);
 }
 
 /* --- Reduced motion --- */
