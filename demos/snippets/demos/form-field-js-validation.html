@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Field JS Validation</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); max-inline-size: 30rem; }
+    h2 { margin-block-end: var(--size-s); }
+    section + section { margin-block-start: var(--size-2xl); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="2xl">
+    <section>
+      <h2>Custom Error Messages</h2>
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="msg-email">Email</label>
+            <input type="email" id="msg-email" name="email"
+                   required minlength="5"
+                   data-message-required="Email is required"
+                   data-message-type="That's not a valid email"
+                   data-message-minlength="Email seems too short"
+                   aria-describedby="msg-email-error" />
+            <output id="msg-email-error" class="error" for="msg-email" aria-live="polite"></output>
+          </form-field>
+          <button type="submit">Submit</button>
+        </layout-stack>
+      </form>
+    </section>
+
+    <section>
+      <h2>Password Confirmation</h2>
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <form-field>
+            <label for="pw">Password</label>
+            <input type="password" id="pw" name="password"
+                   required minlength="8"
+                   data-message-required="Password is required"
+                   data-message-minlength="At least 8 characters"
+                   autocomplete="new-password"
+                   aria-describedby="pw-error" />
+            <output id="pw-error" class="error" for="pw" aria-live="polite"></output>
+          </form-field>
+          <form-field>
+            <label for="pw-confirm">Confirm Password</label>
+            <input type="password" id="pw-confirm" name="confirm"
+                   required
+                   data-match="pw"
+                   data-message-required="Please confirm your password"
+                   data-message-match="Passwords do not match"
+                   autocomplete="new-password"
+                   aria-describedby="pw-confirm-error" />
+            <output id="pw-confirm-error" class="error" for="pw-confirm" aria-live="polite"></output>
+          </form-field>
+          <button type="submit">Create Account</button>
+        </layout-stack>
+      </form>
+    </section>
+
+    <section>
+      <h2>Checkbox Group Constraints</h2>
+      <form data-validate>
+        <layout-stack data-layout-gap="m">
+          <fieldset data-min-checked="1" data-max-checked="2"
+                    data-message-min-checked="Pick at least one"
+                    data-message-max-checked="Maximum 2 allowed">
+            <legend>Favorite Seasons (1-2)</legend>
+            <layout-stack data-layout-gap="xs">
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="spring" /> Spring</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="summer" /> Summer</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="fall" /> Fall</label>
+              </form-field>
+              <form-field data-type="checkbox">
+                <label><input type="checkbox" name="seasons" value="winter" /> Winter</label>
+              </form-field>
+            </layout-stack>
+            <output aria-live="polite"></output>
+          </fieldset>
+          <button type="submit">Save</button>
+        </layout-stack>
+      </form>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

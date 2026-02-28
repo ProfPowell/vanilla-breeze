@@ -177,6 +177,11 @@ module.exports = {
     }
   },
 
+  "dl": {
+    flow: true,
+    permittedContent: ["@script", "dt", "dd", "div", "dl-item"]
+  },
+
   "dl-item": {
     flow: true,
     permittedContent: ["dt", "dd"]

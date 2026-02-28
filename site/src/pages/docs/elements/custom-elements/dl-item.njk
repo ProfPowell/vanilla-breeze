@@ -1,57 +1,82 @@
 ---
 layout: layouts/element.njk
 title: "dl-item"
-description: "Groups a dt/dd pair within a description list for styling purposes."
+description: "Groups a dt/dd pair within a description list for built-in layout variants."
 elementName: dl-item
 category: custom
 currentPath: /docs/elements/custom-elements/dl-item/
 permalink: /docs/elements/custom-elements/dl-item/
 ---
 
-{% set basicUsageCode %}<dl class="key-value">
+{% set horizontalCode %}<dl class="horizontal bordered">
   <dl-item>
     <dt>Full Name</dt>
     <dd>Alexandra Chen</dd>
   </dl-item>
-
   <dl-item>
     <dt>Email</dt>
     <dd>alexandra.chen@example.com</dd>
   </dl-item>
-
+  <dl-item>
+    <dt>Role</dt>
+    <dd>Senior Engineer</dd>
+  </dl-item>
   <dl-item>
     <dt>Status</dt>
     <dd>Active</dd>
   </dl-item>
 </dl>{% endset %}
 
-{% set horizontalLayoutCode %}@scope (.key-value) {
-  dl-item {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: var(--size-m);
-    align-items: baseline;
-    padding-block: var(--size-s);
-    border-bottom: 1px solid var(--color-border);
-  }
-  dl-item:last-child {
-    border-bottom: none;
-  }
-}{% endset %}
+{% set stackedCode %}<dl class="stacked">
+  <dl-item>
+    <dt>Project</dt>
+    <dd>Vanilla Breeze Design System</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Description</dt>
+    <dd>A classless, HTML-first CSS framework with custom elements and design tokens.</dd>
+  </dl-item>
+  <dl-item>
+    <dt>License</dt>
+    <dd>MIT</dd>
+  </dl-item>
+</dl>{% endset %}
 
-{% set stackedLayoutCode %}@scope (.key-value[data-layout="stacked"]) {
-  dl-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-2xs);
-  }
-}{% endset %}
+{% set compactCode %}<dl class="horizontal compact bordered">
+  <dl-item>
+    <dt>Created</dt>
+    <dd>2025-11-15</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Updated</dt>
+    <dd>2026-02-28</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Version</dt>
+    <dd>1.4.0</dd>
+  </dl-item>
+</dl>{% endset %}
 
-{% set cssImplementation %}dl-item {
-  display: block;
-}{% endset %}
+{% set stripedCode %}<dl class="horizontal" data-striped>
+  <dl-item>
+    <dt>CPU</dt>
+    <dd>Apple M2 Pro</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Memory</dt>
+    <dd>32 GB</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Storage</dt>
+    <dd>1 TB SSD</dd>
+  </dl-item>
+  <dl-item>
+    <dt>Display</dt>
+    <dd>14-inch Liquid Retina XDR</dd>
+  </dl-item>
+</dl>{% endset %}
 
-{% set multipleValuesCode %}<dl class="key-value">
+{% set multipleValuesCode %}<dl class="horizontal bordered">
   <dl-item>
     <dt>Phone Numbers</dt>
     <dd>+1 (555) 123-4567</dd>
@@ -61,98 +86,119 @@ permalink: /docs/elements/custom-elements/dl-item/
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;dl-item&gt;</code> custom element is a structural wrapper that groups a <a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a>/<a href="/docs/elements/native/dd/"><code>&lt;dd&gt;</code></a> pair within a <a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> (description list). It exists purely for styling purposes, enabling grid and flex layouts that treat each term-description pair as a unit.</p>
-    <p>This element has no semantic meaning itself—it simply provides a styling hook that the native HTML structure lacks. The <code>&lt;dl&gt;</code> element allows <code>&lt;div&gt;</code> wrappers for this purpose, and custom elements work the same way.</p>
+    <p>The <code>&lt;dl-item&gt;</code> custom element groups a <a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a>/<a href="/docs/elements/native/dd/"><code>&lt;dd&gt;</code></a> pair within a <a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> for styling. Apply class variants on the parent <code>&lt;dl&gt;</code> to get built-in layouts — no custom CSS needed.</p>
   </section>
 
   <section>
-    <h2>When to Use</h2>
-    <ul>
-      <li>Inside <code>&lt;dl class="key-value"&gt;</code> description lists</li>
-      <li>When you need horizontal (grid) or stacked (flex) layouts for term-description pairs</li>
-      <li>With <code>@scope</code> CSS rules that target the key-value pattern</li>
-    </ul>
+    <h2>Variants</h2>
 
-    <h3>When Not to Use</h3>
-    <ul>
-      <li>Outside of a <code>&lt;dl&gt;</code> element</li>
-      <li>For basic description lists that don't need row-based styling</li>
-      <li>When the default indented <code>&lt;dd&gt;</code> styling is sufficient</li>
-    </ul>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.horizontal</code></td>
+          <td>Side-by-side key-value rows (grid layout)</td>
+        </tr>
+        <tr>
+          <td><code>.stacked</code></td>
+          <td>Label above value (flex column)</td>
+        </tr>
+        <tr>
+          <td><code>.bordered</code></td>
+          <td>Separator lines between items</td>
+        </tr>
+        <tr>
+          <td><code>.compact</code></td>
+          <td>Tight spacing for dense data</td>
+        </tr>
+        <tr>
+          <td><code>data-striped</code></td>
+          <td>Alternating row backgrounds</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Variants compose freely — combine <code>.horizontal</code>, <code>.bordered</code>, and <code>.compact</code> on a single <code>&lt;dl&gt;</code>.</p>
   </section>
 
   <section>
-    <h2>Basic Usage</h2>
-    <p>Wrap each <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pair in a <code>&lt;dl-item&gt;</code> element within a description list.</p>
+    <h2>Horizontal</h2>
+    <p>Side-by-side key-value pairs. Combine with <code>.bordered</code> for separator lines between rows.</p>
 
-    <div class="example">
-      <dl class="key-value">
-        <dl-item>
-          <dt>Full Name</dt>
-          <dd>Alexandra Chen</dd>
-        </dl-item>
+    <browser-window
+      src="/docs/snippets/demos/dl-item-horizontal.html"
+      url="https://vanilla-breeze.dev/dl-item/horizontal"
+      title="Horizontal dl-item"
+      shadow>
+    </browser-window>
 
-        <dl-item>
-          <dt>Email</dt>
-          <dd>alexandra.chen@example.com</dd>
-        </dl-item>
+    <code-block language="html" show-lines label="Horizontal + bordered">{{ horizontalCode | escape }}</code-block>
+  </section>
 
-        <dl-item>
-          <dt>Status</dt>
-          <dd>Active</dd>
-        </dl-item>
-      </dl>
-    </div>
+  <section>
+    <h2>Stacked</h2>
+    <p>Label above value with muted term styling. Good for metadata or profile fields.</p>
 
-    <code-block language="html" show-lines label="Basic dl-item usage">{{ basicUsageCode | escape }}</code-block>
+    <browser-window
+      src="/docs/snippets/demos/dl-item-stacked.html"
+      url="https://vanilla-breeze.dev/dl-item/stacked"
+      title="Stacked dl-item"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Stacked layout">{{ stackedCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Compact</h2>
+    <p>Tighter spacing for dense data. Combine with <code>.horizontal</code> and <code>.bordered</code>.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/dl-item-compact.html"
+      url="https://vanilla-breeze.dev/dl-item/compact"
+      title="Compact dl-item"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Compact + horizontal + bordered">{{ compactCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Striped</h2>
+    <p>Alternating row backgrounds using the <code>data-striped</code> attribute — the same attribute used on plain <code>&lt;dl&gt;</code> elements.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/dl-item-striped.html"
+      url="https://vanilla-breeze.dev/dl-item/striped"
+      title="Striped dl-item"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Striped + horizontal">{{ stripedCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Multiple Values</h2>
-    <p>A single <code>&lt;dl-item&gt;</code> can contain one <code>&lt;dt&gt;</code> with multiple <code>&lt;dd&gt;</code> elements for terms that have several values.</p>
+    <p>A single <code>&lt;dl-item&gt;</code> can hold one <code>&lt;dt&gt;</code> with multiple <code>&lt;dd&gt;</code> elements.</p>
 
-    <div class="example">
-      <dl class="key-value">
-        <dl-item>
-          <dt>Phone Numbers</dt>
-          <dd>+1 (555) 123-4567</dd>
-          <dd>+1 (555) 987-6543</dd>
-        </dl-item>
-      </dl>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/dl-item-multiple.html"
+      url="https://vanilla-breeze.dev/dl-item/multiple"
+      title="Multiple values"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Multiple values in one dl-item">{{ multipleValuesCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>CSS Implementation</h2>
-    <p>The base element is simply a block container:</p>
-
-    <code-block language="css" show-lines label="dl-item base styles">{{ cssImplementation | escape }}</code-block>
-
-    <p>The actual layout styling is applied via <code>@scope</code> rules that target the <code>.key-value</code> pattern class.</p>
-
-    <h3>Horizontal Layout</h3>
-    <p>For side-by-side label-value display:</p>
-
-    <code-block language="css" show-lines label="Horizontal layout with @scope">{{ horizontalLayoutCode | escape }}</code-block>
-
-    <h3>Stacked Layout</h3>
-    <p>For vertical stacking with label above value:</p>
-
-    <code-block language="css" show-lines label="Stacked layout with @scope">{{ stackedLayoutCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Multiple values">{{ multipleValuesCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Why a Custom Element?</h2>
-    <p>Using <code>&lt;dl-item&gt;</code> instead of <code>&lt;div&gt;</code> provides several benefits:</p>
-    <ul>
-      <li><strong>Semantic clarity:</strong> The element name describes its purpose—grouping a description list item</li>
-      <li><strong>Targeted styling:</strong> CSS selectors like <code>dl-item</code> are more specific than <code>div</code></li>
-      <li><strong>Pattern recognition:</strong> Easy to identify key-value patterns in the HTML</li>
-      <li><strong>No JavaScript required:</strong> The element works as a pure styling hook</li>
-    </ul>
-    <p>Note: HTML5 explicitly allows wrapping <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pairs in <code>&lt;div&gt;</code> elements, and custom elements inherit this behavior.</p>
+    <p>HTML5 allows wrapping <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pairs in <code>&lt;div&gt;</code>, but <code>&lt;dl-item&gt;</code> is more specific than <code>&lt;div&gt;</code> in both CSS selectors and code readability. It describes its purpose — grouping a description list item — without carrying the ambiguity of a generic container.</p>
   </section>
 
   <section>
@@ -172,19 +218,8 @@ permalink: /docs/elements/custom-elements/dl-item/
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> - Description list container (required parent)</li>
-      <li><a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a> - Definition term (the key/label)</li>
-      <li><a href="/docs/elements/native/dd/"><code>&lt;dd&gt;</code></a> - Definition description (the value)</li>
+      <li><a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> — Description list container (required parent)</li>
+      <li><a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a> — Definition term (the key/label)</li>
+      <li><a href="/docs/elements/native/dd/"><code>&lt;dd&gt;</code></a> — Definition description (the value)</li>
     </ul>
-  </section>
-
-  <section>
-    <h2>Patterns Using This Element</h2>
-    <p>The <code>&lt;dl-item&gt;</code> element is designed specifically for these patterns:</p>
-    <layout-grid data-layout-min="200px" data-layout-gap="m">
-      <a href="/docs/patterns/data/description-list/" class="section-card">
-        <h3>Key-Value / Description List</h3>
-        <p>Display key-value pairs in horizontal or stacked layouts</p>
-      </a>
-    </layout-grid>
   </section>
