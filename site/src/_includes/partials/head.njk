@@ -21,6 +21,9 @@
 <!-- Global Metadata -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
 <meta name="generator" content="Eleventy">
 
 <!-- Favicon -->
@@ -73,6 +76,15 @@
 
     // Fluid scaling
     if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
+
+    // Theme-color: match applied mode instead of OS preference
+    const effectiveMode = mode !== 'auto' ? mode
+      : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const themeColor = effectiveMode === 'dark' ? '#1a1a1a' : '#ffffff';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+    });
+    document.querySelector('meta[name="theme-color"]').content = themeColor;
 
     // Extensions: motion-reduced
     const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');

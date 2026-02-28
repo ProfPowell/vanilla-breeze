@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "head"
-description: "Container for document metadata, scripts, and stylesheets."
+description: "The configuration surface for metadata, theming, performance, and social sharing."
 elementName: head
 category: native
 nativeGroup: Document
@@ -9,34 +9,402 @@ currentPath: /docs/elements/native/head/
 permalink: /docs/elements/native/head/
 ---
 
-{% set basicExample %}<head>...</head>{% endset %}
+{% set minimalExample %}<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Title</title>
+</head>{% endset %}
+
+{% set typicalExample %}<head>
+  <!-- Global Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <!-- Primary Meta Tags -->
+  <title>Page Title | Site Name</title>
+  <meta name="description" content="A short description of this page.">
+  <link rel="canonical" href="https://example.com/page/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/page/">
+  <meta property="og:title" content="Page Title | Site Name">
+  <meta property="og:description" content="A short description of this page.">
+  <meta property="og:image" content="https://example.com/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://example.com/page/">
+  <meta property="twitter:title" content="Page Title | Site Name">
+  <meta property="twitter:description" content="A short description of this page.">
+  <meta property="twitter:image" content="https://example.com/og-image.png">
+
+  <!-- Theme flash prevention -->
+  <script>/* ... inline script ... */</script>
+
+  <!-- Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+
+  <!-- Service Worker opt-in -->
+  <meta name="vb-service-worker" content="true">
+</head>{% endset %}
+
+{% set faviconExample %}<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">{% endset %}
+
+{% set ogExample %}<meta property="og:type" content="website">
+<meta property="og:url" content="https://example.com/page/">
+<meta property="og:title" content="Page Title | Site Name">
+<meta property="og:description" content="A short description of this page.">
+<meta property="og:image" content="https://example.com/og-image.png">{% endset %}
+
+{% set twitterExample %}<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://example.com/page/">
+<meta property="twitter:title" content="Page Title | Site Name">
+<meta property="twitter:description" content="A short description of this page.">
+<meta property="twitter:image" content="https://example.com/og-image.png">{% endset %}
+
+{% set ogFrontmatterExample %}---
+title: "My Page"
+description: "Page description."
+image: "/images/custom-og.png"
+---{% endset %}
+
+{% set canonicalExample %}<link rel="canonical" href="https://example.com/page/">{% endset %}
+
+{% set themeFlashExample %}<script>
+  try {
+    const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
+    const mode = stored.mode || 'auto';
+    const brand = stored.brand || 'default';
+
+    // Apply mode before CSS loads
+    if (mode !== 'auto') {
+      document.documentElement.dataset.mode = mode;
+    } else if (matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.dataset.mode = 'dark';
+    }
+
+    // Compose theme: brand + accessibility layers
+    const a11y = JSON.parse(localStorage.getItem('vb-a11y-themes') || '[]');
+    const parts = [];
+    if (brand && brand !== 'default') parts.push(brand);
+    parts.push(...a11y);
+    if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
+
+    // Fluid scaling preset
+    if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
+
+    // Update theme-color meta to match applied mode
+    const effective = mode !== 'auto' ? mode
+      : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const color = effective === 'dark' ? '#1a1a1a' : '#ffffff';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+    });
+    document.querySelector('meta[name="theme-color"]').content = color;
+
+    // Reduced motion preference
+    const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
+    if (ext.motionFx === false) {
+      document.documentElement.dataset.motionReduced = '';
+    }
+  } catch(e) {}
+</script>{% endset %}
+
+{% set preconnectExample %}<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>{% endset %}
+
+{% set themeColorExample %}<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">{% endset %}
+
+{% set cssDevExample %}<!-- Development: source CSS -->
+<link rel="stylesheet" href="/src/main.css">{% endset %}
+
+{% set cssProdExample %}<!-- Production: bundled CSS -->
+<link rel="stylesheet" href="/cdn/vanilla-breeze.css">{% endset %}
+
+{% set swExample %}<meta name="vb-service-worker" content="true">{% endset %}
+
+{% set swJsExample %}<script>window.__VB_SERVICE_WORKER = true;</script>{% endset %}
+
+{% set extraHeadExample %}{% raw %}{% block extraHead %}
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
+<style>
+  .page-specific { color: var(--color-accent); }
+</style>
+{% endblock %}{% endraw %}{% endset %}
 
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;head&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;head&gt;</code> element is VB's configuration surface. It controls document metadata, theming, performance hints, social sharing, and service worker opt-in. VB's <code>partials/head.njk</code> template generates the full <code>&lt;head&gt;</code> from frontmatter variables, so most pages only need to set <code>title</code>, <code>description</code>, and optionally <code>image</code> in their YAML front matter.</p>
   </section>
 
   <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic head example">{{ basicExample | escape }}</code-block>
+    <h3>Minimal</h3>
+    <code-block language="html" label="Minimal head">{{ minimalExample | escape }}</code-block>
+
+    <h3>Typical VB Page</h3>
+    <p>The <code>partials/head.njk</code> template generates this structure automatically:</p>
+    <code-block language="html" label="Full VB head output">{{ typicalExample | escape }}</code-block>
   </section>
 
-  <!-- Attributes Section -->
+  <!-- Required Elements Section -->
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Required Elements</h2>
+    <p>Every VB page must include these elements. The head partial handles all of them automatically.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;meta charset="UTF-8"&gt;</code></td>
+          <td>Character encoding. Must appear within the first 1024 bytes of the document.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="viewport" ...&gt;</code></td>
+          <td>Viewport configuration for responsive layout. VB sets <code>width=device-width, initial-scale=1.0</code>.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="color-scheme" content="light dark"&gt;</code></td>
+          <td>Tells the browser the page supports both color schemes before CSS loads. Prevents a white flash for dark-mode users and enables correct form control styling.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;title&gt;</code></td>
+          <td>Page title. VB concatenates as <code>Page Title | Site Name</code>, or just the site name if no page title is set.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta name="description"&gt;</code></td>
+          <td>Page description for search engines and social previews. Set via the <code>description</code> frontmatter field.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Favicon Strategy Section -->
+  <section>
+    <h2>Favicon Strategy</h2>
+    <p>VB uses a three-tier favicon approach for maximum browser coverage:</p>
+    <code-block language="html" label="Favicon links">{{ faviconExample | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>favicon.svg</code></td>
+          <td>Primary. Scales perfectly, supports <code>prefers-color-scheme</code> media queries for dark-mode favicons.</td>
+        </tr>
+        <tr>
+          <td><code>favicon-32x32.png</code></td>
+          <td>Fallback for browsers that don't support SVG favicons (older Safari, some RSS readers).</td>
+        </tr>
+        <tr>
+          <td><code>apple-touch-icon.png</code></td>
+          <td>180&times;180 PNG used when iOS users add the site to their home screen.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Social Metadata Section -->
+  <section>
+    <h2>Social Metadata</h2>
+    <p>VB generates Open Graph and Twitter Card tags automatically from frontmatter.</p>
+
+    <h3>Open Graph</h3>
+    <code-block language="html" label="Open Graph tags">{{ ogExample | escape }}</code-block>
+
+    <h3>Twitter Card</h3>
+    <code-block language="html" label="Twitter Card tags">{{ twitterExample | escape }}</code-block>
+
+    <h3>Custom OG Image</h3>
+    <p>Override the default <code>/og-image.png</code> with the <code>image</code> frontmatter field:</p>
+    <code-block language="yaml" label="Frontmatter with custom OG image">{{ ogFrontmatterExample | escape }}</code-block>
+  </section>
+
+  <!-- Canonical URL Section -->
+  <section>
+    <h2>Canonical URL</h2>
+    <p>VB auto-generates a canonical URL from <code>site.url</code> + <code>page.url</code>. This tells search engines the preferred URL for each page, preventing duplicate content issues.</p>
+    <code-block language="html" label="Canonical link">{{ canonicalExample | escape }}</code-block>
+  </section>
+
+  <!-- Theme Flash Prevention Section -->
+  <section>
+    <h2>Theme Flash Prevention</h2>
+    <p>An inline <code>&lt;script&gt;</code> runs before CSS loads to prevent a flash of wrong theme. It reads the user's saved preferences from <code>localStorage</code> and applies data attributes to <code>&lt;html&gt;</code> synchronously:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Preference</th>
+          <th>Storage Key</th>
+          <th>Attribute Set</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Light/dark mode</td>
+          <td><code>vb-theme</code> → <code>.mode</code></td>
+          <td><code>data-mode</code></td>
+        </tr>
+        <tr>
+          <td>Brand theme</td>
+          <td><code>vb-theme</code> → <code>.brand</code></td>
+          <td rowspan="2"><code>data-theme</code></td>
+        </tr>
+        <tr>
+          <td>Accessibility themes</td>
+          <td><code>vb-a11y-themes</code></td>
+        </tr>
+        <tr>
+          <td>Fluid scaling preset</td>
+          <td><code>vb-theme</code> → <code>.fluid</code></td>
+          <td><code>data-fluid</code></td>
+        </tr>
+        <tr>
+          <td>Reduced motion</td>
+          <td><code>vb-extensions</code> → <code>.motionFx</code></td>
+          <td><code>data-motion-reduced</code></td>
+        </tr>
+        <tr>
+          <td>Browser chrome color</td>
+          <td><em>(derived from mode)</em></td>
+          <td><code>&lt;meta name="theme-color"&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The script also updates the <code>theme-color</code> meta tag so the browser chrome matches the applied mode rather than the OS preference.</p>
+    <code-block language="html" label="Theme flash prevention script">{{ themeFlashExample | escape }}</code-block>
+  </section>
+
+  <!-- Performance Section -->
+  <section>
+    <h2>Performance</h2>
+
+    <h3>Preconnect</h3>
+    <p>VB preconnects to Google Fonts so the DNS lookup, TCP handshake, and TLS negotiation happen in parallel with CSS parsing:</p>
+    <code-block language="html" label="Font preconnect">{{ preconnectExample | escape }}</code-block>
+
+    <h3>Theme Color</h3>
+    <p>Two <code>&lt;meta name="theme-color"&gt;</code> tags tell the browser what color to paint the address bar and tab strip, matched to VB's default backgrounds:</p>
+    <code-block language="html" label="Theme color meta tags">{{ themeColorExample | escape }}</code-block>
+    <p>The theme flash prevention script dynamically updates these to match the user's chosen mode, so the browser chrome stays in sync even when the mode is explicitly set (not following OS preference).</p>
+
+    <h3>CSS Loading</h3>
+    <p>VB uses different CSS paths in development and production:</p>
+    <code-block language="html" label="Development CSS">{{ cssDevExample | escape }}</code-block>
+    <code-block language="html" label="Production CSS">{{ cssProdExample | escape }}</code-block>
+    <p>The <code>site.css</code> data variable handles this automatically — <code>/src/main.css</code> in dev mode (served by Caddy), <code>/cdn/vanilla-breeze.css</code> in production.</p>
+  </section>
+
+  <!-- Service Worker Section -->
+  <section>
+    <h2>Service Worker</h2>
+    <p>VB's service worker is opt-in. Add the meta tag to enable offline caching and background updates:</p>
+    <code-block language="html" label="Service worker opt-in">{{ swExample | escape }}</code-block>
+    <p>Alternatively, set the flag in JavaScript before VB's autoloader runs:</p>
+    <code-block language="html" label="JavaScript opt-in">{{ swJsExample | escape }}</code-block>
+    <p>When enabled, VB registers a service worker that caches CSS, JS, and font assets using a stale-while-revalidate strategy. See the <a href="/docs/performance/">Performance page</a> for details on cache strategies and lifecycle.</p>
+  </section>
+
+  <!-- Extension Point Section -->
+  <section>
+    <h2>Extension Point</h2>
+    <p>Child layouts can inject additional content into <code>&lt;head&gt;</code> using the <code>extraHead</code> block. This is the recommended way to add page-specific styles, fonts, or scripts:</p>
+    <code-block language="html" label="Using the extraHead block">{{ extraHeadExample | escape }}</code-block>
+    <p>The block appears after all standard head content, so page-specific styles can override defaults without specificity battles.</p>
+  </section>
+
+  <!-- Permitted Child Elements Section -->
+  <section>
+    <h2>Permitted Child Elements</h2>
+    <p>The <code>&lt;head&gt;</code> element may only contain metadata content:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;title&gt;</code></td>
+          <td>Document title (exactly one required)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;meta&gt;</code></td>
+          <td>Metadata: charset, viewport, description, theme-color, etc.</td>
+        </tr>
+        <tr>
+          <td><code>&lt;link&gt;</code></td>
+          <td>External resources: stylesheets, favicons, preconnects, canonical URLs</td>
+        </tr>
+        <tr>
+          <td><code>&lt;style&gt;</code></td>
+          <td>Inline CSS (prefer external stylesheets; use for critical CSS or page-specific overrides)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;script&gt;</code></td>
+          <td>JavaScript (VB uses this for theme flash prevention)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;base&gt;</code></td>
+          <td>Base URL for relative links (rarely needed)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;noscript&gt;</code></td>
+          <td>Fallback content when JavaScript is disabled</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;head&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><strong><code>lang</code> on <code>&lt;html&gt;</code>:</strong> Set on the parent <code>&lt;html&gt;</code> element (not <code>&lt;head&gt;</code>), this attribute tells screen readers which pronunciation rules to use. VB's base layout sets <code>lang="en"</code> by default.</li>
+      <li><strong><code>description</code> meta:</strong> Provides a concise page summary for search engines and assistive technology. Screen readers can announce this to help users decide whether to continue reading.</li>
+      <li><strong><code>color-scheme</code> meta:</strong> Informs the browser about supported color schemes before CSS loads. This is essential for <code>forced-colors</code> mode and ensures native form controls (inputs, selects, textareas) render in the correct scheme from the first paint.</li>
+      <li><strong>Title pattern:</strong> The <code>Page Title | Site Name</code> format gives screen reader users immediate context about both the specific page and the site they're on.</li>
+    </ul>
   </section>
 
-  <!-- Related Elements Section -->
+  <!-- Related Section -->
   <section>
-    <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> - Root element with theming and layout attributes</li>
+      <li><a href="/docs/elements/native/body/"><code>&lt;body&gt;</code></a> - Document content container</li>
+      <li><a href="/docs/elements/native/title/"><code>&lt;title&gt;</code></a> - Document title element</li>
+      <li><a href="/docs/elements/native/meta/"><code>&lt;meta&gt;</code></a> - Metadata element</li>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> - External resource link</li>
+      <li><a href="/docs/themes/">Themes</a> - Full theme catalogue with live previews</li>
+      <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> - How <code>data-fluid</code> presets work</li>
+      <li><a href="/docs/tokens/">Design Tokens</a> - Color, spacing, and typography tokens</li>
+      <li><a href="/docs/performance/">Performance</a> - Caching strategies and service worker details</li>
+    </ul>
   </section>
