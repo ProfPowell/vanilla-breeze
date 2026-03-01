@@ -1,0 +1,100 @@
+/* mock-media: Placeholder media elements via data-mock attribute */
+/* Production transition: replace src, remove data-mock — no HTML restructure */
+
+/* Base: any media element with data-mock */
+:is(img, video, iframe, canvas)[data-mock] {
+  display: block;
+  max-inline-size: 100%;
+  background-color: var(--color-gray-200);
+  border: 1px dashed var(--color-gray-400);
+  background-image:
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--color-gray-400) calc(50% - 0.5px), var(--color-gray-400) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--color-gray-400) calc(50% - 0.5px), var(--color-gray-400) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-size: 100% 100%;
+  object-fit: cover;
+}
+
+/* Hide broken image icon when src is not yet set (before JS runs or without JS) */
+img[data-mock]:not([src]),
+img[data-mock][src=""] {
+  content: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+}
+
+/* --- Presets: set aspect-ratio and default dimensions --- */
+
+[data-mock="hero"] {
+  aspect-ratio: 3 / 1;
+  inline-size: 100%;
+}
+
+[data-mock="card"] {
+  aspect-ratio: 16 / 9;
+  inline-size: 400px;
+}
+
+[data-mock="avatar"] {
+  aspect-ratio: 1;
+  inline-size: 48px;
+  border-radius: var(--radius-full);
+}
+
+[data-mock="product"] {
+  aspect-ratio: 1;
+  inline-size: 400px;
+}
+
+[data-mock="thumbnail"] {
+  aspect-ratio: 1;
+  inline-size: 150px;
+}
+
+[data-mock="logo"] {
+  aspect-ratio: 4 / 1;
+  inline-size: 200px;
+}
+
+[data-mock="og"] {
+  aspect-ratio: 1200 / 630;
+  inline-size: 100%;
+}
+
+[data-mock="banner"] {
+  aspect-ratio: 728 / 90;
+  inline-size: 100%;
+}
+
+/* Photo/placehold presets — dimensions from width/height attrs, no X-pattern */
+:is(img)[data-mock="photo"],
+:is(img)[data-mock="placehold"] {
+  background-image: none;
+  border-style: solid;
+}
+
+/* --- Element-specific defaults --- */
+
+video[data-mock] {
+  aspect-ratio: 16 / 9;
+  inline-size: 100%;
+}
+
+iframe[data-mock] {
+  aspect-ratio: 16 / 9;
+  inline-size: 100%;
+  min-block-size: 300px;
+}
+
+canvas[data-mock] {
+  aspect-ratio: 4 / 3;
+  inline-size: 100%;
+}
+
+/* --- Wireframe integration --- */
+
+[data-wireframe] :is(img, video, iframe, canvas)[data-mock],
+:is(img, video, iframe, canvas)[data-mock]:is([data-wireframe] *) {
+  background-color: var(--wireframe-fill);
+  border: var(--wireframe-border);
+  background-image:
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--wireframe-stroke) calc(50% - 0.5px), var(--wireframe-stroke) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--wireframe-stroke) calc(50% - 0.5px), var(--wireframe-stroke) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}

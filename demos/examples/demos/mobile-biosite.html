@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1e3d" />
+  <meta name="description" content="Nuvaris Therapeutics — Mobile biosite demo using Vanilla Breeze" />
+  <title>Nuvaris Therapeutics | VB Mobile Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    /* ============================================================
+       BRAND THEME — Override VB tokens for pharma branding
+       ============================================================ */
+    :root {
+      --color-primary: #0b1e3d;
+      --color-primary-subtle: #162d56;
+      --color-accent: #b8922a;
+      --color-accent-light: #d4a83a;
+      --color-teal: #007d74;
+      --color-teal-light: #009d92;
+    }
+
+    /* ============================================================
+       LANDING GRID FIX — main takes the hero grid area so
+       all content sections render between header and footer.
+       Empty named rows (feature, cta) collapse to 0 height.
+       Bottom nav overrides body-nav (not in landing template)
+       to avoid implicit column creation.
+       ============================================================ */
+    body > main {
+      grid-area: hero;
+    }
+
+    body > nav[aria-label="Quick navigation"] {
+      grid-area: auto;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    /* ============================================================
+       BOTTOM NAV — App-shell navigation
+       ============================================================ */
+    body > nav {
+      background: var(--color-primary);
+      border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+      padding-block-end: var(--safe-bottom, 0px);
+    }
+
+    body > nav ul {
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    body > nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-3xs);
+      padding: var(--size-xs) var(--size-s);
+      font-size: var(--font-size-xs);
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    body > nav a[aria-current="page"],
+    body > nav a:hover {
+      color: var(--color-accent);
+    }
+
+    /* ============================================================
+       HEADER — Fixed top bar
+       ============================================================ */
+    body > header {
+      background: var(--color-primary);
+      border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+      padding: var(--size-s) var(--size-m);
+      padding-block-start: calc(var(--size-s) + var(--safe-top, 0px));
+    }
+
+    body > header a {
+      text-decoration: none;
+    }
+
+    body > header button {
+      color: white;
+    }
+
+    .brand-name {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: white;
+      line-height: 1;
+    }
+
+    .brand-ticker {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       HERO — Full viewport cover
+       ============================================================ */
+    .hero-cover {
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0, 125, 116, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 20% 80%, rgba(22, 45, 86, 0.9) 0%, transparent 50%),
+        linear-gradient(135deg, var(--color-primary) 0%, #0d2650 50%, #091829 100%);
+      color: white;
+    }
+
+    .hero-cover h1 {
+      font-size: clamp(2.5rem, 6vw + 1rem, 5rem);
+      line-height: 1.05;
+      font-weight: 500;
+      max-width: 14ch;
+    }
+
+    .hero-cover h1 em {
+      color: var(--color-teal-light);
+    }
+
+    .hero-cover p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .hero-eyebrow {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .hero-ticker-strip {
+      width: 100%;
+    }
+
+    .hero-ticker-card {
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius-m);
+      padding: var(--size-s) var(--size-m);
+    }
+
+    .ticker-symbol {
+      color: var(--color-accent);
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .ticker-up {
+      color: #4ade80;
+    }
+
+    /* ============================================================
+       STATS REEL — Horizontal scroll strip
+       ============================================================ */
+    .stats-strip {
+      background: var(--color-primary);
+      padding: var(--size-m);
+      color: white;
+    }
+
+    .stat-item {
+      text-align: center;
+      flex-shrink: 0;
+      padding-inline: var(--size-l);
+      border-inline-end: 1px solid rgba(255, 255, 255, 0.12);
+      container-type: normal;
+    }
+
+    .stat-item:last-child {
+      border-inline-end: none;
+    }
+
+    .stat-value {
+      font-size: var(--font-size-2xl);
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-block-start: var(--size-3xs);
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       SECTION HEADER — Reusable section intro
+       ============================================================ */
+    .section-label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-teal);
+    }
+
+    .section-heading {
+      font-size: clamp(1.75rem, 3vw + 0.75rem, 3rem);
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--color-primary);
+    }
+
+    .section-sub {
+      color: var(--color-text-muted);
+      max-width: 58ch;
+    }
+
+    .section-pad {
+      padding: var(--size-xl) var(--size-m);
+    }
+
+    /* ============================================================
+       PIPELINE CARDS
+       ============================================================ */
+    .phase-indicator {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: var(--size-3xs) var(--size-s);
+      border-radius: var(--radius-full);
+      display: inline-block;
+    }
+
+    [data-phase="3"] .phase-indicator {
+      background: rgba(184, 146, 42, 0.12);
+      color: var(--color-accent);
+    }
+
+    [data-phase="2"] .phase-indicator {
+      background: rgba(0, 125, 116, 0.1);
+      color: var(--color-teal);
+    }
+
+    [data-phase="1"] .phase-indicator {
+      background: rgba(90, 100, 120, 0.1);
+      color: var(--color-text-muted);
+    }
+
+    .phase-bar {
+      display: flex;
+      gap: 3px;
+    }
+
+    .phase-bar span {
+      height: 4px;
+      flex: 1;
+      background: var(--color-border);
+      border-radius: 2px;
+    }
+
+    [data-phase="3"] .phase-bar span:nth-child(-n+3) { background: var(--color-accent); }
+    [data-phase="2"] .phase-bar span:nth-child(-n+2) { background: var(--color-teal); }
+    [data-phase="1"] .phase-bar span:first-child { background: var(--color-text-muted); }
+
+    .compound-id {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+
+    .brand-drug {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--color-primary);
+      line-height: 1.1;
+    }
+
+    .pipeline-indication {
+      color: var(--color-text-muted);
+    }
+
+    .pipeline-desc {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .pipeline-meta {
+      border-block-start: 1px solid var(--color-border);
+      padding-block-start: var(--size-s);
+    }
+
+    .pipeline-meta dt {
+      color: var(--color-text-muted);
+    }
+
+    .pipeline-meta dd {
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       ABOUT VALUES
+       ============================================================ */
+    .value-item {
+      padding: var(--size-m);
+      background: var(--color-surface-alt, var(--color-surface));
+      border-radius: var(--radius-m);
+      border-inline-start: 3px solid var(--color-teal);
+    }
+
+    .value-desc {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================================
+       LEADER CARDS
+       ============================================================ */
+    .leader-photo {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-m) var(--radius-m) 0 0;
+      padding: 0;
+    }
+
+    .leader-initials {
+      font-size: var(--font-size-2xl);
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.05em;
+    }
+
+    .leader-card {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .leader-info {
+      padding: var(--size-m);
+    }
+
+    .leader-title {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================================
+       NEWS CARDS
+       ============================================================ */
+    .news-date {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-xs);
+    }
+
+    .news-link {
+      color: var(--color-teal);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+    }
+
+    .news-desc {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================================
+       DARK SECTIONS
+       ============================================================ */
+    .dark-section {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .dark-section .section-label {
+      color: var(--color-accent);
+    }
+
+    .dark-section .section-heading {
+      color: white;
+    }
+
+    .dark-section .section-sub {
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .job-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--size-m);
+      padding: var(--size-m);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-m);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s;
+    }
+
+    .job-row:hover {
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .job-title {
+      font-weight: 600;
+      color: white;
+    }
+
+    .job-location {
+      font-size: var(--font-size-xs);
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .job-dept {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      background: rgba(184, 146, 42, 0.12);
+      padding: var(--size-3xs) var(--size-s);
+      border-radius: var(--radius-s);
+    }
+
+    /* ============================================================
+       NOTIFICATION BANNER — Gesture dismiss demo
+       ============================================================ */
+    .alert-banner {
+      background: var(--color-teal);
+      color: white;
+      padding: var(--size-s) var(--size-m);
+      border-radius: var(--radius-m);
+      cursor: grab;
+    }
+
+    .alert-banner[data-dismissed] {
+      display: none;
+    }
+
+    .alert-pad {
+      padding: var(--size-m);
+    }
+
+    /* ============================================================
+       INVESTORS
+       ============================================================ */
+    .investor-label {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .investor-value {
+      font-size: var(--font-size-2xl);
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .investor-note {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ============================================================
+       CONTACT
+       ============================================================ */
+    .contact-section {
+      background: var(--color-surface-alt, var(--color-surface));
+      padding: var(--size-xl) var(--size-m);
+    }
+
+    .contact-dt {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-teal);
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .site-footer {
+      background: var(--color-primary);
+      color: rgba(255, 255, 255, 0.6);
+      padding: var(--size-2xl) var(--size-m) var(--size-l);
+    }
+
+    .site-footer a {
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .site-footer a:hover {
+      color: white;
+    }
+
+    .footer-heading {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      margin-block-end: var(--size-m);
+    }
+
+    .footer-tagline {
+      color: rgba(255, 255, 255, 0.45);
+      margin-block-start: var(--size-s);
+      max-width: 28ch;
+    }
+
+    .footer-nav-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-legal {
+      font-size: var(--font-size-xs);
+      color: rgba(255, 255, 255, 0.3);
+      max-width: 70ch;
+    }
+
+    .footer-divider {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-bottom {
+      padding-block-start: var(--size-l);
+    }
+
+    .footer-grid {
+      margin-block-end: var(--size-xl);
+    }
+
+    /* ============================================================
+       MENU DIALOG
+       ============================================================ */
+    .menu-link {
+      padding: var(--size-s);
+      text-decoration: none;
+      border-radius: var(--radius-m);
+    }
+
+    .menu-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .dialog-pad {
+      padding: var(--size-m);
+    }
+
+    .alt-bg {
+      background: var(--color-surface-alt, var(--color-surface));
+    }
+
+    /* ============================================================
+       RESPONSIVE NAV — Desktop/mobile toggle
+       ============================================================ */
+    .desktop-nav {
+      display: none;
+    }
+
+    .desktop-nav a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .desktop-nav a:hover {
+      color: white;
+    }
+
+    .mobile-only {
+      display: inline-flex;
+    }
+
+    @media (min-width: 48rem) {
+      .desktop-nav {
+        display: block;
+      }
+
+      .mobile-only {
+        display: none;
+      }
+
+      body > nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body data-page-layout="landing" data-layout-gap="none">
+
+  <!-- ============================================================
+       HEADER — Sticky top bar with safe-area support
+       ============================================================ -->
+  <header data-layout="cluster" data-layout-justify="between" data-layout-sticky aria-label="Site header">
+    <a href="#" data-layout="stack" data-layout-gap="none">
+      <strong class="brand-name">Nuvaris</strong>
+      <small class="brand-ticker">NUVR · NASDAQ</small>
+    </a>
+
+    <!-- Desktop navigation (hidden on mobile) -->
+    <nav class="horizontal desktop-nav" aria-label="Main navigation">
+      <ul>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#newsroom">News</a></li>
+        <li><a href="#careers">Careers</a></li>
+        <li><a href="#investors">Investors</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Mobile hamburger (hidden on desktop) -->
+    <button type="button" commandfor="mobile-menu" command="show-modal" class="ghost icon-only mobile-only" aria-label="Open menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main data-layout="stack" data-layout-gap="none">
+
+    <!-- HERO — Full viewport cover layout -->
+    <section class="hero-cover" data-layout="cover" data-layout-min="100svh" data-layout-padding="xl" aria-label="Hero">
+      <header data-layout-cover-top>
+        <p class="hero-eyebrow">Neurochemistry · Emotional Wellness</p>
+      </header>
+
+      <article data-layout-principal data-layout="stack" data-layout-gap="m">
+        <h1>Pioneering the science of <em>human flourishing</em></h1>
+        <p>
+          Nuvaris Therapeutics develops breakthrough therapies targeting the neurochemical
+          pathways underlying mood, resilience, and emotional health. Two late-stage assets.
+          One clear mission.
+        </p>
+        <footer data-layout="cluster" data-layout-gap="m">
+          <button type="button" onclick="location.hash='#pipeline'">View Our Pipeline</button>
+          <button type="button" class="secondary" onclick="location.hash='#about'">Our Science</button>
+        </footer>
+      </article>
+
+      <footer data-layout-cover-bottom class="hero-ticker-strip">
+        <aside class="hero-ticker-card" aria-label="Stock ticker">
+          <section data-layout="cluster" data-layout-gap="l" data-layout-justify="center">
+            <p><strong class="ticker-symbol">NUVR</strong></p>
+            <p><strong>$48.32</strong></p>
+            <p class="ticker-up">+1.24 (+2.63%)</p>
+          </section>
+        </aside>
+      </footer>
+    </section>
+
+    <!-- STATS STRIP — Horizontal reel scroll -->
+    <section class="stats-strip" aria-label="Company at a glance">
+      <layout-reel data-layout-gap="none">
+        <article class="stat-item">
+          <p class="stat-value">2</p>
+          <p class="stat-label">Clinical Assets</p>
+        </article>
+        <article class="stat-item">
+          <p class="stat-value">Phase 3</p>
+          <p class="stat-label">Lead Program</p>
+        </article>
+        <article class="stat-item">
+          <p class="stat-value">14</p>
+          <p class="stat-label">Patents Granted</p>
+        </article>
+        <article class="stat-item">
+          <p class="stat-value">380+</p>
+          <p class="stat-label">Employees</p>
+        </article>
+        <article class="stat-item">
+          <p class="stat-value">$610M</p>
+          <p class="stat-label">Cash &amp; Equivalents</p>
+        </article>
+        <article class="stat-item">
+          <p class="stat-value">2019</p>
+          <p class="stat-label">Founded</p>
+        </article>
+      </layout-reel>
+    </section>
+
+    <!-- ALERT — Gesture dismiss demo -->
+    <section class="alert-pad" aria-label="Announcements">
+      <aside class="alert-banner" data-gesture="dismiss" role="alert" aria-live="polite">
+        <section data-layout="cluster" data-layout-justify="between">
+          <p><icon-wc name="bell"></icon-wc> <strong>RADIANT-3 fully enrolled</strong> — 842 patients across 68 sites. Swipe to dismiss.</p>
+        </section>
+      </aside>
+    </section>
+
+    <!-- PIPELINE — Swipeable card reel -->
+    <section id="pipeline" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Clinical pipeline">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Clinical Pipeline</p>
+        <h2 class="section-heading">Two novel therapies. Measurable lives changed.</h2>
+        <p class="section-sub">
+          Our pipeline targets two of the most underserved conditions in neuropsychiatry.
+        </p>
+      </header>
+
+      <layout-reel data-layout-gap="m" data-layout-item-width="l" data-gesture="swipe">
+
+        <!-- NVR-401 / ElyvaMood -->
+        <layout-card data-phase="3">
+          <header data-layout="stack" data-layout-gap="xs">
+            <p class="phase-indicator">Phase 3 · Pivotal</p>
+            <p class="compound-id">NVR-401</p>
+            <h3 class="brand-drug">ElyvaMood™</h3>
+            <p class="pipeline-indication">Major Depressive Disorder (MDD)</p>
+          </header>
+          <section data-layout="stack" data-layout-gap="s">
+            <aside class="phase-bar" role="img" aria-label="Phase 3 of 4">
+              <span></span><span></span><span></span><span></span>
+            </aside>
+            <p class="pipeline-desc">
+              A first-in-class selective serotonin allosteric modulator (SSAM).
+              RADIANT-3 trial fully enrolled (n=842). Primary readout expected Q3 2026.
+            </p>
+          </section>
+          <footer>
+            <dl class="pipeline-meta" data-layout="stack" data-layout-gap="xs">
+              <div data-layout="cluster" data-layout-justify="between"><dt>Target</dt><dd>5-HT<sub>1A</sub> / 5-HT<sub>7</sub></dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>Modality</dt><dd>Small Molecule · Oral QD</dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>Readout</dt><dd>Q3 2026</dd></div>
+            </dl>
+          </footer>
+        </layout-card>
+
+        <!-- NVR-205 / SeroGuard -->
+        <layout-card data-phase="2">
+          <header data-layout="stack" data-layout-gap="xs">
+            <p class="phase-indicator">Phase 2 · Proof of Concept</p>
+            <p class="compound-id">NVR-205</p>
+            <h3 class="brand-drug">SeroGuard™</h3>
+            <p class="pipeline-indication">Generalized Anxiety Disorder (GAD)</p>
+          </header>
+          <section data-layout="stack" data-layout-gap="s">
+            <aside class="phase-bar" role="img" aria-label="Phase 2 of 4">
+              <span></span><span></span><span></span><span></span>
+            </aside>
+            <p class="pipeline-desc">
+              A neuroimmune resilience modulator targeting the gut-brain serotonin axis.
+              Induces durable anxiolytic response in preclinical and Phase 1 data.
+            </p>
+          </section>
+          <footer>
+            <dl class="pipeline-meta" data-layout="stack" data-layout-gap="xs">
+              <div data-layout="cluster" data-layout-justify="between"><dt>Target</dt><dd>Enterochromaffin / mast cells</dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>Modality</dt><dd>Biologic · SC Monthly</dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>Readout</dt><dd>Q2 2027</dd></div>
+            </dl>
+          </footer>
+        </layout-card>
+
+        <!-- NVR-118 -->
+        <layout-card data-phase="1">
+          <header data-layout="stack" data-layout-gap="xs">
+            <p class="phase-indicator">Preclinical</p>
+            <p class="compound-id">NVR-118</p>
+            <h3 class="brand-drug">Discovery</h3>
+            <p class="pipeline-indication">Treatment-Resistant Depression (TRD)</p>
+          </header>
+          <section data-layout="stack" data-layout-gap="s">
+            <aside class="phase-bar" role="img" aria-label="Preclinical stage">
+              <span></span><span></span><span></span><span></span>
+            </aside>
+            <p class="pipeline-desc">
+              Next-generation asset targeting neuroplasticity via BDNF pathway enhancement.
+              IND submission anticipated H1 2027.
+            </p>
+          </section>
+          <footer>
+            <dl class="pipeline-meta" data-layout="stack" data-layout-gap="xs">
+              <div data-layout="cluster" data-layout-justify="between"><dt>Target</dt><dd>TrkB / BDNF</dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>Modality</dt><dd>Small Molecule · Oral</dd></div>
+              <div data-layout="cluster" data-layout-justify="between"><dt>IND Target</dt><dd>H1 2027</dd></div>
+            </dl>
+          </footer>
+        </layout-card>
+
+      </layout-reel>
+    </section>
+
+    <!-- ABOUT — Split layout -->
+    <section id="about" class="section-pad" data-layout="stack" data-layout-gap="l" aria-label="About Nuvaris">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">About Nuvaris</p>
+        <h2 class="section-heading">Science-first. Patient-led. Always.</h2>
+      </header>
+
+      <section data-layout="split" data-layout-gap="l">
+        <article data-layout="stack" data-layout-gap="m">
+          <p class="section-sub">
+            Founded in 2019 by neuroscientists from MIT and UCSF, Nuvaris emerged
+            from a simple observation: the neurochemical basis of emotional wellness
+            had been underinvested for a generation. We are changing that.
+          </p>
+          <p class="section-sub">
+            Headquartered in Cambridge, MA with research operations in South San Francisco,
+            our 380-person team combines deep neuroscience expertise with disciplined
+            clinical development.
+          </p>
+        </article>
+
+        <section data-layout="grid" data-layout-min="10rem" data-layout-gap="s">
+          <article class="value-item">
+            <h3>Rigor</h3>
+            <p class="value-desc">Highest standards of scientific integrity.</p>
+          </article>
+          <article class="value-item">
+            <h3>Transparency</h3>
+            <p class="value-desc">Open communication with all stakeholders.</p>
+          </article>
+          <article class="value-item">
+            <h3>Access</h3>
+            <p class="value-desc">Therapies should reach every patient.</p>
+          </article>
+          <article class="value-item">
+            <h3>Urgency</h3>
+            <p class="value-desc">Millions wait. We do not delay.</p>
+          </article>
+        </section>
+      </section>
+    </section>
+
+    <!-- LEADERSHIP — Grid with long-press gesture -->
+    <section id="leadership" class="section-pad alt-bg" data-layout="stack" data-layout-gap="l" aria-label="Leadership team">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Leadership Team</p>
+        <h2 class="section-heading">Experienced operators. Driven scientists.</h2>
+      </header>
+
+      <section data-layout="grid" data-layout-min="12rem" data-layout-gap="m">
+        <layout-card class="leader-card" data-gesture="long-press">
+          <header class="leader-photo"><span class="leader-initials">ML</span></header>
+          <section class="leader-info">
+            <p><strong>Margaret Lowe, Ph.D.</strong></p>
+            <p class="leader-title">CEO &amp; Co-Founder</p>
+          </section>
+        </layout-card>
+        <layout-card class="leader-card" data-gesture="long-press">
+          <header class="leader-photo"><span class="leader-initials">RK</span></header>
+          <section class="leader-info">
+            <p><strong>Raj Krishnamurthy, M.D.</strong></p>
+            <p class="leader-title">Chief Medical Officer</p>
+          </section>
+        </layout-card>
+        <layout-card class="leader-card" data-gesture="long-press">
+          <header class="leader-photo"><span class="leader-initials">SP</span></header>
+          <section class="leader-info">
+            <p><strong>Sophia Park, Ph.D.</strong></p>
+            <p class="leader-title">CSO &amp; Co-Founder</p>
+          </section>
+        </layout-card>
+        <layout-card class="leader-card" data-gesture="long-press">
+          <header class="leader-photo"><span class="leader-initials">DW</span></header>
+          <section class="leader-info">
+            <p><strong>Daniel Whitmore</strong></p>
+            <p class="leader-title">Chief Financial Officer</p>
+          </section>
+        </layout-card>
+      </section>
+    </section>
+
+    <!-- NEWSROOM — Card grid -->
+    <section id="newsroom" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Newsroom">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Newsroom</p>
+        <h2 class="section-heading">Latest news &amp; press releases</h2>
+      </header>
+
+      <section data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+        <layout-card>
+          <header data-layout="stack" data-layout-gap="xs">
+            <layout-badge data-color="success">Clinical Update</layout-badge>
+            <h3>Nuvaris Announces Completion of Enrollment in RADIANT-3 Phase 3 Trial</h3>
+          </header>
+          <section>
+            <p class="news-desc">
+              842 patients enrolled across 68 clinical sites. Primary endpoint data expected Q3 2026.
+            </p>
+          </section>
+          <footer data-layout="cluster" data-layout-justify="between">
+            <time datetime="2026-02-10" class="news-date">Feb 10, 2026</time>
+            <a href="#" class="news-link">Read more</a>
+          </footer>
+        </layout-card>
+
+        <layout-card>
+          <header data-layout="stack" data-layout-gap="xs">
+            <layout-badge data-color="info">Financial</layout-badge>
+            <h3>Q4 and Full Year 2025 Financial Results</h3>
+          </header>
+          <section>
+            <p class="news-desc">
+              Cash position of $610M provides runway through multiple clinical readouts.
+            </p>
+          </section>
+          <footer data-layout="cluster" data-layout-justify="between">
+            <time datetime="2026-02-05" class="news-date">Feb 5, 2026</time>
+            <a href="#" class="news-link">Read more</a>
+          </footer>
+        </layout-card>
+
+        <layout-card>
+          <header data-layout="stack" data-layout-gap="xs">
+            <layout-badge data-color="warning">Partnerships</layout-badge>
+            <h3>Collaboration with Mass General to Study SeroGuard in PTSD</h3>
+          </header>
+          <section>
+            <p class="news-desc">
+              Expanding clinical evidence for neuroimmune resilience modulation in trauma.
+            </p>
+          </section>
+          <footer data-layout="cluster" data-layout-justify="between">
+            <time datetime="2026-01-18" class="news-date">Jan 18, 2026</time>
+            <a href="#" class="news-link">Read more</a>
+          </footer>
+        </layout-card>
+      </section>
+    </section>
+
+    <!-- CAREERS — Dark section with job listings -->
+    <section id="careers" class="dark-section section-pad" data-layout="stack" data-layout-gap="m" aria-label="Careers">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Careers</p>
+        <h2 class="section-heading">Join us. The work matters.</h2>
+        <p class="section-sub">
+          We're building a team of exceptional scientists and operators who want their
+          work to have direct patient impact.
+        </p>
+      </header>
+
+      <section data-layout="stack" data-layout-gap="s">
+        <a href="#" class="job-row">
+          <article>
+            <p class="job-title">Clinical Trial Manager — RADIANT-3</p>
+            <p class="job-location">Cambridge, MA · Hybrid · Full-time</p>
+          </article>
+          <span class="job-dept">Clinical</span>
+        </a>
+        <a href="#" class="job-row">
+          <article>
+            <p class="job-title">Principal Scientist, Neuroimmunology</p>
+            <p class="job-location">South San Francisco, CA · On-site</p>
+          </article>
+          <span class="job-dept">Research</span>
+        </a>
+        <a href="#" class="job-row">
+          <article>
+            <p class="job-title">Regulatory Affairs Manager</p>
+            <p class="job-location">Remote · US · Full-time</p>
+          </article>
+          <span class="job-dept">Regulatory</span>
+        </a>
+        <a href="#" class="job-row">
+          <article>
+            <p class="job-title">Biostatistician II</p>
+            <p class="job-location">Remote · US · Full-time</p>
+          </article>
+          <span class="job-dept">Biometrics</span>
+        </a>
+      </section>
+
+      <footer data-layout="center" data-layout-intrinsic>
+        <button type="button" commandfor="apply-sheet" command="show-modal" class="full-width">
+          View All Open Positions
+        </button>
+      </footer>
+    </section>
+
+    <!-- INVESTORS — Stats grid -->
+    <section id="investors" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Investor relations">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Investor Relations</p>
+        <h2 class="section-heading">NUVR · NASDAQ</h2>
+        <p class="section-sub">
+          Committed to transparent, timely communication with our shareholders.
+        </p>
+      </header>
+
+      <section data-layout="grid" data-layout-min="10rem" data-layout-gap="m">
+        <layout-card data-variant="outlined">
+          <header><p class="investor-label">Share Price</p></header>
+          <section><p class="investor-value">$48.32</p></section>
+          <footer><p class="investor-note">+2.63% · Feb 24, 2026</p></footer>
+        </layout-card>
+        <layout-card data-variant="outlined">
+          <header><p class="investor-label">Market Cap</p></header>
+          <section><p class="investor-value">$3.2B</p></section>
+          <footer><p class="investor-note">NASDAQ Global Select</p></footer>
+        </layout-card>
+        <layout-card data-variant="outlined">
+          <header><p class="investor-label">Cash Position</p></header>
+          <section><p class="investor-value">$610M</p></section>
+          <footer><p class="investor-note">As of Dec 31, 2025</p></footer>
+        </layout-card>
+        <layout-card data-variant="outlined">
+          <header><p class="investor-label">Runway</p></header>
+          <section><p class="investor-value">&gt;3 yrs</p></section>
+          <footer><p class="investor-note">Funded through readouts</p></footer>
+        </layout-card>
+      </section>
+    </section>
+
+    <!-- CONTACT — Split layout with mobile-optimized form -->
+    <section id="contact" class="contact-section" data-layout="stack" data-layout-gap="l" aria-label="Contact">
+      <header data-layout="stack" data-layout-gap="xs">
+        <p class="section-label">Contact</p>
+        <h2 class="section-heading">Get in touch</h2>
+      </header>
+
+      <section data-layout="split" data-layout-gap="xl">
+
+        <!-- Contact info -->
+        <article data-layout="stack" data-layout-gap="m">
+          <h3>Nuvaris Therapeutics, Inc.</h3>
+          <p class="section-sub">
+            For media inquiries, investor relations, or partnership discussions,
+            please use the form or contact us directly.
+          </p>
+          <dl data-layout="stack" data-layout-gap="m">
+            <div>
+              <dt class="contact-dt">Corporate HQ</dt>
+              <dd>One Kendall Square, Building 200<br />Cambridge, MA 02139</dd>
+            </div>
+            <div>
+              <dt class="contact-dt">Investor Relations</dt>
+              <dd>ir@nuvaristherapeutics.com</dd>
+            </div>
+            <div>
+              <dt class="contact-dt">Media</dt>
+              <dd>media@nuvaristherapeutics.com</dd>
+            </div>
+          </dl>
+        </article>
+
+        <!-- Contact form — Mobile-optimized with keyboard hints -->
+        <form class="stacked" novalidate>
+          <section data-layout="split" data-layout-gap="m">
+            <form-field>
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="first-name"
+                     autocomplete="given-name" enterkeyhint="next" required
+                     placeholder="Margaret" />
+            </form-field>
+            <form-field>
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="last-name"
+                     autocomplete="family-name" enterkeyhint="next" required
+                     placeholder="Lowe" />
+            </form-field>
+          </section>
+
+          <form-field>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email"
+                   autocomplete="email" inputmode="email" enterkeyhint="next" required
+                   placeholder="you@organization.com" />
+          </form-field>
+
+          <form-field>
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone"
+                   autocomplete="tel" inputmode="tel" enterkeyhint="next"
+                   placeholder="+1 (555) 000-0000" />
+          </form-field>
+
+          <form-field>
+            <label for="inquiry-type">Inquiry Type</label>
+            <select id="inquiry-type" name="inquiry-type">
+              <option value="">Select one…</option>
+              <option value="investor">Investor Relations</option>
+              <option value="media">Media / Press</option>
+              <option value="partnership">Business Development</option>
+              <option value="patient">Patient / HCP Inquiry</option>
+              <option value="careers">Careers</option>
+              <option value="other">Other</option>
+            </select>
+          </form-field>
+
+          <form-field>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" enterkeyhint="send"
+                      placeholder="Tell us how we can help…"></textarea>
+          </form-field>
+
+          <button type="submit">Send Message</button>
+        </form>
+
+      </section>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       SITE FOOTER — Direct body child for landing grid area
+       ============================================================ -->
+  <footer class="site-footer">
+    <section data-layout="grid" data-layout-min="10rem" data-layout-gap="l" class="footer-grid">
+      <article data-layout="stack" data-layout-gap="xs">
+        <strong class="brand-name">Nuvaris</strong>
+        <small class="brand-ticker">NUVR · NASDAQ</small>
+        <p class="footer-tagline">
+          Pioneering the neurochemistry of human flourishing.
+        </p>
+      </article>
+
+      <nav aria-label="Pipeline links">
+        <h3 class="footer-heading">Pipeline</h3>
+        <ul data-layout="stack" data-layout-gap="xs" class="footer-nav-list">
+          <li><a href="#pipeline">ElyvaMood™ (NVR-401)</a></li>
+          <li><a href="#pipeline">SeroGuard™ (NVR-205)</a></li>
+          <li><a href="#pipeline">NVR-118</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Company links">
+        <h3 class="footer-heading">Company</h3>
+        <ul data-layout="stack" data-layout-gap="xs" class="footer-nav-list">
+          <li><a href="#about">About</a></li>
+          <li><a href="#leadership">Leadership</a></li>
+          <li><a href="#newsroom">Newsroom</a></li>
+          <li><a href="#careers">Careers</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Investor links">
+        <h3 class="footer-heading">Investors</h3>
+        <ul data-layout="stack" data-layout-gap="xs" class="footer-nav-list">
+          <li><a href="#investors">Overview</a></li>
+          <li><a href="#">SEC Filings</a></li>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Governance</a></li>
+        </ul>
+      </nav>
+    </section>
+
+    <hr class="footer-divider" />
+
+    <section data-layout="stack" data-layout-gap="m" class="footer-bottom">
+      <p class="footer-legal">
+        &copy; 2026 Nuvaris Therapeutics, Inc. All rights reserved.
+        ElyvaMood™ and SeroGuard™ are investigational compounds not approved by the FDA.
+      </p>
+      <nav data-layout="cluster" data-layout-gap="l" aria-label="Legal links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Policy</a>
+        <a href="#">Accessibility</a>
+      </nav>
+    </section>
+  </footer>
+
+  <!-- ============================================================
+       BOTTOM NAV — App-shell navigation (mobile)
+       ============================================================ -->
+  <nav aria-label="Quick navigation">
+    <ul>
+      <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
+      <li><a href="#pipeline"><icon-wc name="flask-conical"></icon-wc> Pipeline</a></li>
+      <li><a href="#newsroom"><icon-wc name="newspaper"></icon-wc> News</a></li>
+      <li><a href="#careers"><icon-wc name="briefcase"></icon-wc> Careers</a></li>
+      <li><a href="#investors"><icon-wc name="trending-up"></icon-wc> Investors</a></li>
+    </ul>
+  </nav>
+
+  <!-- ============================================================
+       BOTTOM SHEET — Mobile menu dialog
+       ============================================================ -->
+  <dialog id="mobile-menu" data-position="bottom">
+    <header data-layout="cluster" data-layout-justify="between" aria-label="Menu dialog header">
+      <h2>Menu</h2>
+      <button type="button" commandfor="mobile-menu" command="close" class="ghost icon-only" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <nav aria-label="Menu navigation" class="dialog-pad">
+      <ul data-layout="stack" data-layout-gap="xs" class="menu-list">
+        <li><a href="#pipeline" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="flask-conical"></icon-wc> Pipeline</a></li>
+        <li><a href="#about" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="building-2"></icon-wc> About</a></li>
+        <li><a href="#leadership" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="users"></icon-wc> Leadership</a></li>
+        <li><a href="#newsroom" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="newspaper"></icon-wc> Newsroom</a></li>
+        <li><a href="#careers" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="briefcase"></icon-wc> Careers</a></li>
+        <li><a href="#investors" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="trending-up"></icon-wc> Investors</a></li>
+        <li><a href="#contact" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="mail"></icon-wc> Contact</a></li>
+      </ul>
+    </nav>
+  </dialog>
+
+  <!-- Bottom sheet for careers -->
+  <dialog id="apply-sheet" data-position="bottom">
+    <header data-layout="cluster" data-layout-justify="between" aria-label="Apply dialog header">
+      <h2>Apply</h2>
+      <button type="button" commandfor="apply-sheet" command="close" class="ghost icon-only" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <section class="dialog-pad">
+      <form class="stacked" novalidate>
+        <form-field>
+          <label for="apply-name">Full Name</label>
+          <input type="text" id="apply-name" autocomplete="name" enterkeyhint="next" required />
+        </form-field>
+        <form-field>
+          <label for="apply-email">Email</label>
+          <input type="email" id="apply-email" autocomplete="email" inputmode="email" enterkeyhint="send" required />
+        </form-field>
+        <button type="submit">Submit Application</button>
+      </form>
+    </section>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Close mobile menu on link click
+    const menuDialog = document.getElementById('mobile-menu');
+    menuDialog?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => menuDialog.close());
+    });
+
+    // Active bottom nav on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('body > nav a');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(a => {
+            const href = a.getAttribute('href');
+            const matches = href === '#' + entry.target.id;
+            if (matches) {
+              a.setAttribute('aria-current', 'page');
+            } else if (href !== '#') {
+              a.removeAttribute('aria-current');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+
+    // Long-press handler — show leader detail
+    document.querySelectorAll('[data-gesture="long-press"]').forEach(card => {
+      card.addEventListener('long-press', () => {
+        const name = card.querySelector('strong')?.textContent;
+        if (name) alert(`View full bio for ${name}`);
+      });
+    });
+
+    // Swipe event for pipeline reel
+    const pipeline = document.querySelector('[data-gesture="swipe"]');
+    pipeline?.addEventListener('swipe-left', () => {
+      pipeline.scrollBy({ left: 280, behavior: 'smooth' });
+    });
+    pipeline?.addEventListener('swipe-right', () => {
+      pipeline.scrollBy({ left: -280, behavior: 'smooth' });
+    });
+
+    // Form submission handling
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const btn = e.target.querySelector('[type=submit]');
+        if (btn) {
+          btn.textContent = 'Sent \u2713';
+          btn.disabled = true;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

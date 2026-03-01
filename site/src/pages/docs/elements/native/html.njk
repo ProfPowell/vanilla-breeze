@@ -15,9 +15,14 @@ permalink: /docs/elements/native/html/
   <body>...</body>
 </html>{% endset %}
 
-{% set docsPageExample %}<html lang="en" data-page="docs">
+{% set typicalPageExample %}<!DOCTYPE html>
+<html lang="en" data-theme="ocean" data-fluid>
   <head>...</head>
-  <body>...</body>
+  <body data-page-layout="sidebar-start">
+    <header>...</header>
+    <nav>...</nav>
+    <main>...</main>
+  </body>
 </html>{% endset %}
 
 {% set pageTypeExample %}<html lang="en" data-page="docs">{% endset %}
@@ -26,7 +31,19 @@ permalink: /docs/elements/native/html/
 
 {% set oceanThemeExample %}<html lang="en" data-theme="ocean">{% endset %}
 
-{% set combinedExample %}<html lang="en" data-page="docs" data-theme="forest" data-mode="dark">{% endset %}
+{% set multiThemeExample %}<html lang="en" data-theme="ocean a11y-large-text">{% endset %}
+
+{% set fluidExample %}<html lang="en" data-fluid>
+<!-- or with a preset -->
+<html lang="en" data-fluid="compact">{% endset %}
+
+{% set combinedExample %}<html lang="en" data-page="docs" data-theme="forest" data-mode="dark" data-fluid>{% endset %}
+
+{% set extensionExample %}<html lang="en" data-border-style="sketch" data-icon-set="lucide">{% endset %}
+
+{% set devExample %}<html lang="en" data-debug>
+<!-- or wireframe mode -->
+<html lang="en" data-wireframe="mid">{% endset %}
 
 {% set themeManagerExample %}import { ThemeManager } from './lib/theme-manager.js';
 
@@ -53,10 +70,74 @@ window.addEventListener('theme-change', (e) => {
   console.log(e.detail); // { mode, brand, effectiveMode }
 });{% endset %}
 
+{% set cascadeCssExample %}/* Theme CSS uses :root[data-theme~="name"] — the ~= operator
+   matches individual words in a space-separated list */
+:root[data-theme~="ocean"] {
+  --hue-primary: 200;
+  --hue-secondary: 180;
+}
+
+/* Mode uses exact match since only one value is valid */
+:root[data-mode="dark"] {
+  color-scheme: dark;
+}{% endset %}
+
+{% set scopedOverrideExample %}<main data-theme="ocean">
+  <!-- This section gets ocean colors while the rest
+       of the page uses the root theme -->
+</main>
+
+<aside data-mode="dark">
+  <!-- Dark sidebar regardless of page mode -->
+</aside>{% endset %}
+
+{% set pageScopeExample %}/* Site-specific CSS can target sections */
+[data-page="docs"] .sidebar {
+  position: sticky;
+  top: var(--space-m);
+}
+
+[data-page="lab"] main {
+  max-inline-size: none;
+}{% endset %}
+
+{% set resetCssExample %}html {
+  text-size-adjust: none;          /* prevent iOS landscape inflation */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+html:focus-within {
+  scroll-behavior: smooth;        /* smooth anchor scrolling */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;        /* respect motion preference */
+  }
+}{% endset %}
+
+{% set nojsExample %}<!DOCTYPE html>
+<html lang="en" class="no-js" data-fluid>
+<head>
+  <script>document.documentElement.classList.replace('no-js', 'js')</script>
+  ...
+</head>{% endset %}
+
+{% set nojsCssExample %}.no-js carousel-wc {
+  /* Show all slides as a vertical stack when JS is unavailable */
+  overflow: visible;
+}
+
+.no-js [data-show-when="js"] {
+  display: none;
+}{% endset %}
+
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;html&gt;</code> element is the root of an HTML document. In Vanilla Breeze, it serves as the attachment point for theming and page layout configuration via data attributes.</p>
+    <p>The <code>&lt;html&gt;</code> element is the root of an HTML document. In Vanilla Breeze, it serves as the attachment point for theming, fluid scaling, page layout, and accessibility configuration via data attributes.</p>
+    <p>Because CSS selectors like <code>:root[data-theme]</code> and <code>:root[data-mode]</code> target this element, the <code>&lt;html&gt;</code> element acts as VB's global control surface. Data attributes set here cascade through the entire document via custom properties, while individual elements can override them locally for scoped theming.</p>
   </section>
 
   <!-- Basic Example Section -->
@@ -64,33 +145,67 @@ window.addEventListener('theme-change', (e) => {
     <h2>Basic Example</h2>
     <code-block language="html" label="Minimal html structure">{{ basicExample | escape }}</code-block>
 
-    <h3>Documentation Page</h3>
-    <p>Documentation pages use the <code>data-page="docs"</code> attribute for layout:</p>
-    <code-block language="html" label="Documentation page">{{ docsPageExample | escape }}</code-block>
+    <h3>Typical Page</h3>
+    <p>A typical Vanilla Breeze page sets global config on <code>&lt;html&gt;</code> and page structure on <code>&lt;body&gt;</code>:</p>
+    <code-block language="html" label="Typical VB page">{{ typicalPageExample | escape }}</code-block>
+  </section>
+
+  <!-- How It Works Section -->
+  <section>
+    <h2>How It Works</h2>
+
+    <h3>Cascade Model</h3>
+    <p>VB stores configuration as data attributes on <code>&lt;html&gt;</code>. CSS activates token overrides using <code>:root[data-*]</code> selectors. Theme selectors use the <code>~=</code> operator (word-match) so multiple themes can be space-separated. Mode and fluid selectors use <code>=</code> (exact match) since only one value is valid at a time.</p>
+    <code-block language="css" label="Selector patterns">{{ cascadeCssExample | escape }}</code-block>
+
+    <h3>html vs body</h3>
+    <p>VB splits responsibilities between these two elements:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Element</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-mode</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Light/dark color scheme (global config)</td>
+        </tr>
+        <tr>
+          <td><code>data-theme</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Brand and aesthetic tokens (global config)</td>
+        </tr>
+        <tr>
+          <td><code>data-fluid</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Fluid typography and spacing scaling</td>
+        </tr>
+        <tr>
+          <td><code>data-page</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Site section identifier for scoped CSS</td>
+        </tr>
+        <tr>
+          <td><code>data-page-layout</code></td>
+          <td><code>&lt;body&gt;</code></td>
+          <td>Page grid structure (sidebar, holy-grail, etc.)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Scoped Overrides</h3>
+    <p>Both <code>data-theme</code> and <code>data-mode</code> can be placed on any descendant element to create a scoped region. VB's reset re-applies <code>color: var(--color-text)</code> on scoped elements so custom properties resolve in the element's own context rather than inheriting from the body.</p>
+    <code-block language="html" label="Scoped overrides">{{ scopedOverrideExample | escape }}</code-block>
   </section>
 
   <!-- Vanilla Breeze Attributes Section -->
   <section>
     <h2>Vanilla Breeze Attributes</h2>
     <p>Vanilla Breeze uses data attributes on the <code>&lt;html&gt;</code> element to control theming and layout.</p>
-
-    <h3>data-page</h3>
-    <p>Sets the page layout type. Different values apply different structural styles.</p>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Value</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>docs</code></td>
-          <td>Documentation layout with sticky header, sidebar navigation, and article structure</td>
-        </tr>
-      </tbody>
-    </table>
-    <code-block language="html" label="Page type">{{ pageTypeExample | escape }}</code-block>
 
     <h3>data-mode</h3>
     <p>Controls light/dark mode. When omitted, mode follows the user's system preference (auto).</p>
@@ -119,7 +234,71 @@ window.addEventListener('theme-change', (e) => {
     <code-block language="html" label="Force dark mode">{{ darkModeExample | escape }}</code-block>
 
     <h3>data-theme</h3>
-    <p>Sets the brand color theme. When omitted, uses the default purple/blue theme.</p>
+    <p>Sets the color theme. Accepts a space-separated list of theme tokens. When omitted, uses the default purple/blue theme. See the <a href="/docs/themes/">Themes page</a> for the full catalogue and live previews.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Brand</td>
+          <td><code>ocean</code>, <code>forest</code>, <code>sunset</code>, <code>amber</code>, <code>emerald</code>, <code>lavender</code>, <code>indigo</code>, <code>slate</code>, <code>rose</code>, <code>coral</code></td>
+        </tr>
+        <tr>
+          <td>Extreme</td>
+          <td><code>swiss</code>, <code>brutalist</code>, <code>organic</code>, <code>kawaii</code>, <code>cyber</code>, <code>terminal</code>, <code>8bit</code>, <code>nes</code>, <code>win9x</code>, <code>vaporwave</code>, <code>art-deco</code>, <code>bauhaus</code>, <code>memphis</code>, <code>editorial</code>, <code>claymorphism</code>, <code>neumorphism</code>, <code>glassmorphism</code>, <code>cottagecore</code>, <code>rough</code>, <code>genai</code>, and more</td>
+        </tr>
+        <tr>
+          <td>Editor</td>
+          <td><code>solarized</code>, <code>dracula</code>, <code>nord</code>, <code>gruvbox</code>, <code>rose-pine</code>, <code>tokyo-night</code>, <code>catppuccin-mocha</code>, <code>catppuccin-latte</code>, <code>catppuccin-frappe</code>, <code>catppuccin-macchiato</code>, <code>dusk</code>, <code>midnight</code>, <code>dawn</code>, <code>high-noon</code></td>
+        </tr>
+        <tr>
+          <td>Industry</td>
+          <td><code>government</code>, <code>financial</code>, <code>clinical</code>, <code>startup</code>, <code>modern</code>, <code>minimal</code>, <code>classic</code></td>
+        </tr>
+        <tr>
+          <td>Accessibility</td>
+          <td><code>a11y-high-contrast</code>, <code>a11y-large-text</code>, <code>a11y-dyslexia</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Themes can be combined. Accessibility themes layer on top of brand or extreme themes. The <code>[data-theme~="name"]</code> word-match selector enables this stacking &#8212; each token is matched independently, so <code>data-theme="ocean a11y-large-text"</code> activates both rulesets simultaneously.</p>
+    <code-block language="html" label="Single theme">{{ oceanThemeExample | escape }}</code-block>
+    <code-block language="html" label="Combined themes">{{ multiThemeExample | escape }}</code-block>
+
+    <h3>data-page</h3>
+    <p>Identifies which site section a page belongs to. This is a scoping hook for your own CSS &#8212; VB does not define a fixed enumeration. Values are whatever makes sense for your site (e.g., <code>docs</code>, <code>lab</code>, <code>blog</code>, <code>admin</code>).</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Purpose</td>
+          <td>Section-scoped CSS via attribute selectors</td>
+        </tr>
+        <tr>
+          <td>Values</td>
+          <td>User-defined. Examples: <code>docs</code>, <code>lab</code>, <code>blog</code></td>
+        </tr>
+        <tr>
+          <td>Set by</td>
+          <td>Template layout or page front matter (<code>dataPage</code> variable)</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Page section">{{ pageTypeExample | escape }}</code-block>
+    <code-block language="css" label="Section-scoped CSS">{{ pageScopeExample | escape }}</code-block>
+    <p>For page-level grid layouts, use <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> on <code>&lt;body&gt;</code> instead.</p>
+
+    <h3>data-fluid</h3>
+    <p>Activates fluid scaling. Typography and spacing scale continuously between 320px and 1440px viewports. Always present in the Vanilla Breeze base layout.</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -129,28 +308,118 @@ window.addEventListener('theme-change', (e) => {
       </thead>
       <tbody>
         <tr>
-          <td><em>(omitted)</em></td>
-          <td>Default theme - purple primary (hue 260)</td>
+          <td><em>(boolean / omitted value)</em></td>
+          <td>Default preset — Major Second → Major Third type ratio</td>
         </tr>
         <tr>
-          <td><code>ocean</code></td>
-          <td>Teal-blue professional palette (hue 200)</td>
+          <td><code>default</code></td>
+          <td>Same as boolean — explicit default preset</td>
         </tr>
         <tr>
-          <td><code>forest</code></td>
-          <td>Green nature-inspired palette (hue 145)</td>
+          <td><code>compact</code></td>
+          <td>Tighter spacing and smaller type ratio (Minor Second → Minor Third)</td>
         </tr>
         <tr>
-          <td><code>sunset</code></td>
-          <td>Warm orange-coral palette (hue 25)</td>
+          <td><code>spacious</code></td>
+          <td>Generous spacing and larger type ratio (Minor Third → Perfect Fourth)</td>
         </tr>
       </tbody>
     </table>
-    <code-block language="html" label="Ocean theme">{{ oceanThemeExample | escape }}</code-block>
+    <code-block language="html" label="Fluid scaling">{{ fluidExample | escape }}</code-block>
+
+    <h3>data-motion-reduced</h3>
+    <p>User-toggled reduced motion. When present, all CSS transitions, animations, and view transitions are disabled. Set programmatically by <code>&lt;theme-picker&gt;</code> or <code>&lt;settings-panel&gt;</code>; complements the <code>prefers-reduced-motion</code> media query for users who want motion control per-site rather than system-wide.</p>
+
+    <h3>data-border-style</h3>
+    <p>Overrides the global border aesthetic. Can also be set on any descendant element for scoped styling.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>clean</code></td><td>Crisp, minimal borders (default)</td></tr>
+        <tr><td><code>sharp</code></td><td>Zero-radius hard edges</td></tr>
+        <tr><td><code>soft</code></td><td>Large radius, gentle rounding</td></tr>
+        <tr><td><code>sketch</code></td><td>Hand-drawn look with slight irregularity</td></tr>
+        <tr><td><code>rough</code></td><td>Rough, imperfect edges</td></tr>
+        <tr><td><code>marker</code></td><td>Thick marker-stroke borders</td></tr>
+        <tr><td><code>kawaii</code></td><td>Rounded, playful, pastel-friendly</td></tr>
+        <tr><td><code>pixel</code></td><td>Stepped pixel-art corners</td></tr>
+        <tr><td><code>neon</code></td><td>Glowing neon border effect</td></tr>
+        <tr><td><code>double</code></td><td>Classic double-line border</td></tr>
+        <tr><td><code>bubbly</code></td><td>Extra-round, bubbly shapes</td></tr>
+        <tr><td><code>organic</code></td><td>Natural, irregular organic shapes</td></tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Border style and icon set">{{ extensionExample | escape }}</code-block>
+
+    <h3>data-icon-set</h3>
+    <p>Sets the default icon library for all <code>&lt;icon-wc&gt;</code> components on the page. Defaults to <code>lucide</code> when omitted. Individual <code>&lt;icon-wc&gt;</code> elements can override this with their own <code>set</code> attribute.</p>
+
+    <h3>data-icon-path</h3>
+    <p>Sets the base path for loading icon SVG files. Useful when icons are hosted at a custom CDN path. Individual <code>&lt;icon-wc&gt;</code> elements can override with their own <code>path</code> attribute.</p>
+
+    <h3>data-ruby</h3>
+    <p>Controls the visibility of ruby annotations (<code>&lt;rt&gt;</code> elements) for CJK text.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>show</code></td>
+          <td>Always show ruby annotations</td>
+        </tr>
+        <tr>
+          <td><code>hide</code></td>
+          <td>Always hide ruby annotations</td>
+        </tr>
+        <tr>
+          <td><code>auto</code></td>
+          <td>Show only when document language is <code>ja</code>, <code>zh</code>, or <code>ko</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>data-print-raw</h3>
+    <p>When present, disables all Vanilla Breeze print optimizations. The page prints as-is without VB's <code>@media print</code> adjustments. Set automatically by the <code>&lt;print-page&gt;</code> component in "raw" mode.</p>
 
     <h3>Combining Attributes</h3>
     <p>All data attributes can be combined:</p>
     <code-block language="html" label="Combined attributes">{{ combinedExample | escape }}</code-block>
+  </section>
+
+  <!-- Developer Utilities Section -->
+  <section>
+    <h2>Developer Utilities</h2>
+    <p>These attributes are for development and debugging only.</p>
+
+    <h3>data-debug</h3>
+    <p>Activates debug mode. Shows an overlay banner and highlights HTML content model violations (e.g., block elements inside inline elements). Can also be activated via <code>localStorage</code>.</p>
+
+    <h3>data-wireframe</h3>
+    <p>Renders the page in wireframe view, stripping visual styling to expose layout structure.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>lo</code></td><td>Low fidelity — minimal structure outlines</td></tr>
+        <tr><td><code>mid</code></td><td>Medium fidelity — visible element boundaries</td></tr>
+        <tr><td><code>hi</code></td><td>High fidelity — detailed wireframe with labels</td></tr>
+        <tr><td><code>annotate</code></td><td>Annotated wireframe with element names</td></tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Developer utilities">{{ devExample | escape }}</code-block>
   </section>
 
   <!-- Theme Manager Section -->
@@ -160,37 +429,219 @@ window.addEventListener('theme-change', (e) => {
     <code-block language="javascript" label="Using ThemeManager">{{ themeManagerExample | escape }}</code-block>
   </section>
 
-  <!-- Standard Attributes Section -->
+  <!-- CSS Reset Section -->
   <section>
-    <h2>Standard Attributes</h2>
-    <p>The <code>&lt;html&gt;</code> element supports these standard HTML attributes:</p>
+    <h2>CSS Reset</h2>
+    <p>VB's reset applies these rules to <code>&lt;html&gt;</code> automatically:</p>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
+          <th>Property</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>text-size-adjust: none</code></td>
+          <td>Prevents iOS landscape font inflation</td>
+        </tr>
+        <tr>
+          <td><code>scrollbar-width: thin</code></td>
+          <td>Thin scrollbars on supported browsers</td>
+        </tr>
+        <tr>
+          <td><code>scrollbar-color</code></td>
+          <td>Themed scrollbar thumb and track via custom properties</td>
+        </tr>
+        <tr>
+          <td><code>scroll-behavior: smooth</code></td>
+          <td>Smooth anchor scrolling (on <code>html:focus-within</code> only)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Smooth scrolling is automatically disabled when <code>prefers-reduced-motion: reduce</code> is active.</p>
+    <code-block language="css" label="Reset rules applied to html">{{ resetCssExample | escape }}</code-block>
+  </section>
+
+  <!-- System Preference Detection Section -->
+  <section>
+    <h2>System Preference Detection</h2>
+    <p>VB responds to these <code>@media</code> queries at the <code>:root</code> level. No configuration needed &#8212; these activate automatically based on the user's system settings.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Query</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>prefers-color-scheme</code></td>
+          <td>Automatic light/dark via <code>light-dark()</code> color function</td>
+        </tr>
+        <tr>
+          <td><code>prefers-reduced-motion</code></td>
+          <td>Sets all <code>--duration-*</code> tokens to <code>0ms</code></td>
+        </tr>
+        <tr>
+          <td><code>prefers-contrast: more</code></td>
+          <td>Stronger borders, bolder text colors, wider focus rings</td>
+        </tr>
+        <tr>
+          <td><code>prefers-reduced-transparency</code></td>
+          <td>Fully opaque overlays, no <code>backdrop-filter</code></td>
+        </tr>
+        <tr>
+          <td><code>forced-colors: active</code></td>
+          <td>Maps tokens to Windows system colors (<code>Canvas</code>, <code>CanvasText</code>, etc.)</td>
+        </tr>
+        <tr>
+          <td><code>pointer: coarse</code></td>
+          <td>Enforces 44px minimum touch targets (WCAG 2.5.8)</td>
+        </tr>
+        <tr>
+          <td><code>hover: none</code></td>
+          <td>Disables hover-based motion effects</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <code>data-mode</code> attribute overrides <code>prefers-color-scheme</code>, and <code>data-motion-reduced</code> complements <code>prefers-reduced-motion</code> for per-site control.</p>
+  </section>
+
+  <!-- Custom Properties at :root Section -->
+  <section>
+    <h2>Custom Properties at :root</h2>
+    <p>VB defines its design token system as custom properties on <code>:root</code>. This table shows the major categories &#8212; see the <a href="/docs/tokens/">Design Tokens</a> page for the full reference.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Example Properties</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Colors</td>
+          <td><code>--color-primary</code>, <code>--color-text</code>, <code>--color-surface</code></td>
+        </tr>
+        <tr>
+          <td>Typography</td>
+          <td><code>--font-sans</code>, <code>--font-mono</code>, <code>--line-height-normal</code></td>
+        </tr>
+        <tr>
+          <td>Spacing</td>
+          <td><code>--space-xs</code> through <code>--space-3xl</code></td>
+        </tr>
+        <tr>
+          <td>Borders</td>
+          <td><code>--border-radius</code>, <code>--border-width</code>, <code>--color-border</code></td>
+        </tr>
+        <tr>
+          <td>Shadows</td>
+          <td><code>--shadow-xs</code> through <code>--shadow-xl</code></td>
+        </tr>
+        <tr>
+          <td>Motion</td>
+          <td><code>--duration-fast</code>, <code>--duration-normal</code>, <code>--ease-default</code></td>
+        </tr>
+        <tr>
+          <td>Sizing</td>
+          <td><code>--size-touch-min</code>, <code>--focus-ring-width</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Two standalone <code>:root</code> properties are worth noting: <code>color-scheme: light dark</code> enables the <code>light-dark()</code> CSS function for automatic mode switching, and <code>interpolate-size: allow-keywords</code> enables smooth transitions to and from keyword sizes like <code>auto</code>.</p>
+  </section>
+
+  <!-- Standard Attributes Section -->
+  <section>
+    <h2>Standard Attributes</h2>
+
+    <h3>lang</h3>
+    <p>Sets the document language. Required for accessibility &#8212; screen readers use it to select the correct pronunciation engine.</p>
+    <p>VB's i18n layer responds to <code>lang</code> through <code>:lang()</code> selectors, automatically applying script-appropriate typography:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>zh</code>, <code>ja</code>, <code>ko</code></td>
+          <td>CJK font family, <code>line-height: 1.8</code>, <code>word-break: break-all</code>. Japanese adds <code>font-feature-settings: "palt"</code> for proportional punctuation.</td>
+        </tr>
+        <tr>
+          <td><code>ar</code>, <code>fa</code>, <code>ur</code>, <code>ps</code></td>
+          <td>Arabic script font family, <code>line-height: 1.9</code>, slight word-spacing</td>
+        </tr>
+        <tr>
+          <td><code>he</code>, <code>yi</code></td>
+          <td>Hebrew font family, <code>line-height: 1.75</code></td>
+        </tr>
+        <tr>
+          <td><code>th</code></td>
+          <td>Thai font family, <code>line-height: 2</code>, no word breaks</td>
+        </tr>
+        <tr>
+          <td><code>hi</code>, <code>mr</code>, <code>sa</code>, <code>ne</code></td>
+          <td>Devanagari font family, <code>line-height: 1.75</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Additional <code>lang</code>-driven behaviors:</p>
+    <ul>
+      <li><strong>Quotation marks:</strong> The <code>&lt;q&gt;</code> element renders locale-correct quotes (English <code>&#x201C;&#x201D;</code>, French <code>&#x00AB;&#x00BB;</code>, Japanese <code>&#x300C;&#x300D;</code>, German <code>&#x201E;&#x201C;</code>, Russian <code>&#x00AB;&#x00BB;</code>)</li>
+      <li><strong>Ruby annotations:</strong> With <code>data-ruby="auto"</code>, annotations show only for CJK languages</li>
+      <li><strong>Translation protection:</strong> <code>&lt;code&gt;</code>, <code>&lt;kbd&gt;</code>, <code>&lt;samp&gt;</code>, <code>&lt;pre&gt;</code>, and <code>&lt;var&gt;</code> are marked <code>translate: no</code> to prevent machine translation tools from mangling code</li>
+    </ul>
+
+    <h3>dir</h3>
+    <p>Sets the text direction. VB uses CSS logical properties throughout (<code>inline-start</code>/<code>inline-end</code> instead of <code>left</code>/<code>right</code>), so setting <code>dir="rtl"</code> automatically mirrors all layouts.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>lang</code></td>
-          <td>Document language (e.g., <code>en</code>, <code>es</code>, <code>fr</code>). Required for accessibility.</td>
+          <td><code>ltr</code></td>
+          <td>Left-to-right (default for most languages)</td>
         </tr>
         <tr>
-          <td><code>dir</code></td>
-          <td>Text direction: <code>ltr</code> (left-to-right) or <code>rtl</code> (right-to-left)</td>
+          <td><code>rtl</code></td>
+          <td>Right-to-left. VB sets <code>unicode-bidi: embed</code> for correct embedding.</td>
+        </tr>
+        <tr>
+          <td><code>auto</code></td>
+          <td>Direction determined by content. VB sets <code>unicode-bidi: isolate</code>. Useful for user-generated content (chat messages, comments, form inputs).</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <!-- Progressive Enhancement Section -->
+  <section>
+    <h2>Progressive Enhancement (no-js)</h2>
+    <p>VB does not enforce a no-js pattern, but the following is a recommended approach for pages with web components that need JavaScript fallbacks:</p>
+    <code-block language="html" label="no-js pattern">{{ nojsExample | escape }}</code-block>
+    <p>The inline script runs before any content renders, replacing the class synchronously. CSS can then target both states:</p>
+    <code-block language="css" label="Fallback styles">{{ nojsCssExample | escape }}</code-block>
   </section>
 
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Always set <code>lang</code>:</strong> Screen readers use this to select the correct pronunciation</li>
+      <li><strong>Always set <code>lang</code>:</strong> Screen readers use this to select the correct pronunciation. VB's i18n layer also reads it to apply script-specific typography, locale-aware quotation marks, and ruby annotation visibility.</li>
       <li><strong>Theme considerations:</strong> The <code>data-mode</code> attribute works with <code>color-scheme</code> CSS to ensure proper contrast and respect user preferences</li>
-      <li><strong>Motion preferences:</strong> Vanilla Breeze respects <code>prefers-reduced-motion</code> regardless of theme settings</li>
+      <li><strong>Motion preferences:</strong> Vanilla Breeze respects <code>prefers-reduced-motion</code> at the system level. The <code>data-motion-reduced</code> attribute provides per-site opt-out for users who want motion elsewhere but not on your page.</li>
+      <li><strong>Accessibility themes:</strong> The <code>a11y-high-contrast</code>, <code>a11y-large-text</code>, and <code>a11y-dyslexia</code> theme tokens can be combined with any brand theme via <code>data-theme</code>.</li>
+      <li><strong>System preferences:</strong> VB automatically responds to <code>prefers-contrast</code>, <code>prefers-reduced-transparency</code>, <code>forced-colors</code>, and <code>pointer: coarse</code> &#8212; no opt-in required.</li>
+      <li><strong>Touch targets:</strong> On coarse-pointer devices, interactive elements enforce a 44px minimum size per WCAG 2.5.8.</li>
     </ul>
   </section>
 
@@ -200,7 +651,12 @@ window.addEventListener('theme-change', (e) => {
     <ul>
       <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Document metadata container</li>
       <li><a href="/docs/elements/native/body/"><code>&lt;body&gt;</code></a> - Document content container</li>
-      <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> - Theme picker component</li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> - Page grid structure (set on <code>&lt;body&gt;</code>)</li>
+      <li><a href="/docs/themes/">Themes</a> - Full theme catalogue with live previews</li>
+      <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> - How <code>data-fluid</code> presets work</li>
+      <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> - Interactive theme and mode switcher</li>
+      <li><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> - Full settings panel with motion, border-style, and icon controls</li>
+      <li><a href="/docs/elements/web-components/icon-wc/"><code>&lt;icon-wc&gt;</code></a> - Icon component that reads <code>data-icon-set</code> and <code>data-icon-path</code></li>
       <li><a href="/docs/tokens/">Design Tokens</a> - Color, spacing, and typography tokens</li>
     </ul>
   </section>

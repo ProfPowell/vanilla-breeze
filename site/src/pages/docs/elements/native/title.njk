@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "title"
-description: "Defines the document title shown in browser tabs and bookmarks."
+description: "Defines the document title shown in browser tabs, bookmarks, history, search results, and screen reader announcements."
 elementName: title
 category: native
 nativeGroup: Document
@@ -9,34 +9,327 @@ currentPath: /docs/elements/native/title/
 permalink: /docs/elements/native/title/
 ---
 
-{% set basicExample %}<title>...</title>{% endset %}
+{% set basicExample %}<title>Page Title</title>{% endset %}
+
+{% set vbPatternExample %}<title>Page Title | Site Name</title>{% endset %}
+
+{% set spaExample %}<title>Dashboard | My App</title>{% endset %}
+
+{% set notificationExample %}<title>(3) Inbox | My App</title>{% endset %}
+
+{% set emojiStatusExample %}<title>&#x2709;&#xFE0F; New message | My App</title>{% endset %}
+
+{% set emojiPatternsExample %}<!-- Connection status -->
+<title>&#x1F7E2; Connected | Dashboard</title>
+<title>&#x1F534; Offline | Dashboard</title>
+
+<!-- Activity status -->
+<title>&#x23F3; Uploading... | Files</title>
+<title>&#x2705; Upload complete | Files</title>
+
+<!-- Notification types -->
+<title>&#x1F4EC; (3) new | Inbox</title>
+<title>&#x26A0;&#xFE0F; Action required | Settings</title>{% endset %}
+
+{% set dynamicTitleExample %}<script>
+// Save the original title once
+const originalTitle = document.title;
+
+// Update on route change (SPA)
+function setPageTitle(pageName) {
+  document.title = pageName + ' | My App';
+}
+
+// Add a notification count
+function setNotificationCount(count) {
+  document.title = count > 0
+    ? `(${count}) ${originalTitle}`
+    : originalTitle;
+}
+</script>{% endset %}
+
+{% set spinnerExample %}<script>
+// Emoji sequences that animate well in browser tabs
+const spinners = {
+  moon:    ['&#x1F311;','&#x1F312;','&#x1F313;','&#x1F314;','&#x1F315;','&#x1F316;','&#x1F317;','&#x1F318;'],
+  clock:   ['&#x1F55B;','&#x1F550;','&#x1F551;','&#x1F552;','&#x1F553;','&#x1F554;','&#x1F555;','&#x1F556;','&#x1F557;','&#x1F558;','&#x1F559;','&#x1F55A;'],
+  earth:   ['&#x1F30D;','&#x1F30E;','&#x1F30F;'],
+  braille: ['\u280B','\u2819','\u2839','\u2838','\u283C','\u2834','\u2826','\u2827','\u2807','\u280F'],
+  dots:    ['\u22C5','\u2219','\u25CF','\u2219'],
+};
+
+let timer = null;
+const originalTitle = document.title;
+
+function startSpinner(type = 'moon') {
+  const frames = spinners[type];
+  let i = 0;
+  timer = setInterval(() =&gt; {
+    document.title = frames[i++ % frames.length] + ' ' + originalTitle;
+  }, 150);
+}
+
+function stopSpinner() {
+  clearInterval(timer);
+  timer = null;
+  document.title = originalTitle;
+}
+
+// Usage: show spinner during a fetch
+startSpinner('clock');
+fetch('/api/data')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    stopSpinner();
+    // ... use data
+  })
+  .catch(() =&gt; {
+    stopSpinner();
+    document.title = '\u26A0\uFE0F ' + originalTitle;
+  });
+</script>{% endset %}
+
+{% set badgingApiExample %}<script>
+// Modern Badging API (installed PWAs only)
+// Sets a numeric badge on the app icon in the dock/taskbar
+
+// Show unread count
+navigator.setAppBadge(5);
+
+// Show flag-only badge (no number)
+navigator.setAppBadge();
+
+// Clear badge
+navigator.clearAppBadge();
+
+// Progressive enhancement: badge API + title fallback
+function setBadge(count) {
+  // Update the tab title (works everywhere)
+  const base = document.title.replace(/^\(\d+\)\s*/, '');
+  document.title = count > 0 ? `(${count}) ${base}` : base;
+
+  // Also set the app badge if available (installed PWAs)
+  if ('setAppBadge' in navigator) {
+    count > 0
+      ? navigator.setAppBadge(count)
+      : navigator.clearAppBadge();
+  }
+}
+</script>{% endset %}
+
+{% set spinnerSequencesExample %}// High-quality spinner sequences for document.title
+//
+// Moon phases     &#x1F311;&#x1F312;&#x1F313;&#x1F314;&#x1F315;&#x1F316;&#x1F317;&#x1F318;     Smooth 8-frame cycle
+// Clock faces     &#x1F55B;&#x1F550;&#x1F551;&#x1F552;...&#x1F55A;     12-frame, very readable
+// Earth           &#x1F30D;&#x1F30E;&#x1F30F;           3-frame, fast loop
+// Braille dots    &#x280B;&#x2819;&#x2839;&#x2838;&#x283C;&#x2834;&#x2826;&#x2827;&#x2807;&#x280F;     10-frame, monochrome
+// Quarter circle  &#x25DF;&#x25DC;&#x25DD;&#x25DE;           4-frame classic
+// Pulsing dot     &#x22C5;&#x2219;&#x25CF;&#x2219;           4-frame heartbeat{% endset %}
+
+{% set visibilityExample %}<script>
+// Pause spinner when tab is hidden (saves CPU)
+document.addEventListener('visibilitychange', () =&gt; {
+  if (document.hidden) {
+    stopSpinner();
+  } else if (isLoading) {
+    startSpinner();
+  }
+});
+</script>{% endset %}
 
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;title&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;title&gt;</code> element defines the document's name. It is the only required element inside <code>&lt;head&gt;</code> and serves as the primary identifier for the page across every browser surface: tabs, bookmarks, history, task switchers, and search engine results. Screen readers announce it first when a user lands on a page.</p>
+    <p>Beyond static identification, <code>document.title</code> is a live, writable property. This makes the browser tab a zero-UI status channel: prepend an emoji for state, a count for notifications, or cycle through animation frames for a loading indicator — all without touching the visible page.</p>
   </section>
 
   <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic title example">{{ basicExample | escape }}</code-block>
+    <code-block language="html" label="Minimal title">{{ basicExample | escape }}</code-block>
+  </section>
+
+  <!-- Format Patterns Section -->
+  <section>
+    <h2>Format Patterns</h2>
+    <p>VB uses the <code>Page | Site</code> convention. The page-specific part comes first so users scanning many tabs see the distinguishing content before it gets truncated.</p>
+    <code-block language="html" label="VB title pattern">{{ vbPatternExample | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Example</th>
+          <th>When to Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Page | Site</code></td>
+          <td>Pricing | Acme Corp</td>
+          <td>Default for most pages. VB's head partial generates this automatically.</td>
+        </tr>
+        <tr>
+          <td><code>Site</code></td>
+          <td>Acme Corp</td>
+          <td>Homepage only, where the page name would be redundant.</td>
+        </tr>
+        <tr>
+          <td><code>(n) Page | Site</code></td>
+          <td>(3) Inbox | My App</td>
+          <td>Notification count. The number draws the eye in a row of tabs.</td>
+        </tr>
+        <tr>
+          <td><code>Emoji Page | Site</code></td>
+          <td>&#x2709;&#xFE0F; New message | My App</td>
+          <td>Status indicator. Works without JavaScript if the state is known at render time.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Keep titles under 60 characters. Search engines truncate around that point, and shorter titles are easier for screen reader users to parse.</p>
+  </section>
+
+  <!-- Static Emoji Status Section -->
+  <section>
+    <h2>Static Emoji Status</h2>
+    <p>The simplest form of tab status: prepend an emoji to the title in your HTML. No JavaScript required. This works for any state known at render time — connection status, build results, form state.</p>
+    <code-block language="html" label="Emoji status patterns">{{ emojiPatternsExample | escape }}</code-block>
+    <p>Choose emoji that are visually distinct at small sizes. Colored circles, warning signs, and mail icons work well. Avoid emoji that look similar across platforms or require fine detail to distinguish.</p>
+  </section>
+
+  <!-- Dynamic Title Updates Section -->
+  <section>
+    <h2>Dynamic Title Updates</h2>
+    <p><code>document.title</code> is writable and updates the browser tab immediately. Use it for SPA route changes and notification badges.</p>
+    <code-block language="javascript" label="Dynamic title updates">{{ dynamicTitleExample | escape }}</code-block>
+    <code-block language="html" label="Notification count in title">{{ notificationExample | escape }}</code-block>
+  </section>
+
+  <!-- Animated Spinners Section -->
+  <section>
+    <h2>Animated Spinners</h2>
+    <p>Cycle through an emoji sequence with <code>setInterval</code> to create a loading spinner directly in the browser tab. This is a progressive enhancement — the tab title remains readable text with a rotating prefix.</p>
+    <code-block language="javascript" label="Title spinner utility">{{ spinnerExample | escape }}</code-block>
+
+    <h3>Spinner Sequences</h3>
+    <p>These sequences animate smoothly in browser tabs. Choose based on the mood you want:</p>
+    <code-block language="javascript" label="Available spinner sequences">{{ spinnerSequencesExample | escape }}</code-block>
+    <p>Braille dot spinners are monochrome and compact — they work best when you want a subtle, terminal-style indicator. Moon and clock emoji are more playful and visible at a glance.</p>
+
+    <h3>Performance</h3>
+    <p>Pause the spinner when the tab is hidden. The animation is invisible anyway, and clearing the interval avoids unnecessary work:</p>
+    <code-block language="javascript" label="Visibility-aware spinner">{{ visibilityExample | escape }}</code-block>
+    <p><code>document.title</code> updates are not throttled by browsers (unlike <code>history.pushState</code>, which Chrome and Safari limit to ~100 calls per 30 seconds). An interval of 100&ndash;200ms produces smooth animation without measurable overhead.</p>
+  </section>
+
+  <!-- Badging API Section -->
+  <section>
+    <h2>Badging API</h2>
+    <p>The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Badging_API">Badging API</a> is the platform-native way to show a numeric badge on an installed PWA's icon in the dock or taskbar. It complements title-based indicators but does not replace them — the Badging API only works for installed web apps, while title updates work in every browser tab.</p>
+    <code-block language="javascript" label="Badging API with title fallback">{{ badgingApiExample | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Approach</th>
+          <th>Where It Shows</th>
+          <th>Requires</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>document.title</code></td>
+          <td>Browser tab, task switcher, history</td>
+          <td>Nothing (works everywhere)</td>
+        </tr>
+        <tr>
+          <td><code>navigator.setAppBadge()</code></td>
+          <td>App icon in dock/taskbar/home screen</td>
+          <td>PWA install, HTTPS, browser support</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Use both together for the best coverage. The title fallback ensures uninstalled users still see the notification count.</p>
   </section>
 
   <!-- Attributes Section -->
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <p>The <code>&lt;title&gt;</code> element has no element-specific attributes. It supports <a href="/docs/elements/native/states/">global attributes</a>, though in practice none are commonly used on it.</p>
+    <p>Its content model is text only — no child elements, no HTML tags. The text between the opening and closing tags becomes the document's title.</p>
   </section>
 
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;title&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><strong>First thing announced:</strong> Screen readers read the page title before any other content. It is the primary way a user identifies which page they have landed on.</li>
+      <li><strong>Unique per page:</strong> Every page must have a distinct title. Duplicate titles across pages make navigation impossible for screen reader users who rely on title differences to distinguish tabs and history entries.</li>
+      <li><strong>Page-specific content first:</strong> The <code>Page | Site</code> format puts the distinguishing content first. A screen reader user scanning multiple tabs hears the unique part immediately rather than hearing the site name repeated for every tab.</li>
+      <li><strong>Emoji are announced:</strong> Screen readers read emoji by their Unicode name. <code>&#x1F550;</code> is announced as "one o'clock," <code>&#x1F311;</code> as "new moon." This is meaningful but can be verbose — avoid stacking multiple emoji in the title.</li>
+      <li><strong>Dynamic updates are announced:</strong> Some screen readers announce title changes via live region behavior. Rapidly cycling a spinner may cause announcement storms. Use <code>aria-live</code> regions for important status messages rather than relying on title changes alone.</li>
+      <li><strong>Keep it concise:</strong> Aim for under 60 characters. Long titles are tedious to listen to and get truncated in visual UI.</li>
+      <li><strong>Avoid keyword stuffing:</strong> Titles like "Shoes | Buy Shoes | Best Shoes | Shoe Store" are frustrating for everyone and actively harmful for screen reader users who must listen to the entire string.</li>
+    </ul>
   </section>
 
-  <!-- Related Elements Section -->
+  <!-- SEO Section -->
   <section>
-    <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <h2>SEO</h2>
+    <ul>
+      <li>Search engines display roughly 50&ndash;60 characters of the title in results. Put the most important words first.</li>
+      <li>The title should match or closely reflect the page's <code>&lt;h1&gt;</code> heading. Mismatches between the tab title and the visible heading confuse both users and search engines.</li>
+      <li>Each page needs a unique title. Duplicate titles signal duplicate content to search crawlers.</li>
+      <li>The <code>&lt;title&gt;</code> and <code>&lt;meta name="description"&gt;</code> work as a pair — the title is the headline, the description is the summary. Make sure they complement each other.</li>
+      <li>Dynamic emoji prefixes and notification counts do not affect SEO. Search engines index the server-rendered title, not JavaScript-modified values.</li>
+    </ul>
+  </section>
+
+  <!-- Browser Behavior Section -->
+  <section>
+    <h2>Browser Behavior</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Surface</th>
+          <th>What Shows</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tab bar</td>
+          <td>Title text, truncated to fit. Emoji render in color on macOS/iOS, monochrome on some Windows versions.</td>
+        </tr>
+        <tr>
+          <td>Bookmarks</td>
+          <td>Title at the time of bookmarking. Does not update with <code>document.title</code> changes.</td>
+        </tr>
+        <tr>
+          <td>History</td>
+          <td>Title at the time the history entry was created. SPA route changes should update <code>document.title</code> before calling <code>history.pushState()</code>.</td>
+        </tr>
+        <tr>
+          <td>Task switcher</td>
+          <td>OS-level alt-tab and task views show the current <code>document.title</code>.</td>
+        </tr>
+        <tr>
+          <td>Search results</td>
+          <td>Server-rendered title from the HTML source. JavaScript changes are not indexed.</td>
+        </tr>
+        <tr>
+          <td>Social previews</td>
+          <td><code>og:title</code> takes precedence. Falls back to <code>&lt;title&gt;</code> if no OG tag is present.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Related Section -->
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> — Parent element; VB's head partial generates the title from frontmatter</li>
+      <li><a href="/docs/elements/native/meta/"><code>&lt;meta&gt;</code></a> — <code>description</code> meta pairs with the title for search results</li>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> — Canonical URL and favicon, which appear alongside the title in tabs</li>
+      <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> — The <code>lang</code> attribute on the root element affects how screen readers pronounce the title</li>
+    </ul>
   </section>

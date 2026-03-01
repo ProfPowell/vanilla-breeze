@@ -1,0 +1,275 @@
+---
+layout: layouts/docs.njk
+title: "Prototyping Toolkit"
+description: "Build clickable prototypes with placeholder images, lorem text, wireframe mode, and skeleton loading — no external tools needed."
+toc: true
+currentPath: /docs/prototyping/
+permalink: /docs/prototyping/
+---
+
+{% set codeMockBasic %}<img data-mock width="400" height="300" alt="Hero banner">{% endset %}
+
+{% set codeMockPresets %}<img data-mock="hero" alt="Hero banner">
+<img data-mock="card" alt="Featured article">
+<img data-mock="avatar" alt="User photo">
+<img data-mock="product" alt="Product image">
+<img data-mock="thumbnail" alt="Gallery thumb">
+<img data-mock="logo" alt="Company logo">
+<img data-mock="og" alt="Social share image">
+<img data-mock="banner" alt="Ad banner">{% endset %}
+
+{% set codeMockPhoto %}<img data-mock="photo" width="400" height="300" alt="Product shot">
+
+<!-- Reproducible with data-seed -->
+<img data-mock="photo" width="400" height="300" data-seed="42" alt="Consistent photo">{% endset %}
+
+{% set codeMockVideo %}<video data-mock width="800" height="450" alt="Product demo"></video>
+<iframe data-mock width="600" height="400" title="Embedded map"></iframe>
+<canvas data-mock width="400" height="300" aria-label="Chart area"></canvas>{% endset %}
+
+{% set codeMockFigure %}<figure>
+  <img data-mock="card" alt="Team photo">
+  <figcaption>Our engineering team</figcaption>
+</figure>{% endset %}
+
+{% set codeMockProd %}<!-- Prototype -->
+<img data-mock width="400" height="300" alt="Hero banner">
+
+<!-- Production: swap src, remove data-mock -->
+<img src="/images/hero.webp" width="400" height="300" alt="Hero banner">{% endset %}
+
+{% set codeLoremBasic %}<p data-lorem></p>{% endset %}
+
+{% set codeLoremOptions %}<p data-lorem="50"></p>
+<p data-lorem="3 sentences"></p>
+<h2 data-lorem="heading"></h2>
+<ul data-lorem="5 items"></ul>{% endset %}
+
+{% set codeLoremI18n %}<p lang="ja" data-lorem></p>
+<p lang="ar" data-lorem></p>
+<p lang="ru" data-lorem></p>
+<p data-lorem="cjk"></p>{% endset %}
+
+{% set codeWireframe %}<html data-wireframe>
+<!-- "lo"  — scribble font, pure B&W -->
+<html data-wireframe="lo">
+<!-- "mid" — block font, dashed borders -->
+<html data-wireframe="mid">
+<!-- "hi"  — system fonts, subtle styling -->
+<html data-wireframe="hi">{% endset %}
+
+{% set codeWireframeJs %}// Toggle wireframe mode
+VanillaBreeze.wireframe.toggle();
+VanillaBreeze.wireframe.toggle('lo');
+
+// Set specific fidelity
+VanillaBreeze.wireframe.setFidelity('hi');
+
+// Query state
+VanillaBreeze.wireframe.isActive();
+VanillaBreeze.wireframe.getFidelity();
+
+// Label elements for annotation mode
+VanillaBreeze.wireframe.labelElements();{% endset %}
+
+{% set codeSkeleton %}<article data-loading="skeleton">
+  <h2>Loading title...</h2>
+  <p>Loading content paragraph...</p>
+  <img src="placeholder.svg" alt="" width="400" height="225">
+</article>{% endset %}
+
+{% set codeFaker %}# Generate fake product data
+node scripts/fake-content-helper.js --type product --count 5
+
+# Generate user testimonials
+node scripts/fake-content-helper.js --type testimonial --count 3{% endset %}
+
+{% set codeImageUrl %}// Programmatic placeholder URLs
+VanillaBreeze.mock.imageUrl({
+  service: 'picsum',
+  width: 400,
+  height: 300,
+  seed: 42
+});
+// → 'https://picsum.photos/seed/42/400/300'
+
+VanillaBreeze.mock.imageUrl({
+  service: 'placehold',
+  width: 400,
+  height: 300,
+  text: 'Hero'
+});
+// → 'https://placehold.co/400x300?text=Hero'{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>Vanilla Breeze includes everything you need for rapid HTML prototyping without leaving your editor or relying on external tools. The toolkit provides:</p>
+  <ul>
+    <li><strong><code>data-mock</code></strong> — placeholder images, video, iframes, and canvas</li>
+    <li><strong><code>data-lorem</code></strong> — placeholder text on any element with multi-language support</li>
+    <li><strong><code>data-wireframe</code></strong> — sketch-like wireframe mode with fidelity levels</li>
+    <li><strong><code>data-loading="skeleton"</code></strong> — skeleton loading states</li>
+    <li><strong>Fake content CLI</strong> — realistic test data from the command line</li>
+  </ul>
+  <p>All prototyping tools use <code>data-*</code> attributes on native HTML elements. Moving to production is a content swap — replace <code>src</code>, fill in real text, remove the data attribute. No HTML restructuring needed.</p>
+</section>
+
+<section>
+  <h2>Placeholder Media</h2>
+  <p>Add <code>data-mock</code> to <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;iframe&gt;</code>, or <code>&lt;canvas&gt;</code> to render a placeholder box with an X-pattern and optional label.</p>
+
+  <h3>Basic usage</h3>
+  <code-block language="html" show-lines label="Simple placeholder">{{ codeMockBasic | escape }}</code-block>
+  <section class="example">
+    <img data-mock width="400" height="300" alt="Hero banner">
+  </section>
+
+  <h3>Presets</h3>
+  <p>Named presets set aspect ratio and default dimensions via CSS. No <code>width</code>/<code>height</code> attributes needed.</p>
+  <code-block language="html" show-lines label="Preset gallery">{{ codeMockPresets | escape }}</code-block>
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <img data-mock="hero" alt="Hero banner">
+    <layout-grid data-layout-min="150px" data-layout-gap="m">
+      <img data-mock="card" alt="Featured article">
+      <img data-mock="avatar" alt="User photo">
+      <img data-mock="thumbnail" alt="Gallery thumb">
+      <img data-mock="logo" alt="Company logo">
+    </layout-grid>
+  </section>
+
+  <table>
+    <caption>Available presets</caption>
+    <thead>
+      <tr><th>Preset</th><th>Aspect ratio</th><th>Default width</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>hero</code></td><td>3:1</td><td>100%</td></tr>
+      <tr><td><code>card</code></td><td>16:9</td><td>400px</td></tr>
+      <tr><td><code>avatar</code></td><td>1:1</td><td>48px</td></tr>
+      <tr><td><code>product</code></td><td>1:1</td><td>400px</td></tr>
+      <tr><td><code>thumbnail</code></td><td>1:1</td><td>150px</td></tr>
+      <tr><td><code>logo</code></td><td>4:1</td><td>200px</td></tr>
+      <tr><td><code>og</code></td><td>1200:630</td><td>100%</td></tr>
+      <tr><td><code>banner</code></td><td>728:90</td><td>100%</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Photo service</h3>
+  <p>Use <code>data-mock="photo"</code> for realistic images from <a href="https://picsum.photos">picsum.photos</a>. Add <code>data-seed</code> for reproducible results.</p>
+  <code-block language="html" show-lines label="Photo placeholder">{{ codeMockPhoto | escape }}</code-block>
+
+  <h3>Video, iframe, and canvas</h3>
+  <p><code>data-mock</code> works on all media elements. Video gets a poster overlay, iframes get <code>srcdoc</code> with a centered label, and canvas elements draw the placeholder pattern directly.</p>
+  <code-block language="html" show-lines label="Other media types">{{ codeMockVideo | escape }}</code-block>
+
+  <h3>Inside figure</h3>
+  <p>Works inside <code>&lt;figure&gt;</code> and <code>&lt;picture&gt;</code> with no structural changes.</p>
+  <code-block language="html" show-lines label="Figure with mock">{{ codeMockFigure | escape }}</code-block>
+  <section class="example">
+    <figure>
+      <img data-mock="card" alt="Team photo">
+      <figcaption>Our engineering team</figcaption>
+    </figure>
+  </section>
+
+  <h3>Production transition</h3>
+  <p>Replace <code>src</code> and remove <code>data-mock</code>. The HTML structure stays identical.</p>
+  <code-block language="html" show-lines label="Prototype to production">{{ codeMockProd | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Placeholder Text</h2>
+  <p>Add <code>data-lorem</code> to any text-containing element to fill it with placeholder text.</p>
+
+  <h3>Basic usage</h3>
+  <code-block language="html" show-lines label="Default paragraph">{{ codeLoremBasic | escape }}</code-block>
+  <section class="example">
+    <p data-lorem></p>
+  </section>
+
+  <h3>Options</h3>
+  <code-block language="html" show-lines label="Word count, sentences, headings, lists">{{ codeLoremOptions | escape }}</code-block>
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <h2 data-lorem="heading"></h2>
+    <p data-lorem="3 sentences"></p>
+    <ul data-lorem="5 items"></ul>
+  </section>
+
+  <table>
+    <caption>data-lorem values</caption>
+    <thead>
+      <tr><th>Value</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><em>(empty)</em></td><td>~50 words of lorem ipsum</td></tr>
+      <tr><td><code>50</code></td><td>50 words</td></tr>
+      <tr><td><code>3 sentences</code></td><td>3 sentences</td></tr>
+      <tr><td><code>heading</code></td><td>5 words (heading-length)</td></tr>
+      <tr><td><code>5 items</code></td><td>5 list items (on <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code>)</td></tr>
+      <tr><td><code>cjk</code></td><td>CJK corpus (Chinese/Japanese/Korean)</td></tr>
+      <tr><td><code>arabic</code></td><td>Arabic corpus</td></tr>
+      <tr><td><code>cyrillic</code></td><td>Cyrillic corpus</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Multi-language support</h3>
+  <p>The corpus auto-detects from the <code>lang</code> attribute on the element or its ancestors.</p>
+  <code-block language="html" show-lines label="Non-Latin corpuses">{{ codeLoremI18n | escape }}</code-block>
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <p lang="ja" data-lorem></p>
+    <p lang="ar" data-lorem dir="rtl"></p>
+    <p lang="ru" data-lorem></p>
+  </section>
+</section>
+
+<section>
+  <h2>Wireframe Mode</h2>
+  <p>Add <code>data-wireframe</code> to <code>&lt;html&gt;</code> or any container to enable wireframe rendering. Requires the dev CSS bundle.</p>
+
+  <h3>Fidelity levels</h3>
+  <code-block language="html" show-lines label="Wireframe fidelity">{{ codeWireframe | escape }}</code-block>
+
+  <table>
+    <caption>Wireframe fidelity levels</caption>
+    <thead>
+      <tr><th>Level</th><th>Fonts</th><th>Borders</th><th>Colors</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>lo</code></td><td>Scribble (Redacted Script)</td><td>Rough dashed</td><td>Pure B&W</td></tr>
+      <tr><td><code>mid</code> (default)</td><td>Block (Flow Block)</td><td>Dashed</td><td>Grayscale</td></tr>
+      <tr><td><code>hi</code></td><td>System fonts</td><td>Subtle</td><td>Near-production</td></tr>
+      <tr><td><code>annotate</code></td><td>System fonts</td><td>Labeled</td><td>Grayscale + labels</td></tr>
+    </tbody>
+  </table>
+
+  <h3>JavaScript API</h3>
+  <p>The <code>VanillaBreeze.wireframe</code> object is available when the dev JS bundle is loaded.</p>
+  <code-block language="js" show-lines label="Wireframe JS API">{{ codeWireframeJs | escape }}</code-block>
+
+  <h3>Integration with prototyping tools</h3>
+  <p><code>data-mock</code> media adapts automatically to wireframe tokens. <code>data-lorem</code> text in <code>lo</code> fidelity gets abstract letter-spacing for a text-block appearance. No extra configuration needed.</p>
+</section>
+
+<section>
+  <h2>Skeleton Loading</h2>
+  <p>The <code>data-loading="skeleton"</code> attribute renders pulsing placeholder blocks for content that is loading. Cross-reference: <a href="/docs/attributes/hide-until-ready/">Loading states</a>.</p>
+  <code-block language="html" show-lines label="Skeleton loading">{{ codeSkeleton | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Fake Content CLI</h2>
+  <p>For realistic test data (products, users, testimonials), use the CLI helper powered by <a href="https://fakerjs.dev">Faker.js</a>.</p>
+  <code-block language="bash" show-lines label="Fake content CLI">{{ codeFaker | escape }}</code-block>
+  <p>Faker is a Node.js devDependency only — it is not included in the browser bundle.</p>
+</section>
+
+<section>
+  <h2>Image URL Utility</h2>
+  <p>For JS-driven scenarios (dynamic galleries, programmatic mockups), use the image URL utility available on the dev bundle.</p>
+  <code-block language="js" show-lines label="Image URL utility">{{ codeImageUrl | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Full Demo</h2>
+  <p>See all prototyping tools working together in the <a href="/demos/examples/demos/prototyping-toolkit.html">Prototyping Toolkit Demo</a>.</p>
+</section>

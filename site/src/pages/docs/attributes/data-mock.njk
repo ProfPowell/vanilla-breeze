@@ -1,0 +1,216 @@
+---
+layout: layouts/attribute.njk
+title: "data-mock"
+description: "Placeholder media via data attributes. Add data-mock to img, video, iframe, or canvas for instant placeholder boxes with X-pattern, presets, and photo service integration."
+attributeName: data-mock
+category: prototyping
+attributeType: data
+currentPath: /docs/attributes/data-mock/
+permalink: /docs/attributes/data-mock/
+---
+
+{% set codeBasic %}<img data-mock width="400" height="300" alt="Hero banner">{% endset %}
+
+{% set codePresets %}<img data-mock="hero" alt="Hero banner">
+<img data-mock="card" alt="Featured article">
+<img data-mock="avatar" alt="User photo">
+<img data-mock="product" alt="Product image">
+<img data-mock="thumbnail" alt="Gallery thumb">
+<img data-mock="logo" alt="Company logo">{% endset %}
+
+{% set codePhoto %}<img data-mock="photo" width="400" height="300" alt="Product shot">
+
+<!-- Reproducible with data-seed -->
+<img data-mock="photo" width="400" height="300" data-seed="42" alt="Consistent photo">{% endset %}
+
+{% set codePlacehold %}<img data-mock="placehold" width="400" height="300" alt="Labeled placeholder">{% endset %}
+
+{% set codeVideo %}<video data-mock width="800" height="450" alt="Product demo"></video>{% endset %}
+
+{% set codeIframe %}<iframe data-mock width="600" height="400" title="Embedded map"></iframe>{% endset %}
+
+{% set codeCanvas %}<canvas data-mock width="400" height="300" aria-label="Chart area"></canvas>{% endset %}
+
+{% set codeFigure %}<figure>
+  <img data-mock="card" alt="Team photo">
+  <figcaption>Our engineering team</figcaption>
+</figure>{% endset %}
+
+{% set codeTransition %}<!-- Prototype -->
+<img data-mock width="400" height="300" alt="Hero banner">
+
+<!-- Production: replace src, remove data-mock -->
+<img src="/images/hero.webp" width="400" height="300" alt="Hero banner">{% endset %}
+
+{% set codeCss %}/* Override placeholder colors */
+img[data-mock] {
+  background-color: oklch(95% 0.02 250);
+  border-color: oklch(80% 0.02 250);
+}{% endset %}
+
+{% set codeDynamic %}// Dynamically added mock elements are auto-enhanced via MutationObserver
+const img = document.createElement('img');
+img.dataset.mock = 'card';
+img.alt = 'Dynamic card';
+document.body.appendChild(img);
+// img gets placeholder SVG automatically{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-mock</code> attribute turns native media elements into placeholder boxes. CSS renders the visual (gray box, X-pattern) and JS generates a valid <code>src</code> to keep the element well-formed. Moving to production means replacing <code>src</code> and removing <code>data-mock</code> &mdash; no HTML restructuring.</p>
+
+  <section class="example">
+    <img data-mock width="400" height="300" alt="Hero banner">
+  </section>
+
+  <code-block language="html" show-lines label="Basic placeholder image">{{ codeBasic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <ol>
+    <li><strong>CSS</strong> applies a gray background, dashed border, and diagonal X-pattern via gradients</li>
+    <li><strong>JS</strong> generates an inline SVG data URI as <code>src</code> (for <code>&lt;img&gt;</code>), <code>poster</code> (for <code>&lt;video&gt;</code>), <code>srcdoc</code> (for <code>&lt;iframe&gt;</code>), or draws on <code>&lt;canvas&gt;</code></li>
+    <li>The label text comes from the <code>alt</code> attribute (images), <code>title</code> (iframes), or <code>aria-label</code> (canvas)</li>
+    <li>Named presets set aspect ratio and default dimensions via CSS &mdash; no <code>width</code>/<code>height</code> attributes needed</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-mock</code></td>
+        <td>string</td>
+        <td>Preset name (<code>hero</code>, <code>card</code>, <code>avatar</code>, etc.) or empty for generic placeholder. Special values: <code>photo</code> (picsum), <code>placehold</code> (placehold.co).</td>
+      </tr>
+      <tr>
+        <td><code>data-seed</code></td>
+        <td>string</td>
+        <td>Reproducible seed for the <code>photo</code> preset (picsum.photos). Same seed always returns the same image.</td>
+      </tr>
+      <tr>
+        <td><code>data-mock-init</code></td>
+        <td>boolean</td>
+        <td>Set automatically to prevent double-binding. Do not set manually.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Presets</h2>
+  <p>Named presets set <code>aspect-ratio</code> and a default <code>inline-size</code> via CSS. Explicit <code>width</code>/<code>height</code> attributes override the JS dimensions used for SVG generation.</p>
+
+  <table>
+    <thead>
+      <tr><th>Preset</th><th>Aspect Ratio</th><th>Default Width</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>hero</code></td><td>3:1</td><td>100%</td><td>Hero banners</td></tr>
+      <tr><td><code>card</code></td><td>16:9</td><td>400px</td><td>Blog/article cards</td></tr>
+      <tr><td><code>avatar</code></td><td>1:1</td><td>48px</td><td>User avatars (rounded)</td></tr>
+      <tr><td><code>product</code></td><td>1:1</td><td>400px</td><td>Product images</td></tr>
+      <tr><td><code>thumbnail</code></td><td>1:1</td><td>150px</td><td>Grid thumbnails</td></tr>
+      <tr><td><code>logo</code></td><td>4:1</td><td>200px</td><td>Brand logos</td></tr>
+      <tr><td><code>og</code></td><td>1200:630</td><td>100%</td><td>Open Graph images</td></tr>
+      <tr><td><code>banner</code></td><td>728:90</td><td>100%</td><td>Ad banners</td></tr>
+    </tbody>
+  </table>
+
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <img data-mock="hero" alt="Hero banner">
+    <layout-grid data-layout-min="150px" data-layout-gap="m">
+      <img data-mock="card" alt="Card image">
+      <img data-mock="avatar" alt="User avatar">
+      <img data-mock="thumbnail" alt="Thumbnail">
+      <img data-mock="logo" alt="Logo">
+    </layout-grid>
+  </section>
+
+  <code-block language="html" show-lines label="Preset examples">{{ codePresets | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Photo Service</h2>
+  <p>Use <code>data-mock="photo"</code> for realistic placeholder photos from <a href="https://picsum.photos">picsum.photos</a>. The image dimensions come from <code>width</code> and <code>height</code> attributes.</p>
+  <p>Add <code>data-seed</code> for reproducible results &mdash; the same seed always returns the same photo.</p>
+
+  <code-block language="html" show-lines label="Photo from picsum">{{ codePhoto | escape }}</code-block>
+
+  <h3>Placehold.co</h3>
+  <p>Use <code>data-mock="placehold"</code> for labeled placeholder images from <a href="https://placehold.co">placehold.co</a>. The <code>alt</code> text is used as the label.</p>
+  <code-block language="html" show-lines label="Placehold.co integration">{{ codePlacehold | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Video, Iframe, and Canvas</h2>
+  <p><code>data-mock</code> works on all media elements.</p>
+
+  <h3>Video</h3>
+  <p>Gets a <code>poster</code> attribute with an SVG placeholder showing a play icon and label. Defaults to 16:9 aspect ratio.</p>
+  <code-block language="html" show-lines label="Video placeholder">{{ codeVideo | escape }}</code-block>
+
+  <h3>Iframe</h3>
+  <p>Gets a <code>srcdoc</code> with a minimal HTML page showing a centered label. Defaults to 16:9 with min-height 300px.</p>
+  <code-block language="html" show-lines label="Iframe placeholder">{{ codeIframe | escape }}</code-block>
+
+  <h3>Canvas</h3>
+  <p>Draws the X-pattern and label directly on the canvas context. Defaults to 4:3 aspect ratio.</p>
+  <code-block language="html" show-lines label="Canvas placeholder">{{ codeCanvas | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Inside Figure</h2>
+  <p>Works inside <code>&lt;figure&gt;</code> and <code>&lt;picture&gt;</code> with no structural changes needed.</p>
+
+  <section class="example">
+    <figure>
+      <img data-mock="card" alt="Team photo">
+      <figcaption>Our engineering team</figcaption>
+    </figure>
+  </section>
+
+  <code-block language="html" show-lines label="Figure with mock image">{{ codeFigure | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Production Transition</h2>
+  <p>Moving to production requires no HTML restructuring. Replace <code>src</code> and remove <code>data-mock</code>.</p>
+  <code-block language="html" show-lines label="Prototype to production">{{ codeTransition | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p>The placeholder colors use design tokens (<code>--color-gray-200</code>, <code>--color-gray-400</code>). Override them with element-scoped CSS.</p>
+  <code-block language="css" show-lines label="Custom placeholder colors">{{ codeCss | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Wireframe Integration</h2>
+  <p>When inside a <code>[data-wireframe]</code> container, mock media automatically adapts to wireframe tokens (<code>--wireframe-fill</code>, <code>--wireframe-stroke</code>, <code>--wireframe-border</code>). No extra configuration needed.</p>
+</section>
+
+<section>
+  <h2>Dynamic Elements</h2>
+  <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver.</p>
+  <code-block language="javascript" show-lines label="Dynamic mock elements">{{ codeDynamic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Always include <code>alt</code> text on images &mdash; it doubles as the placeholder label</li>
+    <li>Use <code>title</code> on iframes and <code>aria-label</code> on canvas for labeling</li>
+    <li>The generated SVG includes <code>role="img"</code> and <code>aria-label</code></li>
+    <li>Placeholder images get <code>loading="lazy"</code> for photo/placehold variants</li>
+  </ul>
+</section>

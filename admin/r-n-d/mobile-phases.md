@@ -213,7 +213,7 @@ Strategy Stage 6. Installable web app capabilities.
 **Reason**: VB's intrinsic layouts (`sidebar`, `switcher`) already achieve container-responsive behavior without container queries. The `container-type: inline-size` on `main/article/section/aside` (in layout-attributes.css) provides containment. Adding `@container` rules would be useful for card-level responsiveness but is a separate concern from mobile strategy.
 
 ### Web Share API integration
-**Reason**: Useful but orthogonal to mobile layout/UX strategy. Would be a standalone `<share-button>` web component if pursued.
+**Reason**: Useful but orthogonal to mobile layout/UX strategy. Would be a standalone `<share-button>` web component if pursued.  This should absolutely be implemented as a feature.
 
 ### Vibration patterns beyond haptic feedback
 **Reason**: The Vibration API is Android-only and considered a novelty. The brief haptic taps (8-15ms) for gesture feedback are the only defensible use case. Longer patterns feel gimmicky and drain battery.

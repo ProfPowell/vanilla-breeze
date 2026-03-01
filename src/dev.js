@@ -7,3 +7,5 @@
  */
 
 import './lib/debug-content-model.js';
+import './lib/wireframe.js';
+import './lib/mock-image.js';

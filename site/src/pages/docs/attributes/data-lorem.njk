@@ -1,0 +1,219 @@
+---
+layout: layouts/attribute.njk
+title: "data-lorem"
+description: "Placeholder text via data attributes. Fill any element with lorem ipsum, specify word counts, sentence counts, or list items. Auto-detects language for CJK, Arabic, and Cyrillic corpuses."
+attributeName: data-lorem
+category: prototyping
+attributeType: data
+currentPath: /docs/attributes/data-lorem/
+permalink: /docs/attributes/data-lorem/
+---
+
+{% set codeBasic %}<p data-lorem></p>{% endset %}
+
+{% set codeWords %}<p data-lorem="50"></p>{% endset %}
+
+{% set codeSentences %}<p data-lorem="3 sentences"></p>{% endset %}
+
+{% set codeHeading %}<h2 data-lorem="heading"></h2>{% endset %}
+
+{% set codeItems %}<ul data-lorem="5 items"></ul>{% endset %}
+
+{% set codeI18n %}<!-- Auto-detected from lang attribute -->
+<p lang="ja" data-lorem></p>
+<p lang="ar" data-lorem dir="rtl"></p>
+<p lang="ru" data-lorem></p>
+
+<!-- Explicit corpus override -->
+<p data-lorem="cjk"></p>
+<p data-lorem="arabic"></p>
+<p data-lorem="cyrillic"></p>{% endset %}
+
+{% set codeTransition %}<!-- Prototype -->
+<p data-lorem="3 sentences"></p>
+
+<!-- Production: replace content, remove data-lorem -->
+<p>Our platform helps teams ship faster with modern tooling.</p>{% endset %}
+
+{% set codeDynamic %}// Dynamically added elements are auto-enhanced via MutationObserver
+const p = document.createElement('p');
+p.dataset.lorem = '3 sentences';
+document.body.appendChild(p);
+// p is filled with lorem text automatically{% endset %}
+
+{% set codeWireframe %}<!-- In lo-fidelity wireframe, lorem text gets abstract appearance -->
+<html data-wireframe="lo">
+  <body>
+    <p data-lorem></p>
+    <!-- Text renders with extra letter-spacing and reduced opacity -->
+  </body>
+</html>{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-lorem</code> attribute fills any text-containing element with placeholder text. Built-in corpuses for Latin, CJK, Arabic, and Cyrillic keep the browser bundle lean (~4KB) without requiring external dependencies.</p>
+
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <p data-lorem></p>
+  </section>
+
+  <code-block language="html" show-lines label="Default paragraph">{{ codeBasic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <ol>
+    <li>On <code>DOMContentLoaded</code>, finds all elements with <code>data-lorem</code></li>
+    <li>Parses the attribute value to determine word count, sentence count, or mode</li>
+    <li>Detects the appropriate corpus from the element's <code>lang</code> attribute (or its ancestors)</li>
+    <li>Fills the element's <code>textContent</code> (or <code>innerHTML</code> for list items)</li>
+    <li>Marks the element with <code>data-lorem-filled</code> and <code>translate="no"</code></li>
+    <li>A MutationObserver watches for dynamically added elements</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-lorem</code></td>
+        <td>string</td>
+        <td>Controls output. See Values table below.</td>
+      </tr>
+      <tr>
+        <td><code>data-lorem-filled</code></td>
+        <td>boolean</td>
+        <td>Set automatically after content is injected. Used as CSS hook for wireframe integration.</td>
+      </tr>
+      <tr>
+        <td><code>data-lorem-init</code></td>
+        <td>boolean</td>
+        <td>Set automatically to prevent double-binding. Do not set manually.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Result</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><em>(empty)</em></td><td>~50 words of lorem ipsum</td><td><code>&lt;p data-lorem&gt;&lt;/p&gt;</code></td></tr>
+      <tr><td><code>50</code></td><td>50 words</td><td><code>&lt;p data-lorem="50"&gt;&lt;/p&gt;</code></td></tr>
+      <tr><td><code>3 sentences</code></td><td>3 full sentences</td><td><code>&lt;p data-lorem="3 sentences"&gt;&lt;/p&gt;</code></td></tr>
+      <tr><td><code>heading</code></td><td>5 words (heading-length)</td><td><code>&lt;h2 data-lorem="heading"&gt;&lt;/h2&gt;</code></td></tr>
+      <tr><td><code>5 items</code></td><td>5 <code>&lt;li&gt;</code> elements (on <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code>)</td><td><code>&lt;ul data-lorem="5 items"&gt;&lt;/ul&gt;</code></td></tr>
+      <tr><td><code>cjk</code></td><td>CJK placeholder corpus</td><td><code>&lt;p data-lorem="cjk"&gt;&lt;/p&gt;</code></td></tr>
+      <tr><td><code>arabic</code></td><td>Arabic placeholder corpus</td><td><code>&lt;p data-lorem="arabic"&gt;&lt;/p&gt;</code></td></tr>
+      <tr><td><code>cyrillic</code></td><td>Cyrillic placeholder corpus</td><td><code>&lt;p data-lorem="cyrillic"&gt;&lt;/p&gt;</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Word Count</h2>
+  <p>Pass a number to get that many words.</p>
+
+  <section class="example">
+    <p data-lorem="20"></p>
+  </section>
+
+  <code-block language="html" show-lines label="Word count">{{ codeWords | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Sentence Count</h2>
+  <p>Use <code>N sentences</code> for full sentences (singular <code>sentence</code> also works).</p>
+
+  <section class="example">
+    <p data-lorem="3 sentences"></p>
+  </section>
+
+  <code-block language="html" show-lines label="Sentence count">{{ codeSentences | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Headings</h2>
+  <p>Use <code>heading</code> for short, heading-length text (5 words).</p>
+
+  <section class="example">
+    <h2 data-lorem="heading"></h2>
+  </section>
+
+  <code-block language="html" show-lines label="Heading text">{{ codeHeading | escape }}</code-block>
+</section>
+
+<section>
+  <h2>List Items</h2>
+  <p>On <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code>, use <code>N items</code> to generate <code>&lt;li&gt;</code> elements.</p>
+
+  <section class="example">
+    <ul data-lorem="5 items"></ul>
+  </section>
+
+  <code-block language="html" show-lines label="List items">{{ codeItems | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Multi-language Support</h2>
+  <p>The corpus auto-detects from the <code>lang</code> attribute on the element or any ancestor. You can also force a specific corpus by name.</p>
+
+  <table>
+    <caption>Language detection</caption>
+    <thead>
+      <tr><th>Language codes</th><th>Corpus</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>ja</code>, <code>zh</code>, <code>ko</code></td><td>CJK (Chinese/Japanese/Korean)</td></tr>
+      <tr><td><code>ar</code>, <code>fa</code>, <code>ur</code>, <code>he</code></td><td>Arabic</td></tr>
+      <tr><td><code>ru</code>, <code>uk</code>, <code>bg</code>, <code>sr</code></td><td>Cyrillic</td></tr>
+      <tr><td><em>any other / none</em></td><td>Latin (default)</td></tr>
+    </tbody>
+  </table>
+
+  <section class="example" data-layout="stack" data-layout-gap="m">
+    <p lang="ja" data-lorem></p>
+    <p lang="ar" data-lorem dir="rtl"></p>
+    <p lang="ru" data-lorem></p>
+  </section>
+
+  <code-block language="html" show-lines label="Multi-language corpuses">{{ codeI18n | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Production Transition</h2>
+  <p>Replace the content and remove <code>data-lorem</code>. No structural changes needed.</p>
+  <code-block language="html" show-lines label="Prototype to production">{{ codeTransition | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Wireframe Integration</h2>
+  <p>In <code>data-wireframe="lo"</code> mode, elements with <code>data-lorem-filled</code> get abstract text-block styling: extra letter-spacing and reduced opacity.</p>
+  <code-block language="html" show-lines label="Lo-fi wireframe appearance">{{ codeWireframe | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Dynamic Elements</h2>
+  <p>Elements added to the DOM after page load are automatically filled via a MutationObserver.</p>
+  <code-block language="javascript" show-lines label="Dynamic lorem elements">{{ codeDynamic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Sets <code>translate="no"</code> on filled elements so translation tools skip placeholder text</li>
+    <li>Does <strong>not</strong> set <code>aria-hidden</code> &mdash; screen readers should still read placeholder content during testing to verify document structure</li>
+    <li>Filled list items use semantic <code>&lt;li&gt;</code> elements</li>
+  </ul>
+</section>

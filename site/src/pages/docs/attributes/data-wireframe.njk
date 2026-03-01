@@ -1,0 +1,269 @@
+---
+layout: layouts/attribute.njk
+title: "data-wireframe"
+description: "Wireframe mode for rapid HTML prototyping. Apply sketch-like rendering with four fidelity levels, dark mode support, and element labeling via a single data attribute."
+attributeName: data-wireframe
+category: prototyping
+attributeType: data
+currentPath: /docs/attributes/data-wireframe/
+permalink: /docs/attributes/data-wireframe/
+---
+
+{% set codeBasic %}<!-- Apply to html for full-page wireframe -->
+<html data-wireframe>
+
+<!-- Or scope to a container -->
+<section data-wireframe>
+  <h2>This section renders as a wireframe</h2>
+  <p>Rest of the page is normal.</p>
+</section>{% endset %}
+
+{% set codeFidelity %}<!-- Lo: scribble font, rough borders, pure B&W -->
+<html data-wireframe="lo">
+
+<!-- Mid: block font, dashed borders, grayscale (default) -->
+<html data-wireframe="mid">
+<html data-wireframe>
+
+<!-- Hi: system fonts, subtle styling, near-production -->
+<html data-wireframe="hi">
+
+<!-- Annotate: element labels visible -->
+<html data-wireframe="annotate">{% endset %}
+
+{% set codeToggle %}{% raw %}// Toggle wireframe on/off
+VanillaBreeze.wireframe.toggle();
+
+// Toggle with specific fidelity
+VanillaBreeze.wireframe.toggle('lo');
+
+// Set fidelity directly
+VanillaBreeze.wireframe.setFidelity('hi');
+
+// Remove wireframe mode
+VanillaBreeze.wireframe.setFidelity('');{% endraw %}{% endset %}
+
+{% set codeLabel %}{% raw %}// Auto-label all elements that have data-wf-label
+VanillaBreeze.wireframe.labelElements();
+
+// Manually label an element
+VanillaBreeze.wireframe.label('.hero', 'Hero Banner');
+VanillaBreeze.wireframe.label(element, 'Primary Navigation');{% endraw %}{% endset %}
+
+{% set codeQuery %}{% raw %}VanillaBreeze.wireframe.isActive();
+// → true/false
+
+VanillaBreeze.wireframe.getFidelity();
+// → 'lo' | 'mid' | 'hi' | 'annotate' | null{% endraw %}{% endset %}
+
+{% set codeWfLabel %}<section data-wf-label="Hero Section">
+  <h1>Page Title</h1>
+  <p>Subtitle text here.</p>
+</section>
+
+<nav data-wf-label="Primary Navigation">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+</nav>{% endset %}
+
+{% set codeDark %}<!-- Explicit dark mode -->
+<html data-wireframe data-mode="dark">
+
+<!-- Auto dark mode via system preference works too -->{% endset %}
+
+{% set codeTokens %}{% raw %}/* Available wireframe tokens */
+[data-wireframe] {
+  --wireframe-stroke: oklch(30% 0 0);
+  --wireframe-fill: oklch(98% 0 0);
+  --wireframe-text: oklch(15% 0 0);
+  --wireframe-muted: oklch(50% 0 0);
+  --wireframe-accent: oklch(90% 0 0);
+  --wireframe-border: 2px dashed var(--wireframe-stroke);
+  --wireframe-label-bg: var(--wireframe-stroke);
+  --wireframe-label-color: var(--wireframe-fill);
+}{% endraw %}{% endset %}
+
+{% set codeBundleSetup %}<!-- Main CSS (always needed) -->
+<link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+
+<!-- Dev CSS (adds wireframe, debug tools) -->
+<link rel="stylesheet" href="/cdn/vanilla-breeze-dev.css">
+
+<!-- Dev JS (adds VanillaBreeze.wireframe API) -->
+<script type="module" src="/cdn/vanilla-breeze-dev.js"></script>{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-wireframe</code> attribute converts any page or container into a sketch-like wireframe. It applies grayscale rendering, dashed borders, and hand-drawn fonts to help focus on layout and structure during prototyping.</p>
+  <p>Wireframe mode requires the dev CSS bundle. The JS API requires the dev JS bundle.</p>
+
+  <code-block language="html" show-lines label="Bundle setup">{{ codeBundleSetup | escape }}</code-block>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <ol>
+    <li>Add <code>data-wireframe</code> to <code>&lt;html&gt;</code> for full-page wireframe, or to any container for scoped wireframing</li>
+    <li>CSS applies a grayscale filter, replaces fonts with sketch fonts, converts borders to dashed lines, and removes shadows</li>
+    <li>Four fidelity levels control how abstract the rendering is</li>
+    <li>Dark mode is supported via <code>data-mode="dark"</code> or system preference</li>
+  </ol>
+
+  <code-block language="html" show-lines label="Basic wireframe">{{ codeBasic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-wireframe</code></td>
+        <td>string</td>
+        <td>Fidelity level: <code>lo</code>, <code>mid</code>, <code>hi</code>, <code>annotate</code>, or empty (defaults to mid behavior).</td>
+      </tr>
+      <tr>
+        <td><code>data-wf-label</code></td>
+        <td>string</td>
+        <td>Element label text shown in annotate mode via <code>::before</code> pseudo-element.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Fidelity Levels</h2>
+  <table>
+    <thead>
+      <tr><th>Level</th><th>Fonts</th><th>Borders</th><th>Colors</th><th>Best For</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>lo</code></td>
+        <td>Redacted Script (scribble)</td>
+        <td>Rough dashed</td>
+        <td>Pure B&W</td>
+        <td>Early concept sketches</td>
+      </tr>
+      <tr>
+        <td><code>mid</code> (default)</td>
+        <td>Flow Block</td>
+        <td>Dashed</td>
+        <td>Grayscale</td>
+        <td>Layout review</td>
+      </tr>
+      <tr>
+        <td><code>hi</code></td>
+        <td>System fonts</td>
+        <td>Subtle</td>
+        <td>Near-production</td>
+        <td>Content review, stakeholder demos</td>
+      </tr>
+      <tr>
+        <td><code>annotate</code></td>
+        <td>System fonts</td>
+        <td>Labeled</td>
+        <td>Grayscale + labels</td>
+        <td>Design specs, developer handoff</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Fidelity levels">{{ codeFidelity | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Element Labels</h2>
+  <p>Add <code>data-wf-label</code> to any element to show a label badge in annotate mode. The JS API can also auto-label elements using their <code>alt</code> text (images) or explicit labels.</p>
+
+  <code-block language="html" show-lines label="Element labels">{{ codeWfLabel | escape }}</code-block>
+  <code-block language="javascript" show-lines label="Labeling API">{{ codeLabel | escape }}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>The <code>VanillaBreeze.wireframe</code> object provides programmatic control. Available when the dev JS bundle is loaded.</p>
+
+  <h3>Toggle</h3>
+  <code-block language="javascript" show-lines label="Toggle wireframe">{{ codeToggle | escape }}</code-block>
+
+  <h3>Query State</h3>
+  <code-block language="javascript" show-lines label="Query wireframe state">{{ codeQuery | escape }}</code-block>
+
+  <table class="props-table">
+    <caption>API Methods</caption>
+    <thead>
+      <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>toggle(level?)</code></td>
+        <td><code>boolean</code></td>
+        <td>Toggle wireframe on/off. Returns whether now enabled.</td>
+      </tr>
+      <tr>
+        <td><code>setFidelity(level)</code></td>
+        <td><code>void</code></td>
+        <td>Set fidelity. Pass empty string to disable.</td>
+      </tr>
+      <tr>
+        <td><code>isActive()</code></td>
+        <td><code>boolean</code></td>
+        <td>Check if wireframe mode is active.</td>
+      </tr>
+      <tr>
+        <td><code>getFidelity()</code></td>
+        <td><code>string|null</code></td>
+        <td>Get current fidelity level.</td>
+      </tr>
+      <tr>
+        <td><code>labelElements()</code></td>
+        <td><code>void</code></td>
+        <td>Auto-label elements with <code>data-wf-label</code> and images with <code>alt</code> text.</td>
+      </tr>
+      <tr>
+        <td><code>label(target, text)</code></td>
+        <td><code>void</code></td>
+        <td>Label a specific element or CSS selector.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Dark Mode</h2>
+  <p>Wireframe tokens automatically invert for dark mode, either via the <code>data-mode="dark"</code> attribute or <code>prefers-color-scheme: dark</code> media query.</p>
+  <code-block language="html" show-lines label="Dark mode wireframe">{{ codeDark | escape }}</code-block>
+</section>
+
+<section>
+  <h2>CSS Tokens</h2>
+  <p>Wireframe mode exposes custom properties you can use or override in your own styles.</p>
+  <code-block language="css" show-lines label="Wireframe tokens">{{ codeTokens | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Integration with Prototyping Tools</h2>
+  <p>Wireframe mode works seamlessly with other prototyping attributes:</p>
+  <ul>
+    <li><strong><a href="/docs/attributes/data-mock/">data-mock</a></strong> &mdash; placeholder media adapts to wireframe tokens (fill, stroke, border)</li>
+    <li><strong><a href="/docs/attributes/data-lorem/">data-lorem</a></strong> &mdash; in <code>lo</code> fidelity, placeholder text gets abstract letter-spacing and reduced opacity</li>
+  </ul>
+  <p>See the <a href="/docs/prototyping/">Prototyping Toolkit</a> page for the full picture.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Wireframe mode is a visual-only transformation &mdash; the DOM structure and ARIA attributes are preserved</li>
+    <li>Screen readers are unaffected by wireframe rendering</li>
+    <li>Element labels use <code>::before</code> pseudo-elements, not injected DOM nodes</li>
+    <li>The wireframe indicator badge at the bottom-right corner has <code>pointer-events: none</code></li>
+  </ul>
+</section>

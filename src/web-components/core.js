@@ -53,3 +53,5 @@ import '../utils/reveal-init.js';
 import '../utils/highlight-init.js';
 import '../utils/select-all-init.js';
 import '../utils/math-init.js';
+import '../utils/mock-init.js';
+import '../utils/lorem-init.js';
