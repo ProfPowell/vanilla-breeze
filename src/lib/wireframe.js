@@ -142,5 +142,3 @@ if (typeof window !== 'undefined') {
   window.VanillaBreeze = window.VanillaBreeze || {};
   window.VanillaBreeze.wireframe = wireframe;
 }
-
-export default wireframe;

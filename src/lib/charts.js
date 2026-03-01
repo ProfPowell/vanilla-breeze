@@ -12,12 +12,12 @@
 export const charts = {
   /**
    * Create chart from data array
-   * @param {Object} options - Chart configuration
+   * @param {object} options - Chart configuration
    * @param {string|Element} options.container - CSS selector or DOM element
    * @param {string} options.type - Chart type (bar, column, line, area, pie)
    * @param {string} options.caption - Chart title
    * @param {Array} options.data - Data array [{label, value, displayValue?, series?}]
-   * @param {Object} options.modifiers - Optional modifiers {labels, legend, tooltip, gap, size}
+   * @param {object} options.modifiers - Optional modifiers {labels, legend, tooltip, gap, size}
    * @returns {HTMLTableElement|null} The created chart element
    */
   create({ container, type = 'bar', caption, data, modifiers = {} }) {
@@ -101,7 +101,11 @@ export const charts = {
 
   /**
    * Create pie chart with calculated conic-gradient segments
-   * @param {Object} options - Chart configuration
+   * @param {object} options - Chart configuration
+   * @param {string|Element} options.container - CSS selector or DOM element
+   * @param {string} options.caption - Chart title
+   * @param {Array} options.data - Data array [{label, value}]
+   * @param {object} options.modifiers - Optional modifiers
    * @returns {HTMLTableElement|null} The created chart element
    */
   createPie({ container, caption, data, modifiers = {} }) {
@@ -161,7 +165,7 @@ export const charts = {
       td.style.setProperty('--value', percentage.toFixed(4));
       td.style.setProperty('--start', startAngle.toFixed(4));
       td.textContent = item.displayValue ?? `${Math.round(percentage * 100)}%`;
-      td.dataset.series = seriesNum;
+      td.dataset.series = String(seriesNum);
 
       tr.appendChild(th);
       tr.appendChild(td);
@@ -319,7 +323,7 @@ export const charts = {
   /**
    * Create animated entry effect
    * @param {string|Element} chartSelector - Chart selector or element
-   * @param {Object} options - Animation options {duration, delay, stagger}
+   * @param {object} options - Animation options {duration, delay, stagger}
    */
   animate(chartSelector, options = {}) {
     const chart = typeof chartSelector === 'string'
@@ -357,7 +361,7 @@ export const charts = {
   /**
    * Observe chart for viewport entry and animate
    * @param {string|Element} chartSelector - Chart selector or element
-   * @param {Object} options - IntersectionObserver options
+   * @param {object} options - IntersectionObserver options
    */
   animateOnScroll(chartSelector, options = {}) {
     const chart = typeof chartSelector === 'string'
@@ -387,5 +391,3 @@ if (typeof window !== 'undefined') {
   window.VanillaBreeze = window.VanillaBreeze || {};
   window.VanillaBreeze.charts = charts;
 }
-
-export default charts;

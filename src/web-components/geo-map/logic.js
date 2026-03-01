@@ -15,7 +15,7 @@ function markerSvg(color) {
 
 /**
  * @class GeoMap
- * @extends HTMLElement
+ * @augments HTMLElement
  * @description A zero-dependency map component using OSM tiles.
  * Renders a static tile grid centered on the given coordinates
  * with an optional marker pin and caption slot.

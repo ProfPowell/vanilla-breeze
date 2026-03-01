@@ -14,7 +14,7 @@
 
 /**
  * Generate a placeholder image URL
- * @param {Object} options
+ * @param {object} options
  * @param {'picsum'|'placehold'} [options.service='picsum'] - Image service
  * @param {number} [options.width=400] - Image width
  * @param {number} [options.height=300] - Image height

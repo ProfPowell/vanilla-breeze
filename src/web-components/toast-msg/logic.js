@@ -34,7 +34,7 @@ class ToastMsg extends HTMLElement {
 
   /**
    * Show a toast notification
-   * @param {Object} options - Toast options
+   * @param {object} options - Toast options
    * @param {string} options.message - The message to display
    * @param {string} [options.variant] - Variant: 'info', 'success', 'warning', 'error'
    * @param {number} [options.duration] - Auto-dismiss duration in ms (0 = no auto-dismiss)

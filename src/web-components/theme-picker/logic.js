@@ -435,7 +435,7 @@ class ThemePicker extends HTMLElement {
 
   /**
    * Load extension preferences from localStorage
-   * @returns {Object}
+   * @returns {object}
    */
   #loadExtensions() {
     try {

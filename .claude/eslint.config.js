@@ -1,5 +1,8 @@
+import jsdoc from "eslint-plugin-jsdoc";
+
 export default [
   {
+    plugins: { jsdoc },
     rules: {
       "no-var": "error",
       "no-restricted-exports": ["error", {
@@ -10,7 +13,15 @@ export default [
           "namedFrom": false,
           "namespaceFrom": false
         }
-      }]
+      }],
+
+      // JSDoc quality rules — complement tsc --noEmit (which catches type errors)
+      "jsdoc/check-param-names": "warn",
+      "jsdoc/check-tag-names": ["warn", {
+        "definedTags": ["attr"]
+      }],
+      "jsdoc/check-types": "warn",
+      "jsdoc/empty-tags": "warn",
     }
   }
 ];

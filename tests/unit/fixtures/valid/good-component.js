@@ -1,6 +1,6 @@
 /**
  * @class GoodComponent
- * @extends HTMLElement
+ * @augments HTMLElement
  * @description A well-structured test component demonstrating proper patterns
  * @fires good-component-update - Fired when the component state changes
  */
@@ -26,8 +26,8 @@ class GoodComponent extends HTMLElement {
     }
 
     /**
-     * @private
      * Renders the component
+     * @private
      */
     render() {
         const value = this.getAttribute('value') || '';

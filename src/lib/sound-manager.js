@@ -236,5 +236,3 @@ export const SoundManager = {
     };
   }
 };
-
-export default SoundManager;

@@ -256,5 +256,3 @@ export const ThemeManager = {
     });
   }
 };
-
-export default ThemeManager;

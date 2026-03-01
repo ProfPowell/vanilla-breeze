@@ -8,7 +8,7 @@ const iconCache = new Map();
 
 /**
  * @class IconWc
- * @extends HTMLElement
+ * @augments HTMLElement
  * @description A lightweight icon component that loads SVG icons from local files
  *
  * @example
@@ -54,7 +54,7 @@ class IconWc extends HTMLElement {
     }
 
     /**
-     * @constructor
+     * @class
      */
     constructor() {
         super();
