@@ -366,13 +366,14 @@ class EmojiPicker extends HTMLElement {
     if (!target) return;
 
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-      const start = target.selectionStart ?? target.value.length;
-      const end = target.selectionEnd ?? start;
-      const before = target.value.slice(0, start);
-      const after = target.value.slice(end);
-      target.value = before + entry.emoji + after;
+      const input = /** @type {HTMLInputElement} */ (target);
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? start;
+      const before = input.value.slice(0, start);
+      const after = input.value.slice(end);
+      input.value = before + entry.emoji + after;
       const newPos = start + entry.emoji.length;
-      target.setSelectionRange(newPos, newPos);
+      input.setSelectionRange(newPos, newPos);
       target.dispatchEvent(new Event('input', { bubbles: true }));
       target.focus();
     } else if (target.isContentEditable) {

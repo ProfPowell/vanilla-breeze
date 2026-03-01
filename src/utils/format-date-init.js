@@ -32,7 +32,7 @@ function initFormatDate(root = document) {
 
 /**
  * Enhance a single <time> element with formatted date display
- * @param {Element} el - The time element to enhance
+ * @param {HTMLElement} el - The time element to enhance
  */
 function enhanceDate(el) {
   if (el.hasAttribute('data-format-date-init')) return;
@@ -42,7 +42,7 @@ function enhanceDate(el) {
   if (!raw) return;
 
   const datetime = new Date(raw);
-  if (isNaN(datetime)) return;
+  if (isNaN(datetime.getTime())) return;
 
   // Preserve original text as tooltip
   if (!el.title) {
@@ -73,8 +73,9 @@ function formatAbsolute(date, style, el, locale) {
   const timeStyle = el.getAttribute('data-format-time') || undefined;
 
   try {
-    const opts = { dateStyle };
-    if (timeStyle) opts.timeStyle = timeStyle;
+    /** @type {Intl.DateTimeFormatOptions} */
+    const opts = { dateStyle: /** @type {Intl.DateTimeFormatOptions['dateStyle']} */ (dateStyle) };
+    if (timeStyle) opts.timeStyle = /** @type {Intl.DateTimeFormatOptions['timeStyle']} */ (timeStyle);
     return new Intl.DateTimeFormat(locale, opts).format(date);
   } catch {
     return el.textContent;
@@ -106,7 +107,7 @@ function formatRelative(date, locale) {
     if (absSec >= seconds) {
       const value = Math.round(diffSec / seconds);
       try {
-        return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(value, unit);
+        return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(value, /** @type {Intl.RelativeTimeFormatUnit} */ (unit));
       } catch {
         const abs = Math.abs(value);
         const label = abs === 1 ? unit : `${unit}s`;
@@ -177,20 +178,22 @@ const observer = new MutationObserver((mutations) => {
     // Enhance newly added elements
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      const el = /** @type {Element} */ (node);
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceDate(node);
+      if (el.matches(SELECTOR)) {
+        enhanceDate(/** @type {HTMLElement} */ (el));
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceDate);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceDate(/** @type {HTMLElement} */ (child)));
     }
 
     // Clean up intervals for removed elements
     for (const node of mutation.removedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      const el = /** @type {Element} */ (node);
 
-      cleanupElement(node);
-      node.querySelectorAll?.(SELECTOR).forEach(cleanupElement);
+      cleanupElement(el);
+      el.querySelectorAll(SELECTOR).forEach(cleanupElement);
     }
   }
 });

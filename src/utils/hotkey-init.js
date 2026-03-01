@@ -25,7 +25,7 @@ function initHotkeys(root = document) {
 
 /**
  * Enhance a single kbd element with platform-aware key symbols
- * @param {Element} el - The kbd element to enhance
+ * @param {HTMLElement} el - The kbd element to enhance
  */
 function enhanceHotkey(el) {
   if (el.hasAttribute('data-hotkey-init')) return;
@@ -66,12 +66,13 @@ const observer = new MutationObserver((mutations) => {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
       // Check the node itself
-      if (node.matches?.(SELECTOR)) {
-        enhanceHotkey(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceHotkey(/** @type {HTMLElement} */ (el));
       }
 
       // Check descendants
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceHotkey);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceHotkey(/** @type {HTMLElement} */ (child)));
     }
   }
 });

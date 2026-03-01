@@ -52,7 +52,7 @@ class DragSurface extends HTMLElement {
   // --- Public API ---
 
   get draggableChildren() {
-    return [...this.querySelectorAll(':scope > [draggable="true"]')];
+    return [.../** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll(':scope > [draggable="true"]'))];
   }
 
   get group() {
@@ -390,9 +390,10 @@ class DragSurface extends HTMLElement {
 
   // --- Cross-Surface ---
 
+  /** @returns {DragSurface | null} */
   #findAdjacentSurface(direction) {
     if (!this.group) return null;
-    const all = [...document.querySelectorAll(`drag-surface[data-group="${this.group}"]`)];
+    const all = /** @type {DragSurface[]} */ ([...document.querySelectorAll(`drag-surface[data-group="${this.group}"]`)]);
     if (all.length < 2) return null;
 
     // Sort by visual position (left-to-right, top-to-bottom)
@@ -428,7 +429,7 @@ class DragSurface extends HTMLElement {
   }
 
   #updateSortOrders() {
-    this.draggableChildren.forEach((child, i) => {
+    this.draggableChildren.forEach((/** @type {HTMLElement} */ child, i) => {
       child.dataset.sortOrder = String(i + 1);
     });
   }

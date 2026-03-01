@@ -168,7 +168,6 @@ class IconWc extends HTMLElement {
     }
 
     /**
-     * @private
      * @param {string} set - Icon set name
      * @returns {Promise<string>} SVG text
      */

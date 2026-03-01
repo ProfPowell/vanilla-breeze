@@ -237,7 +237,7 @@ function setupAnchorNames(el) {
   if (!target?.id) return;
   const name = `--interest-${target.id}`;
   el.style.anchorName = name;
-  target.style.positionAnchor = name;
+  /** @type {any} */ (target.style).positionAnchor = name;
 }
 
 function positionWithJS(invoker, target) {
@@ -329,7 +329,7 @@ function addEventHandlers() {
   const longPressTime = 500;
   document.body.addEventListener('touchstart', (e) => {
     touchInProgress = true;
-    const invoker = e.target.closest(`button[${ATTR}]`);
+    const invoker = /** @type {Element} */ (e.target).closest(`button[${ATTR}]`);
     if (!invoker) return;
     const data = ensureData(invoker);
     data.longPressTimer = setTimeout(() => {
@@ -339,7 +339,7 @@ function addEventHandlers() {
     }, longPressTime);
   });
   const cancelLongPress = (e) => {
-    const invoker = e.target.closest(`button[${ATTR}]`);
+    const invoker = /** @type {Element} */ (e.target).closest(`button[${ATTR}]`);
     if (!invoker) return;
     const data = invokerData.get(invoker);
     if (data?.longPressTimer) {
@@ -396,18 +396,20 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.hasAttribute?.(ATTR)) setupInvoker(node);
-      node.querySelectorAll?.(`[${ATTR}]`).forEach(setupInvoker);
+      const el = /** @type {Element} */ (node);
+      if (el.hasAttribute(ATTR)) setupInvoker(el);
+      el.querySelectorAll(`[${ATTR}]`).forEach(setupInvoker);
     }
     for (const node of mutation.removedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (invokerData.has(node)) cleanupInvoker(node);
-      node.querySelectorAll?.(`[${ATTR}]`).forEach(el => {
-        if (invokerData.has(el)) cleanupInvoker(el);
+      const el = /** @type {Element} */ (node);
+      if (invokerData.has(el)) cleanupInvoker(el);
+      el.querySelectorAll(`[${ATTR}]`).forEach(child => {
+        if (invokerData.has(child)) cleanupInvoker(child);
       });
     }
     if (mutation.type === 'attributes' && mutation.target.nodeType === Node.ELEMENT_NODE) {
-      const el = mutation.target;
+      const el = /** @type {Element} */ (mutation.target);
       if (el.hasAttribute(ATTR)) {
         if (!invokerData.has(el)) setupInvoker(el);
       } else {
@@ -463,11 +465,12 @@ if (nativeSupported && supportsAnchor) {
       for (const m of mutations) {
         for (const node of m.addedNodes) {
           if (node.nodeType !== Node.ELEMENT_NODE) continue;
-          if (node.hasAttribute?.(ATTR)) setupAnchorNames(node);
-          node.querySelectorAll?.(`[${ATTR}]`).forEach(setupAnchorNames);
+          const el = /** @type {Element} */ (node);
+          if (el.hasAttribute(ATTR)) setupAnchorNames(el);
+          el.querySelectorAll(`[${ATTR}]`).forEach(setupAnchorNames);
         }
-        if (m.type === 'attributes' && m.target.hasAttribute?.(ATTR)) {
-          setupAnchorNames(m.target);
+        if (m.type === 'attributes' && /** @type {Element} */ (m.target).hasAttribute?.(ATTR)) {
+          setupAnchorNames(/** @type {Element} */ (m.target));
         }
       }
     }).observe(document.documentElement, {

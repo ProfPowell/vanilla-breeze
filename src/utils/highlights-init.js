@@ -183,8 +183,8 @@ function showToolbar(rect, controller, existingHighlight) {
 
   // Keyboard navigation for swatches
   swatchGroup.addEventListener('keydown', (e) => {
-    const btns = [...swatchGroup.querySelectorAll('button')];
-    const idx = btns.indexOf(document.activeElement);
+    const btns = /** @type {HTMLButtonElement[]} */ ([...swatchGroup.querySelectorAll('button')]);
+    const idx = btns.indexOf(/** @type {HTMLButtonElement} */ (document.activeElement));
     if (idx < 0) return;
 
     let next = -1;
@@ -878,8 +878,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) initHighlights(node);
-      node.querySelectorAll?.(SELECTOR).forEach(el => {
+      const addedEl = /** @type {Element} */ (node);
+      if (addedEl.matches(SELECTOR)) initHighlights(addedEl);
+      addedEl.querySelectorAll(SELECTOR).forEach(el => {
         if (!el.hasAttribute('data-highlights-init')) initHighlights(el);
       });
     }

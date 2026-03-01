@@ -30,7 +30,7 @@ function initFormatBytes(root = document) {
 
 /**
  * Enhance a single <data> element with formatted byte display
- * @param {Element} el - The data element to enhance
+ * @param {HTMLElement} el - The data element to enhance
  */
 function enhanceBytes(el) {
   if (el.hasAttribute('data-format-bytes-init')) return;
@@ -87,11 +87,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceBytes(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceBytes(/** @type {HTMLElement} */ (el));
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceBytes);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceBytes(/** @type {HTMLElement} */ (child)));
     }
   }
 });

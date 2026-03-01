@@ -57,7 +57,7 @@ class VbComposer extends HTMLElement {
     const radios = this.querySelectorAll('[name="export-mode"]');
     for (const r of radios) {
       r.addEventListener('change', this.#onExportModeChange);
-      if (r.checked) this.#exportMode = r.value;
+      if (/** @type {HTMLInputElement} */ (r).checked) this.#exportMode = /** @type {HTMLInputElement} */ (r).value;
     }
 
     // Canvas change → update code output
@@ -133,9 +133,9 @@ class VbComposer extends HTMLElement {
     const colsInput = this.querySelector('.grid-settings [name="cols"]');
     const gapInput = this.querySelector('.grid-settings [name="gap"]');
     const rowInput = this.querySelector('.grid-settings [name="row-size"]');
-    if (colsInput) colsInput.value = grid.cols;
-    if (gapInput) gapInput.value = grid.gap;
-    if (rowInput) rowInput.value = grid.rowSize;
+    if (colsInput) /** @type {HTMLInputElement} */ (colsInput).value = grid.cols;
+    if (gapInput) /** @type {HTMLInputElement} */ (gapInput).value = grid.gap;
+    if (rowInput) /** @type {HTMLInputElement} */ (rowInput).value = grid.rowSize;
 
     // Reset select to placeholder
     e.target.value = '';

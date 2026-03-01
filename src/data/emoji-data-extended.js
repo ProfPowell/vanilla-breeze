@@ -14,6 +14,7 @@
  * <script type="module" src="/cdn/emoji-extended.js"></script>
  */
 
+/** @type {[string, string, string, string][]} */
 const EXTENDED = [
   ["satisfied","😆","grinning squinting face","smileys"],
   ["melting_face","🫠","melting face","smileys"],

@@ -56,8 +56,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceHighlight(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceHighlight);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceHighlight(el);
+      el.querySelectorAll(SELECTOR).forEach(enhanceHighlight);
     }
   }
 });

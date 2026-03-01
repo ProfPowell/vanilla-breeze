@@ -34,17 +34,19 @@ function enhanceForm(form) {
    * @returns {Record<string, string>}
    */
   function collectData() {
+    /** @type {Record<string, string>} */
     const data = {};
     const elements = form.elements;
     for (const el of elements) {
-      if (!el.name) continue;
-      if (el.type === 'password' || el.type === 'file') continue;
-      if (el.type === 'checkbox') {
-        data[el.name] = el.checked ? 'on' : '';
-      } else if (el.type === 'radio') {
-        if (el.checked) data[el.name] = el.value;
+      const field = /** @type {HTMLInputElement} */ (el);
+      if (!field.name) continue;
+      if (field.type === 'password' || field.type === 'file') continue;
+      if (field.type === 'checkbox') {
+        data[field.name] = field.checked ? 'on' : '';
+      } else if (field.type === 'radio') {
+        if (field.checked) data[field.name] = field.value;
       } else {
-        data[el.name] = el.value;
+        data[field.name] = field.value;
       }
     }
     return data;
@@ -83,7 +85,8 @@ function enhanceForm(form) {
 
       for (const [name, value] of Object.entries(data)) {
         const fields = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
-        fields.forEach(field => {
+        fields.forEach(f => {
+          const field = /** @type {HTMLInputElement} */ (f);
           if (field.type === 'checkbox') {
             field.checked = value === 'on';
           } else if (field.type === 'radio') {
@@ -125,7 +128,8 @@ function enhanceForm(form) {
   if (restore()) {
     notifyRestored();
     // Trigger input events so other enhancements (count, grow) update
-    Array.from(form.elements).forEach(el => {
+    Array.from(form.elements).forEach(e => {
+      const el = /** @type {HTMLInputElement} */ (e);
       if (el.name && el.type !== 'password' && el.type !== 'file') {
         el.dispatchEvent(new Event('input', { bubbles: true }));
       }
@@ -171,8 +175,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceForm(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceForm);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceForm(/** @type {HTMLFormElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(enhanceForm);
     }
   }
 });

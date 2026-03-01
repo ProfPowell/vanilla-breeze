@@ -128,7 +128,7 @@ function enhanceMock(el) {
     }
   } else if (tag === 'canvas') {
     // Draw X-pattern + label on canvas
-    drawCanvasPlaceholder(el, w, h);
+    drawCanvasPlaceholder(/** @type {HTMLCanvasElement} */ (el), w, h);
   }
 }
 
@@ -188,8 +188,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceMock(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceMock);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceMock(/** @type {HTMLElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceMock(/** @type {HTMLElement} */ (child)));
     }
   }
 });

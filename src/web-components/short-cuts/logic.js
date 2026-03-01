@@ -55,7 +55,7 @@ class ShortCuts extends HTMLElement {
     body.className = 'shortcut-body';
 
     // Gather shortcuts from the command registry
-    const { getRegisteredCommands } = window.__commandRegistry || {};
+    const { getRegisteredCommands } = /** @type {any} */ (window.__commandRegistry || {});
     const grouped = new Map();
 
     // Always include ? itself

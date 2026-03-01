@@ -139,7 +139,8 @@ export class VbI18n {
   apply(root = this.root) {
     const elements = root.querySelectorAll('[data-i18n]');
 
-    for (const el of elements) {
+    for (const rawEl of elements) {
+      const el = /** @type {HTMLElement} */ (rawEl);
       const key = el.dataset.i18n;
       const attr = el.dataset.i18nAttr;
       const vars = el.dataset.i18nVars ? JSON.parse(el.dataset.i18nVars) : {};

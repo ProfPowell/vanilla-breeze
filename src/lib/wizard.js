@@ -323,8 +323,9 @@ class WizardController {
     let isValid = true;
 
     for (const input of inputs) {
-      if (!input.checkValidity()) {
-        input.reportValidity();
+      const formControl = /** @type {HTMLInputElement} */ (input);
+      if (!formControl.checkValidity()) {
+        formControl.reportValidity();
         isValid = false;
         break;
       }
@@ -540,20 +541,21 @@ class WizardController {
 function initWizards() {
   const wizardForms = document.querySelectorAll('form[data-wizard]');
 
-  wizardForms.forEach((form) => {
+  wizardForms.forEach((rawForm) => {
     // Skip if already enhanced
-    if (form.hasAttribute('data-wizard-enhanced')) return;
+    if (rawForm.hasAttribute('data-wizard-enhanced')) return;
 
+    const form = /** @type {HTMLFormElement} */ (rawForm);
     const controller = new WizardController(form);
 
     // Attach controller to form element for external access
-    form.wizardController = controller;
+    /** @type {any} */ (form).wizardController = controller;
 
     // Add convenience methods directly to form
-    form.wizardGoTo = (index) => controller.goTo(index);
-    form.wizardNext = () => controller.next();
-    form.wizardPrev = () => controller.prev();
-    form.wizardReset = () => controller.reset();
+    /** @type {any} */ (form).wizardGoTo = (/** @type {number} */ index) => controller.goTo(index);
+    /** @type {any} */ (form).wizardNext = () => controller.next();
+    /** @type {any} */ (form).wizardPrev = () => controller.prev();
+    /** @type {any} */ (form).wizardReset = () => controller.reset();
   });
 }
 

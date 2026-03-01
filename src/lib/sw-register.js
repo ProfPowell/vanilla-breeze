@@ -128,7 +128,7 @@ function shouldRegister() {
 
   if (window.__VB_SERVICE_WORKER) return true;
 
-  const meta = document.querySelector('meta[name="vb-service-worker"]');
+  const meta = /** @type {HTMLMetaElement|null} */ (document.querySelector('meta[name="vb-service-worker"]'));
   return meta?.content === 'true';
 }
 

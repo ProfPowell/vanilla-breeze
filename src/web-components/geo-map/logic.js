@@ -99,7 +99,7 @@ class GeoMap extends HTMLElement {
         }
 
         // 4. Slotted <address data-lat data-lng>
-        const addr = this.querySelector('address[data-lat][data-lng]');
+        const addr = /** @type {HTMLElement | null} */ (this.querySelector('address[data-lat][data-lng]'));
         if (addr) {
             const lat = parseFloat(addr.dataset.lat);
             const lng = parseFloat(addr.dataset.lng);
@@ -145,8 +145,8 @@ class GeoMap extends HTMLElement {
         }
 
         // JSON-LD script element
-        if (el.tagName === 'SCRIPT' && el.type === 'application/ld+json') {
-            return this.#parseJsonLdGeo(el);
+        if (el.tagName === 'SCRIPT' && /** @type {HTMLScriptElement} */ (el).type === 'application/ld+json') {
+            return this.#parseJsonLdGeo(/** @type {HTMLScriptElement} */ (el));
         }
 
         return null;
@@ -298,7 +298,7 @@ class GeoMap extends HTMLElement {
         const offsetX = Math.round(w / 2 - 256 - pixelX);
         const offsetY = Math.round(h / 2 - 256 - pixelY);
 
-        tilesEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        /** @type {HTMLElement} */ (tilesEl).style.transform = `translate(${offsetX}px, ${offsetY}px)`;
 
         let loadCount = 0;
         let errorCount = 0;

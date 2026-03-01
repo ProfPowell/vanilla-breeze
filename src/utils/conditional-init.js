@@ -42,11 +42,11 @@ function getFieldValue(name, scope) {
   const fields = scope.querySelectorAll(`[name="${CSS.escape(name)}"]`);
   if (!fields.length) return '';
 
-  const first = fields[0];
+  const first = /** @type {HTMLInputElement} */ (fields[0]);
 
   // Radio group — find checked
   if (first.type === 'radio') {
-    const checked = Array.from(fields).find(f => f.checked);
+    const checked = /** @type {HTMLInputElement|undefined} */ (Array.from(fields).find(f => /** @type {HTMLInputElement} */ (f).checked));
     return checked ? checked.value : '';
   }
 
@@ -104,7 +104,7 @@ function initConditionalFields(root = document) {
   elements.forEach(el => {
     if (el.hasAttribute('data-conditional-init')) return;
     el.setAttribute('data-conditional-init', '');
-    updateVisibility(el);
+    updateVisibility(/** @type {HTMLElement} */ (el));
   });
 
   // Listen for changes on forms (event delegation)
@@ -150,16 +150,17 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) {
-        if (!node.hasAttribute('data-conditional-init')) {
-          node.setAttribute('data-conditional-init', '');
-          updateVisibility(node);
+      const addedEl = /** @type {Element} */ (node);
+      if (addedEl.matches(SELECTOR)) {
+        if (!addedEl.hasAttribute('data-conditional-init')) {
+          addedEl.setAttribute('data-conditional-init', '');
+          updateVisibility(/** @type {HTMLElement} */ (addedEl));
         }
       }
-      node.querySelectorAll?.(SELECTOR).forEach(el => {
+      addedEl.querySelectorAll(SELECTOR).forEach(el => {
         if (!el.hasAttribute('data-conditional-init')) {
           el.setAttribute('data-conditional-init', '');
-          updateVisibility(el);
+          updateVisibility(/** @type {HTMLElement} */ (el));
         }
       });
     }

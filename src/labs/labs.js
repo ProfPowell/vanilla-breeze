@@ -55,7 +55,7 @@ class SoundManager {
     gainNode.connect(this.audioContext.destination);
 
     oscillator.frequency.value = frequency;
-    oscillator.type = type;
+    oscillator.type = /** @type {OscillatorType} */ (type);
     gainNode.gain.value = this.volume * 0.3;
 
     oscillator.start();
@@ -205,7 +205,7 @@ const VBLabs = {
     // Auto-bind sound to elements with data-labs-sound attribute
     document.querySelectorAll('[data-labs-sound]').forEach((el) => {
       el.addEventListener('click', () => {
-        this.sound.play(el.dataset.labsSound);
+        this.sound.play(/** @type {HTMLElement} */ (el).dataset.labsSound);
       });
     });
 

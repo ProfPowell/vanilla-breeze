@@ -70,7 +70,7 @@ function enhanceUpload(input) {
 
   // Also click on zone (but not on file list items)
   zone.addEventListener('click', (e) => {
-    if (e.target === zone || e.target === prompt || e.target.closest('.upload-prompt')) {
+    if (e.target === zone || e.target === prompt || /** @type {Element} */ (e.target).closest('.upload-prompt')) {
       input.click();
     }
   });
@@ -157,8 +157,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceUpload(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceUpload);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceUpload(/** @type {HTMLInputElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceUpload(/** @type {HTMLInputElement} */ (child)));
     }
   }
 });

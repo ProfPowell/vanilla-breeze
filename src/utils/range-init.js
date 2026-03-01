@@ -93,7 +93,7 @@ function enhanceRange(input) {
       const min = parseFloat(input.min) || 0;
       const max = parseFloat(input.max) || 100;
 
-      Array.from(datalist.options).forEach(option => {
+      Array.from(/** @type {HTMLDataListElement} */ (datalist).options).forEach(option => {
         const span = document.createElement('span');
         span.textContent = option.label || option.value;
         const pct = ((parseFloat(option.value) - min) / (max - min)) * 100;
@@ -134,8 +134,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceRange(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceRange);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceRange(/** @type {HTMLInputElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceRange(/** @type {HTMLInputElement} */ (child)));
     }
   }
 });

@@ -100,10 +100,10 @@ class VbCanvas extends HTMLElement {
    */
   addBlock(tag, col = 1, cspan = 12, row = 1, rspan = 2, parent) {
     const el = document.createElement(tag);
-    el.style.setProperty('--col', col);
-    el.style.setProperty('--cspan', cspan);
-    el.style.setProperty('--row', row);
-    el.style.setProperty('--rspan', rspan);
+    el.style.setProperty('--col', String(col));
+    el.style.setProperty('--cspan', String(cspan));
+    el.style.setProperty('--row', String(row));
+    el.style.setProperty('--rspan', String(rspan));
     this.#prepareBlock(el);
     (parent || this).appendChild(el);
     return el;

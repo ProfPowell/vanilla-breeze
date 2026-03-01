@@ -196,11 +196,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        observeTicker(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        observeTicker(el);
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(observeTicker);
+      el.querySelectorAll(SELECTOR).forEach(observeTicker);
     }
   }
 });

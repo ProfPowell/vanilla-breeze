@@ -182,14 +182,15 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.hasAttribute?.('data-swap') && !node.matches('content-swap') && !node.hasAttribute('data-swap-init')) {
-        if (node.querySelector(':scope > [data-face]')) {
-          initSwapBehavior(node);
-          node.setAttribute('data-swap-init', '');
+      const el = /** @type {Element} */ (node);
+      if (el.hasAttribute('data-swap') && !el.matches('content-swap') && !el.hasAttribute('data-swap-init')) {
+        if (el.querySelector(':scope > [data-face]')) {
+          initSwapBehavior(el);
+          el.setAttribute('data-swap-init', '');
         }
       }
       // Also check descendants
-      node.querySelectorAll?.('[data-swap]:not(content-swap):not([data-swap-init])').forEach(el => {
+      el.querySelectorAll('[data-swap]:not(content-swap):not([data-swap-init])').forEach(el => {
         if (el.querySelector(':scope > [data-face]')) {
           initSwapBehavior(el);
           el.setAttribute('data-swap-init', '');

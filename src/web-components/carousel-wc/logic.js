@@ -347,7 +347,7 @@ class CarouselWc extends HTMLElement {
     });
     this.addEventListener('focusin', () => this.pause());
     this.addEventListener('focusout', (e) => {
-      if (!this.contains(e.relatedTarget) && this.hasAttribute('data-autoplay')) {
+      if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('data-autoplay')) {
         this.play();
       }
     });

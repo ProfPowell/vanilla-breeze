@@ -84,8 +84,10 @@ async function loadComponent(tagName) {
   const url = componentMap?.get(tagName);
   if (!url) return;
 
+  /** @type {Promise<void>} */
   const promise = import(/* webpackIgnore: true */ url)
     .then(() => customElements.whenDefined(tagName))
+    .then(() => {})
     .catch(err => {
       console.warn(`[VB] Failed to autoload ${tagName}:`, err);
       loadingPromises.delete(tagName);
@@ -144,14 +146,15 @@ export async function initAutoloader() {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-        const tag = node.localName;
+        const el = /** @type {Element} */ (node);
+        const tag = el.localName;
         if (tag.includes('-') && componentMap.has(tag)) {
           loadComponent(tag);
         }
 
         // Also scan children of added nodes
-        if (node.querySelectorAll) {
-          scanForComponents(node);
+        if (el.querySelectorAll) {
+          scanForComponents(el);
         }
       }
     }

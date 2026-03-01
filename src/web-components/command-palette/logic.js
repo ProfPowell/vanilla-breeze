@@ -244,7 +244,7 @@ class CommandPalette extends HTMLElement {
     if (!this.hasAttribute('data-discover')) return;
 
     // Lazy-import to avoid circular dependency at module load time
-    const { getRegisteredCommands, scanAutoDiscoverable } = window.__commandRegistry || {};
+    const { getRegisteredCommands, scanAutoDiscoverable } = /** @type {any} */ (window.__commandRegistry || {});
     if (!getRegisteredCommands) return;
 
     // Remove previously added discovered items and headers

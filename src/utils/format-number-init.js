@@ -30,7 +30,7 @@ function initFormatNumber(root = document) {
 
 /**
  * Enhance a single <data> element with formatted number display
- * @param {Element} el - The data element to enhance
+ * @param {HTMLElement} el - The data element to enhance
  */
 function enhanceNumber(el) {
   if (el.hasAttribute('data-format-number-init')) return;
@@ -50,6 +50,7 @@ function enhanceNumber(el) {
   const style = el.getAttribute('data-format-number') || 'decimal';
   const locale = el.getAttribute('data-locale') || getLocale();
 
+  /** @type {Intl.NumberFormatOptions} */
   const opts = {};
 
   switch (style) {
@@ -89,11 +90,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceNumber(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceNumber(/** @type {HTMLElement} */ (el));
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceNumber);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceNumber(/** @type {HTMLElement} */ (child)));
     }
   }
 });

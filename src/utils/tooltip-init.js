@@ -57,7 +57,7 @@ function connectTrigger(trigger, tip) {
   if (canUseInterestFor(trigger)) {
     trigger.setAttribute('interestfor', tip.id);
     // Position on show for JS fallback positioning
-    tip.addEventListener('toggle', (e) => {
+    tip.addEventListener('toggle', (/** @type {ToggleEvent} */ e) => {
       if (e.newState === 'open') positionTooltip(trigger, tip);
     });
     return;
@@ -67,10 +67,12 @@ function connectTrigger(trigger, tip) {
   let showTimer = null;
   let hideTimer = null;
 
+  const htmlTip = /** @type {HTMLElement} */ (tip);
+
   const scheduleShow = () => {
     clearTimeout(hideTimer);
     showTimer = setTimeout(() => {
-      tip.showPopover();
+      htmlTip.showPopover();
       positionTooltip(trigger, tip);
     }, SHOW_DELAY);
   };
@@ -78,19 +80,19 @@ function connectTrigger(trigger, tip) {
   const scheduleHide = () => {
     clearTimeout(showTimer);
     hideTimer = setTimeout(() => {
-      tip.hidePopover();
+      htmlTip.hidePopover();
     }, HIDE_DELAY);
   };
 
   const showImmediate = () => {
     clearTimeout(hideTimer);
-    tip.showPopover();
+    htmlTip.showPopover();
     positionTooltip(trigger, tip);
   };
 
   const hideImmediate = () => {
     clearTimeout(showTimer);
-    tip.hidePopover();
+    htmlTip.hidePopover();
   };
 
   // Hover events with delay
@@ -115,8 +117,8 @@ function connectTrigger(trigger, tip) {
 function setupAnchor(trigger, tip) {
   if (!supportsAnchor) return;
   const anchorName = `--tooltip-anchor-${tip.id}`;
-  trigger.style.anchorName = anchorName;
-  tip.style.positionAnchor = anchorName;
+  /** @type {any} */ (/** @type {HTMLElement} */ (trigger).style).anchorName = anchorName;
+  /** @type {any} */ (/** @type {HTMLElement} */ (tip).style).positionAnchor = anchorName;
   tip.setAttribute('data-anchor', '');
 }
 
@@ -139,7 +141,7 @@ function initTitleTooltip(trigger) {
   tip.textContent = titleText;
 
   // Position from trigger's data-tooltip-position
-  const position = trigger.dataset.tooltipPosition || 'top';
+  const position = /** @type {HTMLElement} */ (trigger).dataset.tooltipPosition || 'top';
   tip.dataset.tooltipPosition = position;
 
   // Add arrow
@@ -201,7 +203,7 @@ function initTooltips(root = document) {
     if (trigger.hasAttribute('data-tooltip-init')) return;
     trigger.setAttribute('data-tooltip-init', '');
 
-    const tooltipId = trigger.dataset.tooltip;
+    const tooltipId = /** @type {HTMLElement} */ (trigger).dataset.tooltip;
 
     if (tooltipId) {
       // Tier 2: Reference to existing popover element
@@ -247,7 +249,7 @@ function initTooltips(root = document) {
     tip.setAttribute('data-tooltip-click-init', '');
 
     // Position tooltip when it opens via toggle event
-    tip.addEventListener('toggle', (event) => {
+    tip.addEventListener('toggle', (/** @type {ToggleEvent} */ event) => {
       if (event.newState === 'open') {
         positionTooltip(trigger, tip);
       }
@@ -265,7 +267,7 @@ function positionTooltip(trigger, tooltip) {
   if (tooltip.hasAttribute('data-anchor')) return;
 
   const triggerRect = trigger.getBoundingClientRect();
-  const position = tooltip.dataset.tooltipPosition || 'top';
+  const position = /** @type {HTMLElement} */ (tooltip).dataset.tooltipPosition || 'top';
   const gap = 8;
 
   // Get tooltip dimensions (need to show first to measure)
@@ -298,8 +300,8 @@ function positionTooltip(trigger, tooltip) {
   left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
   top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
 
-  tooltip.style.top = `${top}px`;
-  tooltip.style.left = `${left}px`;
+  /** @type {HTMLElement} */ (tooltip).style.top = `${top}px`;
+  /** @type {HTMLElement} */ (tooltip).style.left = `${left}px`;
 }
 
 // Auto-init on DOMContentLoaded

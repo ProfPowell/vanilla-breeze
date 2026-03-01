@@ -59,7 +59,7 @@ function enhanceEmoji(el) {
   el.setAttribute('data-emoji-init', '');
 
   if (INPUT_TAGS.has(el.tagName)) {
-    enhanceInput(el);
+    enhanceInput(/** @type {HTMLInputElement|HTMLTextAreaElement} */ (el));
     return;
   }
 
@@ -200,7 +200,7 @@ function processTextNodes(container, unknownMode) {
   }
 
   for (const node of textNodes) {
-    replaceShortcodes(node, unknownMode);
+    replaceShortcodes(/** @type {Text} */ (node), unknownMode);
   }
 }
 
@@ -266,8 +266,9 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) pending.push(node);
-      node.querySelectorAll?.(SELECTOR).forEach(el => pending.push(el));
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) pending.push(el);
+      el.querySelectorAll(SELECTOR).forEach(child => pending.push(child));
     }
   }
   if (pending.length === 0) return;

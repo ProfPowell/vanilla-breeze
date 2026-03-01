@@ -218,8 +218,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceLorem(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceLorem);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceLorem(/** @type {HTMLElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceLorem(/** @type {HTMLElement} */ (child)));
     }
   }
 });

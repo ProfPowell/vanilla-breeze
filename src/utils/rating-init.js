@@ -45,10 +45,10 @@ function enhanceRating(fieldset) {
   let pendingClear = false;
 
   fieldset.addEventListener('mousedown', (e) => {
-    const label = e.target.closest('label');
+    const label = /** @type {Element} */ (e.target).closest('label');
     if (!label) return;
 
-    const radio = label.querySelector('input[type="radio"]');
+    const radio = /** @type {HTMLInputElement|null} */ (label.querySelector('input[type="radio"]'));
     if (!radio) return;
 
     // If clicking an already-checked radio, flag it for clear
@@ -61,10 +61,10 @@ function enhanceRating(fieldset) {
     if (!pendingClear) return;
     pendingClear = false;
 
-    const label = e.target.closest('label');
+    const label = /** @type {Element} */ (e.target).closest('label');
     if (!label) return;
 
-    const radio = label.querySelector('input[type="radio"]');
+    const radio = /** @type {HTMLInputElement|null} */ (label.querySelector('input[type="radio"]'));
     if (!radio) return;
 
     radio.checked = false;
@@ -75,11 +75,12 @@ function enhanceRating(fieldset) {
 
   // Normal selection via change event
   fieldset.addEventListener('change', (e) => {
-    if (e.target.type !== 'radio') return;
+    const target = /** @type {HTMLInputElement} */ (e.target);
+    if (target.type !== 'radio') return;
     if (pendingClear) return; // Will be handled by click
-    lastValue = e.target.value;
-    dispatch(fieldset, Number(e.target.value));
-    announce(`Rating: ${e.target.value} ${Number(e.target.value) === 1 ? 'star' : 'stars'}`);
+    lastValue = target.value;
+    dispatch(fieldset, Number(target.value));
+    announce(`Rating: ${target.value} ${Number(target.value) === 1 ? 'star' : 'stars'}`);
   });
 }
 
@@ -89,7 +90,7 @@ function enhanceRating(fieldset) {
  * @returns {string}
  */
 function getCheckedValue(fieldset) {
-  const checked = fieldset.querySelector('input[type="radio"]:checked');
+  const checked = /** @type {HTMLInputElement|null} */ (fieldset.querySelector('input[type="radio"]:checked'));
   return checked ? checked.value : '0';
 }
 
@@ -142,11 +143,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceRating(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceRating(/** @type {HTMLFieldSetElement} */ (el));
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceRating);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceRating(/** @type {HTMLFieldSetElement} */ (child)));
     }
   }
 });

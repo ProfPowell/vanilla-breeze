@@ -144,8 +144,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhance(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhance);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhance(/** @type {HTMLImageElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(enhance);
     }
   }
 });

@@ -31,7 +31,7 @@ function splitIntoWords(el) {
     const span = document.createElement('span');
     span.className = 'vb-reveal-chunk';
     span.textContent = word;
-    span.style.setProperty('--i', Math.floor(i / 2));
+    span.style.setProperty('--i', String(Math.floor(i / 2)));
     span.setAttribute('aria-hidden', 'true');
     el.appendChild(span);
   });
@@ -80,7 +80,7 @@ function splitIntoLines(el) {
     const span = document.createElement('span');
     span.className = 'vb-reveal-chunk';
     span.textContent = line;
-    span.style.setProperty('--i', i);
+    span.style.setProperty('--i', String(i));
     span.setAttribute('aria-hidden', 'true');
     el.appendChild(span);
     if (i < lines.length - 1) el.appendChild(document.createTextNode(' '));
@@ -132,8 +132,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceReveal(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceReveal);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceReveal(el);
+      el.querySelectorAll(SELECTOR).forEach(enhanceReveal);
     }
   }
 });

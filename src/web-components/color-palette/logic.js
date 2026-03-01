@@ -58,7 +58,7 @@ class ColorPalette extends HTMLElement {
     this.innerHTML = `<div class="palette ${layout}" role="group" aria-label="Color palette">${swatches}</div>`;
 
     // Click handler — copy + dispatch event
-    this.querySelectorAll('.swatch').forEach(btn => {
+    this.querySelectorAll('.swatch').forEach((/** @type {HTMLElement} */ btn) => {
       btn.addEventListener('click', () => {
         const idx = Number(btn.dataset.index);
         const color = colors[idx];

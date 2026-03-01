@@ -107,7 +107,7 @@ class StarRating extends HTMLElement {
 
     // Listen for rating-change from rating-init.js
     fieldset.addEventListener('rating-change', (e) => {
-      this.#syncFormValue(e.detail.value);
+      this.#syncFormValue(/** @type {CustomEvent} */ (e).detail.value);
       this.#validate();
     });
   }
@@ -198,11 +198,11 @@ class StarRating extends HTMLElement {
     if (!fieldset) return;
 
     // Uncheck all radios
-    fieldset.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = false; });
+    fieldset.querySelectorAll('input[type="radio"]').forEach((/** @type {HTMLInputElement} */ r) => { r.checked = false; });
 
     // Re-check initial value if set
     if (this.#initialValue > 0) {
-      const target = fieldset.querySelector(`input[value="${this.#initialValue}"]`);
+      const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${this.#initialValue}"]`));
       if (target) target.checked = true;
     }
 
@@ -215,7 +215,7 @@ class StarRating extends HTMLElement {
     const fieldset = this.querySelector('fieldset');
     if (!fieldset) return;
 
-    const target = fieldset.querySelector(`input[value="${state}"]`);
+    const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${state}"]`));
     if (target) {
       target.checked = true;
       this.#syncFormValue(Number(state));
@@ -226,7 +226,7 @@ class StarRating extends HTMLElement {
   get value() {
     const fieldset = this.querySelector('fieldset');
     if (!fieldset) return Number(this.getAttribute('value') || 0);
-    const checked = fieldset.querySelector('input[type="radio"]:checked');
+    const checked = /** @type {HTMLInputElement | null} */ (fieldset.querySelector('input[type="radio"]:checked'));
     return checked ? Number(checked.value) : 0;
   }
 
@@ -234,11 +234,11 @@ class StarRating extends HTMLElement {
     const fieldset = this.querySelector('fieldset');
     if (!fieldset) return;
 
-    fieldset.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = false; });
+    fieldset.querySelectorAll('input[type="radio"]').forEach((/** @type {HTMLInputElement} */ r) => { r.checked = false; });
 
     const numVal = Number(val);
     if (numVal > 0) {
-      const target = fieldset.querySelector(`input[value="${numVal}"]`);
+      const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${numVal}"]`));
       if (target) target.checked = true;
     }
 

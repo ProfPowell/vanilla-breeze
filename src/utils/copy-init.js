@@ -28,7 +28,7 @@ function initCopyButtons(root = document) {
 
 /**
  * Enhance a single button with copy behavior
- * @param {Element} button - The button element to enhance
+ * @param {HTMLElement} button - The button element to enhance
  */
 function enhanceButton(button) {
   if (button.hasAttribute('data-copy-init')) return;
@@ -65,7 +65,7 @@ function enhanceButton(button) {
 
 /**
  * Get text to copy from a button's data attributes
- * @param {Element} button
+ * @param {HTMLElement} button
  * @returns {string}
  */
 function getText(button) {
@@ -108,12 +108,13 @@ const observer = new MutationObserver((mutations) => {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
       // Check the node itself
-      if (node.matches?.(SELECTOR)) {
-        enhanceButton(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceButton(/** @type {HTMLElement} */ (el));
       }
 
       // Check descendants
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceButton);
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceButton(/** @type {HTMLElement} */ (child)));
     }
   }
 });

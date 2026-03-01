@@ -167,7 +167,7 @@ function initContentModelValidation() {
     for (const mutation of mutations) {
       // Check if mutation affects components we care about
       if (mutation.type === 'childList') {
-        const target = mutation.target;
+        const target = /** @type {Element} */ (mutation.target);
         if (target.tagName && CONTENT_MODELS[target.tagName.toLowerCase()]) {
           shouldValidate = true;
           break;
@@ -175,8 +175,9 @@ function initContentModelValidation() {
         // Check added nodes
         for (const node of mutation.addedNodes) {
           if (node.nodeType === Node.ELEMENT_NODE) {
-            if (CONTENT_MODELS[node.tagName.toLowerCase()] ||
-                node.querySelector(Object.keys(CONTENT_MODELS).join(','))) {
+            const el = /** @type {Element} */ (node);
+            if (CONTENT_MODELS[el.tagName.toLowerCase()] ||
+                el.querySelector(Object.keys(CONTENT_MODELS).join(','))) {
               shouldValidate = true;
               break;
             }

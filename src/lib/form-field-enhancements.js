@@ -99,11 +99,11 @@ function enhanceOtpField(formField) {
   digitInputs.forEach((digit, index) => {
     // Handle input
     digit.addEventListener('input', (e) => {
-      const value = e.target.value;
+      const value = /** @type {HTMLInputElement} */ (e.target).value;
 
       // Only allow digits
       if (value && !/^\d$/.test(value)) {
-        e.target.value = '';
+        /** @type {HTMLInputElement} */ (e.target).value = '';
         return;
       }
 
@@ -118,7 +118,7 @@ function enhanceOtpField(formField) {
     // Handle keydown
     digit.addEventListener('keydown', (e) => {
       // Move to previous input on backspace when empty
-      if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      if (e.key === 'Backspace' && !/** @type {HTMLInputElement} */ (e.target).value && index > 0) {
         digitInputs[index - 1].focus();
       }
 
@@ -136,7 +136,7 @@ function enhanceOtpField(formField) {
     // Handle paste
     digit.addEventListener('paste', (e) => {
       e.preventDefault();
-      const paste = (e.clipboardData || window.clipboardData).getData('text');
+      const paste = (e.clipboardData || /** @type {any} */ (window).clipboardData).getData('text');
       const digits = paste.replace(/\D/g, '').slice(0, length).split('');
 
       digits.forEach((d, i) => {
@@ -226,7 +226,7 @@ function enhancePasswordStrength(formField) {
 
     rules.forEach((rule, i) => {
       const met = evaluateRule(rule, value);
-      const li = checklist.children[i];
+      const li = /** @type {HTMLElement} */ (checklist.children[i]);
       li.dataset.met = met ? '' : undefined;
       if (met) {
         li.setAttribute('data-met', '');
@@ -334,32 +334,34 @@ export function initFormFieldEnhancements() {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
+        const el = /** @type {Element} */ (node);
+
         // Check if the added node is a form-field with password
-        if (node.matches?.('form-field:has(input[type="password"])')) {
-          enhancePasswordField(node);
+        if (el.matches?.('form-field:has(input[type="password"])')) {
+          enhancePasswordField(el);
         }
 
         // Check if the added node is a form-field with OTP/PIN
-        if (node.matches?.('form-field:has(input[data-type="otp"])') ||
-            node.matches?.('form-field:has(input[data-type="pin"])')) {
-          enhanceOtpField(node);
+        if (el.matches?.('form-field:has(input[data-type="otp"])') ||
+            el.matches?.('form-field:has(input[data-type="pin"])')) {
+          enhanceOtpField(el);
         }
 
         // Check if the added node is a form-field with strength
-        if (node.matches?.('form-field:has(input[data-strength])')) {
-          enhancePasswordStrength(node);
+        if (el.matches?.('form-field:has(input[data-strength])')) {
+          enhancePasswordStrength(el);
         }
 
         // Check children for password fields
-        const passwordChildren = node.querySelectorAll?.('form-field:has(input[type="password"])');
+        const passwordChildren = el.querySelectorAll?.('form-field:has(input[type="password"])');
         passwordChildren?.forEach(enhancePasswordField);
 
         // Check children for OTP/PIN fields
-        const otpChildren = node.querySelectorAll?.('form-field:has(input[data-type="otp"]), form-field:has(input[data-type="pin"])');
+        const otpChildren = el.querySelectorAll?.('form-field:has(input[data-type="otp"]), form-field:has(input[data-type="pin"])');
         otpChildren?.forEach(enhanceOtpField);
 
         // Check children for strength fields
-        const strengthChildren = node.querySelectorAll?.('form-field:has(input[data-strength])');
+        const strengthChildren = el.querySelectorAll?.('form-field:has(input[data-strength])');
         strengthChildren?.forEach(enhancePasswordStrength);
       }
     }

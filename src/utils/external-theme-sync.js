@@ -36,10 +36,10 @@ function syncComponents(mode) {
 export function initExternalThemeSync() {
   // Apply current theme to existing components
   const { effectiveMode } = ThemeManager.getState();
-  syncComponents(effectiveMode);
+  syncComponents(/** @type {'light' | 'dark'} */ (effectiveMode));
 
   // Listen for theme changes
-  window.addEventListener('theme-change', (e) => {
+  window.addEventListener('theme-change', (/** @type {CustomEvent} */ e) => {
     syncComponents(e.detail.effectiveMode);
   });
 
@@ -50,20 +50,21 @@ export function initExternalThemeSync() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        const el = /** @type {Element} */ (node);
 
         // Check if the added node is a component we care about
-        if (node.tagName === 'BROWSER-WINDOW') {
-          node.setAttribute('mode', effectiveMode);
-        } else if (node.tagName === 'CODE-BLOCK') {
-          node.setAttribute('theme', effectiveMode);
+        if (el.tagName === 'BROWSER-WINDOW') {
+          el.setAttribute('mode', effectiveMode);
+        } else if (el.tagName === 'CODE-BLOCK') {
+          el.setAttribute('theme', effectiveMode);
         }
 
         // Also check descendants
-        node.querySelectorAll?.('browser-window').forEach(el => {
-          el.setAttribute('mode', effectiveMode);
+        el.querySelectorAll('browser-window').forEach(child => {
+          child.setAttribute('mode', effectiveMode);
         });
-        node.querySelectorAll?.('code-block').forEach(el => {
-          el.setAttribute('theme', effectiveMode);
+        el.querySelectorAll('code-block').forEach(child => {
+          child.setAttribute('theme', effectiveMode);
         });
       }
     }

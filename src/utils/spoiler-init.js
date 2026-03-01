@@ -99,7 +99,7 @@ function enhanceSpoiler(el) {
     });
   }
 
-  el.addEventListener('keydown', (e) => {
+  el.addEventListener('keydown', (/** @type {KeyboardEvent} */ e) => {
     if (e.key === 'Escape' && el.hasAttribute('data-spoiler-visible')) {
       e.stopPropagation();
       conceal(el);
@@ -126,7 +126,7 @@ function reveal(el) {
   if (content) content.removeAttribute('inert');
   if (trigger) {
     trigger.setAttribute('aria-expanded', 'true');
-    trigger.hidden = true;
+    /** @type {HTMLElement} */ (trigger).hidden = true;
   }
   el.setAttribute('data-spoiler-visible', '');
 
@@ -178,8 +178,8 @@ function conceal(el) {
   if (content) content.setAttribute('inert', '');
   if (trigger) {
     trigger.setAttribute('aria-expanded', 'false');
-    trigger.hidden = false;
-    trigger.focus();
+    /** @type {HTMLElement} */ (trigger).hidden = false;
+    /** @type {HTMLElement} */ (trigger).focus();
   }
   if (hideBtn) hideBtn.remove();
   el.removeAttribute('data-spoiler-visible');
@@ -228,11 +228,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceSpoiler(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceSpoiler(el);
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceSpoiler);
+      el.querySelectorAll(SELECTOR).forEach(enhanceSpoiler);
     }
   }
 });

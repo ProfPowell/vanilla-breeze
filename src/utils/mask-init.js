@@ -183,8 +183,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceInput(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceInput);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceInput(/** @type {HTMLInputElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceInput(/** @type {HTMLInputElement} */ (child)));
     }
   }
 });

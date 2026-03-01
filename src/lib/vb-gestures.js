@@ -379,17 +379,17 @@ export function initGestures(root = document) {
 
   // data-gesture="swipe"
   for (const el of root.querySelectorAll('[data-gesture="swipe"]')) {
-    cleanups.push(addSwipeListener(el));
+    cleanups.push(addSwipeListener(/** @type {HTMLElement} */ (el)));
   }
 
   // data-gesture="dismiss"
   for (const el of root.querySelectorAll('[data-gesture="dismiss"]')) {
-    cleanups.push(makeSwipeable(el));
+    cleanups.push(makeSwipeable(/** @type {HTMLElement} */ (el)));
   }
 
   // data-gesture="long-press"
   for (const el of root.querySelectorAll('[data-gesture="long-press"]')) {
-    cleanups.push(addLongPress(el, () => {
+    cleanups.push(addLongPress(/** @type {HTMLElement} */ (el), () => {
       el.dispatchEvent(new CustomEvent('long-press', { bubbles: true }));
     }));
   }

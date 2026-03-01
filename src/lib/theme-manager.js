@@ -33,7 +33,7 @@ export const ThemeManager = {
    * Initialize theme from storage or defaults
    * Loads saved brand CSS before applying (prevents FOUC for returning visitors)
    * Falls back to default on network error.
-   * @returns {Promise<{ mode: string, brand: string }>}
+   * @returns {Promise<VBThemePrefs>}
    */
   async init() {
     const saved = this.load();
@@ -53,7 +53,7 @@ export const ThemeManager = {
 
   /**
    * Load theme preferences from localStorage
-   * @returns {{ mode: string, brand: string }}
+   * @returns {VBThemePrefs}
    */
   load() {
     try {
@@ -66,8 +66,8 @@ export const ThemeManager = {
 
   /**
    * Save theme preferences to localStorage
-   * @param {{ mode?: string, brand?: string }} prefs - Partial preferences to update
-   * @returns {{ mode: string, brand: string }} - Updated full preferences
+   * @param {Partial<VBThemePrefs>} prefs - Partial preferences to update
+   * @returns {VBThemePrefs} - Updated full preferences
    */
   save(prefs) {
     const current = this.load();
@@ -82,7 +82,7 @@ export const ThemeManager = {
 
   /**
    * Apply theme to document root
-   * @param {{ mode?: string, brand?: string }} prefs
+   * @param {Partial<VBThemePrefs>} prefs
    */
   apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '' } = {}) {
     const root = document.documentElement;
@@ -193,13 +193,13 @@ export const ThemeManager = {
    */
   getEffectiveMode() {
     const { mode } = this.load();
-    if (mode !== 'auto') return mode;
+    if (mode !== 'auto') return /** @type {'light' | 'dark'} */ (mode);
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   },
 
   /**
    * Get current theme state
-   * @returns {{ mode: string, brand: string, effectiveMode: string }}
+   * @returns {VBThemeState}
    */
   getState() {
     const { mode, brand, borderStyle, iconSet, fluid } = this.load();

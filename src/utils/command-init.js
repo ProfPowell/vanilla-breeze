@@ -47,7 +47,7 @@ function registerCommand(el) {
 
   let unbind = null;
   if (shortcut) {
-    unbind = bindHotkey(shortcut, () => el.click());
+    unbind = bindHotkey(shortcut, () => /** @type {HTMLElement} */ (el).click());
   }
 
   const entry = { element: el, label, group, icon, shortcut, unbind };
@@ -82,7 +82,7 @@ function getRegisteredCommands() {
   const grouped = new Map();
   for (const entry of registry.values()) {
     // Skip hidden/disabled elements
-    if (entry.element.hidden || entry.element.closest('[hidden]')) continue;
+    if (/** @type {HTMLElement} */ (entry.element).hidden || entry.element.closest('[hidden]')) continue;
 
     const list = grouped.get(entry.group) || [];
     list.push(entry);
@@ -112,22 +112,24 @@ const observer = new MutationObserver((mutations) => {
     // Handle added nodes
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) registerCommand(node);
-      node.querySelectorAll?.(SELECTOR).forEach(registerCommand);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) registerCommand(el);
+      el.querySelectorAll(SELECTOR).forEach(registerCommand);
     }
 
     // Handle removed nodes
     for (const node of mutation.removedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (registry.has(node)) unregisterCommand(node);
-      node.querySelectorAll?.(SELECTOR).forEach(el => {
-        if (registry.has(el)) unregisterCommand(el);
+      const el = /** @type {Element} */ (node);
+      if (registry.has(el)) unregisterCommand(el);
+      el.querySelectorAll(SELECTOR).forEach(child => {
+        if (registry.has(child)) unregisterCommand(child);
       });
     }
 
     // Handle attribute changes (data-command added/removed)
     if (mutation.type === 'attributes' && mutation.target.nodeType === Node.ELEMENT_NODE) {
-      const el = mutation.target;
+      const el = /** @type {Element} */ (mutation.target);
       if (el.matches(SELECTOR) && !registry.has(el)) {
         registerCommand(el);
       } else if (!el.matches(SELECTOR) && registry.has(el)) {
@@ -192,6 +194,6 @@ function scanAutoDiscoverable() {
 }
 
 // Expose for command-palette lazy access (avoids circular imports)
-window.__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
+/** @type {any} */ (window).__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
 
 export { getRegisteredCommands, scanAutoDiscoverable, initCommands };

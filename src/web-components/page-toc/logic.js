@@ -218,7 +218,7 @@ class PageToc extends HTMLElement {
       // Create list item
       const li = document.createElement('li');
       li.className = 'item';
-      li.dataset.level = level;
+      li.dataset.level = String(level);
 
       const link = document.createElement('a');
       link.href = `#${heading.id}`;

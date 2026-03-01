@@ -225,7 +225,7 @@ export const charts = {
 
     if (!chart) return;
 
-    chart.dataset.tooltip = '';
+    /** @type {HTMLElement} */ (chart).dataset.tooltip = '';
 
     chart.querySelectorAll('td').forEach(td => {
       const th = td.closest('tr')?.querySelector('th');
@@ -248,7 +248,7 @@ export const charts = {
 
     if (!chart) return;
 
-    const type = chart.dataset.type;
+    const type = /** @type {HTMLElement} */ (chart).dataset.type;
     const maxValue = Math.max(...newData.map(d => d.value));
     const rows = chart.querySelectorAll('tbody tr');
 

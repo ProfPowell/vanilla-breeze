@@ -20,7 +20,7 @@ const ANNOUNCE_DURATION = 1000;
 let equationCounter = 0;
 
 // Global equation registry
-window.VBMath = window.VBMath || { equations: [] };
+/** @type {any} */ (window).VBMath = /** @type {any} */ (window).VBMath || { equations: [] };
 
 /**
  * Initialize math elements within a root element
@@ -91,10 +91,10 @@ function enhanceElement(el) {
     equationCounter++;
     eqNumber = equationCounter;
     wrapper.setAttribute('data-math-numbered', '');
-    wrapper.setAttribute('data-equation-number', eqNumber);
+    wrapper.setAttribute('data-equation-number', String(eqNumber));
 
     if (sourceId) {
-      window.VBMath.equations.push({ id: sourceId, number: eqNumber, latex });
+      /** @type {any} */ (window).VBMath.equations.push({ id: sourceId, number: eqNumber, latex });
     }
   }
 
@@ -122,7 +122,7 @@ function enhanceElement(el) {
     parentPre.setAttribute('data-math-state', 'rendered');
     parentPre.hidden = true;
   } else {
-    el.hidden = true;
+    /** @type {HTMLElement} */ (el).hidden = true;
   }
 
   // Ensure math font is loaded
@@ -175,11 +175,12 @@ const observer = new MutationObserver((mutations) => {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-      if (node.matches?.(SELECTOR)) {
-        enhanceElement(node);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) {
+        enhanceElement(el);
       }
 
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceElement);
+      el.querySelectorAll(SELECTOR).forEach(enhanceElement);
     }
   }
 });

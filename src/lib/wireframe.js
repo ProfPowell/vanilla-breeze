@@ -22,11 +22,12 @@ export const wireframe = {
   labelElements() {
     // Apply labels to elements with data-wf-label
     document.querySelectorAll('[data-wf-label]').forEach((el) => {
-      this.applyLabel(el, el.dataset.wfLabel);
+      this.applyLabel(el, /** @type {HTMLElement} */ (el).dataset.wfLabel);
     });
 
     // Use alt text for images without explicit labels
-    document.querySelectorAll('img[alt]').forEach((img) => {
+    document.querySelectorAll('img[alt]').forEach((rawImg) => {
+      const img = /** @type {HTMLImageElement} */ (rawImg);
       if (!img.dataset.wfLabel && img.alt) {
         this.applyLabel(img, img.alt);
       }
@@ -46,7 +47,7 @@ export const wireframe = {
       : target;
 
     if (el) {
-      el.dataset.wfLabel = text;
+      /** @type {HTMLElement} */ (el).dataset.wfLabel = text;
       this.applyLabel(el, text);
     }
   },
@@ -60,7 +61,7 @@ export const wireframe = {
     if (!text) return;
     // Escape quotes for CSS content
     const escaped = text.replace(/"/g, '\\"');
-    el.style.setProperty('--wf-label-text', `"${escaped}"`);
+    /** @type {HTMLElement} */ (el).style.setProperty('--wf-label-text', `"${escaped}"`);
 
     // For images, we need to propagate the label to the parent figure
     // since <img> elements cannot have ::before/::after pseudo-elements

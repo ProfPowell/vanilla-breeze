@@ -28,7 +28,7 @@ function enhanceTextarea(textarea) {
   textarea.style.resize = 'none';
 
   if (supportsFieldSizing) {
-    textarea.style.fieldSizing = 'content';
+    /** @type {any} */ (textarea.style).fieldSizing = 'content';
     if (maxRows > 0) {
       textarea.style.maxBlockSize = `${maxRows}lh`;
     }
@@ -84,8 +84,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhanceTextarea(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhanceTextarea);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhanceTextarea(/** @type {HTMLTextAreaElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhanceTextarea(/** @type {HTMLTextAreaElement} */ (child)));
     }
   }
 });

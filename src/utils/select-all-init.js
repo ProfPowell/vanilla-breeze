@@ -66,7 +66,7 @@ function enhance(master) {
     const scope = master.closest('[data-select-all-scope]') || master.closest('table, form, fieldset') || document;
     const countEl = scope.querySelector('[data-selected-count]');
     if (countEl) {
-      countEl.textContent = checked;
+      countEl.textContent = String(checked);
     }
 
     // Dispatch event
@@ -99,7 +99,7 @@ function enhance(master) {
   scope.addEventListener('change', (e) => {
     if (bulkUpdating) return;
     if (e.target === master) return;
-    if (e.target.matches?.(targetSelector)) {
+    if (/** @type {Element} */ (e.target).matches?.(targetSelector)) {
       syncState();
     }
   });
@@ -120,8 +120,9 @@ const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      if (node.matches?.(SELECTOR)) enhance(node);
-      node.querySelectorAll?.(SELECTOR).forEach(enhance);
+      const el = /** @type {Element} */ (node);
+      if (el.matches(SELECTOR)) enhance(/** @type {HTMLInputElement} */ (el));
+      el.querySelectorAll(SELECTOR).forEach(child => enhance(/** @type {HTMLInputElement} */ (child)));
     }
   }
 });

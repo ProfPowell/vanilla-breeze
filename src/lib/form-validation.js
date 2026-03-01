@@ -334,10 +334,11 @@ export function initFormValidation() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
-        if (node.matches?.('form[data-validate]')) {
-          enhanceValidatedForm(node);
+        const el = /** @type {Element} */ (node);
+        if (el.matches?.('form[data-validate]')) {
+          enhanceValidatedForm(/** @type {HTMLFormElement} */ (el));
         }
-        node.querySelectorAll?.('form[data-validate]').forEach(enhanceValidatedForm);
+        el.querySelectorAll?.('form[data-validate]').forEach(f => enhanceValidatedForm(/** @type {HTMLFormElement} */ (f)));
       }
     }
   });

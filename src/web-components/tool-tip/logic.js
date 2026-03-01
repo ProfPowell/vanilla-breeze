@@ -175,7 +175,7 @@ class ToolTip extends HTMLElement {
     // Move content into the card
     this.#tooltip.appendChild(content);
     content.removeAttribute('data-content');
-    content.hidden = false;
+    /** @type {HTMLElement} */ (content).hidden = false;
 
     this.appendChild(this.#tooltip);
 
