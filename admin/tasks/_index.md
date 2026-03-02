@@ -7,12 +7,13 @@ Master backlog across all projects. Sorted by priority within each status group.
 | ID | Project | Priority | Summary |
 |:---|:--------|:--------:|:--------|
 | [example-task](./active/example-task.md) | project-name | p1 | Brief one-line description |
-| [mobile-biosite-demo](./active/mobile-biosite-demo.md) | vanilla-breeze | p1 | Create biosite demo using VB syntax to showcase mobile capabilities |
 
 ## Backlog
 
 | ID | Project | Priority | Summary |
 |:---|:--------|:--------:|:--------|
+| [link-as-button](./active/link-as-button.md) | vanilla-breeze | p3 | Add link-as-button pattern for CTA anchors |
+| [pull-to-refresh-indicator](./active/pull-to-refresh-indicator.md) | vanilla-breeze | p3 | Add pull-to-refresh visual indicator component |
 
 
 ## Blocked
@@ -24,6 +25,7 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Completed | Summary |
 |:---|:--------|:----------|:--------|
+| [mobile-biosite-demo](./done/mobile-biosite-demo.md) | vanilla-breeze | 2026-03-01 | VB-native pharma biosite demo with full mobile feature set |
 | [responsive-nav-toggle](./done/responsive-nav-toggle.md) | vanilla-breeze | 2026-03-01 | Add responsive nav toggle pattern (data-visible + nav.bottom) |
 | [htmlvalidate-custom-elements](./done/htmlvalidate-custom-elements.md) | vanilla-breeze | 2026-03-01 | Fix phrasing elements missing flow content flag in html-validate config |
 | [container-type-reel-conflict](./done/container-type-reel-conflict.md) | vanilla-breeze | 2026-03-01 | Fix container-type zeroing out flex children in reels |
