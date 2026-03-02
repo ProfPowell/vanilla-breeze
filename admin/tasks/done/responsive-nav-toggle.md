@@ -1,11 +1,11 @@
 ---
 id: responsive-nav-toggle
 project: vanilla-breeze
-status: backlog
+status: done
 priority: p2
 depends: []
 created: 2026-02-25
-updated: 2026-02-25
+updated: 2026-03-01
 ---
 
 # Add responsive nav toggle pattern (desktop nav + mobile hamburger)
@@ -21,12 +21,12 @@ VB has no built-in pattern for showing a horizontal nav on desktop and switching
 
 ## Acceptance Criteria
 
-- [ ] A VB-native way to declare "show this nav on desktop, show that nav on mobile" without custom media queries
-- [ ] Works with `data-page-layout="landing"` and other single-column layouts
-- [ ] Bottom nav can be sticky on mobile without per-page CSS
-- [ ] Hamburger button auto-hides on desktop
-- [ ] Desktop nav auto-hides on mobile
-- [ ] Documented with a demo page
+- [x] A VB-native way to declare "show this nav on desktop, show that nav on mobile" without custom media queries
+- [x] Works with `data-page-layout="landing"` and other single-column layouts
+- [x] Bottom nav can be sticky on mobile without per-page CSS
+- [x] Hamburger button auto-hides on desktop
+- [x] Desktop nav auto-hides on mobile
+- [x] Documented with a demo page
 
 ## Out of Scope
 
@@ -41,4 +41,14 @@ VB has no built-in pattern for showing a horizontal nav on desktop and switching
 
 ## Session Log
 
-_No sessions yet._
+### 2026-03-01
+
+**Done:**
+- Created `src/utils/responsive.css` with `data-visible="mobile"` and `data-visible="desktop"` media-query utilities (48rem breakpoint)
+- Added `@import "./responsive.css"` to `src/utils/index.css`
+- Added `nav.bottom` variant to `src/native-elements/nav/styles.css` (sticky bottom tab bar with flex row, icon+label stacking, safe-area padding)
+- Added `[data-page-layout] > nav.bottom { grid-area: auto }` override in `src/custom-elements/layout-attributes.css`
+- Created `demos/examples/demos/responsive-nav.html` demo page showing all three primitives together
+- 294 tests pass, CDN build succeeds
+
+**What's next:** Nothing — task complete.

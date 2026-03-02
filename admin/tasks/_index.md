@@ -13,7 +13,6 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Priority | Summary |
 |:---|:--------|:--------:|:--------|
-| [responsive-nav-toggle](./active/responsive-nav-toggle.md) | vanilla-breeze | p2 | Add responsive nav toggle pattern (desktop/mobile) |
 
 
 ## Blocked
@@ -25,6 +24,7 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Completed | Summary |
 |:---|:--------|:----------|:--------|
+| [responsive-nav-toggle](./done/responsive-nav-toggle.md) | vanilla-breeze | 2026-03-01 | Add responsive nav toggle pattern (data-visible + nav.bottom) |
 | [htmlvalidate-custom-elements](./done/htmlvalidate-custom-elements.md) | vanilla-breeze | 2026-03-01 | Fix phrasing elements missing flow content flag in html-validate config |
 | [container-type-reel-conflict](./done/container-type-reel-conflict.md) | vanilla-breeze | 2026-03-01 | Fix container-type zeroing out flex children in reels |
 | [landing-layout-body-main](./done/landing-layout-body-main.md) | vanilla-breeze | 2026-03-01 | Add `body-main` and `body-nav` grid areas to landing layout |
