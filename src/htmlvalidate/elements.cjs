@@ -193,6 +193,7 @@ module.exports = {
   },
 
   "layout-badge": {
+    flow: true,
     phrasing: true,
     permittedContent: ["@phrasing"],
     attributes: {
@@ -203,6 +204,7 @@ module.exports = {
   },
 
   "loading-spinner": {
+    flow: true,
     phrasing: true,
     permittedContent: ["@phrasing"],
     attributes: {
@@ -213,6 +215,7 @@ module.exports = {
   },
 
   "progress-ring": {
+    flow: true,
     phrasing: true,
     permittedContent: ["@phrasing"],
     attributes: {
@@ -404,6 +407,7 @@ module.exports = {
   },
 
   "foot-note": {
+    flow: true,
     phrasing: true,
     permittedContent: ["@phrasing"]
   },
@@ -427,6 +431,7 @@ module.exports = {
   },
 
   "icon-wc": {
+    flow: true,
     phrasing: true,
     permittedContent: [],
     attributes: {

@@ -1,7 +1,7 @@
 ---
 id: htmlvalidate-custom-elements
 project: vanilla-breeze
-status: backlog
+status: done
 priority: p2
 depends: []
 created: 2026-02-25
@@ -21,10 +21,10 @@ html-validate flags all VB custom elements (`<icon-wc>`, `<form-field>`, `<layou
 
 ## Acceptance Criteria
 
-- [ ] All VB custom elements registered in html-validate config
-- [ ] Zero `no-unknown-elements` errors on VB demo pages
-- [ ] `element-permitted-content` errors resolved for VB elements used in standard contexts
-- [ ] html-validate still catches genuinely unknown elements
+- [x] All VB custom elements registered in html-validate config
+- [x] Zero `no-unknown-elements` errors on VB demo pages
+- [x] `element-permitted-content` errors resolved for VB elements used in standard contexts
+- [x] html-validate still catches genuinely unknown elements
 
 ## Out of Scope
 
@@ -39,4 +39,6 @@ html-validate flags all VB custom elements (`<icon-wc>`, `<form-field>`, `<layou
 
 ## Session Log
 
-_No sessions yet._
+### 2026-03-01
+
+All 59 custom elements were already registered in `src/htmlvalidate/elements.cjs`. The actual bug was that 5 phrasing-level elements (`icon-wc`, `layout-badge`, `loading-spinner`, `progress-ring`, `foot-note`) were missing `flow: true`. In html-validate, both flags must be explicit — phrasing doesn't imply flow. Without `flow: true`, these elements couldn't appear inside `<aside>`, `<figure>`, `<section>`, `<div>`, or other flow containers. Added `flow: true` to all 5. Result: zero `element-permitted-content` and zero `no-unknown-elements` errors across all demo pages. 294 unit tests pass.
