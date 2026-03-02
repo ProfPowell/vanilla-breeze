@@ -1,0 +1,142 @@
+---
+layout: layouts/attribute.njk
+title: "data-bubble"
+description: "Chat bubble shapes for messaging UIs — incoming, outgoing, assistant, thought, typing, error, system variants with CSS shape() tails."
+attributeName: data-bubble
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-bubble/
+permalink: /docs/attributes/data-bubble/
+---
+
+<nav class="subnav" aria-label="Bubble sections">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#variants">Variants</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#accessibility">Accessibility</a></li>
+    <li><a href="#demos">Demos</a></li>
+  </ul>
+</nav>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p>The <code>data-bubble</code> attribute provides a full taxonomy of chat bubble shapes for messaging UIs. Each variant has a distinctive tail direction, background color, and alignment built from CSS <code>shape()</code> paths.</p>
+
+  <p>Bubbles are designed to be used inside a flex column container. Each variant sets its own <code>align-self</code> for correct left/right/center positioning.</p>
+</section>
+
+<section id="variants">
+  <h2>Variants</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Tail</th>
+        <th>Background</th>
+        <th>Alignment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>incoming</code></td>
+        <td>Bottom-left</td>
+        <td><code>--color-surface-raised</code></td>
+        <td>Left</td>
+      </tr>
+      <tr>
+        <td><code>outgoing</code></td>
+        <td>Bottom-right</td>
+        <td><code>--color-primary</code></td>
+        <td>Right</td>
+      </tr>
+      <tr>
+        <td><code>assistant</code></td>
+        <td>Top-left</td>
+        <td>Tinted secondary</td>
+        <td>Left</td>
+      </tr>
+      <tr>
+        <td><code>thought</code></td>
+        <td>Cloud shape (no tail)</td>
+        <td><code>--color-surface-raised</code></td>
+        <td>Left</td>
+      </tr>
+      <tr>
+        <td><code>typing</code></td>
+        <td>Bottom-left (like incoming)</td>
+        <td><code>--color-surface-raised</code></td>
+        <td>Left</td>
+      </tr>
+      <tr>
+        <td><code>error</code></td>
+        <td>Left accent border (no clip)</td>
+        <td>Danger tint</td>
+        <td>Left</td>
+      </tr>
+      <tr>
+        <td><code>system</code></td>
+        <td>Pill (no clip)</td>
+        <td><code>--color-surface-sunken</code></td>
+        <td>Center</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+
+  <h3>Basic chat conversation</h3>
+  {% set _codeChat %}<!-- Chat container: flex column with gap -->
+<section class="chat-window">
+  <p data-bubble="system">Today, 2:34 PM</p>
+
+  <p data-bubble="incoming">Hey, have you seen this?</p>
+  <p data-bubble="outgoing">Yes! Looks great.</p>
+
+  <p data-bubble="assistant">I can help with that.</p>
+  <p data-bubble="thought">Hmm, interesting idea...</p>
+
+  <!-- Typing indicator with animated dots -->
+  <p data-bubble="typing">
+    <span></span>
+    <span></span>
+    <span></span>
+  </p>
+
+  <p data-bubble="error">Failed to send. Check connection.</p>
+  <p data-bubble="system">Alice left the conversation</p>
+</section>
+
+<style>
+  .chat-window {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-s);
+    max-width: 500px;
+    padding: var(--size-l);
+  }
+</style>{% endset %}
+  <code-block language="html" label="Chat conversation">{{ _codeChat | escape }}</code-block>
+
+  <h3>Typing indicator</h3>
+  <p>The <code>typing</code> bubble expects three empty <code>&lt;span&gt;</code> children for the animated dot indicators. The animation respects <code>prefers-reduced-motion</code>.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Use semantic elements (<code>&lt;p&gt;</code>, <code>&lt;blockquote&gt;</code>) for bubble content</li>
+    <li>The typing indicator uses <code>opacity</code> animation, not content changes, to avoid screen reader noise</li>
+    <li>System messages use <code>text-align: center</code> and a pill shape for visual distinction</li>
+    <li>Error bubbles use a colored left border rather than color alone to indicate errors</li>
+    <li>All <code>data-morph</code> and typing animations are disabled when <code>prefers-reduced-motion: reduce</code> is active</li>
+  </ul>
+</section>
+
+<section id="demos">
+  <h2>Demos</h2>
+  <browser-window src="/docs/examples/demos/css-shapes-chat.html" url="https://vanilla-breeze.dev/shapes/chat" title="CSS Shapes: Chat Bubbles" shadow></browser-window>
+</section>

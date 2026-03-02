@@ -174,6 +174,20 @@ const dataAttributes = {
       { name: 'data-striped', type: 'styling', href: '/docs/elements/native/dl/', description: 'Alternating row backgrounds for definition lists' },
     ],
   },
+  shapes: {
+    label: 'Shapes',
+    items: [
+      { name: 'data-shape-start', type: 'styling', href: '/docs/attributes/data-shape/', description: 'Clip the top edge of a section with wave, chevron, scallop, or diagonal shapes' },
+      { name: 'data-shape-end', type: 'styling', href: '/docs/attributes/data-shape/', description: 'Clip the bottom edge of a section with wave, chevron, scallop, or diagonal shapes' },
+      { name: 'data-clip', type: 'styling', href: '/docs/attributes/data-clip/', description: 'Responsive shape masking for images and figures using CSS shape()' },
+      { name: 'data-badge (shape)', type: 'styling', href: '/docs/attributes/data-badge-shape/', description: 'Inline shaped labels with clip-path — ribbon, notch, flag, double-arrow, stamp' },
+      { name: 'data-callout', type: 'styling', href: '/docs/attributes/data-badge-shape/', description: 'Block callout containers with speech, notched, and tip shape variants' },
+      { name: 'data-bubble', type: 'styling', href: '/docs/attributes/data-bubble/', description: 'Chat bubble shapes for messaging UIs — incoming, outgoing, assistant, thought, typing' },
+      { name: 'data-cutout', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Punch-out shapes using evenodd fill rule — circle, diamond, arch-window, hex' },
+      { name: 'data-border-shape', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Two-layer shaped borders for images and containers — hexagon, diamond, arch' },
+      { name: 'data-morph', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Shape morphing animations — pulse, breathe, wave with prefers-reduced-motion support' },
+    ],
+  },
   infrastructure: {
     label: 'Infrastructure',
     items: [

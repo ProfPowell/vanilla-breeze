@@ -1,0 +1,234 @@
+---
+layout: layouts/attribute.njk
+title: "data-shape"
+description: "Section edge shapes and HR dividers using CSS shape() — wave, chevron, scallop, diagonal patterns with customizable depth."
+attributeName: data-shape
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-shape/
+permalink: /docs/attributes/data-shape/
+---
+
+<nav class="subnav" aria-label="Shape sections">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#section-edges">Section Edges</a></li>
+    <li><a href="#hr-dividers">HR Dividers</a></li>
+    <li><a href="#custom-properties">Custom Properties</a></li>
+    <li><a href="#demos">Demos</a></li>
+    <li><a href="#browser-support">Support</a></li>
+  </ul>
+</nav>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p>The CSS <code>shape()</code> function enables responsive, CSS-native clip-path shapes using any CSS unit. Vanilla Breeze provides a shapes system that adds decorative edge clipping to sections and styled dividers to <code>&lt;hr&gt;</code> elements.</p>
+
+  <p>All shapes are guarded by <code>@supports (clip-path: shape(...))</code> and degrade gracefully to rectangular elements in unsupported browsers. No SVG or JavaScript required.</p>
+
+  <p>The shapes system lives in the <code>utils</code> cascade layer, so any theme or component styles can override them.</p>
+</section>
+
+<section id="section-edges">
+  <h2>Section Edges</h2>
+  <p>Apply <code>data-shape-start</code> and <code>data-shape-end</code> to <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;header&gt;</code>, or <code>&lt;footer&gt;</code> to clip the top or bottom edge into a decorative shape.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Values</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-shape-start</code></td>
+        <td><code>wave</code>, <code>chevron</code>, <code>scallop</code>, <code>diagonal</code></td>
+        <td>Clips the top edge of the element</td>
+      </tr>
+      <tr>
+        <td><code>data-shape-end</code></td>
+        <td><code>wave</code>, <code>chevron</code>, <code>scallop</code>, <code>diagonal</code></td>
+        <td>Clips the bottom edge of the element</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Both attributes can be combined on a single element for different top and bottom shapes.</p>
+
+  {% set _codeEdges %}<!-- Bottom wave edge -->
+<section data-shape-end="wave">
+  <h2>Our Services</h2>
+  <p>Content flows into a wave shape at the bottom.</p>
+</section>
+
+<!-- Top chevron + bottom scallop -->
+<section data-shape-start="chevron" data-shape-end="scallop">
+  <h2>Middle section</h2>
+  <p>Chevron top, scallop bottom.</p>
+</section>
+
+<!-- Custom depth override -->
+<section data-shape-end="wave" class="subtle-edge">
+  <h2>Subtle wave</h2>
+</section>
+
+<style>
+  .subtle-edge { --shape-depth: 5%; }
+</style>{% endset %}
+  <code-block language="html" label="Section edge examples">{{ _codeEdges | escape }}</code-block>
+
+  <p>Padding is automatically added on the clipped side to prevent content from being cut off.</p>
+</section>
+
+<section id="hr-dividers">
+  <h2>HR Dividers</h2>
+  <p>Class-based shape variants for <code>&lt;hr&gt;</code> elements. These extend the existing <code>hr.decorative</code> pattern.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Effect</th>
+        <th>Requires shape()</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>hr.wave</code></td>
+        <td>Sinusoidal wave line</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>hr.zigzag</code></td>
+        <td>Sharp zigzag line</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>hr.scallop</code></td>
+        <td>Repeating arcs</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>hr.diamonds</code></td>
+        <td>Connected diamond chain</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>hr.dots</code></td>
+        <td>Dot chain via radial-gradient</td>
+        <td>No &mdash; works everywhere</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeHr %}<hr class="wave">
+<hr class="zigzag">
+<hr class="scallop">
+<hr class="diamonds">
+<hr class="dots">{% endset %}
+  <code-block language="html" label="HR divider variants">{{ _codeHr | escape }}</code-block>
+
+  <p>All shape-based dividers fall back to a plain 1px <code>&lt;hr&gt;</code> in browsers without <code>shape()</code> support. The <code>hr.dots</code> variant uses <code>radial-gradient</code> and works in all browsers.</p>
+</section>
+
+<section id="custom-properties">
+  <h2>Custom Properties</h2>
+  <p>The shapes system registers several <code>@property</code> declarations for animatable, type-safe customization.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Syntax</th>
+        <th>Default</th>
+        <th>Used By</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--shape-depth</code></td>
+        <td><code>&lt;percentage&gt;</code></td>
+        <td><code>15%</code></td>
+        <td>Section edges &mdash; how dramatic the edge clip is</td>
+      </tr>
+      <tr>
+        <td><code>--shape-bevel</code></td>
+        <td><code>&lt;length&gt;</code></td>
+        <td><code>20px</code></td>
+        <td>Notched callouts &mdash; corner bevel size</td>
+      </tr>
+      <tr>
+        <td><code>--shape-curve</code></td>
+        <td><code>&lt;percentage&gt;</code></td>
+        <td><code>50%</code></td>
+        <td>Reserved for theme overrides</td>
+      </tr>
+      <tr>
+        <td><code>--shape-border</code></td>
+        <td><code>&lt;length&gt;</code></td>
+        <td><code>4px</code></td>
+        <td>Shaped borders &mdash; border thickness</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>These properties inherit and can be overridden at any level. Theme files (like cyber and kawaii) set their own defaults.</p>
+</section>
+
+<section id="demos">
+  <h2>Demos</h2>
+
+  <h3>HR Dividers &amp; Section Edges</h3>
+  <browser-window src="/docs/examples/demos/css-shapes-dividers.html" url="https://vanilla-breeze.dev/shapes/dividers" title="CSS Shapes: Dividers" shadow></browser-window>
+</section>
+
+<section id="browser-support">
+  <h2>Browser Support</h2>
+  <p>The CSS <code>shape()</code> function is supported in all major browsers.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Chrome</th>
+        <th>Firefox</th>
+        <th>Safari</th>
+        <th>Edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>clip-path: shape()</code></td>
+        <td>135+</td>
+        <td>148+</td>
+        <td>18.4+</td>
+        <td>135+</td>
+      </tr>
+      <tr>
+        <td><code>calc()</code> inside shape()</td>
+        <td>135+</td>
+        <td>148+</td>
+        <td>18.4+</td>
+        <td>135+</td>
+      </tr>
+      <tr>
+        <td>Custom properties in shape()</td>
+        <td>135+</td>
+        <td>148+</td>
+        <td>18.4+</td>
+        <td>135+</td>
+      </tr>
+      <tr>
+        <td>Shape animation interpolation</td>
+        <td>135+</td>
+        <td>148+</td>
+        <td>18.4+</td>
+        <td>135+</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Older browsers see plain rectangles. The <code>@supports</code> guard prevents any broken rendering.</p>
+</section>

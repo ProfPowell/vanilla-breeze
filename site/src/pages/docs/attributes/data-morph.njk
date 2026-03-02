@@ -1,0 +1,162 @@
+---
+layout: layouts/attribute.njk
+title: "data-morph"
+description: "Shape morphing animations, evenodd cutouts, and two-layer shaped borders — advanced CSS shape() techniques."
+attributeName: data-morph
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-morph/
+permalink: /docs/attributes/data-morph/
+---
+
+<nav class="subnav" aria-label="Advanced shape sections">
+  <ul>
+    <li><a href="#animation">Animation</a></li>
+    <li><a href="#cutouts">Cutouts</a></li>
+    <li><a href="#shaped-borders">Shaped Borders</a></li>
+    <li><a href="#demos">Demos</a></li>
+  </ul>
+</nav>
+
+<section id="animation">
+  <h2>Shape Animation</h2>
+  <p>Apply <code>data-morph</code> to any element to animate its <code>clip-path</code> between matching-point shapes using CSS keyframes. All animations respect <code>prefers-reduced-motion</code>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Effect</th>
+        <th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>pulse</code></td>
+        <td>Subtle inset throb between full and slightly inset rectangles</td>
+        <td>3s</td>
+      </tr>
+      <tr>
+        <td><code>breathe</code></td>
+        <td>Organic morphing between curved top and curved bottom shapes</td>
+        <td>4s</td>
+      </tr>
+      <tr>
+        <td><code>wave</code></td>
+        <td>Horizontal wave undulation on top and bottom edges</td>
+        <td>2.5s</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeMorph %}<section data-morph="pulse">
+  Pulsing shape
+</section>
+
+<section data-morph="breathe">
+  Breathing shape
+</section>
+
+<section data-morph="wave">
+  Waving shape
+</section>{% endset %}
+  <code-block language="html" label="Morph animation examples">{{ _codeMorph | escape }}</code-block>
+
+  <p>Shape animation works because <code>shape()</code> supports interpolation between matching-point paths. Both keyframe states must have the same number of points for smooth transitions.</p>
+
+  <h3>Theme overrides</h3>
+  <p>The <strong>cyber</strong> theme uses <code>steps(8)</code> timing for a glitchy digital feel. The <strong>kawaii</strong> theme uses bouncy easing for playful motion.</p>
+</section>
+
+<section id="cutouts">
+  <h2>Cutouts</h2>
+  <p>Apply <code>data-cutout</code> to punch a hole through an element using the <code>evenodd</code> fill rule. The outer rectangle stays, the inner shape is removed.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Inner Shape</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>circle</code></td>
+        <td>Centered circle cutout</td>
+      </tr>
+      <tr>
+        <td><code>diamond</code></td>
+        <td>Centered diamond cutout</td>
+      </tr>
+      <tr>
+        <td><code>arch-window</code></td>
+        <td>Arched window opening</td>
+      </tr>
+      <tr>
+        <td><code>hex</code></td>
+        <td>Centered hexagon cutout</td>
+      </tr>
+      <tr>
+        <td><code>badge-corner</code></td>
+        <td>Quarter-circle in top-right corner</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeCutout %}<section data-cutout="circle"
+  style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+         aspect-ratio: 1;">
+  <!-- Content shows through the gradient; hole reveals whatever is behind -->
+</section>{% endset %}
+  <code-block language="html" label="Cutout examples">{{ _codeCutout | escape }}</code-block>
+
+  <p>Cutouts work by defining two closed paths in one <code>shape()</code>: the outer rectangle and the inner shape. The <code>evenodd</code> fill rule means the overlapping area (the inner shape) is transparent.</p>
+</section>
+
+<section id="shaped-borders">
+  <h2>Shaped Borders</h2>
+  <p>Apply <code>data-border-shape</code> to a wrapper element for a colored shape outline. Uses a two-layer technique: a <code>::before</code> pseudo-element provides the colored background at full shape, and the inner content clips to the same shape inset by <code>--shape-border</code>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Shape</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>hexagon</code></td>
+        <td>Six-sided hexagonal frame</td>
+      </tr>
+      <tr>
+        <td><code>diamond</code></td>
+        <td>Rotated square diamond frame</td>
+      </tr>
+      <tr>
+        <td><code>arch</code></td>
+        <td>Rounded arch frame</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% set _codeBorder %}<span data-border-shape="hexagon">
+  <img src="avatar.jpg" alt="Profile" width="200" height="200">
+</span>{% endset %}
+  <code-block language="html" label="Shaped border examples">{{ _codeBorder | escape }}</code-block>
+
+  <p>Adjust border thickness with <code>--shape-border</code> (default: <code>4px</code>). The border color comes from <code>--color-primary</code> by default.</p>
+</section>
+
+<section id="demos">
+  <h2>Demos</h2>
+
+  <h3>Advanced Shapes</h3>
+  <browser-window src="/docs/examples/demos/css-shapes-advanced.html" url="https://vanilla-breeze.dev/shapes/advanced" title="CSS Shapes: Advanced" shadow></browser-window>
+
+  <h3>Cyber Theme Showcase</h3>
+  <browser-window src="/docs/examples/demos/css-shapes-cyber-showcase.html" url="https://vanilla-breeze.dev/shapes/cyber" title="CSS Shapes: Cyber" shadow></browser-window>
+
+  <h3>Kawaii Theme Showcase</h3>
+  <browser-window src="/docs/examples/demos/css-shapes-kawaii-showcase.html" url="https://vanilla-breeze.dev/shapes/kawaii" title="CSS Shapes: Kawaii" shadow></browser-window>
+</section>
