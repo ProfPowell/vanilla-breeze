@@ -144,6 +144,7 @@ class ThemePicker extends HTMLElement {
   #panel;
   #isOpen = false;
   #isInline = false;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #autoDismissTimer = null;
   #extensionsExpanded = false;
 

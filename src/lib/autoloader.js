@@ -11,7 +11,7 @@
  * // Now <geo-map> added to DOM will auto-load its JS module
  */
 
-/** @type {Map<string, string>} tag-name → file path */
+/** @type {Map<string, string> | null} tag-name → file path */
 let componentMap = null;
 
 /** @type {Map<string, Promise<void>>} tag-name → loading promise */
@@ -148,11 +148,12 @@ export async function initAutoloader() {
 
         const el = /** @type {Element} */ (node);
         const tag = el.localName;
-        if (tag.includes('-') && componentMap.has(tag)) {
+        if (tag.includes('-') && componentMap?.has(tag)) {
           loadComponent(tag);
         }
 
         // Also scan children of added nodes
+        // @ts-ignore — defensive check for non-Element nodes
         if (el.querySelectorAll) {
           scanForComponents(el);
         }

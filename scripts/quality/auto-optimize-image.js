@@ -97,7 +97,9 @@ async function generateVariants(imagePath) {
   const baseName = basename(imagePath, ext);
 
   const results = {
+    /** @type {string[]} */
     generated: [],
+    /** @type {string[]} */
     errors: [],
   };
 

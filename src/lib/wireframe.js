@@ -22,7 +22,7 @@ export const wireframe = {
   labelElements() {
     // Apply labels to elements with data-wf-label
     document.querySelectorAll('[data-wf-label]').forEach((el) => {
-      this.applyLabel(el, /** @type {HTMLElement} */ (el).dataset.wfLabel);
+      this.applyLabel(el, /** @type {HTMLElement} */ (el).dataset.wfLabel ?? '');
     });
 
     // Use alt text for images without explicit labels

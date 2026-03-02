@@ -82,6 +82,7 @@ class PageToc extends HTMLElement {
 
     for (const link of links) {
       const href = link.getAttribute('href');
+      if (!href) continue;
       const id = href.slice(1); // Remove leading #
 
       if (id) {

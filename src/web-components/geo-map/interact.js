@@ -64,7 +64,7 @@ export class MapInteraction {
         this.#onDeactivate = onDeactivate;
         this.#zoom = zoom;
 
-        this.#tiles = shadow.querySelector('[part="tiles"]');
+        this.#tiles = /** @type {HTMLElement} */ (shadow.querySelector('[part="tiles"]'));
         this.#marker = shadow.querySelector('[part="marker"]');
 
         // Calculate initial world pixel position from lat/lng
@@ -310,8 +310,8 @@ export class MapInteraction {
         img.style.height = '256px';
 
         // Store world pixel positions directly (avoids CSS serialization roundtrip)
-        /** @type {any} */ (img)._wx = pxLeft;
-        /** @type {any} */ (img)._wy = pxTop;
+        /** @type {VBMapImage} */ (img)._wx = pxLeft;
+        /** @type {VBMapImage} */ (img)._wy = pxTop;
 
         this.#tileCache.set(key, img);
         this.#tiles.appendChild(img);
@@ -326,8 +326,8 @@ export class MapInteraction {
         const buffer = 512; // 2 tiles
 
         for (const [key, img] of this.#tileCache) {
-            const imgLeft = /** @type {any} */ (img)._wx;
-            const imgTop = /** @type {any} */ (img)._wy;
+            const imgLeft = /** @type {VBMapImage} */ (img)._wx;
+            const imgTop = /** @type {VBMapImage} */ (img)._wy;
 
             if (
                 imgLeft + 256 < left - buffer ||

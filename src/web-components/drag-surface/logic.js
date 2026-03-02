@@ -28,9 +28,12 @@
  * </drag-surface>
  */
 class DragSurface extends HTMLElement {
+  /** @type {HTMLDivElement | null} */
   #liveRegion = null;
+  /** @type {number | null} */
   #keyboardOriginalIndex = null;
   #reducedMotion = false;
+  /** @type {EventTarget | null} */
   #lastPointerTarget = null;
 
   connectedCallback() {
@@ -90,11 +93,12 @@ class DragSurface extends HTMLElement {
   }
 
   #announce(message) {
-    if (!this.#liveRegion) return;
+    const region = this.#liveRegion;
+    if (!region) return;
     // Clear then set to ensure screen readers re-announce
-    this.#liveRegion.textContent = '';
+    region.textContent = '';
     requestAnimationFrame(() => {
-      this.#liveRegion.textContent = message;
+      region.textContent = message;
     });
   }
 
@@ -476,6 +480,7 @@ class DragSurface extends HTMLElement {
     }
   }
 
+  /** @type {{ item: HTMLElement; source: DragSurface; originalIndex: number } | null} */
   static #activeDrag = null;
 }
 

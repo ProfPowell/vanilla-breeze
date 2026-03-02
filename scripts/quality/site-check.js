@@ -34,6 +34,14 @@ const colors = {
   bold: '\x1b[1m',
 };
 
+/**
+ * @typedef {object} CheckResults
+ * @property {string[]} passed
+ * @property {string[]} warnings
+ * @property {string[]} errors
+ * @property {string[]} info
+ */
+
 /** Site infrastructure requirements */
 const REQUIREMENTS = {
   favicon: {
@@ -67,6 +75,7 @@ function fileExists(siteRoot, filename) {
  * @returns {object} Validation results
  */
 function checkFavicons(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -121,6 +130,7 @@ const KNOWN_BOTS = [
  * @returns {object} Validation results
  */
 function checkRobotsTxt(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -304,6 +314,7 @@ function checkRobotsTxt(siteRoot) {
  * @returns {object} Validation results
  */
 function checkSitemap(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -353,6 +364,7 @@ function checkSitemap(siteRoot) {
  * @returns {object} Validation results
  */
 function checkManifest(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -445,6 +457,7 @@ function checkManifest(siteRoot) {
  * @returns {object} Validation results
  */
 function checkErrorPages(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -502,6 +515,7 @@ function checkErrorPages(siteRoot) {
  * @returns {object} Validation results
  */
 function checkLlmsTxt(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -546,6 +560,7 @@ function checkLlmsTxt(siteRoot) {
  * @returns {object} Validation results
  */
 function checkSecurityTxt(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -620,6 +635,7 @@ function checkSecurityTxt(siteRoot) {
  * @returns {object} Validation results
  */
 function checkOpenSearch(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],
@@ -681,6 +697,7 @@ function checkOpenSearch(siteRoot) {
  * @returns {object} Validation results
  */
 function checkHumansTxt(siteRoot) {
+  /** @type {CheckResults} */
   const results = {
     passed: [],
     warnings: [],

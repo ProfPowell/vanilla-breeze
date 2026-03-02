@@ -25,7 +25,7 @@ class FootNotes extends HTMLElement {
 
     // Allow customization via attribute
     if (this.hasAttribute('data-back-label')) {
-      this.#backLabel = this.getAttribute('data-back-label');
+      this.#backLabel = this.getAttribute('data-back-label') ?? this.#backLabel;
     }
 
     // Find all foot-note elements in the document before this element

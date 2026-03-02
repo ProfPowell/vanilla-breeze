@@ -31,7 +31,9 @@ const CONFIG = {
 };
 
 // Track errors and warnings
+/** @type {string[]} */
 const errors = [];
+/** @type {string[]} */
 const warnings = [];
 
 /**
@@ -107,7 +109,9 @@ async function checkModernFormats(imagePath) {
 async function validateImage(imagePath) {
   const results = {
     path: imagePath,
+    /** @type {string[]} */
     errors: [],
+    /** @type {string[]} */
     warnings: [],
   };
 

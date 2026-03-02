@@ -40,10 +40,10 @@ const VERSION = pkg.version;
 const JS_DEFAULTS = {
   bundle: true,
   minify: true,
-  format: 'esm',
+  format: /** @type {const} */ ('esm'),
   target: ['es2022'],
-  legalComments: 'none',
-  sourcemap: 'linked',
+  legalComments: /** @type {const} */ ('none'),
+  sourcemap: /** @type {const} */ ('linked'),
   define: {
     '__VB_VERSION__': JSON.stringify(VERSION),
   },
@@ -53,7 +53,7 @@ const JS_DEFAULTS = {
 const CSS_DEFAULTS = {
   bundle: true,
   minify: true,
-  sourcemap: 'linked',
+  sourcemap: /** @type {const} */ ('linked'),
 };
 
 // Ensure directories exist

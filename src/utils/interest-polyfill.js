@@ -237,7 +237,7 @@ function setupAnchorNames(el) {
   if (!target?.id) return;
   const name = `--interest-${target.id}`;
   el.style.anchorName = name;
-  /** @type {any} */ (target.style).positionAnchor = name;
+  target.style.positionAnchor = name;
 }
 
 function positionWithJS(invoker, target) {

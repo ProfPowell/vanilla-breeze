@@ -39,7 +39,7 @@ function formatHotkey(combo) {
  */
 function parseHotkey(combo) {
   const parts = combo.toLowerCase().split('+').map(k => k.trim());
-  const key = parts.pop();
+  const key = parts.pop() ?? '';
   return {
     key,
     meta: parts.includes('meta') || parts.includes('cmd'),

@@ -181,7 +181,7 @@ function enhanceLorem(el) {
   if (el.hasAttribute('data-lorem-init')) return;
   el.setAttribute('data-lorem-init', '');
 
-  const parsed = parseValue(el.dataset.lorem, el);
+  const parsed = parseValue(el.dataset.lorem ?? '', el);
   const content = generateText(parsed);
   const tag = el.tagName.toLowerCase();
 

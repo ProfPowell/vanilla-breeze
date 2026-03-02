@@ -162,6 +162,7 @@ function findJsFiles(dir) {
  * @returns {{ file: string, issues: Issue[] }}
  */
 function checkFile(filePath, isEntryPoint = false) {
+  /** @type {Issue[]} */
   const issues = [];
 
   if (!existsSync(filePath)) {
@@ -182,7 +183,7 @@ function checkFile(filePath, isEntryPoint = false) {
 
       if (check.required && !hasPattern) {
         issues.push({
-          severity: check.severity,
+          severity: /** @type {Issue['severity']} */ (check.severity),
           message: check.message,
           code: check.name
         });
@@ -195,7 +196,7 @@ function checkFile(filePath, isEntryPoint = false) {
         const lineNumber = beforeMatch.split('\n').length;
 
         issues.push({
-          severity: check.severity,
+          severity: /** @type {Issue['severity']} */ (check.severity),
           message: check.message,
           line: lineNumber,
           code: check.name
@@ -212,7 +213,7 @@ function checkFile(filePath, isEntryPoint = false) {
  * @param {{ file: string, issues: Issue[] }[]} results
  * @returns {number} Error count
  */
-function printResults(results) {
+function printResults(/** @type {{ file: string, issues: Issue[] }[]} */ results) {
   let errorCount = 0;
   let warningCount = 0;
   let infoCount = 0;

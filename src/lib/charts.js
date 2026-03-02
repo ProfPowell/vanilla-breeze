@@ -194,7 +194,7 @@ export const charts = {
    * Generate legend element for chart
    * @param {Element} container - Container to append legend to
    * @param {Array} series - Array of {label, series} objects
-   * @returns {HTMLDivElement} The created legend element
+   * @returns {HTMLDivElement | null} The created legend element
    */
   generateLegend(container, series) {
     const target = typeof container === 'string'
@@ -264,7 +264,7 @@ export const charts = {
 
       rows.forEach((row, index) => {
         if (newData[index]) {
-          const td = row.querySelector('td');
+          const td = /** @type {HTMLElement | null} */ (row.querySelector('td'));
           const th = row.querySelector('th');
           const item = newData[index];
           const percentage = item.value / total;
@@ -275,9 +275,11 @@ export const charts = {
             `var(--chart-series-${seriesNum}) ${(startAngle * 360).toFixed(2)}deg ${(endAngle * 360).toFixed(2)}deg`
           );
 
-          td.style.setProperty('--value', percentage.toFixed(4));
-          td.style.setProperty('--start', startAngle.toFixed(4));
-          td.textContent = item.displayValue ?? `${Math.round(percentage * 100)}%`;
+          if (td) {
+            td.style.setProperty('--value', percentage.toFixed(4));
+            td.style.setProperty('--start', startAngle.toFixed(4));
+            td.textContent = item.displayValue ?? `${Math.round(percentage * 100)}%`;
+          }
 
           if (item.label && th) {
             th.textContent = item.label;
@@ -295,21 +297,23 @@ export const charts = {
       // Update bar/column/line/area charts
       rows.forEach((row, index) => {
         if (newData[index]) {
-          const td = row.querySelector('td');
+          const td = /** @type {HTMLElement | null} */ (row.querySelector('td'));
           const th = row.querySelector('th');
           const item = newData[index];
           const normalizedValue = maxValue > 0 ? item.value / maxValue : 0;
 
-          td.style.setProperty('--value', normalizedValue.toFixed(4));
-          td.textContent = item.displayValue ?? item.value;
+          if (td) {
+            td.style.setProperty('--value', normalizedValue.toFixed(4));
+            td.textContent = item.displayValue ?? item.value;
 
-          if (td.dataset.label !== undefined) {
-            td.dataset.label = item.displayValue ?? item.value;
-          }
+            if (td.dataset.label !== undefined) {
+              td.dataset.label = item.displayValue ?? item.value;
+            }
 
-          if (td.dataset.tooltip !== undefined) {
-            const label = item.label ?? th?.textContent ?? '';
-            td.dataset.tooltip = `${label}: ${item.displayValue ?? item.value}`;
+            if (td.dataset.tooltip !== undefined) {
+              const label = item.label ?? th?.textContent ?? '';
+              td.dataset.tooltip = `${label}: ${item.displayValue ?? item.value}`;
+            }
           }
 
           if (item.label && th) {

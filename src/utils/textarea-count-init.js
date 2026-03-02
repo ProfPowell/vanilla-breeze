@@ -26,7 +26,7 @@ function enhanceTextarea(textarea) {
 
   const isWordMode = textarea.dataset.count === 'words';
   const max = isWordMode
-    ? parseInt(textarea.dataset.maxwords, 10) || 0
+    ? parseInt(textarea.dataset.maxwords ?? '0', 10) || 0
     : textarea.maxLength > 0 ? textarea.maxLength : 0;
 
   // Create counter element

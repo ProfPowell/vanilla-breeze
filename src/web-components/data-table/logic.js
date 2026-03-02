@@ -51,14 +51,20 @@ class DataTable extends HTMLElement {
   #allRows = [];
   #filteredRows = [];
   #currentSortColumn = -1;
+  /** @type {string | null} */
   #currentSortDirection = null;
   #currentPage = 1;
   #pageSize = 0;
+  /** @type {HTMLInputElement | null} */
   #filterInput = null;
+  /** @type {HTMLElement | null} */
   #paginationNav = null;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #filterDebounceTimer = null;
   #filterQuery = '';
+  /** @type {HTMLInputElement | null} */
   #selectAllCheckbox = null;
+  /** @type {Element | null} */
   #selectedCountElement = null;
 
   connectedCallback() {
@@ -512,10 +518,11 @@ class DataTable extends HTMLElement {
   #renderPagination() {
     if (!this.#paginationNav || this.#pageSize <= 0) return;
 
+    const nav = this.#paginationNav;
     const totalPages = Math.ceil(this.#filteredRows.length / this.#pageSize);
 
     // Clear existing content
-    this.#paginationNav.innerHTML = '';
+    nav.innerHTML = '';
 
     if (totalPages <= 1) {
       return; // No pagination needed
@@ -528,7 +535,7 @@ class DataTable extends HTMLElement {
     prevBtn.setAttribute('data-pagination-prev', '');
     prevBtn.disabled = this.#currentPage === 1;
     prevBtn.addEventListener('click', () => this.goToPage(this.#currentPage - 1));
-    this.#paginationNav.appendChild(prevBtn);
+    nav.appendChild(prevBtn);
 
     // Page numbers with ellipsis
     const pageNumbers = this.#getPageNumbers(totalPages);
@@ -538,7 +545,7 @@ class DataTable extends HTMLElement {
         const ellipsis = document.createElement('span');
         ellipsis.textContent = '...';
         ellipsis.setAttribute('data-pagination-ellipsis', '');
-        this.#paginationNav.appendChild(ellipsis);
+        nav.appendChild(ellipsis);
       } else {
         const pageBtn = document.createElement('button');
         pageBtn.type = 'button';
@@ -551,7 +558,7 @@ class DataTable extends HTMLElement {
         }
 
         pageBtn.addEventListener('click', () => this.goToPage(pageNum));
-        this.#paginationNav.appendChild(pageBtn);
+        nav.appendChild(pageBtn);
       }
     });
 
@@ -562,7 +569,7 @@ class DataTable extends HTMLElement {
     nextBtn.setAttribute('data-pagination-next', '');
     nextBtn.disabled = this.#currentPage === totalPages;
     nextBtn.addEventListener('click', () => this.goToPage(this.#currentPage + 1));
-    this.#paginationNav.appendChild(nextBtn);
+    nav.appendChild(nextBtn);
   }
 
   #getPageNumbers(totalPages) {

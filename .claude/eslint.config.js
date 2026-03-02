@@ -22,6 +22,10 @@ export default [
       }],
       "jsdoc/check-types": "warn",
       "jsdoc/empty-tags": "warn",
+
+      // Require JSDoc on exported functions (warn — doesn't block CI)
+      "jsdoc/require-param": ["warn", { checkSetters: false }],
+      "jsdoc/require-returns": ["warn", { forceRequireReturn: false }],
     }
   }
 ];

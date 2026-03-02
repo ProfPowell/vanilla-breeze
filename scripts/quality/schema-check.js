@@ -52,6 +52,7 @@ function findDbDirs() {
  * @returns {Issue[]}
  */
 function checkSchemaDoc(dbDir) {
+  /** @type {Issue[]} */
   const issues = [];
   const schemaPath = join(dbDir, 'schema.sql');
 
@@ -106,6 +107,7 @@ function checkSchemaDoc(dbDir) {
  * @returns {Issue[]}
  */
 function checkMigrations(dbDir) {
+  /** @type {Issue[]} */
   const issues = [];
   const migrationsDir = join(dbDir, 'migrations');
 
@@ -209,6 +211,7 @@ function checkMigrations(dbDir) {
  * @returns {Issue[]}
  */
 function checkSeeds(dbDir) {
+  /** @type {Issue[]} */
   const issues = [];
   const seedsDir = join(dbDir, 'seeds');
 
@@ -252,6 +255,7 @@ function checkSeeds(dbDir) {
  * @returns {Issue[]}
  */
 function checkClient(dbDir) {
+  /** @type {Issue[]} */
   const issues = [];
   const clientPath = join(dbDir, 'client.js');
 

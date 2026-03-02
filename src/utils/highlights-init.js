@@ -387,7 +387,7 @@ function getTextOffset(container, node, nodeOffset) {
     if (walker.currentNode === node) {
       return offset + nodeOffset;
     }
-    offset += walker.currentNode.textContent.length;
+    offset += (walker.currentNode.textContent ?? '').length;
   }
   return -1;
 }
@@ -402,7 +402,7 @@ function findRangeFromOffsets(container, startOffset, endOffset) {
 
   while (walker.nextNode()) {
     const node = walker.currentNode;
-    const nodeLen = node.textContent.length;
+    const nodeLen = (node.textContent ?? '').length;
 
     if (!startNode && accumulated + nodeLen > startOffset) {
       startNode = node;
@@ -422,8 +422,8 @@ function findRangeFromOffsets(container, startOffset, endOffset) {
 
   try {
     const range = document.createRange();
-    range.setStart(startNode, Math.min(startNodeOffset, startNode.textContent.length));
-    range.setEnd(endNode, Math.min(endNodeOffset, endNode.textContent.length));
+    range.setStart(startNode, Math.min(startNodeOffset, (startNode.textContent ?? '').length));
+    range.setEnd(endNode, Math.min(endNodeOffset, (endNode.textContent ?? '').length));
     return range;
   } catch {
     return null;

@@ -23,6 +23,7 @@ const iconCache = new Map();
  */
 class IconWc extends HTMLElement {
     static #instances = new Set();
+    /** @type {MutationObserver | null} */
     static #globalObserver = null;
 
     static #initGlobalObserver() {
@@ -39,7 +40,7 @@ class IconWc extends HTMLElement {
                 }
             }
         });
-        IconWc.#globalObserver.observe(document.documentElement, {
+        IconWc.#globalObserver?.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ['data-icon-set']
         });
@@ -119,7 +120,7 @@ class IconWc extends HTMLElement {
      * @description Renders the component's shadow DOM with styles
      */
     render() {
-        this.shadowRoot.innerHTML = `
+        /** @type {ShadowRoot} */ (this.shadowRoot).innerHTML = `
             <style>${styles}</style>
             <slot></slot>
         `;
@@ -139,7 +140,7 @@ class IconWc extends HTMLElement {
 
         // Check cache first
         if (iconCache.has(cacheKey)) {
-            this.displayIcon(iconCache.get(cacheKey));
+            this.displayIcon(/** @type {string} */ (iconCache.get(cacheKey)));
             return;
         }
 
@@ -153,7 +154,7 @@ class IconWc extends HTMLElement {
             if (this.set !== fallbackSet) {
                 const fallbackKey = `${fallbackSet}/${this.name}`;
                 if (iconCache.has(fallbackKey)) {
-                    this.displayIcon(iconCache.get(fallbackKey));
+                    this.displayIcon(/** @type {string} */ (iconCache.get(fallbackKey)));
                     return;
                 }
                 try {
@@ -192,6 +193,7 @@ class IconWc extends HTMLElement {
      * @private
      * @param {string} svgText - The SVG markup to display
      */
+    /** @param {string} svgText */
     displayIcon(svgText) {
         // Parse and clean up the SVG
         const parser = new DOMParser();
@@ -219,7 +221,7 @@ class IconWc extends HTMLElement {
         this.removeAttribute('data-error');
 
         // Insert the SVG
-        const slot = this.shadowRoot.querySelector('slot');
+        const slot = this.shadowRoot?.querySelector('slot');
         if (slot) {
             slot.replaceWith(svg);
         }
@@ -234,7 +236,7 @@ class IconWc extends HTMLElement {
         console.warn(`icon-wc: ${message}`);
 
         // Show fallback or hide
-        const slot = this.shadowRoot.querySelector('slot');
+        const slot = this.shadowRoot?.querySelector('slot');
         if (slot) {
             slot.textContent = '';
         }
@@ -282,7 +284,7 @@ class IconWc extends HTMLElement {
                 this.render();
                 this.loadIcon();
             } else if (name === 'label') {
-                const svg = this.shadowRoot.querySelector('svg');
+                const svg = this.shadowRoot?.querySelector('svg');
                 if (svg) {
                     if (newValue) {
                         svg.setAttribute('role', 'img');

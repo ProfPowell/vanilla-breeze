@@ -42,6 +42,7 @@ class DropDown extends HTMLElement {
   #activeIndex = -1;
   #isOpen = false;
   #hoverMode = false;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #closeTimeout = null;
   #usePopover = false;
 

@@ -47,7 +47,7 @@ function enhanceBytes(el) {
     el.title = el.textContent.trim();
   }
 
-  const precision = parseInt(el.getAttribute('data-format-bytes'), 10) || 0;
+  const precision = parseInt(el.getAttribute('data-format-bytes') ?? '0', 10) || 0;
   const isDecimal = el.getAttribute('data-unit') === 'decimal';
   const locale = el.getAttribute('data-locale') || getLocale();
   const divisor = isDecimal ? 1000 : 1024;

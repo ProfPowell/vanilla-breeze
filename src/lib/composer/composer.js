@@ -8,7 +8,7 @@
 // Side-effect imports — these register custom elements (vb-canvas, vb-inspector,
 // vb-block-handle). Named imports would be tree-shaken by the bundler since
 // the classes are never referenced directly in this module.
-import './canvas.js';
+import { VbCanvas } from './canvas.js';
 import './inspector.js';
 import { CanvasInteraction } from './interaction.js';
 import { serialize } from './serialize.js';
@@ -16,23 +16,28 @@ import { exportPlacementVars, exportNamedAreas } from './export.js';
 import { TEMPLATES } from './templates.js';
 
 class VbComposer extends HTMLElement {
+  /** @type {CanvasInteraction | null} */
   #interaction = null;
+  /** @type {VbCanvas | null} */
   #canvas = null;
+  /** @type {HTMLElement | null} */
   #outHtml = null;
+  /** @type {HTMLElement | null} */
   #outCss = null;
+  /** @type {HTMLElement | null} */
   #statusEl = null;
   #exportMode = 'vars'; // 'vars' | 'areas'
 
   connectedCallback() {
-    this.#canvas   = this.querySelector('vb-canvas');
-    this.#outHtml  = this.querySelector('#out-html');
-    this.#outCss   = this.querySelector('#out-css');
-    this.#statusEl = this.querySelector('[aria-live]');
+    this.#canvas   = /** @type {VbCanvas | null} */ (this.querySelector('vb-canvas'));
+    this.#outHtml  = /** @type {HTMLElement | null} */ (this.querySelector('#out-html'));
+    this.#outCss   = /** @type {HTMLElement | null} */ (this.querySelector('#out-css'));
+    this.#statusEl = /** @type {HTMLElement | null} */ (this.querySelector('[aria-live]'));
 
     if (!this.#canvas) return;
 
     // Interaction (drag-to-move)
-    this.#interaction = new CanvasInteraction(this.#canvas, this.#statusEl);
+    this.#interaction = new CanvasInteraction(/** @type {HTMLElement} */ (this.#canvas), this.#statusEl);
 
     // Wireframe toggle
     const wfToggle = this.querySelector('[data-action="wireframe"]');
@@ -79,6 +84,7 @@ class VbComposer extends HTMLElement {
   // --- Wireframe ---
 
   #onWireframeToggle = (e) => {
+    if (!this.#canvas) return;
     if (e.target.checked) {
       this.#canvas.setAttribute('data-wireframe', '');
     } else {
@@ -89,6 +95,7 @@ class VbComposer extends HTMLElement {
   // --- Column overlay ---
 
   #onColumnsToggle = (e) => {
+    if (!this.#canvas) return;
     if (e.target.checked) {
       this.#canvas.setAttribute('data-show-columns', '');
     } else {
@@ -99,12 +106,13 @@ class VbComposer extends HTMLElement {
   // --- Grid settings ---
 
   #onGridSettingsInput = (e) => {
+    if (!this.#canvas) return;
     const input = e.target;
     if (!input.name) return;
 
     switch (input.name) {
       case 'cols':
-        this.#canvas.style.setProperty('--cols', Math.max(1, Math.min(24, +input.value)));
+        this.#canvas.style.setProperty('--cols', String(Math.max(1, Math.min(24, +input.value))));
         break;
       case 'gap':
         this.#canvas.style.setProperty('--gap', input.value);
@@ -126,6 +134,7 @@ class VbComposer extends HTMLElement {
       return;
     }
 
+    if (!this.#canvas) return;
     this.#canvas.loadTemplate(TEMPLATES[id]);
 
     // Sync toolbar grid controls with template values
@@ -151,12 +160,14 @@ class VbComposer extends HTMLElement {
     const tag = btn.dataset.tag;
     if (!tag) return;
 
+    if (!this.#canvas) return;
     // Find the next free row (below existing blocks)
     const blocks = this.#canvas.querySelectorAll(':scope > *:not(vb-block-handle)');
     let maxRow = 0;
     for (const b of blocks) {
-      const r = parseInt(b.style.getPropertyValue('--row'), 10) || 1;
-      const rs = parseInt(b.style.getPropertyValue('--rspan'), 10) || 2;
+      const el = /** @type {HTMLElement} */ (b);
+      const r = parseInt(el.style.getPropertyValue('--row'), 10) || 1;
+      const rs = parseInt(el.style.getPropertyValue('--rspan'), 10) || 2;
       maxRow = Math.max(maxRow, r + rs);
     }
     const newRow = maxRow > 0 ? maxRow : 1;
@@ -190,6 +201,7 @@ class VbComposer extends HTMLElement {
   // --- Keyboard ---
 
   #onCanvasKeydown = (e) => {
+    if (!this.#canvas) return;
     const block = this.#canvas.selected;
     if (!block) return;
 

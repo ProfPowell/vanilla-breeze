@@ -199,7 +199,7 @@ function extractDarkModeTokens(css) {
       const match = searchCss.match(pattern);
       if (!match) break;
 
-      const contextStart = match.index + offset;
+      const contextStart = (match.index ?? 0) + offset;
       const afterContext = css.substring(contextStart);
 
       // Find the corresponding block

@@ -19,8 +19,10 @@ const BLOCK_TAG_SET = new Set([
 ]);
 
 class VbCanvas extends HTMLElement {
+  /** @type {MutationObserver | null} */
   #observer = null;
   #rafPending = false;
+  /** @type {HTMLElement | null} */
   #selected = null;
 
   connectedCallback() {

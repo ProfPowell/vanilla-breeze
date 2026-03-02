@@ -218,7 +218,9 @@ function validateContext(data) {
 }
 
 /**
- * Validate @type
+ * Validate the `@type` property
+ * @param {any} data
+ * @param {string|null} [expectedType]
  */
 function validateType(data, expectedType = null) {
   const errors = [];
@@ -339,6 +341,8 @@ function validateNestedObjects(data) {
 
 /**
  * Validate a single JSON-LD block
+ * @param {{raw: string, position: number}} block
+ * @param {string|null} [expectedType]
  */
 function validateBlock(block, expectedType = null) {
   const allErrors = [];
@@ -373,6 +377,8 @@ function validateBlock(block, expectedType = null) {
 
 /**
  * Validate a single JSON-LD item
+ * @param {any} data
+ * @param {string|null} [expectedType]
  */
 function validateSingleItem(data, expectedType = null) {
   const errors = [];
@@ -404,6 +410,8 @@ function validateSingleItem(data, expectedType = null) {
 
 /**
  * Validate a single file
+ * @param {string} filePath
+ * @param {string|null} [expectedType]
  */
 function validateFile(filePath, expectedType = null) {
   const html = readFileSync(filePath, 'utf-8');

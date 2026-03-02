@@ -32,6 +32,7 @@ function enhance(img) {
   // Wrap in a container for positioning
   const wrapper = document.createElement('div');
   wrapper.className = 'animate-image-wrapper';
+  if (!img.parentNode) return;
   img.parentNode.insertBefore(wrapper, img);
   wrapper.appendChild(img);
 
@@ -53,6 +54,7 @@ function enhance(img) {
     canvas.width = img.naturalWidth || img.width;
     canvas.height = img.naturalHeight || img.height;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     ctx.drawImage(img, 0, 0);
     try {
       staticSrc = canvas.toDataURL('image/png');

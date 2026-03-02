@@ -21,8 +21,8 @@ class QrCodeWc extends HTMLElement {
     const value = this.dataset.value || this.textContent.trim();
     if (!value) return;
 
-    const size = parseInt(this.dataset.size, 10) || 200;
-    const ecl = parseInt(this.dataset.errorCorrection, 10) || 1;
+    const size = parseInt(this.dataset.size ?? '200', 10) || 200;
+    const ecl = parseInt(this.dataset.errorCorrection ?? '1', 10) || 1;
 
     this.#canvas = document.createElement('canvas');
     this.#canvas.width = size;
@@ -41,8 +41,8 @@ class QrCodeWc extends HTMLElement {
     if (!this.#canvas) return;
     const value = this.dataset.value || this.textContent.trim();
     if (!value) return;
-    const size = parseInt(this.dataset.size, 10) || 200;
-    const ecl = parseInt(this.dataset.errorCorrection, 10) || 1;
+    const size = parseInt(this.dataset.size ?? '200', 10) || 200;
+    const ecl = parseInt(this.dataset.errorCorrection ?? '1', 10) || 1;
     this.#canvas.width = size;
     this.#canvas.height = size;
     this.#canvas.setAttribute('aria-label', `QR code: ${value}`);

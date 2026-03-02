@@ -90,13 +90,13 @@ class ToastMsg extends HTMLElement {
 
     // Event listeners
     if (dismissible) {
-      toast.querySelector('.close').addEventListener('click', () => {
+      toast.querySelector('.close')?.addEventListener('click', () => {
         this.#dismissToast(toast);
       });
     }
 
     if (action && onAction) {
-      toast.querySelector('.action').addEventListener('click', () => {
+      toast.querySelector('.action')?.addEventListener('click', () => {
         onAction();
         this.#dismissToast(toast);
       });

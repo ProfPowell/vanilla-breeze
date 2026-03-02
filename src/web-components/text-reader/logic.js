@@ -17,26 +17,39 @@ class TextReader extends HTMLElement {
 
   // ---------- private fields ----------
 
+  /** @type {HTMLElement | null} */
   #target = null;
+  /** @type {SpeechSynthesisUtterance | null} */
   #utterance = null;
   #paragraphs = [];
   #fullText = '';
   #currentCharIndex = 0;
+  /** @type {ReturnType<typeof setInterval> | null} */
   #keepAlive = null;
+  /** @type {CSSStyleSheet | null} */
   #highlightSheet = null;
+  /** @type {Highlight | null} */
   #highlight = null;
+  /** @type {Promise<SpeechSynthesisVoice[]> | null} */
   #voicesPromise = null;
   #isSpeaking = false;
   #isPaused = false;
   #startTime = 0;
 
   // control refs
+  /** @type {HTMLButtonElement | null} */
   #playBtn = null;
+  /** @type {HTMLButtonElement | null} */
   #pauseBtn = null;
+  /** @type {HTMLButtonElement | null} */
   #stopBtn = null;
+  /** @type {HTMLSelectElement | null} */
   #voiceSelect = null;
+  /** @type {HTMLInputElement | null} */
   #speedInput = null;
+  /** @type {HTMLSpanElement | null} */
   #speedValue = null;
+  /** @type {HTMLDivElement | null} */
   #controls = null;
 
   // ---------- observed attributes ----------
@@ -60,7 +73,7 @@ class TextReader extends HTMLElement {
     if (name === 'speed' && this.#speedInput) {
       const val = this.#clampSpeed(parseFloat(newVal) || 1);
       this.#speedInput.value = String(val);
-      this.#speedValue.textContent = `${val}\u00d7`;
+      if (this.#speedValue) this.#speedValue.textContent = `${val}\u00d7`;
     }
   }
 
@@ -170,7 +183,7 @@ class TextReader extends HTMLElement {
 
     const speedVal = document.createElement('span');
     speedVal.setAttribute('data-speed-value', '');
-    const initSpeed = this.#clampSpeed(parseFloat(this.getAttribute('speed')) || 1);
+    const initSpeed = this.#clampSpeed(parseFloat(this.getAttribute('speed') ?? '1') || 1);
     speedVal.textContent = `${initSpeed}\u00d7`;
 
     const speedInput = document.createElement('input');
@@ -254,10 +267,11 @@ class TextReader extends HTMLElement {
   // ---------- text extraction ----------
 
   #buildParagraphMap() {
-    if (!this.#target) return;
+    const target = this.#target;
+    if (!target) return;
 
     const selectors = this.getAttribute('selectors') || 'p,li';
-    const candidates = [...this.#target.querySelectorAll(selectors)];
+    const candidates = [...target.querySelectorAll(selectors)];
 
     // Filter out elements inside pre, code, aria-hidden
     const excluded = el =>
@@ -292,7 +306,7 @@ class TextReader extends HTMLElement {
     if (!text.trim()) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value) || 1);
+    utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value ?? '1') || 1);
 
     // Apply selected voice
     const selectedOption = this.#voiceSelect?.selectedOptions[0];
@@ -378,7 +392,7 @@ class TextReader extends HTMLElement {
   }
 
   #stopKeepAlive() {
-    clearInterval(this.#keepAlive);
+    if (this.#keepAlive) clearInterval(this.#keepAlive);
     this.#keepAlive = null;
   }
 
@@ -386,20 +400,22 @@ class TextReader extends HTMLElement {
 
   #injectHighlightSheet() {
     if (!CSS.highlights) return;
-    this.#highlightSheet = new CSSStyleSheet();
-    this.#highlightSheet.replaceSync(`
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`
       ::highlight(text-reader-word) {
         background-color: var(--text-reader-highlight, Mark);
         color: var(--text-reader-highlight-text, MarkText);
       }
     `);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, this.#highlightSheet];
+    this.#highlightSheet = sheet;
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
   }
 
   #removeHighlightSheet() {
-    if (this.#highlightSheet) {
+    const sheet = this.#highlightSheet;
+    if (sheet) {
       document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
-        s => s !== this.#highlightSheet
+        s => s !== sheet
       );
       this.#highlightSheet = null;
     }
@@ -467,7 +483,7 @@ class TextReader extends HTMLElement {
 
     while (walker.nextNode()) {
       const node = walker.currentNode;
-      const nodeText = node.textContent;
+      const nodeText = node.textContent ?? '';
       // Skip whitespace-only text nodes
       if (!nodeText.trim()) continue;
 
@@ -515,7 +531,8 @@ class TextReader extends HTMLElement {
   #populateVoiceSelect(voices) {
     if (!this.#voiceSelect || !voices.length) return;
 
-    this.#voiceSelect.innerHTML = '';
+    const select = this.#voiceSelect;
+    select.innerHTML = '';
 
     // Prefer voices matching page lang
     const lang = document.documentElement.lang || 'en';
@@ -530,14 +547,14 @@ class TextReader extends HTMLElement {
       opt.textContent = `${v.name} (${v.lang})`;
       opt.dataset.voiceUri = v.voiceURI;
       if (preferredURI && v.voiceURI === preferredURI) opt.selected = true;
-      this.#voiceSelect.append(opt);
+      select.append(opt);
     }
 
     // If no preferred was set, select the first lang-matched default
     if (!preferredURI) {
       const defaultVoice = langVoices.find(v => v.default) || langVoices[0];
       if (defaultVoice) {
-        const opt = [...this.#voiceSelect.options].find(
+        const opt = [...select.options].find(
           o => o.dataset.voiceUri === defaultVoice.voiceURI
         );
         if (opt) opt.selected = true;
@@ -548,6 +565,7 @@ class TextReader extends HTMLElement {
   // ---------- UI state ----------
 
   #showSpeakingState(speaking) {
+    if (!this.#playBtn || !this.#pauseBtn || !this.#stopBtn) return;
     if (speaking) {
       this.#playBtn.hidden = true;
       this.#pauseBtn.hidden = false;
@@ -560,6 +578,7 @@ class TextReader extends HTMLElement {
   }
 
   #showPauseState(paused) {
+    if (!this.#playBtn || !this.#pauseBtn) return;
     this.#playBtn.hidden = !paused;
     this.#pauseBtn.hidden = paused;
   }

@@ -117,7 +117,7 @@ function getChangedFiles() {
  */
 function filterByExtension(files, extensions) {
   return files.filter(f => {
-    const ext = f.split('.').pop()?.toLowerCase();
+    const ext = f.split('.').pop()?.toLowerCase() ?? '';
     return extensions.includes(ext);
   });
 }
@@ -239,6 +239,7 @@ function runValidator(command, args) {
  * @returns {Promise<object>}
  */
 async function validateHtml(files, cache) {
+  /** @type {{passed: string[], failed: {file: string, output: any}[], cached: string[], errors: string[]}} */
   const results = { passed: [], failed: [], cached: [], errors: [] };
 
   for (const file of files) {
@@ -282,6 +283,7 @@ async function validateHtml(files, cache) {
  * @returns {Promise<object>}
  */
 async function validateCss(files, cache) {
+  /** @type {{passed: string[], failed: {file: string, output: any}[], cached: string[], errors: string[]}} */
   const results = { passed: [], failed: [], cached: [], errors: [] };
 
   for (const file of files) {
@@ -330,6 +332,7 @@ async function validateCss(files, cache) {
  * @returns {Promise<object>}
  */
 async function validateJs(files, cache) {
+  /** @type {{passed: string[], failed: {file: string, output: any}[], cached: string[], errors: string[]}} */
   const results = { passed: [], failed: [], cached: [], errors: [] };
 
   for (const file of files) {

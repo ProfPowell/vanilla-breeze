@@ -117,8 +117,8 @@ function connectTrigger(trigger, tip) {
 function setupAnchor(trigger, tip) {
   if (!supportsAnchor) return;
   const anchorName = `--tooltip-anchor-${tip.id}`;
-  /** @type {any} */ (/** @type {HTMLElement} */ (trigger).style).anchorName = anchorName;
-  /** @type {any} */ (/** @type {HTMLElement} */ (tip).style).positionAnchor = anchorName;
+  /** @type {HTMLElement} */ (trigger).style.anchorName = anchorName;
+  /** @type {HTMLElement} */ (tip).style.positionAnchor = anchorName;
   tip.setAttribute('data-anchor', '');
 }
 
@@ -216,7 +216,7 @@ function initTooltips(root = document) {
 
   // --- [aria-describedby] discovery (legacy path) ---
   root.querySelectorAll('[aria-describedby]').forEach(trigger => {
-    const tipId = trigger.getAttribute('aria-describedby');
+    const tipId = trigger.getAttribute('aria-describedby') ?? '';
     const tip = document.getElementById(tipId);
 
     // Only init if it's a popover tooltip
@@ -238,7 +238,7 @@ function initTooltips(root = document) {
 
   // --- Click tooltips (popovertarget) ---
   root.querySelectorAll('[popovertarget]').forEach(trigger => {
-    const tipId = trigger.getAttribute('popovertarget');
+    const tipId = trigger.getAttribute('popovertarget') ?? '';
     const tip = document.getElementById(tipId);
 
     // Only init if it's a popover tooltip

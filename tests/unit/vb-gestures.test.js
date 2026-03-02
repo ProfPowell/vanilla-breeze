@@ -116,6 +116,7 @@ function setupGlobals() {
     writable: true,
     configurable: true,
   });
+  // @ts-ignore — test mock override for CustomEvent
   globalThis.CustomEvent = class CustomEvent {
     constructor(type, init = {}) {
       this.type = type;
@@ -126,6 +127,7 @@ function setupGlobals() {
 }
 
 function clearGlobals() {
+  // @ts-ignore — restoring test state by deleting mock
   delete globalThis.CustomEvent;
 }
 
@@ -142,7 +144,7 @@ describe('vb-gestures', () => {
     it('tap vibrates at 8ms', async () => {
       const { haptic } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_tap`);
       haptic.tap();
-      const calls = globalThis.navigator.vibrate.mock.calls;
+      const calls = /** @type {any} */ (globalThis.navigator.vibrate).mock.calls;
       assert.equal(calls.length > 0, true);
       assert.equal(calls[calls.length - 1].arguments[0], 8);
     });
@@ -150,21 +152,21 @@ describe('vb-gestures', () => {
     it('confirm vibrates with double-pulse pattern', async () => {
       const { haptic } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_confirm`);
       haptic.confirm();
-      const calls = globalThis.navigator.vibrate.mock.calls;
+      const calls = /** @type {any} */ (globalThis.navigator.vibrate).mock.calls;
       assert.deepEqual(calls[calls.length - 1].arguments[0], [8, 40, 8]);
     });
 
     it('error vibrates with heavy pattern', async () => {
       const { haptic } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_error`);
       haptic.error();
-      const calls = globalThis.navigator.vibrate.mock.calls;
+      const calls = /** @type {any} */ (globalThis.navigator.vibrate).mock.calls;
       assert.deepEqual(calls[calls.length - 1].arguments[0], [30, 60, 30]);
     });
 
     it('dismiss vibrates at 15ms', async () => {
       const { haptic } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_dismiss`);
       haptic.dismiss();
-      const calls = globalThis.navigator.vibrate.mock.calls;
+      const calls = /** @type {any} */ (globalThis.navigator.vibrate).mock.calls;
       assert.equal(calls[calls.length - 1].arguments[0], 15);
     });
 
@@ -199,7 +201,7 @@ describe('vb-gestures', () => {
       el.emit('pointerup', createPointerEvent('pointerup', { clientX: 100, clientY: 55 }));
 
       assert.notEqual(fired, null);
-      assert.equal(fired.detail.distance, 90);
+      assert.equal(/** @type {any} */ (fired).detail.distance, 90);
       cleanup();
     });
 
@@ -343,7 +345,7 @@ describe('vb-gestures', () => {
       el.emit('pointerup', createPointerEvent('pointerup', { clientX: 60 }));
 
       assert.notEqual(dismissed, null);
-      assert.equal(dismissed.detail.direction, 'right');
+      assert.equal(/** @type {any} */ (dismissed).detail.direction, 'right');
       assert.equal(el.hasAttribute('data-dismissed'), true);
 
       cleanup();
@@ -516,7 +518,7 @@ describe('vb-gestures', () => {
       el.emit('pointerdown', createPointerEvent('pointerdown'));
       await new Promise(r => setTimeout(r, 60));
 
-      const calls = globalThis.navigator.vibrate.mock.calls;
+      const calls = /** @type {any} */ (globalThis.navigator.vibrate).mock.calls;
       assert.equal(calls.length > 0, true);
       // haptic.tap() → 8ms
       assert.equal(calls[calls.length - 1].arguments[0], 8);

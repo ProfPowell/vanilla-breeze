@@ -39,6 +39,7 @@ function enhanceUpload(input) {
   const zone = document.createElement('div');
   zone.className = 'upload-zone';
   zone.setAttribute('role', 'presentation');
+  if (!input.parentNode) return;
   input.parentNode.insertBefore(zone, input);
 
   // Move input inside zone (visually hidden but still functional)
@@ -66,6 +67,7 @@ function enhanceUpload(input) {
 
   // Browse button triggers file input
   const browseBtn = prompt.querySelector('.upload-browse');
+  if (!browseBtn) return;
   browseBtn.addEventListener('click', () => input.click());
 
   // Also click on zone (but not on file list items)
@@ -98,7 +100,7 @@ function enhanceUpload(input) {
     dragCounter = 0;
     delete zone.dataset.dragover;
 
-    if (e.dataTransfer.files.length) {
+    if (e.dataTransfer && e.dataTransfer.files.length) {
       input.files = e.dataTransfer.files;
       input.dispatchEvent(new Event('change', { bubbles: true }));
     }
@@ -107,7 +109,7 @@ function enhanceUpload(input) {
   // Update file list on change
   input.addEventListener('change', () => {
     fileList.innerHTML = '';
-    const files = Array.from(input.files);
+    const files = Array.from(input.files ?? []);
 
     if (files.length === 0) {
       fileList.hidden = true;

@@ -107,7 +107,7 @@ function animateTicker(el) {
   const startValue = Number(el.getAttribute('data-ticker-start') || '0');
   const duration = parseInt(el.getAttribute('data-ticker') || '1000', 10) || 1000;
   const decimals = el.hasAttribute('data-ticker-decimals')
-    ? parseInt(el.getAttribute('data-ticker-decimals'), 10)
+    ? parseInt(el.getAttribute('data-ticker-decimals') ?? '0', 10)
     : detectDecimals(raw);
 
   const formatter = buildFormatter(el, decimals);

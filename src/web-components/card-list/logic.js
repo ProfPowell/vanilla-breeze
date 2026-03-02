@@ -92,6 +92,7 @@ function parseAttrMapping(str) {
 }
 
 class CardList extends HTMLElement {
+  /** @type {HTMLTemplateElement | null} */
   #template = null;
   #items = [];
   #keyProp = 'id';

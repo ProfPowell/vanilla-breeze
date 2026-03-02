@@ -39,6 +39,7 @@ function enhanceRange(input) {
   // Create wrapper
   const wrapper = document.createElement('div');
   wrapper.className = 'range-wrapper';
+  if (!input.parentNode) return;
   input.parentNode.insertBefore(wrapper, input);
   wrapper.appendChild(input);
 

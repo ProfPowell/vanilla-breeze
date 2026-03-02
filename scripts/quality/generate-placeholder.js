@@ -74,7 +74,7 @@ const TOKEN_MAP = {
  * @returns {Object} Extracted colors
  */
 function parseTokensFromCSS(cssPath) {
-  const colors = { ...DEFAULT_COLORS };
+  const colorScheme = { ...DEFAULT_COLORS };
 
   try {
     const cssContent = readFileSync(cssPath, 'utf-8');
@@ -94,20 +94,20 @@ function parseTokensFromCSS(cssPath) {
       }
     }
 
-    // Map tokens to colors
+    // Map tokens to colorScheme
     for (const [colorKey, tokenNames] of Object.entries(TOKEN_MAP)) {
       for (const tokenName of tokenNames) {
         if (tokens[tokenName]) {
-          colors[colorKey] = tokens[tokenName];
+          colorScheme[colorKey] = tokens[tokenName];
           break;
         }
       }
     }
 
-    return colors;
+    return colorScheme;
   } catch (error) {
     console.error(`${colors.yellow}Warning: Could not read CSS file: ${cssPath}${colors.reset}`);
-    return colors;
+    return colorScheme;
   }
 }
 
@@ -146,10 +146,14 @@ function parseArgs() {
     type: 'simple',
     width: 400,
     height: 400,
+    /** @type {string|null} */
     label: null,
+    /** @type {string|null} */
     output: null,
     inline: false,
+    /** @type {string|null} */
     preset: null,
+    /** @type {string|null} */
     tokens: null
   };
 
@@ -201,8 +205,8 @@ function parseArgs() {
   }
 
   // Apply preset if specified
-  if (parsed.preset && PRESETS[parsed.preset]) {
-    const preset = PRESETS[parsed.preset];
+  if (parsed.preset && parsed.preset in PRESETS) {
+    const preset = PRESETS[/** @type {keyof PRESETS} */ (parsed.preset)];
     parsed.width = preset.width;
     parsed.height = preset.height;
     if (!parsed.label) {
@@ -403,6 +407,7 @@ function main() {
   }
 
   // Generate SVG
+  /** @type {string|undefined} */
   let svg;
   switch (args.type) {
     case 'simple':
@@ -414,6 +419,11 @@ function main() {
     case 'brand':
       svg = generateBrand(args.width, args.height, args.label, colorScheme);
       break;
+  }
+
+  if (!svg) {
+    console.error(`${colors.red}Error: Failed to generate SVG${colors.reset}`);
+    process.exit(1);
   }
 
   // Output

@@ -237,7 +237,7 @@ describe('LANG_MAP', () => {
 describe('generateText', () => {
   it('generates word-mode text with correct count', () => {
     const result = generateText({ mode: 'words', count: 10, corpus: 'latin' });
-    assert.equal(result.split(/\s+/).length, 10);
+    assert.equal(/** @type {string} */ (result).split(/\s+/).length, 10);
   });
 
   it('generates sentence-mode text', () => {

@@ -81,7 +81,7 @@ async function fetchSVG(url) {
   return res.text();
 }
 
-async function syncSet(name, baseUrl, nameMap, { normalize } = {}) {
+async function syncSet(name, baseUrl, nameMap, /** @type {{normalize?: (svg: string) => string}} */ { normalize } = {}) {
   const dir = join(ICONS_DIR, name);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 

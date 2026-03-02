@@ -6,14 +6,32 @@
  */
 
 import { BLOCK_TAGS } from './serialize.js';
+import { VbCanvas } from './canvas.js';
+
+/**
+ * @typedef {{
+ *   form: HTMLElement | null,
+ *   tag: HTMLSelectElement | null,
+ *   col: HTMLInputElement | null,
+ *   cspan: HTMLInputElement | null,
+ *   row: HTMLInputElement | null,
+ *   rspan: HTMLInputElement | null,
+ *   subgrid: HTMLInputElement | null,
+ *   del: HTMLElement | null,
+ *   unnest: HTMLElement | null,
+ * }} InspectorFields
+ */
 
 class VbInspector extends HTMLElement {
+  /** @type {HTMLElement | null} */
   #block = null;
+  /** @type {InspectorFields | null} */
   #fields = null;    // cached input references
+  /** @type {HTMLElement | null} */
   #placeholder = null;
 
   connectedCallback() {
-    this.#placeholder = this.querySelector('[data-placeholder]') || this.#buildPlaceholder();
+    this.#placeholder = /** @type {HTMLElement | null} */ (this.querySelector('[data-placeholder]')) || this.#buildPlaceholder();
     this.closest('vb-composer')?.addEventListener('composer:select', this.#onSelect);
   }
 
@@ -47,7 +65,7 @@ class VbInspector extends HTMLElement {
     const rspan = parseInt(b.style.getPropertyValue('--rspan'), 10) || 2;
     const sub   = b.hasAttribute('data-subgrid');
     const isNested = canvas && b.parentElement !== canvas;
-    const parentTag = isNested ? b.parentElement.localName : null;
+    const parentTag = isNested && b.parentElement ? b.parentElement.localName : null;
 
     const tagOptions = BLOCK_TAGS.map(t =>
       `<option value="${t}"${t === b.localName ? ' selected' : ''}>${t}</option>`
@@ -89,20 +107,20 @@ class VbInspector extends HTMLElement {
     `;
 
     this.#fields = {
-      form:    this.querySelector('[data-inspector-form]'),
-      tag:     this.querySelector('[name="tag"]'),
-      col:     this.querySelector('[name="col"]'),
-      cspan:   this.querySelector('[name="cspan"]'),
-      row:     this.querySelector('[name="row"]'),
-      rspan:   this.querySelector('[name="rspan"]'),
-      subgrid: this.querySelector('[name="subgrid"]'),
-      del:     this.querySelector('[data-action="delete"]'),
-      unnest:  this.querySelector('[data-action="unnest"]'),
+      form:    /** @type {HTMLElement | null} */ (this.querySelector('[data-inspector-form]')),
+      tag:     /** @type {HTMLSelectElement | null} */ (this.querySelector('[name="tag"]')),
+      col:     /** @type {HTMLInputElement | null} */ (this.querySelector('[name="col"]')),
+      cspan:   /** @type {HTMLInputElement | null} */ (this.querySelector('[name="cspan"]')),
+      row:     /** @type {HTMLInputElement | null} */ (this.querySelector('[name="row"]')),
+      rspan:   /** @type {HTMLInputElement | null} */ (this.querySelector('[name="rspan"]')),
+      subgrid: /** @type {HTMLInputElement | null} */ (this.querySelector('[name="subgrid"]')),
+      del:     /** @type {HTMLElement | null} */ (this.querySelector('[data-action="delete"]')),
+      unnest:  /** @type {HTMLElement | null} */ (this.querySelector('[data-action="unnest"]')),
     };
 
-    this.#fields.form.addEventListener('input', this.#onInput);
-    this.#fields.tag.addEventListener('change', this.#onTagChange);
-    this.#fields.del.addEventListener('click', this.#onDelete);
+    this.#fields.form?.addEventListener('input', this.#onInput);
+    this.#fields.tag?.addEventListener('change', this.#onTagChange);
+    this.#fields.del?.addEventListener('click', this.#onDelete);
     this.#fields.unnest?.addEventListener('click', this.#onUnnest);
   }
 
@@ -122,20 +140,23 @@ class VbInspector extends HTMLElement {
 
   #onInput = () => {
     if (!this.#block || !this.#fields) return;
+    const fields = this.#fields;
+    if (!fields.col || !fields.cspan || !fields.row || !fields.rspan || !fields.subgrid) return;
 
     const canvas = this.#block.closest('vb-canvas');
+    if (!canvas) return;
     const cols = parseInt(getComputedStyle(canvas).getPropertyValue('--cols'), 10) || 12;
-    const col   = this.#clamp(+this.#fields.col.value, 1, cols);
-    const cspan = this.#clamp(+this.#fields.cspan.value, 1, cols - col + 1);
-    const row   = Math.max(1, +this.#fields.row.value);
-    const rspan = Math.max(1, +this.#fields.rspan.value);
+    const col   = this.#clamp(+fields.col.value, 1, cols);
+    const cspan = this.#clamp(+fields.cspan.value, 1, cols - col + 1);
+    const row   = Math.max(1, +fields.row.value);
+    const rspan = Math.max(1, +fields.rspan.value);
 
-    this.#block.style.setProperty('--col', col);
-    this.#block.style.setProperty('--cspan', cspan);
-    this.#block.style.setProperty('--row', row);
-    this.#block.style.setProperty('--rspan', rspan);
+    this.#block.style.setProperty('--col', String(col));
+    this.#block.style.setProperty('--cspan', String(cspan));
+    this.#block.style.setProperty('--row', String(row));
+    this.#block.style.setProperty('--rspan', String(rspan));
 
-    if (this.#fields.subgrid.checked) {
+    if (fields.subgrid.checked) {
       this.#block.setAttribute('data-subgrid', '');
     } else {
       this.#block.removeAttribute('data-subgrid');
@@ -143,12 +164,12 @@ class VbInspector extends HTMLElement {
   };
 
   #onTagChange = () => {
-    if (!this.#block || !this.#fields) return;
+    if (!this.#block || !this.#fields || !this.#fields.tag) return;
 
     const newTag = this.#fields.tag.value;
     if (newTag === this.#block.localName) return;
 
-    const canvas = this.#block.closest('vb-canvas');
+    const canvas = /** @type {VbCanvas | null} */ (this.#block.closest('vb-canvas'));
     if (!canvas) return;
 
     // Create new element, transfer style + attributes + children
@@ -172,7 +193,7 @@ class VbInspector extends HTMLElement {
 
   #onUnnest = () => {
     if (!this.#block) return;
-    const canvas = this.#block.closest('vb-canvas');
+    const canvas = /** @type {VbCanvas | null} */ (this.#block.closest('vb-canvas'));
     if (!canvas || this.#block.parentElement === canvas) return;
 
     canvas.appendChild(this.#block);
@@ -182,7 +203,7 @@ class VbInspector extends HTMLElement {
 
   #onDelete = () => {
     if (!this.#block) return;
-    const canvas = this.#block.closest('vb-canvas');
+    const canvas = /** @type {VbCanvas | null} */ (this.#block.closest('vb-canvas'));
     canvas?.removeBlock(this.#block);
     this.#block = null;
     this.#render();

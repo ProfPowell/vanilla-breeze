@@ -103,9 +103,13 @@ function findHtmlFiles(dir, files = []) {
  */
 function extractResources(html) {
   const resources = {
+    /** @type {string[]} */
     styles: [],
+    /** @type {string[]} */
     scripts: [],
+    /** @type {string[]} */
     images: [],
+    /** @type {string[]} */
     fonts: [],
     inlineCSS: '',
     inlineJS: '',
@@ -226,8 +230,11 @@ function analyzePage(filePath) {
   const html = readFileSync(filePath, 'utf8');
   const resources = extractResources(html);
 
+  /** @type {string[]} */
   const errors = [];
+  /** @type {string[]} */
   const warnings = [];
+  /** @type {string[]} */
   const info = [];
 
   // Track total page weight

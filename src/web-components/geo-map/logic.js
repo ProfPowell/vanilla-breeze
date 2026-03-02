@@ -47,15 +47,15 @@ class GeoMap extends HTMLElement {
     }
 
     get lat() {
-        return parseFloat(this.getAttribute('lat'));
+        return parseFloat(this.getAttribute('lat') ?? '');
     }
 
     get lng() {
-        return parseFloat(this.getAttribute('lng'));
+        return parseFloat(this.getAttribute('lng') ?? '');
     }
 
     get zoom() {
-        const z = parseInt(this.getAttribute('zoom'), 10);
+        const z = parseInt(this.getAttribute('zoom') ?? '', 10);
         return (z >= 1 && z <= 19) ? z : 15;
     }
 
@@ -87,8 +87,8 @@ class GeoMap extends HTMLElement {
      */
     #resolveCoordinates() {
         // 1. Explicit lat/lng attributes
-        const attrLat = parseFloat(this.getAttribute('lat'));
-        const attrLng = parseFloat(this.getAttribute('lng'));
+        const attrLat = parseFloat(this.getAttribute('lat') ?? '');
+        const attrLng = parseFloat(this.getAttribute('lng') ?? '');
         if (!isNaN(attrLat) && !isNaN(attrLng)) return { lat: attrLat, lng: attrLng };
 
         // 2–3. src ID reference (address or JSON-LD)
@@ -101,8 +101,8 @@ class GeoMap extends HTMLElement {
         // 4. Slotted <address data-lat data-lng>
         const addr = /** @type {HTMLElement | null} */ (this.querySelector('address[data-lat][data-lng]'));
         if (addr) {
-            const lat = parseFloat(addr.dataset.lat);
-            const lng = parseFloat(addr.dataset.lng);
+            const lat = parseFloat(addr.dataset.lat ?? '');
+            const lng = parseFloat(addr.dataset.lng ?? '');
             if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
         }
 
@@ -248,7 +248,7 @@ class GeoMap extends HTMLElement {
             ? `<div part="overlay"><button part="activate" aria-label="Activate interactive map" tabindex="0">Click to interact</button></div>`
             : '';
 
-        this.shadowRoot.innerHTML = `
+        /** @type {ShadowRoot} */ (this.shadowRoot).innerHTML = `
             <style>${styles}</style>
             <div part="container">
                 <div part="tiles" role="img" aria-label="${ariaLabel}"></div>
@@ -279,7 +279,7 @@ class GeoMap extends HTMLElement {
         const provider = this.provider;
         const { tileX, tileY, pixelX, pixelY } = latLngToTile(lat, lng, zoom);
 
-        const tilesEl = this.shadowRoot.querySelector('[part="tiles"]');
+        const tilesEl = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="tiles"]');
         if (!tilesEl) return;
 
         // Clear existing tiles
@@ -348,7 +348,7 @@ class GeoMap extends HTMLElement {
      * Wire up the activate button with hover preconnect and click/eager activation.
      */
     #wireActivation() {
-        const overlay = this.shadowRoot.querySelector('[part="overlay"]');
+        const overlay = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="overlay"]');
         if (!overlay) return;
 
         const btn = overlay.querySelector('[part="activate"]');
@@ -405,7 +405,7 @@ class GeoMap extends HTMLElement {
 
         this.setAttribute('data-interactive-active', '');
         this.#interaction = new MapInteraction({
-            shadow: this.shadowRoot,
+            shadow: /** @type {ShadowRoot} */ (this.shadowRoot),
             host: this,
             lat,
             lng,
@@ -440,7 +440,7 @@ class GeoMap extends HTMLElement {
      * @param {string} message
      */
     handleError(message) {
-        const container = this.shadowRoot.querySelector('[part="container"]');
+        const container = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="container"]');
         if (container) {
             container.setAttribute('data-state', 'error');
             container.setAttribute('data-error', message);

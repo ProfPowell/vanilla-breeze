@@ -151,7 +151,7 @@ function formatCodeSnippet(code) {
   let minIndent = Infinity;
   for (const line of lines) {
     if (line.trim()) {
-      const indent = line.match(/^\s*/)[0].length;
+      const indent = (line.match(/^\s*/) ?? [''])[0].length;
       minIndent = Math.min(minIndent, indent);
     }
   }

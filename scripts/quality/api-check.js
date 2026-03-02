@@ -167,6 +167,7 @@ function findJsFiles(dir) {
  * @returns {CheckResult}
  */
 function checkFile(filePath) {
+  /** @type {Issue[]} */
   const issues = [];
 
   if (!existsSync(filePath)) {
@@ -189,7 +190,7 @@ function checkFile(filePath) {
 
         if (!hasNegative) {
           issues.push({
-            severity: check.severity,
+            severity: /** @type {Issue['severity']} */ (check.severity),
             message: check.message,
             code: check.name
           });
@@ -225,7 +226,7 @@ function checkFile(filePath) {
       }
 
       issues.push({
-        severity: check.severity,
+        severity: /** @type {Issue['severity']} */ (check.severity),
         message: check.message,
         line: lineNumber,
         code: check.name
@@ -241,6 +242,7 @@ function checkFile(filePath) {
  * @returns {Issue[]}
  */
 function checkOpenApiSpec() {
+  /** @type {Issue[]} */
   const issues = [];
   const specPaths = [
     'openapi.json',

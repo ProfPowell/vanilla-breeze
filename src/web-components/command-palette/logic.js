@@ -28,6 +28,7 @@ class CommandPalette extends HTMLElement {
   #items = [];
   #activeIndex = -1;
   #groups = [];
+  /** @type {(() => void) | null} */
   #unbindHotkey = null;
   #discoveredHeaders = [];
 
@@ -136,13 +137,13 @@ class CommandPalette extends HTMLElement {
 
   #registerHotkey() {
     const combo = this.dataset.hotkey || 'meta+k';
-    this.#unbindHotkey = bindHotkey(combo, () => {
+    this.#unbindHotkey = /** @type {() => void} */ (bindHotkey(combo, () => {
       if (this.#dialog.open) {
         this.close();
       } else {
         this.open();
       }
-    }, { global: true });
+    }, { global: true }));
   }
 
   #handleInput = () => {
@@ -244,7 +245,7 @@ class CommandPalette extends HTMLElement {
     if (!this.hasAttribute('data-discover')) return;
 
     // Lazy-import to avoid circular dependency at module load time
-    const { getRegisteredCommands, scanAutoDiscoverable } = /** @type {any} */ (window.__commandRegistry || {});
+    const { getRegisteredCommands, scanAutoDiscoverable } = window.__commandRegistry || {};
     if (!getRegisteredCommands) return;
 
     // Remove previously added discovered items and headers
@@ -272,7 +273,7 @@ class CommandPalette extends HTMLElement {
 
         btn.addEventListener('click', () => {
           this.close();
-          entry.element.click();
+          /** @type {HTMLElement} */ (entry.element).click();
         });
 
         this.#list.insertBefore(btn, empty);
@@ -311,7 +312,7 @@ class CommandPalette extends HTMLElement {
             if (entry.action) {
               entry.action();
             } else {
-              entry.element.click();
+              /** @type {HTMLElement} */ (entry.element).click();
             }
           });
 

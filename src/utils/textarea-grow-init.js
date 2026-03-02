@@ -22,13 +22,13 @@ function enhanceTextarea(textarea) {
   if (textarea.hasAttribute('data-grow-init')) return;
   textarea.setAttribute('data-grow-init', '');
 
-  const maxRows = parseInt(textarea.dataset.maxRows, 10) || 0;
+  const maxRows = parseInt(textarea.dataset.maxRows ?? '0', 10) || 0;
 
   // Disable manual resize — auto-grow handles it
   textarea.style.resize = 'none';
 
   if (supportsFieldSizing) {
-    /** @type {any} */ (textarea.style).fieldSizing = 'content';
+    textarea.style.fieldSizing = 'content';
     if (maxRows > 0) {
       textarea.style.maxBlockSize = `${maxRows}lh`;
     }

@@ -39,10 +39,13 @@ class EmojiPicker extends HTMLElement {
   #grid;
   #categoryNav;
   #isOpen = false;
+  /** @type {HTMLButtonElement[]} */
   #gridCells = [];
   #activeGridIndex = -1;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #searchTimer = null;
   #currentQuery = '';
+  /** @type {any} */
   #emojiData = null;
 
   async connectedCallback() {
@@ -139,6 +142,7 @@ class EmojiPicker extends HTMLElement {
     this.#renderGrid();
   }
 
+  /** @param {any[] | null} [entries] */
   #renderGrid(entries = null) {
     this.#grid.innerHTML = '';
     this.#gridCells = [];
@@ -399,7 +403,7 @@ class EmojiPicker extends HTMLElement {
   }
 
   #addRecent(shortcode) {
-    const limit = parseInt(this.getAttribute('recent-limit'), 10) || 24;
+    const limit = parseInt(this.getAttribute('recent-limit') ?? '24', 10) || 24;
     let recents = this.#getRecents();
     recents = recents.filter(s => s !== shortcode);
     recents.unshift(shortcode);

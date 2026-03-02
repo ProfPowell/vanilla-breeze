@@ -33,13 +33,13 @@ function enhance(master) {
   if (master.hasAttribute('data-select-all-init')) return;
   master.setAttribute('data-select-all-init', '');
 
-  const targetSelector = master.dataset.selectAll;
+  const targetSelector = master.dataset.selectAll ?? '';
   if (!targetSelector) return;
 
   /** @returns {NodeListOf<HTMLInputElement>} */
   function getTargets() {
     const scope = master.closest('[data-select-all-scope]') || master.closest('table, form, fieldset') || document;
-    return scope.querySelectorAll(targetSelector);
+    return /** @type {NodeListOf<HTMLInputElement>} */ (scope.querySelectorAll(targetSelector));
   }
 
   function syncState() {

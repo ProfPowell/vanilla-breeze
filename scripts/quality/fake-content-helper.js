@@ -11,7 +11,9 @@
  *   node scripts/fake-content-helper.js --type article --count 5 --locale de
  */
 
+// @ts-ignore -- @faker-js/faker may not be installed (optional dev dependency)
 import { faker } from '@faker-js/faker';
+// @ts-ignore -- @faker-js/faker may not be installed (optional dev dependency)
 import { fakerDE, fakerFR, fakerES, fakerIT, fakerJA } from '@faker-js/faker';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { dirname } from 'path';
@@ -135,8 +137,10 @@ function parseArgs() {
     type: 'person',
     count: 5,
     format: 'json',
+    /** @type {string|null} */
     output: null,
     locale: 'en',
+    /** @type {number|null} */
     seed: null,
     pretty: true
   };

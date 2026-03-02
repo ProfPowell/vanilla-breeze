@@ -107,8 +107,11 @@ async function optimizeImage(imagePath) {
 
   const results = {
     source: imagePath,
+    /** @type {string[]} */
     generated: [],
+    /** @type {string[]} */
     skipped: [],
+    /** @type {{path: string, error: any}[]} */
     errors: [],
   };
 

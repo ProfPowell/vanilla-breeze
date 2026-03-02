@@ -136,7 +136,7 @@ function enhanceOtpField(formField) {
     // Handle paste
     digit.addEventListener('paste', (e) => {
       e.preventDefault();
-      const paste = (e.clipboardData || /** @type {any} */ (window).clipboardData).getData('text');
+      const paste = (e.clipboardData || window.clipboardData)?.getData('text') ?? '';
       const digits = paste.replace(/\D/g, '').slice(0, length).split('');
 
       digits.forEach((d, i) => {

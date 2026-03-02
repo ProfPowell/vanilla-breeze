@@ -41,8 +41,11 @@ class SiteSearch extends HTMLElement {
   #results = [];
   #activeIndex = -1;
   #isOpen = false;
+  /** @type {any} */
   #pagefind = null;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #debounceTimer = null;
+  /** @type {(() => void) | null} */
   #unbindHotkey = null;
 
   connectedCallback() {
@@ -129,13 +132,13 @@ class SiteSearch extends HTMLElement {
 
     // Global keyboard shortcut (Cmd/Ctrl+K) — skip if another instance already bound
     if (!getBoundHotkeys().includes('meta+k')) {
-      this.#unbindHotkey = bindHotkey('meta+k', () => {
+      this.#unbindHotkey = /** @type {() => void} */ (bindHotkey('meta+k', () => {
         if (this.#isOpen) {
           this.close();
         } else {
           this.open();
         }
-      }, { global: true });
+      }, { global: true }));
     }
 
     // Escape to close (not a global hotkey — only when open)

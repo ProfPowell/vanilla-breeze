@@ -193,7 +193,7 @@ function processTextNodes(container, unknownMode) {
   // Collect nodes first (modifying DOM during walk is unsafe)
   const textNodes = [];
   while (walker.nextNode()) {
-    if (SHORTCODE_RE.test(walker.currentNode.textContent)) {
+    if (SHORTCODE_RE.test(walker.currentNode.textContent ?? '')) {
       textNodes.push(walker.currentNode);
     }
     SHORTCODE_RE.lastIndex = 0;

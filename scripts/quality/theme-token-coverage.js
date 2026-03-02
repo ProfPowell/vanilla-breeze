@@ -183,7 +183,7 @@ async function main() {
       console.log(`  ${GREEN}OK${RESET}  ${entry.themeName}${note}`);
     } else {
       console.log(`  ${RED}GAP${RESET} ${entry.themeName}`);
-      for (const gap of entry.gaps) {
+      for (const gap of entry.gaps ?? []) {
         console.log(
           `       ${YELLOW}${gap.mode}${RESET} missing: ${gap.missing.join(", ")}`
         );

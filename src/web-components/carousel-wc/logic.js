@@ -37,10 +37,12 @@ class CarouselWc extends HTMLElement {
   #indicators;
   #liveRegion;
   #observer;
+  /** @type {ReturnType<typeof setInterval> | null} */
   #autoplayTimer = null;
   #currentIndex = 0;
   #reducedMotion = false;
   #vtMode = false;
+  /** @type {(() => void) | null} */
   #cleanupSwipe = null;
 
   get currentIndex() {
@@ -146,7 +148,7 @@ class CarouselWc extends HTMLElement {
     // VT mode: add swipe navigation via gesture module
     if (this.#vtMode) {
       import('../../lib/vb-gestures.js').then(({ addSwipeListener }) => {
-        this.#cleanupSwipe = addSwipeListener(this.#track, { threshold: 40 });
+        this.#cleanupSwipe = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
         this.#track.addEventListener('swipe-left', () => this.next());
         this.#track.addEventListener('swipe-right', () => this.prev());
       });

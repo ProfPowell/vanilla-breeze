@@ -549,13 +549,13 @@ function initWizards() {
     const controller = new WizardController(form);
 
     // Attach controller to form element for external access
-    /** @type {any} */ (form).wizardController = controller;
+    /** @type {VBWizardForm} */ (form).wizardController = controller;
 
     // Add convenience methods directly to form
-    /** @type {any} */ (form).wizardGoTo = (/** @type {number} */ index) => controller.goTo(index);
-    /** @type {any} */ (form).wizardNext = () => controller.next();
-    /** @type {any} */ (form).wizardPrev = () => controller.prev();
-    /** @type {any} */ (form).wizardReset = () => controller.reset();
+    /** @type {VBWizardForm} */ (form).wizardGoTo = (index) => controller.goTo(index);
+    /** @type {VBWizardForm} */ (form).wizardNext = () => controller.next();
+    /** @type {VBWizardForm} */ (form).wizardPrev = () => controller.prev();
+    /** @type {VBWizardForm} */ (form).wizardReset = () => controller.reset();
   });
 }
 

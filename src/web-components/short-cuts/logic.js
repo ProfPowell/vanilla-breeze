@@ -16,17 +16,18 @@ import { bindHotkey } from '../../utils/hotkey-bind.js';
 
 class ShortCuts extends HTMLElement {
   #dialog;
+  /** @type {(() => void) | null} */
   #unbindHotkey = null;
 
   connectedCallback() {
     this.#build();
-    this.#unbindHotkey = bindHotkey('shift+?', () => {
+    this.#unbindHotkey = /** @type {() => void} */ (bindHotkey('shift+?', () => {
       if (this.#dialog.open) {
         this.#dialog.close();
       } else {
         this.#open();
       }
-    });
+    }));
   }
 
   disconnectedCallback() {
@@ -55,7 +56,7 @@ class ShortCuts extends HTMLElement {
     body.className = 'shortcut-body';
 
     // Gather shortcuts from the command registry
-    const { getRegisteredCommands } = /** @type {any} */ (window.__commandRegistry || {});
+    const { getRegisteredCommands } = window.__commandRegistry || {};
     const grouped = new Map();
 
     // Always include ? itself

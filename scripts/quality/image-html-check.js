@@ -31,7 +31,9 @@ const CONFIG = {
 };
 
 // Track issues
+/** @type {string[]} */
 const errors = [];
+/** @type {string[]} */
 const warnings = [];
 
 /**
@@ -126,6 +128,7 @@ function isInsidePicture(html, imgIndex) {
  * Validate a single image element
  */
 function validateImage(img, html) {
+  /** @type {{errors: string[], warnings: string[]}} */
   const issues = { errors: [], warnings: [] };
   const loc = `${img.file}:${img.line}`;
 
@@ -187,6 +190,7 @@ function validateImage(img, html) {
 async function validateFile(filePath) {
   const html = await readFile(filePath, 'utf-8');
   const images = extractImgElements(html, filePath);
+  /** @type {{errors: string[], warnings: string[]}} */
   const fileIssues = { errors: [], warnings: [] };
 
   for (const img of images) {

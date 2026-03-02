@@ -30,6 +30,7 @@ class GoodComponent extends HTMLElement {
      * @private
      */
     render() {
+        if (!this.shadowRoot) return;
         const value = this.getAttribute('value') || '';
         this.shadowRoot.innerHTML = `<div>${value}</div>`;
     }

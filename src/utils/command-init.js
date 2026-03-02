@@ -194,6 +194,6 @@ function scanAutoDiscoverable() {
 }
 
 // Expose for command-palette lazy access (avoids circular imports)
-/** @type {any} */ (window).__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
+window.__commandRegistry = { getRegisteredCommands, scanAutoDiscoverable };
 
 export { getRegisteredCommands, scanAutoDiscoverable, initCommands };

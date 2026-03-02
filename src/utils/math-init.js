@@ -20,7 +20,7 @@ const ANNOUNCE_DURATION = 1000;
 let equationCounter = 0;
 
 // Global equation registry
-/** @type {any} */ (window).VBMath = /** @type {any} */ (window).VBMath || { equations: [] };
+window.VBMath = window.VBMath || { equations: [] };
 
 /**
  * Initialize math elements within a root element
@@ -94,7 +94,7 @@ function enhanceElement(el) {
     wrapper.setAttribute('data-equation-number', String(eqNumber));
 
     if (sourceId) {
-      /** @type {any} */ (window).VBMath.equations.push({ id: sourceId, number: eqNumber, latex });
+      window.VBMath?.equations.push({ id: sourceId, number: eqNumber, latex });
     }
   }
 

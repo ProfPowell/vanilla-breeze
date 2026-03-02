@@ -17,8 +17,10 @@ export class CanvasInteraction {
   #canvas;
   #statusEl;
   #dragging = false;
+  /** @type {HTMLElement | null} */
   #target = null;
   #mode = 'move'; // 'move' | 'resize'
+  /** @type {string | null} */
   #resizeDir = null; // 'e' | 's' | 'se'
   #startCol;
   #startRow;
@@ -30,11 +32,12 @@ export class CanvasInteraction {
   #rowHeight;
   #gapPx;
   #cols;
+  /** @type {HTMLElement | null} */
   #dropZone = null;
 
   /**
    * @param {HTMLElement} canvas  - The vb-canvas element
-   * @param {HTMLElement} statusEl - aria-live region for announcements
+   * @param {HTMLElement | null} statusEl - aria-live region for announcements
    */
   constructor(canvas, statusEl) {
     this.#canvas = canvas;
@@ -74,8 +77,10 @@ export class CanvasInteraction {
   /**
    * Check if the cursor is over a valid drop target for nesting.
    * Returns the target element or null.
+   * @returns {HTMLElement | null}
    */
   #findDropZone(e) {
+    if (!this.#target) return null;
     const els = document.elementsFromPoint(e.clientX, e.clientY);
     for (const el of els) {
       // Skip the dragged block itself, its children, and non-block elements
@@ -90,7 +95,7 @@ export class CanvasInteraction {
       // Don't nest into self's parent if already nested there
       if (el === this.#target.parentElement) continue;
 
-      return el;
+      return /** @type {HTMLElement} */ (el);
     }
     return null;
   }
@@ -164,7 +169,7 @@ export class CanvasInteraction {
   };
 
   #onPointerMove = (e) => {
-    if (!this.#dragging) return;
+    if (!this.#dragging || !this.#target) return;
 
     const dx = e.clientX - this.#startX;
     const dy = e.clientY - this.#startY;
@@ -176,18 +181,18 @@ export class CanvasInteraction {
       if (dir === 'e' || dir === 'se') {
         const maxCspan = this.#cols - this.#startCol + 1;
         const newCspan = Math.max(1, Math.min(maxCspan, this.#startCspan + deltaCols));
-        this.#target.style.setProperty('--cspan', newCspan);
+        this.#target.style.setProperty('--cspan', String(newCspan));
       }
       if (dir === 's' || dir === 'se') {
         const newRspan = Math.max(1, this.#startRspan + deltaRows);
-        this.#target.style.setProperty('--rspan', newRspan);
+        this.#target.style.setProperty('--rspan', String(newRspan));
       }
     } else {
       const cspan = parseInt(this.#target.style.getPropertyValue('--cspan'), 10) || 12;
       const newCol = Math.max(1, Math.min(this.#cols - cspan + 1, this.#startCol + deltaCols));
       const newRow = Math.max(1, this.#startRow + deltaRows);
-      this.#target.style.setProperty('--col', newCol);
-      this.#target.style.setProperty('--row', newRow);
+      this.#target.style.setProperty('--col', String(newCol));
+      this.#target.style.setProperty('--row', String(newRow));
 
       // Update drop zone during move
       this.#updateDropZone(e);
@@ -195,49 +200,50 @@ export class CanvasInteraction {
   };
 
   #onPointerUp = (e) => {
-    if (!this.#target) return;
+    const target = this.#target;
+    if (!target) return;
 
-    this.#target.releasePointerCapture(e.pointerId);
-    this.#target.style.cursor = '';
-    this.#target.removeEventListener('pointermove', this.#onPointerMove);
-    this.#target.removeEventListener('pointerup', this.#onPointerUp);
+    target.releasePointerCapture(e.pointerId);
+    target.style.cursor = '';
+    target.removeEventListener('pointermove', this.#onPointerMove);
+    target.removeEventListener('pointerup', this.#onPointerUp);
 
-    const tag = this.#target.localName;
+    const tag = target.localName;
 
     if (this.#mode === 'move' && this.#dropZone) {
       // Nest into drop zone
-      this.#dropZone.appendChild(this.#target);
+      this.#dropZone.appendChild(target);
       this.#dropZone.setAttribute('data-subgrid', '');
-      this.#target.style.setProperty('--col', 1);
-      this.#target.style.setProperty('--row', 1);
+      target.style.setProperty('--col', '1');
+      target.style.setProperty('--row', '1');
       // Auto-size nested block to parent's span
       const parentCspan = parseInt(this.#dropZone.style.getPropertyValue('--cspan'), 10) || 12;
-      this.#target.style.setProperty('--cspan', parentCspan);
+      target.style.setProperty('--cspan', String(parentCspan));
       this.#announce(`Nested ${tag} into ${this.#dropZone.localName}`);
       this.#clearDropZone();
     } else if (this.#mode === 'move') {
       // Check if we should un-nest (block is nested and dragged significantly)
-      const isNested = this.#target.parentElement !== this.#canvas;
+      const isNested = target.parentElement !== this.#canvas;
       if (isNested) {
         const totalMovement = Math.abs(e.clientX - this.#startX) + Math.abs(e.clientY - this.#startY);
         // Un-nest if moved more than 1 grid cell worth of distance
         if (totalMovement > this.#colWidth + this.#gapPx) {
-          this.#canvas.appendChild(this.#target);
+          this.#canvas.appendChild(target);
           this.#announce(`Moved ${tag} to canvas`);
         } else {
-          const col = this.#target.style.getPropertyValue('--col');
-          const row = this.#target.style.getPropertyValue('--row');
+          const col = target.style.getPropertyValue('--col');
+          const row = target.style.getPropertyValue('--row');
           this.#announce(`${tag} moved to column ${col}, row ${row}`);
         }
       } else {
-        const col = this.#target.style.getPropertyValue('--col');
-        const row = this.#target.style.getPropertyValue('--row');
+        const col = target.style.getPropertyValue('--col');
+        const row = target.style.getPropertyValue('--row');
         this.#announce(`${tag} moved to column ${col}, row ${row}`);
       }
       this.#clearDropZone();
     } else {
-      const cspan = this.#target.style.getPropertyValue('--cspan');
-      const rspan = this.#target.style.getPropertyValue('--rspan');
+      const cspan = target.style.getPropertyValue('--cspan');
+      const rspan = target.style.getPropertyValue('--rspan');
       this.#announce(`${tag} resized to ${cspan} columns, ${rspan} rows`);
     }
 

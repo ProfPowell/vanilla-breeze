@@ -225,6 +225,7 @@ function findFiles(dir, extensions) {
  * @returns {object} Validation results
  */
 function validateFontFaces(fontFaces) {
+  /** @type {{errors: {file?: any, message: string, suggestion?: string}[], warnings: {file?: any, message: string, suggestion?: string}[], info: {file?: any, message: string, suggestion?: string}[], passed: {file?: any, message: string}[]}} */
   const results = {
     errors: [],
     warnings: [],
@@ -345,6 +346,7 @@ function validateFontFaces(fontFaces) {
  * @returns {object} Validation results
  */
 function validatePreloads(preloads) {
+  /** @type {{errors: {file?: any, message: string, suggestion?: string}[], warnings: {file?: any, message: string, suggestion?: string}[], info: {file?: any, message: string, suggestion?: string}[], passed: {file?: any, message: string}[]}} */
   const results = {
     errors: [],
     warnings: [],
@@ -414,6 +416,7 @@ function validatePreloads(preloads) {
  * @returns {object} Pattern detection results
  */
 function checkFontLoadingPatterns(content, filePath) {
+  /** @type {{warnings: {file?: string, message: string, suggestion?: string}[], info: {file?: string, message: string, suggestion?: string}[]}} */
   const results = {
     warnings: [],
     info: [],
@@ -598,6 +601,7 @@ function main() {
   // Collect all font-faces
   const allFontFaces = [];
   const allPreloads = [];
+  /** @type {{warnings: {file?: string, message: string, suggestion?: string}[], info: {file?: string, message: string, suggestion?: string}[]}} */
   const patternResults = { warnings: [], info: [] };
 
   // Process CSS files
