@@ -1,7 +1,7 @@
 ---
 id: container-type-reel-conflict
 project: vanilla-breeze
-status: backlog
+status: done
 priority: p2
 depends: []
 created: 2026-02-25
@@ -40,4 +40,6 @@ VB sets `container-type: inline-size` on `main`, `article`, `section`, and `asid
 
 ## Session Log
 
-_No sessions yet._
+### 2026-03-01
+
+Added `container-type: normal` override for `main, article, section, aside` as direct children of `layout-reel` in `src/custom-elements/layout-reel/styles.css`. This undoes the `container-type: inline-size` from `layout-attributes.css` that zeroes out intrinsic inline size in flex context. Follows existing pattern from `aside.float`/`aside.sidenote` overrides. All 294 tests pass, CDN build succeeds.

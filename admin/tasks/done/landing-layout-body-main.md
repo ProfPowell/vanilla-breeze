@@ -1,7 +1,7 @@
 ---
 id: landing-layout-body-main
 project: vanilla-breeze
-status: backlog
+status: done
 priority: p2
 depends: []
 created: 2026-02-25
@@ -41,4 +41,6 @@ The landing page layout template only defines `body-header`, `hero`, `feature`, 
 
 ## Session Log
 
-_No sessions yet._
+### 2026-03-01
+
+Added `body-nav` and `body-main` grid areas to `--tpl-landing` in `src/custom-elements/layout-attributes.css`. `body-main` sits between `hero` and `feature` so `<main>` renders naturally without per-page overrides. `body-nav` sits after `body-header` so `<nav>` doesn't create implicit columns. Both use `auto` sizing to collapse when unused. All 294 tests pass, CDN build succeeds.

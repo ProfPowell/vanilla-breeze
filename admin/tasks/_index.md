@@ -13,8 +13,6 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Priority | Summary |
 |:---|:--------|:--------:|:--------|
-| [landing-layout-body-main](./active/landing-layout-body-main.md) | vanilla-breeze | p2 | Add `body-main` grid area to landing page layout |
-| [container-type-reel-conflict](./active/container-type-reel-conflict.md) | vanilla-breeze | p2 | Fix container-type zeroing out flex children in reels |
 | [responsive-nav-toggle](./active/responsive-nav-toggle.md) | vanilla-breeze | p2 | Add responsive nav toggle pattern (desktop/mobile) |
 | [htmlvalidate-custom-elements](./active/htmlvalidate-custom-elements.md) | vanilla-breeze | p2 | Register VB custom elements in html-validate config |
 | [research-highlight-notes-wc](./active/research-highlight-notes-wc.md) | vanilla-breeze | p3 | Research Medium-style highlight & notes web component |
@@ -28,6 +26,9 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Completed | Summary |
 |:---|:--------|:----------|:--------|
+| [container-type-reel-conflict](./done/container-type-reel-conflict.md) | vanilla-breeze | 2026-03-01 | Fix container-type zeroing out flex children in reels |
+| [landing-layout-body-main](./done/landing-layout-body-main.md) | vanilla-breeze | 2026-03-01 | Add `body-main` and `body-nav` grid areas to landing layout |
+| [tighten-type-safety](./done/tighten-type-safety.md) | vanilla-breeze | 2026-03-01 | Enable strictNullChecks, shared types, expand scope to scripts/tests |
 
 ---
 
