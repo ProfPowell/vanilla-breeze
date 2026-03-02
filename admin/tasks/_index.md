@@ -12,8 +12,6 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Priority | Summary |
 |:---|:--------|:--------:|:--------|
-| [link-as-button](./active/link-as-button.md) | vanilla-breeze | p3 | Add link-as-button pattern for CTA anchors |
-| [pull-to-refresh-indicator](./active/pull-to-refresh-indicator.md) | vanilla-breeze | p3 | Add pull-to-refresh visual indicator component |
 
 
 ## Blocked
@@ -25,6 +23,8 @@ Master backlog across all projects. Sorted by priority within each status group.
 
 | ID | Project | Completed | Summary |
 |:---|:--------|:----------|:--------|
+| [link-as-button](./done/link-as-button.md) | vanilla-breeze | 2026-03-02 | Already existed (`a.button`); fixed biosite CTAs to use it |
+| [pull-to-refresh-indicator](./done/pull-to-refresh-indicator.md) | vanilla-breeze | 2026-03-02 | Already existed in vb-gestures.js/css; no new work needed |
 | [mobile-biosite-demo](./done/mobile-biosite-demo.md) | vanilla-breeze | 2026-03-01 | VB-native pharma biosite demo with full mobile feature set |
 | [responsive-nav-toggle](./done/responsive-nav-toggle.md) | vanilla-breeze | 2026-03-01 | Add responsive nav toggle pattern (data-visible + nav.bottom) |
 | [htmlvalidate-custom-elements](./done/htmlvalidate-custom-elements.md) | vanilla-breeze | 2026-03-01 | Fix phrasing elements missing flow content flag in html-validate config |
