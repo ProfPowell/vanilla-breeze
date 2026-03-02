@@ -1,0 +1,139 @@
+---
+layout: layouts/attribute.njk
+title: "data-visible"
+description: "Responsive visibility utility. Show or hide elements based on viewport width without writing custom media queries."
+attributeName: data-visible
+category: responsive
+attributeType: data
+currentPath: /docs/attributes/data-visible/
+permalink: /docs/attributes/data-visible/
+---
+
+{% set desktopCode %}<nav class="horizontal" data-visible="desktop" aria-label="Main">
+  <a href="#" aria-current="page">Home</a>
+  <a href="#">Features</a>
+  <a href="#">Pricing</a>
+</nav>{% endset %}
+
+{% set mobileCode %}<button data-visible="mobile" commandfor="mobile-nav" command="show-modal" class="ghost icon-only" aria-label="Menu">
+  <icon-wc name="menu"></icon-wc>
+</button>
+
+<nav class="bottom" data-visible="mobile" aria-label="Quick navigation">
+  <ul>
+    <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
+    <li><a href="#"><icon-wc name="star"></icon-wc> Features</a></li>
+    <li><a href="#"><icon-wc name="tag"></icon-wc> Pricing</a></li>
+  </ul>
+</nav>{% endset %}
+
+{% set combinedCode %}<header>
+  <!-- Desktop: horizontal nav links -->
+  <nav class="horizontal" data-visible="desktop" aria-label="Main">
+    <a href="#">Home</a>
+    <a href="#">Features</a>
+    <a href="#">Pricing</a>
+  </nav>
+
+  <!-- Mobile: hamburger button -->
+  <button data-visible="mobile" commandfor="mobile-nav" command="show-modal"
+          class="ghost icon-only" aria-label="Menu">
+    <icon-wc name="menu"></icon-wc>
+  </button>
+</header>
+
+<!-- Mobile: bottom tab bar -->
+<nav class="bottom" data-visible="mobile" aria-label="Quick navigation">
+  <ul>
+    <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
+    <li><a href="#"><icon-wc name="star"></icon-wc> Features</a></li>
+    <li><a href="#"><icon-wc name="tag"></icon-wc> Pricing</a></li>
+  </ul>
+</nav>{% endset %}
+
+{% set cssCode %}@media (width >= 48rem) {
+  [data-visible="mobile"] { display: none; }
+}
+
+@media (width < 48rem) {
+  [data-visible="desktop"] { display: none; }
+}{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-visible</code> attribute controls element visibility based on viewport width. It eliminates the need for custom <code>@media</code> queries when toggling between desktop and mobile layouts.</p>
+
+    <ul>
+      <li><code>data-visible="desktop"</code> &mdash; visible at 48 rem and above, hidden below</li>
+      <li><code>data-visible="mobile"</code> &mdash; visible below 48 rem, hidden at 48 rem and above</li>
+    </ul>
+
+    <p>The breakpoint (48 rem) corresponds to a typical tablet/desktop threshold. Because the rules live in the <code>utils</code> cascade layer, they override styles from earlier layers (tokens, reset, native-elements, custom-elements, web-components) without needing <code>!important</code>.</p>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Two media queries set <code>display: none</code> on the opposite breakpoint:</p>
+
+    <code-block language="css" show-lines label="The complete CSS">{{ cssCode | escape }}</code-block>
+
+    <p>Works on any element &mdash; not just navigation. A hamburger button, a bottom nav, a sidebar, a CTA banner, or any content block can use <code>data-visible</code>.</p>
+  </section>
+
+  <section>
+    <h2>Desktop-Only Content</h2>
+    <p>Use <code>data-visible="desktop"</code> on elements that should disappear on narrow viewports:</p>
+
+    <code-block language="html" show-lines label="Desktop-only navigation">{{ desktopCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Mobile-Only Content</h2>
+    <p>Use <code>data-visible="mobile"</code> on elements that should only appear on narrow viewports:</p>
+
+    <code-block language="html" show-lines label="Mobile-only elements">{{ mobileCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Responsive Nav Pattern</h2>
+    <p>The most common use case: toggle between a horizontal desktop nav and a hamburger + bottom tab bar on mobile. No custom media queries needed.</p>
+
+    <code-block language="html" show-lines label="Complete responsive nav pattern">{{ combinedCode | escape }}</code-block>
+
+    <p>See the <a href="/docs/examples/demos/responsive-nav.html">responsive nav demo</a> for a full working example.</p>
+  </section>
+
+  <section>
+    <h2>Values</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Visible</th>
+          <th>Hidden</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>desktop</code></td>
+          <td>&ge; 48 rem</td>
+          <td>&lt; 48 rem</td>
+        </tr>
+        <tr>
+          <td><code>mobile</code></td>
+          <td>&lt; 48 rem</td>
+          <td>&ge; 48 rem</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Elements hidden with <code>display: none</code> are removed from the accessibility tree &mdash; screen readers will not announce them</li>
+      <li>Ensure equivalent content is available at both breakpoints; hiding a desktop nav is fine when a mobile nav provides the same links</li>
+      <li>Do not use <code>data-visible</code> to hide content that has no mobile equivalent &mdash; that would reduce accessibility on narrow screens</li>
+      <li>The hamburger button should include an <code>aria-label</code> since it typically contains only an icon</li>
+    </ul>
+  </section>
