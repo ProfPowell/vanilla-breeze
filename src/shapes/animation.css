@@ -1,0 +1,109 @@
+/* Shape animation
+   [data-morph] keyframe morphing between matching-point shapes.
+   All animations respect prefers-reduced-motion. */
+
+[data-morph] {
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+/* ── Pulse ── subtle scale-like clip-path throb */
+[data-morph="pulse"] {
+  animation-name: shape-pulse;
+}
+
+@keyframes shape-pulse {
+  0%, 100% {
+    clip-path: shape(
+      from 0% 0%,
+      line to 100% 0%,
+      line to 100% 100%,
+      line to 0% 100%,
+      close
+    );
+  }
+  50% {
+    clip-path: shape(
+      from 2% 2%,
+      line to 98% 2%,
+      line to 98% 98%,
+      line to 2% 98%,
+      close
+    );
+  }
+}
+
+/* ── Breathe ── organic breathing motion between curved shapes */
+[data-morph="breathe"] {
+  animation-name: shape-breathe;
+  animation-duration: 4s;
+}
+
+@keyframes shape-breathe {
+  0%, 100% {
+    clip-path: shape(
+      from 0% 0%,
+      line to 100% 0%,
+      line to 100% 80%,
+      curve to 50% 100% with 75% 115%,
+      curve to 0% 80% with 25% 115%,
+      close
+    );
+  }
+  50% {
+    clip-path: shape(
+      from 0% 20%,
+      curve to 50% 0% with 25% -15%,
+      curve to 100% 20% with 75% -15%,
+      line to 100% 100%,
+      line to 0% 100%,
+      close
+    );
+  }
+}
+
+/* ── Wave ── horizontal wave undulation */
+[data-morph="wave"] {
+  animation-name: shape-wave;
+  animation-duration: 2.5s;
+}
+
+@keyframes shape-wave {
+  0%, 100% {
+    clip-path: shape(
+      from 0% 10%,
+      curve to 25% 0% with 12.5% 0%,
+      curve to 50% 10% with 37.5% 0%,
+      curve to 75% 0% with 62.5% 0%,
+      curve to 100% 10% with 87.5% 0%,
+      line to 100% 90%,
+      curve to 75% 100% with 87.5% 100%,
+      curve to 50% 90% with 62.5% 100%,
+      curve to 25% 100% with 37.5% 100%,
+      curve to 0% 90% with 12.5% 100%,
+      close
+    );
+  }
+  50% {
+    clip-path: shape(
+      from 0% 0%,
+      curve to 25% 10% with 12.5% 10%,
+      curve to 50% 0% with 37.5% 10%,
+      curve to 75% 10% with 62.5% 10%,
+      curve to 100% 0% with 87.5% 10%,
+      line to 100% 100%,
+      curve to 75% 90% with 87.5% 90%,
+      curve to 50% 100% with 62.5% 90%,
+      curve to 25% 90% with 37.5% 90%,
+      curve to 0% 100% with 12.5% 90%,
+      close
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-morph] {
+    animation: none;
+  }
+}

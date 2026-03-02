@@ -1,0 +1,61 @@
+/* Shaped borders
+   [data-border-shape] two-layer technique.
+   ::before pseudo draws colored background at full shape,
+   inner content clips to same shape inset by --shape-border. */
+
+[data-border-shape] {
+  position: relative;
+  display: inline-block;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-primary);
+    z-index: -1;
+  }
+
+  & > * {
+    display: block;
+    margin: var(--shape-border);
+  }
+}
+
+/* ── Hexagon ── */
+[data-border-shape="hexagon"],
+[data-border-shape="hexagon"]::before {
+  clip-path: shape(
+    from 50% 0%,
+    line to 100% 25%,
+    line to 100% 75%,
+    line to 50% 100%,
+    line to 0% 75%,
+    line to 0% 25%,
+    close
+  );
+}
+
+/* ── Diamond ── */
+[data-border-shape="diamond"],
+[data-border-shape="diamond"]::before {
+  clip-path: shape(
+    from 50% 0%,
+    line to 100% 50%,
+    line to 50% 100%,
+    line to 0% 50%,
+    close
+  );
+}
+
+/* ── Arch ── */
+[data-border-shape="arch"],
+[data-border-shape="arch"]::before {
+  clip-path: shape(
+    from 0% 100%,
+    line to 0% 32%,
+    curve to 50% 0% with 0% 0%,
+    curve to 100% 32% with 100% 0%,
+    line to 100% 100%,
+    close
+  );
+}

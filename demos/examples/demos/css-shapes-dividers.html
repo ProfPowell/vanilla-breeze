@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Shapes: Dividers &amp; Section Edges</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    h1 { margin-block-end: var(--size-s); }
+
+    .demo-section {
+      margin-block: var(--size-xl);
+    }
+
+    .demo-section h2 {
+      margin-block-end: var(--size-m);
+    }
+
+    .demo-section p {
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-m);
+    }
+
+    /* Edge demo sections need visible backgrounds */
+    .edge-demo {
+      background: var(--color-surface-raised);
+      padding: var(--size-xl) var(--size-l);
+      margin-block: var(--size-xl);
+    }
+
+    .edge-demo h3 { margin-block-end: var(--size-s); }
+
+    /* Stacked sections for visual continuity */
+    .edge-stack {
+      display: grid;
+      gap: 0;
+    }
+
+    .edge-stack > section {
+      padding: var(--size-2xl) var(--size-l);
+    }
+
+    .edge-stack > section:nth-child(odd) {
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+    }
+
+    .edge-stack > section:nth-child(even) {
+      background: var(--color-surface-raised);
+    }
+
+    .edge-stack > section:nth-child(odd) h3,
+    .edge-stack > section:nth-child(odd) p {
+      color: inherit;
+    }
+
+    /* Adjusted depth for more dramatic demo */
+    .edge-stack > section {
+      --shape-depth: 8%;
+    }
+
+    .depth-subtle { --shape-depth: 5%; }
+    .depth-dramatic { --shape-depth: 25%; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CSS Shapes: Dividers &amp; Section Edges</h1>
+    <p>Decorative <code>&lt;hr&gt;</code> shapes and section edge clipping using the CSS <code>shape()</code> function. All shapes degrade gracefully in unsupported browsers.</p>
+  </header>
+
+  <article class="demo-section">
+    <h2>HR Dividers</h2>
+    <p>Class-based variants: <code>hr.wave</code>, <code>hr.zigzag</code>, <code>hr.scallop</code>, <code>hr.diamonds</code>, <code>hr.dots</code>.</p>
+
+    <p>Standard <code>&lt;hr&gt;</code> for reference:</p>
+    <hr>
+
+    <p><code>hr.wave</code></p>
+    <hr class="wave">
+
+    <p><code>hr.zigzag</code></p>
+    <hr class="zigzag">
+
+    <p><code>hr.scallop</code></p>
+    <hr class="scallop">
+
+    <p><code>hr.diamonds</code></p>
+    <hr class="diamonds">
+
+    <p><code>hr.dots</code></p>
+    <hr class="dots">
+
+    <p>Existing decorative variant for comparison:</p>
+    <hr class="decorative">
+  </article>
+
+  <article class="demo-section">
+    <h2>Section Edges &mdash; Bottom Only</h2>
+    <p>Using <code>data-shape-end</code> on sections to clip the bottom edge.</p>
+
+    <section class="edge-demo" data-shape-end="wave">
+      <h3>Wave bottom edge</h3>
+      <p><code>data-shape-end="wave"</code></p>
+    </section>
+
+    <section class="edge-demo" data-shape-end="chevron">
+      <h3>Chevron bottom edge</h3>
+      <p><code>data-shape-end="chevron"</code></p>
+    </section>
+
+    <section class="edge-demo" data-shape-end="scallop">
+      <h3>Scallop bottom edge</h3>
+      <p><code>data-shape-end="scallop"</code></p>
+    </section>
+
+    <section class="edge-demo" data-shape-end="diagonal">
+      <h3>Diagonal bottom edge</h3>
+      <p><code>data-shape-end="diagonal"</code></p>
+    </section>
+  </article>
+
+  <article class="demo-section">
+    <h2>Section Edges &mdash; Top Only</h2>
+    <p>Using <code>data-shape-start</code> on sections to clip the top edge.</p>
+
+    <section class="edge-demo" data-shape-start="wave">
+      <h3>Wave top edge</h3>
+      <p><code>data-shape-start="wave"</code></p>
+    </section>
+
+    <section class="edge-demo" data-shape-start="chevron">
+      <h3>Chevron top edge</h3>
+      <p><code>data-shape-start="chevron"</code></p>
+    </section>
+  </article>
+
+  <article class="demo-section">
+    <h2>Stacked Sections &mdash; Combined Edges</h2>
+    <p>Alternating sections with both <code>data-shape-start</code> and <code>data-shape-end</code> for visual flow.</p>
+
+    <section class="edge-stack">
+      <section data-shape-end="wave">
+        <h3>First section</h3>
+        <p>Wavy bottom flows into the next section.</p>
+      </section>
+      <section data-shape-start="wave" data-shape-end="chevron">
+        <h3>Middle section</h3>
+        <p>Wave top, chevron bottom.</p>
+      </section>
+      <section data-shape-start="chevron" data-shape-end="scallop">
+        <h3>Third section</h3>
+        <p>Chevron top, scallop bottom.</p>
+      </section>
+      <section data-shape-start="scallop">
+        <h3>Final section</h3>
+        <p>Scallop top, flat bottom.</p>
+      </section>
+    </section>
+  </article>
+
+  <article class="demo-section">
+    <h2>Custom Depth</h2>
+    <p>Override <code>--shape-depth</code> to control how dramatic the edge shape is.</p>
+
+    <section class="edge-demo depth-subtle" data-shape-end="wave">
+      <h3>Subtle wave (5%)</h3>
+      <p><code>--shape-depth: 5%</code></p>
+    </section>
+
+    <section class="edge-demo depth-dramatic" data-shape-end="wave">
+      <h3>Dramatic wave (25%)</h3>
+      <p><code>--shape-depth: 25%</code></p>
+    </section>
+  </article>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

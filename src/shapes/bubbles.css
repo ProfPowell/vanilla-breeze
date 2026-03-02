@@ -1,0 +1,164 @@
+/* Chat bubble shapes
+   [data-bubble] for messaging UIs.
+   Each variant has a shaped tail or distinctive form. */
+
+[data-bubble] {
+  display: block;
+  padding: var(--size-s) var(--size-m);
+  max-width: 75%;
+  line-height: 1.5;
+}
+
+/* ── Incoming ── white bg, bottom-left tail */
+[data-bubble="incoming"] {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  align-self: flex-start;
+  clip-path: shape(
+    from 12px 0%,
+    curve to 0% 12px with 0% 0%,
+    line to 0% calc(100% - 20px),
+    line to 0% 100%,
+    line to 20px calc(100% - 6px),
+    line to calc(100% - 12px) calc(100% - 6px),
+    curve to 100% calc(100% - 18px) with 100% calc(100% - 6px),
+    line to 100% 12px,
+    curve to calc(100% - 12px) 0% with 100% 0%,
+    close
+  );
+  padding-block-end: calc(var(--size-s) + 6px);
+}
+
+/* ── Outgoing ── primary bg, bottom-right tail */
+[data-bubble="outgoing"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  align-self: flex-end;
+  clip-path: shape(
+    from 12px 0%,
+    curve to 0% 12px with 0% 0%,
+    line to 0% calc(100% - 18px),
+    curve to 12px calc(100% - 6px) with 0% calc(100% - 6px),
+    line to calc(100% - 20px) calc(100% - 6px),
+    line to 100% 100%,
+    line to 100% calc(100% - 20px),
+    line to 100% 12px,
+    curve to calc(100% - 12px) 0% with 100% 0%,
+    close
+  );
+  padding-block-end: calc(var(--size-s) + 6px);
+}
+
+/* ── Assistant ── tinted bg, top-left tail */
+[data-bubble="assistant"] {
+  background: color-mix(in oklch, var(--color-secondary) 20%, var(--color-surface));
+  color: var(--color-text);
+  align-self: flex-start;
+  clip-path: shape(
+    from 0% 20px,
+    line to 0% 0%,
+    line to 20px 14px,
+    line to calc(100% - 12px) 14px,
+    curve to 100% 26px with 100% 14px,
+    line to 100% calc(100% - 12px),
+    curve to calc(100% - 12px) 100% with 100% 100%,
+    line to 12px 100%,
+    curve to 0% calc(100% - 12px) with 0% 100%,
+    close
+  );
+  padding-block-start: calc(var(--size-s) + 14px);
+}
+
+/* ── Thought ── cloud shape */
+[data-bubble="thought"] {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  align-self: flex-start;
+  clip-path: shape(
+    from 20% 0%,
+    curve to 50% 0% with 20% -8%,
+    curve to 80% 0% with 50% -8%,
+    curve to 100% 25% with 115% 0%,
+    curve to 100% 70% with 115% 50%,
+    curve to 80% 100% with 100% 115%,
+    curve to 20% 100% with 50% 115%,
+    curve to 0% 70% with -15% 115%,
+    curve to 0% 25% with -15% 50%,
+    curve to 20% 0% with -15% 0%,
+    close
+  );
+  padding: var(--size-m) var(--size-l);
+  text-align: center;
+}
+
+/* ── Typing ── incoming shape with animated dot indicators */
+[data-bubble="typing"] {
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  align-self: flex-start;
+  clip-path: shape(
+    from 12px 0%,
+    curve to 0% 12px with 0% 0%,
+    line to 0% calc(100% - 20px),
+    line to 0% 100%,
+    line to 20px calc(100% - 6px),
+    line to calc(100% - 12px) calc(100% - 6px),
+    curve to 100% calc(100% - 18px) with 100% calc(100% - 6px),
+    line to 100% 12px,
+    curve to calc(100% - 12px) 0% with 100% 0%,
+    close
+  );
+  padding-block-end: calc(var(--size-s) + 6px);
+  min-width: 80px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  & > span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: typing-bounce 1.4s infinite ease-in-out;
+
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Error ── left accent border, rectangular */
+[data-bubble="error"] {
+  background: color-mix(in oklch, var(--color-danger, oklch(60% 0.2 25)) 12%, var(--color-surface));
+  color: var(--color-text);
+  align-self: flex-start;
+  border-inline-start: 3px solid var(--color-danger, oklch(60% 0.2 25));
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
+
+/* ── System ── pill-shaped timestamp/status */
+[data-bubble="system"] {
+  background: var(--color-surface-sunken, var(--color-surface));
+  color: var(--color-text-muted);
+  align-self: center;
+  border-radius: 2rem;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  max-width: fit-content;
+  padding: var(--size-2xs) var(--size-m);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-bubble="typing"] > span {
+    animation: none;
+    opacity: 0.6;
+  }
+}

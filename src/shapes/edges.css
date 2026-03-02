@@ -1,0 +1,176 @@
+/* Section edge shapes
+   data-shape-start clips the top edge, data-shape-end clips the bottom.
+   Apply to <section>, <article>, <header>, <footer>.
+   Adds padding to compensate for clipped area. */
+
+/* ── Top edge: data-shape-start ── */
+
+[data-shape-start] {
+  padding-block-start: calc(var(--shape-depth) + var(--size-l));
+}
+
+[data-shape-start="wave"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    curve to 25% 0% with 12.5% 0%,
+    curve to 50% var(--shape-depth) with 37.5% 0%,
+    curve to 75% 0% with 62.5% 0%,
+    curve to 100% var(--shape-depth) with 87.5% 0%,
+    line to 100% 100%,
+    line to 0% 100%,
+    close
+  );
+}
+
+[data-shape-start="chevron"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    line to 50% 0%,
+    line to 100% var(--shape-depth),
+    line to 100% 100%,
+    line to 0% 100%,
+    close
+  );
+}
+
+[data-shape-start="scallop"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    curve to 16.66% var(--shape-depth) with 8.33% 0%,
+    curve to 33.33% var(--shape-depth) with 25% 0%,
+    curve to 50% var(--shape-depth) with 41.66% 0%,
+    curve to 66.66% var(--shape-depth) with 58.33% 0%,
+    curve to 83.33% var(--shape-depth) with 75% 0%,
+    curve to 100% var(--shape-depth) with 91.66% 0%,
+    line to 100% 100%,
+    line to 0% 100%,
+    close
+  );
+}
+
+[data-shape-start="diagonal"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    line to 100% 0%,
+    line to 100% 100%,
+    line to 0% 100%,
+    close
+  );
+}
+
+/* ── Bottom edge: data-shape-end ── */
+
+[data-shape-end] {
+  padding-block-end: calc(var(--shape-depth) + var(--size-l));
+}
+
+[data-shape-end="wave"] {
+  clip-path: shape(
+    from 0% 0%,
+    line to 100% 0%,
+    line to 100% calc(100% - var(--shape-depth)),
+    curve to 75% 100% with 87.5% 100%,
+    curve to 50% calc(100% - var(--shape-depth)) with 62.5% 100%,
+    curve to 25% 100% with 37.5% 100%,
+    curve to 0% calc(100% - var(--shape-depth)) with 12.5% 100%,
+    close
+  );
+}
+
+[data-shape-end="chevron"] {
+  clip-path: shape(
+    from 0% 0%,
+    line to 100% 0%,
+    line to 100% calc(100% - var(--shape-depth)),
+    line to 50% 100%,
+    line to 0% calc(100% - var(--shape-depth)),
+    close
+  );
+}
+
+[data-shape-end="scallop"] {
+  clip-path: shape(
+    from 0% 0%,
+    line to 100% 0%,
+    line to 100% calc(100% - var(--shape-depth)),
+    curve to 83.33% calc(100% - var(--shape-depth)) with 91.66% 100%,
+    curve to 66.66% calc(100% - var(--shape-depth)) with 75% 100%,
+    curve to 50% calc(100% - var(--shape-depth)) with 58.33% 100%,
+    curve to 33.33% calc(100% - var(--shape-depth)) with 41.66% 100%,
+    curve to 16.66% calc(100% - var(--shape-depth)) with 25% 100%,
+    curve to 0% calc(100% - var(--shape-depth)) with 8.33% 100%,
+    close
+  );
+}
+
+[data-shape-end="diagonal"] {
+  clip-path: shape(
+    from 0% 0%,
+    line to 100% 0%,
+    line to 100% 100%,
+    line to 0% calc(100% - var(--shape-depth)),
+    close
+  );
+}
+
+/* ── Combined start + end ──
+   When both are set, compose the full clip-path on the element.
+   Each combination needs its own rule since shape() can't be composed. */
+
+[data-shape-start="wave"][data-shape-end="wave"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    curve to 25% 0% with 12.5% 0%,
+    curve to 50% var(--shape-depth) with 37.5% 0%,
+    curve to 75% 0% with 62.5% 0%,
+    curve to 100% var(--shape-depth) with 87.5% 0%,
+    line to 100% calc(100% - var(--shape-depth)),
+    curve to 75% 100% with 87.5% 100%,
+    curve to 50% calc(100% - var(--shape-depth)) with 62.5% 100%,
+    curve to 25% 100% with 37.5% 100%,
+    curve to 0% calc(100% - var(--shape-depth)) with 12.5% 100%,
+    close
+  );
+}
+
+[data-shape-start="chevron"][data-shape-end="chevron"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    line to 50% 0%,
+    line to 100% var(--shape-depth),
+    line to 100% calc(100% - var(--shape-depth)),
+    line to 50% 100%,
+    line to 0% calc(100% - var(--shape-depth)),
+    close
+  );
+}
+
+[data-shape-start="scallop"][data-shape-end="scallop"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    curve to 16.66% var(--shape-depth) with 8.33% 0%,
+    curve to 33.33% var(--shape-depth) with 25% 0%,
+    curve to 50% var(--shape-depth) with 41.66% 0%,
+    curve to 66.66% var(--shape-depth) with 58.33% 0%,
+    curve to 83.33% var(--shape-depth) with 75% 0%,
+    curve to 100% var(--shape-depth) with 91.66% 0%,
+    line to 100% calc(100% - var(--shape-depth)),
+    curve to 83.33% calc(100% - var(--shape-depth)) with 91.66% 100%,
+    curve to 66.66% calc(100% - var(--shape-depth)) with 75% 100%,
+    curve to 50% calc(100% - var(--shape-depth)) with 58.33% 100%,
+    curve to 33.33% calc(100% - var(--shape-depth)) with 41.66% 100%,
+    curve to 16.66% calc(100% - var(--shape-depth)) with 25% 100%,
+    curve to 0% calc(100% - var(--shape-depth)) with 8.33% 100%,
+    close
+  );
+}
+
+[data-shape-start="diagonal"][data-shape-end="diagonal"] {
+  clip-path: shape(
+    from 0% var(--shape-depth),
+    line to 100% 0%,
+    line to 100% 100%,
+    line to 0% calc(100% - var(--shape-depth)),
+    close
+  );
+}

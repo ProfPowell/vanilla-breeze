@@ -1,0 +1,46 @@
+/* Callout shapes
+   [data-callout] block containers with shaped outlines.
+   Speech bubble tail is part of the shape path (no pseudo-element hacks).
+   Notched corner uses calc() inside shape() coordinates. */
+
+[data-callout] {
+  padding: var(--size-m) var(--size-l);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+/* ── Speech ── rounded rectangle with bottom-left tail */
+[data-callout="speech"] {
+  clip-path: shape(
+    from 0% 8%,
+    curve to 8% 0% with 0% 0%,
+    line to 92% 0%,
+    curve to 100% 8% with 100% 0%,
+    line to 100% 82%,
+    curve to 92% 90% with 100% 90%,
+    line to 20% 90%,
+    line to 0% 100%,
+    line to 8% 90%,
+    curve to 0% 82% with 0% 90%,
+    close
+  );
+  padding-block-end: calc(var(--size-m) + 10%);
+}
+
+/* ── Notched ── top-right corner bevel */
+[data-callout="notched"] {
+  clip-path: shape(
+    from 0% 0%,
+    line to calc(100% - var(--shape-bevel)) 0%,
+    line to 100% var(--shape-bevel),
+    line to 100% 100%,
+    line to 0% 100%,
+    close
+  );
+}
+
+/* ── Tip ── left accent border via inset shape */
+[data-callout="tip"] {
+  border-inline-start: 4px solid var(--color-primary);
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
