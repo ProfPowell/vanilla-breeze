@@ -31,44 +31,19 @@
       grid-area: hero;
     }
 
-    body > nav[aria-label="Quick navigation"] {
-      grid-area: auto;
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-    }
-
-    /* ============================================================
-       BOTTOM NAV — App-shell navigation
-       ============================================================ */
-    body > nav {
+    /* Bottom nav brand overrides (color only — layout from nav.bottom) */
+    body > nav.bottom {
       background: var(--color-primary);
       border-block-start: 1px solid rgba(255, 255, 255, 0.1);
-      padding-block-end: var(--safe-bottom, 0px);
     }
 
-    body > nav ul {
-      display: flex;
-      justify-content: space-around;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    body > nav a {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--size-3xs);
-      padding: var(--size-xs) var(--size-s);
-      font-size: var(--font-size-xs);
+    body > nav.bottom a {
       color: rgba(255, 255, 255, 0.45);
-      text-decoration: none;
       transition: color 0.2s;
     }
 
-    body > nav a[aria-current="page"],
-    body > nav a:hover {
+    body > nav.bottom a[aria-current="page"],
+    body > nav.bottom a:hover {
       color: var(--color-accent);
     }
 
@@ -567,14 +542,8 @@
       background: var(--color-surface-alt, var(--color-surface));
     }
 
-    /* ============================================================
-       RESPONSIVE NAV — Desktop/mobile toggle
-       ============================================================ */
-    .desktop-nav {
-      display: none;
-    }
-
-    .desktop-nav a {
+    /* Desktop nav link colors (layout from nav.horizontal, visibility from data-visible) */
+    header nav a {
       color: rgba(255, 255, 255, 0.7);
       text-decoration: none;
       font-size: var(--font-size-sm);
@@ -582,26 +551,8 @@
       transition: color 0.2s;
     }
 
-    .desktop-nav a:hover {
+    header nav a:hover {
       color: white;
-    }
-
-    .mobile-only {
-      display: inline-flex;
-    }
-
-    @media (min-width: 48rem) {
-      .desktop-nav {
-        display: block;
-      }
-
-      .mobile-only {
-        display: none;
-      }
-
-      body > nav {
-        display: none;
-      }
     }
   </style>
 </head>
@@ -617,7 +568,7 @@
     </a>
 
     <!-- Desktop navigation (hidden on mobile) -->
-    <nav class="horizontal desktop-nav" aria-label="Main navigation">
+    <nav class="horizontal" data-visible="desktop" aria-label="Main navigation">
       <ul>
         <li><a href="#pipeline">Pipeline</a></li>
         <li><a href="#about">About</a></li>
@@ -629,7 +580,7 @@
     </nav>
 
     <!-- Mobile hamburger (hidden on desktop) -->
-    <button type="button" commandfor="mobile-menu" command="show-modal" class="ghost icon-only mobile-only" aria-label="Open menu">
+    <button type="button" commandfor="mobile-menu" command="show-modal" class="ghost icon-only" data-visible="mobile" aria-label="Open menu">
       <icon-wc name="menu"></icon-wc>
     </button>
   </header>
@@ -1175,7 +1126,7 @@
   <!-- ============================================================
        BOTTOM NAV — App-shell navigation (mobile)
        ============================================================ -->
-  <nav aria-label="Quick navigation">
+  <nav class="bottom" data-visible="mobile" aria-label="Quick navigation">
     <ul>
       <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
       <li><a href="#pipeline"><icon-wc name="flask-conical"></icon-wc> Pipeline</a></li>
