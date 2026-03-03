@@ -37,7 +37,20 @@
   {% if includeDev %}
   <link rel="stylesheet" href="{{ site.devCss }}">
   {% endif %}
-  <meta name="vb-service-worker" content="true">
+  {% if not site.isDev %}<meta name="vb-service-worker" content="true">{% endif %}
+  {% if site.isDev %}
+  <script>
+  // Dev mode: unregister any lingering service worker and clear its caches
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+    caches.keys().then(keys => {
+      keys.forEach(k => { if (k.startsWith('vb-')) caches.delete(k); });
+    });
+  }
+  </script>
+  {% endif %}
   {% block extraHead %}{% endblock %}
 </head>
 <body>
