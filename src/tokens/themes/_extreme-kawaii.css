@@ -26,7 +26,6 @@
 
   /* Theme hints for ThemeManager */
   --theme-border-style: kawaii;
-  --theme-icon-set: mage;
 
   /* ===== COLORS ===== */
   --color-surface: oklch(98% 0.02 350); /* Soft pink-white */
@@ -255,6 +254,7 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface-raised);
     border: 2px solid var(--color-border);
+    border-image: none; /* Prevent border-styles system scallop override */
     box-shadow: var(--shadow-md);
     position: relative;
     overflow: visible;
@@ -354,6 +354,21 @@
     background: linear-gradient(135deg, oklch(95% 0.04 180), oklch(95% 0.04 220));
     border-radius: var(--radius-l);
     border: 2px solid var(--color-accent);
+  }
+
+  /* Override border-styles scallop on elements where it looks wrong */
+  & table,
+  & details,
+  & fieldset,
+  & form {
+    border-image: none;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl);
+  }
+
+  /* Prevent border doubling when containers are nested */
+  & :is(details, fieldset) :is(form, fieldset, table) {
+    border: none;
   }
 
   }
