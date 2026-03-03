@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Launcher Demo</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <style>
+    body {
+      min-height: 100dvh;
+      background: var(--color-surface);
+    }
+
+    .page-content {
+      max-width: 60ch;
+      margin: 0 auto;
+      padding: var(--size-xl);
+    }
+
+    /* FAB-style chat trigger */
+    .chat-trigger {
+      position: fixed;
+      inset-block-end: var(--size-xl);
+      inset-inline-end: var(--size-xl);
+      z-index: 1000;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 16px oklch(0% 0 0 / 0.2);
+      transition: transform var(--duration-fast) var(--ease-default),
+                  box-shadow var(--duration-fast) var(--ease-default);
+    }
+
+    .chat-trigger:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 20px oklch(0% 0 0 / 0.28);
+    }
+
+    .chat-trigger:active {
+      transform: scale(0.96);
+    }
+
+    /* Size the chat dialog content */
+    #chat-dialog chat-window {
+      height: min(500px, 70dvh);
+      width: min(420px, 85vw);
+    }
+
+    /* Sidebar demo container */
+    .sidebar-demo {
+      container-type: normal;
+      width: 100%;
+      height: 400px;
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .sidebar-demo layout-sidebar {
+      height: 100%;
+    }
+
+    .sidebar-demo aside {
+      padding: var(--size-m);
+      background: var(--color-surface-sunken);
+      border-inline-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .sidebar-demo aside nav a {
+      display: block;
+      padding: var(--size-xs) var(--size-s);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+    }
+
+    .sidebar-demo aside nav a:hover {
+      background: var(--color-surface);
+    }
+
+    .sidebar-demo aside nav a[aria-current="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page content behind the chat -->
+  <article class="page-content">
+    <layout-stack data-layout-gap="l">
+      <h1>Chat Launcher Patterns</h1>
+      <p>This page demonstrates chat integration patterns using existing VB primitives. Click the floating button in the bottom-right corner to open the chat dialog.</p>
+
+      <section>
+        <h2>Floating Launcher</h2>
+        <p>A fixed-position FAB button uses <code>commandfor</code> and <code>command="show-modal"</code> to open a <code>&lt;dialog&gt;</code> containing a full <code>chat-window</code>. No new elements needed.</p>
+      </section>
+
+      <section>
+        <h2>Embedded with Sidebar</h2>
+        <p>For always-visible chat panels, use <code>&lt;layout-sidebar&gt;</code> with chat history in the aside.</p>
+
+        <section class="sidebar-demo">
+          <layout-sidebar data-layout-side="start" data-layout-sidebar-width="narrow">
+            <aside>
+              <nav aria-label="Chat history">
+                <a href="#" aria-current="true">Current conversation</a>
+                <a href="#">Refund request</a>
+                <a href="#">Setup help</a>
+                <a href="#">Product question</a>
+              </nav>
+            </aside>
+            <chat-window data-endpoint="/api/ai" id="sidebar-chat">
+              <script type="application/json" data-participants>
+              {
+                "user": { "name": "You", "role": "user" },
+                "assistant": { "name": "Assistant", "role": "agent" }
+              }
+              </script>
+              <header>
+                <h3>Support Chat</h3>
+              </header>
+              <chat-thread role="log" aria-label="Support conversation" aria-live="polite">
+                <chat-message data-role="agent" data-from="assistant">
+                  <chat-bubble><p>How can I help you today?</p></chat-bubble>
+                </chat-message>
+              </chat-thread>
+              <chat-input name="message">
+                <textarea data-grow rows="1" placeholder="Type a message..."></textarea>
+                <footer>
+                  <button type="submit" class="small" data-send aria-label="Send">
+                    <icon-wc name="send"></icon-wc>
+                  </button>
+                </footer>
+              </chat-input>
+            </chat-window>
+          </layout-sidebar>
+        </section>
+      </section>
+
+      <section>
+        <h2>History Drawer</h2>
+        <p>The history drawer uses <code>&lt;dialog data-position="start"&gt;</code> for a slide-in panel. Click the sidebar button in the dialog header to open it.</p>
+      </section>
+    </layout-stack>
+  </article>
+
+  <!-- FAB launcher button -->
+  <button commandfor="chat-dialog" command="show-modal"
+          class="chat-trigger" aria-label="Open chat">
+    <icon-wc name="message-circle"></icon-wc>
+  </button>
+
+  <!-- Chat dialog -->
+  <dialog id="chat-dialog">
+    <chat-window data-endpoint="/api/ai" data-model="claude-sonnet-4-6">
+      <script type="application/json" data-participants>
+      {
+        "user": { "name": "You", "role": "user" },
+        "assistant": { "name": "Assistant", "role": "agent" }
+      }
+      </script>
+      <header>
+        <button commandfor="chat-history" command="show-modal"
+                class="ghost small" aria-label="Chat history">
+          <icon-wc name="sidebar"></icon-wc>
+        </button>
+        <h3>AI Assistant</h3>
+        <select data-model-select aria-label="Select model">
+          <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+          <option value="claude-haiku-4-5">Haiku 4.5</option>
+        </select>
+        <button commandfor="chat-dialog" command="close"
+                class="ghost small" aria-label="Close">
+          <icon-wc name="x"></icon-wc>
+        </button>
+      </header>
+      <chat-thread role="log" aria-label="AI conversation" aria-live="polite">
+      </chat-thread>
+      <chat-input name="message">
+        <textarea data-grow rows="1" data-max-rows="8"
+                  placeholder="Ask anything..."></textarea>
+        <footer>
+          <button type="submit" class="small" data-send aria-label="Send">
+            <icon-wc name="send"></icon-wc>
+          </button>
+        </footer>
+      </chat-input>
+    </chat-window>
+  </dialog>
+
+  <!-- History drawer -->
+  <dialog id="chat-history" data-position="start">
+    <header>
+      <h3>History</h3>
+      <button commandfor="chat-history" command="close" class="ghost small" aria-label="Close history">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <nav aria-label="Previous conversations">
+      <a href="#">Current conversation</a>
+      <a href="#">Refund request</a>
+      <a href="#">Setup help</a>
+    </nav>
+  </dialog>
+
+  <script type="module" src="/cdn/vanilla-breeze.js"></script>
+  <script type="module">
+    // Mock fetch for demo
+    const responses = [
+      '<p>I\'d be happy to help! What would you like to know?</p>',
+      '<p>That\'s a great question. Let me think about that...</p>',
+      '<p>Here are some options to consider:</p><ul><li>Option A: Quick and simple</li><li>Option B: More thorough</li><li>Option C: Custom approach</li></ul>',
+      '<p>Is there anything else I can help with?</p>',
+    ];
+    let counter = 0;
+
+    const originalFetch = window.fetch;
+    window.fetch = async (url, options) => {
+      if (url === '/api/ai') {
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+        const html = responses[counter % responses.length];
+        counter++;
+        return new Response(JSON.stringify({ html }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return originalFetch(url, options);
+    };
+  </script>
+</body>
+</html>

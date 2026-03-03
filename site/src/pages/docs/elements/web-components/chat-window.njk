@@ -1,0 +1,272 @@
+---
+layout: layouts/element.njk
+title: "chat-window"
+description: "Orchestrating shell that wires chat-thread, chat-input, participant data, and model selection into a composed chat interface."
+elementName: chat-window
+category: component
+currentPath: /docs/elements/web-components/chat-window/
+permalink: /docs/elements/web-components/chat-window/
+---
+
+{% set aiCode %}<chat-window data-endpoint="/api/ai" data-model="claude-sonnet-4-6">
+  <script type="application/json" data-participants>
+  {
+    "user":      { "name": "You", "role": "user" },
+    "assistant": { "name": "Assistant", "role": "agent" }
+  }
+  </script>
+  <header>
+    <h3>AI Assistant</h3>
+    <select data-model-select aria-label="Select model">
+      <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+      <option value="claude-opus-4-6">Opus 4.6</option>
+      <option value="claude-haiku-4-5">Haiku 4.5</option>
+    </select>
+  </header>
+  <chat-thread role="log" aria-label="AI conversation" aria-live="polite">
+  </chat-thread>
+  <chat-input name="message">
+    <textarea data-grow rows="1" data-max-rows="8"
+              placeholder="Ask anything..."></textarea>
+    <footer>
+      <button type="submit" class="small" data-send aria-label="Send">
+        <icon-wc name="send"></icon-wc>
+      </button>
+    </footer>
+  </chat-input>
+</chat-window>{% endset %}
+
+{% set supportCode %}<chat-window data-endpoint="/api/support">
+  <script type="application/json" data-participants>
+  {
+    "user":  { "name": "You", "role": "user" },
+    "sarah": { "name": "Sarah Chen", "role": "agent" }
+  }
+  </script>
+  <header>
+    <h3>Support Chat</h3>
+  </header>
+  <chat-thread role="log" aria-label="Support conversation" aria-live="polite">
+    <chat-message data-role="agent" data-from="sarah">
+      <chat-bubble><p>Welcome! How can I help?</p></chat-bubble>
+    </chat-message>
+  </chat-thread>
+  <chat-input name="message">
+    <textarea data-grow rows="1" placeholder="Type a message..."></textarea>
+    <footer>
+      <button type="submit" class="small" data-send aria-label="Send">
+        <icon-wc name="send"></icon-wc>
+      </button>
+    </footer>
+  </chat-input>
+</chat-window>{% endset %}
+
+{% set participantCode %}<script type="application/json" data-participants>
+{
+  "user":      { "name": "You", "role": "user" },
+  "sarah":     { "name": "Sarah Chen", "role": "agent", "avatar": "/avatars/sarah.jpg" },
+  "assistant": { "name": "Assistant", "role": "agent", "model": "claude-sonnet-4-6" }
+}
+</script>{% endset %}
+
+{% set jsApiCode %}const chat = document.querySelector('chat-window');
+
+// Change model
+chat.model = 'claude-haiku-4-5';
+
+// Set participants dynamically
+chat.participants = new Map([
+  ['user', { name: 'You', role: 'user' }],
+  ['bot',  { name: 'Bot', role: 'agent' }],
+]);
+
+// Append a message
+chat.appendMessage('agent', '<p>Hello from JS!</p>', 'bot');
+
+// Clear the thread
+chat.clearThread();{% endset %}
+
+<browser-window
+    src="/docs/examples/demos/chat-window-basic.html"
+    url="https://vanilla-breeze.dev/chat-window"
+    title="Chat Window Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Overview</h2>
+    <p>The orchestrating shell for chat UIs. <code>chat-window</code> wires together <a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a>, <a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a>, participant data, and an optional model selector into a complete chat interface.</p>
+    <p>Light DOM, no Shadow DOM. Uses CSS grid with <code>grid-template-rows: auto 1fr auto</code> for header/thread/input layout. The consumer sizes the container; chat-window fills it.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-endpoint</code></td>
+          <td>URL</td>
+          <td>-</td>
+          <td>API endpoint for chat requests</td>
+        </tr>
+        <tr>
+          <td><code>data-model</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Active model; synced with <code>[data-model-select]</code></td>
+        </tr>
+        <tr>
+          <td><code>data-empty-message</code></td>
+          <td>string</td>
+          <td><code>Send a message to start.</code></td>
+          <td>Text shown when thread is empty</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>AI Chat with Model Selector</h2>
+    <p>The full compose: header with title and model selector, empty thread, and input area. The <code>[data-model-select]</code> dropdown syncs bidirectionally with <code>data-model</code>.</p>
+    <code-block language="html" show-lines label="AI chat window">{{ aiCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Support Chat with SSR Messages</h2>
+    <p>Server-rendered messages hydrate on connect. <code>chat-window</code> resolves <code>data-from</code> IDs against the participant map and writes <code>data-from-label</code> for CSS rendering.</p>
+    <code-block language="html" show-lines label="Support chat window">{{ supportCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Participant Data</h2>
+    <p>Declared via a <code>&lt;script type="application/json" data-participants&gt;</code> block inside <code>chat-window</code>, or set programmatically via the <code>participants</code> setter. Keys are participant IDs used in <code>data-from</code> attributes.</p>
+    <code-block language="html" show-lines label="Participant JSON">{{ participantCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Orchestration Flow</h2>
+    <p>When <code>chat-input:send</code> fires:</p>
+    <ol>
+      <li>Builds <code>chat-message[data-role="user"]</code> and appends to thread</li>
+      <li>Builds <code>chat-message[data-role="agent"][data-status="typing"]</code> with animated dots</li>
+      <li>Disables <code>chat-input</code> during fetch</li>
+      <li>Awaits response from <code>data-endpoint</code></li>
+      <li>Populates the typing message with real content; removes <code>data-status</code></li>
+      <li>Re-enables <code>chat-input</code> and restores focus</li>
+    </ol>
+    <p>The typing indicator and the final response share the same DOM node — no element swap, no flicker.</p>
+  </section>
+
+  <section>
+    <h2>DOM Structure</h2>
+    <code-block language="text" label="Light DOM tree">chat-window
+├── script[data-participants]  (optional, hidden)
+├── header
+│   ├── h3 (title)
+│   └── select[data-model-select]  (optional)
+├── chat-thread[role="log"]
+│   └── chat-message elements
+└── chat-input
+    ├── textarea[data-grow]
+    └── footer > button[data-send]</code-block>
+  </section>
+
+  <section>
+    <h2>Public API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>model</code></td>
+          <td>string (get/set)</td>
+          <td>Current model; syncs with select</td>
+        </tr>
+        <tr>
+          <td><code>participants</code></td>
+          <td>Map (get/set)</td>
+          <td>Participant registry</td>
+        </tr>
+        <tr>
+          <td><code>clearThread()</code></td>
+          <td>method</td>
+          <td>Remove all messages</td>
+        </tr>
+        <tr>
+          <td><code>appendMessage(role, html, from?)</code></td>
+          <td>method</td>
+          <td>Programmatic message append</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" show-lines label="JavaScript API">{{ jsApiCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>chat-window:model-change</code></td>
+          <td><code>{ model }</code></td>
+          <td>Model selector changed</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Variables</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--chat-window-header-bg</code></td>
+          <td><code>var(--color-surface)</code></td>
+          <td>Header background</td>
+        </tr>
+        <tr>
+          <td><code>--chat-window-header-border</code></td>
+          <td><code>var(--border-width-thin) solid var(--color-border)</code></td>
+          <td>Header bottom border</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a> — Scrollable message container</li>
+      <li><a href="/docs/elements/custom-elements/chat-message/"><code>&lt;chat-message&gt;</code></a> — Individual message turns</li>
+      <li><a href="/docs/elements/custom-elements/chat-bubble/"><code>&lt;chat-bubble&gt;</code></a> — Content bubble wrapper</li>
+      <li><a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a> — Form-associated input</li>
+      <li><a href="/docs/patterns/application/chat/">Chat Patterns</a> — Launcher, sidebar, and full-page compositions</li>
+    </ul>
+  </section>

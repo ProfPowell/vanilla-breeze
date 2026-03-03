@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Window Demo</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    .demo-container {
+      container-type: normal;
+      max-width: 600px;
+      width: 100%;
+      height: 500px;
+      margin: 0 auto;
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <h2>AI Chat with Model Selector</h2>
+
+    <section class="demo-container">
+      <chat-window data-endpoint="/api/ai" data-model="claude-sonnet-4-6">
+        <script type="application/json" data-participants>
+        {
+          "user": { "name": "You", "role": "user" },
+          "assistant": { "name": "Assistant", "role": "agent" }
+        }
+        </script>
+        <header>
+          <h3>AI Assistant</h3>
+          <select data-model-select aria-label="Select model">
+            <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+            <option value="claude-opus-4-6">Opus 4.6</option>
+            <option value="claude-haiku-4-5">Haiku 4.5</option>
+          </select>
+        </header>
+        <chat-thread role="log" aria-label="AI conversation" aria-live="polite">
+        </chat-thread>
+        <chat-input name="message" autofocus>
+          <textarea data-grow rows="1" data-max-rows="8"
+                    placeholder="Ask anything..."></textarea>
+          <footer>
+            <button type="submit" class="small" data-send aria-label="Send">
+              <icon-wc name="send"></icon-wc>
+            </button>
+          </footer>
+        </chat-input>
+      </chat-window>
+    </section>
+
+    <h2>Support Chat with SSR Messages</h2>
+
+    <section class="demo-container">
+      <chat-window data-endpoint="/api/support">
+        <script type="application/json" data-participants>
+        {
+          "user": { "name": "You", "role": "user" },
+          "sarah": { "name": "Sarah Chen", "role": "agent" }
+        }
+        </script>
+        <header>
+          <h3>Support Chat</h3>
+        </header>
+        <chat-thread role="log" aria-label="Support conversation" aria-live="polite">
+          <chat-message data-role="agent" data-from="sarah">
+            <chat-bubble><p>Welcome! How can I help you today?</p></chat-bubble>
+          </chat-message>
+          <chat-message data-role="user" data-from="user">
+            <chat-bubble><p>I have a question about my order.</p></chat-bubble>
+          </chat-message>
+          <chat-message data-role="agent" data-from="sarah">
+            <chat-bubble><p>Of course! Could you share your order number?</p></chat-bubble>
+          </chat-message>
+        </chat-thread>
+        <chat-input name="message">
+          <textarea data-grow rows="1" placeholder="Type a message..."></textarea>
+          <footer>
+            <button type="submit" class="small" data-send aria-label="Send">
+              <icon-wc name="send"></icon-wc>
+            </button>
+          </footer>
+        </chat-input>
+      </chat-window>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/cdn/vanilla-breeze.js"></script>
+  <script type="module">
+    // Mock responses for demo - intercept fetch
+    const mockResponses = {
+      '/api/ai': [
+        '<p>I\'d be happy to help! What would you like to know?</p>',
+        '<p>That\'s a great question. Let me think about that...</p><p>Based on my understanding, the answer involves several factors. Would you like me to elaborate on any specific aspect?</p>',
+        '<p>Here\'s what I found:</p><ul><li>First, consider the context</li><li>Second, evaluate your options</li><li>Third, make a decision based on your needs</li></ul>',
+        '<p>Interesting! I can help you with that. Let me break it down step by step.</p>',
+      ],
+      '/api/support': [
+        '<p>I can look that up for you right away! One moment please.</p>',
+        '<p>I found your order. It\'s currently being processed and should ship within 2 business days.</p>',
+        '<p>Is there anything else I can help you with?</p>',
+      ],
+    };
+
+    const counters = { '/api/ai': 0, '/api/support': 0 };
+
+    // Mock fetch for demo
+    const originalFetch = window.fetch;
+    window.fetch = async (url, options) => {
+      if (url === '/api/ai' || url === '/api/support') {
+        // Simulate network delay
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+
+        const responses = mockResponses[url];
+        const idx = counters[url] % responses.length;
+        counters[url]++;
+
+        return new Response(JSON.stringify({
+          html: responses[idx],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return originalFetch(url, options);
+    };
+  </script>
+</body>
+</html>

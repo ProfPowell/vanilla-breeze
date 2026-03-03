@@ -65,3 +65,5 @@ import '../utils/mock-init.js';
 import '../utils/lorem-init.js';
 import './print-page/logic.js';
 import './text-reader/logic.js';
+import './chat-input/logic.js';
+import './chat-window/logic.js';

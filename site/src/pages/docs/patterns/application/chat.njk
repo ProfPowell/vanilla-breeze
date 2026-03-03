@@ -1,0 +1,236 @@
+---
+layout: layouts/pattern.njk
+title: "Chat"
+description: "Chat integration patterns: floating launcher, embedded with sidebar, and full-page layouts using existing VB primitives."
+patternName: "Chat"
+category: application
+currentPath: /docs/patterns/application/chat/
+permalink: /docs/patterns/application/chat/
+---
+
+{% set launcherCode %}<style>
+.chat-trigger {
+  position: fixed;
+  inset-block-end: var(--size-xl);
+  inset-inline-end: var(--size-xl);
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 16px oklch(0% 0 0 / 0.2);
+  transition: transform var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+}
+.chat-trigger:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px oklch(0% 0 0 / 0.28);
+}
+.chat-trigger:active { transform: scale(0.96); }
+</style>
+
+<!-- Fixed trigger button -->
+<button commandfor="chat-dialog" command="show-modal"
+        class="chat-trigger" aria-label="Open chat">
+  <icon-wc name="message-circle"></icon-wc>
+</button>
+
+<!-- Dialog contains chat-window -->
+<dialog id="chat-dialog">
+  <chat-window data-endpoint="/api/chat">
+    <script type="application/json" data-participants>
+    { "user": { "name": "You", "role": "user" },
+      "assistant": { "name": "Assistant", "role": "agent" } }
+    </script>
+    <header>
+      <h3>AI Assistant</h3>
+      <button commandfor="chat-dialog" command="close"
+              class="ghost small" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <chat-thread role="log" aria-label="Chat" aria-live="polite">
+    </chat-thread>
+    <chat-input name="message">
+      <textarea data-grow rows="1" placeholder="Ask anything..."></textarea>
+      <footer>
+        <button type="submit" class="small" data-send aria-label="Send">
+          <icon-wc name="send"></icon-wc>
+        </button>
+      </footer>
+    </chat-input>
+  </chat-window>
+</dialog>{% endset %}
+
+{% set sidebarCode %}<layout-sidebar data-layout-side="start" data-layout-sidebar-width="narrow">
+  <aside>
+    <nav aria-label="Chat history">
+      <a href="/chat/5" aria-current="true">Current conversation</a>
+      <a href="/chat/4">Refund request</a>
+      <a href="/chat/3">Setup help</a>
+    </nav>
+  </aside>
+  <chat-window data-endpoint="/api/ai">
+    <script type="application/json" data-participants>
+    { "user": { "name": "You", "role": "user" },
+      "assistant": { "name": "Assistant", "role": "agent" } }
+    </script>
+    <header>
+      <h3>Support Chat</h3>
+    </header>
+    <chat-thread role="log" aria-label="Support conversation" aria-live="polite">
+    </chat-thread>
+    <chat-input name="message">
+      <textarea data-grow rows="1" placeholder="Type a message..."></textarea>
+      <footer>
+        <button type="submit" class="small" data-send aria-label="Send">
+          <icon-wc name="send"></icon-wc>
+        </button>
+      </footer>
+    </chat-input>
+  </chat-window>
+</layout-sidebar>{% endset %}
+
+{% set fullpageCode %}<chat-window data-endpoint="/api/ai" style="height: 100dvh">
+  <script type="application/json" data-participants>
+  { "user": { "name": "You", "role": "user" },
+    "assistant": { "name": "Assistant", "role": "agent" } }
+  </script>
+  <header>
+    <button commandfor="chat-history" command="show-modal"
+            class="ghost small" aria-label="History">
+      <icon-wc name="sidebar"></icon-wc>
+    </button>
+    <h3>Chat</h3>
+    <select data-model-select aria-label="Select model">
+      <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+      <option value="claude-haiku-4-5">Haiku 4.5</option>
+    </select>
+  </header>
+  <chat-thread role="log" aria-label="Conversation" aria-live="polite">
+  </chat-thread>
+  <chat-input name="message">
+    <textarea data-grow rows="1" data-max-rows="8"
+              placeholder="Ask anything..."></textarea>
+    <footer>
+      <button type="submit" class="small" data-send aria-label="Send">
+        <icon-wc name="send"></icon-wc>
+      </button>
+    </footer>
+  </chat-input>
+</chat-window>
+
+<dialog id="chat-history" data-position="start">
+  <header>
+    <h3>History</h3>
+    <button commandfor="chat-history" command="close" class="ghost small">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <nav aria-label="Previous conversations">
+    <a href="/chat/5" aria-current="true">Current conversation</a>
+    <a href="/chat/4">Refund request</a>
+    <a href="/chat/3">Setup help</a>
+  </nav>
+</dialog>{% endset %}
+
+{% set badgeCode %}<button commandfor="chat-dialog" command="show-modal"
+        class="chat-trigger" aria-label="Open chat">
+  <icon-wc name="message-circle"></icon-wc>
+  <layout-badge data-color="error" data-size="sm"
+                style="position:absolute;inset-block-start:-4px;inset-inline-end:-4px">
+    3
+  </layout-badge>
+</button>{% endset %}
+
+  <browser-window
+    src="/docs/examples/demos/chat-launcher-demo.html"
+    url="https://vanilla-breeze.dev/chat-launcher"
+    title="Chat Launcher Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Overview</h2>
+    <p>These patterns compose <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> with existing VB primitives to create complete chat experiences. No new custom elements are needed — <code>&lt;dialog&gt;</code>, <code>commandfor</code>, and <code>&lt;layout-sidebar&gt;</code> handle the shell.</p>
+  </section>
+
+  <section>
+    <h2>Floating Launcher</h2>
+    <p>A fixed-position FAB button opens a <code>&lt;dialog&gt;</code> containing <code>chat-window</code>. The <code>commandfor</code>/<code>command</code> attributes handle open/close automatically with proper focus management.</p>
+    <code-block language="html" show-lines label="Floating chat launcher">{{ launcherCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Unread Badge</h2>
+    <p>Add an unread count using <code>&lt;layout-badge&gt;</code> positioned over the trigger button.</p>
+    <code-block language="html" show-lines label="Trigger with unread badge">{{ badgeCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Embedded with Sidebar</h2>
+    <p>For always-visible chat panels, use <code>&lt;layout-sidebar&gt;</code> with a chat history list in the aside. The sidebar collapses on narrow viewports.</p>
+    <code-block language="html" show-lines label="Embedded chat with sidebar">{{ sidebarCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Full-Page with History Drawer</h2>
+    <p>A full-viewport chat using <code>height: 100dvh</code> on the window. The history drawer uses <code>&lt;dialog data-position="start"&gt;</code> for a slide-in panel triggered from the header.</p>
+    <code-block language="html" show-lines label="Full-page chat">{{ fullpageCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Key Primitives Used</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Need</th>
+          <th>Primitive</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Launcher trigger</td>
+          <td><code>commandfor</code> / <code>command="show-modal"</code></td>
+          <td>Native focus management, no JS</td>
+        </tr>
+        <tr>
+          <td>Chat overlay</td>
+          <td><code>&lt;dialog&gt;</code></td>
+          <td>Modal with backdrop, Escape to close</td>
+        </tr>
+        <tr>
+          <td>History drawer</td>
+          <td><code>&lt;dialog data-position="start"&gt;</code></td>
+          <td>Slide-in panel with VB styling</td>
+        </tr>
+        <tr>
+          <td>Split layout</td>
+          <td><code>&lt;layout-sidebar&gt;</code></td>
+          <td>Responsive sidebar collapse</td>
+        </tr>
+        <tr>
+          <td>Unread count</td>
+          <td><code>&lt;layout-badge&gt;</code></td>
+          <td>Color-coded badge overlay</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> — The orchestrating web component</li>
+      <li><a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a> — Form-associated input</li>
+      <li><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a> — Scrollable message container</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> — Native modal/drawer</li>
+      <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> — Split panel layout</li>
+    </ul>
+  </section>
