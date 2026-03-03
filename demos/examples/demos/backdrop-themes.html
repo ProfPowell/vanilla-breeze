@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-backdrop>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Backdrop — Page Canvas Concept Demo</title>
-  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css"/>
   <link rel="stylesheet" href="/cdn/themes/cyber.css"/>
   <link rel="stylesheet" href="/cdn/themes/midnight.css"/>
   <link rel="stylesheet" href="/cdn/themes/dracula.css"/>
@@ -14,18 +14,6 @@
   <link rel="stylesheet" href="/cdn/themes/glassmorphism.css"/>
   <link rel="stylesheet" href="/cdn/themes/organic.css"/>
   <style>
-    /* ===== Backdrop: the environment layer ===== */
-    body {
-      margin: 0;
-      padding: 0;
-      min-block-size: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      /* Background comes from --page-bg-* tokens via reset.css */
-      transition: background-color 0.6s ease, background-image 0.6s ease;
-    }
-
     /* ===== Theme picker bar — fixed at top ===== */
     .theme-bar {
       position: sticky;
@@ -75,98 +63,132 @@
       color: oklch(100% 0 0);
     }
 
-    /* ===== Canvas: the floating content sheet ===== */
-    .canvas {
-      width: min(860px, calc(100vw - 4rem));
-      margin: 3rem auto;
-      background: var(--color-surface);
-      color: var(--color-text);
-      border-radius: 12px;
-      box-shadow:
-        0 4px 6px -1px oklch(0% 0 0 / 0.1),
-        0 20px 60px -10px oklch(0% 0 0 / 0.25),
-        0 0 0 1px oklch(100% 0 0 / 0.05);
-      overflow: hidden;
+    /* ===== Background mode bar ===== */
+    .bg-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--size-xs);
+      padding: var(--size-2xs) var(--size-m);
+      background: oklch(0% 0 0 / 0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-block-end: 1px solid oklch(100% 0 0 / 0.06);
+      flex-wrap: wrap;
+    }
+
+    .bg-bar span {
+      font-size: var(--font-size-xs);
+      color: oklch(70% 0 0);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-inline-end: var(--size-xs);
+    }
+
+    .bg-bar button {
+      padding: var(--size-2xs) var(--size-s);
+      font: inherit;
+      font-size: var(--font-size-xs);
+      border-radius: var(--radius-s);
+      border: 1px solid oklch(100% 0 0 / 0.12);
+      background: oklch(100% 0 0 / 0.06);
+      color: oklch(75% 0 0);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .bg-bar button:hover {
+      background: oklch(100% 0 0 / 0.12);
+    }
+
+    .bg-bar button[aria-pressed="true"] {
+      background: oklch(100% 0 0 / 0.2);
+      border-color: oklch(100% 0 0 / 0.25);
+      color: oklch(95% 0 0);
+    }
+
+    /* ===== Backdrop preset bar ===== */
+    .preset-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--size-xs);
+      padding: var(--size-2xs) var(--size-m);
+      background: oklch(0% 0 0 / 0.25);
+      border-block-end: 1px solid oklch(100% 0 0 / 0.04);
+      flex-wrap: wrap;
+    }
+
+    .preset-bar span {
+      font-size: var(--font-size-xs);
+      color: oklch(65% 0 0);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-inline-end: var(--size-xs);
+    }
+
+    .preset-bar button {
+      padding: var(--size-2xs) var(--size-s);
+      font: inherit;
+      font-size: var(--font-size-xs);
+      border-radius: var(--radius-s);
+      border: 1px solid oklch(100% 0 0 / 0.10);
+      background: oklch(100% 0 0 / 0.05);
+      color: oklch(70% 0 0);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .preset-bar button:hover {
+      background: oklch(100% 0 0 / 0.10);
+    }
+
+    .preset-bar button[aria-pressed="true"] {
+      background: oklch(100% 0 0 / 0.18);
+      border-color: oklch(100% 0 0 / 0.2);
+      color: oklch(90% 0 0);
+    }
+
+    /* ===== Ensure body is flex column for sticky bars ===== */
+    body {
+      margin: 0;
+      padding: 0;
+      min-block-size: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.6s ease, background-image 0.6s ease;
+    }
+
+    /* ===== Main gets margin for floating effect ===== */
+    main {
+      margin-block: 3rem;
       view-transition-name: canvas;
     }
 
-    /* On mobile, go full-width — no sheet metaphor */
     @media (width < 640px) {
-      .canvas {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-        min-block-size: 100vh;
-      }
-    }
-
-    .canvas-inner {
-      padding: clamp(1.5rem, 5vw, 3rem);
-    }
-
-    /* ===== Ghost cards (stack depth illusion) ===== */
-    .canvas-wrapper {
-      position: relative;
-      width: min(860px, calc(100vw - 4rem));
-      margin: 3rem auto;
-    }
-
-    @media (width < 640px) {
-      .canvas-wrapper {
-        width: 100%;
-        margin: 0;
-      }
-    }
-
-    .canvas-wrapper .canvas {
-      position: relative;
-      z-index: 2;
-      margin: 0;
-      width: 100%;
-    }
-
-    .ghost-card {
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      background: var(--color-surface);
-      box-shadow:
-        0 4px 6px -1px oklch(0% 0 0 / 0.05),
-        0 10px 30px -5px oklch(0% 0 0 / 0.12);
-    }
-
-    .ghost-card:nth-child(1) {
-      z-index: 1;
-      transform: translateY(8px) scale(0.975);
-      opacity: 0.6;
-    }
-
-    .ghost-card:nth-child(2) {
-      z-index: 0;
-      transform: translateY(16px) scale(0.95);
-      opacity: 0.35;
-    }
-
-    @media (width < 640px) {
-      .ghost-card { display: none; }
+      main { margin-block: 0; }
     }
 
     /* ===== Content styling ===== */
-    .canvas h1 {
+    main h1 {
       font-size: var(--font-size-3xl);
       line-height: var(--line-height-tight);
       margin-block-end: var(--size-s);
     }
 
-    .canvas .lead {
+    main .lead {
       font-size: var(--font-size-l);
       color: var(--color-text-muted);
       max-inline-size: 55ch;
       margin-block-end: var(--size-xl);
     }
 
-    .canvas hr {
+    main hr {
       border: none;
       border-block-start: 1px solid var(--color-border);
       margin-block: var(--size-xl);
@@ -243,52 +265,6 @@
       color: var(--color-text);
     }
 
-    /* ===== Background mode bar ===== */
-    .bg-bar {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--size-xs);
-      padding: var(--size-2xs) var(--size-m);
-      background: oklch(0% 0 0 / 0.35);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-block-end: 1px solid oklch(100% 0 0 / 0.06);
-      flex-wrap: wrap;
-    }
-
-    .bg-bar span {
-      font-size: var(--font-size-xs);
-      color: oklch(70% 0 0);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-inline-end: var(--size-xs);
-    }
-
-    .bg-bar button {
-      padding: var(--size-2xs) var(--size-s);
-      font: inherit;
-      font-size: var(--font-size-xs);
-      border-radius: var(--radius-s);
-      border: 1px solid oklch(100% 0 0 / 0.12);
-      background: oklch(100% 0 0 / 0.06);
-      color: oklch(75% 0 0);
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-
-    .bg-bar button:hover {
-      background: oklch(100% 0 0 / 0.12);
-    }
-
-    .bg-bar button[aria-pressed="true"] {
-      background: oklch(100% 0 0 / 0.2);
-      border-color: oklch(100% 0 0 / 0.25);
-      color: oklch(95% 0 0);
-    }
-
     /* ===== Blur overlay for photo-blur mode ===== */
     body.bg-photo-blur::before {
       content: "";
@@ -296,13 +272,12 @@
       inset: 0;
       background: inherit;
       filter: blur(8px) brightness(0.7);
-      transform: scale(1.05); /* prevent blur edge gaps */
+      transform: scale(1.05);
       z-index: -1;
       pointer-events: none;
     }
 
     body.bg-photo-blur {
-      /* The background shows through the blur pseudo-element */
       background-attachment: fixed;
     }
 
@@ -333,45 +308,6 @@
       .token-info { display: none; }
     }
 
-    /* ===== Multi-canvas demo ===== */
-    .multi-canvas {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--size-l);
-      width: min(900px, calc(100vw - 4rem));
-      margin: 0 auto 3rem;
-    }
-
-    @media (width < 768px) {
-      .multi-canvas {
-        grid-template-columns: 1fr;
-        width: calc(100% - 2rem);
-        margin: 0 1rem 2rem;
-      }
-    }
-
-    .mini-canvas {
-      background: var(--color-surface);
-      color: var(--color-text);
-      border-radius: 10px;
-      padding: var(--size-l);
-      box-shadow:
-        0 2px 4px oklch(0% 0 0 / 0.08),
-        0 10px 30px -5px oklch(0% 0 0 / 0.18),
-        0 0 0 1px oklch(100% 0 0 / 0.04);
-    }
-
-    .mini-canvas h3 {
-      font-size: var(--font-size-base);
-      margin-block-end: var(--size-xs);
-    }
-
-    .mini-canvas p {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-
     /* ===== Transition animation via View Transitions ===== */
     @media (prefers-reduced-motion: no-preference) {
       ::view-transition-old(canvas) {
@@ -393,24 +329,6 @@
       from {
         transform: translateY(-12px) scale(0.97);
         opacity: 0;
-      }
-    }
-
-    /* ===== Section label ===== */
-    .section-label {
-      width: min(860px, calc(100vw - 4rem));
-      margin: 2rem auto 1rem;
-      font-size: var(--font-size-xs);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: oklch(70% 0 0);
-      font-weight: 600;
-    }
-
-    @media (width < 640px) {
-      .section-label {
-        width: 100%;
-        padding-inline: 1rem;
       }
     }
   </style>
@@ -442,87 +360,76 @@
     <button data-bg-mode="dual" aria-pressed="false">Photo + Gradient</button>
   </div>
 
-  <!-- Primary canvas with ghost card stack -->
-  <div class="canvas-wrapper">
-    <div class="ghost-card" aria-hidden="true"></div>
-    <div class="ghost-card" aria-hidden="true"></div>
-    <article class="canvas">
-      <div class="canvas-inner">
-        <header>
-          <h1>The Page Canvas</h1>
-          <p class="lead">Content floats above a rich, expressive background layer. The canvas is the sheet; the backdrop is the environment.</p>
-        </header>
+  <!-- Backdrop preset picker -->
+  <div class="preset-bar" role="toolbar" aria-label="Backdrop preset">
+    <span>Backdrop</span>
+    <button data-preset="default" aria-pressed="true">Default</button>
+    <button data-preset="flush" aria-pressed="false">Flush</button>
+    <button data-preset="elevated" aria-pressed="false">Elevated</button>
+  </div>
 
-        <hr/>
+  <!-- Primary canvas — uses data-backdrop system via <main> -->
+  <main>
+    <header>
+      <h1>The Page Canvas</h1>
+      <p class="lead">Content floats above a rich, expressive background layer. The canvas is the sheet; the backdrop is the environment.</p>
+    </header>
 
-        <section>
-          <h2>Dashboard</h2>
-          <div class="stats-row">
-            <div class="stat">
-              <span class="stat-value">2,847</span>
-              <span class="stat-label">Active Users</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">94.2%</span>
-              <span class="stat-label">Uptime</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">1.4s</span>
-              <span class="stat-label">Avg Load</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">38</span>
-              <span class="stat-label">Themes</span>
-            </div>
-          </div>
-        </section>
+    <hr/>
 
-        <hr/>
-
-        <section>
-          <h2>Capabilities</h2>
-          <div class="feature-grid">
-            <div class="feature-card">
-              <h3>Rich Backgrounds</h3>
-              <p>Gradient, image, and mesh backgrounds via CSS custom properties.</p>
-            </div>
-            <div class="feature-card">
-              <h3>Canvas Elevation</h3>
-              <p>Content sheet floats with shadow and border radius above the backdrop.</p>
-            </div>
-            <div class="feature-card">
-              <h3>Theme Integration</h3>
-              <p>Each theme overrides --page-bg-* tokens for unique backgrounds.</p>
-            </div>
-            <div class="feature-card">
-              <h3>Responsive</h3>
-              <p>Full-width on mobile, elevated sheet on tablet and above.</p>
-            </div>
-          </div>
-        </section>
-
-        <hr/>
-
-        <blockquote class="quote">
-          <p>The background is a first-class design surface. The page canvas floats above it like a physical sheet of paper raised off a table.</p>
-          <cite>Backdrop Specification</cite>
-        </blockquote>
+    <section>
+      <h2>Dashboard</h2>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value">2,847</span>
+          <span class="stat-label">Active Users</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">94.2%</span>
+          <span class="stat-label">Uptime</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">1.4s</span>
+          <span class="stat-label">Avg Load</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">38</span>
+          <span class="stat-label">Themes</span>
+        </div>
       </div>
-    </article>
-  </div>
+    </section>
 
-  <!-- Multi-canvas demo -->
-  <p class="section-label">Multi-canvas layout (v2 concept)</p>
-  <div class="multi-canvas">
-    <article class="mini-canvas">
-      <h3>Editor</h3>
-      <p>Primary content area for editing documents, code, or rich text. The canvas provides an isolated visual context above the environment.</p>
-    </article>
-    <article class="mini-canvas">
-      <h3>Preview</h3>
-      <p>Live preview panel showing rendered output. Both canvases share the same backdrop environment and inherit theme tokens.</p>
-    </article>
-  </div>
+    <hr/>
+
+    <section>
+      <h2>Capabilities</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Rich Backgrounds</h3>
+          <p>Gradient, image, and mesh backgrounds via CSS custom properties.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Canvas Elevation</h3>
+          <p>Content sheet floats with shadow and border radius above the backdrop.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Theme Integration</h3>
+          <p>Each theme overrides --page-bg-* tokens for unique backgrounds.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Responsive</h3>
+          <p>Full-width on mobile, elevated sheet on tablet and above.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr/>
+
+    <blockquote class="quote">
+      <p>The background is a first-class design surface. The page canvas floats above it like a physical sheet of paper raised off a table.</p>
+      <cite>Backdrop Specification</cite>
+    </blockquote>
+  </main>
 
   <!-- Token info panel -->
   <div class="token-info" id="token-info">
@@ -532,8 +439,10 @@
   <script>
     const themeButtons = document.querySelectorAll('[data-theme-pick]');
     const bgButtons = document.querySelectorAll('[data-bg-mode]');
+    const presetButtons = document.querySelectorAll('[data-preset]');
     const tokenDisplay = document.getElementById('token-display');
     const body = document.body;
+    const root = document.documentElement;
 
     let currentMode = 'theme';
 
@@ -541,8 +450,8 @@
     const PHOTO_URL = 'https://picsum.photos/id/1018/1920/1080'; /* mountain lake */
     const PHOTO_URL_2 = 'https://picsum.photos/id/1036/1920/1080'; /* misty forest */
 
-    /* SVG topography texture (inline data URI) */
-    const TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='t' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.15'/%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.12'/%3E%3Ccircle cx='20' cy='20' r='6' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.08'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23t)'/%3E%3C/svg%3E")`;
+    /* SVG dot grid texture — clearly visible pattern */
+    const TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1.5' fill='%23fff' opacity='0.15'/%3E%3C/svg%3E")`;
 
     /* ===== Background mode configs ===== */
     const bgModes = {
@@ -588,15 +497,14 @@
         apply() {
           clearBgOverrides();
           body.style.setProperty('--page-bg-gradient', TEXTURE_SVG);
-          body.style.setProperty('--page-bg-size', '40px 40px');
-          body.style.setProperty('--page-bg-color', 'oklch(18% 0.02 260)');
+          body.style.setProperty('--page-bg-size', '20px 20px');
+          body.style.setProperty('--page-bg-color', 'oklch(12% 0.04 260)');
         },
         token: '--page-bg-gradient: url(SVG texture)',
       },
       'dual': {
         apply() {
           clearBgOverrides();
-          /* Gradient on top of photo via background-image stacking */
           body.style.setProperty('--page-bg-gradient',
             `linear-gradient(to bottom, oklch(20% 0.1 280 / 0.7), oklch(10% 0.05 250 / 0.85)), url("${PHOTO_URL}")`);
           body.style.setProperty('--page-bg-attachment', 'fixed');
@@ -632,9 +540,9 @@
     function switchTheme(theme) {
       const apply = () => {
         if (theme) {
-          document.documentElement.setAttribute('data-theme', theme);
+          root.setAttribute('data-theme', theme);
         } else {
-          document.documentElement.removeAttribute('data-theme');
+          root.removeAttribute('data-theme');
         }
         themeButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.themePick === theme ? 'true' : 'false'));
         /* Re-apply current bg mode (theme switch resets token values) */
@@ -666,10 +574,15 @@
       }
     }
 
+    function switchPreset(preset) {
+      root.dataset.backdrop = preset;
+      presetButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.preset === preset ? 'true' : 'false'));
+    }
+
     function updateTokenDisplay() {
       if (!tokenDisplay) return;
       if (currentMode === 'theme') {
-        const theme = document.documentElement.getAttribute('data-theme') || '';
+        const theme = root.getAttribute('data-theme') || '';
         tokenDisplay.textContent = themeTokenDescriptions[theme] || '--page-bg-type: solid';
       } else {
         tokenDisplay.textContent = bgModes[currentMode].token;
@@ -682,6 +595,10 @@
 
     bgButtons.forEach(btn => {
       btn.addEventListener('click', () => switchBgMode(btn.dataset.bgMode));
+    });
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchPreset(btn.dataset.preset));
     });
   </script>
 </body>

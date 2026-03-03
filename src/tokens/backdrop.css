@@ -7,6 +7,9 @@
  * Makes <main> float as an elevated canvas above the page background.
  * Composes with data-page-layout (main keeps its grid-area) and data-fluid.
  * On mobile (<640px) the canvas goes flush — no elevation, no border-radius.
+ *
+ * DOM structure: <html data-backdrop> > <body> > <main>
+ * With page layout: <html data-backdrop> > <body data-page-layout> > <main>
  */
 
 /* ========================================
@@ -25,13 +28,11 @@
 }
 
 /* ========================================
- * Default Preset
- * 860px centered canvas, 12px radius, layered shadow
+ * Default Preset — elevation styles on main
+ * Applies background, shadow, radius, padding.
+ * Centering (max-width + margin) only when no page-layout grid.
  * ======================================== */
-[data-backdrop] > main,
-[data-backdrop][data-page-layout] > main {
-  max-width: var(--canvas-width);
-  margin-inline: auto;
+:root[data-backdrop] > body > main {
   background: var(--canvas-bg);
   border-radius: var(--canvas-radius);
   box-shadow: var(--canvas-shadow);
@@ -39,9 +40,16 @@
   padding-block: var(--canvas-padding-block);
 }
 
+/* Without page-layout: main is in normal flow — add centering */
+:root[data-backdrop] > body:not([data-page-layout]) > main {
+  width: 100%;
+  max-width: var(--canvas-width);
+  margin-inline: auto;
+}
+
 /* ========================================
  * Flush Preset
- * Max-width centering, no shadow or radius — rich background visible at sides
+ * No shadow or radius — just centering with rich background visible
  * ======================================== */
 [data-backdrop="flush"] {
   --canvas-radius: 0;
@@ -64,8 +72,7 @@
  * Mobile: flush regardless of preset
  * ======================================== */
 @media (max-width: 640px) {
-  [data-backdrop] > main,
-  [data-backdrop][data-page-layout] > main {
+  :root[data-backdrop] > body > main {
     max-width: none;
     border-radius: 0;
     box-shadow: none;
