@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vanilla Breeze — Chat POC v1.0 (Corrected)</title>
+
+  <!-- VB's actual CSS — no inline token definitions -->
+  <link rel="stylesheet" href="../../../src/main.css">
+
+  <style>
+    /* ── POC-only layout (not part of chat component CSS) ── */
+
+    body {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: var(--size-m);
+    }
+
+    .demo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-m);
+      width: 100%;
+    }
+
+    .demo-tabs {
+      display: flex;
+      gap: var(--size-xs);
+      width: min(52rem, 100%);
+    }
+
+    .demo-tab {
+      flex: 1;
+      padding: var(--size-xs) var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-full);
+      background: var(--color-surface-raised);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-default),
+                  border-color var(--duration-fast) var(--ease-default);
+    }
+
+    .demo-tab[aria-selected="true"] {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-color: var(--color-primary);
+    }
+
+    .demo-note {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* ── chat-window — grid layout ─────────────────────── */
+    chat-window {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas: "header" "thread" "input";
+      width: min(52rem, 100%);
+      height: min(680px, 90dvh);
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-l);
+      box-shadow: 0 4px 24px oklch(0% 0 0 / 0.08);
+      overflow: hidden;
+    }
+
+    chat-window[hidden] { display: none !important; }
+
+    /* ── window header ─────────────────────────────────── */
+    chat-window > header {
+      grid-area: header;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--size-s) var(--size-m);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
+      background: var(--color-surface-raised);
+      gap: var(--size-s);
+    }
+
+    chat-window > header h3 {
+      font-size: var(--font-size-md);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      margin: 0;
+    }
+
+    chat-window > header [data-model-select] {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: var(--size-2xs) var(--size-m) var(--size-2xs) var(--size-s);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    /* ── chat-thread ───────────────────────────────────── */
+    chat-thread {
+      grid-area: thread;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-m);
+      overflow-y: auto;
+      padding: var(--size-m);
+      scroll-behavior: smooth;
+      min-height: 0;
+    }
+
+    /* ── chat-message ──────────────────────────────────── */
+    chat-message {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: end;
+      column-gap: var(--size-xs);
+      row-gap: var(--size-2xs);
+      max-width: 82%;
+    }
+
+    /* Collapse avatar column when no user-avatar child */
+    chat-message:not(:has(> user-avatar)) { grid-template-columns: 1fr; }
+
+    /* User messages: right-aligned */
+    chat-message[data-role="user"] {
+      align-self: flex-end;
+      direction: rtl;
+      grid-template-columns: 1fr auto;
+    }
+    chat-message[data-role="user"] > * { direction: ltr; }
+    chat-message[data-role="user"]:not(:has(> user-avatar)) {
+      grid-template-columns: 1fr;
+      direction: ltr;
+    }
+
+    /* Agent messages: left-aligned */
+    chat-message[data-role="agent"] { align-self: flex-start; }
+
+    /* System messages: centered */
+    chat-message[data-role="system"] {
+      align-self: center;
+      max-width: 100%;
+      grid-template-columns: 1fr;
+    }
+
+    /* Avatar positioning */
+    chat-message > user-avatar {
+      grid-row: 1 / -1;
+      grid-column: 1;
+      align-self: end;
+    }
+
+    /* Sender meta line via data-from-label */
+    chat-message[data-role="agent"][data-from-label]::before {
+      content: attr(data-from-label);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      padding-inline-start: var(--size-2xs);
+      grid-column: 2;
+    }
+
+    chat-message:not(:has(> user-avatar))[data-role="agent"][data-from-label]::before {
+      grid-column: 1;
+    }
+
+    /* ── chat-bubble ───────────────────────────────────── */
+    chat-bubble {
+      display: block;
+      padding: var(--size-s) var(--size-m);
+      border-radius: var(--radius-m);
+      line-height: var(--line-height-relaxed);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    chat-message[data-role="agent"] chat-bubble {
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-bottom-left-radius: var(--radius-xs);
+      grid-column: 2;
+    }
+
+    chat-message:not(:has(> user-avatar))[data-role="agent"] chat-bubble {
+      grid-column: 1;
+    }
+
+    chat-message[data-role="user"] chat-bubble {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border-bottom-right-radius: var(--radius-xs);
+    }
+
+    chat-message[data-role="system"] chat-bubble {
+      background: transparent;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      border: none;
+      padding-block: var(--size-2xs);
+      text-align: center;
+    }
+
+    chat-bubble p + p { margin-top: 0.75em; }
+
+    chat-bubble pre {
+      background: oklch(0% 0 0 / 0.07);
+      border-radius: var(--radius-s);
+      padding: var(--size-s);
+      overflow-x: auto;
+      margin-block: var(--size-xs);
+    }
+
+    chat-message[data-role="user"] chat-bubble pre {
+      background: oklch(100% 0 0 / 0.15);
+    }
+
+    chat-bubble code {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+    }
+
+    /* ── Typing state — CSS dots ───────────────────────── */
+    chat-message[data-status="typing"] chat-bubble {
+      min-width: 3.25rem;
+      min-height: 2.25rem;
+      display: flex;
+      align-items: center;
+      padding-block: var(--size-xs);
+    }
+
+    chat-message[data-status="typing"] chat-bubble::after {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 10px;
+      background:
+        radial-gradient(circle, var(--color-text-muted) 2.5px, transparent 2.5px)   0px center / 8px 10px no-repeat,
+        radial-gradient(circle, var(--color-text-muted) 2.5px, transparent 2.5px)  10px center / 8px 10px no-repeat,
+        radial-gradient(circle, var(--color-text-muted) 2.5px, transparent 2.5px)  20px center / 8px 10px no-repeat;
+      animation: vb-dot1 1.3s infinite ease-in-out,
+                 vb-dot2 1.3s 0.2s infinite ease-in-out,
+                 vb-dot3 1.3s 0.4s infinite ease-in-out;
+    }
+
+    @keyframes vb-dot1 {
+      0%,60%,100% { background-position: 0px center, 10px center, 20px center; }
+      30% { background-position: 0px -3px, 10px center, 20px center; }
+    }
+    @keyframes vb-dot2 {
+      0%,60%,100% { background-position: 0px center, 10px center, 20px center; }
+      30% { background-position: 0px center, 10px -3px, 20px center; }
+    }
+    @keyframes vb-dot3 {
+      0%,60%,100% { background-position: 0px center, 10px center, 20px center; }
+      30% { background-position: 0px center, 10px center, 20px -3px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      chat-message[data-status="typing"] chat-bubble::after {
+        animation: none;
+        opacity: 0.4;
+      }
+    }
+
+    /* ── chat-input ───────────────────────────────────── */
+    chat-input {
+      grid-area: input;
+      display: flex;
+      align-items: flex-end;
+      gap: var(--size-xs);
+      border-top: var(--border-width-thin) solid var(--color-border);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+    }
+
+    chat-input textarea {
+      flex: 1;
+      border: var(--border-width-thin) solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-m);
+      padding: var(--size-xs) var(--size-s);
+      font-size: var(--font-size-md);
+      line-height: var(--line-height-normal);
+      color: var(--color-text);
+      max-height: 10lh;
+      overflow-y: auto;
+      resize: none;
+      transition: border-color var(--duration-fast) var(--ease-default),
+                  box-shadow var(--duration-fast) var(--ease-default);
+    }
+
+    chat-input textarea:focus {
+      outline: none;
+      border-color: var(--color-border-focus);
+      box-shadow: 0 0 0 var(--focus-ring-width) var(--color-focus-ring);
+    }
+
+    chat-input textarea::placeholder { color: var(--color-text-muted); }
+
+    chat-input footer {
+      display: flex;
+      gap: var(--size-2xs);
+      align-items: flex-end;
+      padding-bottom: 1px;
+    }
+
+    /* ── Launcher trigger (fixed button) ────────────────── */
+    .chat-trigger {
+      position: fixed;
+      inset-block-end: var(--size-xl);
+      inset-inline-end: var(--size-xl);
+      z-index: 1000;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 16px oklch(0% 0 0 / 0.22);
+      transition: transform var(--duration-fast) var(--ease-default),
+                  box-shadow var(--duration-fast) var(--ease-default);
+    }
+
+    .chat-trigger:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 20px oklch(0% 0 0 / 0.28);
+    }
+
+    .chat-trigger:active { transform: scale(0.96); }
+
+    /* ── Launcher dialog sizing ────────────────────────── */
+    dialog#chat-dialog {
+      width: min(26rem, 95vw);
+      height: min(600px, 80dvh);
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-l);
+      overflow: hidden;
+    }
+
+    dialog#chat-dialog chat-window {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── History/participants drawer ───────────────────── */
+    dialog[data-position] nav {
+      display: flex;
+      flex-direction: column;
+      padding: var(--size-s);
+    }
+
+    dialog[data-position] nav a {
+      display: block;
+      padding: var(--size-xs) var(--size-s);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+
+    dialog[data-position] nav a:hover { background: var(--color-surface-sunken); }
+    dialog[data-position] nav a[aria-current] {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
+    /* History date grouping */
+    .history-date {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      padding: var(--size-xs) var(--size-s) var(--size-2xs);
+    }
+
+    /* Participant roster */
+    .participant-list {
+      list-style: none;
+      padding: var(--size-s);
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xs);
+    }
+
+    .participant-list li {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      font-size: var(--font-size-sm);
+    }
+
+    .participant-role {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Support header status */
+    .header-status {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Fallback avatars with custom colors */
+    .avatar-sarah [data-fallback] { background: #6c4ee4; color: #fff; }
+    .avatar-alex [data-fallback] { background: #0ea5e9; color: #fff; }
+
+    /* ── Floating launcher demo canvas ─────────────────── */
+    .launcher-canvas {
+      width: min(52rem, 100%);
+      height: min(680px, 90dvh);
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-l);
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .launcher-canvas:not([hidden]) { display: flex; }
+
+    .launcher-canvas p {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      text-align: center;
+      padding: var(--size-m);
+    }
+
+    .launcher-canvas small {
+      margin-top: var(--size-xs);
+      display: block;
+    }
+
+    /* Error-colored buttons in drawer footers */
+    .action-danger { color: var(--color-error); }
+  </style>
+</head>
+<body>
+
+<section class="demo-container">
+
+  <nav class="demo-tabs" role="tablist">
+    <button class="demo-tab" role="tab" aria-selected="true" data-target="aiWindow">AI — embedded</button>
+    <button class="demo-tab" role="tab" aria-selected="false" data-target="supportWindow">Support — participants</button>
+    <button class="demo-tab" role="tab" aria-selected="false" data-target="launcherDemo">Floating launcher</button>
+  </nav>
+
+  <!-- ── AI Chat (embedded, with history drawer) ─────── -->
+  <chat-window id="aiWindow">
+    <script type="application/json" data-participants>
+    {
+      "ai-user":      { "name": "You", "role": "user" },
+      "ai-assistant": { "name": "Assistant", "role": "agent" }
+    }
+    </script>
+    <header>
+      <nav>
+        <button commandfor="ai-history" command="show-modal"
+                class="ghost small" aria-label="Chat history">
+          <icon-wc name="sidebar"></icon-wc>
+        </button>
+      </nav>
+      <h3>AI Assistant</h3>
+      <select data-model-select aria-label="Select model">
+        <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+        <option value="claude-opus-4-6">Claude Opus 4.6</option>
+        <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+      </select>
+    </header>
+
+    <chat-thread id="aiThread" role="log" aria-label="AI conversation" aria-live="polite">
+      <chat-message data-role="agent" data-from="ai-assistant" data-from-label="Assistant">
+        <chat-bubble>
+          <p>This corrected POC uses VB's actual <code>src/main.css</code> — no inline token definitions. All spacing, colors, radius, and typography reference real VB tokens.</p>
+          <p>The history panel uses <code>&lt;dialog data-position="start"&gt;</code>, the launcher uses <code>&lt;dialog&gt;</code> + <code>commandfor</code>/<code>command</code>, and icons use <code>&lt;icon-wc&gt;</code>.</p>
+        </chat-bubble>
+      </chat-message>
+    </chat-thread>
+
+    <chat-input id="aiInput">
+      <textarea data-grow rows="1" data-max-rows="8"
+                id="aiTextarea"
+                placeholder="Ask anything... (Enter sends)"
+                aria-label="Message"></textarea>
+      <footer>
+        <button type="button" class="ghost small" aria-label="Attach file (coming soon)" data-attach>
+          <icon-wc name="paperclip"></icon-wc>
+        </button>
+        <button type="button" class="small" id="aiSend" aria-label="Send message" data-send disabled>
+          <icon-wc name="send"></icon-wc>
+        </button>
+      </footer>
+    </chat-input>
+  </chat-window>
+
+  <!-- AI History Drawer (dialog with data-position="start") -->
+  <dialog id="ai-history" data-position="start">
+    <header>
+      <h3>History</h3>
+      <button commandfor="ai-history" command="close" class="ghost small" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <nav aria-label="Previous conversations">
+      <p class="history-date">Today</p>
+      <a href="#" aria-current="true">Current conversation</a>
+      <p class="history-date">Yesterday</p>
+      <a href="#">Refund request help</a>
+      <a href="#">Setup guide questions</a>
+      <p class="history-date">Last week</p>
+      <a href="#">Billing cycle confusion</a>
+      <a href="#">API key generation</a>
+      <a href="#">Export data format</a>
+    </nav>
+    <footer>
+      <button class="ghost small">
+        <icon-wc name="settings"></icon-wc> Preferences
+      </button>
+      <button class="ghost small">
+        <icon-wc name="help-circle"></icon-wc> Help
+      </button>
+      <button class="ghost small action-danger">
+        <icon-wc name="trash-2"></icon-wc> Clear history
+      </button>
+    </footer>
+  </dialog>
+
+  <!-- ── Support Chat (with participant roster) ────────── -->
+  <chat-window id="supportWindow" hidden>
+    <script type="application/json" data-participants>
+    {
+      "s-user":  { "name": "You", "role": "user" },
+      "s-sarah": { "name": "Sarah Chen", "role": "agent", "avatar": "/avatars/sarah.jpg", "color": "#6c4ee4" },
+      "s-alex":  { "name": "Alex Kim", "role": "agent", "avatar": "/avatars/alex.jpg", "color": "#0ea5e9" }
+    }
+    </script>
+    <header>
+      <nav>
+        <button commandfor="support-participants" command="show-modal"
+                class="ghost small" aria-label="Participants">
+          <icon-wc name="users"></icon-wc>
+        </button>
+      </nav>
+      <h3>Support Chat</h3>
+      <span class="header-status">Sarah Chen &middot; Online</span>
+    </header>
+
+    <chat-thread id="supportThread" role="log" aria-label="Support conversation" aria-live="polite">
+      <chat-message data-role="system">
+        <chat-bubble>Sarah Chen joined the conversation</chat-bubble>
+      </chat-message>
+      <chat-message data-role="agent" data-from="s-sarah" data-from-label="Sarah Chen">
+        <user-avatar data-size="sm" class="avatar-sarah">
+          <span data-fallback>SC</span>
+        </user-avatar>
+        <chat-bubble>Hi! Welcome to support. How can I help you today?</chat-bubble>
+      </chat-message>
+    </chat-thread>
+
+    <chat-input id="supportInput">
+      <textarea data-grow rows="1"
+                id="supportTextarea"
+                placeholder="Type your message..."
+                aria-label="Message"></textarea>
+      <footer>
+        <button type="button" class="ghost small" aria-label="Attach file" data-attach>
+          <icon-wc name="paperclip"></icon-wc>
+        </button>
+        <button type="button" class="small" id="supportSend" aria-label="Send message" data-send disabled>
+          <icon-wc name="send"></icon-wc>
+        </button>
+      </footer>
+    </chat-input>
+  </chat-window>
+
+  <!-- Support Participants Drawer -->
+  <dialog id="support-participants" data-position="start">
+    <header>
+      <h3>Participants</h3>
+      <button commandfor="support-participants" command="close" class="ghost small" aria-label="Close">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+    <ul class="participant-list">
+      <li>
+        <user-avatar data-size="sm" class="avatar-sarah">
+          <span data-fallback>SC</span>
+          <span data-status="online"></span>
+        </user-avatar>
+        Sarah Chen
+        <layout-badge data-color="success" data-size="sm">Online</layout-badge>
+      </li>
+      <li>
+        <user-avatar data-size="sm" class="avatar-alex">
+          <span data-fallback>AK</span>
+          <span data-status="online"></span>
+        </user-avatar>
+        Alex Kim
+        <layout-badge data-color="success" data-size="sm">Online</layout-badge>
+      </li>
+      <li>
+        <user-avatar data-size="sm">
+          <span data-fallback>Y</span>
+        </user-avatar>
+        You
+        <span class="participant-role">Customer</span>
+      </li>
+    </ul>
+    <footer>
+      <button class="ghost small">
+        <icon-wc name="mail"></icon-wc> Email transcript
+      </button>
+      <button class="ghost small action-danger">
+        <icon-wc name="x-circle"></icon-wc> End conversation
+      </button>
+    </footer>
+  </dialog>
+
+  <!-- ── Floating launcher demo canvas ────────────────── -->
+  <section id="launcherDemo" class="launcher-canvas" hidden>
+    <p>
+      Click the balloon button below to open the floating chat window.<br>
+      <small>
+        Uses <code>&lt;dialog&gt;</code> + <code>commandfor</code>/<code>command</code> — no custom launcher element.
+      </small>
+    </p>
+  </section>
+
+  <p class="demo-note">POC — responses simulated. Wire <code>data-endpoint</code> to a real backend.</p>
+</section>
+
+<!-- ── Floating chat launcher (dialog + trigger button) ── -->
+<button commandfor="chat-dialog" command="show-modal"
+        class="chat-trigger" id="launcherToggle" aria-label="Open chat">
+  <icon-wc name="message-circle"></icon-wc>
+</button>
+
+<dialog id="chat-dialog">
+  <chat-window id="launcherWindow">
+    <script type="application/json" data-participants>
+    {
+      "l-user":      { "name": "You", "role": "user" },
+      "l-assistant": { "name": "Assistant", "role": "agent" }
+    }
+    </script>
+    <header>
+      <h3>AI Assistant</h3>
+      <button commandfor="chat-dialog" command="close"
+              class="ghost small" aria-label="Close chat">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </header>
+
+    <chat-thread id="launcherThread" role="log" aria-label="Chat" aria-live="polite">
+      <chat-message data-role="agent" data-from="l-assistant" data-from-label="Assistant">
+        <chat-bubble>
+          <p>Hi! I'm a floating chat widget. The trigger button uses <code>commandfor</code>/<code>command</code> to open this <code>&lt;dialog&gt;</code>. No custom launcher element needed.</p>
+        </chat-bubble>
+      </chat-message>
+    </chat-thread>
+
+    <chat-input id="launcherInput">
+      <textarea data-grow rows="1"
+                id="launcherTextarea"
+                placeholder="Say something..."
+                aria-label="Message"></textarea>
+      <footer>
+        <button type="button" class="small" id="launcherSend" aria-label="Send" data-send disabled>
+          <icon-wc name="send"></icon-wc>
+        </button>
+      </footer>
+    </chat-input>
+  </chat-window>
+</dialog>
+
+<!-- VB's web components JS (for icon-wc registration) -->
+<script type="module" src="../../../src/web-components/index.js"></script>
+<!-- VB's textarea auto-grow init -->
+<script type="module" src="../../../src/utils/textarea-grow-init.js"></script>
+
+<script type="module">
+
+  // ── Pure helpers ─────────────────────────────────────────
+
+  const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const simpleMarkdown = (s) =>
+    esc(s)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+
+  const scrollBottom = (thread) => { thread.scrollTop = thread.scrollHeight; };
+
+  const buildMsg = (role, html, { fromId, fromLabel, avatarEl } = {}) => {
+    const msg = document.createElement('chat-message');
+    msg.dataset.role = role;
+    if (fromId)    msg.dataset.from      = fromId;
+    if (fromLabel) msg.dataset.fromLabel = fromLabel;
+    if (avatarEl)  msg.appendChild(avatarEl);
+    const bubble = document.createElement('chat-bubble');
+    bubble.innerHTML = html;
+    msg.appendChild(bubble);
+    return msg;
+  };
+
+  // Avatar color map — keyed by participant id prefix
+  const avatarClasses = { 'sarah': 'avatar-sarah', 'alex': 'avatar-alex' };
+
+  const buildAvatar = (initials, fromId) => {
+    const av = document.createElement('user-avatar');
+    av.setAttribute('data-size', 'sm');
+    // Apply CSS class for avatar color based on participant name
+    const key = Object.keys(avatarClasses).find(k => fromId.includes(k));
+    if (key) av.classList.add(avatarClasses[key]);
+    const fallback = document.createElement('span');
+    fallback.setAttribute('data-fallback', '');
+    fallback.textContent = initials;
+    av.appendChild(fallback);
+    return av;
+  };
+
+  const buildTyping = (fromId, fromLabel, avatarEl) => {
+    const msg = buildMsg('agent', '', { fromId, fromLabel, avatarEl });
+    msg.dataset.status = 'typing';
+    if (fromLabel) msg.setAttribute('aria-label', `${fromLabel} is typing`);
+    return msg;
+  };
+
+  const resolve = (msg, html) => {
+    msg.querySelector('chat-bubble').innerHTML = html;
+    delete msg.dataset.status;
+    msg.removeAttribute('aria-label');
+  };
+
+  // ── Chat instance factory ────────────────────────────────
+
+  function wire({ threadEl, textareaEl, sendBtnEl, getReplies }) {
+    let replyIdx = 0;
+
+    const update = () => {
+      sendBtnEl.disabled = textareaEl.value.length === 0;
+    };
+
+    const setLocked = (locked) => {
+      textareaEl.disabled = locked;
+      sendBtnEl.disabled = locked;
+    };
+
+    const send = async () => {
+      const val = textareaEl.value.trim();
+      if (!val) return;
+
+      // Dispatch chat-input:send event (VB convention)
+      textareaEl.closest('chat-input')?.dispatchEvent(
+        new CustomEvent('chat-input:send', { bubbles: true, detail: { message: val } })
+      );
+
+      threadEl.appendChild(buildMsg('user', simpleMarkdown(val)));
+      scrollBottom(threadEl);
+      textareaEl.value = '';
+      update();
+      setLocked(true);
+
+      const { fromId, fromLabel, avatarEl, html } = getReplies(replyIdx++);
+      const typing = buildTyping(fromId, fromLabel, avatarEl);
+      threadEl.appendChild(typing);
+      scrollBottom(threadEl);
+
+      await new Promise(r => setTimeout(r, 850 + Math.random() * 650));
+
+      resolve(typing, html);
+      scrollBottom(threadEl);
+      setLocked(false);
+      textareaEl.focus();
+    };
+
+    textareaEl.addEventListener('input', update);
+    textareaEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtnEl.disabled) send(); }
+      if (e.key === 'Escape') { textareaEl.value = ''; update(); }
+    });
+    sendBtnEl.addEventListener('click', send);
+    scrollBottom(threadEl);
+  }
+
+  // ── AI replies ───────────────────────────────────────────
+
+  const aiReplies = [
+    "<p>The history panel uses <code>&lt;dialog data-position=\"start\"&gt;</code> — VB's existing drawer pattern. No custom sidebar element needed.</p>",
+    "<p>The model selector is a plain <code>&lt;select data-model-select&gt;</code> child of <code>chat-window</code>. In support contexts it's simply absent.</p>",
+    "<p>Typing state is <code>data-status=\"typing\"</code> on <code>chat-message</code>. Three dots are CSS <code>radial-gradient</code> backgrounds with <code>@keyframes</code>. Same DOM node gets the real reply.</p>",
+    "<p>Icons use <code>&lt;icon-wc name=\"...\"&gt;</code> — VB's actual web component. No inline SVGs needed in production.</p>",
+    "<p>All tokens are real VB tokens: <code>--size-m</code> for 16px spacing, <code>--color-surface-raised</code> for surface backgrounds, <code>--radius-m</code> for 8px radius, <code>--font-size-sm</code> for 14px text.</p>",
+  ];
+
+  const supportReplies = [
+    { fromId: 's-sarah', fromLabel: 'Sarah Chen', initials: 'SC', html: "<p>Thanks for reaching out! Let me check on that for you.</p>" },
+    { fromId: 's-sarah', fromLabel: 'Sarah Chen', initials: 'SC', html: "<p>I found your account. It looks like a sync issue on our side — I'm escalating this now.</p>" },
+    { fromId: 's-alex',  fromLabel: 'Alex Kim',   initials: 'AK', html: "<p>Hi! Sarah looped me in. I can see the backend issue — it's a caching problem we're fixing now.</p>" },
+    { fromId: 's-alex',  fromLabel: 'Alex Kim',   initials: 'AK', html: "<p>All fixed! Clear your browser cache and you should be good. Anything else I can help with?</p>" },
+    { fromId: 's-sarah', fromLabel: 'Sarah Chen', initials: 'SC', html: "<p>Happy to help! Is there anything else you need today?</p>" },
+  ];
+
+  // Wire up AI chat
+  wire({
+    threadEl: document.getElementById('aiThread'),
+    textareaEl: document.getElementById('aiTextarea'),
+    sendBtnEl: document.getElementById('aiSend'),
+    getReplies: (i) => ({
+      fromId: 'ai-assistant',
+      fromLabel: 'Assistant',
+      avatarEl: null,
+      html: aiReplies[i % aiReplies.length],
+    }),
+  });
+
+  // Wire up Support chat
+  wire({
+    threadEl: document.getElementById('supportThread'),
+    textareaEl: document.getElementById('supportTextarea'),
+    sendBtnEl: document.getElementById('supportSend'),
+    getReplies: (i) => {
+      const r = supportReplies[i % supportReplies.length];
+      return {
+        fromId: r.fromId,
+        fromLabel: r.fromLabel,
+        avatarEl: buildAvatar(r.initials, r.fromId),
+        html: r.html,
+      };
+    },
+  });
+
+  // Wire up Launcher chat
+  wire({
+    threadEl: document.getElementById('launcherThread'),
+    textareaEl: document.getElementById('launcherTextarea'),
+    sendBtnEl: document.getElementById('launcherSend'),
+    getReplies: (i) => ({
+      fromId: 'l-assistant',
+      fromLabel: 'Assistant',
+      avatarEl: null,
+      html: aiReplies[i % aiReplies.length],
+    }),
+  });
+
+  // ── Demo tabs ────────────────────────────────────────────
+
+  document.querySelectorAll('.demo-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.demo-tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+      tab.setAttribute('aria-selected', 'true');
+      const target = tab.dataset.target;
+      document.getElementById('aiWindow').hidden       = target !== 'aiWindow';
+      document.getElementById('supportWindow').hidden   = target !== 'supportWindow';
+      document.getElementById('launcherDemo').hidden    = target !== 'launcherDemo';
+    });
+  });
+
+</script>
+</body>
+</html>
