@@ -97,6 +97,26 @@ class SettingsPanel extends HTMLElement {
     return 'default';
   }
 
+  /** Is backdrop enabled? (any non-empty backdrop value) */
+  #isBackdropOn(backdrop) {
+    return backdrop !== '' && backdrop !== undefined;
+  }
+
+  /** Get the backdrop preset from a backdrop value */
+  #getBackdropPreset(backdrop) {
+    if (backdrop === 'flush') return 'flush';
+    if (backdrop === 'elevated') return 'elevated';
+    return 'default';
+  }
+
+  /** Build the backdrop value from toggle + preset */
+  #buildBackdropValue(backdropOn, preset) {
+    if (!backdropOn) return '';
+    if (preset === 'flush') return 'flush';
+    if (preset === 'elevated') return 'elevated';
+    return 'default';
+  }
+
   // --- Render ---
 
   #render() {
@@ -129,7 +149,7 @@ class SettingsPanel extends HTMLElement {
   }
 
   #renderPanel() {
-    const { mode, brand, fluid } = ThemeManager.getState();
+    const { mode, brand, fluid, backdrop } = ThemeManager.getState();
     const selectValue = this.#getSelectValue(brand);
     const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
@@ -137,6 +157,8 @@ class SettingsPanel extends HTMLElement {
     const showAccents = selectValue === 'default';
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
+    const backdropOn = this.#isBackdropOn(backdrop);
+    const backdropPreset = this.#getBackdropPreset(backdrop);
 
     return `
       <header class="settings-header">
@@ -271,6 +293,22 @@ class SettingsPanel extends HTMLElement {
                 `).join('')}
               </div>
             </div>
+
+            <label class="toggle-row">
+              <span>Canvas Backdrop</span>
+              <input type="checkbox" name="canvas-backdrop" data-switch="sm" data-backdrop-toggle ${backdropOn ? 'checked' : ''} />
+            </label>
+            <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
+              <span class="settings-label">Style</span>
+              <div class="segmented-control" role="radiogroup" aria-label="Backdrop style">
+                ${['default', 'flush', 'elevated'].map(p => `
+                  <label class="segment">
+                    <input type="radio" name="settings-backdrop" value="${p}" ${backdropPreset === p ? 'checked' : ''} />
+                    <span>${p[0].toUpperCase() + p.slice(1)}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
           </div>
         </details>
 
@@ -339,6 +377,14 @@ class SettingsPanel extends HTMLElement {
     // Density segmented control
     this.#panel.querySelectorAll('input[name="settings-density"]').forEach(input => {
       input.addEventListener('change', this.#handleDensityChange);
+    });
+
+    // Backdrop toggle
+    this.#panel.querySelector('input[data-backdrop-toggle]')?.addEventListener('change', this.#handleBackdropToggle);
+
+    // Backdrop preset segmented control
+    this.#panel.querySelectorAll('input[name="settings-backdrop"]').forEach(input => {
+      input.addEventListener('change', this.#handleBackdropPreset);
     });
 
     // Accessibility toggles
@@ -428,6 +474,17 @@ class SettingsPanel extends HTMLElement {
     ThemeManager.setFluid(this.#buildFluidValue(true, e.target.value));
   };
 
+  #handleBackdropToggle = (e) => {
+    const backdropOn = e.target.checked;
+    const preset = this.#getBackdropPreset(ThemeManager.getState().backdrop) || 'default';
+    ThemeManager.setBackdrop(this.#buildBackdropValue(backdropOn, preset));
+    this.#updateBackdropVisibility(backdropOn);
+  };
+
+  #handleBackdropPreset = (e) => {
+    ThemeManager.setBackdrop(this.#buildBackdropValue(true, e.target.value));
+  };
+
   #handleA11yChange = (e) => {
     const themeId = e.target.dataset.a11y;
     const current = this.#loadA11yThemes();
@@ -476,13 +533,15 @@ class SettingsPanel extends HTMLElement {
   // --- State sync ---
 
   #syncState() {
-    const { mode, brand, fluid } = ThemeManager.getState();
+    const { mode, brand, fluid, backdrop } = ThemeManager.getState();
     const selectValue = this.#getSelectValue(brand);
     const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
     const extensions = this.#loadExtensions();
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
+    const backdropOn = this.#isBackdropOn(backdrop);
+    const backdropPreset = this.#getBackdropPreset(backdrop);
 
     // Mode
     const modeInput = this.#panel.querySelector(`input[name="settings-mode"][value="${mode}"]`);
@@ -506,6 +565,15 @@ class SettingsPanel extends HTMLElement {
     if (densityInput) densityInput.checked = true;
     this.#updateDensityVisibility(fluidOn);
 
+    // Backdrop toggle
+    const backdropToggle = this.#panel.querySelector('input[data-backdrop-toggle]');
+    if (backdropToggle) backdropToggle.checked = backdropOn;
+
+    // Backdrop preset
+    const backdropInput = this.#panel.querySelector(`input[name="settings-backdrop"][value="${backdropPreset}"]`);
+    if (backdropInput) backdropInput.checked = true;
+    this.#updateBackdropVisibility(backdropOn);
+
     // A11y toggles
     this.#panel.querySelectorAll('input[data-a11y]').forEach(input => {
       input.checked = a11yThemes.includes(input.dataset.a11y);
@@ -525,6 +593,11 @@ class SettingsPanel extends HTMLElement {
 
   #updateDensityVisibility(show) {
     const row = this.#panel.querySelector('.density-row');
+    if (row) row.hidden = !show;
+  }
+
+  #updateBackdropVisibility(show) {
+    const row = this.#panel.querySelector('.backdrop-row');
     if (row) row.hidden = !show;
   }
 

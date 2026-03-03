@@ -1,0 +1,74 @@
+/**
+ * Canvas Backdrop Tokens
+ *
+ * Activate with: <html data-backdrop>
+ * Presets: data-backdrop (default) | data-backdrop="flush" | data-backdrop="elevated"
+ *
+ * Makes <main> float as an elevated canvas above the page background.
+ * Composes with data-page-layout (main keeps its grid-area) and data-fluid.
+ * On mobile (<640px) the canvas goes flush — no elevation, no border-radius.
+ */
+
+/* ========================================
+ * Canvas tokens (overridable by themes)
+ * ======================================== */
+[data-backdrop] {
+  --canvas-width: 860px;
+  --canvas-radius: 12px;
+  --canvas-shadow:
+    0 1px 2px oklch(0% 0 0 / 0.04),
+    0 4px 8px oklch(0% 0 0 / 0.06),
+    0 12px 24px oklch(0% 0 0 / 0.08);
+  --canvas-padding-inline: var(--size-l, 1.5rem);
+  --canvas-padding-block: var(--size-l, 1.5rem);
+  --canvas-bg: var(--color-surface, #fff);
+}
+
+/* ========================================
+ * Default Preset
+ * 860px centered canvas, 12px radius, layered shadow
+ * ======================================== */
+[data-backdrop] > main,
+[data-backdrop][data-page-layout] > main {
+  max-width: var(--canvas-width);
+  margin-inline: auto;
+  background: var(--canvas-bg);
+  border-radius: var(--canvas-radius);
+  box-shadow: var(--canvas-shadow);
+  padding-inline: var(--canvas-padding-inline);
+  padding-block: var(--canvas-padding-block);
+}
+
+/* ========================================
+ * Flush Preset
+ * Max-width centering, no shadow or radius — rich background visible at sides
+ * ======================================== */
+[data-backdrop="flush"] {
+  --canvas-radius: 0;
+  --canvas-shadow: none;
+}
+
+/* ========================================
+ * Elevated Preset
+ * 16px radius, dramatic shadow, stronger float
+ * ======================================== */
+[data-backdrop="elevated"] {
+  --canvas-radius: 16px;
+  --canvas-shadow:
+    0 1px 3px oklch(0% 0 0 / 0.06),
+    0 8px 16px oklch(0% 0 0 / 0.08),
+    0 24px 48px oklch(0% 0 0 / 0.12);
+}
+
+/* ========================================
+ * Mobile: flush regardless of preset
+ * ======================================== */
+@media (max-width: 640px) {
+  [data-backdrop] > main,
+  [data-backdrop][data-page-layout] > main {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding-inline: var(--size-m, 1rem);
+  }
+}

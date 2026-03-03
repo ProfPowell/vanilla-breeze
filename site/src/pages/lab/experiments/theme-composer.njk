@@ -729,6 +729,24 @@ permalink: /docs/tools/theme-composer/
       </div>
     </details>
 
+    <!-- F2. Canvas Backdrop -->
+    <details>
+      <summary>Canvas Backdrop</summary>
+      <div class="detail-body">
+        <label class="toggle-row">
+          <input type="checkbox" id="backdrop-enabled"> Enable backdrop
+        </label>
+        <div id="backdrop-options" hidden>
+          <div class="preset-row" id="backdrop-presets">
+            <label><input type="radio" name="backdrop-preset" value="default" checked><span>Default</span></label>
+            <label><input type="radio" name="backdrop-preset" value="flush"><span>Flush</span></label>
+            <label><input type="radio" name="backdrop-preset" value="elevated"><span>Elevated</span></label>
+          </div>
+          <p style="font-size:var(--font-size-xs,0.75rem);color:var(--color-text-muted,#666);margin-block-start:var(--size-2xs,0.25rem)">Activate with <code>&lt;html data-backdrop&gt;</code></p>
+        </div>
+      </div>
+    </details>
+
     <!-- G. Motion -->
     <details>
       <summary>Motion</summary>
@@ -982,6 +1000,7 @@ const DEFAULTS = {
   iconSet: 'lucide',
   surfaces: { texture: 'none', textureOpacity: 0.03, glassBlur: 0, gradient: 'none', pageBgType: 'none', pageBgColor: '#1a1a2e', pageBgGradStart: '#1a1a2e', pageBgGradEnd: '#16213e', pageBgGradDirection: 'to bottom' },
   shadows: { preset: 'default' },
+  backdrop: { enabled: false, preset: 'default' },
   motion: { durationScale: 1, easingPreset: 'default', hoverLift: 'default', hoverGlow: false, enterAnimation: 'none' },
 };
 
@@ -1307,6 +1326,16 @@ function wireControls() {
     r.addEventListener('change', () => { state.shadows.preset = r.value; updatePreview(); });
   });
 
+  // Backdrop
+  document.getElementById('backdrop-enabled').addEventListener('change', e => {
+    state.backdrop.enabled = e.target.checked;
+    document.getElementById('backdrop-options').hidden = !e.target.checked;
+    updatePreview();
+  });
+  document.querySelectorAll('input[name="backdrop-preset"]').forEach(r => {
+    r.addEventListener('change', () => { state.backdrop.preset = r.value; updatePreview(); });
+  });
+
   // Motion
   document.getElementById('motion-scale').addEventListener('input', e => {
     state.motion.durationScale = parseFloat(e.target.value);
@@ -1420,6 +1449,12 @@ function loadFromRegistry(themeId) {
 
   // Shadows
   if (entry.shadows && entry.shadows.preset) state.shadows.preset = entry.shadows.preset;
+
+  // Backdrop
+  if (entry.backdrop) {
+    if (entry.backdrop.enabled != null) state.backdrop.enabled = entry.backdrop.enabled;
+    if (entry.backdrop.preset) state.backdrop.preset = entry.backdrop.preset;
+  }
 
   // Motion
   if (entry.motion) {
@@ -1577,6 +1612,12 @@ function syncControlsToState() {
 
   const shadPre = document.querySelector(`input[name="shadow-preset"][value="${state.shadows.preset}"]`);
   if (shadPre) shadPre.checked = true;
+
+  // Backdrop
+  document.getElementById('backdrop-enabled').checked = state.backdrop.enabled;
+  document.getElementById('backdrop-options').hidden = !state.backdrop.enabled;
+  const bdPre = document.querySelector(`input[name="backdrop-preset"][value="${state.backdrop.preset}"]`);
+  if (bdPre) bdPre.checked = true;
 
   document.getElementById('motion-scale').value = state.motion.durationScale;
   document.getElementById('motion-scale-out').textContent = state.motion.durationScale.toFixed(1) + 'x';
@@ -1859,6 +1900,26 @@ function generateThemeCSS() {
     css += `\n  /* ===== SHADOWS ===== */\n`;
     for (const [name, val] of Object.entries(shadows)) {
       css += `  --shadow-${name}: ${val};\n`;
+    }
+  }
+
+  // Backdrop
+  if (state.backdrop.enabled) {
+    css += `\n  /* ===== CANVAS BACKDROP ===== */\n`;
+    css += `  /* Activate with: <html data-backdrop> */\n`;
+    const bp = state.backdrop.preset;
+    if (bp === 'flush') {
+      css += `  --canvas-width: 860px;\n`;
+      css += `  --canvas-radius: 0;\n`;
+      css += `  --canvas-shadow: none;\n`;
+    } else if (bp === 'elevated') {
+      css += `  --canvas-width: 860px;\n`;
+      css += `  --canvas-radius: 16px;\n`;
+      css += `  --canvas-shadow: 0 1px 3px oklch(0% 0 0 / 0.06), 0 8px 16px oklch(0% 0 0 / 0.08), 0 24px 48px oklch(0% 0 0 / 0.12);\n`;
+    } else {
+      css += `  --canvas-width: 860px;\n`;
+      css += `  --canvas-radius: 12px;\n`;
+      css += `  --canvas-shadow: 0 1px 2px oklch(0% 0 0 / 0.04), 0 4px 8px oklch(0% 0 0 / 0.06), 0 12px 24px oklch(0% 0 0 / 0.08);\n`;
     }
   }
 

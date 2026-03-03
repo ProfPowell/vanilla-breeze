@@ -26,7 +26,7 @@
 import { ensureThemeLoaded } from './theme-loader.js';
 
 const STORAGE_KEY = 'vb-theme';
-const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '' };
+const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '' };
 
 export const ThemeManager = {
   /**
@@ -84,7 +84,7 @@ export const ThemeManager = {
    * Apply theme to document root
    * @param {Partial<VBThemePrefs>} prefs
    */
-  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '' } = {}) {
+  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '', backdrop = '' } = {}) {
     const root = document.documentElement;
 
     // Apply mode
@@ -128,9 +128,16 @@ export const ThemeManager = {
       delete root.dataset.fluid;
     }
 
+    // Canvas backdrop
+    if (backdrop) {
+      root.dataset.backdrop = backdrop;
+    } else {
+      delete root.dataset.backdrop;
+    }
+
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('theme-change', {
-      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, effectiveMode: this.getEffectiveMode() }
     }));
   },
 
@@ -188,6 +195,15 @@ export const ThemeManager = {
   },
 
   /**
+   * Set canvas backdrop preference
+   * @param {string} backdrop - Backdrop preset ('' | 'default' | 'flush' | 'elevated')
+   */
+  setBackdrop(backdrop) {
+    const updated = this.save({ backdrop });
+    this.apply(updated);
+  },
+
+  /**
    * Get current effective mode (resolves 'auto' to actual mode)
    * @returns {'light' | 'dark'}
    */
@@ -202,8 +218,8 @@ export const ThemeManager = {
    * @returns {VBThemeState}
    */
   getState() {
-    const { mode, brand, borderStyle, iconSet, fluid } = this.load();
-    return { mode, brand, borderStyle, iconSet, fluid, effectiveMode: this.getEffectiveMode() };
+    const { mode, brand, borderStyle, iconSet, fluid, backdrop } = this.load();
+    return { mode, brand, borderStyle, iconSet, fluid, backdrop, effectiveMode: this.getEffectiveMode() };
   },
 
   /**
