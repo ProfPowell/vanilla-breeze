@@ -1,0 +1,95 @@
+chat-message {
+  --chat-user-bg:       var(--color-primary);
+  --chat-user-color:    var(--color-text-on-primary);
+  --chat-agent-bg:      var(--color-surface-sunken);
+  --chat-agent-color:   var(--color-text);
+  --chat-bubble-radius: var(--radius-m);
+  --chat-meta-size:     var(--font-size-xs);
+  --chat-meta-color:    var(--color-text-muted);
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: var(--size-xs);
+  max-width: 80%;
+
+  /* Collapse avatar column when no user-avatar child */
+  &:not(:has(> user-avatar)) {
+    grid-template-columns: 1fr;
+  }
+
+  /* Meta line from data-from-label (agent messages) */
+  &[data-from-label]::before {
+    content: attr(data-from-label);
+    grid-column: 2;
+    font-size: var(--chat-meta-size);
+    color: var(--chat-meta-color);
+    line-height: 1;
+    padding-inline-start: var(--size-2xs);
+  }
+
+  &[data-from-label]:not(:has(> user-avatar))::before {
+    grid-column: 1;
+  }
+
+  /* User messages: right-aligned, reversed column order */
+  &[data-role="user"] {
+    grid-template-columns: 1fr auto;
+    margin-inline-start: auto;
+
+    &:not(:has(> user-avatar)) {
+      grid-template-columns: 1fr;
+    }
+
+    &::before {
+      display: none;
+    }
+
+    & > chat-bubble {
+      grid-column: 1;
+      grid-row: 1;
+      background: var(--chat-user-bg);
+      color: var(--chat-user-color);
+    }
+
+    & > user-avatar {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+
+  /* Agent messages: left-aligned */
+  &[data-role="agent"] {
+    margin-inline-end: auto;
+
+    & > chat-bubble {
+      background: var(--chat-agent-bg);
+      color: var(--chat-agent-color);
+    }
+  }
+
+  /* System messages: centered, full-width */
+  &[data-role="system"] {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    text-align: center;
+
+    &::before {
+      display: none;
+    }
+
+    & > chat-bubble {
+      background: transparent;
+      color: var(--chat-meta-color);
+      font-size: var(--font-size-sm);
+      border-radius: 0;
+      padding-block: var(--size-xs);
+      padding-inline: var(--size-m);
+    }
+  }
+
+  /* Error state */
+  &[data-status="error"] > chat-bubble {
+    border: var(--border-width-thin) solid var(--color-error);
+  }
+}

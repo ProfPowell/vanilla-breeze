@@ -1,0 +1,86 @@
+---
+layout: layouts/element.njk
+title: "chat-bubble"
+description: "Content wrapper for chat messages with typography, code block styling, and CSS-only typing dots animation."
+elementName: chat-bubble
+category: custom
+currentPath: /docs/elements/custom-elements/chat-bubble/
+permalink: /docs/elements/custom-elements/chat-bubble/
+---
+
+{% set basicCode %}<chat-bubble>
+  <p>Paragraph content with <strong>formatting</strong>.</p>
+</chat-bubble>{% endset %}
+
+{% set codeBlockCode %}<chat-bubble>
+  <p>Here's an example:</p>
+  <pre><code>console.log('code blocks work')</code></pre>
+</chat-bubble>{% endset %}
+
+{% set typingCode %}<chat-message data-role="agent" data-status="typing">
+  <chat-bubble></chat-bubble>
+</chat-message>{% endset %}
+
+<browser-window
+    src="/docs/examples/demos/chat-message-basic.html"
+    url="https://vanilla-breeze.dev/chat-bubble"
+    title="Chat Bubble Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Overview</h2>
+    <p>A presentational wrapper for message content inside <code>&lt;chat-message&gt;</code>. Handles padding, border-radius, typography, and code block formatting. The bubble's background color is controlled by the parent message's <code>data-role</code> attribute.</p>
+  </section>
+
+  <section>
+    <h2>Content Formatting</h2>
+    <p>Place any HTML content inside the bubble. Paragraphs, inline formatting, and code blocks are all styled.</p>
+    <code-block language="html" show-lines label="Text content">{{ basicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Code Blocks</h2>
+    <p>Wrap code in <code>&lt;pre&gt;&lt;code&gt;</code> for monospace styling with a subtle background.</p>
+    <code-block language="html" show-lines label="Code block in bubble">{{ codeBlockCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Typing Dots</h2>
+    <p>When the parent <code>&lt;chat-message&gt;</code> has <code>data-status="typing"</code> and the bubble is empty, CSS renders three animated bouncing dots via <code>::after</code> with radial gradients.</p>
+    <code-block language="html" show-lines label="Typing indicator">{{ typingCode | escape }}</code-block>
+    <p>When real content arrives, populate the bubble's innerHTML and remove <code>data-status</code> from the parent. The same DOM node transitions from typing indicator to content — no element swap.</p>
+  </section>
+
+  <section>
+    <h2>Reduced Motion</h2>
+    <p>When <code>prefers-reduced-motion: reduce</code> is active, the typing animation is disabled and the dots display as a static indicator at reduced opacity.</p>
+  </section>
+
+  <section>
+    <h2>CSS Variables</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--chat-bubble-radius</code></td>
+          <td><code>var(--radius-m)</code></td>
+          <td>Bubble border radius (inherited from <code>chat-message</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/chat-message/"><code>&lt;chat-message&gt;</code></a> — Parent message element</li>
+      <li><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a> — Scrollable message container</li>
+    </ul>
+  </section>

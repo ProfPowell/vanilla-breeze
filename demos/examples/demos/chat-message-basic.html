@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Message Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <chat-thread role="log" aria-label="Demo conversation" aria-live="polite">
+
+    <chat-message data-role="agent" data-from-label="Support Bot">
+      <user-avatar data-size="sm">
+        <span data-fallback>SB</span>
+      </user-avatar>
+      <chat-bubble><p>Hi there! How can I help you today?</p></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="user">
+      <chat-bubble><p>I need help with my recent order.</p></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="agent" data-from-label="Support Bot">
+      <chat-bubble><p>Sure, I can look into that for you. Could you share your order number?</p></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="user">
+      <chat-bubble><p>It's order #12345.</p></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="system">
+      <chat-bubble>Sarah Chen joined the conversation.</chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="agent" data-from-label="Sarah Chen">
+      <user-avatar data-size="sm">
+        <span data-fallback>SC</span>
+      </user-avatar>
+      <chat-bubble><p>Hi! I'm taking over this conversation. Let me pull up order #12345.</p></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="agent" data-from-label="Assistant" data-model="claude-sonnet-4-6">
+      <chat-bubble>
+        <p>Here's a code example for tracking your order:</p>
+        <pre><code>fetch('/api/orders/12345')
+  .then(res => res.json())
+  .then(data => console.log(data.status));</code></pre>
+      </chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="agent" data-status="typing" data-from-label="Sarah Chen">
+      <user-avatar data-size="sm">
+        <span data-fallback>SC</span>
+      </user-avatar>
+      <chat-bubble></chat-bubble>
+    </chat-message>
+
+    <chat-message data-role="user" data-status="error">
+      <chat-bubble><p>This message failed to send.</p></chat-bubble>
+    </chat-message>
+
+  </chat-thread>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

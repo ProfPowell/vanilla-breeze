@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Input Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    .demo-output {
+      margin-block-start: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-sunken);
+      border-radius: var(--radius-m);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      min-height: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+
+    <section>
+      <h2>Standalone chat-input</h2>
+      <chat-input name="message">
+        <textarea data-grow rows="1" data-max-rows="8"
+                  placeholder="Type a message... (Enter to send, Shift+Enter for newline)"></textarea>
+        <footer>
+          <button type="submit" class="small" data-send aria-label="Send">
+            <icon-wc name="send"></icon-wc> Send
+          </button>
+        </footer>
+      </chat-input>
+      <output class="demo-output" id="output1">Sent messages appear here...</output>
+    </section>
+
+    <section>
+      <h2>Inside a chat thread</h2>
+      <chat-thread role="log" aria-label="Demo conversation" aria-live="polite"
+                   style="max-height: 300px; border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
+        <chat-message data-role="agent" data-from-label="Bot">
+          <chat-bubble><p>Welcome! Try sending a message below.</p></chat-bubble>
+        </chat-message>
+      </chat-thread>
+      <chat-input name="message" id="thread-input">
+        <textarea data-grow rows="1" data-max-rows="6"
+                  placeholder="Ask anything..."></textarea>
+        <footer>
+          <button type="submit" class="small" data-send aria-label="Send">
+            <icon-wc name="send"></icon-wc>
+          </button>
+        </footer>
+      </chat-input>
+    </section>
+
+    <section>
+      <h2>Inside a native form</h2>
+      <form action="#" method="POST" id="chat-form">
+        <chat-input name="message">
+          <textarea data-grow rows="1" placeholder="Reply..."></textarea>
+          <footer>
+            <button type="submit" class="small" data-send aria-label="Send">
+              <icon-wc name="send"></icon-wc> Send
+            </button>
+          </footer>
+        </chat-input>
+      </form>
+      <output class="demo-output" id="output2">Form data appears here...</output>
+    </section>
+
+    <section>
+      <h2>Disabled state</h2>
+      <chat-input name="message" disabled>
+        <textarea data-grow rows="1" placeholder="Input is disabled..."></textarea>
+        <footer>
+          <button type="submit" class="small" data-send aria-label="Send">
+            <icon-wc name="send"></icon-wc>
+          </button>
+        </footer>
+      </chat-input>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Demo 1: standalone
+    document.querySelector('chat-input[name="message"]').addEventListener('chat-input:send', (e) => {
+      document.getElementById('output1').textContent = `Sent: "${e.detail.message}"`;
+    });
+
+    // Demo 2: thread integration
+    const threadInput = document.getElementById('thread-input');
+    const thread = document.querySelector('chat-thread');
+
+    threadInput.addEventListener('chat-input:send', (e) => {
+      const msg = document.createElement('chat-message');
+      msg.setAttribute('data-role', 'user');
+      const bubble = document.createElement('chat-bubble');
+      const p = document.createElement('p');
+      p.textContent = e.detail.message;
+      bubble.appendChild(p);
+      msg.appendChild(bubble);
+      thread.appendChild(msg);
+      thread.scrollTop = thread.scrollHeight;
+    });
+
+    // Demo 3: form
+    document.getElementById('chat-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      document.getElementById('output2').textContent = `FormData: message="${data.get('message')}"`;
+    });
+  </script>
+</body>
+</html>

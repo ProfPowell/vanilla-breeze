@@ -1,0 +1,250 @@
+---
+layout: layouts/element.njk
+title: "chat-input"
+description: "Form-associated chat input with auto-growing textarea, Enter-to-send, and keyboard shortcuts."
+elementName: chat-input
+category: component
+currentPath: /docs/elements/web-components/chat-input/
+permalink: /docs/elements/web-components/chat-input/
+---
+
+{% set basicCode %}<chat-input name="message">
+  <textarea data-grow rows="1" data-max-rows="8"
+            placeholder="Ask anything..."></textarea>
+  <footer>
+    <button type="submit" class="small" data-send aria-label="Send">
+      <icon-wc name="send"></icon-wc>
+    </button>
+  </footer>
+</chat-input>{% endset %}
+
+{% set formCode %}<form action="/support/reply" method="POST">
+  <chat-input name="message">
+    <textarea data-grow rows="1" placeholder="Reply..."></textarea>
+    <footer>
+      <button type="submit" class="small" data-send aria-label="Send">
+        <icon-wc name="send"></icon-wc>
+      </button>
+    </footer>
+  </chat-input>
+</form>{% endset %}
+
+{% set disabledCode %}<chat-input name="message" disabled>
+  <textarea data-grow rows="1" placeholder="Input is disabled..."></textarea>
+  <footer>
+    <button type="submit" class="small" data-send aria-label="Send">
+      <icon-wc name="send"></icon-wc>
+    </button>
+  </footer>
+</chat-input>{% endset %}
+
+<browser-window
+    src="/docs/examples/demos/chat-input-basic.html"
+    url="https://vanilla-breeze.dev/chat-input"
+    title="Chat Input Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Overview</h2>
+    <p>A form-associated web component that wraps a <code>textarea[data-grow]</code> with send controls. Light DOM, participates in native form submission via <code>ElementInternals</code>. The textarea auto-resizes using VB's existing <code>textarea-grow-init</code> utility.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td><code>message</code></td>
+          <td>Form field name</td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>number</td>
+          <td><code>4000</code></td>
+          <td>Character limit</td>
+        </tr>
+        <tr>
+          <td><code>minlength</code></td>
+          <td>number</td>
+          <td><code>1</code></td>
+          <td>Prevents empty send</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Disables input and controls</td>
+        </tr>
+        <tr>
+          <td><code>autofocus</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Focus textarea on connect</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd></td>
+          <td>Submit message</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift+Enter</kbd></td>
+          <td>Insert newline</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Clear input</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>The child <code>&lt;textarea data-grow&gt;</code> auto-resizes. The <code>[data-send]</code> button triggers submission.</p>
+    <code-block language="html" show-lines label="Basic chat input">{{ basicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Inside a Form</h2>
+    <p>As a form-associated element, <code>chat-input</code> participates in native <code>FormData</code>, form submit, and <code>reset()</code>.</p>
+    <code-block language="html" show-lines label="Form-associated chat input">{{ formCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Disabled State</h2>
+    <p>Set <code>disabled</code> to prevent input. This also disables the send button and reduces opacity.</p>
+    <code-block language="html" show-lines label="Disabled chat input">{{ disabledCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>chat-input:send</code></td>
+          <td><code>{ message, from, model }</code></td>
+          <td>Enter key or send button click</td>
+        </tr>
+        <tr>
+          <td><code>chat-input:input</code></td>
+          <td><code>{ value, length }</code></td>
+          <td>Keystroke (debounced 100ms)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Public API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>string (get/set)</td>
+          <td>Current textarea content</td>
+        </tr>
+        <tr>
+          <td><code>focus()</code></td>
+          <td>method</td>
+          <td>Focus the textarea</td>
+        </tr>
+        <tr>
+          <td><code>reset()</code></td>
+          <td>method</td>
+          <td>Clear value and resize</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean (get/set)</td>
+          <td>Disable/enable state</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Variables</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--chat-input-bg</code></td>
+          <td><code>var(--color-surface)</code></td>
+          <td>Input area background</td>
+        </tr>
+        <tr>
+          <td><code>--chat-input-border</code></td>
+          <td><code>var(--border-width-thin) solid var(--color-border)</code></td>
+          <td>Top border</td>
+        </tr>
+        <tr>
+          <td><code>--chat-input-radius</code></td>
+          <td><code>var(--radius-m)</code></td>
+          <td>Border radius</td>
+        </tr>
+        <tr>
+          <td><code>--chat-input-padding</code></td>
+          <td><code>var(--size-s)</code></td>
+          <td>Internal padding</td>
+        </tr>
+        <tr>
+          <td><code>--chat-input-max-height</code></td>
+          <td><code>12lh</code></td>
+          <td>Maximum textarea height</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a> — Scrollable message container</li>
+      <li><a href="/docs/elements/custom-elements/chat-message/"><code>&lt;chat-message&gt;</code></a> — Individual message turns</li>
+      <li><a href="/docs/attributes/data-grow/"><code>data-grow</code></a> — Textarea auto-resize attribute</li>
+    </ul>
+  </section>
