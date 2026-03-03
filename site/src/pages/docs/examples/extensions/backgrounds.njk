@@ -6,6 +6,26 @@ currentSection: examples
 permalink: /docs/examples/extensions/backgrounds/
 ---
 
+{% set pageBgCode %}/* Page background tokens (surfaces.css) */
+--page-bg-type: solid;
+--page-bg-color: var(--color-background, var(--color-surface));
+--page-bg-gradient: none;
+--page-bg-image: none;
+
+/* Body consumes these tokens (reset.css) */
+body {
+  background-color: var(--page-bg-color);
+  background-image: var(--page-bg-gradient, var(--page-bg-image, none));
+  background-attachment: var(--page-bg-attachment, scroll);
+  background-size: var(--page-bg-size, cover);
+  background-position: var(--page-bg-position, center);
+}
+
+/* Themes override in their :root block */
+:root[data-theme~="cyber"] {
+  --page-bg-gradient: linear-gradient(135deg, oklch(8% 0.04 280), oklch(10% 0.06 200));
+}{% endset %}
+
 {% set meshGradientCode %}/* Mesh gradient - multiple radial overlays */
 .mesh-bg {
   background:
@@ -60,31 +80,77 @@ permalink: /docs/examples/extensions/backgrounds/
 </div>
 
 <section>
-  <h2>Proposed Surface Tokens</h2>
-  <p>New tokens to add texture and depth to surfaces.</p>
+  <h2>Surface Tokens</h2>
+  <p>Tokens for texture overlays, glassmorphism effects, and page backgrounds.</p>
   <table class="props-table">
     <thead>
       <tr>
         <th>Token</th>
-        <th>Values</th>
+        <th>Default</th>
+        <th>Description</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td><code>--surface-texture</code></td>
-        <td><code>none | noise | grain | dots | lines</code></td>
+        <td><code>none</code></td>
+        <td>Texture pattern: <code>none | noise | grain | dots | lines</code></td>
       </tr>
       <tr>
         <td><code>--surface-texture-opacity</code></td>
-        <td><code>0.05</code> (default)</td>
-      </tr>
-      <tr>
-        <td><code>--bg-gradient</code></td>
-        <td><code>linear-gradient(...)</code></td>
+        <td><code>0.05</code></td>
+        <td>Texture overlay opacity</td>
       </tr>
       <tr>
         <td><code>--glass-blur</code></td>
-        <td><code>0 | 8px | 16px</code></td>
+        <td><code>0px</code></td>
+        <td>Glassmorphism blur amount</td>
+      </tr>
+      <tr>
+        <td><code>--glass-opacity</code></td>
+        <td><code>0.15</code></td>
+        <td>Glass background opacity</td>
+      </tr>
+      <tr><td colspan="3"><strong>Page Background</strong></td></tr>
+      <tr>
+        <td><code>--page-bg-type</code></td>
+        <td><code>solid</code></td>
+        <td>Background mode: <code>solid | gradient | image</code></td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-color</code></td>
+        <td><code>var(--color-background)</code></td>
+        <td>Solid background color</td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-gradient</code></td>
+        <td><code>none</code></td>
+        <td>CSS gradient value (linear, radial, conic)</td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-image</code></td>
+        <td><code>none</code></td>
+        <td>Background image URL</td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-attachment</code></td>
+        <td><code>scroll</code></td>
+        <td><code>scroll | fixed</code></td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-size</code></td>
+        <td><code>cover</code></td>
+        <td><code>cover | contain | auto</code></td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-position</code></td>
+        <td><code>center</code></td>
+        <td>Background position value</td>
+      </tr>
+      <tr>
+        <td><code>--page-bg-blend</code></td>
+        <td><code>normal</code></td>
+        <td>Blend mode for compositing</td>
       </tr>
     </tbody>
   </table>
@@ -210,24 +276,30 @@ permalink: /docs/examples/extensions/backgrounds/
 </section>
 
 <section>
-  <h2>Page Background Preview</h2>
-  <p>Test different page-level background treatments.</p>
-  <browser-window url="page-background">
-    <div class="page-bg-demo" data-bg="solid" id="page-bg-demo">
+  <h2>Page Background Tokens</h2>
+  <p>The <code>--page-bg-*</code> token family controls rich <code>body</code> backgrounds. Themes override these tokens to create gradient backgrounds that complement their palette. The default theme uses <code>--page-bg-type: solid</code> with no visual change from the standard <code>var(--color-surface)</code> background.</p>
+  <browser-window url="page-background-tokens">
+    <div class="page-bg-demo" id="page-bg-demo">
       <div class="page-bg-content">
         <div class="page-bg-card">
           <h3>Content Card</h3>
-          <p>This card floats above the page background. Try different backgrounds to see how they affect the overall feel.</p>
+          <p>Switch themes to see how <code>--page-bg-gradient</code> creates rich backgrounds beneath content surfaces.</p>
         </div>
       </div>
     </div>
   </browser-window>
   <div class="bg-controls">
-    <button data-bg="solid" aria-pressed="true">Solid</button>
-    <button data-bg="gradient" aria-pressed="false">Gradient</button>
-    <button data-bg="radial" aria-pressed="false">Radial</button>
-    <button data-bg="noise" aria-pressed="false">Noise</button>
+    <button data-bg-theme="" aria-pressed="true">Default</button>
+    <button data-bg-theme="cyber" aria-pressed="false">Cyber</button>
+    <button data-bg-theme="midnight" aria-pressed="false">Midnight</button>
+    <button data-bg-theme="dracula" aria-pressed="false">Dracula</button>
+    <button data-bg-theme="vaporwave" aria-pressed="false">Vaporwave</button>
+    <button data-bg-theme="nord" aria-pressed="false">Nord</button>
+    <button data-bg-theme="genai" aria-pressed="false">GenAI</button>
+    <button data-bg-theme="glassmorphism" aria-pressed="false">Glass</button>
+    <button data-bg-theme="organic" aria-pressed="false">Organic</button>
   </div>
+  <code-block language="css" label="Page background token usage">{{ pageBgCode | escape }}</code-block>
 </section>
 
 <style>
@@ -560,31 +632,9 @@ permalink: /docs/examples/extensions/backgrounds/
     border-radius: var(--radius-l);
     overflow: hidden;
     border: 1px solid var(--color-border);
-  }
-
-  .page-bg-demo[data-bg="solid"] {
-    background: #f8fafc;
-  }
-
-  .page-bg-demo[data-bg="gradient"] {
-    background: linear-gradient(180deg, #e0e7ff 0%, #fce7f3 50%, #fef3c7 100%);
-  }
-
-  .page-bg-demo[data-bg="radial"] {
-    background: radial-gradient(ellipse at 50% 0%, #c7d2fe 0%, #f8fafc 70%);
-  }
-
-  .page-bg-demo[data-bg="noise"] {
-    background: #f1f5f9;
-  }
-
-  .page-bg-demo[data-bg="noise"]::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.15;
-    pointer-events: none;
+    background-color: var(--page-bg-color, var(--color-surface));
+    background-image: var(--page-bg-gradient, none);
+    transition: background-color 0.3s ease, background-image 0.3s ease;
   }
 
   .page-bg-content {
@@ -665,16 +715,21 @@ permalink: /docs/examples/extensions/backgrounds/
     document.documentElement.style.setProperty('--glass-blur', `${value}px`);
   });
 
-  // Page background controls
+  // Page background controls — theme switching
   const pageBgDemo = document.getElementById('page-bg-demo');
-  const bgButtons = document.querySelectorAll('.bg-controls button');
+  const bgButtons = document.querySelectorAll('.bg-controls button[data-bg-theme]');
 
   bgButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       bgButtons.forEach(b => b.setAttribute('aria-pressed', 'false'));
       btn.setAttribute('aria-pressed', 'true');
       if (pageBgDemo && btn instanceof HTMLElement) {
-        pageBgDemo.dataset.bg = btn.dataset.bg || 'solid';
+        const theme = btn.dataset.bgTheme;
+        if (theme) {
+          pageBgDemo.setAttribute('data-theme', theme);
+        } else {
+          pageBgDemo.removeAttribute('data-theme');
+        }
       }
     });
   });
