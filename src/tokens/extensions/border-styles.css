@@ -248,8 +248,14 @@
   border-radius: var(--vb-border-radius-override);
 }
 
-/* Prevent border doubling when containers are nested (e.g. form inside details) */
-[data-border-style]:not([data-border-style="clean"]) :is(details, fieldset) :is(form, fieldset, table) {
+/* Prevent border doubling when containers are nested (e.g. form inside details).
+   Must include .card in the target :is() to match auto-apply specificity (0,3,0 → 0,3,1). */
+[data-border-style]:not([data-border-style="clean"]) :is(details, fieldset) :is(
+  article, .card, blockquote, form, table, fieldset,
+  .preview-card, .preview-form, .preview-table,
+  .preview-code, .preview-list,
+  .border-card, .vignette
+) {
   border-width: 0;
   border-style: none;
   border-image: none;

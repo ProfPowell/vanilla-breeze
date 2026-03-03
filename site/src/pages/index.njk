@@ -209,6 +209,114 @@ permalink: /
     padding: var(--size-l) !important;
   }
 
+  /*
+   * Isolate PE demo content from active theme effects.
+   * Unlayered CSS here beats all layered theme styles.
+   */
+  .pe-panel output:not(.pe-unstyled) {
+    /* Reset theme heading decorations (kawaii ✿/★, brutalist bg/underline) */
+    & :is(h1, h2, h3) {
+      color: var(--color-text);
+      background: none;
+      padding: 0;
+      width: auto;
+      text-transform: none;
+      text-decoration: none;
+      border: none;
+    }
+
+    & :is(h1, h2, h3)::before,
+    & :is(h1, h2, h3)::after {
+      content: none;
+    }
+
+    /* Reset theme button overrides (kawaii gradient, brutalist shadows) */
+    & button,
+    & .button {
+      background: var(--color-primary);
+      border: none;
+      border-radius: var(--radius-m);
+      box-shadow: none;
+      color: white;
+      font-family: inherit;
+      text-transform: none;
+      transform: none;
+    }
+
+    & button.secondary,
+    & .button.secondary {
+      background: transparent;
+      color: var(--color-text);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+
+    & button.ghost,
+    & .button.ghost {
+      background: transparent;
+      color: var(--color-text);
+      border: none;
+    }
+
+    /* Reset details/form border decorations */
+    & details {
+      border-radius: var(--radius-m);
+      border-image: none;
+      box-shadow: none;
+      filter: none;
+      overflow: visible;
+    }
+
+    & details :is(form, fieldset, table) {
+      border: none;
+      box-shadow: none;
+    }
+
+    /* Reset section borders (kawaii adds border-radius to sections) */
+    & section {
+      border-radius: 0;
+      border: none;
+    }
+
+    /* Reset link decorations */
+    & a:not([class])::after {
+      content: none;
+    }
+  }
+
+  /* Force neutral component theming inside PE demos */
+  .pe-panel code-block {
+    --cb-bg: initial;
+    --cb-code-bg: initial;
+    --cb-header-bg: initial;
+    --cb-text-color: initial;
+    --cb-border-color: initial;
+    --cb-label-color: initial;
+    --cb-border-radius: initial;
+    --cb-comment: initial;
+    --cb-keyword: initial;
+    --cb-string: initial;
+    --cb-function: initial;
+    --cb-number: initial;
+    --cb-tag: initial;
+    --cb-attribute: initial;
+    --cb-button-bg: initial;
+    --cb-button-color: initial;
+    --cb-button-border: initial;
+    --cb-scrollbar-track: initial;
+    --cb-scrollbar-thumb: initial;
+  }
+
+  .pe-panel browser-window {
+    --browser-window-bg: initial;
+    --browser-window-header-bg: initial;
+    --browser-window-content-bg: initial;
+    --browser-window-border-color: initial;
+    --browser-window-border-radius: initial;
+    --browser-window-text-color: initial;
+    --browser-window-text-muted: initial;
+    --browser-window-url-bg: initial;
+  }
+
   /* Theme Showcase */
   .theme-section {
     padding-block: var(--size-2xl);
@@ -327,6 +435,8 @@ permalink: /
     display: grid;
     grid-row: span 3;
     grid-template-rows: subgrid;
+    justify-items: center;
+    text-align: center;
   }
 
   @supports not (grid-template-rows: subgrid) {
@@ -555,7 +665,7 @@ permalink: /
         <figure class="pe-panel">
           <code-block language="html" label="Add one stylesheet">&lt;link rel="stylesheet" href="vanilla-breeze.css"&gt;</code-block>
           <browser-window url="settings.html">
-            <output>
+            <output data-border-style="clean">
               <section data-layout="stack">
                 <h3>Settings</h3>
                 <details name="settings-css">
@@ -608,7 +718,7 @@ permalink: /
         <figure class="pe-panel">
           <code-block language="html" label="Add one script">&lt;script type="module" src="vanilla-breeze.js"&gt;&lt;/script&gt;</code-block>
           <browser-window url="settings.html">
-            <output>
+            <output data-border-style="clean">
               <section data-layout="stack">
                 <h3>Settings</h3>
                 <accordion-wc>
