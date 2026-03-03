@@ -4,12 +4,18 @@
  * Activate with: <html data-backdrop>
  * Presets: data-backdrop (default) | data-backdrop="flush" | data-backdrop="elevated"
  *
- * Makes <main> float as an elevated canvas above the page background.
- * Composes with data-page-layout (main keeps its grid-area) and data-fluid.
- * On mobile (<640px) the canvas goes flush — no elevation, no border-radius.
+ * Makes semantic regions (main, header, footer, nav, aside) float as elevated
+ * canvases above the page background. Main gets prominent shadow; header/footer
+ * get subtle shadow; nav/aside get medium shadow.
  *
- * DOM structure: <html data-backdrop> > <body> > <main>
- * With page layout: <html data-backdrop> > <body data-page-layout> > <main>
+ * Canvas shape inherits from theme tokens — --radius-l, --shadow-lg, etc. —
+ * so Swiss (sharp), Brutalist (hard offset), Organic (rounded) all work
+ * automatically with zero per-theme CSS.
+ *
+ * Composes with data-page-layout (regions keep their grid-areas) and data-fluid.
+ * On mobile (<640px) all canvases go flush — no elevation, no border-radius.
+ *
+ * DOM structure: <html data-backdrop> > <body> > <main|header|footer|nav|aside>
  */
 
 /* ========================================
@@ -17,11 +23,11 @@
  * ======================================== */
 [data-backdrop] {
   --canvas-width: 860px;
-  --canvas-radius: 12px;
-  --canvas-shadow:
-    0 1px 2px oklch(0% 0 0 / 0.04),
-    0 4px 8px oklch(0% 0 0 / 0.06),
-    0 12px 24px oklch(0% 0 0 / 0.08);
+  --canvas-radius: var(--radius-l);
+  --canvas-shadow: var(--shadow-lg);
+  --canvas-shadow-subtle: var(--shadow-sm);
+  --canvas-shadow-medium: var(--shadow-md);
+  --canvas-gap: var(--size-l, 1.5rem);
   --canvas-padding-inline: var(--size-l, 1.5rem);
   --canvas-padding-block: var(--size-l, 1.5rem);
   --canvas-bg: var(--color-surface, #fff);
@@ -34,54 +40,118 @@
 }
 
 /* ========================================
- * Default Preset — elevation styles on main
- * Applies background, shadow, radius, padding.
- * Centering (max-width + margin) only when no page-layout grid.
+ * Body padding — background peeks around region edges
  * ======================================== */
-:root[data-backdrop] > body > main {
+:root[data-backdrop] > body {
+  padding: var(--canvas-gap);
+}
+
+/* ========================================
+ * Grid gap — increase when backdrop is active
+ * Layouts with explicit gap: 0 (app-shell, dashboard) are unaffected
+ * because they set the gap property directly, bypassing this variable.
+ * Explicit data-layout-gap modifiers set --_layout-gap on the body,
+ * which overrides this inherited value.
+ * ======================================== */
+[data-backdrop] {
+  --_layout-gap: var(--canvas-gap);
+}
+
+/* ========================================
+ * Elevation styles on all semantic regions
+ * Shared: background, radius, inline padding
+ * Per-region: shadow level, main also gets block padding
+ * ======================================== */
+:root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
   background: var(--canvas-bg);
   border-radius: var(--canvas-radius);
-  box-shadow: var(--canvas-shadow);
   padding-inline: var(--canvas-padding-inline);
+}
+
+/* Main: prominent shadow + vertical padding (primary reading surface) */
+:root[data-backdrop] > body > main {
+  box-shadow: var(--canvas-shadow);
   padding-block: var(--canvas-padding-block);
 }
 
-/* Without page-layout: main is in normal flow — add centering */
-:root[data-backdrop] > body:not([data-page-layout]) > main {
+/* Header, Footer: subtle shadow (chrome, not content) */
+:root[data-backdrop] > body > header,
+:root[data-backdrop] > body > footer {
+  box-shadow: var(--canvas-shadow-subtle);
+}
+
+/* Nav, Aside: medium shadow (secondary panels) */
+:root[data-backdrop] > body > nav,
+:root[data-backdrop] > body > aside {
+  box-shadow: var(--canvas-shadow-medium);
+}
+
+/* ========================================
+ * Centering for non-grid layouts
+ * Without page-layout: regions are in normal flow — add centering
+ * ======================================== */
+:root[data-backdrop] > body:not([data-page-layout]) > :is(main, header, footer) {
   width: 100%;
   max-width: var(--canvas-width);
   margin-inline: auto;
 }
 
 /* ========================================
+ * Vertical spacing for non-grid layouts
+ * Adjacent regions get gap via margin (grid layouts use gap instead)
+ * ======================================== */
+:root[data-backdrop] > body:not([data-page-layout]) > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+  margin-block-start: var(--canvas-gap);
+}
+
+/* ========================================
  * Flush Preset
- * No shadow or radius — just centering with rich background visible
+ * No shadow, no radius, no gaps — just centering with rich background
  * ======================================== */
 [data-backdrop="flush"] {
   --canvas-radius: 0;
   --canvas-shadow: none;
+  --canvas-shadow-subtle: none;
+  --canvas-shadow-medium: none;
+  --canvas-gap: 0;
 }
 
 /* ========================================
  * Elevated Preset
- * 16px radius, dramatic shadow, stronger float
+ * Larger radius, dramatic shadow, wider gaps
  * ======================================== */
 [data-backdrop="elevated"] {
-  --canvas-radius: 16px;
-  --canvas-shadow:
-    0 1px 3px oklch(0% 0 0 / 0.06),
-    0 8px 16px oklch(0% 0 0 / 0.08),
-    0 24px 48px oklch(0% 0 0 / 0.12);
+  --canvas-radius: var(--radius-xl);
+  --canvas-shadow: var(--shadow-xl);
+  --canvas-shadow-subtle: var(--shadow-md);
+  --canvas-shadow-medium: var(--shadow-lg);
+  --canvas-gap: var(--size-xl, 2rem);
 }
 
 /* ========================================
  * Mobile: flush regardless of preset
+ * All regions go edge-to-edge, no body padding
  * ======================================== */
 @media (max-width: 640px) {
-  :root[data-backdrop] > body > main {
+  :root[data-backdrop] > body {
+    padding: 0;
+  }
+
+  :root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
     max-width: none;
     border-radius: 0;
     box-shadow: none;
+  }
+
+  :root[data-backdrop] > body > main {
     padding-inline: var(--size-m, 1rem);
+  }
+
+  :root[data-backdrop] > body:not([data-page-layout]) > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+    margin-block-start: 0;
+  }
+
+  :root[data-backdrop] > body[data-page-layout] {
+    gap: var(--_layout-gap, var(--size-m));
   }
 }
