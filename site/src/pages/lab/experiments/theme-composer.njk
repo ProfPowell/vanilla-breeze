@@ -685,6 +685,33 @@ permalink: /docs/tools/theme-composer/
             <option value="mesh">Mesh</option>
           </select>
         </label>
+        <hr style="border: none; border-block-start: 1px solid var(--color-border-subtle, #eee); margin-block: var(--size-xs, 0.5rem);">
+        <strong style="font-size: var(--font-size-xs, 0.75rem); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted, #666);">Page Background</strong>
+        <label>Type
+          <select id="page-bg-type">
+            <option value="none">None</option>
+            <option value="solid">Solid</option>
+            <option value="gradient">Gradient</option>
+          </select>
+        </label>
+        <label data-page-bg-field="solid">Color
+          <input type="color" id="page-bg-color" value="#1a1a2e">
+        </label>
+        <label data-page-bg-field="gradient">Gradient Start
+          <input type="color" id="page-bg-grad-start" value="#1a1a2e">
+        </label>
+        <label data-page-bg-field="gradient">Gradient End
+          <input type="color" id="page-bg-grad-end" value="#16213e">
+        </label>
+        <label data-page-bg-field="gradient">Direction
+          <select id="page-bg-grad-direction">
+            <option value="to bottom">Top to Bottom</option>
+            <option value="to right">Left to Right</option>
+            <option value="to bottom right">Diagonal</option>
+            <option value="radial">Radial</option>
+            <option value="conic">Conic</option>
+          </select>
+        </label>
       </div>
     </details>
 
@@ -953,7 +980,7 @@ const DEFAULTS = {
   shape: { radiusPreset: 'default', borderWidth: 1 },
   borderStyle: 'clean',
   iconSet: 'lucide',
-  surfaces: { texture: 'none', textureOpacity: 0.03, glassBlur: 0, gradient: 'none' },
+  surfaces: { texture: 'none', textureOpacity: 0.03, glassBlur: 0, gradient: 'none', pageBgType: 'none', pageBgColor: '#1a1a2e', pageBgGradStart: '#1a1a2e', pageBgGradEnd: '#16213e', pageBgGradDirection: 'to bottom' },
   shadows: { preset: 'default' },
   motion: { durationScale: 1, easingPreset: 'default', hoverLift: 'default', hoverGlow: false, enterAnimation: 'none' },
 };
@@ -1245,6 +1272,36 @@ function wireControls() {
     updatePreview();
   });
 
+  // Page Background
+  function updatePageBgFieldVisibility() {
+    const type = state.surfaces.pageBgType;
+    document.querySelectorAll('[data-page-bg-field]').forEach(el => {
+      el.style.display = el.dataset.pageBgField === type ? '' : 'none';
+    });
+  }
+  document.getElementById('page-bg-type').addEventListener('change', e => {
+    state.surfaces.pageBgType = e.target.value;
+    updatePageBgFieldVisibility();
+    updatePreview();
+  });
+  document.getElementById('page-bg-color').addEventListener('input', e => {
+    state.surfaces.pageBgColor = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('page-bg-grad-start').addEventListener('input', e => {
+    state.surfaces.pageBgGradStart = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('page-bg-grad-end').addEventListener('input', e => {
+    state.surfaces.pageBgGradEnd = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('page-bg-grad-direction').addEventListener('change', e => {
+    state.surfaces.pageBgGradDirection = e.target.value;
+    updatePreview();
+  });
+  updatePageBgFieldVisibility();
+
   // Shadows
   document.querySelectorAll('input[name="shadow-preset"]').forEach(r => {
     r.addEventListener('change', () => { state.shadows.preset = r.value; updatePreview(); });
@@ -1511,6 +1568,12 @@ function syncControlsToState() {
   document.getElementById('glass-blur').value = state.surfaces.glassBlur;
   document.getElementById('glass-blur-out').textContent = state.surfaces.glassBlur + 'px';
   document.getElementById('surface-gradient').value = state.surfaces.gradient;
+  document.getElementById('page-bg-type').value = state.surfaces.pageBgType;
+  document.getElementById('page-bg-color').value = state.surfaces.pageBgColor;
+  document.getElementById('page-bg-grad-start').value = state.surfaces.pageBgGradStart;
+  document.getElementById('page-bg-grad-end').value = state.surfaces.pageBgGradEnd;
+  document.getElementById('page-bg-grad-direction').value = state.surfaces.pageBgGradDirection;
+  if (typeof updatePageBgFieldVisibility === 'function') updatePageBgFieldVisibility();
 
   const shadPre = document.querySelector(`input[name="shadow-preset"][value="${state.shadows.preset}"]`);
   if (shadPre) shadPre.checked = true;
@@ -1800,7 +1863,7 @@ function generateThemeCSS() {
   }
 
   // Surfaces
-  const surfChanged = state.surfaces.texture !== 'none' || state.surfaces.glassBlur > 0;
+  const surfChanged = state.surfaces.texture !== 'none' || state.surfaces.glassBlur > 0 || state.surfaces.gradient !== 'none' || state.surfaces.pageBgType !== 'none';
   if (surfChanged) {
     css += `\n  /* ===== SURFACES ===== */\n`;
     if (state.surfaces.texture !== 'none') {
@@ -1809,6 +1872,23 @@ function generateThemeCSS() {
     }
     if (state.surfaces.glassBlur > 0) {
       css += `  --glass-blur: ${state.surfaces.glassBlur}px;\n`;
+    }
+    if (state.surfaces.gradient !== 'none') {
+      css += `  --gradient-subtle: var(--gradient-${state.surfaces.gradient});\n`;
+    }
+    if (state.surfaces.pageBgType === 'solid') {
+      css += `  --page-bg-color: ${state.surfaces.pageBgColor};\n`;
+    } else if (state.surfaces.pageBgType === 'gradient') {
+      const dir = state.surfaces.pageBgGradDirection;
+      const start = state.surfaces.pageBgGradStart;
+      const end = state.surfaces.pageBgGradEnd;
+      if (dir === 'radial') {
+        css += `  --page-bg-gradient: radial-gradient(ellipse at center, ${start}, ${end});\n`;
+      } else if (dir === 'conic') {
+        css += `  --page-bg-gradient: conic-gradient(from 0deg, ${start}, ${end}, ${start});\n`;
+      } else {
+        css += `  --page-bg-gradient: linear-gradient(${dir}, ${start}, ${end});\n`;
+      }
     }
   }
 
