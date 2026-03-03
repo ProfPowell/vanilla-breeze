@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Backdrop — Page Canvas Concept Demo</title>
+  <title>Backdrop — Page Canvas Test Harness</title>
   <link rel="stylesheet" href="/cdn/vanilla-breeze.css"/>
   <link rel="stylesheet" href="/cdn/themes/swiss.css"/>
   <link rel="stylesheet" href="/cdn/themes/brutalist.css"/>
+  <link rel="stylesheet" href="/cdn/themes/kawaii.css"/>
   <link rel="stylesheet" href="/cdn/themes/cyber.css"/>
   <link rel="stylesheet" href="/cdn/themes/midnight.css"/>
   <link rel="stylesheet" href="/cdn/themes/dracula.css"/>
@@ -16,12 +17,19 @@
   <link rel="stylesheet" href="/cdn/themes/glassmorphism.css"/>
   <link rel="stylesheet" href="/cdn/themes/organic.css"/>
   <style>
-    /* ===== Toolbar bars — demo controls, not page content ===== */
-    .toolbar {
-      position: sticky;
+    /* ===== Fixed toolbar container — outside grid flow ===== */
+    .toolbar-container {
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 100;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== Toolbar rows ===== */
+    .toolbar {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -67,7 +75,6 @@
 
     /* Secondary toolbar rows — slightly less prominent */
     .toolbar-secondary {
-      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -111,14 +118,42 @@
       color: oklch(95% 0 0);
     }
 
+    .toolbar-secondary label {
+      font-size: var(--font-size-xs);
+      color: oklch(70% 0 0);
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs);
+    }
+
+    .toolbar-secondary input[type="range"] {
+      width: 120px;
+      accent-color: oklch(70% 0.15 195);
+    }
+
+    .toolbar-secondary output {
+      font-size: var(--font-size-xs);
+      color: oklch(80% 0 0);
+      font-family: var(--font-mono);
+      min-width: 3ch;
+      text-align: right;
+    }
+
+    /* ===== Override VB display rules on hidden nav/aside ===== */
+    nav[hidden],
+    aside[hidden] {
+      display: none !important;
+    }
+
     /* ===== Body base styles ===== */
     body {
       margin: 0;
       min-block-size: 100vh;
       transition: background-color 0.6s ease, background-image 0.6s ease;
+      padding-block-start: calc(var(--toolbar-offset, 0px) + var(--canvas-gap, 0px)) !important;
     }
 
-    /* ===== Page header — elevated canvas region ===== */
+    /* ===== Page header ===== */
     header {
       padding-block: var(--size-l);
     }
@@ -136,12 +171,107 @@
       margin: 0;
     }
 
-    /* ===== Main canvas — view transition for smooth theme switching ===== */
+    /* ===== Nav sidebar ===== */
+    nav {
+      padding: var(--size-m);
+    }
+
+    nav strong {
+      display: block;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-s);
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-2xs);
+    }
+
+    nav a {
+      display: block;
+      padding: var(--size-2xs) var(--size-s);
+      border-radius: var(--radius-s);
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      transition: background 0.15s ease;
+    }
+
+    nav a:hover {
+      background: var(--color-surface-alt, var(--color-surface-raised));
+    }
+
+    /* ===== Main canvas ===== */
     main {
       view-transition-name: canvas;
     }
 
-    /* ===== Page footer — elevated canvas region ===== */
+    /* ===== Aside sidebar ===== */
+    aside {
+      padding: var(--size-m);
+    }
+
+    aside section {
+      margin-block-end: var(--size-l);
+    }
+
+    aside section:last-child {
+      margin-block-end: 0;
+    }
+
+    aside h3 {
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-s);
+    }
+
+    aside dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--size-2xs) var(--size-s);
+      font-size: var(--font-size-sm);
+    }
+
+    aside dt {
+      color: var(--color-text-muted);
+    }
+
+    aside dd {
+      margin: 0;
+      font-weight: 600;
+      text-align: end;
+    }
+
+    aside ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-2xs);
+    }
+
+    aside a {
+      font-size: var(--font-size-sm);
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    aside a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== Footer ===== */
     footer {
       padding-block: var(--size-m);
       font-size: var(--font-size-sm);
@@ -260,9 +390,10 @@
       color: oklch(80% 0 0);
       font-family: var(--font-mono);
       font-size: var(--font-size-xs);
-      max-inline-size: 320px;
+      max-inline-size: 380px;
       z-index: 100;
       transition: opacity 0.3s ease;
+      line-height: 1.6;
     }
 
     .token-info code {
@@ -300,46 +431,76 @@
 </head>
 <body>
 
-  <!-- Demo controls — divs, not semantic regions, so backdrop doesn't elevate them -->
-  <div class="toolbar" role="toolbar" aria-label="Theme switcher">
-    <span>Theme</span>
-    <button data-theme-pick="" aria-pressed="true">Default</button>
-    <button data-theme-pick="swiss" aria-pressed="false">Swiss</button>
-    <button data-theme-pick="brutalist" aria-pressed="false">Brutalist</button>
-    <button data-theme-pick="cyber" aria-pressed="false">Cyber</button>
-    <button data-theme-pick="midnight" aria-pressed="false">Midnight</button>
-    <button data-theme-pick="dracula" aria-pressed="false">Dracula</button>
-    <button data-theme-pick="vaporwave" aria-pressed="false">Vaporwave</button>
-    <button data-theme-pick="nord" aria-pressed="false">Nord</button>
-    <button data-theme-pick="genai" aria-pressed="false">GenAI</button>
-    <button data-theme-pick="glassmorphism" aria-pressed="false">Glass</button>
-    <button data-theme-pick="organic" aria-pressed="false">Organic</button>
+  <!-- Fixed toolbar overlay — outside grid flow -->
+  <div class="toolbar-container" id="toolbar-container">
+    <div class="toolbar" role="toolbar" aria-label="Theme switcher">
+      <span>Theme</span>
+      <button data-theme-pick="" aria-pressed="true">Default</button>
+      <button data-theme-pick="swiss" aria-pressed="false">Swiss</button>
+      <button data-theme-pick="brutalist" aria-pressed="false">Brutalist</button>
+      <button data-theme-pick="kawaii" aria-pressed="false">Kawaii</button>
+      <button data-theme-pick="cyber" aria-pressed="false">Cyber</button>
+      <button data-theme-pick="midnight" aria-pressed="false">Midnight</button>
+      <button data-theme-pick="dracula" aria-pressed="false">Dracula</button>
+      <button data-theme-pick="vaporwave" aria-pressed="false">Vaporwave</button>
+      <button data-theme-pick="nord" aria-pressed="false">Nord</button>
+      <button data-theme-pick="genai" aria-pressed="false">GenAI</button>
+      <button data-theme-pick="glassmorphism" aria-pressed="false">Glass</button>
+      <button data-theme-pick="organic" aria-pressed="false">Organic</button>
+    </div>
+
+    <div class="toolbar-secondary" role="toolbar" aria-label="Page layout">
+      <span>Layout</span>
+      <button data-layout-pick="none" aria-pressed="true">None</button>
+      <button data-layout-pick="stack" aria-pressed="false">Stack</button>
+      <button data-layout-pick="sidebar-left" aria-pressed="false">Sidebar Left</button>
+      <button data-layout-pick="sidebar-right" aria-pressed="false">Sidebar Right</button>
+      <button data-layout-pick="holy-grail" aria-pressed="false">Holy Grail</button>
+    </div>
+
+    <div class="toolbar-secondary" role="toolbar" aria-label="Backdrop preset">
+      <span>Backdrop</span>
+      <button data-preset="default" aria-pressed="true">Default</button>
+      <button data-preset="flush" aria-pressed="false">Flush</button>
+      <button data-preset="elevated" aria-pressed="false">Elevated</button>
+    </div>
+
+    <div class="toolbar-secondary" role="toolbar" aria-label="Background mode">
+      <span>Background</span>
+      <button data-bg-mode="theme" aria-pressed="true">Theme Gradient</button>
+      <button data-bg-mode="photo-fixed" aria-pressed="false">Photo (Fixed)</button>
+      <button data-bg-mode="photo-overlay" aria-pressed="false">Photo + Overlay</button>
+      <button data-bg-mode="photo-blur" aria-pressed="false">Photo (Blur)</button>
+      <button data-bg-mode="texture" aria-pressed="false">Texture</button>
+      <button data-bg-mode="dual" aria-pressed="false">Photo + Gradient</button>
+    </div>
+
+    <div class="toolbar-secondary" role="toolbar" aria-label="Gap control">
+      <span>Gap</span>
+      <label>
+        <input type="range" id="gap-slider" min="0" max="48" value="24" step="4"/>
+        <output id="gap-output">24px</output>
+      </label>
+    </div>
   </div>
 
-  <div class="toolbar-secondary" role="toolbar" aria-label="Background mode">
-    <span>Background</span>
-    <button data-bg-mode="theme" aria-pressed="true">Theme Gradient</button>
-    <button data-bg-mode="photo-fixed" aria-pressed="false">Photo (Fixed)</button>
-    <button data-bg-mode="photo-overlay" aria-pressed="false">Photo + Overlay</button>
-    <button data-bg-mode="photo-blur" aria-pressed="false">Photo (Blur)</button>
-    <button data-bg-mode="texture" aria-pressed="false">Texture</button>
-    <button data-bg-mode="dual" aria-pressed="false">Photo + Gradient</button>
-  </div>
-
-  <div class="toolbar-secondary" role="toolbar" aria-label="Backdrop preset">
-    <span>Backdrop</span>
-    <button data-preset="default" aria-pressed="true">Default</button>
-    <button data-preset="flush" aria-pressed="false">Flush</button>
-    <button data-preset="elevated" aria-pressed="false">Elevated</button>
-  </div>
-
-  <!-- Page header — elevated canvas with subtle shadow -->
+  <!-- Semantic regions — grid children when data-page-layout is set -->
   <header>
     <h1>The Page Canvas</h1>
     <p>Content floats above a rich, expressive background layer. The canvas is the sheet; the backdrop is the environment.</p>
   </header>
 
-  <!-- Main content — elevated canvas with prominent shadow -->
+  <nav hidden>
+    <strong>Navigation</strong>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Projects</a></li>
+      <li><a href="#">Analytics</a></li>
+      <li><a href="#">Team</a></li>
+      <li><a href="#">Settings</a></li>
+    </ul>
+  </nav>
+
   <main>
     <section>
       <h2>Dashboard</h2>
@@ -374,15 +535,15 @@
         </div>
         <div class="feature-card">
           <h3>Multi-Region Elevation</h3>
-          <p>Header, main, and footer all float as separate canvas regions.</p>
+          <p>Header, main, footer, nav, and aside all float as separate canvas regions.</p>
         </div>
         <div class="feature-card">
           <h3>Theme-Aware Shape</h3>
           <p>Radius and shadow inherit from theme tokens — Swiss: sharp, Brutalist: offset, Organic: round.</p>
         </div>
         <div class="feature-card">
-          <h3>Responsive</h3>
-          <p>Full-width on mobile, elevated sheet on tablet and above.</p>
+          <h3>Layout Integration</h3>
+          <p>Works with data-page-layout grids — sidebar, holy-grail, and stack layouts.</p>
         </div>
       </div>
     </section>
@@ -395,41 +556,94 @@
     </blockquote>
   </main>
 
-  <!-- Page footer — elevated canvas with subtle shadow -->
+  <aside hidden>
+    <section>
+      <h3>Quick Stats</h3>
+      <dl>
+        <dt>Regions</dt>
+        <dd>5</dd>
+        <dt>Themes</dt>
+        <dd>12</dd>
+        <dt>Presets</dt>
+        <dd>3</dd>
+      </dl>
+    </section>
+    <section>
+      <h3>Related Links</h3>
+      <ul>
+        <li><a href="#">Backdrop Docs</a></li>
+        <li><a href="#">Theme Gallery</a></li>
+        <li><a href="#">Layout Guide</a></li>
+      </ul>
+    </section>
+  </aside>
+
   <footer>
-    <span>Vanilla Breeze &middot; Backdrop Canvas Demo</span>
-    <span>header + main + footer &rarr; three elevated regions</span>
+    <span>Vanilla Breeze &middot; Backdrop Canvas Test Harness</span>
+    <span id="region-description">header + main + footer &rarr; 3 elevated regions</span>
   </footer>
 
   <!-- Token info panel -->
   <div class="token-info" id="token-info">
-    <div>Active: <code id="token-display">--page-bg-type: solid</code></div>
+    <div>Theme: <code id="token-theme">default</code></div>
+    <div>Layout: <code id="token-layout">none</code></div>
+    <div>Backdrop: <code id="token-backdrop">default</code></div>
+    <div>BG: <code id="token-bg">theme gradient</code></div>
+    <div>Gap: <code id="token-gap">24px</code></div>
   </div>
 
   <script>
     const themeButtons = document.querySelectorAll('[data-theme-pick]');
+    const layoutButtons = document.querySelectorAll('[data-layout-pick]');
     const bgButtons = document.querySelectorAll('[data-bg-mode]');
     const presetButtons = document.querySelectorAll('[data-preset]');
-    const tokenDisplay = document.getElementById('token-display');
+    const gapSlider = document.getElementById('gap-slider');
+    const gapOutput = document.getElementById('gap-output');
+    const regionDescription = document.getElementById('region-description');
     const body = document.body;
     const root = document.documentElement;
+    const navEl = document.querySelector('nav');
+    const asideEl = document.querySelector('aside');
+    const toolbarContainer = document.getElementById('toolbar-container');
+
+    /* Token info displays */
+    const tokenTheme = document.getElementById('token-theme');
+    const tokenLayout = document.getElementById('token-layout');
+    const tokenBackdrop = document.getElementById('token-backdrop');
+    const tokenBg = document.getElementById('token-bg');
+    const tokenGap = document.getElementById('token-gap');
 
     let currentMode = 'theme';
+    let currentPreset = 'default';
+    let currentLayout = 'none';
 
     /* ===== Photo & texture sources ===== */
-    const PHOTO_URL = 'https://picsum.photos/id/1018/1920/1080'; /* mountain lake */
-    const PHOTO_URL_2 = 'https://picsum.photos/id/1036/1920/1080'; /* misty forest */
+    const PHOTO_URL = 'https://picsum.photos/id/1018/1920/1080';
+    const PHOTO_URL_2 = 'https://picsum.photos/id/1036/1920/1080';
 
-    /* SVG dot grid texture — clearly visible pattern */
     const TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1.5' fill='%23fff' opacity='0.15'/%3E%3C/svg%3E")`;
+
+    /* ===== Layout visibility map ===== */
+    const LAYOUT_VISIBILITY = {
+      'none':          { nav: true,  aside: true  },
+      'stack':         { nav: true,  aside: true  },
+      'sidebar-left':  { nav: false, aside: true  },
+      'sidebar-right': { nav: true,  aside: false },
+      'holy-grail':    { nav: false, aside: false },
+    };
+
+    /* ===== Preset gap defaults ===== */
+    const PRESET_GAPS = {
+      'default': 24,
+      'flush': 0,
+      'elevated': 32,
+    };
 
     /* ===== Background mode configs ===== */
     const bgModes = {
       'theme': {
-        apply() {
-          clearBgOverrides();
-        },
-        token: 'Theme --page-bg-gradient',
+        apply() { clearBgOverrides(); },
+        label: 'theme gradient',
       },
       'photo-fixed': {
         apply() {
@@ -439,7 +653,7 @@
           body.style.setProperty('--page-bg-size', 'cover');
           body.style.setProperty('--page-bg-position', 'center');
         },
-        token: '--page-bg-gradient: url(...) fixed',
+        label: 'photo (fixed)',
       },
       'photo-overlay': {
         apply() {
@@ -450,7 +664,7 @@
           body.style.setProperty('--page-bg-size', 'cover');
           body.style.setProperty('--page-bg-blend', 'overlay');
         },
-        token: '--page-bg-blend: overlay',
+        label: 'photo + overlay',
       },
       'photo-blur': {
         apply() {
@@ -461,7 +675,7 @@
           body.style.setProperty('--page-bg-size', 'cover');
           body.style.setProperty('--page-bg-position', 'center');
         },
-        token: '--page-bg-gradient: url(...) + blur',
+        label: 'photo (blur)',
       },
       'texture': {
         apply() {
@@ -470,7 +684,7 @@
           body.style.setProperty('--page-bg-size', '20px 20px');
           body.style.setProperty('--page-bg-color', 'oklch(12% 0.04 260)');
         },
-        token: '--page-bg-gradient: url(SVG texture)',
+        label: 'SVG texture',
       },
       'dual': {
         apply() {
@@ -480,7 +694,7 @@
           body.style.setProperty('--page-bg-attachment', 'fixed');
           body.style.setProperty('--page-bg-size', 'cover');
         },
-        token: 'gradient + photo composited',
+        label: 'photo + gradient',
       },
     };
 
@@ -496,17 +710,18 @@
 
     /* ===== Theme switching ===== */
     const themeTokenDescriptions = {
-      '': '--page-bg-type: solid (auto-generated)',
-      'swiss': '--radius: 0, --shadow: none (flat)',
-      'brutalist': '--radius: 0, --shadow: hard offset',
-      'cyber': '--page-bg-gradient: linear-gradient(135deg, ...)',
-      'midnight': '--page-bg-gradient: linear-gradient(180deg, ...)',
-      'dracula': '--page-bg-gradient: linear-gradient(180deg, ...)',
-      'vaporwave': '--page-bg-gradient: linear-gradient(to right, ...)',
-      'nord': '--page-bg-gradient: linear-gradient(180deg, ...)',
-      'genai': '--page-bg-gradient: radial-gradient(...) x3',
-      'glassmorphism': '--page-bg-gradient: radial-gradient(...) x3',
-      'organic': '--page-bg-gradient: linear-gradient(180deg, ...)',
+      '': 'default',
+      'swiss': 'swiss — flat, no radius, no shadow',
+      'brutalist': 'brutalist — hard offset shadow',
+      'kawaii': 'kawaii — pill radius, pink accents',
+      'cyber': 'cyber — neon gradient bg',
+      'midnight': 'midnight — deep blue gradient',
+      'dracula': 'dracula — dark purple gradient',
+      'vaporwave': 'vaporwave — retro gradient',
+      'nord': 'nord — arctic tones',
+      'genai': 'genai — radial mesh bg',
+      'glassmorphism': 'glassmorphism — frosted glass',
+      'organic': 'organic — warm earth tones',
     };
 
     function switchTheme(theme) {
@@ -517,7 +732,6 @@
           root.removeAttribute('data-theme');
         }
         themeButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.themePick === theme ? 'true' : 'false'));
-        /* Re-apply current bg mode (theme switch resets token values) */
         if (currentMode !== 'theme') {
           bgModes[currentMode].apply();
         }
@@ -531,6 +745,27 @@
       }
     }
 
+    /* ===== Layout switching ===== */
+    function switchLayout(layout) {
+      currentLayout = layout;
+
+      if (layout === 'none') {
+        body.removeAttribute('data-page-layout');
+      } else {
+        body.setAttribute('data-page-layout', layout);
+      }
+
+      const vis = LAYOUT_VISIBILITY[layout];
+      navEl.hidden = vis.nav;
+      asideEl.hidden = vis.aside;
+
+      layoutButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.layoutPick === layout ? 'true' : 'false'));
+
+      updateRegionDescription();
+      updateTokenDisplay();
+    }
+
+    /* ===== Background mode switching ===== */
     function switchBgMode(mode) {
       const apply = () => {
         currentMode = mode;
@@ -546,27 +781,70 @@
       }
     }
 
+    /* ===== Preset switching ===== */
     function switchPreset(preset) {
+      currentPreset = preset;
+
       if (preset === 'default') {
         root.setAttribute('data-backdrop', '');
       } else {
         root.dataset.backdrop = preset;
       }
+
       presetButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.preset === preset ? 'true' : 'false'));
+
+      /* Sync gap slider to preset default and remove inline override */
+      const gap = PRESET_GAPS[preset];
+      gapSlider.value = gap;
+      gapOutput.textContent = gap + 'px';
+      root.style.removeProperty('--canvas-gap');
+
+      updateTokenDisplay();
     }
 
+    /* ===== Gap slider ===== */
+    function handleGapInput() {
+      const val = gapSlider.value;
+      gapOutput.textContent = val + 'px';
+      root.style.setProperty('--canvas-gap', val + 'px');
+      updateTokenDisplay();
+    }
+
+    /* ===== Toolbar height tracking ===== */
+    function updateToolbarHeight() {
+      if (!toolbarContainer) return;
+      const h = toolbarContainer.offsetHeight;
+      root.style.setProperty('--toolbar-offset', h + 'px');
+    }
+
+    /* ===== Region description ===== */
+    function updateRegionDescription() {
+      const vis = LAYOUT_VISIBILITY[currentLayout];
+      const regions = ['header', 'main', 'footer'];
+      if (!vis.nav) regions.splice(1, 0, 'nav');
+      if (!vis.aside) regions.splice(regions.indexOf('footer'), 0, 'aside');
+      regionDescription.textContent = regions.join(' + ') + ' \u2192 ' + regions.length + ' elevated regions';
+    }
+
+    /* ===== Token info display ===== */
     function updateTokenDisplay() {
-      if (!tokenDisplay) return;
-      if (currentMode === 'theme') {
-        const theme = root.getAttribute('data-theme') || '';
-        tokenDisplay.textContent = themeTokenDescriptions[theme] || '--page-bg-type: solid (auto-generated)';
-      } else {
-        tokenDisplay.textContent = bgModes[currentMode].token;
-      }
+      const theme = root.getAttribute('data-theme') || '';
+      tokenTheme.textContent = themeTokenDescriptions[theme] || 'default';
+      tokenLayout.textContent = currentLayout;
+      tokenBackdrop.textContent = currentPreset;
+      tokenBg.textContent = bgModes[currentMode].label;
+
+      const gapVal = root.style.getPropertyValue('--canvas-gap');
+      tokenGap.textContent = gapVal || PRESET_GAPS[currentPreset] + 'px (preset)';
     }
 
+    /* ===== Event listeners ===== */
     themeButtons.forEach(btn => {
       btn.addEventListener('click', () => switchTheme(btn.dataset.themePick));
+    });
+
+    layoutButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchLayout(btn.dataset.layoutPick));
     });
 
     bgButtons.forEach(btn => {
@@ -576,6 +854,13 @@
     presetButtons.forEach(btn => {
       btn.addEventListener('click', () => switchPreset(btn.dataset.preset));
     });
+
+    gapSlider.addEventListener('input', handleGapInput);
+
+    /* ===== Init ===== */
+    updateToolbarHeight();
+    updateTokenDisplay();
+    window.addEventListener('resize', updateToolbarHeight);
   </script>
 </body>
 </html>
