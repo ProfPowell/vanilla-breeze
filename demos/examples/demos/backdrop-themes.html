@@ -243,6 +243,69 @@
       color: var(--color-text);
     }
 
+    /* ===== Background mode bar ===== */
+    .bg-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--size-xs);
+      padding: var(--size-2xs) var(--size-m);
+      background: oklch(0% 0 0 / 0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-block-end: 1px solid oklch(100% 0 0 / 0.06);
+      flex-wrap: wrap;
+    }
+
+    .bg-bar span {
+      font-size: var(--font-size-xs);
+      color: oklch(70% 0 0);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-inline-end: var(--size-xs);
+    }
+
+    .bg-bar button {
+      padding: var(--size-2xs) var(--size-s);
+      font: inherit;
+      font-size: var(--font-size-xs);
+      border-radius: var(--radius-s);
+      border: 1px solid oklch(100% 0 0 / 0.12);
+      background: oklch(100% 0 0 / 0.06);
+      color: oklch(75% 0 0);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .bg-bar button:hover {
+      background: oklch(100% 0 0 / 0.12);
+    }
+
+    .bg-bar button[aria-pressed="true"] {
+      background: oklch(100% 0 0 / 0.2);
+      border-color: oklch(100% 0 0 / 0.25);
+      color: oklch(95% 0 0);
+    }
+
+    /* ===== Blur overlay for photo-blur mode ===== */
+    body.bg-photo-blur::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: inherit;
+      filter: blur(8px) brightness(0.7);
+      transform: scale(1.05); /* prevent blur edge gaps */
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body.bg-photo-blur {
+      /* The background shows through the blur pseudo-element */
+      background-attachment: fixed;
+    }
+
     /* ===== Token info panel ===== */
     .token-info {
       position: fixed;
@@ -368,6 +431,17 @@
     <button data-theme-pick="organic" aria-pressed="false">Organic</button>
   </nav>
 
+  <!-- Background mode picker -->
+  <div class="bg-bar" role="toolbar" aria-label="Background mode">
+    <span>Background</span>
+    <button data-bg-mode="theme" aria-pressed="true">Theme Gradient</button>
+    <button data-bg-mode="photo-fixed" aria-pressed="false">Photo (Fixed)</button>
+    <button data-bg-mode="photo-overlay" aria-pressed="false">Photo + Overlay</button>
+    <button data-bg-mode="photo-blur" aria-pressed="false">Photo (Blur)</button>
+    <button data-bg-mode="texture" aria-pressed="false">Texture</button>
+    <button data-bg-mode="dual" aria-pressed="false">Photo + Gradient</button>
+  </div>
+
   <!-- Primary canvas with ghost card stack -->
   <div class="canvas-wrapper">
     <div class="ghost-card" aria-hidden="true"></div>
@@ -456,10 +530,96 @@
   </div>
 
   <script>
-    const buttons = document.querySelectorAll('[data-theme-pick]');
+    const themeButtons = document.querySelectorAll('[data-theme-pick]');
+    const bgButtons = document.querySelectorAll('[data-bg-mode]');
     const tokenDisplay = document.getElementById('token-display');
+    const body = document.body;
 
-    const tokenDescriptions = {
+    let currentMode = 'theme';
+
+    /* ===== Photo & texture sources ===== */
+    const PHOTO_URL = 'https://picsum.photos/id/1018/1920/1080'; /* mountain lake */
+    const PHOTO_URL_2 = 'https://picsum.photos/id/1036/1920/1080'; /* misty forest */
+
+    /* SVG topography texture (inline data URI) */
+    const TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='t' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.15'/%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.12'/%3E%3Ccircle cx='20' cy='20' r='6' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.08'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23t)'/%3E%3C/svg%3E")`;
+
+    /* ===== Background mode configs ===== */
+    const bgModes = {
+      'theme': {
+        apply() {
+          clearBgOverrides();
+        },
+        token: 'Theme --page-bg-gradient',
+      },
+      'photo-fixed': {
+        apply() {
+          clearBgOverrides();
+          body.style.setProperty('--page-bg-image', `url("${PHOTO_URL}")`);
+          body.style.setProperty('--page-bg-gradient', 'none');
+          body.style.setProperty('--page-bg-attachment', 'fixed');
+          body.style.setProperty('--page-bg-size', 'cover');
+          body.style.setProperty('--page-bg-position', 'center');
+        },
+        token: '--page-bg-image (fixed)',
+      },
+      'photo-overlay': {
+        apply() {
+          clearBgOverrides();
+          body.style.setProperty('--page-bg-image', `url("${PHOTO_URL_2}")`);
+          body.style.setProperty('--page-bg-gradient', 'none');
+          body.style.setProperty('--page-bg-color', 'oklch(30% 0.08 250)');
+          body.style.setProperty('--page-bg-attachment', 'fixed');
+          body.style.setProperty('--page-bg-blend', 'overlay');
+        },
+        token: '--page-bg-blend: overlay',
+      },
+      'photo-blur': {
+        apply() {
+          clearBgOverrides();
+          body.classList.add('bg-photo-blur');
+          body.style.setProperty('--page-bg-image', `url("${PHOTO_URL}")`);
+          body.style.setProperty('--page-bg-gradient', 'none');
+          body.style.setProperty('--page-bg-attachment', 'fixed');
+          body.style.setProperty('--page-bg-size', 'cover');
+        },
+        token: '--page-bg-image + CSS blur',
+      },
+      'texture': {
+        apply() {
+          clearBgOverrides();
+          body.style.setProperty('--page-bg-image', TEXTURE_SVG);
+          body.style.setProperty('--page-bg-gradient', 'none');
+          body.style.setProperty('--page-bg-size', '40px 40px');
+          body.style.setProperty('--page-bg-color', 'oklch(18% 0.02 260)');
+        },
+        token: '--page-bg-image (SVG texture)',
+      },
+      'dual': {
+        apply() {
+          clearBgOverrides();
+          /* Gradient on top of photo via background-image stacking */
+          body.style.setProperty('--page-bg-gradient',
+            `linear-gradient(to bottom, oklch(20% 0.1 280 / 0.7), oklch(10% 0.05 250 / 0.85)), url("${PHOTO_URL}")`);
+          body.style.setProperty('--page-bg-attachment', 'fixed');
+          body.style.setProperty('--page-bg-size', 'cover');
+        },
+        token: 'gradient + photo composited',
+      },
+    };
+
+    const bgTokenProps = [
+      '--page-bg-image', '--page-bg-gradient', '--page-bg-attachment',
+      '--page-bg-size', '--page-bg-position', '--page-bg-blend', '--page-bg-color',
+    ];
+
+    function clearBgOverrides() {
+      body.classList.remove('bg-photo-blur');
+      bgTokenProps.forEach(p => body.style.removeProperty(p));
+    }
+
+    /* ===== Theme switching ===== */
+    const themeTokenDescriptions = {
       '': '--page-bg-type: solid',
       'cyber': '--page-bg-gradient: linear-gradient(135deg, ...)',
       'midnight': '--page-bg-gradient: linear-gradient(180deg, ...)',
@@ -478,13 +638,14 @@
         } else {
           document.documentElement.removeAttribute('data-theme');
         }
-        buttons.forEach(b => b.setAttribute('aria-pressed', b.dataset.themePick === theme ? 'true' : 'false'));
-        if (tokenDisplay) {
-          tokenDisplay.textContent = tokenDescriptions[theme] || '--page-bg-type: solid';
+        themeButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.themePick === theme ? 'true' : 'false'));
+        /* Re-apply current bg mode (theme switch resets token values) */
+        if (currentMode !== 'theme') {
+          bgModes[currentMode].apply();
         }
+        updateTokenDisplay();
       };
 
-      // Use View Transitions API if available
       if (document.startViewTransition) {
         document.startViewTransition(apply);
       } else {
@@ -492,8 +653,37 @@
       }
     }
 
-    buttons.forEach(btn => {
+    function switchBgMode(mode) {
+      const apply = () => {
+        currentMode = mode;
+        bgModes[mode].apply();
+        bgButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.bgMode === mode ? 'true' : 'false'));
+        updateTokenDisplay();
+      };
+
+      if (document.startViewTransition) {
+        document.startViewTransition(apply);
+      } else {
+        apply();
+      }
+    }
+
+    function updateTokenDisplay() {
+      if (!tokenDisplay) return;
+      if (currentMode === 'theme') {
+        const theme = document.documentElement.getAttribute('data-theme') || '';
+        tokenDisplay.textContent = themeTokenDescriptions[theme] || '--page-bg-type: solid';
+      } else {
+        tokenDisplay.textContent = bgModes[currentMode].token;
+      }
+    }
+
+    themeButtons.forEach(btn => {
       btn.addEventListener('click', () => switchTheme(btn.dataset.themePick));
+    });
+
+    bgButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchBgMode(btn.dataset.bgMode));
     });
   </script>
 </body>
