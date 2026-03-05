@@ -795,17 +795,42 @@ browser-window {
   font-size: var(--font-size-sm);
 }
 
-/* Pack badges on element/attribute detail pages */
-.element-badge[data-type="pack"],
-.attribute-badge[data-type="pack"] {
-  display: inline-block;
+/* Pack badges — icon + text, outline style (distinct from solid category badges) */
+.pack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
   padding: var(--size-3xs) var(--size-xs);
-  border-radius: var(--radius-s);
+  border: var(--border-width-thin) solid var(--color-border-strong, oklch(60% 0 0));
+  border-radius: var(--radius-pill, 100px);
   font-size: var(--font-size-xs);
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: oklch(85% 0.12 310);
-  color: oklch(30% 0.12 310);
+  color: var(--color-text-muted);
+  background: transparent;
+  text-decoration: none;
   vertical-align: middle;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+
+  & icon-wc {
+    --icon-size: 0.9em;
+  }
+}
+
+a.pack-badge:hover {
+  border-color: var(--color-interactive);
+  color: var(--color-interactive);
+}
+
+/* Pack badge in h1 context — slightly larger */
+h1 .pack-badge {
+  font-size: var(--font-size-sm);
+  padding: var(--size-2xs) var(--size-s);
+}
+
+/* In card/entry contexts, don't stretch to full width */
+.element-entry .pack-badge,
+.attribute-entry .pack-badge {
+  align-self: flex-start;
 }
