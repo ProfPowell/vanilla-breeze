@@ -26,7 +26,7 @@
 import { ensureThemeLoaded } from './theme-loader.js';
 
 const STORAGE_KEY = 'vb-theme';
-const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '' };
+const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
 
 export const ThemeManager = {
   /**
@@ -84,7 +84,7 @@ export const ThemeManager = {
    * Apply theme to document root
    * @param {Partial<VBThemePrefs>} prefs
    */
-  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '', backdrop = '' } = {}) {
+  apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '', backdrop = '', backdropChrome = '', pageBgType = '', pageBgColor = '', pageBgGradStart = '', pageBgGradEnd = '', pageBgGradDir = '' } = {}) {
     const root = document.documentElement;
 
     // Apply mode
@@ -135,9 +135,29 @@ export const ThemeManager = {
       delete root.dataset.backdrop;
     }
 
+    // Backdrop chrome mode
+    if (backdropChrome && backdropChrome !== 'card') {
+      root.dataset.backdropChrome = backdropChrome;
+    } else {
+      delete root.dataset.backdropChrome;
+    }
+
+    // Page background overrides
+    if (pageBgType === 'color' && pageBgColor) {
+      root.style.setProperty('--page-bg-color', pageBgColor);
+      root.style.removeProperty('--page-bg-gradient');
+    } else if (pageBgType === 'gradient' && pageBgGradStart && pageBgGradEnd) {
+      const dir = pageBgGradDir || 'to bottom';
+      root.style.setProperty('--page-bg-gradient', `linear-gradient(${dir}, ${pageBgGradStart}, ${pageBgGradEnd})`);
+      root.style.removeProperty('--page-bg-color');
+    } else {
+      root.style.removeProperty('--page-bg-color');
+      root.style.removeProperty('--page-bg-gradient');
+    }
+
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('theme-change', {
-      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, backdropChrome, pageBgType, effectiveMode: this.getEffectiveMode() }
     }));
   },
 
@@ -204,6 +224,24 @@ export const ThemeManager = {
   },
 
   /**
+   * Set backdrop chrome mode
+   * @param {string} chrome - Chrome mode, space-separated ('' | 'card' | 'stretch' | 'integrated' | 'fixed' | 'stretch fixed' | etc.)
+   */
+  setBackdropChrome(chrome) {
+    const updated = this.save({ backdropChrome: chrome });
+    this.apply(updated);
+  },
+
+  /**
+   * Set page background override
+   * @param {{ type?: string, color?: string, gradStart?: string, gradEnd?: string, gradDir?: string }} opts
+   */
+  setPageBg({ type = '', color = '', gradStart = '', gradEnd = '', gradDir = '' } = {}) {
+    const updated = this.save({ pageBgType: type, pageBgColor: color, pageBgGradStart: gradStart, pageBgGradEnd: gradEnd, pageBgGradDir: gradDir });
+    this.apply(updated);
+  },
+
+  /**
    * Get current effective mode (resolves 'auto' to actual mode)
    * @returns {'light' | 'dark'}
    */
@@ -218,8 +256,8 @@ export const ThemeManager = {
    * @returns {VBThemeState}
    */
   getState() {
-    const { mode, brand, borderStyle, iconSet, fluid, backdrop } = this.load();
-    return { mode, brand, borderStyle, iconSet, fluid, backdrop, effectiveMode: this.getEffectiveMode() };
+    const { mode, brand, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = this.load();
+    return { mode, brand, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir, effectiveMode: this.getEffectiveMode() };
   },
 
   /**
@@ -241,6 +279,9 @@ export const ThemeManager = {
     } catch {
       // Ignore
     }
+    const root = document.documentElement;
+    root.style.removeProperty('--page-bg-color');
+    root.style.removeProperty('--page-bg-gradient');
     this.apply(DEFAULTS);
   },
 

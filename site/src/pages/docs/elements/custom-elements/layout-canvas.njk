@@ -1,0 +1,210 @@
+---
+layout: layouts/element.njk
+title: "layout-canvas"
+description: "Elevated surface container with background, radius, shadow, and padding. Use the data-canvas attribute on semantic elements or the layout-canvas wrapper element."
+elementName: layout-canvas
+category: custom
+currentPath: /docs/elements/custom-elements/layout-canvas/
+permalink: /docs/elements/custom-elements/layout-canvas/
+---
+
+{% set attrBasicCode %}<article data-canvas>
+  <h2>My Article</h2>
+  <p>Content with elevated surface styling.</p>
+</article>{% endset %}
+
+{% set elementBasicCode %}<layout-canvas>
+  <header>Page Header</header>
+  <main>
+    <p>Main content area wrapped in a canvas surface.</p>
+  </main>
+</layout-canvas>{% endset %}
+
+{% set flushCode %}<section data-canvas="flush">
+  <h2>Flush Canvas</h2>
+  <p>No border radius or shadow. Edge-to-edge surface.</p>
+</section>{% endset %}
+
+{% set elevatedCode %}<section data-canvas="elevated">
+  <h2>Elevated Canvas</h2>
+  <p>Larger radius and dramatic shadow for emphasis.</p>
+</section>{% endset %}
+
+{% set widthCode %}<article data-canvas data-layout-max="narrow">
+  <h2>Narrow Canvas</h2>
+  <p>Constrained to 45rem max width, centered on the page.</p>
+</article>
+
+<article data-canvas data-layout-max="content">
+  <h2>Content Width</h2>
+  <p>Constrained to 60rem max width.</p>
+</article>{% endset %}
+
+{% set nestedCode %}<article data-canvas>
+  <h2>Outer Canvas</h2>
+  <p>Primary surface background.</p>
+
+  <aside data-canvas>
+    <h3>Nested Canvas</h3>
+    <p>Automatically uses raised surface color for hierarchy.</p>
+  </aside>
+</article>{% endset %}
+
+{% set depthCode %}<article data-canvas data-canvas-depth="1">
+  <h2>Single Ghost Card</h2>
+  <p>One stacked paper shadow beneath the canvas.</p>
+</article>
+
+<article data-canvas data-canvas-depth="2">
+  <h2>Double Ghost Cards</h2>
+  <p>Two stacked paper shadows for extra depth.</p>
+</article>{% endset %}
+
+{% set multiCode %}<section data-layout="grid" data-layout-min="20rem">
+  <article data-canvas>
+    <h3>Canvas A</h3>
+    <p>Independent canvas region.</p>
+  </article>
+  <aside data-canvas="elevated">
+    <h3>Canvas B</h3>
+    <p>Elevated variant alongside.</p>
+  </aside>
+</section>{% endset %}
+
+<browser-window
+    src="/docs/examples/demos/layout-canvas.html"
+    url="https://vanilla-breeze.dev/canvas"
+    title="Canvas Layout Demo"
+    shadow>
+</browser-window>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-canvas</code></td>
+        <td><code>(empty)</code>, <code>flush</code>, <code>elevated</code></td>
+        <td><code>(empty)</code></td>
+        <td>Applies canvas surface styling. Value sets the variant.</td>
+      </tr>
+      <tr>
+        <td><code>data-variant</code></td>
+        <td><code>flush</code>, <code>elevated</code></td>
+        <td>-</td>
+        <td>Variant for the <code>&lt;layout-canvas&gt;</code> element form.</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-max</code></td>
+        <td><code>narrow</code>, <code>content</code>, <code>wide</code>, <code>prose</code></td>
+        <td>-</td>
+        <td>Maximum inline size constraint.</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-padding</code></td>
+        <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+        <td><code>l</code></td>
+        <td>Override default padding.</td>
+      </tr>
+      <tr>
+        <td><code>data-canvas-depth</code></td>
+        <td><code>1</code>, <code>2</code></td>
+        <td>-</td>
+        <td>Ghost card stacking effect (not available on flush).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <p><code>data-canvas</code> is an attribute you add to any semantic element to give it an elevated surface &mdash; background, border-radius, box-shadow, and padding. The <code>&lt;layout-canvas&gt;</code> custom element is an alternative wrapper for when you need a non-semantic container.</p>
+  <p>Both forms share the same CSS and consume the same <code>--canvas-*</code> design tokens used by <code>data-backdrop</code>, so theme overrides apply to both systems.</p>
+</section>
+
+<section>
+  <h2>Attribute Form (Preferred)</h2>
+  <p>Add <code>data-canvas</code> directly to a semantic element. No wrapper needed.</p>
+
+  <code-block language="html" show-lines label="Attribute form">{{ attrBasicCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Element Form</h2>
+  <p>Use <code>&lt;layout-canvas&gt;</code> when you need a non-semantic wrapper around multiple children.</p>
+
+  <code-block language="html" show-lines label="Element form">{{ elementBasicCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Variants</h2>
+
+  <h3>Flush</h3>
+  <p>No border radius or shadow. Edge-to-edge surface.</p>
+  <code-block language="html" show-lines label="Flush variant">{{ flushCode | escape }}</code-block>
+
+  <h3>Elevated</h3>
+  <p>Larger radius and dramatic shadow for emphasis.</p>
+  <code-block language="html" show-lines label="Elevated variant">{{ elevatedCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Width Constraints</h2>
+  <p>Use <code>data-layout-max</code> to constrain the canvas width. It auto-centers with <code>margin-inline: auto</code>.</p>
+
+  <code-block language="html" show-lines label="Width constraints">{{ widthCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Nested Canvases</h2>
+  <p>Nested canvases automatically use <code>--color-surface-raised</code> for visual hierarchy.</p>
+
+  <code-block language="html" show-lines label="Nested canvases">{{ nestedCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Ghost Card Depth</h2>
+  <p>Add stacked-paper shadows beneath the canvas for a layered effect. Not available on the flush variant.</p>
+
+  <code-block language="html" show-lines label="Ghost card depth">{{ depthCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Multiple Canvases</h2>
+  <p>Unlike <code>data-backdrop</code> which styles body-level regions implicitly, <code>data-canvas</code> works on any element &mdash; so you can have multiple independent canvases on the same page.</p>
+
+  <code-block language="html" show-lines label="Multiple canvases on one page">{{ multiCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Relationship to data-backdrop</h2>
+  <p><code>data-canvas</code> and <code>data-backdrop</code> are <strong>complementary</strong>:</p>
+  <ul>
+    <li><code>data-backdrop</code> styles <code>body &gt; main/header/footer/nav/aside</code> implicitly</li>
+    <li><code>data-canvas</code> is for explicit, per-element canvas surfaces</li>
+    <li>Both consume the same <code>--canvas-*</code> tokens</li>
+    <li>A page can use both simultaneously</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Mobile Behavior</h2>
+  <p>At <code>&lt;640px</code>, all canvases automatically go flush &mdash; no border radius, no shadow, reduced padding. This matches <code>data-backdrop</code> mobile behavior.</p>
+</section>
+
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> &mdash; Card container with header/body/footer regions</li>
+    <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; Vertical spacing layout</li>
+    <li><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> &mdash; Centering layout</li>
+  </ul>
+</section>

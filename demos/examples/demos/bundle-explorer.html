@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bundle Explorer — Vanilla Breeze</title>
+
+  <!-- Core VB -->
+  <link rel="stylesheet" href="/src/main.css">
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding-block: var(--size-xl, 2.5rem);
+      padding-inline: clamp(var(--size-m, 1rem), 5vw, var(--size-2xl, 4rem));
+      max-width: 1100px;
+      margin-inline: auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      max-width: 48ch;
+      margin-inline: auto;
+    }
+
+    /* ── Bundle Picker ──────────────────────────── */
+    .bundle-picker {
+      display: flex;
+      gap: var(--size-xs, 0.5rem);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-block-end: var(--size-xl, 2.5rem);
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+    }
+
+    .bundle-picker label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.6;
+      width: 100%;
+      text-align: center;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .bundle-btn {
+      padding: 0.5em 1.2em;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 2px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+      background: var(--color-surface, oklch(12% 0.02 260));
+      color: var(--color-text, oklch(90% 0.01 260));
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .bundle-btn:hover {
+      border-color: var(--color-primary, oklch(65% 0.25 260));
+    }
+
+    .bundle-btn[aria-pressed="true"] {
+      background: var(--color-primary, oklch(65% 0.25 260));
+      border-color: var(--color-primary, oklch(65% 0.25 260));
+      color: oklch(10% 0.02 0);
+    }
+
+    .bundle-btn[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Status Bar ─────────────────────────────── */
+    .status-bar {
+      display: flex;
+      gap: var(--size-m, 1rem);
+      align-items: center;
+      justify-content: center;
+      padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      background: var(--color-surface-sunken, oklch(8% 0.01 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+      margin-block-end: var(--size-xl, 2.5rem);
+      color: var(--color-text-muted, oklch(60% 0.02 260));
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: oklch(45% 0.01 260);
+    }
+
+    .status-dot[data-active] {
+      background: oklch(70% 0.25 145);
+      box-shadow: 0 0 6px oklch(70% 0.25 145 / 0.5);
+    }
+
+    /* ── Section styling ────────────────────────── */
+    section {
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    section > h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-block-end: var(--size-l, 1.5rem);
+      padding-block-end: var(--size-xs, 0.5rem);
+      border-block-end: 1px solid var(--color-border, oklch(32% 0.04 260));
+    }
+
+    /* ── Token Preview ──────────────────────────── */
+    .token-grid {
+      display: grid;
+      gap: var(--size-s, 0.75rem);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    }
+
+    .token-swatch {
+      padding: var(--size-m, 1rem);
+      border-radius: var(--radius-m, 6px);
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+    }
+
+    .swatch-color {
+      width: 100%;
+      height: 2.5rem;
+      border-radius: var(--radius-s, 4px);
+      margin-block-end: var(--size-xs, 0.5rem);
+      border: 1px solid oklch(50% 0 0 / 0.15);
+    }
+
+    .swatch-label {
+      opacity: 0.6;
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+    }
+
+    .swatch-value {
+      font-weight: 600;
+      margin-block-start: 2px;
+      word-break: break-all;
+    }
+
+    /* ── Effect Playground ───────────────────────── */
+    .effect-grid {
+      display: grid;
+      gap: var(--size-m, 1rem);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    }
+
+    .effect-card {
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+    }
+
+    .effect-card h3 {
+      font-size: 0.7rem;
+      font-family: var(--font-mono, monospace);
+      opacity: 0.5;
+      letter-spacing: 0.1em;
+      margin-block-end: var(--size-s, 0.75rem);
+    }
+
+    .effect-demo {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .neon-bg {
+      background: oklch(6% 0.015 260);
+      padding: var(--size-m, 1rem);
+      border-radius: var(--radius-m, 6px);
+    }
+
+    /* ── Component Playground ────────────────────── */
+    .component-grid {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+    }
+
+    .component-card {
+      padding: var(--size-l, 1.5rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+    }
+
+    .component-card h3 {
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      opacity: 0.5;
+      letter-spacing: 0.1em;
+      margin-block-end: var(--size-m, 1rem);
+    }
+
+    /* ── Empty state ────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: var(--size-2xl, 4rem) var(--size-m, 1rem);
+      opacity: 0.5;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+      max-width: 36ch;
+      margin-inline: auto;
+    }
+
+    /* ── Typography preview ─────────────────────── */
+    .type-preview {
+      display: grid;
+      gap: var(--size-s, 0.75rem);
+    }
+
+    .type-sample {
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 6px);
+    }
+
+    .type-label {
+      font-size: 0.6rem;
+      font-family: system-ui, sans-serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Bundle Explorer</h1>
+  <p>Load and compare Vanilla Breeze extension bundles. Each bundle adds its own theme tokens, CSS effects, and web components.</p>
+</header>
+
+<!-- Bundle Picker -->
+<nav class="bundle-picker" aria-label="Bundle selector">
+  <label>Select a bundle</label>
+  <button class="bundle-btn" aria-pressed="false" data-bundle="none">
+    None (Core Only)
+  </button>
+  <button class="bundle-btn" aria-pressed="true" data-bundle="retro">
+    Retro / CRT
+  </button>
+  <button class="bundle-btn" aria-pressed="false" data-bundle="kawaii">
+    Kawaii / Cute
+  </button>
+  <!-- Future bundles will be added here -->
+  <button class="bundle-btn" disabled title="Coming soon">
+    Synthwave
+  </button>
+</nav>
+
+<!-- Status Bar -->
+<div class="status-bar" aria-live="polite">
+  <span class="status-dot" data-active></span>
+  <span id="status-text">retro bundle loaded</span>
+  <span>&middot;</span>
+  <span id="status-files">theme + effects + components</span>
+</div>
+
+<!-- Token Preview -->
+<section id="tokens">
+  <h2>Active Tokens</h2>
+  <div class="token-grid" id="token-grid">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<!-- Typography Preview -->
+<section id="typography">
+  <h2>Typography</h2>
+  <div class="type-preview">
+    <article class="type-sample">
+      <p class="type-label">HEADING / DISPLAY</p>
+      <p style="font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; line-height: 1.05; font-family: var(--font-display, var(--font-mono, system-ui));">The Quick Brown Fox</p>
+    </article>
+    <article class="type-sample">
+      <p class="type-label">BODY / MONOSPACE</p>
+      <p style="font-size: 1rem; line-height: 1.5; font-family: var(--font-mono, monospace);">Sphinx of black quartz, judge my vow. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!</p>
+    </article>
+    <article class="type-sample">
+      <p class="type-label">UI CHROME</p>
+      <p style="display: flex; gap: var(--size-m, 1rem); flex-wrap: wrap;">
+        <button style="padding: 0.4em 1em; border: 1px solid var(--color-border); border-radius: var(--radius-m, 6px); background: var(--color-surface-raised); color: var(--color-text); font-size: 0.85rem; cursor: pointer;">Button</button>
+        <button style="padding: 0.4em 1em; border: 1px solid var(--color-primary); border-radius: var(--radius-m, 6px); background: var(--color-primary); color: oklch(10% 0 0); font-size: 0.85rem; cursor: pointer;">Primary</button>
+        <code style="padding: 0.2em 0.5em; background: var(--color-surface-sunken); border-radius: var(--radius-s, 3px); font-size: 0.8rem;">code sample</code>
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- Effects Playground -->
+<section id="effects">
+  <h2>Effects</h2>
+  <div class="effect-grid" id="effects-grid">
+    <div class="empty-state" id="effects-empty">
+      <p>Load a bundle to see its effects here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Components Playground -->
+<section id="components">
+  <h2>Components</h2>
+  <div class="component-grid" id="components-grid">
+    <div class="empty-state" id="components-empty">
+      <p>Load a bundle to see its components here.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- Core VB JS -->
+<script type="module" src="/src/main.js"></script>
+
+<script type="module">
+  // ─── Bundle registry ──────────────────────────────────────
+  // Maps bundle name to its CSS/JS paths and content builders.
+
+  const BUNDLES = {
+    retro: {
+      css: [
+        '/src/bundles/retro/retro.theme.css',
+        '/src/bundles/retro/retro.effects.css',
+      ],
+      js: [
+        '/src/bundles/retro/retro.effects.js',
+        '/src/bundles/retro/retro.components.js',
+      ],
+      theme: 'retro',
+      label: 'retro bundle loaded',
+      files: 'theme + effects + components',
+      buildEffects,
+      buildComponents,
+    },
+    kawaii: {
+      css: [
+        '/src/bundles/kawaii/kawaii.theme.css',
+        '/src/bundles/kawaii/kawaii.effects.css',
+      ],
+      js: [
+        '/src/bundles/kawaii/kawaii.effects.js',
+      ],
+      theme: 'kawaii',
+      label: 'kawaii bundle loaded',
+      files: 'theme + effects',
+      buildEffects: buildKawaiiEffects,
+      buildComponents: buildKawaiiComponents,
+    },
+    // Future bundles register here
+  }
+
+  // ─── State ────────────────────────────────────────────────
+  let activeBundle = null
+  const loadedCSS = []
+  const loadedJS = new Set()
+
+  // ─── Token inspector ──────────────────────────────────────
+  const TOKENS_TO_SHOW = [
+    { prop: '--color-primary',        label: 'Primary',       type: 'color' },
+    { prop: '--color-surface',        label: 'Surface',       type: 'color' },
+    { prop: '--color-surface-raised', label: 'Surface Raised',type: 'color' },
+    { prop: '--color-surface-sunken', label: 'Surface Sunken',type: 'color' },
+    { prop: '--color-text',           label: 'Text',          type: 'color' },
+    { prop: '--color-border',         label: 'Border',        type: 'color' },
+    { prop: '--radius-m',             label: 'Radius M',      type: 'value' },
+    { prop: '--font-mono',            label: 'Font Mono',     type: 'value' },
+  ]
+
+  function refreshTokens() {
+    const grid = document.getElementById('token-grid')
+    const style = getComputedStyle(document.body)
+    grid.innerHTML = TOKENS_TO_SHOW.map(t => {
+      const val = style.getPropertyValue(t.prop).trim() || '(not set)'
+      const colorBlock = t.type === 'color'
+        ? `<div class="swatch-color" style="background: var(${t.prop});"></div>`
+        : ''
+      return `
+        <div class="token-swatch">
+          ${colorBlock}
+          <p class="swatch-label">${t.prop}</p>
+          <p class="swatch-value">${val.length > 40 ? val.slice(0, 40) + '...' : val}</p>
+        </div>
+      `
+    }).join('')
+  }
+
+  // ─── Effects content builder (retro) ──────────────────────
+  function buildEffects() {
+    return `
+      <article class="effect-card neon-bg">
+        <h3>data-neon</h3>
+        <p class="effect-demo" data-neon>LASER</p>
+        <p style="margin-top: 0.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <span data-neon="pink" style="font-size: 1.2rem; font-weight: 700;">PINK</span>
+          <span data-neon="cyan" style="font-size: 1.2rem; font-weight: 700;">CYAN</span>
+          <span data-neon="amber" style="font-size: 1.2rem; font-weight: 700;">AMBER</span>
+        </p>
+      </article>
+      <article class="effect-card">
+        <h3>data-text-3d</h3>
+        <p class="effect-demo" data-text-3d>RADICAL</p>
+      </article>
+      <article class="effect-card">
+        <h3>data-outline</h3>
+        <p class="effect-demo" data-outline>HOLLOW</p>
+      </article>
+      <article class="effect-card">
+        <h3>data-blink</h3>
+        <p class="effect-demo">
+          <span data-blink>ALERT</span>
+          <span data-blink="fast">!</span>
+        </p>
+      </article>
+      <article class="effect-card">
+        <h3>data-retro-shadow</h3>
+        <p class="effect-demo" data-retro-shadow>TOUR</p>
+      </article>
+      <article class="effect-card">
+        <h3>data-rainbow</h3>
+        <p class="effect-demo" data-rainbow style="color: oklch(65% 0.28 0);">PRIDE</p>
+      </article>
+      <article class="effect-card">
+        <h3>data-flipboard</h3>
+        <p class="effect-demo" style="font-size: clamp(1.2rem, 3vw, 1.8rem);" data-flipboard>DEPARTURES</p>
+      </article>
+    `
+  }
+
+  // ─── Components content builder (retro) ───────────────────
+  function buildComponents() {
+    return `
+      <article class="component-card">
+        <h3>&lt;audio-player&gt; — FULL</h3>
+        <audio-player src="assets/track.mp3" data-title="Demo Track">
+          <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+        </audio-player>
+      </article>
+      <article class="component-card">
+        <h3>&lt;audio-player&gt; — BARS MODE</h3>
+        <audio-player src="assets/track.mp3" data-visualizer="bars" data-title="Bars Mode">
+          <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+        </audio-player>
+      </article>
+      <article class="component-card">
+        <h3>&lt;audio-player&gt; — MINI</h3>
+        <audio-player src="assets/track.mp3" data-size="mini" data-title="Mini Player">
+          <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+        </audio-player>
+      </article>
+    `
+  }
+
+  // ─── Effects content builder (kawaii) ────────────────────
+  function buildKawaiiEffects() {
+    return `
+      <article class="effect-card">
+        <h3>data-sparkle</h3>
+        <p class="effect-demo"><span data-sparkle style="color: var(--color-primary);">Magical</span></p>
+      </article>
+      <article class="effect-card">
+        <h3>data-kawaii-bounce</h3>
+        <p><button data-kawaii-bounce style="padding: 0.5em 1.5em; font-size: 1rem; font-weight: 700; border: 2px solid var(--color-primary); border-radius: var(--radius-full, 9999px); background: var(--color-primary-subtle); color: var(--color-primary); cursor: pointer;">Hover me!</button></p>
+      </article>
+      <article class="effect-card">
+        <h3>data-kawaii-wiggle</h3>
+        <p style="font-size: 2rem; display: flex; gap: 1rem;">
+          <span data-kawaii-wiggle>&#x2661;</span>
+          <span data-kawaii-wiggle style="animation-delay: -0.5s;">&#x2726;</span>
+          <span data-kawaii-wiggle style="animation-delay: -1s;">&#x2605;</span>
+        </p>
+      </article>
+      <article class="effect-card">
+        <h3>data-kawaii-bg</h3>
+        <div data-kawaii-bg style="padding: var(--size-m, 1rem); border-radius: var(--radius-l, 1.5rem); min-height: 100px; display: flex; align-items: center; justify-content: center;">
+          <span data-sparkle style="font-family: var(--font-display, cursive); font-size: 1.3rem; font-weight: 700; color: var(--color-primary);">So Kawaii!</span>
+        </div>
+      </article>
+      <article class="effect-card">
+        <h3>data-kawaii-particles (JS)</h3>
+        <div data-kawaii-particles style="min-height: 120px; background: linear-gradient(135deg, var(--color-primary-subtle, oklch(95% 0.05 350)), oklch(95% 0.04 290)); border-radius: var(--radius-l, 1.5rem); display: flex; align-items: center; justify-content: center;">
+          <span style="font-family: var(--font-display, cursive); color: var(--color-primary);">Sparkles!</span>
+        </div>
+      </article>
+    `
+  }
+
+  // ─── Components content builder (kawaii) ─────────────────
+  function buildKawaiiComponents() {
+    return `
+      <div class="empty-state">
+        <p>The kawaii bundle has no custom web components yet — it focuses on theme tokens and CSS/JS effects.</p>
+      </div>
+    `
+  }
+
+  // ─── Bundle loading ───────────────────────────────────────
+  async function loadBundle(name) {
+    // Unload previous CSS
+    loadedCSS.forEach(link => link.remove())
+    loadedCSS.length = 0
+
+    // Remove previous theme
+    if (activeBundle) {
+      document.body.removeAttribute('data-theme')
+    }
+
+    // Clear dynamic content
+    const effectsGrid = document.getElementById('effects-grid')
+    const componentsGrid = document.getElementById('components-grid')
+    const statusText = document.getElementById('status-text')
+    const statusFiles = document.getElementById('status-files')
+    const statusDot = document.querySelector('.status-dot')
+
+    if (name === 'none' || !BUNDLES[name]) {
+      effectsGrid.innerHTML = '<div class="empty-state"><p>No bundle loaded. Core Vanilla Breeze tokens are active.</p></div>'
+      componentsGrid.innerHTML = '<div class="empty-state"><p>No bundle components loaded.</p></div>'
+      statusText.textContent = 'core only'
+      statusFiles.textContent = 'no bundle'
+      statusDot.removeAttribute('data-active')
+      activeBundle = null
+      refreshTokens()
+      return
+    }
+
+    const bundle = BUNDLES[name]
+
+    // Load CSS files
+    for (const href of bundle.css) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
+      document.head.appendChild(link)
+      loadedCSS.push(link)
+      await new Promise(r => { link.onload = r; link.onerror = r })
+    }
+
+    // Load JS files (only once per module)
+    for (const src of bundle.js) {
+      if (!loadedJS.has(src)) {
+        await import(src)
+        loadedJS.add(src)
+      }
+    }
+
+    // Apply theme
+    document.body.setAttribute('data-theme', bundle.theme)
+    activeBundle = name
+
+    // Build content
+    effectsGrid.innerHTML = bundle.buildEffects()
+    componentsGrid.innerHTML = bundle.buildComponents()
+
+    // Update status
+    statusText.textContent = bundle.label
+    statusFiles.textContent = bundle.files
+    statusDot.setAttribute('data-active', '')
+
+    // Refresh token display
+    // Small delay to let CSS apply
+    requestAnimationFrame(() => refreshTokens())
+  }
+
+  // ─── Picker events ────────────────────────────────────────
+  document.querySelector('.bundle-picker').addEventListener('click', e => {
+    const btn = e.target.closest('.bundle-btn:not([disabled])')
+    if (!btn) return
+
+    const name = btn.dataset.bundle
+    document.querySelectorAll('.bundle-btn').forEach(b =>
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')
+    )
+    loadBundle(name)
+  })
+
+  // ─── Initial load ─────────────────────────────────────────
+  loadBundle('retro')
+</script>
+
+</body>
+</html>

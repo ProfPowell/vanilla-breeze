@@ -1,6 +1,7 @@
 const inertElements = [
   'layout-text',
   'layout-reel',
+  'layout-canvas',
   'dl-item'
 ];
 

@@ -27,6 +27,7 @@ export default [
   { name: 'page-toc', href: '/docs/elements/web-components/page-toc/', desc: 'Table of contents generator' },
   { name: 'site-search', href: '/docs/elements/web-components/site-search/', desc: 'Search dialog component' },
   { name: 'settings-panel', href: '/docs/elements/web-components/settings-panel/', desc: 'Compact settings panel with gear trigger and details accordion' },
+  { name: 'share-wc', href: '/docs/elements/web-components/share/', desc: 'Social share with native Web Share API and platform fallbacks' },
   { name: 'split-surface', href: '/docs/elements/web-components/splitter/', desc: 'Resizable panel splitter with drag divider' },
   { name: 'data-table', href: '/docs/elements/web-components/data-table/', desc: 'Enhanced data tables' },
   { name: 'theme-picker', href: '/docs/elements/web-components/theme-picker/', desc: 'Theme picker component' },

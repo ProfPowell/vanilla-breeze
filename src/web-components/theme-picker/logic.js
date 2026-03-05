@@ -75,7 +75,6 @@ class ThemePicker extends HTMLElement {
     { id: 'terminal', name: 'Terminal', icon: 'terminal', character: 'Retro CRT', swatchBg: '#0d1117', swatchFg: '#00ff00' },
     { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted', swatchBg: '#2d5016', swatchFg: '#faf5e6' },
     { id: 'editorial', name: 'Editorial', icon: 'newspaper', character: 'Magazine elegance', swatchBg: '#1a1a1a', swatchFg: '#c9a227' },
-    { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
     { id: '8bit', name: '8-Bit', icon: 'gamepad-2', character: 'Retro pixel art', swatchBg: '#000080', swatchFg: '#ffff00' },
     { id: 'nes', name: 'NES', icon: 'joystick', character: 'Console pixels', swatchBg: '#bcbcbc', swatchFg: '#e40521' },
     { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0' },
@@ -109,6 +108,12 @@ class ThemePicker extends HTMLElement {
     { id: 'high-noon', name: 'High Noon', icon: 'sun', character: 'Maximum bright', swatchBg: '#ffffff', swatchFg: '#e63946' }
   ];
 
+  // Bundle themes - loaded on demand from /cdn/bundles/
+  static #BUNDLE_THEMES = [
+    { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
+    { id: 'retro', name: 'Retro', icon: 'tv', character: 'CRT terminal', swatchBg: '#0a0a14', swatchFg: '#00ff66' },
+  ];
+
   // Fluid scaling presets
   static #FLUID_PRESETS = [
     { id: '', name: 'Fixed', icon: 'ruler', description: 'Static token values' },
@@ -128,7 +133,8 @@ class ThemePicker extends HTMLElement {
   static #THEMES = [
     ...ThemePicker.#COLOR_THEMES,
     ...ThemePicker.#PERSONALITY_THEMES,
-    ...ThemePicker.#EXTREME_THEMES
+    ...ThemePicker.#EXTREME_THEMES,
+    ...ThemePicker.#BUNDLE_THEMES
   ];
 
   // Extension toggles
@@ -214,7 +220,8 @@ class ThemePicker extends HTMLElement {
     const allBrands = [
       ...ThemePicker.#COLOR_THEMES,
       ...ThemePicker.#PERSONALITY_THEMES,
-      ...ThemePicker.#EXTREME_THEMES
+      ...ThemePicker.#EXTREME_THEMES,
+      ...ThemePicker.#BUNDLE_THEMES
     ];
 
     return `

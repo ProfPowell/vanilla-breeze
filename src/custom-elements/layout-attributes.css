@@ -1382,3 +1382,129 @@ main, article, section, aside:not(.float):not(.sidenote) {
     max-inline-size: 100%;
   }
 }
+
+
+/* ==========================================================================
+   CANVAS SURFACE
+   Explicit elevated surface — attribute form or custom element wrapper.
+   Complements data-backdrop (which targets body > regions implicitly).
+   Use data-canvas on semantic elements or <layout-canvas> as a wrapper.
+
+   Usage:
+     <article data-canvas>...</article>
+     <section data-canvas="flush">...</section>
+     <section data-canvas="elevated">...</section>
+     <layout-canvas>...</layout-canvas>
+     <layout-canvas data-variant="elevated">...</layout-canvas>
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Base canvas surface
+   -------------------------------------------------------------------------- */
+[data-canvas],
+layout-canvas {
+  background: var(--canvas-bg, var(--color-surface));
+  border-radius: var(--canvas-radius, var(--radius-l));
+  box-shadow: var(--canvas-shadow, var(--shadow-lg));
+  padding-inline: var(--canvas-padding-inline, var(--size-l));
+  padding-block: var(--canvas-padding-block, var(--size-l));
+  inline-size: 100%;
+  max-inline-size: var(--canvas-width, min(72rem, 100%));
+  margin-inline: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Variant: flush (no radius, no shadow)
+   -------------------------------------------------------------------------- */
+[data-canvas="flush"],
+layout-canvas[data-variant="flush"] {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Variant: elevated (larger radius, dramatic shadow)
+   -------------------------------------------------------------------------- */
+[data-canvas="elevated"],
+layout-canvas[data-variant="elevated"] {
+  border-radius: var(--radius-xl, var(--radius-l));
+  box-shadow: var(--shadow-xl, var(--shadow-lg));
+}
+
+/* --------------------------------------------------------------------------
+   Width constraints via data-layout-max
+   -------------------------------------------------------------------------- */
+[data-canvas][data-layout-max="narrow"],
+layout-canvas[data-layout-max="narrow"]  { max-inline-size: var(--content-narrow, 45rem); }
+
+[data-canvas][data-layout-max="content"],
+layout-canvas[data-layout-max="content"] { max-inline-size: var(--content-normal, 60rem); }
+
+[data-canvas][data-layout-max="wide"],
+layout-canvas[data-layout-max="wide"]    { max-inline-size: var(--content-wide, 80rem); }
+
+[data-canvas][data-layout-max="prose"],
+layout-canvas[data-layout-max="prose"]   { max-inline-size: 65ch; }
+
+/* --------------------------------------------------------------------------
+   Padding variants
+   -------------------------------------------------------------------------- */
+[data-canvas][data-layout-padding="none"],
+layout-canvas[data-layout-padding="none"] { padding: 0; }
+
+[data-canvas][data-layout-padding="s"],
+layout-canvas[data-layout-padding="s"]    { padding-inline: var(--size-s); padding-block: var(--size-s); }
+
+[data-canvas][data-layout-padding="m"],
+layout-canvas[data-layout-padding="m"]    { padding-inline: var(--size-m); padding-block: var(--size-m); }
+
+[data-canvas][data-layout-padding="l"],
+layout-canvas[data-layout-padding="l"]    { padding-inline: var(--size-l); padding-block: var(--size-l); }
+
+[data-canvas][data-layout-padding="xl"],
+layout-canvas[data-layout-padding="xl"]   { padding-inline: var(--size-xl); padding-block: var(--size-xl); }
+
+/* --------------------------------------------------------------------------
+   Nested canvas: raised surface for visual hierarchy
+   -------------------------------------------------------------------------- */
+[data-canvas] [data-canvas],
+layout-canvas layout-canvas,
+[data-canvas] layout-canvas,
+layout-canvas [data-canvas] {
+  background: var(--color-surface-raised, var(--color-surface));
+}
+
+/* --------------------------------------------------------------------------
+   Canvas depth — ghost cards on canvas elements
+   Same stacked-papers illusion as backdrop-depth.css but for data-canvas.
+   -------------------------------------------------------------------------- */
+[data-canvas][data-canvas-depth="1"]:not([data-canvas="flush"]),
+layout-canvas[data-canvas-depth="1"]:not([data-variant="flush"]) {
+  box-shadow:
+    var(--canvas-shadow, var(--shadow-lg)),
+    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+    0 10px 8px -3px oklch(0% 0 0 / 0.12);
+}
+
+[data-canvas][data-canvas-depth="2"]:not([data-canvas="flush"]),
+layout-canvas[data-canvas-depth="2"]:not([data-variant="flush"]) {
+  box-shadow:
+    var(--canvas-shadow, var(--shadow-lg)),
+    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+    0 10px 8px -3px oklch(0% 0 0 / 0.12),
+    0 16px 0 -6px var(--canvas-bg, var(--color-surface, #fff)),
+    0 18px 8px -6px oklch(0% 0 0 / 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile: canvas goes flush (matches backdrop behavior)
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  [data-canvas],
+  layout-canvas {
+    max-inline-size: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding-inline: var(--size-m, 1rem);
+  }
+}

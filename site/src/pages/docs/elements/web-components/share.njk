@@ -1,0 +1,334 @@
+---
+layout: layouts/element.njk
+title: "Social Share"
+description: "Social share component with native Web Share API and platform fallbacks"
+elementName: share-wc
+category: component
+currentPath: /docs/elements/web-components/share/
+permalink: /docs/elements/web-components/share/
+---
+
+{% set basicCode %}<share-wc></share-wc>{% endset %}
+
+{% set platformsCode %}<share-wc data-platforms="x,linkedin,bluesky,email,copy"></share-wc>{% endset %}
+
+{% set iconOnlyCode %}<share-wc data-platforms="x,linkedin,bluesky,copy" data-variant="icon"></share-wc>{% endset %}
+
+{% set labelOnlyCode %}<share-wc data-platforms="x,linkedin,email,copy" data-variant="label"></share-wc>{% endset %}
+
+{% set brandCode %}<share-wc data-platforms="x,linkedin,whatsapp,bluesky,mastodon" data-color></share-wc>{% endset %}
+
+{% set sizeCode %}<share-wc data-platforms="x,linkedin,copy" data-size="s"></share-wc>
+
+<share-wc data-platforms="x,linkedin,copy"></share-wc>
+
+<share-wc data-platforms="x,linkedin,copy" data-size="l"></share-wc>{% endset %}
+
+{% set explicitCode %}<share-wc
+  data-url="https://example.com/article"
+  data-title="Interesting Article"
+  data-text="A fascinating read about web components"
+  data-platforms="x,linkedin,email,copy">
+</share-wc>{% endset %}
+
+{% set slottedCode %}<share-wc>
+  <a href="https://x.com/intent/post?url={url}&text={title}"
+     data-platform="x" target="_blank" rel="noopener noreferrer">
+    Post on X
+  </a>
+  <a href="https://www.linkedin.com/sharing/share-offsite/?url={url}"
+     data-platform="linkedin" target="_blank" rel="noopener noreferrer">
+    LinkedIn
+  </a>
+  <button type="button" data-platform="copy">Copy link</button>
+</share-wc>{% endset %}
+
+{% set mastodonCode %}<share-wc
+  data-platforms="mastodon"
+  data-mastodon-instance="fosstodon.org">
+</share-wc>{% endset %}
+
+{% set nativeOnlyCode %}<share-wc data-platforms="native-only"></share-wc>{% endset %}
+
+{% set forcePlatformsCode %}<!-- Force platform buttons even on devices with Web Share API -->
+<share-wc data-tier="platforms" data-platforms="x,linkedin,bluesky,copy" data-color></share-wc>{% endset %}
+
+{% set eventCode %}{% raw %}const share = document.querySelector('share-wc');
+
+share.addEventListener('share-wc:success', (e) => {
+  console.log(`Shared via ${e.detail.platform}`);
+});
+
+share.addEventListener('share-wc:error', (e) => {
+  console.error(`Share failed: ${e.detail.error}`);
+});{% endraw %}{% endset %}
+
+{% set apiCode %}const share = document.querySelector('share-wc');
+
+// Update share data
+share.url = 'https://example.com/new-page';
+share.title = 'New Title';
+
+// Trigger native share programmatically
+share.share();{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;share-wc&gt;</code> provides social sharing with <strong>three-tier progressive enhancement</strong>:</p>
+  <ol>
+    <li><strong>Tier 1 (native)</strong> &mdash; On supported platforms, a single button triggers the OS share sheet via <code>navigator.share()</code></li>
+    <li><strong>Tier 2 (platforms)</strong> &mdash; On desktop, individual platform buttons open share URLs</li>
+    <li><strong>Tier 3 (no JS)</strong> &mdash; Slotted <code>&lt;a&gt;</code> links work without JavaScript</li>
+  </ol>
+
+  <browser-window
+    src="/docs/examples/demos/share-basic.html"
+    url="https://vanilla-breeze.dev/share"
+    title="Social Share"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage">{{ basicCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-url</code></td>
+        <td>string</td>
+        <td><code>location.href</code></td>
+        <td>URL to share</td>
+      </tr>
+      <tr>
+        <td><code>data-title</code></td>
+        <td>string</td>
+        <td><code>document.title</code></td>
+        <td>Share title</td>
+      </tr>
+      <tr>
+        <td><code>data-text</code></td>
+        <td>string</td>
+        <td>Meta description</td>
+        <td>Share description text</td>
+      </tr>
+      <tr>
+        <td><code>data-platforms</code></td>
+        <td>string</td>
+        <td><code>x,linkedin,bluesky,mastodon,whatsapp,email,copy</code></td>
+        <td>Comma-separated platform list</td>
+      </tr>
+      <tr>
+        <td><code>data-variant</code></td>
+        <td>string</td>
+        <td><code>icon-label</code></td>
+        <td>Visual variant: <code>icon</code>, <code>label</code>, <code>icon-label</code></td>
+      </tr>
+      <tr>
+        <td><code>data-size</code></td>
+        <td>string</td>
+        <td><code>m</code></td>
+        <td>Button size: <code>s</code>, <code>m</code>, <code>l</code></td>
+      </tr>
+      <tr>
+        <td><code>data-label</code></td>
+        <td>string</td>
+        <td><code>Share</code></td>
+        <td>Label for Tier 1 native button</td>
+      </tr>
+      <tr>
+        <td><code>data-color</code></td>
+        <td>boolean</td>
+        <td>absent</td>
+        <td>Use platform brand colours</td>
+      </tr>
+      <tr>
+        <td><code>data-mastodon-instance</code></td>
+        <td>string</td>
+        <td><code>mastodon.social</code></td>
+        <td>Mastodon instance for share URL</td>
+      </tr>
+      <tr>
+        <td><code>data-tier</code></td>
+        <td>string</td>
+        <td>auto</td>
+        <td>Force tier: <code>native</code> or <code>platforms</code>. Overrides auto-detection.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Platforms</h2>
+  <p>Choose which platforms to show with <code>data-platforms</code>. Order controls render order.</p>
+
+  <code-block language="html" show-lines label="Custom platform list">{{ platformsCode | escape }}</code-block>
+
+  <h3>Available Platforms</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Label</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>x</code></td><td>X</td><td>Opens X/Twitter compose</td></tr>
+      <tr><td><code>twitter</code></td><td>X</td><td>Alias for <code>x</code></td></tr>
+      <tr><td><code>facebook</code></td><td>Facebook</td><td>Opens Facebook sharer</td></tr>
+      <tr><td><code>linkedin</code></td><td>LinkedIn</td><td>Opens LinkedIn share</td></tr>
+      <tr><td><code>whatsapp</code></td><td>WhatsApp</td><td>Opens WhatsApp (native app on mobile)</td></tr>
+      <tr><td><code>telegram</code></td><td>Telegram</td><td>Opens Telegram share</td></tr>
+      <tr><td><code>bluesky</code></td><td>Bluesky</td><td>Opens Bluesky compose</td></tr>
+      <tr><td><code>mastodon</code></td><td>Mastodon</td><td>Opens Mastodon share (configurable instance)</td></tr>
+      <tr><td><code>email</code></td><td>Email</td><td>Opens email client via mailto:</td></tr>
+      <tr><td><code>copy</code></td><td>Copy link</td><td>Copies URL to clipboard with 2s feedback</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Variants</h2>
+
+  <h3>Icon only</h3>
+  <p>Show icons without labels using <code>data-variant="icon"</code>.</p>
+  <code-block language="html" show-lines label="Icon-only share buttons">{{ iconOnlyCode | escape }}</code-block>
+
+  <h3>Label only</h3>
+  <p>Show labels without icons using <code>data-variant="label"</code>.</p>
+  <code-block language="html" show-lines label="Label-only share buttons">{{ labelOnlyCode | escape }}</code-block>
+
+  <h3>Brand colours</h3>
+  <p>Add <code>data-color</code> to apply platform brand colours.</p>
+  <code-block language="html" show-lines label="Brand-coloured share buttons">{{ brandCode | escape }}</code-block>
+
+  <h3>Sizes</h3>
+  <p>Use <code>data-size="s"</code> or <code>data-size="l"</code> for small or large buttons.</p>
+  <code-block language="html" show-lines label="Button sizes">{{ sizeCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Explicit Share Data</h2>
+  <p>Override the auto-detected URL, title, and text with explicit attributes.</p>
+  <code-block language="html" show-lines label="Explicit share attributes">{{ explicitCode | escape }}</code-block>
+
+  <h3>Meta Resolution Order</h3>
+  <table class="props-table">
+    <thead><tr><th>Field</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td>URL</td><td><code>data-url</code> &rarr; <code>&lt;link rel="canonical"&gt;</code> &rarr; <code>location.href</code></td></tr>
+      <tr><td>Title</td><td><code>data-title</code> &rarr; <code>og:title</code> &rarr; <code>document.title</code></td></tr>
+      <tr><td>Text</td><td><code>data-text</code> &rarr; <code>meta[name=description]</code> &rarr; <code>og:description</code> &rarr; empty</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>For full no-JS support, slot <code>&lt;a&gt;</code> elements with <code>data-platform</code> attributes. The component enhances them with click handlers and substitutes <code>{url}</code>, <code>{title}</code>, <code>{text}</code> tokens in href values.</p>
+  <code-block language="html" show-lines label="Slotted links with no-JS fallback">{{ slottedCode | escape }}</code-block>
+
+  <h3>Force platform buttons</h3>
+  <p>On devices with <code>navigator.share</code> (macOS, iOS, Android), the component auto-selects the native share sheet. Use <code>data-tier="platforms"</code> to always show individual platform buttons instead, giving authors full control over which platforms appear.</p>
+  <code-block language="html" show-lines label="Force platform buttons on any device">{{ forcePlatformsCode | escape }}</code-block>
+
+  <h3>Native-only mode</h3>
+  <p>Use <code>data-platforms="native-only"</code> to show only the native share button. Hides entirely on platforms without Web Share API support.</p>
+  <code-block language="html" show-lines label="Native-only share">{{ nativeOnlyCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Mastodon Instance</h2>
+  <p>Set a custom Mastodon instance with <code>data-mastodon-instance</code>. Defaults to <code>mastodon.social</code>.</p>
+  <code-block language="html" show-lines label="Custom Mastodon instance">{{ mastodonCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>share-wc:open</code></td>
+        <td><code>{ platform }</code></td>
+        <td>Fired when a share is initiated</td>
+      </tr>
+      <tr>
+        <td><code>share-wc:success</code></td>
+        <td><code>{ platform }</code></td>
+        <td>Fired after successful share or copy</td>
+      </tr>
+      <tr>
+        <td><code>share-wc:error</code></td>
+        <td><code>{ platform, error }</code></td>
+        <td>Fired on failure (user cancel is not an error)</td>
+      </tr>
+    </tbody>
+  </table>
+  <code-block language="javascript" show-lines label="Listening for share events">{{ eventCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Property/Method</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>url</code></td>
+        <td>get/set</td>
+        <td>Current share URL</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td>get/set</td>
+        <td>Current share title</td>
+      </tr>
+      <tr>
+        <td><code>text</code></td>
+        <td>get/set</td>
+        <td>Current share description</td>
+      </tr>
+      <tr>
+        <td><code>share()</code></td>
+        <td>method</td>
+        <td>Programmatically trigger native share</td>
+      </tr>
+    </tbody>
+  </table>
+  <code-block language="javascript" show-lines label="Programmatic share control">{{ apiCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Tier 1 button has <code>aria-label="Share this page"</code></li>
+    <li>Tier 2 wraps buttons in <code>&lt;nav aria-label="Share this page"&gt;</code></li>
+    <li>Each platform button has an accessible label: "Share on X", "Copy link", etc.</li>
+    <li>Copy button announces "Copied!" via <code>aria-live="polite"</code></li>
+    <li>Icons are hidden from assistive technology with <code>aria-hidden="true"</code></li>
+    <li>Labels remain in the DOM for <code>icon</code> variant (visually hidden, not removed)</li>
+    <li>Reduced motion: transitions disabled via <code>prefers-reduced-motion</code></li>
+  </ul>
+</section>

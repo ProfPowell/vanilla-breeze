@@ -21,7 +21,7 @@
  */
 
 import * as esbuild from 'esbuild';
-import { mkdirSync, existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'fs';
+import { mkdirSync, existsSync, readdirSync, readFileSync, writeFileSync, statSync, cpSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { gzipSync } from 'zlib';
@@ -57,7 +57,7 @@ const CSS_DEFAULTS = {
 };
 
 // Ensure directories exist
-for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components')]) {
+for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components'), join(CDN, 'bundles')]) {
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -201,6 +201,98 @@ async function buildComponents() {
   );
 
   console.log(`  ${count} components → dist/cdn/components/`);
+  console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
+}
+
+/**
+ * Build bundle packages (theme + effects + components per bundle)
+ */
+async function buildBundles() {
+  const bundlesDir = join(SRC, 'bundles');
+  if (!existsSync(bundlesDir)) return;
+
+  const outDir = join(CDN, 'bundles');
+  const manifest = {};
+
+  const bundles = readdirSync(bundlesDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
+
+  if (!bundles.length) return;
+
+  console.log(`Building ${bundles.length} bundle(s)...`);
+
+  for (const name of bundles) {
+    const bundleSrc = join(bundlesDir, name);
+    const entry = {};
+
+    // Build individual CSS files
+    for (const cssFile of ['theme', 'effects']) {
+      const src = join(bundleSrc, `${name}.${cssFile}.css`);
+      if (!existsSync(src)) continue;
+      const out = join(outDir, `${name}.${cssFile}.css`);
+      await esbuild.build({
+        ...CSS_DEFAULTS,
+        entryPoints: [src],
+        outfile: out,
+        logLevel: 'silent',
+        loader: { '.woff2': 'copy', '.woff': 'copy', '.otf': 'copy', '.ttf': 'copy' },
+        assetNames: `${name}/fonts/[name]`,
+      });
+      entry[cssFile + 'Css'] = { file: `${name}.${cssFile}.css`, size: statSync(out).size };
+    }
+
+    // Build individual JS files
+    for (const jsFile of ['effects', 'components', 'bundle']) {
+      const src = join(bundleSrc, `${name}.${jsFile}.js`);
+      if (!existsSync(src)) continue;
+      const out = join(outDir, `${name}.${jsFile}.js`);
+      await esbuild.build({ ...JS_DEFAULTS, entryPoints: [src], outfile: out, logLevel: 'silent' });
+      entry[jsFile + 'Js'] = { file: `${name}.${jsFile}.js`, size: statSync(out).size };
+    }
+
+    // Build full CSS rollup (theme + effects concatenated)
+    const fullCssParts = ['theme', 'effects']
+      .map(f => join(outDir, `${name}.${f}.css`))
+      .filter(existsSync);
+    if (fullCssParts.length) {
+      const combined = fullCssParts.map(f => readFileSync(f, 'utf-8')).join('\n');
+      const fullCssPath = join(outDir, `${name}.full.css`);
+      writeFileSync(fullCssPath, combined);
+      entry.fullCss = { file: `${name}.full.css`, size: statSync(fullCssPath).size };
+    }
+
+    // Build full JS rollup (effects + components bundled together)
+    const fullJsEntry = join(bundleSrc, `${name}.full.js`);
+    const fullJsImports = ['effects', 'components']
+      .map(f => join(bundleSrc, `${name}.${f}.js`))
+      .filter(existsSync);
+    if (fullJsImports.length) {
+      // Create a temporary entry that re-exports both
+      const fullJsContent = fullJsImports.map(f => `import '${f}';`).join('\n');
+      writeFileSync(fullJsEntry, fullJsContent);
+      const fullJsOut = join(outDir, `${name}.full.js`);
+      await esbuild.build({ ...JS_DEFAULTS, entryPoints: [fullJsEntry], outfile: fullJsOut, logLevel: 'silent', ignoreAnnotations: true });
+      entry.fullJs = { file: `${name}.full.js`, size: statSync(fullJsOut).size };
+      // Clean up temp file
+      const { unlinkSync } = await import('fs');
+      unlinkSync(fullJsEntry);
+    }
+
+    // Copy font assets
+    const fontsDir = join(bundleSrc, 'fonts');
+    if (existsSync(fontsDir)) {
+      const fontsOutDir = join(outDir, name, 'fonts');
+      mkdirSync(fontsOutDir, { recursive: true });
+      cpSync(fontsDir, fontsOutDir, { recursive: true });
+    }
+
+    manifest[name] = entry;
+  }
+
+  writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+
+  console.log(`  ${bundles.length} bundle(s) → dist/cdn/bundles/`);
   console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
 }
 
@@ -368,6 +460,7 @@ async function buildCDN() {
   // --- Individual builds ---
   await buildThemes();
   await buildComponents();
+  await buildBundles();
 
   // --- Size summary ---
   console.log(`\nCDN build complete (v${VERSION})`);

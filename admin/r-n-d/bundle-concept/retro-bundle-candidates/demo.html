@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vanilla Breeze — Retro Text Effects</title>
+  <style>
+    /* -------------------------------------------------------
+       Minimal token layer — mirrors VB tokens structure.
+       In the real framework these come from tokens/*.css
+    ------------------------------------------------------- */
+    :root {
+      --hue-primary: 260;
+      --color-primary: oklch(65% 0.28 var(--hue-primary));
+      --color-text: oklch(15% 0.02 260);
+      --color-surface: oklch(98% 0.005 260);
+      --color-surface-alt: oklch(94% 0.01 260);
+      --color-border: oklch(82% 0.015 260);
+      --color-muted: oklch(55% 0.01 260);
+      --size-xs: 0.5rem;
+      --size-s: 0.75rem;
+      --size-m: 1rem;
+      --size-l: 1.5rem;
+      --size-xl: 2.5rem;
+      --size-2xl: 4rem;
+      --radius-m: 8px;
+      --radius-l: 14px;
+      --font-mono: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-text: oklch(93% 0.01 260);
+        --color-surface: oklch(14% 0.025 260);
+        --color-surface-alt: oklch(19% 0.03 260);
+        --color-border: oklch(28% 0.03 260);
+        --color-muted: oklch(60% 0.01 260);
+        --vb-shadow-color: oklch(80% 0 0);
+      }
+    }
+
+    /* -------------------------------------------------------
+       Reset + page shell
+    ------------------------------------------------------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--color-surface);
+      color: var(--color-text);
+      line-height: 1.6;
+      padding-block: var(--size-xl);
+      padding-inline: clamp(var(--size-m), 5vw, var(--size-2xl));
+    }
+
+    .page-title {
+      text-align: center;
+      margin-block-end: var(--size-xl);
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: var(--color-muted);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+    }
+
+    .page-title strong {
+      display: block;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    /* Effect sections grid */
+    .fx-grid {
+      display: grid;
+      gap: var(--size-l);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr));
+    }
+
+    .fx-card {
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-l);
+      overflow: hidden;
+    }
+
+    .fx-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--size-s) var(--size-m);
+      border-block-end: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+
+    .fx-card-title {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+
+    .fx-card-body {
+      padding: var(--size-l) var(--size-m);
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-m);
+      align-items: flex-start;
+    }
+
+    .fx-demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--size-m);
+    }
+
+    .fx-code {
+      display: block;
+      width: 100%;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-xs) var(--size-s);
+      margin-block-start: var(--size-s);
+    }
+
+    /* Demo text sizing helpers */
+    .t-xl  { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; font-weight: 900; }
+    .t-l   { font-size: clamp(1.5rem, 3.5vw, 2.5rem); line-height: 1.1; font-weight: 900; }
+    .t-m   { font-size: clamp(1.1rem, 2.5vw, 1.6rem); font-weight: 700; }
+    .t-s   { font-size: 1rem; }
+
+    /* Stamp demo needs dark bg to show multiply blend properly */
+    .stamp-demo {
+      background: var(--color-surface);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+    }
+
+    /* Marquee band */
+    .marquee-band {
+      background: var(--color-text);
+      color: var(--color-surface);
+      padding-block: var(--size-s);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    /* Full-width marquee section */
+    .fx-marquee {
+      grid-column: 1 / -1;
+    }
+
+    /* Section divider */
+    .section-label {
+      grid-column: 1 / -1;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      padding-block-start: var(--size-m);
+      border-block-start: 1px solid var(--color-border);
+      margin-block-start: var(--size-m);
+    }
+  </style>
+
+  <!-- The text effects module -->
+  <link rel="stylesheet" href="text-fx.css">
+</head>
+<body>
+
+<!-- SVG filter for stamp effect — inject once -->
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="vb-stamp-noise" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="greyNoise"/>
+      <feComposite in="SourceGraphic" in2="greyNoise" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<header>
+  <p class="page-title">
+    Vanilla Breeze
+    <strong>Retro Text Effects</strong>
+    CSS-only · data-* attributes · progressive enhancement
+  </p>
+</header>
+
+<main class="fx-grid">
+
+  <!-- ================================================================
+       data-blink
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-blink</span>
+      <span class="fx-card-title">CSS-only</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row">
+        <span class="t-l" data-blink>★ NEW ★</span>
+        <span class="t-m" data-blink="slow">SALE</span>
+        <span class="t-m" data-blink="fast" style="color: oklch(60% 0.24 25)">⚠ ALERT</span>
+      </div>
+      <div class="fx-demo-row">
+        <button style="font-size: 0.9rem; padding: 0.4em 0.8em; border-radius: 6px; border: 2px solid currentColor; background: none; cursor: pointer; font-weight: 700;">
+          <span data-blink="slow">●</span>&nbsp; RECORD
+        </button>
+        <span class="t-s">
+          Status: <span data-blink style="color: oklch(65% 0.22 145)">ONLINE</span>
+        </span>
+      </div>
+      <code class="fx-code">&lt;span data-blink&gt;★ NEW ★&lt;/span&gt;
+&lt;span data-blink="slow"&gt;SALE&lt;/span&gt;
+&lt;span data-blink="fast"&gt;ALERT&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-neon
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-neon</span>
+      <span class="fx-card-title">CSS-only · multi-layer glow</span>
+    </header>
+    <div class="fx-card-body" style="background: oklch(8% 0.02 260); border-radius: var(--radius-m); padding: var(--size-m);">
+      <div class="fx-demo-row">
+        <span class="t-xl" data-neon style="font-weight: 900;">LASER</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-neon="pink">NEON</span>
+        <span class="t-l" data-neon="cyan">OPEN</span>
+        <span class="t-l" data-neon="green">EXIT</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-m" data-neon="amber">VACANCY</span>
+        <span class="t-m" data-neon="red">CLOSED</span>
+      </div>
+      <code class="fx-code" style="background: oklch(12% 0.02 260); color: oklch(70% 0.01 260);">&lt;span data-neon&gt;LASER&lt;/span&gt;
+&lt;span data-neon="pink"&gt;NEON&lt;/span&gt;
+&lt;span data-neon="cyan"&gt;OPEN&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-text-3d
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-text-3d</span>
+      <span class="fx-card-title">CSS-only · stacked shadows</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row">
+        <span class="t-xl" data-text-3d>RADICAL</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-text-3d="red">ACTION</span>
+        <span class="t-l" data-text-3d="gold">GOLD</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-text-3d="green deep">DEEP</span>
+        <span class="t-l" data-text-3d="purple animate">SPIN</span>
+      </div>
+      <code class="fx-code">&lt;span data-text-3d&gt;RADICAL&lt;/span&gt;
+&lt;span data-text-3d="red"&gt;ACTION&lt;/span&gt;
+&lt;span data-text-3d="gold deep"&gt;DEEP&lt;/span&gt;
+&lt;span data-text-3d="purple animate"&gt;SPIN&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-outline
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-outline</span>
+      <span class="fx-card-title">CSS-only · -webkit-text-stroke</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row">
+        <span class="t-xl" data-outline>HOLLOW</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-outline="thick">THICK</span>
+        <span class="t-l" data-outline="ultra">ULTRA</span>
+      </div>
+      <div class="fx-demo-row" style="background: oklch(8% 0.02 260); padding: var(--size-s); border-radius: var(--radius-m);">
+        <span class="t-l" data-outline="glow" style="--vb-neon-color: oklch(72% 0.2 200)">GLOW</span>
+        <span class="t-l" data-outline="glow" style="--vb-neon-color: oklch(68% 0.3 340)">PINK</span>
+      </div>
+      <code class="fx-code">&lt;span data-outline&gt;HOLLOW&lt;/span&gt;
+&lt;span data-outline="thick"&gt;THICK&lt;/span&gt;
+&lt;span data-outline="glow"&gt;GLOW&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-retro-shadow
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-retro-shadow</span>
+      <span class="fx-card-title">CSS-only · hard offset</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row">
+        <span class="t-xl" data-retro-shadow>WORLD TOUR</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-retro-shadow="double red">DOUBLE</span>
+        <span class="t-l" data-retro-shadow="double blue">BLUE</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-retro-shadow="long gold">LONG GOLD</span>
+      </div>
+      <code class="fx-code">&lt;span data-retro-shadow&gt;WORLD TOUR&lt;/span&gt;
+&lt;span data-retro-shadow="double red"&gt;DOUBLE&lt;/span&gt;
+&lt;span data-retro-shadow="long gold"&gt;LONG GOLD&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-stamp
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-stamp</span>
+      <span class="fx-card-title">CSS-only · SVG filter</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="stamp-demo">
+        <span class="t-l" data-stamp>APPROVED</span>
+        <span class="t-l" data-stamp="red">REJECTED</span>
+        <span class="t-l" data-stamp="blue straight">CLASSIFIED</span>
+        <span class="t-m" data-stamp="black heavy">VOID</span>
+        <span class="t-m" data-stamp="gold slight">CERTIFIED</span>
+        <span class="t-m" data-stamp="green straight">VERIFIED ✓</span>
+      </div>
+      <code class="fx-code">&lt;span data-stamp&gt;APPROVED&lt;/span&gt;
+&lt;span data-stamp="red"&gt;REJECTED&lt;/span&gt;
+&lt;span data-stamp="blue straight"&gt;CLASSIFIED&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-rainbow
+  ================================================================ -->
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-rainbow</span>
+      <span class="fx-card-title">CSS-only · hue-rotate</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row">
+        <span class="t-xl" data-rainbow style="color: oklch(65% 0.28 0); font-weight: 900;">PRIDE</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-l" data-rainbow="slow" style="color: oklch(65% 0.28 120)">SLOW</span>
+        <span class="t-l" data-rainbow="fast" style="color: oklch(65% 0.28 200)">FAST!</span>
+      </div>
+      <div class="fx-demo-row">
+        <span class="t-m" data-rainbow data-neon style="--vb-neon-color: oklch(65% 0.28 260)">COMBO</span>
+      </div>
+      <code class="fx-code">&lt;span data-rainbow&gt;PRIDE&lt;/span&gt;
+&lt;span data-rainbow="slow"&gt;SLOW&lt;/span&gt;
+&lt;span data-rainbow="fast"&gt;FAST!&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       Combos & Creative
+  ================================================================ -->
+  <div class="section-label">Combinations — stack attributes freely</div>
+
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">Stacking effects</span>
+    </header>
+    <div class="fx-card-body" style="background: oklch(8% 0.02 260); border-radius: var(--radius-m); padding: var(--size-m);">
+      <!-- neon + blink combo: classic OPEN sign -->
+      <div class="fx-demo-row">
+        <span class="t-xl" data-neon="cyan" style="font-weight: 900;">
+          <span data-blink="slow">✦</span> OPEN <span data-blink="slow">✦</span>
+        </span>
+      </div>
+
+      <!-- outline + rainbow -->
+      <div class="fx-demo-row">
+        <span class="t-l" data-outline data-rainbow style="color: oklch(65% 0.28 0);">HOLLOW RAINBOW</span>
+      </div>
+
+      <!-- 3d + blink  -->
+      <div class="fx-demo-row">
+        <span class="t-l" data-text-3d="gold" data-blink="slow">JACKPOT!</span>
+      </div>
+
+      <code class="fx-code" style="background: oklch(12% 0.02 260); color: oklch(70% 0.01 260);">&lt;!-- Neon sign with blink accent --&gt;
+&lt;span data-neon="cyan"&gt;
+  &lt;span data-blink="slow"&gt;✦&lt;/span&gt; OPEN
+&lt;/span&gt;
+
+&lt;!-- Outline + rainbow --&gt;
+&lt;span data-outline data-rainbow&gt;HOLLOW RAINBOW&lt;/span&gt;
+
+&lt;!-- 3D + blink --&gt;
+&lt;span data-text-3d="gold" data-blink="slow"&gt;JACKPOT!&lt;/span&gt;</code>
+    </div>
+  </article>
+
+  <article class="fx-card">
+    <header class="fx-card-header">
+      <span class="fx-card-title">Real-world contexts</span>
+    </header>
+    <div class="fx-card-body">
+      <!-- Page hero heading -->
+      <div>
+        <h1 class="t-xl" data-text-3d="red" style="letter-spacing: -0.02em">
+          SUMMER SALE
+        </h1>
+        <p class="t-m" style="margin-block-start: 0.5rem; font-weight: 400;">
+          Up to <strong data-neon="amber" style="font-size: 1.3em">70% OFF</strong> selected items
+        </p>
+      </div>
+
+      <!-- Status badge -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: 6px; width: fit-content;">
+        <span style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Server</span>
+        <span style="font-size: 0.75rem; font-weight: 700; color: oklch(55% 0.22 145);">
+          <span data-blink="slow" aria-hidden="true">●</span> LIVE
+        </span>
+      </div>
+
+      <!-- Concert poster style -->
+      <div style="text-align: center; padding: var(--size-m); background: oklch(12% 0 0); border-radius: var(--radius-m); width: 100%;">
+        <p style="color: oklch(70% 0 0); font-size: 0.75rem; letter-spacing: 0.2em; margin-block-end: 0.25rem;">PRESENTING</p>
+        <p class="t-xl" data-retro-shadow="long gold" style="color: oklch(85% 0.18 75)">THE BAND</p>
+        <p style="color: oklch(70% 0 0); font-size: 0.85rem; letter-spacing: 0.1em; margin-block-start: 0.25rem;">ONE NIGHT ONLY</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       data-marquee — full width
+  ================================================================ -->
+  <div class="section-label">Marquee</div>
+
+  <article class="fx-card fx-marquee">
+    <header class="fx-card-header">
+      <span class="fx-card-title">data-marquee</span>
+      <span class="fx-card-title">CSS-only · seamless loop · hover-pause supported</span>
+    </header>
+    <div class="fx-card-body" style="padding-inline: 0; gap: var(--size-s);">
+
+      <!-- Basic marquee -->
+      <div data-marquee data-marquee-label="Basic" class="marquee-band">
+        <span>
+          Breaking: GeoCities is back &nbsp;·&nbsp; Under Construction &nbsp;·&nbsp; You are visitor #1,337 &nbsp;·&nbsp; This page best viewed in 800×600 &nbsp;·&nbsp; Sign my guestbook! &nbsp;·&nbsp;&nbsp;
+        </span>
+        <span aria-hidden="true">
+          Breaking: GeoCities is back &nbsp;·&nbsp; Under Construction &nbsp;·&nbsp; You are visitor #1,337 &nbsp;·&nbsp; This page best viewed in 800×600 &nbsp;·&nbsp; Sign my guestbook! &nbsp;·&nbsp;&nbsp;
+        </span>
+      </div>
+
+      <!-- Neon marquee -->
+      <div data-marquee data-marquee-hover-pause style="padding-block: var(--size-s); background: oklch(6% 0.015 260);">
+        <span data-neon="pink" style="font-weight: 900; font-size: 1.3rem;">
+          ★ LASER ZONE ★ &nbsp;·&nbsp; NO FLASH PHOTOGRAPHY &nbsp;·&nbsp; 21+ &nbsp;·&nbsp; ALL NIGHT LONG &nbsp;·&nbsp; ★ LASER ZONE ★ &nbsp;·&nbsp;&nbsp;
+        </span>
+        <span data-neon="cyan" aria-hidden="true" style="font-weight: 900; font-size: 1.3rem;">
+          ★ LASER ZONE ★ &nbsp;·&nbsp; NO FLASH PHOTOGRAPHY &nbsp;·&nbsp; 21+ &nbsp;·&nbsp; ALL NIGHT LONG &nbsp;·&nbsp; ★ LASER ZONE ★ &nbsp;·&nbsp;&nbsp;
+        </span>
+      </div>
+
+      <!-- Slow reverse -->
+      <div data-marquee="reverse" style="padding-block: var(--size-xs) var(--size-s); --vb-marquee-speed: 35s; color: var(--color-muted); font-size: 0.85rem;">
+        <span>
+          Slow reverse scroll &nbsp;·&nbsp; CSS custom prop: --vb-marquee-speed &nbsp;·&nbsp; No JavaScript required &nbsp;·&nbsp; Respects prefers-reduced-motion &nbsp;·&nbsp;&nbsp;
+        </span>
+        <span aria-hidden="true">
+          Slow reverse scroll &nbsp;·&nbsp; CSS custom prop: --vb-marquee-speed &nbsp;·&nbsp; No JavaScript required &nbsp;·&nbsp; Respects prefers-reduced-motion &nbsp;·&nbsp;&nbsp;
+        </span>
+      </div>
+
+      <code class="fx-code" style="margin-inline: var(--size-m);">&lt;div data-marquee&gt;
+  &lt;span&gt;Content here · repeat for seamless loop ·&nbsp;&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;Content here · repeat for seamless loop ·&nbsp;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- Speed: CSS custom property on the element --&gt;
+&lt;div data-marquee style="--vb-marquee-speed: 40s"&gt;...&lt;/div&gt;
+
+&lt;!-- Reverse direction --&gt;
+&lt;div data-marquee="reverse"&gt;...&lt;/div&gt;</code>
+    </div>
+  </article>
+
+  <!-- ================================================================
+       Custom property reference
+  ================================================================ -->
+  <div class="section-label">Custom properties — tune any effect inline</div>
+
+  <article class="fx-card fx-marquee">
+    <header class="fx-card-header">
+      <span class="fx-card-title">CSS custom property API</span>
+    </header>
+    <div class="fx-card-body">
+      <div class="fx-demo-row" style="flex-wrap: wrap; gap: var(--size-l);">
+        <div>
+          <span class="t-l" data-neon style="--vb-neon-color: oklch(70% 0.28 30)">CUSTOM COLOR</span>
+          <code class="fx-code">style="--vb-neon-color: oklch(70% 0.28 30)"</code>
+        </div>
+        <div>
+          <span class="t-l" data-text-3d style="--vb-3d-color: oklch(50% 0.22 300); --vb-3d-angle: 2px">BIG DEPTH</span>
+          <code class="fx-code">style="--vb-3d-color: ...; --vb-3d-angle: 2px"</code>
+        </div>
+        <div>
+          <span class="t-l" data-retro-shadow style="--vb-shadow-offset: 6px; --vb-shadow-color: oklch(60% 0.22 180)">OFFSET</span>
+          <code class="fx-code">style="--vb-shadow-offset: 6px; --vb-shadow-color: ..."</code>
+        </div>
+        <div>
+          <span class="t-l" data-blink style="--vb-blink-rate: 0.3s">FAST</span>
+          <code class="fx-code">style="--vb-blink-rate: 0.3s"</code>
+        </div>
+      </div>
+
+      <div style="margin-block-start: var(--size-m); padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m); border: 1px solid var(--color-border);">
+        <p style="font-size: 0.85rem; font-weight: 600; margin-block-end: 0.5rem;">All available tokens</p>
+        <code style="font-family: var(--font-mono); font-size: 0.75rem; white-space: pre; display: block; color: var(--color-muted);">--vb-blink-rate        default: 1s
+--vb-neon-color        default: var(--color-primary)
+--vb-neon-spread       default: 0.04em
+--vb-3d-color          default: dark primary
+--vb-3d-angle          default: 1px
+--vb-shadow-color      default: oklch(20% 0 0)
+--vb-shadow-offset     default: 3px
+--vb-outline-width     default: 1px
+--vb-stamp-color       default: red-ish
+--vb-rainbow-speed     default: 4s
+--vb-marquee-speed     default: 20s
+--vb-marquee-gap       default: var(--size-xl)</code>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<footer style="margin-block-start: var(--size-2xl); text-align: center; color: var(--color-muted); font-size: 0.8rem;">
+  <p>Vanilla Breeze Retro Text Effects · CSS-only · No JavaScript · Progressive Enhancement</p>
+  <p style="margin-block-start: 0.25rem;">
+    <span data-blink="slow" aria-hidden="true">★</span>
+    All effects respect <code>prefers-reduced-motion</code>
+    <span data-blink="slow" aria-hidden="true">★</span>
+  </p>
+</footer>
+
+</body>
+</html>

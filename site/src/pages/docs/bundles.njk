@@ -1,0 +1,376 @@
+---
+layout: layouts/docs.njk
+title: "Bundles - Vanilla Breeze"
+description: "Modular extension packages that add themed effects and components to Vanilla Breeze."
+currentSection: docs
+currentPath: /docs/bundles/
+permalink: /docs/bundles/
+---
+
+{% set bundleInstallCdn %}<!-- Load core Vanilla Breeze first -->
+<link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+<script type="module" src="/cdn/vanilla-breeze.js"></script>
+
+<!-- Load a bundle (all-in-one) -->
+<link rel="stylesheet" href="/cdn/bundles/retro.full.css">
+<script type="module" src="/cdn/bundles/retro.full.js"></script>{% endset %}
+
+{% set bundleGranular %}<!-- Theme tokens only (smallest payload) -->
+<link rel="stylesheet" href="/cdn/bundles/retro.theme.css">
+
+<!-- Effects only (CSS data-* animations) -->
+<link rel="stylesheet" href="/cdn/bundles/retro.effects.css">
+<script type="module" src="/cdn/bundles/retro.effects.js"></script>
+
+<!-- Components only (web components) -->
+<script type="module" src="/cdn/bundles/retro.components.js"></script>{% endset %}
+
+{% set bundleActivate %}import { activateBundle } from '/cdn/vanilla-breeze.js'
+
+// Load a bundle at runtime (returns a Promise)
+await activateBundle('retro')
+
+// Custom CDN path
+await activateBundle('retro', { basePath: '/assets/bundles' }){% endset %}
+
+{% set layerOrder %}@layer tokens, reset, native-elements, custom-elements,
+       web-components, utils,
+       bundle-theme, bundle-effects, bundle-components;{% endset %}
+
+{% set themeSelector %}/* Bundle theme tokens scope to a data-theme selector */
+@layer bundle-theme {
+  [data-theme~="retro"] {
+    --color-primary: oklch(70% 0.28 145);
+    --radius-m: 2px;
+    --font-mono: 'Cartridge', 'VT323', monospace;
+    --ease-out: steps(4);
+  }
+}{% endset %}
+
+{% set effectCss %}/* Effects use data-* attribute selectors in the effects layer */
+@layer bundle-effects {
+  [data-neon] {
+    --vb-neon-color: var(--color-primary);
+    color: var(--vb-neon-color);
+    animation: vb-neon-pulse 2.5s ease-in-out infinite alternate;
+  }
+
+  [data-neon="pink"] { --vb-neon-color: oklch(68% 0.3 340); }
+  [data-neon="cyan"] { --vb-neon-color: oklch(72% 0.2 200); }
+}{% endset %}
+
+{% set effectJs %}import { registerEffect } from '/cdn/vanilla-breeze.js'
+
+registerEffect('flipboard', {
+  selector: '[data-flipboard]',
+  init(el)    { /* set up split-flap animation */ },
+  destroy(el) { /* clean up timers and DOM */ },
+  reducedMotionFallback(el) { /* static display */ },
+}){% endset %}
+
+{% set componentRegister %}import { registerComponent } from '/cdn/vanilla-breeze.js'
+import { AudioPlayer } from './components/audio-player/audio-player.js'
+
+registerComponent('audio-player', AudioPlayer, {
+  bundle: 'retro',
+  contract: 'audio-player',
+  priority: 10,
+}){% endset %}
+
+{% set componentTokens %}/* Components consume system tokens and expose their own */
+class AudioPlayer extends HTMLElement {
+  static consumesTokens = ['--color-primary', '--color-surface-sunken']
+  static exposesTokens  = ['--audioplayer-screen-color', '--audioplayer-bg']
+}{% endset %}
+
+{% set componentUsage %}<!-- Default tokens from active theme -->
+<audio-player src="track.mp3" data-title="Demo"></audio-player>
+
+<!-- Override tokens inline -->
+<audio-player src="track.mp3"
+  style="--audioplayer-screen-color: oklch(72% 0.3 340);">
+</audio-player>
+
+<!-- Mini form factor -->
+<audio-player src="track.mp3" data-size="mini" data-title="Compact">
+</audio-player>{% endset %}
+
+{% set directoryStructure %}src/bundles/retro/
+  retro.theme.css          # Token overrides (@layer bundle-theme)
+  retro.effects.css        # CSS data-* effects (@layer bundle-effects)
+  retro.effects.js         # JS effects (registerEffect calls)
+  retro.components.js      # Component registration (registerComponent calls)
+  retro.bundle.js          # Bundle manifest metadata
+  fonts/                   # Bundle-specific assets
+    Cartridge-Regular.woff2
+    Cartridge-Bold.woff2
+  components/
+    audio-player/
+      audio-player.js      # Web component class
+      audio-player.contract.md{% endset %}
+
+{% set buildOutput %}dist/cdn/bundles/
+  manifest.json            # Registry of all built bundles
+  retro.theme.css          # Theme tokens only
+  retro.effects.css        # Effects CSS only
+  retro.effects.js         # Effects JS only
+  retro.components.js      # Components JS only
+  retro.full.css           # Theme + effects CSS combined
+  retro.full.js            # Effects + components JS combined
+  retro.bundle.js          # Bundle manifest
+  retro/fonts/             # Copied assets{% endset %}
+
+<h1>Bundles</h1>
+<p class="lead">A bundle is a self-contained extension package that adds a coherent aesthetic identity to Vanilla Breeze: themed tokens, CSS effects, and web components that all share one design language.</p>
+
+<nav class="subnav" aria-label="Bundle docs sections">
+  <ul>
+    <li><a href="#mental-model">Mental Model</a></li>
+    <li><a href="#loading">Loading a Bundle</a></li>
+    <li><a href="#layers">Layer Architecture</a></li>
+    <li><a href="#anatomy">Bundle Anatomy</a></li>
+    <li><a href="#effects">Writing Effects</a></li>
+    <li><a href="#components">Writing Components</a></li>
+    <li><a href="#available">Available Bundles</a></li>
+  </ul>
+</nav>
+
+
+<section id="mental-model">
+  <h2>Mental Model</h2>
+  <p>Vanilla Breeze core ships tokens, layouts, and web components. A bundle extends this with:</p>
+
+  <layout-grid data-layout-min="200px" data-layout-gap="m">
+    <layout-card>
+      <layout-stack data-layout-gap="s">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: var(--size-xs);">
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Theme
+        </h3>
+        <p style="margin: 0;">Token overrides scoped to <code>[data-theme~="name"]</code>. Changes colors, fonts, radii, easing. Zero new CSS rules &mdash; just different values.</p>
+      </layout-stack>
+    </layout-card>
+    <layout-card>
+      <layout-stack data-layout-gap="s">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: var(--size-xs);">
+          <icon-wc name="sparkles" size="sm"></icon-wc>
+          Effects
+        </h3>
+        <p style="margin: 0;">CSS and JS animations activated by <code>data-*</code> attributes. Add <code>data-neon</code> or <code>data-flipboard</code> to any element.</p>
+      </layout-stack>
+    </layout-card>
+    <layout-card>
+      <layout-stack data-layout-gap="s">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: var(--size-xs);">
+          <icon-wc name="box" size="sm"></icon-wc>
+          Components
+        </h3>
+        <p style="margin: 0;">Web components with bundle-specific chrome. They consume core tokens automatically &mdash; switch theme and the component adapts.</p>
+      </layout-stack>
+    </layout-card>
+  </layout-grid>
+
+  <p>All three layers are optional. A bundle can ship just a theme, just effects, just components, or any combination.</p>
+
+  <h3>Token Inheritance</h3>
+  <p>This is the key insight: bundle components <strong>consume</strong> the same tokens as core. When you switch from <code>data-theme="retro"</code> to <code>data-theme="ocean"</code>, every bundle component re-renders with ocean's colors, fonts, and spacing. No code changes needed.</p>
+</section>
+
+
+<section id="loading">
+  <h2>Loading a Bundle</h2>
+
+  <h3>CDN (static)</h3>
+  <p>Load the full bundle alongside core:</p>
+  <code-block language="html" label="Full bundle load">{{ bundleInstallCdn | escape }}</code-block>
+
+  <h3>Granular Loading</h3>
+  <p>Load only the parts you need:</p>
+  <code-block language="html" label="Granular bundle loading">{{ bundleGranular | escape }}</code-block>
+
+  <h3>Runtime Activation</h3>
+  <p>Load a bundle dynamically from JavaScript:</p>
+  <code-block language="js" label="activateBundle API">{{ bundleActivate | escape }}</code-block>
+
+  <p><code>activateBundle</code> injects a <code>&lt;link&gt;</code> for the CSS and <code>import()</code>s the JS. It returns a Promise that resolves when both are loaded.</p>
+</section>
+
+
+<section id="layers">
+  <h2>Layer Architecture</h2>
+  <p>Vanilla Breeze uses CSS <code>@layer</code> to manage cascade priority. Bundle layers sit <strong>after</strong> core layers, ensuring bundle styles always win over core defaults without specificity battles:</p>
+
+  <code-block language="css" label="Cascade layer order">{{ layerOrder | escape }}</code-block>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Purpose</th>
+        <th>Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>tokens</code> &hellip; <code>utils</code></td>
+        <td>Core Vanilla Breeze styles</td>
+        <td>Core</td>
+      </tr>
+      <tr>
+        <td><code>bundle-theme</code></td>
+        <td>Token overrides for <code>[data-theme~="name"]</code></td>
+        <td>Bundle theme file</td>
+      </tr>
+      <tr>
+        <td><code>bundle-effects</code></td>
+        <td>CSS effects activated by <code>data-*</code> attributes</td>
+        <td>Bundle effects file</td>
+      </tr>
+      <tr>
+        <td><code>bundle-components</code></td>
+        <td>Web component styles (inside Shadow DOM)</td>
+        <td>Bundle component files</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>When no bundle is loaded, the three bundle layers are empty declarations &mdash; zero cost.</p>
+</section>
+
+
+<section id="anatomy">
+  <h2>Bundle Anatomy</h2>
+  <p>A bundle lives in <code>src/bundles/{name}/</code> and follows a strict file convention:</p>
+
+  <code-block language="text" label="Source directory structure">{{ directoryStructure | escape }}</code-block>
+
+  <p>The build pipeline produces granular and combined outputs:</p>
+
+  <code-block language="text" label="Build output">{{ buildOutput | escape }}</code-block>
+
+  <h3>Theme File</h3>
+  <p>The theme file overrides core tokens inside a <code>@layer bundle-theme</code> block, scoped by a <code>[data-theme~="name"]</code> selector:</p>
+  <code-block language="css" label="Theme token overrides">{{ themeSelector | escape }}</code-block>
+
+  <p>Because it uses the <code>~=</code> (word match) selector, users can combine themes: <code>data-theme="retro dark"</code>.</p>
+</section>
+
+
+<section id="effects">
+  <h2>Writing Effects</h2>
+
+  <h3>CSS Effects</h3>
+  <p>CSS effects are <code>data-*</code> attribute selectors in the <code>bundle-effects</code> layer. They must:</p>
+  <ul>
+    <li>Scope custom properties to their own selector (no <code>:root</code> pollution)</li>
+    <li>Consume core tokens via <code>var(--color-primary)</code> so they adapt to theme changes</li>
+    <li>Provide <code>prefers-reduced-motion</code> and <code>[data-motion-reduced]</code> overrides</li>
+    <li>Include <code>@media print</code> resets</li>
+  </ul>
+
+  <code-block language="css" label="CSS effect example">{{ effectCss | escape }}</code-block>
+
+  <h3>JS Effects</h3>
+  <p>JS effects use the <code>registerEffect</code> API. The bundle registry provides a shared <code>MutationObserver</code> that auto-initializes effects on dynamically added elements:</p>
+
+  <code-block language="js" label="JS effect registration">{{ effectJs | escape }}</code-block>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>selector</code></td>
+        <td>Yes</td>
+        <td>CSS selector to match (e.g. <code>[data-flipboard]</code>)</td>
+      </tr>
+      <tr>
+        <td><code>init(el)</code></td>
+        <td>Yes</td>
+        <td>Called when a matching element enters the DOM</td>
+      </tr>
+      <tr>
+        <td><code>destroy(el)</code></td>
+        <td>No</td>
+        <td>Called when a matching element is removed</td>
+      </tr>
+      <tr>
+        <td><code>reducedMotionFallback(el)</code></td>
+        <td>No</td>
+        <td>Called instead of <code>init</code> when motion is reduced</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<section id="components">
+  <h2>Writing Components</h2>
+
+  <h3>Registration</h3>
+  <p>Components use <code>registerComponent</code> for priority-based conflict resolution. Since <code>customElements.define()</code> is permanent, the registry uses first-wins semantics with priority tiebreaking:</p>
+
+  <code-block language="js" label="Component registration">{{ componentRegister | escape }}</code-block>
+
+  <h3>Token Contract</h3>
+  <p>Every bundle component documents which tokens it consumes and which it exposes. This makes the dependency chain explicit and enables tooling:</p>
+
+  <code-block language="js" label="Token contract metadata">{{ componentTokens | escape }}</code-block>
+
+  <h3>Usage</h3>
+  <code-block language="html" label="Component usage patterns">{{ componentUsage | escape }}</code-block>
+
+  <h3>Component Rules</h3>
+  <ol>
+    <li><strong>Shadow DOM required</strong> &mdash; isolates component styles from the page</li>
+    <li><strong><code>::part()</code> API</strong> &mdash; expose named parts for external styling</li>
+    <li><strong>Consume tokens, not hard values</strong> &mdash; use <code>var(--color-primary)</code> not <code>oklch(70% 0.28 145)</code></li>
+    <li><strong>Progressive enhancement</strong> &mdash; slot a native <code>&lt;audio&gt;</code> for JS-off fallback</li>
+    <li><strong>Static metadata</strong> &mdash; declare <code>bundle</code>, <code>contract</code>, <code>version</code>, token arrays</li>
+  </ol>
+</section>
+
+
+<section id="available">
+  <h2>Available Bundles</h2>
+  <p>Try the bundles in the interactive explorer, or load them individually in your projects.</p>
+
+  <layout-grid data-layout-min="280px" data-layout-gap="m">
+    <a href="/docs/examples/demos/bundle-explorer.html" class="section-card" style="border: 2px solid var(--color-primary);">
+      <h3>Bundle Explorer</h3>
+      <p>Interactive demo page &mdash; load and switch between all available bundles.</p>
+    </a>
+    <a href="/docs/examples/demos/retro-bundle.html" class="section-card">
+      <h3>Retro / CRT</h3>
+      <p>Phosphor green, sharp corners, Cartridge font, CRT effects, split-flap board, audio player with oscilloscope.</p>
+    </a>
+    <a href="/docs/examples/demos/kawaii-bundle.html" class="section-card">
+      <h3>Kawaii / Cute</h3>
+      <p>Pastel pink/mint/lavender palette, pill shapes, bouncy motion, Cherry Bomb One display font, sparkle particles.</p>
+    </a>
+  </layout-grid>
+</section>
+
+
+<section>
+  <h2>Next Steps</h2>
+  <layout-grid data-layout-min="200px" data-layout-gap="m">
+    <a href="/docs/examples/demos/bundle-explorer.html" class="section-card">
+      <h3>Bundle Explorer</h3>
+      <p>Try bundles live in the interactive demo.</p>
+    </a>
+    <a href="/docs/principles/" class="section-card">
+      <h3>Principles</h3>
+      <p>Understand the progressive enhancement philosophy.</p>
+    </a>
+    <a href="/docs/themes/" class="section-card">
+      <h3>Themes</h3>
+      <p>Learn about the core token system that bundles extend.</p>
+    </a>
+  </layout-grid>
+</section>

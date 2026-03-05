@@ -69,10 +69,19 @@
       background: oklch(100% 0 0 / 0.12);
     }
 
+    .toolbar input[type="checkbox"] {
+      accent-color: oklch(70% 0.15 195);
+      vertical-align: middle;
+    }
+
     .toolbar input[type="range"] {
       width: 80px;
       accent-color: oklch(70% 0.15 195);
       vertical-align: middle;
+    }
+
+    .toolbar input[type="range"].compact {
+      width: 56px;
     }
 
     .toolbar output {
@@ -402,7 +411,7 @@
     <span class="sep"></span>
     <label>Layout
       <select id="ctl-layout">
-        <option value="none">None</option>
+        <option value="none">Center</option>
         <option value="stack">Stack</option>
         <option value="sidebar-left">Sidebar Left</option>
         <option value="sidebar-right">Sidebar Right</option>
@@ -418,6 +427,17 @@
       </select>
     </label>
     <span class="sep"></span>
+    <label>Chrome
+      <select id="ctl-chrome">
+        <option value="card">Card</option>
+        <option value="stretch">Stretch</option>
+        <option value="integrated">Integrated</option>
+      </select>
+    </label>
+    <label>
+      <input type="checkbox" id="ctl-fixed"/> Fixed
+    </label>
+    <span class="sep"></span>
     <label>Background
       <select id="ctl-bg">
         <option value="theme">Theme Gradient</option>
@@ -426,6 +446,44 @@
         <option value="photo-blur">Photo (Blur)</option>
         <option value="texture">Texture</option>
         <option value="dual">Photo + Gradient</option>
+      </select>
+    </label>
+    <span class="sep"></span>
+    <label>Depth
+      <select id="ctl-depth">
+        <option value="0">None</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    </label>
+    <label id="depth-offset-ctl" hidden>Y
+      <input type="range" class="compact" id="depth-offset" min="4" max="40" value="8" step="2"/>
+      <output id="depth-offset-out">8</output>
+    </label>
+    <label id="depth-spread-ctl" hidden>Spread
+      <input type="range" class="compact" id="depth-spread" min="0" max="16" value="3" step="1"/>
+      <output id="depth-spread-out">3</output>
+    </label>
+    <label id="depth-blur-ctl" hidden>Blur
+      <input type="range" class="compact" id="depth-blur" min="0" max="32" value="8" step="2"/>
+      <output id="depth-blur-out">8</output>
+    </label>
+    <label id="depth-color-ctl" hidden>Tint
+      <select id="depth-color">
+        <option value="surface">Surface</option>
+        <option value="darker">Darker</option>
+        <option value="lighter">Lighter</option>
+        <option value="accent">Accent</option>
+      </select>
+    </label>
+    <span class="sep"></span>
+    <label>Surface
+      <select id="ctl-surface">
+        <option value="solid">Solid</option>
+        <option value="frosted">Frosted</option>
+        <option value="ghost">Ghost</option>
+        <option value="tinted">Tinted</option>
+        <option value="transparent">Transparent</option>
       </select>
     </label>
     <span class="sep"></span>
@@ -539,15 +597,22 @@
     <div>Theme: <code id="token-theme">default</code></div>
     <div>Layout: <code id="token-layout">none</code></div>
     <div>Backdrop: <code id="token-backdrop">default</code></div>
+    <div>Chrome: <code id="token-chrome">card</code></div>
     <div>BG: <code id="token-bg">theme gradient</code></div>
     <div>Gap: <code id="token-gap">24px</code></div>
+    <div>Depth: <code id="token-depth">none</code></div>
+    <div id="token-depth-detail" hidden>Shadow: <code id="token-depth-shadow">—</code></div>
+    <div>Surface: <code id="token-surface">solid</code></div>
   </div>
 
   <script>
     const ctlTheme = document.getElementById('ctl-theme');
     const ctlLayout = document.getElementById('ctl-layout');
     const ctlPreset = document.getElementById('ctl-preset');
+    const ctlChrome = document.getElementById('ctl-chrome');
     const ctlBg = document.getElementById('ctl-bg');
+    const ctlDepth = document.getElementById('ctl-depth');
+    const ctlSurface = document.getElementById('ctl-surface');
     const gapSlider = document.getElementById('gap-slider');
     const gapOutput = document.getElementById('gap-output');
     const regionDescription = document.getElementById('region-description');
@@ -747,6 +812,143 @@
       updateTokenDisplay();
     }
 
+    /* ===== Chrome mode switching ===== */
+    const ctlFixed = document.getElementById('ctl-fixed');
+    let currentChrome = 'card';
+
+    function applyChromeAttr() {
+      const parts = [];
+      if (currentChrome !== 'card') parts.push(currentChrome);
+      if (ctlFixed.checked) parts.push('fixed');
+
+      if (parts.length === 0) {
+        root.removeAttribute('data-backdrop-chrome');
+      } else {
+        root.setAttribute('data-backdrop-chrome', parts.join(' '));
+      }
+      updateTokenDisplay();
+    }
+
+    function switchChrome(mode) {
+      currentChrome = mode;
+      applyChromeAttr();
+    }
+
+    ctlFixed.addEventListener('change', applyChromeAttr);
+
+    /* ===== Depth controls ===== */
+    const mainEl = document.querySelector('main');
+    const depthOffsetSlider = document.getElementById('depth-offset');
+    const depthSpreadSlider = document.getElementById('depth-spread');
+    const depthBlurSlider = document.getElementById('depth-blur');
+    const depthColorSelect = document.getElementById('depth-color');
+    const depthOffsetOut = document.getElementById('depth-offset-out');
+    const depthSpreadOut = document.getElementById('depth-spread-out');
+    const depthBlurOut = document.getElementById('depth-blur-out');
+    const depthSliderCtls = [
+      document.getElementById('depth-offset-ctl'),
+      document.getElementById('depth-spread-ctl'),
+      document.getElementById('depth-blur-ctl'),
+      document.getElementById('depth-color-ctl'),
+    ];
+    const tokenDepthDetail = document.getElementById('token-depth-detail');
+    const tokenDepthShadow = document.getElementById('token-depth-shadow');
+
+    let currentDepth = 0;
+
+    /* Color tint map — returns the ghost card surface color */
+    function depthCardColor() {
+      const tint = depthColorSelect.value;
+      switch (tint) {
+        case 'darker':
+          return 'oklch(from var(--canvas-bg, var(--color-surface, #fff)) calc(l - 0.06) c h)';
+        case 'lighter':
+          return 'oklch(from var(--canvas-bg, var(--color-surface, #fff)) calc(l + 0.06) c h)';
+        case 'accent':
+          return 'oklch(from var(--color-accent, var(--color-primary)) l 0.04 h / 0.85)';
+        default:
+          return 'var(--canvas-bg, var(--color-surface, #fff))';
+      }
+    }
+
+    /* Build and apply the box-shadow for ghost cards */
+    function applyDepthShadow() {
+      if (currentDepth === 0) {
+        mainEl.style.removeProperty('box-shadow');
+        depthSliderCtls.forEach(el => el.hidden = true);
+        tokenDepthDetail.hidden = true;
+        return;
+      }
+
+      depthSliderCtls.forEach(el => el.hidden = false);
+      tokenDepthDetail.hidden = false;
+
+      const offset = Number(depthOffsetSlider.value);
+      const spread = Number(depthSpreadSlider.value);
+      const blur = Number(depthBlurSlider.value);
+      const color = depthCardColor();
+
+      /* Update outputs */
+      depthOffsetOut.textContent = offset;
+      depthSpreadOut.textContent = spread;
+      depthBlurOut.textContent = blur;
+
+      /* Get main's current canvas shadow from the computed style */
+      const baseShadow = 'var(--canvas-shadow)';
+
+      /* Build ghost card shadows */
+      const layers = [baseShadow];
+
+      /* Ghost 1 */
+      layers.push(`0 ${offset}px 0 -${spread}px ${color}`);
+      layers.push(`0 ${offset + 2}px ${blur}px -${spread}px oklch(0% 0 0 / 0.12)`);
+
+      /* Ghost 2 (when depth = 2) */
+      if (currentDepth >= 2) {
+        const off2 = offset * 2;
+        const spr2 = spread * 2;
+        layers.push(`0 ${off2}px 0 -${spr2}px ${color}`);
+        layers.push(`0 ${off2 + 2}px ${blur}px -${spr2}px oklch(0% 0 0 / 0.06)`);
+      }
+
+      const shadowValue = layers.join(', ');
+      mainEl.style.setProperty('box-shadow', shadowValue);
+
+      /* Show in token panel */
+      tokenDepthShadow.textContent =
+        `Y:${offset} spread:-${spread} blur:${blur} tint:${depthColorSelect.value}` +
+        (currentDepth >= 2 ? ` | Y:${offset*2} spread:-${spread*2}` : '');
+    }
+
+    function switchDepth(depth) {
+      currentDepth = Number(depth);
+      if (depth === '0') {
+        body.removeAttribute('data-canvas-depth');
+      } else {
+        body.setAttribute('data-canvas-depth', depth);
+      }
+      applyDepthShadow();
+      updateTokenDisplay();
+    }
+
+    /* Wire up depth tuning sliders */
+    depthOffsetSlider.addEventListener('input', applyDepthShadow);
+    depthSpreadSlider.addEventListener('input', applyDepthShadow);
+    depthBlurSlider.addEventListener('input', applyDepthShadow);
+    depthColorSelect.addEventListener('change', applyDepthShadow);
+
+    /* ===== Surface switching ===== */
+    const headerEl = document.querySelector('header');
+
+    function switchSurface(surface) {
+      if (surface === 'solid') {
+        headerEl.removeAttribute('data-surface');
+      } else {
+        headerEl.setAttribute('data-surface', surface);
+      }
+      updateTokenDisplay();
+    }
+
     /* ===== Gap slider ===== */
     function handleGapInput() {
       const val = gapSlider.value;
@@ -772,22 +974,32 @@
     }
 
     /* ===== Token info display ===== */
+    const tokenChrome = document.getElementById('token-chrome');
+    const tokenDepth = document.getElementById('token-depth');
+    const tokenSurface = document.getElementById('token-surface');
+
     function updateTokenDisplay() {
       const theme = root.getAttribute('data-theme') || '';
       tokenTheme.textContent = themeTokenDescriptions[theme] || 'default';
       tokenLayout.textContent = currentLayout;
       tokenBackdrop.textContent = currentPreset;
+      tokenChrome.textContent = root.getAttribute('data-backdrop-chrome') || 'card';
       tokenBg.textContent = bgModes[currentMode].label;
 
       const gapVal = root.style.getPropertyValue('--canvas-gap');
       tokenGap.textContent = gapVal || PRESET_GAPS[currentPreset] + 'px (preset)';
+      tokenDepth.textContent = body.getAttribute('data-canvas-depth') || 'none';
+      tokenSurface.textContent = headerEl.getAttribute('data-surface') || 'solid';
     }
 
     /* ===== Event listeners ===== */
     ctlTheme.addEventListener('change', () => switchTheme(ctlTheme.value));
     ctlLayout.addEventListener('change', () => switchLayout(ctlLayout.value));
     ctlPreset.addEventListener('change', () => switchPreset(ctlPreset.value));
+    ctlChrome.addEventListener('change', () => switchChrome(ctlChrome.value));
     ctlBg.addEventListener('change', () => switchBgMode(ctlBg.value));
+    ctlDepth.addEventListener('change', () => switchDepth(ctlDepth.value));
+    ctlSurface.addEventListener('change', () => switchSurface(ctlSurface.value));
     gapSlider.addEventListener('input', handleGapInput);
 
     /* ===== Init ===== */

@@ -15,6 +15,7 @@
  */
 
 import { ThemeManager } from '../../lib/theme-manager.js';
+import { EnvironmentManager } from '../../lib/environment-manager.js';
 import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
@@ -117,6 +118,30 @@ class SettingsPanel extends HTMLElement {
     return 'default';
   }
 
+  /** Extract the chrome mode (card/stretch/integrated) from a space-separated value */
+  #getChromeMode(chromeValue) {
+    if (!chromeValue) return 'card';
+    const parts = chromeValue.split(/\s+/);
+    for (const p of parts) {
+      if (p === 'stretch' || p === 'integrated') return p;
+    }
+    return 'card';
+  }
+
+  /** Check if 'fixed' is present in the chrome value */
+  #isFixedOn(chromeValue) {
+    if (!chromeValue) return false;
+    return chromeValue.split(/\s+/).includes('fixed');
+  }
+
+  /** Build the chrome value from mode + fixed flag */
+  #buildChromeValue(mode, fixed) {
+    const parts = [];
+    if (mode && mode !== 'card') parts.push(mode);
+    if (fixed) parts.push('fixed');
+    return parts.join(' ') || 'card';
+  }
+
   // --- Render ---
 
   #render() {
@@ -149,7 +174,7 @@ class SettingsPanel extends HTMLElement {
   }
 
   #renderPanel() {
-    const { mode, brand, fluid, backdrop } = ThemeManager.getState();
+    const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
     const selectValue = this.#getSelectValue(brand);
     const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
@@ -200,7 +225,6 @@ class SettingsPanel extends HTMLElement {
                 <option value="terminal" ${selectValue === 'terminal' ? 'selected' : ''}>Terminal</option>
                 <option value="organic" ${selectValue === 'organic' ? 'selected' : ''}>Organic</option>
                 <option value="editorial" ${selectValue === 'editorial' ? 'selected' : ''}>Editorial</option>
-                <option value="kawaii" ${selectValue === 'kawaii' ? 'selected' : ''}>Kawaii</option>
                 <option value="8bit" ${selectValue === '8bit' ? 'selected' : ''}>8-Bit</option>
                 <option value="nes" ${selectValue === 'nes' ? 'selected' : ''}>NES</option>
                 <option value="win9x" ${selectValue === 'win9x' ? 'selected' : ''}>Win9x</option>
@@ -232,6 +256,10 @@ class SettingsPanel extends HTMLElement {
                 <option value="dusk" ${selectValue === 'dusk' ? 'selected' : ''}>Dusk</option>
                 <option value="midnight" ${selectValue === 'midnight' ? 'selected' : ''}>Midnight</option>
                 <option value="high-noon" ${selectValue === 'high-noon' ? 'selected' : ''}>High Noon</option>
+              </optgroup>
+              <optgroup label="Bundles">
+                <option value="kawaii" ${selectValue === 'kawaii' ? 'selected' : ''}>Kawaii</option>
+                <option value="retro" ${selectValue === 'retro' ? 'selected' : ''}>Retro</option>
               </optgroup>
             </select>
 
@@ -309,6 +337,50 @@ class SettingsPanel extends HTMLElement {
                 `).join('')}
               </div>
             </div>
+            <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
+              <span class="settings-label">Chrome</span>
+              <div class="segmented-control" role="radiogroup" aria-label="Backdrop chrome mode">
+                ${['card', 'stretch', 'integrated'].map(c => `
+                  <label class="segment">
+                    <input type="radio" name="settings-backdrop-chrome" value="${c}" ${this.#getChromeMode(backdropChrome) === c ? 'checked' : ''} />
+                    <span>${c[0].toUpperCase() + c.slice(1)}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+            <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
+              <label class="toggle-row">
+                <span>Fixed Header</span>
+                <input type="checkbox" name="settings-backdrop-fixed" data-switch="sm" data-backdrop-fixed ${this.#isFixedOn(backdropChrome) ? 'checked' : ''} />
+              </label>
+            </div>
+            <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
+              <label class="settings-label" for="settings-page-bg">Page Background</label>
+              <select id="settings-page-bg" name="settings-page-bg">
+                <option value="" ${pageBgType === '' ? 'selected' : ''}>Theme Default</option>
+                <option value="color" ${pageBgType === 'color' ? 'selected' : ''}>Solid Color</option>
+                <option value="gradient" ${pageBgType === 'gradient' ? 'selected' : ''}>Gradient</option>
+              </select>
+            </div>
+            <div class="page-bg-color-row backdrop-row" ${pageBgType === 'color' && backdropOn ? '' : 'hidden'}>
+              <span class="settings-label">Color</span>
+              <input type="color" name="settings-page-bg-color" value="${pageBgColor || '#1a1a2e'}" />
+            </div>
+            <div class="page-bg-grad-row backdrop-row" ${pageBgType === 'gradient' && backdropOn ? '' : 'hidden'}>
+              <span class="settings-label">Start</span>
+              <input type="color" name="settings-page-bg-grad-start" value="${pageBgGradStart || '#1a1a2e'}" />
+              <span class="settings-label">End</span>
+              <input type="color" name="settings-page-bg-grad-end" value="${pageBgGradEnd || '#16213e'}" />
+            </div>
+            <div class="page-bg-grad-dir-row backdrop-row" ${pageBgType === 'gradient' && backdropOn ? '' : 'hidden'}>
+              <span class="settings-label">Direction</span>
+              <select name="settings-page-bg-grad-dir">
+                <option value="to bottom" ${(pageBgGradDir || 'to bottom') === 'to bottom' ? 'selected' : ''}>Top → Bottom</option>
+                <option value="to right" ${pageBgGradDir === 'to right' ? 'selected' : ''}>Left → Right</option>
+                <option value="135deg" ${pageBgGradDir === '135deg' ? 'selected' : ''}>Diagonal ↘</option>
+                <option value="45deg" ${pageBgGradDir === '45deg' ? 'selected' : ''}>Diagonal ↗</option>
+              </select>
+            </div>
           </div>
         </details>
 
@@ -323,6 +395,21 @@ class SettingsPanel extends HTMLElement {
             <label class="toggle-row">
               <span>Sound Effects</span>
               <input type="checkbox" name="ext-sounds" data-switch="sm" data-ext="sounds" ${extensions.sounds ? 'checked' : ''} />
+            </label>
+          </div>
+        </details>
+
+        <!-- Environment -->
+        <details name="settings">
+          <summary>Environment</summary>
+          <div class="settings-section">
+            <label class="toggle-row">
+              <span>Time-of-Day Shifts</span>
+              <input type="checkbox" name="env-timeOfDay" data-switch="sm" data-env="timeOfDay" ${this.#loadEnvPrefs().timeOfDay ? 'checked' : ''} />
+            </label>
+            <label class="toggle-row">
+              <span>Seasonal Tinting</span>
+              <input type="checkbox" name="env-seasonal" data-switch="sm" data-env="seasonal" ${this.#loadEnvPrefs().seasonal ? 'checked' : ''} />
             </label>
           </div>
         </details>
@@ -387,6 +474,23 @@ class SettingsPanel extends HTMLElement {
       input.addEventListener('change', this.#handleBackdropPreset);
     });
 
+    // Backdrop chrome mode segmented control
+    this.#panel.querySelectorAll('input[name="settings-backdrop-chrome"]').forEach(input => {
+      input.addEventListener('change', this.#handleBackdropChrome);
+    });
+
+    // Backdrop fixed header toggle
+    this.#panel.querySelector('input[data-backdrop-fixed]')?.addEventListener('change', this.#handleBackdropFixed);
+
+    // Page background type
+    this.#panel.querySelector('[name="settings-page-bg"]')?.addEventListener('change', this.#handlePageBgType);
+
+    // Page background color/gradient inputs
+    this.#panel.querySelector('[name="settings-page-bg-color"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.addEventListener('change', this.#handlePageBgChange);
+
     // Accessibility toggles
     this.#panel.querySelectorAll('input[data-a11y]').forEach(input => {
       input.addEventListener('change', this.#handleA11yChange);
@@ -395,6 +499,11 @@ class SettingsPanel extends HTMLElement {
     // Extension toggles
     this.#panel.querySelectorAll('input[data-ext]').forEach(input => {
       input.addEventListener('change', this.#handleExtensionChange);
+    });
+
+    // Environment toggles
+    this.#panel.querySelectorAll('input[data-env]').forEach(input => {
+      input.addEventListener('change', this.#handleEnvironmentChange);
     });
 
     // Reset button
@@ -485,6 +594,45 @@ class SettingsPanel extends HTMLElement {
     ThemeManager.setBackdrop(this.#buildBackdropValue(true, e.target.value));
   };
 
+  #handleBackdropChrome = (e) => {
+    const fixed = this.#isFixedOn(ThemeManager.getState().backdropChrome);
+    ThemeManager.setBackdropChrome(this.#buildChromeValue(e.target.value, fixed));
+  };
+
+  #handleBackdropFixed = (e) => {
+    const mode = this.#getChromeMode(ThemeManager.getState().backdropChrome);
+    ThemeManager.setBackdropChrome(this.#buildChromeValue(mode, e.target.checked));
+  };
+
+  #handlePageBgType = (e) => {
+    const type = e.target.value;
+    this.#updatePageBgVisibility(type);
+    if (type === 'color') {
+      const color = this.#panel.querySelector('[name="settings-page-bg-color"]')?.value || '#1a1a2e';
+      ThemeManager.setPageBg({ type, color });
+    } else if (type === 'gradient') {
+      const gradStart = this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.value || '#1a1a2e';
+      const gradEnd = this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.value || '#16213e';
+      const gradDir = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.value || 'to bottom';
+      ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
+    } else {
+      ThemeManager.setPageBg({});
+    }
+  };
+
+  #handlePageBgChange = () => {
+    const type = this.#panel.querySelector('[name="settings-page-bg"]')?.value || '';
+    if (type === 'color') {
+      const color = this.#panel.querySelector('[name="settings-page-bg-color"]')?.value || '';
+      ThemeManager.setPageBg({ type, color });
+    } else if (type === 'gradient') {
+      const gradStart = this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.value || '';
+      const gradEnd = this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.value || '';
+      const gradDir = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.value || 'to bottom';
+      ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
+    }
+  };
+
   #handleA11yChange = (e) => {
     const themeId = e.target.dataset.a11y;
     const current = this.#loadA11yThemes();
@@ -508,6 +656,12 @@ class SettingsPanel extends HTMLElement {
     this.#applyExtensions();
   };
 
+  #handleEnvironmentChange = (e) => {
+    const source = e.target.dataset.env;
+    const enabled = e.target.checked;
+    EnvironmentManager.setSource(source, enabled);
+  };
+
   #handleReset = () => {
     if (!confirm('Reset all settings to defaults?')) return;
 
@@ -522,6 +676,10 @@ class SettingsPanel extends HTMLElement {
     try { localStorage.removeItem(EXTENSIONS_KEY); } catch { /* ignore */ }
     this.#applyExtensions();
 
+    // Reset environment
+    EnvironmentManager.setSource('timeOfDay', false);
+    EnvironmentManager.setSource('seasonal', false);
+
     // Re-sync UI
     this.#syncState();
   };
@@ -533,7 +691,7 @@ class SettingsPanel extends HTMLElement {
   // --- State sync ---
 
   #syncState() {
-    const { mode, brand, fluid, backdrop } = ThemeManager.getState();
+    const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
     const selectValue = this.#getSelectValue(brand);
     const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
@@ -572,7 +730,29 @@ class SettingsPanel extends HTMLElement {
     // Backdrop preset
     const backdropInput = this.#panel.querySelector(`input[name="settings-backdrop"][value="${backdropPreset}"]`);
     if (backdropInput) backdropInput.checked = true;
+
+    // Backdrop chrome mode (parse space-separated value)
+    const chromeMode = this.#getChromeMode(backdropChrome);
+    const chromeInput = this.#panel.querySelector(`input[name="settings-backdrop-chrome"][value="${chromeMode}"]`);
+    if (chromeInput) chromeInput.checked = true;
+
+    // Backdrop fixed header toggle
+    const fixedToggle = this.#panel.querySelector('input[data-backdrop-fixed]');
+    if (fixedToggle) fixedToggle.checked = this.#isFixedOn(backdropChrome);
     this.#updateBackdropVisibility(backdropOn);
+
+    // Page background
+    const pageBgSelect = this.#panel.querySelector('[name="settings-page-bg"]');
+    if (pageBgSelect) pageBgSelect.value = pageBgType || '';
+    const pageBgColorInput = this.#panel.querySelector('[name="settings-page-bg-color"]');
+    if (pageBgColorInput && pageBgColor) pageBgColorInput.value = pageBgColor;
+    const gradStartInput = this.#panel.querySelector('[name="settings-page-bg-grad-start"]');
+    if (gradStartInput && pageBgGradStart) gradStartInput.value = pageBgGradStart;
+    const gradEndInput = this.#panel.querySelector('[name="settings-page-bg-grad-end"]');
+    if (gradEndInput && pageBgGradEnd) gradEndInput.value = pageBgGradEnd;
+    const gradDirSelect = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]');
+    if (gradDirSelect && pageBgGradDir) gradDirSelect.value = pageBgGradDir;
+    if (backdropOn) this.#updatePageBgVisibility(pageBgType || '');
 
     // A11y toggles
     this.#panel.querySelectorAll('input[data-a11y]').forEach(input => {
@@ -583,6 +763,12 @@ class SettingsPanel extends HTMLElement {
     this.#panel.querySelectorAll('input[data-ext]').forEach(input => {
       const val = extensions[input.dataset.ext];
       input.checked = val ?? EXTENSION_DEFAULTS[input.dataset.ext];
+    });
+
+    // Environment toggles
+    const envPrefs = this.#loadEnvPrefs();
+    this.#panel.querySelectorAll('input[data-env]').forEach(input => {
+      input.checked = envPrefs[input.dataset.env] ?? false;
     });
   }
 
@@ -597,8 +783,22 @@ class SettingsPanel extends HTMLElement {
   }
 
   #updateBackdropVisibility(show) {
-    const row = this.#panel.querySelector('.backdrop-row');
-    if (row) row.hidden = !show;
+    this.#panel.querySelectorAll('.backdrop-row').forEach(row => {
+      row.hidden = !show;
+    });
+    if (show) {
+      const pageBgType = this.#panel.querySelector('[name="settings-page-bg"]')?.value || '';
+      this.#updatePageBgVisibility(pageBgType);
+    }
+  }
+
+  #updatePageBgVisibility(type) {
+    const colorRow = this.#panel.querySelector('.page-bg-color-row');
+    const gradRow = this.#panel.querySelector('.page-bg-grad-row');
+    const gradDirRow = this.#panel.querySelector('.page-bg-grad-dir-row');
+    if (colorRow) colorRow.hidden = type !== 'color';
+    if (gradRow) gradRow.hidden = type !== 'gradient';
+    if (gradDirRow) gradDirRow.hidden = type !== 'gradient';
   }
 
   // --- localStorage helpers ---
@@ -630,6 +830,10 @@ class SettingsPanel extends HTMLElement {
 
   #reapplyA11yThemes() {
     this.#applyA11yThemes();
+  }
+
+  #loadEnvPrefs() {
+    return EnvironmentManager.load();
   }
 
   #loadExtensions() {

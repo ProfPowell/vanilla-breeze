@@ -1,0 +1,51 @@
+/**
+ * Canvas Depth — Ghost Cards
+ *
+ * Adds a "stacked papers" illusion behind <main> using layered box-shadows.
+ * Additional card-shaped shadows peek out below main, shifted down and
+ * slightly narrower (via negative spread), suggesting a pile of papers.
+ *
+ * Usage:
+ *   <body data-backdrop data-canvas-depth="1">  — one ghost card
+ *   <body data-backdrop data-canvas-depth="2">  — two ghost cards
+ *
+ * Only active with card chrome + default/elevated presets (needs visible radius).
+ * Flush, stretch, and integrated modes suppress the effect (radius is 0 or edges look wrong).
+ */
+
+/* ========================================
+ * Depth 1 — one ghost card peeking below main
+ *
+ * Solid shadow = card surface (shifted 8px down, 3px narrower per side)
+ * Blurred shadow = card's own drop shadow
+ * ======================================== */
+:root[data-backdrop]:not([data-backdrop="flush"]):not([data-backdrop-chrome~="stretch"]):not([data-backdrop-chrome~="integrated"]) > body[data-canvas-depth="1"] > main {
+  box-shadow:
+    var(--canvas-shadow),
+    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+    0 10px 8px -3px oklch(0% 0 0 / 0.12);
+}
+
+/* ========================================
+ * Depth 2 — two ghost cards peeking below main
+ *
+ * First card: 8px down, 3px narrower
+ * Second card: 16px down, 6px narrower
+ * ======================================== */
+:root[data-backdrop]:not([data-backdrop="flush"]):not([data-backdrop-chrome~="stretch"]):not([data-backdrop-chrome~="integrated"]) > body[data-canvas-depth="2"] > main {
+  box-shadow:
+    var(--canvas-shadow),
+    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
+    0 10px 8px -3px oklch(0% 0 0 / 0.12),
+    0 16px 0 -6px var(--canvas-bg, var(--color-surface, #fff)),
+    0 18px 8px -6px oklch(0% 0 0 / 0.06);
+}
+
+/* ========================================
+ * Mobile — disable (goes flush, no radius)
+ * ======================================== */
+@media (max-width: 640px) {
+  :root[data-backdrop] > body[data-canvas-depth] > main {
+    box-shadow: none;
+  }
+}

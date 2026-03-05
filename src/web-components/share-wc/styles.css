@@ -1,0 +1,121 @@
+/* share-wc: Social share component */
+
+share-wc {
+  --_gap: var(--size-xs, 0.5rem);
+  --_btn-size: var(--size-m, 2.5rem);
+  --_radius: var(--radius-m, 0.5rem);
+  --_transition: var(--duration-fast, 150ms) var(--ease-out, ease-out);
+
+  display: inline-flex;
+}
+
+/* No-JS: show slotted links as inline cluster */
+share-wc:not(:defined) {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--size-xs, 0.5rem);
+}
+
+/* Nav wrapper for platform buttons */
+share-wc nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--_gap);
+  align-items: center;
+}
+
+/* Shared button styles */
+share-wc button,
+share-wc a[data-platform] {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.25rem);
+  padding: var(--size-2xs, 0.25rem) var(--size-s, 0.75rem);
+  min-block-size: var(--_btn-size);
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  border-radius: var(--_radius);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-s, 0.875rem);
+  color: var(--_brand, var(--color-text, #333));
+  background: var(--color-surface, #fff);
+  transition: background var(--_transition), border-color var(--_transition), color var(--_transition);
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+share-wc button:hover,
+share-wc a[data-platform]:hover {
+  border-color: var(--_brand, var(--color-interactive, oklch(55% 0.2 260)));
+  background: color-mix(in oklab, var(--_brand, var(--color-interactive, oklch(55% 0.2 260))) 8%, transparent);
+}
+
+share-wc button:focus-visible,
+share-wc a[data-platform]:focus-visible {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: 2px;
+}
+
+share-wc button:active,
+share-wc a[data-platform]:active {
+  scale: 0.96;
+}
+
+/* Size modifiers */
+share-wc[data-size="s"] { --_btn-size: var(--size-s, 2rem); }
+share-wc[data-size="s"] button,
+share-wc[data-size="s"] a[data-platform] {
+  padding: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+share-wc[data-size="l"] { --_btn-size: var(--size-l, 3rem); }
+share-wc[data-size="l"] button,
+share-wc[data-size="l"] a[data-platform] {
+  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  font-size: var(--font-size-m, 1rem);
+}
+
+/* Variant: icon only */
+share-wc[data-variant="icon"] .share-label { display: none; }
+share-wc[data-variant="icon"] button,
+share-wc[data-variant="icon"] a[data-platform] {
+  padding: var(--size-2xs, 0.25rem);
+  aspect-ratio: 1;
+  justify-content: center;
+}
+
+/* Variant: label only */
+share-wc[data-variant="label"] icon-wc { display: none; }
+
+/* Copy confirmation */
+[data-platform="copy"][data-state="copied"] {
+  color: var(--color-success, oklch(50% 0.15 145));
+  border-color: var(--color-success, oklch(50% 0.15 145));
+}
+
+/* Platform brand colours (opt-in via data-color) */
+share-wc[data-color] [data-platform="x"],
+share-wc[data-color] [data-platform="twitter"]  { --_brand: #000; }
+share-wc[data-color] [data-platform="facebook"] { --_brand: #1877f2; }
+share-wc[data-color] [data-platform="linkedin"] { --_brand: #0a66c2; }
+share-wc[data-color] [data-platform="whatsapp"] { --_brand: #25d366; }
+share-wc[data-color] [data-platform="telegram"] { --_brand: #229ed9; }
+share-wc[data-color] [data-platform="bluesky"]  { --_brand: #0085ff; }
+share-wc[data-color] [data-platform="mastodon"] { --_brand: #6364ff; }
+share-wc[data-color] [data-platform="email"]    { --_brand: var(--color-text); }
+share-wc[data-color] [data-platform="copy"]     { --_brand: var(--color-text); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  share-wc button,
+  share-wc a[data-platform] {
+    transition: none;
+  }
+
+  share-wc button:active,
+  share-wc a[data-platform]:active {
+    scale: none;
+  }
+}

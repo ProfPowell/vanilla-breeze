@@ -5,8 +5,15 @@
  * Presets: data-backdrop (default) | data-backdrop="flush" | data-backdrop="elevated"
  *
  * Makes semantic regions (main, header, footer, nav, aside) float as elevated
- * canvases above the page background. Main gets prominent shadow; header/footer
- * get subtle shadow; nav/aside get medium shadow.
+ * canvases above the page background. Each region is an independent card with
+ * full border-radius and gaps between them.
+ *
+ * Chrome modes (space-separated, composable):
+ *   data-backdrop-chrome="card"        — default, independent cards
+ *   data-backdrop-chrome="stretch"     — full-width header/footer, centered main
+ *   data-backdrop-chrome="integrated"  — one continuous connected shape
+ *   data-backdrop-chrome="fixed"       — sticky header (combines with any above)
+ *   data-backdrop-chrome="stretch fixed" — traditional web + sticky header
  *
  * Canvas shape inherits from theme tokens — --radius-l, --shadow-lg, etc. —
  * so Swiss (sharp), Brutalist (hard offset), Organic (rounded) all work
@@ -22,7 +29,7 @@
  * Canvas tokens (overridable by themes)
  * ======================================== */
 [data-backdrop] {
-  --canvas-width: 860px;
+  --canvas-width: min(72rem, 100%);
   --canvas-radius: var(--radius-l);
   --canvas-shadow: var(--shadow-lg);
   --canvas-shadow-subtle: var(--shadow-sm);
@@ -59,8 +66,8 @@
 
 /* ========================================
  * Elevation styles on all semantic regions
- * Shared: background, radius, inline padding
- * Per-region: shadow level, main also gets block padding
+ * Each region is an independent card: background, full radius, padding.
+ * Per-region: shadow level, main also gets block padding.
  * ======================================== */
 :root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
   background: var(--canvas-bg);
@@ -88,11 +95,11 @@
 
 /* ========================================
  * Centering for non-grid layouts
- * Without page-layout: regions are in normal flow — add centering
+ * Without page-layout: regions are in normal flow — center them.
  * ======================================== */
 :root[data-backdrop] > body:not([data-page-layout]) > :is(main, header, footer) {
   width: 100%;
-  max-width: var(--canvas-width);
+  max-inline-size: var(--canvas-width);
   margin-inline: auto;
 }
 
@@ -102,6 +109,100 @@
  * ======================================== */
 :root[data-backdrop] > body:not([data-page-layout]) > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
   margin-block-start: var(--canvas-gap);
+}
+
+/* ========================================
+ * Integrated mode (opt-in): connected surface
+ * data-backdrop-chrome~="integrated" joins ALL regions into one
+ * continuous shape. Zeroes gaps, flattens interior corners.
+ * Only header top and footer bottom keep radius.
+ * ======================================== */
+
+/* Flatten all regions first */
+:root[data-backdrop-chrome~="integrated"] > body > :is(main, header, footer, nav, aside) {
+  border-radius: 0;
+}
+
+/* Header: only top corners rounded */
+:root[data-backdrop-chrome~="integrated"] > body > header {
+  border-radius: var(--canvas-radius) var(--canvas-radius) 0 0;
+}
+
+/* Footer: only bottom corners rounded */
+:root[data-backdrop-chrome~="integrated"] > body > footer {
+  border-radius: 0 0 var(--canvas-radius) var(--canvas-radius);
+}
+
+/* Integrated: collapse all gaps so regions touch */
+:root[data-backdrop-chrome~="integrated"] > body > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+  margin-block-start: 0;
+}
+
+:root[data-backdrop-chrome~="integrated"] > body {
+  row-gap: 0;
+  column-gap: 0;
+}
+
+/* ========================================
+ * Stretch mode: traditional web layout
+ * Full-width header/footer, centered main card.
+ * ======================================== */
+
+/* Remove body padding — regions go edge-to-edge */
+:root[data-backdrop-chrome~="stretch"] > body {
+  padding-inline: 0;
+  padding-block: 0;
+}
+
+/* Header/footer: full-width, no card styling */
+:root[data-backdrop-chrome~="stretch"] > body > header,
+:root[data-backdrop-chrome~="stretch"] > body > footer {
+  max-inline-size: none;
+  margin-inline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-backdrop-chrome~="stretch"] > body > header {
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+:root[data-backdrop-chrome~="stretch"] > body > footer {
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Main keeps card styling, centered */
+:root[data-backdrop-chrome~="stretch"] > body > main {
+  width: 100%;
+  max-inline-size: var(--canvas-width);
+  margin-inline: auto;
+}
+
+/* Stretch: seamless body bg matches surface — no visible contrast */
+:root[data-backdrop-chrome~="stretch"] {
+  --page-bg-color: var(--color-surface);
+  --page-bg-gradient: none;
+}
+
+/* ========================================
+ * Fixed mode (composable): sticky header with depth
+ * Combines with any chrome mode via space-separated values.
+ * ======================================== */
+
+:root[data-backdrop-chrome~="fixed"] > body > header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky, 100);
+}
+
+/* Depth shadow when fixed + card/integrated (content scrolls under) */
+:root[data-backdrop-chrome~="fixed"]:not([data-backdrop-chrome~="stretch"]) > body > header {
+  box-shadow: var(--canvas-shadow-subtle);
+}
+
+/* Depth shadow when fixed + stretch */
+:root[data-backdrop-chrome~="stretch"][data-backdrop-chrome~="fixed"] > body > header {
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
 }
 
 /* ========================================
@@ -129,7 +230,7 @@
 }
 
 /* ========================================
- * Mobile: flush regardless of preset
+ * Mobile: flush regardless of preset or chrome mode
  * All regions go edge-to-edge, no body padding
  * ======================================== */
 @media (max-width: 640px) {
@@ -138,7 +239,7 @@
   }
 
   :root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
-    max-width: none;
+    max-inline-size: none;
     border-radius: 0;
     box-shadow: none;
   }

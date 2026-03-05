@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>audio-player — Vanilla Breeze Retro Bundle</title>
+  <style>
+    /* ── VB token system ── each theme block is what a theme file would provide ── */
+
+    /* Default: phosphor green CRT */
+    :root {
+      --hue-primary: 145;
+      --color-primary: oklch(70% 0.28 145);
+      --color-surface: oklch(10% 0.02 260);
+      --color-surface-sunken: oklch(6% 0.015 260);
+      --color-surface-raised: oklch(18% 0.03 260);
+      --color-border: oklch(32% 0.04 260);
+      --color-text: oklch(90% 0.01 260);
+      --color-text-muted: oklch(55% 0.02 260);
+      --size-xs: 0.5rem;
+      --size-s: 0.75rem;
+      --size-m: 1rem;
+      --size-l: 1.5rem;
+      --size-xl: 2.5rem;
+      --radius-m: 4px;
+      --font-mono: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+      --shadow-m: 0 4px 24px oklch(0% 0 0 / 0.6);
+    }
+
+    /* Theme: amber — classic terminal amber */
+    [data-theme="amber"] {
+      --color-primary: oklch(75% 0.2 75);
+      --color-surface: oklch(8% 0.02 60);
+      --color-surface-sunken: oklch(5% 0.015 60);
+      --color-surface-raised: oklch(16% 0.03 60);
+      --color-border: oklch(28% 0.04 60);
+      --color-text: oklch(88% 0.01 60);
+      --color-text-muted: oklch(52% 0.02 60);
+    }
+
+    /* Theme: pink neon — kawaii/vaporwave */
+    [data-theme="pink"] {
+      --color-primary: oklch(72% 0.3 340);
+      --color-surface: oklch(12% 0.03 300);
+      --color-surface-sunken: oklch(8% 0.025 300);
+      --color-surface-raised: oklch(20% 0.04 300);
+      --color-border: oklch(35% 0.06 300);
+      --color-text: oklch(92% 0.01 300);
+      --color-text-muted: oklch(60% 0.03 300);
+      --radius-m: 12px;
+    }
+
+    /* Theme: cyan sci-fi */
+    [data-theme="cyan"] {
+      --color-primary: oklch(74% 0.2 200);
+      --color-surface: oklch(9% 0.02 220);
+      --color-surface-sunken: oklch(5% 0.015 220);
+      --color-surface-raised: oklch(17% 0.03 220);
+      --color-border: oklch(30% 0.04 220);
+      --color-text: oklch(90% 0.01 220);
+      --color-text-muted: oklch(55% 0.02 220);
+    }
+
+    /* Theme: light — shows the token swap works in light mode too */
+    [data-theme="light"] {
+      --color-primary: oklch(50% 0.25 260);
+      --color-surface: oklch(96% 0.005 260);
+      --color-surface-sunken: oklch(92% 0.01 260);
+      --color-surface-raised: oklch(100% 0 260);
+      --color-border: oklch(78% 0.015 260);
+      --color-text: oklch(18% 0.02 260);
+      --color-text-muted: oklch(52% 0.02 260);
+      --shadow-m: 0 4px 16px oklch(0% 0 0 / 0.12);
+    }
+
+    /* ── Page shell ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--color-surface);
+      color: var(--color-text);
+      min-height: 100dvh;
+      padding-block: 2rem;
+      padding-inline: clamp(1rem, 5vw, 4rem);
+      transition: background 0.4s, color 0.4s;
+    }
+
+    h1 {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 700;
+      margin-block-end: 0.25rem;
+      color: var(--color-primary);
+    }
+
+    .subtitle {
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      margin-block-end: 2rem;
+    }
+
+    /* ── Theme switcher ── */
+    .theme-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-block-end: 2.5rem;
+    }
+
+    .theme-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      margin-inline-end: 0.25rem;
+    }
+
+    .theme-btn {
+      background: var(--color-surface-raised);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.75rem;
+      font-family: ui-monospace, monospace;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .theme-btn:hover,
+    .theme-btn[aria-pressed="true"] {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    /* ── Player grid ── */
+    .players {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr));
+    }
+
+    .player-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .player-label {
+      font-family: ui-monospace, monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-text-muted);
+    }
+
+    /* ── Contract section ── */
+    .contract-demo {
+      margin-block-start: 3rem;
+      border-block-start: 1px solid var(--color-border);
+      padding-block-start: 2rem;
+    }
+
+    .contract-demo h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      margin-block-end: 1.5rem;
+    }
+
+    .override-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    code {
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-text-muted);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+    }
+
+    pre {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      color: var(--color-text-muted);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-block-start: 0.75rem;
+    }
+
+    pre .hl { color: var(--color-primary); }
+  </style>
+</head>
+<body>
+
+<h1>audio-player</h1>
+<p class="subtitle">retro bundle · VB component contract v1.0.0 · token layer auto-swaps with theme</p>
+
+<!-- Theme switcher — simulates loading different theme token files -->
+<div class="theme-switcher" role="group" aria-label="Switch active theme">
+  <span class="theme-label">Token theme:</span>
+  <button class="theme-btn" aria-pressed="true"  data-theme-btn=""             >phosphor</button>
+  <button class="theme-btn" aria-pressed="false" data-theme-btn="amber"        >amber</button>
+  <button class="theme-btn" aria-pressed="false" data-theme-btn="pink"         >pink / kawaii</button>
+  <button class="theme-btn" aria-pressed="false" data-theme-btn="cyan"         >cyan / sci-fi</button>
+  <button class="theme-btn" aria-pressed="false" data-theme-btn="light"        >light</button>
+</div>
+
+<!-- Players grid -->
+<div class="players">
+
+  <div class="player-row">
+    <span class="player-label">data-visualizer="wave" (default)</span>
+    <audio-player
+      src="track.mp3"
+      data-title="WAVEFORM DEMO"
+      data-visualizer="wave">
+      <audio controls><!-- JS-off fallback --></audio>
+    </audio-player>
+  </div>
+
+  <div class="player-row">
+    <span class="player-label">data-visualizer="bars"</span>
+    <audio-player
+      src="track.mp3"
+      data-title="SPECTRUM BARS"
+      data-visualizer="bars">
+      <audio controls><!-- JS-off fallback --></audio>
+    </audio-player>
+  </div>
+
+  <div class="player-row">
+    <span class="player-label">data-visualizer="circle"</span>
+    <audio-player
+      src="track.mp3"
+      data-title="RADIAL VIEW"
+      data-visualizer="circle">
+      <audio controls><!-- JS-off fallback --></audio>
+    </audio-player>
+  </div>
+
+  <div class="player-row">
+    <span class="player-label">Custom --component-* token override (gold accent)</span>
+    <audio-player
+      src="track.mp3"
+      data-title="CUSTOM TOKENS"
+      data-visualizer="bars"
+      style="
+        --audioplayer-screen-color: oklch(72% 0.22 75);
+        --audioplayer-bg: oklch(8% 0.015 60);
+        --audioplayer-bezel: oklch(30% 0.04 60);
+      ">
+      <audio controls><!-- JS-off fallback --></audio>
+    </audio-player>
+  </div>
+
+</div>
+
+<!-- Contract + override reference -->
+<section class="contract-demo">
+  <h2>Component token API — override anything inline</h2>
+  <div class="override-demo">
+
+    <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.7;">
+      The retro chrome stays retro. Only the token layer swaps. Use <code>--audioplayer-*</code>
+      custom properties to override specific aspects inline without touching the component internals.
+      Use <code>::part()</code> to restyle structural regions.
+    </p>
+
+    <pre><span class="hl">&lt;!-- Basic usage --&gt;</span>
+&lt;audio-player src="track.mp3"&gt;&lt;/audio-player&gt;
+
+<span class="hl">&lt;!-- With options --&gt;</span>
+&lt;audio-player
+  src="track.mp3"
+  data-title="My Track"
+  data-visualizer="bars"
+  autoplay loop&gt;
+  <span class="hl">&lt;!-- JS-off fallback --&gt;</span>
+  &lt;audio controls src="track.mp3"&gt;&lt;/audio&gt;
+&lt;/audio-player&gt;
+
+<span class="hl">&lt;!-- Custom token overrides --&gt;</span>
+&lt;audio-player style="
+  --audioplayer-screen-color: oklch(72% 0.22 75);
+  --audioplayer-bg: oklch(8% 0.015 60);
+"&gt;&lt;/audio-player&gt;
+
+<span class="hl">&lt;!-- Part styling from outside --&gt;</span>
+&lt;style&gt;
+  audio-player::part(screen)   { border-radius: 50%; aspect-ratio: 1; }
+  audio-player::part(play-button) { border-radius: 50%; }
+&lt;/style&gt;
+
+<span class="hl">&lt;!-- Events --&gt;</span>
+&lt;script&gt;
+  document.querySelector('audio-player')
+    .addEventListener('vb:audioplayer:play', e =&gt; {
+      console.log('Playing', e.detail)
+    })
+&lt;/script&gt;</pre>
+
+  </div>
+</section>
+
+<script type="module" src="audio-player.js"></script>
+<script>
+  // Theme switcher — simulates activating a theme token file
+  const body = document.body
+  document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeBtn
+      body.removeAttribute('data-theme')
+      if (theme) body.setAttribute('data-theme', theme)
+
+      document.querySelectorAll('[data-theme-btn]').forEach(b => {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')
+      })
+    })
+  })
+</script>
+</body>
+</html>

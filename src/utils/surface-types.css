@@ -1,0 +1,64 @@
+/**
+ * Surface Types — Per-Region Transparency
+ *
+ * Controls how individual semantic regions render their background.
+ * Apply to any backdrop region: header, main, footer, nav, aside.
+ *
+ * Usage:
+ *   <header data-surface="frosted">   — frosted glass
+ *   <aside data-surface="ghost">      — barely-there outline
+ *   <main data-surface="tinted">      — accent-tinted glass
+ *   <nav data-surface="transparent">  — fully transparent
+ *
+ * Falls back to solid --color-surface when prefers-reduced-transparency: reduce.
+ */
+
+/* ========================================
+ * Frosted — glass blur with subtle border
+ * ======================================== */
+[data-surface="frosted"] {
+  background: oklch(from var(--color-surface) l c h / 0.75);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid oklch(from var(--color-surface) l c h / 0.2);
+}
+
+/* ========================================
+ * Tinted — accent-colored glass
+ * ======================================== */
+[data-surface="tinted"] {
+  background: oklch(from var(--color-accent, var(--color-primary)) l c h / 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ========================================
+ * Ghost — barely-there outline
+ * ======================================== */
+[data-surface="ghost"] {
+  background: oklch(from var(--color-surface) l c h / 0.05);
+  border: 1px solid oklch(from var(--color-surface) l c h / 0.15);
+  box-shadow: none;
+}
+
+/* ========================================
+ * Transparent — fully transparent
+ * ======================================== */
+[data-surface="transparent"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ========================================
+ * Reduced transparency — solid fallback
+ * ======================================== */
+@media (prefers-reduced-transparency: reduce) {
+  [data-surface="frosted"],
+  [data-surface="tinted"],
+  [data-surface="ghost"],
+  [data-surface="transparent"] {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

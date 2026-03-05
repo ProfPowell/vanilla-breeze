@@ -109,6 +109,7 @@ const elementsByLetter = {
   L: [
     { name: 'label', type: 'native', href: '/docs/elements/native/label/' },
     { name: 'layout-badge', type: 'custom', href: '/docs/elements/custom-elements/layout-badge/' },
+    { name: 'layout-canvas', type: 'custom', href: '/docs/elements/custom-elements/layout-canvas/' },
     { name: 'layout-card', type: 'custom', href: '/docs/elements/custom-elements/layout-card/' },
     { name: 'layout-center', type: 'custom', href: '/docs/elements/custom-elements/center/' },
     { name: 'layout-cluster', type: 'custom', href: '/docs/elements/custom-elements/cluster/' },

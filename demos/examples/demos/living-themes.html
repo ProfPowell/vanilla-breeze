@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en" data-backdrop="elevated">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Living Themes — Environmental Backdrop Demo</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css"/>
+  <link rel="stylesheet" href="/cdn/themes/ocean.css"/>
+  <link rel="stylesheet" href="/cdn/themes/sunset.css"/>
+  <link rel="stylesheet" href="/cdn/themes/forest.css"/>
+  <link rel="stylesheet" href="/cdn/themes/rose.css"/>
+  <link rel="stylesheet" href="/cdn/themes/lavender.css"/>
+  <link rel="stylesheet" href="/cdn/themes/coral.css"/>
+  <link rel="stylesheet" href="/cdn/themes/amber.css"/>
+  <link rel="stylesheet" href="/cdn/themes/indigo.css"/>
+  <link rel="stylesheet" href="/cdn/themes/slate.css"/>
+  <link rel="stylesheet" href="/cdn/themes/emerald.css"/>
+  <link rel="stylesheet" href="/cdn/themes/minimal.css"/>
+  <link rel="stylesheet" href="/cdn/themes/modern.css"/>
+  <style>
+    /* ===== Background image layers — behind everything ===== */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: opacity 1.8s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-layer { transition: none; }
+    }
+
+    .bg-layer.is-hidden { opacity: 0; }
+    .bg-layer.is-visible { opacity: 1; }
+
+    /* Filter-mode single image + overlay */
+    .bg-filter-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      transition: background 1.5s ease, opacity 1.5s ease;
+      mix-blend-mode: multiply;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-filter-overlay { transition: none; }
+    }
+
+    .bg-filter-image {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-size: cover;
+      background-position: center;
+      transition: filter 1.5s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-filter-image { transition: none; }
+    }
+
+    /* ===== SVG Sky Canvas backdrop ===== */
+    @property --sky-hue { syntax: "<number>"; inherits: true; initial-value: 210; }
+    @property --sky-lightness { syntax: "<number>"; inherits: true; initial-value: 60; }
+    @property --sky-saturation { syntax: "<number>"; inherits: true; initial-value: 80; }
+
+    .sky-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      background: linear-gradient(
+        to bottom,
+        oklch(calc(var(--sky-lightness) * 1%) calc(var(--sky-saturation) * 0.002) var(--sky-hue)),
+        oklch(calc((var(--sky-lightness) + 15) * 1%) calc(var(--sky-saturation) * 0.001) var(--sky-hue))
+      );
+      transition: --sky-hue 1.5s ease, --sky-lightness 1.5s ease, --sky-saturation 1.5s ease;
+    }
+
+    .sky-body {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: top 1.5s ease, background 1.5s ease, box-shadow 1.5s ease;
+    }
+
+    .sky-body[data-body="sun"] {
+      background: oklch(95% 0.12 85);
+      box-shadow: 0 0 40px 15px oklch(90% 0.15 70 / 0.5);
+    }
+
+    .sky-body[data-body="moon"] {
+      background: oklch(85% 0.02 240);
+      box-shadow: 0 0 20px 8px oklch(85% 0.04 240 / 0.3);
+    }
+
+    .sky-stars {
+      position: absolute;
+      inset: 0;
+      transition: opacity 1.5s ease;
+      pointer-events: none;
+    }
+
+    .sky-star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .sky-horizon {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+    }
+
+    .sky-horizon svg { display: block; width: 100%; height: 100%; }
+
+    .sky-glow {
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: radial-gradient(ellipse 60% 100% at 50% 100%, oklch(75% 0.18 50 / var(--sky-glow, 0)), transparent);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sky-canvas, .sky-body, .sky-stars, .sky-glow { transition: none; }
+    }
+
+    /* ===== Body adjustments ===== */
+    body {
+      min-block-size: 100dvh;
+      padding-block-end: 120px !important; /* space for fixed toolbar */
+    }
+
+    /* Override backdrop auto-bg so photos show through */
+    [data-backdrop] {
+      --page-bg-color: transparent;
+    }
+
+    /* ===== Header ===== */
+    header {
+      padding-block: var(--size-xl);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: var(--font-size-2xl);
+      line-height: var(--line-height-tight);
+      margin-block-end: var(--size-2xs);
+    }
+
+    header p {
+      color: var(--color-text-muted);
+      max-inline-size: 55ch;
+      margin-inline: auto;
+    }
+
+    /* ===== Main content ===== */
+    main {
+      view-transition-name: canvas;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--size-m);
+    }
+
+    .ui-card {
+      padding: var(--size-l);
+      /* Use hue-tinted surface so hue shifts are visible on cards */
+      background: light-dark(
+        oklch(from var(--color-primary) 96% 0.02 h),
+        oklch(from var(--color-primary) 20% 0.025 h)
+      );
+      border-radius: var(--radius-m);
+      border: 1px solid light-dark(
+        oklch(from var(--color-primary) 88% 0.03 h),
+        oklch(from var(--color-primary) 30% 0.03 h)
+      );
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-s);
+    }
+
+    .ui-card h3 {
+      font-size: var(--font-size-base);
+      margin: 0;
+    }
+
+    .ui-card p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    /* Button samples */
+    .btn-row {
+      display: flex;
+      gap: var(--size-xs);
+      flex-wrap: wrap;
+    }
+
+    .btn-row button {
+      font: inherit;
+      font-size: var(--font-size-sm);
+      padding: var(--size-2xs) var(--size-s);
+      border-radius: var(--radius-s);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-on-primary, white);
+      border-color: transparent;
+    }
+
+    .btn-secondary {
+      background: light-dark(
+        oklch(from var(--color-primary) 93% 0.03 h),
+        oklch(from var(--color-primary) 25% 0.03 h)
+      );
+      color: var(--color-text);
+    }
+
+    .btn-accent {
+      background: var(--color-accent);
+      color: var(--color-on-accent, white);
+      border-color: transparent;
+    }
+
+    /* Badge samples */
+    .badge-row {
+      display: flex;
+      gap: var(--size-xs);
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: var(--font-size-xs);
+      padding: 2px var(--size-xs);
+      border-radius: var(--radius-pill, 100px);
+      font-weight: 600;
+    }
+
+    .badge-primary {
+      background: oklch(from var(--color-primary) l c h / 0.15);
+      color: var(--color-primary);
+    }
+
+    .badge-accent {
+      background: oklch(from var(--color-accent) l c h / 0.15);
+      color: var(--color-accent);
+    }
+
+    .badge-success {
+      background: oklch(75% 0.15 145 / 0.15);
+      color: oklch(75% 0.15 145);
+    }
+
+    /* Swatch row */
+    .swatch-row {
+      display: flex;
+      gap: var(--size-xs);
+      align-items: center;
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-s);
+      border: 1px solid var(--color-border);
+    }
+
+    .swatch-primary { background: var(--color-primary); }
+    .swatch-secondary { background: var(--color-secondary); }
+    .swatch-accent { background: var(--color-accent); }
+
+    .swatch-label {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Mini form */
+    .mini-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xs);
+    }
+
+    .mini-form label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .mini-form input {
+      font: inherit;
+      font-size: var(--font-size-sm);
+      padding: var(--size-2xs) var(--size-xs);
+      border-radius: var(--radius-s);
+      border: 1px solid light-dark(
+        oklch(from var(--color-primary) 85% 0.03 h),
+        oklch(from var(--color-primary) 32% 0.03 h)
+      );
+      background: light-dark(
+        oklch(from var(--color-primary) 98% 0.01 h),
+        oklch(from var(--color-primary) 18% 0.02 h)
+      );
+      color: var(--color-text);
+    }
+
+    /* Offset readout card — reset VB native dl/dd styles for grid layout */
+    .offset-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 12px;
+      font-size: var(--font-size-sm);
+    }
+
+    .offset-grid dt {
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .offset-grid dd {
+      font-family: var(--font-mono, monospace);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .offset-grid dd + dt {
+      margin-block-start: 0;
+    }
+
+    /* ===== Footer ===== */
+    footer:not(.demo-toolbar) {
+      padding-block: var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--size-s);
+    }
+
+    /* ===== Fixed Demo Toolbar ===== */
+    .demo-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: oklch(8% 0.01 250 / 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-block-start: 1px solid oklch(100% 0 0 / 0.1);
+      padding: var(--size-xs) var(--size-m);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .toolbar-row label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: oklch(75% 0 0);
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .toolbar-row select {
+      appearance: auto;
+      font: inherit;
+      font-size: 13px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid oklch(100% 0 0 / 0.2);
+      background: oklch(100% 0 0 / 0.1);
+      color: oklch(95% 0 0);
+      cursor: pointer;
+    }
+
+    .toolbar-row select:focus-visible {
+      outline: 2px solid oklch(70% 0.15 195);
+      outline-offset: 1px;
+    }
+
+    .toolbar-row input[type="range"] {
+      width: 200px;
+      accent-color: oklch(70% 0.15 195);
+    }
+
+    .sep {
+      width: 1px;
+      height: 18px;
+      background: oklch(100% 0 0 / 0.12);
+      flex-shrink: 0;
+    }
+
+    /* Play/pause button */
+    .play-btn {
+      font: inherit;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 12px;
+      border-radius: 6px;
+      border: 1px solid oklch(100% 0 0 / 0.2);
+      background: oklch(100% 0 0 / 0.08);
+      color: oklch(80% 0 0);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .play-btn[aria-pressed="true"] {
+      background: oklch(60% 0.14 145);
+      color: white;
+      border-color: oklch(60% 0.14 145);
+    }
+
+    .play-btn:focus-visible {
+      outline: 2px solid oklch(70% 0.15 195);
+      outline-offset: 1px;
+    }
+
+    /* Speed select */
+    .speed-select {
+      font-size: 12px !important;
+    }
+
+    /* Segmented control */
+    .segmented {
+      display: flex;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid oklch(100% 0 0 / 0.15);
+    }
+
+    .segmented button {
+      font: inherit;
+      font-size: 12px;
+      padding: 3px 10px;
+      border: none;
+      background: oklch(100% 0 0 / 0.05);
+      color: oklch(75% 0 0);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .segmented button:not(:last-child) {
+      border-right: 1px solid oklch(100% 0 0 / 0.1);
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: oklch(60% 0.12 250);
+      color: white;
+    }
+
+    .segmented button:focus-visible {
+      outline: 2px solid oklch(70% 0.15 195);
+      outline-offset: -2px;
+    }
+
+    /* Time display */
+    .time-display {
+      font-family: var(--font-mono, monospace);
+      font-size: 14px;
+      color: oklch(90% 0 0);
+      min-width: 8ch;
+      font-weight: 600;
+    }
+
+    /* Token readout row */
+    .token-readout {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      color: oklch(60% 0 0);
+      text-align: center;
+    }
+
+    .token-readout code {
+      color: oklch(70% 0.12 195);
+    }
+
+    /* ===== View transitions ===== */
+    @media (prefers-reduced-motion: no-preference) {
+      ::view-transition-old(canvas) {
+        animation: vt-out 0.35s ease-in forwards;
+      }
+      ::view-transition-new(canvas) {
+        animation: vt-in 0.35s ease-out forwards;
+      }
+    }
+
+    @keyframes vt-out {
+      to { transform: translateY(12px) scale(0.97); opacity: 0; }
+    }
+    @keyframes vt-in {
+      from { transform: translateY(-12px) scale(0.97); opacity: 0; }
+    }
+
+    /* ===== Responsive ===== */
+    @media (width < 640px) {
+      .toolbar-row input[type="range"] { width: 120px; }
+    }
+  </style>
+</head>
+<body data-page-layout="stack">
+
+  <!-- Background layers for photo cross-fade (mode: photos) -->
+  <div class="bg-layer is-visible" id="bg-a" aria-hidden="true"></div>
+  <div class="bg-layer is-hidden" id="bg-b" aria-hidden="true"></div>
+
+  <!-- Background layer for filter mode (hidden by default) -->
+  <div class="bg-filter-image" id="bg-filter-img" aria-hidden="true" hidden></div>
+  <div class="bg-filter-overlay" id="bg-filter-overlay" aria-hidden="true" hidden></div>
+
+  <!-- SVG sky canvas backdrop (hidden by default) -->
+  <div class="sky-canvas" id="sky-canvas" aria-hidden="true" hidden>
+    <div class="sky-stars" id="sky-stars"></div>
+    <div class="sky-glow" id="sky-glow"></div>
+    <div class="sky-body" id="sky-body" data-body="sun"></div>
+    <svg class="sky-horizon" viewBox="0 0 1440 80" preserveAspectRatio="none">
+      <path d="M0,80 L0,45 Q120,20 240,35 Q360,50 480,30 Q600,10 720,25 Q840,40 960,20 Q1080,0 1200,30 Q1320,55 1440,40 L1440,80 Z"
+            fill="oklch(12% 0.02 250)"/>
+      <path d="M0,80 L0,55 Q180,35 360,50 Q540,65 720,45 Q900,25 1080,45 Q1260,60 1440,50 L1440,80 Z"
+            fill="oklch(8% 0.01 250)"/>
+    </svg>
+  </div>
+
+  <header>
+    <h1>Living Themes</h1>
+    <p>The environment shifts behind your content. Scrub through a full day cycle and watch the backdrop, hues, and mood change in real time.</p>
+  </header>
+
+  <main>
+    <h2 style="text-align: center; margin-block-end: var(--size-l);">Surface Preview</h2>
+    <section class="card-grid">
+
+      <article class="ui-card">
+        <h3>Interactive Colors</h3>
+        <p>Buttons and accents shift with the environment.</p>
+        <div class="btn-row">
+          <button type="button" class="btn-primary">Primary</button>
+          <button type="button" class="btn-secondary">Secondary</button>
+          <button type="button" class="btn-accent">Accent</button>
+        </div>
+      </article>
+
+      <article class="ui-card">
+        <h3>Status Badges</h3>
+        <p>Semantic colors adapt to hue offsets.</p>
+        <div class="badge-row">
+          <span class="badge badge-primary">Active</span>
+          <span class="badge badge-accent">Pending</span>
+          <span class="badge badge-success">Complete</span>
+        </div>
+        <div class="swatch-row">
+          <div class="swatch swatch-primary" title="--color-primary"></div>
+          <div class="swatch swatch-secondary" title="--color-secondary"></div>
+          <div class="swatch swatch-accent" title="--color-accent"></div>
+          <span class="swatch-label" id="hue-readout">hue: 260</span>
+        </div>
+      </article>
+
+      <article class="ui-card">
+        <h3>Form Fields</h3>
+        <p>Focus rings use the shifted primary hue.</p>
+        <div class="mini-form">
+          <label for="demo-input">Name</label>
+          <input type="text" id="demo-input" placeholder="Type here..." />
+          <label for="demo-email">Email</label>
+          <input type="email" id="demo-email" placeholder="you@example.com" />
+        </div>
+      </article>
+
+      <article class="ui-card">
+        <h3>Environment Offset</h3>
+        <p>Live computed modifier values.</p>
+        <dl class="offset-grid">
+          <dt>Time offset</dt>
+          <dd id="offset-time">0</dd>
+          <dt>Season offset</dt>
+          <dd id="offset-season">0</dd>
+          <dt>Total</dt>
+          <dd id="offset-total" style="color: var(--color-primary);">0</dd>
+          <dt>Base hue</dt>
+          <dd id="offset-base">—</dd>
+        </dl>
+      </article>
+
+    </section>
+  </main>
+
+  <footer>
+    <span>Vanilla Breeze &middot; Living Themes Demo</span>
+    <span id="period-label">Midday</span>
+  </footer>
+
+  <!-- ===== Fixed Toolbar ===== -->
+  <div class="demo-toolbar" role="toolbar" aria-label="Environment controls">
+    <div class="toolbar-row">
+      <!-- Play / Pause -->
+      <button type="button" class="play-btn" id="play-btn" aria-pressed="false" aria-label="Play day cycle">
+        <span id="play-icon">&#9654;</span> <span id="play-label">Play</span>
+      </button>
+      <label>Speed
+        <select id="ctl-speed" class="speed-select">
+          <option value="30">Slow</option>
+          <option value="10" selected>Medium</option>
+          <option value="3">Fast</option>
+        </select>
+      </label>
+
+      <span class="sep"></span>
+
+      <!-- Time scrubber -->
+      <label>Time
+        <input type="range" id="ctl-time" min="0" max="24" step="0.1" value="12" />
+      </label>
+      <span class="time-display" id="time-display">12:00 PM</span>
+
+      <span class="sep"></span>
+
+      <!-- Backdrop mode -->
+      <label>Backdrop
+        <select id="ctl-mode">
+          <option value="photos">Photos</option>
+          <option value="filter">Single + Filter</option>
+          <option value="gradient">CSS Gradient</option>
+          <option value="sky">SVG Sky</option>
+        </select>
+      </label>
+
+      <span class="sep"></span>
+
+      <!-- Season -->
+      <label>Season</label>
+      <div class="segmented" role="group" aria-label="Season">
+        <button type="button" data-season="spring" data-month="3" aria-pressed="false">Spring</button>
+        <button type="button" data-season="summer" data-month="6" aria-pressed="false">Summer</button>
+        <button type="button" data-season="autumn" data-month="9" aria-pressed="false">Autumn</button>
+        <button type="button" data-season="winter" data-month="0" aria-pressed="false">Winter</button>
+      </div>
+
+      <span class="sep"></span>
+
+      <!-- Theme -->
+      <label>Theme
+        <select id="ctl-theme">
+          <option value="">Default</option>
+          <option value="ocean">Ocean</option>
+          <option value="sunset">Sunset</option>
+          <option value="forest">Forest</option>
+          <option value="rose">Rose</option>
+          <option value="lavender">Lavender</option>
+          <option value="coral">Coral</option>
+          <option value="amber">Amber</option>
+          <option value="indigo">Indigo</option>
+          <option value="slate">Slate</option>
+          <option value="emerald">Emerald</option>
+          <option value="minimal">Minimal</option>
+          <option value="modern">Modern</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="toolbar-row token-readout">
+      <span>--hue-primary: <code id="readout-hue">260</code></span>
+      <span class="sep"></span>
+      <span>offset: <code id="readout-offset">0</code></span>
+      <span class="sep"></span>
+      <span>season: <code id="readout-season">—</code></span>
+      <span class="sep"></span>
+      <span>backdrop: <code id="readout-period">noon</code></span>
+    </div>
+  </div>
+
+  <script type="module">
+    // ===== Self-contained hue engine (mirrors EnvironmentManager logic) =====
+    function lerp(a, b, t) {
+      return a + (b - a) * Math.min(1, Math.max(0, t));
+    }
+
+    let baseHues = null;
+    let timeOverride = null;
+    let monthOverride = null;
+    let seasonalEnabled = false;
+
+    // Default hues from @property registrations
+    const DEFAULT_HUES = { primary: 260, secondary: 200, accent: 30 };
+
+    function readThemeHues() {
+      // Read hue values directly from CSSOM to avoid animation interpolation.
+      // @property-registered --hue-* values are animatable, so getComputedStyle
+      // returns mid-transition values during View Transitions.
+      const theme = document.documentElement.getAttribute('data-theme');
+      if (!theme) return { ...DEFAULT_HUES };
+
+      const selector = `[data-theme~="${theme}"]`;
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule.selectorText?.includes(selector) && !rule.selectorText.includes('dark')) {
+              const h = rule.style?.getPropertyValue('--hue-primary');
+              if (h) {
+                return {
+                  primary: parseFloat(h) || DEFAULT_HUES.primary,
+                  secondary: parseFloat(rule.style.getPropertyValue('--hue-secondary')) || DEFAULT_HUES.secondary,
+                  accent: parseFloat(rule.style.getPropertyValue('--hue-accent')) || DEFAULT_HUES.accent,
+                };
+              }
+            }
+          }
+        } catch { /* cross-origin sheet */ }
+      }
+      return { ...DEFAULT_HUES };
+    }
+
+    function captureBaseHues(then) {
+      const root = document.documentElement;
+      root.style.removeProperty('--hue-primary');
+      root.style.removeProperty('--hue-secondary');
+      root.style.removeProperty('--hue-accent');
+      baseHues = readThemeHues();
+      if (then) then();
+    }
+
+    function getTimeOfDayOffset(t) {
+      if (t < 5)  return -20;
+      if (t < 7)  return lerp(-20, 20, (t - 5) / 2);
+      if (t < 10) return lerp(20, 5, (t - 7) / 3);
+      if (t < 14) return lerp(5, 0, (t - 10) / 4);
+      if (t < 17) return lerp(0, -5, (t - 14) / 3);
+      if (t < 19) return lerp(-5, 15, (t - 17) / 2);
+      if (t < 21) return lerp(15, -10, (t - 19) / 2);
+      return lerp(-10, -20, (t - 21) / 8);
+    }
+
+    function getSeasonalOffset(month) {
+      if (month >= 2 && month <= 4) return 5;
+      if (month >= 5 && month <= 7) return 10;
+      if (month >= 8 && month <= 10) return -5;
+      return -10;
+    }
+
+    function applyHueModifiers(t) {
+      let hueOffset = getTimeOfDayOffset(t);
+      if (seasonalEnabled && monthOverride !== null) {
+        hueOffset += getSeasonalOffset(monthOverride);
+      }
+
+      const root = document.documentElement;
+      if (hueOffset !== 0 && baseHues) {
+        root.style.setProperty('--hue-primary', String(baseHues.primary + hueOffset));
+        root.style.setProperty('--hue-secondary', String(baseHues.secondary + hueOffset));
+        root.style.setProperty('--hue-accent', String(baseHues.accent + hueOffset * 0.5));
+      } else if (hueOffset === 0) {
+        root.style.removeProperty('--hue-primary');
+        root.style.removeProperty('--hue-secondary');
+        root.style.removeProperty('--hue-accent');
+      }
+
+      return { hueOffset, base: baseHues?.primary ?? null };
+    }
+
+    // ===== Image paths =====
+    const IMG_BASE = '/docs/examples/demos/assets/time-location/';
+    const TIME_IMAGES = [
+      { start: 0,    end: 4.5,  file: 'night.jpg',         label: 'Night'         },
+      { start: 4.5,  end: 6,    file: 'sunrise.jpg',       label: 'Sunrise'       },
+      { start: 6,    end: 8.5,  file: 'early-morning.jpg', label: 'Early Morning' },
+      { start: 8.5,  end: 11.5, file: 'late-morning.jpg',  label: 'Late Morning'  },
+      { start: 11.5, end: 14.5, file: 'noon.jpg',          label: 'Noon'          },
+      { start: 14.5, end: 17,   file: 'gloden-hour.jpg',   label: 'Golden Hour'   },
+      { start: 17,   end: 19,   file: 'sunset.jpg',        label: 'Sunset'        },
+      { start: 19,   end: 21,   file: 'evening.jpg',       label: 'Evening'       },
+      { start: 21,   end: 24,   file: 'night.jpg',         label: 'Night'         },
+    ];
+
+    // CSS filter presets for "filter" mode (applied to noon.jpg base)
+    const FILTER_PRESETS = [
+      { start: 0,    end: 4.5,  brightness: 0.12, saturate: 0.4, hueRotate: 220, overlay: 'oklch(8% 0.04 250 / 0.7)',    label: 'Night'         },
+      { start: 4.5,  end: 6,    brightness: 0.5,  saturate: 1.2, hueRotate: 340, overlay: 'oklch(40% 0.12 30 / 0.35)',    label: 'Sunrise'       },
+      { start: 6,    end: 8.5,  brightness: 0.75, saturate: 0.9, hueRotate: 10,  overlay: 'oklch(60% 0.06 60 / 0.15)',    label: 'Early Morning' },
+      { start: 8.5,  end: 11.5, brightness: 0.95, saturate: 1.0, hueRotate: 0,   overlay: 'oklch(70% 0.02 210 / 0.05)',   label: 'Late Morning'  },
+      { start: 11.5, end: 14.5, brightness: 1.0,  saturate: 1.0, hueRotate: 0,   overlay: 'transparent',                  label: 'Noon'          },
+      { start: 14.5, end: 17,   brightness: 0.9,  saturate: 1.2, hueRotate: 15,  overlay: 'oklch(65% 0.10 55 / 0.2)',     label: 'Golden Hour'   },
+      { start: 17,   end: 19,   brightness: 0.55, saturate: 1.3, hueRotate: 340, overlay: 'oklch(45% 0.14 20 / 0.4)',     label: 'Sunset'        },
+      { start: 19,   end: 21,   brightness: 0.3,  saturate: 0.6, hueRotate: 240, overlay: 'oklch(20% 0.06 270 / 0.5)',    label: 'Evening'       },
+      { start: 21,   end: 24,   brightness: 0.12, saturate: 0.4, hueRotate: 220, overlay: 'oklch(8% 0.04 250 / 0.7)',     label: 'Night'         },
+    ];
+
+    // CSS gradient presets (no images, pure CSS)
+    const GRADIENT_PRESETS = [
+      { start: 0,    end: 4.5,  bg: 'linear-gradient(to bottom, oklch(8% 0.03 250), oklch(12% 0.02 260))',                               label: 'Night'         },
+      { start: 4.5,  end: 6,    bg: 'linear-gradient(to bottom, oklch(30% 0.06 260), oklch(50% 0.14 30), oklch(60% 0.12 40))',            label: 'Sunrise'       },
+      { start: 6,    end: 8.5,  bg: 'linear-gradient(to bottom, oklch(65% 0.06 210), oklch(75% 0.04 200), oklch(70% 0.08 60))',           label: 'Early Morning' },
+      { start: 8.5,  end: 11.5, bg: 'linear-gradient(to bottom, oklch(72% 0.08 220), oklch(80% 0.04 210))',                               label: 'Late Morning'  },
+      { start: 11.5, end: 14.5, bg: 'linear-gradient(to bottom, oklch(75% 0.10 225), oklch(82% 0.06 215))',                               label: 'Noon'          },
+      { start: 14.5, end: 17,   bg: 'linear-gradient(to bottom, oklch(70% 0.10 220), oklch(65% 0.14 50), oklch(55% 0.12 40))',            label: 'Golden Hour'   },
+      { start: 17,   end: 19,   bg: 'linear-gradient(to bottom, oklch(40% 0.08 270), oklch(50% 0.16 20), oklch(45% 0.14 30))',            label: 'Sunset'        },
+      { start: 19,   end: 21,   bg: 'linear-gradient(to bottom, oklch(22% 0.06 270), oklch(15% 0.04 255), oklch(30% 0.08 20))',           label: 'Evening'       },
+      { start: 21,   end: 24,   bg: 'linear-gradient(to bottom, oklch(8% 0.03 250), oklch(12% 0.02 260))',                                label: 'Night'         },
+    ];
+
+    function getTimeSlot(t, presets) {
+      t = ((t % 24) + 24) % 24;
+      for (const slot of presets) {
+        if (t >= slot.start && t < slot.end) return slot;
+      }
+      return presets[0];
+    }
+
+    function getInterpolatedFilter(t) {
+      t = ((t % 24) + 24) % 24;
+      let i = 0;
+      while (i < FILTER_PRESETS.length - 1 && FILTER_PRESETS[i + 1].start <= t) i++;
+      if (i >= FILTER_PRESETS.length - 1) i = FILTER_PRESETS.length - 2;
+
+      const a = FILTER_PRESETS[i];
+      const b = FILTER_PRESETS[i + 1];
+      const range = a.end - a.start;
+      const frac = range > 0 ? Math.min(1, Math.max(0, (t - a.start) / range)) : 0;
+
+      return {
+        brightness: lerp(a.brightness, b.brightness, frac),
+        saturate: lerp(a.saturate, b.saturate, frac),
+        hueRotate: lerp(a.hueRotate, b.hueRotate, frac),
+        label: frac < 0.5 ? a.label : b.label,
+      };
+    }
+
+    // ===== DOM refs =====
+    const bgA = document.getElementById('bg-a');
+    const bgB = document.getElementById('bg-b');
+    const bgFilterImg = document.getElementById('bg-filter-img');
+    const bgFilterOverlay = document.getElementById('bg-filter-overlay');
+    const timeSlider = document.getElementById('ctl-time');
+    const timeDisplay = document.getElementById('time-display');
+    const ctlTheme = document.getElementById('ctl-theme');
+    const ctlMode = document.getElementById('ctl-mode');
+    const ctlSpeed = document.getElementById('ctl-speed');
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playLabel = document.getElementById('play-label');
+    const periodLabel = document.getElementById('period-label');
+    const readoutHue = document.getElementById('readout-hue');
+    const readoutOffset = document.getElementById('readout-offset');
+    const readoutSeason = document.getElementById('readout-season');
+    const readoutPeriod = document.getElementById('readout-period');
+    const hueReadout = document.getElementById('hue-readout');
+    const offsetTime = document.getElementById('offset-time');
+    const offsetSeason = document.getElementById('offset-season');
+    const offsetTotal = document.getElementById('offset-total');
+    const offsetBase = document.getElementById('offset-base');
+    const skyCanvas = document.getElementById('sky-canvas');
+    const skyBody = document.getElementById('sky-body');
+    const skyStars = document.getElementById('sky-stars');
+    const skyGlow = document.getElementById('sky-glow');
+
+    // ===== SVG Sky keyframes =====
+    const SKY_KEYFRAMES = [
+      { hour: 0,  hue: 240, lightness: 10, saturation: 30, body: 'moon', bodyY: 30, glow: 0,   starAlpha: 0.9 },
+      { hour: 4,  hue: 240, lightness: 8,  saturation: 25, body: 'moon', bodyY: 25, glow: 0,   starAlpha: 0.8 },
+      { hour: 5,  hue: 280, lightness: 18, saturation: 40, body: 'sun',  bodyY: 95, glow: 0.2, starAlpha: 0.3 },
+      { hour: 6,  hue: 30,  lightness: 45, saturation: 75, body: 'sun',  bodyY: 80, glow: 0.7, starAlpha: 0   },
+      { hour: 7,  hue: 35,  lightness: 55, saturation: 65, body: 'sun',  bodyY: 65, glow: 0.5, starAlpha: 0   },
+      { hour: 8,  hue: 200, lightness: 60, saturation: 70, body: 'sun',  bodyY: 50, glow: 0.1, starAlpha: 0   },
+      { hour: 10, hue: 210, lightness: 65, saturation: 80, body: 'sun',  bodyY: 30, glow: 0,   starAlpha: 0   },
+      { hour: 12, hue: 210, lightness: 70, saturation: 85, body: 'sun',  bodyY: 15, glow: 0,   starAlpha: 0   },
+      { hour: 14, hue: 215, lightness: 65, saturation: 80, body: 'sun',  bodyY: 30, glow: 0,   starAlpha: 0   },
+      { hour: 17, hue: 25,  lightness: 50, saturation: 70, body: 'sun',  bodyY: 60, glow: 0.6, starAlpha: 0   },
+      { hour: 18, hue: 15,  lightness: 40, saturation: 80, body: 'sun',  bodyY: 75, glow: 0.8, starAlpha: 0   },
+      { hour: 19, hue: 280, lightness: 28, saturation: 50, body: 'sun',  bodyY: 92, glow: 0.3, starAlpha: 0.1 },
+      { hour: 20, hue: 260, lightness: 18, saturation: 40, body: 'moon', bodyY: 70, glow: 0,   starAlpha: 0.5 },
+      { hour: 21, hue: 250, lightness: 12, saturation: 30, body: 'moon', bodyY: 45, glow: 0,   starAlpha: 0.8 },
+      { hour: 24, hue: 240, lightness: 10, saturation: 30, body: 'moon', bodyY: 30, glow: 0,   starAlpha: 0.9 },
+    ];
+
+    function interpolateSky(t) {
+      t = ((t % 24) + 24) % 24;
+      let i = 0;
+      while (i < SKY_KEYFRAMES.length - 1 && SKY_KEYFRAMES[i + 1].hour <= t) i++;
+      if (i >= SKY_KEYFRAMES.length - 1) return SKY_KEYFRAMES[SKY_KEYFRAMES.length - 1];
+
+      const a = SKY_KEYFRAMES[i];
+      const b = SKY_KEYFRAMES[i + 1];
+      const range = b.hour - a.hour;
+      const frac = range > 0 ? (t - a.hour) / range : 0;
+
+      return {
+        hue: lerp(a.hue, b.hue, frac),
+        lightness: lerp(a.lightness, b.lightness, frac),
+        saturation: lerp(a.saturation, b.saturation, frac),
+        body: frac < 0.5 ? a.body : b.body,
+        bodyY: lerp(a.bodyY, b.bodyY, frac),
+        glow: lerp(a.glow, b.glow, frac),
+        starAlpha: lerp(a.starAlpha, b.starAlpha, frac),
+      };
+    }
+
+    function generateStars() {
+      skyStars.innerHTML = '';
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'sky-star';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 70}%`;
+        const size = 1 + Math.random() * 2;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.opacity = String(0.3 + Math.random() * 0.7);
+        skyStars.appendChild(star);
+      }
+    }
+
+    function updateSkyBackdrop(t) {
+      const sky = interpolateSky(t);
+
+      // Set CSS custom properties for gradient transition
+      const root = document.documentElement;
+      root.style.setProperty('--sky-hue', String(sky.hue));
+      root.style.setProperty('--sky-lightness', String(sky.lightness));
+      root.style.setProperty('--sky-saturation', String(sky.saturation));
+
+      // Sun/moon position and type
+      skyBody.dataset.body = sky.body;
+      skyBody.style.top = `${sky.bodyY}%`;
+
+      // Stars opacity
+      skyStars.style.opacity = String(sky.starAlpha);
+
+      // Horizon glow
+      skyGlow.style.setProperty('--sky-glow', String(sky.glow));
+
+      // Return period label
+      if (t < 5)  return 'Night';
+      if (t < 7)  return 'Dawn';
+      if (t < 10) return 'Morning';
+      if (t < 14) return 'Midday';
+      if (t < 17) return 'Afternoon';
+      if (t < 19) return 'Sunset';
+      if (t < 21) return 'Evening';
+      return 'Night';
+    }
+
+    // ===== State =====
+    let currentTime = 12;
+    let currentSeason = null;
+    let currentSeasonMonth = null;
+    let currentMode = 'photos'; // 'photos' | 'filter' | 'gradient' | 'sky'
+    let currentImageFile = null;
+    let activeLayer = 'a'; // which bg-layer is currently visible
+
+    // Preload all images
+    TIME_IMAGES.forEach(slot => {
+      const img = new Image();
+      img.src = IMG_BASE + slot.file;
+    });
+
+    // ===== Format time =====
+    function formatTime(t) {
+      t = ((t % 24) + 24) % 24;
+      const h = Math.floor(t);
+      const m = Math.round((t - h) * 60);
+      const hh = h % 12 || 12;
+      const ampm = h < 12 || h === 24 ? 'AM' : 'PM';
+      return `${hh}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+
+    // ===== Background updates =====
+    function updatePhotosBackdrop(t) {
+      const slot = getTimeSlot(t, TIME_IMAGES);
+
+      if (slot.file !== currentImageFile) {
+        currentImageFile = slot.file;
+        const url = `url("${IMG_BASE}${slot.file}")`;
+
+        // Cross-fade: set the hidden layer to new image, then swap visibility
+        if (activeLayer === 'a') {
+          bgB.style.backgroundImage = url;
+          bgB.classList.replace('is-hidden', 'is-visible');
+          bgA.classList.replace('is-visible', 'is-hidden');
+          activeLayer = 'b';
+        } else {
+          bgA.style.backgroundImage = url;
+          bgA.classList.replace('is-hidden', 'is-visible');
+          bgB.classList.replace('is-visible', 'is-hidden');
+          activeLayer = 'a';
+        }
+      }
+
+      return slot.label;
+    }
+
+    function updateFilterBackdrop(t) {
+      const f = getInterpolatedFilter(t);
+      bgFilterImg.style.filter =
+        `brightness(${f.brightness}) saturate(${f.saturate}) hue-rotate(${f.hueRotate}deg)`;
+
+      const slot = getTimeSlot(t, FILTER_PRESETS);
+      bgFilterOverlay.style.background = slot.overlay;
+
+      return f.label;
+    }
+
+    function updateGradientBackdrop(t) {
+      const slot = getTimeSlot(t, GRADIENT_PRESETS);
+
+      // Apply gradient to layer A (reuse it as a single layer)
+      bgA.style.backgroundImage = slot.bg;
+      bgA.style.backgroundSize = '100% 100%';
+
+      return slot.label;
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      currentImageFile = null; // force image re-evaluation
+
+      // Hide/show appropriate layers
+      const isPhotos = mode === 'photos';
+      const isFilter = mode === 'filter';
+      const isGradient = mode === 'gradient';
+      const isSky = mode === 'sky';
+
+      bgA.hidden = isFilter || isSky;
+      bgB.hidden = isFilter || isSky;
+      bgFilterImg.hidden = !isFilter;
+      bgFilterOverlay.hidden = !isFilter;
+      skyCanvas.hidden = !isSky;
+
+      if (isPhotos || isGradient) {
+        bgA.style.backgroundSize = isGradient ? '100% 100%' : 'cover';
+        bgA.classList.add('is-visible');
+        bgA.classList.remove('is-hidden');
+        bgB.classList.add('is-hidden');
+        bgB.classList.remove('is-visible');
+        activeLayer = 'a';
+      }
+
+      if (isFilter) {
+        bgFilterImg.style.backgroundImage = `url("${IMG_BASE}noon.jpg")`;
+      }
+
+      if (isSky) {
+        generateStars();
+      }
+
+      updateBackdrop(currentTime);
+    }
+
+    function updateBackdrop(t) {
+      let label;
+      if (currentMode === 'photos') {
+        label = updatePhotosBackdrop(t);
+      } else if (currentMode === 'filter') {
+        label = updateFilterBackdrop(t);
+      } else if (currentMode === 'sky') {
+        label = updateSkyBackdrop(t);
+      } else {
+        label = updateGradientBackdrop(t);
+      }
+
+      periodLabel.textContent = label;
+      readoutPeriod.textContent = label.toLowerCase();
+    }
+
+    // ===== Update hue engine + readouts =====
+    function updateEnvironment(t) {
+      const { hueOffset, base } = applyHueModifiers(t);
+      const timeOff = getTimeOfDayOffset(t);
+      const seasonOff = seasonalEnabled && monthOverride !== null ? getSeasonalOffset(monthOverride) : 0;
+
+      offsetTime.textContent = timeOff.toFixed(1);
+      offsetSeason.textContent = seasonOff.toFixed(1);
+      offsetTotal.textContent = hueOffset.toFixed(1);
+      offsetBase.textContent = base !== null ? base.toFixed(0) : '—';
+
+      readoutHue.textContent = base !== null ? (base + hueOffset).toFixed(0) : '—';
+      readoutOffset.textContent = hueOffset.toFixed(1);
+      hueReadout.textContent = base !== null ? `hue: ${(base + hueOffset).toFixed(0)}` : 'hue: —';
+    }
+
+    function updateAll(t) {
+      const timeStr = formatTime(t);
+      timeDisplay.textContent = timeStr;
+      updateBackdrop(t);
+      updateEnvironment(t);
+    }
+
+    // ===== Initialize hue engine =====
+    captureBaseHues();
+
+    // ===== Time slider =====
+    timeSlider.addEventListener('input', () => {
+      currentTime = parseFloat(timeSlider.value);
+      updateAll(currentTime);
+    });
+
+    // ===== Mode selector =====
+    ctlMode.addEventListener('change', () => setMode(ctlMode.value));
+
+    // ===== Play / Pause =====
+    let playing = false;
+    let animRaf = null;
+    let lastFrame = null;
+
+    playBtn.addEventListener('click', () => {
+      if (playing) {
+        stopPlayback();
+      } else {
+        startPlayback();
+      }
+    });
+
+    function startPlayback() {
+      playing = true;
+      playBtn.setAttribute('aria-pressed', 'true');
+      playIcon.textContent = '\u275A\u275A'; // pause icon
+      playLabel.textContent = 'Pause';
+      lastFrame = performance.now();
+      animRaf = requestAnimationFrame(playbackTick);
+    }
+
+    function stopPlayback() {
+      playing = false;
+      playBtn.setAttribute('aria-pressed', 'false');
+      playIcon.textContent = '\u25B6'; // play icon
+      playLabel.textContent = 'Play';
+      if (animRaf) {
+        cancelAnimationFrame(animRaf);
+        animRaf = null;
+        lastFrame = null;
+      }
+    }
+
+    function playbackTick(now) {
+      if (!lastFrame) lastFrame = now;
+      const dt = (now - lastFrame) / 1000;
+      lastFrame = now;
+
+      const speed = parseFloat(ctlSpeed.value); // seconds of real time per simulated hour
+      const hoursAdvanced = dt / speed;
+      currentTime = (currentTime + hoursAdvanced) % 24;
+      timeSlider.value = currentTime;
+
+      updateAll(currentTime);
+      animRaf = requestAnimationFrame(playbackTick);
+    }
+
+    // ===== Season buttons =====
+    const seasonBtns = document.querySelectorAll('[data-season]');
+    seasonBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wasActive = btn.getAttribute('aria-pressed') === 'true';
+        seasonBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+
+        if (wasActive) {
+          currentSeason = null;
+          currentSeasonMonth = null;
+          monthOverride = null;
+          seasonalEnabled = false;
+          readoutSeason.textContent = '—';
+        } else {
+          btn.setAttribute('aria-pressed', 'true');
+          currentSeason = btn.dataset.season;
+          currentSeasonMonth = parseInt(btn.dataset.month, 10);
+          monthOverride = currentSeasonMonth;
+          seasonalEnabled = true;
+          readoutSeason.textContent = currentSeason;
+        }
+
+        updateEnvironment(currentTime);
+      });
+    });
+
+    // ===== Theme switching =====
+    ctlTheme.addEventListener('change', () => {
+      const theme = ctlTheme.value;
+      const apply = () => {
+        if (theme) {
+          document.documentElement.setAttribute('data-theme', theme);
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+        captureBaseHues();
+        updateEnvironment(currentTime);
+      };
+
+      if (document.startViewTransition) {
+        document.startViewTransition(apply);
+      } else {
+        apply();
+      }
+    });
+
+    // ===== Initial render =====
+    setMode('photos');
+    updateAll(currentTime);
+  </script>
+
+</body>
+</html>

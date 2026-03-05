@@ -12,6 +12,7 @@ if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
 import { initFormValidation } from './lib/form-validation.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import './lib/sw-register.js';
+export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
 
 // Initialize theme system early to prevent FOUC
 // init() is async — loads saved theme CSS before applying

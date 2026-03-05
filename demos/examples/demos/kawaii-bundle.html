@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kawaii Bundle — Vanilla Breeze</title>
+
+  <!-- Core VB -->
+  <link rel="stylesheet" href="/src/main.css">
+
+  <!-- Kawaii bundle CSS (theme + effects) -->
+  <link rel="stylesheet" href="/src/bundles/kawaii/kawaii.theme.css">
+  <link rel="stylesheet" href="/src/bundles/kawaii/kawaii.effects.css">
+
+  <style>
+    body {
+      font-family: var(--font-sans, system-ui, sans-serif);
+      line-height: 1.6;
+      padding-block: var(--size-xl, 2.5rem);
+      padding-inline: clamp(var(--size-m, 1rem), 5vw, var(--size-2xl, 4rem));
+      max-width: 960px;
+      margin-inline: auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-block-end: var(--size-xs, 0.5rem);
+      font-family: var(--font-display, var(--font-sans, cursive));
+      color: var(--color-primary, oklch(55% 0.18 350));
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    section {
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    section > h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-block-end: var(--size-l, 1.5rem);
+      padding-block-end: var(--size-xs, 0.5rem);
+      border-block-end: 2px solid var(--color-primary-subtle, oklch(92% 0.05 350));
+      color: var(--color-primary, oklch(55% 0.18 350));
+    }
+
+    .fx-grid {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    }
+
+    .fx-item {
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(100% 0 0));
+      border: 2px solid var(--color-border, oklch(90% 0.05 350));
+      border-radius: var(--radius-xl, 2rem);
+    }
+
+    .fx-item h3 {
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      opacity: 0.6;
+      margin-block-end: var(--size-s, 0.75rem);
+      letter-spacing: 0.1em;
+    }
+
+    .fx-showcase {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .theme-switcher {
+      display: flex;
+      gap: var(--size-xs, 0.5rem);
+      flex-wrap: wrap;
+      margin-block-end: var(--size-l, 1.5rem);
+    }
+
+    .theme-switcher button {
+      padding: 0.4em 1em;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 2px solid var(--color-border, oklch(90% 0.05 350));
+      border-radius: var(--radius-full, 9999px);
+      background: var(--color-surface-raised, oklch(100% 0 0));
+      color: var(--color-text, oklch(25% 0.08 330));
+      cursor: pointer;
+      transition: all 0.3s var(--ease-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
+    }
+
+    .theme-switcher button:hover {
+      border-color: var(--color-primary, oklch(55% 0.18 350));
+      transform: translateY(-2px);
+    }
+
+    .theme-switcher button[aria-pressed="true"] {
+      background: linear-gradient(135deg, var(--color-primary, oklch(55% 0.18 350)), var(--color-lavender, oklch(55% 0.12 290)));
+      color: white;
+      border-color: transparent;
+    }
+
+    /* Background hero section */
+    .kawaii-hero {
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--size-2xl, 4rem) var(--size-m, 1rem);
+      border-radius: var(--radius-2xl, 3rem);
+      margin-block-end: var(--size-l, 1.5rem);
+    }
+
+    .kawaii-hero h3 {
+      font-family: var(--font-display, var(--font-sans, cursive));
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--color-primary, oklch(55% 0.18 350));
+      margin-block-end: var(--size-s, 0.75rem);
+    }
+
+    .kawaii-hero p {
+      max-width: 42ch;
+      opacity: 0.8;
+    }
+
+    /* Specimen grid */
+    .specimen-grid {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+    }
+
+    .specimen-row {
+      padding: var(--size-l, 1.5rem);
+      background: var(--color-surface-raised, oklch(100% 0 0));
+      border: 2px solid var(--color-border, oklch(90% 0.05 350));
+      border-radius: var(--radius-xl, 2rem);
+    }
+
+    .specimen-meta {
+      font-family: system-ui, sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      opacity: 0.5;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .specimen-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-m, 1rem);
+    }
+
+    @media (max-width: 480px) {
+      .specimen-pair { grid-template-columns: 1fr; }
+    }
+
+    /* Content demo — simulate article content for decorative overrides */
+    .content-demo {
+      padding: var(--size-l, 1.5rem);
+      background: var(--color-surface-raised, oklch(100% 0 0));
+      border: 2px solid var(--color-border, oklch(90% 0.05 350));
+      border-radius: var(--radius-xl, 2rem);
+    }
+
+    /* Particles section */
+    .particles-area {
+      min-height: 200px;
+      padding: var(--size-xl, 2.5rem);
+      background: linear-gradient(135deg, var(--color-primary-subtle, oklch(95% 0.05 350)), oklch(95% 0.04 290));
+      border-radius: var(--radius-xl, 2rem);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .particles-area h3 {
+      font-family: var(--font-display, var(--font-sans, cursive));
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      color: var(--color-primary, oklch(55% 0.18 350));
+    }
+
+    .mode-switcher {
+      display: flex;
+      gap: var(--size-xs, 0.5rem);
+      margin-block-end: var(--size-l, 1.5rem);
+    }
+
+    .mode-switcher button {
+      padding: 0.3em 0.8em;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 2px solid var(--color-border, oklch(90% 0.05 350));
+      border-radius: var(--radius-full, 9999px);
+      background: var(--color-surface-raised, oklch(100% 0 0));
+      color: var(--color-text, oklch(25% 0.08 330));
+      cursor: pointer;
+    }
+
+    .mode-switcher button[aria-pressed="true"] {
+      background: var(--color-primary, oklch(55% 0.18 350));
+      color: white;
+      border-color: transparent;
+    }
+  </style>
+</head>
+<body data-theme="kawaii">
+
+<header class="page-header">
+  <h1>Kawaii Bundle</h1>
+  <p>Pastel pink/mint/lavender palette, pill shapes, bouncy motion, Cherry Bomb One display font, sparkle effects.</p>
+</header>
+
+<!-- Theme switching -->
+<section>
+  <h2>Theme Switching</h2>
+  <nav class="theme-switcher" aria-label="Theme picker">
+    <button aria-pressed="true" data-set-theme="kawaii">Kawaii</button>
+    <button aria-pressed="false" data-set-theme="">Default (Core)</button>
+  </nav>
+
+  <nav class="mode-switcher" aria-label="Mode picker">
+    <button aria-pressed="true" data-set-mode="light">Light</button>
+    <button aria-pressed="false" data-set-mode="dark">Dark</button>
+  </nav>
+
+  <p>Switching themes changes token values. All effects and decorative overrides adapt automatically.</p>
+</section>
+
+<!-- Background Effect -->
+<section>
+  <h2>Starburst Background</h2>
+  <div class="kawaii-hero" data-kawaii-bg>
+    <h3 data-sparkle>Welcome!</h3>
+    <p>The <code>data-kawaii-bg</code> effect creates a pastel starburst with rotating rays and soft cloud shapes at the bottom.</p>
+  </div>
+</section>
+
+<!-- Sparkle Particles -->
+<section>
+  <h2>Sparkle Particles (JS)</h2>
+  <div class="particles-area" data-kawaii-particles>
+    <h3>Floating Sparkles</h3>
+    <p>The <code>data-kawaii-particles</code> attribute spawns drifting sparkle characters. Respects <code>prefers-reduced-motion</code>.</p>
+  </div>
+</section>
+
+<!-- CSS Effects Gallery -->
+<section>
+  <h2>CSS Effects</h2>
+  <article class="fx-grid">
+
+    <article class="fx-item">
+      <h3>data-sparkle</h3>
+      <p class="fx-showcase"><span data-sparkle>Magical</span></p>
+      <p style="margin-block-start: 0.75rem; font-size: 0.85rem; opacity: 0.7;">Floating sparkle pseudo-elements orbit the text.</p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-kawaii-bounce</h3>
+      <p style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button data-kawaii-bounce style="padding: 0.5em 1.5em; font-size: 1rem; font-weight: 700; border: 2px solid var(--color-primary); border-radius: var(--radius-full); background: var(--color-primary-subtle); color: var(--color-primary); cursor: pointer;">Hover me!</button>
+        <button data-kawaii-bounce style="padding: 0.5em 1.5em; font-size: 1rem; font-weight: 700; border: 2px solid var(--color-lavender, oklch(55% 0.12 290)); border-radius: var(--radius-full); background: oklch(95% 0.04 290); color: var(--color-lavender, oklch(55% 0.12 290)); cursor: pointer;">Boing!</button>
+      </p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-kawaii-wiggle</h3>
+      <p style="display: flex; gap: 1rem; align-items: center;">
+        <span data-kawaii-wiggle style="font-size: 2rem;">&#x2661;</span>
+        <span data-kawaii-wiggle style="font-size: 2rem; animation-delay: -0.5s;">&#x2726;</span>
+        <span data-kawaii-wiggle style="font-size: 2rem; animation-delay: -1s;">&#x2605;</span>
+      </p>
+      <p style="margin-block-start: 0.5rem;">
+        <span data-kawaii-wiggle="hover" style="font-size: 1.5rem; cursor: pointer;">Hover to wiggle &#x2661;</span>
+      </p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-kawaii-bg (compact)</h3>
+      <div data-kawaii-bg style="padding: var(--size-m, 1rem); border-radius: var(--radius-l, 1.5rem); min-height: 120px; display: flex; align-items: center; justify-content: center;">
+        <p style="font-family: var(--font-display, cursive); font-size: 1.3rem; font-weight: 700; color: var(--color-primary);" data-sparkle>So Kawaii!</p>
+      </div>
+    </article>
+
+  </article>
+</section>
+
+<!-- Typography Specimen -->
+<section>
+  <h2>Typography</h2>
+  <div class="specimen-grid">
+
+    <article class="specimen-row">
+      <p class="specimen-meta">DISPLAY — CHERRY BOMB ONE</p>
+      <p style="font-family: var(--font-display, cursive); font-size: clamp(2.5rem, 7vw, 4rem); line-height: 1.05; color: var(--color-primary);">Hello World!</p>
+      <p style="font-family: var(--font-display, cursive); font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.15; color: var(--color-lavender, oklch(55% 0.12 290)); margin-block-start: 0.5rem;">Super Cute Design</p>
+    </article>
+
+    <article class="specimen-row">
+      <p class="specimen-meta">ACCENT — COINY</p>
+      <p style="font-family: var(--font-accent, cursive); font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.15; color: var(--color-accent, oklch(45% 0.12 180));">Adventure Time!</p>
+      <p style="font-family: var(--font-accent, cursive); font-size: 1.1rem; line-height: 1.4; margin-block-start: 0.5rem;">Perfect for playful headings and callouts.</p>
+    </article>
+
+    <div class="specimen-pair">
+      <article class="specimen-row">
+        <p class="specimen-meta">BODY — NUNITO</p>
+        <p style="font-family: var(--font-sans); font-size: 1rem; line-height: 1.6;">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+        <p style="font-family: var(--font-sans); font-size: 0.85rem; line-height: 1.5; opacity: 0.7; margin-block-start: 0.5rem;">Sphinx of black quartz, judge my vow. How vexingly quick daft zebras jump!</p>
+      </article>
+
+      <article class="specimen-row">
+        <p class="specimen-meta">BODY — NUNITO BOLD</p>
+        <p style="font-family: var(--font-sans); font-size: 1rem; line-height: 1.6; font-weight: 700;">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+        <p style="font-family: var(--font-sans); font-size: 0.85rem; line-height: 1.5; font-weight: 700; opacity: 0.7; margin-block-start: 0.5rem;">Sphinx of black quartz, judge my vow. How vexingly quick daft zebras jump!</p>
+      </article>
+    </div>
+
+    <article class="specimen-row">
+      <p class="specimen-meta">SCALE RAMP</p>
+      <p style="font-family: var(--font-display, cursive); font-size: 3rem; line-height: 1; color: var(--color-primary);">Sparkle</p>
+      <p style="font-family: var(--font-accent, cursive); font-size: 2rem; line-height: 1.1; color: var(--color-lavender, oklch(55% 0.12 290));">Glitter</p>
+      <p style="font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.3; font-weight: 700;">Pastel Dreams</p>
+      <p style="font-family: var(--font-sans); font-size: 1rem; line-height: 1.5;">Soft rounded corners everywhere...</p>
+      <p style="font-family: var(--font-mono, monospace); font-size: 0.8rem; line-height: 1.5; opacity: 0.6;">Cherry Bomb One / Coiny / Nunito — font-display: swap</p>
+    </article>
+
+  </div>
+</section>
+
+<!-- Decorative Overrides Demo -->
+<section>
+  <h2>Decorative Overrides</h2>
+  <p style="margin-block-end: var(--size-m, 1rem); font-size: 0.85rem; opacity: 0.7;">When the kawaii theme is active, these semantic elements get automatic decorative treatment.</p>
+
+  <article class="content-demo">
+    <h1>Kawaii Heading One</h1>
+    <h2>Heading Two with Star</h2>
+    <h3>Heading Three</h3>
+
+    <p>Regular paragraph text styled with <a href="#">rainbow underline links</a> that animate on hover. The body font is Nunito, soft and rounded.</p>
+
+    <hr>
+
+    <blockquote>
+      This is a kawaii blockquote with a scallop-edge mask and speech bubble emoji. Cute!
+    </blockquote>
+
+    <ul>
+      <li>Heart bullet markers</li>
+      <li>Automatically applied to unclassed lists</li>
+      <li>Inside article or main elements</li>
+    </ul>
+
+    <p>
+      <button>Bouncy Button</button>
+      <code>inline code</code>
+    </p>
+  </article>
+</section>
+
+<!-- Token Preview -->
+<section>
+  <h2>Active Tokens</h2>
+  <div class="fx-grid" id="token-grid"></div>
+</section>
+
+
+<!-- Core JS + kawaii bundle JS -->
+<script type="module" src="/src/main.js"></script>
+<script type="module" src="/src/bundles/kawaii/kawaii.effects.js"></script>
+
+<script type="module">
+  // Theme switcher
+  document.querySelector('.theme-switcher').addEventListener('click', e => {
+    const btn = e.target.closest('[data-set-theme]')
+    if (!btn) return
+    const theme = btn.dataset.setTheme
+    document.body.setAttribute('data-theme', theme)
+    document.querySelectorAll('.theme-switcher button').forEach(b =>
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')
+    )
+  })
+
+  // Mode switcher (light/dark)
+  document.querySelector('.mode-switcher').addEventListener('click', e => {
+    const btn = e.target.closest('[data-set-mode]')
+    if (!btn) return
+    const mode = btn.dataset.setMode
+    document.body.setAttribute('data-mode', mode)
+    document.querySelectorAll('.mode-switcher button').forEach(b =>
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')
+    )
+  })
+
+  // Token inspector
+  const TOKENS = [
+    { prop: '--color-primary',        label: 'Primary',        type: 'color' },
+    { prop: '--color-accent',         label: 'Accent',         type: 'color' },
+    { prop: '--color-lavender',       label: 'Lavender',       type: 'color' },
+    { prop: '--color-surface',        label: 'Surface',        type: 'color' },
+    { prop: '--color-surface-raised', label: 'Surface Raised', type: 'color' },
+    { prop: '--color-text',           label: 'Text',           type: 'color' },
+    { prop: '--color-border',         label: 'Border',         type: 'color' },
+    { prop: '--radius-m',             label: 'Radius M',       type: 'value' },
+    { prop: '--radius-full',          label: 'Radius Full',    type: 'value' },
+    { prop: '--font-display',         label: 'Font Display',   type: 'value' },
+    { prop: '--font-sans',            label: 'Font Sans',      type: 'value' },
+    { prop: '--ease-default',         label: 'Ease Default',   type: 'value' },
+  ]
+
+  function refreshTokens() {
+    const grid = document.getElementById('token-grid')
+    const style = getComputedStyle(document.body)
+    grid.innerHTML = TOKENS.map(t => {
+      const val = style.getPropertyValue(t.prop).trim() || '(not set)'
+      const colorBlock = t.type === 'color'
+        ? `<div style="width:100%;height:2.5rem;border-radius:var(--radius-m,1rem);margin-block-end:0.5rem;border:1px solid oklch(50% 0 0/0.15);background:var(${t.prop});"></div>`
+        : ''
+      return `
+        <div style="padding:var(--size-m,1rem);border-radius:var(--radius-l,1.5rem);border:2px solid var(--color-border);font-size:0.75rem;font-family:var(--font-mono,monospace);">
+          ${colorBlock}
+          <p style="opacity:0.6;font-size:0.65rem;letter-spacing:0.05em;">${t.prop}</p>
+          <p style="font-weight:600;margin-block-start:2px;word-break:break-all;">${val.length > 40 ? val.slice(0, 40) + '...' : val}</p>
+        </div>
+      `
+    }).join('')
+  }
+
+  refreshTokens()
+
+  // Re-render tokens on theme/mode change
+  const observer = new MutationObserver(() => requestAnimationFrame(refreshTokens))
+  observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme', 'data-mode'] })
+</script>
+
+</body>
+</html>

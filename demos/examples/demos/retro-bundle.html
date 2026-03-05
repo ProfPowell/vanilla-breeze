@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retro Bundle — Vanilla Breeze</title>
+
+  <!-- Core VB -->
+  <link rel="stylesheet" href="/src/main.css">
+
+  <!-- Retro bundle CSS (theme + effects) -->
+  <link rel="stylesheet" href="/src/bundles/retro/retro.theme.css">
+  <link rel="stylesheet" href="/src/bundles/retro/retro.effects.css">
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding-block: var(--size-xl, 2.5rem);
+      padding-inline: clamp(var(--size-m, 1rem), 5vw, var(--size-2xl, 4rem));
+      max-width: 960px;
+      margin-inline: auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    section {
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    section > h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-block-end: var(--size-l, 1.5rem);
+      padding-block-end: var(--size-xs, 0.5rem);
+      border-block-end: 1px solid var(--color-border, oklch(32% 0.04 260));
+    }
+
+    .fx-grid {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    }
+
+    .fx-item {
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 2px);
+    }
+
+    .fx-item h3 {
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      opacity: 0.6;
+      margin-block-end: var(--size-s, 0.75rem);
+      letter-spacing: 0.1em;
+    }
+
+    .fx-showcase {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .neon-bg {
+      background: oklch(6% 0.015 260);
+      padding: var(--size-m, 1rem);
+      border-radius: var(--radius-m, 2px);
+    }
+
+    .stamp-bg {
+      background: oklch(95% 0.005 260);
+      padding: var(--size-m, 1rem);
+      border-radius: var(--radius-m, 2px);
+    }
+
+    .theme-switcher {
+      display: flex;
+      gap: var(--size-xs, 0.5rem);
+      flex-wrap: wrap;
+      margin-block-end: var(--size-l, 1.5rem);
+    }
+
+    .theme-switcher button {
+      padding: 0.4em 0.8em;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 2px);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      color: var(--color-text, oklch(90% 0.01 260));
+      cursor: pointer;
+    }
+
+    .theme-switcher button:hover {
+      border-color: var(--color-primary, oklch(70% 0.28 145));
+    }
+
+    .theme-switcher button[aria-pressed="true"] {
+      background: var(--color-primary, oklch(70% 0.28 145));
+      color: oklch(10% 0.02 260);
+      border-color: var(--color-primary, oklch(70% 0.28 145));
+    }
+
+    .player-section {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+    }
+
+    .player-label {
+      font-size: 0.75rem;
+      font-family: var(--font-mono, monospace);
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .marquee-band {
+      background: var(--color-text, oklch(90% 0.01 260));
+      color: var(--color-surface, oklch(10% 0.02 260));
+      padding-block: var(--size-s, 0.75rem);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .flipboard-row {
+      display: flex;
+      gap: var(--size-l, 1.5rem);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .flipboard-item {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 700;
+      font-family: var(--font-mono, monospace);
+      letter-spacing: 0.05em;
+    }
+
+    /* Departure board container */
+    .departure-board {
+      background: oklch(10% 0.005 260);
+      border: 2px solid oklch(20% 0.01 260);
+      border-radius: 4px;
+      padding: var(--size-m, 1rem) var(--size-l, 1.5rem);
+      box-shadow:
+        inset 0 2px 6px oklch(0% 0 0 / 0.5),
+        0 4px 12px oklch(0% 0 0 / 0.4);
+      display: grid;
+      gap: var(--size-s, 0.75rem);
+    }
+
+    .departure-row {
+      display: flex;
+      align-items: center;
+      gap: var(--size-m, 1rem);
+    }
+
+    .departure-label {
+      font-size: 0.6rem;
+      font-family: system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: oklch(50% 0.01 260);
+      min-width: 5em;
+    }
+
+    /* Type specimen */
+    .specimen {
+      font-family: 'Cartridge', var(--font-mono, monospace);
+    }
+
+    .specimen-grid {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+    }
+
+    .specimen-row {
+      padding: var(--size-m, 1rem);
+      background: var(--color-surface-raised, oklch(18% 0.03 260));
+      border: 1px solid var(--color-border, oklch(32% 0.04 260));
+      border-radius: var(--radius-m, 2px);
+    }
+
+    .specimen-meta {
+      font-family: system-ui, sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      opacity: 0.5;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .specimen-xl {
+      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+    }
+
+    .specimen-l {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      line-height: 1.15;
+    }
+
+    .specimen-m {
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      line-height: 1.4;
+    }
+
+    .specimen-s {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .specimen-chars {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      line-height: 1.6;
+      letter-spacing: 0.05em;
+      word-break: break-all;
+    }
+
+    .specimen-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-m, 1rem);
+    }
+
+    @media (max-width: 480px) {
+      .specimen-pair { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-theme="retro">
+
+<!-- SVG filter for stamp effect -->
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="vb-stamp-noise" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="greyNoise"/>
+      <feComposite in="SourceGraphic" in2="greyNoise" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="page-header">
+  <h1 data-text-3d="green">RETRO BUNDLE</h1>
+  <p>Vanilla Breeze modular bundle system — first test case</p>
+</header>
+
+<!-- Theme switching -->
+<section>
+  <h2>Theme Switching</h2>
+  <nav class="theme-switcher" aria-label="Theme picker">
+    <button aria-pressed="true" data-set-theme="retro">Retro (CRT)</button>
+    <button aria-pressed="false" data-set-theme="">Default (Core)</button>
+  </nav>
+  <p>Switching themes changes token values. All effects and components adapt automatically.</p>
+</section>
+
+<!-- Cartridge Type Specimen -->
+<section>
+  <h2>Cartridge Type Specimen</h2>
+  <div class="specimen-grid">
+
+    <article class="specimen-row">
+      <p class="specimen-meta">REGULAR 400 — DISPLAY</p>
+      <p class="specimen specimen-xl">GAME OVER</p>
+      <p class="specimen specimen-xl" style="font-style: italic;">INSERT COIN</p>
+    </article>
+
+    <article class="specimen-row">
+      <p class="specimen-meta">BOLD 700 — DISPLAY</p>
+      <p class="specimen specimen-xl" style="font-weight: 700;">PLAYER ONE</p>
+      <p class="specimen specimen-xl" style="font-weight: 700; font-style: italic;">HIGH SCORE</p>
+    </article>
+
+    <div class="specimen-pair">
+      <article class="specimen-row">
+        <p class="specimen-meta">REGULAR 400 — BODY TEXT</p>
+        <p class="specimen specimen-m">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+        <p class="specimen specimen-s" style="margin-block-start: 0.75rem; opacity: 0.7;">Sphinx of black quartz, judge my vow. How vexingly quick daft zebras jump!</p>
+      </article>
+
+      <article class="specimen-row">
+        <p class="specimen-meta">BOLD 700 — BODY TEXT</p>
+        <p class="specimen specimen-m" style="font-weight: 700;">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+        <p class="specimen specimen-s" style="margin-block-start: 0.75rem; font-weight: 700; opacity: 0.7;">Sphinx of black quartz, judge my vow. How vexingly quick daft zebras jump!</p>
+      </article>
+    </div>
+
+    <article class="specimen-row">
+      <p class="specimen-meta">FULL CHARACTER SET</p>
+      <p class="specimen specimen-chars">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+      <p class="specimen specimen-chars">abcdefghijklmnopqrstuvwxyz</p>
+      <p class="specimen specimen-chars">0123456789</p>
+      <p class="specimen specimen-chars">!@#$%^&amp;*()-_=+[]{}|;:',./&lt;&gt;?</p>
+    </article>
+
+    <article class="specimen-row">
+      <p class="specimen-meta">SCALE RAMP</p>
+      <p class="specimen" style="font-size: 3.5rem; line-height: 1;">ARCADE</p>
+      <p class="specimen" style="font-size: 2.5rem; line-height: 1.1;">TERMINAL</p>
+      <p class="specimen" style="font-size: 1.8rem; line-height: 1.2;">INTERFACE</p>
+      <p class="specimen" style="font-size: 1.3rem; line-height: 1.3;">SYSTEM READY</p>
+      <p class="specimen" style="font-size: 1rem; line-height: 1.4;">Awaiting input signal...</p>
+      <p class="specimen" style="font-size: 0.8rem; line-height: 1.5;">Cartridge Regular / Bold / Rough / Bold Rough — woff2 — font-display: swap</p>
+    </article>
+
+  </div>
+</section>
+
+<!-- Text Effects Gallery -->
+<section>
+  <h2>Text Effects (CSS-only)</h2>
+  <article class="fx-grid">
+
+    <article class="fx-item">
+      <h3>data-blink</h3>
+      <p class="fx-showcase">
+        <span data-blink>NEW</span>
+        <span data-blink="slow">SALE</span>
+        <span data-blink="fast">!</span>
+      </p>
+    </article>
+
+    <article class="fx-item neon-bg">
+      <h3>data-neon</h3>
+      <p class="fx-showcase">
+        <span data-neon>LASER</span>
+      </p>
+      <p style="margin-block-start: 0.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <span data-neon="pink" style="font-size: 1.2rem; font-weight: 700;">PINK</span>
+        <span data-neon="cyan" style="font-size: 1.2rem; font-weight: 700;">CYAN</span>
+        <span data-neon="amber" style="font-size: 1.2rem; font-weight: 700;">AMBER</span>
+      </p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-text-3d</h3>
+      <p class="fx-showcase" data-text-3d>RADICAL</p>
+      <p style="margin-block-start: 0.5rem;">
+        <span data-text-3d="red" style="font-size: 1.3rem; font-weight: 900;">RED</span>
+        <span data-text-3d="gold" style="font-size: 1.3rem; font-weight: 900;">GOLD</span>
+      </p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-outline</h3>
+      <p class="fx-showcase" data-outline>HOLLOW</p>
+      <p style="margin-block-start: 0.5rem;">
+        <span data-outline="thick" style="font-size: 1.3rem; font-weight: 900;">THICK</span>
+        <span data-outline="ultra" style="font-size: 1.3rem; font-weight: 900;">ULTRA</span>
+      </p>
+      <div class="neon-bg" style="margin-block-start: 0.5rem;">
+        <span data-outline="glow" style="font-size: 1.3rem; font-weight: 900; --vb-neon-color: oklch(72% 0.2 200);">GLOW</span>
+      </div>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-retro-shadow</h3>
+      <p class="fx-showcase" data-retro-shadow>TOUR</p>
+      <p style="margin-block-start: 0.5rem;">
+        <span data-retro-shadow="long gold" style="font-size: 1.3rem; font-weight: 900;">LONG</span>
+      </p>
+    </article>
+
+    <article class="fx-item stamp-bg">
+      <h3>data-stamp</h3>
+      <p style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <span data-stamp style="font-size: 1.3rem;">APPROVED</span>
+        <span data-stamp="red" style="font-size: 1.3rem;">REJECTED</span>
+        <span data-stamp="blue straight" style="font-size: 1rem;">CLASSIFIED</span>
+      </p>
+    </article>
+
+    <article class="fx-item">
+      <h3>data-rainbow</h3>
+      <p class="fx-showcase" data-rainbow style="color: oklch(65% 0.28 0);">PRIDE</p>
+    </article>
+
+  </article>
+</section>
+
+<!-- Marquee -->
+<section>
+  <h2>Marquee</h2>
+  <div data-marquee class="marquee-band">
+    <span>
+      Breaking: GeoCities is back &nbsp;·&nbsp; Under Construction &nbsp;·&nbsp; You are visitor #1,337 &nbsp;·&nbsp; Sign my guestbook! &nbsp;·&nbsp;&nbsp;
+    </span>
+    <span aria-hidden="true">
+      Breaking: GeoCities is back &nbsp;·&nbsp; Under Construction &nbsp;·&nbsp; You are visitor #1,337 &nbsp;·&nbsp; Sign my guestbook! &nbsp;·&nbsp;&nbsp;
+    </span>
+  </div>
+</section>
+
+<!-- Flipboard / Split-Flap Departure Board (JS effect) -->
+<section>
+  <h2>Split-Flap Departure Board</h2>
+
+  <div class="departure-board">
+    <div class="departure-row">
+      <span class="departure-label">Dest.</span>
+      <span class="flipboard-item" data-flipboard>NEW YORK JFK</span>
+    </div>
+    <div class="departure-row">
+      <span class="departure-label">Flight</span>
+      <span class="flipboard-item" data-flipboard>VB 1337</span>
+    </div>
+    <div class="departure-row">
+      <span class="departure-label">Gate</span>
+      <span class="flipboard-item" data-flipboard>A42</span>
+    </div>
+    <div class="departure-row">
+      <span class="departure-label">Status</span>
+      <span class="flipboard-item" data-flipboard>ON TIME</span>
+    </div>
+  </div>
+
+  <p style="margin-block-start: var(--size-m, 1rem);">
+    <button id="replay-flipboard" style="font-size: 0.8rem; padding: 0.4em 0.8em; border: 1px solid var(--color-border, oklch(32% 0.04 260)); border-radius: var(--radius-m, 2px); background: var(--color-surface-raised, oklch(18% 0.03 260)); color: var(--color-text, oklch(90% 0.01 260)); cursor: pointer;">Replay</button>
+  </p>
+</section>
+
+<!-- Audio Player Component -->
+<section>
+  <h2>Audio Player Component</h2>
+  <div class="player-section">
+    <article>
+      <p class="player-label">WAVE MODE (DEFAULT)</p>
+      <audio-player src="assets/track.mp3" data-title="Demo Track">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+
+    <article>
+      <p class="player-label">BARS MODE</p>
+      <audio-player src="assets/track.mp3" data-visualizer="bars" data-title="Bars Mode">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+
+    <article>
+      <p class="player-label">CIRCLE MODE</p>
+      <audio-player src="assets/track.mp3" data-visualizer="circle" data-title="Circle Mode">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+  </div>
+</section>
+
+<!-- Mini Player -->
+<section>
+  <h2>Mini Form Factor</h2>
+  <p style="margin-block-end: var(--size-m, 1rem); font-size: 0.85rem; opacity: 0.7;">Compact single-row player for inline use. Add <code>data-size="mini"</code>.</p>
+  <div class="player-section">
+    <article>
+      <p class="player-label">MINI DEFAULT</p>
+      <audio-player src="assets/track.mp3" data-size="mini" data-title="Demo Track">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+
+    <article>
+      <p class="player-label">MINI — CUSTOM COLORS</p>
+      <audio-player src="assets/track.mp3" data-size="mini" data-title="Pink Signal"
+        style="--audioplayer-screen-color: oklch(72% 0.3 340); --audioplayer-bg: oklch(12% 0.03 300);">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+
+    <article>
+      <p class="player-label">MINI — AMBER</p>
+      <audio-player src="assets/track.mp3" data-size="mini" data-title="Amber Signal"
+        style="--audioplayer-screen-color: oklch(75% 0.18 70);">
+        <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+      </audio-player>
+    </article>
+  </div>
+</section>
+
+<!-- Token Override Demo -->
+<section>
+  <h2>Token Overrides</h2>
+  <p style="margin-block-end: var(--size-m, 1rem);">Override component tokens inline:</p>
+  <audio-player
+    src="assets/track.mp3"
+    data-title="Custom Colors"
+    style="--audioplayer-screen-color: oklch(72% 0.3 340); --audioplayer-bg: oklch(12% 0.03 300);">
+    <audio controls src="assets/track.mp3">Your browser does not support the audio element.</audio>
+  </audio-player>
+</section>
+
+<!-- Core JS + retro bundle JS -->
+<script type="module" src="/src/main.js"></script>
+<script type="module" src="/src/bundles/retro/retro.effects.js"></script>
+<script type="module" src="/src/bundles/retro/retro.components.js"></script>
+
+<script type="module">
+  import { replayFlipboard } from '/src/bundles/retro/retro.effects.js'
+
+  // Theme switcher logic
+  document.querySelector('.theme-switcher').addEventListener('click', e => {
+    const btn = e.target.closest('[data-set-theme]')
+    if (!btn) return
+
+    const theme = btn.dataset.setTheme
+    document.body.setAttribute('data-theme', theme)
+
+    document.querySelectorAll('.theme-switcher button').forEach(b => {
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')
+    })
+  })
+
+  // Replay flipboard effect
+  document.getElementById('replay-flipboard').addEventListener('click', () => {
+    document.querySelectorAll('[data-flipboard]').forEach(el => {
+      replayFlipboard(el)
+    })
+  })
+</script>
+
+</body>
+</html>

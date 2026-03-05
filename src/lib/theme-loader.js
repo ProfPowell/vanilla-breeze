@@ -28,6 +28,9 @@ const loadCache = new Map();
 /** @type {object|null} */
 let manifestCache = null;
 
+/** @type {object|null} */
+let bundleManifestCache = null;
+
 /** @type {string|null} */
 let baseOverride = null;
 
@@ -157,14 +160,39 @@ export function preloadTheme(themeName) {
 }
 
 /**
+ * Fetch and cache the bundles manifest
+ * @returns {Promise<object>}
+ */
+async function getBundleManifest() {
+  if (bundleManifestCache) return bundleManifestCache;
+
+  const base = detectBase();
+  try {
+    const res = await fetch(`${base}/bundles/manifest.json`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    bundleManifestCache = await res.json();
+  } catch {
+    bundleManifestCache = {};
+  }
+  return bundleManifestCache;
+}
+
+/**
  * Internal: load and inject theme CSS
+ * Checks themes/ first, then bundles/ for bundle themes.
  * @param {string} themeName
  * @returns {Promise<void>}
  */
 async function loadThemeCSS(themeName) {
   const base = detectBase();
 
-  // Try manifest first for correct filename, fall back to convention
+  // Check if this is a bundle theme
+  const bundleManifest = await getBundleManifest();
+  if (bundleManifest[themeName]) {
+    return loadBundleCSS(themeName, base);
+  }
+
+  // Standard theme loading: try manifest first for correct filename, fall back to convention
   const manifest = await getThemeManifest();
   const entry = manifest[themeName];
   const file = entry ? entry.file : `${themeName}.css`;
@@ -186,6 +214,40 @@ async function loadThemeCSS(themeName) {
       link.remove();
       loadCache.delete(themeName);
       reject(new Error(`Failed to load theme: ${themeName}`));
+    };
+
+    document.head.appendChild(link);
+  });
+}
+
+/**
+ * Internal: load bundle CSS (full.css) and JS (full.js)
+ * @param {string} bundleName
+ * @param {string} base - CDN base URL
+ * @returns {Promise<void>}
+ */
+function loadBundleCSS(bundleName, base) {
+  const cssHref = `${base}/bundles/${bundleName}.full.css`;
+  const jsHref = `${base}/bundles/${bundleName}.full.js`;
+
+  return new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = cssHref;
+    link.setAttribute('data-vb-theme', bundleName);
+    link.setAttribute('data-vb-bundle', bundleName);
+
+    link.onload = () => {
+      // Also load bundle JS (non-blocking — resolve immediately after CSS)
+      import(jsHref).catch(() => {
+        // JS effects are optional — CSS tokens are enough for the theme
+      });
+      resolve();
+    };
+    link.onerror = () => {
+      link.remove();
+      loadCache.delete(bundleName);
+      reject(new Error(`Failed to load bundle: ${bundleName}`));
     };
 
     document.head.appendChild(link);
