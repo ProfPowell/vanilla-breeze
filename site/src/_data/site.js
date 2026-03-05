@@ -22,6 +22,14 @@ export default {
   // Extras JS (niche/heavy components — geo-map, emoji-picker, etc.)
   extrasJs: isDev ? null : '/cdn/vanilla-breeze-extras.js',
 
+  // Pack loading (prod only — dev uses full main.js/main.css which includes everything)
+  uiJs: isDev ? null : '/cdn/packs/ui.full.js',
+  uiCss: isDev ? null : '/cdn/packs/ui.full.css',
+  effectsJs: isDev ? null : '/cdn/packs/effects.full.js',
+  effectsCss: isDev ? null : '/cdn/packs/effects.full.css',
+  prototypeJs: isDev ? null : '/cdn/packs/prototype.full.js',
+  prototypeCss: isDev ? null : '/cdn/packs/prototype.full.css',
+
   // Charts CSS add-on (per-page via includeCharts front matter)
   chartsCss: isDev ? '/src/charts-standalone.css' : '/cdn/vanilla-breeze-charts.css',
 

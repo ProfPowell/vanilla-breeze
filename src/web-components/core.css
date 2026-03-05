@@ -1,0 +1,824 @@
+@import "./tab-set/styles.css";
+@import "./foot-notes/styles.css";
+@import "./accordion-wc/styles.css";
+@import "./toast-msg/styles.css";
+@import "./tool-tip/styles.css";
+@import "./drop-down/styles.css";
+@import "./heading-links/styles.css";
+@import "./page-toc/styles.css";
+@import "./data-table/styles.css";
+@import "./site-search/styles.css";
+@import "./card-list/styles.css";
+@import "./content-swap/styles.css";
+@import "./compare-surface/styles.css";
+@import "./split-surface/styles.css";
+@import "./carousel-wc/styles.css";
+@import "./combo-box/styles.css";
+@import "./context-menu/styles.css";
+@import "./command-palette/styles.css";
+@import "./short-cuts/styles.css";
+@import "./qr-code/styles.css";
+@import "./include-file/styles.css";
+@import "./slide-accept/styles.css";
+@import "./drag-surface/styles.css";
+@import "./emoji-picker/styles.css";
+@import "./settings-panel/styles.css";
+@import "./print-page/styles.css";
+@import "./text-reader/styles.css";
+@import "./chat-input/styles.css";
+@import "./chat-window/styles.css";
+@import "./share-wc/styles.css";
+
+/* geo-map: No-JS fallback — show slotted content as a styled card */
+geo-map:not(:defined) {
+  display: block;
+  padding: var(--size-m, 1rem);
+  background: var(--color-surface-raised, #f5f5f5);
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  border-radius: var(--radius-m, 0.5rem);
+  color: var(--color-text, #333);
+}
+
+/* data-mask: Input masking */
+input[data-mask][data-mask-init] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* data-copy: Clipboard copy button feedback */
+[data-copy][data-state="copied"],
+[data-copy-target][data-state="copied"] {
+  color: var(--color-success, oklch(50% 0.15 145));
+}
+/* data-format-date: Locale-aware date formatting */
+time[data-format-date="relative"] {
+  cursor: help;
+}
+
+/* data-format-*: Enhanced formatting display */
+data[data-format-number],
+data[data-format-bytes] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* data-hotkey: Platform-aware keyboard shortcut display */
+kbd[data-hotkey] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+kbd[data-hotkey] kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  line-height: 1.4;
+}
+
+/* data-spoiler: Content concealment */
+[data-spoiler][data-spoiler-init] {
+  position: relative;
+}
+
+[data-spoiler][data-spoiler-init] > [data-spoiler-content] {
+  user-select: none;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Blur effect (default) */
+[data-spoiler="blur"][data-spoiler-init] > [data-spoiler-content] {
+  filter: blur(8px);
+}
+
+[data-spoiler="blur"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  filter: blur(0);
+}
+
+/* Solid effect */
+[data-spoiler="solid"][data-spoiler-init] > [data-spoiler-content] {
+  opacity: 0;
+}
+
+[data-spoiler="solid"][data-spoiler-init]:not([data-spoiler-visible]) > [data-spoiler-trigger] {
+  background: currentColor;
+}
+
+[data-spoiler="solid"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  opacity: 1;
+}
+
+/* Noise effect */
+[data-spoiler="noise"][data-spoiler-init] > [data-spoiler-content] {
+  opacity: 0.15;
+}
+
+[data-spoiler="noise"][data-spoiler-init]:not([data-spoiler-visible]) > [data-spoiler-trigger] {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+[data-spoiler="noise"][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  opacity: 1;
+}
+
+/* Trigger overlay — reset VB button styles completely */
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger] {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  border-radius: var(--radius-s, 4px);
+}
+
+/* Hidden trigger must disappear (overrides display: flex) */
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger][hidden] {
+  display: none;
+}
+
+[data-spoiler][data-spoiler-init] > [data-spoiler-trigger] > [data-spoiler-label] {
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #333);
+  padding: var(--size-2xs, 4px) var(--size-xs, 8px);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.85em;
+  font-weight: 500;
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0,0,0,.12));
+}
+
+/* Re-hide button — normal flow, after content */
+[data-spoiler][data-spoiler-init] > [data-spoiler-hide] {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-block-start: var(--size-2xs, 4px);
+  padding: var(--size-3xs, 2px) var(--size-xs, 8px);
+  font-size: 0.75em;
+  line-height: 1.4;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text-muted, #666);
+  cursor: pointer;
+}
+
+/* Revealed state: content visible */
+[data-spoiler][data-spoiler-init][data-spoiler-visible] > [data-spoiler-content] {
+  user-select: auto;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-spoiler][data-spoiler-init] > [data-spoiler-content] {
+    transition-duration: 0s;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   data-count: Textarea character/word counter
+   -------------------------------------------------------------------------- */
+.textarea-counter {
+  display: block;
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  text-align: end;
+  margin-block-start: var(--size-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.textarea-counter[data-state="warning"] {
+  color: oklch(75% 0.18 75);
+}
+
+.textarea-counter[data-state="error"] {
+  color: var(--color-error, oklch(55% 0.2 25));
+}
+
+/* --------------------------------------------------------------------------
+   data-grow: Auto-expanding textarea
+   -------------------------------------------------------------------------- */
+textarea[data-grow][data-grow-init] {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   data-show-when / data-hide-when: Conditional fields
+   -------------------------------------------------------------------------- */
+[data-show-when][hidden],
+[data-hide-when][hidden] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   data-range: Range slider with value bubble and labels
+   -------------------------------------------------------------------------- */
+.range-wrapper {
+  position: relative;
+  padding-block-start: 1.75rem;
+  padding-block-end: 1.25rem;
+}
+
+.range-wrapper input[type="range"] {
+  inline-size: 100%;
+  cursor: pointer;
+}
+
+/* Track fill via gradient */
+.range-wrapper input[type="range"] {
+  appearance: none;
+  block-size: 0.5rem;
+  border-radius: var(--radius-full, 999px);
+  background: linear-gradient(
+    to right,
+    var(--color-interactive, oklch(55% 0.2 260)) var(--range-pct, 0%),
+    var(--color-surface-raised, oklch(95% 0 0)) var(--range-pct, 0%)
+  );
+  border: none;
+  outline: none;
+}
+
+.range-wrapper input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  border: 2px solid white;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  cursor: pointer;
+}
+
+.range-wrapper input[type="range"]::-moz-range-thumb {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  border: 2px solid white;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+  cursor: pointer;
+}
+
+.range-wrapper input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 4px;
+  border-radius: var(--radius-s);
+}
+
+/* Value bubble */
+.range-bubble {
+  position: absolute;
+  inset-block-start: 0;
+  translate: -50% 0;
+  background: var(--color-surface-raised, #333);
+  color: var(--color-text);
+  padding: var(--size-3xs) var(--size-xs);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-s);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+/* Tick markers at each step */
+.range-markers {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 0.625rem;
+  margin-block-start: var(--size-2xs);
+}
+
+.range-markers span {
+  inline-size: 2px;
+  block-size: 0.5rem;
+  background: var(--color-border);
+  border-radius: 1px;
+}
+
+/* Datalist tick labels */
+.range-labels {
+  position: relative;
+  block-size: 1.25rem;
+}
+
+.range-labels span {
+  position: absolute;
+  translate: -50% 0;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   data-upload: File upload drop zone
+   -------------------------------------------------------------------------- */
+.upload-zone {
+  position: relative;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-m);
+  padding: var(--size-l);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-default),
+              background var(--duration-fast) var(--ease-default);
+}
+
+.upload-zone:hover {
+  border-color: var(--color-interactive);
+}
+
+.upload-zone[data-dragover] {
+  border-color: var(--color-interactive);
+  background: color-mix(in oklab, var(--color-interactive) 5%, transparent);
+}
+
+/* Visually hide the native file input */
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-xs);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.upload-prompt svg {
+  color: var(--color-text-muted);
+}
+
+.upload-prompt small {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted);
+}
+
+.upload-browse {
+  all: unset;
+  color: var(--color-interactive);
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.upload-browse:hover {
+  text-decoration: none;
+}
+
+.upload-file-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--size-s) 0 0;
+  text-align: start;
+}
+
+.upload-file-list[hidden] {
+  display: none;
+}
+
+.upload-file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--size-2xs) var(--size-xs);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-s);
+}
+
+.upload-file-list li:nth-child(odd) {
+  background: color-mix(in oklab, var(--color-surface-raised) 50%, transparent);
+}
+
+.upload-file-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-file-size {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-inline-start: var(--size-s);
+}
+
+/* --------------------------------------------------------------------------
+   data-toggle-tags: Checkbox pill chips
+   -------------------------------------------------------------------------- */
+[data-toggle-tags] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-xs);
+  border: none;
+  padding: 0;
+}
+
+[data-toggle-tags] > legend {
+  float: left;
+  inline-size: 100%;
+  margin-block-end: var(--size-xs);
+  font-weight: 600;
+}
+
+[data-toggle-tags] label {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--size-2xs) var(--size-s);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  font-size: var(--font-size-s);
+  user-select: none;
+  transition: all var(--duration-fast, 150ms) var(--ease-default, ease);
+}
+
+[data-toggle-tags] label:hover {
+  border-color: var(--color-interactive);
+}
+
+[data-toggle-tags] input[type="checkbox"] {
+  appearance: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+[data-toggle-tags] label:has(:checked) {
+  background: var(--color-interactive);
+  color: white;
+  border-color: var(--color-interactive);
+}
+
+[data-toggle-tags] label:has(:focus-visible) {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+[data-toggle-tags] label:has(:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   data-stepper: Number input with +/- buttons
+   -------------------------------------------------------------------------- */
+.number-wrapper {
+  display: inline-flex;
+  align-items: stretch;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  transition: border-color var(--duration-fast, 150ms);
+}
+
+.number-wrapper:focus-within {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+.number-wrapper input[type="number"] {
+  appearance: textfield;
+  border: none;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  inline-size: 4rem;
+  padding-block: var(--size-xs);
+  padding-inline: var(--size-2xs);
+  background: var(--color-surface);
+  font: inherit;
+  min-block-size: 0;
+}
+
+.number-wrapper input[type="number"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.number-wrapper input[type="number"]::-webkit-inner-spin-button,
+.number-wrapper input[type="number"]::-webkit-outer-spin-button {
+  display: none;
+}
+
+.number-wrapper button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  cursor: pointer;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  transition: background var(--duration-fast, 150ms);
+}
+
+.number-wrapper button:hover:not(:disabled) {
+  background: var(--color-surface-sunken, oklch(92% 0 0));
+}
+
+.number-wrapper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   data-color: Enhanced color input with swatch and hex
+   -------------------------------------------------------------------------- */
+.color-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.color-wrapper input[type="color"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  min-block-size: 0;
+}
+
+.color-display {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-xs);
+  padding: var(--size-xs) var(--size-s);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font: inherit;
+  transition: border-color var(--duration-fast, 150ms);
+}
+
+.color-display:hover {
+  border-color: var(--color-interactive);
+}
+
+.color-wrapper:focus-within .color-display {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+.color-swatch {
+  display: inline-block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.color-hex {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-s);
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Text Visual Effects (core — CSS-only effects that stay in core)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   data-gradient-text: Gradient text coloring (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-gradient-text] {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      135deg,
+      var(--color-primary, oklch(55% 0.2 260)),
+      var(--color-secondary, oklch(60% 0.18 310))
+    );
+  }
+
+  [data-gradient-text="sunset"] {
+    background-image: linear-gradient(135deg, oklch(70% 0.22 30), oklch(65% 0.2 350), oklch(55% 0.18 310));
+  }
+
+  [data-gradient-text="ocean"] {
+    background-image: linear-gradient(135deg, oklch(70% 0.15 200), oklch(55% 0.2 260), oklch(50% 0.18 280));
+  }
+
+  [data-gradient-text="forest"] {
+    background-image: linear-gradient(135deg, oklch(65% 0.18 145), oklch(55% 0.15 160), oklch(50% 0.12 180));
+  }
+
+  [data-gradient-text="neon"] {
+    background-image: linear-gradient(135deg, oklch(75% 0.25 330), oklch(70% 0.3 290), oklch(75% 0.25 180));
+  }
+
+  [data-gradient-text][data-gradient-text-animate] {
+    background-size: 200% 200%;
+    animation: vb-gradient-flow 4s var(--ease-default, ease) infinite;
+  }
+}
+
+@keyframes vb-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-gradient-text][data-gradient-text-animate] { animation: none; }
+}
+:root[data-motion-reduced] [data-gradient-text][data-gradient-text-animate] { animation: none; }
+
+/* --------------------------------------------------------------------------
+   data-shimmer: Shimmering text highlight (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-shimmer] {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      110deg,
+      currentColor 35%,
+      oklch(85% 0.05 90) 50%,
+      currentColor 65%
+    );
+    background-size: 200% 100%;
+    animation: vb-shimmer 2s linear infinite;
+    color: var(--color-text);
+  }
+
+  [data-shimmer="slow"] { animation-duration: 4s; }
+  [data-shimmer="fast"] { animation-duration: 1s; }
+}
+
+@keyframes vb-shimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-shimmer] { animation: none; }
+}
+:root[data-motion-reduced] [data-shimmer] { animation: none; }
+
+/* --------------------------------------------------------------------------
+   data-reveal: Word/line reveal entrance
+   -------------------------------------------------------------------------- */
+[data-reveal][data-reveal-init] .vb-reveal-chunk {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.5em);
+  transition:
+    opacity var(--reveal-duration, 400ms) var(--ease-out, ease-out),
+    transform var(--reveal-duration, 400ms) var(--ease-out, ease-out);
+  transition-delay: calc(var(--i, 0) * var(--reveal-delay, 80ms));
+}
+
+[data-reveal][data-reveal-init][data-reveal-visible] .vb-reveal-chunk {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   data-highlight: Draw-in underline / box / circle
+   -------------------------------------------------------------------------- */
+
+/* Underline (default) */
+[data-highlight][data-highlight-init],
+[data-highlight="underline"][data-highlight-init] {
+  background-image: linear-gradient(
+    var(--highlight-color, currentColor),
+    var(--highlight-color, currentColor)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-block-end: 2px;
+}
+
+[data-highlight][data-highlight-init][data-highlight-visible],
+[data-highlight="underline"][data-highlight-init][data-highlight-visible] {
+  background-size: 100% 2px;
+}
+
+/* Box highlight */
+[data-highlight="box"][data-highlight-init] {
+  background-image: linear-gradient(
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent),
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-inline: 0.15em;
+}
+
+[data-highlight="box"][data-highlight-init][data-highlight-visible] {
+  background-size: 100% 100%;
+}
+
+/* Circle highlight */
+[data-highlight="circle"][data-highlight-init] {
+  position: relative;
+  display: inline-block;
+}
+
+[data-highlight="circle"][data-highlight-init]::after {
+  content: '';
+  position: absolute;
+  inset: -0.15em -0.3em;
+  border: 2px solid var(--highlight-color, currentColor);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 0.5s var(--ease-out, ease-out),
+    opacity 0.3s var(--ease-out, ease-out);
+  pointer-events: none;
+}
+
+[data-highlight="circle"][data-highlight-init][data-highlight-visible]::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   data-math: MathML enhancement for code elements
+   -------------------------------------------------------------------------- */
+
+/* Hide original source when rendered */
+[data-math-state="rendered"] {
+  display: none !important;
+}
+
+pre[data-math-state="rendered"] {
+  display: none !important;
+}
+
+/* Rendered math container — block */
+div[data-math-rendered] {
+  display: block;
+  margin-block: var(--size-l, 1.5rem);
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* Rendered math container — inline */
+span[data-math-rendered] {
+  display: inline;
+}
+
+/* Numbered equations — grid with equation number */
+[data-math-numbered] {
+  display: grid !important;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--size-l, 1.5rem);
+}
+
+[data-math-numbered]::after {
+  content: "(" attr(data-equation-number) ")";
+  color: var(--color-text-muted, #666);
+  font-family: var(--font-sans, sans-serif);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Copyable hover affordance */
+[data-math-copyable] {
+  cursor: copy;
+  border-radius: var(--radius-s, 4px);
+  transition: background var(--duration-fast, 150ms);
+}
+
+[data-math-copyable]:hover {
+  background: color-mix(in oklab, var(--color-interactive, oklch(55% 0.2 260)) 8%, transparent);
+}
+
+/* Target highlighting for equation anchoring */
+[data-math-rendered]:target {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: var(--size-xs, 0.5rem);
+  border-radius: var(--radius-s, 4px);
+}
