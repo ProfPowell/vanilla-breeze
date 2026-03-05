@@ -66,7 +66,7 @@ const elementsByLetter = {
   E: [
     { name: 'em', type: 'native', href: '/docs/elements/native/em/' },
     { name: 'embed', type: 'native', href: '/docs/elements/native/embed/' },
-    { name: 'emoji-picker', type: 'component', href: '/docs/elements/web-components/emoji-picker/' },
+    { name: 'emoji-picker', type: 'component', href: '/docs/elements/web-components/emoji-picker/', pack: 'extras' },
   ],
   F: [
     { name: 'fieldset', type: 'native', href: '/docs/elements/native/fieldset/' },
@@ -180,7 +180,7 @@ const elementsByLetter = {
     { name: 'span', type: 'native', href: '/docs/elements/native/span/' },
     { name: 'site-search', type: 'component', href: '/docs/elements/web-components/site-search/' },
     { name: 'split-surface', type: 'component', href: '/docs/elements/web-components/splitter/' },
-    { name: 'star-rating', type: 'component', href: '/docs/elements/web-components/rating/' },
+    { name: 'star-rating', type: 'component', href: '/docs/elements/web-components/rating/', pack: 'effects' },
     { name: 'status-message', type: 'custom', href: '/docs/elements/custom-elements/status-message/' },
     { name: 'strong', type: 'native', href: '/docs/elements/native/strong/' },
     { name: 'style', type: 'native', href: '/docs/elements/native/style/' },
@@ -202,7 +202,7 @@ const elementsByLetter = {
     { name: 'tfoot', type: 'native', href: '/docs/elements/native/tfoot/' },
     { name: 'th', type: 'native', href: '/docs/elements/native/th/' },
     { name: 'thead', type: 'native', href: '/docs/elements/native/thead/' },
-    { name: 'theme-picker', type: 'component', href: '/docs/elements/web-components/theme-picker/' },
+    { name: 'theme-picker', type: 'component', href: '/docs/elements/web-components/theme-picker/', pack: 'ui' },
     { name: 'time', type: 'native', href: '/docs/elements/native/time/' },
     { name: 'title', type: 'native', href: '/docs/elements/native/title/' },
     { name: 'toast-msg', type: 'component', href: '/docs/elements/web-components/toast/' },

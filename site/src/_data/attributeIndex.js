@@ -108,7 +108,7 @@ const dataAttributes = {
       { name: 'data-format-number', type: 'formatting', href: '/docs/attributes/data-format-number/', description: 'Locale-aware number formatting via Intl.NumberFormat' },
       { name: 'data-format-date', type: 'formatting', href: '/docs/attributes/data-format-date/', description: 'Locale-aware date and relative time formatting' },
       { name: 'data-format-bytes', type: 'formatting', href: '/docs/attributes/data-format-bytes/', description: 'Human-readable file size formatting' },
-      { name: 'data-ticker', type: 'behavior', href: '/docs/attributes/data-ticker/', description: 'Animated number count-up on scroll' },
+      { name: 'data-ticker', type: 'behavior', href: '/docs/attributes/data-ticker/', description: 'Animated number count-up on scroll', pack: 'effects' },
     ],
   },
   math: {
@@ -127,8 +127,8 @@ const dataAttributes = {
   'text-effects': {
     label: 'Text Effects',
     items: [
-      { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'Gradient, shimmer, glitch, reveal, highlight, typewriter, and scramble effects' },
-      { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters' },
+      { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'Gradient, shimmer, glitch, reveal, highlight, typewriter, and scramble effects', pack: 'effects' },
+      { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters', pack: 'extras' },
     ],
   },
   interaction: {
@@ -136,7 +136,7 @@ const dataAttributes = {
     items: [
       { name: 'data-hotkey', type: 'behavior', href: '/docs/attributes/data-hotkey/', description: 'Platform-aware keyboard shortcut display' },
       { name: 'data-spoiler', type: 'behavior', href: '/docs/attributes/data-spoiler/', description: 'Content concealment with blur, solid, or noise effects' },
-      { name: 'data-animate-image', type: 'behavior', href: '/docs/attributes/data-animate-image/', description: 'Play/pause control for animated GIF, WebP, and APNG images' },
+      { name: 'data-animate-image', type: 'behavior', href: '/docs/attributes/data-animate-image/', description: 'Play/pause control for animated GIF, WebP, and APNG images', pack: 'effects' },
       { name: 'data-splitter', type: 'behavior', href: '/docs/attributes/data-splitter/', description: 'Resizable drag divider between panels with keyboard support' },
     ],
   },
