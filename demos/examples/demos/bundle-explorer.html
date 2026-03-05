@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bundle Explorer — Vanilla Breeze</title>
+  <title>Pack Explorer — Vanilla Breeze</title>
 
   <!-- Core VB -->
   <link rel="stylesheet" href="/src/main.css">
@@ -37,7 +37,7 @@
       margin-inline: auto;
     }
 
-    /* ── Bundle Picker ──────────────────────────── */
+    /* ── Pack Picker ───────────────────────────── */
     .bundle-picker {
       display: flex;
       gap: var(--size-xs, 0.5rem);
@@ -261,13 +261,13 @@
 <body>
 
 <header class="page-header">
-  <h1>Bundle Explorer</h1>
-  <p>Load and compare Vanilla Breeze extension bundles. Each bundle adds its own theme tokens, CSS effects, and web components.</p>
+  <h1>Pack Explorer</h1>
+  <p>Load and compare Vanilla Breeze extension packs. Each pack adds its own theme tokens, CSS effects, and web components.</p>
 </header>
 
 <!-- Bundle Picker -->
-<nav class="bundle-picker" aria-label="Bundle selector">
-  <label>Select a bundle</label>
+<nav class="bundle-picker" aria-label="Pack selector">
+  <label>Select a pack</label>
   <button class="bundle-btn" aria-pressed="false" data-bundle="none">
     None (Core Only)
   </button>
@@ -277,7 +277,7 @@
   <button class="bundle-btn" aria-pressed="false" data-bundle="kawaii">
     Kawaii / Cute
   </button>
-  <!-- Future bundles will be added here -->
+  <!-- Future packs will be added here -->
   <button class="bundle-btn" disabled title="Coming soon">
     Synthwave
   </button>
@@ -327,7 +327,7 @@
   <h2>Effects</h2>
   <div class="effect-grid" id="effects-grid">
     <div class="empty-state" id="effects-empty">
-      <p>Load a bundle to see its effects here.</p>
+      <p>Load a pack to see its effects here.</p>
     </div>
   </div>
 </section>
@@ -337,7 +337,7 @@
   <h2>Components</h2>
   <div class="component-grid" id="components-grid">
     <div class="empty-state" id="components-empty">
-      <p>Load a bundle to see its components here.</p>
+      <p>Load a pack to see its components here.</p>
     </div>
   </div>
 </section>
@@ -347,40 +347,40 @@
 <script type="module" src="/src/main.js"></script>
 
 <script type="module">
-  // ─── Bundle registry ──────────────────────────────────────
-  // Maps bundle name to its CSS/JS paths and content builders.
+  // ─── Pack registry ───────────────────────────────────────
+  // Maps pack name to its CSS/JS paths and content builders.
 
   const BUNDLES = {
     retro: {
       css: [
-        '/src/bundles/retro/retro.theme.css',
-        '/src/bundles/retro/retro.effects.css',
+        '/src/packs/retro/retro.theme.css',
+        '/src/packs/retro/retro.effects.css',
       ],
       js: [
-        '/src/bundles/retro/retro.effects.js',
-        '/src/bundles/retro/retro.components.js',
+        '/src/packs/retro/retro.effects.js',
+        '/src/packs/retro/retro.components.js',
       ],
       theme: 'retro',
-      label: 'retro bundle loaded',
+      label: 'retro pack loaded',
       files: 'theme + effects + components',
       buildEffects,
       buildComponents,
     },
     kawaii: {
       css: [
-        '/src/bundles/kawaii/kawaii.theme.css',
-        '/src/bundles/kawaii/kawaii.effects.css',
+        '/src/packs/kawaii/kawaii.theme.css',
+        '/src/packs/kawaii/kawaii.effects.css',
       ],
       js: [
-        '/src/bundles/kawaii/kawaii.effects.js',
+        '/src/packs/kawaii/kawaii.effects.js',
       ],
       theme: 'kawaii',
-      label: 'kawaii bundle loaded',
+      label: 'kawaii pack loaded',
       files: 'theme + effects',
       buildEffects: buildKawaiiEffects,
       buildComponents: buildKawaiiComponents,
     },
-    // Future bundles register here
+    // Future packs register here
   }
 
   // ─── State ────────────────────────────────────────────────
@@ -522,12 +522,12 @@
   function buildKawaiiComponents() {
     return `
       <div class="empty-state">
-        <p>The kawaii bundle has no custom web components yet — it focuses on theme tokens and CSS/JS effects.</p>
+        <p>The kawaii pack has no custom web components yet — it focuses on theme tokens and CSS/JS effects.</p>
       </div>
     `
   }
 
-  // ─── Bundle loading ───────────────────────────────────────
+  // ─── Pack loading ────────────────────────────────────────
   async function loadBundle(name) {
     // Unload previous CSS
     loadedCSS.forEach(link => link.remove())
@@ -546,10 +546,10 @@
     const statusDot = document.querySelector('.status-dot')
 
     if (name === 'none' || !BUNDLES[name]) {
-      effectsGrid.innerHTML = '<div class="empty-state"><p>No bundle loaded. Core Vanilla Breeze tokens are active.</p></div>'
-      componentsGrid.innerHTML = '<div class="empty-state"><p>No bundle components loaded.</p></div>'
+      effectsGrid.innerHTML = '<div class="empty-state"><p>No pack loaded. Core Vanilla Breeze tokens are active.</p></div>'
+      componentsGrid.innerHTML = '<div class="empty-state"><p>No pack components loaded.</p></div>'
       statusText.textContent = 'core only'
-      statusFiles.textContent = 'no bundle'
+      statusFiles.textContent = 'no pack'
       statusDot.removeAttribute('data-active')
       activeBundle = null
       refreshTokens()
@@ -594,7 +594,7 @@
     requestAnimationFrame(() => refreshTokens())
   }
 
-  // ─── Picker events ────────────────────────────────────────
+  // ─── Picker events ──────────────────────────────────────
   document.querySelector('.bundle-picker').addEventListener('click', e => {
     const btn = e.target.closest('.bundle-btn:not([disabled])')
     if (!btn) return
