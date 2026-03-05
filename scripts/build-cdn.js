@@ -57,7 +57,7 @@ const CSS_DEFAULTS = {
 };
 
 // Ensure directories exist
-for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components'), join(CDN, 'bundles')]) {
+for (const dir of [CDN, join(CDN, 'themes'), join(CDN, 'components'), join(CDN, 'packs')]) {
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -207,80 +207,111 @@ async function buildComponents() {
 /**
  * Build bundle packages (theme + effects + components per bundle)
  */
-async function buildBundles() {
-  const bundlesDir = join(SRC, 'bundles');
-  if (!existsSync(bundlesDir)) return;
+async function buildPacks() {
+  const packsDir = join(SRC, 'packs');
+  if (!existsSync(packsDir)) return;
 
-  const outDir = join(CDN, 'bundles');
+  const outDir = join(CDN, 'packs');
   const manifest = {};
 
-  const bundles = readdirSync(bundlesDir, { withFileTypes: true })
+  const packs = readdirSync(packsDir, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name);
 
-  if (!bundles.length) return;
+  if (!packs.length) return;
 
-  console.log(`Building ${bundles.length} bundle(s)...`);
+  console.log(`Building ${packs.length} pack(s)...`);
 
-  for (const name of bundles) {
-    const bundleSrc = join(bundlesDir, name);
+  for (const name of packs) {
+    const packSrc = join(packsDir, name);
     const entry = {};
 
-    // Build individual CSS files
-    for (const cssFile of ['theme', 'effects']) {
-      const src = join(bundleSrc, `${name}.${cssFile}.css`);
-      if (!existsSync(src)) continue;
-      const out = join(outDir, `${name}.${cssFile}.css`);
-      await esbuild.build({
-        ...CSS_DEFAULTS,
-        entryPoints: [src],
-        outfile: out,
-        logLevel: 'silent',
-        loader: { '.woff2': 'copy', '.woff': 'copy', '.otf': 'copy', '.ttf': 'copy' },
-        assetNames: `${name}/fonts/[name]`,
-      });
-      entry[cssFile + 'Css'] = { file: `${name}.${cssFile}.css`, size: statSync(out).size };
+    // Detect pack format: functional packs have {name}.js / {name}.css,
+    // aesthetic packs have {name}.theme.css / {name}.effects.js / etc.
+    const isFunctional = existsSync(join(packSrc, `${name}.js`));
+
+    if (isFunctional) {
+      // --- Functional pack: single JS + CSS entry ---
+      const jsSrc = join(packSrc, `${name}.js`);
+      const cssSrc = join(packSrc, `${name}.css`);
+
+      if (existsSync(jsSrc)) {
+        const fullJsOut = join(outDir, `${name}.full.js`);
+        await esbuild.build({ ...JS_DEFAULTS, entryPoints: [jsSrc], outfile: fullJsOut, logLevel: 'silent', ignoreAnnotations: true });
+        entry.fullJs = { file: `${name}.full.js`, size: statSync(fullJsOut).size };
+      }
+
+      if (existsSync(cssSrc)) {
+        const fullCssOut = join(outDir, `${name}.full.css`);
+        await esbuild.build({ ...CSS_DEFAULTS, entryPoints: [cssSrc], outfile: fullCssOut, logLevel: 'silent' });
+        entry.fullCss = { file: `${name}.full.css`, size: statSync(fullCssOut).size };
+      }
+
+      // Build pack manifest if present
+      const packManifestSrc = join(packSrc, `${name}.pack.js`);
+      if (existsSync(packManifestSrc)) {
+        const out = join(outDir, `${name}.pack.js`);
+        await esbuild.build({ ...JS_DEFAULTS, entryPoints: [packManifestSrc], outfile: out, logLevel: 'silent' });
+        entry.packJs = { file: `${name}.pack.js`, size: statSync(out).size };
+      }
+    } else {
+      // --- Aesthetic pack: {name}.theme.css, {name}.effects.css/js, {name}.components.js ---
+
+      // Build individual CSS files
+      for (const cssFile of ['theme', 'effects']) {
+        const src = join(packSrc, `${name}.${cssFile}.css`);
+        if (!existsSync(src)) continue;
+        const out = join(outDir, `${name}.${cssFile}.css`);
+        await esbuild.build({
+          ...CSS_DEFAULTS,
+          entryPoints: [src],
+          outfile: out,
+          logLevel: 'silent',
+          loader: { '.woff2': 'copy', '.woff': 'copy', '.otf': 'copy', '.ttf': 'copy' },
+          assetNames: `${name}/fonts/[name]`,
+        });
+        entry[cssFile + 'Css'] = { file: `${name}.${cssFile}.css`, size: statSync(out).size };
+      }
+
+      // Build individual JS files
+      for (const jsFile of ['effects', 'components', 'bundle']) {
+        const src = join(packSrc, `${name}.${jsFile}.js`);
+        if (!existsSync(src)) continue;
+        const out = join(outDir, `${name}.${jsFile}.js`);
+        await esbuild.build({ ...JS_DEFAULTS, entryPoints: [src], outfile: out, logLevel: 'silent' });
+        entry[jsFile + 'Js'] = { file: `${name}.${jsFile}.js`, size: statSync(out).size };
+      }
+
+      // Build full CSS rollup (theme + effects concatenated)
+      const fullCssParts = ['theme', 'effects']
+        .map(f => join(outDir, `${name}.${f}.css`))
+        .filter(existsSync);
+      if (fullCssParts.length) {
+        const combined = fullCssParts.map(f => readFileSync(f, 'utf-8')).join('\n');
+        const fullCssPath = join(outDir, `${name}.full.css`);
+        writeFileSync(fullCssPath, combined);
+        entry.fullCss = { file: `${name}.full.css`, size: statSync(fullCssPath).size };
+      }
+
+      // Build full JS rollup (effects + components bundled together)
+      const fullJsEntry = join(packSrc, `${name}.full.js`);
+      const fullJsImports = ['effects', 'components']
+        .map(f => join(packSrc, `${name}.${f}.js`))
+        .filter(existsSync);
+      if (fullJsImports.length) {
+        const fullJsContent = fullJsImports.map(f => `import '${f}';`).join('\n');
+        writeFileSync(fullJsEntry, fullJsContent);
+        const fullJsOut = join(outDir, `${name}.full.js`);
+        await esbuild.build({ ...JS_DEFAULTS, entryPoints: [fullJsEntry], outfile: fullJsOut, logLevel: 'silent', ignoreAnnotations: true });
+        entry.fullJs = { file: `${name}.full.js`, size: statSync(fullJsOut).size };
+        // Clean up temp file
+        const { unlinkSync } = await import('fs');
+        unlinkSync(fullJsEntry);
+      }
     }
 
-    // Build individual JS files
-    for (const jsFile of ['effects', 'components', 'bundle']) {
-      const src = join(bundleSrc, `${name}.${jsFile}.js`);
-      if (!existsSync(src)) continue;
-      const out = join(outDir, `${name}.${jsFile}.js`);
-      await esbuild.build({ ...JS_DEFAULTS, entryPoints: [src], outfile: out, logLevel: 'silent' });
-      entry[jsFile + 'Js'] = { file: `${name}.${jsFile}.js`, size: statSync(out).size };
-    }
-
-    // Build full CSS rollup (theme + effects concatenated)
-    const fullCssParts = ['theme', 'effects']
-      .map(f => join(outDir, `${name}.${f}.css`))
-      .filter(existsSync);
-    if (fullCssParts.length) {
-      const combined = fullCssParts.map(f => readFileSync(f, 'utf-8')).join('\n');
-      const fullCssPath = join(outDir, `${name}.full.css`);
-      writeFileSync(fullCssPath, combined);
-      entry.fullCss = { file: `${name}.full.css`, size: statSync(fullCssPath).size };
-    }
-
-    // Build full JS rollup (effects + components bundled together)
-    const fullJsEntry = join(bundleSrc, `${name}.full.js`);
-    const fullJsImports = ['effects', 'components']
-      .map(f => join(bundleSrc, `${name}.${f}.js`))
-      .filter(existsSync);
-    if (fullJsImports.length) {
-      // Create a temporary entry that re-exports both
-      const fullJsContent = fullJsImports.map(f => `import '${f}';`).join('\n');
-      writeFileSync(fullJsEntry, fullJsContent);
-      const fullJsOut = join(outDir, `${name}.full.js`);
-      await esbuild.build({ ...JS_DEFAULTS, entryPoints: [fullJsEntry], outfile: fullJsOut, logLevel: 'silent', ignoreAnnotations: true });
-      entry.fullJs = { file: `${name}.full.js`, size: statSync(fullJsOut).size };
-      // Clean up temp file
-      const { unlinkSync } = await import('fs');
-      unlinkSync(fullJsEntry);
-    }
-
-    // Copy font assets
-    const fontsDir = join(bundleSrc, 'fonts');
+    // Copy font assets (both formats)
+    const fontsDir = join(packSrc, 'fonts');
     if (existsSync(fontsDir)) {
       const fontsOutDir = join(outDir, name, 'fonts');
       mkdirSync(fontsOutDir, { recursive: true });
@@ -292,7 +323,7 @@ async function buildBundles() {
 
   writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
-  console.log(`  ${bundles.length} bundle(s) → dist/cdn/bundles/`);
+  console.log(`  ${packs.length} pack(s) → dist/cdn/packs/`);
   console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
 }
 
@@ -310,10 +341,10 @@ async function buildCDN() {
   });
   fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze.css'));
 
-  // Build core CSS bundle (slim — no decorative themes)
+  // Build core CSS bundle (slim — no decorative themes, no pack CSS)
   await esbuild.build({
     ...CSS_DEFAULTS,
-    entryPoints: [join(SRC, 'main.css')],
+    entryPoints: [join(SRC, 'main-core.css')],
     outfile: join(CDN, 'vanilla-breeze-core.css'),
     logLevel: 'info',
   });
@@ -460,7 +491,7 @@ async function buildCDN() {
   // --- Individual builds ---
   await buildThemes();
   await buildComponents();
-  await buildBundles();
+  await buildPacks();
 
   // --- Size summary ---
   console.log(`\nCDN build complete (v${VERSION})`);

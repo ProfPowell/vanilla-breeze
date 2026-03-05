@@ -108,7 +108,7 @@ class ThemePicker extends HTMLElement {
     { id: 'high-noon', name: 'High Noon', icon: 'sun', character: 'Maximum bright', swatchBg: '#ffffff', swatchFg: '#e63946' }
   ];
 
-  // Bundle themes - loaded on demand from /cdn/bundles/
+  // Pack themes - loaded on demand from /cdn/packs/
   static #BUNDLE_THEMES = [
     { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
     { id: 'retro', name: 'Retro', icon: 'tv', character: 'CRT terminal', swatchBg: '#0a0a14', swatchFg: '#00ff66' },

@@ -160,22 +160,32 @@ export function preloadTheme(themeName) {
 }
 
 /**
- * Fetch and cache the bundles manifest
+ * Fetch and cache the packs manifest
  * @returns {Promise<object>}
  */
-async function getBundleManifest() {
+async function getPackManifest() {
   if (bundleManifestCache) return bundleManifestCache;
 
   const base = detectBase();
   try {
-    const res = await fetch(`${base}/bundles/manifest.json`);
+    const res = await fetch(`${base}/packs/manifest.json`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     bundleManifestCache = await res.json();
   } catch {
-    bundleManifestCache = {};
+    // Fallback to legacy bundles/ path for backwards compat
+    try {
+      const res = await fetch(`${base}/bundles/manifest.json`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      bundleManifestCache = await res.json();
+    } catch {
+      bundleManifestCache = {};
+    }
   }
   return bundleManifestCache;
 }
+
+/** @deprecated Use getPackManifest() */
+const getBundleManifest = getPackManifest;
 
 /**
  * Internal: load and inject theme CSS
@@ -186,10 +196,10 @@ async function getBundleManifest() {
 async function loadThemeCSS(themeName) {
   const base = detectBase();
 
-  // Check if this is a bundle theme
-  const bundleManifest = await getBundleManifest();
-  if (bundleManifest[themeName]) {
-    return loadBundleCSS(themeName, base);
+  // Check if this is a pack/bundle theme
+  const packManifest = await getPackManifest();
+  if (packManifest[themeName]) {
+    return loadPackCSS(themeName, base);
   }
 
   // Standard theme loading: try manifest first for correct filename, fall back to convention
@@ -221,24 +231,24 @@ async function loadThemeCSS(themeName) {
 }
 
 /**
- * Internal: load bundle CSS (full.css) and JS (full.js)
- * @param {string} bundleName
+ * Internal: load pack CSS (full.css) and JS (full.js)
+ * @param {string} packName
  * @param {string} base - CDN base URL
  * @returns {Promise<void>}
  */
-function loadBundleCSS(bundleName, base) {
-  const cssHref = `${base}/bundles/${bundleName}.full.css`;
-  const jsHref = `${base}/bundles/${bundleName}.full.js`;
+function loadPackCSS(packName, base) {
+  const cssHref = `${base}/packs/${packName}.full.css`;
+  const jsHref = `${base}/packs/${packName}.full.js`;
 
   return new Promise((resolve, reject) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = cssHref;
-    link.setAttribute('data-vb-theme', bundleName);
-    link.setAttribute('data-vb-bundle', bundleName);
+    link.setAttribute('data-vb-theme', packName);
+    link.setAttribute('data-vb-pack', packName);
 
     link.onload = () => {
-      // Also load bundle JS (non-blocking — resolve immediately after CSS)
+      // Also load pack JS (non-blocking — resolve immediately after CSS)
       import(jsHref).catch(() => {
         // JS effects are optional — CSS tokens are enough for the theme
       });
@@ -246,8 +256,8 @@ function loadBundleCSS(bundleName, base) {
     };
     link.onerror = () => {
       link.remove();
-      loadCache.delete(bundleName);
-      reject(new Error(`Failed to load bundle: ${bundleName}`));
+      loadCache.delete(packName);
+      reject(new Error(`Failed to load pack: ${packName}`));
     };
 
     document.head.appendChild(link);

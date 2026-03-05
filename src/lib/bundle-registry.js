@@ -125,15 +125,15 @@ export function registerComponent(tag, impl, opts = {}) {
 }
 
 /**
- * Activate a full bundle by loading its CSS and JS from the CDN path.
- * Convention: cdn/bundles/{name}.full.css and cdn/bundles/{name}.full.js
+ * Activate a full pack by loading its CSS and JS from the CDN path.
+ * Convention: cdn/packs/{name}.full.css and cdn/packs/{name}.full.js
  *
  * @param {string} bundleName
  * @param {{ basePath?: string }} [opts]
  * @returns {Promise<void>}
  */
 export async function activateBundle(bundleName, opts = {}) {
-  const base = opts.basePath ?? '/cdn/bundles'
+  const base = opts.basePath ?? '/cdn/packs'
 
   // Load CSS
   const cssHref = `${base}/${bundleName}.full.css`

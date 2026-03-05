@@ -257,7 +257,7 @@ class SettingsPanel extends HTMLElement {
                 <option value="midnight" ${selectValue === 'midnight' ? 'selected' : ''}>Midnight</option>
                 <option value="high-noon" ${selectValue === 'high-noon' ? 'selected' : ''}>High Noon</option>
               </optgroup>
-              <optgroup label="Bundles">
+              <optgroup label="Packs">
                 <option value="kawaii" ${selectValue === 'kawaii' ? 'selected' : ''}>Kawaii</option>
                 <option value="retro" ${selectValue === 'retro' ? 'selected' : ''}>Retro</option>
               </optgroup>
