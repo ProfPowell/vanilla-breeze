@@ -1,0 +1,197 @@
+---
+layout: layouts/attribute.njk
+title: "Kawaii Effects"
+description: "Cute and playful visual effects: pastel starburst backgrounds, floating sparkles, bouncy hovers, wiggles, and particle animations."
+attributeName: data-kawaii-effects
+category: kawaii-effects
+attributeType: data
+pack: kawaii
+currentPath: /docs/attributes/data-kawaii-effects/
+permalink: /docs/attributes/data-kawaii-effects/
+---
+
+{% set bgCode %}<section data-kawaii-bg>
+  <h1>Pastel Starburst</h1>
+  <p>Animated starburst background with rotating ray pattern.</p>
+</section>{% endset %}
+
+{% set sparkleCode %}<span data-sparkle>Sparkle text</span>
+<button data-sparkle>Sparkle button</button>{% endset %}
+
+{% set bounceCode %}<button data-kawaii-bounce>Boing!</button>
+<a href="#" data-kawaii-bounce>Bouncy link</a>{% endset %}
+
+{% set wiggleCode %}<span data-kawaii-wiggle>Always wiggling</span>
+<button data-kawaii-wiggle="hover">Wiggle on hover</button>{% endset %}
+
+{% set particlesCode %}<div data-kawaii-particles style="height: 200px; position: relative;">
+  <p>Floating particles rise from the bottom.</p>
+</div>{% endset %}
+
+<nav class="subnav" aria-label="Kawaii effects">
+  <ul>
+    <li><a href="#kawaii-bg">Background</a></li>
+    <li><a href="#sparkle">Sparkle</a></li>
+    <li><a href="#kawaii-bounce">Bounce</a></li>
+    <li><a href="#kawaii-wiggle">Wiggle</a></li>
+    <li><a href="#kawaii-particles">Particles</a></li>
+  </ul>
+</nav>
+
+<!-- Kawaii Background -->
+<section id="kawaii-bg">
+  <h2>data-kawaii-bg</h2>
+  <p>Animated pastel starburst gradient background. A lavender-to-yellow base with a rotating 10-degree conic-gradient ray pattern that completes one revolution every 60 seconds. A soft radial bokeh glow sits at the bottom edge.</p>
+
+  <code-block language="html" show-lines label="Starburst background">{{ bgCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-kawaii-bg</code></td><td>boolean</td><td>Enables the animated starburst background.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Notes</h3>
+  <ul>
+    <li>Uses pseudo-elements (<code>::before</code> and <code>::after</code>) &mdash; child content is positioned at <code>z-index: 2</code> above the effect layers</li>
+    <li>Container gets <code>position: relative</code> and <code>overflow: hidden</code> automatically</li>
+  </ul>
+</section>
+
+<!-- Sparkle -->
+<section id="sparkle">
+  <h2>data-sparkle</h2>
+  <p>CSS-only floating sparkle stars. Two &#x2726; characters orbit the element with staggered float animations &mdash; one gold at top-right, one lavender at bottom-left.</p>
+
+  <code-block language="html" show-lines label="Sparkle effect">{{ sparkleCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-sparkle</code></td><td>boolean</td><td>Adds floating sparkle stars via <code>::before</code> and <code>::after</code> pseudo-elements.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Notes</h3>
+  <ul>
+    <li>Element must have <code>position: relative</code> (or use <code>display: inline-block</code>)</li>
+    <li>Stars animate via <code>vb-kawaii-float</code>: vertical drift with subtle rotation and opacity changes over 3 seconds</li>
+    <li>For JS-driven particle effects, see <a href="#kawaii-particles">data-kawaii-particles</a></li>
+  </ul>
+</section>
+
+<!-- Bounce -->
+<section id="kawaii-bounce">
+  <h2>data-kawaii-bounce</h2>
+  <p>Spring-loaded bounce animation on hover. Uses a cubic-bezier elastic easing that overshoots slightly before settling.</p>
+
+  <code-block language="html" show-lines label="Bounce hover">{{ bounceCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-kawaii-bounce</code></td><td>boolean</td><td>Enables the bouncy hover effect.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Notes</h3>
+  <ul>
+    <li>Base transition: <code>transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)</code></li>
+    <li>On hover: element bounces up 5px via <code>vb-kawaii-bounce</code> keyframe (0.6s)</li>
+  </ul>
+</section>
+
+<!-- Wiggle -->
+<section id="kawaii-wiggle">
+  <h2>data-kawaii-wiggle</h2>
+  <p>Playful left-right rotation wobble. Runs continuously by default, or only on hover.</p>
+
+  <code-block language="html" show-lines label="Wiggle effect">{{ wiggleCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-kawaii-wiggle</code></td><td><code>""</code>, <code>"hover"</code></td><td>Continuous wiggle (default) or hover-only.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Notes</h3>
+  <ul>
+    <li>Continuous mode: <code>2s ease-in-out infinite</code> rotation &plusmn;3 degrees</li>
+    <li>Hover mode: <code>0.4s ease-in-out</code>, plays once on each hover</li>
+  </ul>
+</section>
+
+<!-- Particles -->
+<section id="kawaii-particles">
+  <h2>data-kawaii-particles</h2>
+  <p>JS-driven floating particle effect. Spawns emoji characters (&#x2726; &#x2727; &#x22C6; &#x2661; &#x2606;) that float upward from the bottom of the container and fade out. Requires JS initialization.</p>
+
+  <code-block language="html" show-lines label="Particle effect">{{ particlesCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-kawaii-particles</code></td><td>boolean</td><td>Enables floating particle spawning.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Animation</h3>
+  <ul>
+    <li>Spawn rate: every 600ms</li>
+    <li>Initial burst: 3 particles at staggered 200ms intervals</li>
+    <li>Duration: 2&ndash;5 seconds per particle (random)</li>
+    <li>Motion: float upward ~120px with 180&deg; rotation, fading from full to transparent</li>
+    <li>Particle lifetime: 5 seconds max before removal</li>
+    <li>5-color palette: pink, lavender, peach, sky, mint (OKLCH)</li>
+  </ul>
+
+  <h3>Notes</h3>
+  <ul>
+    <li>Container must have <code>position: relative</code> (added automatically if <code>static</code>)</li>
+    <li><code>overflow: hidden</code> is set to contain particles within the element</li>
+  </ul>
+</section>
+
+<!-- Shared Behavior -->
+<section>
+  <h2>Shared Behavior</h2>
+
+  <h3>Progressive Enhancement</h3>
+  <p><code>data-kawaii-bg</code>, <code>data-sparkle</code>, <code>data-kawaii-bounce</code>, and <code>data-kawaii-wiggle</code> are CSS-only. <code>data-kawaii-particles</code> requires JS &mdash; without it, the element renders normally.</p>
+
+  <h3>Reduced Motion</h3>
+  <p>All effects respect <code>prefers-reduced-motion: reduce</code> and <code>:root[data-motion-reduced]</code>. CSS animations are disabled; <code>data-kawaii-particles</code> falls back to 5 static sparkles at 40% opacity.</p>
+
+  <h3>Print</h3>
+  <p>Animations and decorative pseudo-elements are stripped in print media.</p>
+
+  <h3>CSS Layer</h3>
+  <p>All rules are scoped to <code>@layer bundle-effects</code>.</p>
+</section>
+
+<section>
+  <h2>Loading</h2>
+  <p>These effects ship with the <a href="/docs/packs/kawaii/">kawaii pack</a>.</p>
+
+{% set packCode %}<link rel="stylesheet" href="/cdn/packs/kawaii.full.css">
+<script type="module" src="/cdn/packs/kawaii.full.js"></script>{% endset %}
+
+  <code-block language="html" label="Full kawaii pack">{{ packCode | escape }}</code-block>
+</section>

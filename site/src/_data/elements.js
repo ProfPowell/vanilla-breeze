@@ -14,6 +14,7 @@ const elementsByLetter = {
     { name: 'article', type: 'native', href: '/docs/elements/native/article/' },
     { name: 'aside', type: 'native', href: '/docs/elements/native/aside/' },
     { name: 'audio', type: 'native', href: '/docs/elements/native/audio/' },
+    { name: 'audio-player', type: 'component', href: '/docs/elements/web-components/audio-player/', pack: 'retro' },
   ],
   B: [
     { name: 'b', type: 'native', href: '/docs/elements/native/b/' },

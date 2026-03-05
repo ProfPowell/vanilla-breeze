@@ -1,0 +1,196 @@
+---
+layout: layouts/attribute.njk
+title: "Retro Display Effects"
+description: "Retro-styled display effects: rubber stamp, scrolling marquee, and split-flap flipboard."
+attributeName: data-retro-display-effects
+category: retro-display-effects
+attributeType: data
+pack: retro
+currentPath: /docs/attributes/data-retro-display-effects/
+permalink: /docs/attributes/data-retro-display-effects/
+---
+
+{% set stampCode %}<span data-stamp>APPROVED</span>
+<span data-stamp="blue">CLASSIFIED</span>
+<span data-stamp="green">VERIFIED</span>
+<span data-stamp="black">TOP SECRET</span>
+<span data-stamp="gold">CERTIFIED</span>{% endset %}
+
+{% set stampModCode %}<span data-stamp="red straight">APPROVED</span>
+<span data-stamp="blue slight">CLASSIFIED</span>
+<span data-stamp="gold heavy">CERTIFIED</span>{% endset %}
+
+{% set marqueeCode %}<div data-marquee>
+  <span>Breaking News</span>
+  <span>Latest Headlines</span>
+  <span>Stay Tuned</span>
+</div>{% endset %}
+
+{% set marqueeVarCode %}<div data-marquee="reverse">
+  <span>Scrolling right</span>
+</div>
+<div data-marquee="slow">
+  <span>Slow scroll (40s)</span>
+</div>
+<div data-marquee="fast">
+  <span>Fast scroll (8s)</span>
+</div>
+<div data-marquee="pause">
+  <span>Paused</span>
+</div>{% endset %}
+
+{% set marqueeHoverCode %}<div data-marquee data-marquee~="hover-pause">
+  <span>Hover to pause</span>
+  <span>Move away to resume</span>
+</div>{% endset %}
+
+{% set flipboardCode %}<div data-flipboard>DEPARTURES</div>
+<div data-flipboard>GATE 42</div>{% endset %}
+
+<nav class="subnav" aria-label="Retro display effects">
+  <ul>
+    <li><a href="#stamp">Stamp</a></li>
+    <li><a href="#marquee">Marquee</a></li>
+    <li><a href="#flipboard">Flipboard</a></li>
+  </ul>
+</nav>
+
+<!-- Stamp -->
+<section id="stamp">
+  <h2>data-stamp</h2>
+  <p>Rubber stamp effect with a fractal noise SVG filter, rotation, and <code>mix-blend-mode: multiply</code>. Renders uppercase, bold text inside a thick border with a worn, inked texture. Requires JS to inject the SVG noise filter.</p>
+
+  <code-block language="html" show-lines label="Stamp colors">{{ stampCode | escape }}</code-block>
+
+  <h3>Rotation Modifiers</h3>
+  <p>Control the tilt angle with space-separated modifiers:</p>
+  <code-block language="html" show-lines label="Stamp rotation">{{ stampModCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-stamp</code></td><td><code>""</code>, <code>"red"</code>, <code>"blue"</code>, <code>"green"</code>, <code>"black"</code>, <code>"gold"</code></td><td>Stamp ink color preset. Empty defaults to red.</td></tr>
+      <tr><td>(modifier) <code>straight</code></td><td>space-separated</td><td>Remove rotation (0deg).</td></tr>
+      <tr><td>(modifier) <code>slight</code></td><td>space-separated</td><td>Reduce rotation to -2deg.</td></tr>
+      <tr><td>(modifier) <code>heavy</code></td><td>space-separated</td><td>Increase rotation to -8deg.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS Custom Properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--vb-stamp-color</code></td><td>Per preset</td><td>Ink color in OKLCH.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Marquee -->
+<section id="marquee">
+  <h2>data-marquee</h2>
+  <p>Continuously scrolling horizontal content with edge masking. Children animate left (or right with <code>reverse</code>) in an infinite loop. Reduced-motion fallback enables horizontal scrolling instead.</p>
+
+  <code-block language="html" show-lines label="Basic marquee">{{ marqueeCode | escape }}</code-block>
+
+  <h3>Variants</h3>
+  <code-block language="html" show-lines label="Marquee variants">{{ marqueeVarCode | escape }}</code-block>
+
+  <h3>Hover Pause</h3>
+  <code-block language="html" show-lines label="Hover to pause">{{ marqueeHoverCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-marquee</code></td><td><code>""</code>, <code>"reverse"</code>, <code>"slow"</code> (40s), <code>"fast"</code> (8s), <code>"pause"</code></td><td>Direction, speed, or paused state.</td></tr>
+      <tr><td>(modifier) <code>hover-pause</code></td><td>space-separated</td><td>Pause animation on hover.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS Custom Properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--vb-marquee-speed</code></td><td><code>20s</code></td><td>Scroll animation duration.</td></tr>
+      <tr><td><code>--vb-marquee-gap</code></td><td><code>var(--size-xl, 3rem)</code></td><td>Gap between repeating items.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Flipboard -->
+<section id="flipboard">
+  <h2>data-flipboard</h2>
+  <p>Split-flap departure board effect. Each character sits in a dark cell with a horizontal hinge and cycles through random letters before settling on the target character. Requires JS initialization.</p>
+
+  <code-block language="html" show-lines label="Flipboard">{{ flipboardCode | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-flipboard</code></td><td>boolean</td><td>Enables the split-flap effect on the element's text content.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS Custom Properties</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--vb-flip-ms</code></td><td><code>60ms</code></td><td>Duration of each character flip animation.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Timing</h3>
+  <ul>
+    <li>Each character flips 4&ndash;10 times randomly before settling</li>
+    <li>Dwell between flips: 30ms</li>
+    <li>Character stagger: 80ms (left-to-right reveal)</li>
+    <li>Flippable characters: <code>A&ndash;Z 0&ndash;9 . , : ! ? / -</code> and space</li>
+  </ul>
+
+  <h3>JavaScript API</h3>
+  <p>The <code>data-flipboard</code> JS init registers via the retro pack. The following functions are available on initialized elements:</p>
+  <ul>
+    <li><code>replayFlipboard(el)</code> &mdash; restart the flip animation</li>
+  </ul>
+</section>
+
+<!-- Shared Behavior -->
+<section>
+  <h2>Shared Behavior</h2>
+
+  <h3>Progressive Enhancement</h3>
+  <p><code>data-stamp</code> and <code>data-marquee</code> are CSS-only (stamp needs a small JS filter injection). <code>data-flipboard</code> requires JS &mdash; without it, the text displays normally.</p>
+
+  <h3>Reduced Motion</h3>
+  <p>All animations respect <code>prefers-reduced-motion: reduce</code> and <code>:root[data-motion-reduced]</code>. Marquee falls back to horizontal scroll; flipboard displays characters immediately without flipping.</p>
+
+  <h3>Print</h3>
+  <p>Animations and filters are stripped in print media.</p>
+
+  <h3>CSS Layer</h3>
+  <p>All rules are scoped to <code>@layer bundle-effects</code>.</p>
+</section>
+
+<section>
+  <h2>Loading</h2>
+  <p>These effects ship with the <a href="/docs/packs/retro/">retro pack</a>.</p>
+
+{% set packCode %}<link rel="stylesheet" href="/cdn/packs/retro.full.css">
+<script type="module" src="/cdn/packs/retro.full.js"></script>{% endset %}
+
+  <code-block language="html" label="Full retro pack">{{ packCode | escape }}</code-block>
+</section>
