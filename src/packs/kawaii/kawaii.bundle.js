@@ -13,11 +13,11 @@ export default {
   js: ['kawaii.effects.js'],
 
   effects: [
-    { name: 'kawaii-bg', selector: '[data-kawaii-bg]', type: 'css' },
+    { name: 'starburst', selector: '[data-starburst]', type: 'css' },
     { name: 'sparkle', selector: '[data-sparkle]', type: 'css' },
-    { name: 'kawaii-bounce', selector: '[data-kawaii-bounce]', type: 'css' },
-    { name: 'kawaii-wiggle', selector: '[data-kawaii-wiggle]', type: 'css' },
-    { name: 'kawaii-particles', selector: '[data-kawaii-particles]', type: 'js' },
+    { name: 'bounce', selector: '[data-bounce]', type: 'css' },
+    { name: 'wiggle', selector: '[data-wiggle]', type: 'css' },
+    { name: 'particles', selector: '[data-particles]', type: 'js' },
   ],
 
   components: [],

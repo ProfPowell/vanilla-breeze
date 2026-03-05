@@ -74,8 +74,8 @@ function destroySparkleParticles(el) {
   })
 }
 
-registerEffect('kawaii-particles', {
-  selector: '[data-kawaii-particles]',
+registerEffect('particles', {
+  selector: '[data-particles]',
   init: initSparkleParticles,
   destroy: destroySparkleParticles,
   reducedMotionFallback(el) {

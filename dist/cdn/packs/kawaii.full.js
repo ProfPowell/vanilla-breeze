@@ -15,7 +15,7 @@ var s=new Map,a=null,u=window.matchMedia("(prefers-reduced-motion: reduce)");fun
         80%  { opacity: 0.6; }
         100% { opacity: 0; transform: translateY(-120px) rotate(180deg) scale(0.3); }
       }
-    `,document.head.appendChild(o)}e._sparkleInterval=setInterval(n,600);for(let o=0;o<3;o++)setTimeout(n,o*200)}function m(e){e._sparkleInterval&&(clearInterval(e._sparkleInterval),e._sparkleInterval=null),e.querySelectorAll('[aria-hidden="true"]').forEach(t=>{t.style.animation?.includes("vb-kawaii-particle")&&t.remove()})}f("kawaii-particles",{selector:"[data-kawaii-particles]",init:p,destroy:m,reducedMotionFallback(e){getComputedStyle(e).position==="static"&&(e.style.position="relative");for(let n=0;n<5;n++){let o=document.createElement("span");o.textContent=r[Math.floor(Math.random()*r.length)],o.setAttribute("aria-hidden","true"),o.style.cssText=`
+    `,document.head.appendChild(o)}e._sparkleInterval=setInterval(n,600);for(let o=0;o<3;o++)setTimeout(n,o*200)}function m(e){e._sparkleInterval&&(clearInterval(e._sparkleInterval),e._sparkleInterval=null),e.querySelectorAll('[aria-hidden="true"]').forEach(t=>{t.style.animation?.includes("vb-kawaii-particle")&&t.remove()})}f("particles",{selector:"[data-particles]",init:p,destroy:m,reducedMotionFallback(e){getComputedStyle(e).position==="static"&&(e.style.position="relative");for(let n=0;n<5;n++){let o=document.createElement("span");o.textContent=r[Math.floor(Math.random()*r.length)],o.setAttribute("aria-hidden","true"),o.style.cssText=`
         position: absolute;
         pointer-events: none;
         font-size: ${.5+Math.random()*.6}rem;

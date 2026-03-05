@@ -124,11 +124,10 @@ const dataAttributes = {
       { name: 'data-select-all', type: 'behavior', href: '/docs/attributes/data-select-all/', description: 'Master checkbox for bulk selection' },
     ],
   },
-  'text-effects': {
-    label: 'Text Effects',
+  'visual-effects': {
+    label: 'Visual Effects',
     items: [
-      { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'Gradient, shimmer, glitch, reveal, highlight, typewriter, and scramble effects', pack: 'effects' },
-      { name: 'data-retro-text-effects', type: 'behavior', href: '/docs/attributes/data-retro-text-effects/', description: 'Neon glow, 3D extrusion, outline stroke, blinking, retro shadows, and rainbow hue cycling', pack: 'retro' },
+      { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'All visual effects: gradient, shimmer, glitch, reveal, highlight, neon, stamp, flipboard, and more' },
       { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters', pack: 'extras' },
     ],
   },
@@ -187,18 +186,6 @@ const dataAttributes = {
       { name: 'data-cutout', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Punch-out shapes using evenodd fill rule — circle, diamond, arch-window, hex' },
       { name: 'data-border-shape', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Two-layer shaped borders for images and containers — hexagon, diamond, arch' },
       { name: 'data-morph', type: 'styling', href: '/docs/attributes/data-morph/', description: 'Shape morphing animations — pulse, breathe, wave with prefers-reduced-motion support' },
-    ],
-  },
-  'retro-display': {
-    label: 'Retro Display',
-    items: [
-      { name: 'data-retro-display-effects', type: 'behavior', href: '/docs/attributes/data-retro-display-effects/', description: 'Rubber stamp, scrolling marquee, and split-flap flipboard effects', pack: 'retro' },
-    ],
-  },
-  'kawaii-effects': {
-    label: 'Kawaii Effects',
-    items: [
-      { name: 'data-kawaii-effects', type: 'behavior', href: '/docs/attributes/data-kawaii-effects/', description: 'Pastel starburst backgrounds, floating sparkles, bouncy hovers, wiggles, and particle animations', pack: 'kawaii' },
     ],
   },
   infrastructure: {

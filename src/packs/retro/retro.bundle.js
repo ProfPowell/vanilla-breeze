@@ -38,7 +38,7 @@ export const bundle = {
     { name: 'neon',         selector: '[data-neon]',       type: 'css' },
     { name: 'text-3d',      selector: '[data-text-3d]',    type: 'css' },
     { name: 'outline',      selector: '[data-outline]',    type: 'css' },
-    { name: 'retro-shadow', selector: '[data-retro-shadow]', type: 'css' },
+    { name: 'hard-shadow', selector: '[data-hard-shadow]', type: 'css' },
     { name: 'stamp',        selector: '[data-stamp]',      type: 'css' },
     { name: 'rainbow',      selector: '[data-rainbow]',    type: 'css' },
     { name: 'marquee',      selector: '[data-marquee]',    type: 'css' },
