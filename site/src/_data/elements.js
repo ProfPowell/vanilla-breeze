@@ -14,7 +14,8 @@ const elementsByLetter = {
     { name: 'article', type: 'native', href: '/docs/elements/native/article/' },
     { name: 'aside', type: 'native', href: '/docs/elements/native/aside/' },
     { name: 'audio', type: 'native', href: '/docs/elements/native/audio/' },
-    { name: 'audio-player', type: 'component', href: '/docs/elements/web-components/audio-player/', pack: 'retro' },
+    { name: 'audio-player', type: 'component', href: '/docs/elements/web-components/audio-player/' },
+    { name: 'audio-visualizer', type: 'component', href: '/docs/elements/web-components/audio-visualizer/' },
   ],
   B: [
     { name: 'b', type: 'native', href: '/docs/elements/native/b/' },
@@ -161,6 +162,7 @@ const elementsByLetter = {
     { name: 'qr-code', type: 'component', href: '/docs/elements/web-components/qr-code/' },
   ],
   R: [
+    { name: 'retro-audio-player', type: 'component', href: '/docs/elements/web-components/retro-audio-player/', pack: 'retro' },
     { name: 'rp', type: 'native', href: '/docs/elements/native/rp/' },
     { name: 'rt', type: 'native', href: '/docs/elements/native/rt/' },
     { name: 'ruby', type: 'native', href: '/docs/elements/native/ruby/' },

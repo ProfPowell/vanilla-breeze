@@ -1,7 +1,7 @@
 ---
-contract: audio-player
+contract: retro-audio-player
 version: 1.0.0
-tag: audio-player
+tag: retro-audio-player
 bundle-hint: retro
 category: media
 

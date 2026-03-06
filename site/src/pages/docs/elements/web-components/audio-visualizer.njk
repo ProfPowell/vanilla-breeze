@@ -1,0 +1,161 @@
+---
+layout: layouts/element.njk
+title: "audio-visualizer"
+description: "Canvas-based audio visualization that pairs with any <audio> element via the for attribute. Supports bars, waveform, and circle modes."
+elementName: audio-visualizer
+category: component
+currentPath: /docs/elements/web-components/audio-visualizer/
+permalink: /docs/elements/web-components/audio-visualizer/
+---
+
+{% set barsCode %}<audio id="demo-track" controls>
+  <source src="track.mp3" type="audio/mpeg">
+</audio>
+<audio-visualizer for="demo-track" data-mode="bars"></audio-visualizer>{% endset %}
+
+{% set waveformCode %}<audio id="wave-track" controls>
+  <source src="track.mp3" type="audio/mpeg">
+</audio>
+<audio-visualizer for="wave-track" data-mode="waveform"></audio-visualizer>{% endset %}
+
+{% set circleCode %}<audio id="circle-track" controls>
+  <source src="track.mp3" type="audio/mpeg">
+</audio>
+<audio-visualizer for="circle-track" data-mode="circle"></audio-visualizer>{% endset %}
+
+{% set pairedCode %}<audio-player>
+  <audio id="my-track" controls>
+    <source src="track.mp3" type="audio/mpeg">
+    <p><a href="track.mp3" download>Download</a></p>
+  </audio>
+</audio-player>
+
+<audio-visualizer for="my-track" data-mode="bars"></audio-visualizer>{% endset %}
+
+{% set customCode %}audio-visualizer {
+  --audio-visualizer-color: oklch(70% 0.25 145);
+  --audio-visualizer-bg: oklch(10% 0.02 260);
+  --audio-visualizer-height: 120px;
+  --audio-visualizer-radius: var(--radius-l);
+}{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>A companion component that draws canvas-based audio visualizations. It connects to any <code>&lt;audio&gt;</code> element by ID via the <code>for</code> attribute — mirroring the <code>&lt;label for=""&gt;</code> pattern.</p>
+  <p>Separated from <code>&lt;audio-player&gt;</code> so it can be independently positioned, omitted, or paired with a plain <code>&lt;audio&gt;</code> element.</p>
+</section>
+
+<section>
+  <h2>Visualization Modes</h2>
+
+  <h3>Bars (default)</h3>
+  <p>Classic frequency bar chart equalizer. Press play to see the visualization.</p>
+  <div class="example">
+    <audio id="doc-bars" controls>
+      <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+    </audio>
+    <audio-visualizer for="doc-bars" data-mode="bars"></audio-visualizer>
+  </div>
+  <code-block language="html" label="Bars mode">{{ barsCode | escape }}</code-block>
+
+  <h3>Waveform</h3>
+  <p>Time-domain oscilloscope line.</p>
+  <div class="example">
+    <audio id="doc-wave" controls>
+      <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+    </audio>
+    <audio-visualizer for="doc-wave" data-mode="waveform"></audio-visualizer>
+  </div>
+  <code-block language="html" label="Waveform mode">{{ waveformCode | escape }}</code-block>
+
+  <h3>Circle</h3>
+  <p>Radial frequency display.</p>
+  <div class="example">
+    <audio id="doc-circle" controls>
+      <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+    </audio>
+    <audio-visualizer for="doc-circle" data-mode="circle" style="--audio-visualizer-height: 160px;"></audio-visualizer>
+  </div>
+  <code-block language="html" label="Circle mode">{{ circleCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Paired with audio-player</h2>
+  <p>The visualizer works alongside <code>&lt;audio-player&gt;</code> — just give the inner <code>&lt;audio&gt;</code> an ID.</p>
+  <div class="example">
+    <audio-player>
+      <audio id="doc-paired" controls>
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+        <p><a href="/docs/examples/demos/assets/track.mp3" download>Download</a></p>
+      </audio>
+    </audio-player>
+    <audio-visualizer for="doc-paired" data-mode="bars"></audio-visualizer>
+  </div>
+  <code-block language="html" label="Visualizer paired with audio-player">{{ pairedCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>for</code></td><td>Yes</td><td>--</td><td>ID of the target <code>&lt;audio&gt;</code> element</td></tr>
+      <tr><td><code>data-mode</code></td><td>No</td><td><code>bars</code></td><td>Visualization style: <code>bars</code>, <code>waveform</code>, <code>circle</code></td></tr>
+      <tr><td><code>data-fft-size</code></td><td>No</td><td><code>256</code></td><td>AnalyserNode FFT size (power of 2, 32-32768)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Custom Properties</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--audio-visualizer-color</code></td><td><code>var(--color-primary)</code></td><td>Bar / waveform draw color</td></tr>
+      <tr><td><code>--audio-visualizer-bg</code></td><td><code>transparent</code></td><td>Canvas background</td></tr>
+      <tr><td><code>--audio-visualizer-height</code></td><td><code>80px</code></td><td>Canvas block size</td></tr>
+      <tr><td><code>--audio-visualizer-radius</code></td><td><code>var(--radius-m)</code></td><td>Canvas border radius</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" label="Custom styling">{{ customCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Behavior</h2>
+  <ul>
+    <li><strong>Lazy AudioContext</strong> — created on first play event, respects browser autoplay policy</li>
+    <li><strong>Shared AudioContext</strong> — multiple visualizers on one page share a single context (browsers cap at ~6)</li>
+    <li><strong>Off-screen pause</strong> — stops canvas rendering via <code>IntersectionObserver</code> when not visible</li>
+    <li><strong>Reduced motion</strong> — stops canvas animation when <code>prefers-reduced-motion: reduce</code> is set; audio continues playing</li>
+    <li><strong>Graceful fallback</strong> — if <code>AudioContext</code> is unavailable, renders nothing and throws no errors</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>Without JS, the visualizer renders nothing — the <code>&lt;audio&gt;</code> plays normally. The visualizer is pure enhancement with no impact on audio functionality.</p>
+  <p>The <code>:not(:defined)</code> CSS rule hides the element before JS loads, preventing a flash of unstyled content.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Canvas is <code>aria-hidden="true"</code> — purely decorative</li>
+    <li>Respects <code>prefers-reduced-motion</code></li>
+    <li>Does not interfere with audio element controls or keyboard navigation</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p><a href="/docs/examples/demos/audio-visualizer-basic.html">View the audio visualizer demo</a> to see all modes with a real audio file.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> — Native audio element</li>
+    <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> — Platform audio player component</li>
+    <li><a href="/docs/elements/web-components/retro-audio-player/"><code>&lt;retro-audio-player&gt;</code></a> — CRT-themed retro pack player with built-in visualizer</li>
+  </ul>
+</section>

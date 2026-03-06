@@ -1,120 +1,137 @@
 ---
 layout: layouts/element.njk
 title: "audio-player"
-description: "Retro-styled audio player with oscilloscope, spectrum, and radial visualizers, VU meters, and CRT scan-line effects."
+description: "Platform audio player that wraps native <audio> with custom controls in shadow DOM. Progressive enhancement — native audio works without JS."
 elementName: audio-player
 category: component
-pack: retro
 currentPath: /docs/elements/web-components/audio-player/
 permalink: /docs/elements/web-components/audio-player/
 ---
 
-{% set basicCode %}<audio-player src="track.mp3" data-title="Demo Track">
-  <audio controls src="track.mp3">
-    Your browser does not support the audio element.
+{% set singleCode %}<audio-player>
+  <audio controls>
+    <source src="track.ogg" type="audio/ogg">
+    <source src="track.mp3" type="audio/mpeg">
+    <p><a href="track.mp3" download>Download track</a></p>
   </audio>
 </audio-player>{% endset %}
 
-{% set barsCode %}<audio-player src="track.mp3" data-visualizer="bars"
-  data-title="Spectrum Bars">
-  <audio controls src="track.mp3"></audio>
+{% set playlistCode %}<audio-player>
+  <audio controls>
+    <source src="tracks/01-opening.mp3" type="audio/mpeg">
+    <p><a href="tracks/01-opening.mp3" download>Download track 1</a></p>
+  </audio>
+  <details>
+    <summary>Track Listing</summary>
+    <ol class="track-list">
+      <li data-audio-active>
+        <a href="tracks/01-opening.mp3">01. Opening Theme</a>
+        <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+      </li>
+      <li>
+        <a href="tracks/02-main.mp3">02. Main Theme</a>
+        <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+      </li>
+      <li data-audio-favorite>
+        <a href="tracks/03-ending.mp3">03. Ending Theme</a>
+        <span class="track-meta"><time datetime="PT4M12S">4:12</time></span>
+      </li>
+    </ol>
+  </details>
 </audio-player>{% endset %}
 
-{% set circleCode %}<audio-player src="track.mp3" data-visualizer="circle"
-  data-title="Radial Mode">
-  <audio controls src="track.mp3"></audio>
+{% set shuffleCode %}<audio-player data-shuffle data-loop>
+  <audio controls>
+    <source src="tracks/01.mp3" type="audio/mpeg">
+  </audio>
+  <details open>
+    <summary>Shuffle Playlist</summary>
+    <ol class="track-list">
+      <li data-audio-active><a href="tracks/01.mp3">Track 1</a></li>
+      <li><a href="tracks/02.mp3">Track 2</a></li>
+      <li><a href="tracks/03.mp3">Track 3</a></li>
+    </ol>
+  </details>
 </audio-player>{% endset %}
 
-{% set miniCode %}<audio-player src="track.mp3" data-size="mini"
-  data-title="Mini Player">
-  <audio controls src="track.mp3"></audio>
-</audio-player>{% endset %}
-
-{% set customCode %}<audio-player src="track.mp3" data-title="Pink Signal"
-  style="--audioplayer-screen-color: oklch(72% 0.3 340);
-         --audioplayer-bg: oklch(12% 0.03 300);">
-  <audio controls src="track.mp3"></audio>
-</audio-player>{% endset %}
-
-{% set loopCode %}<audio-player src="track.mp3" autoplay loop
-  data-title="Looping Track">
-  <audio controls src="track.mp3"></audio>
-</audio-player>{% endset %}
+{% set customCode %}audio-player {
+  --audio-player-accent: oklch(60% 0.2 30);
+  --audio-player-bg: oklch(15% 0.02 260);
+  --audio-player-radius: var(--radius-l);
+}{% endset %}
 
 {% set eventCode %}const player = document.querySelector('audio-player');
 
-player.addEventListener('vb:audioplayer:play', (e) => {
+player.addEventListener('vb:audio:play', (e) => {
   console.log('Playing:', e.detail.src);
 });
 
-player.addEventListener('vb:audioplayer:pause', (e) => {
-  console.log('Paused at:', e.detail.currentTime);
-});
-
-player.addEventListener('vb:audioplayer:ended', (e) => {
-  console.log('Track ended:', e.detail.src);
-});
-
-player.addEventListener('vb:audioplayer:timeupdate', (e) => {
-  const { currentTime, duration, progress } = e.detail;
-  console.log(`${progress.toFixed(1)}% complete`);
+player.addEventListener('vb:audio:track-change', (e) => {
+  console.log('Now playing:', e.detail.title);
 });{% endset %}
 
-{% set partCode %}audio-player::part(bezel) {
-  border-color: oklch(50% 0.2 290);
-}
-
-audio-player::part(screen) {
-  border-radius: 8px;
-}
-
-audio-player::part(play-button):hover {
-  box-shadow: 0 0 20px oklch(70% 0.3 290 / 0.6);
-}{% endset %}
+{% set fallbackCode %}<!-- Without JS: native <audio> controls render and work.
+     Track list links navigate to the audio file. -->
+<audio-player>
+  <audio controls>
+    <source src="track.mp3" type="audio/mpeg">
+    <p><a href="track.mp3" download>Download track</a></p>
+  </audio>
+</audio-player>{% endset %}
 
 <section>
   <h2>Overview</h2>
-  <p>A CRT-inspired audio player with three visualizer modes (waveform, spectrum bars, radial), an 8-bar VU meter, scan-line overlay, and beveled chrome. Ships as part of the <a href="/docs/packs/retro/">retro pack</a>.</p>
-  <p>Progressive enhancement: slot an <code>&lt;audio&gt;</code> element inside for a native fallback when JS is unavailable.</p>
+  <p>A platform-native audio player that wraps <code>&lt;audio&gt;</code> in light DOM and renders custom controls in shadow DOM. The native player is always the fallback — if JS is unavailable or the component fails, <code>&lt;audio controls&gt;</code> works normally.</p>
+  <p>For the retro-themed CRT player with visualizer, see <a href="/docs/elements/web-components/retro-audio-player/"><code>&lt;retro-audio-player&gt;</code></a>.</p>
 </section>
 
 <section>
-  <h2>Basic Usage</h2>
-  <code-block language="html" label="Default (waveform)">{{ basicCode | escape }}</code-block>
+  <h2>Single Track</h2>
+  <div class="example">
+    <audio-player>
+      <audio controls>
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+        <p><a href="/docs/examples/demos/assets/track.mp3" download>Download track</a></p>
+      </audio>
+    </audio-player>
+  </div>
+  <code-block language="html" label="Wrapping a single audio element">{{ singleCode | escape }}</code-block>
 </section>
 
 <section>
-  <h2>Visualizer Modes</h2>
-  <p>Set <code>data-visualizer</code> to change the canvas rendering mode.</p>
-
-  <table>
-    <thead><tr><th>Value</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><code>wave</code> (default)</td><td>Time-domain oscilloscope waveform with phosphor glow</td></tr>
-      <tr><td><code>bars</code></td><td>Frequency spectrum bar graph</td></tr>
-      <tr><td><code>circle</code></td><td>Radial frequency visualization</td></tr>
-    </tbody>
-  </table>
-
-  <code-block language="html" label="Spectrum bars">{{ barsCode | escape }}</code-block>
-  <code-block language="html" label="Radial mode">{{ circleCode | escape }}</code-block>
+  <h2>Playlist Mode</h2>
+  <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the audio source and plays it.</p>
+  <div class="example">
+    <audio-player>
+      <audio controls>
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+        <p><a href="/docs/examples/demos/assets/track.mp3" download>Download track 1</a></p>
+      </audio>
+      <details open>
+        <summary>Track Listing</summary>
+        <ol class="track-list">
+          <li data-audio-active>
+            <a href="/docs/examples/demos/assets/track.mp3">01. Opening Theme</a>
+            <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+          </li>
+          <li>
+            <a href="/docs/examples/demos/assets/track.mp3">02. Main Theme</a>
+            <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+          </li>
+          <li data-audio-favorite>
+            <a href="/docs/examples/demos/assets/track.mp3">03. Ending Theme</a>
+            <span class="track-meta"><time datetime="PT4M12S">4:12</time></span>
+          </li>
+        </ol>
+      </details>
+    </audio-player>
+  </div>
+  <code-block language="html" label="Audio player with playlist">{{ playlistCode | escape }}</code-block>
 </section>
 
 <section>
-  <h2>Mini Form Factor</h2>
-  <p>Add <code>data-size="mini"</code> for a compact single-row player. The screen and VU meters are hidden; track title and time display are inlined in the controls row.</p>
-  <code-block language="html" label="Mini player">{{ miniCode | escape }}</code-block>
-</section>
-
-<section>
-  <h2>Custom Colors</h2>
-  <p>Override component tokens inline or via a parent selector. The player inherits from the active theme but allows per-instance customization.</p>
-  <code-block language="html" label="Custom screen and body colors">{{ customCode | escape }}</code-block>
-</section>
-
-<section>
-  <h2>Autoplay and Loop</h2>
-  <code-block language="html" label="Autoplay with loop">{{ loopCode | escape }}</code-block>
+  <h2>Shuffle and Loop</h2>
+  <code-block language="html" label="Shuffle playlist with loop">{{ shuffleCode | escape }}</code-block>
 </section>
 
 <section>
@@ -122,12 +139,9 @@ audio-player::part(play-button):hover {
   <table>
     <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>src</code></td><td>URL</td><td>Audio source file path</td></tr>
-      <tr><td><code>data-visualizer</code></td><td><code>wave</code> | <code>bars</code> | <code>circle</code></td><td>Visualizer rendering mode (default: <code>wave</code>)</td></tr>
-      <tr><td><code>data-title</code></td><td>String</td><td>Track title override (otherwise derived from filename)</td></tr>
-      <tr><td><code>data-size</code></td><td><code>full</code> | <code>mini</code></td><td>Form factor (default: <code>full</code>)</td></tr>
-      <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playback automatically</td></tr>
-      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop playback</td></tr>
+      <tr><td><code>data-autoplay</code></td><td>Boolean</td><td>Start playing on load (subject to browser autoplay policy)</td></tr>
+      <tr><td><code>data-loop</code></td><td>Boolean</td><td>Loop single track or entire playlist</td></tr>
+      <tr><td><code>data-shuffle</code></td><td>Boolean</td><td>Randomize playlist order on track advance</td></tr>
     </tbody>
   </table>
 </section>
@@ -137,37 +151,27 @@ audio-player::part(play-button):hover {
   <table>
     <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>--audioplayer-screen-color</code></td><td><code>var(--color-primary)</code></td><td>Line, bar, and glow color on the screen</td></tr>
-      <tr><td><code>--audioplayer-bg</code></td><td><code>var(--color-surface-sunken)</code></td><td>Player body background</td></tr>
-      <tr><td><code>--audioplayer-bezel</code></td><td><code>var(--color-border)</code></td><td>Bezel and border color</td></tr>
-      <tr><td><code>--audioplayer-screen-bg</code></td><td>Derived from <code>--audioplayer-bg</code></td><td>Screen canvas background</td></tr>
-      <tr><td><code>--audioplayer-text</code></td><td><code>var(--color-text)</code></td><td>Label and readout text color</td></tr>
-      <tr><td><code>--audioplayer-control-size</code></td><td><code>2.5rem</code></td><td>Height of the controls row</td></tr>
-      <tr><td><code>--audioplayer-glow</code></td><td>Derived from screen color</td><td>Glow spread for screen elements</td></tr>
+      <tr><td><code>--audio-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Control accent and progress fill color</td></tr>
+      <tr><td><code>--audio-player-bg</code></td><td><code>var(--color-surface)</code></td><td>Player background</td></tr>
+      <tr><td><code>--audio-player-radius</code></td><td><code>var(--radius-m)</code></td><td>Player border radius</td></tr>
     </tbody>
   </table>
+  <code-block language="css" label="Custom styling">{{ customCode | escape }}</code-block>
 </section>
 
 <section>
   <h2>Shadow Parts</h2>
-  <p>Style internal regions using <code>::part()</code>.</p>
   <table>
     <thead><tr><th>Part</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>bezel</code></td><td>Outer housing shell</td></tr>
-      <tr><td><code>screen</code></td><td>Canvas visualizer area</td></tr>
-      <tr><td><code>controls</code></td><td>Transport controls row</td></tr>
+      <tr><td><code>player</code></td><td>Outer player container</td></tr>
+      <tr><td><code>controls</code></td><td>Controls row</td></tr>
       <tr><td><code>play-button</code></td><td>Play/pause button</td></tr>
-      <tr><td><code>skip-button</code></td><td>Restart button</td></tr>
       <tr><td><code>timeline</code></td><td>Seek range input</td></tr>
       <tr><td><code>volume</code></td><td>Volume range input</td></tr>
-      <tr><td><code>time-display</code></td><td>Current / duration readout</td></tr>
-      <tr><td><code>track-title</code></td><td>Track name display</td></tr>
-      <tr><td><code>vu-bar</code></td><td>Individual VU meter bar</td></tr>
-      <tr><td><code>canvas</code></td><td>The visualizer canvas element</td></tr>
+      <tr><td><code>track-info</code></td><td>Track title and time display</td></tr>
     </tbody>
   </table>
-  <code-block language="css" label="Styling parts">{{ partCode | escape }}</code-block>
 </section>
 
 <section>
@@ -175,46 +179,73 @@ audio-player::part(play-button):hover {
   <table>
     <thead><tr><th>Event</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td><code>vb:audioplayer:play</code></td><td><code>{ currentTime, src }</code></td></tr>
-      <tr><td><code>vb:audioplayer:pause</code></td><td><code>{ currentTime }</code></td></tr>
-      <tr><td><code>vb:audioplayer:ended</code></td><td><code>{ src }</code></td></tr>
-      <tr><td><code>vb:audioplayer:timeupdate</code></td><td><code>{ currentTime, duration, progress }</code></td></tr>
+      <tr><td><code>vb:audio:play</code></td><td><code>{ currentTime, src }</code></td></tr>
+      <tr><td><code>vb:audio:pause</code></td><td><code>{ currentTime }</code></td></tr>
+      <tr><td><code>vb:audio:ended</code></td><td><code>{ src }</code></td></tr>
+      <tr><td><code>vb:audio:track-change</code></td><td><code>{ src, title }</code></td></tr>
     </tbody>
   </table>
   <code-block language="js" label="Listening for events">{{ eventCode | escape }}</code-block>
 </section>
 
 <section>
+  <h2>Keyboard Shortcuts</h2>
+  <table>
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+      <tr><td><kbd>Left Arrow</kbd></td><td>Seek back 10 seconds</td></tr>
+      <tr><td><kbd>Right Arrow</kbd></td><td>Seek forward 10 seconds</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
   <h2>Progressive Enhancement</h2>
-  <p>Slot a native <code>&lt;audio&gt;</code> element inside for JS-off fallback. The component hides the native element and upgrades to the full player UI when JS loads.</p>
-  <code-block language="html" label="Fallback pattern">{{ basicCode | escape }}</code-block>
+  <p>The <code>&lt;audio&gt;</code> element lives in light DOM. Before JS loads, native <code>controls</code> render. After the component upgrades, native controls are hidden and custom chrome takes over. If the component is removed from the DOM, native controls are restored.</p>
+  <code-block language="html" label="Fallback behavior">{{ fallbackCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Track List Data Attributes</h2>
+  <p><code>&lt;li&gt;</code> elements in <code>.track-list</code> use data attributes for state:</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Set by</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-audio-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
+      <tr><td><code>data-audio-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
+      <tr><td><code>data-audio-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
     <li>All controls have <code>aria-label</code> attributes</li>
-    <li>Play button uses <code>aria-pressed</code> to indicate state</li>
-    <li>Range inputs expose <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code></li>
-    <li>Visualizer canvas is <code>aria-hidden="true"</code></li>
-    <li>Respects <code>prefers-reduced-motion</code>: visualizer pauses and shows a static idle frame</li>
+    <li>Controls group has <code>role="group"</code> with label</li>
+    <li>Keyboard navigable with documented shortcuts</li>
+    <li>Respects <code>prefers-reduced-motion</code></li>
+    <li>Falls back to fully accessible native <code>&lt;audio&gt;</code> without JS</li>
   </ul>
 </section>
 
 <section>
-  <h2>Loading</h2>
-  <p>The audio player ships with the <a href="/docs/packs/retro/">retro pack</a>. Load the full pack or just the component:</p>
-
-{% set packCode %}<link rel="stylesheet" href="/cdn/packs/retro.full.css">
-<script type="module" src="/cdn/packs/retro.full.js"></script>{% endset %}
-
-{% set componentCode %}<script type="module" src="/cdn/packs/retro.components.js"></script>{% endset %}
-
-  <code-block language="html" label="Full retro pack">{{ packCode | escape }}</code-block>
-  <code-block language="html" label="Components only (no theme/effects)">{{ componentCode | escape }}</code-block>
+  <h2>Companion: audio-visualizer</h2>
+  <p>Pair with <a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> for canvas-based frequency or waveform display. The visualizer is a separate component — it connects to any <code>&lt;audio&gt;</code> via the <code>for</code> attribute.</p>
 </section>
 
 <section>
   <h2>Demo</h2>
-  <p><a href="/docs/examples/demos/retro-bundle.html">View the retro pack demo</a> to see the audio player in action with all visualizer modes.</p>
+  <p><a href="/docs/examples/demos/audio-player-basic.html">View the audio player demo</a> to see all variants with a real audio file.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> — Native audio element (Layers 1-3)</li>
+    <li><a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> — Canvas visualization companion</li>
+    <li><a href="/docs/elements/web-components/retro-audio-player/"><code>&lt;retro-audio-player&gt;</code></a> — CRT-themed retro pack player</li>
+  </ul>
 </section>

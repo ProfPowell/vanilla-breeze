@@ -24,10 +24,10 @@ export const bundle = {
 
   components: [
     {
-      tag: 'audio-player',
-      contract: 'audio-player',
-      label: 'Audio Player',
-      load: () => import('./components/audio-player/audio-player.js'),
+      tag: 'retro-audio-player',
+      contract: 'retro-audio-player',
+      label: 'Retro Audio Player',
+      load: () => import('./components/retro-audio-player/retro-audio-player.js'),
     },
   ],
 

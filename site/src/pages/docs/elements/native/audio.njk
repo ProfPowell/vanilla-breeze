@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "audio"
-description: "The audio element embeds sound content with native playback controls and variants for different layout contexts."
+description: "The audio element embeds sound content with native playback controls, styled variants, and an optional track listing for playlists."
 elementName: audio
 category: native
 nativeGroup: Media
@@ -10,14 +10,89 @@ permalink: /docs/elements/native/audio/
 ---
 
 {% set basicAudioCode %}<audio controls>
-  <source src="podcast.mp3" type="audio/mpeg" />
-  <source src="podcast.ogg" type="audio/ogg" />
-  Your browser does not support the audio element.
+  <source src="track.ogg" type="audio/ogg">
+  <source src="track.mp3" type="audio/mpeg">
+  <p>
+    Your browser does not support audio playback.
+    <a href="track.mp3" download>Download the audio file</a>.
+  </p>
 </audio>{% endset %}
 
-{% set compactAudioCode %}<audio class="compact" controls>...</audio>{% endset %}
+{% set multiSourceCode %}<audio controls>
+  <source src="audio/track.opus" type="audio/ogg; codecs=opus">
+  <source src="audio/track.ogg" type="audio/ogg">
+  <source src="audio/track.m4a" type="audio/mp4">
+  <source src="audio/track.mp3" type="audio/mpeg">
+  <p><a href="audio/track.mp3" download>Download audio (MP3)</a></p>
+</audio>{% endset %}
 
-{% set minimalAudioCode %}<audio class="minimal" controls>...</audio>{% endset %}
+{% set compactAudioCode %}<audio class="compact" controls>
+  <source src="track.mp3" type="audio/mpeg">
+</audio>{% endset %}
+
+{% set minimalAudioCode %}<audio class="minimal" controls>
+  <source src="track.mp3" type="audio/mpeg">
+</audio>{% endset %}
+
+{% set captionsCode %}<audio controls>
+  <source src="podcast.mp3" type="audio/mpeg">
+  <track kind="captions" src="captions.vtt" srclang="en" label="English" default>
+  <p><a href="podcast.mp3" download>Download podcast</a></p>
+</audio>{% endset %}
+
+{% set chaptersCode %}<audio controls>
+  <source src="podcast.mp3" type="audio/mpeg">
+  <track kind="chapters" src="chapters.vtt" srclang="en" label="Chapters">
+  <p><a href="podcast.mp3" download>Download podcast</a></p>
+</audio>{% endset %}
+
+{% set trackListCode %}<audio controls>
+  <source src="tracks/01-opening.mp3" type="audio/mpeg">
+  <source src="tracks/01-opening.ogg" type="audio/ogg">
+  <p><a href="tracks/01-opening.mp3" download>Download track 1</a></p>
+</audio>
+
+<details>
+  <summary>Track Listing</summary>
+  <ol class="track-list">
+    <li data-audio-active>
+      <a href="tracks/01-opening.mp3">01. Opening Theme</a>
+      <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+    </li>
+    <li>
+      <a href="tracks/02-main.mp3">02. Main Theme</a>
+      <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+    </li>
+    <li data-audio-favorite>
+      <a href="tracks/03-battle.mp3">03. Battle Theme</a>
+      <span class="track-meta"><time datetime="PT1M58S">1:58</time></span>
+    </li>
+    <li>
+      <a href="tracks/04-ending.mp3">04. Ending Theme</a>
+      <span class="track-meta"><time datetime="PT4M12S">4:12</time></span>
+    </li>
+  </ol>
+</details>{% endset %}
+
+{% set standalonePlaylistCode %}<section class="audio-standalone">
+  <audio controls>
+    <source src="tracks/01-opening.mp3" type="audio/mpeg">
+    <p><a href="tracks/01-opening.mp3" download>Download track 1</a></p>
+  </audio>
+  <details>
+    <summary>Track Listing</summary>
+    <ol class="track-list">
+      <li data-audio-active>
+        <a href="tracks/01-opening.mp3">01. Opening</a>
+        <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+      </li>
+      <li>
+        <a href="tracks/02-main.mp3">02. Main Theme</a>
+        <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+      </li>
+    </ol>
+  </details>
+</section>{% endset %}
 
 {% set preloadOptionsCode %}<!-- Don't preload - best for long content or many players -->
 <audio controls preload="none">...</audio>
@@ -28,30 +103,9 @@ permalink: /docs/elements/native/audio/
 <!-- Preload entire file - small files, likely to play -->
 <audio controls preload="auto">...</audio>{% endset %}
 
-{% set formatFallbackCode %}<audio controls>
-  <!-- Best quality, modern browsers -->
-  <source src="audio.opus" type="audio/opus" />
-
-  <!-- Good quality, open format -->
-  <source src="audio.ogg" type="audio/ogg" />
-
-  <!-- Universal fallback -->
-  <source src="audio.mp3" type="audio/mpeg" />
-
-  <p>Your browser doesn't support audio. <a href="audio.mp3">Download</a></p>
-</audio>{% endset %}
-
-{% set fallbackContentCode %}<audio controls>
-  <source src="podcast.mp3" type="audio/mpeg" />
-  <p>
-    Your browser doesn't support HTML audio.
-    <a href="podcast.mp3">Download the episode</a> (45 MB).
-  </p>
-</audio>{% endset %}
-
 {% set transcriptCode %}<figure>
   <audio controls>
-    <source src="interview.mp3" type="audio/mpeg" />
+    <source src="interview.mp3" type="audio/mpeg">
   </audio>
   <figcaption>
     Interview with Dr. Smith about climate change.
@@ -59,54 +113,63 @@ permalink: /docs/elements/native/audio/
   </figcaption>
 </figure>{% endset %}
 
-{% set captionsTrackCode %}<audio controls>
-  <source src="podcast.mp3" type="audio/mpeg" />
-  <track kind="captions" src="captions.vtt" srclang="en" label="English" />
-</audio>{% endset %}
-
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;audio&gt;</code> element embeds audio content with native browser playback controls. Vanilla Breeze styles audio players to be block-level and full-width by default, with variants for compact and minimal layouts.</p>
-
-    <p>Like video, audio supports multiple <code>&lt;source&gt;</code> elements for format fallbacks and <code>&lt;track&gt;</code> elements for synchronized text content.</p>
+    <p>Audio handling follows a progressive enhancement approach with four layers — each functional on its own:</p>
+    <ol>
+      <li><strong>Layer 1</strong> — Native <code>&lt;audio&gt;</code> with <code>&lt;source&gt;</code> fallback chain</li>
+      <li><strong>Layer 2</strong> — CSS styling: <code>accent-color</code>, <code>border-radius</code>, <code>color-scheme</code></li>
+      <li><strong>Layer 3</strong> — Track listing via <code>&lt;details&gt;</code> + <code>&lt;ol class="track-list"&gt;</code></li>
+      <li><strong>Layer 4</strong> — <a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> web component with custom controls</li>
+    </ol>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
-      <li><strong>Podcasts</strong> - Episode players with playback controls</li>
-      <li><strong>Music players</strong> - Song or album playback</li>
-      <li><strong>Sound effects</strong> - UI feedback or game audio</li>
-      <li><strong>Voice recordings</strong> - Interviews, voicemail, audio messages</li>
-      <li><strong>Audiobooks</strong> - Narrated content</li>
-    </ul>
-
-    <h3>When to Use Video Instead</h3>
-    <ul>
-      <li>Audio content with accompanying visuals</li>
-      <li>Content where a static image adds context (use video with poster)</li>
-      <li>Streaming services that provide video embeds</li>
+      <li><strong>Podcasts</strong> — Episode players with playback controls</li>
+      <li><strong>Music players</strong> — Song or album playback</li>
+      <li><strong>Sound effects</strong> — UI feedback or game audio</li>
+      <li><strong>Voice recordings</strong> — Interviews, voicemail, audio messages</li>
+      <li><strong>Audiobooks</strong> — Narrated content</li>
     </ul>
   </section>
 
   <section>
-    <h2>Variants</h2>
+    <h2>Layer 1: Native Baseline</h2>
+    <p>Works everywhere with no CSS or JS. Always include at least one <code>&lt;source&gt;</code> with a <code>type</code> attribute and a download link as the ultimate fallback.</p>
 
-    <h3>Default</h3>
-    <p>Full-width audio player with native controls.</p>
     <div class="example">
       <audio controls>
-        <source src="#" type="audio/mpeg" />
-        Your browser does not support the audio element.
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+        <p>Your browser does not support audio. <a href="/docs/examples/demos/assets/track.mp3" download>Download the audio file</a>.</p>
       </audio>
     </div>
-    <code-block language="html" label="Basic audio element with multiple sources">{{ basicAudioCode | escape }}</code-block>
+    <code-block language="html" label="Basic audio with fallback download link">{{ basicAudioCode | escape }}</code-block>
+
+    <h3>Multi-Source Format Chain</h3>
+    <p>List formats best-to-worst — the browser picks the first it supports.</p>
+    <code-block language="html" label="Full format fallback chain">{{ multiSourceCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Layer 2: Styled Variants</h2>
+    <p>CSS-only improvements via VB tokens. The native player gains visual polish without any new HTML.</p>
+
+    <h3>Default</h3>
+    <p>Full-width player with <code>accent-color</code>, <code>border-radius</code>, and <code>color-scheme</code> from VB tokens.</p>
+    <div class="example">
+      <audio controls>
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+      </audio>
+    </div>
 
     <h3>.compact</h3>
-    <p>Reduced max-width for inline usage or sidebars.</p>
+    <p>Max-width constrained (320px) for inline usage or sidebars.</p>
     <div class="example">
       <audio class="compact" controls>
-        <source src="#" type="audio/mpeg" />
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
       </audio>
     </div>
     <code-block language="html" label="Compact audio player">{{ compactAudioCode | escape }}</code-block>
@@ -115,23 +178,72 @@ permalink: /docs/elements/native/audio/
     <p>Reduced height for tight layouts.</p>
     <div class="example">
       <audio class="minimal" controls>
-        <source src="#" type="audio/mpeg" />
+        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
       </audio>
     </div>
     <code-block language="html" label="Minimal audio player">{{ minimalAudioCode | escape }}</code-block>
+  </section>
 
-    <h3>Compact + Minimal</h3>
-    <p>Combine variants for the most compact player.</p>
+  <section>
+    <h2>Layer 3: Track Listing</h2>
+    <p>HTML + CSS only. <code>&lt;details&gt;/&lt;summary&gt;</code> exposes a track list that shows and hides natively. Without JS, track links navigate to the audio file. With the playlist utility loaded, clicking a track updates the audio source and plays it.</p>
+
     <div class="example">
-      <audio class="compact minimal" controls>
-        <source src="#" type="audio/mpeg" />
-      </audio>
+      <section class="audio-standalone">
+        <audio controls>
+          <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
+          <p><a href="/docs/examples/demos/assets/track.mp3" download>Download track 1</a></p>
+        </audio>
+        <details open>
+          <summary>Track Listing</summary>
+          <ol class="track-list">
+            <li data-audio-active>
+              <a href="/docs/examples/demos/assets/track.mp3">01. Opening Theme</a>
+              <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+            </li>
+            <li>
+              <a href="/docs/examples/demos/assets/track.mp3">02. Main Theme</a>
+              <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+            </li>
+            <li data-audio-favorite>
+              <a href="/docs/examples/demos/assets/track.mp3">03. Battle Theme</a>
+              <span class="track-meta"><time datetime="PT1M58S">1:58</time></span>
+            </li>
+          </ol>
+        </details>
+      </section>
     </div>
+    <code-block language="html" label="Audio with track listing (CSS-only structure)">{{ trackListCode | escape }}</code-block>
+
+    <h3>Interactive Playlist (with JS)</h3>
+    <p>Wrap the audio and track list in a container with class <code>.audio-standalone</code> to enable click-to-play behavior via the playlist utility.</p>
+    <code-block language="html" label="Standalone interactive playlist">{{ standalonePlaylistCode | escape }}</code-block>
+
+    <h3>Track List Data Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Set by</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-audio-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
+        <tr><td><code>data-audio-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
+        <tr><td><code>data-audio-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Text Tracks</h2>
+
+    <h3>Captions</h3>
+    <code-block language="html" label="Audio with captions track">{{ captionsCode | escape }}</code-block>
+
+    <h3>Chapters</h3>
+    <code-block language="html" label="Audio with chapter markers">{{ chaptersCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Audio Attributes</h2>
-
     <table class="props-table">
       <thead>
         <tr>
@@ -146,7 +258,7 @@ permalink: /docs/elements/native/audio/
         </tr>
         <tr>
           <td><code>autoplay</code></td>
-          <td>Start playing automatically (discouraged - poor UX)</td>
+          <td>Start playing automatically (discouraged — poor UX)</td>
         </tr>
         <tr>
           <td><code>muted</code></td>
@@ -169,107 +281,32 @@ permalink: /docs/elements/native/audio/
 
   <section>
     <h2>Audio Formats</h2>
-    <p>Provide multiple sources for maximum browser compatibility.</p>
-
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Format</th>
-          <th>MIME Type</th>
-          <th>Support</th>
-        </tr>
+        <tr><th>Format</th><th>MIME Type</th><th>Support</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>MP3</td>
-          <td><code>audio/mpeg</code></td>
-          <td>Universal - best for compatibility</td>
-        </tr>
-        <tr>
-          <td>AAC</td>
-          <td><code>audio/aac</code></td>
-          <td>Good quality, wide support</td>
-        </tr>
-        <tr>
-          <td>Ogg Vorbis</td>
-          <td><code>audio/ogg</code></td>
-          <td>Open format, Firefox/Chrome</td>
-        </tr>
-        <tr>
-          <td>Opus</td>
-          <td><code>audio/opus</code></td>
-          <td>Best quality/size ratio, modern browsers</td>
-        </tr>
-        <tr>
-          <td>WAV</td>
-          <td><code>audio/wav</code></td>
-          <td>Uncompressed, large files</td>
-        </tr>
-        <tr>
-          <td>FLAC</td>
-          <td><code>audio/flac</code></td>
-          <td>Lossless, growing support</td>
-        </tr>
+        <tr><td>MP3</td><td><code>audio/mpeg</code></td><td>Universal — best for compatibility</td></tr>
+        <tr><td>AAC</td><td><code>audio/aac</code></td><td>Good quality, wide support</td></tr>
+        <tr><td>Ogg Vorbis</td><td><code>audio/ogg</code></td><td>Open format, Firefox/Chrome</td></tr>
+        <tr><td>Opus</td><td><code>audio/opus</code></td><td>Best quality/size ratio, modern browsers</td></tr>
+        <tr><td>WAV</td><td><code>audio/wav</code></td><td>Uncompressed, large files</td></tr>
+        <tr><td>FLAC</td><td><code>audio/flac</code></td><td>Lossless, growing support</td></tr>
       </tbody>
     </table>
-
-    <code-block language="html" label="Audio with format fallbacks">{{ formatFallbackCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Live Examples</h2>
-
-    <h3>Podcast Player</h3>
-    <div class="example">
-      <layout-stack data-layout-gap="s">
-        <strong>Episode 42: Web Audio Fundamentals</strong>
-        <audio controls preload="metadata">
-          <source src="#" type="audio/mpeg" />
-        </audio>
-        <small>Duration: 45:32 | Published: January 8, 2026</small>
-      </layout-stack>
-    </div>
-
-    <h3>Inline Audio</h3>
-    <div class="example">
-      <p>Listen to the pronunciation: <audio class="compact minimal" controls style="vertical-align: middle; display: inline-block;"><source src="#" type="audio/mpeg" /></audio></p>
-    </div>
-
-    <h3>Audio in Figure</h3>
-    <div class="example">
-      <figure>
-        <audio controls>
-          <source src="#" type="audio/mpeg" />
-        </audio>
-        <figcaption>Interview with Jane Doe - Recorded December 2025</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section>
-    <h2>Fallback Content</h2>
-    <p>Provide fallback for browsers that don't support audio.</p>
-
-    <code-block language="html" label="Audio with fallback download link">{{ fallbackContentCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
 
     <h3>Transcripts</h3>
-    <p>Provide text transcripts for audio content so deaf users and those who can't play audio can access the information.</p>
-
+    <p>Provide text transcripts for audio content so deaf users and those who cannot play audio can access the information.</p>
     <code-block language="html" label="Audio with transcript link for accessibility">{{ transcriptCode | escape }}</code-block>
-
-    <h3>Synchronized Text</h3>
-    <p>Use <a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> for synchronized captions (though browser support varies for audio).</p>
-
-    <code-block language="html" label="Audio with captions track">{{ captionsTrackCode | escape }}</code-block>
 
     <h3>Best Practices</h3>
     <ul>
       <li>Always provide a text transcript for important audio</li>
-      <li>Never autoplay audio - it's disruptive and inaccessible</li>
+      <li>Never autoplay audio — it is disruptive and inaccessible</li>
       <li>Ensure controls are visible and keyboard accessible</li>
       <li>Provide context about what the audio contains</li>
       <li>Include duration information when available</li>
@@ -277,39 +314,45 @@ permalink: /docs/elements/native/audio/
   </section>
 
   <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> - Video content with similar API</li>
-      <li><a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> - Define multiple audio sources for format fallback</li>
-      <li><a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> - Synchronized text tracks (captions, descriptions)</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Wrap audio with caption information</li>
-    </ul>
-  </section>
-
-  <section>
     <h2>CSS Reference</h2>
-    <p>Styles defined in <code>/src/native-elements/video/styles.css</code></p>
+    <p>Styles defined in <code>/src/native-elements/audio/styles.css</code></p>
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Selector</th>
-          <th>Properties</th>
-        </tr>
+        <tr><th>Selector</th><th>Properties</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>audio</code></td>
-          <td><code>display: block; inline-size: 100%; max-inline-size: 100%;</code></td>
-        </tr>
-        <tr>
-          <td><code>audio.minimal</code></td>
-          <td><code>block-size: 2.5rem;</code></td>
+          <td><code>display: block; width: 100%; border-radius: var(--radius-m); accent-color: var(--color-primary); color-scheme: light dark;</code></td>
         </tr>
         <tr>
           <td><code>audio.compact</code></td>
-          <td><code>max-inline-size: 300px;</code></td>
+          <td><code>max-width: 320px;</code></td>
+        </tr>
+        <tr>
+          <td><code>audio.minimal</code></td>
+          <td><code>height: 2.5rem;</code></td>
+        </tr>
+        <tr>
+          <td><code>details:has(.track-list)</code></td>
+          <td><code>border: 1px solid var(--color-border); border-radius: var(--radius-m);</code></td>
+        </tr>
+        <tr>
+          <td><code>.track-list li[data-audio-active]</code></td>
+          <td><code>background: color-mix(in oklch, var(--color-primary), transparent 85%);</code></td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> — Platform web component with custom controls (Layer 4)</li>
+      <li><a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> — Canvas visualization companion</li>
+      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> — Video content with similar API</li>
+      <li><a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> — Define multiple audio sources for format fallback</li>
+      <li><a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> — Synchronized text tracks (captions, chapters)</li>
+    </ul>
   </section>

@@ -4,10 +4,10 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js'
-import { AudioPlayer } from './components/audio-player/audio-player.js'
+import { RetroAudioPlayer } from './components/retro-audio-player/retro-audio-player.js'
 
-registerComponent('audio-player', AudioPlayer, {
+registerComponent('retro-audio-player', RetroAudioPlayer, {
   bundle: 'retro',
-  contract: 'audio-player',
+  contract: 'retro-audio-player',
   priority: 10,
 })

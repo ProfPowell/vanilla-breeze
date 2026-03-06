@@ -1,5 +1,5 @@
 /**
- * audio-player — Retro Bundle
+ * retro-audio-player — Retro Bundle
  * Vanilla Breeze · Contract v1.0.0
  *
  * A phosphor-screen audio player with oscilloscope/spectrum visualizer.
@@ -7,10 +7,10 @@
  * Token layer: inherits from whatever theme is active automatically.
  *
  * Usage:
- *   <audio-player src="track.mp3"></audio-player>
- *   <audio-player src="track.mp3" data-visualizer="bars" autoplay loop>
+ *   <retro-audio-player src="track.mp3"></retro-audio-player>
+ *   <retro-audio-player src="track.mp3" data-visualizer="bars" autoplay loop>
  *     <audio controls src="track.mp3"><!-- JS-off fallback --></audio>
- *   </audio-player>
+ *   </retro-audio-player>
  *
  * CSS custom property API:
  *   --audioplayer-screen-color   line/bar colour on the screen
@@ -34,12 +34,12 @@
  *   vu-bar         individual VU meter bars
  */
 
-class AudioPlayer extends HTMLElement {
+class RetroAudioPlayer extends HTMLElement {
 
   // ─── Contract metadata ────────────────────────────────────────────────────
 
   static bundle   = 'retro'
-  static contract = 'audio-player'
+  static contract = 'retro-audio-player'
   static version  = '1.0.0'
 
   static consumesTokens = [
@@ -111,7 +111,7 @@ class AudioPlayer extends HTMLElement {
 
     // Respect reduced motion at init time
     if (this._reducedMotion) {
-      AudioPlayer.reducedMotionFallback(this)
+      RetroAudioPlayer.reducedMotionFallback(this)
     }
 
     // Watch for motion preference changes
@@ -119,7 +119,7 @@ class AudioPlayer extends HTMLElement {
       .addEventListener('change', e => {
         this._reducedMotion = e.matches
         if (e.matches) {
-          AudioPlayer.reducedMotionFallback(this)
+          RetroAudioPlayer.reducedMotionFallback(this)
         } else {
           this._visualizerPaused = false
           this._startVisualizer()
@@ -1126,4 +1126,4 @@ class AudioPlayer extends HTMLElement {
   }
 }
 
-export { AudioPlayer }
+export { RetroAudioPlayer }
