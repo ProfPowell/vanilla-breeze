@@ -36,6 +36,11 @@ class FootNotes extends HTMLElement {
     } else {
       this.#render();
     }
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   #collectRefs() {

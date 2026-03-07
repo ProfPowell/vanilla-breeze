@@ -184,9 +184,11 @@ class CarouselWc extends HTMLElement {
     if (this.hasAttribute('data-autoplay') && !this.#reducedMotion) {
       this.#setupAutoplay();
     }
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.pause();
     this.#cleanupSwipe?.();
     if (this.#observer) {

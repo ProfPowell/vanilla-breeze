@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/accordion-basic.html';
+const demoPage = '/demos/examples/demos/accordion-basic.html';
 
 test.describe('accordion-wc', () => {
 

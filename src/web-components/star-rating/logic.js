@@ -47,6 +47,11 @@ class StarRating extends HTMLElement {
 
     this.#syncFormValue(value);
     this.#validate();
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   #renderInteractive(value, max, label, name, isHalf, iconName) {

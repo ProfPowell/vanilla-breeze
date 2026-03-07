@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Share (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 0.4rem 0.75rem;
+      font: inherit;
+      font-size: 0.875rem;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      color: inherit;
+    }
+
+    nav a:hover {
+      background: #f5f5f5;
+    }
+
+    nav a:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 1px;
+    }
+
+    .page-url {
+      margin-block-start: 1rem;
+      padding: 0.75rem 1rem;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.875rem;
+      word-break: break-all;
+      -webkit-user-select: all;
+      user-select: all;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <share-wc> enhances.
+
+    Without JS the user sees static <a> links that open platform share
+    URLs directly.  The mailto: link opens the user's email client.  The
+    page URL is displayed as selectable text so the user can manually
+    copy it.  All links work without any JavaScript.
+
+    When JavaScript loads and the <share-wc> custom element is defined,
+    the upgrade adds:
+
+      1. Native share       - On devices with the Web Share API
+                              (navigator.share), a single "Share" button
+                              replaces the platform list, using the OS
+                              native share sheet.
+      2. Three-tier system  - Tier 1: native share (if supported),
+                              Tier 2: individual platform buttons,
+                              Tier 3: these static <a> links.
+      3. Copy to clipboard  - A "Copy Link" button using the Clipboard
+                              API with visual "Copied!" feedback.
+      4. Dynamic URLs       - Share URL, title, and text are resolved
+                              from meta tags, canonical link, and
+                              data attributes at runtime.
+      5. Token substitution - Slotted <a> elements with {url}, {title},
+                              {text} tokens in href are resolved.
+      6. Custom events      - share-wc:open, share-wc:success, and
+                              share-wc:error events for analytics.
+  -->
+
+  <h1>Share This Page</h1>
+
+  <nav aria-label="Share this page">
+    <ul>
+      <li>
+        <a href="https://x.com/intent/post?url=https%3A%2F%2Fexample.com&text=Check%20this%20out"
+           target="_blank" rel="noopener noreferrer">
+          Share on X
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fexample.com"
+           target="_blank" rel="noopener noreferrer">
+          Share on LinkedIn
+        </a>
+      </li>
+      <li>
+        <a href="https://bsky.app/intent/compose?text=Check%20this%20out%20https%3A%2F%2Fexample.com"
+           target="_blank" rel="noopener noreferrer">
+          Share on Bluesky
+        </a>
+      </li>
+      <li>
+        <a href="mailto:?subject=Check%20this%20out&body=https%3A%2F%2Fexample.com">
+          Share via Email
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <p>Or copy the page URL:</p>
+  <p class="page-url">https://example.com</p>
+
+</body>
+</html>

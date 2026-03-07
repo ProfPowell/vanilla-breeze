@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tab Set (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling to convey tabbed-section affordances without any JS or
+      custom elements.  A production page would load the project stylesheet
+      instead; these rules exist only so the file is self-contained.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    details {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    details + details {
+      margin-block-start: -1px;
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+
+    details:not(:last-of-type) {
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    summary {
+      display: flex;
+      align-items: center;
+      padding: 0.625rem 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      list-style: none;
+      color: #555;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details[open] > summary {
+      color: #0066cc;
+      border-block-end: 2px solid #0066cc;
+    }
+
+    summary:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -2px;
+      border-radius: 4px;
+    }
+
+    details > :not(summary) {
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML is the zero-JS baseline for the <tab-set> web component.
+
+    When JavaScript loads and the <tab-set> custom element is defined, these
+    same <details>/<summary> elements are wrapped inside the custom element.
+    CSS Grid with `display: contents` on <details> then visually reorders the
+    summaries into a horizontal tab bar (grid row 1) and the panels below it
+    (grid row 2, spanning all columns), creating a true tabbed interface.
+
+    The upgrade adds:
+
+      1. Visual layout    - Summaries become a horizontal tab strip; only the
+                            open panel is visible below, spanning full width.
+      2. ARIA linking     - aria-controls / aria-labelledby between each
+                            summary and its panel.
+      3. Tabindex mgmt    - The active tab gets tabindex="0"; inactive tabs
+                            get tabindex="-1" for roving-tabindex navigation.
+      4. Keyboard nav     - ArrowLeft / ArrowRight / Home / End to move focus
+                            and switch tabs.
+      5. Ensure one open  - Guarantees at least one panel is always open.
+      6. View Transitions - Optional animated tab switching via the
+                            startViewTransition API with directional awareness.
+
+    Without JS none of those enhancements apply.  The content degrades to a
+    stacked exclusive-open accordion: each section is a <details> element
+    sharing a `name` attribute, so the browser natively ensures only one is
+    open at a time (Chrome 120+, Safari 17.2+, Firefox 130+).  All content
+    remains discoverable and keyboard-navigable via standard <details>
+    disclosure behavior.
+  -->
+
+  <h1>Project Documentation</h1>
+
+  <!-- Exclusive-open accordion: the shared name="docs" attribute causes
+       browsers that support it to close any sibling <details> when another
+       opens, mirroring the tab-set's one-panel-at-a-time behavior. -->
+
+  <details name="docs" open>
+    <summary>Overview</summary>
+    <div>
+      <p>
+        This project uses web components built on native HTML elements.
+        Each component degrades gracefully when JavaScript is unavailable,
+        relying on standard <code>&lt;details&gt;</code> disclosure widgets
+        for its baseline behavior.
+      </p>
+    </div>
+  </details>
+
+  <details name="docs">
+    <summary>Installation</summary>
+    <div>
+      <p>
+        Include the component script and stylesheet in your page. The
+        <code>&lt;tab-set&gt;</code> element wraps standard
+        <code>&lt;details&gt;</code> elements, each containing a
+        <code>&lt;summary&gt;</code> (the tab label) and a content
+        <code>&lt;div&gt;</code> (the panel body).
+      </p>
+    </div>
+  </details>
+
+  <details name="docs">
+    <summary>Usage</summary>
+    <div>
+      <p>
+        When the custom element upgrades, summaries are visually rearranged
+        into a horizontal tab bar and panels display below.  Without
+        JavaScript, the same content appears as a stacked accordion with
+        exclusive-open behavior provided by the shared
+        <code>name</code> attribute.
+      </p>
+    </div>
+  </details>
+
+  <details name="docs">
+    <summary>API Reference</summary>
+    <div>
+      <p>
+        The enhanced <code>&lt;tab-set&gt;</code> component emits a
+        <code>tab-set:change</code> custom event when the active tab changes,
+        and supports <code>data-transition</code> for animated switching.
+        In this static form, the browser handles all interaction natively.
+      </p>
+    </div>
+  </details>
+
+</body>
+</html>

@@ -74,9 +74,11 @@ class ShareWc extends HTMLElement {
     }
 
     this.dataset.tier = this.#tier;
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     if (this.#copyTimer) {
       clearTimeout(this.#copyTimer);
       this.#copyTimer = null;

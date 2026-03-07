@@ -53,9 +53,11 @@ class SettingsPanel extends HTMLElement {
     window.addEventListener('theme-change', this.#handleExternalChange);
     window.addEventListener('extensions-change', this.#handleExternalChange);
     window.addEventListener('a11y-themes-change', this.#handleExternalChange);
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     window.removeEventListener('theme-change', this.#handleExternalChange);
     window.removeEventListener('extensions-change', this.#handleExternalChange);
     window.removeEventListener('a11y-themes-change', this.#handleExternalChange);

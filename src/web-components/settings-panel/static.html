@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings Panel (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-block-end: 1rem;
+    }
+
+    legend {
+      font-weight: 600;
+      padding-inline: 0.25rem;
+    }
+
+    label {
+      display: block;
+      padding: 0.25rem 0;
+      cursor: pointer;
+    }
+
+    select {
+      display: block;
+      inline-size: 100%;
+      padding: 0.5rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-block-start: 0.25rem;
+    }
+
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 1px;
+    }
+
+    footer {
+      margin-block-start: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+    }
+
+    button[type="submit"] {
+      border-color: transparent;
+      background: #0066cc;
+      color: #fff;
+    }
+
+    button[type="submit"]:hover {
+      background: #0055aa;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <settings-panel> enhances.
+
+    Without JS the user has a standard <form> with fieldsets grouping
+    appearance, accessibility, layout, effects, and environment settings.
+    The form can POST to a server endpoint to persist preferences via
+    cookies or a database.
+
+    When JavaScript loads and the <settings-panel> custom element is
+    defined, the upgrade adds:
+
+      1. Live preview       - All changes apply instantly via ThemeManager,
+                              EnvironmentManager, and SoundManager.
+      2. Popover UI         - A gear-button trigger opens a positioned
+                              dialog panel with Escape-to-close and
+                              click-outside dismissal.
+      3. Accordion sections - Each settings group is wrapped in a
+                              <details> accordion for compact display.
+      4. Segmented controls - Radio groups render as segmented button
+                              strips instead of plain radio lists.
+      5. Color swatches     - Accent color selection uses visual color
+                              dot swatches.
+      6. Toggle switches    - Checkboxes render as styled toggle switches
+                              via data-switch.
+      7. Backdrop & chrome  - Canvas backdrop, chrome mode, and page
+                              background color/gradient controls.
+      8. System info        - Service worker status, cache management,
+                              and version display.
+      9. Cross-component    - Syncs state with <theme-picker> via
+                              custom events on window.
+  -->
+
+  <h1>Site Settings</h1>
+
+  <form action="/settings" method="post">
+
+    <fieldset>
+      <legend>Appearance</legend>
+      <label>Color Mode</label>
+      <label><input type="radio" name="mode" value="auto" checked> Auto (system)</label>
+      <label><input type="radio" name="mode" value="light"> Light</label>
+      <label><input type="radio" name="mode" value="dark"> Dark</label>
+
+      <label for="settings-theme">Theme</label>
+      <select id="settings-theme" name="theme">
+        <optgroup label="Base">
+          <option value="default" selected>Default</option>
+        </optgroup>
+        <optgroup label="Personality">
+          <option value="modern">Modern</option>
+          <option value="minimal">Minimal</option>
+          <option value="classic">Classic</option>
+        </optgroup>
+        <optgroup label="Extreme">
+          <option value="swiss">Swiss</option>
+          <option value="brutalist">Brutalist</option>
+          <option value="cyber">Cyber</option>
+          <option value="terminal">Terminal</option>
+          <option value="nord">Nord</option>
+          <option value="dracula">Dracula</option>
+          <option value="solarized">Solarized</option>
+        </optgroup>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Accessibility</legend>
+      <label><input type="checkbox" name="a11y-high-contrast"> High Contrast</label>
+      <label><input type="checkbox" name="a11y-large-text"> Large Text</label>
+      <label><input type="checkbox" name="a11y-dyslexia"> Dyslexia-Friendly</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Layout</legend>
+      <label><input type="checkbox" name="fluid-scaling"> Fluid Scaling</label>
+      <label>Density</label>
+      <label><input type="radio" name="density" value="compact"> Compact</label>
+      <label><input type="radio" name="density" value="default" checked> Default</label>
+      <label><input type="radio" name="density" value="spacious"> Spacious</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Effects</legend>
+      <label><input type="checkbox" name="motion-fx" checked> Motion Effects</label>
+      <label><input type="checkbox" name="sounds"> Sound Effects</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Environment</legend>
+      <label><input type="checkbox" name="time-of-day"> Time-of-Day Shifts</label>
+      <label><input type="checkbox" name="seasonal"> Seasonal Tinting</label>
+    </fieldset>
+
+    <footer>
+      <button type="submit">Save Settings</button>
+      <button type="reset">Reset to Defaults</button>
+    </footer>
+  </form>
+
+</body>
+</html>

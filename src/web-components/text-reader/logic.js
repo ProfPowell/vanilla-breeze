@@ -92,9 +92,11 @@ class TextReader extends HTMLElement {
     this.#voicesPromise.then(voices => this.#populateVoiceSelect(voices));
 
     window.addEventListener('beforeunload', this.#handleBeforeUnload);
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.stop();
     this.#removeHighlightSheet();
     window.removeEventListener('beforeunload', this.#handleBeforeUnload);

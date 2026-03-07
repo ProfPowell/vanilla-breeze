@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accordion (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling to convey accordion affordances without any JS or
+      custom elements.  A production page would load the project stylesheet
+      instead; these rules exist only so the file is self-contained.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    details {
+      border-block-end: 1px solid #ccc;
+    }
+
+    details:first-of-type {
+      border-block-start: 1px solid #ccc;
+    }
+
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    /* Chevron indicator */
+    summary::after {
+      content: "";
+      inline-size: 0.5em;
+      block-size: 0.5em;
+      flex-shrink: 0;
+      border-inline-end: 2px solid currentColor;
+      border-block-end: 2px solid currentColor;
+      transform: rotate(-45deg);
+      transition: transform 150ms ease;
+    }
+
+    details[open] > summary::after {
+      transform: rotate(45deg);
+    }
+
+    summary:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -2px;
+      border-radius: 4px;
+    }
+
+    details > :not(summary) {
+      padding: 0 1rem 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <accordion-wc> enhances.
+
+    When JavaScript loads and the <accordion-wc> custom element is defined,
+    these same <details>/<summary> elements are wrapped (or already nested)
+    inside the custom element.  The upgrade adds:
+
+      1. ARIA attributes  - aria-expanded, aria-controls, aria-labelledby,
+                            role="region" on panels.
+      2. Keyboard nav     - ArrowUp / ArrowDown / Home / End to move focus
+                            between summaries.
+      3. Single-open      - A JS polyfill for the `name` attribute so that
+                            only one panel is open at a time even in older
+                            browsers that lack native <details name> support.
+      4. View Transitions - Optional animated open/close via the
+                            startViewTransition API.
+
+    Without JS none of those enhancements apply, but the core behaviour is
+    fully functional: each <details> is independently openable/closable by
+    mouse or keyboard, and the shared `name` attribute provides exclusive-
+    open (single-open) in browsers that support it natively (Chrome 120+,
+    Safari 17.2+, Firefox 130+).
+  -->
+
+  <h1>Frequently Asked Questions</h1>
+
+  <!-- Single-open accordion: the shared name="faq" attribute causes browsers
+       that support it to close any sibling <details> when another opens. -->
+
+  <details name="faq">
+    <summary>What is progressive enhancement?</summary>
+    <div>
+      <p>
+        Progressive enhancement is a design philosophy that starts with a
+        baseline of functional HTML, then layers on CSS and JavaScript to
+        improve the experience for browsers that support them.
+      </p>
+    </div>
+  </details>
+
+  <details name="faq">
+    <summary>Does this work without JavaScript?</summary>
+    <div>
+      <p>
+        Yes. Native <code>&lt;details&gt;</code> and
+        <code>&lt;summary&gt;</code> elements are keyboard-accessible and
+        togglable in every modern browser without any script.
+      </p>
+    </div>
+  </details>
+
+  <details name="faq">
+    <summary>How does single-open mode work?</summary>
+    <div>
+      <p>
+        The <code>name</code> attribute on each <code>&lt;details&gt;</code>
+        element groups them together.  The browser natively ensures only one
+        in the group can be open at a time.  The enhanced
+        <code>&lt;accordion-wc&gt;</code> component polyfills this for older
+        browsers.
+      </p>
+    </div>
+  </details>
+
+  <details name="faq">
+    <summary>What enhancements does the web component add?</summary>
+    <div>
+      <p>
+        The <code>&lt;accordion-wc&gt;</code> custom element adds richer
+        ARIA semantics, arrow-key navigation between panels, a single-open
+        polyfill for older browsers, and optional view-transition animations.
+      </p>
+    </div>
+  </details>
+
+</body>
+</html>

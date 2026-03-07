@@ -1,0 +1,175 @@
+---
+layout: layouts/docs.njk
+title: "Architecture Decisions"
+description: "Key architectural decisions in Vanilla Breeze, the failure modes they prevent, and the trade-offs they accept."
+currentSection: docs
+currentPath: /docs/concepts/architecture-decisions/
+permalink: /docs/concepts/architecture-decisions/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Architecture Decisions</span></li>
+  </ol>
+</nav>
+
+<h1>Architecture Decisions</h1>
+<p class="lead">Every major architectural choice in Vanilla Breeze traces to a failure mode it prevents. This page documents those decisions so future contributors understand not just <em>what</em> was decided, but <em>why</em>. For the philosophy these decisions serve, see <a href="/docs/principles/">Principles</a>.</p>
+
+<section>
+  <h2>Hyphenated Element Names</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Custom elements must use a hyphen in their name (e.g. <code>&lt;tab-set&gt;</code>, not <code>&lt;tabset&gt;</code>).</dd>
+    <dt>Because</dt>
+    <dd>The HTML spec reserves unhyphenated names for future standard elements. Using a hyphen prevents collision with any current or future HTML element, ensures the parser routes the element through the custom element registry, and makes third-party component origins visually identifiable in markup.</dd>
+    <dt>Trade-off</dt>
+    <dd>Slightly more verbose tag names. Acceptable given the collision protection and parser guarantee.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>State via <code>data-*</code> Attributes</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Component state is communicated via <code>data-*</code> attributes, not CSS classes.</dd>
+    <dt>Because</dt>
+    <dd>CSS classes conflate styling concerns with state concerns. <code>data-*</code> attributes are queryable via the <code>dataset</code> API, can be targeted by CSS attribute selectors without class specificity issues, survive serialization (e.g. server-side rendering produces correct initial state), and are unambiguous in their purpose. A class named <code>active</code> could mean anything; <code>data-state="active"</code> cannot.</dd>
+    <dt>Trade-off</dt>
+    <dd>Slightly more verbose selectors (<code>[data-state="active"]</code> vs <code>.active</code>). Acceptable given the clarity and API benefits.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Single <code>@layer</code> Declaration</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd><code>@layer</code> order is declared once in the framework entry file; no other file may redeclare layer order.</dd>
+    <dt>Because</dt>
+    <dd>Multiple <code>@layer</code> order declarations in different files produce unpredictable cascade behavior as load order varies. A single declaration point guarantees deterministic cascade behavior regardless of which stylesheets load first or in what order. This is the CSS equivalent of a single source of truth.</dd>
+    <dt>Trade-off</dt>
+    <dd>All consuming projects must import the framework entry file before any other stylesheet. Documented as a usage requirement.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Theme Restrictions</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Themes may not change layout, spacing structure, or <code>display</code> values &mdash; only color, typography, and surface tokens.</dd>
+    <dt>Because</dt>
+    <dd>Layout changes in a theme layer break the component's pre-upgrade CSS baseline, potentially causing the <code>:not(:defined)</code> fallback and the upgraded state to have different layout models. This would produce layout shift on upgrade even with pre-upgrade CSS in place.</dd>
+    <dt>Trade-off</dt>
+    <dd>Theme authors have less control. This is intentional &mdash; visual identity lives in color and type; structural layout lives in components.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2><code>&lt;details&gt;</code>-Based Tabs</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>The <code>&lt;tab-set&gt;</code> component is built on native <code>&lt;details&gt;</code> elements with the <code>name</code> attribute for exclusive accordion behavior.</dd>
+    <dt>Because</dt>
+    <dd>Native <code>&lt;details&gt;</code> provides disclosure interactivity without JavaScript, keyboard support, screen reader announcements, and form state restoration for free. The <code>name</code> attribute (supported in all modern browsers) provides exclusive-open behavior. This means tabs degrade gracefully to a working accordion when JS fails to load.</dd>
+    <dt>Trade-off</dt>
+    <dd>Summary elements cannot use ARIA <code>role="tab"</code> without conflicting with their implicit button role. VB accepts this by relying on the native semantics rather than imposing tab semantics.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>OKLCH Color System</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>All color tokens use OKLCH color space with hue-angle custom properties.</dd>
+    <dt>Because</dt>
+    <dd>OKLCH provides perceptually uniform lightness (unlike HSL), consistent chroma across hues, and enables algorithmic palette generation via hue rotation. The <code>@property</code>-registered hue angles (<code>--hue-primary</code>, etc.) allow themes to shift the entire palette with a single value change.</dd>
+    <dt>Trade-off</dt>
+    <dd>OKLCH requires modern browser support (2023+). Fallback hex values are provided where critical.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Pack Architecture</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Visual themes, effects, and component extensions are bundled as "packs" (e.g. <code>kawaii</code>, <code>retro</code>) that layer onto the base framework.</dd>
+    <dt>Because</dt>
+    <dd>Packs allow themed experiences without polluting the core framework. Each pack appends to the declared <code>bundle-theme</code>, <code>bundle-effects</code>, and <code>bundle-components</code> layers, ensuring predictable cascade behavior. Packs are additive and optional &mdash; the framework is fully functional without any pack.</dd>
+    <dt>Trade-off</dt>
+    <dd>Pack authors must understand the layer system and token contract. Documentation and the <code>/validate-component</code> command help enforce compliance.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Custom Elements over Utility Classes</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd><code>&lt;layout-stack data-layout-gap="m"&gt;</code> instead of <code>&lt;div class="flex flex-col gap-4"&gt;</code>.</dd>
+    <dt>Because</dt>
+    <dd>Custom elements are self-documenting in the DOM inspector, clearly show nesting relationships, and don't pollute the global class namespace. They create a semantic vocabulary for layout intent rather than encoding visual properties in markup.</dd>
+    <dt>Trade-off</dt>
+    <dd>Slight unfamiliarity for developers used to utility-class frameworks. The readability and maintainability benefits outweigh this learning curve.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Logical Properties Throughout</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>All component CSS uses logical properties (<code>inline-size</code>, <code>margin-block-start</code>, <code>inset-inline-end</code>) instead of physical equivalents.</dd>
+    <dt>Because</dt>
+    <dd>Physical CSS properties (<code>margin-left</code>, <code>width</code>, <code>top</code>) break silently in RTL layouts and non-horizontal writing modes. Logical properties adapt automatically to any writing direction, making components work correctly in English (LTR), Arabic (RTL), and vertical scripts without code changes.</dd>
+    <dt>Trade-off</dt>
+    <dd>Less familiar syntax. Intentional exceptions exist for <code>float: left</code> (limited <code>float: inline-start</code> support), CSS Anchor Positioning (uses physical inset properties), and JS-computed viewport coordinates.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Selective Normalization, Not Reset</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Vanilla Breeze uses targeted normalization rather than a comprehensive CSS reset.</dd>
+    <dt>Because</dt>
+    <dd>Browser defaults are often sensible and reflect user preferences (e.g. font size, link colors). A heavy reset discards those defaults and forces re-declaration of everything. Selective normalization adjusts only what needs adjusting (box-sizing, margin collapse, tap targets), resulting in smaller CSS and better alignment with user settings.</dd>
+    <dt>Trade-off</dt>
+    <dd>Components inherit some browser variation. Acceptable because design tokens override the meaningful values.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Zero Runtime Dependencies</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Vanilla Breeze ships no runtime dependencies. The CSS and JavaScript are self-contained.</dd>
+    <dt>Because</dt>
+    <dd>Every dependency is a supply chain risk, a source of breaking changes, and a chunk of code you don't control. Zero dependencies means no transitive vulnerabilities, no forced upgrades, no package manager required, and a stable artifact that works as long as browsers support standard web APIs.</dd>
+    <dt>Trade-off</dt>
+    <dd>Some functionality that libraries provide for free must be implemented directly. Acceptable given the security, stability, and longevity benefits.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>MIT License</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>The project uses the MIT license.</dd>
+    <dt>Because</dt>
+    <dd>MIT is maximally permissive. Students can use it in coursework. Companies can use it without legal review. Contributors face no licensing friction. This removes barriers to adoption and encourages learning.</dd>
+    <dt>Trade-off</dt>
+    <dd>No copyleft protection. Acceptable because the goal is maximum adoption and educational use.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Pre-upgrade CSS Baseline</h2>
+  <dl>
+    <dt>Decision</dt>
+    <dd>Every web component must include <code>:not(:defined)</code> CSS rules that render content readably before JavaScript upgrades the element.</dd>
+    <dt>Because</dt>
+    <dd>The gap between HTML parsing and custom element upgrade produces a Flash of Undefined Content (FOUC). Without pre-upgrade styles, elements may render as unstyled blocks, shift layout on upgrade, or be invisible. The <code>:not(:defined)</code> selector targets exactly this window.</dd>
+    <dt>Trade-off</dt>
+    <dd>Component authors must maintain two visual states (pre and post upgrade). The spec template and validation command enforce this requirement.</dd>
+  </dl>
+</section>

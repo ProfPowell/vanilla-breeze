@@ -17,6 +17,11 @@ class TabSet extends HTMLElement {
     this.#setup();
     this.#ensureOneOpen();
     this.#initVT();
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   #initVT() {

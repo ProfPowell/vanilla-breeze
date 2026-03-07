@@ -33,9 +33,11 @@ class IncludeFile extends HTMLElement {
     } else {
       this.#load(src);
     }
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#observer?.disconnect();
     this.#abortController?.abort();
   }

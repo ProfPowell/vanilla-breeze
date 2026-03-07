@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Geo Map (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    address {
+      font-style: normal;
+      margin-block-end: 0.75rem;
+    }
+
+    .map-link {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      color: #0066cc;
+    }
+
+    .map-link:hover {
+      background: #f5f5f5;
+    }
+
+    .map-link:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+
+    .coordinates {
+      margin-block-start: 0.5rem;
+      font-size: 0.875rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <geo-map> enhances.
+
+    Without JS the user sees the location as a readable <address>
+    element with a link to view the location on OpenStreetMap.  The
+    address text, coordinates, and external link are fully accessible
+    and functional without any JavaScript.
+
+    When JavaScript loads and the <geo-map> custom element is defined,
+    the upgrade adds:
+
+      1. Tile rendering     - A 3x3 grid of OpenStreetMap tiles is
+                              loaded and centered on the coordinates.
+      2. Marker pin         - An SVG teardrop marker is drawn at the
+                              center point.
+      3. Multiple providers - Support for osm, carto-light, and
+                              carto-dark tile sources.
+      4. Interactive mode   - Click-to-activate drag panning, scroll
+                              zooming, and keyboard navigation.
+      5. Coordinate sources - Resolves lat/lng from attributes, src
+                              references, slotted <address> elements,
+                              JSON-LD, or <meta name="geo.position">.
+      6. Lazy loading       - Tile images use loading="lazy" and
+                              preconnect hints on hover/focus.
+      7. Shadow DOM         - Renders tiles and marker in an
+                              encapsulated shadow root.
+      8. Attribution        - OpenStreetMap copyright link is
+                              automatically included.
+  -->
+
+  <h1>Location</h1>
+
+  <address>
+    Empire State Building<br>
+    20 W 34th St<br>
+    New York, NY 10001
+  </address>
+
+  <a class="map-link"
+     href="https://www.openstreetmap.org/?mlat=40.7484&mlon=-73.9857#map=15/40.7484/-73.9857"
+     target="_blank"
+     rel="noopener noreferrer">
+    View on OpenStreetMap
+  </a>
+
+  <p class="coordinates">
+    Coordinates: 40.7484, -73.9857
+  </p>
+
+</body>
+</html>

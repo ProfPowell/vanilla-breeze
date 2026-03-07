@@ -58,9 +58,11 @@ class ChatInput extends HTMLElement {
     if (this.hasAttribute('autofocus')) {
       requestAnimationFrame(() => this.#textarea.focus());
     }
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     if (this.#textarea) {
       this.#textarea.removeEventListener('keydown', this.#handleKeyDown);
       this.#textarea.removeEventListener('input', this.#handleInput);

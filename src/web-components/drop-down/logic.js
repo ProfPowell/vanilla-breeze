@@ -48,9 +48,11 @@ class DropDown extends HTMLElement {
 
   connectedCallback() {
     this.#setup();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#cleanup();
   }
 

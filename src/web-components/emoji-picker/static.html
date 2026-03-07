@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emoji Picker (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-block-end: 0.25rem;
+    }
+
+    textarea {
+      display: block;
+      inline-size: 100%;
+      min-block-size: 6rem;
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
+
+    textarea:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -1px;
+    }
+
+    .emoji-hint {
+      margin-block-start: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: #555;
+    }
+
+    .emoji-hint p {
+      margin: 0 0 0.5rem;
+    }
+
+    .emoji-hint p:last-child {
+      margin-block-end: 0;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 0.1rem 0.35rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8em;
+      background: #f4f4f5;
+      border: 1px solid #d4d4d8;
+      border-radius: 3px;
+      box-shadow: 0 1px 0 #d4d4d8;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <emoji-picker> enhances.
+
+    Without JS the user can type emoji directly using their operating
+    system's built-in emoji input method.  A helpful note explains how
+    to access the system emoji keyboard.  The textarea accepts all
+    Unicode characters including emoji natively.
+
+    When JavaScript loads and the <emoji-picker> custom element is
+    defined, the upgrade adds:
+
+      1. Visual picker      - A trigger button opens a dropdown panel
+                              with a browsable grid of emoji organized
+                              by categories (Smileys, People, Animals,
+                              Food, Travel, Activities, Objects, Symbols,
+                              Flags).
+      2. Search             - A search input with debounced filtering
+                              matches emoji by name and keywords.
+      3. Category tabs      - Tab buttons scroll to each emoji category
+                              within the grid.
+      4. Keyboard nav       - Full arrow-key grid navigation with
+                              Home/End support and Escape to close.
+      5. Recent emoji       - Recently used emoji are stored in
+                              localStorage and shown at the top.
+      6. Target insertion   - Selected emoji are inserted at the cursor
+                              position in the linked input/textarea/
+                              contenteditable via the for attribute.
+      7. Custom event       - An emoji-picker:select event fires with
+                              shortcode, emoji, name, and keywords.
+  -->
+
+  <h1>Compose Message</h1>
+
+  <label for="msg">Your message</label>
+  <textarea id="msg" placeholder="Type your message here..."></textarea>
+
+  <aside class="emoji-hint">
+    <p>
+      To insert emoji, use your system emoji keyboard:
+    </p>
+    <p>
+      <strong>Windows:</strong> <kbd>Win</kbd> + <kbd>.</kbd><br>
+      <strong>macOS:</strong> <kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>Space</kbd><br>
+      <strong>Linux:</strong> <kbd>Ctrl</kbd> + <kbd>.</kbd> (GNOME) or your input method
+    </p>
+    <p>
+      You can also copy and paste emoji from any source directly into the
+      text field above.
+    </p>
+  </aside>
+
+</body>
+</html>

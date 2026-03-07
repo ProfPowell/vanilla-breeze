@@ -43,6 +43,11 @@ class PrintPage extends HTMLElement {
       toggle.append(this.#checkbox, span);
       this.append(toggle);
     }
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   #print() {

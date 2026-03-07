@@ -79,6 +79,35 @@ h6 {
   scroll-margin-block: 5ex;
 }
 
+/*
+ * Suppress transitions/animations on undefined custom elements.
+ * Prevents unstyled-to-styled transition flicker during upgrade gap.
+ */
+:not(:defined) {
+  transition: none !important;
+  animation: none !important;
+}
+
+/*
+ * Scripting detection
+ *
+ * [data-requires-js]: Hidden entirely when scripting is unavailable.
+ * Use for controls with no meaningful static-HTML equivalent.
+ * Prefer static HTML fallbacks over hiding with this attribute.
+ *
+ * [data-js-enhanced]: Hidden when scripting is unavailable.
+ * Used for JS-driven internal controls within components.
+ */
+@media (scripting: none) {
+  [data-requires-js] {
+    display: none !important;
+  }
+
+  [data-js-enhanced] {
+    display: none;
+  }
+}
+
 /* Touch devices — enforce comfortable target sizes (WCAG 2.5.8) */
 @media (pointer: coarse) {
   button,

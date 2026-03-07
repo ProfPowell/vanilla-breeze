@@ -197,6 +197,7 @@ class GeoMap extends HTMLElement {
         this.render();
         this.loadTiles();
         this.#wireActivation();
+        this.setAttribute('data-upgraded', '');
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -212,6 +213,7 @@ class GeoMap extends HTMLElement {
     }
 
     disconnectedCallback() {
+        this.removeAttribute('data-upgraded');
         if (this.#interaction) {
             this.#interaction.destroy();
             this.#interaction = null;

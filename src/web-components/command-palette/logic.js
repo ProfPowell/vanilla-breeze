@@ -38,9 +38,11 @@ class CommandPalette extends HTMLElement {
     if (this.hasAttribute('data-discover')) {
       this.#listenForRegistryChanges();
     }
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#unbindHotkey?.();
     document.removeEventListener('command-registry-change', this.#handleRegistryChange);
   }

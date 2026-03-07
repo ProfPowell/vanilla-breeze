@@ -22,6 +22,11 @@ class ColorPalette extends HTMLElement {
 
   connectedCallback() {
     this.#render();
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback() {

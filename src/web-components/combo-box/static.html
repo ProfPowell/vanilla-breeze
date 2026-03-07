@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combo-Box — Static Fallback</title>
+</head>
+<body>
+  <!--
+    Static fallback for <combo-box>.
+
+    Upgrade relationship:
+    - Without JS: A native <input> with a <datalist> provides built-in
+      autocomplete. The browser renders a suggestion dropdown as the
+      user types, filtered automatically. The input participates in
+      form submission natively. No ARIA attributes or keyboard handling
+      are needed — the browser manages the combobox pattern entirely.
+    - With JS: <combo-box> replaces the datalist with a custom listbox
+      (role="listbox") using the Popover API for positioning. It adds
+      form association via ElementInternals, aria-expanded,
+      aria-autocomplete="list", aria-activedescendant for active option
+      tracking, configurable filter modes (contains/startsWith),
+      multi-select tag mode (data-multiple) with tag creation/removal,
+      custom entry support (data-allow-custom), and validation via
+      the Constraint Validation API.
+
+    The static form gives users type-ahead autocomplete in every modern
+    browser. The component adds richer filtering, multi-select, and
+    form integration.
+  -->
+
+  <main>
+    <h1>Combo-Box Examples</h1>
+
+    <!-- Single-select autocomplete -->
+    <h2>Country Selector</h2>
+    <form action="/submit" method="post">
+      <p>
+        <label for="country">Country</label>
+        <input type="text" id="country" name="country" list="country-list"
+               placeholder="Search countries..." autocomplete="off" required>
+        <datalist id="country-list">
+          <option value="United States">
+          <option value="United Kingdom">
+          <option value="Canada">
+          <option value="Australia">
+          <option value="Germany">
+          <option value="France">
+          <option value="Japan">
+          <option value="Brazil">
+        </datalist>
+      </p>
+
+      <!-- Multi-select fallback: a standard <select multiple> -->
+      <h2>Topic Tags</h2>
+      <p>
+        <label for="topics">Topics (select multiple)</label>
+        <select id="topics" name="topics" multiple>
+          <option value="js">JavaScript</option>
+          <option value="css">CSS</option>
+          <option value="html">HTML</option>
+          <option value="a11y">Accessibility</option>
+          <option value="perf">Performance</option>
+          <option value="testing">Testing</option>
+        </select>
+      </p>
+
+      <p><button type="submit">Submit</button></p>
+    </form>
+  </main>
+</body>
+</html>

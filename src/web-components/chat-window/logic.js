@@ -41,9 +41,11 @@ class ChatWindow extends HTMLElement {
     this.#resolveExistingLabels();
     this.#updateEmptyState();
     this.#bindEvents();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.removeEventListener('chat-input:send', this.#handleSend);
     if (this.#modelSelect) {
       this.#modelSelect.removeEventListener('change', this.#handleModelChange);

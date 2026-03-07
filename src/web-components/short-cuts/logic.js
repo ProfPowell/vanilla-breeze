@@ -28,9 +28,11 @@ class ShortCuts extends HTMLElement {
         this.#open();
       }
     }));
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#unbindHotkey?.();
   }
 

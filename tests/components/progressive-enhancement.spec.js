@@ -13,7 +13,7 @@ test.describe('Progressive Enhancement', () => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
 
-    await page.goto('/docs/examples/demos/accordion-basic.html');
+    await page.goto('/demos/examples/demos/accordion-basic.html');
     await page.waitForLoadState('domcontentloaded');
 
     // details/summary works natively without JS
@@ -30,7 +30,7 @@ test.describe('Progressive Enhancement', () => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
 
-    await page.goto('/docs/examples/demos/tabs-basic.html');
+    await page.goto('/demos/examples/demos/tabs-basic.html');
     await page.waitForLoadState('domcontentloaded');
 
     // Without JS, tab-set falls back to details/summary
@@ -49,7 +49,7 @@ test.describe('Progressive Enhancement', () => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
 
-    await page.goto('/docs/examples/demos/accordion-basic.html');
+    await page.goto('/demos/examples/demos/accordion-basic.html');
     await page.waitForLoadState('domcontentloaded');
 
     // Summary text should be visible

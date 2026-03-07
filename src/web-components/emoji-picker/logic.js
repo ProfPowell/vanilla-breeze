@@ -51,9 +51,11 @@ class EmojiPicker extends HTMLElement {
   async connectedCallback() {
     this.#emojiData = await loadEmojiModule();
     this.#setup();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#cleanup();
   }
 

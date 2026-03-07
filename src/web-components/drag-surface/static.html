@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drag Surface (Static Fallback)</title>
+  <style>
+    /*
+     * Static fallback for <drag-surface>.
+     *
+     * Upgrade relationship:
+     * When JavaScript loads and the <drag-surface> custom element is defined,
+     * it sets role="list" on the container and role="listitem" on draggable
+     * children. It enables native HTML drag-and-drop reordering plus full
+     * keyboard support: Space/Enter to grab/drop an item, arrow keys to move
+     * it within the list, perpendicular arrows to transfer between grouped
+     * surfaces, and Escape to cancel. A live region announces position
+     * changes to screen readers. Cross-surface transfer is supported via
+     * shared data-group attributes.
+     *
+     * Without JS, this static page shows the items in a plain ordered list.
+     * The content order is visible and all items are keyboard-accessible.
+     */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem;
+      color: #1a1a1a;
+      background: #f8f8f8;
+    }
+
+    h1 {
+      margin-block-end: 1rem;
+    }
+
+    .drag-static {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-width: 30rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .drag-static li {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .drag-static li::before {
+      content: counter(list-item) ".";
+      counter-increment: list-item;
+      font-weight: 600;
+      color: #666;
+      min-width: 1.5em;
+    }
+
+    .drag-static {
+      counter-reset: list-item;
+    }
+  </style>
+</head>
+<body>
+  <h1>Drag Surface</h1>
+  <p>Items are shown in their current order. With JavaScript enabled, items can be reordered by dragging or by using the keyboard (Space to grab, arrows to move, Enter to drop).</p>
+
+  <ol class="drag-static" aria-label="Reorderable items">
+    <li>Design mockups</li>
+    <li>Write content</li>
+    <li>Build prototype</li>
+    <li>Run user testing</li>
+    <li>Ship to production</li>
+  </ol>
+</body>
+</html>

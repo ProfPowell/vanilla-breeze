@@ -51,9 +51,11 @@ class SiteSearch extends HTMLElement {
   connectedCallback() {
     this.#render();
     this.#bindEvents();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#unbindHotkey?.();
     document.removeEventListener('keydown', this.#handleEscape);
     this.#clearDebounce();

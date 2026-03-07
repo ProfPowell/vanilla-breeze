@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Window (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      padding: 0.75rem 1rem;
+      border-block-end: 1px solid #eee;
+    }
+
+    li:last-child {
+      border-block-end: none;
+    }
+
+    .from {
+      font-weight: 600;
+      margin-inline-end: 0.5rem;
+    }
+
+    .from[data-role="agent"] {
+      color: #0066cc;
+    }
+
+    .thread {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      max-block-size: 24rem;
+      overflow-y: auto;
+      margin-block-end: 1rem;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      resize: vertical;
+      min-block-size: 2.5rem;
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    textarea:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -1px;
+    }
+
+    button[type="submit"] {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #0066cc;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #0055aa;
+    }
+
+    button[type="submit"]:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <chat-window> enhances.
+
+    Without JS the page shows server-rendered chat messages in a
+    semantic ordered list and a standard <form> for submitting new
+    messages via a full page POST.  The conversation is readable,
+    navigable, and submittable with no JavaScript.
+
+    When JavaScript loads and the <chat-window> custom element is
+    defined, the upgrade adds:
+
+      1. Live messaging     - Messages are sent via fetch() and appended
+                              to the thread without page reloads.
+      2. Typing indicators  - A "typing" state is shown while waiting
+                              for an API response.
+      3. Participant labels - data-from attributes are resolved to
+                              human-readable names from a JSON config.
+      4. Model selection    - An optional <select> syncs the active AI
+                              model with the data-model attribute.
+      5. Empty state        - An automatic placeholder message when no
+                              messages exist in the thread.
+      6. Auto-scroll        - The thread scrolls to the bottom when new
+                              messages arrive.
+      7. Orchestration      - Coordinates <chat-input> and <chat-thread>
+                              child components into a single send-cycle.
+  -->
+
+  <h1>AI Chat</h1>
+
+  <section class="thread" role="log" aria-label="Chat messages">
+    <ol>
+      <li>
+        <span class="from">You:</span>
+        <p>What is progressive enhancement?</p>
+      </li>
+      <li>
+        <span class="from" data-role="agent">Assistant:</span>
+        <p>
+          Progressive enhancement is a design philosophy that starts with a
+          baseline of functional HTML, then layers on CSS and JavaScript to
+          improve the experience for browsers that support them.
+        </p>
+      </li>
+      <li>
+        <span class="from">You:</span>
+        <p>Can you give me an example?</p>
+      </li>
+      <li>
+        <span class="from" data-role="agent">Assistant:</span>
+        <p>
+          Sure! A chat interface like this one: without JS you get a plain
+          message list with a form. With JS you get live messaging, typing
+          indicators, and auto-scroll.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <form action="/api/chat" method="post">
+    <label>
+      <span class="sr-only">Message</span>
+      <textarea
+        name="message"
+        rows="2"
+        placeholder="Type your message..."
+        required
+      ></textarea>
+    </label>
+    <button type="submit">Send</button>
+  </form>
+
+</body>
+</html>

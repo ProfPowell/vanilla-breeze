@@ -94,9 +94,11 @@ class SplitSurface extends HTMLElement {
     if (this.hasAttribute('data-collapsible')) {
       this.#divider.addEventListener('dblclick', this.#onDblClick);
     }
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     if (this.#divider) {
       this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
       this.#divider.removeEventListener('keydown', this.#onKeyDown);

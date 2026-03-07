@@ -39,9 +39,11 @@ class PageToc extends HTMLElement {
   connectedCallback() {
     // Delay to ensure headings are processed by heading-links
     requestAnimationFrame(() => this.#setup());
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#cleanup();
   }
 

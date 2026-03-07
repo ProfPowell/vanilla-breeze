@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toast-Msg — Static Fallback</title>
+</head>
+<body>
+  <!--
+    Static fallback for <toast-msg>.
+
+    Upgrade relationship:
+    - Without JS: Status messages are rendered inline within the page
+      flow, using a container with role="status" and aria-live="polite"
+      so screen readers announce updates. Messages are always visible
+      rather than appearing and auto-dismissing. This is appropriate
+      because without JS there is no mechanism to show/dismiss toasts
+      dynamically.
+    - With JS: <toast-msg> becomes a fixed-position notification
+      container. Toasts are created programmatically via .show(),
+      appear with enter/exit animations, auto-dismiss after a
+      configurable duration, support dismiss buttons, action buttons,
+      variant styling (info/success/warning/error), and a queue system
+      that limits the maximum number of visible toasts.
+
+    The static form ensures status information is visible and announced
+    to assistive technology. The component adds transient, non-blocking
+    notification UX.
+  -->
+
+  <main>
+    <h1>Toast-Msg Examples</h1>
+
+    <!-- Inline status message area (replaces floating toasts) -->
+    <h2>Status Messages</h2>
+
+    <section role="status" aria-live="polite">
+      <p>
+        <strong>Success:</strong> File saved successfully.
+      </p>
+    </section>
+
+    <section role="status" aria-live="polite">
+      <p>
+        <strong>Warning:</strong> Your session will expire in 5 minutes.
+      </p>
+    </section>
+
+    <section role="alert">
+      <p>
+        <strong>Error:</strong> Unable to connect to the server.
+        <a href="/retry">Try again</a>.
+      </p>
+    </section>
+
+    <!-- Form submission feedback example -->
+    <h2>Form with Inline Feedback</h2>
+    <form action="/save" method="post">
+      <p>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+      </p>
+      <p>
+        <button type="submit">Save</button>
+      </p>
+      <!-- Without JS, the server response page provides the feedback -->
+    </form>
+  </main>
+</body>
+</html>

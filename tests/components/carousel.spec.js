@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/carousel-basic.html';
+const demoPage = '/demos/examples/demos/carousel-basic.html';
 
 test.describe('carousel-wc', () => {
 
@@ -15,7 +15,7 @@ test.describe('carousel-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const carousel = page.locator('carousel-wc');
+    const carousel = page.locator('carousel-wc').first();
     await expect(carousel).toBeVisible();
   });
 
@@ -24,7 +24,7 @@ test.describe('carousel-wc', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for prev/next buttons
-    const buttons = page.locator('carousel-wc button');
+    const buttons = page.locator('carousel-wc').first().locator('button');
     const count = await buttons.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -33,11 +33,10 @@ test.describe('carousel-wc', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const carousel = page.locator('carousel-wc');
-    await carousel.focus();
-
-    // Should be focusable
-    await expect(carousel).toBeFocused();
+    // Focus goes to the internal track element (tabindex="0"), not the outer element
+    const track = page.locator('carousel-wc').first().locator('.carousel-track');
+    await track.focus();
+    await expect(track).toBeFocused();
   });
 
 });

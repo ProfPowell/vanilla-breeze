@@ -43,9 +43,11 @@ class DragSurface extends HTMLElement {
     this.#setupDragListeners();
     this.#setupKeyboardListeners();
     this.#ensureChildRoles();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     // Clean up static reference if this surface owns the active drag
     if (DragSurface.#activeDrag?.source === this) {
       DragSurface.#activeDrag = null;

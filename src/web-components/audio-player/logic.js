@@ -87,9 +87,11 @@ class AudioPlayerElement extends HTMLElement {
       }
     }
     window.addEventListener('theme-change', this.#onThemeChange)
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     // Restore native controls if component is removed
     if (this.#audio) {
       this.#audio.setAttribute('controls', '')

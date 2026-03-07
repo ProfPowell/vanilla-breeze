@@ -1,0 +1,115 @@
+---
+layout: layouts/docs.njk
+title: "Resilience Matrix"
+description: "Component-by-component assessment of defensive design across six dimensions: No-JS, No-CSS, Upgrade Gap, Keyboard, Screen Reader, and RTL."
+currentSection: docs
+currentPath: /docs/concepts/resilience-matrix/
+permalink: /docs/concepts/resilience-matrix/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Resilience Matrix</span></li>
+  </ol>
+</nav>
+
+<h1>Resilience Matrix</h1>
+<p class="lead">Every Vanilla Breeze component is assessed across six defensive design dimensions. This matrix makes the framework's progressive enhancement posture visible and verifiable.</p>
+
+<section>
+  <h2>Scope</h2>
+  <p>This matrix covers <strong>web components</strong> only &mdash; elements with a JavaScript upgrade lifecycle (<code>connectedCallback</code>, custom element registration). These are the elements where resilience requires deliberate engineering.</p>
+  <p><a href="/docs/elements/">Native HTML elements</a> and <a href="/docs/elements/#custom-elements">lightweight custom elements</a> (like <code>&lt;layout-stack&gt;</code> or <code>&lt;form-field&gt;</code>) are not listed here. Native elements get their resilience from the browser platform itself. Custom elements are CSS-only &mdash; they have no JS, no upgrade gap, and no failure modes beyond what the browser provides natively.</p>
+</section>
+
+<section>
+  <h2>Legend</h2>
+  <dl>
+    <dt>Full</dt>
+    <dd>Fully supported and tested</dd>
+    <dt>Partial</dt>
+    <dd>Partially supported &mdash; see component notes below</dd>
+    <dt>None</dt>
+    <dd>Not supported &mdash; known limitation, by design</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Component Matrix</h2>
+
+  <data-table>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          {% for dim in resilience.dimensions %}
+          <th>
+            <tool-tip>
+              {{ dim.label }}
+              <span role="tooltip">{{ dim.description }}</span>
+            </tool-tip>
+          </th>
+          {% endfor %}
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for comp in resilience.components %}
+        {% set hasNote = false %}
+        {% for dim in resilience.dimensions %}
+          {% set status = comp[dim.key] %}
+          {% if status == "partial" or status == "none" %}
+            {% set hasNote = true %}
+          {% endif %}
+        {% endfor %}
+        <tr>
+          <td><code>&lt;{{ comp.name }}&gt;</code></td>
+          {% for dim in resilience.dimensions %}
+          {% set status = comp[dim.key] %}
+          <td data-status="{{ status }}">
+            {% if status == "full" %}Full
+            {% elif status == "partial" %}Partial
+            {% elif status == "none" %}None{% endif %}
+          </td>
+          {% endfor %}
+          <td>{% if hasNote %}<a href="#note-{{ comp.name }}">{{ comp.notes | e | truncate(50) }}</a>{% else %}&mdash;{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </data-table>
+</section>
+
+<section>
+  <h2>Dimensions</h2>
+
+  <dl>
+    {% for dim in resilience.dimensions %}
+    <dt>{{ dim.label }}</dt>
+    <dd>{{ dim.description }}</dd>
+    {% endfor %}
+  </dl>
+</section>
+
+<section>
+  <h2>Component Notes</h2>
+  <p>Detailed notes for components with <strong>Partial</strong> or <strong>None</strong> ratings.</p>
+
+  <dl>
+    {% for comp in resilience.components %}
+    {% set hasNote = false %}
+    {% for dim in resilience.dimensions %}
+      {% set status = comp[dim.key] %}
+      {% if status == "partial" or status == "none" %}
+        {% set hasNote = true %}
+      {% endif %}
+    {% endfor %}
+    {% if hasNote %}
+    <dt id="note-{{ comp.name }}"><code>&lt;{{ comp.name }}&gt;</code></dt>
+    <dd>{{ comp.notes | e }}</dd>
+    {% endif %}
+    {% endfor %}
+  </dl>
+</section>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Site Search (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="search"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    input[type="search"]:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -1px;
+    }
+
+    button[type="submit"] {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #0066cc;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #0055aa;
+    }
+
+    button[type="submit"]:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+
+    .hint {
+      display: block;
+      margin-block-start: 0.5rem;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 0.1rem 0.35rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8em;
+      background: #f4f4f5;
+      border: 1px solid #d4d4d8;
+      border-radius: 3px;
+      box-shadow: 0 1px 0 #d4d4d8;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <site-search> enhances.
+
+    Without JS the user has a standard <form> with a search input that
+    submits to a server-side search endpoint.  The form uses GET so the
+    query appears in the URL and results are returned as a full page.
+    This works with any search backend or even a static site generator's
+    server-side search.
+
+    When JavaScript loads and the <site-search> custom element is
+    defined, the upgrade adds:
+
+      1. Client-side search - Integrates with Pagefind for instant
+                              client-side full-text search.
+      2. Dialog overlay     - A modal dialog with backdrop replaces the
+                              inline form for a focused search experience.
+      3. Keyboard shortcut  - Cmd/Ctrl+K opens the search dialog from
+                              anywhere on the page.
+      4. Live results       - Results appear as you type with debounced
+                              input (150ms).
+      5. Keyboard nav       - Arrow keys navigate results, Enter selects,
+                              Escape closes.
+      6. Result excerpts    - Matched text is highlighted in context
+                              excerpts from Pagefind.
+      7. Body scroll lock   - Page scrolling is disabled while the search
+                              dialog is open.
+  -->
+
+  <h1>Search</h1>
+
+  <form action="/search" method="get" role="search">
+    <label for="q" class="sr-only">Search the site</label>
+    <input
+      type="search"
+      id="q"
+      name="q"
+      placeholder="Search documentation..."
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    >
+    <button type="submit">Search</button>
+  </form>
+
+  <p class="hint">
+    Tip: Press <kbd>Ctrl</kbd> + <kbd>K</kbd> to open search when
+    JavaScript is available.
+  </p>
+
+</body>
+</html>

@@ -127,6 +127,11 @@ class CardList extends HTMLElement {
     if (src) {
       this.#fetchData(src);
     }
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

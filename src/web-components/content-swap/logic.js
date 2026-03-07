@@ -135,6 +135,11 @@ function moveFocus(face) {
 class ContentSwap extends HTMLElement {
   connectedCallback() {
     initSwapBehavior(this);
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   /** Swap to show the back face */

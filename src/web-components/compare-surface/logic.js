@@ -39,9 +39,11 @@ class CompareSurface extends HTMLElement {
     // Pointer events on divider
     this.#divider.addEventListener('pointerdown', this.#onPointerDown);
     this.#divider.addEventListener('keydown', this.#onKeyDown);
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     if (this.#divider) {
       this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
       this.#divider.removeEventListener('keydown', this.#onKeyDown);

@@ -260,12 +260,14 @@ class IconWc extends HTMLElement {
             }
         };
         window.addEventListener('theme-change', this._onThemeChange);
+        this.setAttribute('data-upgraded', '');
     }
 
     /**
      * @description Lifecycle callback when element is removed from DOM
      */
     disconnectedCallback() {
+        this.removeAttribute('data-upgraded');
         IconWc.#instances.delete(this);
         if (this._onThemeChange) {
             window.removeEventListener('theme-change', this._onThemeChange);

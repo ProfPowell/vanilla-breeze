@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/tabs-basic.html';
+const demoPage = '/demos/examples/demos/tabs-basic.html';
 
 test.describe('tab-set', () => {
 

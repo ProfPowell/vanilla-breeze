@@ -31,6 +31,11 @@ class QrCodeWc extends HTMLElement {
     this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
 
     this.#render(value, size, ecl);
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   static get observedAttributes() {

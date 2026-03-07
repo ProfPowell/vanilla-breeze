@@ -30,6 +30,11 @@ class ToastMsg extends HTMLElement {
     this.setAttribute('role', 'region');
     this.setAttribute('aria-label', 'Notifications');
     this.setAttribute('aria-live', 'polite');
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   /**

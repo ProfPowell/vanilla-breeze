@@ -168,9 +168,11 @@ class ThemePicker extends HTMLElement {
 
     // Apply accessibility themes on load
     this.#applyA11yThemes();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     window.removeEventListener('theme-change', this.#handleThemeChange);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);

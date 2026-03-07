@@ -37,6 +37,11 @@ class AccordionWc extends HTMLElement {
 
     this.#setup();
     this.#initVT();
+    this.setAttribute('data-upgraded', '');
+  }
+
+  disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
   }
 
   #initVT() {

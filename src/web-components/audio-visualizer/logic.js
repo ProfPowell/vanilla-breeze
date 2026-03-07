@@ -81,9 +81,11 @@ class AudioVisualizerElement extends HTMLElement {
       }
     }
     window.addEventListener('theme-change', this.#onThemeChange)
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#stopAnimation()
     this.#observer?.disconnect()
     if (this.#onThemeChange) {

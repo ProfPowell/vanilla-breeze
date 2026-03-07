@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Split Surface (Static Fallback)</title>
+  <style>
+    /*
+     * Static fallback for <split-surface>.
+     *
+     * Upgrade relationship:
+     * When JavaScript loads and the <split-surface> custom element is defined,
+     * it inserts a draggable divider (role="separator") between the two child
+     * panels. Users can drag the divider or use keyboard arrows (with Shift
+     * for 10% steps, Home/End for min/max) to resize the panels. Supports
+     * horizontal and vertical orientations, position persistence via
+     * localStorage, and collapsible panels via double-click.
+     *
+     * Without JS, this static page stacks both panels vertically so all
+     * content in both panels remains visible and accessible.
+     */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem;
+      color: #1a1a1a;
+      background: #f8f8f8;
+    }
+
+    h1 {
+      margin-block-end: 1rem;
+    }
+
+    .split-static {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 48rem;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      min-height: 10rem;
+    }
+
+    .panel h2 {
+      margin-block-start: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Split Surface</h1>
+  <p>Both panels are shown stacked. With JavaScript enabled, a draggable divider lets users resize the panels side by side.</p>
+
+  <div class="split-static">
+    <nav class="panel" aria-label="Sidebar navigation">
+      <h2>Sidebar</h2>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#details">Details</a></li>
+        <li><a href="#settings">Settings</a></li>
+      </ul>
+    </nav>
+
+    <main class="panel">
+      <h2>Content</h2>
+      <p>This is the main content area. In the enhanced version, users can drag the divider between this panel and the sidebar to adjust their relative widths.</p>
+      <p>The split position can be persisted across sessions and the first panel can be collapsed by double-clicking the divider.</p>
+    </main>
+  </div>
+</body>
+</html>

@@ -75,9 +75,11 @@ class DataTable extends HTMLElement {
     if (!this.#tbody) return;
 
     this.#setup();
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#cleanup();
   }
 

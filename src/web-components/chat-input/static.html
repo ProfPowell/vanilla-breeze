@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Input (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      resize: vertical;
+      min-block-size: 2.5rem;
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    textarea:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: -1px;
+    }
+
+    button[type="submit"] {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #0066cc;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #0055aa;
+    }
+
+    button[type="submit"]:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <chat-input> enhances.
+
+    Without JS the user has a standard <form> with a <textarea> and submit
+    button.  The form can POST to a server endpoint for full round-trip
+    message submission.
+
+    When JavaScript loads and the <chat-input> custom element is defined,
+    these same elements are wrapped inside the custom element.  The upgrade
+    adds:
+
+      1. Form association  - The element participates in its parent <form>
+                             via ElementInternals (setFormValue, setValidity).
+      2. Enter to send     - Pressing Enter submits the message without a
+                             full page reload; Shift+Enter inserts a newline.
+      3. Escape to clear   - Pressing Escape clears the textarea.
+      4. Auto-grow         - The textarea auto-resizes via data-grow as the
+                             user types, up to data-max-rows.
+      5. Debounced input   - A custom 'chat-input:input' event fires on
+                             typing for live character counts or previews.
+      6. Validation        - Client-side maxlength validation via
+                             ElementInternals.
+      7. Disabled state    - The disabled attribute propagates to both the
+                             textarea and the send button.
+  -->
+
+  <h1>Send a Message</h1>
+
+  <form action="/api/chat" method="post">
+    <label>
+      <span class="sr-only">Message</span>
+      <textarea
+        name="message"
+        rows="2"
+        maxlength="4000"
+        placeholder="Type your message..."
+        required
+      ></textarea>
+    </label>
+    <button type="submit">Send</button>
+  </form>
+
+</body>
+</html>

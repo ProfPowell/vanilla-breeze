@@ -67,9 +67,11 @@ class SlideAccept extends HTMLElement {
     this.#handle.addEventListener('pointerdown', this.#onPointerDown);
     this.#handle.addEventListener('keydown', this.#onKeyDown);
     this.#handle.addEventListener('transitionend', this.#onTransitionEnd);
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     if (this.#handle) {
       this.#handle.removeEventListener('pointerdown', this.#onPointerDown);
       this.#handle.removeEventListener('keydown', this.#onKeyDown);

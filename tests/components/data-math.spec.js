@@ -6,7 +6,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/data-math-basic.html';
+const demoPage = '/demos/examples/demos/data-math-basic.html';
 
 test.describe('data-math', () => {
   test('moves source id to rendered wrapper for hash-link targeting', async ({ page }) => {

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Icon (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    nav li {
+      padding: 0.25rem 0;
+    }
+
+    nav a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    nav a:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-block-start: 1.5rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-block: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <icon-wc> enhances.
+
+    Without JS, icons are absent because they are purely decorative
+    visual enhancements.  All meaning is conveyed through text labels
+    on buttons, links, and headings.  No information is lost.
+
+    Decorative icons (the majority) use aria-hidden="true" even when
+    enhanced, meaning they add no semantic content.  Functional icons
+    that carry meaning use the label attribute, which sets
+    role="img" and aria-label on the SVG — but the same information
+    should always also be present as visible text or an aria-label
+    on the parent element.
+
+    When JavaScript loads and the <icon-wc> custom element is defined,
+    the upgrade adds:
+
+      1. SVG loading        - Fetches SVG files from /src/icons/{set}/
+                              and injects them into a shadow DOM slot.
+      2. Icon sets          - Supports multiple icon sets (lucide,
+                              custom) with a global default via
+                              data-icon-set on <html>.
+      3. Size variants      - xs, sm, md, lg, xl, 2xl sizing via the
+                              size attribute.
+      4. Caching            - A Map-based cache prevents duplicate
+                              fetches of the same icon.
+      5. Fallback chain     - If a set's icon is missing, falls back
+                              to the lucide set.
+      6. Accessibility      - Icons with a label attribute get
+                              role="img" and aria-label; all others
+                              get aria-hidden="true".
+      7. Theme reactivity   - Forces SVG repaint on theme-change
+                              events to re-resolve currentColor.
+  -->
+
+  <h1>Navigation</h1>
+
+  <nav aria-label="Main navigation">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/docs">Documentation</a></li>
+      <li><a href="/settings">Settings</a></li>
+      <li><a href="/search">Search</a></li>
+    </ul>
+  </nav>
+
+  <h2>Actions</h2>
+
+  <div class="actions">
+    <button type="button">Edit</button>
+    <button type="button">Download</button>
+    <button type="button">Share</button>
+    <button type="button">Delete</button>
+  </div>
+
+  <h2>Toolbar</h2>
+
+  <div class="toolbar" role="toolbar" aria-label="Text formatting">
+    <button type="button" aria-label="Bold">B</button>
+    <button type="button" aria-label="Italic">I</button>
+    <button type="button" aria-label="Underline">U</button>
+    <button type="button" aria-label="Link">Link</button>
+  </div>
+
+</body>
+</html>

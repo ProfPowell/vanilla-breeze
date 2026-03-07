@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/docs/examples/demos/dropdown-basic.html';
+const demoPage = '/demos/examples/demos/dropdown-basic.html';
 
 test.describe('drop-down', () => {
 

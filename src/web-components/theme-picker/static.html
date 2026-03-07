@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theme Picker (Static Fallback)</title>
+  <style>
+    /*
+      Minimal styling so the file is self-contained.
+      A production page would load the project stylesheet instead.
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 30rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-block-end: 1rem;
+    }
+
+    legend {
+      font-weight: 600;
+      padding-inline: 0.25rem;
+    }
+
+    label {
+      display: block;
+      padding: 0.25rem 0;
+      cursor: pointer;
+    }
+
+    select {
+      display: block;
+      inline-size: 100%;
+      padding: 0.5rem;
+      font: inherit;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-block-start: 0.25rem;
+    }
+
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 1px;
+    }
+
+    button[type="submit"] {
+      padding: 0.5rem 1.5rem;
+      font: inherit;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #0066cc;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #0055aa;
+    }
+
+    button[type="submit"]:focus-visible {
+      outline: 2px solid #0066cc;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <theme-picker> enhances.
+
+    Without JS the user has a standard <form> with a <select> dropdown
+    for choosing a theme.  The form can submit to a server endpoint that
+    sets a cookie or session preference, enabling server-side theme
+    rendering on subsequent page loads.
+
+    When JavaScript loads and the <theme-picker> custom element is
+    defined, the upgrade adds:
+
+      1. Instant preview    - Theme changes apply immediately via
+                              ThemeManager without a page reload.
+      2. localStorage       - Preferences persist client-side across
+                              sessions.
+      3. Color mode radios  - Auto / Light / Dark mode selection with
+                              system preference detection (prefers-color-scheme).
+      4. Swatch grid        - A visual grid of color/brand theme swatches
+                              replaces the flat <select>.
+      5. Fluid sizing       - Toggle and density controls for fluid
+                              viewport-responsive scaling.
+      6. Accessibility      - Composable a11y theme toggles for high
+                              contrast, large text, and dyslexia-friendly
+                              typography.
+      7. Extensions         - Motion effects and sound effects toggles.
+      8. Popover UI         - A trigger button opens a positioned panel
+                              with auto-dismiss, Escape to close, and
+                              click-outside dismissal.
+  -->
+
+  <h1>Theme Settings</h1>
+
+  <form action="/settings/theme" method="post">
+    <fieldset>
+      <legend>Color Mode</legend>
+      <label><input type="radio" name="mode" value="auto" checked> Auto (system)</label>
+      <label><input type="radio" name="mode" value="light"> Light</label>
+      <label><input type="radio" name="mode" value="dark"> Dark</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme</legend>
+      <label for="theme-select">Choose a theme</label>
+      <select id="theme-select" name="theme">
+        <optgroup label="Base">
+          <option value="default" selected>Default</option>
+        </optgroup>
+        <optgroup label="Color Accents">
+          <option value="ocean">Ocean</option>
+          <option value="forest">Forest</option>
+          <option value="sunset">Sunset</option>
+          <option value="rose">Rose</option>
+          <option value="lavender">Lavender</option>
+        </optgroup>
+        <optgroup label="Personality">
+          <option value="modern">Modern</option>
+          <option value="minimal">Minimal</option>
+          <option value="classic">Classic</option>
+        </optgroup>
+        <optgroup label="Extreme">
+          <option value="swiss">Swiss</option>
+          <option value="brutalist">Brutalist</option>
+          <option value="cyber">Cyber</option>
+          <option value="terminal">Terminal</option>
+          <option value="nord">Nord</option>
+          <option value="dracula">Dracula</option>
+          <option value="solarized">Solarized</option>
+        </optgroup>
+      </select>
+    </fieldset>
+
+    <button type="submit">Apply Theme</button>
+  </form>
+
+</body>
+</html>
