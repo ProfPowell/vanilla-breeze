@@ -53,6 +53,7 @@ class AudioVisualizerElement extends HTMLElement {
   #visible = true
   #started = false
   #reducedMotion = false
+  #onThemeChange = null
 
   // ─── Observed attributes ───────────────────────────────────────────────
 
@@ -69,11 +70,25 @@ class AudioVisualizerElement extends HTMLElement {
     this.#findAudio()
     this.#setupIntersectionObserver()
     this.#watchMotionPreference()
+
+    // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
+    this.#onThemeChange = () => {
+      const canvas = this.shadowRoot?.querySelector('canvas')
+      if (canvas) {
+        canvas.style.display = 'none'
+        canvas.offsetHeight
+        canvas.style.display = ''
+      }
+    }
+    window.addEventListener('theme-change', this.#onThemeChange)
   }
 
   disconnectedCallback() {
     this.#stopAnimation()
     this.#observer?.disconnect()
+    if (this.#onThemeChange) {
+      window.removeEventListener('theme-change', this.#onThemeChange)
+    }
   }
 
   attributeChangedCallback(name) {
@@ -89,7 +104,7 @@ class AudioVisualizerElement extends HTMLElement {
         :host {
           display: block;
           --_color: var(--audio-visualizer-color, var(--color-primary, oklch(55% 0.2 260)));
-          --_bg: var(--audio-visualizer-bg, transparent);
+          --_bg: var(--audio-visualizer-bg, var(--color-surface-sunken, transparent));
           --_height: var(--audio-visualizer-height, 80px);
           --_radius: var(--audio-visualizer-radius, var(--radius-m, 0.5rem));
         }
@@ -176,11 +191,11 @@ class AudioVisualizerElement extends HTMLElement {
 
     const style = getComputedStyle(this)
     const color = style.getPropertyValue('--_color').trim() || 'oklch(55% 0.2 260)'
-    const bg = style.getPropertyValue('--_bg').trim() || 'transparent'
+    const bg = style.getPropertyValue('--_bg').trim()
 
-    // Clear
+    // Clear and fill background
     ctx.clearRect(0, 0, W, H)
-    if (bg !== 'transparent') {
+    if (bg && bg !== 'transparent') {
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, W, H)
     }

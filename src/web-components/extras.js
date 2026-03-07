@@ -7,6 +7,8 @@
  */
 
 // Niche/heavy components
+import './audio-player/logic.js';
+import './audio-visualizer/logic.js';
 import './geo-map/logic.js';
 import './emoji-picker/logic.js';
 import './drag-surface/logic.js';
@@ -21,9 +23,9 @@ import './type-specimen/logic.js';
 
 // Specialty utility inits
 import '../utils/command-init.js';
-import '../utils/glitch-init.js';
-import '../utils/blur-reveal-init.js';
-import '../utils/typewriter-init.js';
-import '../utils/scramble-init.js';
-import '../utils/animate-image-init.js';
+import '../effects/glitch.js';
+import '../effects/blur-reveal.js';
+import '../effects/typewriter.js';
+import '../effects/scramble.js';
+import '../effects/animate-image.js';
 import '../utils/emoji-init.js';

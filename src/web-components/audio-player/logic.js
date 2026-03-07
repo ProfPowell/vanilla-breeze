@@ -54,6 +54,7 @@ class AudioPlayerElement extends HTMLElement {
   #currentTimeEl = null
   #durationEl = null
   #trackTitleEl = null
+  #onThemeChange = null
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -75,12 +76,26 @@ class AudioPlayerElement extends HTMLElement {
     if (this.hasAttribute('data-autoplay')) {
       this.#audio.play().catch(() => {})
     }
+
+    // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
+    this.#onThemeChange = () => {
+      const player = this.shadowRoot?.querySelector('.player')
+      if (player) {
+        player.style.display = 'none'
+        player.offsetHeight
+        player.style.display = ''
+      }
+    }
+    window.addEventListener('theme-change', this.#onThemeChange)
   }
 
   disconnectedCallback() {
     // Restore native controls if component is removed
     if (this.#audio) {
       this.#audio.setAttribute('controls', '')
+    }
+    if (this.#onThemeChange) {
+      window.removeEventListener('theme-change', this.#onThemeChange)
     }
   }
 
@@ -153,12 +168,18 @@ class AudioPlayerElement extends HTMLElement {
         --_accent: var(--audio-player-accent, var(--color-primary, oklch(55% 0.2 260)));
         --_bg: var(--audio-player-bg, var(--color-surface, #fff));
         --_radius: var(--audio-player-radius, var(--radius-m, 0.5rem));
+        --_text: var(--audio-player-text, var(--color-text, inherit));
+        --_border: var(--audio-player-border, var(--color-border, #ddd));
+        --_shadow: var(--audio-player-shadow, none);
+        --_padding: var(--audio-player-padding, var(--size-xs, 0.5rem) var(--size-s, 0.75rem));
       }
 
       .player {
         background: var(--_bg);
-        border: 1px solid var(--color-border, #ddd);
+        color: var(--_text);
+        border: var(--border-width-thin, 1px) solid var(--_border);
         border-radius: var(--_radius);
+        box-shadow: var(--_shadow);
         overflow: hidden;
       }
 
@@ -166,7 +187,7 @@ class AudioPlayerElement extends HTMLElement {
         display: flex;
         align-items: center;
         gap: var(--size-xs, 0.5rem);
-        padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+        padding: var(--_padding);
       }
 
       /* ── Play button ──────────────────────────── */
@@ -177,18 +198,26 @@ class AudioPlayerElement extends HTMLElement {
         justify-content: center;
         width: 2.25rem;
         height: 2.25rem;
-        border-radius: 50%;
+        border-radius: var(--radius-full, 50%);
         background: var(--_accent);
-        color: white;
+        color: var(--color-text-on-primary, white);
         cursor: pointer;
         flex-shrink: 0;
-        transition: opacity 150ms;
+        transition: background-color var(--duration-fast, 100ms) var(--ease-default, ease),
+                    transform var(--duration-fast, 100ms) var(--ease-default, ease);
       }
 
-      .play-btn:hover { opacity: 0.85; }
+      .play-btn:hover {
+        background-color: var(--color-primary-hover, var(--_accent));
+        transform: scale(1.05);
+      }
+
+      .play-btn:active {
+        transform: scale(0.97);
+      }
 
       .play-btn:focus-visible {
-        outline: 2px solid var(--_accent);
+        outline: var(--focus-ring-width, 2px) solid var(--color-focus-ring, var(--_accent));
         outline-offset: 2px;
       }
 
@@ -202,7 +231,7 @@ class AudioPlayerElement extends HTMLElement {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: var(--size-3xs, 2px);
       }
 
       .track-info {
@@ -224,6 +253,7 @@ class AudioPlayerElement extends HTMLElement {
 
       .time-display {
         flex-shrink: 0;
+        font-family: var(--font-mono, ui-monospace, monospace);
         font-variant-numeric: tabular-nums;
         color: var(--color-text-muted, #666);
       }
@@ -245,8 +275,9 @@ class AudioPlayerElement extends HTMLElement {
         height: 4px;
         background: var(--_accent);
         pointer-events: none;
-        border-radius: 2px;
+        border-radius: var(--radius-full, 2px);
         width: 0%;
+        transition: width var(--duration-instant, 50ms) linear;
       }
 
       .timeline {
@@ -261,49 +292,60 @@ class AudioPlayerElement extends HTMLElement {
 
       .timeline::-webkit-slider-runnable-track {
         height: 4px;
-        background: var(--color-border, #ddd);
-        border-radius: 2px;
+        background: var(--_border);
+        border-radius: var(--radius-full, 2px);
       }
 
       .timeline::-moz-range-track {
         height: 4px;
-        background: var(--color-border, #ddd);
-        border-radius: 2px;
+        background: var(--_border);
+        border-radius: var(--radius-full, 2px);
       }
 
       .timeline::-webkit-slider-thumb {
         -webkit-appearance: none;
         width: 12px;
         height: 12px;
-        border-radius: 50%;
+        border-radius: var(--radius-full, 50%);
         background: var(--_accent);
-        border: 2px solid white;
-        box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+        border: var(--border-width-medium, 2px) solid var(--_bg);
+        box-shadow: var(--shadow-sm, 0 1px 3px oklch(0% 0 0 / 0.2));
         cursor: pointer;
         margin-top: -4px;
+        transition: transform var(--duration-fast, 100ms) var(--ease-default, ease);
+      }
+
+      .timeline:hover::-webkit-slider-thumb {
+        transform: scale(1.2);
       }
 
       .timeline::-moz-range-thumb {
         width: 12px;
         height: 12px;
-        border-radius: 50%;
+        border-radius: var(--radius-full, 50%);
         background: var(--_accent);
-        border: 2px solid white;
-        box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+        border: var(--border-width-medium, 2px) solid var(--_bg);
+        box-shadow: var(--shadow-sm, 0 1px 3px oklch(0% 0 0 / 0.2));
         cursor: pointer;
       }
 
+      .timeline::-moz-range-progress {
+        height: 4px;
+        background: var(--_accent);
+        border-radius: var(--radius-full, 2px);
+      }
+
       .timeline:focus-visible {
-        outline: 2px solid var(--_accent);
+        outline: var(--focus-ring-width, 2px) solid var(--color-focus-ring, var(--_accent));
         outline-offset: 4px;
-        border-radius: 2px;
+        border-radius: var(--radius-s, 2px);
       }
 
       /* ── Volume ───────────────────────────────── */
       .volume-wrap {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: var(--size-2xs, 4px);
         flex: 0 0 80px;
         min-width: 0;
       }
@@ -316,12 +358,17 @@ class AudioPlayerElement extends HTMLElement {
         cursor: pointer;
         color: var(--color-text-muted, #666);
         flex-shrink: 0;
+        transition: color var(--duration-fast, 100ms) var(--ease-default, ease);
+      }
+
+      .mute-btn:hover {
+        color: var(--color-text, inherit);
       }
 
       .mute-btn:focus-visible {
-        outline: 2px solid var(--_accent);
+        outline: var(--focus-ring-width, 2px) solid var(--color-focus-ring, var(--_accent));
         outline-offset: 2px;
-        border-radius: 2px;
+        border-radius: var(--radius-s, 2px);
       }
 
       .icon-muted { display: none; }
@@ -339,40 +386,53 @@ class AudioPlayerElement extends HTMLElement {
 
       .volume::-webkit-slider-runnable-track {
         height: 3px;
-        background: var(--color-border, #ddd);
-        border-radius: 2px;
+        background: linear-gradient(to right,
+          var(--_accent) calc(var(--_vol, 1) * 100%),
+          var(--_border) calc(var(--_vol, 1) * 100%));
+        border-radius: var(--radius-full, 2px);
       }
 
       .volume::-moz-range-track {
         height: 3px;
-        background: var(--color-border, #ddd);
-        border-radius: 2px;
+        background: var(--_border);
+        border-radius: var(--radius-full, 2px);
+      }
+
+      .volume::-moz-range-progress {
+        height: 3px;
+        background: var(--_accent);
+        border-radius: var(--radius-full, 2px);
       }
 
       .volume::-webkit-slider-thumb {
         -webkit-appearance: none;
         width: 10px;
         height: 10px;
-        border-radius: 50%;
-        background: var(--color-text-muted, #666);
+        border-radius: var(--radius-full, 50%);
+        background: var(--_accent);
         border: none;
         cursor: pointer;
         margin-top: -3.5px;
+        transition: transform var(--duration-fast, 100ms) var(--ease-default, ease);
+      }
+
+      .volume:hover::-webkit-slider-thumb {
+        transform: scale(1.3);
       }
 
       .volume::-moz-range-thumb {
         width: 10px;
         height: 10px;
-        border-radius: 50%;
-        background: var(--color-text-muted, #666);
+        border-radius: var(--radius-full, 50%);
+        background: var(--_accent);
         border: none;
         cursor: pointer;
       }
 
       .volume:focus-visible {
-        outline: 2px solid var(--_accent);
+        outline: var(--focus-ring-width, 2px) solid var(--color-focus-ring, var(--_accent));
         outline-offset: 2px;
-        border-radius: 2px;
+        border-radius: var(--radius-s, 2px);
       }
 
       /* ── Slot: hide native audio controls ─────── */
@@ -383,8 +443,17 @@ class AudioPlayerElement extends HTMLElement {
       /* ── Reduced motion ───────────────────────── */
       @media (prefers-reduced-motion: reduce) {
         .play-btn,
-        .timeline-fill {
+        .timeline-fill,
+        .timeline::-webkit-slider-thumb,
+        .volume::-webkit-slider-thumb,
+        .mute-btn {
           transition: none;
+        }
+        .play-btn:hover,
+        .play-btn:active,
+        .timeline:hover::-webkit-slider-thumb,
+        .volume:hover::-webkit-slider-thumb {
+          transform: none;
         }
       }
     `
@@ -453,6 +522,7 @@ class AudioPlayerElement extends HTMLElement {
       this.#audio.volume = this.#volumeSlider.value
       this.#audio.muted = false
       this.removeAttribute('data-muted')
+      this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
     })
 
     // Mute toggle
@@ -460,6 +530,7 @@ class AudioPlayerElement extends HTMLElement {
     muteBtn.addEventListener('click', () => {
       this.#audio.muted = !this.#audio.muted
       this.toggleAttribute('data-muted', this.#audio.muted)
+      this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
     })
 
     // Keyboard shortcuts
@@ -487,6 +558,7 @@ class AudioPlayerElement extends HTMLElement {
         case 'M':
           this.#audio.muted = !this.#audio.muted
           this.toggleAttribute('data-muted', this.#audio.muted)
+          this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
           break
       }
     })

@@ -57,8 +57,29 @@ permalink: /docs/elements/web-components/audio-player/
 {% set customCode %}audio-player {
   --audio-player-accent: oklch(60% 0.2 30);
   --audio-player-bg: oklch(15% 0.02 260);
+  --audio-player-text: oklch(95% 0 0);
+  --audio-player-border: oklch(30% 0.02 260);
+  --audio-player-shadow: var(--shadow-md);
   --audio-player-radius: var(--radius-l);
+  --audio-player-padding: var(--size-s) var(--size-m);
 }{% endset %}
+
+{% set darkCode %}<div data-mode="dark">
+  <audio-player>
+    <audio controls>
+      <source src="track.mp3" type="audio/mpeg">
+    </audio>
+  </audio-player>
+</div>{% endset %}
+
+{% set elevatedCode %}<audio-player style="
+  --audio-player-shadow: var(--shadow-md);
+  --audio-player-padding: var(--size-s) var(--size-m);
+">
+  <audio controls>
+    <source src="track.mp3" type="audio/mpeg">
+  </audio>
+</audio-player>{% endset %}
 
 {% set eventCode %}const player = document.querySelector('audio-player');
 
@@ -83,55 +104,29 @@ player.addEventListener('vb:audio:track-change', (e) => {
   <h2>Overview</h2>
   <p>A platform-native audio player that wraps <code>&lt;audio&gt;</code> in light DOM and renders custom controls in shadow DOM. The native player is always the fallback — if JS is unavailable or the component fails, <code>&lt;audio controls&gt;</code> works normally.</p>
   <p>For the retro-themed CRT player with visualizer, see <a href="/docs/elements/web-components/retro-audio-player/"><code>&lt;retro-audio-player&gt;</code></a>.</p>
+
+  <browser-window
+    src="/docs/examples/demos/audio-player-basic.html"
+    url="https://vanilla-breeze.dev/audio-player"
+    title="Audio Player"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
   <h2>Single Track</h2>
-  <div class="example">
-    <audio-player>
-      <audio controls>
-        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
-        <p><a href="/docs/examples/demos/assets/track.mp3" download>Download track</a></p>
-      </audio>
-    </audio-player>
-  </div>
-  <code-block language="html" label="Wrapping a single audio element">{{ singleCode | escape }}</code-block>
+  <code-block language="html" show-lines label="Wrapping a single audio element">{{ singleCode | escape }}</code-block>
 </section>
 
 <section>
   <h2>Playlist Mode</h2>
   <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the audio source and plays it.</p>
-  <div class="example">
-    <audio-player>
-      <audio controls>
-        <source src="/docs/examples/demos/assets/track.mp3" type="audio/mpeg">
-        <p><a href="/docs/examples/demos/assets/track.mp3" download>Download track 1</a></p>
-      </audio>
-      <details open>
-        <summary>Track Listing</summary>
-        <ol class="track-list">
-          <li data-audio-active>
-            <a href="/docs/examples/demos/assets/track.mp3">01. Opening Theme</a>
-            <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
-          </li>
-          <li>
-            <a href="/docs/examples/demos/assets/track.mp3">02. Main Theme</a>
-            <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
-          </li>
-          <li data-audio-favorite>
-            <a href="/docs/examples/demos/assets/track.mp3">03. Ending Theme</a>
-            <span class="track-meta"><time datetime="PT4M12S">4:12</time></span>
-          </li>
-        </ol>
-      </details>
-    </audio-player>
-  </div>
-  <code-block language="html" label="Audio player with playlist">{{ playlistCode | escape }}</code-block>
+  <code-block language="html" show-lines label="Audio player with playlist">{{ playlistCode | escape }}</code-block>
 </section>
 
 <section>
   <h2>Shuffle and Loop</h2>
-  <code-block language="html" label="Shuffle playlist with loop">{{ shuffleCode | escape }}</code-block>
+  <code-block language="html" show-lines label="Shuffle playlist with loop">{{ shuffleCode | escape }}</code-block>
 </section>
 
 <section>
@@ -151,12 +146,28 @@ player.addEventListener('vb:audio:track-change', (e) => {
   <table>
     <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>--audio-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Control accent and progress fill color</td></tr>
-      <tr><td><code>--audio-player-bg</code></td><td><code>var(--color-surface)</code></td><td>Player background</td></tr>
+      <tr><td><code>--audio-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Play button, slider thumbs, and progress fill color</td></tr>
+      <tr><td><code>--audio-player-bg</code></td><td><code>var(--color-surface)</code></td><td>Player background and slider thumb border color</td></tr>
       <tr><td><code>--audio-player-radius</code></td><td><code>var(--radius-m)</code></td><td>Player border radius</td></tr>
+      <tr><td><code>--audio-player-text</code></td><td><code>var(--color-text)</code></td><td>Track title and controls text color</td></tr>
+      <tr><td><code>--audio-player-border</code></td><td><code>var(--color-border)</code></td><td>Player border and slider track color</td></tr>
+      <tr><td><code>--audio-player-shadow</code></td><td><code>none</code></td><td>Player box shadow (opt-in)</td></tr>
+      <tr><td><code>--audio-player-padding</code></td><td><code>var(--size-xs) var(--size-s)</code></td><td>Controls area padding</td></tr>
     </tbody>
   </table>
-  <code-block language="css" label="Custom styling">{{ customCode | escape }}</code-block>
+  <code-block language="css" show-lines label="Custom styling">{{ customCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Dark Mode</h2>
+  <p>The player adapts automatically to light and dark mode via design tokens. All colors resolve through CSS custom properties that respond to theme changes. Wrap any ancestor in <code>data-mode="dark"</code> or let the system preference apply.</p>
+  <code-block language="html" show-lines label="Dark mode wrapper">{{ darkCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Elevated Card Style</h2>
+  <p>Opt in to a shadow with <code>--audio-player-shadow</code> for a raised card look.</p>
+  <code-block language="html" show-lines label="Elevated card variant">{{ elevatedCode | escape }}</code-block>
 </section>
 
 <section>
@@ -185,7 +196,7 @@ player.addEventListener('vb:audio:track-change', (e) => {
       <tr><td><code>vb:audio:track-change</code></td><td><code>{ src, title }</code></td></tr>
     </tbody>
   </table>
-  <code-block language="js" label="Listening for events">{{ eventCode | escape }}</code-block>
+  <code-block language="js" show-lines label="Listening for events">{{ eventCode | escape }}</code-block>
 </section>
 
 <section>
@@ -204,7 +215,7 @@ player.addEventListener('vb:audio:track-change', (e) => {
 <section>
   <h2>Progressive Enhancement</h2>
   <p>The <code>&lt;audio&gt;</code> element lives in light DOM. Before JS loads, native <code>controls</code> render. After the component upgrades, native controls are hidden and custom chrome takes over. If the component is removed from the DOM, native controls are restored.</p>
-  <code-block language="html" label="Fallback behavior">{{ fallbackCode | escape }}</code-block>
+  <code-block language="html" show-lines label="Fallback behavior">{{ fallbackCode | escape }}</code-block>
 </section>
 
 <section>
@@ -234,11 +245,6 @@ player.addEventListener('vb:audio:track-change', (e) => {
 <section>
   <h2>Companion: audio-visualizer</h2>
   <p>Pair with <a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> for canvas-based frequency or waveform display. The visualizer is a separate component — it connects to any <code>&lt;audio&gt;</code> via the <code>for</code> attribute.</p>
-</section>
-
-<section>
-  <h2>Demo</h2>
-  <p><a href="/docs/examples/demos/audio-player-basic.html">View the audio player demo</a> to see all variants with a real audio file.</p>
 </section>
 
 <section>
