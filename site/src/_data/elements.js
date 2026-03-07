@@ -162,8 +162,7 @@ const elementsByLetter = {
     { name: 'qr-code', type: 'component', href: '/docs/elements/web-components/qr-code/' },
   ],
   R: [
-    { name: 'retro-audio-player', type: 'component', href: '/docs/elements/web-components/retro-audio-player/', pack: 'retro' },
-    { name: 'rp', type: 'native', href: '/docs/elements/native/rp/' },
+{ name: 'rp', type: 'native', href: '/docs/elements/native/rp/' },
     { name: 'rt', type: 'native', href: '/docs/elements/native/rt/' },
     { name: 'ruby', type: 'native', href: '/docs/elements/native/ruby/' },
   ],

@@ -22,14 +22,7 @@ export const bundle = {
     { role: 'components', src: 'retro.components.js' },
   ],
 
-  components: [
-    {
-      tag: 'retro-audio-player',
-      contract: 'retro-audio-player',
-      label: 'Retro Audio Player',
-      load: () => import('./components/retro-audio-player/retro-audio-player.js'),
-    },
-  ],
+  components: [],
 
   effects: [
     { name: 'flipboard',    selector: '[data-effect~="flipboard"]',    type: 'js' },
