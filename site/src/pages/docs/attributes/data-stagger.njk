@@ -1,0 +1,78 @@
+---
+layout: layouts/attribute.njk
+title: "data-stagger"
+description: "Cascades timing to child elements for choreographed entrance sequences."
+attributeName: data-stagger
+category: visual-effects
+attributeType: data
+currentPath: /docs/attributes/data-stagger/
+permalink: /docs/attributes/data-stagger/
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-stagger</code> attribute goes on a <strong>parent</strong> element. It sets <code>--vb-stagger-index</code> on each child (0, 1, 2, ...) so CSS can calculate cascading delays for entrance effects.</p>
+
+  <browser-window src="/docs/examples/demos/stagger-demo.html" url="https://vanilla-breeze.dev/stagger" title="Stagger Demo" shadow></browser-window>
+</section>
+
+<section id="basic">
+  <h2>Basic usage</h2>
+  <code-block language="html" label="Staggered list">
+&lt;ul data-stagger="80ms"&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;First&lt;/li&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Second&lt;/li&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Third&lt;/li&gt;
+&lt;/ul&gt;
+  </code-block>
+  <p>Each child appears 80ms after the previous one, creating a cascading entrance.</p>
+</section>
+
+<section id="how-it-works">
+  <h2>How it works</h2>
+  <p>VB.js sets <code>--vb-stagger-index</code> on each direct child. The built-in CSS rule calculates the delay:</p>
+  <code-block language="css" label="Stagger CSS">
+[data-stagger] > * {
+  --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
+}
+  </code-block>
+  <p>Effects that support <code>--vb-delay</code> (like <code>fade-in</code>, <code>slide-up</code>, <code>pop</code>) automatically pick up the staggered timing.</p>
+</section>
+
+<section id="choreography">
+  <h2>Choreography</h2>
+  <p>Combine stagger with different effects for varied choreography patterns.</p>
+  <browser-window src="/docs/examples/demos/stagger-choreography.html" url="https://vanilla-breeze.dev/stagger-choreography" title="Stagger Choreography" shadow></browser-window>
+</section>
+
+<section id="custom-timing">
+  <h2>Custom timing</h2>
+  <p>Override the stagger interval with a CSS custom property or inline style:</p>
+  <code-block language="html" label="Custom stagger timing">
+&lt;!-- Fast stagger --&gt;
+&lt;ul data-stagger="40ms"&gt;...&lt;/ul&gt;
+
+&lt;!-- Slow stagger --&gt;
+&lt;ul data-stagger="200ms"&gt;...&lt;/ul&gt;
+
+&lt;!-- Via CSS custom property --&gt;
+&lt;ul data-stagger style="--vb-stagger: 120ms"&gt;...&lt;/ul&gt;
+  </code-block>
+</section>
+
+<section id="api">
+  <h2>Attribute reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Applied to</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-stagger</code></td><td>Parent element</td><td>Value is the delay between children (e.g. <code>"80ms"</code>). JS sets <code>--vb-stagger-index</code> on each child.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Set on</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-stagger-index</code></td><td>Each child</td><td>Auto-set by JS (0, 1, 2, ...). Used in delay calculation.</td></tr>
+      <tr><td><code>--vb-stagger</code></td><td>Parent</td><td>Overrides the stagger interval. Falls back to attribute value or 80ms.</td></tr>
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,188 @@
+---
+layout: layouts/attribute.njk
+title: "data-transition"
+description: "Declarative View Transitions API integration. Marks elements that morph, slide, or fade during state changes."
+attributeName: data-transition
+category: visual-effects
+attributeType: data
+currentPath: /docs/attributes/data-transition/
+permalink: /docs/attributes/data-transition/
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-transition</code> attribute marks elements that participate in <a href="https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API">View Transitions</a>. Unlike <code>data-effect</code> (ambient animation), <code>data-transition</code> describes <strong>state-change moments</strong> — navigation, DOM swaps, route changes.</p>
+  <p>VB auto-assigns <code>view-transition-name</code> and optional <code>view-transition-class</code> so the browser's View Transition API handles the animation.</p>
+
+  <browser-window src="/docs/examples/demos/transition-morph.html" url="https://vanilla-breeze.dev/transitions" title="View Transitions" shadow></browser-window>
+</section>
+
+<section id="mental-model">
+  <h2>Mental model</h2>
+  <p>Two attribute systems, two purposes:</p>
+  <table class="props-table">
+    <thead><tr><th>Intent</th><th>Attribute</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>Ambient animation</td><td><code>data-effect</code></td><td>Scroll, hover, load</td></tr>
+      <tr><td>State change</td><td><code>data-transition</code></td><td>DOM updates, navigation</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" label="Two systems, one element">
+&lt;!-- Ambient: decorative, repeatable --&gt;
+&lt;p data-effect="fade-in" data-trigger="scroll"&gt;
+
+&lt;!-- State change: meaningful, navigational --&gt;
+&lt;img data-transition="morph"&gt;
+&lt;main data-transition="slide"&gt;
+&lt;ul data-transition="stagger"&gt;
+  </code-block>
+</section>
+
+<section id="morph">
+  <h2>morph</h2>
+  <p>The element morphs between its old and new state. The browser interpolates position, size, and appearance. Ideal for images, cards, and shared elements across views.</p>
+
+  <code-block language="html" label="Morph transition">
+&lt;!-- List view --&gt;
+&lt;img src="photo.jpg" data-transition="morph"&gt;
+
+&lt;!-- Detail view (same element or matched by view-transition-name) --&gt;
+&lt;img src="photo.jpg" data-transition="morph"&gt;
+  </code-block>
+
+  <p>VB assigns <code>view-transition-name: morph-{uid}</code> automatically. Use <code>id</code> for stable names or let VB generate one.</p>
+</section>
+
+<section id="slide">
+  <h2>slide</h2>
+  <p>Page-level slide animation. The old content slides out while new content slides in.</p>
+
+  <code-block language="html" label="Slide transition">
+&lt;main data-transition="slide"&gt;
+  &lt;!-- Page content swaps with a slide animation --&gt;
+&lt;/main&gt;
+  </code-block>
+</section>
+
+<section id="fade">
+  <h2>fade</h2>
+  <p>Explicit crossfade without position morphing. Good for content areas that shouldn't move.</p>
+
+  <code-block language="html" label="Fade transition">
+&lt;article data-transition="fade"&gt;
+  &lt;!-- Content cross-fades on swap --&gt;
+&lt;/article&gt;
+  </code-block>
+</section>
+
+<section id="scale">
+  <h2>scale</h2>
+  <p>Scale-down/scale-up swap effect.</p>
+
+  <code-block language="html" label="Scale transition">
+&lt;section data-transition="scale"&gt;...&lt;/section&gt;
+  </code-block>
+</section>
+
+<section id="stagger">
+  <h2>stagger</h2>
+  <p>Children get individual <code>view-transition-name</code> values so they can reorder, add, or remove with staggered timing.</p>
+
+  <code-block language="html" label="Stagger transition">
+&lt;ul data-transition="stagger"&gt;
+  &lt;li&gt;Item 1&lt;/li&gt;
+  &lt;li&gt;Item 2&lt;/li&gt;
+  &lt;li&gt;Item 3&lt;/li&gt;
+&lt;/ul&gt;
+  </code-block>
+</section>
+
+<section id="none">
+  <h2>none</h2>
+  <p>Instant swap with no animation. Opt out a specific section from the page-level transition.</p>
+
+  <code-block language="html" label="No transition">
+&lt;nav data-transition="none"&gt;
+  &lt;!-- Navigation stays static during page transitions --&gt;
+&lt;/nav&gt;
+  </code-block>
+</section>
+
+<section id="vb-swap">
+  <h2>VB.swap()</h2>
+  <p>Wrap any DOM mutation in a View Transition. Falls back gracefully when the API isn't supported.</p>
+
+  <code-block language="js" label="Programmatic swap">
+VB.swap(() => {
+  // DOM mutations here — the browser captures before/after snapshots
+  document.querySelector('main').innerHTML = newContent;
+});
+  </code-block>
+</section>
+
+<section id="custom">
+  <h2>Custom transitions</h2>
+  <p>Register custom transition types via <code>VB.transition()</code>.</p>
+
+  <code-block language="js" label="Custom transition">
+VB.transition('flip', (el) => {
+  el.style.viewTransitionName = 'flip-' + VB.uid(el);
+  el.style.viewTransitionClass = 'flip';
+  return () => {
+    el.style.viewTransitionName = '';
+    el.style.viewTransitionClass = '';
+  };
+});
+  </code-block>
+
+  <code-block language="html" label="Using the custom transition">
+&lt;section data-transition="flip"&gt;...&lt;/section&gt;
+  </code-block>
+</section>
+
+<section id="with-effects">
+  <h2>Combining with effects</h2>
+  <p>Both systems compose on the same element. <code>data-effect</code> handles ambient animation while <code>data-transition</code> handles state changes.</p>
+
+  <code-block language="html" label="Effects + transitions together">
+&lt;section
+  data-effect="fade-in slide-up"
+  data-trigger="scroll"
+  data-transition="morph"
+  data-stagger="80ms"
+  class="slow"
+&gt;
+  &lt;!-- Scroll-triggered entrance + morphs during navigation --&gt;
+&lt;/section&gt;
+  </code-block>
+</section>
+
+<section id="browser-support">
+  <h2>Browser support</h2>
+  <p>View Transitions require Chrome 111+ or Safari 18+. In unsupported browsers, <code>VB.swap()</code> falls back to calling the update function directly — the DOM change happens instantly, no error.</p>
+</section>
+
+<section id="api">
+  <h2>API reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Transition</th><th>CSS Class</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>morph</code></td><td>(default crossfade)</td><td>Position + size + appearance morph between states.</td></tr>
+      <tr><td><code>slide</code></td><td><code>slide-left</code></td><td>Horizontal slide out/in.</td></tr>
+      <tr><td><code>fade</code></td><td><code>fade</code></td><td>Crossfade without position interpolation.</td></tr>
+      <tr><td><code>scale</code></td><td><code>scale</code></td><td>Scale-down/scale-up swap.</td></tr>
+      <tr><td><code>stagger</code></td><td><code>fade</code></td><td>Children get individual names for list reorder transitions.</td></tr>
+      <tr><td><code>none</code></td><td><code>none</code></td><td>Instant swap, no animation.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="props-table">
+    <thead><tr><th>JS Method</th><th>Signature</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>VB.transition()</code></td><td><code>(name, handler) => void</code></td><td>Register a custom transition type.</td></tr>
+      <tr><td><code>VB.swap()</code></td><td><code>(update) => ViewTransition?</code></td><td>Wrap DOM mutations in a View Transition.</td></tr>
+      <tr><td><code>VB.uid()</code></td><td><code>(el) => string</code></td><td>Stable unique ID for view-transition-name generation.</td></tr>
+    </tbody>
+  </table>
+</section>

@@ -127,7 +127,10 @@ const dataAttributes = {
   'visual-effects': {
     label: 'Visual Effects',
     items: [
-      { name: 'data-text-effects', type: 'behavior', href: '/docs/attributes/data-text-effects/', description: 'All visual effects: gradient, shimmer, glitch, reveal, highlight, neon, stamp, flipboard, and more' },
+      { name: 'data-effect', type: 'behavior', href: '/docs/attributes/data-effect/', description: 'Unified composable effect system: fade-in, shimmer, neon, reveal, glitch, and 20+ more' },
+      { name: 'data-trigger', type: 'behavior', href: '/docs/attributes/data-trigger/', description: 'Controls when effects activate: scroll, hover, click, or timed delay' },
+      { name: 'data-stagger', type: 'behavior', href: '/docs/attributes/data-stagger/', description: 'Cascades timing to children for choreographed entrance sequences' },
+      { name: 'data-transition', type: 'behavior', href: '/docs/attributes/data-transition/', description: 'Declarative View Transitions: morph, slide, fade, scale, and stagger for state changes' },
       { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters', pack: 'extras' },
     ],
   },

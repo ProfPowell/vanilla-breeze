@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Effect Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    .spacer { height: 60vh; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: var(--radius-m); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+  <section>
+    <small>Custom VB.effect('count-up') registered via JS</small>
+    <p>Revenue: <data value="48200" data-effect="count-up" data-trigger="scroll">0</data></p>
+    <p>Users: <data value="1250" data-effect="count-up" data-trigger="scroll">0</data></p>
+  </section>
+
+  <p class="spacer">Scroll down for another count-up</p>
+
+  <section>
+    <p>Conversion: <data value="97.5" data-effect="count-up" data-trigger="scroll">0</data>%</p>
+  </section>
+
+  <script type="module">
+    import { VB } from '/src/lib/vb.js';
+
+    VB.effect('count-up', (el) => {
+      const target = Number(el.getAttribute('value') || '0');
+      if (isNaN(target)) return;
+
+      return {
+        activate() {
+          const duration = 1500;
+          let start = null;
+
+          function tick(ts) {
+            if (!start) start = ts;
+            const progress = Math.min((ts - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = target * eased;
+
+            el.textContent = target % 1 === 0
+              ? Math.round(current).toLocaleString()
+              : current.toFixed(1);
+
+            if (progress < 1) requestAnimationFrame(tick);
+            else el.textContent = target % 1 === 0 ? target.toLocaleString() : target.toFixed(1);
+          }
+
+          requestAnimationFrame(tick);
+        },
+      };
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

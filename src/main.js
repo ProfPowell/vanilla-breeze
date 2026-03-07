@@ -14,9 +14,27 @@ import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import './lib/sw-register.js';
 export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
 
+// VB effects system — unified data-effect API
+import { VB } from './lib/vb.js';
+import './lib/vb-triggers.js';
+import './lib/vb-transitions.js';
+import './effects/glitch.js';
+import './effects/reveal.js';
+import './effects/blur-reveal.js';
+import './effects/highlight.js';
+import './effects/typewriter.js';
+import './effects/scramble.js';
+import './effects/ticker.js';
+import './effects/animate-image.js';
+import './effects/rating.js';
+export { VB } from './lib/vb.js';
+
 // Initialize theme system early to prevent FOUC
 // init() is async — loads saved theme CSS before applying
 await ThemeManager.init();
+
+// Boot unified effects observer
+VB.observe();
 
 // Sync external components (browser-window, code-block) with theme
 initExternalThemeSync();

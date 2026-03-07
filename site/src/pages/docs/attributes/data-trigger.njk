@@ -1,0 +1,107 @@
+---
+layout: layouts/attribute.njk
+title: "data-trigger"
+description: "Controls when effects activate. Separates effect behavior from activation timing."
+attributeName: data-trigger
+category: visual-effects
+attributeType: data
+currentPath: /docs/attributes/data-trigger/
+permalink: /docs/attributes/data-trigger/
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-trigger</code> attribute controls <em>when</em> an effect activates. It separates the visual effect from its activation moment, allowing the same effect to be triggered by scroll, hover, click, or a timed delay.</p>
+  <p>If no <code>data-trigger</code> is set, CSS-only effects activate immediately and JS effects run on load.</p>
+
+  <browser-window src="/docs/examples/demos/trigger-demo.html" url="https://vanilla-breeze.dev/triggers" title="Trigger Types" shadow></browser-window>
+</section>
+
+<section id="scroll">
+  <h2>scroll</h2>
+  <p>Activates when the element scrolls into the viewport (10% visible threshold). Uses <code>IntersectionObserver</code> and fires once.</p>
+
+  <code-block language="html" label="Scroll trigger">
+&lt;h1 data-effect="fade-in slide-up" data-trigger="scroll"&gt;Appears on scroll&lt;/h1&gt;
+&lt;p data-effect="reveal" data-trigger="scroll"&gt;Words reveal when visible&lt;/p&gt;
+  </code-block>
+</section>
+
+<section id="hover">
+  <h2>hover</h2>
+  <p>Activates on pointer enter, deactivates on pointer leave. For CSS-only effects, the <code>:hover</code> pseudo-class drives the animation directly.</p>
+
+  <code-block language="html" label="Hover trigger">
+&lt;span data-effect="wiggle" data-trigger="hover"&gt;Hover to wiggle&lt;/span&gt;
+&lt;h2 data-effect="glitch" data-trigger="hover"&gt;Hover for glitch&lt;/h2&gt;
+  </code-block>
+</section>
+
+<section id="click">
+  <h2>click</h2>
+  <p>Toggles the effect on click. Adds <code>[data-effect-active]</code> on first click, removes it on second.</p>
+
+  <code-block language="html" label="Click trigger">
+&lt;button data-effect="shake" data-trigger="click"&gt;Click to shake&lt;/button&gt;
+&lt;h2 data-effect="pop" data-trigger="click"&gt;Click to pop&lt;/h2&gt;
+  </code-block>
+</section>
+
+<section id="time">
+  <h2>time:<var>n</var></h2>
+  <p>Activates after a delay of <var>n</var> milliseconds. Uses <code>setTimeout</code>.</p>
+
+  <code-block language="html" label="Time trigger">
+&lt;h1 data-effect="fade-in" data-trigger="time:2000"&gt;Appears after 2 seconds&lt;/h1&gt;
+&lt;p data-effect="slide-up" data-trigger="time:500"&gt;Half-second delay&lt;/p&gt;
+  </code-block>
+</section>
+
+<section id="no-trigger">
+  <h2>No trigger (immediate)</h2>
+  <p>When <code>data-trigger</code> is omitted, CSS-only effects activate immediately via their CSS selectors. JS effects run their <code>activate()</code> function on initialization.</p>
+
+  <code-block language="html" label="Immediate (no trigger)">
+&lt;h1 data-effect="shimmer"&gt;Shimmers immediately&lt;/h1&gt;
+&lt;h2 data-effect="neon" class="pink"&gt;Glows immediately&lt;/h2&gt;
+  </code-block>
+</section>
+
+<section id="independence">
+  <h2>Trigger independence</h2>
+  <p>An effect doesn't know what triggered it. The same <code>fade-in slide-up</code> effect behaves identically whether activated by scroll, hover, click, or a timer.</p>
+  <browser-window src="/docs/examples/demos/trigger-independence.html" url="https://vanilla-breeze.dev/trigger-independence" title="Trigger Independence" shadow></browser-window>
+</section>
+
+<section id="custom">
+  <h2>Custom triggers</h2>
+  <p>Register custom triggers via the <code>VB.trigger()</code> API. Custom triggers work identically to built-in ones.</p>
+  <code-block language="js" label="Custom trigger registration">
+VB.trigger('visible', (el, activate, param) => {
+  const threshold = parseInt(param || '50', 10) / 100;
+  const io = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) { io.disconnect(); activate(); }
+  }, { threshold });
+  io.observe(el);
+  return () => io.disconnect();
+});
+  </code-block>
+  <code-block language="html" label="Custom trigger usage">
+&lt;h2 data-effect="fade-in" data-trigger="visible:50"&gt;50% visibility&lt;/h2&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/custom-trigger.html" url="https://vanilla-breeze.dev/custom-trigger" title="Custom Trigger" shadow></browser-window>
+</section>
+
+<section id="api">
+  <h2>Attribute reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Trigger</th><th>Implementation</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>scroll</code></td><td><code>IntersectionObserver</code></td><td>Fires once at 10% visible, then disconnects.</td></tr>
+      <tr><td><code>hover</code></td><td>CSS <code>:hover</code> + JS events</td><td>CSS-only effects use <code>:hover</code>. JS effects use pointer events.</td></tr>
+      <tr><td><code>click</code></td><td><code>addEventListener('click')</code></td><td>Toggles <code>[data-effect-active]</code>.</td></tr>
+      <tr><td><code>time:<var>n</var></code></td><td><code>setTimeout</code></td><td><var>n</var> is delay in milliseconds.</td></tr>
+    </tbody>
+  </table>
+</section>

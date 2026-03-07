@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>&lt;q&gt; language demo</title>
+	<style>
+		:root {
+			--border: #ccc;
+			--bg: #f7f7f7;
+			--panel: #fff;
+			--text: #111;
+			--muted: #555;
+			--accent: #0a66c2;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			font: 16px/1.5 system-ui, sans-serif;
+			color: var(--text);
+			background: var(--bg);
+		}
+
+		main {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 2rem 1rem 4rem;
+		}
+
+		h1, h2 {
+			line-height: 1.2;
+		}
+
+		.note {
+			color: var(--muted);
+			max-width: 70ch;
+		}
+
+		.grid {
+			display: grid;
+			gap: 1rem;
+		}
+
+		.card {
+			background: var(--panel);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 1rem;
+		}
+
+		code, pre {
+			font: 0.95em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		}
+
+		.label {
+			display: inline-block;
+			margin-bottom: 0.5rem;
+			padding: 0.2rem 0.5rem;
+			border-radius: 999px;
+			background: #eaf3ff;
+			color: var(--accent);
+			font-size: 0.85rem;
+			font-weight: 600;
+		}
+
+		.sample {
+			font-size: 1.1rem;
+		}
+
+		.inspect {
+			margin-top: 0.75rem;
+			color: var(--muted);
+			font-size: 0.95rem;
+		}
+
+		/* Explicit quote control for comparison */
+		.forced-quotes :lang(en) > q {
+			quotes: "“" "”" "‘" "’";
+		}
+
+		.forced-quotes :lang(fr) > q {
+			quotes: "«\00A0" "\00A0»" "‹\00A0" "\00A0›";
+		}
+
+		.forced-quotes :lang(de) > q {
+			quotes: "„" "“" "‚" "‘";
+		}
+
+		.forced-quotes :lang(es) > q {
+			quotes: "«" "»" "“" "”";
+		}
+
+		.forced-quotes :lang(ja) > q {
+			quotes: "「" "」" "『" "』";
+		}
+
+		.forced-quotes :lang(zh) > q {
+			quotes: "「" "」" "『" "』";
+		}
+
+		/* Show visibly where q elements are */
+		q {
+			background: color-mix(in srgb, yellow 18%, transparent);
+		}
+
+		/* Optional helper to make nesting easier to see */
+		.sample q q {
+			background: color-mix(in srgb, orange 18%, transparent);
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			background: var(--panel);
+		}
+
+		th, td {
+			border: 1px solid var(--border);
+			padding: 0.75rem;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		th {
+			background: #f0f0f0;
+		}
+	</style>
+</head>
+<body>
+<main>
+	<h1>Demo: HTML <code>&lt;q&gt;</code> and foreign languages</h1>
+
+	<p class="note">
+		This page lets you check whether your browser’s default rendering of
+		<code>&lt;q&gt;</code> responds to <code>lang</code> or not. The first section
+		uses browser defaults. The second forces quote marks with CSS so you can compare.
+	</p>
+
+	<h2>1) Browser default behavior</h2>
+	<div class="grid">
+		<section class="card" lang="en">
+			<div class="label">Page language: English</div>
+			<p class="sample">He said <q>This is a short quote.</q></p>
+			<p class="sample">Nested example: <q>She replied <q>Not today</q> and left.</q></p>
+			<div class="inspect">Expected in many browsers: curly English quotes.</div>
+		</section>
+
+		<section class="card" lang="fr">
+			<div class="label">Language: French</div>
+			<p class="sample">Il a dit <q>Ceci est une citation courte.</q></p>
+			<p class="sample">Imbrication : <q>Elle a répondu <q>Pas aujourd’hui</q> puis elle est partie.</q></p>
+			<div class="inspect">Look to see whether you get French guillemets or just English-style quotes.</div>
+		</section>
+
+		<section class="card" lang="de">
+			<div class="label">Language: German</div>
+			<p class="sample">Er sagte <q>Dies ist ein kurzes Zitat.</q></p>
+			<p class="sample">Verschachtelt: <q>Sie antwortete <q>Nicht heute</q> und ging.</q></p>
+			<div class="inspect">Look for German low-high outer quotes in browsers that localize them.</div>
+		</section>
+
+		<section class="card" lang="es">
+			<div class="label">Language: Spanish</div>
+			<p class="sample">Él dijo <q>Esta es una cita breve.</q></p>
+			<p class="sample">Anidado: <q>Ella respondió <q>No hoy</q> y se fue.</q></p>
+			<div class="inspect">Some browsers may still show generic curly quotes instead of Spanish-preferred styling.</div>
+		</section>
+
+		<section class="card" lang="ja">
+			<div class="label">Language: Japanese</div>
+			<p class="sample">彼は<q>これは短い引用です。</q>と言いました。</p>
+			<p class="sample">入れ子: <q>彼女は<q>今日はだめ</q>と答えて去った。</q></p>
+			<div class="inspect">Check whether corner brackets appear by default.</div>
+		</section>
+
+		<section class="card" lang="zh">
+			<div class="label">Language: Chinese</div>
+			<p class="sample">他说：<q>这是一段简短的引文。</q></p>
+			<p class="sample">嵌套：<q>她回答<q>今天不行</q>然后离开了。</q></p>
+			<div class="inspect">Check whether localized CJK quotation marks appear.</div>
+		</section>
+	</div>
+
+	<h2>2) Mixed-language quotes inside an English page</h2>
+	<section class="card" lang="en">
+		<p class="sample">
+			English context with French quote:
+			<q lang="fr">Ceci est une citation française.</q>
+		</p>
+
+		<p class="sample">
+			English context with German quote:
+			<q lang="de">Dies ist ein deutsches Zitat.</q>
+		</p>
+
+		<p class="sample">
+			English context with Japanese quote:
+			<q lang="ja">これは日本語の引用です。</q>
+		</p>
+
+		<p class="note">
+			This is the key test. Some browsers respond to the quote’s own
+			<code>lang</code>; others behave more like the surrounding language context. W3C’s i18n material specifically notes uneven default behavior here.  [oai_citation:1‡W3C GitHub](https://w3c.github.io/i18n-drafts/questions/qa-the-q-element.en?utm_source=chatgpt.com)
+		</p>
+	</section>
+
+	<h2>3) Forced quote styles with CSS for comparison</h2>
+	<section class="card forced-quotes">
+		<p class="note">
+			The CSS <code>quotes</code> property lets you explicitly control the quotation
+			marks used by <code>&lt;q&gt;</code>. MDN documents that this property affects
+			the automatically added quotation marks for the element.  [oai_citation:2‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/quotes?utm_source=chatgpt.com)
+		</p>
+
+		<div class="grid">
+			<div lang="en">
+				<div class="label">Forced English</div>
+				<p class="sample">He said <q>This is a short quote.</q></p>
+			</div>
+
+			<div lang="fr">
+				<div class="label">Forced French</div>
+				<p class="sample">Il a dit <q>Ceci est une citation courte.</q></p>
+			</div>
+
+			<div lang="de">
+				<div class="label">Forced German</div>
+				<p class="sample">Er sagte <q>Dies ist ein kurzes Zitat.</q></p>
+			</div>
+
+			<div lang="es">
+				<div class="label">Forced Spanish</div>
+				<p class="sample">Él dijo <q>Esta es una cita breve.</q></p>
+			</div>
+
+			<div lang="ja">
+				<div class="label">Forced Japanese</div>
+				<p class="sample">彼は<q>これは短い引用です。</q>と言いました。</p>
+			</div>
+
+			<div lang="zh">
+				<div class="label">Forced Chinese</div>
+				<p class="sample">他说：<q>这是一段简短的引文。</q></p>
+			</div>
+		</div>
+	</section>
+
+	<h2>4) What to look for</h2>
+	<table>
+		<thead>
+		<tr>
+			<th>Test</th>
+			<th>Question</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td>Default English</td>
+			<td>Does the browser add quote marks around <code>&lt;q&gt;</code> at all?</td>
+		</tr>
+		<tr>
+			<td>French / German / Japanese</td>
+			<td>Do the glyphs change when the container or quote has a different <code>lang</code>?</td>
+		</tr>
+		<tr>
+			<td>Mixed-language section</td>
+			<td>Does the quote follow its own <code>lang</code> or the surrounding page language?</td>
+		</tr>
+		<tr>
+			<td>Forced CSS section</td>
+			<td>How does browser default behavior differ from explicit typographic control?</td>
+		</tr>
+		</tbody>
+	</table>
+</main>
+</body>
+</html>

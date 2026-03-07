@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Transitions Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/src/utils/view-transitions.css">
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--size-m); }
+    .card {
+      padding: var(--size-m); border: 1px solid var(--color-border);
+      border-radius: var(--radius-m); background: var(--color-surface-raised, var(--color-surface));
+      cursor: pointer; transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: var(--shadow-m, 0 2px 8px oklch(0% 0 0 / 0.1)); }
+    .card h3 { margin: 0 0 0.5rem; }
+    .card p { margin: 0; color: var(--color-text-muted); font-size: 0.875rem; }
+    .card img { width: 100%; aspect-ratio: 3/2; object-fit: cover; border-radius: var(--radius-s); margin-block-end: var(--size-s); background: var(--color-border); }
+    .detail { display: none; }
+    .detail.active { display: block; }
+    .detail img { width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius-m); margin-block-end: var(--size-m); background: var(--color-border); }
+    .detail h2 { margin-block-start: 0; }
+    .back-btn { margin-block-end: var(--size-m); }
+
+    /* Stagger children during transition */
+    .card-grid > * {
+      view-transition-class: fade;
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <h1>data-transition</h1>
+  <p>Click a card to see the image morph into the detail view using the View Transitions API. The <code>data-transition="morph"</code> attribute auto-assigns <code>view-transition-name</code>.</p>
+
+  <section id="list-view">
+    <section class="card-grid" data-transition="stagger">
+      <article class="card" data-id="1">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23dbeafe'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='%232563eb' font-size='16'%3EMountains%3C/text%3E%3C/svg%3E"
+             alt="Mountains" data-transition="morph">
+        <h3>Mountain Vista</h3>
+        <p>Alpine peaks at sunset with golden light.</p>
+      </article>
+      <article class="card" data-id="2">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23dcfce7'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='%2316a34a' font-size='16'%3EForest%3C/text%3E%3C/svg%3E"
+             alt="Forest" data-transition="morph">
+        <h3>Deep Forest</h3>
+        <p>Ancient redwoods in morning mist.</p>
+      </article>
+      <article class="card" data-id="3">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23fef3c7'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='%23d97706' font-size='16'%3EDesert%3C/text%3E%3C/svg%3E"
+             alt="Desert" data-transition="morph">
+        <h3>Desert Dunes</h3>
+        <p>Endless sand sculpted by wind.</p>
+      </article>
+      <article class="card" data-id="4">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23e0e7ff'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='%234f46e5' font-size='16'%3EOcean%3C/text%3E%3C/svg%3E"
+             alt="Ocean" data-transition="morph">
+        <h3>Ocean Horizon</h3>
+        <p>Calm waters stretching to infinity.</p>
+      </article>
+    </section>
+  </section>
+
+  <section id="detail-view" class="detail">
+    <button class="back-btn" id="back-btn" type="button">&larr; Back to gallery</button>
+    <img id="detail-img" src="" alt="" data-transition="morph">
+    <h2 id="detail-title"></h2>
+    <p id="detail-desc"></p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const listView = document.getElementById('list-view');
+    const detailView = document.getElementById('detail-view');
+    const detailImg = document.getElementById('detail-img');
+    const detailTitle = document.getElementById('detail-title');
+    const detailDesc = document.getElementById('detail-desc');
+    const backBtn = document.getElementById('back-btn');
+
+    // Cards data
+    const cards = {
+      '1': { title: 'Mountain Vista', desc: 'Alpine peaks at sunset with golden light cascading across glacial valleys. The air is thin and crisp, carrying the scent of pine from the treeline below.' },
+      '2': { title: 'Deep Forest', desc: 'Ancient redwoods tower overhead, their canopy filtering morning mist into shafts of emerald light. The forest floor is soft with centuries of fallen needles.' },
+      '3': { title: 'Desert Dunes', desc: 'Endless sand sculpted by wind into flowing forms that shift with each passing hour. The silence here is profound, broken only by the whisper of grains in motion.' },
+      '4': { title: 'Ocean Horizon', desc: 'Calm waters stretching to infinity where sea meets sky in a seamless gradient. The rhythm of waves creates a meditation that anchors you to the present moment.' },
+    };
+
+    function showDetail(card) {
+      const id = card.dataset.id;
+      const data = cards[id];
+      const img = card.querySelector('img');
+
+      // Copy the morph view-transition-name from card img to detail img
+      const vtName = img.style.viewTransitionName;
+      detailImg.style.viewTransitionName = vtName;
+      img.style.viewTransitionName = '';
+
+      function update() {
+        detailImg.src = img.src;
+        detailImg.alt = img.alt;
+        detailTitle.textContent = data.title;
+        detailDesc.textContent = data.desc;
+        listView.style.display = 'none';
+        detailView.classList.add('active');
+      }
+
+      if (window.VB) {
+        window.VB.swap(update);
+      } else {
+        update();
+      }
+
+      // Stash the card ref for the back transition
+      detailView._sourceCard = card;
+    }
+
+    function showList() {
+      const card = detailView._sourceCard;
+      const img = card?.querySelector('img');
+
+      if (img) {
+        // Move view-transition-name back to the card img
+        img.style.viewTransitionName = detailImg.style.viewTransitionName;
+        detailImg.style.viewTransitionName = '';
+      }
+
+      function update() {
+        detailView.classList.remove('active');
+        listView.style.display = '';
+      }
+
+      if (window.VB) {
+        window.VB.swap(update);
+      } else {
+        update();
+      }
+    }
+
+    // Event delegation
+    listView.addEventListener('click', (e) => {
+      const card = e.target.closest('.card');
+      if (card) showDetail(card);
+    });
+
+    backBtn.addEventListener('click', showList);
+  </script>
+</body>
+</html>

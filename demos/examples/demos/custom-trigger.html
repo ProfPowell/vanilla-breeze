@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Trigger Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    .spacer { height: 80vh; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: var(--radius-m); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+  <section>
+    <small>Custom trigger: visible:50 (50% threshold)</small>
+    <p>Elements below use a custom scroll trigger with 50% visibility threshold.</p>
+  </section>
+
+  <p class="spacer">Scroll down — the element activates at 50% visible (not 10%)</p>
+
+  <section>
+    <h2 data-effect="fade-in slide-up" data-trigger="visible:50">Activated at 50% visibility</h2>
+  </section>
+
+  <p class="spacer">Another section with the custom trigger</p>
+
+  <section>
+    <h2 data-effect="pop" data-trigger="visible:50">Pops at 50% visible</h2>
+  </section>
+
+  <script type="module">
+    import { VB } from '/src/lib/vb.js';
+
+    VB.trigger('visible', (el, activate, param) => {
+      const threshold = parseInt(param || '50', 10) / 100;
+
+      const io = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          io.disconnect();
+          activate();
+        }
+      }, { threshold });
+
+      io.observe(el);
+      return () => io.disconnect();
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

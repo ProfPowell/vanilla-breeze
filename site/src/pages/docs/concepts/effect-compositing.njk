@@ -1,0 +1,172 @@
+---
+layout: layouts/docs.njk
+title: "Effect Compositing"
+description: "How Vanilla Breeze effects compose naturally via space-separated data-effect values, CSS property separation, and the VB trigger system."
+currentSection: docs
+currentPath: /docs/concepts/effect-compositing/
+permalink: /docs/concepts/effect-compositing/
+---
+
+<section>
+  <h2>Why compositing matters</h2>
+  <p>Traditional effect systems use one attribute per effect: <code>data-shimmer</code>, <code>data-neon</code>, <code>data-reveal</code>. This creates two problems:</p>
+  <ul>
+    <li><strong>No stacking</strong> — you can't combine shimmer + gradient-text on the same element.</li>
+    <li><strong>Hardcoded triggers</strong> — each effect decides when it activates (scroll, hover, always). You can't change the trigger without changing the effect.</li>
+  </ul>
+  <p>The <code>data-effect</code> system solves both. Effects are <strong>space-separated values</strong> that compose at the CSS selector level. Triggers are a <strong>separate attribute</strong>.</p>
+</section>
+
+<section>
+  <h2>How effects compose</h2>
+  <p>Most effects use different CSS properties and compose naturally — the browser applies both without conflict:</p>
+
+  <table class="props-table">
+    <thead><tr><th>Effect</th><th>Primary CSS Property</th></tr></thead>
+    <tbody>
+      <tr><td><code>shimmer</code></td><td><code>background</code> (clip: text)</td></tr>
+      <tr><td><code>neon</code></td><td><code>text-shadow</code>, <code>color</code></td></tr>
+      <tr><td><code>outline</code></td><td><code>-webkit-text-stroke</code></td></tr>
+      <tr><td><code>gradient-text</code></td><td><code>background</code> (clip: text)</td></tr>
+      <tr><td><code>rainbow</code></td><td><code>filter</code> (hue-rotate)</td></tr>
+      <tr><td><code>bounce</code></td><td><code>animation</code> (transform)</td></tr>
+      <tr><td><code>wiggle</code></td><td><code>animation</code> (rotate)</td></tr>
+      <tr><td><code>sparkle</code></td><td><code>::before</code> / <code>::after</code></td></tr>
+    </tbody>
+  </table>
+
+  <p>When two effects target <em>different</em> properties, they compose with zero extra CSS.</p>
+</section>
+
+<section>
+  <h2>Natural composition</h2>
+  <p>Neon uses <code>text-shadow</code>. Rainbow uses <code>filter</code>. Both apply simultaneously:</p>
+
+  <code-block language="html" label="Natural composition">
+&lt;h1 data-effect="neon rainbow"&gt;Neon Rainbow&lt;/h1&gt;
+&lt;h2 data-effect="outline shimmer"&gt;Outlined Shimmer&lt;/h2&gt;
+&lt;h2 data-effect="sparkle gradient-text" class="sunset"&gt;Sparkle Gradient&lt;/h2&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/compose-natural.html" url="https://vanilla-breeze.dev/compose-natural" title="Natural Composition" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Designed combinations</h2>
+  <p>When two effects target the <em>same</em> CSS property (like <code>text-shadow</code>), VB ships a compound CSS rule that merges them:</p>
+
+  <code-block language="css" label="Compound rule for neon + hard-shadow">
+[data-effect~="neon"][data-effect~="hard-shadow"] {
+  text-shadow:
+    /* neon glow shadows */
+    0 0 0.04em color-mix(in oklch, var(--vb-neon-color), white 60%),
+    0 0 0.12em var(--vb-neon-color),
+    /* hard shadow */
+    var(--vb-shadow-offset) var(--vb-shadow-offset) 0 var(--vb-shadow-color);
+}
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/compose-designed.html" url="https://vanilla-breeze.dev/compose-designed" title="Designed Combinations" shadow></browser-window>
+</section>
+
+<section>
+  <h2>The override hierarchy</h2>
+  <p>Tune composed effects with the standard CSS cascade:</p>
+  <ol>
+    <li><strong>Built-in default</strong> — <code>data-effect="fade-in"</code></li>
+    <li><strong>Class variant</strong> — <code>class="slow"</code> sets <code>--vb-duration: 900ms</code></li>
+    <li><strong>Inline style</strong> — <code>style="--vb-duration: 2s"</code></li>
+  </ol>
+
+  <code-block language="html" label="Override hierarchy">
+&lt;h2 data-effect="fade-in slide-up" data-trigger="scroll"&gt;Default&lt;/h2&gt;
+&lt;h2 data-effect="fade-in slide-up" data-trigger="scroll" class="slow"&gt;Slow&lt;/h2&gt;
+&lt;h2 data-effect="fade-in slide-up" data-trigger="scroll" class="bouncy"&gt;Bouncy&lt;/h2&gt;
+&lt;h2 data-effect="fade-in slide-up" data-trigger="scroll" style="--vb-duration: 3s"&gt;Custom&lt;/h2&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/compose-override.html" url="https://vanilla-breeze.dev/compose-override" title="Override Hierarchy" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Trigger independence</h2>
+  <p>An effect doesn't know what triggered it. The same <code>fade-in slide-up</code> effect can be activated by scroll, hover, click, or a timer — the visual result is identical:</p>
+
+  <code-block language="html" label="Same effect, different triggers">
+&lt;h2 data-effect="fade-in slide-up" data-trigger="scroll"&gt;Scroll&lt;/h2&gt;
+&lt;h2 data-effect="fade-in slide-up" data-trigger="hover"&gt;Hover&lt;/h2&gt;
+&lt;button data-effect="fade-in slide-up" data-trigger="click"&gt;Click&lt;/button&gt;
+&lt;h2 data-effect="fade-in slide-up" data-trigger="time:2000"&gt;2s delay&lt;/h2&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/trigger-independence.html" url="https://vanilla-breeze.dev/trigger-independence" title="Trigger Independence" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Stagger as composition</h2>
+  <p>Parent stagger + child effects = choreographed sequences. The <code>data-stagger</code> attribute sets <code>--vb-stagger-index</code> on each child, cascading the <code>--vb-delay</code>:</p>
+
+  <code-block language="html" label="Staggered entrance">
+&lt;ul data-stagger="80ms"&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;First&lt;/li&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Second&lt;/li&gt;
+  &lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Third&lt;/li&gt;
+&lt;/ul&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/stagger-choreography.html" url="https://vanilla-breeze.dev/stagger-choreography" title="Stagger Choreography" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Extending with VB.effect()</h2>
+  <p>Register custom effects using the VB API. Custom effects compose with built-in effects automatically:</p>
+
+  <code-block language="js" label="Custom effect registration">
+VB.effect('count-up', (el) => {
+  const target = Number(el.getAttribute('value') || '0');
+
+  return {
+    activate() {
+      // Animate from 0 to target
+      const duration = 1500;
+      let start = null;
+      function tick(ts) {
+        if (!start) start = ts;
+        const progress = Math.min((ts - start) / duration, 1);
+        el.textContent = Math.round(target * progress).toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+  };
+});
+  </code-block>
+
+  <code-block language="html" label="Using the custom effect">
+&lt;data value="48200" data-effect="count-up" data-trigger="scroll"&gt;0&lt;/data&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/custom-effect.html" url="https://vanilla-breeze.dev/custom-effect" title="Custom Effect" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Extending with VB.trigger()</h2>
+  <p>Register custom triggers that work with any effect:</p>
+
+  <code-block language="js" label="Custom trigger registration">
+VB.trigger('visible', (el, activate, param) => {
+  const threshold = parseInt(param || '50', 10) / 100;
+  const io = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) { io.disconnect(); activate(); }
+  }, { threshold });
+  io.observe(el);
+  return () => io.disconnect();
+});
+  </code-block>
+
+  <code-block language="html" label="Using the custom trigger">
+&lt;h2 data-effect="fade-in" data-trigger="visible:50"&gt;50% visibility threshold&lt;/h2&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/custom-trigger.html" url="https://vanilla-breeze.dev/custom-trigger" title="Custom Trigger" shadow></browser-window>
+</section>

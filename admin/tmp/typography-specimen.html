@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Typography Specimen — No CSS vs Old CSS vs Modern CSS</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#faf8f3, #141414);
+      --panel: light-dark(#ffffff, #1d1d1d);
+      --panel-2: light-dark(#f2eee6, #232323);
+      --text: light-dark(#1f1b16, #f3eee6);
+      --muted: light-dark(#5b5148, #c9b8a7);
+      --border: light-dark(#d8cfc3, #3b342e);
+      --accent: light-dark(#7c4d12, #f2b15d);
+      --code-bg: light-dark(#f7f4ef, #1a1a1a);
+      --measure: 68ch;
+      --space: clamp(1rem, 1vw + 0.75rem, 1.5rem);
+      --radius: 14px;
+      --shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Noto Serif", Georgia, serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-inline-size: 1200px;
+      margin-inline: auto;
+      padding: clamp(1rem, 2vw, 2rem);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .toolbar,
+    .notes,
+    .specimen-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      padding: 1rem;
+      position: sticky;
+      top: 0.75rem;
+      z-index: 5;
+    }
+
+    .toolbar-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      justify-content: space-between;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 1rem + 1.3vw, 2.2rem);
+      line-height: 1.05;
+    }
+
+    .title-block p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      max-inline-size: 70ch;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .segmented {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      background: var(--panel-2);
+      padding: 0.35rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .segmented button,
+    .toggle-row button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .segmented button:hover,
+    .toggle-row button:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .segmented button[aria-pressed="true"],
+    .toggle-row button[aria-pressed="true"] {
+      background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .notes {
+      padding: 1rem;
+    }
+
+    .notes h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+    }
+
+    .notes p {
+      margin: 0.4rem 0;
+      color: var(--muted);
+    }
+
+    .notes code {
+      font-family: var(--mono);
+      background: var(--code-bg);
+      padding: 0.1em 0.35em;
+      border-radius: 0.4em;
+      border: 1px solid var(--border);
+    }
+
+    .specimen-wrap {
+      overflow: clip;
+    }
+
+    .specimen-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem 1rem;
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .specimen-header strong {
+      font-size: 1rem;
+    }
+
+    iframe {
+      display: block;
+      inline-size: 100%;
+      block-size: 75vh;
+      border: 0;
+      background: white;
+    }
+
+    @media (max-width: 760px) {
+      iframe { block-size: 68vh; }
+      .toolbar { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="toolbar" aria-label="Demo controls">
+      <div class="toolbar-top">
+        <div class="title-block">
+          <h1>Typography specimen: no CSS vs old CSS vs modern CSS</h1>
+          <p>A single prose sample displayed three ways so students can compare raw HTML defaults, older conventional article styling, and a more modern fall-forward CSS typography approach.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="segmented" role="group" aria-label="Choose comparison mode">
+          <button type="button" data-mode="none" aria-pressed="false">No CSS</button>
+          <button type="button" data-mode="old" aria-pressed="true">Old CSS</button>
+          <button type="button" data-mode="modern" aria-pressed="false">Modern CSS</button>
+        </div>
+
+        <div class="toggle-row" role="group" aria-label="Toggle extra enhancements">
+          <button type="button" data-toggle="hyphens" aria-pressed="false">Hyphenation</button>
+          <button type="button" data-toggle="pretty" aria-pressed="false">Pretty wrap</button>
+          <button type="button" data-toggle="balance" aria-pressed="true">Balanced headings</button>
+          <button type="button" data-toggle="dropcap" aria-pressed="false">Drop cap</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="notes" aria-label="What to look for">
+      <h2>What to inspect</h2>
+      <p>Look at <strong>measure</strong>, <strong>line-height</strong>, heading breaks, link underlines, blockquote treatment, list spacing, code styling, and how a long URL behaves. The modern mode uses features like <code>clamp()</code>, <code>max-inline-size: 68ch</code>, <code>text-wrap: balance</code>, <code>text-wrap: pretty</code>, <code>font-optical-sizing: auto</code>, logical properties, and underline tuning.</p>
+      <p>The “old CSS” view is deliberately respectable but dated: fixed-ish widths, simpler heading scale, ordinary wrapping, plain underlines, and fewer typographic niceties.</p>
+    </section>
+
+    <section class="specimen-wrap">
+      <div class="specimen-header">
+        <strong id="modeLabel">Current mode: Old CSS</strong>
+        <span id="featureLabel">Active extras: balanced headings</span>
+      </div>
+      <iframe id="specimenFrame" title="Typography specimen preview"></iframe>
+    </section>
+  </div>
+
+  <template id="specimenTemplate">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typography specimen content</title>
+<style id="modeStyle"></style>
+<style id="featureStyle"></style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Specimen essay</p>
+    <h1>The web page is a reading surface first, even when it is also an application shell</h1>
+    <p class="dek">A compact prose sample for evaluating how CSS changes readability, rhythm, texture, and tone.</p>
+  </header>
+
+  <main>
+    <article>
+      <p class="lede">Typography on the web is easy to underestimate because browsers will already render text without any help from us. That is both the blessing and the trap. A document with no author styling is usually legible, but not necessarily thoughtful. Once we begin shaping measure, line height, hierarchy, link treatment, and spacing, the page starts to reveal whether it was designed for skimming, deep reading, or merely surviving.</p>
+
+      <p>Consider the difference between a paragraph that stretches almost edge to edge and one held to a measured width. In the first case, the eye works harder to relocate the next line. In the second, reading feels more deliberate, almost quieter. CSS gives us unusually expressive tools for this: not only traditional size and leading, but also <code>ch</code>-based measures, fluid type with <code>clamp()</code>, variable font controls, and newer wrapping behaviors that can make headings and ragged text feel less awkward.</p>
+
+      <h2>What older article styling often got right</h2>
+      <p>Many “classic blog” stylesheets from the 2010s were already improvements over raw defaults. They usually established a maximum width, increased body text size slightly, added margin between paragraphs, and chose a serviceable serif or sans-serif. That alone produced a friendlier reading experience. Even so, older CSS often stopped before reaching finer composition: heading line breaks were left to chance, underlines sat too close to descenders, and prose columns could still feel either cramped or too loose depending on the viewport.</p>
+
+      <blockquote>
+        <p>Good web typography does not require ornamental excess. It requires making dozens of small decisions that together let the text carry less friction.</p>
+      </blockquote>
+
+      <h2>Where modern CSS can quietly help</h2>
+      <p>Modern CSS does not magically make text beautiful, but it does let us move closer to the intent long familiar in print. Headings can use balanced wrapping. Body copy can use prettier wrapping where supported. Fonts with optical sizing can adapt to display size. Fallbacks can be tuned with <code>font-size-adjust</code>. Hyphenation can reduce ugly ragged gaps in narrow measures. None of these features should be treated as hard requirements. They are enhancements that let capable browsers compose text more gracefully while older browsers simply ignore what they do not understand.</p>
+
+      <p>Here is a long URL to stress test overflow behavior: <a href="https://example.com/a-very-long-url-that-is-intentionally-designed-to-trigger-overflow-wrap-behavior-in-a-prose-column-with-limited-inline-size-and-multiple-descriptive-segments">https://example.com/a-very-long-url-that-is-intentionally-designed-to-trigger-overflow-wrap-behavior-in-a-prose-column-with-limited-inline-size-and-multiple-descriptive-segments</a>.</p>
+
+      <h3>A short checklist</h3>
+      <ul>
+        <li>Keep paragraph measure within a readable range.</li>
+        <li>Use a comfortable line height rather than crowding the page.</li>
+        <li>Give headings a stronger scale and better wrap behavior.</li>
+        <li>Tune links, lists, quotations, and inline code instead of styling only the body.</li>
+        <li>Layer advanced features so the design falls forward when support exists.</li>
+      </ul>
+
+      <h2>Why this matters for teaching</h2>
+      <p>For students, this comparison is useful because it shows that typography is not merely a decorative pass added after the “real work” is done. It is part of the structure of meaning. The same semantic HTML can feel raw, dated, or polished depending on the CSS choices layered above it. That makes typography a particularly good topic for demonstrating progressive enhancement: the markup remains durable while the presentation grows more refined.</p>
+
+      <p>In practice, the goal is not to create a single universal “perfect” stylesheet. The goal is to learn which adjustments produce the biggest gains: a saner measure, better spacing, a clearer hierarchy, less clumsy wrapping, and fewer accidental distractions. When those things improve, the prose stops feeling like a pile of paragraphs and starts feeling authored.</p>
+    </article>
+  </main>
+</body>
+</html>
+  </template>
+
+  <script>
+    const frame = document.getElementById('specimenFrame');
+    const template = document.getElementById('specimenTemplate').innerHTML;
+    const modeLabel = document.getElementById('modeLabel');
+    const featureLabel = document.getElementById('featureLabel');
+
+    const state = {
+      mode: 'old',
+      toggles: {
+        hyphens: false,
+        pretty: false,
+        balance: true,
+        dropcap: false,
+      }
+    };
+
+    const styles = {
+      none: '',
+      old: `
+        html {
+          font-size: 16px;
+        }
+        body {
+          margin: 0;
+          padding: 2rem 1rem 3rem;
+          font-family: Georgia, "Times New Roman", serif;
+          color: #222;
+          background: #fff;
+          line-height: 1.5;
+          font-size: 18px;
+        }
+        main, header {
+          max-width: 760px;
+          margin: 0 auto;
+        }
+        .eyebrow {
+          font-family: Arial, Helvetica, sans-serif;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.08em;
+          color: #666;
+          margin-bottom: 1rem;
+        }
+        h1, h2, h3 {
+          font-family: Arial, Helvetica, sans-serif;
+          line-height: 1.2;
+          margin: 1.6em 0 0.5em;
+          color: #111;
+        }
+        h1 {
+          font-size: 2.2rem;
+          margin-top: 0;
+        }
+        h2 {
+          font-size: 1.55rem;
+        }
+        h3 {
+          font-size: 1.2rem;
+        }
+        .dek {
+          font-size: 1.1rem;
+          color: #555;
+          margin-top: 0;
+          margin-bottom: 1.5rem;
+        }
+        p, ul, blockquote {
+          margin: 0 0 1rem;
+        }
+        blockquote {
+          margin-left: 1.5rem;
+          padding-left: 1rem;
+          border-left: 4px solid #ccc;
+          color: #444;
+        }
+        a {
+          color: #0b57d0;
+        }
+        code {
+          font-family: Consolas, monospace;
+          font-size: 0.95em;
+          background: #f4f4f4;
+          padding: 0.1em 0.25em;
+        }
+      `,
+      modern: `
+        :root {
+          --bg: #fcfbf8;
+          --text: #1d1b18;
+          --muted: #645b53;
+          --rule: #ddd3c6;
+          --accent: #844d15;
+          --measure: 68ch;
+          --space: clamp(1rem, 0.4rem + 1.2vw, 1.6rem);
+          --serif: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+          --sans: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+        html {
+          font-size: 100%;
+          text-size-adjust: 100%;
+        }
+        body {
+          margin: 0;
+          padding: clamp(1rem, 1vw + 0.75rem, 2rem);
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--serif);
+          font-size: 1rem;
+          line-height: 1.58;
+          font-optical-sizing: auto;
+          font-size-adjust: 0.5;
+        }
+        header,
+        main {
+          max-inline-size: min(100%, 88rem);
+          margin-inline: auto;
+        }
+        article {
+          max-inline-size: var(--measure);
+          overflow-wrap: break-word;
+        }
+        .eyebrow {
+          margin: 0 0 0.85rem;
+          font-family: var(--sans);
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-size: 0.78rem;
+          color: var(--accent);
+        }
+        h1, h2, h3 {
+          font-family: var(--sans);
+          line-height: 1.08;
+          letter-spacing: -0.02em;
+          margin: 0;
+        }
+        h1 {
+          font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.8rem);
+          max-inline-size: 15ch;
+        }
+        h2 {
+          font-size: clamp(1.5rem, 1.15rem + 1vw, 2.2rem);
+          margin-block-start: 2.2em;
+          margin-block-end: 0.5em;
+        }
+        h3 {
+          font-size: clamp(1.15rem, 1rem + 0.55vw, 1.45rem);
+          margin-block-start: 1.8em;
+          margin-block-end: 0.45em;
+        }
+        .dek {
+          margin-block: 0.8rem 2rem;
+          max-inline-size: 56ch;
+          font-family: var(--sans);
+          font-size: clamp(1.06rem, 1rem + 0.35vw, 1.25rem);
+          line-height: 1.42;
+          color: var(--muted);
+        }
+        .lede {
+          font-size: clamp(1.06rem, 1rem + 0.25vw, 1.2rem);
+        }
+        p, ul, blockquote {
+          margin: 0;
+        }
+        article > * + * {
+          margin-block-start: var(--space);
+        }
+        ul {
+          padding-inline-start: 1.25rem;
+        }
+        li + li {
+          margin-block-start: 0.45rem;
+        }
+        blockquote {
+          padding-inline: 1rem 0;
+          padding-block: 0.2rem;
+          border-inline-start: 0.3rem solid var(--accent);
+          color: color-mix(in srgb, var(--text) 85%, var(--accent));
+        }
+        blockquote p {
+          font-size: clamp(1.12rem, 1rem + 0.3vw, 1.28rem);
+          line-height: 1.45;
+        }
+        a {
+          color: color-mix(in srgb, var(--accent) 75%, #0d46a0 25%);
+          text-decoration-thickness: 0.08em;
+          text-underline-offset: 0.14em;
+          text-decoration-skip-ink: auto;
+        }
+        code {
+          font-family: var(--mono);
+          font-size: 0.92em;
+          background: #f2eee8;
+          border: 1px solid #e3d8c8;
+          border-radius: 0.35em;
+          padding: 0.08em 0.35em;
+        }
+      `
+    };
+
+    function featureCSS() {
+      const parts = [];
+      if (state.toggles.hyphens) {
+        parts.push(`article { hyphens: auto; }`);
+        parts.push(`html { -webkit-hyphens: auto; }`);
+      }
+      if (state.toggles.pretty) {
+        parts.push(`@supports (text-wrap: pretty) { article { text-wrap: pretty; } }`);
+      }
+      if (state.toggles.balance) {
+        parts.push(`@supports (text-wrap: balance) { h1, h2, h3 { text-wrap: balance; } }`);
+      }
+      if (state.toggles.dropcap) {
+        parts.push(`.lede::first-letter { font-size: 3.2em; line-height: 0.92; float: inline-start; margin-inline-end: 0.08em; padding-block-start: 0.04em; font-family: Inter, Arial, sans-serif; font-weight: 700; color: #844d15; }`);
+      }
+      return parts.join('\n');
+    }
+
+    function buildDoc() {
+      const modeCSS = styles[state.mode];
+      const featureCSS_ = state.mode === 'none' ? '' : featureCSS();
+      return template
+        .replace(
+          '<style id="modeStyle"></style>',
+          `<style id="modeStyle">${modeCSS}</style>`
+        )
+        .replace(
+          '<style id="featureStyle"></style>',
+          `<style id="featureStyle">${featureCSS_}</style>`
+        );
+    }
+
+    function updateLabels() {
+      const modeNames = {
+        none: 'No CSS',
+        old: 'Old CSS',
+        modern: 'Modern CSS'
+      };
+      modeLabel.textContent = `Current mode: ${modeNames[state.mode]}`;
+      const active = Object.entries(state.toggles)
+        .filter(([, on]) => on)
+        .map(([name]) => ({
+          hyphens: 'hyphenation',
+          pretty: 'pretty wrap',
+          balance: 'balanced headings',
+          dropcap: 'drop cap'
+        }[name]));
+      featureLabel.textContent = active.length
+        ? `Active extras: ${active.join(', ')}`
+        : 'Active extras: none';
+    }
+
+    function render() {
+      frame.srcdoc = buildDoc();
+      updateLabels();
+      document.querySelectorAll('[data-mode]').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.mode === state.mode));
+      });
+      document.querySelectorAll('[data-toggle]').forEach((button) => {
+        const key = button.dataset.toggle;
+        button.setAttribute('aria-pressed', String(Boolean(state.toggles[key])));
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const modeButton = target.closest('[data-mode]');
+      if (modeButton instanceof HTMLElement) {
+        const nextMode = modeButton.dataset.mode;
+        if (nextMode && nextMode in styles) {
+          state.mode = nextMode;
+          render();
+        }
+        return;
+      }
+
+      const toggleButton = target.closest('[data-toggle]');
+      if (toggleButton instanceof HTMLElement) {
+        const key = toggleButton.dataset.toggle;
+        if (key && key in state.toggles) {
+          state.toggles[key] = !state.toggles[key];
+          render();
+        }
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

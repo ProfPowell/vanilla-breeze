@@ -665,10 +665,10 @@ textarea[data-grow][data-grow-init] {
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   data-gradient-text: Gradient text coloring (CSS-only)
+   data-effect~="gradient-text": Gradient text coloring (CSS-only)
    -------------------------------------------------------------------------- */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
-  [data-gradient-text] {
+  [data-effect~="gradient-text"] {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -679,23 +679,23 @@ textarea[data-grow][data-grow-init] {
     );
   }
 
-  [data-gradient-text="sunset"] {
+  [data-effect~="gradient-text"].sunset {
     background-image: linear-gradient(135deg, oklch(70% 0.22 30), oklch(65% 0.2 350), oklch(55% 0.18 310));
   }
 
-  [data-gradient-text="ocean"] {
+  [data-effect~="gradient-text"].ocean {
     background-image: linear-gradient(135deg, oklch(70% 0.15 200), oklch(55% 0.2 260), oklch(50% 0.18 280));
   }
 
-  [data-gradient-text="forest"] {
+  [data-effect~="gradient-text"].forest {
     background-image: linear-gradient(135deg, oklch(65% 0.18 145), oklch(55% 0.15 160), oklch(50% 0.12 180));
   }
 
-  [data-gradient-text="neon"] {
+  [data-effect~="gradient-text"].neon {
     background-image: linear-gradient(135deg, oklch(75% 0.25 330), oklch(70% 0.3 290), oklch(75% 0.25 180));
   }
 
-  [data-gradient-text][data-gradient-text-animate] {
+  [data-effect~="gradient-text"].animate {
     background-size: 200% 200%;
     animation: vb-gradient-flow 4s var(--ease-default, ease) infinite;
   }
@@ -707,15 +707,15 @@ textarea[data-grow][data-grow-init] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-gradient-text][data-gradient-text-animate] { animation: none; }
+  [data-effect~="gradient-text"].animate { animation: none; }
 }
-:root[data-motion-reduced] [data-gradient-text][data-gradient-text-animate] { animation: none; }
+:root[data-motion-reduced] [data-effect~="gradient-text"].animate { animation: none; }
 
 /* --------------------------------------------------------------------------
-   data-shimmer: Shimmering text highlight (CSS-only)
+   data-effect~="shimmer": Shimmering text highlight (CSS-only)
    -------------------------------------------------------------------------- */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
-  [data-shimmer] {
+  [data-effect~="shimmer"] {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -730,8 +730,8 @@ textarea[data-grow][data-grow-init] {
     color: var(--color-text);
   }
 
-  [data-shimmer="slow"] { animation-duration: 4s; }
-  [data-shimmer="fast"] { animation-duration: 1s; }
+  [data-effect~="shimmer"].slow { animation-duration: 4s; }
+  [data-effect~="shimmer"].fast { animation-duration: 1s; }
 }
 
 @keyframes vb-shimmer {
@@ -740,46 +740,46 @@ textarea[data-grow][data-grow-init] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-shimmer] { animation: none; }
+  [data-effect~="shimmer"] { animation: none; }
 }
-:root[data-motion-reduced] [data-shimmer] { animation: none; }
+:root[data-motion-reduced] [data-effect~="shimmer"] { animation: none; }
 
 /* --------------------------------------------------------------------------
-   data-glitch: Chromatic aberration glitch effect (CSS + tiny JS)
+   data-effect~="glitch": Chromatic aberration glitch effect (CSS + tiny JS)
    -------------------------------------------------------------------------- */
-[data-glitch][data-glitch-init] {
+[data-effect~="glitch"][data-effect-glitch-init] {
   position: relative;
   display: inline-block;
 }
 
-[data-glitch][data-glitch-init]::before,
-[data-glitch][data-glitch-init]::after {
+[data-effect~="glitch"][data-effect-glitch-init]::before,
+[data-effect~="glitch"][data-effect-glitch-init]::after {
   content: attr(data-glitch-text);
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-[data-glitch][data-glitch-init]::before {
+[data-effect~="glitch"][data-effect-glitch-init]::before {
   color: oklch(65% 0.25 210);
   animation: vb-glitch-1 2s infinite linear alternate-reverse;
   clip-path: inset(0 0 65% 0);
 }
 
-[data-glitch][data-glitch-init]::after {
+[data-effect~="glitch"][data-effect-glitch-init]::after {
   color: oklch(65% 0.25 25);
   animation: vb-glitch-2 2s infinite linear alternate-reverse;
   clip-path: inset(65% 0 0 0);
 }
 
-/* Hover-only variant: hide pseudos until hover */
-[data-glitch="hover"][data-glitch-init]::before,
-[data-glitch="hover"][data-glitch-init]::after {
+/* Hover-only variant: hide pseudos until hover via trigger */
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]::after {
   opacity: 0;
 }
 
-[data-glitch="hover"][data-glitch-init]:hover::before,
-[data-glitch="hover"][data-glitch-init]:hover::after {
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::after {
   opacity: 1;
 }
 
@@ -802,16 +802,16 @@ textarea[data-grow][data-grow-init] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-glitch][data-glitch-init]::before,
-  [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+  [data-effect~="glitch"][data-effect-glitch-init]::before,
+  [data-effect~="glitch"][data-effect-glitch-init]::after { animation: none; opacity: 0; }
 }
-:root[data-motion-reduced] [data-glitch][data-glitch-init]::before,
-:root[data-motion-reduced] [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+:root[data-motion-reduced] [data-effect~="glitch"][data-effect-glitch-init]::before,
+:root[data-motion-reduced] [data-effect~="glitch"][data-effect-glitch-init]::after { animation: none; opacity: 0; }
 
 /* --------------------------------------------------------------------------
-   data-reveal: Word/line reveal entrance
+   data-effect~="reveal": Word/line reveal entrance
    -------------------------------------------------------------------------- */
-[data-reveal][data-reveal-init] .vb-reveal-chunk {
+[data-effect~="reveal"][data-effect-reveal-init] .vb-reveal-chunk {
   display: inline-block;
   opacity: 0;
   transform: translateY(0.5em);
@@ -821,15 +821,15 @@ textarea[data-grow][data-grow-init] {
   transition-delay: calc(var(--i, 0) * var(--reveal-delay, 80ms));
 }
 
-[data-reveal][data-reveal-init][data-reveal-visible] .vb-reveal-chunk {
+[data-effect~="reveal"][data-effect-reveal-init][data-effect-active] .vb-reveal-chunk {
   opacity: 1;
   transform: translateY(0);
 }
 
 /* --------------------------------------------------------------------------
-   data-blur-reveal: Word/line blur-to-clear reveal
+   data-effect~="blur-reveal": Word/line blur-to-clear reveal
    -------------------------------------------------------------------------- */
-[data-blur-reveal][data-blur-reveal-init] .vb-blur-chunk {
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init] .vb-blur-chunk {
   display: inline-block;
   opacity: 0;
   filter: blur(8px);
@@ -839,18 +839,18 @@ textarea[data-grow][data-grow-init] {
   transition-delay: calc(var(--i, 0) * var(--blur-delay, 80ms));
 }
 
-[data-blur-reveal][data-blur-reveal-init][data-blur-reveal-visible] .vb-blur-chunk {
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-active] .vb-blur-chunk {
   opacity: 1;
   filter: blur(0);
 }
 
 /* --------------------------------------------------------------------------
-   data-highlight: Draw-in underline / box / circle
+   data-effect~="highlight": Draw-in underline / box / circle
    -------------------------------------------------------------------------- */
 
 /* Underline (default) */
-[data-highlight][data-highlight-init],
-[data-highlight="underline"][data-highlight-init] {
+[data-effect~="highlight"][data-effect-highlight-init],
+[data-effect~="highlight"].underline[data-effect-highlight-init] {
   background-image: linear-gradient(
     var(--highlight-color, currentColor),
     var(--highlight-color, currentColor)
@@ -862,13 +862,13 @@ textarea[data-grow][data-grow-init] {
   padding-block-end: 2px;
 }
 
-[data-highlight][data-highlight-init][data-highlight-visible],
-[data-highlight="underline"][data-highlight-init][data-highlight-visible] {
+[data-effect~="highlight"][data-effect-highlight-init][data-effect-active],
+[data-effect~="highlight"].underline[data-effect-highlight-init][data-effect-active] {
   background-size: 100% 2px;
 }
 
 /* Box highlight */
-[data-highlight="box"][data-highlight-init] {
+[data-effect~="highlight"].box[data-effect-highlight-init] {
   background-image: linear-gradient(
     color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent),
     color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent)
@@ -880,17 +880,17 @@ textarea[data-grow][data-grow-init] {
   padding-inline: 0.15em;
 }
 
-[data-highlight="box"][data-highlight-init][data-highlight-visible] {
+[data-effect~="highlight"].box[data-effect-highlight-init][data-effect-active] {
   background-size: 100% 100%;
 }
 
 /* Circle highlight */
-[data-highlight="circle"][data-highlight-init] {
+[data-effect~="highlight"].circle[data-effect-highlight-init] {
   position: relative;
   display: inline-block;
 }
 
-[data-highlight="circle"][data-highlight-init]::after {
+[data-effect~="highlight"].circle[data-effect-highlight-init]::after {
   content: '';
   position: absolute;
   inset: -0.15em -0.3em;
@@ -904,7 +904,7 @@ textarea[data-grow][data-grow-init] {
   pointer-events: none;
 }
 
-[data-highlight="circle"][data-highlight-init][data-highlight-visible]::after {
+[data-effect~="highlight"].circle[data-effect-highlight-init][data-effect-active]::after {
   transform: scale(1);
   opacity: 1;
 }
@@ -930,10 +930,256 @@ textarea[data-grow][data-grow-init] {
 :root[data-motion-reduced] .vb-typewriter-cursor { animation: none; }
 
 /* --------------------------------------------------------------------------
-   data-scramble: Decode effect (minimal CSS — JS drives animation)
+   data-effect~="scramble": Decode effect (minimal CSS — JS drives animation)
    -------------------------------------------------------------------------- */
-[data-scramble][data-scramble-init] {
+[data-effect~="scramble"][data-effect-scramble-init] {
   font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   New CSS-only effects: entrance, attention, decoration, exit
+   -------------------------------------------------------------------------- */
+
+/* ── Entrance: fade-in ── */
+@keyframes vb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Only hide before activation when a trigger is present (scroll, time) */
+[data-effect~="fade-in"][data-trigger] {
+  opacity: 0;
+}
+
+[data-effect~="fade-in"][data-effect-active],
+[data-effect~="fade-in"]:not([data-trigger]) {
+  animation: vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+}
+
+/* ── Entrance: slide-up ── */
+@keyframes vb-slide-up {
+  from { opacity: 0; transform: translateY(var(--vb-slide-distance, 40px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-effect~="slide-up"][data-trigger] {
+  opacity: 0;
+  transform: translateY(var(--vb-slide-distance, 40px));
+}
+
+[data-effect~="slide-up"][data-effect-active],
+[data-effect~="slide-up"]:not([data-trigger]) {
+  animation: vb-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+}
+
+/* ── Entrance: pop ── */
+@keyframes vb-pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+[data-effect~="pop"][data-trigger] {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+[data-effect~="pop"][data-effect-active],
+[data-effect~="pop"]:not([data-trigger]) {
+  animation: vb-pop var(--vb-duration, 300ms) var(--vb-easing, cubic-bezier(0.68, -0.55, 0.27, 1.55)) var(--vb-delay, 0ms) forwards;
+}
+
+/* ── Exit: fade-out ── */
+@keyframes vb-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+[data-effect~="fade-out"][data-effect-active] {
+  animation: vb-fade-out var(--vb-duration, 300ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
+}
+
+/* ── Attention: shake ── */
+@keyframes vb-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+[data-effect~="shake"][data-effect-active],
+[data-effect~="shake"]:not([data-trigger]) {
+  animation: vb-shake var(--vb-duration, 400ms) var(--vb-easing, ease-in-out);
+}
+
+/* ── Attention: pulse ── */
+@keyframes vb-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+[data-effect~="pulse"][data-effect-active],
+[data-effect~="pulse"]:not([data-trigger]) {
+  animation: vb-pulse var(--vb-duration, 1.5s) var(--vb-easing, ease-in-out) infinite;
+}
+
+/* ── Decoration: float ── */
+@keyframes vb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+[data-effect~="float"] {
+  animation: vb-float var(--vb-duration, 3s) var(--vb-easing, ease-in-out) infinite;
+}
+
+/* ── Composed: fade-in + slide-up ── */
+@keyframes vb-fade-slide-up {
+  from { opacity: 0; transform: translateY(var(--vb-slide-distance, 40px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-effect~="fade-in"][data-effect~="slide-up"][data-trigger] {
+  opacity: 0;
+  transform: translateY(var(--vb-slide-distance, 40px));
+}
+
+[data-effect~="fade-in"][data-effect~="slide-up"][data-effect-active],
+[data-effect~="fade-in"][data-effect~="slide-up"]:not([data-trigger]) {
+  animation: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+}
+
+/* ── Entrance: slide-in ── */
+@keyframes vb-slide-in-ltr {
+  from { opacity: 0; transform: translateX(calc(-1 * var(--vb-slide-distance, 40px))); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes vb-slide-in-rtl {
+  from { opacity: 0; transform: translateX(var(--vb-slide-distance, 40px)); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+[data-effect~="slide-in"][data-trigger] {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--vb-slide-distance, 40px)));
+}
+
+:where([dir="rtl"]) [data-effect~="slide-in"][data-trigger],
+[data-effect~="slide-in"][dir="rtl"][data-trigger] {
+  transform: translateX(var(--vb-slide-distance, 40px));
+}
+
+[data-effect~="slide-in"][data-effect-active],
+[data-effect~="slide-in"]:not([data-trigger]) {
+  animation: vb-slide-in-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+}
+
+:where([dir="rtl"]) [data-effect~="slide-in"][data-effect-active],
+:where([dir="rtl"]) [data-effect~="slide-in"]:not([data-trigger]),
+[data-effect~="slide-in"][dir="rtl"][data-effect-active],
+[data-effect~="slide-in"][dir="rtl"]:not([data-trigger]) {
+  animation-name: vb-slide-in-rtl;
+}
+
+/* ── Exit: collapse ── */
+@keyframes vb-collapse {
+  from { max-height: var(--vb-collapse-height, 500px); opacity: 1; overflow: hidden; }
+  to { max-height: 0; opacity: 0; overflow: hidden; padding-block: 0; }
+}
+
+[data-effect~="collapse"][data-effect-active] {
+  animation: vb-collapse var(--vb-duration, 300ms) var(--vb-easing, ease-in) forwards;
+}
+
+/* ── Attention: glow ── */
+[data-effect~="glow"] {
+  --vb-glow-color: var(--color-primary, oklch(55% 0.2 260));
+  filter: drop-shadow(0 0 0.3em color-mix(in oklch, var(--vb-glow-color), transparent 40%));
+  animation: vb-glow var(--vb-duration, 2s) var(--vb-easing, ease-in-out) infinite alternate;
+}
+
+@keyframes vb-glow {
+  from { filter: drop-shadow(0 0 0.2em color-mix(in oklch, var(--vb-glow-color), transparent 50%)); }
+  to { filter: drop-shadow(0 0 0.5em color-mix(in oklch, var(--vb-glow-color), transparent 20%)); }
+}
+
+/* ── Composed: fade-in + glow ── */
+[data-effect~="fade-in"][data-effect~="glow"][data-trigger] {
+  opacity: 0;
+}
+
+[data-effect~="fade-in"][data-effect~="glow"][data-effect-active],
+[data-effect~="fade-in"][data-effect~="glow"]:not([data-trigger]) {
+  animation:
+    vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards,
+    vb-glow 2s ease-in-out 300ms infinite alternate;
+}
+
+/* ── Composed: shimmer + gradient-text (both use background-clip: text) ── */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-effect~="shimmer"][data-effect~="gradient-text"] {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-primary, oklch(55% 0.2 260)) 20%,
+      oklch(85% 0.05 90) 40%,
+      var(--color-secondary, oklch(60% 0.18 310)) 60%,
+      oklch(85% 0.05 90) 80%,
+      var(--color-primary, oklch(55% 0.2 260)) 100%
+    );
+    background-size: 300% 100%;
+    animation: vb-shimmer-gradient 3s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@keyframes vb-shimmer-gradient {
+  from { background-position: 300% center; }
+  to { background-position: -300% center; }
+}
+
+/* ── Shared class variants ── */
+[data-effect].slow { --vb-duration: 900ms; }
+[data-effect].fast { --vb-duration: 150ms; }
+[data-effect].bouncy { --vb-easing: cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+
+/* ── Stagger system ── */
+[data-stagger] > * {
+  --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
+}
+
+/* ── Reduced motion for new effects ── */
+@media (prefers-reduced-motion: reduce) {
+  [data-effect~="fade-in"],
+  [data-effect~="slide-up"],
+  [data-effect~="slide-in"],
+  [data-effect~="pop"],
+  [data-effect~="fade-out"],
+  [data-effect~="collapse"],
+  [data-effect~="shake"],
+  [data-effect~="pulse"],
+  [data-effect~="glow"],
+  [data-effect~="float"] {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+:root[data-motion-reduced] [data-effect~="fade-in"],
+:root[data-motion-reduced] [data-effect~="slide-up"],
+:root[data-motion-reduced] [data-effect~="slide-in"],
+:root[data-motion-reduced] [data-effect~="pop"],
+:root[data-motion-reduced] [data-effect~="fade-out"],
+:root[data-motion-reduced] [data-effect~="collapse"],
+:root[data-motion-reduced] [data-effect~="shake"],
+:root[data-motion-reduced] [data-effect~="pulse"],
+:root[data-motion-reduced] [data-effect~="glow"],
+:root[data-motion-reduced] [data-effect~="float"] {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+  filter: none;
 }
 
 /* --------------------------------------------------------------------------

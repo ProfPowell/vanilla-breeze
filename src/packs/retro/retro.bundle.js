@@ -32,16 +32,15 @@ export const bundle = {
   ],
 
   effects: [
-    { name: 'flipboard',    selector: '[data-flipboard]',  type: 'js' },
-    { name: 'stamp-filter', selector: '[data-stamp]',      type: 'js' },
-    { name: 'blink',        selector: '[data-blink]',      type: 'css' },
-    { name: 'neon',         selector: '[data-neon]',       type: 'css' },
-    { name: 'text-3d',      selector: '[data-text-3d]',    type: 'css' },
-    { name: 'outline',      selector: '[data-outline]',    type: 'css' },
-    { name: 'hard-shadow', selector: '[data-hard-shadow]', type: 'css' },
-    { name: 'stamp',        selector: '[data-stamp]',      type: 'css' },
-    { name: 'rainbow',      selector: '[data-rainbow]',    type: 'css' },
-    { name: 'marquee',      selector: '[data-marquee]',    type: 'css' },
+    { name: 'flipboard',    selector: '[data-effect~="flipboard"]',    type: 'js' },
+    { name: 'stamp',        selector: '[data-effect~="stamp"]',        type: 'js' },
+    { name: 'blink',        selector: '[data-effect~="blink"]',        type: 'css' },
+    { name: 'neon',         selector: '[data-effect~="neon"]',         type: 'css' },
+    { name: 'text-3d',      selector: '[data-effect~="text-3d"]',      type: 'css' },
+    { name: 'outline',      selector: '[data-effect~="outline"]',      type: 'css' },
+    { name: 'hard-shadow',  selector: '[data-effect~="hard-shadow"]',  type: 'css' },
+    { name: 'rainbow',      selector: '[data-effect~="rainbow"]',      type: 'css' },
+    { name: 'marquee',      selector: '[data-effect~="marquee"]',      type: 'css' },
   ],
 
   tokenOverrides: [

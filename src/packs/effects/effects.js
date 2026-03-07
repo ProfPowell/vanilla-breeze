@@ -1,15 +1,16 @@
 /**
  * Effects Pack — niche text/visual effects and interactive widgets
  *
+ * Migrated to VB.effect() API. Effects self-register on import.
  * Includes: glitch, typewriter, scramble, blur-reveal, animate-image,
- * ticker, star-rating, and rating-init.
+ * ticker, star-rating, and rating.
  */
 
-import '../../utils/glitch-init.js';
-import '../../utils/typewriter-init.js';
-import '../../utils/scramble-init.js';
-import '../../utils/blur-reveal-init.js';
-import '../../utils/animate-image-init.js';
-import '../../utils/ticker-init.js';
-import '../../web-components/star-rating/logic.js';
-import '../../utils/rating-init.js';
+import '../../effects/glitch.js'
+import '../../effects/typewriter.js'
+import '../../effects/scramble.js'
+import '../../effects/blur-reveal.js'
+import '../../effects/animate-image.js'
+import '../../effects/ticker.js'
+import '../../web-components/star-rating/logic.js'
+import '../../effects/rating.js'

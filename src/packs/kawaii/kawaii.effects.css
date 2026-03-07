@@ -1,7 +1,8 @@
 /* ==========================================================================
    Kawaii Bundle — CSS Effects
    Vanilla Breeze · Kawaii / Cute
-   Decorative overrides, animations, and data-* attribute effects.
+   Decorative overrides, animations, and data-effect attribute effects.
+   Migrated to data-effect~="name" selectors.
    ========================================================================== */
 
 @layer bundle-effects {
@@ -39,11 +40,10 @@
 
 
   /* ------------------------------------------------------------------
-     data-starburst — Pastel starburst background
-     Inspired by the kawaii starburst backdrop concept.
+     data-effect~="starburst" — Pastel starburst background
      ------------------------------------------------------------------ */
 
-  [data-starburst] {
+  [data-effect~="starburst"] {
     position: relative;
     overflow: hidden;
     background: linear-gradient(
@@ -54,7 +54,7 @@
     );
   }
 
-  [data-starburst]::before {
+  [data-effect~="starburst"]::before {
     content: "";
     position: absolute;
     inset: -50%;
@@ -70,7 +70,7 @@
     z-index: 0;
   }
 
-  [data-starburst]::after {
+  [data-effect~="starburst"]::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -87,39 +87,39 @@
     z-index: 1;
   }
 
-  [data-starburst] > * {
+  [data-effect~="starburst"] > * {
     position: relative;
     z-index: 2;
   }
 
 
   /* ------------------------------------------------------------------
-     data-sparkle — Animated sparkle effect on text/elements
+     data-effect~="sparkle" — Animated sparkle effect on text/elements
      ------------------------------------------------------------------ */
 
-  [data-sparkle] {
+  [data-effect~="sparkle"] {
     position: relative;
     display: inline-block;
   }
 
-  [data-sparkle]::before,
-  [data-sparkle]::after {
+  [data-effect~="sparkle"]::before,
+  [data-effect~="sparkle"]::after {
     position: absolute;
     font-size: 0.6em;
     pointer-events: none;
     animation: vb-kawaii-float 3s ease-in-out infinite;
   }
 
-  [data-sparkle]::before {
-    content: "✦";
+  [data-effect~="sparkle"]::before {
+    content: "\2726";
     top: -0.3em;
     right: -0.5em;
     color: oklch(75% 0.18 60);
     animation-delay: 0s;
   }
 
-  [data-sparkle]::after {
-    content: "✦";
+  [data-effect~="sparkle"]::after {
+    content: "\2726";
     bottom: -0.2em;
     left: -0.4em;
     color: oklch(70% 0.15 290);
@@ -129,31 +129,32 @@
 
 
   /* ------------------------------------------------------------------
-     data-bounce — Bouncy hover animation
+     data-effect~="bounce" — Bouncy hover animation
      ------------------------------------------------------------------ */
 
-  [data-bounce] {
+  [data-effect~="bounce"] {
     transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  [data-bounce]:hover {
+  [data-effect~="bounce"]:hover {
     animation: vb-kawaii-bounce 0.6s ease-in-out;
   }
 
 
   /* ------------------------------------------------------------------
-     data-wiggle — Wiggle animation
+     data-effect~="wiggle" — Wiggle animation
      ------------------------------------------------------------------ */
 
-  [data-wiggle] {
+  [data-effect~="wiggle"] {
+    display: inline-block;
     animation: vb-kawaii-wiggle 2s ease-in-out infinite;
   }
 
-  [data-wiggle="hover"] {
+  [data-effect~="wiggle"][data-trigger~="hover"] {
     animation: none;
   }
 
-  [data-wiggle="hover"]:hover {
+  [data-effect~="wiggle"][data-trigger~="hover"]:hover {
     animation: vb-kawaii-wiggle 0.4s ease-in-out;
   }
 
@@ -305,18 +306,18 @@
      ------------------------------------------------------------------ */
 
   @media (prefers-reduced-motion: reduce) {
-    [data-sparkle]::before,
-    [data-sparkle]::after,
-    [data-wiggle],
-    [data-starburst]::before {
+    [data-effect~="sparkle"]::before,
+    [data-effect~="sparkle"]::after,
+    [data-effect~="wiggle"],
+    [data-effect~="starburst"]::before {
       animation: none;
     }
   }
 
-  :root[data-motion-reduced] [data-sparkle]::before,
-  :root[data-motion-reduced] [data-sparkle]::after,
-  :root[data-motion-reduced] [data-wiggle],
-  :root[data-motion-reduced] [data-starburst]::before {
+  :root[data-motion-reduced] [data-effect~="sparkle"]::before,
+  :root[data-motion-reduced] [data-effect~="sparkle"]::after,
+  :root[data-motion-reduced] [data-effect~="wiggle"],
+  :root[data-motion-reduced] [data-effect~="starburst"]::before {
     animation: none;
   }
 
@@ -326,18 +327,18 @@
      ------------------------------------------------------------------ */
 
   @media print {
-    [data-starburst],
-    [data-sparkle],
-    [data-bounce],
-    [data-wiggle] {
+    [data-effect~="starburst"],
+    [data-effect~="sparkle"],
+    [data-effect~="bounce"],
+    [data-effect~="wiggle"] {
       animation: none !important;
       transform: none !important;
     }
 
-    [data-starburst]::before,
-    [data-starburst]::after,
-    [data-sparkle]::before,
-    [data-sparkle]::after {
+    [data-effect~="starburst"]::before,
+    [data-effect~="starburst"]::after,
+    [data-effect~="sparkle"]::before,
+    [data-effect~="sparkle"]::after {
       display: none !important;
     }
   }

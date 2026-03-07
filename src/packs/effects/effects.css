@@ -1,9 +1,10 @@
 /**
  * Effects Pack CSS — styles for extracted text/visual effects
+ * Migrated to data-effect~="name" selectors.
  */
 @import "../../web-components/star-rating/styles.css";
 
-/* data-animate-image: Play/pause control for animated images */
+/* data-effect~="animate-image": Play/pause control for animated images */
 .animate-image-wrapper {
   position: relative;
   display: inline-block;
@@ -60,45 +61,45 @@
   margin-inline-start: 2px;
 }
 
-/* data-ticker: Animated number count-up */
-data[data-ticker] {
+/* data-effect~="ticker": Animated number count-up */
+data[data-effect~="ticker"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* data-glitch: Chromatic aberration glitch effect (CSS + tiny JS) */
-[data-glitch][data-glitch-init] {
+/* data-effect~="glitch": Chromatic aberration glitch effect (CSS + tiny JS) */
+[data-effect~="glitch"][data-effect-glitch-init] {
   position: relative;
   display: inline-block;
 }
 
-[data-glitch][data-glitch-init]::before,
-[data-glitch][data-glitch-init]::after {
+[data-effect~="glitch"][data-effect-glitch-init]::before,
+[data-effect~="glitch"][data-effect-glitch-init]::after {
   content: attr(data-glitch-text);
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-[data-glitch][data-glitch-init]::before {
+[data-effect~="glitch"][data-effect-glitch-init]::before {
   color: oklch(65% 0.25 210);
   animation: vb-glitch-1 2s infinite linear alternate-reverse;
   clip-path: inset(0 0 65% 0);
 }
 
-[data-glitch][data-glitch-init]::after {
+[data-effect~="glitch"][data-effect-glitch-init]::after {
   color: oklch(65% 0.25 25);
   animation: vb-glitch-2 2s infinite linear alternate-reverse;
   clip-path: inset(65% 0 0 0);
 }
 
-/* Hover-only variant: hide pseudos until hover */
-[data-glitch="hover"][data-glitch-init]::before,
-[data-glitch="hover"][data-glitch-init]::after {
+/* Hover-only variant: hide pseudos until hover via trigger */
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]::after {
   opacity: 0;
 }
 
-[data-glitch="hover"][data-glitch-init]:hover::before,
-[data-glitch="hover"][data-glitch-init]:hover::after {
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::after {
   opacity: 1;
 }
 
@@ -121,14 +122,14 @@ data[data-ticker] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-glitch][data-glitch-init]::before,
-  [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+  [data-effect~="glitch"][data-effect-glitch-init]::before,
+  [data-effect~="glitch"][data-effect-glitch-init]::after { animation: none; opacity: 0; }
 }
-:root[data-motion-reduced] [data-glitch][data-glitch-init]::before,
-:root[data-motion-reduced] [data-glitch][data-glitch-init]::after { animation: none; opacity: 0; }
+:root[data-motion-reduced] [data-effect~="glitch"][data-effect-glitch-init]::before,
+:root[data-motion-reduced] [data-effect~="glitch"][data-effect-glitch-init]::after { animation: none; opacity: 0; }
 
-/* data-blur-reveal: Word/line blur-to-clear reveal */
-[data-blur-reveal][data-blur-reveal-init] .vb-blur-chunk {
+/* data-effect~="blur-reveal": Word/line blur-to-clear reveal */
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init] .vb-blur-chunk {
   display: inline-block;
   opacity: 0;
   filter: blur(8px);
@@ -138,7 +139,7 @@ data[data-ticker] {
   transition-delay: calc(var(--i, 0) * var(--blur-delay, 80ms));
 }
 
-[data-blur-reveal][data-blur-reveal-init][data-blur-reveal-visible] .vb-blur-chunk {
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-active] .vb-blur-chunk {
   opacity: 1;
   filter: blur(0);
 }
@@ -161,7 +162,7 @@ data[data-ticker] {
 }
 :root[data-motion-reduced] .vb-typewriter-cursor { animation: none; }
 
-/* data-scramble: Decode effect (minimal CSS — JS drives animation) */
-[data-scramble][data-scramble-init] {
+/* data-effect~="scramble": Decode effect (minimal CSS — JS drives animation) */
+[data-effect~="scramble"][data-effect-scramble-init] {
   font-variant-numeric: tabular-nums;
 }
