@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consent Banner &mdash; Positions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); min-block-size: 400px; }
+  </style>
+</head>
+<body>
+  <article>
+    <h2>Position Variants</h2>
+    <p>Use the buttons below to preview each position. Each clears its own localStorage key so you can try again.</p>
+    <layout-cluster data-layout-gap="m">
+      <button type="button" id="show-bottom">Bottom (default)</button>
+      <button type="button" id="show-top">Top</button>
+      <button type="button" id="show-center">Center (modal)</button>
+    </layout-cluster>
+    <p><small>Center position uses <code>showModal()</code> &mdash; the page is blocked until you choose. ESC is prevented.</small></p>
+  </article>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import { ConsentBanner } from '/src/web-components/consent-banner/logic.js';
+
+    function createBanner(position, key) {
+      /* Remove any existing demo banner */
+      document.querySelector(`consent-banner[data-persist="${key}"]`)?.remove();
+      ConsentBanner.reset(key);
+
+      const banner = document.createElement('consent-banner');
+      banner.dataset.persist = key;
+      if (position !== 'bottom') banner.dataset.position = position;
+
+      banner.innerHTML = `
+        <dialog>
+          <p>This banner is positioned at the <strong>${position}</strong>.</p>
+          <footer>
+            <button value="reject" class="secondary">Reject</button>
+            <button value="accept">Accept</button>
+          </footer>
+        </dialog>
+      `;
+
+      document.body.appendChild(banner);
+    }
+
+    document.getElementById('show-bottom').addEventListener('click', () => createBanner('bottom', 'demo-pos-bottom'));
+    document.getElementById('show-top').addEventListener('click', () => createBanner('top', 'demo-pos-top'));
+    document.getElementById('show-center').addEventListener('click', () => createBanner('center', 'demo-pos-center'));
+
+    document.addEventListener('consent-banner:change', ({ detail }) => {
+      console.log('Consent:', detail.action, detail.preferences);
+    });
+  </script>
+</body>
+</html>

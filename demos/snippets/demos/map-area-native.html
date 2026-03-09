@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Native Image Map</title>
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f6f8;
+      color: #1a1a2e;
+    }
+    figure { line-height: 0; }
+    figcaption {
+      line-height: 1.5;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: #555;
+      background: #eef0f3;
+    }
+    #status {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      background: #1a1a2e;
+      color: #ddd;
+      min-height: 2rem;
+    }
+    #status strong { color: #7eb8f7; }
+  </style>
+</head>
+<body>
+  <figure>
+    <img src="assets/map-sample.svg" alt="Office floor plan" usemap="#office-plan" width="800" height="500" />
+    <map name="office-plan">
+      <area shape="rect" coords="40,40,320,220" href="#conference" alt="Conference Hall" title="Conference Hall — seats 120" />
+      <area shape="circle" coords="500,160,80" href="#server" alt="Server Room" title="Server Room — 24 racks" />
+      <area shape="rect" coords="40,280,340,460" href="#cafeteria" alt="Cafeteria" title="Cafeteria — open 7am to 7pm" />
+      <area shape="rect" coords="620,40,760,160" href="#reception" alt="Reception" title="Reception — visitor check-in" />
+      <area shape="poly" coords="480,280,760,280,760,460,560,460,480,380" href="#office" alt="Open Office" title="Open Office — 80 desks" />
+    </map>
+    <figcaption>Hover over a room to see its <code>title</code> tooltip. Click to navigate.</figcaption>
+  </figure>
+  <div id="status">Click a room&hellip;</div>
+  <script>
+    const status = document.getElementById('status');
+    const areas = document.querySelectorAll('area');
+    areas.forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        status.innerHTML = 'Clicked: <strong>' + a.alt + '</strong> &mdash; ' + a.title;
+      });
+    });
+  </script>
+</body>
+</html>

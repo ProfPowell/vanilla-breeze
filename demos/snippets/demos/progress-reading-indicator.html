@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reading Progress Indicator</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: 0; background: var(--color-surface); }
+    #reading-progress {
+      position: fixed;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      inline-size: 100%;
+      block-size: 4px;
+      z-index: 100;
+    }
+    article {
+      padding: var(--size-l);
+      max-inline-size: 60ch;
+      margin-inline: auto;
+    }
+  </style>
+</head>
+<body>
+  <progress id="reading-progress" max="100" value="0" aria-hidden="true"></progress>
+
+  <article>
+    <h2>The Semantic Web Promise</h2>
+    <p>The semantic web was a promise made early in the web's history — that machines and humans could share a common understanding of content through structured markup. That promise lives on in elements like <code>&lt;meter&gt;</code>, <code>&lt;progress&gt;</code>, and <code>&lt;fieldset&gt;</code>: elements designed not just for visual output, but to communicate intent.</p>
+    <p>When a browser renders a <code>&lt;progress&gt;</code> element without a <code>value</code> attribute, something interesting happens. The element enters an indeterminate state — visually animated by the browser itself, with no JavaScript required. This is progressive enhancement in its purest form.</p>
+    <p>The <code>&lt;meter&gt;</code> element goes further. Its <code>low</code>, <code>high</code>, and <code>optimum</code> attributes encode domain knowledge into markup. A value within the optimum range renders green. A value that deviates renders yellow. A value in the danger zone renders red.</p>
+    <p>Consider what this means for a design system. Instead of maintaining separate CSS classes for status colors, you encode the semantic range in HTML. The styling follows automatically.</p>
+    <p>Fieldsets have an underrated superpower: the <code>disabled</code> attribute cascades. Set <code>disabled</code> on a fieldset and every descendant control is disabled. This is native state management — no JavaScript loop, no class toggling.</p>
+    <p>These elements are a reminder that the web platform has been quietly solving UI problems for decades. Before reaching for a framework, it's worth asking: does the platform already have this?</p>
+  </article>
+
+  <script>
+    const bar = document.getElementById('reading-progress');
+    document.addEventListener('scroll', () => {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      bar.value = (scrollTop / (scrollHeight - clientHeight)) * 100;
+    }, { passive: true });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

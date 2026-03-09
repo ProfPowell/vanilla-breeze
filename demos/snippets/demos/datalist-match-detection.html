@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datalist Match Detection</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    [data-match="true"] { color: var(--color-success, green); }
+    [data-match="false"] { color: var(--color-text-muted, gray); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
+    <label for="country-input">Country</label>
+    <input
+      type="text"
+      id="country-input"
+      list="country-list"
+      placeholder="Start typing..."
+      autocomplete="off"
+    />
+    <datalist id="country-list">
+      <option value="Australia"></option>
+      <option value="Austria"></option>
+      <option value="Belgium"></option>
+      <option value="Brazil"></option>
+      <option value="Canada"></option>
+      <option value="Chile"></option>
+      <option value="China"></option>
+      <option value="Denmark"></option>
+      <option value="Finland"></option>
+      <option value="France"></option>
+      <option value="Germany"></option>
+      <option value="Greece"></option>
+      <option value="India"></option>
+      <option value="Ireland"></option>
+      <option value="Italy"></option>
+      <option value="Japan"></option>
+      <option value="Mexico"></option>
+      <option value="Netherlands"></option>
+      <option value="New Zealand"></option>
+      <option value="Norway"></option>
+      <option value="Portugal"></option>
+      <option value="South Korea"></option>
+      <option value="Spain"></option>
+      <option value="Sweden"></option>
+      <option value="Switzerland"></option>
+      <option value="United Kingdom"></option>
+      <option value="United States"></option>
+    </datalist>
+    <output id="match-result" aria-live="polite">Type a country name</output>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const input = document.getElementById('country-input');
+    const result = document.getElementById('match-result');
+    const options = [...document.querySelectorAll('#country-list option')].map(o => o.value);
+
+    input.addEventListener('input', () => {
+      const v = input.value.trim();
+      if (!v) {
+        result.textContent = 'Type a country name';
+        result.removeAttribute('data-match');
+        return;
+      }
+      const isMatch = options.includes(v);
+      result.textContent = isMatch ? `\u2713 "${v}" matches a list option` : `"${v}" is a custom entry`;
+      result.setAttribute('data-match', isMatch);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Canvas Drawing Examples</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+    <section>
+      <h3>Basic shapes and text</h3>
+      <canvas id="shapes" class="bordered" width="400" height="180" role="img" aria-label="Filled rectangle, stroked rectangle, and text demo"></canvas>
+    </section>
+    <section>
+      <h3>Bar chart</h3>
+      <figure>
+        <canvas id="chart" class="bordered" width="450" height="220" role="img" aria-label="Bar chart: Q1 $45k, Q2 $52k, Q3 $48k, Q4 $61k">
+          <p>Quarterly sales: Q1 $45k, Q2 $52k, Q3 $48k, Q4 $61k</p>
+        </canvas>
+        <figcaption>Quarterly sales &mdash; 2025</figcaption>
+      </figure>
+    </section>
+    <section>
+      <h3>Responsive canvas (resize browser)</h3>
+      <section class="canvas-responsive" style="max-inline-size: 500px; border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
+        <canvas id="responsive" role="img" aria-label="Responsive gradient canvas"></canvas>
+      </section>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Shapes and text
+    const s = document.getElementById('shapes');
+    const sc = s.getContext('2d');
+    sc.fillStyle = '#4a90d9';
+    sc.fillRect(20, 30, 120, 80);
+    sc.strokeStyle = '#8b5cf6';
+    sc.lineWidth = 3;
+    sc.strokeRect(170, 30, 120, 80);
+    sc.beginPath();
+    sc.arc(350, 70, 40, 0, Math.PI * 2);
+    sc.fillStyle = '#10b981';
+    sc.fill();
+    sc.fillStyle = '#333';
+    sc.font = '14px system-ui';
+    sc.fillText('fillRect', 40, 140);
+    sc.fillText('strokeRect', 185, 140);
+    sc.fillText('arc', 337, 140);
+
+    // Bar chart
+    const ch = document.getElementById('chart');
+    const cc = ch.getContext('2d');
+    const data = [
+      { label: 'Q1', value: 45, color: '#4a90d9' },
+      { label: 'Q2', value: 52, color: '#8b5cf6' },
+      { label: 'Q3', value: 48, color: '#ec4899' },
+      { label: 'Q4', value: 61, color: '#10b981' },
+    ];
+    const maxVal = 65;
+    const barW = 60;
+    const gap = 30;
+    const startX = 60;
+    const chartH = 160;
+    const baseY = 190;
+
+    // Y-axis labels
+    cc.fillStyle = '#999';
+    cc.font = '11px system-ui';
+    cc.textAlign = 'right';
+    for (let i = 0; i <= 3; i++) {
+      const y = baseY - (chartH / 3) * i;
+      const val = Math.round((maxVal / 3) * i);
+      cc.fillText(`$${val}k`, 45, y + 4);
+      cc.beginPath();
+      cc.moveTo(52, y);
+      cc.lineTo(450, y);
+      cc.strokeStyle = 'oklch(0% 0 0 / 0.08)';
+      cc.lineWidth = 1;
+      cc.stroke();
+    }
+
+    // Bars
+    cc.textAlign = 'center';
+    data.forEach((d, i) => {
+      const x = startX + i * (barW + gap);
+      const barH = (d.value / maxVal) * chartH;
+      const y = baseY - barH;
+      cc.fillStyle = d.color;
+      cc.beginPath();
+      cc.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+      cc.fill();
+      cc.fillStyle = '#666';
+      cc.font = '12px system-ui';
+      cc.fillText(d.label, x + barW / 2, baseY + 16);
+      cc.fillStyle = '#333';
+      cc.font = 'bold 12px system-ui';
+      cc.fillText(`$${d.value}k`, x + barW / 2, y - 8);
+    });
+
+    // Responsive canvas
+    const rc = document.getElementById('responsive');
+    const rctx = rc.getContext('2d');
+    function drawResponsive() {
+      const w = rc.parentElement.clientWidth;
+      const h = rc.parentElement.clientHeight;
+      rc.width = w;
+      rc.height = h;
+      const g = rctx.createLinearGradient(0, 0, w, h);
+      g.addColorStop(0, '#4a90d9');
+      g.addColorStop(0.5, '#8b5cf6');
+      g.addColorStop(1, '#ec4899');
+      rctx.fillStyle = g;
+      rctx.fillRect(0, 0, w, h);
+      rctx.fillStyle = 'white';
+      rctx.font = '16px system-ui';
+      rctx.textAlign = 'center';
+      rctx.fillText(`${w} × ${h}px`, w / 2, h / 2 + 6);
+    }
+    drawResponsive();
+    new ResizeObserver(drawResponsive).observe(rc.parentElement);
+  </script>
+</body>
+</html>

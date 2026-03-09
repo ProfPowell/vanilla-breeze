@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datalist Range with Tick Labels</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    footer[role="presentation"] {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m" style="max-inline-size: 30rem;">
+    <label for="budget-range">Budget range</label>
+    <input
+      type="range"
+      id="budget-range"
+      min="0"
+      max="5000"
+      step="500"
+      value="2500"
+      list="budget-ticks"
+    />
+    <datalist id="budget-ticks">
+      <option value="0"></option>
+      <option value="500"></option>
+      <option value="1000"></option>
+      <option value="1500"></option>
+      <option value="2000"></option>
+      <option value="2500"></option>
+      <option value="3000"></option>
+      <option value="3500"></option>
+      <option value="4000"></option>
+      <option value="4500"></option>
+      <option value="5000"></option>
+    </datalist>
+    <footer role="presentation">
+      <span>$0</span>
+      <span>$1k</span>
+      <span>$2k</span>
+      <span>$3k</span>
+      <span>$4k</span>
+      <span>$5k</span>
+    </footer>
+    <output id="budget-value" for="budget-range" aria-live="polite">Budget: $2,500</output>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const range = document.getElementById('budget-range');
+    const output = document.getElementById('budget-value');
+    const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    function update() { output.textContent = `Budget: ${fmt.format(range.value)}`; }
+    range.addEventListener('input', update);
+  </script>
+</body>
+</html>

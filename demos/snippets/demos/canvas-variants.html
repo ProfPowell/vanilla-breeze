@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Canvas Variants</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+    <section>
+      <h3>Default</h3>
+      <canvas id="c-default" width="300" height="120" role="img" aria-label="Blue gradient rectangle"></canvas>
+    </section>
+    <section>
+      <h3>.bordered</h3>
+      <canvas id="c-bordered" class="bordered" width="300" height="120" role="img" aria-label="Circles on bordered canvas"></canvas>
+    </section>
+    <section>
+      <h3>.loading (placeholder state)</h3>
+      <canvas class="bordered loading" width="300" height="120" role="img" aria-label="Loading placeholder"></canvas>
+    </section>
+    <section>
+      <h3>.interactive (crosshair cursor — hover to see)</h3>
+      <canvas id="c-interactive" class="bordered interactive" width="300" height="120" role="img" aria-label="Interactive canvas with hover tracking"></canvas>
+    </section>
+    <section>
+      <h3>.drawing (draw with mouse/touch)</h3>
+      <canvas id="c-drawing" class="bordered drawing" width="300" height="150" role="img" aria-label="Drawing canvas"></canvas>
+      <p><small>Click and drag to draw</small></p>
+    </section>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Default: gradient
+    const c1 = document.getElementById('c-default');
+    const ctx1 = c1.getContext('2d');
+    const grad = ctx1.createLinearGradient(0, 0, 300, 0);
+    grad.addColorStop(0, '#4a90d9');
+    grad.addColorStop(1, '#8b5cf6');
+    ctx1.fillStyle = grad;
+    ctx1.fillRect(0, 0, 300, 120);
+    ctx1.fillStyle = 'white';
+    ctx1.font = '16px system-ui';
+    ctx1.fillText('Canvas Drawing', 90, 65);
+
+    // Bordered: circles
+    const c2 = document.getElementById('c-bordered');
+    const ctx2 = c2.getContext('2d');
+    const colors = ['#4a90d9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+    colors.forEach((color, i) => {
+      ctx2.beginPath();
+      ctx2.arc(50 + i * 55, 60, 20, 0, Math.PI * 2);
+      ctx2.fillStyle = color;
+      ctx2.fill();
+    });
+
+    // Interactive: follow mouse
+    const c3 = document.getElementById('c-interactive');
+    const ctx3 = c3.getContext('2d');
+    function drawInteractive(x, y) {
+      ctx3.clearRect(0, 0, 300, 120);
+      ctx3.fillStyle = 'oklch(90% 0.02 250)';
+      ctx3.fillRect(0, 0, 300, 120);
+      ctx3.beginPath();
+      ctx3.arc(x, y, 15, 0, Math.PI * 2);
+      ctx3.fillStyle = '#4a90d9';
+      ctx3.fill();
+      ctx3.fillStyle = '#666';
+      ctx3.font = '12px system-ui';
+      ctx3.fillText(`${x}, ${y}`, x + 20, y + 5);
+    }
+    drawInteractive(150, 60);
+    c3.addEventListener('pointermove', e => {
+      const r = c3.getBoundingClientRect();
+      drawInteractive(Math.round(e.clientX - r.left), Math.round(e.clientY - r.top));
+    });
+
+    // Drawing: freehand
+    const c4 = document.getElementById('c-drawing');
+    const ctx4 = c4.getContext('2d');
+    ctx4.fillStyle = 'oklch(97% 0.01 250)';
+    ctx4.fillRect(0, 0, 300, 150);
+    ctx4.strokeStyle = '#4a90d9';
+    ctx4.lineWidth = 3;
+    ctx4.lineCap = 'round';
+    ctx4.lineJoin = 'round';
+    let drawing = false;
+    c4.addEventListener('pointerdown', e => { drawing = true; ctx4.beginPath(); const r = c4.getBoundingClientRect(); ctx4.moveTo(e.clientX - r.left, e.clientY - r.top); });
+    c4.addEventListener('pointermove', e => { if (!drawing) return; const r = c4.getBoundingClientRect(); ctx4.lineTo(e.clientX - r.left, e.clientY - r.top); ctx4.stroke(); });
+    c4.addEventListener('pointerup', () => { drawing = false; });
+    c4.addEventListener('pointerleave', () => { drawing = false; });
+  </script>
+</body>
+</html>

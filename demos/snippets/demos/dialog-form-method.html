@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dialog Form method=dialog</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); min-block-size: 300px; }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m">
+    <button type="button" id="open-choice">Open Choice Dialog</button>
+    <output id="result" aria-live="polite"></output>
+  </layout-stack>
+
+  <dialog id="choice-dlg">
+    <form method="dialog">
+      <header><h3>Choose an Option</h3></header>
+      <p>Submitting this form closes the dialog and returns the button's value.</p>
+      <footer>
+        <button type="submit" value="cancel" class="secondary">Cancel</button>
+        <button type="submit" value="confirm">Confirm</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const dlg = document.getElementById('choice-dlg');
+    document.getElementById('open-choice').addEventListener('click', () => dlg.showModal());
+    dlg.addEventListener('close', () => {
+      document.getElementById('result').textContent = `You chose: ${dlg.returnValue || '(none)'}`;
+    });
+  </script>
+</body>
+</html>

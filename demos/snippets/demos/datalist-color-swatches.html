@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datalist Color Palette Swatches</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    input[type="color"] {
+      inline-size: 100%;
+      block-size: 3rem;
+      padding: 0.2rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-s, 4px);
+      cursor: pointer;
+    }
+    [role="list"] button {
+      inline-size: 2rem;
+      block-size: 2rem;
+      border-radius: var(--radius-s, 4px);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    [role="list"] button:hover {
+      transform: scale(1.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+  <layout-grid data-layout-gap="l" style="max-inline-size: 30rem; --layout-grid-min: 12rem;">
+    <section>
+      <layout-stack data-layout-gap="s">
+        <label for="color-picker">Theme color</label>
+        <input
+          type="color"
+          id="color-picker"
+          list="brand-palette"
+          value="#c84b2f"
+        />
+        <datalist id="brand-palette">
+          <option value="#c84b2f"></option>
+          <option value="#1a1612"></option>
+          <option value="#2d6a4f"></option>
+          <option value="#4a7fbd"></option>
+          <option value="#e8a838"></option>
+          <option value="#8b3a8b"></option>
+          <option value="#f5f0e8"></option>
+          <option value="#7a6e62"></option>
+        </datalist>
+      </layout-stack>
+    </section>
+    <section>
+      <layout-stack data-layout-gap="s">
+        <p>Brand palette (click to apply)</p>
+        <layout-cluster data-layout-gap="s" id="swatches" role="list" aria-label="Brand color swatches"></layout-cluster>
+      </layout-stack>
+    </section>
+  </layout-grid>
+  <output id="color-output" for="color-picker" aria-live="polite" style="margin-block-start: var(--size-m); display: flex; align-items: center; gap: var(--size-s);">
+    <span>Color:</span>
+    <span id="color-hex">#c84b2f</span>
+    <span id="color-swatch" style="display:inline-block; inline-size:1em; block-size:1em; border-radius:2px; background:#c84b2f; border:1px solid var(--color-border);"></span>
+  </output>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const picker = document.getElementById('color-picker');
+    const hexEl = document.getElementById('color-hex');
+    const swatchEl = document.getElementById('color-swatch');
+    const container = document.getElementById('swatches');
+
+    const names = {
+      '#c84b2f': 'Accent red', '#1a1612': 'Ink', '#2d6a4f': 'Forest',
+      '#4a7fbd': 'Slate blue', '#e8a838': 'Amber', '#8b3a8b': 'Plum',
+      '#f5f0e8': 'Paper', '#7a6e62': 'Muted'
+    };
+
+    function updateOutput(hex) {
+      hexEl.textContent = hex;
+      swatchEl.style.background = hex;
+    }
+
+    [...document.querySelectorAll('#brand-palette option')].forEach(opt => {
+      const hex = opt.value;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.background = hex;
+      btn.title = names[hex] || hex;
+      btn.setAttribute('aria-label', names[hex] || hex);
+      btn.setAttribute('role', 'listitem');
+      btn.addEventListener('click', () => { picker.value = hex; updateOutput(hex); });
+      container.appendChild(btn);
+    });
+
+    picker.addEventListener('input', () => updateOutput(picker.value));
+  </script>
+</body>
+</html>

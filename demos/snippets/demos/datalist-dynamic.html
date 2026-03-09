@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datalist Dynamic Suggestions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    [data-status] { font-size: var(--font-size-s); color: var(--color-text-muted); }
+    [data-status]::before {
+      content: '';
+      display: inline-block;
+      inline-size: 0.5em;
+      block-size: 0.5em;
+      border-radius: 50%;
+      margin-inline-end: var(--size-xs);
+      background: var(--color-text-muted);
+      vertical-align: middle;
+    }
+    [data-status="loading"]::before { background: var(--color-warning, orange); animation: pulse 0.8s ease-in-out infinite; }
+    [data-status="ready"]::before { background: var(--color-success, green); }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
+    <label for="city-input">City search</label>
+    <input
+      type="search"
+      id="city-input"
+      list="city-suggestions"
+      placeholder="Type a city name..."
+      autocomplete="off"
+    />
+    <datalist id="city-suggestions"></datalist>
+    <output id="city-status" data-status="idle" aria-live="polite">Type at least 2 characters</output>
+    <output id="city-value" aria-live="polite"></output>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const CITIES = [
+      'Amsterdam','Athens','Auckland','Bangkok','Barcelona',
+      'Beijing','Berlin','Brisbane','Brussels','Buenos Aires',
+      'Cairo','Cape Town','Chicago','Copenhagen','Dallas',
+      'Delhi','Dublin','Dubai','Edinburgh','Frankfurt',
+      'Helsinki','Hong Kong','Istanbul','Jakarta','Johannesburg',
+      'Kuala Lumpur','Lagos','Lima','Lisbon','London',
+      'Los Angeles','Madrid','Manila','Melbourne','Mexico City',
+      'Miami','Milan','Montreal','Mumbai','Nairobi','New York',
+      'Osaka','Oslo','Paris','Prague','Rome','San Francisco',
+      'Santiago','Seoul','Shanghai','Singapore','Stockholm',
+      'Sydney','Taipei','Tokyo','Toronto','Vancouver',
+      'Vienna','Warsaw','Washington DC','Zurich'
+    ];
+
+    async function fetchCities(query) {
+      await new Promise(r => setTimeout(r, 150));
+      const q = query.toLowerCase();
+      return CITIES.filter(c => c.toLowerCase().includes(q)).slice(0, 8);
+    }
+
+    const input = document.getElementById('city-input');
+    const datalist = document.getElementById('city-suggestions');
+    const status = document.getElementById('city-status');
+    const valueEl = document.getElementById('city-value');
+    let timer;
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      const v = input.value.trim();
+      if (v.length < 2) {
+        datalist.innerHTML = '';
+        status.textContent = 'Type at least 2 characters';
+        status.dataset.status = 'idle';
+        return;
+      }
+      status.textContent = 'Searching...';
+      status.dataset.status = 'loading';
+      timer = setTimeout(async () => {
+        const results = await fetchCities(v);
+        datalist.innerHTML = results.map(r => `<option value="${r}">`).join('');
+        status.textContent = `${results.length} suggestion${results.length !== 1 ? 's' : ''} loaded`;
+        status.dataset.status = 'ready';
+      }, 300);
+    });
+
+    input.addEventListener('change', () => {
+      valueEl.textContent = input.value ? `Selected: ${input.value}` : '';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consent Banner &mdash; Granular Preferences</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); min-block-size: 400px; }
+  </style>
+</head>
+<body>
+  <article>
+    <h2>Granular Consent Banner</h2>
+    <p>Checkboxes let users choose individual cookie categories. The <q>Necessary</q> checkbox is always on.</p>
+    <p>A <q>Manage Cookies</q> button re-opens the banner with previously saved preferences pre-checked.</p>
+    <footer>
+      <button type="button" id="manage-cookies" class="secondary small">Manage Cookies</button>
+    </footer>
+  </article>
+
+  <consent-banner data-persist="demo-granular" data-trigger="#manage-cookies">
+    <dialog>
+      <header>
+        <h3>Cookie Preferences</h3>
+      </header>
+      <section>
+        <p>We use cookies to personalize content and analyse traffic. <a href="#">Learn more</a></p>
+        <fieldset class="minimal">
+          <label><input type="checkbox" name="necessary" checked disabled> Necessary</label>
+          <label><input type="checkbox" name="analytics"> Analytics</label>
+          <label><input type="checkbox" name="marketing"> Marketing</label>
+          <label><input type="checkbox" name="personalization"> Personalization</label>
+        </fieldset>
+      </section>
+      <footer>
+        <button value="reject" class="secondary">Reject All</button>
+        <button value="save" class="secondary">Save Preferences</button>
+        <button value="accept">Accept All</button>
+      </footer>
+    </dialog>
+  </consent-banner>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    document.addEventListener('consent-banner:change', ({ detail }) => {
+      console.log('Consent:', detail.action, detail.preferences);
+    });
+  </script>
+</body>
+</html>
