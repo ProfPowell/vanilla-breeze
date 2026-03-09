@@ -8,7 +8,7 @@ tags:
   - specification
   - effects
   - progressive-enhancement
-draft: true
+draft: false
 ---
 
 # Vanilla Breeze Declarative Effects System
@@ -84,7 +84,8 @@ When the effect activates. Space-separated for composing triggers. Colon syntax 
 | `click` | CSS or minimal JS | Prefer native where possible |
 | `scroll` | `IntersectionObserver` | JS required |
 | `time:n` | `setTimeout` | JS required, `n` in ms |
-| `navigate` | View Transitions API | Routes to `data-transition` system |
+
+> **Note:** Navigation transitions are not a trigger — they are handled by `data-transition` + `VB.swap()` directly. See the [View Transitions](#view-transitions) section.
 
 ### `data-stagger`
 
@@ -121,7 +122,7 @@ Marks elements participating in View Transitions. Separate from `data-effect` �
 
 ## Effect Vocabulary
 
-Built-in named effects. All are pure CSS at the basic tier.
+Built-in named effects. Core effects are pure CSS at the basic tier. JS-enhanced effects use `VB.effect()` for initialization and progressively enhance from a CSS base.
 
 ### Entrance
 
@@ -130,7 +131,8 @@ Built-in named effects. All are pure CSS at the basic tier.
 <p data-effect="slide-up">    <!-- translate Y + fade -->
 <p data-effect="slide-in">    <!-- respects dir attribute for RTL -->
 <p data-effect="pop">         <!-- scale 0.8 → 1 -->
-<p data-effect="reveal">      <!-- clip-path wipe -->
+<p data-effect="reveal">      <!-- clip-path wipe (JS-enhanced: word/line splitting) -->
+<p data-effect="blur-reveal"> <!-- word/line blur-to-clear entrance (JS-enhanced) -->
 ```
 
 ### Attention
@@ -157,6 +159,72 @@ Built-in named effects. All are pure CSS at the basic tier.
 <p data-effect="slide-out">
 <p data-effect="collapse">    <!-- height → 0 -->
 ```
+
+### Text Effects
+
+Effects targeting text rendering and typography. Mix of CSS-only and JS-enhanced.
+
+```html
+<span data-effect="typewriter">         <!-- character-by-character typing (JS) -->
+<span data-effect="scramble">           <!-- decode/unscramble reveal (JS) -->
+<data data-effect="ticker">             <!-- animated number count-up (JS) -->
+<span data-effect="gradient-text">      <!-- gradient coloring (.sunset .ocean .forest .neon .animate) -->
+<span data-effect="text-3d">            <!-- 3D extruded text (.red .gold .green .purple .black .deep .animate) -->
+<span data-effect="outline">            <!-- stroke/outline text (.thick .ultra .glow) -->
+<span data-effect="hard-shadow">        <!-- flat offset shadow (.double .long .red .blue .gold .green) -->
+```
+
+### Visual Effects
+
+Effects targeting visual presentation, emphasis, and interactive decoration.
+
+```html
+<mark data-effect="highlight">          <!-- draw-in underline/box/circle (.underline .box .circle) -->
+<span data-effect="blur-reveal">        <!-- word/line blur-to-clear reveal (JS) -->
+<img  data-effect="animate-image">      <!-- play/pause control for animated images (JS) -->
+<span data-effect="rating">             <!-- star/icon rating display (JS) -->
+<div  data-effect="marquee">            <!-- continuous scroll (.reverse .slow .fast .pause .hover-pause) -->
+<span data-effect="flipboard">          <!-- split-flap / Solari departure board (JS) -->
+<span data-effect="stamp">              <!-- rubber stamp (.red .blue .green .black .gold .straight .slight .heavy) -->
+<span data-effect="rainbow">            <!-- cycling hue rotation (.slow .fast) -->
+<span data-effect="glitch">             <!-- chromatic aberration glitch (CSS + JS init) -->
+```
+
+### Pack Effects
+
+Themed effect packs extend the vocabulary with curated effect sets.
+
+#### Retro Pack
+
+Nostalgic, analog-inspired effects loaded via `retro.bundle.js`.
+
+```html
+<span data-effect="blink">             <!-- classic cursor blink (.slow .fast) -->
+<span data-effect="neon">              <!-- neon sign glow (.pink .cyan .green .amber .red) -->
+<span data-effect="text-3d">           <!-- 3D extruded text (also in core) -->
+<span data-effect="outline">           <!-- stroke text (also in core) -->
+<span data-effect="hard-shadow">       <!-- flat offset shadow (also in core) -->
+<span data-effect="stamp">             <!-- rubber stamp (also in core) -->
+<span data-effect="rainbow">           <!-- hue cycling (also in core) -->
+<span data-effect="marquee">           <!-- continuous scroll (also in core) -->
+<span data-effect="flipboard">         <!-- split-flap display (JS) -->
+```
+
+#### Kawaii Pack
+
+Soft, playful effects loaded via `kawaii.bundle.js`.
+
+```html
+<span data-effect="starburst">         <!-- pastel starburst background -->
+<span data-effect="sparkle">           <!-- animated sparkle overlay -->
+<span data-effect="bounce">            <!-- bouncy hover (kawaii variant) -->
+<span data-effect="wiggle">            <!-- wiggle animation (.hover trigger) -->
+<span data-effect="particles">         <!-- floating particle overlay (JS) -->
+```
+
+#### Effects Pack
+
+The general-purpose effects pack (`effects.full.js`) bundles the JS-enhanced effects — glitch, blur-reveal, scramble, ticker, typewriter, highlight, reveal, animate-image, and rating — as a single import. CSS for these effects is included in the core stylesheet.
 
 ---
 
@@ -268,9 +336,12 @@ const VB = {
   disconnect() {},              // full teardown
 
   // Utilities
-  uid(el) {},                   // stable id for view-transition-name
-  params(el) {},                // dataset → typed values
-  emit(el, name, detail) {},    // CustomEvent wrapper
+  uid(el) {},                        // stable id for view-transition-name
+  params(el) {},                     // CSS custom property reader → { get, getNumber, hasClass }
+  emit(el, name, detail) {},         // CustomEvent wrapper
+  swap(update) {},                   // View Transition wrapper (startViewTransition or fallback)
+  applyTheme(name, scope) {},        // apply registered theme tokens to a scope element
+  prefersReducedMotion() {},         // returns boolean for motion preference
 }
 ```
 
@@ -299,18 +370,24 @@ VB.trigger('scroll', (el, run) => {
 })
 ```
 
-### `VB.params()` — typed dataset parsing
+### `VB.params()` — CSS custom property reader
+
+Returns an object with methods for reading `--vb-*` custom properties from the element's computed style. This integrates with the CSS cascade, media queries, and themes — the source of truth is always CSS, not data attributes.
 
 ```js
-// Reads el.dataset, coerces types automatically:
-// data-duration="300ms"  → { duration: '300ms' }
-// data-to="1000"         → { to: 1000 }
-// data-once              → { once: true }
-// data-stagger="80ms"    → { stagger: '80ms' }
+const params = VB.params(el)
 
-VB.effect('scroll-counter', (el) => {
-  const { to, duration = 2000 } = VB.params(el)
-  // no manual parsing needed
+params.get('duration')           // reads --vb-duration, returns trimmed string
+params.getNumber('delay', 0)     // reads --vb-delay, parses as float (fallback if empty)
+params.hasClass('once')          // checks el.classList.contains('once')
+```
+
+```js
+VB.effect('reveal', (el) => {
+  const params = VB.params(el)
+  const delay = params.get('blur-reveal-delay') || '80ms'
+  // Values come from CSS — a theme or media query can override them
+  // without the effect handler needing to know
 })
 ```
 
@@ -380,92 +457,91 @@ input.addEventListener('invalid', () => {
 
 ## Theme Scoping
 
-### The problem
+### The approach — composable flat selectors
 
-CSS custom properties inherit through the DOM. Without scoping, parent theme tokens leak into child themes for any token the child doesn't explicitly set.
-
-### `@scope` lower boundary
-
-```css
-@scope ([data-theme="swiss"]) to ([data-theme]:not([data-theme="swiss"])) {
-  --color-bg: white;
-  --color-text: #111;
-  --font-family: 'Helvetica Neue', sans-serif;
-}
-
-@scope ([data-theme="organic"]) to ([data-theme]:not([data-theme="organic"])) {
-  --color-bg: #f5f0e8;
-  --color-text: #2d2d2d;
-  --font-family: 'Lora', serif;
-}
-```
-
-The `to (...)` clause stops rules at any nested theme boundary — swiss tokens won't reach inside an organic section.
+The implementation chose simplicity and composability over strict isolation. Themes are applied via space-separated names in `data-theme`, matched with flat `[data-theme~="name"]` selectors. This enables theme composition — multiple themes can be active on the same element, with later declarations winning via normal CSS cascade order.
 
 ```html
-<body data-theme="swiss">
-  <h1>Swiss heading</h1>             <!-- swiss tokens -->
+<!-- Single theme -->
+<body data-theme="forest">
 
-  <section data-theme="organic">
-    <h2>Organic heading</h2>         <!-- organic tokens, no swiss bleed -->
-  </section>
+<!-- Composed themes — forest provides base tokens, a11y-high-contrast overlays adjustments -->
+<body data-theme="forest a11y-high-contrast">
 
-  <p>Back to swiss</p>               <!-- swiss again -->
-</body>
+<!-- Scoped to a section -->
+<section data-theme="swiss">
 ```
 
-### `@property` — opt tokens out of inheritance entirely
+### Flat `~=` selectors
+
+Each theme targets a single word in the `data-theme` attribute:
 
 ```css
-@property --color-bg {
-  syntax: '<color>';
-  inherits: false;       /* does not cascade through DOM at all */
-  initial-value: white;
+[data-theme~="forest"] {
+  --hue-primary: 145;
+  --color-bg: oklch(97% 0.01 145);
+  --color-text: oklch(20% 0.02 145);
+}
+
+[data-theme~="a11y-high-contrast"] {
+  --color-bg: #000;
+  --color-text: #fff;
+  /* overrides forest's colors, keeps forest's hue */
 }
 ```
 
-With `inherits: false`, each theme sets its own value. Nothing bleeds regardless of nesting. This is the strongest isolation — worth the boilerplate of registering every token explicitly.
+Composition works because `~=` matches individual space-separated tokens. When `data-theme="forest a11y-high-contrast"`, both selectors match. The cascade determines which token wins — later declaration order or higher specificity.
 
-### Clean slate reset
+### `@property` — inheritance is intentional
 
-For tokens not using `@property`, reset at every theme boundary:
+All registered custom properties use `inherits: true`:
 
 ```css
-[data-theme] {
-  --color-bg: initial;
-  --color-text: initial;
-  --font-family: initial;
-  /* all vb tokens listed here */
-}
+@property --hue-primary   { syntax: "<number>"; inherits: true; initial-value: 260; }
+@property --hue-secondary { syntax: "<number>"; inherits: true; initial-value: 200; }
+@property --hue-accent    { syntax: "<number>"; inherits: true; initial-value: 30; }
+@property --radius-s      { syntax: "<length>"; inherits: true; initial-value: 4px; }
 ```
 
-### `@layer` — override order
+Inheritance is how themes cascade through the DOM. A `data-theme` on `<body>` sets tokens that all descendants inherit — child elements don't need to repeat the attribute. A nested `data-theme` on a `<section>` overrides tokens for that subtree without requiring explicit reset.
+
+### `@layer bundle-theme` — single shared layer
+
+All themes live in one cascade layer:
 
 ```css
-@layer vb.themes.base, vb.themes.custom;
+@layer tokens, reset, native-elements, custom-elements, web-components, utils, bundle-theme, bundle-effects, bundle-components;
 
-@layer vb.themes.base {
-  @scope ([data-theme="swiss"]) to ([data-theme]:not([data-theme="swiss"])) {
-    --color-bg: white;
-  }
-}
-
-@layer vb.themes.custom {
-  /* author overrides always win */
-  @scope ([data-theme="swiss"]) to ([data-theme]:not([data-theme="swiss"])) {
-    --color-bg: #fafafa;
-  }
+@layer bundle-theme {
+  [data-theme~="forest"] { /* ... */ }
+  [data-theme~="swiss"]  { /* ... */ }
+  [data-theme~="retro"]  { /* ... */ }
 }
 ```
 
-### Full isolation toolkit
+A single `bundle-theme` layer keeps themes at a consistent cascade position — above utilities, below effects and components. Author stylesheets (unlayered) always win.
 
-| Tool | Role |
+### JS registration via `VB.theme()`
+
+Themes can also be registered programmatically and applied to a scope:
+
+```js
+VB.theme('brand', {
+  '--hue-primary': '220',
+  '--color-bg': 'oklch(98% 0.01 220)',
+})
+
+VB.applyTheme('brand', document.querySelector('main'))
+```
+
+### Design rationale
+
+| Decision | Why |
 |---|---|
-| `@property { inherits: false }` | Opt tokens out of inheritance entirely |
-| `@scope ... to` | Stop rules crossing theme boundaries |
-| `[data-theme]` reset | Clean slate for tokens not using `@property` |
-| `@layer` | Author overrides always win |
+| Flat `~=` selectors | Enables composable themes (`data-theme="forest a11y-high-contrast"`) |
+| `inherits: true` | Themes cascade through the DOM — set once on a parent, inherited by all children |
+| No reset layer | Simpler mental model; nested themes override only the tokens they set |
+| Single `bundle-theme` layer | Predictable cascade position; author styles always win |
 
 ---
 

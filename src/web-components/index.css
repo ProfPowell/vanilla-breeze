@@ -32,6 +32,8 @@
 @import "./share-wc/styles.css";
 @import "./audio-player/styles.css";
 @import "./audio-visualizer/styles.css";
+@import "./consent-banner/styles.css";
+@import "./image-map/styles.css";
 
 /* geo-map: No-JS fallback — show slotted content as a styled card */
 geo-map:not(:defined) {
@@ -1021,6 +1023,19 @@ textarea[data-grow][data-grow-init] {
   animation: vb-pulse var(--vb-duration, 1.5s) var(--vb-easing, ease-in-out) infinite;
 }
 
+/* ── Attention: bounce ── */
+@keyframes vb-bounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(calc(-1 * var(--vb-bounce-height, 12px))); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(calc(-0.5 * var(--vb-bounce-height, 12px))); }
+}
+
+[data-effect~="bounce"][data-effect-active],
+[data-effect~="bounce"]:not([data-trigger]) {
+  animation: vb-bounce var(--vb-duration, 1s) var(--vb-easing, ease-in-out) infinite;
+}
+
 /* ── Decoration: float ── */
 @keyframes vb-float {
   0%, 100% { transform: translateY(0); }
@@ -1089,6 +1104,25 @@ textarea[data-grow][data-grow-init] {
   animation: vb-collapse var(--vb-duration, 300ms) var(--vb-easing, ease-in) forwards;
 }
 
+/* ── Exit: slide-out ── */
+@keyframes vb-slide-out-ltr {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(var(--vb-slide-distance, 40px)); }
+}
+@keyframes vb-slide-out-rtl {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(calc(-1 * var(--vb-slide-distance, 40px))); }
+}
+
+[data-effect~="slide-out"][data-effect-active] {
+  animation: vb-slide-out-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
+}
+
+:where([dir="rtl"]) [data-effect~="slide-out"][data-effect-active],
+[data-effect~="slide-out"][dir="rtl"][data-effect-active] {
+  animation-name: vb-slide-out-rtl;
+}
+
 /* ── Attention: glow ── */
 [data-effect~="glow"] {
   --vb-glow-color: var(--color-primary, oklch(55% 0.2 260));
@@ -1099,6 +1133,27 @@ textarea[data-grow][data-grow-init] {
 @keyframes vb-glow {
   from { filter: drop-shadow(0 0 0.2em color-mix(in oklch, var(--vb-glow-color), transparent 50%)); }
   to { filter: drop-shadow(0 0 0.5em color-mix(in oklch, var(--vb-glow-color), transparent 20%)); }
+}
+
+/* ── Decoration: shadow ── */
+@keyframes vb-shadow-lift {
+  from {
+    box-shadow: var(--vb-shadow, 0 2px 8px oklch(0% 0 0 / 0.12));
+    transform: translateY(0);
+  }
+  to {
+    box-shadow: var(--vb-shadow, 0 8px 24px oklch(0% 0 0 / 0.18));
+    transform: translateY(-2px);
+  }
+}
+
+[data-effect~="shadow"][data-trigger] {
+  box-shadow: var(--vb-shadow, 0 2px 8px oklch(0% 0 0 / 0.12));
+}
+
+[data-effect~="shadow"][data-effect-active],
+[data-effect~="shadow"]:not([data-trigger]) {
+  animation: vb-shadow-lift var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Composed: fade-in + glow ── */
@@ -1154,15 +1209,22 @@ textarea[data-grow][data-grow-init] {
   [data-effect~="slide-in"],
   [data-effect~="pop"],
   [data-effect~="fade-out"],
+  [data-effect~="slide-out"],
   [data-effect~="collapse"],
   [data-effect~="shake"],
   [data-effect~="pulse"],
+  [data-effect~="bounce"],
   [data-effect~="glow"],
+  [data-effect~="shadow"],
   [data-effect~="float"] {
     animation: none !important;
     opacity: 1;
     transform: none;
     filter: none;
+  }
+
+  [data-effect~="shadow"] {
+    box-shadow: var(--vb-shadow, 0 8px 24px oklch(0% 0 0 / 0.18));
   }
 }
 
@@ -1171,15 +1233,22 @@ textarea[data-grow][data-grow-init] {
 :root[data-motion-reduced] [data-effect~="slide-in"],
 :root[data-motion-reduced] [data-effect~="pop"],
 :root[data-motion-reduced] [data-effect~="fade-out"],
+:root[data-motion-reduced] [data-effect~="slide-out"],
 :root[data-motion-reduced] [data-effect~="collapse"],
 :root[data-motion-reduced] [data-effect~="shake"],
 :root[data-motion-reduced] [data-effect~="pulse"],
+:root[data-motion-reduced] [data-effect~="bounce"],
 :root[data-motion-reduced] [data-effect~="glow"],
+:root[data-motion-reduced] [data-effect~="shadow"],
 :root[data-motion-reduced] [data-effect~="float"] {
   animation: none !important;
   opacity: 1;
   transform: none;
   filter: none;
+}
+
+:root[data-motion-reduced] [data-effect~="shadow"] {
+  box-shadow: var(--vb-shadow, 0 8px 24px oklch(0% 0 0 / 0.18));
 }
 
 /* --------------------------------------------------------------------------

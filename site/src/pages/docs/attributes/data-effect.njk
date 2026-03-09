@@ -17,7 +17,32 @@ permalink: /docs/attributes/data-effect/
 <h2 data-effect="blur-reveal" data-trigger="scroll" style="--vb-blur-reveal-delay: 120ms">Slower blur-to-clear transition</h2>
 <p data-effect="blur-reveal" data-trigger="scroll" class="line">Line-by-line blur reveal creates a dreamy effect.</p>{% endset %}
 
-{% set bounceCode %}<button data-effect="bounce">Bounce Me!</button>{% endset %}
+{% set bounceCode %}<button data-effect="bounce">Bouncing Button</button>
+<span data-effect="bounce" class="slow">Slow bounce</span>
+<span data-effect="bounce" style="--vb-bounce-height: 20px; display: inline-block;">Big bounce</span>{% endset %}
+
+{% set collapseCode %}<p data-effect="collapse" data-trigger="click">Click this paragraph to collapse it.</p>
+<p data-effect="collapse" data-trigger="time:4000">This collapses after 4 seconds.</p>{% endset %}
+
+{% set glowCode %}<h2 data-effect="glow">Glowing text</h2>
+<h2 data-effect="glow" style="--vb-glow-color: oklch(65% 0.28 25);">Red glow</h2>
+<button data-effect="glow">Attention needed</button>{% endset %}
+
+{% set shadowCode %}<article data-effect="shadow" data-trigger="scroll">
+  <h2>Elevated Card</h2>
+  <p>Lifts with a shadow when scrolled into view.</p>
+</article>
+<article data-effect="shadow" style="--vb-shadow: 0 12px 32px oklch(55% 0.2 260 / 0.25);">
+  <h2>Custom Shadow</h2>
+  <p>A branded shadow via --vb-shadow.</p>
+</article>{% endset %}
+
+{% set slideInCode %}<h1 data-effect="slide-in">Slides in from the left</h1>
+<h2 data-effect="slide-in" data-trigger="scroll">Appears on scroll</h2>
+<p data-effect="slide-in" data-trigger="scroll" style="--vb-slide-distance: 80px;">From further away</p>{% endset %}
+
+{% set slideOutCode %}<p data-effect="slide-out" data-trigger="click">Click to slide out</p>
+<p data-effect="slide-out" class="slow" data-trigger="click">Slow slide out</p>{% endset %}
 
 {% set flipboardCode %}<p data-effect="flipboard">DEPARTURES</p>
 <p data-effect="flipboard">GATE 42</p>
@@ -204,16 +229,50 @@ permalink: /docs/attributes/data-effect/
 </section>
 
 <section id="bounce">
-  <h2>data-effect="bounce" <span class="element-badge" data-type="pack">kawaii</span></h2>
-  <p>Spring-loaded bounce animation on hover. Uses elastic easing that overshoots slightly before settling.</p>
+  <h2>data-effect="bounce"</h2>
+  <p>Continuous vertical bounce animation. The element bounces up and down in a rhythmic loop. The <span class="element-badge" data-type="pack">kawaii</span> pack overrides this with a spring-loaded hover-only variant when loaded.</p>
 
-  <browser-window src="/docs/examples/demos/bounce-basic.html" url="https://vanilla-breeze.dev/bounce" title="Bounce" shadow></browser-window>
+  <browser-window src="/docs/examples/demos/bounce-core-basic.html" url="https://vanilla-breeze.dev/bounce" title="Bounce" shadow></browser-window>
 
-  <code-block language="html" label="Bounce hover">{{ bounceCode | escape }}</code-block>
+  <code-block language="html" label="Bounce">{{ bounceCode | escape }}</code-block>
   <table class="props-table">
     <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>data-effect="bounce"</code></td><td>&mdash;</td><td>Enables the bouncy hover effect.</td></tr>
+      <tr><td><code>data-effect="bounce"</code></td><td>&mdash;</td><td>Enables the bounce animation (continuous loop).</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower bounce cycle.</td></tr>
+      <tr><td><code>class="fast"</code></td><td>&mdash;</td><td>Faster bounce cycle.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-bounce-height</code></td><td><code>12px</code></td><td>Maximum bounce height.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>1s</code></td><td>Duration of one bounce cycle.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="collapse">
+  <h2>data-effect="collapse"</h2>
+  <p>Height-to-zero exit animation. The element collapses vertically while fading out, then stays hidden. Useful for dismissible alerts, list item removal, or accordion-style closing.</p>
+
+  <browser-window src="/docs/examples/demos/collapse-basic.html" url="https://vanilla-breeze.dev/collapse" title="Collapse" shadow></browser-window>
+
+  <code-block language="html" label="Collapse">{{ collapseCode | escape }}</code-block>
+  <table class="props-table">
+    <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="collapse"</code></td><td>&mdash;</td><td>Enables the collapse exit effect. Activates when <code>data-effect-active</code> is set.</td></tr>
+      <tr><td><code>data-trigger="click"</code></td><td>&mdash;</td><td>Collapse on click.</td></tr>
+      <tr><td><code>data-trigger="time:n"</code></td><td>&mdash;</td><td>Collapse after <code>n</code> milliseconds.</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower collapse duration.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-collapse-height</code></td><td><code>500px</code></td><td>Starting max-height. Set to the element's natural height for a smoother animation.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>300ms</code></td><td>Duration of the collapse animation.</td></tr>
     </tbody>
   </table>
 </section>
@@ -339,6 +398,30 @@ permalink: /docs/attributes/data-effect/
       <tr><td><code>class="forest"</code></td><td>&mdash;</td><td>Deep forest gradient palette.</td></tr>
       <tr><td><code>class="neon"</code></td><td>&mdash;</td><td>Electric neon gradient palette.</td></tr>
       <tr><td><code>class="animate"</code></td><td>&mdash;</td><td>Enable flowing gradient animation.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="glow">
+  <h2>data-effect="glow"</h2>
+  <p>Pulsing drop-shadow glow that alternates between a subtle and intense luminance. Uses <code>filter: drop-shadow()</code> with <code>color-mix()</code> for smooth color transitions. Defaults to the theme's primary color.</p>
+
+  <browser-window src="/docs/examples/demos/glow-basic.html" url="https://vanilla-breeze.dev/glow" title="Glow" shadow></browser-window>
+
+  <code-block language="html" label="Glow">{{ glowCode | escape }}</code-block>
+  <table class="props-table">
+    <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="glow"</code></td><td>&mdash;</td><td>Enables the pulsing glow animation (2s default cycle).</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower glow pulse.</td></tr>
+      <tr><td><code>class="fast"</code></td><td>&mdash;</td><td>Faster glow pulse.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-glow-color</code></td><td><code>var(--color-primary)</code></td><td>Glow color. Any CSS color value.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>2s</code></td><td>Duration of one glow pulse cycle.</td></tr>
     </tbody>
   </table>
 </section>
@@ -604,6 +687,30 @@ permalink: /docs/attributes/data-effect/
   </table>
 </section>
 
+<section id="shadow">
+  <h2>data-effect="shadow"</h2>
+  <p>Elevated box-shadow decoration with a subtle lift animation. The element rises slightly and gains depth, transitioning from a light shadow to a more pronounced elevated shadow. Ideal for cards, panels, and call-to-action containers.</p>
+
+  <browser-window src="/docs/examples/demos/shadow-basic.html" url="https://vanilla-breeze.dev/shadow" title="Shadow" shadow></browser-window>
+
+  <code-block language="html" label="Shadow">{{ shadowCode | escape }}</code-block>
+  <table class="props-table">
+    <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="shadow"</code></td><td>&mdash;</td><td>Enables the shadow lift effect.</td></tr>
+      <tr><td><code>data-trigger="scroll"</code></td><td>&mdash;</td><td>Lift when scrolled into view.</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower lift duration.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-shadow</code></td><td><code>0 8px 24px oklch(0% 0 0 / 0.18)</code></td><td>Final elevated box-shadow. Override for branded shadows.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>400ms</code></td><td>Duration of the lift animation.</td></tr>
+    </tbody>
+  </table>
+</section>
+
 <section id="shake">
   <h2>data-effect="shake"</h2>
   <p>Rapid horizontal shaking animation. Useful for error states, attention-grabbing, or playful interactions. Runs continuously or on hover.</p>
@@ -640,6 +747,54 @@ permalink: /docs/attributes/data-effect/
       <tr><td><code>data-effect="shimmer"</code></td><td>&mdash;</td><td>Enables the shimmer effect (2s default cycle).</td></tr>
       <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slow shimmer speed.</td></tr>
       <tr><td><code>class="fast"</code></td><td>&mdash;</td><td>Fast shimmer speed.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="slide-in">
+  <h2>data-effect="slide-in"</h2>
+  <p>Horizontal entrance animation that respects text direction. In LTR, the element slides in from the left; in RTL, from the right. Uses <code>:where([dir="rtl"])</code> for automatic direction support.</p>
+
+  <browser-window src="/docs/examples/demos/slide-in-basic.html" url="https://vanilla-breeze.dev/slide-in" title="Slide In" shadow></browser-window>
+
+  <code-block language="html" label="Slide in">{{ slideInCode | escape }}</code-block>
+  <table class="props-table">
+    <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="slide-in"</code></td><td>&mdash;</td><td>Enables horizontal entrance. Use with <code>data-trigger="scroll"</code>.</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower slide duration.</td></tr>
+      <tr><td><code>class="fast"</code></td><td>&mdash;</td><td>Faster slide duration.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-slide-distance</code></td><td><code>40px</code></td><td>Horizontal offset distance.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>400ms</code></td><td>Duration of the slide animation.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="slide-out">
+  <h2>data-effect="slide-out"</h2>
+  <p>Horizontal exit animation. The element slides out in the inline-end direction while fading. Mirrors <code>slide-in</code> with reversed direction and RTL support via <code>:where([dir="rtl"])</code>.</p>
+
+  <browser-window src="/docs/examples/demos/slide-out-basic.html" url="https://vanilla-breeze.dev/slide-out" title="Slide Out" shadow></browser-window>
+
+  <code-block language="html" label="Slide out">{{ slideOutCode | escape }}</code-block>
+  <table class="props-table">
+    <thead><tr><th>Attribute / Class</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="slide-out"</code></td><td>&mdash;</td><td>Enables horizontal exit. Activates when <code>data-effect-active</code> is set.</td></tr>
+      <tr><td><code>data-trigger="click"</code></td><td>&mdash;</td><td>Slide out on click.</td></tr>
+      <tr><td><code>class="slow"</code></td><td>&mdash;</td><td>Slower slide duration.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-slide-distance</code></td><td><code>40px</code></td><td>Horizontal offset distance.</td></tr>
+      <tr><td><code>--vb-duration</code></td><td><code>400ms</code></td><td>Duration of the slide animation.</td></tr>
     </tbody>
   </table>
 </section>
@@ -786,6 +941,64 @@ permalink: /docs/attributes/data-effect/
       <tr><td><code>data-trigger="hover"</code></td><td>&mdash;</td><td>Wiggle only on hover.</td></tr>
     </tbody>
   </table>
+</section>
+
+<section id="ticker">
+  <h2>data-effect="ticker" <span class="element-badge" data-type="pack">effects</span></h2>
+  <p>Animated number count-up on <code>&lt;data&gt;</code> elements. Counts from a start value to the element's <code>value</code> attribute using <code>easeOutExpo</code> easing &mdash; fast start, decelerating finish. Pairs with <code>data-format-number</code> for locale-aware formatting during animation.</p>
+
+  <browser-window src="/docs/snippets/demos/data-ticker.html" url="data-ticker.html" title="Ticker" shadow></browser-window>
+
+  <code-block language="html" label="Ticker">{{ '<data value="50000" data-effect="ticker" data-trigger="scroll"\n      style="--vb-ticker-duration: 2000">50,000</data>' | escape }}</code-block>
+
+  <h3>Attributes</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-effect="ticker"</code></td><td>&mdash;</td><td>Enables animated count-up. Use on <code>&lt;data&gt;</code> elements with a <code>value</code> attribute.</td></tr>
+      <tr><td><code>data-trigger="scroll"</code></td><td>&mdash;</td><td>Start animation when scrolled into view (IntersectionObserver, 10% threshold).</td></tr>
+      <tr><td><code>data-format-number</code></td><td><code>currency</code>, <code>percent</code>, <code>compact</code></td><td>Apply <code>Intl.NumberFormat</code> to intermediate values during animation.</td></tr>
+      <tr><td><code>data-currency</code></td><td>e.g. <code>USD</code>, <code>EUR</code></td><td>Currency code when using <code>data-format-number="currency"</code>.</td></tr>
+      <tr><td><code>data-locale</code></td><td>e.g. <code>de-DE</code></td><td>Override locale for this element (defaults to <code>html[lang]</code>).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>CSS Properties</h3>
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-ticker-duration</code></td><td><code>1000</code></td><td>Animation duration in ms.</td></tr>
+      <tr><td><code>--vb-ticker-start</code></td><td><code>0</code></td><td>Starting number for count-up.</td></tr>
+      <tr><td><code>--vb-ticker-decimals</code></td><td>auto</td><td>Decimal places (auto-detected from <code>value</code> if omitted).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>How It Works</h3>
+  <ol>
+    <li>The <code>scroll</code> trigger watches for the element to enter the viewport (10% threshold)</li>
+    <li>A <code>requestAnimationFrame</code> loop animates from start to end value at 60fps</li>
+    <li>Each frame applies <code>easeOutExpo</code> easing for a fast-start, decelerating finish</li>
+    <li>Intermediate values are formatted with <code>Intl.NumberFormat</code> matching any <code>data-format-number</code> options</li>
+    <li>At completion, sets <code>data-format-number-init</code> to prevent double-formatting</li>
+  </ol>
+
+  <h3>With Format Number</h3>
+  <p>Combine with <code>data-format-number</code> for locale-aware formatting during the animation:</p>
+
+  <code-block language="html" label="Currency and compact formatting">{{ '<data value="48200" data-effect="ticker" data-trigger="scroll"\n      data-format-number="currency" data-currency="USD"\n      style="--vb-ticker-duration: 2000">$48,200</data>\n\n<data value="1500000" data-effect="ticker" data-trigger="scroll"\n      data-format-number="compact"\n      style="--vb-ticker-duration: 2500">1.5M</data>' | escape }}</code-block>
+
+  <h3>Stats Pattern</h3>
+  <p>The ticker pairs naturally with the <a href="/docs/patterns/data/stats/">Stats pattern</a>:</p>
+
+  <code-block language="html" label="Stats with tickers">{{ '<layout-grid data-layout-gap="m" style="--layout-grid-min: 10rem;">\n  <article>\n    <data value="24521" data-effect="ticker" data-trigger="scroll"\n          data-format-number>24,521</data>\n    <p>Active Users</p>\n  </article>\n  <article>\n    <data value="48200" data-effect="ticker" data-trigger="scroll"\n          data-format-number="currency" data-currency="USD"\n          style="--vb-ticker-duration: 2000">$48,200</data>\n    <p>Revenue</p>\n  </article>\n</layout-grid>' | escape }}</code-block>
+
+  <h3>Reduced Motion</h3>
+  <p>The ticker checks <code>prefers-reduced-motion: reduce</code> and <code>:root[data-motion-reduced]</code>. When either is true, the animation is skipped entirely &mdash; the original text content is preserved as-is. <code>data-format-number</code> still formats normally.</p>
+
+  <h3>Easing</h3>
+  <code-block language="js" label="easeOutExpo">{{ 'function easeOutExpo(t) {\n  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);\n}' | escape }}</code-block>
+
+  <p>See also: <a href="/docs/elements/native/data/">data element</a> for byte formatting and locale overrides.</p>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════ -->
