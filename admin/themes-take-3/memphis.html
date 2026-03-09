@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Memphis Theme — Vanilla Breeze</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<!--
+	  Memphis Group typography:
+	  • Boogaloo — captures the geometric rounded boldness of Futura Heavy
+		as used on Memphis Group furniture labels and catalogues
+	  • Outfit (700/900) — clean geometric sans for secondary / body
+	  • Space Mono — typewriter/plotterlike mono for data readouts
+	-->
+	<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Outfit:wght@400;500;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+	<style>
+
+		/* ============================================================
+		   MEMPHIS THEME — Vanilla Breeze
+		   Memphis Group (1981–1988), founded in Milan by Ettore Sottsass.
+		   Visual language: bold flat colour, geometric surface patterns
+		   on every face, asymmetric composition, anti-functionalist
+		   ornament, hard drop shadows, zigzag borders, scattered shapes.
+
+		   The PATTERN SYSTEM is the heart of this theme.
+		============================================================ */
+
+		/* ──────────────────────────────────────────────────────────
+		   DESIGN TOKENS
+		────────────────────────────────────────────────────────── */
+		@layer tokens {
+			:root {
+				/* ── Colour ── */
+				--m-cream:   oklch(96%  0.018  88);   /* warm off-white page */
+				--m-yellow:  oklch(86%  0.185  96);   /* sunflower */
+				--m-red:     oklch(58%  0.240  26);   /* tomato */
+				--m-blue:    oklch(48%  0.220 258);   /* cobalt */
+				--m-teal:    oklch(72%  0.160 195);   /* turquoise */
+				--m-pink:    oklch(64%  0.240  10);   /* hot pink/magenta */
+				--m-mint:    oklch(80%  0.135 165);   /* mint green */
+				--m-black:   oklch(12%  0.010  80);   /* near-black */
+				--m-white:   oklch(99%  0.005  90);
+
+				/* Pastel tints — for pattern backgrounds */
+				--m-yellow-lt: oklch(94% 0.08   96);
+				--m-blue-lt:   oklch(88% 0.07  258);
+				--m-pink-lt:   oklch(92% 0.07   10);
+				--m-teal-lt:   oklch(92% 0.06  195);
+				--m-mint-lt:   oklch(94% 0.05  165);
+
+				/* ── Hard drop shadow — Memphis uses solid offset blocks, no blur ── */
+				--m-shadow:  4px 4px 0 var(--m-black);
+				--m-shadow-lg: 6px 6px 0 var(--m-black);
+				--m-shadow-sm: 2px 2px 0 var(--m-black);
+				--m-shadow-col: 4px 4px 0;  /* colour to be appended per-use */
+
+				/* ── Border ── */
+				--m-stroke: 2.5px solid var(--m-black);
+				--m-stroke-sm: 1.5px solid var(--m-black);
+				--m-radius: 0px;   /* Memphis is mostly square */
+				--m-radius-pill: 999px;
+
+				/* ── Typography ── */
+				--m-font-display: 'Boogaloo', 'Futura', 'Century Gothic', sans-serif;
+				--m-font-body:    'Outfit', 'Futura', 'Century Gothic', sans-serif;
+				--m-font-mono:    'Space Mono', 'Courier New', monospace;
+
+				/* ── Spacing ── */
+				--m-sp-xs:  0.25rem;
+				--m-sp-sm:  0.5rem;
+				--m-sp-md:  1rem;
+				--m-sp-lg:  1.5rem;
+				--m-sp-xl:  2.5rem;
+				--m-sp-2xl: 4rem;
+
+				/* ════════════════════════════════════════════════════
+				   PATTERN SYSTEM — the DNA of Memphis Design
+				   Every surface can carry a pattern. These are pure CSS.
+				════════════════════════════════════════════════════ */
+
+				/* 1 · Diagonal thin stripes (black on colour) */
+				--m-pat-stripe-y: repeating-linear-gradient(
+									 45deg,
+									 var(--m-black) 0px, var(--m-black) 1.5px,
+									 transparent    1.5px, transparent  10px
+							 );
+				--m-pat-stripe-p: repeating-linear-gradient(
+									 45deg,
+									 var(--m-pink) 0px, var(--m-pink) 1.5px,
+									 var(--m-cream) 1.5px, var(--m-cream) 10px
+							 );
+				--m-pat-stripe-b: repeating-linear-gradient(
+									 45deg,
+									 var(--m-blue) 0px, var(--m-blue) 1.5px,
+									 var(--m-cream) 1.5px, var(--m-cream) 10px
+							 );
+				--m-pat-stripe-t: repeating-linear-gradient(
+									 45deg,
+									 var(--m-teal) 0px, var(--m-teal) 1.5px,
+									 var(--m-cream) 1.5px, var(--m-cream) 10px
+							 );
+				--m-pat-stripe-vert: repeating-linear-gradient(
+									 90deg,
+									 var(--m-black) 0px, var(--m-black) 1.5px,
+									 transparent    1.5px, transparent  8px
+							 );
+
+				/* 2 · Polka dots */
+				--m-pat-dots-y: radial-gradient(
+									 circle, var(--m-yellow) 4px, transparent 4px
+							 ) 0 0 / 16px 16px;
+				--m-pat-dots-r: radial-gradient(
+									 circle, var(--m-red) 4px, transparent 4px
+							 ) 0 0 / 16px 16px;
+				--m-pat-dots-b: radial-gradient(
+									 circle, var(--m-blue) 4px, transparent 4px
+							 ) 0 0 / 16px 16px;
+				--m-pat-dots-p: radial-gradient(
+									 circle, var(--m-pink) 4px, transparent 4px
+							 ) 0 0 / 16px 16px;
+				--m-pat-dots-sm: radial-gradient(
+									 circle, var(--m-black) 2px, transparent 2px
+							 ) 0 0 / 10px 10px;
+				--m-pat-dots-lg: radial-gradient(
+									 circle, var(--m-black) 6px, transparent 6px
+							 ) 0 0 / 22px 22px;
+
+				/* 3 · Checkerboard */
+				--m-pat-check-sm: conic-gradient(
+									 var(--m-black) 90deg, transparent 90deg
+							 ) 0 0 / 10px 10px;
+				--m-pat-check-md: conic-gradient(
+									 var(--m-black) 90deg, transparent 90deg
+							 ) 0 0 / 16px 16px;
+				--m-pat-check-y: conic-gradient(
+									 var(--m-yellow) 90deg, var(--m-cream) 90deg
+							 ) 0 0 / 14px 14px;
+				--m-pat-check-p: conic-gradient(
+									 var(--m-pink) 90deg, var(--m-cream) 90deg
+							 ) 0 0 / 14px 14px;
+
+				/* 4 · Crosshatch */
+				--m-pat-cross: repeating-linear-gradient(
+									 0deg,
+									 var(--m-black) 0px, var(--m-black) 1px,
+									 transparent 1px, transparent 12px
+							 ),
+							 repeating-linear-gradient(
+									 90deg,
+									 var(--m-black) 0px, var(--m-black) 1px,
+									 transparent 1px, transparent 12px
+							 );
+
+				/* 5 · Zigzag (CSS triangle trick) */
+				--m-pat-zigzag-y: repeating-linear-gradient(
+									 135deg,
+									 var(--m-yellow) 0 8px,
+									 transparent 0 16px
+							 ),
+							 repeating-linear-gradient(
+									 45deg,
+									 var(--m-yellow) 0 8px,
+									 transparent 0 16px
+							 );
+				--m-pat-zigzag-b: repeating-linear-gradient(
+									 135deg,
+									 var(--m-blue) 0 8px,
+									 transparent 0 16px
+							 ),
+							 repeating-linear-gradient(
+									 45deg,
+									 var(--m-blue) 0 8px,
+									 transparent 0 16px
+							 );
+
+				/* 6 · Squiggle — SVG inline data URI */
+				--m-pat-squiggle-r: url("data:image/svg+xml,%3Csvg width='40' height='20' viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 C5 0, 15 0, 20 10 C25 20, 35 20, 40 10' stroke='%23d03040' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") repeat;
+				--m-pat-squiggle-b: url("data:image/svg+xml,%3Csvg width='40' height='20' viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 C5 0, 15 0, 20 10 C25 20, 35 20, 40 10' stroke='%231a3a9e' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") repeat;
+				--m-pat-squiggle-p: url("data:image/svg+xml,%3Csvg width='40' height='20' viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 C5 0, 15 0, 20 10 C25 20, 35 20, 40 10' stroke='%23c02070' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") repeat;
+				--m-pat-squiggle-bk: url("data:image/svg+xml,%3Csvg width='40' height='20' viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 C5 0, 15 0, 20 10 C25 20, 35 20, 40 10' stroke='%231a1a14' stroke-width='2' fill='none'/%3E%3C/svg%3E") repeat;
+
+				/* 7 · Confetti (multi-colour dots via layered radials) */
+				--m-pat-confetti:
+						radial-gradient(circle, var(--m-red)    3px, transparent 3px) 0   0   / 28px 28px,
+							 radial-gradient(circle, var(--m-blue)   3px, transparent 3px) 14px 7px  / 28px 28px,
+							 radial-gradient(circle, var(--m-yellow) 3px, transparent 3px) 7px  14px / 28px 28px,
+							 radial-gradient(circle, var(--m-teal)   3px, transparent 3px) 21px 3px  / 28px 28px,
+							 radial-gradient(circle, var(--m-pink)   3px, transparent 3px) 3px  21px / 28px 28px;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESET & BASE
+		────────────────────────────────────────────────────────── */
+		@layer reset {
+			*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+			html { color-scheme: light; scroll-behavior: smooth; }
+
+			body {
+				background-color: var(--m-cream);
+				color: var(--m-black);
+				font-family: var(--m-font-body);
+				font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+				font-weight: 500;
+				line-height: 1.6;
+				overflow-x: hidden;
+			}
+
+			h1, h2, h3, h4 {
+				font-family: var(--m-font-display);
+				font-weight: 400; /* Boogaloo is single-weight — doesn't need 700 */
+				line-height: 1;
+				color: var(--m-black);
+				letter-spacing: 0.01em;
+			}
+
+			p { line-height: 1.7; }
+
+			strong { font-weight: 700; }
+
+			code, kbd {
+				font-family: var(--m-font-mono);
+				font-size: 0.88em;
+				background: var(--m-yellow-lt);
+				padding: 0.1em 0.4em;
+				border: var(--m-stroke-sm);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   LAYOUT
+		────────────────────────────────────────────────────────── */
+		@layer layout {
+			.m-container {
+				max-width: 72rem;
+				margin-inline: auto;
+				padding-inline: var(--m-sp-xl);
+			}
+			.m-section { padding-block: var(--m-sp-2xl); }
+			.m-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+				gap: var(--m-sp-lg);
+			}
+			.m-grid-2 {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+				gap: var(--m-sp-lg);
+			}
+			.m-flex {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--m-sp-md);
+				align-items: center;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   ZIGZAG BORDER — the Memphis signature divider
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-zigzag {
+				height: 16px;
+				background: var(--m-pat-zigzag-b);
+				background-size: 32px 16px;
+				border-block: var(--m-stroke);
+			}
+			.m-zigzag-y {
+				height: 16px;
+				background: var(--m-pat-zigzag-y);
+				background-size: 32px 16px;
+				border-block: var(--m-stroke);
+			}
+			.m-stripe-band {
+				height: 12px;
+				background: var(--m-pat-stripe-b);
+				border-block: var(--m-stroke);
+			}
+			.m-dots-band {
+				height: 24px;
+				background: var(--m-pat-dots-r);
+				background-color: var(--m-cream);
+				border-block: var(--m-stroke);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   NAVIGATION
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.m-nav {
+				position: sticky;
+				top: 0;
+				z-index: 100;
+				background: var(--m-yellow);
+				border-block-end: var(--m-stroke);
+
+				& .nav-inner {
+					display: flex;
+					align-items: stretch;
+					min-height: 56px;
+					gap: 0;
+				}
+
+				/* Logo block — polka dot background */
+				& .nav-logo {
+					font-family: var(--m-font-display);
+					font-size: 1.5rem;
+					text-decoration: none;
+					color: var(--m-black);
+					display: flex;
+					align-items: center;
+					padding-inline: var(--m-sp-lg);
+					border-inline-end: var(--m-stroke);
+					background: var(--m-pat-dots-sm);
+					background-color: var(--m-yellow);
+					gap: var(--m-sp-sm);
+					flex-shrink: 0;
+
+					& span {
+						color: var(--m-red);
+					}
+				}
+
+				& .nav-links {
+					display: flex;
+					list-style: none;
+					margin-inline-start: auto;
+
+					& a {
+						font-family: var(--m-font-display);
+						font-size: 1rem;
+						text-decoration: none;
+						color: var(--m-black);
+						display: flex;
+						align-items: center;
+						padding-inline: var(--m-sp-lg);
+						border-inline-start: var(--m-stroke);
+						transition: background 0.1s;
+
+						&:hover {
+							background: var(--m-pat-dots-sm);
+							background-color: var(--m-yellow);
+						}
+					}
+				}
+
+				& .nav-shape {
+					display: flex;
+					align-items: center;
+					padding-inline: var(--m-sp-lg);
+					border-inline-start: var(--m-stroke);
+					background: var(--m-teal);
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   HERO
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.m-hero {
+				position: relative;
+				overflow: hidden;
+				background: var(--m-cream);
+				border-block-end: var(--m-stroke);
+				min-height: 480px;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				align-items: stretch;
+
+				@media (max-width: 768px) {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.m-hero-left {
+				padding: var(--m-sp-2xl) var(--m-sp-xl) var(--m-sp-2xl) var(--m-sp-xl);
+				border-inline-end: var(--m-stroke);
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				gap: var(--m-sp-lg);
+				position: relative;
+				z-index: 1;
+
+				@media (max-width: 768px) {
+					border-inline-end: none;
+					border-block-end: var(--m-stroke);
+				}
+			}
+
+			.m-hero-eyebrow {
+				font-family: var(--m-font-mono);
+				font-size: 0.72rem;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				color: var(--m-blue);
+				font-weight: 700;
+			}
+
+			.m-hero-title {
+				font-family: var(--m-font-display);
+				font-size: clamp(3.5rem, 9vw, 7.5rem);
+				line-height: 0.9;
+				color: var(--m-black);
+				position: relative;
+
+				& em {
+					font-style: normal;
+					color: var(--m-red);
+					display: block;
+				}
+			}
+
+			.m-hero-desc {
+				font-size: 1rem;
+				font-weight: 500;
+				color: var(--m-black);
+				max-width: 38ch;
+				line-height: 1.75;
+				opacity: 0.75;
+			}
+
+			/* Right side — geometric pattern composition */
+			.m-hero-right {
+				position: relative;
+				background: var(--m-blue);
+				overflow: hidden;
+				min-height: 360px;
+
+				@media (max-width: 768px) {
+					min-height: 220px;
+				}
+
+				/* Squiggle overlay */
+				&::before {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background: var(--m-pat-squiggle-p);
+					background-size: 40px 20px;
+					background-color: var(--m-blue);
+					opacity: 0.5;
+				}
+			}
+
+			/* Geometric shapes scattered in hero-right */
+			.m-shape {
+				position: absolute;
+				z-index: 1;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   SECTION HEADER — Memphis label style
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-section-header {
+				margin-block-end: var(--m-sp-xl);
+				display: flex;
+				align-items: flex-start;
+				gap: var(--m-sp-lg);
+
+				& .header-tag {
+					display: inline-flex;
+					align-items: center;
+					justify-content: center;
+					background: var(--m-black);
+					color: var(--m-yellow);
+					font-family: var(--m-font-display);
+					font-size: 1.1rem;
+					padding: 0.2em 0.7em;
+					flex-shrink: 0;
+					transform: rotate(-2deg);
+					box-shadow: var(--m-shadow-sm);
+				}
+
+				& .header-text h2 {
+					font-size: clamp(2rem, 4vw, 3rem);
+				}
+
+				& .header-text p {
+					font-size: 0.95rem;
+					opacity: 0.7;
+					margin-block-start: var(--m-sp-xs);
+					max-width: 50ch;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   PATTERN SWATCHES
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-pat-swatch {
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow);
+				overflow: hidden;
+				aspect-ratio: 3/2;
+				position: relative;
+
+				& .pat-label {
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					background: var(--m-black);
+					color: var(--m-yellow);
+					font-family: var(--m-font-mono);
+					font-size: 0.65rem;
+					padding: 0.3em 0.6em;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+				}
+			}
+
+			.m-colour-swatch {
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow);
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+
+				& .chip {
+					height: 72px;
+					flex-shrink: 0;
+				}
+
+				& .clr-meta {
+					padding: var(--m-sp-sm);
+					background: var(--m-cream);
+					border-block-start: var(--m-stroke-sm);
+
+					& .clr-name {
+						font-family: var(--m-font-display);
+						font-size: 1.1rem;
+						display: block;
+						margin-block-end: 2px;
+					}
+					& .clr-var {
+						font-family: var(--m-font-mono);
+						font-size: 0.6rem;
+						opacity: 0.6;
+						display: block;
+					}
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   BUTTONS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: var(--m-sp-sm);
+				padding: 0.55em 1.4em 0.5em;
+				font-family: var(--m-font-display);
+				font-size: 1.15rem;
+				text-transform: uppercase;
+				text-decoration: none;
+				border: var(--m-stroke);
+				cursor: pointer;
+				position: relative;
+				transition: transform 0.06s, box-shadow 0.06s;
+				box-shadow: var(--m-shadow);
+				user-select: none;
+				background: var(--m-cream);
+				color: var(--m-black);
+
+				&:hover { filter: brightness(0.94); }
+				&:active {
+					transform: translate(3px, 3px);
+					box-shadow: 1px 1px 0 var(--m-black);
+				}
+
+				&[data-variant="yellow"]  { background: var(--m-yellow); }
+				&[data-variant="red"]     { background: var(--m-red);    color: var(--m-white); box-shadow: 4px 4px 0 var(--m-black); }
+				&[data-variant="blue"]    { background: var(--m-blue);   color: var(--m-white); }
+				&[data-variant="teal"]    { background: var(--m-teal); }
+				&[data-variant="pink"]    { background: var(--m-pink);   color: var(--m-white); }
+				&[data-variant="mint"]    { background: var(--m-mint); }
+
+				/* Pattern-fill buttons — the Memphis move */
+				&[data-variant="stripe"]  {
+					background: var(--m-pat-stripe-y);
+					background-color: var(--m-cream);
+				}
+				&[data-variant="dots"]    {
+					background: var(--m-pat-dots-b);
+					background-color: var(--m-cream);
+				}
+				&[data-variant="check"]   {
+					background: var(--m-pat-check-y);
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   CARDS — the Memphis laminate tile
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-card {
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow-lg);
+				overflow: hidden;
+				background: var(--m-cream);
+				transition: transform 0.15s, box-shadow 0.15s;
+				position: relative;
+
+				&:hover {
+					transform: translate(-2px, -2px);
+					box-shadow: 8px 8px 0 var(--m-black);
+				}
+
+				& .card-face {
+					height: 100px;
+					border-block-end: var(--m-stroke);
+					position: relative;
+					overflow: hidden;
+				}
+
+				& .card-body {
+					padding: var(--m-sp-lg);
+				}
+
+				& .card-title {
+					font-family: var(--m-font-display);
+					font-size: 1.6rem;
+					margin-block-end: var(--m-sp-sm);
+					line-height: 1;
+				}
+
+				& .card-desc {
+					font-size: 0.92rem;
+					opacity: 0.75;
+					line-height: 1.65;
+					margin-block-end: var(--m-sp-md);
+				}
+			}
+
+			/* Badge */
+			.m-badge {
+				display: inline-block;
+				font-family: var(--m-font-display);
+				font-size: 0.95rem;
+				padding: 0.1em 0.6em;
+				border: var(--m-stroke-sm);
+				box-shadow: var(--m-shadow-sm);
+
+				&[data-color="yellow"] { background: var(--m-yellow); }
+				&[data-color="red"]    { background: var(--m-red);    color: var(--m-white); }
+				&[data-color="blue"]   { background: var(--m-blue);   color: var(--m-white); }
+				&[data-color="teal"]   { background: var(--m-teal); }
+				&[data-color="pink"]   { background: var(--m-pink);   color: var(--m-white); }
+				&[data-color="mint"]   { background: var(--m-mint); }
+				&[data-color="stripe"] { background: var(--m-pat-stripe-y); background-color: var(--m-cream); }
+				&[data-color="dots"]   { background: var(--m-pat-dots-sm);  background-color: var(--m-cream); }
+				&[data-color="check"]  { background: var(--m-pat-check-y); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   STAT / NUMBER CALLOUT
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-stat {
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow);
+				overflow: hidden;
+				background: var(--m-cream);
+				text-align: center;
+
+				& .stat-top {
+					padding: var(--m-sp-sm);
+					border-block-end: var(--m-stroke-sm);
+					font-family: var(--m-font-mono);
+					font-size: 0.62rem;
+					letter-spacing: 0.2em;
+					text-transform: uppercase;
+					opacity: 0.7;
+				}
+
+				& .stat-body {
+					padding: var(--m-sp-lg) var(--m-sp-md);
+				}
+
+				& .stat-val {
+					font-family: var(--m-font-display);
+					font-size: clamp(2.5rem, 5vw, 4rem);
+					line-height: 1;
+					margin-block-end: var(--m-sp-xs);
+				}
+
+				& .stat-lbl {
+					font-family: var(--m-font-body);
+					font-size: 0.75rem;
+					font-weight: 700;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					opacity: 0.6;
+				}
+
+				&[data-color="yellow"] { & .stat-top { background: var(--m-yellow); border-block-end-color: oklch(from var(--m-black) l c h / 0.3); } & .stat-val { color: var(--m-red); } }
+				&[data-color="teal"]   { & .stat-top { background: var(--m-teal); } & .stat-val { color: var(--m-blue); } }
+				&[data-color="pink"]   { & .stat-top { background: var(--m-pink); color: var(--m-white); } & .stat-val { color: var(--m-pink); } }
+				&[data-color="blue"]   { & .stat-top { background: var(--m-blue); color: var(--m-white); } & .stat-val { color: var(--m-blue); } }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   ALERTS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-alert {
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow);
+				overflow: hidden;
+				display: grid;
+				grid-template-columns: 36px 1fr;
+				background: var(--m-cream);
+
+				& .alert-accent {
+					border-inline-end: var(--m-stroke);
+				}
+
+				& .alert-body {
+					padding: var(--m-sp-md) var(--m-sp-lg);
+
+					& strong {
+						font-family: var(--m-font-display);
+						font-size: 1.2rem;
+						display: block;
+						margin-block-end: var(--m-sp-xs);
+					}
+
+					& p {
+						font-size: 0.9rem;
+						opacity: 0.75;
+						margin: 0;
+					}
+				}
+
+				&[data-type="warning"] {
+					& .alert-accent { background: var(--m-yellow); }
+					& strong { color: var(--m-red); }
+				}
+				&[data-type="error"] {
+					& .alert-accent { background: var(--m-red); }
+					& strong { color: var(--m-red); }
+				}
+				&[data-type="info"] {
+					& .alert-accent { background: var(--m-blue); }
+					& strong { color: var(--m-blue); }
+				}
+				&[data-type="success"] {
+					& .alert-accent { background: var(--m-teal); }
+					& strong { color: var(--m-teal); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FORMS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.m-field {
+				display: flex;
+				flex-direction: column;
+				gap: var(--m-sp-xs);
+
+				& label {
+					font-family: var(--m-font-display);
+					font-size: 1rem;
+					color: var(--m-black);
+				}
+
+				& input, & select, & textarea {
+					background: var(--m-white);
+					color: var(--m-black);
+					border: var(--m-stroke);
+					padding: 0.6em 0.9em;
+					font-family: var(--m-font-body);
+					font-size: 1rem;
+					font-weight: 500;
+					outline: none;
+					box-shadow: var(--m-shadow-sm);
+					transition: box-shadow 0.1s;
+
+					&:focus {
+						box-shadow: 4px 4px 0 var(--m-blue);
+						border-color: var(--m-blue);
+					}
+
+					&::placeholder { opacity: 0.45; }
+					option { background: var(--m-white); }
+				}
+			}
+
+			.m-segmented {
+				display: inline-flex;
+				border: var(--m-stroke);
+				box-shadow: var(--m-shadow);
+				overflow: hidden;
+				background: var(--m-cream);
+
+				& button {
+					flex: 1;
+					padding: 0.5em 1.3em;
+					font-family: var(--m-font-display);
+					font-size: 1rem;
+					border: none;
+					border-inline-end: var(--m-stroke);
+					cursor: pointer;
+					background: transparent;
+					color: var(--m-black);
+					transition: background 0.1s;
+
+					&:last-child { border-inline-end: none; }
+
+					&[data-active] {
+						background: var(--m-black);
+						color: var(--m-yellow);
+					}
+
+					&:hover:not([data-active]) { background: var(--m-yellow-lt); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FOOTER
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.m-footer {
+				background: var(--m-black);
+				color: var(--m-yellow);
+				border-block-start: var(--m-stroke);
+
+				& .foot-top {
+					background: var(--m-pat-confetti);
+					background-color: var(--m-black);
+					height: 48px;
+					border-block-end: var(--m-stroke);
+				}
+
+				& .foot-inner {
+					padding: var(--m-sp-xl);
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					flex-wrap: wrap;
+					gap: var(--m-sp-xl);
+				}
+
+				& .foot-logo {
+					font-family: var(--m-font-display);
+					font-size: 2.5rem;
+					line-height: 1;
+
+					& span { color: var(--m-red); }
+				}
+
+				& .foot-meta {
+					font-family: var(--m-font-mono);
+					font-size: 0.68rem;
+					letter-spacing: 0.1em;
+					color: oklch(60% 0 0);
+					text-transform: uppercase;
+					line-height: 1.8;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESPONSIVE
+		────────────────────────────────────────────────────────── */
+		@layer responsive {
+			@media (max-width: 640px) {
+				.m-container { padding-inline: var(--m-sp-md); }
+				.m-nav .nav-links { display: none; }
+				.m-nav .nav-shape { display: none; }
+				.m-section-header { flex-direction: column; }
+			}
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="m-nav" aria-label="Main navigation">
+	<div class="m-container">
+		<div class="nav-inner">
+			<a href="#" class="nav-logo" aria-label="Memphis theme home">
+				<!-- Small diamond shape -->
+				<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+					<polygon points="9,0 18,9 9,18 0,9" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="1.5"/>
+				</svg>
+				MEMPHIS <span>VB</span>
+			</a>
+			<ul class="nav-links">
+				<li><a href="#palette">Palette</a></li>
+				<li><a href="#patterns">Patterns</a></li>
+				<li><a href="#type">Type</a></li>
+				<li><a href="#components">Components</a></li>
+				<li><a href="#tokens">Tokens</a></li>
+			</ul>
+			<!-- Memphis decorative teal shape -->
+			<div class="nav-shape" aria-hidden="true">
+				<svg width="28" height="28" viewBox="0 0 28 28">
+					<circle cx="14" cy="14" r="12" fill="var(--m-black)" stroke="var(--m-cream)" stroke-width="2"/>
+					<circle cx="14" cy="14" r="5"  fill="var(--m-yellow)"/>
+				</svg>
+			</div>
+		</div>
+	</div>
+</nav>
+
+<!-- HERO -->
+<header class="m-hero">
+	<!-- Left: text -->
+	<div class="m-hero-left">
+		<p class="m-hero-eyebrow">Vanilla Breeze / Theme System</p>
+
+		<h1 class="m-hero-title">
+			MEM<em>PHIS</em>
+		</h1>
+
+		<p class="m-hero-desc">
+			Inspired by the Memphis Group (Milan, 1981–88) led by Ettore Sottsass. Bold flat colour, geometric surface patterns on every face, hard drop shadows, zigzag borders, and anti-functionalist ornament. Post-modernism at its most joyful.
+		</p>
+
+		<div class="m-flex">
+			<button class="m-btn" data-variant="yellow">Get Started</button>
+			<button class="m-btn" data-variant="red">Components</button>
+			<button class="m-btn" data-variant="blue">Docs</button>
+		</div>
+	</div>
+
+	<!-- Right: geometric pattern composition -->
+	<div class="m-hero-right" aria-hidden="true">
+		<!-- Overlapping geometric shapes scattered asymmetrically -->
+		<svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 480 380" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+			<!-- Large yellow circle — top left -->
+			<circle cx="80" cy="70" r="90" fill="var(--m-yellow)" stroke="var(--m-black)" stroke-width="3"/>
+			<!-- Polka dot fill circle -->
+			<circle cx="80" cy="70" r="90" fill="url(#dots-fill)" opacity="0.4"/>
+
+			<!-- Red square — right of centre, rotated -->
+			<rect x="260" y="60" width="130" height="130" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="3" transform="rotate(15 325 125)"/>
+			<!-- Stripe fill on red square -->
+			<rect x="260" y="60" width="130" height="130" fill="url(#stripe-fill)" opacity="0.35" transform="rotate(15 325 125)"/>
+
+			<!-- Teal triangle — lower left -->
+			<polygon points="40,320 180,200 40,200" fill="var(--m-teal)" stroke="var(--m-black)" stroke-width="3"/>
+
+			<!-- Hot pink rectangle — lower right -->
+			<rect x="290" y="240" width="160" height="100" fill="var(--m-pink)" stroke="var(--m-black)" stroke-width="3"/>
+			<rect x="290" y="240" width="160" height="100" fill="url(#check-fill)" opacity="0.3"/>
+
+			<!-- Mint circle — small, lower centre -->
+			<circle cx="220" cy="310" r="40" fill="var(--m-mint)" stroke="var(--m-black)" stroke-width="2.5"/>
+
+			<!-- Black diamond -->
+			<polygon points="400,160 440,200 400,240 360,200" fill="var(--m-black)"/>
+			<polygon points="400,160 440,200 400,240 360,200" fill="url(#dots-yellow-fill)" opacity="0.5"/>
+
+			<!-- Small circles -->
+			<circle cx="380" cy="60"  r="18" fill="var(--m-mint)"   stroke="var(--m-black)" stroke-width="2"/>
+			<circle cx="170" cy="350" r="12" fill="var(--m-yellow)" stroke="var(--m-black)" stroke-width="2"/>
+			<circle cx="450" cy="350" r="22" fill="var(--m-teal)"   stroke="var(--m-black)" stroke-width="2"/>
+
+			<!-- Diagonal line accents -->
+			<line x1="10"  y1="380" x2="90"  y2="300" stroke="var(--m-black)" stroke-width="3"/>
+			<line x1="440" y1="10"  x2="480" y2="50"  stroke="var(--m-black)" stroke-width="3"/>
+
+			<!-- SVG pattern defs -->
+			<defs>
+				<pattern id="dots-fill" patternUnits="userSpaceOnUse" width="16" height="16">
+					<circle cx="8" cy="8" r="3" fill="var(--m-black)" opacity="0.5"/>
+				</pattern>
+				<pattern id="dots-yellow-fill" patternUnits="userSpaceOnUse" width="16" height="16">
+					<circle cx="8" cy="8" r="3" fill="var(--m-yellow)"/>
+				</pattern>
+				<pattern id="stripe-fill" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+					<line x1="0" y1="0" x2="0" y2="10" stroke="var(--m-cream)" stroke-width="2"/>
+				</pattern>
+				<pattern id="check-fill" patternUnits="userSpaceOnUse" width="14" height="14">
+					<rect x="0" y="0" width="7"  height="7"  fill="var(--m-black)" opacity="0.4"/>
+					<rect x="7" y="7" width="7"  height="7"  fill="var(--m-black)" opacity="0.4"/>
+				</pattern>
+			</defs>
+		</svg>
+	</div>
+</header>
+
+<div class="m-zigzag-y" aria-hidden="true"></div>
+
+<!-- COLOUR PALETTE -->
+<section class="m-section" id="palette">
+	<div class="m-container">
+		<div class="m-section-header">
+			<span class="header-tag">01</span>
+			<div class="header-text">
+				<h2>Colour Palette</h2>
+				<p>Memphis used bold saturated primaries and secondaries applied in flat fields. No gradients, no subtlety. Every colour carries equal weight.</p>
+			</div>
+		</div>
+
+		<div class="m-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));">
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-yellow);"></div>
+				<div class="clr-meta"><span class="clr-name">Yellow</span><span class="clr-var">--m-yellow</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-red);"></div>
+				<div class="clr-meta"><span class="clr-name">Red</span><span class="clr-var">--m-red</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-blue);"></div>
+				<div class="clr-meta"><span class="clr-name">Blue</span><span class="clr-var">--m-blue</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-teal);"></div>
+				<div class="clr-meta"><span class="clr-name">Teal</span><span class="clr-var">--m-teal</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-pink);"></div>
+				<div class="clr-meta"><span class="clr-name">Pink</span><span class="clr-var">--m-pink</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-mint);"></div>
+				<div class="clr-meta"><span class="clr-name">Mint</span><span class="clr-var">--m-mint</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-black);"></div>
+				<div class="clr-meta"><span class="clr-name">Black</span><span class="clr-var">--m-black</span></div>
+			</div>
+			<div class="m-colour-swatch">
+				<div class="chip" style="background: var(--m-cream); border-block-end: var(--m-stroke-sm);"></div>
+				<div class="clr-meta"><span class="clr-name">Cream</span><span class="clr-var">--m-cream</span></div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<div class="m-dots-band" aria-hidden="true"></div>
+
+<!-- PATTERN SYSTEM -->
+<section class="m-section" id="patterns">
+	<div class="m-container">
+		<div class="m-section-header">
+			<span class="header-tag" style="background: var(--m-red); color: var(--m-white); transform: rotate(2deg);">02</span>
+			<div class="header-text">
+				<h2>Pattern System</h2>
+				<p>The heart of Memphis. Every surface can carry a pattern — diagonal stripes, polka dots, squiggles, checkerboard, crosshatch, zigzag. All pure CSS, no images.</p>
+			</div>
+		</div>
+
+		<div class="m-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-stripe-y);background-color:var(--m-cream);"></div>
+				<span class="pat-label">stripe / diagonal</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-stripe-b);background-color:var(--m-cream);"></div>
+				<span class="pat-label">stripe / blue</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-stripe-p);background-color:var(--m-cream);"></div>
+				<span class="pat-label">stripe / pink</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-dots-y);background-color:var(--m-cream);"></div>
+				<span class="pat-label">dots / yellow</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-dots-r);background-color:var(--m-cream);"></div>
+				<span class="pat-label">dots / red</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-dots-b);background-color:var(--m-cream);"></div>
+				<span class="pat-label">dots / blue</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-dots-sm);background-color:var(--m-cream);"></div>
+				<span class="pat-label">dots / small black</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-check-sm);background-color:var(--m-cream);"></div>
+				<span class="pat-label">checker / small</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-check-y);"></div>
+				<span class="pat-label">checker / yellow</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-check-p);"></div>
+				<span class="pat-label">checker / pink</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-cross);background-color:var(--m-cream);"></div>
+				<span class="pat-label">crosshatch</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-stripe-vert);background-color:var(--m-cream);"></div>
+				<span class="pat-label">stripes / vertical</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-squiggle-r);background-color:var(--m-cream);background-size:40px 20px;"></div>
+				<span class="pat-label">squiggle / red</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-squiggle-b);background-color:var(--m-cream);background-size:40px 20px;"></div>
+				<span class="pat-label">squiggle / blue</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-squiggle-p);background-color:var(--m-blue);background-size:40px 20px;"></div>
+				<span class="pat-label">squiggle / on blue</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-confetti);background-color:var(--m-cream);"></div>
+				<span class="pat-label">confetti</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-zigzag-y);background-color:var(--m-cream);background-size:32px 16px;"></div>
+				<span class="pat-label">zigzag / yellow</span>
+			</div>
+
+			<div class="m-pat-swatch">
+				<div style="height:100%;background:var(--m-pat-zigzag-b);background-color:var(--m-cream);background-size:32px 16px;"></div>
+				<span class="pat-label">zigzag / blue</span>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+<div class="m-zigzag" aria-hidden="true"></div>
+
+<!-- TYPOGRAPHY -->
+<section class="m-section" id="type">
+	<div class="m-container">
+		<div class="m-section-header">
+			<span class="header-tag" style="background: var(--m-teal); transform: rotate(1deg);">03</span>
+			<div class="header-text">
+				<h2>Typography</h2>
+				<p>Memphis catalogues and labels used Futura Black and Futura Heavy — bold geometric letterforms, large and unapologetic. Boogaloo approximates this spirit. Space Mono for readouts.</p>
+			</div>
+		</div>
+
+		<div style="display:grid;gap:var(--m-sp-2xl);">
+
+			<div style="border-block-end: var(--m-stroke); padding-block-end: var(--m-sp-xl);">
+				<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;margin-block-end:var(--m-sp-md);opacity:0.6;">Display — Boogaloo (≈ Futura Black)</p>
+				<h2 style="font-size:clamp(3rem,9vw,8rem);line-height:0.9;border:none;">MEMPHIS GROUP</h2>
+			</div>
+
+			<div style="border-block-end: var(--m-stroke); padding-block-end: var(--m-sp-xl);">
+				<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;margin-block-end:var(--m-sp-md);opacity:0.6;">Display / Multi-colour treatment</p>
+				<p style="font-family:var(--m-font-display);font-size:clamp(2rem,7vw,6rem);line-height:0.95;">
+					<span style="color:var(--m-red);">BOLD.</span>
+					<span style="color:var(--m-blue);">FLAT.</span>
+					<span style="color:var(--m-teal);">FUN.</span>
+				</p>
+			</div>
+
+			<div style="border-block-end: var(--m-stroke); padding-block-end: var(--m-sp-xl);">
+				<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;margin-block-end:var(--m-sp-md);opacity:0.6;">Body — Outfit 500</p>
+				<p style="font-size:1.15rem;font-weight:500;max-width:56ch;">Memphis rejected the austere good taste of Modernism. Sottsass declared: "Design is a way of discussing life." Every surface became an opportunity for pattern, colour, and wit.</p>
+			</div>
+
+			<div style="border-block-end: var(--m-stroke); padding-block-end: var(--m-sp-xl);">
+				<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;margin-block-end:var(--m-sp-md);opacity:0.6;">Mono — Space Mono (data / code)</p>
+				<p style="font-family:var(--m-font-mono);font-size:1.1rem;color:var(--m-blue);">--m-font-display: 'Boogaloo', 'Futura', sans-serif;</p>
+				<p style="font-family:var(--m-font-mono);font-size:1.1rem;color:var(--m-red);">--m-font-body:    'Outfit', 'Century Gothic', sans-serif;</p>
+			</div>
+
+			<div>
+				<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;margin-block-end:var(--m-sp-md);opacity:0.6;">Type scale — all Boogaloo</p>
+				<div style="display:grid;gap:var(--m-sp-md);padding-inline-start:var(--m-sp-lg);border-inline-start:4px solid var(--m-yellow);">
+					<p style="font-family:var(--m-font-display);font-size:3.5rem;line-height:1;">3.5rem Display</p>
+					<p style="font-family:var(--m-font-display);font-size:2rem;">2rem Section Title</p>
+					<p style="font-family:var(--m-font-display);font-size:1.3rem;">1.3rem Subheading</p>
+					<p style="font-weight:500;font-size:1rem;">1rem Body — clear and readable despite the chaos around it.</p>
+					<p style="font-size:0.85rem;opacity:0.65;font-weight:400;">0.85rem Small — captions and secondary info.</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+<div class="m-stripe-band" aria-hidden="true"></div>
+
+<!-- COMPONENTS -->
+<section class="m-section" id="components">
+	<div class="m-container">
+		<div class="m-section-header">
+			<span class="header-tag" style="background: var(--m-pink); color: var(--m-white); transform: rotate(-1.5deg);">04</span>
+			<div class="header-text">
+				<h2>Components</h2>
+			</div>
+		</div>
+
+		<!-- Buttons -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Buttons — solid fill</p>
+			<div class="m-flex">
+				<button class="m-btn" data-variant="yellow">Yellow</button>
+				<button class="m-btn" data-variant="red">Red</button>
+				<button class="m-btn" data-variant="blue">Blue</button>
+				<button class="m-btn" data-variant="teal">Teal</button>
+				<button class="m-btn" data-variant="pink">Pink</button>
+				<button class="m-btn" data-variant="mint">Mint</button>
+			</div>
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block:var(--m-sp-lg) var(--m-sp-md);">Buttons — pattern fill</p>
+			<div class="m-flex">
+				<button class="m-btn" data-variant="stripe">Stripe</button>
+				<button class="m-btn" data-variant="dots">Dots</button>
+				<button class="m-btn" data-variant="check">Check</button>
+				<button class="m-btn">Default</button>
+			</div>
+		</div>
+
+		<!-- Badges -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Badges</p>
+			<div class="m-flex" style="flex-wrap:wrap;gap:var(--m-sp-sm);">
+				<span class="m-badge" data-color="yellow">Memphis</span>
+				<span class="m-badge" data-color="red">Sottsass</span>
+				<span class="m-badge" data-color="blue">1981</span>
+				<span class="m-badge" data-color="teal">Milan</span>
+				<span class="m-badge" data-color="pink">Post-modern</span>
+				<span class="m-badge" data-color="mint">Anti-taste</span>
+				<span class="m-badge" data-color="stripe">Stripe</span>
+				<span class="m-badge" data-color="dots">Dots</span>
+				<span class="m-badge" data-color="check">Check</span>
+			</div>
+		</div>
+
+		<!-- Stats -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Stats</p>
+			<div class="m-grid">
+				<div class="m-stat" data-color="yellow"><div class="stat-top">Components</div><div class="stat-body"><div class="stat-val">47</div><div class="stat-lbl">Available</div></div></div>
+				<div class="m-stat" data-color="teal"><div class="stat-top">JS Required</div><div class="stat-body"><div class="stat-val">0<small style="font-size:0.45em;">KB</small></div><div class="stat-lbl">Payload</div></div></div>
+				<div class="m-stat" data-color="pink"><div class="stat-top">Lighthouse</div><div class="stat-body"><div class="stat-val">100</div><div class="stat-lbl">Score</div></div></div>
+				<div class="m-stat" data-color="blue"><div class="stat-top">Themes</div><div class="stat-body"><div class="stat-val">∞</div><div class="stat-lbl">Available</div></div></div>
+			</div>
+		</div>
+
+		<!-- Cards — each face carries a different Memphis pattern -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Cards — patterned face</p>
+			<div class="m-grid">
+
+				<article class="m-card">
+					<div class="card-face" style="background:var(--m-pat-dots-y);background-color:var(--m-yellow);">
+						<!-- Decorative circle -->
+						<svg style="position:absolute;bottom:-10px;right:16px;" width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
+							<circle cx="30" cy="30" r="28" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="2.5"/>
+						</svg>
+					</div>
+					<div class="card-body">
+						<div style="margin-block-end:var(--m-sp-xs);"><span class="m-badge" data-color="yellow">Framework</span></div>
+						<h3 class="card-title">Vanilla Breeze</h3>
+						<p class="card-desc">HTML-first, zero build step. Platform-native CSS and JS working together with the joyful chaos of a Memphis pattern — rich, purposeful, and without unnecessary complexity.</p>
+						<button class="m-btn" data-variant="yellow" style="font-size:0.95rem;padding:0.4em 1em;">Explore</button>
+					</div>
+				</article>
+
+				<article class="m-card">
+					<div class="card-face" style="background:var(--m-pat-stripe-b);background-color:var(--m-blue);">
+						<svg style="position:absolute;bottom:-10px;right:16px;" width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
+							<polygon points="30,2 58,58 2,58" fill="var(--m-yellow)" stroke="var(--m-black)" stroke-width="2.5"/>
+						</svg>
+					</div>
+					<div class="card-body">
+						<div style="margin-block-end:var(--m-sp-xs);"><span class="m-badge" data-color="blue">Hypermedia</span></div>
+						<h3 class="card-title">html-star</h3>
+						<p class="card-desc">Server-driven UI with zero JavaScript overhead. Like the Memphis Group working with industrial laminates — bold results from simple materials.</p>
+						<button class="m-btn" data-variant="blue" style="font-size:0.95rem;padding:0.4em 1em;">Explore</button>
+					</div>
+				</article>
+
+				<article class="m-card">
+					<div class="card-face" style="background:var(--m-pat-check-p);">
+						<svg style="position:absolute;bottom:-10px;right:16px;" width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
+							<polygon points="30,6 54,30 30,54 6,30" fill="var(--m-teal)" stroke="var(--m-black)" stroke-width="2.5"/>
+						</svg>
+					</div>
+					<div class="card-body">
+						<div style="margin-block-end:var(--m-sp-xs);"><span class="m-badge" data-color="pink">Reactivity</span></div>
+						<h3 class="card-title">Montane</h3>
+						<p class="card-desc">Alpine.js alternative on pure web standards. Lightweight client-side reactivity — functional at its core, decorative in its expression.</p>
+						<button class="m-btn" data-variant="pink" style="font-size:0.95rem;padding:0.4em 1em;">Explore</button>
+					</div>
+				</article>
+
+			</div>
+		</div>
+
+		<!-- Alerts -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Alerts</p>
+			<div style="display:grid;gap:var(--m-sp-md);">
+				<div class="m-alert" data-type="warning">
+					<div class="alert-accent"></div>
+					<div class="alert-body"><strong>Caution</strong><p>Memphis patterns are highly contagious. Once applied, there is no known antidote.</p></div>
+				</div>
+				<div class="m-alert" data-type="error">
+					<div class="alert-accent"></div>
+					<div class="alert-body"><strong>Error</strong><p>Insufficient chaos detected. Apply additional polka dot or diagonal stripe patterns immediately.</p></div>
+				</div>
+				<div class="m-alert" data-type="info">
+					<div class="alert-accent"></div>
+					<div class="alert-body"><strong>Information</strong><p>The Memphis Group held its first exhibition in Milan in December 1981. The furniture sold out within hours.</p></div>
+				</div>
+				<div class="m-alert" data-type="success">
+					<div class="alert-accent"></div>
+					<div class="alert-body"><strong>Success</strong><p>Memphis theme loaded. All patterns active. Ettore Sottsass would be proud.</p></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Forms -->
+		<div style="margin-block-end: var(--m-sp-2xl);">
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Form Elements</p>
+			<div class="m-grid-2" style="max-width:600px;">
+				<div class="m-field">
+					<label for="m-name">Designer Name</label>
+					<input type="text" id="m-name" placeholder="Ettore Sottsass" />
+				</div>
+				<div class="m-field">
+					<label for="m-style">Design Era</label>
+					<select id="m-style">
+						<option>Memphis (1981–1988)</option>
+						<option>Post-Modern (1970s)</option>
+						<option>Radical Design (1960s)</option>
+						<option>Deconstructivist (1980s)</option>
+					</select>
+				</div>
+			</div>
+			<div style="margin-block-start:var(--m-sp-md);">
+				<div class="m-segmented" role="group" aria-label="Grid style">
+					<button data-active>Dots</button>
+					<button>Stripes</button>
+					<button>Checks</button>
+					<button>Squiggles</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Geometric shapes showcase -->
+		<div>
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-block-end:var(--m-sp-md);">Geometric Shapes — decorative elements</p>
+			<div class="m-flex" style="gap:var(--m-sp-lg);flex-wrap:wrap;align-items:center;">
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Circle">
+					<circle cx="32" cy="32" r="30" fill="var(--m-yellow)" stroke="var(--m-black)" stroke-width="2.5"/>
+				</svg>
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Square">
+					<rect x="4" y="4" width="56" height="56" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="2.5"/>
+				</svg>
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Triangle">
+					<polygon points="32,4 60,60 4,60" fill="var(--m-teal)" stroke="var(--m-black)" stroke-width="2.5"/>
+				</svg>
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Diamond">
+					<polygon points="32,2 62,32 32,62 2,32" fill="var(--m-blue)" stroke="var(--m-black)" stroke-width="2.5"/>
+				</svg>
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Star">
+					<polygon points="32,4 38,24 60,24 44,38 50,60 32,46 14,60 20,38 4,24 26,24" fill="var(--m-pink)" stroke="var(--m-black)" stroke-width="2"/>
+				</svg>
+				<!-- Polka dot circle -->
+				<svg width="64" height="64" viewBox="0 0 64 64" aria-label="Patterned circle">
+					<defs>
+						<clipPath id="c-clip"><circle cx="32" cy="32" r="30"/></clipPath>
+						<pattern id="c-dots" patternUnits="userSpaceOnUse" width="10" height="10">
+							<circle cx="5" cy="5" r="2.5" fill="var(--m-black)"/>
+						</pattern>
+					</defs>
+					<circle cx="32" cy="32" r="30" fill="var(--m-mint)" stroke="var(--m-black)" stroke-width="2.5"/>
+					<rect width="64" height="64" fill="url(#c-dots)" opacity="0.4" clip-path="url(#c-clip)"/>
+				</svg>
+				<!-- Stripe rectangle -->
+				<svg width="80" height="40" viewBox="0 0 80 40" aria-label="Patterned rectangle">
+					<defs>
+						<clipPath id="r-clip"><rect x="0" y="0" width="80" height="40" rx="0"/></clipPath>
+						<pattern id="r-stripe" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="10" stroke="var(--m-cream)" stroke-width="3"/>
+						</pattern>
+					</defs>
+					<rect x="0" y="0" width="80" height="40" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="2.5"/>
+					<rect x="0" y="0" width="80" height="40" fill="url(#r-stripe)" opacity="0.5" clip-path="url(#r-clip)"/>
+				</svg>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div class="m-zigzag-y" aria-hidden="true"></div>
+
+<!-- TOKEN REFERENCE -->
+<section class="m-section" id="tokens" style="background: var(--m-pat-dots-sm); background-color: var(--m-cream);">
+	<div class="m-container">
+		<div class="m-section-header">
+			<span class="header-tag" style="background: var(--m-blue); color: var(--m-white); transform: rotate(-1deg);">05</span>
+			<div class="header-text">
+				<h2>CSS Tokens</h2>
+				<p>Drop <code>memphis-theme.css</code> into Vanilla Breeze.</p>
+			</div>
+		</div>
+
+		<div class="m-grid-2">
+        <pre style="background:var(--m-black);color:var(--m-yellow);border:var(--m-stroke);padding:var(--m-sp-lg);font-family:var(--m-font-mono);font-size:0.78rem;line-height:1.9;overflow-x:auto;box-shadow:var(--m-shadow-lg);"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(50% 0 0);">/* Colours */</span>
+<span style="color:var(--m-yellow);">--m-yellow</span>
+<span style="color:var(--m-red);">--m-red</span>
+<span style="color:oklch(from var(--m-blue) calc(l + 0.2) c h);">--m-blue</span>
+<span style="color:var(--m-teal);">--m-teal</span>
+<span style="color:var(--m-pink);">--m-pink</span>
+<span style="color:var(--m-mint);">--m-mint</span>
+--m-black
+--m-cream
+
+<span style="color:oklch(50% 0 0);">/* Shadows */</span>
+--m-shadow-sm    2px 2px 0
+--m-shadow       4px 4px 0
+--m-shadow-lg    6px 6px 0</code></pre>
+
+			<pre style="background:var(--m-black);color:var(--m-yellow);border:var(--m-stroke);padding:var(--m-sp-lg);font-family:var(--m-font-mono);font-size:0.78rem;line-height:1.9;overflow-x:auto;box-shadow:var(--m-shadow-lg);"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(50% 0 0);">/* Patterns */</span>
+--m-pat-stripe-y/p/b/t
+--m-pat-stripe-vert
+--m-pat-dots-y/r/b/p
+--m-pat-dots-sm/lg
+--m-pat-check-sm/md/y/p
+--m-pat-cross
+--m-pat-squiggle-r/b/p/bk
+--m-pat-zigzag-y/b
+--m-pat-confetti
+
+<span style="color:oklch(50% 0 0);">/* Fonts */</span>
+--m-font-display  Boogaloo
+--m-font-body     Outfit
+--m-font-mono     Space Mono</code></pre>
+		</div>
+	</div>
+</section>
+
+<div class="m-dots-band" aria-hidden="true"></div>
+
+<!-- FOOTER -->
+<footer class="m-footer">
+	<div class="foot-top" aria-hidden="true"></div>
+	<div class="foot-inner m-container">
+		<div>
+			<div class="foot-logo">MEM<span>PHIS</span></div>
+			<p style="font-family:var(--m-font-mono);font-size:0.65rem;margin-block-start:var(--m-sp-sm);color:oklch(55% 0 0);letter-spacing:0.1em;">VANILLA BREEZE THEME SYSTEM</p>
+		</div>
+		<div style="display:flex;gap:var(--m-sp-lg);align-items:center;" aria-hidden="true">
+			<svg width="40" height="40" viewBox="0 0 40 40">
+				<circle cx="20" cy="20" r="18" fill="var(--m-yellow)" stroke="var(--m-black)" stroke-width="2"/>
+			</svg>
+			<svg width="40" height="40" viewBox="0 0 40 40">
+				<rect x="2" y="2" width="36" height="36" fill="var(--m-teal)" stroke="var(--m-black)" stroke-width="2"/>
+			</svg>
+			<svg width="40" height="40" viewBox="0 0 40 40">
+				<polygon points="20,2 38,38 2,38" fill="var(--m-pink)" stroke="var(--m-black)" stroke-width="2"/>
+			</svg>
+			<svg width="40" height="40" viewBox="0 0 40 40">
+				<polygon points="20,2 38,20 20,38 2,20" fill="var(--m-red)" stroke="var(--m-black)" stroke-width="2"/>
+			</svg>
+		</div>
+		<div class="foot-meta">
+			<p>INSPIRED BY THE MEMPHIS GROUP (1981–1988)</p>
+			<p>ETTORE SOTTSASS — MILAN</p>
+			<p style="margin-block-start:var(--m-sp-sm);opacity:0.5;">VANILLA BREEZE RETRO THEME COLLECTION</p>
+		</div>
+	</div>
+</footer>
+
+<script>
+	// Segmented controls
+	document.querySelectorAll('.m-segmented').forEach(seg => {
+		seg.querySelectorAll('button').forEach(btn => {
+			btn.addEventListener('click', () => {
+				seg.querySelectorAll('button').forEach(b => b.removeAttribute('data-active'));
+				btn.setAttribute('data-active', '');
+			});
+		});
+	});
+</script>
+
+</body>
+</html>

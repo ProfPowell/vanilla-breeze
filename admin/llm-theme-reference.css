@@ -1,0 +1,909 @@
+/**
+ * ╔══════════════════════════════════════════════════════════════════╗
+ * ║  VANILLA BREEZE — LLM THEME REFERENCE                          ║
+ * ║  Feed this file to an LLM for accurate theme prototyping        ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ *
+ * This file documents the complete token contract for the Vanilla Breeze
+ * design system. Every CSS custom property a theme can override is listed
+ * here with its default value and explanatory notes.
+ *
+ * HOW THEMES WORK
+ * ────────────────
+ * Themes are applied via the `data-theme` attribute on <html> or any element:
+ *
+ *   <html data-theme="ocean">                      — brand color theme
+ *   <html data-theme="nord">                       — personality/extreme theme
+ *   <html data-theme="ocean" data-mode="dark">     — force dark mode
+ *   <html data-theme="forest a11y-high-contrast">  — composable themes
+ *
+ * Light/dark mode uses `data-mode="light|dark"` or follows the system via
+ * `color-scheme: light dark` and the CSS `light-dark()` function.
+ *
+ * THEME CATEGORIES
+ * ────────────────
+ * 1. BRAND THEMES (simple) — Only override hue values. Shape, shadows,
+ *    typography stay default. Examples: ocean, forest, sunset, coral.
+ *
+ * 2. PERSONALITY THEMES (moderate) — Override colors + shape + typography
+ *    for a distinct feel. Examples: modern, minimal, classic.
+ *
+ * 3. EXTREME THEMES (comprehensive) — Dramatic overhauls of every token
+ *    category. Examples: brutalist, swiss, cyber, nord, kawaii, 8bit.
+ *
+ * COMPLETE OVERRIDE PRINCIPLE
+ * ──────────────────────────
+ * Any theme providing a dark mode variant MUST completely override all
+ * surface, text, and border tokens. You cannot rely on the base neutrals
+ * because theme-tinted OKLCH values (e.g. oklch(12% 0.02 280)) will
+ * clash with achromatic grays. Required tokens in every mode variant:
+ *
+ *   --color-surface, --color-surface-raised, --color-surface-sunken,
+ *   --color-background, --color-text, --color-text-muted,
+ *   --color-border, --color-border-strong, --shadow-sm, --shadow-md
+ *
+ * COLOR SPACE
+ * ──────────
+ * All colors use OKLCH: oklch(lightness chroma hue)
+ *   - Lightness: 0% (black) to 100% (white)
+ *   - Chroma: 0 (gray) to ~0.37 (maximum saturation)
+ *   - Hue: 0-360 degrees (0=red, 120=green, 240=blue)
+ *
+ * Relative color syntax is used for hover/active states:
+ *   oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h)
+ *
+ * CSS SELECTOR PATTERN
+ * ────────────────────
+ * Use `data-theme~="name"` (word match) so themes compose:
+ *
+ *   :root[data-theme~="mytheme"],
+ *   [data-theme~="mytheme"] { ... }
+ *
+ * Dark variant:
+ *   :root[data-theme~="mytheme"][data-mode="dark"],
+ *   [data-theme~="mytheme"][data-mode="dark"] { ... }
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+ * ║  SECTION 1: BASE TOKEN DEFAULTS                                 ║
+ * ║  These are what every theme inherits. Override selectively.      ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
+
+/* ─────────────────────────── 1A. COLORS ─────────────────────────── */
+/**
+ * The color system is hue-driven. Changing --hue-primary, --hue-secondary,
+ * and --hue-accent cascades to all derived brand colors automatically.
+ * For finer control, override the individual --color-* tokens directly.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Gray scale (achromatic — zero chroma) */
+  --color-gray-50: oklch(98% 0 0);
+  --color-gray-100: oklch(96% 0 0);
+  --color-gray-200: oklch(90% 0 0);
+  --color-gray-300: oklch(80% 0 0);
+  --color-gray-400: oklch(70% 0 0);
+  --color-gray-500: oklch(55% 0 0);
+  --color-gray-600: oklch(45% 0 0);
+  --color-gray-700: oklch(35% 0 0);
+  --color-gray-800: oklch(25% 0 0);
+  --color-gray-900: oklch(15% 0 0);
+  --color-gray-950: oklch(10% 0 0);
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(0% 0 0);
+
+  /* Brand hues (0-360, themes override these) */
+  --hue-primary: 260;
+  --hue-secondary: 200;
+  --hue-accent: 30;
+  /*
+   * Hue reference:
+   *   0-30    Red/Orange
+   *   30-60   Orange/Yellow
+   *   60-120  Yellow/Green
+   *   120-180 Green/Cyan
+   *   180-240 Cyan/Blue
+   *   240-300 Blue/Purple
+   *   300-360 Purple/Red
+   */
+
+  /* Brand colors (derived from hues) */
+  --color-primary: oklch(50% 0.2 var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+
+  --color-accent: oklch(65% 0.18 var(--hue-accent));
+  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+
+  /* Status colors (fixed hues, not theme-dependent) */
+  --color-success: oklch(55% 0.2 145);
+  --color-success-subtle: light-dark(oklch(95% 0.05 145), oklch(25% 0.08 145));
+  --color-success-text: light-dark(oklch(35% 0.12 145), oklch(75% 0.15 145));
+
+  --color-warning: oklch(70% 0.18 70);
+  --color-warning-subtle: light-dark(oklch(95% 0.08 70), oklch(25% 0.1 70));
+  --color-warning-text: light-dark(oklch(40% 0.12 70), oklch(80% 0.12 70));
+
+  --color-error: oklch(55% 0.22 25);
+  --color-error-subtle: light-dark(oklch(95% 0.05 25), oklch(25% 0.08 25));
+  --color-error-text: light-dark(oklch(40% 0.15 25), oklch(75% 0.18 25));
+
+  --color-info: oklch(55% 0.15 240);
+  --color-info-subtle: light-dark(oklch(95% 0.05 240), oklch(25% 0.08 240));
+  --color-info-text: light-dark(oklch(35% 0.12 240), oklch(75% 0.12 240));
+
+  /* Semantic surfaces (backgrounds) */
+  --color-background: light-dark(var(--color-white), var(--color-gray-950));
+  --color-surface: light-dark(var(--color-white), var(--color-gray-900));
+  --color-surface-raised: light-dark(var(--color-gray-50), var(--color-gray-800));
+  --color-surface-sunken: light-dark(var(--color-gray-100), var(--color-gray-950));
+
+  /* Semantic text */
+  --color-text: light-dark(var(--color-gray-900), var(--color-gray-100));
+  --color-text-muted: light-dark(var(--color-gray-600), var(--color-gray-400));
+  --color-text-subtle: light-dark(var(--color-gray-500), var(--color-gray-500));
+  --color-text-inverted: light-dark(var(--color-white), var(--color-gray-900));
+  --color-text-on-primary: var(--color-white);
+
+  /* Semantic borders */
+  --color-border: light-dark(var(--color-gray-200), var(--color-gray-700));
+  --color-border-strong: light-dark(var(--color-gray-300), var(--color-gray-600));
+  --color-border-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --color-border-focus: var(--color-primary);
+
+  /* Interactive (buttons, links) */
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  /* Overlays */
+  --color-overlay-subtle: light-dark(oklch(0% 0 0 / 0.05), oklch(100% 0 0 / 0.05));
+  --color-overlay-medium: light-dark(oklch(0% 0 0 / 0.15), oklch(100% 0 0 / 0.10));
+  --color-overlay-strong: light-dark(oklch(0% 0 0 / 0.50), oklch(0% 0 0 / 0.70));
+
+  /* Focus ring */
+  --color-focus-ring: var(--color-primary);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-focus-ring);
+
+  /* Scrollbar */
+  --scrollbar-thumb: light-dark(var(--color-gray-400), var(--color-gray-600));
+  --scrollbar-track: transparent;
+}
+
+/* Derived color tokens (auto-adapt when base colors change) */
+:root {
+  /* Primary tint scale — for backgrounds, highlights */
+  --tint-primary-5: color-mix(in oklab, var(--color-primary) 5%, transparent);
+  --tint-primary-10: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  --tint-primary-20: color-mix(in oklab, var(--color-primary) 20%, transparent);
+  --tint-primary-30: color-mix(in oklab, var(--color-primary) 30%, transparent);
+
+  /* Surface interaction states */
+  --surface-hover: color-mix(in oklab, var(--color-interactive) 8%, var(--color-surface));
+  --surface-focus: color-mix(in oklab, var(--color-interactive) 12%, var(--color-surface));
+  --surface-active: color-mix(in oklab, var(--color-interactive) 16%, var(--color-surface));
+  --surface-selected: color-mix(in oklab, var(--color-primary) 10%, var(--color-surface));
+
+  /* Status backgrounds */
+  --status-success-bg: color-mix(in oklab, var(--color-success) 10%, var(--color-surface));
+  --status-warning-bg: color-mix(in oklab, var(--color-warning) 10%, var(--color-surface));
+  --status-error-bg: color-mix(in oklab, var(--color-error) 10%, var(--color-surface));
+  --status-info-bg: color-mix(in oklab, var(--color-info) 10%, var(--color-surface));
+
+  --border-tint: color-mix(in oklab, var(--color-border) 50%, transparent);
+  --text-on-tint: color-mix(in oklab, var(--color-text) 90%, var(--color-primary));
+}
+
+
+/* ────────────────────── 1B. TYPOGRAPHY ──────────────────────────── */
+
+:root {
+  /* Font families */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+
+  /* Font size scale */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px — base */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+
+  /* Line heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 1.75;
+
+  /* Body line-height unit (for vertical rhythm) */
+  --lh: 1.5rem;
+
+  /* Measure (line length) */
+  --measure-narrow: 45ch;
+  --measure-normal: 65ch;
+  --measure-wide: 80ch;
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Letter spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+
+  /* Font metrics normalization (for themes with unusual fonts) */
+  --font-size-adjust: none;
+}
+
+
+/* ────────────────────── 1C. SPACING & SIZING ───────────────────── */
+/**
+ * All sizing is derived from --size-unit (0.25rem = 4px).
+ * Themes can scale everything proportionally by changing --size-unit.
+ * The fluid system (data-fluid) overrides these with clamp() values.
+ */
+
+:root {
+  --size-unit: 0.25rem;
+  --size-3xs: calc(var(--size-unit) * 0.5);   /* 0.125rem / 2px */
+  --size-2xs: calc(var(--size-unit) * 1);      /* 0.25rem / 4px */
+  --size-xs: calc(var(--size-unit) * 2);       /* 0.5rem / 8px */
+  --size-s: calc(var(--size-unit) * 3);        /* 0.75rem / 12px */
+  --size-m: calc(var(--size-unit) * 4);        /* 1rem / 16px */
+  --size-l: calc(var(--size-unit) * 6);        /* 1.5rem / 24px */
+  --size-xl: calc(var(--size-unit) * 8);       /* 2rem / 32px */
+  --size-2xl: calc(var(--size-unit) * 12);     /* 3rem / 48px */
+  --size-3xl: calc(var(--size-unit) * 16);     /* 4rem / 64px */
+
+  /* Content widths */
+  --content-narrow: 40rem;
+  --content-normal: 60rem;
+  --content-wide: 80rem;
+
+  /* Touch target minimum */
+  --size-touch-min: 2.75rem;
+}
+
+
+/* ──────────────────── 1D. BORDERS & SHAPE ──────────────────────── */
+
+:root {
+  /* Border widths */
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 4px;
+
+  /* Border radius scale (controls geometric feel: sharp → rounded) */
+  --radius-xs: 0.125rem;    /* 2px */
+  --radius-s: 0.25rem;      /* 4px */
+  --radius-m: 0.5rem;       /* 8px */
+  --radius-l: 0.75rem;      /* 12px */
+  --radius-xl: 1rem;        /* 16px */
+  --radius-2xl: 1.5rem;     /* 24px */
+  --radius-full: 9999px;    /* pill shape */
+}
+
+
+/* ────────────────────── 1E. SHADOWS ────────────────────────────── */
+/**
+ * Shadow scale provides elevation levels. Themes should tint shadows
+ * to match their palette for visual cohesion (see Nord example below).
+ */
+
+:root {
+  --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+  --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 hsl(0 0% 0% / 0.05);
+  --shadow-none: 0 0 #0000;
+}
+
+
+/* ────────────────────── 1F. MOTION ─────────────────────────────── */
+/**
+ * Duration and easing tokens. All duration tokens go to 0ms when
+ * prefers-reduced-motion: reduce is active. Themes can make motion
+ * snappier or smoother by adjusting these.
+ */
+
+:root {
+  /* Duration scale */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  /* Easing functions (1=subtle → 5=dramatic) */
+  --ease-1: cubic-bezier(0.25, 0, 0.5, 1);
+  --ease-2: cubic-bezier(0.25, 0, 0.4, 1);
+  --ease-3: cubic-bezier(0.4, 0, 0.2, 1);      /* Standard (Material) */
+  --ease-4: cubic-bezier(0.5, 0, 0.1, 1);
+  --ease-5: cubic-bezier(0.7, 0, 0.1, 1);      /* Dramatic */
+
+  --ease-in-1: cubic-bezier(0.25, 0, 1, 1);
+  --ease-in-2: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-3: cubic-bezier(0.5, 0, 1, 1);
+
+  --ease-out-1: cubic-bezier(0, 0, 0.75, 1);
+  --ease-out-2: cubic-bezier(0, 0, 0.5, 1);
+  --ease-out-3: cubic-bezier(0, 0, 0.3, 1);
+  --ease-out-4: cubic-bezier(0, 0, 0.2, 1);
+  --ease-out-5: cubic-bezier(0, 0, 0.1, 1);
+
+  /* Semantic aliases */
+  --ease-default: var(--ease-3);
+  --ease-in: var(--ease-in-2);
+  --ease-out: var(--ease-out-3);
+
+  /* Spring/bounce easings */
+  --ease-elastic-1: cubic-bezier(0.5, 0.75, 0.75, 1.25);
+  --ease-elastic-2: cubic-bezier(0.5, 1, 0.75, 1.25);
+  --ease-squish-1: cubic-bezier(0.5, -0.1, 0.1, 1.3);
+  --ease-squish-2: cubic-bezier(0.5, -0.3, 0.1, 1.5);
+}
+
+/* Reduced motion: all durations become 0ms */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}
+
+
+/* ────────────────── 1G. EXTENSION TOKENS (opt-in) ──────────────── */
+/**
+ * Extensions add capabilities beyond the core tokens. Themes can
+ * override these for richer visual expression. All default to
+ * minimal/disabled values so they're safe to ignore.
+ */
+
+:root {
+  /* --- Font slots (override for custom typography) --- */
+  --font-display: var(--font-serif);    /* Hero text, large titles */
+  --font-heading: var(--font-sans);     /* Section headings */
+  --font-body: var(--font-sans);        /* Paragraph text */
+  --font-code: var(--font-mono);        /* Code blocks */
+
+  /* --- Motion effects (hover, stagger, enter/exit) --- */
+  --motion-hover-lift: translateY(-2px);
+  --motion-hover-scale: scale(1.02);
+  --motion-hover-glow: 0 0 0 4px var(--color-primary-subtle);
+  --motion-stagger-delay: 50ms;
+  --motion-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --motion-enter-duration: 300ms;
+  --motion-exit-duration: 200ms;
+
+  /* --- Surface textures (noise, grain, dots, grid, lines) --- */
+  --surface-texture-opacity: 0.05;
+  /* Textures available: --texture-noise, --texture-grain,
+     --texture-dots, --texture-grid, --texture-lines */
+
+  /* --- Glassmorphism --- */
+  --glass-blur: 0px;           /* 0 = disabled, try 8-20px */
+  --glass-opacity: 0.15;
+  --glass-bg: oklch(100% 0 0 / var(--glass-opacity));
+  --glass-border: oklch(100% 0 0 / 0.2);
+
+  /* --- Page background (body backdrop) --- */
+  --page-bg-type: solid;
+  --page-bg-color: var(--color-background);
+  --page-bg-gradient: none;    /* Themes can set gradient backgrounds */
+  --page-bg-image: none;
+  --page-bg-attachment: scroll;
+  --page-bg-size: cover;
+  --page-bg-position: center;
+  --page-bg-blend: normal;
+  --page-bg-overlay: none;
+
+  /* --- Gradient presets --- */
+  --gradient-subtle: linear-gradient(180deg,
+    oklch(98% 0.01 var(--hue-primary)) 0%,
+    oklch(96% 0.02 var(--hue-secondary)) 100%);
+  --gradient-radial: radial-gradient(ellipse at 50% 0%,
+    oklch(90% 0.05 var(--hue-primary)) 0%,
+    oklch(98% 0.01 var(--hue-primary)) 70%);
+
+  /* --- Rough/hand-drawn borders --- */
+  --border-roughness: 0;            /* 0=none, 1=light, 2=medium, 3=heavy */
+  --filter-rough: none;             /* SVG filter reference */
+  --shadow-sketch-offset: 4px;      /* Brutalist offset shadow */
+
+  /* --- Border style system (data-border-style attribute) --- */
+  --vb-border-image: none;
+  --vb-border-filter: none;
+  --vb-border-width: var(--border-width-thin);
+  --vb-border-style: solid;
+  --vb-border-radius-override: initial;
+  --vb-border-glow: none;
+  /*
+   * Available data-border-style presets:
+   *   clean   — default, no-op
+   *   sharp   — zero radius, 2px borders (Swiss, Brutalist)
+   *   soft    — large radius, thin borders (Organic, Kawaii)
+   *   sketch  — wavy hand-drawn borders
+   *   rough   — variable dash, heavy hand
+   *   marker  — expressive marker strokes
+   *   kawaii  — scalloped cloud borders with glow
+   *   pixel   — stepped staircase borders (8-bit, NES)
+   *   neon    — solid border with glow (Cyber, Terminal)
+   *   double  — classic double-line borders
+   *   bubbly  — dotted borders with big radius + glow
+   *   organic — wavy irregular borders
+   */
+
+  /* --- Canvas/backdrop (data-backdrop attribute) --- */
+  --canvas-width: min(72rem, 100%);
+  --canvas-radius: var(--radius-l);
+  --canvas-shadow: var(--shadow-lg);
+  --canvas-shadow-subtle: var(--shadow-sm);
+  --canvas-shadow-medium: var(--shadow-md);
+  --canvas-gap: var(--size-l);
+  --canvas-padding-inline: var(--size-l);
+  --canvas-padding-block: var(--size-l);
+  --canvas-bg: var(--color-surface);
+
+  /* --- Character tokens (separators, markers) --- */
+  --sep-breadcrumb: "\203A";
+  --sep-list: "\00B7";
+  --sep-pipe: "\007C";
+  --marker-default: "\2022";
+  --marker-check: "\2714";
+  --marker-arrow: "\27A4";
+  --marker-dash: "\2043";
+
+  /* --- Theme hint tokens (read by ThemeManager JS) --- */
+  --theme-border-style: clean;    /* clean | soft | sharp | sketch | etc. */
+  --theme-icon-set: lucide;       /* icon set name */
+}
+
+/* Reduced motion: disable hover/stagger/enter-exit effects */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-hover-lift: none;
+    --motion-hover-scale: none;
+    --motion-stagger-delay: 0ms;
+    --motion-enter-duration: 0ms;
+    --motion-exit-duration: 0ms;
+  }
+}
+
+/* User-toggled motion reduction (via theme picker toggle) */
+:root[data-motion-reduced] {
+  --motion-hover-lift: none;
+  --motion-hover-scale: none;
+  --motion-stagger-delay: 0ms;
+  --motion-enter-duration: 0ms;
+  --motion-exit-duration: 0ms;
+}
+
+
+/* ────────────────── 1H. FLUID SCALING (data-fluid) ─────────────── */
+/**
+ * Activate with: <html data-fluid>
+ * Presets: data-fluid="compact" | data-fluid (default) | data-fluid="spacious"
+ *
+ * Type sizes and spacing scale continuously between 320px and 1440px.
+ * Uses a variable-ratio scale: tighter at narrow → wider at wide.
+ * Themes generally don't need to override these unless they want custom
+ * fluid behavior.
+ *
+ * Example (default preset):
+ *   --font-size-md: clamp(1rem, 0.0893vi + 0.9821rem, 1.0625rem);
+ *   --size-unit: clamp(0.225rem, 0.0714vi + 0.2107rem, 0.275rem);
+ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+ * ║  SECTION 2: DARK MODE DEFAULTS                                  ║
+ * ║  What changes when data-mode="dark" is set (without a theme)    ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
+
+:root[data-mode="dark"],
+[data-mode="dark"] {
+  color-scheme: dark;
+
+  /* Brighter primary for dark mode contrast */
+  --color-primary: oklch(65% 0.18 var(--hue-primary));
+
+  /* Deeper shadows */
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+
+  /* Glass adjustments */
+  --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
+  --glass-border: oklch(40% 0 0 / 0.3);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+ * ║  SECTION 3: THEME TEMPLATE                                      ║
+ * ║  Copy this block to create a new theme.                          ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
+
+/*
+:root[data-theme~="THEME_NAME"],
+[data-theme~="THEME_NAME"] {
+  color-scheme: light;
+
+  --theme-border-style: soft;
+  --theme-icon-set: lucide;
+
+  --hue-primary: 200;
+  --hue-secondary: 180;
+  --hue-accent: 45;
+
+  --color-primary: oklch(50% 0.15 var(--hue-primary));
+  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
+  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+
+  --color-secondary: oklch(50% 0.10 var(--hue-secondary));
+  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+
+  --color-accent: oklch(65% 0.15 var(--hue-accent));
+  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  --color-background: oklch(97% 0.01 var(--hue-primary));
+  --color-surface: oklch(95% 0.01 var(--hue-primary));
+  --color-surface-raised: oklch(98% 0.008 var(--hue-primary));
+  --color-surface-sunken: oklch(92% 0.015 var(--hue-primary));
+
+  --color-text: oklch(20% 0.02 var(--hue-primary));
+  --color-text-muted: oklch(40% 0.02 var(--hue-primary));
+  --color-text-subtle: oklch(55% 0.015 var(--hue-primary));
+
+  --color-border: oklch(82% 0.012 var(--hue-primary));
+  --color-border-strong: oklch(65% 0.02 var(--hue-primary));
+
+  --font-sans: system-ui, sans-serif;
+  --font-serif: Charter, serif;
+  --font-mono: ui-monospace, monospace;
+
+  --radius-xs: 0.125rem;
+  --radius-s: 0.25rem;
+  --radius-m: 0.5rem;
+  --radius-l: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-xs: 0 1px 2px oklch(20% 0.02 var(--hue-primary) / 0.06);
+  --shadow-sm: 0 1px 3px oklch(20% 0.02 var(--hue-primary) / 0.08);
+  --shadow-md: 0 4px 6px oklch(20% 0.02 var(--hue-primary) / 0.08);
+  --shadow-lg: 0 10px 15px oklch(20% 0.02 var(--hue-primary) / 0.08);
+
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  --motion-hover-lift: translateY(-2px);
+  --motion-hover-scale: scale(1.02);
+  --motion-enter-duration: 300ms;
+  --motion-exit-duration: 200ms;
+
+  --page-bg-gradient: linear-gradient(180deg,
+    oklch(95% 0.015 var(--hue-primary)) 0%,
+    oklch(90% 0.02 var(--hue-secondary)) 100%);
+}
+*/
+
+/* Dark variant — MUST provide complete surface/text/border overrides */
+/*
+:root[data-theme~="THEME_NAME"][data-mode="dark"],
+[data-theme~="THEME_NAME"][data-mode="dark"] {
+  color-scheme: dark;
+
+  --color-primary: oklch(65% 0.15 var(--hue-primary));
+  --color-primary-hover: oklch(70% 0.16 var(--hue-primary));
+  --color-primary-subtle: oklch(25% 0.04 var(--hue-primary));
+
+  --color-background: oklch(12% 0.02 var(--hue-primary));
+  --color-surface: oklch(16% 0.02 var(--hue-primary));
+  --color-surface-raised: oklch(20% 0.02 var(--hue-primary));
+  --color-surface-sunken: oklch(10% 0.02 var(--hue-primary));
+
+  --color-text: oklch(95% 0.01 var(--hue-primary));
+  --color-text-muted: oklch(75% 0.01 var(--hue-primary));
+  --color-text-subtle: oklch(60% 0.015 var(--hue-primary));
+
+  --color-border: oklch(30% 0.02 var(--hue-primary));
+  --color-border-strong: oklch(45% 0.02 var(--hue-primary));
+
+  --shadow-sm: 0 1px 3px oklch(5% 0.02 var(--hue-primary) / 0.3);
+  --shadow-md: 0 4px 6px oklch(5% 0.02 var(--hue-primary) / 0.3);
+
+  --page-bg-gradient: linear-gradient(180deg,
+    oklch(14% 0.025 var(--hue-primary)) 0%,
+    oklch(10% 0.02 var(--hue-secondary)) 100%);
+}
+*/
+
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+ * ║  SECTION 4: COMPLETE EXAMPLE — NORD THEME                      ║
+ * ║  A real production theme showing all patterns in action.         ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
+
+/**
+ * Extreme Theme: Nord
+ * Arctic blue-gray palette, muted tones, calm professional
+ *
+ * Character: Professional calm — the anti-cyber
+ * - System sans-serif (clean, not decorative)
+ * - Subtle radius (0.25-0.5rem)
+ * - Muted, cool-tinted shadows
+ * - Default motion, smooth easing
+ *
+ * Palette DNA: 4 polar-night darks, 6 snowstorm lights,
+ *              4 frost blues, 4 aurora accents
+ *
+ * Light: Snowstorm whites, polar-night text, frost-blue primary
+ * Dark: Polar Night bg, snowstorm text, bright frost primary
+ */
+
+:root[data-theme~="nord"],
+[data-theme~="nord"] {
+  color-scheme: light;
+
+  /* Theme hints for ThemeManager */
+  --theme-border-style: soft;
+  --theme-icon-set: lucide;
+
+  /* ===== COLORS ===== */
+  --color-background: oklch(95% 0.01 230);      /* Snowstorm */
+  --color-surface: oklch(92.5% 0.012 230);
+  --color-surface-alt: oklch(90% 0.015 230);
+  --color-surface-raised: oklch(96% 0.008 230);
+  --color-surface-sunken: oklch(89% 0.015 230);
+
+  --color-text: oklch(25% 0.02 230);             /* Polar Night */
+  --color-text-muted: oklch(42% 0.02 230);
+  --color-text-subtle: oklch(55% 0.015 230);
+
+  --color-primary: oklch(55% 0.08 240);          /* Frost */
+  --color-primary-hover: oklch(50% 0.09 240);
+  --color-primary-subtle: oklch(90% 0.03 240);
+
+  --color-accent: oklch(72% 0.1 145);            /* Aurora green */
+  --color-accent-hover: oklch(67% 0.11 145);
+
+  --color-border: oklch(82% 0.012 230);
+  --color-border-muted: oklch(88% 0.01 230);
+  --color-border-strong: oklch(60% 0.02 230);
+
+  --color-interactive: var(--color-primary);
+  --color-interactive-hover: var(--color-primary-hover);
+
+  --color-success: oklch(72% 0.1 145);
+  --color-warning: oklch(75% 0.12 80);
+  --color-danger: oklch(62% 0.15 20);
+  --color-info: oklch(65% 0.07 240);
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+
+  /* ===== SHAPE ===== */
+  --radius-xs: 0.125rem;
+  --radius-s: 0.25rem;
+  --radius-m: 0.375rem;
+  --radius-l: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ===== SHADOWS (tinted to palette hue 230) ===== */
+  --shadow-xs: 0 1px 2px oklch(25% 0.02 230 / 0.06);
+  --shadow-sm: 0 1px 3px oklch(25% 0.02 230 / 0.08), 0 1px 2px oklch(25% 0.02 230 / 0.04);
+  --shadow-md: 0 4px 6px oklch(25% 0.02 230 / 0.08), 0 2px 4px oklch(25% 0.02 230 / 0.04);
+  --shadow-lg: 0 10px 15px oklch(25% 0.02 230 / 0.08), 0 4px 6px oklch(25% 0.02 230 / 0.03);
+  --shadow-xl: 0 20px 25px oklch(25% 0.02 230 / 0.08);
+  --shadow-2xl: 0 25px 50px oklch(25% 0.02 230 / 0.12);
+
+  /* ===== MOTION ===== */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ===== PAGE BACKGROUND ===== */
+  --page-bg-gradient: linear-gradient(
+    180deg,
+    oklch(93% 0.015 230) 0%,
+    oklch(88% 0.02 220) 100%
+  );
+}
+
+/* --- Nord: component-level overrides --- */
+/**
+ * Themes can override web component internal tokens using CSS nesting.
+ * This is optional — only needed when the base token overrides above
+ * don't fully achieve the desired look for specific components.
+ */
+:root[data-theme~="nord"],
+[data-theme~="nord"] {
+  & :is(main, article) {
+    & hr:not([data-ornament]) {
+      border: none;
+      border-block-start: 1px solid oklch(82% 0.012 230);
+      margin-block: 2rem;
+    }
+
+    & h1, & h2 {
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: oklch(25% 0.02 230);
+    }
+
+    & a:not([class]) {
+      color: var(--color-primary);
+      text-decoration-color: oklch(55% 0.08 240 / 0.4);
+      text-underline-offset: 0.15em;
+
+      &:hover {
+        text-decoration-color: currentColor;
+      }
+    }
+
+    & blockquote {
+      border-inline-start: 3px solid var(--color-primary);
+      padding-inline-start: 1.25rem;
+      color: oklch(35% 0.02 230);
+    }
+  }
+
+  & ::selection {
+    background: oklch(55% 0.08 240 / 0.25);
+    color: oklch(25% 0.02 230);
+  }
+}
+
+/* --- Nord: dark variant (Polar Night) --- */
+/**
+ * Note how EVERY surface, text, border, and shadow token is overridden.
+ * This follows the Complete Override Principle — no partial mixing with
+ * the base neutral grays.
+ */
+:root[data-theme~="nord"][data-mode="dark"],
+[data-theme~="nord"][data-mode="dark"] {
+  color-scheme: dark;
+
+  --color-background: oklch(22% 0.02 230);       /* Polar Night */
+  --color-surface: oklch(26% 0.02 230);
+  --color-surface-alt: oklch(30% 0.02 230);
+  --color-surface-raised: oklch(34% 0.02 230);
+  --color-surface-sunken: oklch(18% 0.02 230);
+
+  --color-text: oklch(95% 0.01 230);              /* Snowstorm */
+  --color-text-muted: oklch(78% 0.01 230);
+  --color-text-subtle: oklch(65% 0.015 230);
+
+  --color-primary: oklch(68% 0.06 230);           /* Frost bright */
+  --color-primary-hover: oklch(73% 0.07 230);
+  --color-primary-subtle: oklch(30% 0.04 230);
+
+  --color-accent: oklch(72% 0.1 145);
+  --color-accent-hover: oklch(77% 0.11 145);
+
+  --color-border: oklch(35% 0.02 230);
+  --color-border-muted: oklch(30% 0.02 230);
+  --color-border-strong: oklch(50% 0.02 230);
+
+  --color-success: oklch(72% 0.1 145);
+  --color-warning: oklch(75% 0.12 80);
+  --color-danger: oklch(62% 0.15 20);
+  --color-info: oklch(68% 0.06 230);
+
+  --shadow-xs: 0 1px 2px oklch(10% 0.02 230 / 0.2);
+  --shadow-sm: 0 1px 3px oklch(10% 0.02 230 / 0.25), 0 1px 2px oklch(10% 0.02 230 / 0.15);
+  --shadow-md: 0 4px 6px oklch(10% 0.02 230 / 0.25), 0 2px 4px oklch(10% 0.02 230 / 0.15);
+  --shadow-lg: 0 10px 15px oklch(10% 0.02 230 / 0.25), 0 4px 6px oklch(10% 0.02 230 / 0.1);
+  --shadow-xl: 0 20px 25px oklch(10% 0.02 230 / 0.25);
+  --shadow-2xl: 0 25px 50px oklch(10% 0.02 230 / 0.3);
+
+  --page-bg-gradient: linear-gradient(
+    180deg,
+    oklch(24% 0.025 230) 0%,
+    oklch(18% 0.02 240) 100%
+  );
+
+  & :is(main, article) {
+    & hr:not([data-ornament]) {
+      border-color: oklch(35% 0.02 230);
+    }
+    & h1, & h2 {
+      color: oklch(95% 0.01 230);
+    }
+    & blockquote {
+      color: oklch(78% 0.01 230);
+    }
+  }
+
+  & ::selection {
+    background: oklch(68% 0.06 230 / 0.3);
+    color: oklch(95% 0.01 230);
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+ * ║  SECTION 5: QUICK REFERENCE — TOKEN CHECKLIST                   ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ *
+ * BRAND THEME (simple — just hues):
+ *   --hue-primary, --hue-secondary, --hue-accent
+ *
+ * PERSONALITY THEME (moderate — hues + shape + typography):
+ *   Colors: --hue-*, --color-primary/secondary/accent + hover variants
+ *   Surfaces: --color-background, --color-surface, -raised, -sunken
+ *   Text: --color-text, -muted, -subtle
+ *   Borders: --color-border, -strong, -subtle
+ *   Shape: --radius-xs through --radius-full
+ *   Shadows: --shadow-xs through --shadow-2xl
+ *   Typography: --font-sans, --font-serif, --font-mono
+ *
+ * EXTREME THEME (comprehensive — everything above plus):
+ *   Motion: --duration-*, --ease-*, --motion-hover-*, --motion-enter/exit-*
+ *   Extensions: --font-display/heading/body/code, --glass-*, --surface-*,
+ *               --page-bg-*, --border-roughness, --filter-rough,
+ *               --theme-border-style, --theme-icon-set
+ *   Component overrides: element-specific rules nested under theme selector
+ *   Dark variant: COMPLETE override of all surface/text/border/shadow tokens
+ *
+ * REMEMBER:
+ *   - Use OKLCH for all colors
+ *   - Tint shadows to match palette hue for visual cohesion
+ *   - Selector: :root[data-theme~="name"], [data-theme~="name"]
+ *   - Dark variant: append [data-mode="dark"] to both selectors
+ *   - Set color-scheme: light or color-scheme: dark in each variant
+ *   - Test at both light and dark, compact and spacious fluid presets
+ */

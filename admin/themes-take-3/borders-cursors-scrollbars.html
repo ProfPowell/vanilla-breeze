@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="explorer">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>VB Theme Extensions — Animated Borders · Scrollbars · Cursors</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+	<style>
+		/* ================================================================
+		   VB THEME EXTENSIONS — Exploration & Test Page
+
+		   This page explores three new token categories for Vanilla Breeze:
+
+		   1. ANIMATED BORDERS
+			  CSS-only techniques using @property, conic-gradient, border-image,
+			  and clip-path. No SVG, no JS required.
+
+		   2. SCROLLBAR THEMING
+			  scrollbar-color + scrollbar-width (now Baseline: widely available).
+			  Custom SVG thumbs via ::-webkit-scrollbar for legacy/enhanced path.
+
+		   3. CURSOR THEMING
+			  cursor property values + SVG data URI custom cursors + JS spotlight
+			  effect for dramatic dark-mode themes.
+
+		   ARCHITECTURE NOTE
+		   Each capability proposes new extension tokens following the same
+		   pattern as --glass-blur, --motion-hover-lift, etc. Themes override
+		   the tokens; components consume them.
+		================================================================ */
+
+		/* ──────────────────────────────────────────────────────────────
+		   @property DECLARATIONS
+		   Required for animating gradient stops and border angles.
+		   Must be at top level — cannot be nested inside @layer.
+		────────────────────────────────────────────────────────────── */
+		@property --ba {
+			syntax: '<angle>';
+			inherits: false;
+			initial-value: 0deg;
+		}
+		@property --border-hue {
+			syntax: '<number>';
+			inherits: true;
+			initial-value: 260;
+		}
+		@property --pulse-size {
+			syntax: '<length>';
+			inherits: false;
+			initial-value: 0px;
+		}
+		@property --spotlight-x {
+			syntax: '<percentage>';
+			inherits: false;
+			initial-value: 50%;
+		}
+		@property --spotlight-y {
+			syntax: '<percentage>';
+			inherits: false;
+			initial-value: 50%;
+		}
+
+		@layer tokens, reset, layout, components, demo;
+
+		/* ──────────────────────────────────────────────────────────────
+		   LAYER: tokens
+		────────────────────────────────────────────────────────────── */
+		@layer tokens {
+
+			:root {
+				color-scheme: light dark;
+
+				/* Base VB tokens (minimal — not a full theme override) */
+				--hue-primary:   260;
+				--hue-secondary: 200;
+				--hue-accent:     30;
+
+				--color-background:     light-dark(oklch(97% 0 0),   oklch(12% 0.01 240));
+				--color-surface:        light-dark(oklch(94% 0 0),   oklch(16% 0.01 240));
+				--color-surface-raised: light-dark(oklch(100% 0 0),  oklch(20% 0.01 240));
+				--color-surface-sunken: light-dark(oklch(90% 0 0),   oklch(10% 0.01 240));
+
+				--color-text:        light-dark(oklch(15% 0 0),   oklch(95% 0 0));
+				--color-text-muted:  light-dark(oklch(45% 0 0),   oklch(65% 0 0));
+				--color-text-subtle: light-dark(oklch(60% 0 0),   oklch(50% 0 0));
+
+				--color-primary:         oklch(55% 0.22 var(--hue-primary));
+				--color-primary-subtle:  light-dark(oklch(94% 0.03 var(--hue-primary)), oklch(22% 0.05 var(--hue-primary)));
+				--color-secondary:       oklch(50% 0.14 var(--hue-secondary));
+				--color-accent:          oklch(65% 0.20 var(--hue-accent));
+
+				--color-border:       light-dark(oklch(84% 0 0),   oklch(30% 0.01 240));
+				--color-border-strong: light-dark(oklch(60% 0 0),  oklch(55% 0.01 240));
+
+				--radius-m:  0.5rem;
+				--radius-l:  0.75rem;
+				--radius-xl: 1rem;
+				--radius-full: 9999px;
+
+				--shadow-md: 0 4px 6px oklch(0% 0 0 / 0.12), 0 2px 4px oklch(0% 0 0 / 0.08);
+				--shadow-lg: 0 10px 20px oklch(0% 0 0 / 0.14), 0 4px 6px oklch(0% 0 0 / 0.10);
+
+				--font-sans: "Inter", system-ui, sans-serif;
+				--font-mono: "Space Mono", monospace;
+
+				--duration-normal:  200ms;
+				--duration-slow:    350ms;
+				--ease-3: cubic-bezier(0.4, 0, 0.2, 1);
+
+				/* ════════════════════════════════════════════════════════
+				   PROPOSED EXTENSION TOKENS — ANIMATED BORDERS
+
+				   These would live in llm-theme-reference.css under
+				   "Extension Tokens (opt-in)" alongside --glass-blur etc.
+				   Default values = disabled / off.
+				════════════════════════════════════════════════════════ */
+
+				/* Border animation type: none | spin | pulse | march | hue-cycle */
+				--border-anim: none;
+
+				/* Spin border (conic-gradient rotating around element) */
+				--border-anim-spin-duration:  3s;
+				--border-anim-spin-width:     2px;
+				--border-anim-spin-from:      var(--color-primary);
+				--border-anim-spin-to:        var(--color-secondary);
+				--border-anim-spin-stops:     oklch(55% 0.22 260), oklch(65% 0.18 300), oklch(60% 0.20 340), oklch(55% 0.22 260);
+
+				/* Pulse border (box-shadow glow pulsing) */
+				--border-anim-pulse-duration: 2s;
+				--border-anim-pulse-color:    var(--color-primary);
+				--border-anim-pulse-size:     8px;
+
+				/* March border (dashed border with moving background-position) */
+				--border-anim-march-duration: 1s;
+				--border-anim-march-color:    var(--color-primary);
+				--border-anim-march-gap:      8px;
+				--border-anim-march-width:    2px;
+
+				/* Hue-cycle border (filter: hue-rotate on a colored border) */
+				--border-anim-hue-duration:   4s;
+				--border-anim-hue-width:      3px;
+
+				/* ════════════════════════════════════════════════════════
+				   PROPOSED EXTENSION TOKENS — SCROLLBAR
+
+				   scrollbar-color and scrollbar-width are now Baseline:
+				   widely available (Chrome, Firefox, Safari 18+).
+				   Themes set these on :root; browser handles the rest.
+				════════════════════════════════════════════════════════ */
+
+				--scrollbar-thumb:        var(--color-border-strong);
+				--scrollbar-thumb-hover:  var(--color-primary);
+				--scrollbar-track:        var(--color-surface-sunken);
+				--scrollbar-width:        thin;      /* auto | thin | none */
+				--scrollbar-color:        var(--scrollbar-thumb) var(--scrollbar-track);
+
+				/* ════════════════════════════════════════════════════════
+				   PROPOSED EXTENSION TOKENS — CURSOR
+
+				   CSS cursor property and SVG data URI cursors.
+				   Themes can override for personality without JS.
+				════════════════════════════════════════════════════════ */
+
+				--cursor-default: default;
+				--cursor-pointer: pointer;
+				--cursor-text:    text;
+				--cursor-grab:    grab;
+				--cursor-grabbing: grabbing;
+				/* Custom SVG cursors: override with url("data:image/svg+xml,...") auto */
+				--cursor-custom-default: var(--cursor-default);
+				--cursor-custom-pointer: var(--cursor-pointer);
+
+				/* Spotlight (JS cursor effect for dark dramatic themes) */
+				--spotlight-enabled: 0;            /* 0 = off, set to 1 by theme */
+				--spotlight-color: oklch(60% 0.10 var(--hue-primary));
+				--spotlight-size:  300px;
+			}
+
+			/* Apply scrollbar tokens */
+			:root {
+				scrollbar-color: var(--scrollbar-color);
+				scrollbar-width: var(--scrollbar-width);
+			}
+			/* Apply custom cursors */
+			:root {
+				cursor: var(--cursor-custom-default);
+			}
+			:root a, :root button, :root [role="button"], :root label[for], :root select {
+				cursor: var(--cursor-custom-pointer);
+			}
+			:root input, :root textarea {
+				cursor: var(--cursor-text);
+			}
+		}
+
+		@layer reset {
+			*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+			html { scroll-behavior: smooth; }
+			img, svg { display: block; max-width: 100%; }
+			input, button, textarea, select { font: inherit; }
+		}
+
+		@layer layout {
+			body {
+				font-family: var(--font-sans);
+				font-size: 1rem;
+				line-height: 1.6;
+				background: var(--color-background);
+				color: var(--color-text);
+				min-block-size: 100dvh;
+			}
+
+			.page-wrap {
+				width: min(70rem, 100% - 3rem);
+				margin-inline: auto;
+				padding-block: 4rem;
+			}
+
+			.section {
+				margin-block-end: 5rem;
+			}
+			.section-header {
+				display: flex;
+				align-items: baseline;
+				gap: 1rem;
+				border-block-end: 2px solid var(--color-border);
+				padding-block-end: 0.75rem;
+				margin-block-end: 2rem;
+			}
+			.section-title {
+				font-size: 1.4rem;
+				font-weight: 700;
+				letter-spacing: -0.02em;
+			}
+			.section-tag {
+				font-family: var(--font-mono);
+				font-size: 0.7rem;
+				background: var(--color-primary-subtle);
+				color: var(--color-primary);
+				padding: 0.2em 0.6em;
+				border-radius: var(--radius-m);
+			}
+
+			.demo-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+				gap: 1.5rem;
+			}
+			.demo-grid-2 {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+				gap: 1.5rem;
+			}
+			.flex-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+
+			.label {
+				font-family: var(--font-mono);
+				font-size: 0.7rem;
+				color: var(--color-text-muted);
+				margin-block-end: 0.5rem;
+				display: block;
+			}
+			.desc {
+				font-size: 0.85rem;
+				color: var(--color-text-muted);
+				margin-block-start: 0.5rem;
+				line-height: 1.5;
+			}
+
+			.token-pill {
+				display: inline-block;
+				font-family: var(--font-mono);
+				font-size: 0.7rem;
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-full);
+				padding: 0.15em 0.6em;
+				color: var(--color-text-muted);
+			}
+
+			h1 {
+				font-size: clamp(1.8rem, 4vw, 2.8rem);
+				font-weight: 700;
+				letter-spacing: -0.03em;
+				margin-block-end: 0.5rem;
+			}
+			.page-lead {
+				font-size: 1.05rem;
+				color: var(--color-text-muted);
+				max-width: 58ch;
+				margin-block-end: 3rem;
+			}
+
+			code {
+				font-family: var(--font-mono);
+				font-size: 0.85em;
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				border-radius: 3px;
+				padding: 0.1em 0.35em;
+			}
+
+			/* Mode toggle */
+			.mode-btn {
+				padding: 0.4em 1em;
+				font-size: 0.8rem;
+				font-weight: 600;
+				background: var(--color-surface);
+				color: var(--color-text-muted);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-m);
+				cursor: pointer;
+				transition: background var(--duration-normal) var(--ease-3);
+				&:hover { background: var(--color-surface-sunken); }
+			}
+			.page-toolbar {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-block-end: 3rem;
+				padding-block-end: 1.5rem;
+				border-block-end: 1px solid var(--color-border);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		   LAYER: components — base card used throughout demos
+		────────────────────────────────────────────────────────────── */
+		@layer components {
+			.demo-card {
+				background: var(--color-surface-raised);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-l);
+				padding: 1.5rem;
+			}
+			.demo-swatch {
+				aspect-ratio: 3 / 2;
+				border-radius: var(--radius-m);
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 0.8rem;
+				color: var(--color-text-muted);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		   LAYER: demo
+		   The actual technique demonstrations.
+		────────────────────────────────────────────────────────────── */
+		@layer demo {
+
+			/* ══════════════════════════════════════════════════════
+			   1A. SPIN BORDER — conic-gradient + @property
+			   The gold standard for animated gradient borders.
+			   Requires: padding-box / border-box background combo.
+			══════════════════════════════════════════════════════ */
+
+			.border-spin {
+				border: var(--border-anim-spin-width, 2px) solid transparent;
+				background:
+						linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+						conic-gradient(
+								from var(--ba),
+								oklch(55% 0.22 260),
+								oklch(65% 0.18 310),
+								oklch(60% 0.24 350),
+								oklch(65% 0.20 30),
+								oklch(55% 0.22 260)
+						) border-box;
+				animation: spin-ba var(--border-anim-spin-duration, 3s) linear infinite;
+			}
+			@keyframes spin-ba {
+				to { --ba: 360deg; }
+			}
+
+			/* Slow spin — calm, sophisticated */
+			.border-spin-slow {
+				animation-duration: 6s;
+			}
+
+			/* Theme-aware spin — uses theme primary/secondary */
+			.border-spin-theme {
+				/* Must declare transparent border here — .demo-card's opaque border
+				   blocks the border-box conic-gradient from showing through */
+				border: 2px solid transparent;
+				background:
+						linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+						conic-gradient(
+								from var(--ba),
+								var(--color-primary),
+								var(--color-secondary),
+								var(--color-accent),
+								var(--color-primary)
+						) border-box;
+				animation: spin-ba 4s linear infinite;
+			}
+
+			/* Retro rainbow spin */
+			.border-spin-rainbow {
+				/* Transparent border required — border-box gradient only shows through
+				   a transparent border. Opaque border would hide the conic-gradient. */
+				border: 3px solid transparent;
+				background:
+						linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+						conic-gradient(
+								from var(--ba),
+								oklch(60% 0.27 0),
+								oklch(70% 0.20 60),
+								oklch(80% 0.18 120),
+								oklch(65% 0.22 180),
+								oklch(55% 0.24 240),
+								oklch(60% 0.22 300),
+								oklch(60% 0.27 360)
+						) border-box;
+				animation: spin-ba 2.5s linear infinite;
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   1B. PULSE BORDER — animated box-shadow glow
+			   Cleanest for "active" / "selected" / "loading" states.
+			   No gradient needed — pure shadow expansion.
+			══════════════════════════════════════════════════════ */
+
+			.border-pulse {
+				border: 2px solid var(--color-primary);
+				animation: pulse-border var(--border-anim-pulse-duration, 2s) ease-in-out infinite;
+			}
+			@keyframes pulse-border {
+				0%, 100% { box-shadow: 0 0 0 0   oklch(55% 0.22 260 / 0.5); }
+				50%       { box-shadow: 0 0 0 8px oklch(55% 0.22 260 / 0); }
+			}
+
+			/* Danger pulse — red */
+			.border-pulse-danger {
+				border-color: oklch(55% 0.24 25);
+				animation: pulse-danger 1.5s ease-in-out infinite;
+			}
+			@keyframes pulse-danger {
+				0%, 100% { box-shadow: 0 0 0 0   oklch(55% 0.24 25 / 0.6); }
+				50%       { box-shadow: 0 0 0 10px oklch(55% 0.24 25 / 0); }
+			}
+
+			/* Multi-ring pulse — layered shadows */
+			.border-pulse-multi {
+				border: 2px solid var(--color-accent);
+				animation: pulse-multi 2.5s ease-in-out infinite;
+			}
+			@keyframes pulse-multi {
+				0%, 100% {
+					box-shadow:
+							0 0 0 0  oklch(65% 0.20 30 / 0.5),
+							0 0 0 0  oklch(65% 0.20 30 / 0.25);
+				}
+				50% {
+					box-shadow:
+							0 0 0 6px  oklch(65% 0.20 30 / 0.3),
+							0 0 0 12px oklch(65% 0.20 30 / 0);
+				}
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   1C. MARCH BORDER — "marching ants" via background-position
+			   Uses a dashed SVG border-image or the background trick.
+			   Platform-native: background-image + background-position animation.
+			══════════════════════════════════════════════════════ */
+
+			/*
+			 * Technique: ::before pseudo-element carries the animated dashes so the
+			 * card's solid background is untouched. background-image on the element
+			 * itself conflicts with .demo-card's background shorthand.
+			 */
+			.border-march {
+				position: relative;
+				/* Remove the card's own border so only our animated dashes show */
+				border: none;
+			}
+			.border-march::before {
+				content: "";
+				position: absolute;
+				inset: 0;
+				border-radius: inherit;
+				pointer-events: none;
+				background-image:
+						repeating-linear-gradient(90deg,  var(--color-primary) 0, var(--color-primary) 8px, transparent 8px, transparent 16px),
+						 repeating-linear-gradient(180deg, var(--color-primary) 0, var(--color-primary) 8px, transparent 8px, transparent 16px),
+						 repeating-linear-gradient(90deg,  var(--color-primary) 0, var(--color-primary) 8px, transparent 8px, transparent 16px),
+						 repeating-linear-gradient(180deg, var(--color-primary) 0, var(--color-primary) 8px, transparent 8px, transparent 16px);
+				background-size:     16px 2px, 2px 16px, 16px 2px, 2px 16px;
+				background-position: 0 0,      100% 0,   0 100%,   0 0;
+				background-repeat:   repeat-x, repeat-y,  repeat-x, repeat-y;
+				animation: march 0.5s linear infinite;
+			}
+			@keyframes march {
+				to { background-position: 32px 0, 100% 32px, -32px 100%, 0 -32px; }
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   1D. HUE-CYCLE BORDER — filter: hue-rotate
+			   Simplest animated border. One colored border, rotate hue.
+			   Works on any element. Theme applies the base hue.
+			══════════════════════════════════════════════════════ */
+
+			.border-hue {
+				border: 3px solid oklch(60% 0.22 260);
+				animation: hue-cycle var(--border-anim-hue-duration, 4s) linear infinite;
+			}
+			@keyframes hue-cycle {
+				to { filter: hue-rotate(360deg); }
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   1E. BREATHE BORDER — scale + opacity on ::before
+			   The border breathes in and out. Zero color change,
+			   pure geometry motion. Great for subtle "active" feedback.
+			══════════════════════════════════════════════════════ */
+
+			.border-breathe {
+				position: relative;
+				border: 2px solid var(--color-primary);
+				isolation: isolate;
+			}
+			.border-breathe::before {
+				content: "";
+				position: absolute;
+				inset: -6px;
+				border: 2px solid var(--color-primary);
+				border-radius: inherit;
+				animation: breathe 2s ease-in-out infinite;
+				pointer-events: none;
+			}
+			@keyframes breathe {
+				0%, 100% { opacity: 0.4; transform: scale(1.0); }
+				50%       { opacity: 0;   transform: scale(1.06); }
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   1F. CORNER TRACE — border draws clockwise on hover
+			   Staggered transition-delay on individual border sides
+			   creates a clockwise "drawing" effect. No clip-path needed —
+			   that approach caused visual glitches as the clip regions
+			   transitioned through intermediate states.
+			══════════════════════════════════════════════════════ */
+
+			.border-trace-wrap {
+				position: relative;
+				display: inline-flex;
+			}
+			.border-trace-wrap::before,
+			.border-trace-wrap::after {
+				content: "";
+				position: absolute;
+				inset: 0;
+				border: 2px solid transparent;
+				border-radius: inherit;
+				pointer-events: none;
+			}
+			/* ::before handles top + right — they reveal first, in sequence */
+			.border-trace-wrap::before {
+				transition:
+						border-block-start-color  0.18s ease 0s,
+						border-inline-end-color   0.18s ease 0.18s;
+			}
+			/* ::after handles bottom + left — reveal after top-right complete */
+			.border-trace-wrap::after {
+				transition:
+						border-block-end-color    0.18s ease 0.36s,
+						border-inline-start-color 0.18s ease 0.54s;
+			}
+			/* On hover: all four sides get primary color with staggered delays */
+			.border-trace-wrap:hover::before {
+				border-block-start-color: var(--color-primary);
+				border-inline-end-color:  var(--color-primary);
+			}
+			.border-trace-wrap:hover::after {
+				border-block-end-color:    var(--color-primary);
+				border-inline-start-color: var(--color-primary);
+			}
+
+			.border-trace-inner {
+				padding: 1rem 1.5rem;
+				border-radius: var(--radius-m);
+				background: var(--color-surface-raised);
+				font-weight: 600;
+				font-size: 0.95rem;
+				cursor: default;
+				user-select: none;
+				min-width: 10rem;
+				text-align: center;
+			}
+
+
+			/* ══════════════════════════════════════════════════════
+			   2. SCROLLBAR THEMING
+			══════════════════════════════════════════════════════ */
+
+			/* The `scrollbar-color` and `scrollbar-width` properties
+			   are now set on :root in the tokens layer.
+			   For theme variants, just override those tokens. */
+
+			/* Scrollable demo boxes */
+			.scroll-box {
+				/* Tall enough to always show a scrollbar thumb */
+				block-size: 9rem;
+				overflow-y: scroll;
+				padding: 1rem;
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-m);
+				font-size: 0.875rem;
+				line-height: 1.7;
+
+				scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+				scrollbar-width: var(--scrollbar-width);
+			}
+
+			/* Default: muted thumb, noticeably different track */
+			.scroll-default {
+				--scrollbar-thumb: oklch(55% 0 0);
+				--scrollbar-track: oklch(88% 0 0);
+			}
+			[data-mode="dark"] .scroll-default {
+				--scrollbar-thumb: oklch(55% 0 0);
+				--scrollbar-track: oklch(18% 0 0);
+			}
+
+			/* Theme variant: primary scrollbar — vivid thumb, tinted track */
+			.scroll-primary {
+				--scrollbar-thumb: oklch(55% 0.22 260);
+				--scrollbar-track: oklch(90% 0.05 260);
+			}
+			[data-mode="dark"] .scroll-primary {
+				--scrollbar-thumb: oklch(65% 0.22 260);
+				--scrollbar-track: oklch(22% 0.05 260);
+			}
+
+			/* Vivid: hot pink/red thumb on pink track */
+			.scroll-vivid {
+				--scrollbar-thumb: oklch(58% 0.26 350);
+				--scrollbar-track: oklch(92% 0.06 350);
+			}
+			[data-mode="dark"] .scroll-vivid {
+				--scrollbar-thumb: oklch(68% 0.26 350);
+				--scrollbar-track: oklch(20% 0.07 350);
+			}
+
+			/* Minimal: thin, low-contrast */
+			.scroll-minimal {
+				--scrollbar-thumb: oklch(70% 0 0);
+				--scrollbar-track: oklch(93% 0 0);
+				scrollbar-width: thin;
+			}
+			[data-mode="dark"] .scroll-minimal {
+				--scrollbar-thumb: oklch(45% 0 0);
+				--scrollbar-track: oklch(16% 0 0);
+			}
+
+			/* Hidden — scrollbar-width: none */
+			.scroll-hidden {
+				scrollbar-width: none;
+				/* Track/thumb tokens irrelevant when width is none */
+			}
+
+			/* Auto width with green accent */
+			.scroll-wide {
+				--scrollbar-thumb: oklch(52% 0.20 145);
+				--scrollbar-track: oklch(90% 0.05 145);
+				scrollbar-width: auto;
+			}
+			[data-mode="dark"] .scroll-wide {
+				--scrollbar-thumb: oklch(60% 0.20 145);
+				--scrollbar-track: oklch(20% 0.06 145);
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   3. CURSOR THEMING
+			══════════════════════════════════════════════════════ */
+
+			/* CSS cursor keyword demos */
+			.cursor-demo-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+				gap: 0.75rem;
+			}
+			.cursor-swatch {
+				padding: 1rem;
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-m);
+				text-align: center;
+				font-family: var(--font-mono);
+				font-size: 0.72rem;
+				color: var(--color-text-muted);
+				transition: background var(--duration-normal) var(--ease-3),
+						 border-color var(--duration-normal) var(--ease-3);
+				&:hover {
+					background: var(--color-primary-subtle);
+					border-color: var(--color-primary);
+					color: var(--color-text);
+				}
+			}
+
+			/* SVG custom cursor: crosshair-style */
+			.cursor-crosshair {
+				cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='16' y1='0' x2='16' y2='10' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='16' y1='22' x2='16' y2='32' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='0' y1='16' x2='10' y2='16' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='22' y1='16' x2='32' y2='16' stroke='%237c3aed' stroke-width='2'/%3E%3C/svg%3E") 16 16, crosshair;
+			}
+
+			/* SVG custom cursor: dot */
+			.cursor-dot {
+				cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5' fill='%23d97706'/%3E%3Ccircle cx='8' cy='8' r='2' fill='%23fff'/%3E%3C/svg%3E") 8 8, crosshair;
+			}
+
+			/* SVG custom cursor: arrow with primary color */
+			.cursor-branded {
+				cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3l14 9-8 1-3 8z' fill='%237c3aed' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, auto;
+			}
+
+			/* Large cursor for a11y / touch-first themes */
+			.cursor-large {
+				cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='18' fill='none' stroke='%23059669' stroke-width='3'/%3E%3Ccircle cx='24' cy='24' r='4' fill='%23059669'/%3E%3C/svg%3E") 24 24, crosshair;
+			}
+
+			/* Cursor hover areas — for showing in context */
+			.cursor-zone {
+				padding: 1.25rem;
+				background: var(--color-surface);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-m);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 0.4rem;
+				min-block-size: 5rem;
+				text-align: center;
+				transition: background var(--duration-normal) var(--ease-3);
+				&:hover { background: var(--color-primary-subtle); }
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   SPOTLIGHT CURSOR — JS-powered radial spotlight
+			   Used on dramatic dark themes. CSS does the rendering;
+			   JS only updates two custom properties on mousemove.
+			══════════════════════════════════════════════════════ */
+
+			.spotlight-demo {
+				position: relative;
+				min-block-size: 16rem;
+				background: oklch(10% 0.02 240);
+				border-radius: var(--radius-l);
+				overflow: hidden;
+				cursor: crosshair;
+			}
+
+			.spotlight-demo::before {
+				content: "";
+				position: absolute;
+				inset: 0;
+				background: radial-gradient(
+								 circle 200px at var(--spotlight-x) var(--spotlight-y),
+								 oklch(55% 0.15 260 / 0.25) 0%,
+								 transparent 70%
+						 );
+				transition: --spotlight-x 60ms linear, --spotlight-y 60ms linear;
+				pointer-events: none;
+			}
+
+			.spotlight-content {
+				position: relative;
+				z-index: 1;
+				padding: 2rem;
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+				gap: 1rem;
+			}
+
+			.spotlight-card {
+				background: oklch(18% 0.02 240 / 0.8);
+				border: 1px solid oklch(35% 0.03 240 / 0.5);
+				border-radius: var(--radius-m);
+				padding: 1rem;
+				backdrop-filter: blur(4px);
+			}
+			.spotlight-card .sc-title {
+				font-size: 0.75rem;
+				font-weight: 600;
+				color: oklch(85% 0.02 240);
+				margin-block-end: 0.3rem;
+			}
+			.spotlight-card .sc-val {
+				font-family: var(--font-mono);
+				font-size: 1.1rem;
+				font-weight: 700;
+				color: oklch(65% 0.18 260);
+			}
+
+
+			/* ══════════════════════════════════════════════════════
+			   THEME PRESETS — how themes would activate these
+			══════════════════════════════════════════════════════ */
+
+			/*
+			 * EXAMPLE: Neon Cyber theme applying spin border to all cards
+			 * (shows how a theme uses the tokens, not the class directly)
+			 */
+			[data-theme~="neon-preview"] {
+				--color-primary:   oklch(75% 0.30 290);
+				--color-secondary: oklch(70% 0.28 180);
+				--color-accent:    oklch(80% 0.25 160);
+				--color-background: oklch(8% 0.02 250);
+				--color-surface:    oklch(12% 0.02 250);
+				--color-surface-raised: oklch(16% 0.02 250);
+				--color-border:    oklch(28% 0.04 250);
+				--color-text:      oklch(95% 0.01 250);
+				--color-text-muted: oklch(65% 0.02 250);
+				--radius-l:  0;
+				--radius-m:  0;
+				--scrollbar-thumb: oklch(75% 0.30 290);
+				--scrollbar-track: oklch(12% 0.02 250);
+				--cursor-custom-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8' fill='none' stroke='%23a855f7' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23a855f7'/%3E%3C/svg%3E") 10 10, pointer;
+			}
+
+			.neon-card {
+				background: var(--color-surface-raised);
+				border: 2px solid transparent;
+				border-radius: var(--radius-l);
+				padding: 1.25rem;
+				background:
+						linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+							conic-gradient(
+									from var(--ba),
+									var(--color-primary),
+									var(--color-secondary),
+									var(--color-accent),
+									var(--color-primary)
+							) border-box;
+				animation: spin-ba 3s linear infinite;
+				color: var(--color-text);
+			}
+
+			/*
+			 * EXAMPLE: Kawaii theme — pulse border on focused elements
+			 */
+			[data-theme~="kawaii-preview"] {
+				--color-primary:   oklch(72% 0.22 340);
+				--color-secondary: oklch(78% 0.18 270);
+				--color-background: oklch(98% 0.01 330);
+				--color-surface:   oklch(95% 0.02 330);
+				--color-surface-raised: oklch(99% 0.01 330);
+				--color-border:    oklch(88% 0.04 330);
+				--color-text:      oklch(30% 0.05 330);
+				--color-text-muted: oklch(55% 0.04 330);
+				--radius-l: 1.5rem;
+				--radius-m: 1rem;
+				--scrollbar-thumb: oklch(72% 0.22 340);
+				--scrollbar-track: oklch(93% 0.04 340);
+			}
+
+			.kawaii-card {
+				background: var(--color-surface-raised);
+				border: 2px solid var(--color-primary);
+				border-radius: var(--radius-l);
+				padding: 1.25rem;
+				animation: pulse-border 2.5s ease-in-out infinite;
+				color: var(--color-text);
+				& p { color: var(--color-text-muted); font-size: 0.875rem; }
+			}
+
+			/* ══════════════════════════════════════════════════════
+			   TOKEN PROPOSAL TABLE
+			══════════════════════════════════════════════════════ */
+			.proposal-table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 0.85rem;
+				& th, & td {
+					padding: 0.6rem 0.75rem;
+					text-align: start;
+					border: 1px solid var(--color-border);
+					vertical-align: top;
+				}
+				& th {
+					font-size: 0.72rem;
+					font-weight: 700;
+					text-transform: uppercase;
+					letter-spacing: 0.06em;
+					background: var(--color-surface);
+					color: var(--color-text-muted);
+				}
+				& td:first-child {
+					font-family: var(--font-mono);
+					font-size: 0.78rem;
+					white-space: nowrap;
+					color: var(--color-primary);
+				}
+				& tr:hover td { background: var(--color-primary-subtle); }
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+<div class="page-wrap">
+
+	<div class="page-toolbar">
+		<div>
+			<h1>VB Theme Extensions</h1>
+			<p class="page-lead">
+				Exploring animated borders, scrollbar theming, and custom cursors
+				as new Vanilla Breeze extension tokens — all platform-native CSS,
+				no dependencies.
+			</p>
+		</div>
+		<button class="mode-btn" id="mode-btn" aria-label="Toggle dark mode">Dark mode</button>
+	</div>
+
+
+	<!-- ══════════════════════════════════════════════════
+		 SECTION 1: ANIMATED BORDERS
+	══════════════════════════════════════════════════ -->
+	<section class="section" aria-labelledby="border-h">
+		<div class="section-header">
+			<h2 class="section-title" id="border-h">Animated Borders</h2>
+			<span class="section-tag">CSS @property + conic-gradient</span>
+		</div>
+
+		<!-- 1A. Spin -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 1.5rem 1rem; color:var(--color-text-muted);">
+			Spinning gradient border — <code>conic-gradient</code> + <code>@property --ba</code>
+		</h3>
+		<div class="demo-grid" style="margin-block-end: 2rem;">
+			<div>
+				<span class="label">--color-primary → secondary → accent</span>
+				<div class="demo-card border-spin-theme" style="border-radius: var(--radius-l);">
+					<strong>Theme Spin</strong>
+					<p class="desc">Uses <code>--color-primary</code>, <code>--color-secondary</code>, and <code>--color-accent</code>. Swap the theme, the border follows.</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">Slow (6s) — subtle, ambient</span>
+				<div class="demo-card border-spin border-spin-slow" style="border-radius: var(--radius-l);">
+					<strong>Slow Spin</strong>
+					<p class="desc">At 6s the motion is almost imperceptible — a quiet sign of life on a card. Elegant on dashboard widgets.</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">Rainbow (2.5s) — 7-stop conic</span>
+				<div class="demo-card border-spin-rainbow" style="border-radius: var(--radius-l);">
+					<strong>Rainbow Spin</strong>
+					<p class="desc">Full spectrum. 7 hue stops. Fast. Retro and Kawaii themes would use this; professional themes wouldn't.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- 1B. Pulse -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 1.5rem 1rem; color:var(--color-text-muted);">
+			Pulse border — animated <code>box-shadow</code> outward ring
+		</h3>
+		<div class="demo-grid" style="margin-block-end: 2rem;">
+			<div>
+				<span class="label">Primary pulse — selected / active</span>
+				<div class="demo-card border-pulse" style="border-radius: var(--radius-l);">
+					<strong>Active Pulse</strong>
+					<p class="desc">Ring expands to 8px then fades. Communicates "selected" or "focused" without a hard ring.</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">Danger pulse — alert / error states</span>
+				<div class="demo-card border-pulse-danger" style="border-radius: var(--radius-l);">
+					<strong>Danger Pulse</strong>
+					<p class="desc">Red, faster (1.5s), larger spread (10px). Urgency without a modal. Use on critical inputs or system alerts.</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">Multi-ring pulse — concentric rings</span>
+				<div class="demo-card border-pulse-multi" style="border-radius: var(--radius-l);">
+					<strong>Multi-ring</strong>
+					<p class="desc">Two simultaneous shadow rings at different radii. Radar-like. Striking on dark backgrounds.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- 1C. March -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 1.5rem 1rem; color:var(--color-text-muted);">
+			Marching ants — <code>background-position</code> animation, no SVG
+		</h3>
+		<div class="demo-grid-2" style="margin-block-end: 2rem;">
+			<div>
+				<span class="label">background-image dash pattern + animation</span>
+				<div class="demo-card border-march" style="border-radius: 0; padding: 1.5rem;">
+					<strong>Marching Ants</strong>
+					<p class="desc">
+						Four <code>repeating-linear-gradient</code> backgrounds simulate a dashed border.
+						Animating <code>background-position</code> makes them march.
+						No SVG, no JS. Great for selection states, drag targets, or clipboard operations.
+					</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">Hover to reveal — clockwise border trace</span>
+				<div style="display: flex; flex-direction: column; gap: 1rem;">
+					<div class="border-trace-wrap" style="border-radius: var(--radius-m); width: 100%;">
+						<div class="border-trace-inner" style="width: 100%;">Hover to trace border</div>
+					</div>
+					<p class="desc">
+						Staggered <code>transition-delay</code> on individual border sides
+						(top → right → bottom → left, 180ms each). The border draws clockwise.
+						Pure CSS — no clip-path, no JS. Works on any element with a
+						<code>::before</code> / <code>::after</code> available.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- 1D+E. Hue + Breathe -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 1.5rem 1rem; color:var(--color-text-muted);">
+			Hue-cycle and Breathe — simpler effects
+		</h3>
+		<div class="demo-grid" style="margin-block-end: 2rem;">
+			<div>
+				<span class="label">filter: hue-rotate(360deg) cycling</span>
+				<div class="demo-card border-hue" style="border-radius: var(--radius-l);">
+					<strong>Hue Cycle</strong>
+					<p class="desc">One colored border + <code>filter: hue-rotate</code> animating to 360°. Simplest possible technique. One property, one keyframe.</p>
+				</div>
+			</div>
+			<div>
+				<span class="label">::before ring that expands + fades</span>
+				<div class="demo-card border-breathe" style="border-radius: var(--radius-l);">
+					<strong>Breathe</strong>
+					<p class="desc">A <code>::before</code> ring scales from 100% → 106% while fading out. Like a sonar ping. Good for "standby" or "recording" states.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Theme presets using borders -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 1.5rem 1rem; color:var(--color-text-muted);">
+			Theme presets — how themes activate borders
+		</h3>
+		<div class="demo-grid">
+			<div data-theme="neon-preview">
+				<span class="label">data-theme="neon" card</span>
+				<div class="neon-card">
+					<strong style="font-size:0.9rem;">Neon Cyber</strong>
+					<p style="font-size:0.8rem; margin-block-start:0.4rem; color:var(--color-text-muted);">
+						Spin border auto-applied via theme selector.
+						All cards get animated borders; no extra classes.
+					</p>
+				</div>
+			</div>
+			<div data-theme="kawaii-preview">
+				<span class="label">data-theme="kawaii" card</span>
+				<div class="kawaii-card">
+					<strong style="font-size:0.9rem;">✿ Kawaii</strong>
+					<p>Pulse border on a soft pink surface with large radius. Friendly and alive.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+	<!-- ══════════════════════════════════════════════════
+		 SECTION 2: SCROLLBARS
+	══════════════════════════════════════════════════ -->
+	<section class="section" aria-labelledby="scroll-h">
+		<div class="section-header">
+			<h2 class="section-title" id="scroll-h">Scrollbar Theming</h2>
+			<span class="section-tag">scrollbar-color · scrollbar-width · Baseline ✓</span>
+		</div>
+
+		<p style="font-size:0.9rem; color:var(--color-text-muted); max-width:60ch; margin-block-end:2rem;">
+			<code>scrollbar-color</code> and <code>scrollbar-width</code> are now
+			<strong>Baseline: widely available</strong> (Chrome, Firefox, Safari 18+).
+			Two CSS properties, zero JavaScript, zero pseudo-elements.
+			Themes set <code>--scrollbar-thumb</code> and <code>--scrollbar-track</code>;
+			the root rule does the rest.
+		</p>
+
+		<div class="demo-grid">
+			<div>
+          <span class="label">
+            Default — thumb <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(55% 0 0);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> gray / track <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(88% 0 0);border:1px solid #ccc;vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> light gray
+          </span>
+				<div class="scroll-box scroll-default">
+					Default scrollbar: muted gray thumb against a noticeably lighter
+					track. The thumb/track contrast is the most important thing to get
+					right — they must be perceptibly different or the track disappears.
+					Scroll this box to see both thumb and track. This is the base
+					experience every theme inherits before overriding.
+					More text here so scrolling is necessary to reach this sentence.
+				</div>
+			</div>
+			<div>
+          <span class="label">
+            Primary — thumb <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(55% 0.22 260);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> indigo / track <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(90% 0.05 260);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> pale indigo
+          </span>
+				<div class="scroll-box scroll-primary">
+					Indigo thumb against a pale indigo track — the track tint is key,
+					it makes the gutter visible as a design element rather than dead
+					space. The theme's brand hue carries all the way to the scroll
+					chrome. Sidebar menus and persistent panels benefit most from this.
+					More text so scrolling is required to reach the end of this box.
+				</div>
+			</div>
+			<div>
+          <span class="label">
+            Vivid — thumb <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(58% 0.26 350);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> hot pink / track <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(92% 0.06 350);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> blush
+          </span>
+				<div class="scroll-box scroll-vivid">
+					Hot pink thumb on a blush track. Dramatic and unmistakable.
+					Kawaii, Memphis, and retro themes would use this. The track
+					tint makes the whole scrollbar feel intentional rather than
+					incidental. <code>scrollbar-color</code> accepts any CSS color
+					including OKLCH — full color system access.
+					More text here to ensure the thumb is always visible on screen.
+				</div>
+			</div>
+			<div>
+          <span class="label">
+            Minimal — thumb <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(70% 0 0);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> light gray / track <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(93% 0 0);border:1px solid #ccc;vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> near-white · thin
+          </span>
+				<div class="scroll-box scroll-minimal">
+					<code>scrollbar-width: thin</code> with muted colors. Maximum
+					content area, minimum visual chrome. Nordic, Swiss, and editorial
+					themes use this. The scrollbar is present and functional but
+					doesn't compete with the content. It fades into the background
+					until the user needs it. More text needed for the thumb to appear.
+				</div>
+			</div>
+			<div>
+          <span class="label">
+            Hidden — <code>scrollbar-width: none</code> · still scrollable
+          </span>
+				<div class="scroll-box scroll-hidden">
+					No visible scrollbar — but the box still scrolls. Try it:
+					use a trackpad, mouse wheel, or keyboard arrow keys.
+					The content is accessible; only the UI chrome is hidden.
+					Use for carousels, horizontal scrollers, and cards where a
+					visible scrollbar would break the layout. More text below.
+					Even more content here to make scrolling obvious is possible.
+				</div>
+			</div>
+			<div>
+          <span class="label">
+            Auto — thumb <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(52% 0.20 145);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> green / track <span style="display:inline-block;width:0.75rem;height:0.75rem;background:oklch(90% 0.05 145);vertical-align:middle;border-radius:2px;margin-inline:2px;"></span> pale green · auto width
+          </span>
+				<div class="scroll-box scroll-wide">
+					<code>scrollbar-width: auto</code> — the widest native option.
+					Green thumb on a pale green track. This is the most accessible
+					variant: the large thumb hit-target suits motor impairment users.
+					A11y themes and medical/government applications should default
+					to auto-width with high-contrast thumb-to-track contrast.
+				</div>
+			</div>
+		</div>
+
+		<div style="margin-block-start: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: 1.25rem;">
+			<p style="font-size: 0.875rem; font-weight: 600; margin-block-end: 0.5rem;">Token proposal</p>
+			<table class="proposal-table">
+				<thead><tr><th>Token</th><th>Default</th><th>Notes</th></tr></thead>
+				<tbody>
+				<tr><td>--scrollbar-thumb</td><td>--color-border-strong</td><td>Thumb color. Override per theme.</td></tr>
+				<tr><td>--scrollbar-thumb-hover</td><td>--color-primary</td><td>Not yet in spec — future.</td></tr>
+				<tr><td>--scrollbar-track</td><td>--color-surface-sunken</td><td>Track / gutter color.</td></tr>
+				<tr><td>--scrollbar-width</td><td>thin</td><td><code>auto | thin | none</code>. Themes set this.</td></tr>
+				<tr><td>--scrollbar-color</td><td>var(--scrollbar-thumb) var(--scrollbar-track)</td><td>Composite. Applied to :root.</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+
+	<!-- ══════════════════════════════════════════════════
+		 SECTION 3: CURSORS
+	══════════════════════════════════════════════════ -->
+	<section class="section" aria-labelledby="cursor-h">
+		<div class="section-header">
+			<h2 class="section-title" id="cursor-h">Cursor Theming</h2>
+			<span class="section-tag">cursor: url() · SVG data URI · JS spotlight</span>
+		</div>
+
+		<!-- CSS keyword cursors -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 0 1rem; color:var(--color-text-muted);">
+			CSS cursor keywords — hover each to see the cursor change
+		</h3>
+		<div class="cursor-demo-grid" style="margin-block-end: 2rem;">
+			<div class="cursor-swatch" style="cursor:default">default</div>
+			<div class="cursor-swatch" style="cursor:pointer">pointer</div>
+			<div class="cursor-swatch" style="cursor:crosshair">crosshair</div>
+			<div class="cursor-swatch" style="cursor:move">move</div>
+			<div class="cursor-swatch" style="cursor:grab">grab</div>
+			<div class="cursor-swatch" style="cursor:zoom-in">zoom-in</div>
+			<div class="cursor-swatch" style="cursor:zoom-out">zoom-out</div>
+			<div class="cursor-swatch" style="cursor:copy">copy</div>
+			<div class="cursor-swatch" style="cursor:not-allowed">not-allowed</div>
+			<div class="cursor-swatch" style="cursor:wait">wait</div>
+			<div class="cursor-swatch" style="cursor:progress">progress</div>
+			<div class="cursor-swatch" style="cursor:cell">cell</div>
+			<div class="cursor-swatch" style="cursor:col-resize">col-resize</div>
+			<div class="cursor-swatch" style="cursor:row-resize">row-resize</div>
+			<div class="cursor-swatch" style="cursor:n-resize">n-resize</div>
+			<div class="cursor-swatch" style="cursor:all-scroll">all-scroll</div>
+		</div>
+
+		<!-- SVG custom cursors -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 0 1rem; color:var(--color-text-muted);">
+			SVG data URI cursors — hover each zone
+		</h3>
+		<div class="demo-grid" style="margin-block-end: 2rem;">
+			<div>
+				<div class="cursor-zone cursor-crosshair">
+					<strong style="font-size:0.85rem;">Crosshair cursor</strong>
+					<span class="label" style="margin:0">Circle + 4 lines. SVG data URI.</span>
+				</div>
+				<p class="desc">Purple ring + lines. Hotspot at 16,16. Falls back to <code>crosshair</code>.</p>
+			</div>
+			<div>
+				<div class="cursor-zone cursor-dot">
+					<strong style="font-size:0.85rem;">Dot cursor</strong>
+					<span class="label" style="margin:0">Solid orange dot with white center.</span>
+				</div>
+				<p class="desc">16px dot, hotspot centered. Used in precision design tools and data viz themes.</p>
+			</div>
+			<div>
+				<div class="cursor-zone cursor-branded">
+					<strong style="font-size:0.85rem;">Branded arrow</strong>
+					<span class="label" style="margin:0">Custom arrow in --color-primary.</span>
+				</div>
+				<p class="desc">Replaces the OS arrow with a theme-colored one. Full brand control at 24px. Hotspot at 5,3.</p>
+			</div>
+			<div>
+				<div class="cursor-zone cursor-large">
+					<strong style="font-size:0.85rem;">Large a11y cursor</strong>
+					<span class="label" style="margin:0">48px ring — high visibility.</span>
+				</div>
+				<p class="desc">Accessibility-first cursor for motor impairment or large-display themes. Green, 48px, centered hotspot.</p>
+			</div>
+		</div>
+
+		<div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: 1.25rem; margin-block-end: 2rem;">
+			<p style="font-size: 0.875rem; color: var(--color-text-muted); margin-block-end: 0.5rem;">
+				<strong>Implementation note:</strong> SVG cursors use inline data URIs — no separate files, no network requests.
+				The SVG is URL-encoded, color values are hex (not OKLCH — SVG fill doesn't accept OKLCH in cursor URLs).
+				The <code>cursor</code> property accepts a fallback: <code>url("…") hotspot-x hotspot-y, fallback-keyword</code>.
+				Custom cursors work in all modern browsers. Max recommended size: 128×128px; 24–48px is practical.
+			</p>
+			<p style="font-size: 0.875rem; color: var(--color-text-muted);">
+				<strong>Theme token pattern:</strong> Themes set <code>--cursor-custom-default</code> and
+				<code>--cursor-custom-pointer</code>. The root rules apply them to <code>:root</code> and
+				interactive elements respectively. JS cursor effects are opt-in via <code>--spotlight-enabled: 1</code>.
+			</p>
+		</div>
+
+		<!-- Spotlight effect -->
+		<h3 style="font-size:1rem; font-weight:600; margin-block: 0 1rem; color:var(--color-text-muted);">
+			Spotlight cursor — JS + CSS custom properties
+		</h3>
+		<div class="spotlight-demo" id="spotlight-demo" aria-label="Spotlight cursor demo — move your mouse">
+			<div class="spotlight-content">
+				<div class="spotlight-card"><div class="sc-title">Matches</div><div class="sc-val" id="sp-matches">0</div></div>
+				<div class="spotlight-card"><div class="sc-title">Score</div><div class="sc-val">100%</div></div>
+				<div class="spotlight-card"><div class="sc-title">Rank</div><div class="sc-val">#1</div></div>
+				<div class="spotlight-card"><div class="sc-title">Time</div><div class="sc-val" id="sp-time">0.0s</div></div>
+				<div class="spotlight-card"><div class="sc-title">Team</div><div class="sc-val">A</div></div>
+				<div class="spotlight-card"><div class="sc-title">Zone</div><div class="sc-val">S</div></div>
+			</div>
+			<div style="position:absolute; inset-block-end:1rem; inset-inline-start:1rem; font-family:var(--font-mono); font-size:0.65rem; color:oklch(40% 0.02 240);" aria-hidden="true">
+				Move cursor — spotlight follows via CSS custom properties on the element
+			</div>
+		</div>
+		<p class="desc" style="margin-block-start: 0.75rem;">
+			JS reads <code>mousemove</code> coordinates, converts to percentages, and sets
+			<code>--spotlight-x</code> / <code>--spotlight-y</code> on the element.
+			CSS renders a <code>radial-gradient</code> using those properties in the <code>::before</code>.
+			The browser handles smooth compositing — no canvas, no requestAnimationFrame loop needed.
+			Dramatic on dark themes. Pair with <code>--spotlight-size</code> and <code>--spotlight-color</code>.
+		</p>
+
+		<div style="margin-block-start: 1.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: 1.25rem;">
+			<p style="font-size: 0.875rem; font-weight: 600; margin-block-end: 0.5rem;">Token proposal</p>
+			<table class="proposal-table">
+				<thead><tr><th>Token</th><th>Default</th><th>Notes</th></tr></thead>
+				<tbody>
+				<tr><td>--cursor-custom-default</td><td>default</td><td>Applied to :root. Themes override with url() or keyword.</td></tr>
+				<tr><td>--cursor-custom-pointer</td><td>pointer</td><td>Applied to links, buttons, interactive elements.</td></tr>
+				<tr><td>--cursor-text</td><td>text</td><td>Applied to inputs / textareas.</td></tr>
+				<tr><td>--spotlight-enabled</td><td>0</td><td>JS checks; if 1, attaches mousemove listener.</td></tr>
+				<tr><td>--spotlight-color</td><td>oklch(60% 0.10 hue-primary)</td><td>Spotlight tint color.</td></tr>
+				<tr><td>--spotlight-size</td><td>300px</td><td>Radial gradient radius.</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+
+	<!-- ══════════════════════════════════════════════════
+		 SECTION 4: REDUCED MOTION
+	══════════════════════════════════════════════════ -->
+	<section class="section" aria-labelledby="rm-h">
+		<div class="section-header">
+			<h2 class="section-title" id="rm-h">Reduced Motion</h2>
+			<span class="section-tag">prefers-reduced-motion · data-motion-reduced</span>
+		</div>
+		<p style="font-size: 0.9rem; color: var(--color-text-muted); max-width: 60ch; margin-block-end: 1.5rem;">
+			All animated border effects must disable when motion is reduced. The pattern follows
+			the existing VB motion token approach — one media query stops everything.
+		</p>
+		<pre style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: 1.25rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7; color: var(--color-text-muted);">
+<span style="color:var(--color-primary)">/* In the tokens layer — same pattern as --duration-* */</span>
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --border-anim-spin-duration:  0s;    <span style="color:var(--color-text-subtle)">/* stops animation */</span>
+    --border-anim-pulse-duration: 0s;
+    --border-anim-march-duration: 0s;
+    --border-anim-hue-duration:   0s;
+    --spotlight-enabled:          0;    <span style="color:var(--color-text-subtle)">/* JS checks this */</span>
+  }
+}
+<span style="color:var(--color-primary)">/* User toggle via ThemeManager */</span>
+:root[data-motion-reduced] {
+  --border-anim-spin-duration:  0s;
+  --border-anim-pulse-duration: 0s;
+  --border-anim-march-duration: 0s;
+  --border-anim-hue-duration:   0s;
+  --spotlight-enabled:          0;
+}</pre>
+		<p style="font-size: 0.875rem; color: var(--color-text-muted); margin-block-start: 1rem; max-width: 58ch;">
+			When <code>animation-duration: 0s</code>, the animation still runs but completes instantly —
+			the element stays in its final <code>animation-fill-mode</code> state. For spin and hue borders this
+			means the gradient is frozen at the start angle, which is still visually correct.
+			For pulse borders it means no glow at all — fall back cleanly to a static border.
+		</p>
+	</section>
+
+
+	<!-- ══════════════════════════════════════════════════
+		 SECTION 5: DECISION GUIDE
+	══════════════════════════════════════════════════ -->
+	<section class="section" aria-labelledby="guide-h">
+		<div class="section-header">
+			<h2 class="section-title" id="guide-h">Decision Guide</h2>
+			<span class="section-tag">When to use what</span>
+		</div>
+		<table class="proposal-table">
+			<thead><tr><th>Effect</th><th>Best for</th><th>Avoid when</th><th>Performance</th></tr></thead>
+			<tbody>
+			<tr>
+				<td>Spin border</td>
+				<td>Featured cards, loading states, premium CTAs, Cyber / Retro themes</td>
+				<td>Large quantity on screen, text-dense layouts</td>
+				<td>GPU composited via conic-gradient — cheap</td>
+			</tr>
+			<tr>
+				<td>Pulse border</td>
+				<td>Selected state, errors, recording indicators, realtime data</td>
+				<td>Every card in a grid — overwhelming</td>
+				<td>box-shadow on GPU layer — very cheap</td>
+			</tr>
+			<tr>
+				<td>Marching ants</td>
+				<td>Selection mode, drag targets, clipboard operations</td>
+				<td>Decorative use — carries strong "selection" meaning</td>
+				<td>4× background-position animations — moderate</td>
+			</tr>
+			<tr>
+				<td>Hue cycle</td>
+				<td>Simple themes wanting color motion without gradient setup</td>
+				<td>Any element beside non-hue-rotated siblings (affects children)</td>
+				<td>filter applies to whole stacking context — use carefully</td>
+			</tr>
+			<tr>
+				<td>Breathe</td>
+				<td>Standby, "recording", "live" indicators</td>
+				<td>Interactive elements — not obviously a state indicator</td>
+				<td>transform + opacity on ::before — GPU cheap</td>
+			</tr>
+			<tr>
+				<td>Corner trace</td>
+				<td>Gallery thumbnails, card hover, nav item reveal</td>
+				<td>Where the element already has a prominent border</td>
+				<td>clip-path transition — GPU composited, efficient</td>
+			</tr>
+			<tr>
+				<td>Scrollbar theming</td>
+				<td>Any theme — set it and forget it in tokens layer</td>
+				<td>scrollbar-width: none on main document (hurts a11y)</td>
+				<td>Zero — native browser rendering</td>
+			</tr>
+			<tr>
+				<td>Custom cursors</td>
+				<td>Personality / extreme themes, gaming, creative tools</td>
+				<td>Business apps — breaks user expectation, hurts trust</td>
+				<td>Native — zero overhead</td>
+			</tr>
+			<tr>
+				<td>Spotlight cursor</td>
+				<td>Dark dramatic themes, hero sections, dashboards</td>
+				<td>Light themes (invisible), touch-only devices</td>
+				<td>CSS custom property update on mousemove — near zero</td>
+			</tr>
+			</tbody>
+		</table>
+	</section>
+
+</div><!-- /page-wrap -->
+
+
+<script>
+	'use strict';
+
+	/* ── Dark mode toggle ── */
+	const root    = document.documentElement;
+	const modeBtn = document.getElementById('mode-btn');
+
+	// Respect system preference
+	const mq = window.matchMedia('(prefers-color-scheme: dark)');
+	if (mq.matches) root.setAttribute('data-mode', 'dark');
+	modeBtn.textContent = mq.matches ? 'Light mode' : 'Dark mode';
+
+	modeBtn.addEventListener('click', () => {
+		const dark = root.getAttribute('data-mode') === 'dark';
+		if (dark) {
+			root.removeAttribute('data-mode');
+			modeBtn.textContent = 'Dark mode';
+		} else {
+			root.setAttribute('data-mode', 'dark');
+			modeBtn.textContent = 'Light mode';
+		}
+	});
+
+
+	/* ── Spotlight cursor effect ──
+	 *
+	 * JS only does two things:
+	 * 1. Read mousemove x/y as percentages of the element's bounds
+	 * 2. Set --spotlight-x and --spotlight-y as CSS custom properties
+	 *
+	 * CSS handles all rendering via radial-gradient in ::before.
+	 * This pattern is ~0 cost — no canvas, no rAF loop.
+	 * Themes activate it by setting --spotlight-enabled: 1.
+	 */
+	const spotEl  = document.getElementById('spotlight-demo');
+	const spTime  = document.getElementById('sp-time');
+	const spMatch = document.getElementById('sp-matches');
+
+	let moveCount = 0;
+	const startTime = Date.now();
+
+	spotEl.addEventListener('mousemove', (e) => {
+		const rect = spotEl.getBoundingClientRect();
+		const x = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1) + '%';
+		const y = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1) + '%';
+
+		spotEl.style.setProperty('--spotlight-x', x);
+		spotEl.style.setProperty('--spotlight-y', y);
+
+		moveCount++;
+		spMatch.textContent = moveCount;
+		spTime.textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+	});
+
+	spotEl.addEventListener('mouseleave', () => {
+		// Reset to center on exit
+		spotEl.style.setProperty('--spotlight-x', '50%');
+		spotEl.style.setProperty('--spotlight-y', '50%');
+	});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="super2026" data-fluid>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Super2026 Theme — Vanilla Breeze</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+	<style>
+		/* ================================================================
+		   SUPER2026 THEME — Vanilla Breeze
+		   Category: EXTREME
+
+		   Barbara Stauffacher Solomon's Supergraphics (Sea Ranch, 1966)
+		   meets Los Angeles 2026 mega-event energy.
+
+		   Three primaries on white plaster. Geometry that refuses to stay
+		   inside the room. Motion tokens that mean it. Glass panels as the
+		   modern upgrade over pure geometry.
+		================================================================ */
+
+		@layer tokens, reset, layout, components, sections, responsive;
+
+		/* ──────────────────────────────────────────────────────────────
+		   LAYER: tokens — complete VB override for data-theme="super2026"
+		────────────────────────────────────────────────────────────── */
+		@layer tokens {
+
+			/* ── LIGHT MODE ── */
+			:root[data-theme~="super2026"],
+			[data-theme~="super2026"] {
+				color-scheme: light;
+
+				--theme-border-style: sharp;
+				--theme-icon-set: lucide;
+
+				/* Brand hues */
+				--hue-primary: 18;
+				--hue-secondary: 256;
+				--hue-accent: 90;
+
+				/* Brand colors */
+				--color-primary:          oklch(52% 0.27 18);
+				--color-primary-hover:    oklch(58% 0.28 18);
+				--color-primary-active:   oklch(44% 0.24 18);
+				--color-primary-subtle:   oklch(94% 0.04 18);
+
+				--color-secondary:        oklch(44% 0.22 256);
+				--color-secondary-hover:  oklch(50% 0.24 256);
+				--color-secondary-subtle: oklch(93% 0.04 256);
+
+				--color-accent:           oklch(80% 0.20 90);
+				--color-accent-hover:     oklch(74% 0.20 90);
+				--color-accent-subtle:    oklch(95% 0.06 90);
+
+				/* Surfaces: warm plaster wall */
+				--color-background:       oklch(97% 0.006 80);
+				--color-surface:          oklch(94% 0.008 80);
+				--color-surface-alt:      oklch(91% 0.010 80);
+				--color-surface-raised:   oklch(99.5% 0.002 80);
+				--color-surface-sunken:   oklch(90% 0.012 80);
+
+				/* Text: architectural ink */
+				--color-text:             oklch(12% 0.008 240);
+				--color-text-muted:       oklch(40% 0.006 240);
+				--color-text-subtle:      oklch(58% 0.004 240);
+				--color-text-inverted:    oklch(97% 0.006 80);
+				--color-text-on-primary:  oklch(99% 0.002 80);
+
+				/* Borders: hard rules */
+				--color-border:           oklch(75% 0.008 240);
+				--color-border-strong:    oklch(12% 0.008 240);
+				--color-border-subtle:    oklch(86% 0.006 240);
+				--color-border-muted:     oklch(82% 0.007 240);
+
+				/* Shape: zero radius */
+				--radius-xs:   0; --radius-s:  0; --radius-m:    0;
+				--radius-l:    0; --radius-xl: 0; --radius-2xl:  0;
+				--radius-full: 0;
+
+				/* Shadows: warm tint */
+				--shadow-xs:    0 1px 2px oklch(12% 0.008 240 / 0.06);
+				--shadow-sm:    0 1px 3px oklch(12% 0.008 240 / 0.12), 0 1px 2px oklch(12% 0.008 240 / 0.08);
+				--shadow-md:    0 4px 6px oklch(12% 0.008 240 / 0.14), 0 2px 4px oklch(12% 0.008 240 / 0.10);
+				--shadow-lg:    0 10px 20px oklch(12% 0.008 240 / 0.16), 0 4px 6px oklch(12% 0.008 240 / 0.10);
+				--shadow-xl:    0 20px 30px oklch(12% 0.008 240 / 0.18), 0 8px 12px oklch(12% 0.008 240 / 0.12);
+				--shadow-2xl:   0 30px 50px oklch(12% 0.008 240 / 0.22);
+				--shadow-inner: inset 0 2px 4px oklch(12% 0.008 240 / 0.08);
+
+				/* Typography */
+				--font-sans:    "Barlow Condensed", system-ui, sans-serif;
+				--font-serif:   "Barlow Condensed", serif;
+				--font-mono:    "Space Mono", monospace;
+				--font-display: "Big Shoulders Display", "Barlow Condensed", sans-serif;
+				--font-heading: "Big Shoulders Display", "Barlow Condensed", sans-serif;
+				--font-body:    "Barlow Condensed", system-ui, sans-serif;
+				--font-code:    "Space Mono", monospace;
+
+				/* Motion: elastic and dramatic */
+				--duration-fast:          100ms;
+				--duration-normal:        200ms;
+				--duration-slow:          350ms;
+				--duration-slower:        600ms;
+				--motion-enter-duration:  500ms;
+				--motion-exit-duration:   250ms;
+				--motion-stagger-delay:   60ms;
+				--motion-bounce:          cubic-bezier(0.34, 1.56, 0.64, 1);
+				--motion-snappy:          cubic-bezier(0.4, 0, 0.2, 1);
+				--motion-elastic:         cubic-bezier(0.68, -0.55, 0.265, 1.55);
+				--motion-smooth:          cubic-bezier(0.25, 0.1, 0.25, 1);
+				--motion-hover-lift:      translateY(-4px);
+				--motion-hover-scale:     scale(1.04);
+				--motion-hover-glow:      0 0 0 3px oklch(52% 0.27 18 / 0.25);
+
+				/* Glass: modern 2026 layer */
+				--glass-blur:    10px;
+				--glass-opacity: 0.12;
+				--glass-bg:      oklch(99% 0.002 80 / var(--glass-opacity));
+				--glass-border:  oklch(99% 0.002 80 / 0.30);
+
+				/* Page background */
+				--page-bg-type:     solid;
+				--page-bg-color:    var(--color-background);
+				--page-bg-gradient: none;
+
+				/* Private theme tokens */
+				--sg2-red:        oklch(52% 0.27 18);
+				--sg2-blue:       oklch(44% 0.22 256);
+				--sg2-gold:       oklch(80% 0.20 90);
+				--sg2-ink:        oklch(12% 0.008 240);
+				--sg2-wall:       oklch(97% 0.006 80);
+				--sg2-rule:       4px solid var(--sg2-ink);
+				--sg2-rule-sm:    2px solid var(--sg2-ink);
+				--sg2-rule-heavy: 8px solid var(--sg2-ink);
+			}
+
+			/* ── DARK MODE ── */
+			:root[data-theme~="super2026"][data-mode="dark"],
+			[data-theme~="super2026"][data-mode="dark"] {
+				color-scheme: dark;
+
+				--color-primary:          oklch(62% 0.28 18);
+				--color-primary-hover:    oklch(68% 0.28 18);
+				--color-primary-active:   oklch(54% 0.24 18);
+				--color-primary-subtle:   oklch(22% 0.08 18);
+
+				--color-secondary:        oklch(60% 0.22 256);
+				--color-secondary-hover:  oklch(66% 0.24 256);
+				--color-secondary-subtle: oklch(20% 0.08 256);
+
+				--color-accent:           oklch(78% 0.22 90);
+				--color-accent-hover:     oklch(84% 0.22 90);
+				--color-accent-subtle:    oklch(22% 0.08 90);
+
+				--color-background:       oklch(11% 0.006 240);
+				--color-surface:          oklch(15% 0.007 240);
+				--color-surface-alt:      oklch(18% 0.008 240);
+				--color-surface-raised:   oklch(20% 0.008 240);
+				--color-surface-sunken:   oklch(8%  0.005 240);
+
+				--color-text:             oklch(96% 0.004 80);
+				--color-text-muted:       oklch(72% 0.006 80);
+				--color-text-subtle:      oklch(54% 0.005 80);
+				--color-text-inverted:    oklch(12% 0.008 240);
+				--color-text-on-primary:  oklch(99% 0.002 80);
+
+				--color-border:           oklch(28% 0.010 240);
+				--color-border-strong:    oklch(60% 0.010 240);
+				--color-border-subtle:    oklch(20% 0.008 240);
+				--color-border-muted:     oklch(24% 0.009 240);
+
+				--shadow-xs:    0 1px 2px oklch(5% 0.005 240 / 0.4);
+				--shadow-sm:    0 1px 3px oklch(5% 0.005 240 / 0.5), 0 1px 2px oklch(5% 0.005 240 / 0.4);
+				--shadow-md:    0 4px 6px oklch(5% 0.005 240 / 0.5), 0 2px 4px oklch(5% 0.005 240 / 0.4);
+				--shadow-lg:    0 10px 20px oklch(5% 0.005 240 / 0.55), 0 4px 6px oklch(5% 0.005 240 / 0.4);
+				--shadow-xl:    0 20px 30px oklch(5% 0.005 240 / 0.6);
+				--shadow-2xl:   0 30px 50px oklch(5% 0.005 240 / 0.65);
+
+				--glass-bg:      oklch(15% 0.007 240 / 0.60);
+				--glass-border:  oklch(60% 0.010 240 / 0.20);
+
+				--page-bg-gradient: linear-gradient(
+									  160deg,
+									  oklch(14% 0.010 240) 0%,
+									  oklch(10% 0.006 250) 100%
+							  );
+
+				--sg2-wall: oklch(11% 0.006 240);
+				--sg2-rule: 4px solid oklch(35% 0.010 240);
+				--sg2-rule-sm: 2px solid oklch(30% 0.009 240);
+				--sg2-rule-heavy: 8px solid oklch(40% 0.010 240);
+			}
+
+			/* Reduced motion */
+			@media (prefers-reduced-motion: reduce) {
+				:root {
+					--motion-enter-duration: 0ms;
+					--motion-exit-duration:  0ms;
+					--motion-stagger-delay:  0ms;
+					--motion-hover-lift:     none;
+					--motion-hover-scale:    none;
+				}
+			}
+			:root[data-motion-reduced] {
+				--motion-enter-duration: 0ms;
+				--motion-exit-duration:  0ms;
+				--motion-stagger-delay:  0ms;
+				--motion-hover-lift:     none;
+				--motion-hover-scale:    none;
+			}
+		}
+
+		@layer reset {
+			*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+			html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+			img, video, svg { display: block; max-width: 100%; }
+			input, button, textarea, select { font: inherit; }
+		}
+
+		@layer layout {
+			body {
+				font-family: var(--font-body);
+				font-size: 1.0625rem;
+				line-height: 1.5;
+				background-color: var(--color-background);
+				color: var(--color-text);
+				min-block-size: 100dvh;
+				overflow-x: hidden;
+			}
+			[data-mode="dark"] body {
+				background: var(--page-bg-gradient), var(--color-background);
+			}
+
+			.container {
+				width: min(72rem, 100% - 3rem);
+				margin-inline: auto;
+			}
+			.section {
+				padding-block: clamp(4rem, 10vw, 7rem);
+				position: relative;
+				overflow: hidden;
+			}
+			.section + .section { border-block-start: var(--sg2-rule); }
+
+			.section-label {
+				font-family: var(--font-display);
+				font-size: 0.75rem;
+				font-weight: 900;
+				letter-spacing: 0.15em;
+				text-transform: uppercase;
+				color: var(--color-text-muted);
+				margin-block-end: 1rem;
+			}
+			.section-title {
+				font-family: var(--font-display);
+				font-weight: 900;
+				font-size: clamp(2rem, 5vw, 3.5rem);
+				letter-spacing: -0.02em;
+				line-height: 1;
+				text-transform: uppercase;
+				margin-block-end: 0.25em;
+			}
+			.section-sub {
+				font-size: 1rem;
+				color: var(--color-text-muted);
+				max-width: 52ch;
+				margin-block-end: 3rem;
+			}
+
+			.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.5rem; }
+			.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1.5rem; }
+			.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; }
+			.flex-wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+		}
+
+		@layer components {
+
+			/* ── BUTTONS ── */
+			.btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.65em 1.4em;
+				font-family: var(--font-display);
+				font-size: 0.9rem;
+				font-weight: 900;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				text-decoration: none;
+				border: none;
+				cursor: pointer;
+				transition:
+						transform var(--duration-fast) var(--motion-bounce),
+						 box-shadow var(--duration-fast) var(--motion-snappy),
+						 background-color var(--duration-fast) var(--motion-snappy);
+				&:hover { transform: var(--motion-hover-lift); box-shadow: var(--shadow-md); }
+				&:active { transform: translateY(1px); }
+			}
+			.btn-primary   { background: var(--color-primary); color: var(--color-text-on-primary); &:hover { background: var(--color-primary-hover); } }
+			.btn-secondary { background: var(--color-secondary); color: oklch(98% 0.002 80); &:hover { background: var(--color-secondary-hover); } }
+			.btn-accent    { background: var(--color-accent); color: var(--sg2-ink); &:hover { background: var(--color-accent-hover); } }
+			.btn-outline   {
+				background: transparent;
+				color: var(--color-text);
+				border: var(--sg2-rule-sm);
+				&:hover { background: var(--color-text); color: var(--color-background); }
+			}
+			.btn-ghost {
+				background: transparent;
+				color: var(--color-primary);
+				text-decoration: underline;
+				text-decoration-thickness: 2px;
+				text-underline-offset: 3px;
+				&:hover { background: var(--color-primary-subtle); }
+			}
+			.btn-glass {
+				background: var(--glass-bg);
+				backdrop-filter: blur(var(--glass-blur));
+				-webkit-backdrop-filter: blur(var(--glass-blur));
+				color: var(--color-text);
+				border: 1px solid var(--glass-border);
+				&:hover { background: oklch(from var(--color-surface) l c h / 0.8); }
+			}
+
+			/* ── BADGES ── */
+			.badge {
+				display: inline-block;
+				padding: 0.2em 0.6em;
+				font-family: var(--font-display);
+				font-size: 0.7rem;
+				font-weight: 900;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+			}
+			.badge-red     { background: var(--sg2-red);  color: white; }
+			.badge-blue    { background: var(--sg2-blue); color: white; }
+			.badge-gold    { background: var(--sg2-gold); color: var(--sg2-ink); }
+			.badge-ink     { background: var(--sg2-ink);  color: var(--sg2-wall); }
+			.badge-outline { background: transparent; color: var(--color-text); outline: 2px solid var(--color-border-strong); outline-offset: -2px; }
+
+			/* ── CARDS ── */
+			.card {
+				background: var(--color-surface-raised);
+				border: var(--sg2-rule-sm);
+				padding: 1.75rem;
+				position: relative;
+				overflow: hidden;
+				transition:
+							transform var(--duration-normal) var(--motion-bounce),
+							box-shadow var(--duration-normal) var(--motion-snappy);
+				&:hover { transform: var(--motion-hover-lift); box-shadow: var(--shadow-lg); }
+				& .card-label {
+					font-family: var(--font-display);
+					font-size: 0.7rem;
+					font-weight: 900;
+					letter-spacing: 0.14em;
+					text-transform: uppercase;
+					color: var(--color-text-subtle);
+					margin-block-end: 0.5rem;
+				}
+				& .card-title {
+					font-family: var(--font-display);
+					font-size: clamp(1.3rem, 3vw, 1.8rem);
+					font-weight: 900;
+					text-transform: uppercase;
+					letter-spacing: -0.01em;
+					line-height: 1.05;
+					margin-block-end: 0.75rem;
+				}
+				& p { font-size: 0.95rem; color: var(--color-text-muted); line-height: 1.6; }
+			}
+			.card-arc::before {
+				content: "";
+				position: absolute;
+				inset-block-start: -60%;
+				inset-inline-end: -60%;
+				width: 130%;
+				aspect-ratio: 1;
+				border-radius: 50%;
+				pointer-events: none;
+			}
+			.card-arc-red::before  { background: var(--sg2-red);  opacity: 0.08; }
+			.card-arc-blue::before { background: var(--sg2-blue); opacity: 0.08; }
+			.card-arc-gold::before { background: var(--sg2-gold); opacity: 0.12; }
+
+			.card-red  { border-block-start: 5px solid var(--sg2-red);  }
+			.card-blue { border-block-start: 5px solid var(--sg2-blue); }
+			.card-gold { border-block-start: 5px solid var(--sg2-gold); }
+			.card-glass {
+				background: var(--glass-bg);
+				backdrop-filter: blur(var(--glass-blur));
+				-webkit-backdrop-filter: blur(var(--glass-blur));
+				border: 1px solid var(--glass-border);
+			}
+
+			/* ── ALERTS ── */
+			.alert {
+				padding: 1rem 1.25rem;
+				border-inline-start: 5px solid;
+				display: flex;
+				gap: 0.75rem;
+				align-items: flex-start;
+				& .alert-icon {
+					font-family: var(--font-display);
+					font-weight: 900;
+					font-size: 1rem;
+					flex-shrink: 0;
+					margin-block-start: 0.1rem;
+				}
+				& .alert-title {
+					font-family: var(--font-display);
+					font-weight: 900;
+					font-size: 0.85rem;
+					letter-spacing: 0.08em;
+					text-transform: uppercase;
+					margin-block-end: 0.25rem;
+				}
+				& p { font-size: 0.875rem; color: var(--color-text-muted); }
+			}
+			.alert-info    { background: var(--color-secondary-subtle); border-color: var(--sg2-blue); & .alert-icon { color: var(--sg2-blue); } }
+			.alert-success { background: oklch(93% 0.04 145); border-color: oklch(50% 0.20 145); & .alert-icon { color: oklch(40% 0.20 145); } }
+			.alert-warning { background: var(--color-accent-subtle); border-color: var(--sg2-gold); & .alert-icon { color: oklch(55% 0.22 90); } }
+			.alert-danger  { background: var(--color-primary-subtle); border-color: var(--sg2-red); & .alert-icon { color: var(--sg2-red); } }
+			.alert-hazard {
+				background: repeating-linear-gradient(-45deg, oklch(80% 0.20 90) 0, oklch(80% 0.20 90) 12px, var(--sg2-ink) 12px, var(--sg2-ink) 24px);
+				color: white;
+				border: none;
+				padding-inline-start: 1.25rem;
+				& .alert-title { color: white; letter-spacing: 0.1em; }
+				& p { color: oklch(90% 0.005 80); }
+			}
+
+			/* ── STATS ── */
+			.stat {
+				padding: 1.5rem;
+				border: var(--sg2-rule-sm);
+				background: var(--color-surface-raised);
+				position: relative;
+				overflow: hidden;
+				& .stat-value {
+					font-family: var(--font-display);
+					font-size: clamp(2.5rem, 7vw, 4.5rem);
+					font-weight: 900;
+					line-height: 1;
+					letter-spacing: -0.03em;
+				}
+				& .stat-label {
+					font-family: var(--font-display);
+					font-size: 0.7rem;
+					font-weight: 700;
+					letter-spacing: 0.14em;
+					text-transform: uppercase;
+					color: var(--color-text-muted);
+					margin-block-start: 0.4rem;
+				}
+				& .stat-sub { font-size: 0.8rem; color: var(--color-text-subtle); margin-block-start: 0.25rem; }
+			}
+			.stat-red  .stat-value { color: var(--sg2-red); }
+			.stat-blue .stat-value { color: var(--sg2-blue); }
+			.stat-gold .stat-value { color: var(--color-accent); }
+
+			/* ── FORM ── */
+			.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-block-end: 1.25rem; }
+			.form-label {
+				font-family: var(--font-display);
+				font-size: 0.75rem;
+				font-weight: 900;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: var(--color-text-muted);
+			}
+			.form-input {
+				padding: 0.7em 0.9em;
+				font-family: var(--font-body);
+				font-size: 0.95rem;
+				background: var(--color-surface-raised);
+				color: var(--color-text);
+				border: var(--sg2-rule-sm);
+				outline: none;
+				transition: border-color var(--duration-fast) var(--motion-snappy),
+						 box-shadow var(--duration-fast) var(--motion-snappy);
+				&:focus { border-color: var(--sg2-red); box-shadow: 0 0 0 3px oklch(52% 0.27 18 / 0.18); }
+				&::placeholder { color: var(--color-text-subtle); }
+			}
+			select.form-input { appearance: none; cursor: pointer; }
+
+			/* ── SEGMENTED CONTROL ── */
+			.seg-control { display: inline-flex; border: var(--sg2-rule-sm); overflow: hidden; }
+			.seg-btn {
+				flex: 1;
+				padding: 0.5em 1.25em;
+				font-family: var(--font-display);
+				font-size: 0.78rem;
+				font-weight: 900;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				background: transparent;
+				color: var(--color-text-muted);
+				border: none;
+				border-inline-start: var(--sg2-rule-sm);
+				cursor: pointer;
+				transition: background var(--duration-fast) var(--motion-snappy),
+					  color var(--duration-fast) var(--motion-snappy);
+				&:first-child { border-inline-start: none; }
+				&[data-active] { background: var(--sg2-ink); color: var(--sg2-wall); }
+				&:hover:not([data-active]) { background: var(--color-surface-alt); }
+			}
+
+			/* ── ENTER ANIMATIONS ── */
+			[data-enter] {
+				opacity: 0;
+				translate: 0 24px;
+				transition:
+						opacity   var(--motion-enter-duration) var(--motion-smooth),
+						 translate var(--motion-enter-duration) var(--motion-bounce);
+				transition-delay: calc(var(--stagger-i, 0) * var(--motion-stagger-delay));
+			}
+			[data-enter][data-entered] { opacity: 1; translate: 0 0; }
+
+			[data-enter="scale"] {
+				scale: 0.93;
+				transition:
+					   opacity   var(--motion-enter-duration) var(--motion-smooth),
+					   translate var(--motion-enter-duration) var(--motion-bounce),
+					   scale     var(--motion-enter-duration) var(--motion-bounce);
+				transition-delay: calc(var(--stagger-i, 0) * var(--motion-stagger-delay));
+			}
+			[data-enter="scale"][data-entered] { opacity: 1; translate: 0 0; scale: 1; }
+
+			/* ── MOTION DEMO ── */
+			.motion-card {
+				padding: 1.5rem;
+				border: var(--sg2-rule-sm);
+				background: var(--color-surface-raised);
+				text-align: center;
+				& .motion-token {
+					font-family: "Space Mono", monospace;
+					font-size: 0.68rem;
+					color: var(--color-text-subtle);
+					margin-block-end: 0.75rem;
+					display: block;
+				}
+				& .motion-label {
+					font-family: var(--font-display);
+					font-size: 0.78rem;
+					font-weight: 900;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					color: var(--color-text-muted);
+					margin-block-start: 0.75rem;
+					display: block;
+				}
+			}
+			.ease-track {
+				width: 100%;
+				block-size: 4px;
+				background: var(--color-border);
+				position: relative;
+				margin-block: 0.75rem;
+				& .ease-dot {
+					position: absolute;
+					inset-block: -8px;
+					inset-inline-start: 0;
+					width: 20px;
+					height: 20px;
+					border-radius: 50%;
+					background: var(--sg2-red);
+				}
+			}
+			.motion-card:hover .ease-dot { inset-inline-start: calc(100% - 20px); }
+			.ease-bounce   .ease-dot { transition: inset-inline-start 600ms var(--motion-bounce); }
+			.ease-elastic  .ease-dot { transition: inset-inline-start 600ms var(--motion-elastic); }
+			.ease-squish   .ease-dot { transition: inset-inline-start 500ms cubic-bezier(0.5, -0.3, 0.1, 1.5); }
+			.ease-snappy   .ease-dot { transition: inset-inline-start 200ms var(--motion-snappy); }
+			.ease-smooth   .ease-dot { transition: inset-inline-start 400ms var(--motion-smooth); }
+
+			/* ── TOKEN TABLE ── */
+			.token-table {
+				width: 100%;
+				border-collapse: collapse;
+				font-family: "Space Mono", monospace;
+				font-size: 0.72rem;
+				& th, & td {
+					padding: 0.5rem 0.75rem;
+					text-align: start;
+					border: 1px solid var(--color-border);
+					vertical-align: middle;
+				}
+				& th {
+					font-family: var(--font-display);
+					font-size: 0.65rem;
+					font-weight: 900;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					background: var(--color-surface-alt);
+				}
+				& tr:nth-child(even) td { background: var(--color-surface); }
+				& .swatch {
+					display: inline-block;
+					width: 1rem;
+					height: 1rem;
+					vertical-align: middle;
+					margin-inline-end: 0.4rem;
+					outline: 1px solid var(--color-border);
+				}
+			}
+
+			/* ── BLEND DEMO ── */
+			.blend-grid {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				border: var(--sg2-rule-sm);
+				overflow: hidden;
+			}
+			.blend-cell {
+				aspect-ratio: 1;
+				position: relative;
+				display: flex;
+				align-items: flex-end;
+				padding: 0.75rem;
+				& .blend-label {
+					font-family: var(--font-display);
+					font-weight: 900;
+					font-size: 0.72rem;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					color: white;
+					mix-blend-mode: difference;
+					position: relative;
+					z-index: 2;
+				}
+			}
+			.bc-r  { background: var(--sg2-red); }
+			.bc-b  { background: var(--sg2-blue); }
+			.bc-g  { background: var(--sg2-gold); }
+			.bc-rb { background: var(--sg2-red); &::after { content:""; position:absolute; inset:0; background:var(--sg2-blue); mix-blend-mode:multiply; } }
+			.bc-rg { background: var(--sg2-red); &::after { content:""; position:absolute; inset:0; background:var(--sg2-gold); mix-blend-mode:multiply; } }
+			.bc-bg { background: var(--sg2-blue); &::after { content:""; position:absolute; inset:0; background:var(--sg2-gold); mix-blend-mode:multiply; } }
+			.bc-all {
+				grid-column: span 3;
+				aspect-ratio: auto;
+				block-size: 5rem;
+				background: var(--sg2-red);
+				&::after  { content:""; position:absolute; inset:0; background:var(--sg2-blue); mix-blend-mode:multiply; }
+				&::before { content:""; position:absolute; inset:0; background:var(--sg2-gold); mix-blend-mode:multiply; z-index:1; }
+			}
+			[data-mode="dark"] .blend-cell { mix-blend-mode: screen; }
+
+			/* Dividers */
+			.rule       { border: none; border-block-start: var(--sg2-rule);       margin-block: 3rem; }
+			.rule-sm    { border: none; border-block-start: var(--sg2-rule-sm);    margin-block: 2rem; }
+			.rule-heavy { border: none; border-block-start: var(--sg2-rule-heavy); margin-block: 4rem; }
+
+			/* Color swatches */
+			.swatch-row { display: flex; flex-wrap: wrap; border: var(--sg2-rule-sm); gap: 0; }
+			.swatch-item {
+				flex: 1;
+				min-width: 7rem;
+				padding: 0.75rem;
+				& .swatch-block { width: 100%; aspect-ratio: 4/3; display: block; margin-block-end: 0.5rem; }
+				& .swatch-name  { font-family: "Space Mono", monospace; font-size: 0.62rem; color: var(--color-text-muted); display: block; }
+			}
+		}
+
+		@layer sections {
+
+			/* ── NAVIGATION ── */
+			.site-nav {
+				position: sticky;
+				inset-block-start: 0;
+				z-index: 100;
+				background: var(--glass-bg);
+				backdrop-filter: blur(var(--glass-blur));
+				-webkit-backdrop-filter: blur(var(--glass-blur));
+				border-block-end: var(--sg2-rule-sm);
+			}
+			.nav-inner {
+				width: min(72rem, 100% - 3rem);
+				margin-inline: auto;
+				display: flex;
+				align-items: stretch;
+				min-block-size: 3.5rem;
+			}
+			.nav-brand {
+				display: flex;
+				align-items: center;
+				padding-inline-end: 1.5rem;
+				border-inline-end: var(--sg2-rule-sm);
+				text-decoration: none;
+				& .bw { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+				& .bw-s { color: var(--sg2-red); }
+				& .bw-y { color: var(--sg2-blue); }
+			}
+			.nav-links {
+				display: flex;
+				align-items: stretch;
+				list-style: none;
+				flex: 1;
+			}
+			.nav-link {
+				display: flex;
+				align-items: center;
+				padding-inline: 1rem;
+				font-family: var(--font-display);
+				font-size: 0.78rem;
+				font-weight: 700;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				text-decoration: none;
+				color: var(--color-text-muted);
+				border-inline-end: 1px solid var(--color-border-subtle);
+				transition: color var(--duration-fast) var(--motion-snappy),
+						 background var(--duration-fast) var(--motion-snappy);
+				&:hover { color: var(--color-text); background: var(--color-surface-alt); }
+				&[aria-current="page"] { color: var(--sg2-red); border-block-end: 3px solid var(--sg2-red); }
+			}
+			.nav-actions { display: flex; align-items: center; gap: 0.5rem; padding-inline-start: 1rem; }
+			.mode-toggle {
+				padding: 0.4em 0.8em;
+				font-family: var(--font-display);
+				font-size: 0.72rem;
+				font-weight: 900;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				background: transparent;
+				color: var(--color-text-muted);
+				border: var(--sg2-rule-sm);
+				cursor: pointer;
+				transition: background var(--duration-fast) var(--motion-snappy);
+				&:hover { background: var(--color-surface-alt); color: var(--color-text); }
+			}
+
+			/* ── HERO ── */
+			.hero {
+				min-block-size: 92dvh;
+				display: grid;
+				align-items: center;
+				position: relative;
+				overflow: hidden;
+				border-block-end: var(--sg2-rule-heavy);
+			}
+			.hero-arc {
+				position: absolute;
+				border-radius: 50%;
+				pointer-events: none;
+				mix-blend-mode: multiply;
+			}
+			[data-mode="dark"] .hero-arc { mix-blend-mode: screen; opacity: 0.55; }
+			.arc-red  {
+				width: max(90vw, 900px);
+				aspect-ratio: 1;
+				background: var(--sg2-red);
+				inset-block-start: -30%;
+				inset-inline-end: -22%;
+				animation: arc-in var(--duration-slower) var(--motion-smooth) both;
+			}
+			.arc-blue {
+				width: max(70vw, 700px);
+				aspect-ratio: 1;
+				background: var(--sg2-blue);
+				inset-block-end: -40%;
+				inset-inline-start: -18%;
+				animation: arc-in var(--duration-slower) 120ms var(--motion-smooth) both;
+			}
+			.arc-gold {
+				width: max(50vw, 500px);
+				aspect-ratio: 1;
+				background: var(--sg2-gold);
+				inset-block-start: 40%;
+				inset-inline-start: 20%;
+				animation: arc-in var(--duration-slower) 240ms var(--motion-smooth) both;
+			}
+			@keyframes arc-in {
+				from { scale: 0; opacity: 0; }
+				to   { scale: 1; opacity: 1; }
+			}
+			.hero-content {
+				position: relative;
+				z-index: 2;
+				padding-block: 6rem;
+			}
+			.hero-eyebrow {
+				font-family: var(--font-display);
+				font-size: 0.75rem;
+				font-weight: 900;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				color: var(--color-text-muted);
+				margin-block-end: 0.75rem;
+			}
+			.hero-title {
+				font-family: var(--font-display);
+				font-weight: 900;
+				font-size: clamp(5rem, 18vw, 16rem);
+				line-height: 0.88;
+				text-transform: uppercase;
+				letter-spacing: -0.04em;
+				margin-block-end: 2rem;
+			}
+			.title-super { color: var(--sg2-wall); -webkit-text-stroke: 3px var(--sg2-ink); }
+			[data-mode="dark"] .title-super { color: transparent; -webkit-text-stroke-color: oklch(80% 0.005 80); }
+			.title-year  { color: var(--sg2-ink); display: block; }
+			[data-mode="dark"] .title-year  { color: oklch(92% 0.008 80); }
+			.hero-body {
+				font-size: clamp(1rem, 2vw, 1.2rem);
+				max-width: 46ch;
+				margin-block-end: 2rem;
+				line-height: 1.6;
+				color: var(--color-text-muted);
+			}
+			.hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+		}
+
+		@layer responsive {
+			@media (max-width: 680px) {
+				.nav-links { display: none; }
+			}
+		}
+
+		.sr-only {
+			position: absolute; width: 1px; height: 1px;
+			padding: 0; margin: -1px; overflow: hidden;
+			clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+		}
+	</style>
+</head>
+
+<body>
+
+<!-- NAVIGATION -->
+<nav class="site-nav" aria-label="Site navigation">
+	<div class="nav-inner">
+		<a href="#" class="nav-brand" aria-label="Super2026 home">
+			<span class="bw bw-s">SUPER</span><span class="bw bw-y">2026</span>
+		</a>
+		<ul class="nav-links" role="list">
+			<li><a href="#motion"     class="nav-link">Motion</a></li>
+			<li><a href="#geometry"   class="nav-link">Geometry</a></li>
+			<li><a href="#components" class="nav-link" aria-current="page">Components</a></li>
+			<li><a href="#tokens"     class="nav-link">Tokens</a></li>
+		</ul>
+		<div class="nav-actions">
+			<button class="mode-toggle" id="mode-toggle" aria-label="Toggle dark mode">
+				<span id="mode-label">Dark</span>
+			</button>
+		</div>
+	</div>
+</nav>
+
+
+<!-- HERO -->
+<header class="hero" role="banner">
+	<div class="hero-arc arc-red"  aria-hidden="true"></div>
+	<div class="hero-arc arc-blue" aria-hidden="true"></div>
+	<div class="hero-arc arc-gold" aria-hidden="true"></div>
+
+	<div class="hero-content">
+		<div class="container">
+			<p class="hero-eyebrow">Vanilla Breeze · Extreme Theme · 2026</p>
+			<h1 class="hero-title" aria-label="Super 2026">
+				<span class="title-super">SUPER</span>
+				<span class="title-year">2026</span>
+			</h1>
+			<p class="hero-body">
+				Barbara Stauffacher Solomon's Supergraphics, born at Sea Ranch in 1966,
+				arrives in 2026. Three primaries on white plaster. Geometry that refuses
+				to stay inside the room. Motion tokens that mean it.
+			</p>
+			<div class="hero-actions">
+				<a href="#components" class="btn btn-primary">Components</a>
+				<a href="#tokens"     class="btn btn-outline">Token Ref</a>
+				<a href="#motion"     class="btn btn-glass">Motion</a>
+			</div>
+		</div>
+	</div>
+</header>
+
+
+<!-- STATS -->
+<section class="section" aria-labelledby="stats-h">
+	<div class="container">
+		<p class="section-label" id="stats-h">Event Data</p>
+		<div class="grid-4">
+			<div class="stat stat-red"  data-enter style="--stagger-i:0">
+				<div class="stat-value">32</div>
+				<div class="stat-label">Teams</div>
+				<div class="stat-sub">FIFA World Cup 2026</div>
+			</div>
+			<div class="stat stat-blue" data-enter style="--stagger-i:1">
+				<div class="stat-value">64</div>
+				<div class="stat-label">Matches</div>
+				<div class="stat-sub">3 host nations</div>
+			</div>
+			<div class="stat stat-gold" data-enter style="--stagger-i:2">
+				<div class="stat-value">16</div>
+				<div class="stat-label">Venues</div>
+				<div class="stat-sub">USA · Canada · Mexico</div>
+			</div>
+			<div class="stat"           data-enter style="--stagger-i:3">
+				<div class="stat-value" style="font-size:clamp(1.8rem,4vw,3rem);">1.1B</div>
+				<div class="stat-label">Viewers</div>
+				<div class="stat-sub">Global audience</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<!-- MOTION -->
+<section class="section" id="motion" style="background: var(--color-surface);" aria-labelledby="motion-h">
+	<div class="container">
+		<p class="section-label">Motion System</p>
+		<h2 class="section-title" id="motion-h">Tokens at Work</h2>
+		<p class="section-sub">
+			Hover each card to see the easing. All durations are VB motion tokens —
+			they collapse to 0ms when <code>prefers-reduced-motion</code> is active.
+		</p>
+
+		<div class="grid-3" style="margin-block-end: 3rem;">
+			<div class="motion-card ease-bounce" data-enter style="--stagger-i:0">
+				<span class="motion-token">--motion-bounce</span>
+				<div class="ease-track" aria-hidden="true"><div class="ease-dot"></div></div>
+				<span class="motion-label">Bounce</span>
+			</div>
+			<div class="motion-card ease-elastic" data-enter style="--stagger-i:1">
+				<span class="motion-token">--motion-elastic</span>
+				<div class="ease-track" aria-hidden="true"><div class="ease-dot"></div></div>
+				<span class="motion-label">Elastic</span>
+			</div>
+			<div class="motion-card ease-squish" data-enter style="--stagger-i:2">
+				<span class="motion-token">--ease-squish-2</span>
+				<div class="ease-track" aria-hidden="true"><div class="ease-dot"></div></div>
+				<span class="motion-label">Squish</span>
+			</div>
+			<div class="motion-card ease-snappy" data-enter style="--stagger-i:3">
+				<span class="motion-token">--motion-snappy</span>
+				<div class="ease-track" aria-hidden="true"><div class="ease-dot"></div></div>
+				<span class="motion-label">Snappy</span>
+			</div>
+			<div class="motion-card ease-smooth" data-enter style="--stagger-i:4">
+				<span class="motion-token">--motion-smooth</span>
+				<div class="ease-track" aria-hidden="true"><div class="ease-dot"></div></div>
+				<span class="motion-label">Smooth</span>
+			</div>
+		</div>
+
+		<p class="section-label">Staggered Scroll Reveal</p>
+		<p class="section-sub">
+			<code>[data-enter]</code> + IntersectionObserver.
+			Delay = <code>var(--stagger-i) × --motion-stagger-delay</code>.
+			CSS handles the math; JS only toggles <code>data-entered</code>.
+		</p>
+		<div class="grid-3">
+			<div class="card card-red  card-arc card-arc-red"  data-enter="scale" style="--stagger-i:0">
+				<span class="card-label">Stagger i=0</span>
+				<h3 class="card-title">No Delay</h3>
+				<p>First to enter. 500ms bounce transition via <code>--motion-enter-duration</code>.</p>
+			</div>
+			<div class="card card-blue card-arc card-arc-blue" data-enter="scale" style="--stagger-i:1">
+				<span class="card-label">Stagger i=1</span>
+				<h3 class="card-title">60ms Delay</h3>
+				<p>Offset by one <code>--motion-stagger-delay</code> unit.</p>
+			</div>
+			<div class="card card-gold card-arc card-arc-gold" data-enter="scale" style="--stagger-i:2">
+				<span class="card-label">Stagger i=2</span>
+				<h3 class="card-title">120ms Delay</h3>
+				<p>The cascade effect is pure CSS calc — no JS timing loops.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<!-- GEOMETRY -->
+<section class="section" id="geometry" aria-labelledby="geo-h">
+	<div class="container">
+		<p class="section-label">Supergraphics</p>
+		<h2 class="section-title" id="geo-h">Three Primaries</h2>
+		<p class="section-sub">
+			No tints. No gradients. Overlapping primaries produce secondaries
+			via <code>mix-blend-mode: multiply</code> — exactly as paint on a wall.
+		</p>
+
+		<div class="grid-2" style="gap: 2rem; align-items: start;">
+			<div class="blend-grid" aria-label="Colour blend demo">
+				<div class="blend-cell bc-r"><span class="blend-label">Red</span></div>
+				<div class="blend-cell bc-b"><span class="blend-label">Blue</span></div>
+				<div class="blend-cell bc-g"><span class="blend-label">Gold</span></div>
+				<div class="blend-cell bc-rb"><span class="blend-label">R+B</span></div>
+				<div class="blend-cell bc-rg"><span class="blend-label">R+G</span></div>
+				<div class="blend-cell bc-bg"><span class="blend-label">B+G</span></div>
+				<div class="blend-cell bc-all"><span class="blend-label">All Three</span></div>
+			</div>
+
+			<div>
+				<div class="swatch-row">
+					<div class="swatch-item">
+						<span class="swatch-block" style="background:var(--sg2-red)"></span>
+						<span class="swatch-name">--sg2-red<br>oklch(52% 0.27 18)</span>
+					</div>
+					<div class="swatch-item">
+						<span class="swatch-block" style="background:var(--sg2-blue)"></span>
+						<span class="swatch-name">--sg2-blue<br>oklch(44% 0.22 256)</span>
+					</div>
+					<div class="swatch-item">
+						<span class="swatch-block" style="background:var(--sg2-gold)"></span>
+						<span class="swatch-name">--sg2-gold<br>oklch(80% 0.20 90)</span>
+					</div>
+					<div class="swatch-item">
+						<span class="swatch-block" style="background:var(--sg2-ink)"></span>
+						<span class="swatch-name">--sg2-ink<br>oklch(12% 0.008 240)</span>
+					</div>
+					<div class="swatch-item">
+						<span class="swatch-block" style="background:var(--sg2-wall);border:1px solid var(--color-border)"></span>
+						<span class="swatch-name">--sg2-wall<br>oklch(97% 0.006 80)</span>
+					</div>
+				</div>
+
+				<!-- Colour bar -->
+				<div style="display:flex; margin-block-start: 1.5rem; border: var(--sg2-rule-sm);">
+					<div style="flex:1; background:var(--sg2-red); padding:1rem;
+                 font-family:var(--font-display); font-weight:900; font-size:0.72rem;
+                 letter-spacing:0.12em; text-transform:uppercase; color:white;">
+						Primary<br>LA Vermillion
+					</div>
+					<div style="flex:1; background:var(--sg2-blue); padding:1rem;
+                 font-family:var(--font-display); font-weight:900; font-size:0.72rem;
+                 letter-spacing:0.12em; text-transform:uppercase; color:white;
+                 border-inline: var(--sg2-rule-sm);">
+						Secondary<br>Olympic Cobalt
+					</div>
+					<div style="flex:1; background:var(--sg2-gold); padding:1rem;
+                 font-family:var(--font-display); font-weight:900; font-size:0.72rem;
+                 letter-spacing:0.12em; text-transform:uppercase; color:var(--sg2-ink);">
+						Accent<br>California Gold
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Outline type wall interlude -->
+<div style="background:var(--color-surface); border-block:var(--sg2-rule-heavy);
+              padding-block:2rem; overflow:hidden;" aria-hidden="true">
+	<div style="font-family:var(--font-display); font-weight:900;
+                font-size:clamp(5rem,18vw,16rem); line-height:0.88;
+                text-transform:uppercase; letter-spacing:-0.04em;
+                -webkit-text-stroke:3px var(--sg2-ink); color:transparent;
+                padding-inline:1.5vw; user-select:none;">
+		GEOMETRY
+	</div>
+</div>
+
+
+<!-- COMPONENTS -->
+<section class="section" id="components" aria-labelledby="comp-h">
+	<div class="container">
+		<p class="section-label">Components</p>
+		<h2 class="section-title" id="comp-h">Building Blocks</h2>
+
+		<!-- Buttons -->
+		<p class="section-label" style="margin-block:2rem 0.75rem;">Buttons</p>
+		<div class="flex-wrap" data-enter style="--stagger-i:0">
+			<button class="btn btn-primary">Primary</button>
+			<button class="btn btn-secondary">Secondary</button>
+			<button class="btn btn-accent">Accent</button>
+			<button class="btn btn-outline">Outline</button>
+			<button class="btn btn-ghost">Ghost</button>
+			<button class="btn btn-glass">Glass</button>
+		</div>
+
+		<hr class="rule-sm" />
+
+		<!-- Badges -->
+		<p class="section-label" style="margin-block-end:0.75rem;">Badges</p>
+		<div class="flex-wrap" data-enter style="--stagger-i:0">
+			<span class="badge badge-red">Los Angeles</span>
+			<span class="badge badge-blue">World Cup</span>
+			<span class="badge badge-gold">2026</span>
+			<span class="badge badge-ink">FINAL</span>
+			<span class="badge badge-outline">Live</span>
+		</div>
+
+		<hr class="rule-sm" />
+
+		<!-- Cards -->
+		<p class="section-label" style="margin-block-end:0.75rem;">Cards</p>
+		<div class="grid-3">
+			<div class="card card-red  card-arc card-arc-red"  data-enter style="--stagger-i:0">
+				<span class="card-label">Primary</span>
+				<h3 class="card-title">Red Arc Card</h3>
+				<p>Circle enters from corner at 8% opacity. Hard rules, zero radius, elastic hover.</p>
+				<div style="margin-block-start:1rem;"><button class="btn btn-primary" style="font-size:0.78rem;padding:0.5em 1em;">Action</button></div>
+			</div>
+			<div class="card card-blue card-arc card-arc-blue" data-enter style="--stagger-i:1">
+				<span class="card-label">Secondary</span>
+				<h3 class="card-title">Blue Arc Card</h3>
+				<p>Cobalt arc. Border-block-start accent stripe. Lifts 4px via <code>--motion-hover-lift</code>.</p>
+				<div style="margin-block-start:1rem;"><button class="btn btn-secondary" style="font-size:0.78rem;padding:0.5em 1em;">Action</button></div>
+			</div>
+			<div class="card card-glass" data-enter style="--stagger-i:2">
+				<span class="card-label">Glass Panel</span>
+				<h3 class="card-title">Modern Layer</h3>
+				<p>Glassmorphism via <code>--glass-blur: 10px</code>. The 2026 upgrade over pure geometry.</p>
+				<div style="margin-block-start:1rem;"><button class="btn btn-glass" style="font-size:0.78rem;padding:0.5em 1em;">Action</button></div>
+			</div>
+		</div>
+
+		<hr class="rule-sm" />
+
+		<!-- Alerts -->
+		<p class="section-label" style="margin-block-end:0.75rem;">Alerts</p>
+		<div style="display:grid;gap:0.75rem;" data-enter style="--stagger-i:0">
+			<div class="alert alert-info"    role="status"><span class="alert-icon" aria-hidden="true">ℹ</span><div><p class="alert-title">Info</p><p>Qualification rounds begin March 2026. Check the schedule.</p></div></div>
+			<div class="alert alert-success" role="status"><span class="alert-icon" aria-hidden="true">✓</span><div><p class="alert-title">Success</p><p>Your registration has been confirmed. Welcome to the tournament.</p></div></div>
+			<div class="alert alert-warning" role="alert"><span class="alert-icon" aria-hidden="true">!</span><div><p class="alert-title">Warning</p><p>Tickets for the final are selling fast. Act now.</p></div></div>
+			<div class="alert alert-danger"  role="alert"><span class="alert-icon" aria-hidden="true">✕</span><div><p class="alert-title">Danger</p><p>Your session has expired. Please sign in again to continue.</p></div></div>
+			<div class="alert alert-hazard"  role="alert"><div><p class="alert-title">⚠ Hazard Stripe</p><p>Gate 7 closed for maintenance. Use Gates 4 or 9.</p></div></div>
+		</div>
+
+		<hr class="rule-sm" />
+
+		<!-- Form -->
+		<p class="section-label" style="margin-block-end:0.75rem;">Form</p>
+		<form action="#" style="max-width:32rem;" data-enter style="--stagger-i:0" onsubmit="return false">
+			<div class="grid-2">
+				<div class="form-group">
+					<label class="form-label" for="fname">First name</label>
+					<input class="form-input" type="text" id="fname" placeholder="Barbara" />
+				</div>
+				<div class="form-group">
+					<label class="form-label" for="lname">Last name</label>
+					<input class="form-input" type="text" id="lname" placeholder="Solomon" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label" for="event">Select event</label>
+				<select class="form-input" id="event">
+					<option value="">Choose…</option>
+					<option>Group Stage</option>
+					<option>Quarter-Final</option>
+					<option>Semi-Final</option>
+					<option>Final</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label class="form-label" for="msg">Notes</label>
+				<textarea class="form-input" id="msg" rows="3" placeholder="Accessibility requirements?"></textarea>
+			</div>
+			<div class="flex-wrap" style="gap:0.75rem;">
+				<button type="submit" class="btn btn-primary">Register</button>
+				<button type="reset"  class="btn btn-outline">Clear</button>
+			</div>
+		</form>
+
+		<hr class="rule-sm" />
+
+		<!-- Segmented control -->
+		<p class="section-label" style="margin-block-end:0.75rem;">Segmented Control</p>
+		<div class="seg-control" role="group" aria-label="View mode">
+			<button class="seg-btn" data-active aria-pressed="true">Table</button>
+			<button class="seg-btn" aria-pressed="false">Grid</button>
+			<button class="seg-btn" aria-pressed="false">List</button>
+			<button class="seg-btn" aria-pressed="false">Map</button>
+		</div>
+	</div>
+</section>
+
+
+<!-- TOKENS -->
+<section class="section" id="tokens" style="background:var(--color-surface);" aria-labelledby="tok-h">
+	<div class="container">
+		<p class="section-label">Reference</p>
+		<h2 class="section-title" id="tok-h">Theme Tokens</h2>
+		<p class="section-sub">
+			Super2026 is a Vanilla Breeze <strong>extreme theme</strong> that fully overrides
+			the token contract for light and dark modes, following the Complete Override Principle.
+		</p>
+
+		<p class="section-label" style="margin-block-end:0.5rem;">Colors</p>
+		<table class="token-table" style="margin-block-end:2rem;">
+			<thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Notes</th></tr></thead>
+			<tbody>
+			<tr><td>--hue-primary</td><td>18</td><td>18</td><td>LA Vermillion</td></tr>
+			<tr><td>--hue-secondary</td><td>256</td><td>256</td><td>Olympic Cobalt</td></tr>
+			<tr><td>--hue-accent</td><td>90</td><td>90</td><td>California Gold</td></tr>
+			<tr><td>--color-primary</td><td><span class="swatch" style="background:oklch(52% 0.27 18)"></span>oklch(52% 0.27 18)</td><td><span class="swatch" style="background:oklch(62% 0.28 18)"></span>oklch(62% 0.28 18)</td><td>Brighter on dark</td></tr>
+			<tr><td>--color-secondary</td><td><span class="swatch" style="background:oklch(44% 0.22 256)"></span>oklch(44% 0.22 256)</td><td><span class="swatch" style="background:oklch(60% 0.22 256)"></span>oklch(60% 0.22 256)</td><td></td></tr>
+			<tr><td>--color-accent</td><td><span class="swatch" style="background:oklch(80% 0.20 90)"></span>oklch(80% 0.20 90)</td><td><span class="swatch" style="background:oklch(78% 0.22 90)"></span>oklch(78% 0.22 90)</td><td></td></tr>
+			<tr><td>--color-background</td><td><span class="swatch" style="background:oklch(97% 0.006 80);border:1px solid #ccc"></span>oklch(97% 0.006 80)</td><td><span class="swatch" style="background:oklch(11% 0.006 240)"></span>oklch(11% 0.006 240)</td><td>Warm plaster / Deep ink</td></tr>
+			<tr><td>--color-surface-raised</td><td><span class="swatch" style="background:oklch(99.5% 0.002 80);border:1px solid #ccc"></span>oklch(99.5% 0.002 80)</td><td><span class="swatch" style="background:oklch(20% 0.008 240)"></span>oklch(20% 0.008 240)</td><td></td></tr>
+			</tbody>
+		</table>
+
+		<p class="section-label" style="margin-block-end:0.5rem;">Motion</p>
+		<table class="token-table" style="margin-block-end:2rem;">
+			<thead><tr><th>Token</th><th>Value</th><th>Notes</th></tr></thead>
+			<tbody>
+			<tr><td>--motion-enter-duration</td><td>500ms</td><td>Scroll reveal entrance</td></tr>
+			<tr><td>--motion-exit-duration</td><td>250ms</td><td>Exit transitions</td></tr>
+			<tr><td>--motion-stagger-delay</td><td>60ms</td><td>Per-item cascade offset</td></tr>
+			<tr><td>--motion-hover-lift</td><td>translateY(-4px)</td><td>Card / button hover</td></tr>
+			<tr><td>--motion-hover-scale</td><td>scale(1.04)</td><td>Thumbnail hover</td></tr>
+			<tr><td>--motion-bounce</td><td>cubic-bezier(0.34, 1.56, 0.64, 1)</td><td>Overshoot spring</td></tr>
+			<tr><td>--motion-elastic</td><td>cubic-bezier(0.68, -0.55, 0.265, 1.55)</td><td>Pull-back dramatic</td></tr>
+			<tr><td>--motion-snappy</td><td>cubic-bezier(0.4, 0, 0.2, 1)</td><td>Material standard</td></tr>
+			<tr><td>--motion-smooth</td><td>cubic-bezier(0.25, 0.1, 0.25, 1)</td><td>Glass / ambient</td></tr>
+			<tr><td>--duration-fast</td><td>100ms</td><td>Micro interactions</td></tr>
+			<tr><td>--duration-normal</td><td>200ms</td><td>Card hover</td></tr>
+			<tr><td>--duration-slow</td><td>350ms</td><td>Panel transitions</td></tr>
+			</tbody>
+		</table>
+
+		<p class="section-label" style="margin-block-end:0.5rem;">Shape &amp; Extensions</p>
+		<table class="token-table">
+			<thead><tr><th>Token</th><th>Value</th><th>Notes</th></tr></thead>
+			<tbody>
+			<tr><td>--radius-* (all)</td><td>0</td><td>Architectural sharp — no softness</td></tr>
+			<tr><td>--theme-border-style</td><td>sharp</td><td>ThemeManager hint</td></tr>
+			<tr><td>--glass-blur</td><td>10px</td><td>Glassmorphism backdrop blur</td></tr>
+			<tr><td>--glass-opacity</td><td>0.12</td><td>Glass surface transparency</td></tr>
+			<tr><td>--font-display</td><td>Big Shoulders Display 900</td><td>Type walls, headings</td></tr>
+			<tr><td>--font-body</td><td>Barlow Condensed 400</td><td>Body copy</td></tr>
+			<tr><td>--font-code</td><td>Space Mono</td><td>Token values, data displays</td></tr>
+			<tr><td>--page-bg-gradient</td><td>none (light) / 160deg dark</td><td>Dark mode diagonal gradient</td></tr>
+			</tbody>
+		</table>
+	</div>
+</section>
+
+
+<!-- FOOTER -->
+<footer style="border-block-start:var(--sg2-rule-heavy); background:var(--sg2-ink);
+                 color:var(--sg2-wall); padding-block:3rem;" role="contentinfo">
+	<div class="container">
+		<div style="display:flex; flex-wrap:wrap; justify-content:space-between;
+                  align-items:flex-end; gap:2rem;">
+			<div>
+				<div style="font-family:var(--font-display); font-weight:900;
+                      font-size:clamp(2rem,6vw,4rem); line-height:1;
+                      letter-spacing:-0.03em; text-transform:uppercase; margin-block-end:0.5rem;">
+					<span style="color:var(--sg2-red);">SUPER</span><span style="color:var(--sg2-gold);">2026</span>
+				</div>
+				<p style="font-size:0.85rem; color:oklch(55% 0.006 240); max-width:42ch;">
+					An extreme theme for Vanilla Breeze. Inspired by Barbara Stauffacher Solomon's
+					Sea Ranch Supergraphics, 1966–1975. Motion tokens, glassmorphism, full dark mode.
+				</p>
+			</div>
+			<div style="text-align:end;">
+				<p style="font-family:var(--font-display); font-size:0.72rem;
+                    letter-spacing:0.14em; text-transform:uppercase;
+                    color:oklch(45% 0.006 240); margin-block-end:0.25rem;">
+					Vanilla Breeze
+				</p>
+				<p style="font-family:'Space Mono',monospace; font-size:0.72rem; color:oklch(40% 0.006 240);">
+					data-theme="super2026"
+				</p>
+			</div>
+		</div>
+	</div>
+</footer>
+
+
+<script>
+	'use strict';
+
+	/* ── Dark mode ── */
+	const root        = document.documentElement;
+	const modeToggle  = document.getElementById('mode-toggle');
+	const modeLabel   = document.getElementById('mode-label');
+
+	function setMode(dark) {
+		if (dark) {
+			root.setAttribute('data-mode', 'dark');
+			modeLabel.textContent = 'Light';
+		} else {
+			root.removeAttribute('data-mode');
+			modeLabel.textContent = 'Dark';
+		}
+	}
+
+	setMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+	modeToggle.addEventListener('click', () =>
+		setMode(root.getAttribute('data-mode') !== 'dark'));
+
+	/* ── Scroll reveal ── */
+	const enterEls = document.querySelectorAll('[data-enter]');
+
+	if ('IntersectionObserver' in window) {
+		const io = new IntersectionObserver((entries) => {
+			for (const e of entries) {
+				if (e.isIntersecting) {
+					e.target.setAttribute('data-entered', '');
+					io.unobserve(e.target);
+				}
+			}
+		}, { threshold: 0.1 });
+		for (const el of enterEls) io.observe(el);
+	} else {
+		for (const el of enterEls) el.setAttribute('data-entered', '');
+	}
+
+	/* ── Segmented control ── */
+	for (const ctrl of document.querySelectorAll('.seg-control')) {
+		ctrl.addEventListener('click', (e) => {
+			const btn = e.target.closest('.seg-btn');
+			if (!btn) return;
+			for (const b of ctrl.querySelectorAll('.seg-btn')) {
+				b.removeAttribute('data-active');
+				b.setAttribute('aria-pressed', 'false');
+			}
+			btn.setAttribute('data-active', '');
+			btn.setAttribute('aria-pressed', 'true');
+		});
+	}
+</script>
+
+</body>
+</html>

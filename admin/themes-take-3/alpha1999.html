@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Space: 1999 Theme — Vanilla Breeze</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<!--
+	  Font strategy:
+	  • "Nunito" Black (900) — closest freely available match for Futura Black's
+		round geometric heaviness and filled counters. Used for all hero/display.
+	  • "Josefin Sans" — captures Futura's geometric proportions for body/secondary.
+	  • "Share Tech Mono" — instrument/readout mono, retained from v1.
+	  • "Comfortaa" — rounded British grotesque, stand-in for Granby in closing credits.
+	-->
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Josefin+Sans:ital,wght@0,300;0,400;0,600;0,700;1,600&family=Share+Tech+Mono&family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet" />
+	<style>
+
+		/* ============================================================
+		   SPACE: 1999 THEME v2 — Vanilla Breeze
+		   Corrected to reference the actual title sequence typography
+		   and visual language:
+
+		   • Futura Black (→ Nunito 900) for the signature heavy
+			 geometric letterforms that "hit you over the head"
+		   • Futura (→ Josefin Sans) for episode/secondary text
+		   • Granby (→ Comfortaa) for rolling credits
+		   • DARK space background — the titles play over blackness
+		   • Perspective type — "SPACE" rushes toward the viewer
+		   • Orange/amber reserved for "1999" and critical callouts
+		   • Neil Bold hand-lettered logo character: square, thick,
+			 very little internal counter space
+		============================================================ */
+
+		/* ──────────────────────────────────────────────────────────
+		   TOKENS
+		────────────────────────────────────────────────────────── */
+		@layer tokens {
+			:root {
+				/* Space black — the actual title sequence background */
+				--sp-void:       oklch(4%  0.008 260);
+				--sp-deep:       oklch(8%  0.010 255);
+				--sp-panel:      oklch(12% 0.012 255);
+				--sp-surface:    oklch(17% 0.014 255);
+				--sp-raised:     oklch(22% 0.012 255);
+
+				/* The orange — specifically the "1999" numeral colour.
+				   Warm amber-orange, not pure orange. */
+				--sp-orange:     oklch(68% 0.20 48);
+				--sp-orange-hi:  oklch(76% 0.18 56);
+				--sp-orange-glow:oklch(68% 0.20 48 / 0.35);
+
+				/* White — title card type colour */
+				--sp-white:      oklch(96% 0.004 90);
+				--sp-white-dim:  oklch(75% 0.008 90);
+				--sp-white-muted:oklch(50% 0.008 90);
+
+				/* Department sleeve colours — accurate to the show */
+				--sp-command:    oklch(74% 0.17 68);   /* amber/mustard */
+				--sp-medical:    oklch(60% 0.22 28);   /* warm red */
+				--sp-technical:  oklch(55% 0.14 258);  /* slate blue */
+				--sp-security:   oklch(50% 0.06 285);  /* grey-violet */
+
+				/* Status */
+				--sp-green:      oklch(62% 0.22 148);
+				--sp-red:        oklch(58% 0.24 22);
+				--sp-blue:       oklch(56% 0.18 238);
+
+				/* Hazard stripes — amber on black */
+				--sp-hazard: repeating-linear-gradient(
+										 -45deg,
+										 var(--sp-orange) 0px, var(--sp-orange) 12px,
+										 var(--sp-void)   12px, var(--sp-void)  24px
+								 );
+
+				/* Futura Black-style font stack */
+				--sp-font-black:   'Nunito', 'Arial Black', 'Impact', sans-serif;
+				--sp-font-futura:  'Josefin Sans', 'Century Gothic', 'Futura', sans-serif;
+				--sp-font-granby:  'Comfortaa', 'Gill Sans', sans-serif;
+				--sp-font-mono:    'Share Tech Mono', 'Courier New', monospace;
+
+				/* Bevel / shadow — for the raised plastic control surface */
+				--sp-shadow-sm:
+						0 2px 8px  oklch(0% 0 0 / 0.5),
+								 0 1px 2px  oklch(0% 0 0 / 0.4);
+				--sp-shadow-md:
+						0 4px 16px oklch(0% 0 0 / 0.6),
+								 0 8px 32px oklch(0% 0 0 / 0.3);
+				--sp-glow-orange:
+						0 0 12px var(--sp-orange-glow),
+								 0 0 32px oklch(68% 0.20 48 / 0.15);
+				--sp-glow-white:
+						0 0 10px oklch(96% 0 0 / 0.3),
+								 0 0 24px oklch(96% 0 0 / 0.1);
+
+				--sp-border:    1px solid oklch(30% 0.01 255);
+				--sp-border-hi: 1px solid oklch(40% 0.01 255);
+				--sp-radius:    3px;
+				--sp-radius-lg: 6px;
+
+				--sp-sp-xs:  0.25rem;
+				--sp-sp-sm:  0.5rem;
+				--sp-sp-md:  1rem;
+				--sp-sp-lg:  1.5rem;
+				--sp-sp-xl:  2.5rem;
+				--sp-sp-2xl: 4rem;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESET & BASE
+		────────────────────────────────────────────────────────── */
+		@layer reset {
+			*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+			html { color-scheme: dark; scroll-behavior: smooth; }
+
+			body {
+				background: var(--sp-void);
+				color: var(--sp-white);
+				font-family: var(--sp-font-futura);
+				font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+				font-weight: 400;
+				line-height: 1.65;
+				overflow-x: hidden;
+			}
+
+			/* Subtle film grain — the show had that 16mm quality */
+			body::before {
+				content: '';
+				position: fixed;
+				inset: 0;
+				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.07'/%3E%3C/svg%3E");
+				background-size: 200px 200px;
+				pointer-events: none;
+				z-index: 9999;
+				mix-blend-mode: overlay;
+				opacity: 0.4;
+			}
+
+			h1, h2, h3, h4 {
+				font-family: var(--sp-font-black);
+				font-weight: 900;
+				line-height: 1.0;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: var(--sp-white);
+			}
+
+			p { line-height: 1.7; color: var(--sp-white-dim); }
+
+			code, kbd {
+				font-family: var(--sp-font-mono);
+				font-size: 0.88em;
+				color: var(--sp-orange);
+				background: var(--sp-panel);
+				padding: 0.1em 0.4em;
+				border-radius: var(--sp-radius);
+				border: var(--sp-border);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   LAYOUT
+		────────────────────────────────────────────────────────── */
+		@layer layout {
+			.sp-container {
+				max-width: 72rem;
+				margin-inline: auto;
+				padding-inline: var(--sp-sp-xl);
+			}
+			.sp-section { padding-block: var(--sp-sp-2xl); }
+
+			.sp-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+				gap: var(--sp-sp-lg);
+			}
+			.sp-grid-2 {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+				gap: var(--sp-sp-lg);
+			}
+			.sp-flex {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--sp-sp-md);
+				align-items: center;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   STARFIELD — the actual backdrop of the titles
+		────────────────────────────────────────────────────────── */
+		@layer layout {
+			.sp-starfield {
+				position: relative;
+				background: var(--sp-void);
+				overflow: hidden;
+
+				&::after {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background-image:
+							radial-gradient(1px 1px at  7% 12%, oklch(90% 0 0 / 0.9) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 15% 68%, oklch(90% 0 0 / 0.7) 0%, transparent 100%),
+							 radial-gradient(1.5px 1.5px at 22% 35%, oklch(90% 0 0 / 0.8) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 31% 82%, oklch(90% 0 0 / 0.6) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 38% 20%, oklch(90% 0 0 / 0.9) 0%, transparent 100%),
+							 radial-gradient(2px 2px at 44% 55%, oklch(90% 0 0 / 0.5) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 52%  8%, oklch(90% 0 0 / 0.8) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 59% 74%, oklch(90% 0 0 / 0.7) 0%, transparent 100%),
+							 radial-gradient(1.5px 1.5px at 67% 42%, oklch(90% 0 0 / 0.9) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 74% 91%, oklch(90% 0 0 / 0.6) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 81% 25%, oklch(90% 0 0 / 0.8) 0%, transparent 100%),
+							 radial-gradient(2px 2px at 88% 60%, oklch(90% 0 0 / 0.5) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 93% 15%, oklch(90% 0 0 / 0.9) 0%, transparent 100%),
+							 radial-gradient(1px 1px at  4% 48%, oklch(78% 0.08 60 / 0.6) 0%, transparent 100%),
+							 radial-gradient(1px 1px at 71% 33%, oklch(78% 0.08 240 / 0.5) 0%, transparent 100%),
+							 radial-gradient(1.5px 1.5px at 29% 88%, oklch(78% 0.05 60 / 0.7) 0%, transparent 100%);
+					pointer-events: none;
+					z-index: 0;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   HERO — the title card
+		   The key insight: "SPACE" in massive Futura Black-weight type,
+		   set in dramatic perspective as if rushing toward camera.
+		   ": 1999" in orange. White on black void.
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sp-hero {
+				position: relative;
+				padding-block: var(--sp-sp-2xl) calc(var(--sp-sp-2xl) * 1.4);
+				text-align: center;
+				overflow: hidden;
+			}
+
+			.sp-hero-eyebrow {
+				font-family: var(--sp-font-futura);
+				font-size: 0.75rem;
+				font-weight: 600;
+				letter-spacing: 0.35em;
+				text-transform: uppercase;
+				color: var(--sp-white-muted);
+				margin-block-end: var(--sp-sp-xl);
+				position: relative;
+				z-index: 1;
+			}
+
+			/* THE TITLE — perspective transform, Futura Black weight */
+			.sp-title-perspective {
+				position: relative;
+				z-index: 1;
+				perspective: 800px;
+				perspective-origin: 50% 60%;
+				margin-block-end: var(--sp-sp-xl);
+			}
+
+			.sp-title-space {
+				display: block;
+				font-family: var(--sp-font-black);
+				font-weight: 900;
+				font-size: clamp(5rem, 18vw, 14rem);
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				line-height: 0.9;
+				color: var(--sp-white);
+				transform: rotateX(28deg) scaleY(1.08);
+				transform-origin: 50% 100%;
+				transform-style: preserve-3d;
+				text-shadow:
+						0 2px 0  oklch(0% 0 0 / 0.9),
+						 0 4px 0  oklch(0% 0 0 / 0.7),
+						 0 8px 0  oklch(0% 0 0 / 0.5),
+						 0 16px 32px oklch(0% 0 0 / 0.4);
+				animation: sp-title-emerge 2.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+			}
+
+			.sp-title-sub {
+				display: flex;
+				align-items: baseline;
+				justify-content: center;
+				gap: 0.15em;
+				font-family: var(--sp-font-black);
+				font-weight: 900;
+				line-height: 1;
+				margin-block-start: var(--sp-sp-sm);
+				position: relative;
+				z-index: 2;
+				animation: sp-sub-fade 1.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+				opacity: 0;
+			}
+
+			.sp-title-colon {
+				font-size: clamp(1.5rem, 4vw, 3.5rem);
+				color: var(--sp-white-dim);
+				letter-spacing: 0;
+			}
+
+			/* "1999" — the orange numeral, the show's most distinct graphic moment */
+			.sp-title-year {
+				font-size: clamp(2.5rem, 7vw, 6rem);
+				letter-spacing: 0.1em;
+				color: var(--sp-orange);
+				text-shadow: var(--sp-glow-orange);
+			}
+
+			.sp-hero-desc {
+				font-family: var(--sp-font-granby);
+				font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+				font-weight: 300;
+				letter-spacing: 0.06em;
+				color: var(--sp-white-muted);
+				max-width: 44ch;
+				margin-inline: auto;
+				margin-block-end: var(--sp-sp-xl);
+				position: relative;
+				z-index: 1;
+				line-height: 1.8;
+			}
+
+			@keyframes sp-title-emerge {
+				from {
+					transform: rotateX(55deg) scaleY(0.6) translateZ(-200px);
+					opacity: 0;
+				}
+				to {
+					transform: rotateX(28deg) scaleY(1.08);
+					opacity: 1;
+				}
+			}
+
+			@keyframes sp-sub-fade {
+				from { opacity: 0; transform: translateY(12px); }
+				to   { opacity: 1; transform: translateY(0); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   HORIZONTAL RULE / TAPE BURN
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-rule {
+				border: none;
+				border-block-start: 1px solid oklch(30% 0.01 255);
+				margin-block: var(--sp-sp-xl);
+			}
+
+			.sp-rule-orange {
+				border: none;
+				border-block-start: 2px solid var(--sp-orange);
+				margin-block: var(--sp-sp-xl);
+				box-shadow: 0 0 8px var(--sp-orange-glow);
+			}
+
+			/* Hazard band */
+			.sp-hazard-band {
+				height: 14px;
+				background: var(--sp-hazard);
+				background-size: 34px 34px;
+			}
+			.sp-hazard-band-sm { height: 6px; background: var(--sp-hazard); background-size: 17px 17px; }
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   NAVIGATION
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sp-nav {
+				position: sticky;
+				top: 0;
+				z-index: 100;
+				background: oklch(6% 0.01 255 / 0.94);
+				backdrop-filter: blur(16px);
+				border-block-end: var(--sp-border);
+
+				& .nav-inner {
+					display: flex;
+					align-items: stretch;
+					justify-content: space-between;
+					min-height: 52px;
+				}
+
+				& .nav-logo {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 0.95rem;
+					letter-spacing: 0.08em;
+					text-transform: uppercase;
+					text-decoration: none;
+					color: var(--sp-white);
+					display: flex;
+					align-items: center;
+					gap: var(--sp-sp-sm);
+					padding-inline-end: var(--sp-sp-lg);
+					border-inline-end: var(--sp-border);
+
+					& .logo-year {
+						color: var(--sp-orange);
+						text-shadow: var(--sp-glow-orange);
+					}
+				}
+
+				& .nav-links {
+					display: flex;
+					list-style: none;
+					margin-inline-start: auto;
+
+					& a {
+						font-family: var(--sp-font-futura);
+						font-size: 0.68rem;
+						font-weight: 600;
+						letter-spacing: 0.18em;
+						text-transform: uppercase;
+						color: var(--sp-white-muted);
+						text-decoration: none;
+						display: flex;
+						align-items: center;
+						padding-inline: var(--sp-sp-lg);
+						border-inline-start: var(--sp-border);
+						transition: color 0.12s;
+
+						&:hover { color: var(--sp-white); }
+					}
+				}
+
+				& .nav-signal {
+					display: flex;
+					align-items: center;
+					gap: var(--sp-sp-sm);
+					padding-inline-start: var(--sp-sp-lg);
+					border-inline-start: var(--sp-border);
+					font-family: var(--sp-font-mono);
+					font-size: 0.65rem;
+					color: var(--sp-white-muted);
+
+					& .dot {
+						width: 7px; height: 7px;
+						border-radius: 50%;
+						background: var(--sp-orange);
+						box-shadow: 0 0 6px var(--sp-orange);
+						animation: sp-blink 2s step-end infinite;
+					}
+				}
+
+				@keyframes sp-blink {
+					0%, 100% { opacity: 1; }
+					50%       { opacity: 0.15; }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   SECTION HEADERS — episode card style
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-section-header {
+				margin-block-end: var(--sp-sp-xl);
+
+				& .sp-ep-number {
+					font-family: var(--sp-font-mono);
+					font-size: 0.7rem;
+					letter-spacing: 0.25em;
+					color: var(--sp-orange);
+					text-transform: uppercase;
+					margin-block-end: var(--sp-sp-sm);
+					display: flex;
+					align-items: center;
+					gap: var(--sp-sp-sm);
+
+					&::after {
+						content: '';
+						display: block;
+						height: 1px;
+						width: 48px;
+						background: var(--sp-orange);
+						opacity: 0.5;
+					}
+				}
+
+				& h2 {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+					letter-spacing: 0.05em;
+					text-transform: uppercase;
+				}
+
+				& p {
+					margin-block-start: var(--sp-sp-sm);
+					font-family: var(--sp-font-granby);
+					font-weight: 300;
+					font-size: 0.95rem;
+					color: var(--sp-white-muted);
+					max-width: 52ch;
+					letter-spacing: 0.03em;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   EPISODE TITLE CARD — the most iconic show graphic element
+		   Black card, massive type, orange episode number in corner
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-episode-card {
+				background: var(--sp-void);
+				border: 1px solid oklch(20% 0.01 255);
+				border-radius: var(--sp-radius);
+				overflow: hidden;
+				aspect-ratio: 16 / 6;
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
+				padding: var(--sp-sp-xl) var(--sp-sp-2xl);
+				position: relative;
+				box-shadow: var(--sp-shadow-md);
+
+				& .ep-number {
+					position: absolute;
+					top: var(--sp-sp-md);
+					right: var(--sp-sp-lg);
+					font-family: var(--sp-font-mono);
+					font-size: 0.72rem;
+					letter-spacing: 0.2em;
+					color: var(--sp-orange);
+					text-shadow: var(--sp-glow-orange);
+				}
+
+				& .ep-title {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: clamp(1.8rem, 4vw, 3.2rem);
+					letter-spacing: 0.06em;
+					text-transform: uppercase;
+					color: var(--sp-white);
+					text-shadow: var(--sp-glow-white);
+					line-height: 1;
+					position: relative;
+					z-index: 1;
+				}
+
+				/* Light-leak vignette from left — film camera effect */
+				&::before {
+					content: '';
+					position: absolute;
+					left: 0; top: 0; bottom: 0;
+					width: 40%;
+					background: linear-gradient(
+									 90deg,
+									 oklch(68% 0.20 48 / 0.04) 0%,
+									 transparent 100%
+							 );
+					pointer-events: none;
+				}
+			}
+
+			/* Demo episode card variation */
+			.sp-episode-card[data-ep] {
+				&::after {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background-image:
+							radial-gradient(1px 1px at 10% 20%, oklch(90% 0 0 / 0.4) 0%, transparent),
+							 radial-gradient(1px 1px at 30% 70%, oklch(90% 0 0 / 0.3) 0%, transparent),
+							 radial-gradient(1px 1px at 55% 15%, oklch(90% 0 0 / 0.5) 0%, transparent),
+							 radial-gradient(1px 1px at 80% 60%, oklch(90% 0 0 / 0.3) 0%, transparent),
+							 radial-gradient(1px 1px at 92% 30%, oklch(90% 0 0 / 0.4) 0%, transparent);
+					pointer-events: none;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   COLOUR SWATCHES
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-swatch-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+				gap: 2px;
+				background: var(--sp-panel);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius-lg);
+				overflow: hidden;
+			}
+
+			.sp-swatch {
+				display: flex;
+				flex-direction: column;
+
+				& .chip {
+					height: 72px;
+					position: relative;
+					&::after {
+						content: '';
+						position: absolute;
+						inset: 0;
+						background: linear-gradient(135deg, oklch(100% 0 0 / 0.1) 0%, transparent 60%);
+					}
+				}
+
+				& .meta {
+					padding: var(--sp-sp-sm);
+					background: var(--sp-panel);
+
+					& .swatch-name {
+						font-family: var(--sp-font-black);
+						font-size: 0.6rem;
+						font-weight: 900;
+						letter-spacing: 0.1em;
+						text-transform: uppercase;
+						color: var(--sp-white);
+						display: block;
+						margin-block-end: 2px;
+					}
+
+					& .swatch-var {
+						font-family: var(--sp-font-mono);
+						font-size: 0.58rem;
+						color: var(--sp-white-muted);
+						display: block;
+					}
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   BUTTONS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: var(--sp-sp-sm);
+				padding: 0.6em 1.5em 0.55em;
+				font-family: var(--sp-font-black);
+				font-weight: 900;
+				font-size: 0.9rem;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				text-decoration: none;
+				border: var(--sp-border);
+				border-radius: var(--sp-radius);
+				cursor: pointer;
+				transition: filter 0.1s, transform 0.08s;
+				position: relative;
+				overflow: hidden;
+
+				&:active { transform: translateY(1px); }
+				&:hover { filter: brightness(1.15); }
+
+				/* Gloss */
+				&::before {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background: linear-gradient(180deg, oklch(100% 0 0 / 0.1) 0%, transparent 50%);
+					pointer-events: none;
+				}
+
+				&[data-variant="primary"] {
+					background: var(--sp-orange);
+					color: var(--sp-void);
+					border-color: oklch(from var(--sp-orange) calc(l - 0.1) c h);
+					text-shadow: 0 1px 0 oklch(100% 0 0 / 0.2);
+					box-shadow: var(--sp-glow-orange), 0 2px 8px oklch(0% 0 0 / 0.4);
+				}
+
+				&[data-variant="black"] {
+					background: var(--sp-surface);
+					color: var(--sp-white);
+					border: var(--sp-border-hi);
+					box-shadow: var(--sp-shadow-sm);
+				}
+
+				&[data-variant="ghost"] {
+					background: transparent;
+					color: var(--sp-white);
+					border: var(--sp-border-hi);
+				}
+
+				&[data-variant="hazard"] {
+					background: var(--sp-hazard);
+					background-size: 34px 34px;
+					color: var(--sp-white);
+					font-size: 0.75rem;
+					text-shadow: 0 1px 3px oklch(0% 0 0 / 0.8);
+				}
+
+				&[data-variant="command"] {
+					background: var(--sp-command);
+					color: var(--sp-void);
+					border-color: oklch(from var(--sp-command) calc(l - 0.12) c h);
+				}
+
+				&[data-variant="medical"] {
+					background: var(--sp-medical);
+					color: var(--sp-white);
+					border-color: oklch(from var(--sp-medical) calc(l - 0.1) c h);
+				}
+
+				&[data-variant="technical"] {
+					background: var(--sp-technical);
+					color: var(--sp-white);
+					border-color: oklch(from var(--sp-technical) calc(l - 0.1) c h);
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   CARDS — control panel aesthetic
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-card {
+				background: var(--sp-deep);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius-lg);
+				overflow: hidden;
+				box-shadow: var(--sp-shadow-sm);
+				position: relative;
+				transition: transform 0.2s, box-shadow 0.2s;
+
+				&:hover {
+					transform: translateY(-3px);
+					box-shadow:
+							   var(--sp-shadow-md),
+							   0 0 0 1px oklch(40% 0.01 255);
+				}
+
+				& .card-header {
+					padding: var(--sp-sp-md) var(--sp-sp-lg);
+					background: var(--sp-panel);
+					border-block-end: var(--sp-border);
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: var(--sp-sp-md);
+				}
+
+				& .card-episode {
+					font-family: var(--sp-font-mono);
+					font-size: 0.65rem;
+					letter-spacing: 0.2em;
+					color: var(--sp-orange);
+				}
+
+				& .card-body {
+					padding: var(--sp-sp-lg);
+				}
+
+				& .card-title {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 1.25rem;
+					letter-spacing: 0.05em;
+					text-transform: uppercase;
+					color: var(--sp-white);
+					margin-block-end: var(--sp-sp-sm);
+					line-height: 1.1;
+				}
+
+				& .card-desc {
+					font-family: var(--sp-font-granby);
+					font-size: 0.9rem;
+					font-weight: 300;
+					color: var(--sp-white-muted);
+					line-height: 1.7;
+					margin-block-end: var(--sp-sp-lg);
+				}
+
+				/* Futura Black on the card top — the orange left-border accent */
+				&::before {
+					content: '';
+					position: absolute;
+					top: 0; left: 0; bottom: 0;
+					width: 3px;
+					background: var(--sp-orange);
+					box-shadow: var(--sp-glow-orange);
+				}
+			}
+
+			.sp-badge {
+				display: inline-block;
+				font-family: var(--sp-font-futura);
+				font-size: 0.62rem;
+				font-weight: 700;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+				padding: 0.2em 0.7em;
+				border-radius: 2px;
+
+				&[data-dept="command"]  { background: oklch(from var(--sp-command)  l c h / 0.18); color: var(--sp-command);  border: 1px solid oklch(from var(--sp-command)  l c h / 0.4); }
+				&[data-dept="medical"]  { background: oklch(from var(--sp-medical)  l c h / 0.15); color: var(--sp-medical);  border: 1px solid oklch(from var(--sp-medical)  l c h / 0.4); }
+				&[data-dept="technical"]{ background: oklch(from var(--sp-technical)l c h / 0.15); color: oklch(from var(--sp-technical) calc(l + 0.15) c h); border: 1px solid oklch(from var(--sp-technical) l c h / 0.4); }
+				&[data-dept="security"] { background: oklch(from var(--sp-security) l c h / 0.15); color: oklch(from var(--sp-security)  calc(l + 0.2)  c h); border: 1px solid oklch(from var(--sp-security)  l c h / 0.4); }
+				&[data-dept="neutral"]  { background: var(--sp-panel); color: var(--sp-white-dim); border: var(--sp-border); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   MISSION STATUS PANEL — backlit control surface
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-status-panel {
+				background: var(--sp-deep);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius-lg);
+				overflow: hidden;
+				box-shadow: var(--sp-shadow-md);
+
+				& .panel-head {
+					background: oklch(4% 0.01 255);
+					padding: var(--sp-sp-sm) var(--sp-sp-lg);
+					border-block-end: var(--sp-border);
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+
+					& .panel-title {
+						font-family: var(--sp-font-black);
+						font-weight: 900;
+						font-size: 0.75rem;
+						letter-spacing: 0.2em;
+						text-transform: uppercase;
+						color: var(--sp-orange);
+						text-shadow: var(--sp-glow-orange);
+					}
+
+					& .panel-clock {
+						font-family: var(--sp-font-mono);
+						font-size: 0.72rem;
+						color: var(--sp-white-dim);
+						animation: sp-blink 1s step-end infinite;
+					}
+				}
+
+				& .panel-cells {
+					display: grid;
+					grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+					gap: 1px;
+					background: oklch(15% 0.01 255);
+
+					& .cell {
+						background: var(--sp-deep);
+						padding: var(--sp-sp-md);
+						text-align: center;
+					}
+
+					& .cell-val {
+						font-family: var(--sp-font-mono);
+						font-size: 1.5rem;
+						line-height: 1;
+						color: var(--sp-white);
+						margin-block-end: 4px;
+					}
+
+					& .cell-lbl {
+						font-family: var(--sp-font-futura);
+						font-size: 0.6rem;
+						font-weight: 600;
+						letter-spacing: 0.16em;
+						text-transform: uppercase;
+						color: var(--sp-white-muted);
+					}
+
+					& .cell[data-status="warn"] .cell-val { color: var(--sp-orange); text-shadow: var(--sp-glow-orange); }
+					& .cell[data-status="ok"]   .cell-val { color: var(--sp-green);  text-shadow: 0 0 10px oklch(from var(--sp-green) l c h / 0.4); }
+					& .cell[data-status="alert"].cell-val { color: var(--sp-red);    text-shadow: 0 0 10px oklch(from var(--sp-red) l c h / 0.4); animation: sp-blink 0.6s step-end infinite; }
+				}
+
+				& .panel-foot {
+					background: oklch(6% 0.01 255);
+					border-block-start: var(--sp-border);
+					padding: var(--sp-sp-sm) var(--sp-sp-lg);
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					font-family: var(--sp-font-mono);
+					font-size: 0.62rem;
+					color: var(--sp-white-muted);
+
+					& .lights { display: flex; gap: 6px; align-items: center; }
+					& .sl { width: 7px; height: 7px; border-radius: 50%; }
+					& .sl-g { background: var(--sp-green); box-shadow: 0 0 4px var(--sp-green); }
+					& .sl-o { background: var(--sp-orange); box-shadow: 0 0 4px var(--sp-orange); animation: sp-blink 1.8s ease infinite; }
+					& .sl-r { background: var(--sp-red); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   STAT DISPLAY
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-stat {
+				background: var(--sp-deep);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius);
+				overflow: hidden;
+				box-shadow: var(--sp-shadow-sm);
+
+				& .stat-head {
+					background: var(--sp-panel);
+					border-block-end: var(--sp-border);
+					padding: var(--sp-sp-xs) var(--sp-sp-md);
+					font-family: var(--sp-font-futura);
+					font-size: 0.6rem;
+					font-weight: 600;
+					letter-spacing: 0.2em;
+					text-transform: uppercase;
+					color: var(--sp-white-muted);
+				}
+
+				& .stat-body {
+					padding: var(--sp-sp-lg) var(--sp-sp-md);
+					text-align: center;
+				}
+
+				& .stat-val {
+					font-family: var(--sp-font-mono);
+					font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+					line-height: 1;
+					color: var(--sp-white);
+					margin-block-end: 4px;
+				}
+
+				& .stat-lbl {
+					font-family: var(--sp-font-futura);
+					font-size: 0.6rem;
+					font-weight: 600;
+					letter-spacing: 0.18em;
+					text-transform: uppercase;
+					color: var(--sp-white-muted);
+				}
+
+				&[data-highlight] {
+					& .stat-head { background: var(--sp-orange); color: var(--sp-void); border-block-end-color: oklch(from var(--sp-orange) calc(l - 0.12) c h); }
+					& .stat-val  { color: var(--sp-orange); text-shadow: var(--sp-glow-orange); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   ALERTS — hazard stripe always on left
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-alert {
+				display: grid;
+				grid-template-columns: 28px 1fr;
+				border: var(--sp-border);
+				border-radius: var(--sp-radius);
+				overflow: hidden;
+				background: var(--sp-deep);
+
+				& .alert-stripe { background: var(--sp-hazard); background-size: 20px 20px; }
+
+				& .alert-body {
+					padding: var(--sp-sp-md) var(--sp-sp-lg);
+				}
+
+				& strong {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 0.85rem;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					color: var(--sp-orange);
+					text-shadow: var(--sp-glow-orange);
+					display: block;
+					margin-block-end: var(--sp-sp-xs);
+				}
+
+				& p { font-family: var(--sp-font-granby); font-weight: 300; font-size: 0.92rem; margin: 0; color: var(--sp-white-dim); }
+
+				&[data-type="critical"] {
+					border-color: var(--sp-red);
+					& .alert-stripe { background: var(--sp-red); }
+					& strong { color: var(--sp-red); text-shadow: 0 0 10px oklch(from var(--sp-red) l c h / 0.4); }
+				}
+				&[data-type="info"] {
+					border-color: var(--sp-technical);
+					& .alert-stripe { background: var(--sp-technical); }
+					& strong { color: oklch(from var(--sp-technical) calc(l + 0.2) c h); text-shadow: none; }
+				}
+				&[data-type="ok"] {
+					border-color: var(--sp-green);
+					& .alert-stripe { background: var(--sp-green); }
+					& strong { color: var(--sp-green); text-shadow: 0 0 8px oklch(from var(--sp-green) l c h / 0.4); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   CREW CARDS — department sleeve colours
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-crew {
+				background: var(--sp-deep);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius);
+				display: flex;
+				align-items: center;
+				gap: 0;
+				overflow: hidden;
+
+				& .crew-sleeve { width: 5px; flex-shrink: 0; align-self: stretch; }
+				& .crew-avatar {
+					width: 44px; height: 44px;
+					flex-shrink: 0;
+					background: var(--sp-panel);
+					border-radius: 50%;
+					border: 1px solid oklch(30% 0 0);
+					display: flex; align-items: center; justify-content: center;
+					font-size: 1.3rem;
+					margin-inline: var(--sp-sp-md);
+				}
+				& .crew-info { flex: 1; padding: var(--sp-sp-md) var(--sp-sp-md) var(--sp-sp-md) 0; }
+				& .crew-rank {
+					font-family: var(--sp-font-mono);
+					font-size: 0.6rem;
+					letter-spacing: 0.18em;
+					color: var(--sp-white-muted);
+					text-transform: uppercase;
+				}
+				& .crew-name {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 0.92rem;
+					letter-spacing: 0.06em;
+					text-transform: uppercase;
+					color: var(--sp-white);
+					margin-block: 1px;
+				}
+				& .crew-role {
+					font-family: var(--sp-font-granby);
+					font-size: 0.78rem;
+					font-weight: 300;
+					color: var(--sp-white-muted);
+				}
+
+				&[data-dept="command"]   .crew-sleeve { background: var(--sp-command); }
+				&[data-dept="medical"]   .crew-sleeve { background: var(--sp-medical); }
+				&[data-dept="technical"] .crew-sleeve { background: var(--sp-technical); }
+				&[data-dept="security"]  .crew-sleeve { background: var(--sp-security); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FORMS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-field {
+				display: flex;
+				flex-direction: column;
+				gap: var(--sp-sp-xs);
+
+				& label {
+					font-family: var(--sp-font-futura);
+					font-size: 0.65rem;
+					font-weight: 700;
+					letter-spacing: 0.2em;
+					text-transform: uppercase;
+					color: var(--sp-white-muted);
+				}
+
+				& input, & select, & textarea {
+					background: var(--sp-panel);
+					color: var(--sp-white);
+					border: var(--sp-border);
+					border-radius: var(--sp-radius);
+					padding: 0.65em 1em;
+					font-family: var(--sp-font-futura);
+					font-size: 1rem;
+					font-weight: 600;
+					outline: none;
+					transition: border-color 0.15s, box-shadow 0.15s;
+					box-shadow: inset 0 2px 4px oklch(0% 0 0 / 0.3);
+
+					&:focus {
+						border-color: var(--sp-orange);
+						box-shadow:
+									  inset 0 2px 4px oklch(0% 0 0 / 0.3),
+									  0 0 0 3px oklch(from var(--sp-orange) l c h / 0.18),
+									  var(--sp-glow-orange);
+					}
+					&::placeholder { color: var(--sp-white-muted); font-weight: 400; }
+
+					option { background: var(--sp-panel); }
+				}
+			}
+
+			.sp-segmented {
+				display: inline-flex;
+				background: var(--sp-panel);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius);
+				overflow: hidden;
+
+				& button {
+					flex: 1;
+					padding: 0.5em 1.3em;
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 0.78rem;
+					letter-spacing: 0.12em;
+					text-transform: uppercase;
+					border: none;
+					border-inline-end: var(--sp-border);
+					cursor: pointer;
+					background: transparent;
+					color: var(--sp-white-muted);
+					transition: all 0.12s;
+
+					&:last-child { border-inline-end: none; }
+
+					&[data-active] {
+						background: var(--sp-orange);
+						color: var(--sp-void);
+						text-shadow: none;
+						box-shadow: var(--sp-glow-orange);
+					}
+
+					&:hover:not([data-active]) { background: var(--sp-surface); color: var(--sp-white); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   ROLLING CREDITS — Granby-style block
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sp-credits {
+				background: var(--sp-void);
+				border: var(--sp-border);
+				border-radius: var(--sp-radius-lg);
+				padding: var(--sp-sp-xl) var(--sp-sp-2xl);
+				overflow: hidden;
+				position: relative;
+				text-align: center;
+
+				&::before {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background-image:
+							radial-gradient(1px 1px at 20% 20%, oklch(90% 0 0 / 0.3) 0%, transparent),
+							 radial-gradient(1px 1px at 60% 50%, oklch(90% 0 0 / 0.2) 0%, transparent),
+							 radial-gradient(1px 1px at 80% 80%, oklch(90% 0 0 / 0.3) 0%, transparent),
+							 radial-gradient(1px 1px at 40% 70%, oklch(90% 0 0 / 0.2) 0%, transparent);
+					pointer-events: none;
+				}
+
+				& .credits-role {
+					font-family: var(--sp-font-granby);
+					font-size: 0.7rem;
+					font-weight: 300;
+					letter-spacing: 0.25em;
+					text-transform: uppercase;
+					color: var(--sp-white-muted);
+					margin-block-end: var(--sp-sp-xs);
+				}
+
+				& .credits-name {
+					font-family: var(--sp-font-granby);
+					font-size: clamp(1rem, 2.5vw, 1.6rem);
+					font-weight: 700;
+					letter-spacing: 0.12em;
+					text-transform: uppercase;
+					color: var(--sp-white);
+					margin-block-end: var(--sp-sp-lg);
+				}
+
+				& hr {
+					border: none;
+					border-block-start: 1px solid oklch(20% 0 0);
+					margin-block: var(--sp-sp-lg);
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FOOTER
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sp-footer {
+				background: oklch(4% 0.01 255);
+				border-block-start: var(--sp-border);
+				padding-block: var(--sp-sp-xl);
+
+				& .foot-inner {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					flex-wrap: wrap;
+					gap: var(--sp-sp-xl);
+				}
+
+				& .foot-logo {
+					font-family: var(--sp-font-black);
+					font-weight: 900;
+					font-size: 1rem;
+					letter-spacing: 0.08em;
+					text-transform: uppercase;
+					color: var(--sp-white);
+
+					& span { color: var(--sp-orange); text-shadow: var(--sp-glow-orange); }
+				}
+
+				& p {
+					font-family: var(--sp-font-granby);
+					font-weight: 300;
+					font-size: 0.72rem;
+					letter-spacing: 0.1em;
+					color: var(--sp-white-muted);
+					margin: 0;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESPONSIVE
+		────────────────────────────────────────────────────────── */
+		@layer responsive {
+			@media (max-width: 640px) {
+				.sp-container { padding-inline: var(--sp-sp-md); }
+				.sp-nav .nav-links { display: none; }
+				.sp-nav .nav-signal { display: none; }
+				.sp-episode-card { aspect-ratio: unset; min-height: 100px; }
+				.sp-episode-card .ep-title { font-size: 1.4rem; }
+			}
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sp-nav" aria-label="Main navigation">
+	<div class="sp-container">
+		<div class="nav-inner">
+			<a href="#" class="nav-logo">
+				SPACE<span class="logo-year">: 1999</span>
+			</a>
+			<ul class="nav-links">
+				<li><a href="#palette">Palette</a></li>
+				<li><a href="#type">Type</a></li>
+				<li><a href="#cards">Episode Cards</a></li>
+				<li><a href="#components">Components</a></li>
+				<li><a href="#tokens">Tokens</a></li>
+			</ul>
+			<div class="nav-signal">
+				<span class="dot" aria-hidden="true"></span>
+				ALPHA UPLINK ACTIVE
+			</div>
+		</div>
+	</div>
+</nav>
+
+<!-- HERO -->
+<header class="sp-hero sp-starfield">
+	<p class="sp-hero-eyebrow">Vanilla Breeze — Theme System</p>
+
+	<div class="sp-title-perspective" aria-label="Space 1999">
+		<span class="sp-title-space" aria-hidden="true">SPACE</span>
+		<div class="sp-title-sub" aria-hidden="true">
+			<span class="sp-title-colon">:</span>
+			<span class="sp-title-year">1999</span>
+		</div>
+	</div>
+
+	<p class="sp-hero-desc">
+		A Vanilla Breeze theme drawn from the graphic language of Space:&nbsp;1999 (ITV/RAI, 1975–77). Futura Black's geometric weight, the orange "1999" callout, dramatic perspective type, black voids, and Granby rolling credits — the show's actual visual toolkit.
+	</p>
+
+	<div class="sp-flex" style="justify-content: center; position: relative; z-index: 1;">
+		<button class="sp-btn" data-variant="primary">Launch Eagle</button>
+		<button class="sp-btn" data-variant="black">Mission Brief</button>
+		<button class="sp-btn" data-variant="ghost">Read Manual</button>
+	</div>
+</header>
+
+<div class="sp-hazard-band" aria-hidden="true"></div>
+
+<!-- PALETTE -->
+<section class="sp-section" id="palette">
+	<div class="sp-container">
+		<div class="sp-section-header">
+			<span class="sp-ep-number">Section 01</span>
+			<h2>Colour Palette</h2>
+			<p>Space black backgrounds. White title-card type. Orange reserved for "1999" — the year designation and critical callouts. Department sleeve colours for crew function.</p>
+		</div>
+
+		<div class="sp-swatch-grid">
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-void); border: 1px solid oklch(20% 0 0);"></div>
+				<div class="meta"><span class="swatch-name">Void</span><span class="swatch-var">--sp-void</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-deep);"></div>
+				<div class="meta"><span class="swatch-name">Deep</span><span class="swatch-var">--sp-deep</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-panel);"></div>
+				<div class="meta"><span class="swatch-name">Panel</span><span class="swatch-var">--sp-panel</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-surface);"></div>
+				<div class="meta"><span class="swatch-name">Surface</span><span class="swatch-var">--sp-surface</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-white);"></div>
+				<div class="meta"><span class="swatch-name">White</span><span class="swatch-var">--sp-white</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-orange); box-shadow: var(--sp-glow-orange);"></div>
+				<div class="meta"><span class="swatch-name">Orange</span><span class="swatch-var">--sp-orange</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-command);"></div>
+				<div class="meta"><span class="swatch-name">Command</span><span class="swatch-var">--sp-command</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-medical);"></div>
+				<div class="meta"><span class="swatch-name">Medical</span><span class="swatch-var">--sp-medical</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-technical);"></div>
+				<div class="meta"><span class="swatch-name">Technical</span><span class="swatch-var">--sp-technical</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-green); box-shadow: 0 0 8px oklch(from var(--sp-green) l c h / 0.4);"></div>
+				<div class="meta"><span class="swatch-name">OK</span><span class="swatch-var">--sp-green</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-red);"></div>
+				<div class="meta"><span class="swatch-name">Alert</span><span class="swatch-var">--sp-red</span></div>
+			</div>
+			<div class="sp-swatch">
+				<div class="chip" style="background: var(--sp-hazard); background-size: 20px 20px;"></div>
+				<div class="meta"><span class="swatch-name">Hazard</span><span class="swatch-var">--sp-hazard</span></div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<hr class="sp-rule" />
+
+<!-- TYPOGRAPHY -->
+<section class="sp-section" id="type">
+	<div class="sp-container">
+		<div class="sp-section-header">
+			<span class="sp-ep-number">Section 02</span>
+			<h2>Typography</h2>
+			<p>Futura Black's weight approximated via Nunito 900. Futura regular via Josefin Sans. Granby's rounded warmth via Comfortaa for credits.</p>
+		</div>
+
+		<div style="display: grid; gap: var(--sp-sp-2xl);">
+
+			<div>
+				<p style="font-family: var(--sp-font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Futura Black → Nunito 900 — dominant headline weight</p>
+				<p style="font-family: var(--sp-font-black); font-weight: 900; font-size: clamp(2.5rem, 7vw, 6rem); letter-spacing: 0.05em; text-transform: uppercase; line-height: 0.95; color: var(--sp-white);">MOONBASE<br>ALPHA</p>
+			</div>
+
+			<div>
+				<p style="font-family: var(--sp-font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Futura Black + orange "year" treatment — the show's title graphic</p>
+				<p style="font-family: var(--sp-font-black); font-weight: 900; font-size: clamp(2rem, 5vw, 4.5rem); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1;">
+					SPACE<span style="color: var(--sp-orange); text-shadow: var(--sp-glow-orange);">: 1999</span>
+				</p>
+			</div>
+
+			<div>
+				<p style="font-family: var(--sp-font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Futura → Josefin Sans — episode credits and body</p>
+				<p style="font-family: var(--sp-font-futura); font-size: clamp(1rem, 2.5vw, 1.5rem); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sp-white-dim);">WRITTEN BY CHRISTOPHER PENFOLD</p>
+				<p style="font-family: var(--sp-font-futura); font-size: clamp(1rem, 2.5vw, 1.5rem); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sp-white-dim);">DIRECTED BY RAY AUSTIN</p>
+			</div>
+
+			<div>
+				<p style="font-family: var(--sp-font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Granby → Comfortaa — closing credits rolling type</p>
+				<p style="font-family: var(--sp-font-granby); font-size: clamp(1rem, 2.5vw, 1.6rem); font-weight: 700; letter-spacing: 0.1em; color: var(--sp-white);">MARTIN LANDAU</p>
+				<p style="font-family: var(--sp-font-granby); font-size: clamp(0.9rem, 2vw, 1.3rem); font-weight: 300; letter-spacing: 0.12em; color: var(--sp-white-dim);">Commander John Koenig</p>
+			</div>
+
+			<div>
+				<p style="font-family: var(--sp-font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Share Tech Mono — instrument readouts</p>
+				<p style="font-family: var(--sp-font-mono); font-size: 1.3rem; color: var(--sp-green); letter-spacing: 0.08em; text-shadow: 0 0 10px oklch(from var(--sp-green) l c h / 0.5);">
+					SYS.STATUS: NOMINAL · LIFE.SUPPORT: 100% · VELOCITY: 0.00042c
+				</p>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+<div class="sp-hazard-band-sm" aria-hidden="true"></div>
+
+<!-- EPISODE TITLE CARDS -->
+<section class="sp-section" id="cards">
+	<div class="sp-container">
+		<div class="sp-section-header">
+			<span class="sp-ep-number">Section 03</span>
+			<h2>Episode Title Cards</h2>
+			<p>The most iconic graphic moment of the show: massive Futura Black type on pure black, starfield backdrop, orange episode number. This component is the spiritual core of this theme.</p>
+		</div>
+
+		<div style="display: grid; gap: var(--sp-sp-md);">
+			<div class="sp-episode-card" data-ep>
+				<span class="ep-number">S01 · E01</span>
+				<span class="ep-title">Breakaway</span>
+			</div>
+			<div class="sp-episode-card" data-ep>
+				<span class="ep-number">S01 · E04</span>
+				<span class="ep-title">War Games</span>
+			</div>
+			<div class="sp-episode-card" data-ep>
+				<span class="ep-number">S01 · E08</span>
+				<span class="ep-title">Guardian of Piri</span>
+			</div>
+		</div>
+	</div>
+</section>
+
+<hr class="sp-rule" />
+
+<!-- COMPONENTS -->
+<section class="sp-section" id="components">
+	<div class="sp-container">
+		<div class="sp-section-header">
+			<span class="sp-ep-number">Section 04</span>
+			<h2>Components</h2>
+		</div>
+
+		<!-- Buttons -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Buttons</p>
+			<div class="sp-flex">
+				<button class="sp-btn" data-variant="primary">Primary</button>
+				<button class="sp-btn" data-variant="black">Black Panel</button>
+				<button class="sp-btn" data-variant="ghost">Ghost</button>
+				<button class="sp-btn" data-variant="hazard">⚠ Hazard</button>
+			</div>
+			<div class="sp-flex" style="margin-block-start: var(--sp-sp-md);">
+				<button class="sp-btn" data-variant="command">Command</button>
+				<button class="sp-btn" data-variant="medical">Medical</button>
+				<button class="sp-btn" data-variant="technical">Technical</button>
+			</div>
+		</div>
+
+		<!-- Badges -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Department Badges</p>
+			<div class="sp-flex">
+				<span class="sp-badge" data-dept="command">Command</span>
+				<span class="sp-badge" data-dept="medical">Medical</span>
+				<span class="sp-badge" data-dept="technical">Technical</span>
+				<span class="sp-badge" data-dept="security">Security</span>
+				<span class="sp-badge" data-dept="neutral">Unassigned</span>
+			</div>
+		</div>
+
+		<!-- Mission panel -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Mission Status Panel</p>
+			<div class="sp-status-panel">
+				<div class="panel-head">
+					<span class="panel-title">Moonbase Alpha — Main Mission</span>
+					<span class="panel-clock" id="sp-clock">--:--:--</span>
+				</div>
+				<div class="panel-cells">
+					<div class="cell" data-status="ok"><div class="cell-val">100%</div><div class="cell-lbl">Life Support</div></div>
+					<div class="cell" data-status="ok"><div class="cell-val">312</div><div class="cell-lbl">Crew Active</div></div>
+					<div class="cell" data-status="warn"><div class="cell-val">0.42c</div><div class="cell-lbl">Velocity</div></div>
+					<div class="cell" data-status="ok"><div class="cell-val">7</div><div class="cell-lbl">Eagles Ready</div></div>
+					<div class="cell" data-status="alert"><div class="cell-val">LOSS</div><div class="cell-lbl">Earth Contact</div></div>
+				</div>
+				<div class="panel-foot">
+					<div class="lights" aria-hidden="true">
+						<span class="sl sl-g"></span>
+						<span class="sl sl-o"></span>
+						<span class="sl sl-r"></span>
+					</div>
+					<span>LAST SYNC: 13 SEPT 1999 / 09:02:14</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Cards -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Cards</p>
+			<div class="sp-grid">
+				<article class="sp-card">
+					<div class="card-header"><span class="card-episode">Framework</span><span class="sp-badge" data-dept="command">Core</span></div>
+					<div class="card-body">
+						<h3 class="card-title">Vanilla Breeze</h3>
+						<p class="card-desc">HTML-first, progressive enhancement. No build step, no lock-in. The platform is the framework — as reliable as Alpha's life support.</p>
+						<div class="sp-flex" style="gap: var(--sp-sp-xs);"><span class="sp-badge" data-dept="neutral">HTML</span><span class="sp-badge" data-dept="neutral">CSS</span></div>
+					</div>
+				</article>
+				<article class="sp-card">
+					<div class="card-header"><span class="card-episode">Hypermedia</span><span class="sp-badge" data-dept="technical">Beta</span></div>
+					<div class="card-body">
+						<h3 class="card-title">html-star</h3>
+						<p class="card-desc">Server-driven UI without JavaScript overhead. Declarative hypermedia — mission-critical reliability, Eagle-transporter efficiency.</p>
+						<div class="sp-flex" style="gap: var(--sp-sp-xs);"><span class="sp-badge" data-dept="neutral">Declarative</span></div>
+					</div>
+				</article>
+				<article class="sp-card">
+					<div class="card-header"><span class="card-episode">Reactivity</span><span class="sp-badge" data-dept="medical">Active</span></div>
+					<div class="card-body">
+						<h3 class="card-title">Montane</h3>
+						<p class="card-desc">Client-side reactivity on pure web standards. Lightweight — like Dr Russell's Medical Centre: precise, minimal, zero waste.</p>
+						<div class="sp-flex" style="gap: var(--sp-sp-xs);"><span class="sp-badge" data-dept="neutral">Reactive</span></div>
+					</div>
+				</article>
+			</div>
+		</div>
+
+		<!-- Stats -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Stats</p>
+			<div class="sp-grid">
+				<div class="sp-stat" data-highlight><div class="stat-head">Components</div><div class="stat-body"><div class="stat-val">47</div><div class="stat-lbl">Total</div></div></div>
+				<div class="sp-stat"><div class="stat-head">JS Required</div><div class="stat-body"><div class="stat-val">0<span style="font-size:0.5em;vertical-align:top;line-height:3.5;color:var(--sp-white-muted);">KB</span></div><div class="stat-lbl">Payload</div></div></div>
+				<div class="sp-stat"><div class="stat-head">Lighthouse</div><div class="stat-body"><div class="stat-val">100</div><div class="stat-lbl">Score</div></div></div>
+				<div class="sp-stat"><div class="stat-head">Themes</div><div class="stat-body"><div class="stat-val">∞</div><div class="stat-lbl">Available</div></div></div>
+			</div>
+		</div>
+
+		<!-- Alerts -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Alerts</p>
+			<div style="display: grid; gap: var(--sp-sp-md);">
+				<div class="sp-alert"><div class="alert-stripe"></div><div class="alert-body"><strong>Eagle Launch Hold</strong><p>All Eagles grounded. Launch window in 04:22:00. Standby for Commander Koenig's authorization.</p></div></div>
+				<div class="sp-alert" data-type="critical"><div class="alert-stripe"></div><div class="alert-body"><strong>Red Alert</strong><p>Unidentified vessel on intercept course. All personnel to emergency stations. This is not a drill.</p></div></div>
+				<div class="sp-alert" data-type="info"><div class="alert-stripe"></div><div class="alert-body"><strong>Technical Briefing</strong><p>Professor Bergman's analysis of the gravity field anomaly is complete. Report filed at 14:30 Alpha time.</p></div></div>
+				<div class="sp-alert" data-type="ok"><div class="alert-stripe"></div><div class="alert-body"><strong>Systems Nominal</strong><p>SP1999 theme v2 loaded. Corrected typography, dark cinematic aesthetic, perspective type. Moonbase Alpha standing by.</p></div></div>
+			</div>
+		</div>
+
+		<!-- Crew -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Crew Roster — Department Colours</p>
+			<div class="sp-grid-2">
+				<div class="sp-crew" data-dept="command"><div class="crew-sleeve"></div><div class="crew-avatar">👨‍✈️</div><div class="crew-info"><div class="crew-rank">Commander</div><div class="crew-name">John Koenig</div><div class="crew-role">Moonbase Alpha Commander</div></div></div>
+				<div class="sp-crew" data-dept="medical"><div class="crew-sleeve"></div><div class="crew-avatar">👩‍⚕️</div><div class="crew-info"><div class="crew-rank">Dr</div><div class="crew-name">Helena Russell</div><div class="crew-role">Chief Medical Officer</div></div></div>
+				<div class="sp-crew" data-dept="technical"><div class="crew-sleeve"></div><div class="crew-avatar">👨‍🔬</div><div class="crew-info"><div class="crew-rank">Professor</div><div class="crew-name">Victor Bergman</div><div class="crew-role">Chief Science Officer</div></div></div>
+				<div class="sp-crew" data-dept="security"><div class="crew-sleeve"></div><div class="crew-avatar">🛡️</div><div class="crew-info"><div class="crew-rank">Captain</div><div class="crew-name">Tony Verdeschi</div><div class="crew-role">Head of Security</div></div></div>
+			</div>
+		</div>
+
+		<!-- Rolling credits block -->
+		<div style="margin-block-end: var(--sp-sp-2xl);">
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Closing Credits (Granby → Comfortaa)</p>
+			<div class="sp-credits sp-starfield">
+				<div class="credits-role">Starring</div>
+				<div class="credits-name">Martin Landau</div>
+				<hr />
+				<div class="credits-role">And</div>
+				<div class="credits-name">Barbara Bain</div>
+				<hr />
+				<div class="credits-role">With</div>
+				<div class="credits-name">Barry Morse</div>
+				<hr />
+				<div class="credits-role" style="margin-block-start: var(--sp-sp-lg);">Executive Producer</div>
+				<div class="credits-name">Gerry Anderson</div>
+				<div class="credits-role">Producer</div>
+				<div class="credits-name">Sylvia Anderson</div>
+			</div>
+		</div>
+
+		<!-- Forms -->
+		<div>
+			<p style="font-family: var(--sp-font-futura); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sp-white-muted); margin-block-end: var(--sp-sp-md);">Form Elements</p>
+			<div class="sp-grid-2" style="max-width: 600px;">
+				<div class="sp-field"><label for="sp-crew-id">Crew ID</label><input type="text" id="sp-crew-id" placeholder="e.g. KOENIG-001" /></div>
+				<div class="sp-field">
+					<label for="sp-dept">Department</label>
+					<select id="sp-dept">
+						<option>Command</option><option>Medical</option>
+						<option>Technical Research</option><option>Security</option>
+					</select>
+				</div>
+			</div>
+			<div style="margin-block-start: var(--sp-sp-md);">
+				<div class="sp-segmented" role="group" aria-label="Eagle status">
+					<button data-active>Ready</button>
+					<button>Standby</button>
+					<button>Grounded</button>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div class="sp-hazard-band" aria-hidden="true"></div>
+
+<!-- TOKEN REFERENCE -->
+<section class="sp-section" id="tokens">
+	<div class="sp-container">
+		<div class="sp-section-header">
+			<span class="sp-ep-number">Section 05</span>
+			<h2>CSS Tokens</h2>
+			<p>Drop <code>sp1999-theme.css</code> into Vanilla Breeze.</p>
+		</div>
+		<div class="sp-grid-2">
+        <pre style="background:var(--sp-panel);border:var(--sp-border);border-radius:var(--sp-radius-lg);padding:var(--sp-sp-lg);font-family:var(--sp-font-mono);font-size:0.78rem;line-height:1.9;overflow-x:auto;color:var(--sp-white-muted);"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(45% 0 0);">/* Surfaces */</span>
+<span style="color:var(--sp-white-dim);">--sp-void</span>
+<span style="color:var(--sp-white-dim);">--sp-deep</span>
+<span style="color:var(--sp-white-dim);">--sp-panel</span>
+<span style="color:var(--sp-white-dim);">--sp-surface</span>
+<span style="color:var(--sp-white);">--sp-white</span>
+<span style="color:var(--sp-white-dim);">--sp-white-dim</span>
+
+<span style="color:oklch(45% 0 0);">/* Accent */</span>
+<span style="color:var(--sp-orange);">--sp-orange</span>       ← "1999"
+<span style="color:var(--sp-orange);">--sp-orange-hi</span>
+<span style="color:var(--sp-orange);">--sp-orange-glow</span>
+
+<span style="color:oklch(45% 0 0);">/* Departments */</span>
+<span style="color:var(--sp-command);">--sp-command</span>
+<span style="color:var(--sp-medical);">--sp-medical</span>
+<span style="color:oklch(from var(--sp-technical) calc(l + 0.2) c h);">--sp-technical</span>
+<span style="color:oklch(from var(--sp-security) calc(l + 0.2) c h);">--sp-security</span></code></pre>
+			<pre style="background:var(--sp-panel);border:var(--sp-border);border-radius:var(--sp-radius-lg);padding:var(--sp-sp-lg);font-family:var(--sp-font-mono);font-size:0.78rem;line-height:1.9;overflow-x:auto;color:var(--sp-white-muted);"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(45% 0 0);">/* Patterns */</span>
+<span style="color:var(--sp-orange);">--sp-hazard</span>
+
+<span style="color:oklch(45% 0 0);">/* Effects */</span>
+--sp-shadow-sm
+--sp-shadow-md
+--sp-glow-orange
+--sp-glow-white
+
+<span style="color:oklch(45% 0 0);">/* Fonts */</span>
+--sp-font-black
+  → Nunito 900
+    (≈ Futura Black)
+--sp-font-futura
+  → Josefin Sans
+    (≈ Futura)
+--sp-font-granby
+  → Comfortaa
+    (≈ Granby)
+--sp-font-mono
+  → Share Tech Mono</code></pre>
+		</div>
+	</div>
+</section>
+
+<div class="sp-hazard-band" aria-hidden="true"></div>
+
+<!-- FOOTER -->
+<footer class="sp-footer">
+	<div class="sp-container">
+		<div class="foot-inner">
+			<div>
+				<div class="foot-logo">SPACE<span>: 1999</span> THEME</div>
+				<p style="margin-block-start: 0.4rem;">VANILLA BREEZE THEME SYSTEM · CSS CUSTOM PROPERTIES</p>
+			</div>
+			<div>
+				<p>ITV / RAI / GROUP THREE PRODUCTIONS (1975–1977)</p>
+				<p style="opacity: 0.5; margin-block-start: 0.3rem;">EDUCATIONAL &amp; NOSTALGIC REFERENCE ONLY</p>
+			</div>
+		</div>
+	</div>
+</footer>
+
+<script>
+	// Live clock
+	function tick() {
+		const el = document.getElementById('sp-clock');
+		if (!el) return;
+		const n = new Date();
+		el.textContent = [n.getHours(), n.getMinutes(), n.getSeconds()]
+			.map(v => String(v).padStart(2, '0')).join(':');
+	}
+	tick();
+	setInterval(tick, 1000);
+
+	// Segmented controls
+	document.querySelectorAll('.sp-segmented').forEach(seg => {
+		seg.querySelectorAll('button').forEach(btn => {
+			btn.addEventListener('click', () => {
+				seg.querySelectorAll('button').forEach(b => b.removeAttribute('data-active'));
+				btn.setAttribute('data-active', '');
+			});
+		});
+	});
+</script>
+
+</body>
+</html>

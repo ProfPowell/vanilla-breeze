@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>hgroup Patterns — Vanilla Breeze</title>
+  <style>
+    /* =============================================
+       TOKENS
+    ============================================= */
+    :root {
+      --font-sans: system-ui, -apple-system, sans-serif;
+      --font-serif: "Iowan Old Style", Palatino, Georgia, serif;
+
+      --font-size-xs:  0.75rem;
+      --font-size-sm:  0.875rem;
+      --font-size-md:  1rem;
+      --font-size-lg:  1.25rem;
+      --font-size-xl:  1.563rem;
+      --font-size-2xl: 1.953rem;
+      --font-size-3xl: 2.441rem;
+      --font-size-4xl: 3.052rem;
+
+      --font-weight-normal:   400;
+      --font-weight-medium:   500;
+      --font-weight-semibold: 600;
+      --font-weight-bold:     700;
+
+      --line-height-tight:   1.2;
+      --line-height-normal:  1.5;
+      --line-height-relaxed: 1.75;
+
+      --letter-spacing-wide:   0.05em;
+      --letter-spacing-wider:  0.1em;
+      --letter-spacing-tight: -0.02em;
+
+      --spacing-xs:  0.25rem;
+      --spacing-sm:  0.5rem;
+      --spacing-md:  1rem;
+      --spacing-lg:  1.5rem;
+      --spacing-xl:  2rem;
+      --spacing-2xl: 3rem;
+
+      --text:         oklch(15% 0.01 260);
+      --text-muted:   oklch(45% 0.02 260);
+      --text-subtle:  oklch(60% 0.02 260);
+      --surface:      oklch(98% 0.005 260);
+      --surface-alt:  oklch(94% 0.01 260);
+      --border:       oklch(85% 0.01 260);
+      --accent:       oklch(50% 0.2 260);
+      --accent-muted: oklch(92% 0.05 260);
+
+      color-scheme: light dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text:         oklch(93% 0.01 260);
+        --text-muted:   oklch(68% 0.02 260);
+        --text-subtle:  oklch(52% 0.02 260);
+        --surface:      oklch(14% 0.01 260);
+        --surface-alt:  oklch(20% 0.01 260);
+        --border:       oklch(30% 0.01 260);
+        --accent:       oklch(72% 0.18 260);
+        --accent-muted: oklch(22% 0.08 260);
+      }
+    }
+
+    /* =============================================
+       BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-md);
+      line-height: var(--line-height-normal);
+      color: var(--text);
+      background: var(--surface);
+      margin: 0;
+      padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    main {
+      max-inline-size: 72ch;
+      margin-inline: auto;
+    }
+
+    h1 {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      text-wrap: balance;
+      margin-block: 0 var(--spacing-2xl);
+    }
+
+    /* Demo separators */
+    .demo {
+      border-block-start: 1px solid var(--border);
+      padding-block: var(--spacing-2xl);
+    }
+
+    .demo-label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wider);
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-block-end: var(--spacing-lg);
+    }
+
+    hr { display: none; }
+
+    /* =============================================
+       PATTERN 1 — BASE hgroup
+       No classes. Pure element styling.
+       h + p treated as subtitle automatically.
+    ============================================= */
+    hgroup {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    hgroup h1,
+    hgroup h2,
+    hgroup h3,
+    hgroup h4 {
+      margin: 0;
+      text-wrap: balance;
+      line-height: var(--line-height-tight);
+    }
+
+    /* The subtitle <p> — always last meaningful child */
+    hgroup > p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-normal);
+      text-wrap: pretty;
+      max-inline-size: 55ch;
+    }
+
+    /* =============================================
+       PATTERN 2 — EYEBROW
+       hgroup with p:first-child before the heading.
+       Eyebrow = label above heading.
+    ============================================= */
+    hgroup.eyebrow > p:first-child {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wider);
+      text-transform: uppercase;
+      color: var(--accent);
+      order: -1; /* enforce visual order regardless of DOM */
+    }
+
+    /* When eyebrow is present, subtitle gets normal muted treatment */
+    hgroup.eyebrow > p:last-child:not(:first-child) {
+      font-size: var(--font-size-lg);
+      color: var(--text-muted);
+    }
+
+    /* =============================================
+       PATTERN 3 — CENTERED (hero / section header)
+       data-align="center" on hgroup
+    ============================================= */
+    hgroup[data-align="center"] {
+      align-items: center;
+      text-align: center;
+    }
+
+    hgroup[data-align="center"] > p {
+      margin-inline: auto;
+    }
+
+    /* =============================================
+       PATTERN 4 — ARTICLE BYLINE
+       hgroup with time + author metadata in <p>
+    ============================================= */
+    hgroup.byline {
+      gap: var(--spacing-sm);
+    }
+
+    hgroup.byline > p {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--spacing-xs) var(--spacing-md);
+      font-size: var(--font-size-sm);
+      color: var(--text-subtle);
+    }
+
+    hgroup.byline > p time {
+      font-variant-numeric: tabular-nums;
+    }
+
+    hgroup.byline > p [rel="author"] {
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    hgroup.byline > p [rel="author"]:hover {
+      color: var(--accent);
+    }
+
+    /* Separator dot between byline items */
+    hgroup.byline > p > span + span::before {
+      content: "·";
+      margin-inline-end: var(--spacing-md);
+      color: var(--border);
+    }
+
+    /* =============================================
+       PATTERN 5 — SECTION HEADER (bordered)
+       Large feature section intro, with bottom rule.
+    ============================================= */
+    hgroup.section-header {
+      padding-block-end: var(--spacing-lg);
+      border-block-end: 1px solid var(--border);
+      margin-block-end: var(--spacing-xl);
+      gap: var(--spacing-sm);
+    }
+
+    hgroup.section-header > h2 {
+      font-size: var(--font-size-3xl);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+
+    hgroup.section-header > p {
+      font-size: var(--font-size-lg);
+      max-inline-size: 60ch;
+    }
+
+    /* =============================================
+       PATTERN 6 — DISPLAY / HERO
+       Very large. Fluid type. Accent subtitle.
+    ============================================= */
+    hgroup.display {
+      gap: var(--spacing-md);
+    }
+
+    hgroup.display > h1 {
+      font-size: clamp(var(--font-size-3xl), 5vw + 1rem, var(--font-size-4xl));
+      letter-spacing: var(--letter-spacing-tight);
+      font-weight: var(--font-weight-bold);
+    }
+
+    hgroup.display > p {
+      font-size: clamp(var(--font-size-md), 1.5vw + 0.75rem, var(--font-size-xl));
+      color: var(--text-muted);
+      max-inline-size: 50ch;
+    }
+
+    /* Optional accent rule below display hgroup */
+    hgroup.display::after {
+      content: "";
+      display: block;
+      inline-size: 3rem;
+      block-size: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-block-start: var(--spacing-sm);
+    }
+
+    hgroup.display[data-align="center"]::after {
+      margin-inline: auto;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>hgroup Patterns — Vanilla Breeze</h1>
+
+    <!-- ==========================================
+         PATTERN 1: Base — no classes
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 1 — Base (no classes)</p>
+      <hgroup>
+        <h2>Progressive Enhancement</h2>
+        <p>Building resilient interfaces that work for everyone, regardless of capability or connection.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 2a: Eyebrow — label before heading
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 2a — Eyebrow (label + heading)</p>
+      <hgroup class="eyebrow">
+        <p>Core Concepts</p>
+        <h2>The Platform is the Framework</h2>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 2b: Eyebrow + subtitle
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 2b — Eyebrow + heading + subtitle</p>
+      <hgroup class="eyebrow">
+        <p>Release Notes</p>
+        <h2>Vanilla Breeze 2.0</h2>
+        <p>A complete overhaul of the theming system, new component primitives, and full dark mode support.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 3: Centered (hero / section intro)
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 3 — Centered (data-align)</p>
+      <hgroup data-align="center">
+        <h2>Why Web Standards</h2>
+        <p>Standards outlive frameworks. Writing HTML that works today also works in ten years.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 3b: Centered eyebrow
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 3b — Centered eyebrow</p>
+      <hgroup class="eyebrow" data-align="center">
+        <p>Features</p>
+        <h2>Everything You Need</h2>
+        <p>A thoughtfully scoped set of primitives, patterns, and conventions—nothing more.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 4: Article byline
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 4 — Article byline</p>
+      <hgroup class="byline">
+        <h2>Understanding the Cascade</h2>
+        <p>
+          <span><a href="#" rel="author">Thomas Powell</a></span>
+          <span><time datetime="2026-03-06">March 6, 2026</time></span>
+          <span>8 min read</span>
+        </p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 5: Section header with border
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 5 — Section header</p>
+      <hgroup class="section-header">
+        <h2>Component Library</h2>
+        <p>Semantic, composable HTML components styled with modern CSS—zero JavaScript by default.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 6: Display / Hero
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 6 — Display / Hero</p>
+      <hgroup class="display">
+        <h1>HTML is the product.</h1>
+        <p>Vanilla Breeze is a CSS-first framework built on the assumption that great HTML is already halfway there.</p>
+      </hgroup>
+    </section>
+
+    <!-- ==========================================
+         PATTERN 6b: Display centered
+    =========================================== -->
+    <section class="demo">
+      <p class="demo-label">Pattern 6b — Display centered</p>
+      <hgroup class="display" data-align="center">
+        <h1>Start with the platform.</h1>
+        <p>Modern CSS and HTML have quietly solved most of what frameworks were invented to handle.</p>
+      </hgroup>
+    </section>
+
+  </main>
+</body>
+</html>

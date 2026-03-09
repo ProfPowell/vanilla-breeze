@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Supergraphics Theme — Vanilla Breeze</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<!--
+	  Supergraphics typography:
+	  • "Big Shoulders Display" 900 — compressed grotesque matching the
+		Helvetica Bold Condensed used in Sea Ranch signage and 1960s
+		environmental graphics at architectural scale
+	  • "Barlow" 400/600 — clean grotesque body, Swiss influenced
+	  • "Space Mono" — data / code contexts
+	-->
+	<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+	<style>
+
+		/* ============================================================
+		   SUPERGRAPHICS THEME — Vanilla Breeze
+
+		   Movement: Supergraphics, c. 1966–1975.
+		   Barbara Stauffacher Solomon (Sea Ranch, 1966), Charles Moore,
+		   Lawrence Halprin. Environmental graphics at architectural scale.
+
+		   The concept: geometry so large it cannot be contained.
+		   Circles whose radius exceeds the room. Type that fills a wall.
+		   Primary colour on white. Swiss grid blown to the scale of a building.
+
+		   CSS techniques that make this theme:
+		   • overflow: visible — shapes escape their containers intentionally
+		   • clip-path — giant arcs cropped at viewport / section edges
+		   • vw / vh / vmin units — shapes scaled to the screen, not the text
+		   • position: absolute with negative offsets — geometry breaks boxes
+		   • mix-blend-mode: multiply — overlapping primaries create secondaries
+		   • @property + animation — shapes that grow and move on scroll
+		============================================================ */
+
+		/* ──────────────────────────────────────────────────────────
+		   TOKENS
+		────────────────────────────────────────────────────────── */
+		@layer tokens {
+			:root {
+				/* Pure primaries — Supergraphics never uses tints or shades */
+				--sg-red:    oklch(52% 0.26 25);
+				--sg-blue:   oklch(42% 0.24 260);
+				--sg-yellow: oklch(85% 0.19 98);
+				--sg-black:  oklch(10% 0.006 240);
+				--sg-white:  oklch(99% 0.002 90);
+
+				/* Warm white — the Sea Ranch interior wall */
+				--sg-wall:   oklch(97% 0.008 80);
+
+				/* Secondaries via mix (no tints) */
+				--sg-orange: oklch(68% 0.22 50);  /* red + yellow zone */
+				--sg-green:  oklch(56% 0.18 155); /* blue + yellow zone */
+				--sg-violet: oklch(42% 0.22 300); /* red + blue zone */
+
+				/* Typography */
+				--sg-font-display: 'Big Shoulders Display', 'Helvetica Neue', 'Arial', sans-serif;
+				--sg-font-body:    'Barlow', 'Helvetica', 'Arial', sans-serif;
+				--sg-font-mono:    'Space Mono', 'Courier New', monospace;
+
+				/* Spacing — generous, like architectural scale */
+				--sg-sp-xs:  0.25rem;
+				--sg-sp-sm:  0.5rem;
+				--sg-sp-md:  1rem;
+				--sg-sp-lg:  2rem;
+				--sg-sp-xl:  4rem;
+				--sg-sp-2xl: 7rem;
+
+				/* Stroke */
+				--sg-rule: 3px solid var(--sg-black);
+				--sg-rule-sm: 1.5px solid var(--sg-black);
+				--sg-rule-heavy: 6px solid var(--sg-black);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESET
+		────────────────────────────────────────────────────────── */
+		@layer reset {
+			*, *::before, *::after {
+				box-sizing: border-box;
+				margin: 0; padding: 0;
+			}
+
+			html {
+				color-scheme: light;
+				scroll-behavior: smooth;
+			}
+
+			body {
+				background: var(--sg-wall);
+				color: var(--sg-black);
+				font-family: var(--sg-font-body);
+				font-size: clamp(1rem, 1.5vw, 1.1rem);
+				line-height: 1.6;
+				overflow-x: hidden;
+			}
+
+			h1, h2, h3, h4 {
+				font-family: var(--sg-font-display);
+				font-weight: 900;
+				line-height: 0.9;
+				text-transform: uppercase;
+				letter-spacing: -0.01em;
+				color: var(--sg-black);
+			}
+
+			p { max-width: 56ch; }
+
+			code {
+				font-family: var(--sg-font-mono);
+				font-size: 0.88em;
+				background: var(--sg-yellow);
+				padding: 0.1em 0.4em;
+				border: 1.5px solid var(--sg-black);
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   LAYOUT
+		────────────────────────────────────────────────────────── */
+		@layer layout {
+			.sg-container {
+				max-width: 80rem;
+				margin-inline: auto;
+				padding-inline: var(--sg-sp-xl);
+			}
+
+			.sg-section {
+				padding-block: var(--sg-sp-2xl);
+				position: relative;
+				overflow: hidden; /* clip the escaping geometry */
+			}
+
+			/* Two-col for wider sections */
+			.sg-two-col {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 0;
+				@media (max-width: 768px) { grid-template-columns: 1fr; }
+			}
+
+			.sg-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+				gap: var(--sg-sp-lg);
+			}
+
+			.sg-flex {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--sg-sp-md);
+				align-items: center;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   NAV — horizontal rule + colour band
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sg-nav {
+				position: sticky;
+				top: 0;
+				z-index: 200;
+				background: var(--sg-white);
+				border-block-end: var(--sg-rule-heavy);
+
+				& .nav-inner {
+					display: flex;
+					align-items: stretch;
+					min-height: 60px;
+				}
+
+				/* Colour stripe — left side */
+				& .nav-colour-bar {
+					display: flex;
+					flex-shrink: 0;
+
+					& span {
+						display: block;
+						width: 16px;
+						border-inline-end: var(--sg-rule);
+					}
+				}
+
+				& .nav-logo {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: 1.5rem;
+					letter-spacing: -0.02em;
+					text-transform: uppercase;
+					text-decoration: none;
+					color: var(--sg-black);
+					display: flex;
+					align-items: center;
+					padding-inline: var(--sg-sp-lg);
+					border-inline-end: var(--sg-rule);
+					gap: var(--sg-sp-sm);
+					flex-shrink: 0;
+				}
+
+				& .nav-links {
+					display: flex;
+					list-style: none;
+					margin-inline-start: auto;
+
+					& a {
+						font-family: var(--sg-font-display);
+						font-weight: 900;
+						font-size: 0.95rem;
+						letter-spacing: 0.02em;
+						text-transform: uppercase;
+						text-decoration: none;
+						color: var(--sg-black);
+						display: flex;
+						align-items: center;
+						padding-inline: var(--sg-sp-lg);
+						border-inline-start: var(--sg-rule-sm);
+						transition: background 0.1s;
+
+						&:hover { background: var(--sg-yellow); }
+					}
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   HERO — The Sea Ranch moment
+		   A giant arc enters from top-right. Type at room scale.
+		   The circle has a radius of ~65vw — only an eighth is visible.
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sg-hero {
+				position: relative;
+				min-height: 88vh;
+				display: flex;
+				align-items: center;
+				background: var(--sg-white);
+				border-block-end: var(--sg-rule-heavy);
+				overflow: hidden;
+
+				/* Background column grid — faint, like graph paper */
+				&::before {
+					content: '';
+					position: absolute;
+					inset: 0;
+					background:
+							repeating-linear-gradient(
+									 90deg,
+									 oklch(0% 0 0 / 0.04) 0px,
+									 oklch(0% 0 0 / 0.04) 1px,
+									 transparent 1px,
+									 transparent calc(100% / 12)
+							 );
+					pointer-events: none;
+				}
+			}
+
+			/* The BIG circle — enters from top-right, radius ~70vw */
+			.sg-hero-arc {
+				position: absolute;
+				top: 50%;
+				right: 0;
+				translate: 40% -50%;
+				width: min(140vw, 1400px);
+				height: min(140vw, 1400px);
+				border-radius: 50%;
+				background: var(--sg-red);
+				z-index: 0;
+				animation: sg-arc-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+			}
+
+			/* Blue quarter-disc — bottom left */
+			.sg-hero-arc-2 {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				translate: -60% 60%;
+				width: min(90vw, 900px);
+				height: min(90vw, 900px);
+				border-radius: 50%;
+				background: var(--sg-blue);
+				z-index: 0;
+				animation: sg-arc-in 1.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+			}
+
+			@keyframes sg-arc-in {
+				from { scale: 0; opacity: 0; }
+				to   { scale: 1; opacity: 1; }
+			}
+
+			.sg-hero-content {
+				position: relative;
+				z-index: 10;
+				padding: var(--sg-sp-2xl) var(--sg-sp-xl);
+				max-width: 52%;
+				@media (max-width: 768px) { max-width: 100%; }
+			}
+
+			/* The hero label */
+			.sg-eyebrow {
+				font-family: var(--sg-font-mono);
+				font-size: 0.72rem;
+				font-weight: 700;
+				letter-spacing: 0.3em;
+				text-transform: uppercase;
+				color: var(--sg-black);
+				opacity: 0.5;
+				margin-block-end: var(--sg-sp-lg);
+				display: flex;
+				align-items: center;
+				gap: var(--sg-sp-sm);
+
+				&::before {
+					content: '';
+					display: inline-block;
+					width: 32px;
+					height: 3px;
+					background: var(--sg-red);
+				}
+			}
+
+			/* Main title — fills horizontal space */
+			.sg-hero-title {
+				font-size: clamp(5rem, 14vw, 13rem);
+				line-height: 0.85;
+				margin-block-end: var(--sg-sp-lg);
+
+				& .title-sub {
+					display: block;
+					font-size: 0.38em;
+					color: var(--sg-blue);
+					letter-spacing: 0.08em;
+					margin-block-start: var(--sg-sp-sm);
+				}
+			}
+
+			.sg-hero-desc {
+				font-size: clamp(1rem, 1.5vw, 1.2rem);
+				font-weight: 400;
+				line-height: 1.7;
+				opacity: 0.75;
+				margin-block-end: var(--sg-sp-xl);
+				max-width: 44ch;
+			}
+
+			/* Yellow horizontal band — the stripe that crosses everything */
+			.sg-hero-band {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				height: 10px;
+				background: var(--sg-yellow);
+				border-block-start: var(--sg-rule);
+				z-index: 5;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   SECTION INTRO RULE — the architectural line
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-section-label {
+				display: flex;
+				align-items: baseline;
+				gap: var(--sg-sp-lg);
+				padding-block-end: var(--sg-sp-lg);
+				border-block-end: var(--sg-rule);
+				margin-block-end: var(--sg-sp-xl);
+
+				& .label-num {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: clamp(4rem, 8vw, 7rem);
+					line-height: 1;
+					color: var(--sg-black);
+					opacity: 0.12;
+					flex-shrink: 0;
+					translate: 0 0.1em;
+				}
+
+				& .label-content h2 {
+					font-size: clamp(2rem, 4vw, 3.5rem);
+				}
+
+				& .label-content p {
+					margin-block-start: var(--sg-sp-sm);
+					font-weight: 400;
+					font-size: 1rem;
+					opacity: 0.6;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   SUPERGRAPHIC ELEMENTS — the escape-the-box geometry
+		   These are CSS classes that produce the signature shapes.
+		────────────────────────────────────────────────────────── */
+		@layer components {
+
+			/* A full-bleed section with a giant geometric intrusion */
+			.sg-wall {
+				position: relative;
+				overflow: hidden;
+				background: var(--sg-white);
+
+				/* The "bleed" — an element larger than its parent */
+				& .sg-bleed-circle {
+					position: absolute;
+					border-radius: 50%;
+					pointer-events: none;
+					z-index: 0;
+				}
+
+				& .sg-bleed-rect {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+				}
+
+				& > * { position: relative; z-index: 1; }
+			}
+
+			/* Supergraphic horizontal band — spans full container width */
+			.sg-band {
+				height: var(--sg-band-h, 80px);
+				background: var(--sg-band-color, var(--sg-red));
+				border-block: var(--sg-rule);
+
+				&.sg-band-yellow { --sg-band-color: var(--sg-yellow); }
+				&.sg-band-blue   { --sg-band-color: var(--sg-blue); }
+				&.sg-band-red    { --sg-band-color: var(--sg-red); }
+				&.sg-band-black  { --sg-band-color: var(--sg-black); }
+			}
+
+			/* The classic Supergraphic "corner arc" — CSS only */
+			.sg-corner-arc {
+				position: absolute;
+				border-radius: 50%;
+				background: transparent;
+				pointer-events: none;
+				z-index: 0;
+			}
+
+			/* Architectural rule — thick horizontal line crossing the page */
+			.sg-arch-rule {
+				border: none;
+				height: var(--sg-rule-h, 6px);
+				background: var(--sg-rule-color, var(--sg-black));
+				margin: 0;
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   COLOUR / PATTERN SWATCHES
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-swatch-row {
+				display: flex;
+				border: var(--sg-rule);
+				overflow: hidden;
+
+				& .sg-swatch {
+					flex: 1;
+					min-height: 120px;
+					display: flex;
+					flex-direction: column;
+					justify-content: flex-end;
+					border-inline-end: var(--sg-rule-sm);
+					position: relative;
+					overflow: hidden;
+
+					&:last-child { border-inline-end: none; }
+
+					& .swatch-label {
+						background: oklch(0% 0 0 / 0.55);
+						color: var(--sg-white);
+						font-family: var(--sg-font-mono);
+						font-size: 0.6rem;
+						letter-spacing: 0.12em;
+						text-transform: uppercase;
+						padding: 0.3em 0.6em;
+						backdrop-filter: blur(2px);
+					}
+
+					/* Geometry peeking in from top-right of each swatch */
+					&::before {
+						content: '';
+						position: absolute;
+						top: 0; right: 0;
+						translate: 40% -40%;
+						width: 60%;
+						aspect-ratio: 1;
+						border-radius: 50%;
+						background: oklch(0% 0 0 / 0.15);
+						pointer-events: none;
+					}
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   TYPE WALL — the signature Supergraphics typographic moment.
+		   A word so big it IS the wall.
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-type-wall {
+				position: relative;
+				overflow: hidden;
+				padding-block: var(--sg-sp-xl);
+				background: var(--sg-wall);
+				border-block: var(--sg-rule);
+
+				& .tw-word {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: clamp(10rem, 28vw, 26rem);
+					text-transform: uppercase;
+					line-height: 0.82;
+					white-space: nowrap;
+					display: block;
+					letter-spacing: -0.04em;
+					/* The word overflows intentionally — clipped by overflow:hidden */
+					translate: -4vw 0;
+				}
+
+				& .tw-secondary {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: clamp(4rem, 12vw, 11rem);
+					text-transform: uppercase;
+					line-height: 0.9;
+					letter-spacing: -0.02em;
+					translate: 6vw 0;
+				}
+
+				/* Overlay arc — the geometry that makes this architectural */
+				&::after {
+					content: '';
+					position: absolute;
+					top: 50%;
+					right: -20vw;
+					translate: 0 -50%;
+					width: 60vw;
+					height: 60vw;
+					border-radius: 50%;
+					background: var(--sg-red);
+					mix-blend-mode: multiply;
+					pointer-events: none;
+					z-index: 1;
+				}
+			}
+
+			/* Colour variants */
+			.sg-type-wall[data-color="red"]    { background: var(--sg-red); & .tw-word, & .tw-secondary { color: var(--sg-white); } &::after { background: oklch(0% 0 0 / 0.2); mix-blend-mode: normal; } }
+			.sg-type-wall[data-color="blue"]   { background: var(--sg-blue); & .tw-word, & .tw-secondary { color: var(--sg-white); } &::after { background: oklch(100% 0 0 / 0.1); mix-blend-mode: normal; } }
+			.sg-type-wall[data-color="yellow"] { background: var(--sg-yellow); &::after { background: var(--sg-red); } }
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   CARDS — the geometry escapes the card
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-card {
+				background: var(--sg-white);
+				border: var(--sg-rule);
+				position: relative;
+				overflow: hidden; /* clips the escaping arc */
+				transition: translate 0.15s;
+
+				/* The giant arc — positioned so it bleeds from top-right */
+				&::before {
+					content: '';
+					position: absolute;
+					top: -40%;
+					right: -40%;
+					width: 120%;
+					aspect-ratio: 1;
+					border-radius: 50%;
+					background: var(--sg-card-color, var(--sg-red));
+					opacity: 0.1;
+					pointer-events: none;
+					transition: opacity 0.2s, scale 0.3s;
+					transform-origin: center;
+				}
+
+				&:hover {
+					translate: -2px -4px;
+
+					&::before {
+						opacity: 0.18;
+						scale: 1.1;
+					}
+				}
+
+				& .card-arc {
+					/* A visible, more opaque version for certain cards */
+					position: absolute;
+					top: -30%;
+					right: -30%;
+					width: 80%;
+					aspect-ratio: 1;
+					border-radius: 50%;
+					pointer-events: none;
+					z-index: 0;
+				}
+
+				& .card-content {
+					position: relative;
+					z-index: 1;
+					padding: var(--sg-sp-lg);
+				}
+
+				& .card-label {
+					font-family: var(--sg-font-mono);
+					font-size: 0.65rem;
+					font-weight: 700;
+					letter-spacing: 0.2em;
+					text-transform: uppercase;
+					opacity: 0.5;
+					margin-block-end: var(--sg-sp-sm);
+					display: flex;
+					align-items: center;
+					gap: var(--sg-sp-sm);
+
+					&::before {
+						content: '';
+						display: inline-block;
+						width: 8px;
+						height: 8px;
+						border-radius: 50%;
+						background: var(--sg-card-color, var(--sg-red));
+					}
+				}
+
+				& .card-title {
+					font-size: clamp(1.8rem, 3vw, 2.5rem);
+					margin-block-end: var(--sg-sp-md);
+					line-height: 0.95;
+				}
+
+				& .card-body {
+					font-size: 0.95rem;
+					opacity: 0.7;
+					line-height: 1.7;
+					margin-block-end: var(--sg-sp-lg);
+				}
+
+				&[data-color="red"]    { --sg-card-color: var(--sg-red); }
+				&[data-color="blue"]   { --sg-card-color: var(--sg-blue); }
+				&[data-color="yellow"] { --sg-card-color: var(--sg-yellow); }
+			}
+
+			/* Full-colour card — the card IS the geometry */
+			.sg-card-solid {
+				position: relative;
+				overflow: hidden;
+				border: var(--sg-rule);
+				padding: var(--sg-sp-xl) var(--sg-sp-lg);
+				color: var(--sg-white);
+
+				&::before {
+					content: '';
+					position: absolute;
+					bottom: -30%;
+					left: -20%;
+					width: 80%;
+					aspect-ratio: 1;
+					border-radius: 50%;
+					background: oklch(100% 0 0 / 0.12);
+					pointer-events: none;
+				}
+
+				&[data-color="red"]  { background: var(--sg-red); }
+				&[data-color="blue"] { background: var(--sg-blue); }
+
+				& h3 {
+					font-size: clamp(2rem, 4vw, 3rem);
+					color: var(--sg-white);
+					margin-block-end: var(--sg-sp-md);
+				}
+
+				& p { color: oklch(100% 0 0 / 0.8); max-width: 36ch; }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   BUTTONS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: var(--sg-sp-sm);
+				padding: 0.6em 1.6em 0.55em;
+				font-family: var(--sg-font-display);
+				font-weight: 900;
+				font-size: 1.2rem;
+				letter-spacing: 0.02em;
+				text-transform: uppercase;
+				text-decoration: none;
+				border: var(--sg-rule);
+				cursor: pointer;
+				background: var(--sg-white);
+				color: var(--sg-black);
+				position: relative;
+				overflow: hidden;
+				transition: translate 0.08s;
+
+				/* The arc that sneaks in on hover */
+				&::before {
+					content: '';
+					position: absolute;
+					top: 50%;
+					right: 0;
+					translate: 50% -50%;
+					width: 200%;
+					aspect-ratio: 1;
+					border-radius: 50%;
+					background: var(--sg-btn-arc, var(--sg-yellow));
+					scale: 0;
+					transition: scale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+					z-index: 0;
+				}
+
+				&:hover::before { scale: 1; }
+				&:hover { translate: -1px -2px; }
+				&:active { translate: 1px 1px; }
+
+				& span { position: relative; z-index: 1; }
+
+				&[data-variant="red"]    { background: var(--sg-red);    color: var(--sg-white); --sg-btn-arc: oklch(from var(--sg-red) calc(l - 0.1) c h); }
+				&[data-variant="blue"]   { background: var(--sg-blue);   color: var(--sg-white); --sg-btn-arc: oklch(from var(--sg-blue) calc(l - 0.08) c h); }
+				&[data-variant="yellow"] { background: var(--sg-yellow); color: var(--sg-black); --sg-btn-arc: oklch(from var(--sg-yellow) calc(l - 0.06) c h); }
+				&[data-variant="black"]  { background: var(--sg-black);  color: var(--sg-white); --sg-btn-arc: oklch(20% 0 0); }
+				&[data-variant="ghost"]  { background: transparent; --sg-btn-arc: var(--sg-yellow); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   STAT BLOCKS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-stat {
+				position: relative;
+				overflow: hidden;
+				border: var(--sg-rule);
+				padding: var(--sg-sp-lg);
+				background: var(--sg-white);
+
+				/* Huge number bleeds behind */
+				& .stat-bg-num {
+					position: absolute;
+					bottom: -0.2em;
+					right: -0.05em;
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: 8rem;
+					line-height: 1;
+					text-transform: uppercase;
+					color: var(--sg-stat-color, var(--sg-red));
+					opacity: 0.08;
+					pointer-events: none;
+					user-select: none;
+				}
+
+				& .stat-label {
+					font-family: var(--sg-font-mono);
+					font-size: 0.65rem;
+					font-weight: 700;
+					letter-spacing: 0.2em;
+					text-transform: uppercase;
+					opacity: 0.5;
+					margin-block-end: var(--sg-sp-sm);
+				}
+
+				& .stat-value {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: clamp(3rem, 6vw, 5rem);
+					line-height: 1;
+					color: var(--sg-stat-color, var(--sg-red));
+					margin-block-end: var(--sg-sp-xs);
+				}
+
+				& .stat-sub {
+					font-size: 0.85rem;
+					opacity: 0.55;
+					font-weight: 600;
+					letter-spacing: 0.05em;
+				}
+
+				&[data-color="red"]    { --sg-stat-color: var(--sg-red); }
+				&[data-color="blue"]   { --sg-stat-color: var(--sg-blue); }
+				&[data-color="yellow"] { --sg-stat-color: var(--sg-yellow); }
+				&[data-color="black"]  { --sg-stat-color: var(--sg-black); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   ALERTS — architectural signage style
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-alert {
+				border: var(--sg-rule);
+				display: flex;
+				align-items: stretch;
+				gap: 0;
+				overflow: hidden;
+				background: var(--sg-white);
+				position: relative;
+
+				& .alert-colour-block {
+					width: 12px;
+					flex-shrink: 0;
+					background: var(--sg-alert-color, var(--sg-black));
+				}
+
+				& .alert-content {
+					padding: var(--sg-sp-md) var(--sg-sp-lg);
+					flex: 1;
+				}
+
+				& strong {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: 1.3rem;
+					text-transform: uppercase;
+					display: block;
+					margin-block-end: var(--sg-sp-xs);
+					color: var(--sg-alert-color, var(--sg-black));
+				}
+
+				& p { font-size: 0.92rem; opacity: 0.7; margin: 0; }
+
+				&[data-type="warning"] { --sg-alert-color: var(--sg-yellow); & strong { color: var(--sg-black); } }
+				&[data-type="error"]   { --sg-alert-color: var(--sg-red); }
+				&[data-type="info"]    { --sg-alert-color: var(--sg-blue); }
+				&[data-type="ok"]      { --sg-alert-color: oklch(56% 0.18 155); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FORMS
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-field {
+				display: flex;
+				flex-direction: column;
+				gap: var(--sg-sp-xs);
+
+				& label {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: 1rem;
+					text-transform: uppercase;
+					color: var(--sg-black);
+				}
+
+				& input, & select, & textarea {
+					background: var(--sg-white);
+					color: var(--sg-black);
+					border: var(--sg-rule);
+					padding: 0.6em 0.9em;
+					font-family: var(--sg-font-body);
+					font-size: 1rem;
+					font-weight: 600;
+					outline: none;
+					transition: border-color 0.12s, box-shadow 0.12s;
+					border-radius: 0;
+					appearance: none;
+
+					&:focus {
+						border-color: var(--sg-blue);
+						box-shadow: 4px 4px 0 var(--sg-blue);
+					}
+
+					&::placeholder { opacity: 0.4; font-weight: 400; }
+					option { background: var(--sg-white); }
+				}
+			}
+
+			.sg-segmented {
+				display: inline-flex;
+				border: var(--sg-rule);
+				overflow: hidden;
+
+				& button {
+					flex: 1;
+					padding: 0.55em 1.4em;
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: 0.95rem;
+					text-transform: uppercase;
+					border: none;
+					border-inline-end: var(--sg-rule-sm);
+					cursor: pointer;
+					background: transparent;
+					color: var(--sg-black);
+					transition: background 0.1s;
+
+					&:last-child { border-inline-end: none; }
+
+					&[data-active] {
+						background: var(--sg-blue);
+						color: var(--sg-white);
+					}
+
+					&:hover:not([data-active]) { background: var(--sg-yellow); }
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   BADGE
+		────────────────────────────────────────────────────────── */
+		@layer components {
+			.sg-badge {
+				display: inline-block;
+				font-family: var(--sg-font-display);
+				font-weight: 900;
+				font-size: 0.9rem;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
+				padding: 0.1em 0.65em;
+				border: var(--sg-rule-sm);
+
+				&[data-color="red"]    { background: var(--sg-red);    color: var(--sg-white); border-color: var(--sg-red); }
+				&[data-color="blue"]   { background: var(--sg-blue);   color: var(--sg-white); border-color: var(--sg-blue); }
+				&[data-color="yellow"] { background: var(--sg-yellow); color: var(--sg-black); border-color: var(--sg-black); }
+				&[data-color="black"]  { background: var(--sg-black);  color: var(--sg-white); }
+				&[data-color="outline"]{ background: transparent; color: var(--sg-black); }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   FOOTER
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sg-footer {
+				background: var(--sg-black);
+				color: var(--sg-white);
+				border-block-start: var(--sg-rule-heavy);
+				position: relative;
+				overflow: hidden;
+
+				/* Giant yellow arc from top-left — escaping the footer box */
+				&::before {
+					content: '';
+					position: absolute;
+					bottom: -30%;
+					right: -15%;
+					width: min(70vw, 700px);
+					height: min(70vw, 700px);
+					border-radius: 50%;
+					background: var(--sg-red);
+					opacity: 0.2;
+					pointer-events: none;
+				}
+
+				& .foot-band {
+					height: 10px;
+					background: var(--sg-yellow);
+					border-block-end: var(--sg-rule);
+				}
+
+				& .foot-inner {
+					position: relative;
+					z-index: 1;
+					padding: var(--sg-sp-xl);
+					display: flex;
+					align-items: flex-end;
+					justify-content: space-between;
+					flex-wrap: wrap;
+					gap: var(--sg-sp-xl);
+				}
+
+				& .foot-logo {
+					font-family: var(--sg-font-display);
+					font-weight: 900;
+					font-size: clamp(3rem, 8vw, 6rem);
+					line-height: 0.9;
+					text-transform: uppercase;
+					letter-spacing: -0.02em;
+				}
+
+				& .foot-logo-red { color: var(--sg-red); }
+				& .foot-logo-blue { color: var(--sg-blue); display: block; }
+
+				& .foot-meta {
+					font-family: var(--sg-font-mono);
+					font-size: 0.68rem;
+					letter-spacing: 0.1em;
+					text-transform: uppercase;
+					color: oklch(55% 0 0);
+					line-height: 1.9;
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   PROGRESSIVE ENHANCEMENT SHOWCASE — the key demo section
+		────────────────────────────────────────────────────────── */
+		@layer sections {
+			.sg-pe-showcase {
+				background: var(--sg-wall);
+
+				& .pe-tier {
+					border: var(--sg-rule);
+					padding: var(--sg-sp-xl);
+					position: relative;
+					overflow: hidden;
+					background: var(--sg-white);
+					margin-block-end: var(--sg-sp-lg);
+
+					& .pe-tier-label {
+						font-family: var(--sg-font-mono);
+						font-size: 0.68rem;
+						font-weight: 700;
+						letter-spacing: 0.2em;
+						text-transform: uppercase;
+						display: inline-flex;
+						align-items: center;
+						gap: var(--sg-sp-sm);
+						padding: 0.2em 0.8em;
+						border: var(--sg-rule-sm);
+						margin-block-end: var(--sg-sp-lg);
+						position: relative;
+						z-index: 1;
+					}
+
+					& h3 {
+						font-size: clamp(1.4rem, 3vw, 2.2rem);
+						margin-block-end: var(--sg-sp-md);
+						position: relative;
+						z-index: 1;
+					}
+
+					& p {
+						font-size: 0.95rem;
+						opacity: 0.7;
+						position: relative;
+						z-index: 1;
+					}
+				}
+
+				/* Tier 1: HTML only — flat rectangle, no decoration */
+				& .pe-tier-1 {
+					/* The deliberately plain baseline */
+					background: var(--sg-wall);
+
+					& .pe-tier-label { background: var(--sg-wall); }
+				}
+
+				/* Tier 2: + CSS geometry enters from right */
+				& .pe-tier-2 {
+					&::after {
+						content: '';
+						position: absolute;
+						top: 50%;
+						right: -15%;
+						translate: 0 -50%;
+						width: 60%;
+						aspect-ratio: 1;
+						border-radius: 50%;
+						background: var(--sg-yellow);
+						border: var(--sg-rule);
+						pointer-events: none;
+					}
+					& .pe-tier-label { background: var(--sg-yellow); }
+				}
+
+				/* Tier 3: Geometry overlaps + mix-blend-mode */
+				& .pe-tier-3 {
+					&::before {
+						content: '';
+						position: absolute;
+						top: -20%;
+						right: 20%;
+						width: 55%;
+						aspect-ratio: 1;
+						border-radius: 50%;
+						background: var(--sg-red);
+						mix-blend-mode: multiply;
+						pointer-events: none;
+					}
+					&::after {
+						content: '';
+						position: absolute;
+						top: -20%;
+						right: -5%;
+						width: 50%;
+						aspect-ratio: 1;
+						border-radius: 50%;
+						background: var(--sg-blue);
+						mix-blend-mode: multiply;
+						pointer-events: none;
+					}
+					& .pe-tier-label { background: var(--sg-wall); }
+				}
+
+				/* Tier 4: Full SVG + animation */
+				& .pe-tier-4 {
+					background: var(--sg-black);
+					color: var(--sg-white);
+
+					& h3 { color: var(--sg-white); }
+					& p { color: oklch(75% 0 0); opacity: 1; }
+
+					& .pe-tier-label {
+						background: var(--sg-yellow);
+						color: var(--sg-black);
+						border-color: var(--sg-yellow);
+					}
+
+					& .pe-svg-layer {
+						position: absolute;
+						inset: 0;
+						pointer-events: none;
+						overflow: hidden;
+					}
+				}
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   RESPONSIVE
+		────────────────────────────────────────────────────────── */
+		@layer responsive {
+			@media (max-width: 640px) {
+				.sg-container { padding-inline: var(--sg-sp-md); }
+				.sg-nav .nav-links { display: none; }
+				.sg-hero-content { padding: var(--sg-sp-xl) var(--sg-sp-md); }
+				.sg-type-wall .tw-word { font-size: 20vw; }
+				.sg-type-wall .tw-secondary { font-size: 10vw; }
+			}
+		}
+
+		/* ──────────────────────────────────────────────────────────
+		   SCROLL ANIMATION — shapes scale in as sections enter view
+		────────────────────────────────────────────────────────── */
+		@layer animation {
+			@media (prefers-reduced-motion: no-preference) {
+				.sg-animate-in {
+					animation: sg-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+				}
+
+				.sg-animate-in:nth-child(2) { animation-delay: 0.1s; }
+				.sg-animate-in:nth-child(3) { animation-delay: 0.2s; }
+				.sg-animate-in:nth-child(4) { animation-delay: 0.3s; }
+
+				@keyframes sg-rise {
+					from { translate: 0 24px; opacity: 0; }
+					to   { translate: 0 0;    opacity: 1; }
+				}
+			}
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+	 NAVIGATION
+═══════════════════════════════════════════════════════ -->
+<nav class="sg-nav" aria-label="Main navigation">
+	<div style="max-width:80rem;margin-inline:auto;">
+		<div class="nav-inner">
+
+			<!-- Colour bars — the three primaries -->
+			<div class="nav-colour-bar" aria-hidden="true">
+				<span style="background: var(--sg-red);"></span>
+				<span style="background: var(--sg-blue);"></span>
+				<span style="background: var(--sg-yellow);"></span>
+			</div>
+
+			<a href="#" class="nav-logo">
+				<!-- Mini arc mark -->
+				<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+					<circle cx="28" cy="28" r="26" fill="none" stroke="var(--sg-red)" stroke-width="3"/>
+				</svg>
+				SUPER<wbr>GRAPHICS
+			</a>
+
+			<ul class="nav-links">
+				<li><a href="#type-wall">Type Wall</a></li>
+				<li><a href="#palette">Palette</a></li>
+				<li><a href="#components">Components</a></li>
+				<li><a href="#progressive">P.E.</a></li>
+				<li><a href="#tokens">Tokens</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+	 HERO
+═══════════════════════════════════════════════════════ -->
+<header class="sg-hero">
+	<!-- The two arcs — they enter on load -->
+	<div class="sg-hero-arc" aria-hidden="true"></div>
+	<div class="sg-hero-arc-2" aria-hidden="true"></div>
+
+	<!-- Yellow stripe across mid-page -->
+	<div style="position:absolute;top:55%;left:0;right:0;height:5px;background:var(--sg-yellow);z-index:4;" aria-hidden="true"></div>
+
+	<div class="sg-hero-content">
+		<p class="sg-eyebrow">Vanilla Breeze — Theme System</p>
+
+		<h1 class="sg-hero-title">
+			SUPER
+			<span class="title-sub">GRAPHICS</span>
+		</h1>
+
+		<p class="sg-hero-desc">
+			Geometry at architectural scale. Barbara Stauffacher Solomon painted these forms at Sea Ranch in 1966. Circles so large only an arc is visible. Type that fills the room. Primary colour on white. The platform demonstrates this with CSS alone — no images, no canvas.
+		</p>
+
+		<div class="sg-flex">
+			<button class="sg-btn" data-variant="red"><span>Explore</span></button>
+			<button class="sg-btn" data-variant="blue"><span>Components</span></button>
+			<button class="sg-btn" data-variant="ghost"><span>Docs</span></button>
+		</div>
+	</div>
+
+	<div class="sg-hero-band" aria-hidden="true"></div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+	 TYPE WALL — the room-scale typography moment
+═══════════════════════════════════════════════════════ -->
+<div id="type-wall" class="sg-type-wall" aria-hidden="true">
+	<span class="tw-word" style="color: var(--sg-black);">SCALE</span>
+	<span class="tw-secondary" style="color: var(--sg-blue);">IS THE IDEA</span>
+</div>
+
+<hr class="sg-arch-rule" style="--sg-rule-h: 5px; --sg-rule-color: var(--sg-black);" />
+
+<!-- ═══════════════════════════════════════════════════════
+	 PALETTE
+═══════════════════════════════════════════════════════ -->
+<section class="sg-section" id="palette">
+	<div class="sg-container">
+		<div class="sg-section-label">
+			<span class="label-num">01</span>
+			<div class="label-content">
+				<h2>Palette</h2>
+				<p>Three primaries. Black. White. No tints, no gradients, no approximations. Supergraphics used the same colours you find in primary school classrooms — their power comes from scale, not subtlety.</p>
+			</div>
+		</div>
+
+		<div class="sg-swatch-row">
+			<div class="sg-swatch" style="background: var(--sg-red);">
+				<span class="swatch-label">--sg-red · oklch(52% 0.26 25)</span>
+			</div>
+			<div class="sg-swatch" style="background: var(--sg-blue);">
+				<span class="swatch-label">--sg-blue · oklch(42% 0.24 260)</span>
+			</div>
+			<div class="sg-swatch" style="background: var(--sg-yellow); &amp; .swatch-label { color: var(--sg-black); }">
+				<span class="swatch-label" style="background: oklch(0% 0 0 / 0.4);">--sg-yellow · oklch(85% 0.19 98)</span>
+			</div>
+			<div class="sg-swatch" style="background: var(--sg-black);">
+				<span class="swatch-label">--sg-black</span>
+			</div>
+			<div class="sg-swatch" style="background: var(--sg-wall); border-inline-start: var(--sg-rule-sm);">
+				<span class="swatch-label">--sg-wall (cream)</span>
+			</div>
+		</div>
+
+		<!-- Mix demonstrations — overlap produces the secondaries -->
+		<div style="margin-block-start: var(--sg-sp-lg); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border: var(--sg-rule);">
+			<div style="padding: var(--sg-sp-lg); border-inline-end: var(--sg-rule-sm); background: var(--sg-wall);">
+				<div style="display:flex; gap: 0; height: 60px; margin-block-end: var(--sg-sp-sm); border: var(--sg-rule-sm); overflow: hidden;">
+					<div style="flex:1; background: var(--sg-red); mix-blend-mode: normal;"></div>
+					<div style="flex:1; background: var(--sg-yellow); mix-blend-mode: multiply;"></div>
+				</div>
+				<p style="font-family: var(--sg-font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; max-width: none;">Red × Yellow → Orange via multiply</p>
+			</div>
+			<div style="padding: var(--sg-sp-lg); border-inline-end: var(--sg-rule-sm); background: var(--sg-wall);">
+				<div style="display:flex; gap: 0; height: 60px; margin-block-end: var(--sg-sp-sm); border: var(--sg-rule-sm); overflow: hidden;">
+					<div style="flex:1; background: var(--sg-blue);"></div>
+					<div style="flex:1; background: var(--sg-yellow); mix-blend-mode: multiply;"></div>
+				</div>
+				<p style="font-family: var(--sg-font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; max-width: none;">Blue × Yellow → Green via multiply</p>
+			</div>
+			<div style="padding: var(--sg-sp-lg); background: var(--sg-wall);">
+				<div style="display:flex; gap: 0; height: 60px; margin-block-end: var(--sg-sp-sm); border: var(--sg-rule-sm); overflow: hidden;">
+					<div style="flex:1; background: var(--sg-red);"></div>
+					<div style="flex:1; background: var(--sg-blue); mix-blend-mode: multiply;"></div>
+				</div>
+				<p style="font-family: var(--sg-font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; max-width: none;">Red × Blue → Violet via multiply</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- TYPE WALL 2 — Blue -->
+<div class="sg-type-wall" data-color="blue">
+	<span class="tw-word">FORM</span>
+	<span class="tw-secondary" style="color: var(--sg-yellow);">ESCAPES THE BOX</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+	 TYPOGRAPHY
+═══════════════════════════════════════════════════════ -->
+<section class="sg-section" style="background: var(--sg-wall);">
+	<div class="sg-container">
+		<div class="sg-section-label">
+			<span class="label-num">02</span>
+			<div class="label-content">
+				<h2>Typography</h2>
+				<p>Big Shoulders Display — compressed, heavy, architectural. Helvetica Bold Condensed at room scale. Words as objects.</p>
+			</div>
+		</div>
+
+		<div style="display: grid; gap: var(--sg-sp-xl);">
+
+			<div style="border-block-end: var(--sg-rule-sm); padding-block-end: var(--sg-sp-xl);">
+				<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-md);">Display — Big Shoulders Display 900</p>
+				<h2 style="font-size: clamp(4rem, 11vw, 10rem); line-height: 0.88;">ARCHITECTURE<br>AS CANVAS</h2>
+			</div>
+
+			<div style="border-block-end: var(--sg-rule-sm); padding-block-end: var(--sg-sp-xl); display: grid; grid-template-columns: 1fr 1fr; gap: var(--sg-sp-lg);">
+				<div>
+					<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-md);">Multi-colour treatment</p>
+					<p style="font-family: var(--sg-font-display); font-weight: 900; font-size: clamp(2.5rem, 5vw, 5rem); text-transform: uppercase; line-height: 0.9;">
+						<span style="color: var(--sg-red);">RED.</span><br>
+						<span style="color: var(--sg-blue);">BLUE.</span><br>
+						<span style="color: var(--sg-yellow); -webkit-text-stroke: 1.5px var(--sg-black);">YELLOW.</span>
+					</p>
+				</div>
+				<div>
+					<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-md);">Outline treatment</p>
+					<p style="font-family: var(--sg-font-display); font-weight: 900; font-size: clamp(2.5rem, 5vw, 5rem); text-transform: uppercase; line-height: 0.9; -webkit-text-stroke: 3px var(--sg-black); color: transparent;">
+						OUTLINE<br>TYPE
+					</p>
+				</div>
+			</div>
+
+			<div style="border-block-end: var(--sg-rule-sm); padding-block-end: var(--sg-sp-xl);">
+				<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-md);">Body — Barlow 400/600</p>
+				<p style="font-size: 1.15rem; font-weight: 400; max-width: 56ch; line-height: 1.8;">Barbara Stauffacher Solomon's Sea Ranch graphics of 1966 were the founding moment. She applied Swiss International Style — the discipline of Neue Grafik — directly to building surfaces, scaling letterforms and geometry to room dimensions. The wall became the grid.</p>
+			</div>
+
+			<div>
+				<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-md);">Space Mono — data and readouts</p>
+				<p style="font-family: var(--sg-font-mono); font-size: 1rem; color: var(--sg-blue);">--sg-red: oklch(52% 0.26 25)  /* primary red */</p>
+				<p style="font-family: var(--sg-font-mono); font-size: 1rem; color: var(--sg-red);">--sg-blue: oklch(42% 0.24 260) /* cobalt blue */</p>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+<hr class="sg-arch-rule" style="--sg-rule-h: 80px; --sg-rule-color: var(--sg-red);" />
+<hr class="sg-arch-rule" style="--sg-rule-h: 5px; --sg-rule-color: var(--sg-black);" />
+
+<!-- ═══════════════════════════════════════════════════════
+	 COMPONENTS
+═══════════════════════════════════════════════════════ -->
+<section class="sg-section" id="components">
+	<div class="sg-container">
+		<div class="sg-section-label">
+			<span class="label-num">03</span>
+			<div class="label-content">
+				<h2>Components</h2>
+			</div>
+		</div>
+
+		<!-- Buttons -->
+		<div style="margin-block-end: var(--sg-sp-2xl);">
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Buttons — arc ripple on hover</p>
+			<div class="sg-flex">
+				<button class="sg-btn" data-variant="red"><span>Primary</span></button>
+				<button class="sg-btn" data-variant="blue"><span>Secondary</span></button>
+				<button class="sg-btn" data-variant="yellow"><span>Accent</span></button>
+				<button class="sg-btn" data-variant="black"><span>Dark</span></button>
+				<button class="sg-btn" data-variant="ghost"><span>Ghost</span></button>
+			</div>
+		</div>
+
+		<!-- Badges -->
+		<div style="margin-block-end: var(--sg-sp-2xl);">
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Badges</p>
+			<div class="sg-flex">
+				<span class="sg-badge" data-color="red">Sea Ranch</span>
+				<span class="sg-badge" data-color="blue">1966</span>
+				<span class="sg-badge" data-color="yellow">Primary</span>
+				<span class="sg-badge" data-color="black">Helvetica</span>
+				<span class="sg-badge" data-color="outline">Outline</span>
+			</div>
+		</div>
+
+		<!-- Stats — huge number as background element -->
+		<div style="margin-block-end: var(--sg-sp-2xl);">
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Stats — number as supergraphic</p>
+			<div class="sg-grid">
+				<div class="sg-stat" data-color="red">
+					<span class="stat-bg-num" aria-hidden="true">47</span>
+					<div class="stat-label">Components</div>
+					<div class="stat-value">47</div>
+					<div class="stat-sub">Available</div>
+				</div>
+				<div class="sg-stat" data-color="blue">
+					<span class="stat-bg-num" aria-hidden="true">0</span>
+					<div class="stat-label">Build Step</div>
+					<div class="stat-value">0</div>
+					<div class="stat-sub">Required</div>
+				</div>
+				<div class="sg-stat" data-color="yellow">
+					<span class="stat-bg-num" aria-hidden="true">100</span>
+					<div class="stat-label">Lighthouse</div>
+					<div class="stat-value">100</div>
+					<div class="stat-sub">Performance</div>
+				</div>
+				<div class="sg-stat" data-color="black">
+					<span class="stat-bg-num" aria-hidden="true">∞</span>
+					<div class="stat-label">Themes</div>
+					<div class="stat-value">∞</div>
+					<div class="stat-sub">Available</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Cards — the arc bleeds from inside the card -->
+		<div style="margin-block-end: var(--sg-sp-2xl);">
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Cards — arc escapes the container</p>
+			<div class="sg-grid">
+
+				<article class="sg-card sg-animate-in" data-color="red">
+					<div class="card-arc" style="background: var(--sg-red); opacity: 0.12;" aria-hidden="true"></div>
+					<div class="card-content">
+						<p class="card-label">Framework</p>
+						<h3 class="card-title">Vanilla Breeze</h3>
+						<p class="card-body">HTML-first, progressive enhancement. The platform as the framework. No build step, no abstraction layer — just the web, scaled to fill the room.</p>
+						<div class="sg-flex" style="gap: 0.5rem;"><span class="sg-badge" data-color="red">HTML</span><span class="sg-badge" data-color="outline">CSS</span></div>
+					</div>
+				</article>
+
+				<article class="sg-card sg-animate-in" data-color="blue">
+					<div class="card-arc" style="background: var(--sg-blue); opacity: 0.12;" aria-hidden="true"></div>
+					<div class="card-content">
+						<p class="card-label">Hypermedia</p>
+						<h3 class="card-title">html-star</h3>
+						<p class="card-body">Server-driven UI with zero JS overhead. Declarative, structural, as fundamental as a load-bearing wall. Architecture you can read.</p>
+						<div class="sg-flex" style="gap: 0.5rem;"><span class="sg-badge" data-color="blue">Server</span><span class="sg-badge" data-color="outline">Lean</span></div>
+					</div>
+				</article>
+
+				<article class="sg-card-solid sg-animate-in" data-color="red">
+					<div style="position:absolute;top:-25%;right:-25%;width:70%;aspect-ratio:1;border-radius:50%;background:oklch(100% 0 0/0.08);pointer-events:none;" aria-hidden="true"></div>
+					<div style="position:relative;z-index:1;">
+						<p style="font-family:var(--sg-font-mono);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:oklch(100% 0 0/0.6);margin-block-end:var(--sg-sp-lg);">Reactivity</p>
+						<h3>Montane</h3>
+						<p>Client-side reactivity on web standards. Alpine.js without the overhead — as direct as painting primary red directly onto a white wall.</p>
+					</div>
+				</article>
+
+			</div>
+		</div>
+
+		<!-- Alerts -->
+		<div style="margin-block-end: var(--sg-sp-2xl);">
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Alerts — architectural signage</p>
+			<div style="display: grid; gap: var(--sg-sp-md);">
+				<div class="sg-alert" data-type="warning">
+					<div class="alert-colour-block"></div>
+					<div class="alert-content"><strong>Caution</strong><p>Supergraphic elements may escape their containers. This is intentional and correct.</p></div>
+				</div>
+				<div class="sg-alert" data-type="error">
+					<div class="alert-colour-block"></div>
+					<div class="alert-content"><strong>Error</strong><p>Container too small for geometry of this scale. The shape will bleed outside the frame.</p></div>
+				</div>
+				<div class="sg-alert" data-type="info">
+					<div class="alert-colour-block"></div>
+					<div class="alert-content"><strong>Information</strong><p>Sea Ranch, Sonoma County, 1966. The first supergraphics. Sold within hours of the show opening.</p></div>
+				</div>
+				<div class="sg-alert" data-type="ok">
+					<div class="alert-colour-block"></div>
+					<div class="alert-content"><strong>Success</strong><p>Supergraphics theme loaded. All geometry active. The wall is now the canvas.</p></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Forms -->
+		<div>
+			<p style="font-family: var(--sg-font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-block-end: var(--sg-sp-lg);">Form Elements</p>
+			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sg-sp-lg);max-width:640px;">
+				<div class="sg-field">
+					<label for="sg-designer">Designer</label>
+					<input type="text" id="sg-designer" placeholder="Barbara Stauffacher Solomon" />
+				</div>
+				<div class="sg-field">
+					<label for="sg-era">Era</label>
+					<select id="sg-era">
+						<option>Supergraphics (1966–1975)</option>
+						<option>Swiss International (1950s)</option>
+						<option>Memphis Design (1981–88)</option>
+						<option>Deconstructivist (1980s)</option>
+					</select>
+				</div>
+			</div>
+			<div style="margin-block-start: var(--sg-sp-lg);">
+				<div class="sg-segmented" role="group" aria-label="Primary">
+					<button data-active>Red</button>
+					<button>Blue</button>
+					<button>Yellow</button>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<!-- TYPE WALL 3 — Yellow on yellow — one word, outline -->
+<div class="sg-type-wall" data-color="yellow" style="padding-block:var(--sg-sp-lg);">
+	<span class="tw-word" style="-webkit-text-stroke: 4px var(--sg-black); color: transparent;">PRIMARY</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+	 PROGRESSIVE ENHANCEMENT SHOWCASE
+═══════════════════════════════════════════════════════ -->
+<section class="sg-section sg-pe-showcase" id="progressive">
+	<div class="sg-container">
+		<div class="sg-section-label">
+			<span class="label-num">04</span>
+			<div class="label-content">
+				<h2>Progressive Enhancement</h2>
+				<p>The same component shown at each CSS capability tier. Content works at every level. Visual complexity layers on top — exactly as a supergraphic is applied to an existing building.</p>
+			</div>
+		</div>
+
+		<!-- Tier 1: HTML baseline -->
+		<div class="pe-tier pe-tier-1">
+			<span class="pe-tier-label" style="background: var(--sg-wall);">Tier 1 — HTML only</span>
+			<h3>Vanilla Breeze Component</h3>
+			<p>Content is structured, readable, accessible. No visual enhancement. The room before the painter arrives.</p>
+		</div>
+
+		<!-- Tier 2: + CSS geometry -->
+		<div class="pe-tier pe-tier-2">
+			<span class="pe-tier-label">Tier 2 — + CSS geometry</span>
+			<h3>Vanilla Breeze Component</h3>
+			<p>CSS adds the supergraphic circle. It's cropped at the container edge — the geometry exists but doesn't intrude on content.</p>
+		</div>
+
+		<!-- Tier 3: mix-blend-mode overlap -->
+		<div class="pe-tier pe-tier-3">
+			<span class="pe-tier-label" style="background: var(--sg-wall);">Tier 3 — + mix-blend-mode overlap</span>
+			<h3>Vanilla Breeze Component</h3>
+			<p>Two overlapping circles with <code>mix-blend-mode: multiply</code> produce a secondary colour at the intersection. Red + Blue = Violet. The primary palette generates its own secondaries.</p>
+		</div>
+
+		<!-- Tier 4: Full animated SVG layer -->
+		<div class="pe-tier pe-tier-4">
+			<div class="pe-svg-layer" aria-hidden="true">
+				<svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice">
+					<!-- Giant red arc from top right -->
+					<circle cx="900" cy="100" r="280" fill="var(--sg-red)" opacity="0.25"/>
+					<!-- Blue quarter from bottom left -->
+					<circle cx="-100" cy="220" r="200" fill="var(--sg-blue)" opacity="0.3"/>
+					<!-- Yellow horizontal stripe -->
+					<rect x="0" y="88" width="800" height="6" fill="var(--sg-yellow)" opacity="0.7"/>
+					<!-- Vertical column lines -->
+					<line x1="200" y1="0" x2="200" y2="200" stroke="oklch(0% 0 0/0.1)" stroke-width="1"/>
+					<line x1="400" y1="0" x2="400" y2="200" stroke="oklch(0% 0 0/0.1)" stroke-width="1"/>
+					<line x1="600" y1="0" x2="600" y2="200" stroke="oklch(0% 0 0/0.1)" stroke-width="1"/>
+				</svg>
+			</div>
+			<span class="pe-tier-label">Tier 4 — + SVG supergraphic layer</span>
+			<h3 style="color:var(--sg-white);">Vanilla Breeze Component</h3>
+			<p>SVG layer adds precise arcs, grid lines, and blended geometry. The content sits above in the stacking context. Remove the CSS and HTML — this layer disappears, content remains.</p>
+		</div>
+
+	</div>
+</section>
+
+<hr class="sg-arch-rule" style="--sg-rule-h: 5px; --sg-rule-color: var(--sg-black);" />
+<hr class="sg-arch-rule" style="--sg-rule-h: 60px; --sg-rule-color: var(--sg-blue);" />
+<hr class="sg-arch-rule" style="--sg-rule-h: 5px; --sg-rule-color: var(--sg-black);" />
+
+<!-- ═══════════════════════════════════════════════════════
+	 TOKEN REFERENCE
+═══════════════════════════════════════════════════════ -->
+<section class="sg-section" id="tokens">
+	<div class="sg-container">
+		<div class="sg-section-label">
+			<span class="label-num">05</span>
+			<div class="label-content">
+				<h2>Tokens</h2>
+				<p>Drop <code>supergraphics-theme.css</code> into Vanilla Breeze.</p>
+			</div>
+		</div>
+
+		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sg-sp-lg);">
+        <pre style="background:var(--sg-black);color:oklch(75% 0 0);border:var(--sg-rule);padding:var(--sg-sp-lg);font-family:var(--sg-font-mono);font-size:0.8rem;line-height:1.9;overflow-x:auto;"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(45% 0 0);">/* Primaries */</span>
+<span style="color:var(--sg-red);">--sg-red</span>      oklch(52% 0.26 25)
+<span style="color:oklch(60% 0.2 260);">--sg-blue</span>     oklch(42% 0.24 260)
+<span style="color:var(--sg-yellow);">--sg-yellow</span>   oklch(85% 0.19 98)
+--sg-black    oklch(10% 0.006 240)
+--sg-white    oklch(99% 0.002 90)
+--sg-wall     oklch(97% 0.008 80)
+
+<span style="color:oklch(45% 0 0);">/* Borders */</span>
+--sg-rule          3px solid black
+--sg-rule-sm       1.5px solid black
+--sg-rule-heavy    6px solid black</code></pre>
+
+			<pre style="background:var(--sg-black);color:oklch(75% 0 0);border:var(--sg-rule);padding:var(--sg-sp-lg);font-family:var(--sg-font-mono);font-size:0.8rem;line-height:1.9;overflow-x:auto;"><code style="background:none;padding:0;color:inherit;font-size:inherit;"><span style="color:oklch(45% 0 0);">/* Typography */</span>
+--sg-font-display
+  Big Shoulders Display 900
+  ≈ Helvetica Bold Condensed
+
+--sg-font-body
+  Barlow 400/600
+
+--sg-font-mono
+  Space Mono
+
+<span style="color:oklch(45% 0 0);">/* Spacing (architectural) */</span>
+--sg-sp-xs   0.25rem
+--sg-sp-sm   0.5rem
+--sg-sp-md   1rem
+--sg-sp-lg   2rem
+--sg-sp-xl   4rem
+--sg-sp-2xl  7rem</code></pre>
+		</div>
+
+		<!-- The "why" of progressive enhancement -->
+		<div style="margin-block-start: var(--sg-sp-2xl); border: var(--sg-rule); background: var(--sg-white); overflow: hidden; display: grid; grid-template-columns: 8px 1fr; gap: 0;">
+			<div style="background: var(--sg-red);"></div>
+			<div style="padding: var(--sg-sp-xl);">
+				<h3 style="font-size: clamp(1.5rem, 3vw, 2.5rem); margin-block-end: var(--sg-sp-lg);">Why Supergraphics + Progressive Enhancement</h3>
+				<p style="font-size: 1rem; line-height: 1.8; opacity: 0.8;">
+					Stauffacher Solomon applied supergraphics to existing buildings — the structure came first, the art was additive. Vanilla Breeze works identically: the HTML is the building. CSS is the painter. Remove the painter and the building still stands, fully functional, perfectly readable. Add the painter and the building becomes extraordinary. The <code>overflow: hidden</code> on a section is the wall. The arc that enters from outside is the supergraphic. Scale is the idea. The platform is the canvas.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+	 FOOTER
+═══════════════════════════════════════════════════════ -->
+<footer class="sg-footer">
+	<div class="foot-band" aria-hidden="true"></div>
+	<div class="foot-inner">
+		<div>
+			<div class="foot-logo">
+				<span class="foot-logo-red">SUPER</span>
+				<span class="foot-logo-blue">GRAPHICS</span>
+			</div>
+			<p style="font-family: var(--sg-font-mono); font-size: 0.65rem; letter-spacing: 0.12em; color: oklch(45% 0 0); margin-block-start: var(--sg-sp-md);">VANILLA BREEZE THEME SYSTEM</p>
+		</div>
+		<div class="foot-meta">
+			<p>INSPIRED BY BARBARA STAUFFACHER SOLOMON</p>
+			<p>SEA RANCH, SONOMA COUNTY, 1966</p>
+			<p>SUPERGRAPHICS MOVEMENT c. 1966–1975</p>
+			<p style="margin-block-start: var(--sg-sp-sm); opacity: 0.4;">VANILLA BREEZE RETRO THEME COLLECTION</p>
+		</div>
+	</div>
+</footer>
+
+<script>
+	// Segmented controls
+	document.querySelectorAll('.sg-segmented').forEach(seg => {
+		seg.querySelectorAll('button').forEach(btn => {
+			btn.addEventListener('click', () => {
+				seg.querySelectorAll('button').forEach(b => b.removeAttribute('data-active'));
+				btn.setAttribute('data-active', '');
+			});
+		});
+	});
+
+	// Scroll-triggered animation — pure IntersectionObserver
+	const animateEls = document.querySelectorAll('.sg-animate-in');
+	const io = new IntersectionObserver((entries) => {
+		entries.forEach(e => {
+			if (e.isIntersecting) {
+				e.target.style.animationPlayState = 'running';
+				io.unobserve(e.target);
+			}
+		});
+	}, { threshold: 0.15 });
+
+	animateEls.forEach(el => {
+		el.style.animationPlayState = 'paused';
+		io.observe(el);
+	});
+</script>
+
+</body>
+</html>
