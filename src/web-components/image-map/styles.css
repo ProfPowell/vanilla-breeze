@@ -1,0 +1,189 @@
+/* ==========================================================================
+   image-map + map-area: Responsive image maps
+   ========================================================================== */
+
+/* --- Progressive enhancement --- */
+image-map:not(:defined) {
+  display: block;
+}
+
+map-area:not(:defined) {
+  display: list-item;
+  margin-inline-start: var(--size-l);
+}
+
+map-area:not(:defined)::before {
+  content: attr(label);
+  font-weight: 600;
+}
+
+map-area:not(:defined)[href]::before {
+  content: none;
+}
+
+map-area:not(:defined)[href]::after {
+  content: none;
+}
+
+/* When href is present, render as a link */
+map-area:not(:defined)[href] {
+  display: list-item;
+}
+
+/* Hide area content when JS upgrades */
+image-map:defined > map-area {
+  display: none;
+}
+
+/* --- Core layout --- */
+image-map:defined {
+  display: block;
+  position: relative;
+  line-height: 0;
+}
+
+.image-map-img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+/* --- SVG overlay --- */
+.image-map-overlay {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.image-map-overlay > * {
+  pointer-events: all;
+  fill: var(--map-area-color, oklch(60% 0.2 250 / 0.08));
+  stroke: var(--map-area-stroke, oklch(60% 0.2 250 / 0.3));
+  stroke-width: 0.4;
+  cursor: pointer;
+  transition: fill 150ms, stroke 150ms;
+}
+
+.image-map-overlay > *:hover,
+.image-map-overlay > *[data-hover] {
+  fill: var(--map-area-color-hover, oklch(60% 0.2 250 / 0.35));
+  stroke: var(--map-area-stroke-hover, oklch(60% 0.2 250 / 0.6));
+}
+
+.image-map-overlay > *[data-disabled] {
+  fill: oklch(50% 0 0 / 0.2);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Focus anchors --- */
+.image-map-anchor {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.image-map-anchor:focus-visible {
+  clip: auto;
+  clip-path: none;
+  inline-size: auto;
+  block-size: auto;
+  min-inline-size: max-content;
+  padding: var(--size-2xs) var(--size-xs);
+  background: var(--map-area-color-hover, oklch(60% 0.2 250 / 0.6));
+  color: white;
+  font-size: var(--font-size-s, 0.875rem);
+  font-weight: 600;
+  border-radius: var(--radius-s, 4px);
+  outline: 3px solid var(--map-area-color-hover, oklch(60% 0.2 250 / 0.6));
+  outline-offset: 2px;
+  z-index: 10;
+  text-decoration: none;
+}
+
+/* Disable focus styling for disabled anchors */
+.image-map-anchor[aria-disabled="true"] {
+  pointer-events: none;
+}
+
+/* --- Tooltip --- */
+.image-map-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--map-tooltip-bg, oklch(15% 0 0 / 0.92));
+  color: var(--map-tooltip-color, white);
+  border-radius: var(--map-tooltip-radius, 0.5rem);
+  max-inline-size: var(--map-tooltip-max-width, 20rem);
+  padding: var(--size-s) var(--size-m);
+  line-height: var(--leading-normal, 1.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms, transform 150ms;
+  transform: translateY(4px);
+}
+
+.image-map-tooltip[data-visible] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Tooltip content styling */
+.image-map-tooltip p {
+  margin: 0;
+}
+
+.image-map-tooltip p + p {
+  margin-block-start: var(--size-xs);
+}
+
+.image-map-tooltip strong {
+  display: block;
+  margin-block-end: var(--size-2xs);
+}
+
+.image-map-tooltip a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.image-map-tooltip a:hover {
+  text-decoration: none;
+}
+
+.image-map-tooltip img {
+  border-radius: var(--radius-s, 4px);
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .image-map-overlay > * {
+    transition: none;
+  }
+
+  .image-map-tooltip {
+    transition: none;
+    transform: none;
+  }
+}
+
+:root[data-motion-reduced] .image-map-overlay > * {
+  transition: none;
+}
+
+:root[data-motion-reduced] .image-map-tooltip {
+  transition: none;
+  transform: none;
+}

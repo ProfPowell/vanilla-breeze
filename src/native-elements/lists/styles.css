@@ -106,3 +106,40 @@ dl[data-striped] > dl-item {
 dl[data-striped] > dl-item:nth-of-type(odd) {
   background: var(--color-surface-raised);
 }
+
+/* --- Metadata List --- */
+/* Inline list of items separated by middle dots: <ul class="meta"><li>Item</li></ul> */
+
+ul.meta,
+ol.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  list-style: none;
+  padding: 0;
+
+  & li {
+    margin-block-start: 0;
+  }
+
+  & li + li::before {
+    content: var(--sep-list, "\00B7");
+    padding-inline: 0.35em;
+  }
+}
+
+/* Separator variants */
+ul.meta[data-separator="pipe"] li + li::before { content: var(--sep-pipe, "|"); }
+ul.meta[data-separator="dash"] li + li::before { content: var(--sep-ndash, "\2013"); }
+ul.meta[data-separator="slash"] li + li::before { content: "/"; }
+
+/* --- List Marker Variants --- */
+/* Override list markers using character tokens */
+
+ul[data-marker="check"] li::marker { content: var(--marker-check, "\2714") "\2009"; color: var(--color-success, currentColor); }
+ul[data-marker="arrow"] li::marker { content: var(--marker-arrow, "\27A4") "\2009"; color: var(--color-interactive); }
+ul[data-marker="dash"] li::marker  { content: var(--marker-dash, "\2043") "\2009"; }
+ul[data-marker="star"] li::marker  { content: "\2605\2009"; color: var(--color-interactive); }

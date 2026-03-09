@@ -1,0 +1,61 @@
+/* consent-banner: Cookie/privacy consent positioning & animation */
+
+/* Progressive enhancement: hide until JS defines the element */
+consent-banner:not(:defined) {
+  display: none;
+}
+
+consent-banner {
+  display: contents;
+}
+
+consent-banner[hidden] {
+  display: none;
+}
+
+/* ── Non-modal (bottom / top) ──
+   dialog.show() does not promote to the top-layer,
+   so we position fixed and layer manually. */
+consent-banner:not([data-position="center"]) > dialog[open] {
+  position: fixed;
+  z-index: 900;
+  inset: auto;
+  inset-inline: 0;
+  inset-block-end: var(--size-m);
+  margin: 0 auto;
+  max-inline-size: min(90vw, 52rem);
+  border-radius: var(--radius-l);
+  box-shadow:
+    0 0 0 1px oklch(0% 0 0 / 0.05),
+    0 10px 15px -3px oklch(0% 0 0 / 0.1),
+    0 20px 25px -5px oklch(0% 0 0 / 0.15);
+  animation: vb-slide-in-bottom var(--motion-enter-duration) var(--ease-out);
+}
+
+/* ── Top ── */
+consent-banner[data-position="top"] > dialog[open] {
+  inset-block-end: auto;
+  inset-block-start: var(--size-m);
+  animation: vb-slide-in-top var(--motion-enter-duration) var(--ease-out);
+}
+
+/* ── Center: modal — uses showModal(), inherits standard dialog centering ── */
+consent-banner[data-position="center"] > dialog {
+  max-inline-size: min(90vw, 40rem);
+}
+
+/* ── Compact layout: no header = no divider above footer ── */
+consent-banner > dialog:not(:has(header)) > footer {
+  border-block-start: none;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  consent-banner > dialog[open] {
+    animation: none;
+  }
+}
+
+:root[data-motion-reduced] consent-banner > dialog[open] {
+  animation: none;
+}

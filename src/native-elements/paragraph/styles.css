@@ -39,10 +39,34 @@ p.justify {
 
 strong, b {
   font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
 }
 
 em, i {
   font-style: italic;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+}
+
+/* True combined bold-italic when nested */
+:where(b i, i b, strong em, em strong) {
+  font-weight: 600;
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Bold in code — highlight background instead of just weight */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}
+
+/* Italic in blockquote — de-emphasize since blockquote is already offset */
+:where(blockquote) :where(i, em) {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
 }
 
 small {

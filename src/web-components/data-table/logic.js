@@ -185,6 +185,21 @@ class DataTable extends HTMLElement {
     }
   };
 
+  #isAlreadySorted(columnIndex, sortType, dir) {
+    const rows = this.#filteredRows;
+    if (rows.length < 2) return true;
+    const multiplier = dir === 'asc' ? 1 : -1;
+    for (let i = 1; i < rows.length; i++) {
+      const a = this.#getSortValue(rows[i - 1].children[columnIndex], sortType);
+      const b = this.#getSortValue(rows[i].children[columnIndex], sortType);
+      const cmp = typeof a === 'string'
+        ? a.localeCompare(b) * multiplier
+        : (a - b) * multiplier;
+      if (cmp > 0) return false;
+    }
+    return true;
+  }
+
   #sortByColumn(columnIndex) {
     const headerInfo = this.#sortableHeaders.find(h => h.columnIndex === columnIndex);
     if (!headerInfo) return;
@@ -194,7 +209,13 @@ class DataTable extends HTMLElement {
     if (this.#currentSortColumn === columnIndex) {
       direction = this.#currentSortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      direction = 'asc';
+      // First click on this column: if already sorted asc, start desc so
+      // the user sees an immediate visible change
+      if (this.#isAlreadySorted(columnIndex, headerInfo.sortType, 'asc')) {
+        direction = 'desc';
+      } else {
+        direction = 'asc';
+      }
     }
 
     // Clear previous sort state

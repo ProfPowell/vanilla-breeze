@@ -1,7 +1,9 @@
 /* hgroup: Heading group styling */
 
 hgroup {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs);
 }
 
 hgroup > * {
@@ -12,45 +14,154 @@ hgroup > * {
 hgroup > p,
 hgroup > small {
   color: var(--color-text-muted);
-  font-weight: normal;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+  text-wrap: pretty;
+  max-inline-size: 55ch;
 }
 
-/* --- Hgroup Variants --- */
+/* --- Spacing Variants --- */
 
 /* Tight spacing */
 hgroup.tight {
-  & > *:not(:first-child) {
-    margin-block-start: var(--size-2xs);
-  }
+  gap: 0;
 }
 
 /* Normal spacing */
 hgroup.spaced {
-  & > *:not(:first-child) {
-    margin-block-start: var(--size-s);
-  }
+  gap: var(--size-s);
 }
+
+/* --- Layout Variants --- */
 
 /* Reversed (subheading above) */
 hgroup.reversed {
-  display: flex;
   flex-direction: column-reverse;
-
-  & > *:not(:last-child) {
-    margin-block-start: var(--size-2xs);
-  }
 }
 
 /* Centered hgroup */
-hgroup.centered {
+hgroup.centered,
+hgroup[data-align="center"] {
+  align-items: center;
   text-align: center;
+
+  & > p {
+    margin-inline: auto;
+  }
 }
 
 /* With divider */
 hgroup.divided {
   & > *:not(:first-child) {
-    margin-block-start: var(--size-s);
     padding-block-start: var(--size-s);
     border-block-start: var(--border-width-thin) solid var(--color-border);
   }
+}
+
+/* --- Eyebrow --- */
+/* Small label above the heading: <hgroup class="eyebrow"><p>Label</p><h2>Title</h2></hgroup> */
+
+hgroup.eyebrow > p:first-child {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--color-interactive);
+  max-inline-size: none;
+  order: -1;
+}
+
+hgroup.eyebrow > p:last-child:not(:first-child) {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+}
+
+/* --- Byline --- */
+/* Article metadata: <hgroup class="byline"><h2>Title</h2><p><span>Author</span><span>Date</span></p></hgroup> */
+
+hgroup.byline {
+  gap: var(--size-xs);
+}
+
+hgroup.byline > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-2xs) var(--size-m);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  max-inline-size: none;
+}
+
+hgroup.byline > p time {
+  font-variant-numeric: tabular-nums;
+}
+
+hgroup.byline > p [rel="author"] {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-interactive);
+  }
+}
+
+hgroup.byline > p > span + span::before {
+  content: var(--sep-list, "\00B7");
+  margin-inline-end: var(--size-m);
+  color: var(--color-border);
+}
+
+/* --- Section Header --- */
+/* Large bordered section intro: <hgroup class="section-header"><h2>Title</h2><p>Intro text</p></hgroup> */
+
+hgroup.section-header {
+  padding-block-end: var(--size-m);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+  margin-block-end: var(--size-l);
+  gap: var(--size-xs);
+}
+
+hgroup.section-header > :is(h1, h2) {
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+hgroup.section-header > p {
+  font-size: var(--font-size-lg);
+  max-inline-size: 60ch;
+}
+
+/* --- Display / Hero --- */
+/* Large hero heading: <hgroup class="display"><h1>Big Title</h1><p>Subtitle</p></hgroup> */
+
+hgroup.display {
+  gap: var(--size-s);
+}
+
+hgroup.display > :is(h1, h2) {
+  font-size: clamp(var(--font-size-3xl), 5vw + 1rem, var(--font-size-4xl));
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+hgroup.display > p {
+  font-size: clamp(var(--font-size-md), 1.5vw + 0.75rem, var(--font-size-xl));
+  color: var(--color-text-muted);
+  max-inline-size: 50ch;
+}
+
+hgroup.display::after {
+  content: "";
+  display: block;
+  inline-size: 3rem;
+  block-size: 3px;
+  background: var(--color-interactive);
+  border-radius: var(--radius-s);
+  margin-block-start: var(--size-2xs);
+}
+
+hgroup.display[data-align="center"]::after {
+  margin-inline: auto;
 }

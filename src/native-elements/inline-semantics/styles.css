@@ -53,6 +53,7 @@ ins {
 
 /* Subscript */
 sub {
+  font-variant-position: sub;
   font-size: 0.75em;
   line-height: 0;
   position: relative;
@@ -62,11 +63,23 @@ sub {
 
 /* Superscript */
 sup {
+  font-variant-position: super;
   font-size: 0.75em;
   line-height: 0;
   position: relative;
   vertical-align: baseline;
   inset-block-end: 0.5em;
+}
+
+/* When font-variant-position works, let it handle everything */
+@supports (font-variant-position: super) {
+  sub, sup {
+    vertical-align: inherit;
+    font-size: inherit;
+    position: static;
+    inset-block-end: unset;
+    line-height: inherit;
+  }
 }
 
 /* Time element */
@@ -203,4 +216,61 @@ sup.footnote-ref {
 .footnotes a[href^="#fnref"] {
   text-decoration: none;
   font-size: 0.85em;
+}
+
+/* --- Status Indicator --- */
+/* Inline status dot: <span class="status" data-status="success">Deployed</span> */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: var(--font-size-sm);
+
+  &::before {
+    content: "\25CF"; /* filled circle */
+    font-size: 0.7em;
+    color: var(--color-text-muted);
+  }
+
+  &[data-status="success"]::before { color: var(--color-success); }
+  &[data-status="warning"]::before { color: var(--color-warning); }
+  &[data-status="error"]::before   { color: var(--color-error); }
+
+  &[data-status="inactive"]::before {
+    content: "\25CB"; /* empty circle */
+    color: var(--color-text-muted);
+  }
+
+  &[data-status="check"]::before {
+    content: "\2714"; /* check mark */
+    color: var(--color-success);
+  }
+
+  &[data-status="fail"]::before {
+    content: "\2718"; /* cross mark */
+    color: var(--color-error);
+  }
+}
+
+/* --- Block Progress --- */
+/* Unicode block-char progress: <span class="block-progress" role="meter" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Progress"><span aria-hidden="true" data-filled>███████</span><span aria-hidden="true" data-empty>░░░</span> <small>70%</small></span> */
+
+.block-progress {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+
+  & [data-filled] { color: var(--color-interactive); }
+  & [data-empty]  { color: var(--color-text-muted); opacity: 0.4; }
+
+  & small {
+    font-size: 0.8em;
+    letter-spacing: normal;
+    color: var(--color-text-muted);
+  }
 }

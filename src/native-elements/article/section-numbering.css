@@ -1,0 +1,31 @@
+/* article[data-section-numbers]: Section-sign (§) numbering for legal/doc content.
+   Distinct from data-numbered (outline-style 1.1, 1.2 numbering). */
+
+article[data-section-numbers] {
+  counter-reset: vb-sec;
+}
+
+article[data-section-numbers] :is(h2, h3) {
+  counter-increment: vb-sec;
+}
+
+article[data-section-numbers] h2::before {
+  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec) "\2002";
+  color: var(--color-interactive);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nested: §1a, §1b style for h3 under data-section-numbers */
+article[data-section-numbers] h3 {
+  counter-increment: vb-subsec;
+}
+
+article[data-section-numbers] h2 {
+  counter-reset: vb-subsec;
+}
+
+article[data-section-numbers] h3::before {
+  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec) counter(vb-subsec, lower-alpha) "\2002";
+  color: var(--color-interactive);
+  font-variant-numeric: tabular-nums;
+}

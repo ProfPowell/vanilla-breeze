@@ -124,15 +124,27 @@
    CSS quotes property adapts to language convention.
    ============================================================ */
 
-q { quotes: "\201C" "\201D" "\2018" "\2019"; }          /* English "..." */
-:lang(de) q { quotes: "\201E" "\201C" "\201A" "\2018"; } /* German  „..." */
-:lang(fr) q { quotes: "\00AB" "\00BB" "\2039" "\203A"; } /* French  «...» */
-:lang(ja) q { quotes: "\300C" "\300D" "\300E" "\300F"; } /* Japanese「...」*/
-:lang(zh) q { quotes: "\300C" "\300D" "\300E" "\300F"; } /* Chinese 「...」*/
-:lang(ru) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; } /* Russian «...» */
+q { quotes: "\201C" "\201D" "\2018" "\2019"; }                   /* English "..." */
+:lang(en-GB) q, :lang(en-AU) q, :lang(en-NZ) q {
+  quotes: "\2018" "\2019" "\201C" "\201D";                       /* 'single' "double" */
+}
+:lang(de) q { quotes: "\201E" "\201C" "\201A" "\2018"; }         /* German  „..." */
+:lang(fr) q { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; } /* French «...» (narrow NBSP) */
+:lang(it) q, :lang(es) q, :lang(pt) q {
+  quotes: "\00AB" "\00BB" "\201C" "\201D";
+}
+:lang(pl) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }
+:lang(ja) q { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Japanese「...」*/
+:lang(zh) q { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Chinese 「...」*/
+:lang(ko) q { quotes: "\201C" "\201D" "\2018" "\2019"; }         /* Korean */
+:lang(ru) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }         /* Russian «...» */
+:lang(ar) q { quotes: "\00AB" "\00BB" "\2018" "\2019"; }         /* Arabic */
 
 q::before { content: open-quote; }
 q::after  { content: close-quote; }
+
+/* Hanging punctuation for typographic refinement (progressive — Safari) */
+blockquote { hanging-punctuation: first last; }
 
 /* ============================================================
    4. UNTRANSLATABLE CONTENT
