@@ -20,8 +20,10 @@ import './qr-code/logic.js';
 import './slide-accept/logic.js';
 import './color-palette/logic.js';
 import './type-specimen/logic.js';
+import './consent-banner/logic.js';
 
 // Specialty utility inits
+import '../utils/chapter-list-init.js';
 import '../utils/command-init.js';
 import '../effects/glitch.js';
 import '../effects/blur-reveal.js';

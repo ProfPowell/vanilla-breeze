@@ -1,5 +1,9 @@
 # Theme Consistency: Cross-Theme Card Layout & Color Mode Stability
 
+
+-- March 8, 2026 Note:  This may be done already, check to make sure as the most important first step --
+
+
 ## Problem Statement
 
 When switching between themes, card grids (particularly the "Built Different" section on the home page) exhibit layout inconsistency due to font metric differences. Themes using monospace fonts (Brutalist, Cyber, Terminal, 8bit, NES) cause card headings like "Progressive Enhancement" to wrap to 2 lines, while proportional sans-serif themes keep them on 1 line. This produces misaligned heading/body regions across cards in the same row.
