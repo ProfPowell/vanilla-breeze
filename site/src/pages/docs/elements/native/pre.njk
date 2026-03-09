@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "pre"
-description: "Preformatted text preserving whitespace and line breaks."
+description: "Preformatted text preserving whitespace and line breaks. VB distinguishes code blocks (pre+code) from bare preformatted text (poetry, ASCII art) with different visual treatments."
 elementName: pre
 category: native
 nativeGroup: Text Content
@@ -9,37 +9,172 @@ currentPath: /docs/elements/native/pre/
 permalink: /docs/elements/native/pre/
 ---
 
-{% set basicPreCode %}<pre>...&lt;/pre&gt;{% endset %}
+{% set codeBlockCode %}<pre><code>function greet(name) {
+  return `Hello, ${name}!`;
+}
 
-<!-- Description Section -->
-  <section>
+console.log(greet('World'));</code></pre>{% endset %}
+
+{% set terminalCode %}<pre><samp>$ npm install
+added 125 packages in 3.2s
+
+$ npm run build
+Build completed successfully.</samp></pre>{% endset %}
+
+{% set asciiCode %}<pre>    *
+   ***
+  *****
+ *******
+*********
+   |||</pre>{% endset %}
+
+{% set poetryCode %}<pre>Two roads diverged in a wood, and I—
+I took the one less traveled by,
+And that has made all the difference.</pre>{% endset %}
+
+{% set preCssCode %}pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Code blocks: pre containing code gets full treatment */
+pre:has(code) {
+  background: var(--color-surface-raised);
+  padding: var(--size-m);
+  border-radius: var(--radius-m);
+  white-space: pre;
+  word-wrap: normal;
+
+  & code {
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+  }
+}{% endset %}
+
+{% set boldInCodeCode %}/* Bold in code — highlight background */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}{% endset %}
+
+{% set printCode %}/* Print: pre blocks avoid page breaks */
+@media print {
+  pre { break-inside: avoid; }
+}{% endset %}
+
+<section>
     <h2>Description</h2>
-    <p>The <code>&lt;pre&gt;</code> element is part of the Text Content category in HTML.</p>
+    <p>The <code>&lt;pre&gt;</code> element preserves whitespace and line breaks exactly as written in the HTML source. VB makes an important distinction:</p>
+    <ul>
+      <li><strong><code>&lt;pre&gt;&lt;code&gt;</code></strong> (code blocks) &mdash; Full treatment with background, padding, border-radius, and <code>white-space: pre</code> with horizontal scroll</li>
+      <li><strong>Bare <code>&lt;pre&gt;</code></strong> (no <code>&lt;code&gt;</code> child) &mdash; Lighter treatment with <code>pre-wrap</code> and no background, for ASCII art, poetry, or other preformatted text that isn't code</li>
+    </ul>
+    <p>This distinction uses <code>pre:has(code)</code> &mdash; no classes needed.</p>
   </section>
 
-  <!-- Basic Example Section -->
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <pre>Example pre content</pre>
-    </div>
-    <code-block language="html" label="Basic pre example">{{ basicPreCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Code blocks:</strong> Wrap <code>&lt;code&gt;</code> inside <code>&lt;pre&gt;</code> for multi-line source code</li>
+      <li><strong>Terminal output:</strong> Wrap <code>&lt;samp&gt;</code> inside <code>&lt;pre&gt;</code> for command output</li>
+      <li><strong>ASCII art:</strong> Bare <code>&lt;pre&gt;</code> for art that depends on character alignment</li>
+      <li><strong>Poetry:</strong> Bare <code>&lt;pre&gt;</code> when line breaks are part of the content's meaning</li>
+      <li><strong>Data tables:</strong> Plain-text tabular data (though <code>&lt;table&gt;</code> is usually better)</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For indenting content &mdash; use CSS margins or layout elements</li>
+      <li>For single-line code &mdash; use inline <a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a></li>
+      <li>For poetry with complex formatting &mdash; consider <code>&lt;p&gt;</code> with <a href="/docs/elements/native/br/"><code>&lt;br&gt;</code></a></li>
+    </ul>
   </section>
 
-  <!-- Attributes Section -->
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/pre-examples.html" url="pre-examples.html" title="Preformatted text" shadow></browser-window>
   </section>
 
-  <!-- Accessibility Section -->
+  <section>
+    <h2>Code Blocks (pre + code)</h2>
+    <p>The canonical pattern for displaying source code. VB detects the <code>&lt;code&gt;</code> child via <code>pre:has(code)</code> and applies full code-block styling:</p>
+
+    <code-block language="html" show-lines label="Code block">{{ codeBlockCode | escape }}</code-block>
+
+    <h3>Bold Highlighting in Code</h3>
+    <p><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> and <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> inside code blocks get a subtle background highlight instead of relying on font weight alone:</p>
+
+    <code-block language="css" label="Bold in code">{{ boldInCodeCode | escape }}</code-block>
+
+    <h3>Syntax Highlighting</h3>
+    <p>For colored syntax highlighting, VB provides the <code>&lt;code-block&gt;</code> web component (used throughout this documentation site). For external tools, add <code>class="language-*"</code> to the <code>&lt;code&gt;</code> element and integrate Prism.js or highlight.js.</p>
+  </section>
+
+  <section>
+    <h2>Terminal Output (pre + samp)</h2>
+    <p>Use <a href="/docs/elements/native/samp/"><code>&lt;samp&gt;</code></a> inside <code>&lt;pre&gt;</code> for command-line output. This gets code-block styling since samp behaves like code in this context:</p>
+
+    <code-block language="html" show-lines label="Terminal output">{{ terminalCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Bare Pre (No Code Child)</h2>
+    <p>Without a <code>&lt;code&gt;</code> or <code>&lt;samp&gt;</code> child, <code>&lt;pre&gt;</code> gets lighter styling &mdash; no background, no padding, and <code>white-space: pre-wrap</code> so long lines wrap rather than scroll. This is appropriate for ASCII art, poetry, and other preformatted text that isn't code.</p>
+
+    <code-block language="html" show-lines label="ASCII art">{{ asciiCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Poetry">{{ poetryCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="pre CSS">{{ preCssCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Context</th><th>Background</th><th>White-space</th><th>Scroll</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>pre:has(code)</code></td>
+          <td><code>var(--color-surface-raised)</code></td>
+          <td><code>pre</code> (exact)</td>
+          <td>Horizontal</td>
+        </tr>
+        <tr>
+          <td>Bare <code>pre</code></td>
+          <td>None</td>
+          <td><code>pre-wrap</code> (wraps)</td>
+          <td>None</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Print</h3>
+    <code-block language="css" label="Print styles">{{ printCode | escape }}</code-block>
+  </section>
+
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;pre&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Screen readers read <code>&lt;pre&gt;</code> content in its linear order</li>
+      <li>Add <code>tabindex="0"</code> to scrollable code blocks so keyboard users can scroll with arrow keys</li>
+      <li>Add <code>role="region"</code> and <code>aria-label</code> for complex code blocks that benefit from a landmark</li>
+      <li>ASCII art is inaccessible to screen readers &mdash; add <code>aria-label</code> or <code>alt</code> text describing what it depicts</li>
+    </ul>
   </section>
 
-  <!-- Related Elements Section -->
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; Inline code and the required child for code blocks</li>
+      <li><a href="/docs/elements/native/samp/"><code>&lt;samp&gt;</code></a> &mdash; Sample output inside pre for terminal patterns</li>
+      <li><a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a> &mdash; Keyboard input (often documented alongside code blocks)</li>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Bold highlighting inside code blocks</li>
+      <li><a href="/docs/elements/native/br/"><code>&lt;br&gt;</code></a> &mdash; Alternative for line breaks in non-preformatted poetry</li>
+    </ul>
   </section>

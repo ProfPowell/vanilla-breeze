@@ -13,13 +13,17 @@ permalink: /docs/elements/native/iframe/
 
 {% set borderedIframeCode %}<iframe class="bordered" src="page.html" title="..."></iframe>{% endset %}
 
-{% set responsiveEmbedCode %}<div class="embed-responsive">
-  <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Video title"></iframe>
-</div>{% endset %}
+{% set responsiveEmbedCode %}<section class="embed-responsive">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
+    title="Video title"
+    allowfullscreen>
+  </iframe>
+</section>{% endset %}
 
-{% set ratio4x3Code %}<div class="embed-responsive ratio-4x3">
+{% set ratio4x3Code %}<section class="embed-responsive ratio-4x3">
   <iframe src="..." title="..."></iframe>
-</div>{% endset %}
+</section>{% endset %}
 
 {% set sandboxCode %}<!-- Most restrictive: no scripts, forms, or same-origin access -->
 <iframe sandbox src="..." title="..."></iframe>
@@ -54,32 +58,23 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
   title="...">
 </iframe>{% endset %}
 
-{% set youtubeCode %}<div class="embed-responsive">
+{% set youtubeCode %}<section class="embed-responsive">
   <iframe
-    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+    src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
     title="YouTube video player"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen>
+    allowfullscreen
+    loading="lazy">
   </iframe>
-</div>{% endset %}
+</section>{% endset %}
 
-{% set googleMapsCode %}<div class="embed-responsive ratio-4x3">
+{% set mapCode %}<section class="embed-responsive ratio-4x3">
   <iframe
-    src="https://www.google.com/maps/embed?pb=..."
+    src="https://www.openstreetmap.org/export/embed.html?bbox=..."
     title="Map showing office location"
-    loading="lazy"
-    referrerpolicy="no-referrer-when-downgrade">
+    loading="lazy">
   </iframe>
-</div>{% endset %}
-
-{% set vimeoCode %}<div class="embed-responsive">
-  <iframe
-    src="https://player.vimeo.com/video/VIDEO_ID"
-    title="Vimeo video"
-    allow="autoplay; fullscreen; picture-in-picture"
-    allowfullscreen>
-  </iframe>
-</div>{% endset %}
+</section>{% endset %}
 
 {% set titleExamplesCode %}<!-- Good: descriptive title -->
 <iframe
@@ -99,134 +94,86 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;iframe&gt;</code> element embeds another HTML document within the current page. It's commonly used for third-party content like video players, maps, widgets, and external applications.</p>
-    <p>Vanilla Breeze removes default borders and provides responsive wrapper classes for common aspect ratios, ensuring embedded content scales properly across devices.</p>
+    <p>The <code>&lt;iframe&gt;</code> element embeds another HTML document within the current page. VB removes default borders, provides variant classes for visual style, and offers responsive wrapper classes for common aspect ratios.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
-      <li><strong>Video embeds</strong> - YouTube, Vimeo, and other video platforms</li>
-      <li><strong>Maps</strong> - Google Maps, OpenStreetMap embeds</li>
-      <li><strong>Social widgets</strong> - Twitter timelines, Facebook posts</li>
-      <li><strong>Payment forms</strong> - Stripe, PayPal checkout</li>
-      <li><strong>Third-party tools</strong> - Calendars, forms, surveys</li>
+      <li><strong>Video embeds:</strong> YouTube, Vimeo, and other video platforms</li>
+      <li><strong>Maps:</strong> Google Maps, OpenStreetMap embeds</li>
+      <li><strong>Social widgets:</strong> Twitter timelines, social posts</li>
+      <li><strong>Payment forms:</strong> Stripe, PayPal checkout</li>
+      <li><strong>Third-party tools:</strong> Calendars, forms, surveys</li>
     </ul>
 
     <h3>When to Use Other Elements</h3>
     <ul>
       <li>Use <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> for self-hosted video files</li>
       <li>Use <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> for self-hosted audio</li>
-      <li>Use native components when available instead of embedded widgets</li>
+      <li>Use <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> for modal content on your own page</li>
     </ul>
   </section>
 
   <section>
     <h2>Variants</h2>
+    <p>VB removes the default iframe border and provides variant classes for visual style.</p>
 
-    <h3>Default</h3>
-    <p>Basic iframe without borders.</p>
-    <div class="example">
-      <iframe src="about:blank" title="Empty iframe example" style="inline-size: 100%; block-size: 200px; background: var(--color-surface-raised);"></iframe>
-    </div>
+    <browser-window src="/docs/snippets/demos/iframe-examples.html" url="iframe-examples.html" title="Iframe variants" shadow></browser-window>
+
     <code-block language="html" show-lines label="Basic iframe">{{ basicIframeCode | escape }}</code-block>
-
-    <h3>.bordered</h3>
-    <p>Adds subtle border and rounded corners.</p>
-    <div class="example">
-      <iframe class="bordered" src="about:blank" title="Bordered iframe" style="inline-size: 100%; block-size: 200px; background: var(--color-surface-raised);"></iframe>
-    </div>
     <code-block language="html" show-lines label="Bordered iframe">{{ borderedIframeCode | escape }}</code-block>
-
-    <h3>.rounded</h3>
-    <p>Medium border radius without border.</p>
-    <div class="example">
-      <iframe class="rounded" src="about:blank" title="Rounded iframe" style="inline-size: 100%; block-size: 200px; background: var(--color-surface-raised);"></iframe>
-    </div>
-
-    <h3>.full</h3>
-    <p>Full container width.</p>
-    <div class="example">
-      <iframe class="full bordered" src="about:blank" title="Full width iframe" style="block-size: 150px; background: var(--color-surface-raised);"></iframe>
-    </div>
-
-    <h3>.fixed</h3>
-    <p>Full width with fixed height (400px).</p>
-    <div class="example" style="max-block-size: 250px; overflow: hidden;">
-      <iframe class="fixed bordered" src="about:blank" title="Fixed height iframe" style="background: var(--color-surface-raised);"></iframe>
-    </div>
-  </section>
-
-  <section>
-    <h2>Responsive Embeds</h2>
-    <p>Use the <code>.embed-responsive</code> wrapper to maintain aspect ratio while filling available width.</p>
-
-    <h3>.embed-responsive (16:9 default)</h3>
-    <div class="example" style="max-inline-size: 500px;">
-      <div class="embed-responsive">
-        <iframe src="about:blank" title="16:9 responsive embed" style="background: var(--color-surface-raised);"></iframe>
-      </div>
-    </div>
-    <code-block language="html" show-lines label="16:9 responsive embed">{{ responsiveEmbedCode | escape }}</code-block>
-
-    <h3>.ratio-4x3</h3>
-    <div class="example" style="max-inline-size: 400px;">
-      <div class="embed-responsive ratio-4x3">
-        <iframe src="about:blank" title="4:3 embed" style="background: var(--color-surface-raised);"></iframe>
-      </div>
-    </div>
-    <code-block language="html" show-lines label="4:3 aspect ratio embed">{{ ratio4x3Code | escape }}</code-block>
-
-    <h3>.ratio-1x1</h3>
-    <div class="example" style="max-inline-size: 300px;">
-      <div class="embed-responsive ratio-1x1">
-        <iframe src="about:blank" title="Square embed" style="background: var(--color-surface-raised);"></iframe>
-      </div>
-    </div>
-
-    <h3>.ratio-21x9</h3>
-    <div class="example" style="max-inline-size: 600px;">
-      <div class="embed-responsive ratio-21x9">
-        <iframe src="about:blank" title="Ultrawide embed" style="background: var(--color-surface-raised);"></iframe>
-      </div>
-    </div>
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Wrapper Class</th>
-          <th>Aspect Ratio</th>
-          <th>Use Case</th>
-        </tr>
+        <tr><th>Class</th><th>Effect</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>.embed-responsive</code></td>
-          <td>16:9</td>
-          <td>YouTube, Vimeo, most video</td>
-        </tr>
-        <tr>
-          <td><code>.ratio-4x3</code></td>
-          <td>4:3</td>
-          <td>Classic presentations, some maps</td>
-        </tr>
-        <tr>
-          <td><code>.ratio-1x1</code></td>
-          <td>1:1</td>
-          <td>Instagram embeds, square widgets</td>
-        </tr>
-        <tr>
-          <td><code>.ratio-21x9</code></td>
-          <td>21:9</td>
-          <td>Cinematic video, ultrawide content</td>
-        </tr>
+        <tr><td>(default)</td><td>No border, block display, max-width 100%</td></tr>
+        <tr><td><code>.bordered</code></td><td>Subtle border with rounded corners</td></tr>
+        <tr><td><code>.rounded</code></td><td>Medium border radius, overflow hidden</td></tr>
+        <tr><td><code>.full</code></td><td>100% container width</td></tr>
+        <tr><td><code>.fixed</code></td><td>100% width, fixed 400px height</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Security Considerations</h2>
-    <p>Iframes can pose security risks. Follow these best practices:</p>
+    <h2>Responsive Embeds</h2>
+    <p>Wrap an iframe in an <code>.embed-responsive</code> container to maintain aspect ratio while filling available width. The iframe stretches to fill the container via absolute positioning.</p>
+
+    <browser-window src="/docs/snippets/demos/iframe-responsive.html" url="iframe-responsive.html" title="Responsive embed ratios" shadow></browser-window>
+
+    <code-block language="html" show-lines label="16:9 responsive embed">{{ responsiveEmbedCode | escape }}</code-block>
+    <code-block language="html" show-lines label="4:3 aspect ratio embed">{{ ratio4x3Code | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Wrapper Class</th><th>Aspect Ratio</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.embed-responsive</code></td><td>16:9</td><td>YouTube, Vimeo, most video</td></tr>
+        <tr><td><code>.ratio-4x3</code></td><td>4:3</td><td>Classic presentations, some maps</td></tr>
+        <tr><td><code>.ratio-1x1</code></td><td>1:1</td><td>Instagram embeds, square widgets</td></tr>
+        <tr><td><code>.ratio-21x9</code></td><td>21:9</td><td>Cinematic video, ultrawide content</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Live Embeds</h2>
+    <p>Real-world embed examples showing YouTube video and OpenStreetMap.</p>
+
+    <browser-window src="/docs/snippets/demos/iframe-live-embeds.html" url="iframe-live-embeds.html" title="Live embed examples" shadow></browser-window>
+
+    <code-block language="html" show-lines label="YouTube video embed">{{ youtubeCode | escape }}</code-block>
+    <code-block language="html" show-lines label="OpenStreetMap embed">{{ mapCode | escape }}</code-block>
+
+    <p><strong>Privacy note:</strong> Use <code>youtube-nocookie.com</code> instead of <code>youtube.com</code> for privacy-enhanced mode that doesn't set tracking cookies until the user plays the video.</p>
+  </section>
+
+  <section>
+    <h2>Security</h2>
 
     <h3>The sandbox Attribute</h3>
     <p>Restricts iframe capabilities. Start with an empty value (most restrictive) and add permissions as needed.</p>
@@ -234,70 +181,34 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Sandbox Value</th>
-          <th>Allows</th>
-        </tr>
+        <tr><th>Sandbox Value</th><th>Allows</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>allow-scripts</code></td>
-          <td>JavaScript execution</td>
-        </tr>
-        <tr>
-          <td><code>allow-same-origin</code></td>
-          <td>Treat content as same origin</td>
-        </tr>
-        <tr>
-          <td><code>allow-forms</code></td>
-          <td>Form submission</td>
-        </tr>
-        <tr>
-          <td><code>allow-popups</code></td>
-          <td>Open new windows/tabs</td>
-        </tr>
-        <tr>
-          <td><code>allow-modals</code></td>
-          <td>Modal dialogs (alert, confirm)</td>
-        </tr>
-        <tr>
-          <td><code>allow-downloads</code></td>
-          <td>Downloading files</td>
-        </tr>
+        <tr><td><code>allow-scripts</code></td><td>JavaScript execution</td></tr>
+        <tr><td><code>allow-same-origin</code></td><td>Treat content as same origin</td></tr>
+        <tr><td><code>allow-forms</code></td><td>Form submission</td></tr>
+        <tr><td><code>allow-popups</code></td><td>Open new windows/tabs</td></tr>
+        <tr><td><code>allow-modals</code></td><td>Modal dialogs (alert, confirm)</td></tr>
+        <tr><td><code>allow-downloads</code></td><td>Downloading files</td></tr>
       </tbody>
     </table>
 
     <h3>Content Security Policy</h3>
-    <p>Control which sources can be embedded with the <code>frame-src</code> directive.</p>
     <code-block language="html" show-lines label="Content Security Policy">{{ cspCode | escape }}</code-block>
 
     <h3>Referrer Policy</h3>
-    <p>Control what information is sent to the embedded content.</p>
     <code-block language="html" show-lines label="Referrer policy">{{ referrerCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Live Examples</h2>
-
-    <h3>YouTube Video</h3>
-    <code-block language="html" show-lines label="YouTube video embed">{{ youtubeCode | escape }}</code-block>
-
-    <h3>Google Maps</h3>
-    <code-block language="html" show-lines label="Google Maps embed">{{ googleMapsCode | escape }}</code-block>
-
-    <h3>Vimeo Video</h3>
-    <code-block language="html" show-lines label="Vimeo video embed">{{ vimeoCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
 
     <h3>Title Attribute</h3>
-    <p>Every iframe must have a <code>title</code> attribute that describes its content.</p>
+    <p>Every iframe <strong>must</strong> have a <code>title</code> attribute that describes its content for screen readers.</p>
     <code-block language="html" show-lines label="Title attribute examples">{{ titleExamplesCode | escape }}</code-block>
 
-    <h3>Loading Attribute</h3>
-    <p>Defer loading of off-screen iframes for better performance.</p>
+    <h3>Lazy Loading</h3>
+    <p>Defer loading of below-the-fold iframes for better performance.</p>
     <code-block language="html" show-lines label="Lazy loading iframe">{{ lazyLoadCode | escape }}</code-block>
 
     <h3>Best Practices</h3>
@@ -311,54 +222,30 @@ Content-Security-Policy: frame-src 'self' https://www.youtube.com https://player
   </section>
 
   <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> - For self-hosted video content</li>
-      <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> - For self-hosted audio content</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Wrap embeds that need captions</li>
-    </ul>
+    <h2>CSS Reference</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Selector</th><th>Properties</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>iframe</code></td><td><code>display: block; border: none; max-inline-size: 100%;</code></td></tr>
+        <tr><td><code>iframe.full</code></td><td><code>inline-size: 100%;</code></td></tr>
+        <tr><td><code>iframe.fixed</code></td><td><code>inline-size: 100%; block-size: 400px;</code></td></tr>
+        <tr><td><code>iframe.rounded</code></td><td><code>border-radius: var(--radius-m); overflow: hidden;</code></td></tr>
+        <tr><td><code>iframe.bordered</code></td><td><code>border; border-radius;</code></td></tr>
+        <tr><td><code>.embed-responsive</code></td><td><code>position: relative; aspect-ratio: 16 / 9;</code></td></tr>
+        <tr><td><code>.embed-responsive > iframe</code></td><td><code>position: absolute; inset: 0; 100% width/height;</code></td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>CSS Reference</h2>
-    <p>Styles defined in <code>/src/native-elements/iframe/styles.css</code></p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Selector</th>
-          <th>Properties</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>iframe</code></td>
-          <td><code>display: block; border: none; max-inline-size: 100%;</code></td>
-        </tr>
-        <tr>
-          <td><code>iframe.full</code></td>
-          <td><code>inline-size: 100%;</code></td>
-        </tr>
-        <tr>
-          <td><code>iframe.fixed</code></td>
-          <td><code>block-size: 400px;</code></td>
-        </tr>
-        <tr>
-          <td><code>iframe.rounded</code></td>
-          <td><code>border-radius: var(--radius-m); overflow: hidden;</code></td>
-        </tr>
-        <tr>
-          <td><code>iframe.bordered</code></td>
-          <td><code>border; border-radius;</code></td>
-        </tr>
-        <tr>
-          <td><code>.embed-responsive</code></td>
-          <td><code>position: relative; aspect-ratio: 16 / 9;</code></td>
-        </tr>
-        <tr>
-          <td><code>.embed-responsive &gt; iframe</code></td>
-          <td><code>position: absolute; inset: 0; 100% width/height;</code></td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> &mdash; For self-hosted video content</li>
+      <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> &mdash; For self-hosted audio content</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; For modal content on your own page</li>
+      <li><a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> &mdash; Legacy embed mechanism</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wrap embeds that need captions</li>
+    </ul>
   </section>

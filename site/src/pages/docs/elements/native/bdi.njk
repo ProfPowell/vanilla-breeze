@@ -25,71 +25,107 @@ permalink: /docs/elements/native/bdi/
 <p>User <bdi>محمد</bdi> posted 3 comments.</p>{% endset %}
 
 {% set dynamicContentCode %}<p>
-  Latest comment by <bdi class="username"><!-- Dynamic username --></bdi>:
-  <bdi class="comment"><!-- Dynamic comment --></bdi>
+  Latest comment by <bdi class="username"><!-- dynamic --></bdi>:
+  <bdi class="comment"><!-- dynamic --></bdi>
 </p>{% endset %}
+
+{% set bdiCssCode %}bdi {
+  unicode-bidi: isolate;  /* browser default */
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;bdi&gt;</code> (Bidirectional Isolate) element tells the browser's bidirectional algorithm to treat the text it contains in isolation from its surrounding text. This is particularly useful when embedding user-generated content or other text whose direction is unknown.</p>
-    <p>Without <code>&lt;bdi&gt;</code>, a username in Arabic or Hebrew could cause the surrounding punctuation and text to display incorrectly due to the bidirectional algorithm treating it as part of a right-to-left sequence.</p>
+    <p>The <code>&lt;bdi&gt;</code> (Bidirectional Isolate) element tells the browser's bidirectional algorithm to treat the text it contains in isolation from its surrounding text. This is essential when embedding user-generated content or any text whose direction is unknown.</p>
+    <p>Without <code>&lt;bdi&gt;</code>, a username in Arabic or Hebrew could cause surrounding punctuation and numbers to display incorrectly due to the Unicode Bidirectional Algorithm treating it as part of a right-to-left sequence.</p>
+    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets <code>unicode-bidi: isolate</code> on <code>[dir="auto"]</code> elements, complementing the native bdi behavior.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>User <bdi>إيان</bdi> posted 3 comments.</p>
-    </div>
-    <code-block language="html" label="Basic bdi example">{{ basicBdiCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>User-generated names:</strong> Usernames, display names, search queries from any locale</li>
+      <li><strong>Database values:</strong> Any text retrieved from a data source whose direction you don't control</li>
+      <li><strong>API responses:</strong> Text from external services</li>
+      <li><strong>Leaderboards and lists:</strong> Mixed-script rankings</li>
+      <li><strong>Chat messages:</strong> User-submitted messages in multilingual applications</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For text whose direction you know &mdash; use <a href="/docs/elements/native/bdo/"><code>&lt;bdo dir="..."&gt;</code></a> instead</li>
+      <li>For entire sections in a different language &mdash; use <code>dir="rtl"</code> or <code>dir="ltr"</code> on the container</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Leaderboard with Mixed Names</h2>
-    <p>When displaying a list of usernames that may include different scripts:</p>
-    <div class="example">
-      <ul>
-        <li><bdi>Alice</bdi>: 15 points</li>
-        <li><bdi>محمد</bdi>: 12 points</li>
-        <li><bdi>Bob</bdi>: 10 points</li>
-        <li><bdi>יעקב</bdi>: 8 points</li>
-      </ul>
-    </div>
-    <code-block language="html" label="Leaderboard example">{{ leaderboardCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/bdi-examples.html" url="bdi-examples.html" title="Bidirectional isolate" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic bdi usage">{{ basicBdiCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Leaderboard with mixed scripts">{{ leaderboardCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Why Use bdi?</h2>
-    <p>The difference becomes clear when RTL text is embedded without isolation:</p>
-    <code-block language="html" label="With vs without bdi">{{ withoutBdiCode | escape }}</code-block>
-    <p>Without <code>&lt;bdi&gt;</code>, the colon and number "3" might appear in unexpected positions when RTL text is present.</p>
+    <p>The difference becomes clear when RTL text is embedded without isolation. Without <code>&lt;bdi&gt;</code>, the colon and numbers may appear in unexpected positions:</p>
+    <code-block language="html" show-lines label="With vs without bdi">{{ withoutBdiCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Dynamic Content</h2>
-    <p>Always wrap user-generated content in <code>&lt;bdi&gt;</code> when you don't know the text direction:</p>
-    <div class="example">
-      <p>
-        Latest comment by <bdi class="username">DemoUser</bdi>:
-        <bdi class="comment">This is a sample comment</bdi>
-      </p>
-    </div>
-    <code-block language="html" label="Dynamic content">{{ dynamicContentCode | escape }}</code-block>
+    <p>Always wrap user-generated content in <code>&lt;bdi&gt;</code> when the text direction is unknown:</p>
+    <code-block language="html" show-lines label="Dynamic content pattern">{{ dynamicContentCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>bdi vs bdo</h2>
+
+    <browser-window src="/docs/snippets/demos/bdi-bdo-comparison.html" url="bdi-bdo-comparison.html" title="bdi vs bdo" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Purpose</th>
+          <th>Direction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;bdi&gt;</code></td>
+          <td>Isolate &mdash; let the browser detect direction</td>
+          <td>Defaults to <code>auto</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;bdo&gt;</code></td>
+          <td>Override &mdash; force a specific direction</td>
+          <td>Requires <code>dir="rtl"</code> or <code>dir="ltr"</code></td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
-    <p>Note: The <code>dir</code> attribute defaults to <code>auto</code> on <code>&lt;bdi&gt;</code> elements, meaning the direction is determined by the element's content.</p>
+    <p>Supports <a href="/docs/elements/native/states/">global attributes</a>. The <code>dir</code> attribute defaults to <code>auto</code> on <code>&lt;bdi&gt;</code> elements, meaning the direction is determined by the element's content.</p>
+  </section>
+
+  <section>
+    <h2>CSS</h2>
+    <code-block language="css" label="bdi CSS (browser default)">{{ bdiCssCode | escape }}</code-block>
+    <p>VB does not add additional styling. The element's value is purely in its Unicode isolation behavior.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The <code>&lt;bdi&gt;</code> element has no special accessibility role. It purely affects visual rendering of bidirectional text. Screen readers will read the content in its logical order regardless of visual direction.</p>
+    <p><code>&lt;bdi&gt;</code> has no special accessibility role. It affects visual rendering only. Screen readers read the content in logical order regardless of visual direction.</p>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> - Forces a specific text direction (overrides bidirectional algorithm)</li>
+      <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> &mdash; Forces a specific text direction (override)</li>
+      <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> &mdash; Inline quotations with locale-aware quote marks</li>
+      <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; Full i18n reference including logical properties, ruby, and locale quotes</li>
     </ul>
   </section>

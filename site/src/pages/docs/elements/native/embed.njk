@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "embed"
-description: "Embeds external content from plugins or applications."
+description: "The embed element is a void element for embedding external content. It provides no fallback mechanism -- prefer modern alternatives like iframe, video, and audio."
 elementName: embed
 category: native
 nativeGroup: Embedded
@@ -9,35 +9,125 @@ currentPath: /docs/elements/native/embed/
 permalink: /docs/elements/native/embed/
 ---
 
-{% set basicExample %}<embed>{% endset %}
+{% set basicEmbedCode %}<embed src="animation.swf" type="application/x-shockwave-flash"
+       width="400" height="300">{% endset %}
+
+{% set svgEmbedCode %}<embed src="diagram.svg" type="image/svg+xml"
+       width="600" height="400">{% endset %}
+
+{% set pdfEmbedCode %}<embed src="document.pdf" type="application/pdf"
+       width="100%" height="600">{% endset %}
+
+{% set objectAlternativeCode %}<!-- embed: no fallback if the resource fails -->
+<embed src="chart.svg" type="image/svg+xml" width="400" height="300">
+
+<!-- object: fallback content is displayed on failure -->
+<object data="chart.svg" type="image/svg+xml" width="400" height="300">
+  <p>Chart unavailable. <a href="chart.png">View as image</a>.</p>
+</object>
+
+<!-- Best: use native elements -->
+<img src="chart.svg" alt="Quarterly revenue chart" width="400" height="300">{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;embed&gt;</code> element is part of the Embedded category in HTML.</p>
+    <p>The <code>&lt;embed&gt;</code> element provides an integration point for external content or applications, typically handled by browser plugins. It is a <strong>void element</strong> (self-closing) with no closing tag and no fallback content mechanism.</p>
+    <p>Originally designed for plugin content like Flash and Java applets, <code>&lt;embed&gt;</code> has limited utility in modern web development. Unlike <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a>, it cannot contain fallback markup, so if the resource fails to load the user sees nothing.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>The embed element provides an integration point for external content.</p>
-    </div>
-    <code-block language="html" label="Basic embed example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <p>In modern HTML, there is almost always a better alternative. The <code>&lt;embed&gt;</code> element should only be used when no other element supports the content type and you are certain the resource will load.</p>
+
+    <h3>Prefer Modern Alternatives</h3>
+    <ul>
+      <li>Use <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> for embedding HTML documents and web applications</li>
+      <li>Use <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> for video content with native controls and captions</li>
+      <li>Use <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> for audio content with native controls</li>
+      <li>Use <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> for images including external SVG files</li>
+      <li>Use <a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> for inline vector graphics</li>
+      <li>Use <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> if you need fallback content for a non-HTML resource</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <browser-window
+      src="/docs/snippets/demos/object-embed.html"
+      url="https://vanilla-breeze.dev/embed"
+      title="Embed element examples"
+      shadow>
+    </browser-window>
+
+    <h3>SVG File</h3>
+    <code-block language="html" show-lines label="Embed an SVG">{{ svgEmbedCode | escape }}</code-block>
+
+    <h3>PDF Document</h3>
+    <code-block language="html" show-lines label="Embed a PDF">{{ pdfEmbedCode | escape }}</code-block>
+
+    <h3>Legacy Plugin Content</h3>
+    <code-block language="html" show-lines label="Legacy Flash embed (non-functional)">{{ basicEmbedCode | escape }}</code-block>
+    <p>Plugin-based content (Flash, Java, Silverlight) is no longer supported by modern browsers. This syntax is shown for historical reference only.</p>
+  </section>
+
+  <section>
+    <h2>embed vs. object</h2>
+    <p>The key difference is fallback content. <code>&lt;embed&gt;</code> is a void element with no closing tag, so it cannot contain alternative markup. <a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> supports content between its tags that is displayed when the resource fails to load.</p>
+
+    <code-block language="html" show-lines label="Comparison: embed, object, and img">{{ objectAlternativeCode | escape }}</code-block>
+
+    <p>For any use case where the resource might not load, prefer <code>&lt;object&gt;</code> or a native element over <code>&lt;embed&gt;</code>.</p>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>URL of the resource to embed.</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>MIME type of the embedded content (e.g., <code>image/svg+xml</code>, <code>application/pdf</code>).</td>
+        </tr>
+        <tr>
+          <td><code>width</code></td>
+          <td>Display width of the embedded content in pixels.</td>
+        </tr>
+        <tr>
+          <td><code>height</code></td>
+          <td>Display height of the embedded content in pixels.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This element also supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;embed&gt;</code> element will be documented here.</p>
+    <p>The <code>&lt;embed&gt;</code> element has significant accessibility limitations:</p>
+    <ul>
+      <li>No fallback content mechanism -- if the resource cannot be loaded, the user gets nothing</li>
+      <li>No native <code>alt</code> attribute like <code>&lt;img&gt;</code></li>
+      <li>Embedded content is opaque to screen readers unless the content itself is accessible</li>
+      <li>Prefer elements with built-in accessibility semantics (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>) whenever possible</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> - Embed external resources with fallback content</li>
-      <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> - Embed HTML documents</li>
+      <li><a href="/docs/elements/native/object/"><code>&lt;object&gt;</code></a> - Similar embedding with fallback content support</li>
+      <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> - For embedding HTML documents with security sandboxing</li>
+      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> - For video with native controls, captions, and multiple sources</li>
+      <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> - For audio with native controls and multiple sources</li>
     </ul>
   </section>

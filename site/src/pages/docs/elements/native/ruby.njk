@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "ruby"
-description: "Represents a ruby annotation, used for East Asian typography."
+description: "Represents a ruby annotation, used for East Asian typography to show pronunciation guides above or beside base text."
 elementName: ruby
 category: native
 nativeGroup: Text Semantics
@@ -19,103 +19,176 @@ permalink: /docs/elements/native/ruby/
 </p>{% endset %}
 
 {% set chineseCode %}<p>
-  <ruby>
-    北京 <rp>(</rp><rt>Běijīng</rt><rp>)</rp>
-  </ruby>
+  <ruby>北京<rp>(</rp><rt>Běijīng</rt><rp>)</rp></ruby>
   is the capital of China.
 </p>{% endset %}
 
-{% set multipleRubyCode %}<p>
-  <ruby>明日<rp>(</rp><rt>あした</rt><rp>)</rp></ruby>の
-  <ruby>天気<rp>(</rp><rt>てんき</rt><rp>)</rp></ruby>は
-  <ruby>晴<rp>(</rp><rt>は</rt><rp>)</rp></ruby>れです。
+{% set englishCode %}<p>
+  How to pronounce <ruby>Versailles<rp>(</rp><rt>vair-SIGH</rt><rp>)</rp></ruby>.
 </p>{% endset %}
 
-{% set styledRubyCode %}<style>
-  ruby { ruby-position: under; }
-  rt { font-size: 0.6em; color: #666; }
-</style>
+{% set rubyCssCode %}ruby {
+  display: ruby;
+}
 
-<ruby>
-  日本語 <rp>(</rp><rt>にほんご</rt><rp>)</rp>
-</ruby>{% endset %}
+rt {
+  font-size: 0.5em;
+  line-height: 1;
+  ruby-align: center;
+}
+
+rp {
+  display: none;  /* hidden in supporting browsers */
+}{% endset %}
+
+{% set rubyVisibilityCode %}<html lang="ja" data-ruby="auto">
+<body>
+  <!-- Ruby visible (CJK language) -->
+  <ruby>漢字<rt>かんじ</rt></ruby>
+
+  <section lang="en">
+    <!-- Ruby hidden (non-CJK) -->
+    <ruby>ruby<rt>annotation</rt></ruby>
+  </section>
+</body>
+</html>{% endset %}
+
+{% set visibilityCssCode %}/* data-ruby="show" — always visible */
+:root[data-ruby="show"] rt { display: block; }
+
+/* data-ruby="hide" — visually hidden, accessible */
+:root[data-ruby="hide"] rt {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+}
+
+/* data-ruby="auto" — visible for CJK only */
+:root[data-ruby="auto"] rt { /* hidden by default */ }
+:root[data-ruby="auto"]:lang(ja) rt,
+:root[data-ruby="auto"]:lang(zh) rt,
+:root[data-ruby="auto"]:lang(ko) rt { /* shown */ }{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;ruby&gt;</code> element represents a ruby annotation. Ruby annotations are small text above or beside the base text, typically used to show pronunciation of East Asian characters (like furigana in Japanese or pinyin in Chinese).</p>
-    <p>A ruby annotation consists of the base text and the ruby text (<code>&lt;rt&gt;</code>), with optional fallback parentheses (<code>&lt;rp&gt;</code>) for browsers that don't support ruby.</p>
+    <p>The <code>&lt;ruby&gt;</code> element represents a ruby annotation &mdash; small text above or beside base text, typically showing pronunciation. Ruby annotations are essential for East Asian typography (furigana in Japanese, pinyin in Chinese) but can also help with pronunciation guides in any language.</p>
+    <p>A ruby annotation consists of base text, ruby text (<a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a>), and optional fallback parentheses (<a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a>).</p>
+    <p>VB provides <a href="/docs/i18n/">i18n-aware styling</a>: CJK script fonts for ruby text, and a <code>data-ruby</code> visibility system to control when annotations appear.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <ruby>
-        漢 <rp>(</rp><rt>かん</rt><rp>)</rp>
-        字 <rp>(</rp><rt>じ</rt><rp>)</rp>
-      </ruby>
-    </div>
-    <code-block language="html" label="Basic ruby example">{{ basicRubyCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Japanese furigana:</strong> Pronunciation guides for kanji</li>
+      <li><strong>Chinese pinyin:</strong> Romanized pronunciation for Chinese characters</li>
+      <li><strong>Korean:</strong> Hanja pronunciation guides</li>
+      <li><strong>Language learning:</strong> Pronunciation for unfamiliar words in any language</li>
+      <li><strong>Accessibility:</strong> Helping users with reading difficulties</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Japanese Furigana</h2>
-    <p>Ruby is commonly used to show furigana (pronunciation guides) for kanji:</p>
-    <div class="example">
-      <p>
-        <ruby>東京<rp>(</rp><rt>とうきょう</rt><rp>)</rp></ruby>は日本の首都です。
-      </p>
-    </div>
-    <code-block language="html" label="Japanese furigana">{{ japaneseCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/ruby-annotations.html" url="ruby-annotations.html" title="Ruby annotations" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Japanese furigana">{{ japaneseCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Chinese pinyin">{{ chineseCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Per-character annotations">{{ basicRubyCode | escape }}</code-block>
+    <code-block language="html" show-lines label="English pronunciation">{{ englishCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Chinese Pinyin</h2>
-    <p>Ruby can also display pinyin for Chinese characters:</p>
-    <div class="example">
-      <p>
-        <ruby>
-          北京 <rp>(</rp><rt>Běijīng</rt><rp>)</rp>
-        </ruby>
-        is the capital of China.
-      </p>
-    </div>
-    <code-block language="html" label="Chinese pinyin">{{ chineseCode | escape }}</code-block>
+    <h2>Ruby Visibility Control</h2>
+    <p>VB's <a href="/docs/i18n/">i18n system</a> provides a <code>data-ruby</code> attribute on <code>&lt;html&gt;</code> to control when annotations display:</p>
+
+    <browser-window src="/docs/snippets/demos/ruby-visibility.html" url="ruby-visibility.html" title="Ruby visibility" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>show</code></td>
+          <td>Always visible</td>
+        </tr>
+        <tr>
+          <td><code>hide</code></td>
+          <td>Visually hidden, kept in DOM for screen readers</td>
+        </tr>
+        <tr>
+          <td><code>auto</code></td>
+          <td>Visible for CJK languages (<code>ja</code>, <code>zh</code>, <code>ko</code>), hidden otherwise</td>
+        </tr>
+        <tr>
+          <td>(absent)</td>
+          <td>Browser default (always visible)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Ruby visibility markup">{{ rubyVisibilityCode | escape }}</code-block>
+    <code-block language="css" show-lines label="Ruby visibility CSS (simplified)">{{ visibilityCssCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Multiple Ruby Annotations</h2>
-    <p>Multiple ruby elements in a sentence:</p>
-    <div class="example">
-      <p>
-        <ruby>明日<rp>(</rp><rt>あした</rt><rp>)</rp></ruby>の
-        <ruby>天気<rp>(</rp><rt>てんき</rt><rp>)</rp></ruby>は
-        <ruby>晴<rp>(</rp><rt>は</rt><rp>)</rp></ruby>れです。
-      </p>
-    </div>
-    <code-block language="html" label="Multiple ruby">{{ multipleRubyCode | escape }}</code-block>
-  </section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Ruby CSS (VB defaults)">{{ rubyCssCode | escape }}</code-block>
 
-  <section>
-    <h2>Styling Ruby</h2>
-    <p>Ruby annotations can be styled with CSS:</p>
-    <code-block language="html" label="Styled ruby">{{ styledRubyCode | escape }}</code-block>
-    <p>The <code>ruby-position</code> property controls whether annotations appear above (<code>over</code>) or below (<code>under</code>) the base text.</p>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h3>Styling Options</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ruby-position: over</code></td>
+          <td>Annotation above base text (default)</td>
+        </tr>
+        <tr>
+          <td><code>ruby-position: under</code></td>
+          <td>Annotation below base text</td>
+        </tr>
+        <tr>
+          <td><code>ruby-align: center</code></td>
+          <td>Center annotation over base text (VB default)</td>
+        </tr>
+        <tr>
+          <td><code>rt font-size</code></td>
+          <td><code>0.5em</code> (VB default)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Screen readers may read both the base text and ruby text, or just one depending on the implementation. The ruby text provides pronunciation information that benefits learners and those with reading difficulties. The <code>&lt;rp&gt;</code> fallback ensures that in unsupported browsers, the annotation appears in parentheses.</p>
+    <ul>
+      <li>Screen readers may read both base text and ruby text, or provide options for users to hear annotations</li>
+      <li>The <code>&lt;rp&gt;</code> fallback ensures annotations appear in parentheses when ruby is not supported</li>
+      <li>Ruby text benefits language learners and those with reading difficulties</li>
+      <li>The <code>data-ruby="hide"</code> mode keeps annotations in the DOM for accessibility even when visually hidden</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> - The ruby text (annotation)</li>
-      <li><a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a> - Fallback parentheses for non-supporting browsers</li>
+      <li><a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> &mdash; The ruby text (annotation content)</li>
+      <li><a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a> &mdash; Fallback parentheses for non-supporting browsers</li>
+      <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> &mdash; Bidirectional isolation for mixed-script text</li>
+      <li><a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> &mdash; Bidirectional direction override</li>
+      <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; Script-specific typography, ruby visibility, locale quotes</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>Browser Support</h2>
+    <p>Ruby annotations are supported in all modern browsers. The <code>ruby-position</code> CSS property is supported in Chrome, Edge, Safari, and Firefox 38+.</p>
   </section>

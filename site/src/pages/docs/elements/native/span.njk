@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "span"
-description: "Generic inline container for phrasing content."
+description: "Generic inline container for phrasing content. Use only when no semantic element fits — for effects, status indicators, translation control, or accessibility helpers."
 elementName: span
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,167 @@ currentPath: /docs/elements/native/span/
 permalink: /docs/elements/native/span/
 ---
 
-{% set basicExample %}<span>...</span>{% endset %}
+{% set effectCode %}<p>This text has an
+  <span data-effect="highlight" data-trigger="scroll">animated highlight</span>
+  effect applied.
+</p>{% endset %}
+
+{% set statusCode %}<span class="status" data-status="success">Deployed</span>
+<span class="status" data-status="warning">Pending review</span>
+<span class="status" data-status="error">Build failed</span>
+<span class="status" data-status="inactive">Offline</span>{% endset %}
+
+{% set translateCode %}<p>Install <span translate="no">Vanilla Breeze</span> via npm.</p>
+<p>Your username is <span translate="no">tpowell42</span>.</p>{% endset %}
+
+{% set visuallyHiddenCode %}<p>Price:
+  <span class="visually-hidden">Was </span>
+  <s>$99.99</s>
+  <span class="visually-hidden">Now </span>
+  $79.99
+</p>{% endset %}
+
+{% set blockProgressCode %}<span class="block-progress" role="meter"
+      aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"
+      aria-label="Progress">
+  <span aria-hidden="true" data-filled>███████</span>
+  <span aria-hidden="true" data-empty>░░░</span>
+  <small>70%</small>
+</span>{% endset %}
+
+{% set statusCssCode %}.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: var(--font-size-sm);
+
+  &::before {
+    content: "\25CF"; /* filled circle */
+    font-size: 0.7em;
+    color: var(--color-text-muted);
+  }
+
+  &[data-status="success"]::before { color: var(--color-success); }
+  &[data-status="warning"]::before { color: var(--color-warning); }
+  &[data-status="error"]::before   { color: var(--color-error); }
+
+  &[data-status="inactive"]::before {
+    content: "\25CB"; /* empty circle */
+  }
+  &[data-status="check"]::before {
+    content: "\2714"; /* check mark */
+    color: var(--color-success);
+  }
+  &[data-status="fail"]::before {
+    content: "\2718"; /* cross mark */
+    color: var(--color-error);
+  }
+}{% endset %}
+
+{% set antiPatternCode %}<!-- Wrong: span for layout -->
+<span class="header">Site Title</span>
+
+<!-- Right: use semantic element -->
+<h1>Site Title</h1>
+
+<!-- Wrong: span for emphasis -->
+<span style="font-weight: bold">Important</span>
+
+<!-- Right: use semantic element -->
+<strong>Important</strong>{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;span&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;span&gt;</code> element is a generic inline container with no inherent semantics. Like <code>&lt;div&gt;</code> for block content, <code>&lt;span&gt;</code> should be used only when no semantic element fits the need.</p>
+    <p><strong>Prefer semantic elements first:</strong> <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>, <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a>, <a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a>, <a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a>, <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a>, <a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a>, etc. But when the content doesn't fit any semantic category, <code>&lt;span&gt;</code> is the right tool.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <span>Example span content</span>
-    </div>
-    <code-block language="html" label="Basic span example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <p>Legitimate uses of <code>&lt;span&gt;</code> in Vanilla Breeze:</p>
+    <ul>
+      <li><strong>Effect targets:</strong> Apply <code>data-effect</code> to a text range within a paragraph</li>
+      <li><strong>Status indicators:</strong> The <code>.status</code> class for inline status dots</li>
+      <li><strong>Translation control:</strong> <code>translate="no"</code> on brand names or identifiers</li>
+      <li><strong>Visually hidden text:</strong> <code>.visually-hidden</code> for screen reader context</li>
+      <li><strong>Block progress:</strong> The <code>.block-progress</code> Unicode meter pattern</li>
+      <li><strong>Styling hooks:</strong> When CSS needs an inline target that has no semantic equivalent</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For emphasis &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> or <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a></li>
+      <li>For highlighted text &mdash; use <a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a></li>
+      <li>For code or keyboard input &mdash; use <a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> or <a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a></li>
+      <li>For dates or data values &mdash; use <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> or <a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a></li>
+      <li>For abbreviations &mdash; use <a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a></li>
+      <li>For headings, navigation, or layout &mdash; always use the semantic element</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/span-examples.html" url="span-examples.html" title="Span usage patterns" shadow></browser-window>
+  </section>
+
+  <section>
+    <h2>Effect Targets</h2>
+    <p>When a VB effect needs to wrap a text range inside a paragraph, <code>&lt;span&gt;</code> is the correct container:</p>
+    <code-block language="html" show-lines label="Effect target">{{ effectCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Status Indicators</h2>
+    <p>The <code>.status</code> class creates an inline status dot using a <code>::before</code> pseudo-element with Unicode characters. Six states are available:</p>
+
+    <code-block language="html" show-lines label="Status indicators">{{ statusCode | escape }}</code-block>
+
+    <code-block language="css" show-lines label="Status CSS">{{ statusCssCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Translation Control</h2>
+    <p>Use <code>translate="no"</code> on <code>&lt;span&gt;</code> to prevent machine translation of brand names, identifiers, and technical terms:</p>
+    <code-block language="html" show-lines label="Translation control">{{ translateCode | escape }}</code-block>
+    <p>See the <a href="/docs/i18n/">i18n guide</a> for VB's full translation convention.</p>
+  </section>
+
+  <section>
+    <h2>Visually Hidden Text</h2>
+    <p>The <code>.visually-hidden</code> class hides text visually while keeping it accessible to screen readers. This provides context that sighted users get from visual cues:</p>
+    <code-block language="html" show-lines label="Visually hidden text">{{ visuallyHiddenCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Block Progress</h2>
+    <p>A Unicode block-character progress meter using <code>role="meter"</code> for accessibility:</p>
+    <code-block language="html" show-lines label="Block progress">{{ blockProgressCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Anti-Patterns</h2>
+    <p>Avoid using <code>&lt;span&gt;</code> when a semantic element exists:</p>
+    <code-block language="html" show-lines label="Wrong vs right">{{ antiPatternCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;span&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><code>&lt;span&gt;</code> has no inherent ARIA role or semantic meaning</li>
+      <li>Screen readers treat it as anonymous inline text</li>
+      <li>Add <code>role</code>, <code>aria-label</code>, or <code>aria-live</code> when the span carries meaning (e.g., status indicators, meters)</li>
+      <li>The <code>.visually-hidden</code> pattern is essential for providing screen reader context that sighted users get visually</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; Stress emphasis (preferred over styled span)</li>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Importance (preferred over styled span)</li>
+      <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a> &mdash; Highlighted text (preferred over styled span)</li>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; Code content (preferred over styled span)</li>
+      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; Machine-readable values (preferred over styled span)</li>
+      <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> &mdash; Dates and times (preferred over styled span)</li>
+    </ul>
   </section>

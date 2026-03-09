@@ -15,28 +15,26 @@ permalink: /docs/elements/native/meter/
 <label>Battery Level</label>
 <meter value="85" min="0" max="100">85%</meter>{% endset %}
 
-{% set optimumRangeCode %}<!-- High optimum (higher is better, like battery) -->
-<meter value="0.9" min="0" max="1"
-       low="0.3" high="0.7" optimum="0.9">90%</meter>
+{% set optimumRangeCode %}<!-- Low optimum (lower is better, like CPU/disk usage) -->
+<meter value="22" min="0" max="100"
+       low="40" high="75" optimum="20">22%</meter>
 
-<!-- Low optimum (lower is better, like disk usage) -->
-<meter value="0.2" min="0" max="1"
-       low="0.3" high="0.7" optimum="0.1">20%</meter>{% endset %}
+<!-- High optimum (higher is better, like skills/score) -->
+<meter value="9" min="0" max="10"
+       low="4" high="7" optimum="10">9/10</meter>{% endset %}
 
 {% set sizeVariantsCode %}<meter class="xs" value="0.6">60%</meter>
 <meter class="s" value="0.6">60%</meter>
 <meter value="0.6">60%</meter>  <!-- default -->
 <meter class="l" value="0.6">60%</meter>{% endset %}
 
-{% set segmentedMeterCode %}<meter class="segmented" value="0.7">70%</meter>{% endset %}
-
-{% set labeledMeterCode %}<div class="labeled">
+{% set labeledMeterCode %}<section class="labeled">
   <label>
     <span>Storage</span>
     <span>14.3 GB / 20 GB</span>
   </label>
   <meter value="14.3" min="0" max="20">71.5%</meter>
-</div>{% endset %}
+</section>{% endset %}
 
 {% set cssReferenceCode %}meter {
   appearance: none;
@@ -101,20 +99,7 @@ meter.segmented {
     <h2>Basic Usage</h2>
     <p>A simple meter showing a value within a range.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>Storage Used</label>
-          <meter value="0.7" min="0" max="1">70%</meter>
-        </form-field>
-        <form-field>
-          <label>Battery Level</label>
-          <meter value="85" min="0" max="100">85%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/meter-basic.html" url="https://vanilla-breeze.dev/meter/basic" title="Basic meter elements" shadow></browser-window>
     <code-block language="html" show-lines label="Basic meter elements">{{ basicMeterCode | escape }}</code-block>
   </section>
 
@@ -165,47 +150,9 @@ meter.segmented {
 
   <section>
     <h2>Optimum Range Behavior</h2>
-    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute.</p>
+    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute. Set <code>optimum</code> low for "less is better" metrics (CPU, disk usage) or high for "more is better" metrics (skills, scores). No classes or JavaScript needed — the browser handles the color logic.</p>
 
-    <h3>High Optimum (like battery or score)</h3>
-    <p>When <code>optimum</code> is in the high range, low values show red and high values show green.</p>
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>Optimum (high value = good): <strong style="color: oklch(60% 0.18 145);">90%</strong></label>
-          <meter value="0.9" min="0" max="1" low="0.3" high="0.7" optimum="0.9">90%</meter>
-        </form-field>
-        <form-field>
-          <label>Suboptimum (medium value): <strong style="color: oklch(70% 0.15 75);">50%</strong></label>
-          <meter value="0.5" min="0" max="1" low="0.3" high="0.7" optimum="0.9">50%</meter>
-        </form-field>
-        <form-field>
-          <label>Poor (low value = bad): <strong style="color: oklch(55% 0.2 25);">20%</strong></label>
-          <meter value="0.2" min="0" max="1" low="0.3" high="0.7" optimum="0.9">20%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Low Optimum (like disk usage or errors)</h3>
-    <p>When <code>optimum</code> is in the low range, high values show red and low values show green.</p>
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>Optimum (low usage = good): <strong style="color: oklch(60% 0.18 145);">20%</strong></label>
-          <meter value="0.2" min="0" max="1" low="0.3" high="0.7" optimum="0.1">20%</meter>
-        </form-field>
-        <form-field>
-          <label>Suboptimum (medium usage): <strong style="color: oklch(70% 0.15 75);">50%</strong></label>
-          <meter value="0.5" min="0" max="1" low="0.3" high="0.7" optimum="0.1">50%</meter>
-        </form-field>
-        <form-field>
-          <label>Poor (high usage = bad): <strong style="color: oklch(55% 0.2 25);">90%</strong></label>
-          <meter value="0.9" min="0" max="1" low="0.3" high="0.7" optimum="0.1">90%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/meter-optimum-ranges.html" url="https://vanilla-breeze.dev/meter/optimum-ranges" title="Meter optimum range behavior" shadow></browser-window>
     <code-block language="html" show-lines label="Optimum range examples">{{ optimumRangeCode | escape }}</code-block>
   </section>
 
@@ -213,143 +160,16 @@ meter.segmented {
     <h2>Size Variants</h2>
     <p>Different heights for various contexts.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>.xs (extra small)</label>
-          <meter class="xs" value="0.6" min="0" max="1">60%</meter>
-        </form-field>
-        <form-field>
-          <label>.s (small)</label>
-          <meter class="s" value="0.6" min="0" max="1">60%</meter>
-        </form-field>
-        <form-field>
-          <label>Default (.m)</label>
-          <meter class="m" value="0.6" min="0" max="1">60%</meter>
-        </form-field>
-        <form-field>
-          <label>.l (large)</label>
-          <meter class="l" value="0.6" min="0" max="1">60%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/meter-sizes.html" url="https://vanilla-breeze.dev/meter/sizes" title="Meter size variants" shadow></browser-window>
     <code-block language="html" show-lines label="Meter size variants">{{ sizeVariantsCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Segmented Meter</h2>
-    <p>Visual segmentation for discrete levels.</p>
-
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>Segmented Meter</label>
-          <meter class="segmented" value="0.7" min="0" max="1">70%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Segmented meter">{{ segmentedMeterCode | escape }}</code-block>
-  </section>
-
-  <section>
     <h2>Labeled Meter</h2>
-    <p>Use the <code>.labeled</code> wrapper pattern for meters with percentage displays.</p>
+    <p>Use the <code>.labeled</code> wrapper pattern for meters with value displays.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="l" style="max-inline-size: 25rem;">
-        <div class="labeled">
-          <label>
-            <span>Storage</span>
-            <span>14.3 GB / 20 GB</span>
-          </label>
-          <meter value="14.3" min="0" max="20" low="5" high="17" optimum="0">71.5%</meter>
-        </div>
-        <div class="labeled">
-          <label>
-            <span>Password Strength</span>
-            <span>Strong</span>
-          </label>
-          <meter value="0.85" min="0" max="1" low="0.3" high="0.6" optimum="1">85%</meter>
-        </div>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/meter-labeled.html" url="https://vanilla-breeze.dev/meter/labeled" title="Labeled meters" shadow></browser-window>
     <code-block language="html" show-lines label="Labeled meter">{{ labeledMeterCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>With Output Element</h2>
-    <p>Use <a href="/docs/elements/native/output/">output</a> to display the current value dynamically.</p>
-
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label>CPU Usage: <output id="cpu-output">45%</output></label>
-          <meter id="cpu-meter" value="45" min="0" max="100" low="30" high="80" optimum="20">45%</meter>
-        </form-field>
-      </layout-stack>
-    </div>
-  </section>
-
-  <section>
-    <h2>Real-World Examples</h2>
-
-    <h3>Password Strength</h3>
-    <div class="example">
-      <form style="max-inline-size: 25rem;">
-        <layout-stack data-layout-gap="m">
-          <form-field>
-            <label for="password-strength">Password</label>
-            <input type="password" id="password-strength" placeholder="Enter password" />
-          </form-field>
-          <div class="labeled">
-            <label>
-              <span>Strength</span>
-              <span>Good</span>
-            </label>
-            <meter value="0.65" min="0" max="1" low="0.3" high="0.6" optimum="1">65%</meter>
-          </div>
-        </layout-stack>
-      </form>
-    </div>
-
-    <h3>Budget Usage</h3>
-    <div class="example">
-      <layout-stack data-layout-gap="l" style="max-inline-size: 25rem;">
-        <div class="labeled">
-          <label>
-            <span>Marketing Budget</span>
-            <span>$7,500 / $10,000</span>
-          </label>
-          <meter value="75" min="0" max="100" low="30" high="80" optimum="0">75%</meter>
-        </div>
-        <div class="labeled">
-          <label>
-            <span>Development Budget</span>
-            <span>$45,000 / $50,000</span>
-          </label>
-          <meter value="90" min="0" max="100" low="30" high="80" optimum="0">90%</meter>
-        </div>
-      </layout-stack>
-    </div>
-
-    <h3>Survey Results</h3>
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <div class="labeled">
-          <label>
-            <span>Satisfaction Rate</span>
-            <span>87%</span>
-          </label>
-          <meter value="87" min="0" max="100">87%</meter>
-        </div>
-      </layout-stack>
-    </div>
   </section>
 
   <section>

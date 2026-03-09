@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "blockquote"
-description: "The blockquote element represents a section quoted from another source, providing visual and semantic distinction from the surrounding content."
+description: "The blockquote element represents a section quoted from another source, with VB styling for attribution, prose refinement, and academic citation patterns."
 elementName: blockquote
 category: native
 nativeGroup: Text Content
@@ -9,38 +9,47 @@ currentPath: /docs/elements/native/blockquote/
 permalink: /docs/elements/native/blockquote/
 ---
 
-{% set simpleBlockquoteCode %}<blockquote>
+{% set simpleCode %}<blockquote>
   The best way to predict the future is to invent it.
 </blockquote>{% endset %}
 
-{% set multiParagraphCode %}<blockquote>
-  <p>First paragraph of the quote...</p>
-  <p>Second paragraph continues...</p>
-</blockquote>{% endset %}
-
-{% set footerAttributionCode %}<blockquote>
+{% set footerCode %}<blockquote>
   The best way to predict the future is to invent it.
   <footer>Alan Kay</footer>
 </blockquote>{% endset %}
 
-{% set citeAttributionCode %}<blockquote>
-  Good design is as little design as possible.
-  <cite>Dieter Rams</cite>
-</blockquote>{% endset %}
-
-{% set fullAttributionCode %}<blockquote cite="https://example.com/source">
+{% set fullCode %}<blockquote cite="https://example.com/source">
   Any sufficiently advanced technology is indistinguishable from magic.
   <footer>Arthur C. Clarke, <cite>Profiles of the Future</cite></footer>
 </blockquote>{% endset %}
 
-{% set cssPropertiesCode %}blockquote {
+{% set figureCode %}<figure class="quote">
+  <blockquote>
+    Good design is as little design as possible.
+  </blockquote>
+  <figcaption>Dieter Rams, <cite>Less and More</cite></figcaption>
+</figure>{% endset %}
+
+{% set academicCode %}<blockquote cite="https://doi.org/10.1000/example">
+  <p>The results demonstrate a statistically significant correlation
+  between design simplicity and user satisfaction scores (p &lt; 0.01).</p>
+  <footer>Smith &amp; Jones (2025), <cite>Journal of Web Usability</cite>,
+  Vol. 12, pp. 45&ndash;62</footer>
+</blockquote>{% endset %}
+
+{% set langCode %}<blockquote lang="fr">
+  Je pense, donc je suis.
+  <footer>René Descartes</footer>
+</blockquote>{% endset %}
+
+{% set blockquoteCssCode %}blockquote {
   padding-inline-start: var(--size-m);
   border-inline-start: var(--border-width-thick) solid var(--color-border);
   color: var(--color-text-muted);
   font-style: italic;
 }
 
-/* Attribution */
+/* Attribution — auto em-dash prefix */
 blockquote footer,
 blockquote cite {
   display: block;
@@ -53,195 +62,153 @@ blockquote cite {
   }
 }{% endset %}
 
-{% set langAttributeCode %}<blockquote lang="fr">
-  Je pense, donc je suis.
-  <footer>Rene Descartes</footer>
-</blockquote>{% endset %}
+{% set proseCode %}/* Hanging punctuation for typographic refinement (Safari) */
+blockquote { hanging-punctuation: first last; }
 
-<!-- Overview Section -->
-  <section>
-    <h2 id="overview">Overview</h2>
-    <p>The <code>&lt;blockquote&gt;</code> element indicates that the enclosed text is an extended quotation. It is styled with a left border and italic text to visually set it apart from regular content.</p>
+/* Italic de-emphasis inside blockquotes */
+:where(blockquote) :where(i, em) {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+}{% endset %}
 
-    <div class="example">
-      <blockquote>
-        This is a blockquote. It is styled with a left border and muted color to set it apart from regular paragraph text. Use blockquotes for quotations from other sources.
-      </blockquote>
-    </div>
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;blockquote&gt;</code> element represents an extended quotation from another source. VB styles it with a left border, muted italic text, and automatic em-dash attribution via <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> inside the blockquote.</p>
+    <p>VB also adds typographic refinements: <code>hanging-punctuation: first last</code> for Safari, and a de-emphasis reset for <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>/<a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> inside blockquotes (since the blockquote is already visually offset, double-italic would be redundant).</p>
   </section>
 
-  <!-- When to Use Section -->
   <section>
-    <h2 id="when-to-use">When to Use</h2>
+    <h2>When to Use</h2>
     <ul>
-      <li><strong>Extended quotations</strong> - Quotes from external sources, books, or articles</li>
-      <li><strong>Testimonials</strong> - Customer quotes or endorsements</li>
-      <li><strong>Pull quotes</strong> - Highlighted excerpts from the current article</li>
-      <li><strong>Citations</strong> - Academic or legal references</li>
+      <li><strong>Extended quotations:</strong> Quotes from books, articles, speeches</li>
+      <li><strong>Testimonials:</strong> Customer quotes and endorsements</li>
+      <li><strong>Pull quotes:</strong> Highlighted excerpts (use <code>&lt;figure class="quote"&gt;</code>)</li>
+      <li><strong>Academic citations:</strong> Referenced passages with source attribution</li>
+      <li><strong>Epigraphs:</strong> Opening quotes in articles or chapters</li>
     </ul>
-
-    <h3>When Not to Use</h3>
+    <h3>When NOT to Use</h3>
     <ul>
-      <li>For short inline quotes within a sentence (use <code>&lt;q&gt;</code> instead)</li>
+      <li>For short inline quotes &mdash; use <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a></li>
       <li>For content that isn't a quotation (even if you want the visual style)</li>
-      <li>For indenting content (use CSS margins instead)</li>
+      <li>For indenting content &mdash; use CSS margins or <a href="/docs/elements/custom-elements/layout-stack/"><code>&lt;layout-stack&gt;</code></a></li>
     </ul>
   </section>
 
-  <!-- Basic Examples Section -->
   <section>
-    <h2 id="basic-examples">Basic Examples</h2>
+    <h2>Examples</h2>
 
-    <h3>Simple Blockquote</h3>
-    <div class="example">
-      <blockquote>
-        The best way to predict the future is to invent it.
-      </blockquote>
-    </div>
+    <browser-window src="/docs/snippets/demos/blockquote-examples.html" url="blockquote-examples.html" title="Blockquote patterns" shadow></browser-window>
 
-    <code-block language="html" label="Simple blockquote">{{ simpleBlockquoteCode | escape }}</code-block>
-
-    <h3>Multi-paragraph Blockquote</h3>
-    <div class="example">
-      <blockquote>
-        <p>First paragraph of the quote. Long quotations may contain multiple paragraphs.</p>
-        <p>Second paragraph continues the thought. Each paragraph maintains proper spacing within the blockquote.</p>
-      </blockquote>
-    </div>
-
-    <code-block language="html" label="Multi-paragraph blockquote">{{ multiParagraphCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Simple blockquote">{{ simpleCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Footer attribution">{{ footerCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Full attribution with cite">{{ fullCode | escape }}</code-block>
   </section>
 
-  <!-- Attribution Section -->
   <section>
-    <h2 id="attribution">Attribution</h2>
-    <p>Include the source of a quote using a <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> element inside the blockquote.</p>
+    <h2>Attribution Patterns</h2>
+    <p>VB auto-prepends an em dash (&mdash;) to <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> elements inside a blockquote. Combine both for author + work title:</p>
 
-    <h3>Using Footer</h3>
-    <div class="example">
-      <blockquote>
-        The best way to predict the future is to invent it.
-        <footer>Alan Kay</footer>
-      </blockquote>
-    </div>
-
-    <code-block language="html" label="Blockquote with footer attribution">{{ footerAttributionCode | escape }}</code-block>
-
-    <h3>Using Cite</h3>
-    <div class="example">
-      <blockquote>
-        Good design is as little design as possible.
-        <cite>Dieter Rams</cite>
-      </blockquote>
-    </div>
-
-    <code-block language="html" label="Blockquote with cite attribution">{{ citeAttributionCode | escape }}</code-block>
-
-    <h3>Full Attribution with Source</h3>
-    <div class="example">
-      <blockquote cite="https://example.com/source">
-        Any sufficiently advanced technology is indistinguishable from magic.
-        <footer>Arthur C. Clarke, <cite>Profiles of the Future</cite></footer>
-      </blockquote>
-    </div>
-
-    <code-block language="html" label="Blockquote with full attribution and source URL">{{ fullAttributionCode | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr><th>Pattern</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;footer&gt;Author Name&lt;/footer&gt;</code></td>
+          <td>Simple attribution (person)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;cite&gt;Work Title&lt;/cite&gt;</code></td>
+          <td>Work title only</td>
+        </tr>
+        <tr>
+          <td><code>&lt;footer&gt;Author, &lt;cite&gt;Work&lt;/cite&gt;&lt;/footer&gt;</code></td>
+          <td>Author + work (recommended)</td>
+        </tr>
+        <tr>
+          <td><code>cite="URL"</code> attribute</td>
+          <td>Machine-readable source URL (not displayed)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
-  <!-- Testimonials Section -->
   <section>
-    <h2 id="testimonials">Testimonials</h2>
-    <p>Blockquotes work well for customer testimonials and reviews.</p>
+    <h2>Pull Quote (figure pattern)</h2>
+    <p>Wrap a blockquote in <code>&lt;figure class="quote"&gt;</code> with a <code>&lt;figcaption&gt;</code> for pull quote styling. The figure removes blockquote margins and adds its own em-dash to the caption:</p>
 
-    <div class="example">
-      <blockquote>
-        This product completely transformed our workflow. We have seen a 40% increase in productivity since implementing it.
-        <footer>Jane Smith, CEO of TechCorp</footer>
-      </blockquote>
-    </div>
-
-    <div class="example">
-      <blockquote>
-        The best decision we made this year. The support team is incredibly responsive and the documentation is excellent.
-        <footer>John Doe, Lead Developer</footer>
-      </blockquote>
-    </div>
+    <code-block language="html" show-lines label="Pull quote figure">{{ figureCode | escape }}</code-block>
   </section>
 
-  <!-- CSS Properties Section -->
   <section>
-    <h2 id="css-properties">CSS Properties</h2>
+    <h2>Academic Citations</h2>
+    <p>For academic and research writing, use the <code>cite</code> attribute with a DOI or URL for machine-readable provenance. The footer can include full bibliographic information:</p>
 
-    <code-block language="css" label="Blockquote CSS styling">{{ cssPropertiesCode | escape }}</code-block>
+    <browser-window src="/docs/snippets/demos/blockquote-academic.html" url="blockquote-academic.html" title="Academic citations" shadow></browser-window>
 
-    <h3>Key Features</h3>
+    <code-block language="html" show-lines label="Academic citation">{{ academicCode | escape }}</code-block>
+
+    <p>The <code>cite</code> attribute is not displayed but is available to scripts, search engines, and citation tools. Future VB features may auto-generate bibliography sections from <code>cite</code> attributes.</p>
+  </section>
+
+  <section>
+    <h2>Foreign Language Quotes</h2>
+    <p>Use the <code>lang</code> attribute when quoting in another language. VB's <a href="/docs/i18n/">i18n system</a> will apply appropriate font family and line height:</p>
+
+    <code-block language="html" show-lines label="Foreign language quote">{{ langCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Blockquote CSS">{{ blockquoteCssCode | escape }}</code-block>
+
+    <h3>Prose Refinements</h3>
+    <code-block language="css" show-lines label="Typographic refinements">{{ proseCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Feature</th><th>Implementation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Left border</td>
+          <td><code>border-inline-start</code> (RTL-safe)</td>
+        </tr>
+        <tr>
+          <td>Em-dash attribution</td>
+          <td><code>::before { content: "— " }</code> on footer/cite</td>
+        </tr>
+        <tr>
+          <td>Hanging punctuation</td>
+          <td><code>hanging-punctuation: first last</code> (progressive, Safari)</td>
+        </tr>
+        <tr>
+          <td>Italic de-emphasis</td>
+          <td><code>em</code>/<code>i</code> inside blockquote reset to normal + medium weight</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
     <ul>
-      <li><strong>Left border</strong> - Uses <code>border-inline-start</code> for RTL language support</li>
-      <li><strong>Muted color</strong> - Distinguishes quoted text from regular content</li>
-      <li><strong>Italic text</strong> - Traditional styling for quoted content</li>
-      <li><strong>Em dash</strong> - Automatically prepends attribution with "-- "</li>
-    </ul>
-  </section>
-
-  <!-- Inline Quotes Section -->
-  <section>
-    <h2 id="inline-quotes">Inline Quotes vs Blockquotes</h2>
-    <p>Use <code>&lt;q&gt;</code> for short inline quotes within a sentence, and <code>&lt;blockquote&gt;</code> for longer, standalone quotations.</p>
-
-    <h3>Inline Quote Example</h3>
-    <div class="example">
-      <p>As the saying goes, <q>less is more</q>, which applies perfectly to minimalist design.</p>
-    </div>
-
-    <h3>Blockquote for Longer Content</h3>
-    <div class="example">
-      <p>In his essay on design, Dieter Rams wrote:</p>
-      <blockquote>
-        Good design is as little design as possible. Less, but better because it concentrates on the essential aspects, and the products are not burdened with non-essentials.
-        <cite>Dieter Rams</cite>
-      </blockquote>
-    </div>
-  </section>
-
-  <!-- Accessibility Section -->
-  <section>
-    <h2 id="accessibility">Accessibility</h2>
-
-    <h3>Best Practices</h3>
-    <ul>
-      <li><strong>Provide attribution</strong> - Always cite the source when quoting external content</li>
-      <li><strong>Use the cite attribute</strong> - Add a URL to the source when available</li>
-      <li><strong>Semantic meaning</strong> - Only use blockquote for actual quotations</li>
-      <li><strong>Context</strong> - Introduce quotes with surrounding text that explains their relevance</li>
-    </ul>
-
-    <h3>Screen Reader Behavior</h3>
-    <p>Screen readers may announce blockquotes differently:</p>
-    <ul>
-      <li>Some announce "blockquote" before reading the content</li>
+      <li>Screen readers may announce "blockquote" before reading content</li>
       <li>Users can navigate between blockquotes on a page</li>
       <li>The <code>cite</code> attribute is not announced but is available programmatically</li>
+      <li>Always provide attribution for external quotations</li>
+      <li>Use <code>lang</code> for quotes in different languages so screen readers switch pronunciation</li>
     </ul>
-
-    <h3>Language Considerations</h3>
-    <p>If quoting content in a different language, use the <code>lang</code> attribute:</p>
-    <div class="example">
-      <blockquote lang="fr">
-        Je pense, donc je suis.
-        <footer>Rene Descartes</footer>
-      </blockquote>
-    </div>
-
-    <code-block language="html" label="Blockquote with language attribute">{{ langAttributeCode | escape }}</code-block>
   </section>
 
-  <!-- Related Elements Section -->
   <section>
-    <h2 id="related">Related Elements</h2>
+    <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/text/"><code>&lt;q&gt;</code></a> - For short inline quotations</li>
-      <li><a href="/docs/elements/native/text/"><code>&lt;cite&gt;</code></a> - For citing the title of a work</li>
-      <li><a href="/docs/elements/native/p/"><code>&lt;p&gt;</code></a> - Regular paragraphs for non-quoted content</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Can wrap blockquote with figcaption for pull quotes</li>
+      <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> &mdash; Short inline quotations with locale-aware marks</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Title of a creative work (used inside blockquote for source)</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wraps blockquote + figcaption for pull quote pattern</li>
+      <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> &mdash; Attribution inside blockquote</li>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; De-emphasized inside blockquotes to avoid double-italic</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Locale-specific font, line height, and hanging punctuation</li>
     </ul>
   </section>

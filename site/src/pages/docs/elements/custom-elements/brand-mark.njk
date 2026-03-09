@@ -33,6 +33,18 @@ permalink: /docs/elements/custom-elements/brand-mark/
   </brand-mark>
 </a>{% endset %}
 
+{% set srcCode %}<brand-mark src="/logo.svg" alt="Acme Inc">
+  Acme Inc
+</brand-mark>{% endset %}
+
+{% set wordmarkCode %}<brand-mark src="/logo.svg" wordmark>
+  Acme Inc
+</brand-mark>{% endset %}
+
+{% set heightCode %}<brand-mark src="/logo.svg" wordmark height="40">
+  Acme Inc
+</brand-mark>{% endset %}
+
 {% set headerCode %}<header>
   <nav>
     <a href="/">
@@ -63,6 +75,30 @@ permalink: /docs/elements/custom-elements/brand-mark/
       </thead>
       <tbody>
         <tr>
+          <td><code>src</code></td>
+          <td>URL</td>
+          <td>-</td>
+          <td>Path to logo image (SVG preferred). JS enhancement injects an <code>&lt;img&gt;</code> element.</td>
+        </tr>
+        <tr>
+          <td><code>alt</code></td>
+          <td>string</td>
+          <td>text content</td>
+          <td>Alt text for the logo image. Defaults to the element's text content.</td>
+        </tr>
+        <tr>
+          <td><code>wordmark</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Show text alongside the image logo. Without this, only the image is shown.</td>
+        </tr>
+        <tr>
+          <td><code>height</code></td>
+          <td>number (px)</td>
+          <td>-</td>
+          <td>Explicit pixel height for the logo image.</td>
+        </tr>
+        <tr>
           <td><code>data-size</code></td>
           <td><code>s</code>, <code>l</code>, <code>xl</code></td>
           <td>-</td>
@@ -90,6 +126,26 @@ permalink: /docs/elements/custom-elements/brand-mark/
     </browser-window>
 
     <code-block language="html" show-lines label="Brand mark with logo">{{ basicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Image Logo via <code>src</code></h2>
+    <p>Use the <code>src</code> attribute to load a logo image. The JS enhancement injects an <code>&lt;img&gt;</code> element automatically. Without JS, the text content renders as a fallback — this is progressive enhancement.</p>
+
+    <code-block language="html" show-lines label="Logo image (image only)">{{ srcCode | escape }}</code-block>
+
+    <p>By default, only the image is shown. The text content becomes the <code>alt</code> text or <code>aria-label</code>.</p>
+  </section>
+
+  <section>
+    <h2>Image + Wordmark</h2>
+    <p>Add the <code>wordmark</code> attribute to show the brand name text alongside the logo image.</p>
+
+    <code-block language="html" show-lines label="Logo with wordmark">{{ wordmarkCode | escape }}</code-block>
+
+    <p>Use <code>height</code> to control the image size explicitly. The CSS token <code>--brand-mark-height</code> can also be set by themes.</p>
+
+    <code-block language="html" show-lines label="Custom height">{{ heightCode | escape }}</code-block>
   </section>
 
   <section>
@@ -144,10 +200,13 @@ permalink: /docs/elements/custom-elements/brand-mark/
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>When using an image logo, set <code>alt=""</code> since the brand name text provides the text alternative</li>
+      <li>When using the <code>src</code> attribute without <code>wordmark</code>, the text content is used as <code>aria-label</code> or image <code>alt</code></li>
+      <li>When using <code>wordmark</code>, the image gets <code>alt=""</code> (decorative) since the visible text provides the label</li>
+      <li>When manually adding an <code>&lt;img&gt;</code> child, set <code>alt=""</code> since the brand name text provides the text alternative</li>
       <li>When wrapped in a link, the brand name serves as the link text</li>
       <li>Ensure sufficient color contrast between brand text and background</li>
       <li>Focus states are handled automatically when wrapped in a link</li>
+      <li>Without JS, the <code>src</code> attribute has no effect — text content always provides a readable fallback</li>
     </ul>
   </section>
 
@@ -162,6 +221,20 @@ permalink: /docs/elements/custom-elements/brand-mark/
 
     <h3>Permitted Parents</h3>
     <p>Any flow content. Commonly placed inside <code>&lt;a&gt;</code>, <code>&lt;header&gt;</code>, or <code>&lt;nav&gt;</code>.</p>
+
+    <h3>CSS Tokens</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Token</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--brand-mark-height</code></td>
+          <td><code>2rem</code></td>
+          <td>Height of the logo image (set by themes)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>

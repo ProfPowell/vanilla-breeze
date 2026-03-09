@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "data"
-description: "Links content with a machine-readable value."
+description: "Links content with a machine-readable value. Enhanced in VB with locale-aware number formatting, byte formatting, and animated ticker effects."
 elementName: data
 category: native
 nativeGroup: Text Semantics
@@ -14,94 +14,227 @@ permalink: /docs/elements/native/data/
 {% set productCode %}<ul>
   <li><data value="UPC:012345678901">Wireless Headphones</data> - $79.99</li>
   <li><data value="UPC:012345678902">Bluetooth Speaker</data> - $49.99</li>
-  <li><data value="UPC:012345678903">USB-C Cable</data> - $12.99</li>
 </ul>{% endset %}
 
-{% set dateCode %}<p>
-  The event is scheduled for
-  <data value="2024-06-15">June 15th, 2024</data>.
-</p>{% endset %}
-
 {% set currencyCode %}<table>
-  <tr>
-    <td>USA</td>
-    <td><data value="1000">$1,000</data></td>
-  </tr>
-  <tr>
-    <td>UK</td>
-    <td><data value="800">£800</data></td>
-  </tr>
-  <tr>
-    <td>EU</td>
-    <td><data value="900">€900</data></td>
-  </tr>
+  <tr><td>USA</td><td><data value="1000">$1,000</data></td></tr>
+  <tr><td>UK</td><td><data value="800">&pound;800</data></td></tr>
+  <tr><td>EU</td><td><data value="900">&euro;900</data></td></tr>
 </table>{% endset %}
+
+{% set formatNumberCode %}<!-- Decimal (default) -->
+<data value="1234567" data-format-number>1,234,567</data>
+
+<!-- Currency -->
+<data value="48200" data-format-number="currency" data-currency="USD">$48,200</data>
+
+<!-- Percent -->
+<data value="0.85" data-format-number="percent">85%</data>
+
+<!-- Compact -->
+<data value="1500000" data-format-number="compact">1.5M</data>{% endset %}
+
+{% set formatBytesCode %}<!-- Default (no decimals) -->
+<data value="1048576" data-format-bytes>1 MB</data>
+
+<!-- With decimal precision -->
+<data value="1536000" data-format-bytes="1">1.5 MB</data>
+
+<!-- Decimal units (1000-based) -->
+<data value="1000000" data-format-bytes data-unit="decimal">1 MB</data>{% endset %}
+
+{% set tickerCode %}<data value="50000"
+      data-effect="ticker"
+      data-trigger="scroll"
+      style="--vb-ticker-duration: 2000">50,000</data>{% endset %}
+
+{% set localeCode %}<!-- Uses page locale from html[lang] -->
+<data value="1234567" data-format-number>1,234,567</data>
+
+<!-- Override locale for this element -->
+<data value="1234567" data-format-number data-locale="de-DE">1.234.567</data>{% endset %}
+
+{% set dataCssCode %}data {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;data&gt;</code> element links a given piece of content with a machine-readable translation. If the content is time- or date-related, use the <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> element instead.</p>
-    <p>The <code>value</code> attribute provides the machine-readable equivalent of the element's content. This is useful for data processors, search engines, or scripts that need to work with the data in a standardized format.</p>
+    <p>The <code>&lt;data&gt;</code> element links content with a machine-readable <code>value</code> attribute. The visible text is the human-readable form; the <code>value</code> is for scripts, search engines, and data processors.</p>
+    <p>In Vanilla Breeze, <code>&lt;data&gt;</code> is enhanced with three powerful features:</p>
+    <ul>
+      <li><strong>Locale-aware number formatting</strong> via <code>data-format-number</code></li>
+      <li><strong>Byte formatting</strong> via <code>data-format-bytes</code></li>
+      <li><strong>Animated counter (ticker)</strong> via the <code>data-effect="ticker"</code> effect</li>
+    </ul>
+    <p>For date and time values, use <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> instead.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>The price is <data value="49.99">$49.99</data>.</p>
-    </div>
-    <code-block language="html" label="Basic data example">{{ basicDataCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Product identifiers:</strong> UPC codes, SKUs, ISBN numbers</li>
+      <li><strong>Prices:</strong> Display currency while storing raw numeric value</li>
+      <li><strong>Statistics:</strong> Counters, percentages, metrics</li>
+      <li><strong>Measurements:</strong> File sizes, distances, weights</li>
+      <li><strong>Normalized values:</strong> Any data where the display and machine formats differ</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For dates and times &mdash; use <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a></li>
+      <li>For measurements within a known range &mdash; use <a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a></li>
+      <li>For progress toward completion &mdash; use <a href="/docs/elements/native/progress/"><code>&lt;progress&gt;</code></a></li>
+    </ul>
   </section>
 
   <section>
-    <h2>Product Identifiers</h2>
-    <p>Use <code>&lt;data&gt;</code> to associate products with their identifiers:</p>
-    <div class="example">
-      <ul>
-        <li><data value="UPC:012345678901">Wireless Headphones</data> - $79.99</li>
-        <li><data value="UPC:012345678902">Bluetooth Speaker</data> - $49.99</li>
-        <li><data value="UPC:012345678903">USB-C Cable</data> - $12.99</li>
-      </ul>
-    </div>
-    <code-block language="html" label="Product identifiers">{{ productCode | escape }}</code-block>
+    <h2>Basic Usage</h2>
+
+    <browser-window src="/docs/snippets/demos/data-basic.html" url="data-basic.html" title="Data element basics" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic data">{{ basicDataCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Product identifiers">{{ productCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Currency values">{{ currencyCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Non-Date Values</h2>
-    <p>While dates should use <code>&lt;time&gt;</code>, <code>&lt;data&gt;</code> can store date strings when appropriate:</p>
-    <div class="example">
-      <p>
-        The event is scheduled for
-        <data value="2024-06-15">June 15th, 2024</data>.
-      </p>
-    </div>
-    <code-block language="html" label="Date data">{{ dateCode | escape }}</code-block>
-    <p><strong>Note:</strong> For dates and times, prefer using the <a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> element with its <code>datetime</code> attribute.</p>
-  </section>
+    <h2>Number Formatting</h2>
+    <p>Add <code>data-format-number</code> to have VB automatically format the <code>value</code> using the page's locale via <code>Intl.NumberFormat</code>. The visible text serves as a no-JS fallback.</p>
 
-  <section>
-    <h2>Currency Values</h2>
-    <p>Store normalized currency values while displaying localized formats:</p>
-    <div class="example">
-      <table>
+    <browser-window src="/docs/snippets/demos/data-formatting.html" url="data-formatting.html" title="Number and byte formatting" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Number formatting">{{ formatNumberCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
         <tr>
-          <td>USA</td>
-          <td><data value="1000">$1,000</data></td>
+          <th>Attribute Value</th>
+          <th>Format</th>
+          <th>Example (en-US)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-format-number</code> (empty)</td>
+          <td>Decimal</td>
+          <td>1,234,567</td>
         </tr>
         <tr>
-          <td>UK</td>
-          <td><data value="800">£800</data></td>
+          <td><code>data-format-number="currency"</code></td>
+          <td>Currency (requires <code>data-currency</code>)</td>
+          <td>$48,200.00</td>
         </tr>
         <tr>
-          <td>EU</td>
-          <td><data value="900">€900</data></td>
+          <td><code>data-format-number="percent"</code></td>
+          <td>Percentage</td>
+          <td>85%</td>
         </tr>
-      </table>
-    </div>
-    <code-block language="html" label="Currency values">{{ currencyCode | escape }}</code-block>
+        <tr>
+          <td><code>data-format-number="compact"</code></td>
+          <td>Compact notation</td>
+          <td>1.5M</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Byte Formatting</h2>
+    <p>Add <code>data-format-bytes</code> to format raw byte values as human-readable file sizes. The attribute value sets decimal precision.</p>
+
+    <code-block language="html" show-lines label="Byte formatting">{{ formatBytesCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-format-bytes</code></td>
+          <td>Format as bytes (default: 0 decimal places)</td>
+        </tr>
+        <tr>
+          <td><code>data-format-bytes="1"</code></td>
+          <td>1 decimal place (e.g., 1.5 MB)</td>
+        </tr>
+        <tr>
+          <td><code>data-unit="decimal"</code></td>
+          <td>Use 1000-based units instead of 1024-based</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Ticker Effect</h2>
+    <p>The <code>data-effect="ticker"</code> animates a count-up from a start value to the element's <code>value</code> when it becomes visible. Useful for statistics and dashboards.</p>
+
+    <browser-window src="/docs/snippets/demos/data-ticker.html" url="data-ticker.html" title="Ticker effect" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Ticker effect">{{ tickerCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute / Property</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-effect="ticker"</code></td>
+          <td>Enable animated count-up</td>
+          <td>&mdash;</td>
+        </tr>
+        <tr>
+          <td><code>data-trigger="scroll"</code></td>
+          <td>Start when scrolled into view (IntersectionObserver)</td>
+          <td>&mdash;</td>
+        </tr>
+        <tr>
+          <td><code>--vb-ticker-start</code></td>
+          <td>Starting number (CSS custom property)</td>
+          <td><code>0</code></td>
+        </tr>
+        <tr>
+          <td><code>--vb-ticker-duration</code></td>
+          <td>Animation duration in ms (CSS custom property)</td>
+          <td><code>1000</code></td>
+        </tr>
+        <tr>
+          <td><code>--vb-ticker-decimals</code></td>
+          <td>Decimal places (CSS custom property)</td>
+          <td>auto-detected</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Parameters are read from CSS custom properties via <code>style="--vb-ticker-duration: 2000"</code>. This follows VB's unified effect configuration pattern. The ticker respects <code>prefers-reduced-motion</code> &mdash; the animation is skipped entirely when reduced motion is preferred.</p>
+  </section>
+
+  <section>
+    <h2>Locale Override</h2>
+    <p>Number and byte formatting use the page's locale (from <code>html[lang]</code>) by default. Override per-element with <code>data-locale</code>:</p>
+
+    <code-block language="html" show-lines label="Locale override">{{ localeCode | escape }}</code-block>
+
+    <p>See the <a href="/docs/i18n/">Internationalization guide</a> for full locale resolution details.</p>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" label="Data CSS">{{ dataCssCode | escape }}</code-block>
+    <p>VB styles <code>&lt;data&gt;</code> with monospace font at 0.9em to distinguish machine-readable values from prose text.</p>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <table>
+    <table class="props-table">
       <thead>
         <tr>
           <th>Attribute</th>
@@ -111,22 +244,53 @@ permalink: /docs/elements/native/data/
       <tbody>
         <tr>
           <td><code>value</code></td>
-          <td><strong>Required.</strong> The machine-readable translation of the element's content.</td>
+          <td><strong>Required.</strong> Machine-readable translation of the content.</td>
+        </tr>
+        <tr>
+          <td><code>data-format-number</code></td>
+          <td>Enable locale-aware number formatting (VB enhancement)</td>
+        </tr>
+        <tr>
+          <td><code>data-format-bytes</code></td>
+          <td>Enable human-readable byte formatting (VB enhancement)</td>
+        </tr>
+        <tr>
+          <td><code>data-currency</code></td>
+          <td>Currency code for <code>data-format-number="currency"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-locale</code></td>
+          <td>Override locale for this element</td>
+        </tr>
+        <tr>
+          <td><code>data-effect="ticker"</code></td>
+          <td>Enable animated count-up effect (VB enhancement). Configure via CSS: <code>--vb-ticker-duration</code>, <code>--vb-ticker-start</code>, <code>--vb-ticker-decimals</code></td>
+        </tr>
+        <tr>
+          <td><code>data-trigger="scroll"</code></td>
+          <td>Start ticker on scroll into view (VB enhancement)</td>
         </tr>
       </tbody>
     </table>
-    <p>This element also supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The <code>&lt;data&gt;</code> element has no special accessibility behavior. Screen readers will read the visible content, not the <code>value</code> attribute. The <code>value</code> is intended for machine processing.</p>
+    <ul>
+      <li>Screen readers read the visible content, not the <code>value</code> attribute</li>
+      <li>The <code>value</code> is intended for machine processing</li>
+      <li>The no-JS fallback text ensures content is readable even without JavaScript</li>
+      <li>The ticker effect uses <code>data-trigger="scroll"</code> (IntersectionObserver), not auto-play</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> - For dates and times (preferred for temporal data)</li>
-      <li><a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> - For scalar measurements within a known range</li>
+      <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> &mdash; For dates and times (also has VB format utilities via <code>data-format-date</code>)</li>
+      <li><a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> &mdash; For scalar measurements within a known range</li>
+      <li><a href="/docs/elements/native/progress/"><code>&lt;progress&gt;</code></a> &mdash; For progress toward completion</li>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; For code content (both use <code>var(--font-mono)</code>)</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Locale resolution for number formatting</li>
     </ul>
   </section>

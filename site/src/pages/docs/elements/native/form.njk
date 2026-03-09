@@ -9,69 +9,87 @@ currentPath: /docs/elements/native/form/
 permalink: /docs/elements/native/form/
 ---
 
-{% set basicFormCode %}<form action="/api/submit" method="POST">
-  <layout-stack data-layout-gap="m">
-    <div class="group">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required />
-    </div>
-    <div class="group">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required />
-    </div>
+{% set basicFormCode %}<form action="/api/submit" method="POST" class="stacked">
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required />
+  </form-field>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required />
+  </form-field>
+  <footer class="actions end">
     <button type="submit">Submit</button>
-  </layout-stack>
+  </footer>
 </form>{% endset %}
 
 {% set layoutVariantsCode %}<!-- Vertical stacked layout -->
 <form class="stacked">
-  <div class="group">...</div>
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" />
+  </form-field>
+  <footer class="actions end">
+    <button type="submit">Send</button>
+  </footer>
 </form>
 
 <!-- Horizontal inline layout -->
 <form class="inline">
-  <input type="search" />
+  <input type="search" placeholder="Search..." />
   <button type="submit">Search</button>
 </form>
 
 <!-- Two-column grid layout -->
 <form class="grid">
-  <label for="name">Name</label>
-  <input type="text" id="name" />
+  <label for="first">First Name</label>
+  <input type="text" id="first" />
+  <label for="last">Last Name</label>
+  <input type="text" id="last" />
 </form>{% endset %}
 
-{% set formGroupsCode %}<!-- Vertical group -->
-<div class="group">
-  <label for="field">Label</label>
-  <input type="text" id="field" />
-</div>
+{% set formFieldCode %}<form class="stacked">
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" required />
+    <output for="email" aria-live="polite">
+      We'll never share your email.
+    </output>
+  </form-field>
+</form>{% endset %}
 
-<!-- Horizontal group -->
-<div class="group horizontal">
-  <input type="checkbox" id="remember" />
-  <label for="remember">Remember me</label>
-</div>{% endset %}
+{% set formActionsCode %}<!-- End-aligned (most common) -->
+<form class="stacked">
+  ...fields...
+  <footer class="actions end">
+    <button type="button" class="secondary">Cancel</button>
+    <button type="submit">Submit</button>
+  </footer>
+</form>
 
-{% set formActionsCode %}<div class="actions">...</div>        <!-- start aligned -->
-<div class="actions end">...</div>    <!-- end aligned -->
-<div class="actions between">...</div> <!-- space between -->{% endset %}
+<!-- Space between (delete + save) -->
+<form class="stacked">
+  ...fields...
+  <footer class="actions between">
+    <button type="button" class="ghost">Delete</button>
+    <span>
+      <button type="button" class="secondary">Cancel</button>
+      <button type="submit">Save</button>
+    </span>
+  </footer>
+</form>{% endset %}
 
-{% set helpErrorCode %}<div class="group">
+{% set helpErrorCode %}<form-field>
   <label for="password">Password</label>
   <input type="password" id="password" />
   <span class="help">At least 8 characters.</span>
-</div>
+</form-field>
 
-<div class="group">
+<form-field>
   <label for="email">Email</label>
   <input type="email" id="email" aria-invalid="true" />
   <span class="error">Invalid email address.</span>
-</div>{% endset %}
-
-{% set fileUploadCode %}<form enctype="multipart/form-data" method="POST">
-  <input type="file" name="document" accept=".pdf,.doc" />
-  <button type="submit">Upload</button>
-</form>{% endset %}
+</form-field>{% endset %}
 
 {% set autosaveCode %}<form data-autosave="contact-form">
   <input name="name" placeholder="Name">
@@ -126,7 +144,7 @@ form.grid {
   align-items: center;
 }
 
-/* Form group wrapper */
+/* Legacy group wrapper (prefer <form-field>) */
 .group {
   display: flex;
   flex-direction: column;
@@ -168,30 +186,66 @@ form.grid {
       <li>Any interaction that submits data to a server</li>
       <li>Client-side form validation with HTML5 attributes</li>
     </ul>
+
+    <h3>When Not to Use</h3>
+    <ul>
+      <li>For layout or grouping unrelated content (use <code>&lt;section&gt;</code> or <code>&lt;fieldset&gt;</code>)</li>
+      <li>For links styled as buttons (use <code>&lt;a&gt;</code> directly)</li>
+      <li>For toggling UI state without server submission (use JavaScript event handlers)</li>
+    </ul>
   </section>
 
   <section>
     <h2>Basic Usage</h2>
-    <p>A minimal form with essential attributes.</p>
+    <p>A minimal form with <code>form.stacked</code> layout, <code>&lt;form-field&gt;</code> wrappers, and a <code>&lt;footer class="actions"&gt;</code> for buttons.</p>
 
-    <div class="example">
-      <form action="/api/submit" method="POST" style="max-inline-size: 25rem;">
-        <layout-stack data-layout-gap="m">
-          <form-field>
-            <label for="form-name">Name</label>
-            <input type="text" id="form-name" name="name" required />
-          </form-field>
-          <form-field>
-            <label for="form-email">Email</label>
-            <input type="email" id="form-email" name="email" required />
-          </form-field>
-          <button type="submit">Submit</button>
-        </layout-stack>
-      </form>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/form-basic.html" url="https://vanilla-breeze.dev/form/basic" title="Basic form" shadow></browser-window>
     <code-block language="html" show-lines label="Basic form with POST method">{{ basicFormCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Layout Variants</h2>
+    <p>VB provides three layout classes on <code>&lt;form&gt;</code> that handle spacing and direction without extra wrappers.</p>
+
+    <browser-window src="/docs/snippets/demos/form-layouts.html" url="https://vanilla-breeze.dev/form/layouts" title="Form layout variants" shadow></browser-window>
+
+    <h3>form.stacked</h3>
+    <p>Fields arranged vertically with consistent spacing. Best for general-purpose forms.</p>
+
+    <h3>form.inline</h3>
+    <p>Fields arranged horizontally with wrapping. Best for search bars and compact forms.</p>
+
+    <h3>form.grid</h3>
+    <p>Labels on the left, inputs on the right in a two-column grid. Best for data entry forms.</p>
+
+    <code-block language="html" show-lines label="Form layout variants">{{ layoutVariantsCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Display</th>
+          <th>Best for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>form.stacked</code></td>
+          <td>Vertical flex column</td>
+          <td>General-purpose forms, contact forms</td>
+        </tr>
+        <tr>
+          <td><code>form.inline</code></td>
+          <td>Horizontal flex with wrap</td>
+          <td>Search bars, filters, compact forms</td>
+        </tr>
+        <tr>
+          <td><code>form.grid</code></td>
+          <td>Two-column grid</td>
+          <td>Data entry, settings panels</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -240,219 +294,62 @@ form.grid {
   </section>
 
   <section>
-    <h2>Layout Variants</h2>
+    <h2>Using form-field</h2>
+    <p>The <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> web component wraps a label, input, and optional help/error text into a single accessible unit. It handles <code>aria-describedby</code> wiring automatically and adds required indicators.</p>
 
-    <h3>.stacked (Vertical Layout)</h3>
-    <p>Fields arranged vertically with consistent spacing. Best for general-purpose forms.</p>
-    <div class="example">
-      <form class="stacked" style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="stacked-name">Name</label>
-          <input type="text" id="stacked-name" placeholder="Your name" />
-        </form-field>
-        <form-field>
-          <label for="stacked-email">Email</label>
-          <input type="email" id="stacked-email" placeholder="you@example.com" />
-        </form-field>
-        <form-field>
-          <label for="stacked-message">Message</label>
-          <textarea id="stacked-message" rows="4" placeholder="Your message"></textarea>
-        </form-field>
-        <div class="actions end">
-          <button type="button" class="secondary">Cancel</button>
-          <button type="submit">Send</button>
-        </div>
-      </form>
-    </div>
+    <aside class="note">
+      <strong>Prefer <code>&lt;form-field&gt;</code> over <code>.group</code>.</strong> The older <code>&lt;div class="group"&gt;</code> pattern still works but <code>&lt;form-field&gt;</code> provides built-in accessibility wiring, validation states, and required indicators. Use bare <code>&lt;label&gt;</code> for simple optional checkboxes and radios that need no help text or validation.
+    </aside>
 
-    <h3>.inline (Horizontal Layout)</h3>
-    <p>Fields arranged horizontally. Best for search bars and compact forms.</p>
-    <div class="example">
-      <form class="inline">
-        <form-field>
-          <label for="inline-search" class="visually-hidden">Search</label>
-          <input type="search" id="inline-search" placeholder="Search..." />
-        </form-field>
-        <button type="submit">Search</button>
-      </form>
-    </div>
-
-    <h3>.grid (Two-Column Layout)</h3>
-    <p>Labels on the left, inputs on the right. Best for data entry forms.</p>
-    <div class="example">
-      <form class="grid" style="max-inline-size: 30rem;">
-        <label for="grid-first">First Name</label>
-        <input type="text" id="grid-first" />
-
-        <label for="grid-last">Last Name</label>
-        <input type="text" id="grid-last" />
-
-        <label for="grid-phone">Phone</label>
-        <input type="tel" id="grid-phone" />
-
-        <label for="grid-company">Company</label>
-        <input type="text" id="grid-company" />
-      </form>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Form layout variants">{{ layoutVariantsCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Form Groups</h2>
-    <p>The <code>.group</code> class wraps a label-input pair with appropriate spacing.</p>
-
-    <h3>.group (Vertical)</h3>
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="group-example">Field Label</label>
-        <input type="text" id="group-example" placeholder="Input value" />
-      </form-field>
-    </div>
-
-    <h3>.group.horizontal</h3>
-    <p>For checkbox and toggle layouts where label and input are side by side.</p>
-    <div class="example">
-      <div class="group horizontal" style="max-inline-size: 25rem;">
-        <input type="checkbox" id="group-checkbox" />
-        <label for="group-checkbox">Remember me on this device</label>
-      </div>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Form group patterns">{{ formGroupsCode | escape }}</code-block>
+    <code-block language="html" show-lines label="form-field with output message">{{ formFieldCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Form Actions</h2>
-    <p>The <code>.actions</code> class provides a container for submit/cancel buttons.</p>
+    <p>Use <code>&lt;footer class="actions"&gt;</code> for the submit/cancel button row at the bottom of a form. The <code>.end</code> modifier right-aligns buttons; <code>.between</code> pushes groups apart.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="l" style="max-inline-size: 30rem;">
-        <div>
-          <strong>Default (start aligned)</strong>
-          <div class="actions">
-            <button type="button" class="secondary">Cancel</button>
-            <button type="submit">Submit</button>
-          </div>
-        </div>
+    <aside class="note">
+      <strong>Prefer <code>&lt;footer class="actions"&gt;</code> over <code>&lt;div class="actions"&gt;</code>.</strong> A <code>&lt;footer&gt;</code> is semantically correct for a form&rsquo;s concluding actions and avoids an unnecessary <code>&lt;div&gt;</code>.
+    </aside>
 
-        <div>
-          <strong>.actions.end</strong>
-          <div class="actions end">
-            <button type="button" class="secondary">Cancel</button>
-            <button type="submit">Submit</button>
-          </div>
-        </div>
+    <code-block language="html" show-lines label="Form actions patterns">{{ formActionsCode | escape }}</code-block>
 
-        <div>
-          <strong>.actions.between</strong>
-          <div class="actions between">
-            <button type="button" class="ghost">Delete</button>
-            <div>
-              <button type="button" class="secondary">Cancel</button>
-              <button type="submit">Save</button>
-            </div>
-          </div>
-        </div>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Form actions alignment">{{ formActionsCode | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.actions</code></td>
+          <td>Start-aligned (default)</td>
+        </tr>
+        <tr>
+          <td><code>.actions.end</code></td>
+          <td>End-aligned</td>
+        </tr>
+        <tr>
+          <td><code>.actions.between</code></td>
+          <td>Space between groups</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Help and Error Text</h2>
-    <p>Provide additional context with help and error text classes.</p>
+    <p>Inside a <code>&lt;form-field&gt;</code>, add a <code>&lt;span class="help"&gt;</code> for hints or a <code>&lt;span class="error"&gt;</code> for validation messages. Mark invalid inputs with <code>aria-invalid="true"</code>.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="help-field">Password</label>
-          <input type="password" id="help-field" />
-          <span class="help">Must be at least 8 characters with one number.</span>
-        </form-field>
-
-        <form-field>
-          <label for="error-field">Email</label>
-          <input type="email" id="error-field" aria-invalid="true" value="not-valid" />
-          <span class="error">Please enter a valid email address.</span>
-        </form-field>
-      </layout-stack>
-    </div>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Help and error text patterns">{{ helpErrorCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>File Upload Forms</h2>
-    <p>For file uploads, use <code>enctype="multipart/form-data"</code>.</p>
-
-    <div class="example">
-      <form enctype="multipart/form-data" class="stacked" style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="file-upload">Upload Document</label>
-          <input type="file" id="file-upload" name="document" accept=".pdf,.doc,.docx" />
-          <span class="help">Accepts PDF, DOC, or DOCX files up to 10MB.</span>
-        </form-field>
-        <button type="submit">Upload</button>
-      </form>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="File upload form">{{ fileUploadCode | escape }}</code-block>
-  </section>
-
-  <section>
     <h2>Complete Contact Form</h2>
-    <p>A full example combining multiple form elements.</p>
+    <p>A full example combining <code>form.stacked</code>, <code>&lt;form-field&gt;</code>, <code>&lt;fieldset&gt;</code>, and <code>&lt;footer class="actions"&gt;</code>.</p>
 
-    <div class="example">
-      <form class="stacked" style="max-inline-size: 30rem;">
-        <fieldset>
-          <legend>Contact Us</legend>
-          <layout-stack data-layout-gap="m">
-            <form-field>
-              <label for="contact-name">Name</label>
-              <input type="text" id="contact-name" name="name" required autocomplete="name" />
-            </form-field>
-
-            <form-field>
-              <label for="contact-email">Email</label>
-              <input type="email" id="contact-email" name="email" required autocomplete="email" />
-            </form-field>
-
-            <form-field>
-              <label for="contact-subject">Subject</label>
-              <select id="contact-subject" name="subject" required>
-                <option value="">Select a subject...</option>
-                <option value="general">General Inquiry</option>
-                <option value="support">Technical Support</option>
-                <option value="feedback">Feedback</option>
-              </select>
-            </form-field>
-
-            <form-field>
-              <label for="contact-message">Message</label>
-              <textarea id="contact-message" name="message" rows="5" required></textarea>
-            </form-field>
-
-            <div class="group horizontal">
-              <input type="checkbox" id="contact-newsletter" name="newsletter" />
-              <label for="contact-newsletter">Subscribe to our newsletter</label>
-            </div>
-          </layout-stack>
-        </fieldset>
-
-        <div class="actions end">
-          <button type="reset" class="secondary">Clear</button>
-          <button type="submit">Send Message</button>
-        </div>
-      </form>
-    </div>
+    <browser-window src="/docs/snippets/demos/form-contact.html" url="https://vanilla-breeze.dev/form/contact" title="Complete contact form" shadow></browser-window>
   </section>
 
   <section>
@@ -544,7 +441,8 @@ form.grid {
       <li><strong>Error identification</strong>: Use <code>aria-invalid</code> and <code>aria-describedby</code> for errors</li>
       <li><strong>Autocomplete</strong>: Add appropriate <code>autocomplete</code> attributes for autofill</li>
       <li><strong>Focus management</strong>: Use <code>autofocus</code> on the first field (one per page)</li>
-      <li><strong>Submit button</strong>: Always include a submit button, not just Enter key handling</li>
+      <li><strong>Submit button</strong>: Always include a visible submit button, not just Enter key handling</li>
+      <li><strong>Use form-field</strong>: The <code>&lt;form-field&gt;</code> component handles <code>aria-describedby</code> wiring automatically</li>
     </ul>
   </section>
 
@@ -562,6 +460,10 @@ form.grid {
       <li><a href="/docs/elements/native/textarea/">textarea</a> - Multi-line text input</li>
       <li><a href="/docs/elements/native/fieldset/">fieldset</a> - Group related form fields</li>
       <li><a href="/docs/elements/native/label/">label</a> - Accessible input labels</li>
-      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper</li>
+      <li><a href="/docs/elements/native/legend/">legend</a> - Caption for fieldset groups</li>
+      <li><a href="/docs/elements/native/output/">output</a> - Calculation result or action output</li>
+      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper with validation</li>
+      <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete suggestions for inputs</li>
+      <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms with <code>method="dialog"</code></li>
     </ul>
   </section>

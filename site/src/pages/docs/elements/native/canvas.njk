@@ -13,33 +13,28 @@ permalink: /docs/elements/native/canvas/
 
 {% set borderedCanvasCode %}<canvas class="bordered" width="300" height="150"></canvas>{% endset %}
 
-{% set loadingCanvasCode %}<canvas class="bordered loading" width="300" height="150"></canvas>{% endset %}
-
-{% set interactiveCanvasCode %}<canvas class="interactive" width="300" height="150"></canvas>{% endset %}
-
 {% set drawingCanvasCode %}<canvas class="drawing" width="300" height="150"></canvas>{% endset %}
 
-{% set responsiveCanvasCode %}<div class="canvas-responsive">
+{% set responsiveCanvasCode %}<section class="canvas-responsive">
   <canvas></canvas>
-</div>{% endset %}
+</section>{% endset %}
 
 {% set customAspectCode %}<!-- Square canvas -->
-<div class="canvas-responsive" style="aspect-ratio: 1;">
+<section class="canvas-responsive" style="aspect-ratio: 1;">
   <canvas></canvas>
-</div>
+</section>
 
 <!-- 4:3 canvas -->
-<div class="canvas-responsive" style="aspect-ratio: 4 / 3;">
+<section class="canvas-responsive" style="aspect-ratio: 4 / 3;">
   <canvas></canvas>
-</div>{% endset %}
+</section>{% endset %}
 
 {% set sizingCode %}<!-- Drawing buffer is 600x400 pixels -->
 <!-- Display size is 300x200 CSS pixels (for retina) -->
 <canvas width="600" height="400" style="inline-size: 300px; block-size: 200px;">
 </canvas>{% endset %}
 
-{% set retinaCode %}// Scale canvas for retina displays
-const canvas = document.querySelector('canvas');
+{% set retinaCode %}const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const dpr = window.devicePixelRatio || 1;
 
@@ -54,7 +49,7 @@ canvas.height = 200 * dpr;
 // Scale context to match
 ctx.scale(dpr, dpr);{% endset %}
 
-{% set basicDrawingCode %}const canvas = document.getElementById('example-basic');
+{% set basicDrawingCode %}const canvas = document.getElementById('my-canvas');
 const ctx = canvas.getContext('2d');
 
 // Fill rectangle
@@ -62,14 +57,15 @@ ctx.fillStyle = '#4a90d9';
 ctx.fillRect(20, 20, 150, 100);
 
 // Stroke rectangle
-ctx.strokeStyle = '#333';
-ctx.lineWidth = 2;
+ctx.strokeStyle = '#8b5cf6';
+ctx.lineWidth = 3;
 ctx.strokeRect(200, 20, 150, 100);
 
-// Draw text
-ctx.fillStyle = '#333';
-ctx.font = '16px system-ui';
-ctx.fillText('Canvas Demo', 20, 160);{% endset %}
+// Draw circle
+ctx.beginPath();
+ctx.arc(350, 70, 40, 0, Math.PI * 2);
+ctx.fillStyle = '#10b981';
+ctx.fill();{% endset %}
 
 {% set fallbackCode %}<canvas width="400" height="300">
   <!-- Fallback for screen readers and non-canvas browsers -->
@@ -90,7 +86,10 @@ ctx.fillText('Canvas Demo', 20, 160);{% endset %}
 </canvas>{% endset %}
 
 {% set dataTableCode %}<figure>
-  <canvas id="sales-chart" width="600" height="400"></canvas>
+  <canvas id="sales-chart" width="600" height="400"
+    role="img"
+    aria-label="Annual sales by region">
+  </canvas>
   <figcaption>
     Annual sales by region.
     <a href="#sales-table">View data table</a>
@@ -98,129 +97,86 @@ ctx.fillText('Canvas Demo', 20, 160);{% endset %}
 </figure>
 
 <table id="sales-table">
-  <!-- Accessible data table with same information -->
+  <!-- Accessible data table with the same information -->
 </table>{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;canvas&gt;</code> element is a container for scriptable graphics. It provides a bitmap drawing surface that you can manipulate with JavaScript using either the 2D rendering context or WebGL for 3D graphics.</p>
-    <p>Vanilla Breeze styles canvas elements to be block-level and responsive by default, with variants for borders, loading states, and interactive cursors.</p>
+    <p>The <code>&lt;canvas&gt;</code> element provides a bitmap drawing surface for JavaScript-driven graphics. VB styles canvases as block-level and responsive by default, with variants for borders, loading states, interactive cursors, and drawing modes.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
-      <li><strong>Charts and graphs</strong> - Data visualization (often via libraries like Chart.js)</li>
-      <li><strong>Games</strong> - 2D and 3D game rendering</li>
-      <li><strong>Image manipulation</strong> - Filters, cropping, compositing</li>
-      <li><strong>Animations</strong> - Complex animations beyond CSS capabilities</li>
-      <li><strong>Drawing applications</strong> - User-interactive drawing tools</li>
-      <li><strong>Signatures</strong> - Capture user signatures</li>
+      <li><strong>Charts and graphs:</strong> Data visualization (Chart.js, D3, etc.)</li>
+      <li><strong>Games:</strong> 2D and 3D game rendering</li>
+      <li><strong>Image manipulation:</strong> Filters, cropping, compositing</li>
+      <li><strong>Animations:</strong> Complex animations beyond CSS capabilities</li>
+      <li><strong>Drawing tools:</strong> Signatures, sketches, annotation</li>
     </ul>
 
     <h3>When to Use Other Elements</h3>
     <ul>
       <li>Use <a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> for scalable, accessible vector graphics</li>
       <li>Use <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> for static images</li>
-      <li>Use CSS animations for simple, declarative animations</li>
+      <li>Use CSS animations for simple, declarative motion</li>
       <li>Use <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> for pre-recorded animated content</li>
     </ul>
   </section>
 
   <section>
     <h2>Variants</h2>
+    <p>VB provides variant classes for borders, loading placeholders, and cursor modes. The interactive demo below includes a coordinate tracker (hover) and a freehand drawing canvas (click and drag).</p>
 
-    <h3>Default</h3>
-    <p>Basic canvas without styling.</p>
-    <div class="example">
-      <canvas width="300" height="150" style="background: var(--color-surface-raised);"></canvas>
-    </div>
-    <code-block language="html" label="Basic canvas element">{{ basicCanvasCode | escape }}</code-block>
+    <browser-window src="/docs/snippets/demos/canvas-variants.html" url="canvas-variants.html" title="Canvas variants" shadow></browser-window>
 
-    <h3>.bordered</h3>
-    <p>Adds a subtle border to define the canvas boundary.</p>
-    <div class="example">
-      <canvas class="bordered" width="300" height="150" style="background: var(--color-surface-raised);"></canvas>
-    </div>
-    <code-block language="html" label="Canvas with border">{{ borderedCanvasCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Basic canvas">{{ basicCanvasCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Bordered canvas">{{ borderedCanvasCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Drawing canvas">{{ drawingCanvasCode | escape }}</code-block>
 
-    <h3>.loading</h3>
-    <p>Striped pattern indicates loading or placeholder state before content is rendered.</p>
-    <div class="example">
-      <canvas class="bordered loading" width="300" height="150"></canvas>
-    </div>
-    <code-block language="html" label="Canvas with loading state">{{ loadingCanvasCode | escape }}</code-block>
+    <table class="props-table">
+      <thead>
+        <tr><th>Class</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>(default)</td><td>Block display, max-width 100%</td></tr>
+        <tr><td><code>.bordered</code></td><td>Border + border-radius to define the canvas boundary</td></tr>
+        <tr><td><code>.loading</code></td><td>Striped background pattern (placeholder before JS renders)</td></tr>
+        <tr><td><code>.interactive</code></td><td>Crosshair cursor for click/hover interactions</td></tr>
+        <tr><td><code>.drawing</code></td><td>Crosshair cursor + <code>touch-action: none</code> for freehand drawing</td></tr>
+        <tr><td><code>.full</code></td><td>100% container width</td></tr>
+        <tr><td><code>.fixed</code></td><td>100% width, fixed 400px height</td></tr>
+      </tbody>
+    </table>
+  </section>
 
-    <h3>.interactive</h3>
-    <p>Crosshair cursor for interactive canvases where users can click or draw.</p>
-    <div class="example">
-      <canvas class="bordered interactive" width="300" height="150" style="background: var(--color-surface-raised);"></canvas>
-    </div>
-    <code-block language="html" label="Interactive canvas with crosshair cursor">{{ interactiveCanvasCode | escape }}</code-block>
+  <section>
+    <h2>Drawing Examples</h2>
+    <p>Canvas requires JavaScript to render. These demos show shapes, a working bar chart with data labels, and a responsive canvas that reports its own dimensions.</p>
 
-    <h3>.drawing</h3>
-    <p>Crosshair cursor with <code>touch-action: none</code> for drawing applications that handle touch events manually.</p>
-    <div class="example">
-      <canvas class="bordered drawing" width="300" height="150" style="background: var(--color-surface-raised);"></canvas>
-      <p><small>Click and drag to draw</small></p>
-    </div>
-    <code-block language="html" label="Drawing canvas with touch handling">{{ drawingCanvasCode | escape }}</code-block>
+    <browser-window src="/docs/snippets/demos/canvas-drawing.html" url="canvas-drawing.html" title="Canvas drawing examples" shadow></browser-window>
 
-    <h3>.full</h3>
-    <p>Full container width.</p>
-    <div class="example">
-      <canvas class="bordered full" width="800" height="200" style="background: var(--color-surface-raised);"></canvas>
-    </div>
-
-    <h3>.fixed</h3>
-    <p>Full width with fixed height (400px).</p>
-    <div class="example" style="max-block-size: 250px; overflow: hidden;">
-      <canvas class="bordered fixed" width="800" height="400" style="background: var(--color-surface-raised);"></canvas>
-    </div>
+    <code-block language="javascript" show-lines label="Basic canvas drawing">{{ basicDrawingCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Responsive Canvas</h2>
-    <p>Use the <code>.canvas-responsive</code> wrapper to maintain aspect ratio while filling available width.</p>
+    <p>Use <code>.canvas-responsive</code> to maintain aspect ratio while filling available width. The canvas is positioned absolutely inside the wrapper.</p>
 
-    <div class="example" style="max-inline-size: 500px;">
-      <div class="canvas-responsive" style="background: var(--color-surface-raised);">
-        <canvas></canvas>
-      </div>
-    </div>
-    <code-block language="html" label="Responsive canvas wrapper">{{ responsiveCanvasCode | escape }}</code-block>
-
-    <p>The wrapper maintains a 16:9 aspect ratio by default. The canvas is positioned absolutely to fill the container.</p>
+    <code-block language="html" show-lines label="Responsive canvas wrapper">{{ responsiveCanvasCode | escape }}</code-block>
 
     <h3>Custom Aspect Ratios</h3>
-    <code-block language="html" label="Custom aspect ratio canvases">{{ customAspectCode | escape }}</code-block>
+    <p>Override the default 16:9 ratio with inline <code>aspect-ratio</code>:</p>
+    <code-block language="html" show-lines label="Custom aspect ratios">{{ customAspectCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Canvas Sizing</h2>
-    <p>Canvas has two size concepts: the element size (CSS) and the drawing buffer size (attributes).</p>
-    <code-block language="html" label="Canvas with separate buffer and display sizes">{{ sizingCode | escape }}</code-block>
+    <p>Canvas has two independent sizes: the element size (CSS) and the drawing buffer size (<code>width</code>/<code>height</code> attributes). For crisp rendering on retina displays, set the buffer to a multiple of the display size.</p>
+    <code-block language="html" show-lines label="Separate buffer and display sizes">{{ sizingCode | escape }}</code-block>
 
-    <h3>High DPI / Retina Support</h3>
-    <code-block language="javascript" label="Retina display scaling for canvas">{{ retinaCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Live Examples</h2>
-
-    <h3>Basic Drawing</h3>
-    <div class="example">
-      <canvas class="bordered" width="400" height="200" style="background: var(--color-surface-raised);"></canvas>
-    </div>
-    <code-block language="javascript" label="Basic canvas drawing example">{{ basicDrawingCode | escape }}</code-block>
-
-    <h3>Chart Placeholder</h3>
-    <div class="example">
-      <figure>
-        <canvas class="bordered" width="500" height="250" style="background: var(--color-surface-raised);"></canvas>
-        <figcaption>Monthly sales data - Q4 2025</figcaption>
-      </figure>
-    </div>
+    <h3>High DPI / Retina</h3>
+    <code-block language="javascript" show-lines label="Retina display scaling">{{ retinaCode | escape }}</code-block>
   </section>
 
   <section>
@@ -228,15 +184,16 @@ ctx.fillText('Canvas Demo', 20, 160);{% endset %}
     <p>Canvas content is not accessible to screen readers by default. You must provide alternatives.</p>
 
     <h3>Fallback Content</h3>
-    <p>Place fallback content inside the canvas element for browsers that don't support canvas or for screen readers.</p>
-    <code-block language="html" label="Canvas with accessible fallback content">{{ fallbackCode | escape }}</code-block>
+    <p>Place content inside the canvas element. It's shown when canvas is unsupported and available to screen readers.</p>
+    <code-block language="html" show-lines label="Canvas with fallback content">{{ fallbackCode | escape }}</code-block>
 
     <h3>ARIA Labels</h3>
-    <code-block language="html" label="Canvas with ARIA label">{{ ariaLabelCode | escape }}</code-block>
+    <p>For simple informative graphics, use <code>role="img"</code> with <code>aria-label</code>:</p>
+    <code-block language="html" show-lines label="Canvas with ARIA label">{{ ariaLabelCode | escape }}</code-block>
 
     <h3>Data Tables</h3>
-    <p>For complex data visualizations, provide an accessible data table nearby.</p>
-    <code-block language="html" label="Canvas chart with linked data table">{{ dataTableCode | escape }}</code-block>
+    <p>For complex data visualizations, provide an accessible data table nearby:</p>
+    <code-block language="html" show-lines label="Canvas with linked data table">{{ dataTableCode | escape }}</code-block>
 
     <h3>Best Practices</h3>
     <ul>
@@ -249,58 +206,30 @@ ctx.fillText('Canvas Demo', 20, 160);{% endset %}
   </section>
 
   <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> - Scalable vector graphics, often better for accessibility</li>
-      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> - Static images</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Wrap canvas with captions</li>
-    </ul>
+    <h2>CSS Reference</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Selector</th><th>Properties</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>canvas</code></td><td><code>display: block; max-inline-size: 100%;</code></td></tr>
+        <tr><td><code>canvas.full</code></td><td><code>inline-size: 100%; block-size: auto;</code></td></tr>
+        <tr><td><code>canvas.fixed</code></td><td><code>inline-size: 100%; block-size: 400px;</code></td></tr>
+        <tr><td><code>canvas.interactive</code></td><td><code>cursor: crosshair;</code></td></tr>
+        <tr><td><code>canvas.drawing</code></td><td><code>cursor: crosshair; touch-action: none;</code></td></tr>
+        <tr><td><code>canvas.bordered</code></td><td><code>border; border-radius;</code></td></tr>
+        <tr><td><code>canvas.loading</code></td><td><code>Diagonal stripe background pattern</code></td></tr>
+        <tr><td><code>.canvas-responsive</code></td><td><code>position: relative; aspect-ratio: 16 / 9;</code></td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>CSS Reference</h2>
-    <p>Styles defined in <code>/src/native-elements/canvas/styles.css</code></p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Selector</th>
-          <th>Properties</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>canvas</code></td>
-          <td><code>display: block; max-inline-size: 100%;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.full</code></td>
-          <td><code>inline-size: 100%; block-size: auto;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.fixed</code></td>
-          <td><code>inline-size: 100%; block-size: 400px;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.interactive</code></td>
-          <td><code>cursor: crosshair;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.drawing</code></td>
-          <td><code>cursor: crosshair; touch-action: none;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.bordered</code></td>
-          <td><code>border; border-radius;</code></td>
-        </tr>
-        <tr>
-          <td><code>canvas.loading</code></td>
-          <td><code>background with diagonal stripes;</code></td>
-        </tr>
-        <tr>
-          <td><code>.canvas-responsive</code></td>
-          <td><code>position: relative; aspect-ratio: 16 / 9;</code></td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> &mdash; Scalable vector graphics (often better for accessibility and resolution independence)</li>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> &mdash; Static images</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wrap canvas with captions for charts</li>
+      <li><a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> &mdash; VB's canvas-based audio visualization component</li>
+    </ul>
   </section>

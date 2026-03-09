@@ -52,11 +52,6 @@ permalink: /docs/elements/native/menu/
   <li><button type="button" class="ghost">Completed</button></li>
 </menu>{% endset %}
 
-{% set compactMenuCode %}<menu class="context compact">
-  <li><button type="button">Item 1</button></li>
-  ...
-</menu>{% endset %}
-
 {% set menuCssCode %}menu {
   display: flex;
   flex-wrap: wrap;
@@ -78,17 +73,6 @@ menu.toolbar {
   padding: var(--size-2xs);
   background: var(--color-surface-raised);
   border-radius: var(--radius-m);
-
-  & > li > button {
-    padding: var(--size-xs);
-    min-inline-size: auto;
-    background: transparent;
-    color: var(--color-text);
-
-    &:hover {
-      background: var(--color-surface);
-    }
-  }
 }
 
 /* Context menu variant */
@@ -101,21 +85,7 @@ menu.context {
   border-radius: var(--radius-m);
   box-shadow: 0 4px 12px oklch(0% 0 0 / 0.15);
   min-inline-size: 160px;
-
-  & > li[role="separator"] {
-    block-size: 1px;
-    margin-block: var(--size-2xs);
-    background: var(--color-border);
-  }
 }{% endset %}
-
-{% set separatorMenuCode %}<menu class="context">
-  <li><button type="button">Edit</button></li>
-  <li><button type="button">Duplicate</button></li>
-  <li role="separator"></li>
-  <li><button type="button">Move to folder</button></li>
-  ...
-</menu>{% endset %}
 
 {% set iconButtonCode %}<button type="button" class="ghost" aria-label="Bold">
   <svg ...>...</svg>
@@ -123,12 +93,9 @@ menu.context {
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;menu&gt;</code> element represents a group of commands or options. While its original purpose was for context menus, it's now primarily used as a semantic container for toolbar buttons and action menus.</p>
+    <p>The <code>&lt;menu&gt;</code> element represents a group of commands or options. It is semantically equivalent to <code>&lt;ul&gt;</code> but signals to assistive technologies that the items represent commands rather than list content.</p>
 
-    <p>In Vanilla Breeze, <code>&lt;menu&gt;</code> is styled as a flexible container with variants for different menu patterns: toolbars, context menus, vertical menus, and icon button groups.</p>
-
-    <h3>HTML Semantics</h3>
-    <p>The <code>&lt;menu&gt;</code> element is semantically equivalent to <code>&lt;ul&gt;</code> but signals to assistive technologies that the items represent commands rather than list content. It's the appropriate choice for groups of actions.</p>
+    <p>In Vanilla Breeze, <code>&lt;menu&gt;</code> is styled as a flexible container with variants for toolbars, context menus, vertical menus, and icon button groups.</p>
   </section>
 
   <section>
@@ -143,9 +110,10 @@ menu.context {
 
     <h3>When Not to Use</h3>
     <ul>
-      <li>For navigation links - use <a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> instead</li>
-      <li>For content lists - use <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></li>
-      <li>For dropdown selection - use <code>&lt;select&gt;</code></li>
+      <li>For navigation links &mdash; use <a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a></li>
+      <li>For content lists &mdash; use <a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> or <a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a></li>
+      <li>For dropdown selection &mdash; use <code>&lt;select&gt;</code></li>
+      <li>For full dropdown components &mdash; use <a href="/docs/elements/custom-elements/drop-down/"><code>&lt;drop-down&gt;</code></a></li>
     </ul>
   </section>
 
@@ -154,116 +122,45 @@ menu.context {
 
     <h3>Default Menu</h3>
     <p>The default menu displays as a horizontal flexbox container.</p>
-    <div class="example">
-      <menu>
-        <li><button type="button">Action 1</button></li>
-        <li><button type="button">Action 2</button></li>
-        <li><button type="button">Action 3</button></li>
-      </menu>
-    </div>
+
+    <browser-window src="/docs/snippets/demos/menu-default.html" url="menu-default.html" title="Default menu" shadow></browser-window>
 
     <code-block language="html" show-lines label="Default menu">{{ defaultMenuCode | escape }}</code-block>
 
-    <h3>.toolbar</h3>
+    <h3><code>.toolbar</code></h3>
     <p>Horizontal toolbar with background and contained button styling.</p>
-    <div class="example">
-      <menu class="toolbar">
-        <li><button type="button" class="ghost">Bold</button></li>
-        <li><button type="button" class="ghost">Italic</button></li>
-        <li><button type="button" class="ghost">Underline</button></li>
-        <li><button type="button" class="ghost">Link</button></li>
-      </menu>
-    </div>
+
+    <browser-window src="/docs/snippets/demos/menu-toolbar.html" url="menu-toolbar.html" title="Toolbar menu" shadow></browser-window>
 
     <code-block language="html" show-lines label="Toolbar menu">{{ toolbarMenuCode | escape }}</code-block>
 
-    <h3>.context</h3>
-    <p>Dropdown-style context menu with separators.</p>
-    <div class="example">
-      <menu class="context" style="display: inline-flex;">
-        <li><button type="button">Cut</button></li>
-        <li><button type="button">Copy</button></li>
-        <li><button type="button">Paste</button></li>
-        <li role="separator"></li>
-        <li><button type="button">Select All</button></li>
-      </menu>
-    </div>
+    <h3><code>.context</code></h3>
+    <p>Dropdown-style context menu with separators. Works with both buttons and links.</p>
+
+    <browser-window src="/docs/snippets/demos/menu-context.html" url="menu-context.html" title="Context menu" shadow></browser-window>
 
     <code-block language="html" show-lines label="Context menu">{{ contextMenuCode | escape }}</code-block>
 
-    <h3>.context with Links</h3>
-    <p>Context menus can also contain links for navigation actions.</p>
-    <div class="example">
-      <menu class="context" style="display: inline-flex;">
-        <li><a href="#">View Profile</a></li>
-        <li><a href="#">Settings</a></li>
-        <li><a href="#">Help</a></li>
-        <li role="separator"></li>
-        <li><a href="#">Sign Out</a></li>
-      </menu>
-    </div>
-
-    <h3>.vertical</h3>
+    <h3><code>.vertical</code></h3>
     <p>Vertical menu layout for sidebar or dropdown patterns.</p>
-    <div class="example" style="max-inline-size: 200px;">
-      <menu class="vertical">
-        <li><button type="button" class="ghost">Dashboard</button></li>
-        <li><button type="button" class="ghost">Projects</button></li>
-        <li><button type="button" class="ghost">Tasks</button></li>
-        <li><button type="button" class="ghost">Settings</button></li>
-      </menu>
-    </div>
+
+    <browser-window src="/docs/snippets/demos/menu-vertical.html" url="menu-vertical.html" title="Vertical menu" shadow></browser-window>
 
     <code-block language="html" show-lines label="Vertical menu">{{ verticalMenuCode | escape }}</code-block>
 
-    <h3>.icons</h3>
+    <h3><code>.icons</code></h3>
     <p>Icon-only toolbar with square icon buttons.</p>
-    <div class="example">
-      <menu class="toolbar icons">
-        <li>
-          <button type="button" class="ghost" aria-label="Bold">
-            <svg class="s currentcolor" viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" fill="none" stroke="currentColor" stroke-width="2" /></svg>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="ghost" aria-label="Italic">
-            <svg class="s currentcolor" viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4" stroke="currentColor" stroke-width="2" /><line x1="14" y1="20" x2="5" y2="20" stroke="currentColor" stroke-width="2" /><line x1="15" y1="4" x2="9" y2="20" stroke="currentColor" stroke-width="2" /></svg>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="ghost" aria-label="Underline">
-            <svg class="s currentcolor" viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4" fill="none" stroke="currentColor" stroke-width="2" /><line x1="4" y1="20" x2="20" y2="20" stroke="currentColor" stroke-width="2" /></svg>
-          </button>
-        </li>
-      </menu>
-    </div>
+
+    <browser-window src="/docs/snippets/demos/menu-icons.html" url="menu-icons.html" title="Icon toolbar" shadow></browser-window>
 
     <code-block language="html" show-lines label="Icon toolbar menu">{{ iconToolbarCode | escape }}</code-block>
 
-    <h3>.pills</h3>
+    <h3><code>.pills</code></h3>
     <p>Pill-shaped buttons for filter or toggle patterns.</p>
-    <div class="example">
-      <menu class="toolbar pills">
-        <li><button type="button" class="ghost">All</button></li>
-        <li><button type="button">Active</button></li>
-        <li><button type="button" class="ghost">Completed</button></li>
-      </menu>
-    </div>
+
+    <browser-window src="/docs/snippets/demos/menu-pills.html" url="menu-pills.html" title="Pills menu" shadow></browser-window>
 
     <code-block language="html" show-lines label="Pills menu">{{ pillsMenuCode | escape }}</code-block>
-
-    <h3>.compact</h3>
-    <p>Reduced spacing for dense interfaces.</p>
-    <div class="example">
-      <menu class="context compact" style="display: inline-flex;">
-        <li><button type="button">Item 1</button></li>
-        <li><button type="button">Item 2</button></li>
-        <li><button type="button">Item 3</button></li>
-        <li><button type="button">Item 4</button></li>
-      </menu>
-    </div>
-
-    <code-block language="html" show-lines label="Compact menu">{{ compactMenuCode | escape }}</code-block>
   </section>
 
   <section>
@@ -312,20 +209,6 @@ menu.context {
   <section>
     <h2>Menu Separators</h2>
     <p>Use <code>role="separator"</code> on list items to create visual dividers in context menus.</p>
-
-    <div class="example">
-      <menu class="context" style="display: inline-flex;">
-        <li><button type="button">Edit</button></li>
-        <li><button type="button">Duplicate</button></li>
-        <li role="separator"></li>
-        <li><button type="button">Move to folder</button></li>
-        <li><button type="button">Archive</button></li>
-        <li role="separator"></li>
-        <li><button type="button">Delete</button></li>
-      </menu>
-    </div>
-
-    <code-block language="html" show-lines label="Menu with separators">{{ separatorMenuCode | escape }}</code-block>
   </section>
 
   <section>
@@ -336,9 +219,9 @@ menu.context {
 
     <h3>ARIA Roles</h3>
     <ul>
-      <li><code>role="separator"</code> - Marks visual dividers between groups of items</li>
-      <li><code>aria-label</code> - Use on icon-only buttons to describe the action</li>
-      <li><code>aria-disabled</code> - For non-functional menu items</li>
+      <li><code>role="separator"</code> &mdash; Marks visual dividers between groups of items</li>
+      <li><code>aria-label</code> &mdash; Required on icon-only buttons to describe the action</li>
+      <li><code>aria-disabled</code> &mdash; For non-functional menu items</li>
     </ul>
 
     <h3>Icon Buttons</h3>
@@ -347,8 +230,6 @@ menu.context {
     <code-block language="html" show-lines label="Icon button with aria-label">{{ iconButtonCode | escape }}</code-block>
 
     <h3>Keyboard Navigation</h3>
-    <p>Menu buttons receive standard keyboard focus. For more complex menu patterns with arrow key navigation, consider using ARIA menu roles or a JavaScript-enhanced component.</p>
-
     <table class="props-table">
       <thead>
         <tr>
@@ -370,51 +251,15 @@ menu.context {
   </section>
 
   <section>
-    <h2>Combining Variants</h2>
-    <p>Variants can be combined for different effects.</p>
-
-    <div class="example">
-      <layout-stack data-layout-gap="l">
-        <div>
-          <strong>Toolbar + Icons + Pills</strong>
-          <menu class="toolbar icons pills">
-            <li>
-              <button type="button" class="ghost" aria-label="Align left">
-                <svg class="s currentcolor" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" /><line x1="4" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="2" /><line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-width="2" /></svg>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="ghost" aria-label="Align center">
-                <svg class="s currentcolor" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" /><line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2" /><line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-width="2" /></svg>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="ghost" aria-label="Align right">
-                <svg class="s currentcolor" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" /><line x1="10" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2" /><line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-width="2" /></svg>
-              </button>
-            </li>
-          </menu>
-        </div>
-
-        <div>
-          <strong>Context + Compact</strong>
-          <menu class="context compact" style="display: inline-flex;">
-            <li><button type="button">Quick action 1</button></li>
-            <li><button type="button">Quick action 2</button></li>
-            <li><button type="button">Quick action 3</button></li>
-          </menu>
-        </div>
-      </layout-stack>
-    </div>
-  </section>
-
-  <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> - Primary interactive element inside menu items</li>
-      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> - For navigation links (not commands)</li>
-      <li><a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> - For non-command list content</li>
-      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> - For modal menus or action sheets</li>
+      <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> &mdash; Primary interactive element inside menu items</li>
+      <li><a href="/docs/elements/native/li/"><code>&lt;li&gt;</code></a> &mdash; List item (required child)</li>
+      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; For navigation links (not commands)</li>
+      <li><a href="/docs/elements/native/ul/"><code>&lt;ul&gt;</code></a> &mdash; For non-command list content</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; For modal menus or action sheets</li>
+      <li><a href="/docs/elements/custom-elements/context-menu/"><code>&lt;context-menu&gt;</code></a> &mdash; Full-featured context menu web component</li>
+      <li><a href="/docs/elements/custom-elements/drop-down/"><code>&lt;drop-down&gt;</code></a> &mdash; Dropdown menu web component</li>
     </ul>
   </section>
 

@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "area"
-description: "Defines a clickable area within an image map."
+description: "Defines a clickable region within a map element using pixel-based shape coordinates. Used with img and map for client-side image maps."
 elementName: area
 category: native
 nativeGroup: Media
@@ -9,35 +9,208 @@ currentPath: /docs/elements/native/area/
 permalink: /docs/elements/native/area/
 ---
 
-{% set basicAreaCode %}<area>{% endset %}
+{% set rectCode %}<area shape="rect" coords="40,40,320,220"
+  href="/rooms/conference" alt="Conference Hall" />
+
+<!-- coords: left, top, right, bottom (pixels) -->{% endset %}
+
+{% set circleCode %}<area shape="circle" coords="500,160,80"
+  href="/rooms/server" alt="Server Room" />
+
+<!-- coords: center-x, center-y, radius (pixels) -->{% endset %}
+
+{% set polyCode %}<area shape="poly"
+  coords="480,280,760,280,760,460,560,460,480,380"
+  href="/rooms/office" alt="Open Office" />
+
+<!-- coords: x1,y1, x2,y2, x3,y3, ... (pixels) -->{% endset %}
+
+{% set defaultCode %}<area shape="default"
+  href="/rooms/overview" alt="View building overview" />
+
+<!-- Covers the entire image not matched by other areas -->{% endset %}
+
+{% set fullExampleCode %}<img src="floor-plan.jpg" alt="Office floor plan"
+  usemap="#office" width="800" height="500" />
+
+<map name="office">
+  <area shape="rect" coords="40,40,320,220"
+    href="/rooms/conference" alt="Conference Hall"
+    title="Conference Hall — seats 120" />
+
+  <area shape="circle" coords="500,160,80"
+    href="/rooms/server" alt="Server Room"
+    target="_blank" />
+
+  <area shape="poly"
+    coords="480,280,760,280,760,460,560,460,480,380"
+    href="/rooms/office" alt="Open Office" />
+
+  <area shape="default"
+    href="/rooms" alt="View all rooms" />
+</map>{% endset %}
+
+{% set mapAreaCode %}<!-- Modern replacement: percentage coordinates + rich tooltips -->
+<image-map>
+  <img src="floor-plan.jpg" alt="Office floor plan" />
+
+  <map-area shape="rect" coords="5 8 40 44"
+    label="Conference Hall" href="/rooms/conference">
+    <strong>Conference Hall</strong>
+    <p>Seats 120 people.</p>
+  </map-area>
+
+  <map-area shape="circle" coords="62.5 32 10"
+    label="Server Room" href="/rooms/server">
+    <strong>Server Room</strong>
+    <p>24 racks, climate controlled.</p>
+  </map-area>
+</image-map>{% endset %}
 
 <section>
-    <h2>Description</h2>
-    <p>The <code>&lt;area&gt;</code> element is part of the Media category in HTML.</p>
-  </section>
+  <h2>Description</h2>
+  <p>The <code>&lt;area&gt;</code> element defines a single clickable region inside an image map. It is always a child of a <a href="/docs/elements/native/map/"><code>&lt;map&gt;</code></a> element. Each area specifies a <code>shape</code>, pixel-based <code>coords</code>, and a destination <code>href</code>.</p>
 
-  <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <area />
-    </div>
-    <code-block language="html" label="Basic area example">{{ basicAreaCode | escape }}</code-block>
-  </section>
+  <p>The <code>&lt;area&gt;</code> element is a <strong>void element</strong> &mdash; it has no closing tag and cannot contain child content. Tooltip text is limited to the <code>title</code> attribute (plain text only).</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
-  </section>
+<section>
+  <h2>Live Demo</h2>
 
-  <section>
-    <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;area&gt;</code> element will be documented here.</p>
-  </section>
+  <p>Hover over a room to see its <code>title</code> tooltip. Click to see the area name. The image renders at its native 800&times;500 pixels so the pixel-based coordinates align correctly.</p>
 
-  <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/map/"><code>&lt;map&gt;</code></a> - Container for area elements defining an image map</li>
-      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> - The image element that uses the map</li>
-    </ul>
-  </section>
+  <iframe
+    src="/docs/snippets/demos/map-area-native.html"
+    width="800" height="540"
+    style="border: 1px solid var(--color-border, #ddd); border-radius: var(--radius-m, 8px); max-inline-size: 100%;"
+    loading="lazy"
+    title="Native area shapes demo">
+  </iframe>
+
+  <code-block language="html" show-lines label="Complete image map with all shape types">{{ fullExampleCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Shape Types</h2>
+  <p>The <code>shape</code> attribute determines how <code>coords</code> are interpreted. All coordinate values are in <strong>absolute pixels</strong> relative to the image&rsquo;s natural dimensions.</p>
+
+  <h3>Rectangle</h3>
+  <p>Defined by the top-left and bottom-right corners: <code>left, top, right, bottom</code>.</p>
+  <code-block language="html" show-lines label="Rectangle area">{{ rectCode | escape }}</code-block>
+
+  <h3>Circle</h3>
+  <p>Defined by a centre point and radius: <code>center-x, center-y, radius</code>.</p>
+  <code-block language="html" show-lines label="Circle area">{{ circleCode | escape }}</code-block>
+
+  <h3>Polygon</h3>
+  <p>Defined by a series of x,y coordinate pairs. Minimum three points. The polygon closes automatically.</p>
+  <code-block language="html" show-lines label="Polygon area">{{ polyCode | escape }}</code-block>
+
+  <h3>Default</h3>
+  <p>Covers the entire image surface not claimed by other areas. Useful as a catch-all link.</p>
+  <code-block language="html" show-lines label="Default area">{{ defaultCode | escape }}</code-block>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Shape</th><th>Coords format</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>rect</code></td><td><code>left, top, right, bottom</code></td><td><code>40,40,320,220</code></td></tr>
+      <tr><td><code>circle</code></td><td><code>cx, cy, radius</code></td><td><code>500,160,80</code></td></tr>
+      <tr><td><code>poly</code></td><td><code>x1,y1, x2,y2, ...</code></td><td><code>480,280,760,280,...</code></td></tr>
+      <tr><td><code>default</code></td><td>(none)</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>shape</code></td>
+        <td>string</td>
+        <td>Yes</td>
+        <td><code>rect</code>, <code>circle</code>, <code>poly</code>, or <code>default</code></td>
+      </tr>
+      <tr>
+        <td><code>coords</code></td>
+        <td>string</td>
+        <td>Yes*</td>
+        <td>Comma-separated pixel coordinates. Not needed for <code>shape=&quot;default&quot;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>href</code></td>
+        <td>URL</td>
+        <td>No</td>
+        <td>Navigation target. Without <code>href</code>, the area is not interactive.</td>
+      </tr>
+      <tr>
+        <td><code>alt</code></td>
+        <td>string</td>
+        <td>Yes**</td>
+        <td>Accessible text label. Required when <code>href</code> is present.</td>
+      </tr>
+      <tr>
+        <td><code>target</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Link target: <code>_self</code>, <code>_blank</code>, <code>_parent</code>, <code>_top</code></td>
+      </tr>
+      <tr>
+        <td><code>download</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Triggers a download instead of navigation. Value sets the filename.</td>
+      </tr>
+      <tr>
+        <td><code>rel</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Link relationship (<code>noopener</code>, <code>noreferrer</code>, etc.)</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Tooltip text shown on hover. Plain text only.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>The Responsive Problem</h2>
+  <p>The <code>&lt;area&gt;</code> coordinate system uses <strong>absolute pixel values</strong> matching the image&rsquo;s natural dimensions. When the image scales responsively (as it does in every modern layout), the clickable regions no longer align with the visual regions.</p>
+  <p>For example, an area defined at <code>coords=&quot;40,40,320,220&quot;</code> targets pixels 40&ndash;320 horizontally. If the image renders at half width (400px instead of 800px), those coordinates still reference the 800px space, and clicks land in the wrong place.</p>
+
+  <aside class="note">
+    <strong>Use <code>&lt;image-map&gt;</code> instead.</strong> The <a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> component solves this with percentage-based coordinates that scale with the image. It also adds rich HTML tooltips, keyboard arrow-key navigation, and a visible SVG overlay for hover feedback.
+  </aside>
+
+  <code-block language="html" show-lines label="Modern replacement with percentage coordinates">{{ mapAreaCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Every <code>&lt;area&gt;</code> with an <code>href</code> <strong>must</strong> have an <code>alt</code> attribute</li>
+    <li>Screen readers announce <code>alt</code> text as the link label</li>
+    <li>Users navigate between areas with <kbd>Tab</kbd></li>
+    <li>No visible focus indicator exists on native areas &mdash; keyboard users cannot see which region has focus</li>
+    <li>The <code>title</code> attribute provides hover tooltips but is not reliably announced by screen readers &mdash; do not use it as the sole accessible name</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/elements/native/map/"><code>&lt;map&gt;</code></a> &mdash; container element that groups <code>&lt;area&gt;</code> elements</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> &mdash; the image element linked via <code>usemap</code></li>
+    <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; standard hyperlink (simpler alternative for single-link images)</li>
+    <li><a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> &mdash; modern responsive replacement with percentage coordinates and rich tooltips</li>
+  </ul>
+</section>

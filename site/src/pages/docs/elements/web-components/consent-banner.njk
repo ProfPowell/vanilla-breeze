@@ -1,0 +1,368 @@
+---
+layout: layouts/element.njk
+title: "consent-banner"
+description: "Cookie and privacy consent banner. Non-modal (bottom/top) or modal (center) dialog backed by localStorage."
+elementName: consent-banner
+category: component
+currentPath: /docs/elements/web-components/consent-banner/
+permalink: /docs/elements/web-components/consent-banner/
+---
+
+{% set simpleCode %}<consent-banner>
+  <dialog>
+    <p>We use cookies to improve your experience.
+      <a href="/privacy">Privacy Policy</a></p>
+    <footer>
+      <button value="reject" class="secondary">Reject All</button>
+      <button value="accept">Accept All</button>
+    </footer>
+  </dialog>
+</consent-banner>{% endset %}
+
+{% set granularCode %}<consent-banner data-persist="cookie-prefs"
+  data-trigger="#manage-cookies">
+  <dialog>
+    <header><h2>Cookie Preferences</h2></header>
+    <section>
+      <p>We use cookies to personalize content and
+        analyse traffic. <a href="/privacy">Learn more</a></p>
+      <fieldset class="minimal">
+        <label>
+          <input type="checkbox" name="necessary"
+            checked disabled> Necessary
+        </label>
+        <label>
+          <input type="checkbox" name="analytics">
+          Analytics
+        </label>
+        <label>
+          <input type="checkbox" name="marketing">
+          Marketing
+        </label>
+      </fieldset>
+    </section>
+    <footer>
+      <button value="reject" class="secondary">Reject All</button>
+      <button value="save" class="secondary">Save Preferences</button>
+      <button value="accept">Accept All</button>
+    </footer>
+  </dialog>
+</consent-banner>
+
+<!-- Elsewhere on the page -->
+<button id="manage-cookies">Manage Cookies</button>{% endset %}
+
+{% set topCode %}<consent-banner data-position="top">
+  <dialog>
+    <p>This site uses cookies. <a href="/privacy">Learn more</a></p>
+    <footer>
+      <button value="reject" class="secondary">Reject</button>
+      <button value="accept">Accept</button>
+    </footer>
+  </dialog>
+</consent-banner>{% endset %}
+
+{% set centerCode %}<consent-banner data-position="center">
+  <dialog>
+    <header><h2>Before you continue</h2></header>
+    <section>
+      <p>We need your consent to use cookies.
+        You must make a choice to proceed.</p>
+    </section>
+    <footer>
+      <button value="reject" class="secondary">Reject All</button>
+      <button value="accept">Accept All</button>
+    </footer>
+  </dialog>
+</consent-banner>{% endset %}
+
+{% set eventsCode %}// Listen for consent changes
+document.addEventListener('consent-banner:change', (e) => {
+  const { preferences, action } = e.detail;
+
+  if (preferences.analytics) initAnalytics();
+  if (preferences.marketing) initMarketing();
+
+  console.log(`User chose: ${action}`, preferences);
+});{% endset %}
+
+{% set staticApiCode %}import { ConsentBanner } from
+  '/src/web-components/consent-banner/logic.js';
+
+// Check stored consent on page load
+const consent = ConsentBanner.getConsent('cookie-prefs');
+if (consent?.preferences?.analytics) {
+  initAnalytics();
+}
+
+// Clear consent (banner reappears on next load)
+ConsentBanner.reset('cookie-prefs');{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;consent-banner&gt;</code> component wraps a native <code>&lt;dialog&gt;</code> to handle cookie and privacy consent. It manages localStorage persistence, expiry, and provides a <code>data-trigger</code> attribute to let users re-open their preferences from anywhere on the page.</p>
+  <p>The author controls all content inside the dialog &mdash; the component handles the plumbing: show/hide, localStorage read/write, and event dispatch.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/consent-banner-simple.html"
+    url="https://example.com"
+    title="Simple Consent Banner"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Simple Banner</h2>
+  <p>The minimal setup: a <code>&lt;dialog&gt;</code> with a paragraph and footer containing <code>accept</code>/<code>reject</code> buttons. The <code>value</code> attribute on each button drives the consent logic.</p>
+
+  <code-block language="html" show-lines label="Simple accept/reject banner">{{ simpleCode | escape }}</code-block>
+
+  <aside class="note">
+    <strong>How it works:</strong> On page load, the component checks localStorage. If no stored consent (or expired), the dialog opens via <code>dialog.show()</code> (non-modal). After the user clicks a button, consent is stored and the element is removed from the DOM.
+  </aside>
+</section>
+
+<section>
+  <h2>Granular Preferences</h2>
+  <p>Add checkboxes for per-category control. The <code>value="save"</code> button stores whatever the user has checked. The <code>value="accept"</code> button marks everything <code>true</code>; <code>value="reject"</code> only keeps <code>disabled</code> checkboxes (typically <q>Necessary</q>) as <code>true</code>.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/consent-banner-granular.html"
+    url="https://example.com/preferences"
+    title="Granular Preferences"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Granular preferences with trigger">{{ granularCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Position Variants</h2>
+  <p>The <code>data-position</code> attribute controls where the banner appears and whether it is modal.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/consent-banner-positions.html"
+    url="https://example.com/positions"
+    title="Position Variants"
+    shadow>
+  </browser-window>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Behavior</th>
+        <th>Dialog API</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>bottom</code> (default)</td>
+        <td>Fixed to viewport bottom, page remains interactive</td>
+        <td><code>dialog.show()</code></td>
+      </tr>
+      <tr>
+        <td><code>top</code></td>
+        <td>Fixed to viewport top, page remains interactive</td>
+        <td><code>dialog.show()</code></td>
+      </tr>
+      <tr>
+        <td><code>center</code></td>
+        <td>Centered modal with backdrop &mdash; user must choose (ESC prevented)</td>
+        <td><code>dialog.showModal()</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Top position">{{ topCode | escape }}</code-block>
+  <code-block language="html" show-lines label="Center (modal consent wall)">{{ centerCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Re-opening Preferences</h2>
+  <p>Set <code>data-trigger</code> to a CSS selector pointing at a <q>Manage Cookies</q> button (or link) elsewhere on the page. When clicked, the dialog re-opens with previously saved checkbox states restored.</p>
+  <p>The trigger uses document-level event delegation, so the target element can exist anywhere in the DOM &mdash; even if it loads after the banner.</p>
+
+  <aside class="note">
+    <strong>How it works:</strong> When <code>data-trigger</code> is set, the banner is hidden (not removed) after consent. This keeps the element alive so the trigger can re-open it.
+  </aside>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The component dispatches a single event when the user makes a consent choice.</p>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>consent-banner:change</code></td>
+        <td><code>{ preferences: Object, action: string }</code></td>
+        <td>Fired when the user clicks accept, reject, or save. <code>preferences</code> maps checkbox names to booleans. <code>action</code> is the button&rsquo;s <code>value</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="javascript" show-lines label="Listening for consent changes">{{ eventsCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Static API</h2>
+  <p>The <code>ConsentBanner</code> class exposes static methods for reading and clearing consent from external code.</p>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Parameters</th>
+        <th>Returns</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ConsentBanner.getConsent(key?)</code></td>
+        <td><code>key: string</code> (default: <code>'consent-banner'</code>)</td>
+        <td><code>{ preferences, action, timestamp } | null</code></td>
+        <td>Read stored consent. Use on page load to check if analytics/marketing scripts should run.</td>
+      </tr>
+      <tr>
+        <td><code>ConsentBanner.reset(key?)</code></td>
+        <td><code>key: string</code> (default: <code>'consent-banner'</code>)</td>
+        <td><code>void</code></td>
+        <td>Clear stored consent. The banner reappears on next page load.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="javascript" show-lines label="Static API usage">{{ staticApiCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes Reference</h2>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Value</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-persist</code></td>
+        <td>string</td>
+        <td><code>'consent-banner'</code></td>
+        <td>localStorage key for storing consent.</td>
+      </tr>
+      <tr>
+        <td><code>data-position</code></td>
+        <td><code>bottom</code> | <code>top</code> | <code>center</code></td>
+        <td><code>bottom</code></td>
+        <td>Banner position. Center uses modal dialog.</td>
+      </tr>
+      <tr>
+        <td><code>data-trigger</code></td>
+        <td>CSS selector</td>
+        <td>&mdash;</td>
+        <td>Selector for a re-open button (e.g., <code>#manage-cookies</code>). Keeps element alive after consent for re-opening.</td>
+      </tr>
+      <tr>
+        <td><code>data-expires</code></td>
+        <td>number | <code>'never'</code></td>
+        <td><code>365</code></td>
+        <td>Days until consent expires and the banner reappears. <code>0</code> or <code>'never'</code> disables expiry.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Button Values</h3>
+  <p>The component delegates behavior based on the <code>value</code> attribute of clicked buttons inside the dialog.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Behavior</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>accept</code></td>
+        <td>Sets all checkbox preferences to <code>true</code>.</td>
+      </tr>
+      <tr>
+        <td><code>reject</code></td>
+        <td>Sets only <code>disabled</code> checkboxes (e.g., Necessary) to <code>true</code>, rest to <code>false</code>.</td>
+      </tr>
+      <tr>
+        <td><code>save</code></td>
+        <td>Stores each checkbox&rsquo;s current <code>checked</code> state.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>localStorage Format</h2>
+  <p>Consent is stored as JSON under the configured key.</p>
+
+  <code-block language="json" label="Stored consent object">{
+  "preferences": {
+    "necessary": true,
+    "analytics": true,
+    "marketing": false
+  },
+  "action": "save",
+  "timestamp": 1709913600000
+}</code-block>
+
+  <p>The <code>timestamp</code> field enables expiry. When <code>data-expires</code> days have elapsed since the timestamp, the banner reappears on next page load.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+
+  <h3>Dialog Behavior</h3>
+  <ul>
+    <li><strong>Bottom / Top:</strong> Uses <code>dialog.show()</code> (non-modal). The page remains interactive &mdash; users can scroll and navigate freely.</li>
+    <li><strong>Center:</strong> Uses <code>dialog.showModal()</code> (modal). Focus is trapped inside the dialog. ESC is prevented to enforce a consent choice.</li>
+  </ul>
+
+  <h3>Keyboard</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><kbd>Tab</kbd></td>
+        <td>Move between buttons and checkboxes</td>
+      </tr>
+      <tr>
+        <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+        <td>Activate button or toggle checkbox</td>
+      </tr>
+      <tr>
+        <td><kbd>Escape</kbd></td>
+        <td>Prevented in center (modal) position; no effect in bottom/top (non-modal)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Reduced Motion</h3>
+  <p>When <code>prefers-reduced-motion: reduce</code> is set, the slide-in animation is disabled. The banner appears instantly.</p>
+
+  <h3>No JavaScript</h3>
+  <p>The <code>consent-banner:not(:defined)</code> CSS rule hides the banner until the component is defined. Without JavaScript, the banner never appears and no consent is required &mdash; a safe progressive enhancement default.</p>
+</section>

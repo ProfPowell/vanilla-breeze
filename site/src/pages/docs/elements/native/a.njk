@@ -64,12 +64,23 @@ permalink: /docs/elements/native/a/
   <span class="visually-hidden">(opens in new tab)</span>
 </a>{% endset %}
 
+{% set contextOverridesCode %}/* Links in nav/header/footer suppress auto-icons */
+nav a[href^="http"]::after { content: none; }
+header a[href^="http"]::after { content: none; }
+footer a[href^="http"]::after { content: none; }
+
+/* Icon-only links suppress indicators */
+a:has(> icon-wc:only-child)::after { content: none; }
+
+/* Button-styled links suppress auto-icons */
+a.button[href^="http"]::after { content: none; }{% endset %}
+
 <section>
     <h2>Progressive Enhancement</h2>
     <p>The anchor element is the fundamental building block of the web. It works in every browser with zero CSS or JavaScript.</p>
     <ul>
-      <li><strong>HTML-first:</strong> Links function without any styling - the browser provides default blue/purple colors and underlines</li>
-      <li><strong>CSS-enhanced:</strong> Vanilla Breeze adds visual polish (interactive colors, hover effects, focus rings) without changing functionality</li>
+      <li><strong>HTML-first:</strong> Links function without any styling &mdash; the browser provides default blue/purple colors and underlines</li>
+      <li><strong>CSS-enhanced:</strong> Vanilla Breeze adds interactive colors, hover effects, auto-detected link-type indicators, and focus rings</li>
       <li><strong>No JavaScript required:</strong> All link functionality is native browser behavior</li>
     </ul>
   </section>
@@ -85,147 +96,109 @@ permalink: /docs/elements/native/a/
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
-      <li><strong>Buttons:</strong> Use <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> for actions that don't navigate</li>
-      <li><strong>Form submission:</strong> Use <code>&lt;button type="submit"&gt;</code> instead</li>
-      <li><strong>JavaScript actions:</strong> Use buttons for toggles, modals, or state changes</li>
+      <li><strong>Actions:</strong> Use <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> for toggles, dialogs, form submission, or state changes</li>
+      <li><strong>Dialogs:</strong> Use <code>&lt;button commandfor="..." command="show-modal"&gt;</code> via the <a href="/docs/elements/native/dialog/">Invokers API</a></li>
     </ul>
   </section>
 
   <section>
     <h2>Auto-Detection</h2>
-    <p>Vanilla Breeze automatically detects and adds visual indicators to special link types. This is CSS-only with no JavaScript required.</p>
+    <p>Vanilla Breeze automatically detects and adds visual indicators to special link types using CSS only &mdash; no JavaScript required.</p>
 
-    <h3>External Links</h3>
-    <p>Links starting with <code>http</code> automatically show an external indicator (arrow).</p>
-    <div class="example">
-      <p>Visit <a href="https://example.com">Example.com</a> for more information.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/a-auto-detect.html" url="a-auto-detect.html" title="Auto-detected link types" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Link Type</th>
+          <th>Detection</th>
+          <th>Indicator</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>External</td>
+          <td><code>href^="http"</code></td>
+          <td>&uarr; arrow after text</td>
+        </tr>
+        <tr>
+          <td>Download</td>
+          <td><code>[download]</code></td>
+          <td>&darr; arrow after text</td>
+        </tr>
+        <tr>
+          <td>Email</td>
+          <td><code>href^="mailto"</code></td>
+          <td>&#x2709; envelope before text</td>
+        </tr>
+        <tr>
+          <td>Phone</td>
+          <td><code>href^="tel"</code></td>
+          <td>&#x260E; phone before text</td>
+        </tr>
+        <tr>
+          <td>PDF</td>
+          <td><code>href$=".pdf"</code></td>
+          <td><small>PDF</small> badge after text</td>
+        </tr>
+      </tbody>
+    </table>
+
     <code-block language="html" label="External link (auto-detected)">{{ externalLinkCode | escape }}</code-block>
-
-    <h3>Download Links</h3>
-    <p>Links with the <code>download</code> attribute show a download indicator.</p>
-    <div class="example">
-      <p><a href="#" download="example.pdf">Download the PDF</a></p>
-    </div>
     <code-block language="html" label="Download link (auto-detected)">{{ downloadLinkCode | escape }}</code-block>
 
-    <h3>Email Links</h3>
-    <p>Use <code>&lt;icon-wc name="mail"&gt;</code> inside email links for a clean mail icon:</p>
-    <div class="example">
-      <p><a href="mailto:hello@example.com"><icon-wc name="mail" size="xs"></icon-wc> hello@example.com</a></p>
-      <p><a href="mailto:support@example.com"><icon-wc name="mail" size="xs"></icon-wc> Contact Support</a></p>
-    </div>
-    <code-block language="html" label="Email link with icon">{{ emailLinkCode | escape }}</code-block>
-
-    <h3>Phone Links</h3>
-    <p>Use <code>&lt;icon-wc name="phone"&gt;</code> inside phone links:</p>
-    <div class="example">
-      <p><a href="tel:+1234567890"><icon-wc name="phone" size="xs"></icon-wc> +1 (234) 567-890</a></p>
-      <p><a href="tel:+18005551234"><icon-wc name="phone" size="xs"></icon-wc> Call Us</a></p>
-    </div>
-    <code-block language="html" label="Phone link with icon">{{ phoneLinkCode | escape }}</code-block>
-
     <h3>Custom Link Icons</h3>
-    <p>Any <a href="/docs/elements/web-components/icons/">Lucide icon</a> can be used inside links for visual context:</p>
-    <div class="example">
-      <p><a href="/files/report.pdf" download data-no-icon><icon-wc name="file-text" size="xs"></icon-wc> Annual Report (PDF)</a></p>
-      <p><a href="/files/data.xlsx" download data-no-icon><icon-wc name="file-spreadsheet" size="xs"></icon-wc> Data Export (Excel)</a></p>
-      <p><a href="https://github.com/example" data-no-icon><icon-wc name="github" size="xs"></icon-wc> View on GitHub</a></p>
-      <p><a href="/calendar"><icon-wc name="calendar" size="xs"></icon-wc> Schedule Meeting</a></p>
-    </div>
+    <p>Use <a href="/docs/elements/web-components/icons/">icon-wc</a> inside links for custom icons. Add <code>data-no-icon</code> to suppress the auto-inserted indicator when using your own.</p>
+
+    <browser-window src="/docs/snippets/demos/a-custom-icons.html" url="a-custom-icons.html" title="Custom link icons" shadow></browser-window>
+
     <code-block language="html" label="Custom icons in links">{{ customIconsCode | escape }}</code-block>
-    <p><strong>Tip:</strong> Use <code>data-no-icon</code> on external/download links when using custom icons to suppress the auto-inserted arrow.</p>
 
     <h3>Suppressing Auto-Icons</h3>
-    <p>Use <code>data-no-icon</code> to suppress automatic icons when they're not appropriate.</p>
-    <div class="example">
-      <p>Visit <a href="https://example.com" data-no-icon>Example.com</a> (no icon).</p>
-    </div>
+    <p>Use <code>data-no-icon</code> to suppress automatic icons. Links inside <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, and <code>&lt;footer&gt;</code> automatically suppress icons &mdash; no attribute needed.</p>
+
     <code-block language="html" label="Suppress auto-icon">{{ suppressIconCode | escape }}</code-block>
-    <p><strong>Note:</strong> Links inside <code>&lt;nav&gt;</code> and <code>&lt;header&gt;</code> elements automatically suppress icons - no <code>data-no-icon</code> needed.</p>
   </section>
 
   <section>
     <h2>Variants</h2>
     <p>Use <code>data-variant</code> to change link appearance.</p>
 
-    <h3>Default Link</h3>
-    <p>Standard link with underline and interactive color.</p>
-    <div class="example">
-      <p>This is a <a href="#">default link</a> in a paragraph.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/a-variants.html" url="a-variants.html" title="Link variants" shadow></browser-window>
+
     <code-block language="html" label="Default link">{{ defaultLinkCode | escape }}</code-block>
-
-    <h3>data-variant="muted"</h3>
-    <p>Less prominent link using muted text color. Good for footer links or secondary navigation.</p>
-    <div class="example">
-      <p>This is a <a href="#" data-variant="muted">muted link</a> that is less prominent.</p>
-    </div>
     <code-block language="html" label="Muted link">{{ mutedLinkCode | escape }}</code-block>
-
-    <h3>data-variant="plain"</h3>
-    <p>No underline by default, reveals underline on hover.</p>
-    <div class="example">
-      <p>This is a <a href="#" data-variant="plain">plain link</a> without default underline.</p>
-    </div>
     <code-block language="html" label="Plain link">{{ plainLinkCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Button-Styled Links</h2>
-    <p>Use <code>class="button"</code> on a link to make it look like a button. This is for links that navigate to another page but need the visual weight of a button — hero CTAs, sign-up links, prominent calls to action.</p>
-    <p>All button variants and sizes work: <code>.secondary</code>, <code>.ghost</code>, <code>.small</code>, <code>.large</code>, and <code>.full-width</code>.</p>
+    <p>Use <code>class="button"</code> on a link to give it button styling. This is for links that navigate to another page but need the visual weight of a button &mdash; hero CTAs, sign-up links, prominent calls to action.</p>
+    <p>All button variants and sizes work: <code>.secondary</code>, <code>.ghost</code>, <code>.small</code>, <code>.large</code>, and <code>.full-width</code>. Auto-icons are automatically suppressed on button-styled links.</p>
 
-    <h3>Variants</h3>
-    <div class="example">
-      <layout-cluster data-layout-gap="m">
-        <a href="#" class="button">Get Started</a>
-        <a href="#" class="button secondary">Documentation</a>
-        <a href="#" class="button ghost">Learn More</a>
-      </layout-cluster>
-    </div>
+    <browser-window src="/docs/snippets/demos/a-button-styled.html" url="a-button-styled.html" title="Button-styled links" shadow></browser-window>
+
     <code-block language="html" label="Button-styled link variants">{{ buttonLinkCode | escape }}</code-block>
-
-    <h3>Sizes</h3>
-    <div class="example">
-      <layout-cluster data-layout-gap="m" data-layout-align="center">
-        <a href="#" class="button small">Small</a>
-        <a href="#" class="button">Default</a>
-        <a href="#" class="button large">Large</a>
-      </layout-cluster>
-    </div>
     <code-block language="html" label="Button-styled link sizes">{{ buttonLinkSizesCode | escape }}</code-block>
 
-    <h3>Full Width</h3>
-    <div class="example">
-      <a href="#" class="button full-width">Create Account</a>
-    </div>
-    <code-block language="html" label="Full-width button-styled link">{{ buttonLinkFullWidthCode | escape }}</code-block>
-
-    <p><strong>Note:</strong> For actions that don't navigate (toggles, form submission, dialogs), use <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> instead. The <code>.button</code> class is for links that go somewhere.</p>
+    <p><strong>Note:</strong> For actions that don't navigate (toggles, form submission, dialogs), use <a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> instead.</p>
   </section>
 
   <section>
     <h2>Links Wrapping Content</h2>
-    <p>When links wrap images, pictures, figures, or cards, the underline is automatically removed. This uses the CSS <code>:has()</code> selector for detection.</p>
+    <p>When links wrap images, pictures, figures, or cards, the underline is automatically removed via the CSS <code>:has()</code> selector.</p>
 
-    <h3>Image Links</h3>
-    <div class="example">
-      <a href="#">
-        <img src="https://placehold.co/200x120" alt="Example placeholder" width="200" height="120" />
-      </a>
-    </div>
+    <browser-window src="/docs/snippets/demos/a-wrapping-content.html" url="a-wrapping-content.html" title="Links wrapping content" shadow></browser-window>
+
     <code-block language="html" label="Link wrapping image">{{ imageLinkCode | escape }}</code-block>
-
-    <h3>Card Links</h3>
-    <div class="example">
-      <a href="#">
-        <layout-card data-padding="m">
-          <p>Click this entire card</p>
-        </layout-card>
-      </a>
-    </div>
     <code-block language="html" label="Link wrapping card">{{ cardLinkCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Context Overrides</h2>
+    <p>Auto-icons are suppressed in certain contexts to keep UI clean:</p>
+
+    <code-block language="css" show-lines label="Context-specific icon suppression">{{ contextOverridesCode | escape }}</code-block>
   </section>
 
   <section>
@@ -240,7 +213,7 @@ permalink: /docs/elements/native/a/
       <tbody>
         <tr>
           <td><code>href</code></td>
-          <td>The URL the link points to (required for functional link)</td>
+          <td>The URL the link points to (required for a functional link)</td>
         </tr>
         <tr>
           <td><code>target</code></td>
@@ -248,7 +221,7 @@ permalink: /docs/elements/native/a/
         </tr>
         <tr>
           <td><code>rel</code></td>
-          <td>Relationship between pages (e.g., <code>noopener</code>, <code>noreferrer</code>)</td>
+          <td>Relationship between pages (<code>noopener</code>, <code>noreferrer</code>)</td>
         </tr>
         <tr>
           <td><code>download</code></td>
@@ -311,41 +284,34 @@ permalink: /docs/elements/native/a/
     <p>Underline thickness increases from 1px to 2px on hover.</p>
 
     <h3>Focus</h3>
-    <p>A visible focus ring appears when navigating via keyboard (uses <code>:focus-visible</code>).</p>
-    <div class="example">
-      <p><a href="#">Tab to this link</a> to see the focus ring.</p>
-    </div>
+    <p>A visible focus ring appears when navigating via keyboard (uses <code>:focus-visible</code> with <code>var(--color-interactive)</code> outline).</p>
 
     <h3>Visited</h3>
-    <p>Vanilla Breeze deliberately does not style <code>:visited</code> links. This is a privacy decision - browsers restrict what CSS properties can be applied to visited links to prevent history sniffing attacks. Rather than provide inconsistent styling, we leave visited links the same color as unvisited.</p>
-
-    <h3>Active</h3>
-    <p>No special <code>:active</code> state is applied. The hover state provides sufficient feedback.</p>
+    <p>Vanilla Breeze deliberately does not style <code>:visited</code> links. This is a privacy decision &mdash; browsers restrict what CSS properties can be applied to visited links to prevent history sniffing attacks.</p>
   </section>
 
   <section id="accessibility">
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Descriptive link text:</strong> Avoid "click here" or "read more" - use meaningful text that describes the destination</li>
-      <li><strong>Visual distinction:</strong> Links have underlines by default - color alone is not sufficient to identify links</li>
+      <li><strong>Descriptive link text:</strong> Avoid "click here" or "read more" &mdash; use meaningful text that describes the destination</li>
+      <li><strong>Visual distinction:</strong> Links have underlines by default &mdash; color alone is not sufficient to identify links</li>
       <li><strong>Focus visibility:</strong> Links have visible focus rings for keyboard navigation</li>
-      <li><strong>New tab warning:</strong> When links open in new tabs, consider informing users</li>
+      <li><strong>New tab warning:</strong> When links open in new tabs, inform users</li>
       <li><strong>Skip links:</strong> Use anchor links to create "skip to content" navigation</li>
     </ul>
 
     <h3>External Link Best Practice</h3>
-    <p>For links that open in a new tab, add a visually hidden notice for screen reader users.</p>
-    <div class="example">
-      <p>Visit <a href="https://example.com" target="_blank" rel="noopener noreferrer">Example.com <span class="visually-hidden">(opens in new tab)</span></a></p>
-    </div>
+    <p>For links that open in a new tab, add a visually hidden notice for screen reader users:</p>
     <code-block language="html" label="Accessible external link">{{ accessibleExternalCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> - For actions that don't navigate</li>
-      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> - For wrapping navigation links</li>
-      <li><a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-notes&gt;</code></a> - For footnote reference links</li>
+      <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> &mdash; For actions that don't navigate</li>
+      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; For wrapping navigation links (suppresses auto-icons)</li>
+      <li><a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-notes&gt;</code></a> &mdash; For footnote reference links</li>
+      <li><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> &mdash; Lucide icons inside links</li>
+      <li><a href="/docs/elements/custom-elements/heading-links/"><code>&lt;heading-links&gt;</code></a> &mdash; Auto-generates anchor links for headings</li>
     </ul>
   </section>

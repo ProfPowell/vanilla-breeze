@@ -18,94 +18,73 @@ permalink: /docs/elements/native/rp/
   京 <rp>(</rp><rt>きょう</rt><rp>)</rp>
 </ruby>{% endset %}
 
-{% set supportedRenderingCode %}<!-- In browsers that support ruby -->
-漢字
-かんじ  (annotation appears above)
-
-<!-- In browsers without ruby support -->
-漢字(かんじ){% endset %}
-
-{% set withoutRpCode %}<!-- Without rp - no fallback -->
+{% set withoutRpCode %}<!-- Without rp — no fallback -->
 <ruby>漢字 <rt>かんじ</rt></ruby>
+<!-- Renders as: 漢字かんじ (confusing!) -->
 
-<!-- Without ruby support, renders as: -->
-漢字かんじ  (confusing!)
-
-<!-- With rp - proper fallback -->
+<!-- With rp — proper fallback -->
 <ruby>漢字 <rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby>
-
-<!-- Without ruby support, renders as: -->
-漢字(かんじ)  (clear!){% endset %}
+<!-- Renders as: 漢字(かんじ) (clear!) -->{% endset %}
 
 {% set bracketRpCode %}<ruby>
   日本 <rp>[</rp><rt>にほん</rt><rp>]</rp>
 </ruby>{% endset %}
 
+{% set rpCssCode %}rp {
+  display: none;  /* hidden in supporting browsers */
+}{% endset %}
+
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;rp&gt;</code> element is used to provide fallback parentheses for browsers that do not support display of ruby annotations using the <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> element. The content of <code>&lt;rp&gt;</code> is typically parentheses, but can be any text that helps indicate the annotation.</p>
-    <p>In browsers that support ruby, the content of <code>&lt;rp&gt;</code> is hidden. In browsers without ruby support, it's displayed, wrapping the annotation text in parentheses (or whatever characters you provide).</p>
+    <p>The <code>&lt;rp&gt;</code> element provides fallback text &mdash; typically parentheses &mdash; for browsers that do not support <a href="/docs/elements/native/ruby/">ruby</a> annotations. In browsers that support ruby, the content of <code>&lt;rp&gt;</code> is hidden via <code>display: none</code>. In non-supporting environments, it displays, wrapping the annotation in parentheses.</p>
+    <p>Always include <code>&lt;rp&gt;</code> as a best practice to ensure graceful degradation.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <ruby>
-        漢字 <rp>(</rp><rt>かんじ</rt><rp>)</rp>
-      </ruby>
-    </div>
-    <code-block language="html" label="Basic rp example">{{ basicRpCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Inside <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a>, flanking each <a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> element</li>
+      <li>Any time you use ruby annotations and want graceful degradation</li>
+    </ul>
   </section>
 
   <section>
-    <h2>How It Renders</h2>
-    <p>The <code>&lt;rp&gt;</code> element provides graceful degradation:</p>
-    <code-block language="text" label="Rendering comparison">{{ supportedRenderingCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/ruby-annotations.html" url="ruby-annotations.html" title="Ruby with rp fallback" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic rp usage">{{ basicRpCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Multiple annotations">{{ multipleRpCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Why Use rp?</h2>
-    <p>Without <code>&lt;rp&gt;</code>, browsers that don't support ruby will show confusing output:</p>
-    <code-block language="html" label="With vs without rp">{{ withoutRpCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Multiple Annotations</h2>
-    <p>Each ruby text should have its own pair of rp elements:</p>
-    <div class="example">
-      <ruby>
-        東 <rp>(</rp><rt>とう</rt><rp>)</rp>
-        京 <rp>(</rp><rt>きょう</rt><rp>)</rp>
-      </ruby>
-    </div>
-    <code-block language="html" label="Multiple annotations">{{ multipleRpCode | escape }}</code-block>
+    <p>Without <code>&lt;rp&gt;</code>, non-supporting browsers concatenate the annotation directly with the base text, making it unreadable:</p>
+    <code-block language="html" show-lines label="With vs without rp">{{ withoutRpCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Alternative Characters</h2>
-    <p>You can use brackets or other characters instead of parentheses:</p>
-    <div class="example">
-      <ruby>
-        日本 <rp>[</rp><rt>にほん</rt><rp>]</rp>
-      </ruby>
-    </div>
-    <code-block language="html" label="Brackets instead of parentheses">{{ bracketRpCode | escape }}</code-block>
+    <p>Any characters can be used instead of parentheses:</p>
+    <code-block language="html" show-lines label="Brackets instead of parentheses">{{ bracketRpCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>CSS</h2>
+    <code-block language="css" label="rp CSS">{{ rpCssCode | escape }}</code-block>
+    <p>VB hides <code>&lt;rp&gt;</code> via the browser default. The content is only visible in browsers without ruby support.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The <code>&lt;rp&gt;</code> content is typically hidden from screen readers in browsers that support ruby. In non-supporting environments, the parentheses help clarify that the text in them is an annotation of the preceding text.</p>
+    <p>In supporting browsers, <code>&lt;rp&gt;</code> content is typically hidden from screen readers. In non-supporting environments, the parentheses help clarify that the enclosed text is an annotation.</p>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> - Parent element for ruby annotations</li>
-      <li><a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> - The ruby text (annotation)</li>
+      <li><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> &mdash; Parent element for ruby annotations</li>
+      <li><a href="/docs/elements/native/rt/"><code>&lt;rt&gt;</code></a> &mdash; The ruby text (annotation content)</li>
+      <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; Ruby visibility control and script-specific typography</li>
     </ul>
   </section>

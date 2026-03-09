@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "caption"
-description: "The caption element provides a title or description for a table. It is essential for accessibility, helping users understand the purpose and content of the table."
+description: "Provides a title or description for a table. Vanilla Breeze styles captions with start-aligned text, muted color, and medium font weight to clearly label tabular data without competing with the data itself."
 elementName: caption
 category: native
 nativeGroup: Tables
@@ -10,12 +10,12 @@ permalink: /docs/elements/native/caption/
 ---
 
 {% set basicCaptionCode %}<table>
-  <caption>Employee Directory - January 2024</caption>
+  <caption>Quarterly Sales Report</caption>
   <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Department</th>
-      <th scope="col">Email</th>
+      <th scope="col">Product</th>
+      <th scope="col" data-numeric>Q1</th>
+      <th scope="col" data-numeric>Q2</th>
     </tr>
   </thead>
   <tbody>
@@ -23,209 +23,123 @@ permalink: /docs/elements/native/caption/
   </tbody>
 </table>{% endset %}
 
+{% set richCaptionCode %}<table>
+  <caption>
+    Quarterly Sales Report
+    <br />
+    <small>Data from January - March 2024</small>
+  </caption>
+  <!-- thead, tbody... -->
+</table>{% endset %}
+
 {% set ariaLabelledbyCode %}<h3 id="sales-heading">Monthly Sales Data</h3>
 <table aria-labelledby="sales-heading">
   <!-- Table content without caption -->
 </table>{% endset %}
 
+{% set cssReferenceCode %}caption {
+  padding: var(--size-s) var(--size-m);
+  text-align: start;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}{% endset %}
+
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;caption&gt;</code> element must be the first child of a <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> element. It provides a programmatic association between the table and its description, which is announced by screen readers when users navigate to the table.</p>
-    <p>Vanilla Breeze styles captions with muted text color and medium font weight, positioned at the top of the table with left alignment.</p>
+    <p>The <code>&lt;caption&gt;</code> element must be the first child of a <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>. It provides a programmatic association between the table and its description, which screen readers announce when a user navigates to the table.</p>
+    <p>Vanilla Breeze styles captions with <code>text-align: start</code> (RTL-aware), <code>font-weight: 500</code> for medium emphasis, and <code>var(--color-text-muted)</code> so the label does not compete visually with the data. Padding matches the cell padding (<code>var(--size-s) var(--size-m)</code>) to keep alignment consistent with table content.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
-      <li><strong>Every data table:</strong> All tables containing meaningful data should have a caption</li>
-      <li><strong>Table identification:</strong> When multiple tables appear on a page</li>
-      <li><strong>Context setting:</strong> To explain what data the table contains</li>
-      <li><strong>Time-sensitive data:</strong> To indicate the date or period the data represents</li>
+      <li><strong>Every data table:</strong> all tables containing meaningful data should have a caption</li>
+      <li><strong>Table identification:</strong> when multiple tables appear on the same page</li>
+      <li><strong>Context setting:</strong> to explain what data the table contains</li>
+      <li><strong>Time-sensitive data:</strong> to indicate the date or period the data represents</li>
     </ul>
 
     <h3>When Not Required</h3>
     <ul>
-      <li><strong>Decorative tables:</strong> Purely presentational tables (though these should be avoided)</li>
-      <li><strong>Tables with adjacent headings:</strong> If a heading immediately precedes the table, use <code>aria-labelledby</code> instead</li>
+      <li><strong>Tables with adjacent headings:</strong> if a heading immediately precedes the table, use <code>aria-labelledby</code> to link them instead</li>
+      <li><strong>Non-tabular content:</strong> for image descriptions, use <a href="/docs/elements/native/figcaption/"><code>&lt;figcaption&gt;</code></a> inside a <a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a></li>
     </ul>
   </section>
 
   <section>
     <h2>Basic Example</h2>
-    <p>Place the caption as the first child of the table element.</p>
+    <p>The demo below shows a complete table with a caption as its first child, followed by <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code>, and <code>&lt;tfoot&gt;</code>. Note how the caption aligns with the table content.</p>
 
-    <div class="example">
-      <table>
-        <caption>Employee Directory - January 2024</caption>
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Department</th>
-            <th scope="col">Email</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Alice Johnson</td>
-            <td>Engineering</td>
-            <td>alice@example.com</td>
-          </tr>
-          <tr>
-            <td>Bob Smith</td>
-            <td>Design</td>
-            <td>bob@example.com</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <code-block language="html" label="Table with caption element">{{ basicCaptionCode | escape }}</code-block>
+    <browser-window src="/docs/snippets/demos/table-basic.html" url="table-basic.html" title="Table with caption" shadow></browser-window>
+    <code-block language="html" show-lines label="Table with caption element">{{ basicCaptionCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Caption Content</h2>
-    <p>Captions can contain additional elements for richer descriptions.</p>
-
-    <h3>With Description</h3>
-    <div class="example">
-      <table>
-        <caption>
-          Quarterly Sales Report
-          <br />
-          <small>Data from January - March 2024</small>
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Product</th>
-            <th scope="col" data-numeric>Q1 Sales</th>
-            <th scope="col" data-numeric>Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Widget Pro</td>
-            <td data-numeric>1,250</td>
-            <td data-numeric>$62,500</td>
-          </tr>
-          <tr>
-            <td>Gadget Plus</td>
-            <td data-numeric>890</td>
-            <td data-numeric>$44,500</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>With Data Source</h3>
-    <div class="example">
-      <table>
-        <caption>
-          Population by Region
-          <br />
-          <small>Source: Census Bureau, 2023</small>
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Region</th>
-            <th scope="col" data-numeric>Population</th>
-            <th scope="col" data-numeric>Change</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Northeast</td>
-            <td data-numeric>55,982,803</td>
-            <td data-numeric>+0.2%</td>
-          </tr>
-          <tr>
-            <td>Midwest</td>
-            <td data-numeric>68,985,454</td>
-            <td data-numeric>+0.4%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <h2>Rich Captions</h2>
+    <p>Captions can contain inline elements like <code>&lt;small&gt;</code> for secondary information such as data sources or date ranges.</p>
+    <code-block language="html" show-lines label="Caption with secondary description">{{ richCaptionCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li><strong>Required for data tables:</strong> WCAG 2.1 Success Criterion 1.3.1 requires tables to be programmatically identifiable</li>
-      <li><strong>Screen reader announcement:</strong> When a user navigates to a table, the caption is announced first, providing context</li>
-      <li><strong>Be descriptive:</strong> Write captions that explain what data the table contains, not just "Table 1"</li>
-      <li><strong>Include date/time context:</strong> If data is time-sensitive, include the relevant period in the caption</li>
-    </ul>
-
-    <h3>Alternative: aria-labelledby</h3>
-    <p>If a heading immediately precedes the table, you can use <code>aria-labelledby</code> instead of a caption:</p>
-
-    <div class="example">
-      <h3 id="sales-heading">Monthly Sales Data</h3>
-      <table aria-labelledby="sales-heading">
-        <thead>
-          <tr>
-            <th scope="col">Month</th>
-            <th scope="col" data-numeric>Sales</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>January</td>
-            <td data-numeric>$10,500</td>
-          </tr>
-          <tr>
-            <td>February</td>
-            <td data-numeric>$12,300</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <code-block language="html" label="Table with aria-labelledby instead of caption">{{ ariaLabelledbyCode | escape }}</code-block>
+    <h2>Alternative: <code>aria-labelledby</code></h2>
+    <p>When a visible heading immediately precedes the table and serves as its label, you can use <code>aria-labelledby</code> instead of duplicating the text in a caption.</p>
+    <code-block language="html" show-lines label="Table labelled by a heading">{{ ariaLabelledbyCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Styling</h2>
-    <p>Vanilla Breeze applies the following styles to captions:</p>
+    <h2>CSS Reference</h2>
+    <p>The styles Vanilla Breeze applies to caption elements.</p>
+    <code-block language="css" show-lines label="Caption CSS styles">{{ cssReferenceCode | escape }}</code-block>
 
-    <table class="props-table">
+    <table>
       <thead>
         <tr>
           <th scope="col">Property</th>
           <th scope="col">Value</th>
-          <th scope="col">Description</th>
+          <th scope="col">Purpose</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>padding</code></td>
           <td><code>var(--size-s) var(--size-m)</code></td>
-          <td>Consistent spacing with table cells</td>
+          <td>Matches cell padding for visual alignment</td>
         </tr>
         <tr>
           <td><code>text-align</code></td>
           <td><code>start</code></td>
-          <td>Left-aligned (RTL-aware)</td>
+          <td>Left-aligned in LTR, right-aligned in RTL</td>
         </tr>
         <tr>
           <td><code>font-weight</code></td>
           <td><code>500</code></td>
-          <td>Medium weight for emphasis</td>
+          <td>Medium weight for subtle emphasis</td>
         </tr>
         <tr>
           <td><code>color</code></td>
           <td><code>var(--color-text-muted)</code></td>
-          <td>Muted to differentiate from data</td>
+          <td>Muted to differentiate from data content</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Screen reader announcement:</strong> when a user navigates to a table, the caption is announced first, providing immediate context</li>
+      <li><strong>Be descriptive:</strong> write captions that explain what data the table contains, not just "Table 1"</li>
+      <li><strong>Include temporal context:</strong> if data is time-sensitive, include the relevant period</li>
+      <li><strong>WCAG requirement:</strong> Success Criterion 1.3.1 requires data tables to be programmatically identifiable</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - Parent container (caption must be first child)</li>
-      <li><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> - Header group that follows caption</li>
-      <li><a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> - Header cells that provide column/row context</li>
+      <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - parent container (caption must be its first child)</li>
+      <li><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> - header group that follows the caption</li>
+      <li><a href="/docs/elements/native/figcaption/"><code>&lt;figcaption&gt;</code></a> - similar purpose for figures and images (compare: <code>&lt;caption&gt;</code> is for tables, <code>&lt;figcaption&gt;</code> is for figures)</li>
+      <li><a href="/docs/elements/native/summary/"><code>&lt;summary&gt;</code></a> - similar "label" role for <code>&lt;details&gt;</code> disclosure widgets</li>
     </ul>
   </section>

@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "map"
-description: "Defines an image map with clickable regions."
+description: "Defines an image map with clickable regions linked to an img element via the usemap attribute. Coordinates are pixel-based and do not scale responsively."
 elementName: map
 category: native
 nativeGroup: Media
@@ -9,35 +9,160 @@ currentPath: /docs/elements/native/map/
 permalink: /docs/elements/native/map/
 ---
 
-{% set basicMapCode %}<map>...</map>{% endset %}
+{% set basicMapCode %}<img src="floor-plan.jpg" alt="Office floor plan" usemap="#office" width="800" height="500" />
+
+<map name="office">
+  <area shape="rect" coords="40,40,320,220"
+    href="/rooms/conference" alt="Conference Hall" />
+  <area shape="circle" coords="500,160,80"
+    href="/rooms/server" alt="Server Room" />
+  <area shape="poly" coords="480,280,760,280,760,460,560,460,480,380"
+    href="/rooms/office" alt="Open Office" />
+</map>{% endset %}
+
+{% set usemapCode %}<!-- The img references the map by name -->
+<img src="diagram.png" alt="Network diagram"
+  usemap="#network" width="600" height="400" />
+
+<!-- The map is identified by its name attribute -->
+<map name="network">
+  <area shape="rect" coords="10,10,200,150"
+    href="#router" alt="Main router" />
+  <area shape="rect" coords="250,10,450,150"
+    href="#switch" alt="Core switch" />
+</map>{% endset %}
+
+{% set responsiveIssueCode %}<!-- Native map: pixel coords break at any size other than 800x500 -->
+<img src="plan.jpg" alt="Floor plan" usemap="#plan"
+  width="800" height="500"
+  style="max-inline-size: 100%; block-size: auto;" />
+
+<map name="plan">
+  <!-- These coords target exact pixels in the 800x500 image.
+       When the image scales to 400px wide, coords still reference
+       the original 800px space — hotspots shift off-target. -->
+  <area shape="rect" coords="40,40,320,220"
+    href="#room-a" alt="Room A" />
+</map>{% endset %}
+
+{% set imageMapCode %}<!-- Modern replacement: percentage-based coordinates -->
+<image-map>
+  <img src="plan.jpg" alt="Floor plan" />
+  <map-area shape="rect" coords="5 8 40 44"
+    label="Room A" href="#room-a">
+    <strong>Room A</strong>
+    <p>Rich HTML tooltip content.</p>
+  </map-area>
+</image-map>{% endset %}
 
 <section>
-    <h2>Description</h2>
-    <p>The <code>&lt;map&gt;</code> element is part of the Media category in HTML.</p>
-  </section>
+  <h2>Description</h2>
+  <p>The <code>&lt;map&gt;</code> element defines a client-side image map &mdash; a set of clickable regions overlaid on an image. Each region is defined by an <a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> child element with pixel-based coordinates. The map is linked to an <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> via the <code>usemap</code> attribute.</p>
 
-  <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <map>Example map content</map>
-    </div>
-    <code-block language="html" label="Basic map example">{{ basicMapCode | escape }}</code-block>
-  </section>
+  <p>Image maps were designed for fixed-size images in the early web. The coordinate system uses <strong>absolute pixel values</strong>, which means hotspot regions break when the image scales to a different size &mdash; a serious limitation in responsive layouts.</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
-  </section>
+<section>
+  <h2>Basic Example</h2>
 
-  <section>
-    <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;map&gt;</code> element will be documented here.</p>
-  </section>
+  <p>Hover over a room to see its <code>title</code> tooltip. Click to see the area name in the status bar. This demo renders the image at its native 800&times;500 pixels so the pixel-based coordinates align correctly.</p>
 
-  <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> - Defines clickable areas within an image map</li>
-      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> - The image element that uses the map</li>
-    </ul>
-  </section>
+  <iframe
+    src="/docs/snippets/demos/map-area-native.html"
+    width="800" height="540"
+    style="border: 1px solid var(--color-border, #ddd); border-radius: var(--radius-m, 8px); max-inline-size: 100%;"
+    loading="lazy"
+    title="Native image map demo">
+  </iframe>
+
+  <code-block language="html" show-lines label="Image map with three area shapes">{{ basicMapCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <p>The <code>&lt;map&gt;</code> and <code>&lt;img&gt;</code> are connected through two attributes:</p>
+  <ol>
+    <li>The <code>&lt;map&gt;</code> element has a <code>name</code> attribute (e.g. <code>name=&quot;office&quot;</code>)</li>
+    <li>The <code>&lt;img&gt;</code> has a <code>usemap</code> attribute with a hash reference (e.g. <code>usemap=&quot;#office&quot;</code>)</li>
+  </ol>
+  <p>The browser renders the image normally. When the user clicks or taps within a region defined by an <code>&lt;area&gt;</code>, the browser navigates to that area&rsquo;s <code>href</code>.</p>
+
+  <code-block language="html" show-lines label="Linking img to map via usemap">{{ usemapCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>name</code></td>
+        <td>string</td>
+        <td>Yes</td>
+        <td>Unique name referenced by the <code>usemap</code> attribute on an <code>&lt;img&gt;</code>. Must not contain spaces.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The <code>&lt;map&gt;</code> element also supports <a href="/docs/attributes/">global attributes</a>.</p>
+</section>
+
+<section>
+  <h2>The Responsive Problem</h2>
+  <p>Native <code>&lt;map&gt;</code> coordinates are defined in <strong>absolute pixels</strong> matching the image&rsquo;s natural dimensions. Modern layouts scale images fluidly with <code>max-inline-size: 100%</code>, but the coordinate system does not scale with them. The result: hotspot regions drift away from their visual targets as the image shrinks or grows.</p>
+
+  <code-block language="html" show-lines label="Pixel coordinates break at different sizes">{{ responsiveIssueCode | escape }}</code-block>
+
+  <p>Workarounds exist (JavaScript that recalculates coordinates on resize), but they add complexity and fragility. The native element was not designed for responsive use.</p>
+
+  <aside class="note">
+    <strong>Recommendation:</strong> For responsive image maps, use the <a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> web component. It uses percentage-based coordinates (0&ndash;100) that scale with the image, supports rich HTML tooltips, and provides keyboard navigation.
+  </aside>
+</section>
+
+<section>
+  <h2>Modern Alternative</h2>
+  <p>Vanilla Breeze provides <a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> as a modern replacement for native <code>&lt;map&gt;</code>/<code>&lt;area&gt;</code>:</p>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Feature</th><th>Native <code>&lt;map&gt;</code></th><th>VB <code>&lt;image-map&gt;</code></th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Coordinate system</td><td>Absolute pixels</td><td>Percentages (0&ndash;100)</td></tr>
+      <tr><td>Responsive</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Tooltips</td><td><code>title</code> text only</td><td>Rich HTML content</td></tr>
+      <tr><td>Keyboard navigation</td><td>Tab only</td><td>Tab + Arrow keys + Escape</td></tr>
+      <tr><td>Visual feedback</td><td>None</td><td>SVG overlay with hover highlight</td></tr>
+      <tr><td>Progressive enhancement</td><td>N/A (native)</td><td>Falls back to labeled list</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Modern replacement with percentage coordinates">{{ imageMapCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Every <code>&lt;area&gt;</code> must have an <code>alt</code> attribute describing the linked region</li>
+    <li>The <code>&lt;img&gt;</code> itself needs an <code>alt</code> describing the overall image</li>
+    <li>Native image maps support keyboard navigation via <kbd>Tab</kbd> between areas</li>
+    <li>Screen readers announce area <code>alt</code> text as link text</li>
+    <li>No visual focus indicator exists on native areas &mdash; users cannot see which region has focus</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Browser Support</h2>
+  <p>The <code>&lt;map&gt;</code> element has universal browser support dating back to the earliest HTML specifications. However, it was designed for an era of fixed-width layouts and offers no adaptation for modern responsive design.</p>
+</section>
+
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/elements/native/area/"><code>&lt;area&gt;</code></a> &mdash; defines clickable regions within an image map</li>
+    <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> &mdash; the image element that references a map via <code>usemap</code></li>
+    <li><a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> &mdash; modern responsive replacement with percentage coordinates</li>
+  </ul>
+</section>

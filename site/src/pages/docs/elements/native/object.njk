@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "object"
-description: "Embeds external resources like images, videos, or plugins."
+description: "The object element is a legacy mechanism for embedding external resources. Modern alternatives like img, video, audio, iframe, and svg are preferred."
 elementName: object
 category: native
 nativeGroup: Embedded
@@ -9,35 +9,144 @@ currentPath: /docs/elements/native/object/
 permalink: /docs/elements/native/object/
 ---
 
-{% set basicExample %}<object>...</object>{% endset %}
+{% set basicObjectCode %}<object data="diagram.svg" type="image/svg+xml" width="400" height="300">
+  <p>Your browser does not support SVG. <a href="diagram.png">View as PNG</a>.</p>
+</object>{% endset %}
+
+{% set pdfObjectCode %}<object data="document.pdf" type="application/pdf" width="100%" height="600">
+  <p>This browser does not support inline PDFs.
+     <a href="document.pdf">Download the PDF</a>.</p>
+</object>{% endset %}
+
+{% set fallbackChainCode %}<object data="animation.svg" type="image/svg+xml">
+  <object data="animation.gif" type="image/gif">
+    <img src="animation.png" alt="Animated diagram showing data flow" />
+  </object>
+</object>{% endset %}
+
+{% set accessibleObjectCode %}<object data="chart.svg" type="image/svg+xml"
+        role="img" aria-label="Quarterly revenue chart">
+  <p>Quarterly revenue: Q1 $1.2M, Q2 $1.5M, Q3 $1.8M, Q4 $2.1M.</p>
+</object>{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;object&gt;</code> element is part of the Embedded category in HTML.</p>
+    <p>The <code>&lt;object&gt;</code> element embeds an external resource such as an image, PDF, or SVG. It is a <strong>legacy embedding mechanism</strong> from earlier HTML specifications, originally designed to handle plugin content (Flash, Java applets, etc.).</p>
+    <p>In modern HTML, dedicated elements handle each media type more effectively. The main remaining advantage of <code>&lt;object&gt;</code> is its <strong>fallback content pattern</strong>: any HTML placed between the opening and closing tags is displayed when the external resource cannot be loaded.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>The object element can embed various external resources.</p>
-    </div>
-    <code-block language="html" label="Basic object example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <p>In nearly all cases, a modern alternative is the better choice. Consider <code>&lt;object&gt;</code> only when you specifically need the nested fallback pattern for a non-HTML resource.</p>
+
+    <h3>Prefer Modern Alternatives</h3>
+    <ul>
+      <li>Use <a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> for images (raster or SVG via <code>src</code>)</li>
+      <li>Use <a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> for inline scalable vector graphics</li>
+      <li>Use <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> for video content</li>
+      <li>Use <a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> for audio content</li>
+      <li>Use <a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> for embedding HTML documents</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <h3>SVG with Fallback</h3>
+    <p>Embed an SVG file with a PNG fallback for older browsers.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/object-embed.html"
+      url="https://vanilla-breeze.dev/object/svg-fallback"
+      title="Object embedding SVG with image fallback"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="SVG with PNG fallback">{{ basicObjectCode | escape }}</code-block>
+
+    <h3>PDF Embed</h3>
+    <p>Display a PDF inline with a download link fallback.</p>
+    <code-block language="html" show-lines label="PDF with download fallback">{{ pdfObjectCode | escape }}</code-block>
+
+    <h3>Nested Fallback Chain</h3>
+    <p><code>&lt;object&gt;</code> elements can be nested to create a fallback chain. The browser tries each in order, stopping at the first one it can render.</p>
+    <code-block language="html" show-lines label="Nested fallback chain">{{ fallbackChainCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>The Fallback Content Pattern</h2>
+    <p>Unlike void elements such as <code>&lt;img&gt;</code> and <a href="/docs/elements/native/embed/"><code>&lt;embed&gt;</code></a>, <code>&lt;object&gt;</code> supports fallback content between its tags. This content is rendered when:</p>
+    <ul>
+      <li>The resource specified by <code>data</code> cannot be loaded</li>
+      <li>The browser does not support the resource's MIME type</li>
+      <li>The <code>type</code> attribute specifies an unsupported format</li>
+    </ul>
+    <p>This makes <code>&lt;object&gt;</code> useful for progressive enhancement scenarios where you want a graceful degradation path.</p>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data</code></td>
+          <td>URL of the resource to embed. Required for most use cases.</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>MIME type of the resource (e.g., <code>image/svg+xml</code>, <code>application/pdf</code>). Helps the browser decide how to handle the content.</td>
+        </tr>
+        <tr>
+          <td><code>width</code></td>
+          <td>Display width of the object in pixels.</td>
+        </tr>
+        <tr>
+          <td><code>height</code></td>
+          <td>Display height of the object in pixels.</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>Name for the embedded browsing context (used with forms and links targeting this object).</td>
+        </tr>
+        <tr>
+          <td><code>form</code></td>
+          <td>Associates the object with a <code>&lt;form&gt;</code> element by ID.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This element also supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;object&gt;</code> element will be documented here.</p>
+    <p>Because <code>&lt;object&gt;</code> embeds opaque external content, accessibility depends on providing good fallback content and ARIA attributes.</p>
+
+    <code-block language="html" show-lines label="Accessible object with fallback text">{{ accessibleObjectCode | escape }}</code-block>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Always provide meaningful fallback content between the <code>&lt;object&gt;</code> tags</li>
+      <li>Add <code>role="img"</code> and <code>aria-label</code> when embedding images or charts</li>
+      <li>Fallback content should convey the same information as the embedded resource</li>
+      <li>Include download links in fallback content so users can still access the resource</li>
+      <li>Prefer native elements (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>) which have built-in accessibility semantics</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/embed/"><code>&lt;embed&gt;</code></a> - Embed external plugin content</li>
-      <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> - Embed HTML documents</li>
+      <li><a href="/docs/elements/native/embed/"><code>&lt;embed&gt;</code></a> - Void element for embedding; no fallback content support</li>
+      <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> - For embedding HTML documents with full security controls</li>
+      <li><a href="/docs/elements/native/img/"><code>&lt;img&gt;</code></a> - For images (raster and external SVG); use <code>alt</code> text instead of fallback content</li>
+      <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> - For video with native controls, captions, and multiple sources</li>
+      <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> - For audio with native controls and multiple sources</li>
+      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> - For inline vector graphics with full CSS and DOM control</li>
     </ul>
   </section>

@@ -14,18 +14,41 @@ permalink: /docs/elements/native/legend/
   <!-- form fields -->
 </fieldset>{% endset %}
 
+{% set minimalFieldsetCode %}<fieldset class="minimal">
+  <legend>Preferences</legend>
+  <label>
+    <input type="checkbox" name="prefs" value="dark" /> Dark mode
+  </label>
+  <label>
+    <input type="checkbox" name="prefs" value="reduce" /> Reduce motion
+  </label>
+</fieldset>{% endset %}
+
 {% set richContentCode %}<fieldset>
   <legend><strong>Required:</strong> Contact Details</legend>
   <!-- form fields -->
 </fieldset>{% endset %}
 
+{% set nestedFieldsetsCode %}<fieldset>
+  <legend>Shipping Information</legend>
+
+  <fieldset class="minimal">
+    <legend>Address</legend>
+    <!-- address fields -->
+  </fieldset>
+
+  <fieldset class="minimal">
+    <legend>Delivery Options</legend>
+    <!-- radio buttons -->
+  </fieldset>
+</fieldset>{% endset %}
+
 {% set cssReferenceCode %}legend {
-  padding-inline: var(--size-s);
   font-weight: 600;
-  font-size: var(--font-size-sm);
+  padding-inline: var(--size-xs);
 }
 
-/* In minimal fieldset */
+/* In a minimal fieldset, legend acts as a section heading */
 fieldset.minimal > legend {
   padding: 0;
   margin-block-end: var(--size-s);
@@ -35,7 +58,7 @@ fieldset.minimal > legend {
 <section>
     <h2>When to Use</h2>
     <ul>
-      <li>Always as the first child of a <a href="/docs/elements/native/fieldset/">fieldset</a></li>
+      <li>Always as the <strong>first child</strong> of a <a href="/docs/elements/native/fieldset/">fieldset</a></li>
       <li>Labeling groups of related form controls</li>
       <li>Providing context for radio button or checkbox groups</li>
       <li>Sectioning complex forms into logical parts</li>
@@ -44,26 +67,15 @@ fieldset.minimal > legend {
   </section>
 
   <section>
+    <h2>VB Styling</h2>
+    <p>Vanilla Breeze sets <code>font-weight: 600</code> and <code>padding-inline: var(--size-xs)</code> on legend. In a bordered fieldset, the legend visually breaks the top border. In a <code>fieldset.minimal</code>, the legend loses its inline padding and gains a bottom margin, acting as a section heading at <code>font-size: var(--font-size-md)</code>.</p>
+  </section>
+
+  <section>
     <h2>Basic Usage</h2>
     <p>A legend provides the accessible name for its fieldset group.</p>
 
-    <div class="example">
-      <fieldset>
-        <legend>Personal Information</legend>
-        <layout-stack data-layout-gap="m">
-          <form-field>
-            <label for="legend-name">Full Name</label>
-            <input type="text" id="legend-name" />
-          </form-field>
-          <form-field>
-            <label for="legend-email">Email</label>
-            <input type="email" id="legend-email" />
-          </form-field>
-        </layout-stack>
-      </fieldset>
-    </div>
-
-    <h3>Code</h3>
+    <browser-window src="/docs/snippets/demos/legend-examples.html" url="https://vanilla-breeze.dev/legend" title="Legend examples" shadow></browser-window>
     <code-block language="html" show-lines label="Basic legend usage">{{ basicLegendCode | escape }}</code-block>
   </section>
 
@@ -71,63 +83,16 @@ fieldset.minimal > legend {
     <h2>Visual Styles</h2>
 
     <h3>Default (Bordered Fieldset)</h3>
-    <p>In a standard fieldset, the legend appears to break the top border.</p>
-    <div class="example">
-      <fieldset>
-        <legend>Account Settings</legend>
-        <layout-stack data-layout-gap="m">
-          <form-field>
-            <label for="legend-username">Username</label>
-            <input type="text" id="legend-username" />
-          </form-field>
-          <form-field>
-            <label for="legend-password">Password</label>
-            <input type="password" id="legend-password" />
-          </form-field>
-        </layout-stack>
-      </fieldset>
-    </div>
+    <p>In a standard fieldset with a visible border, the legend appears inset in the top border.</p>
 
     <h3>Minimal Fieldset</h3>
-    <p>In a minimal fieldset, the legend appears as a section heading.</p>
-    <div class="example">
-      <fieldset class="minimal">
-        <legend>Preferences</legend>
-        <layout-stack data-layout-gap="s">
-          <label>
-            <input type="checkbox" name="prefs" value="dark" /> Dark mode
-          </label>
-          <label>
-            <input type="checkbox" name="prefs" value="reduce" /> Reduce motion
-          </label>
-          <label>
-            <input type="checkbox" name="prefs" value="compact" /> Compact view
-          </label>
-        </layout-stack>
-      </fieldset>
-    </div>
+    <p>In a <code>fieldset.minimal</code>, the border is removed and the legend appears as a section heading with increased font size and a bottom margin.</p>
+    <code-block language="html" show-lines label="Minimal fieldset legend">{{ minimalFieldsetCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>For Radio Groups</h2>
     <p>Radio buttons should always be in a fieldset with a legend. Screen readers announce the legend before each option.</p>
-
-    <div class="example">
-      <fieldset>
-        <legend>Select Payment Method</legend>
-        <layout-stack data-layout-gap="s">
-          <label>
-            <input type="radio" name="payment" value="card" checked /> Credit Card
-          </label>
-          <label>
-            <input type="radio" name="payment" value="paypal" /> PayPal
-          </label>
-          <label>
-            <input type="radio" name="payment" value="bank" /> Bank Transfer
-          </label>
-        </layout-stack>
-      </fieldset>
-    </div>
 
     <h3>Screen Reader Behavior</h3>
     <p>When navigating radio buttons, screen readers announce:</p>
@@ -139,87 +104,15 @@ fieldset.minimal > legend {
   </section>
 
   <section>
-    <h2>For Checkbox Groups</h2>
-    <p>Group related checkboxes with a legend to provide context.</p>
-
-    <div class="example">
-      <fieldset class="minimal">
-        <legend>Notification Settings</legend>
-        <layout-stack data-layout-gap="s">
-          <label>
-            <input type="checkbox" name="notify" value="email" checked /> Email notifications
-          </label>
-          <label>
-            <input type="checkbox" name="notify" value="sms" /> SMS notifications
-          </label>
-          <label>
-            <input type="checkbox" name="notify" value="push" /> Push notifications
-          </label>
-        </layout-stack>
-      </fieldset>
-    </div>
-  </section>
-
-  <section>
     <h2>Rich Content in Legends</h2>
     <p>Legends can contain simple inline content but should remain concise.</p>
-
-    <div class="example">
-      <fieldset>
-        <legend><strong>Required:</strong> Contact Details</legend>
-        <layout-stack data-layout-gap="m">
-          <form-field>
-            <label for="legend-phone">Phone *</label>
-            <input type="tel" id="legend-phone" required />
-          </form-field>
-          <form-field>
-            <label for="legend-alt-email">Email *</label>
-            <input type="email" id="legend-alt-email" required />
-          </form-field>
-        </layout-stack>
-      </fieldset>
-    </div>
-
-    <h3>Code</h3>
     <code-block language="html" show-lines label="Rich content in legend">{{ richContentCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Nested Fieldsets</h2>
-    <p>When nesting fieldsets, each needs its own legend for proper hierarchy.</p>
-
-    <div class="example">
-      <fieldset>
-        <legend>Shipping Information</legend>
-        <layout-stack data-layout-gap="l">
-          <fieldset class="minimal">
-            <legend>Address</legend>
-            <layout-stack data-layout-gap="m">
-              <form-field>
-                <label for="nested-street">Street</label>
-                <input type="text" id="nested-street" />
-              </form-field>
-              <form-field>
-                <label for="nested-city">City</label>
-                <input type="text" id="nested-city" />
-              </form-field>
-            </layout-stack>
-          </fieldset>
-
-          <fieldset class="minimal">
-            <legend>Delivery Options</legend>
-            <layout-stack data-layout-gap="s">
-              <label>
-                <input type="radio" name="delivery" value="standard" checked /> Standard
-              </label>
-              <label>
-                <input type="radio" name="delivery" value="express" /> Express
-              </label>
-            </layout-stack>
-          </fieldset>
-        </layout-stack>
-      </fieldset>
-    </div>
+    <p>When nesting fieldsets, each needs its own legend for proper hierarchy. A common pattern is a bordered outer fieldset with minimal inner fieldsets.</p>
+    <code-block language="html" show-lines label="Nested fieldsets">{{ nestedFieldsetsCode | escape }}</code-block>
   </section>
 
   <section>

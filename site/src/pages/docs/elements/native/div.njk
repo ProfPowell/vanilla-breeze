@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "div"
-description: "Generic block-level container with no semantic meaning."
+description: "Generic block-level container. In Vanilla Breeze, div usage is discouraged — prefer semantic elements and VB layout primitives."
 elementName: div
 category: native
 nativeGroup: Text Content
@@ -9,37 +9,174 @@ currentPath: /docs/elements/native/div/
 permalink: /docs/elements/native/div/
 ---
 
-{% set basicDivCode %}<div>...</div>{% endset %}
+{% set semanticCode %}<!-- Instead of <div class="card"> -->
+<article>
+  <h3>Card Title</h3>
+  <p>Self-contained content.</p>
+</article>
 
-<!-- Description Section -->
-  <section>
-    <h2>Description</h2>
-    <p>The <code>&lt;div&gt;</code> element is part of the Text Content category in HTML.</p>
-  </section>
+<!-- Instead of <div class="sidebar"> -->
+<aside>
+  <p>Tangentially related content.</p>
+</aside>
 
-  <!-- Basic Example Section -->
-  <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <div>Example div content</div>
+<!-- Instead of <div class="nav"> -->
+<nav aria-label="Primary">
+  <ul class="unstyled">
+    <li><a href="#">Home</a></li>
+  </ul>
+</nav>
+
+<!-- Instead of <div class="footer"> / <div class="actions"> -->
+<footer>
+  <button type="button">Save</button>
+</footer>{% endset %}
+
+{% set layoutCode %}<!-- Instead of <div data-layout="stack"> -->
+<section data-layout="stack" data-layout-gap="m">
+  <p>Content with vertical spacing.</p>
+  <p>No wrapper div needed.</p>
+</section>
+
+<!-- Instead of <div data-layout="grid"> -->
+<ul data-layout="grid" data-layout-gap="m">
+  <li>Grid item one</li>
+  <li>Grid item two</li>
+</ul>{% endset %}
+
+{% set legitimateCode %}<!-- dl grouping (HTML5 spec allows div inside dl) -->
+<dl data-striped>
+  <div>
+    <dt>Term</dt>
+    <dd>Description</dd>
+  </div>
+</dl>
+
+<!-- Radio/checkbox group wrapper for form-field -->
+<form-field>
+  <fieldset>
+    <legend>Options</legend>
+    <div>
+      <label><input type="radio" name="opt" /> Option A</label>
+      <label><input type="radio" name="opt" /> Option B</label>
     </div>
-    <code-block language="html" label="Basic div example">{{ basicDivCode | escape }}</code-block>
+  </fieldset>
+</form-field>{% endset %}
+
+{% set conformanceCode %}# VB conformance checker flags divs:
+
+vb/no-div          — Any <div> element (warning → error)
+vb/no-div-wrapper   — <div> wrapping a single semantic child
+semantic/no-div     — Semantic check for div elements{% endset %}
+
+<section>
+    <h2>Philosophy</h2>
+    <p>Vanilla Breeze takes an intentional stance: <strong><code>&lt;div&gt;</code> is a last resort, not a default.</strong> The VB conformance checker flags every <code>&lt;div&gt;</code> as a warning, and the semantic check raises it as an error for new code.</p>
+    <p>This is not about being pedantic &mdash; semantic elements provide:</p>
+    <ul>
+      <li><strong>Accessibility:</strong> Screen readers can navigate by landmarks (<code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>)</li>
+      <li><strong>SEO:</strong> Search engines understand content structure from semantic markup</li>
+      <li><strong>Readability:</strong> Code is self-documenting when elements describe their purpose</li>
+      <li><strong>Less CSS:</strong> VB styles semantic elements directly &mdash; no class soup</li>
+    </ul>
   </section>
 
-  <!-- Attributes Section -->
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Semantic Alternatives</h2>
+    <p>For every common <code>&lt;div&gt;</code> pattern, a semantic element exists:</p>
+
+    <browser-window src="/docs/snippets/demos/div-alternatives.html" url="div-alternatives.html" title="Semantic alternatives" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Instead of</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&lt;div class="card"&gt;</code></td><td><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="sidebar"&gt;</code></td><td><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="nav"&gt;</code></td><td><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="header"&gt;</code></td><td><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="footer"&gt;</code></td><td><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="main"&gt;</code></td><td><a href="/docs/elements/native/main/"><code>&lt;main&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="section"&gt;</code></td><td><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="actions"&gt;</code></td><td><code>&lt;footer&gt;</code> or <a href="/docs/elements/native/menu/"><code>&lt;menu&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div class="group"&gt;</code></td><td><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a></td></tr>
+        <tr><td><code>&lt;div data-layout="stack"&gt;</code></td><td>Put <code>data-layout</code> on the semantic parent</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Semantic replacements">{{ semanticCode | escape }}</code-block>
   </section>
 
-  <!-- Accessibility Section -->
+  <section>
+    <h2>Layout Without Divs</h2>
+    <p>VB's layout attributes (<code>data-layout</code>) and custom elements (<code>&lt;layout-stack&gt;</code>, <code>&lt;layout-grid&gt;</code>, etc.) can be applied directly to semantic elements:</p>
+
+    <code-block language="html" show-lines label="Layout on semantic elements">{{ layoutCode | escape }}</code-block>
+
+    <p>When no semantic element fits, VB layout custom elements (<code>&lt;layout-stack&gt;</code>, <code>&lt;layout-grid&gt;</code>, <code>&lt;layout-cluster&gt;</code>) serve as the container &mdash; they are more descriptive than <code>&lt;div&gt;</code> because they declare layout intent.</p>
+  </section>
+
+  <section>
+    <h2>Legitimate Uses</h2>
+    <p>There are a few cases where <code>&lt;div&gt;</code> is the correct choice:</p>
+    <ul>
+      <li><strong><code>&lt;dl&gt;</code> grouping:</strong> HTML5 allows <code>&lt;div&gt;</code> inside <code>&lt;dl&gt;</code> to group <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pairs (for striped styling)</li>
+      <li><strong>Form field groups:</strong> Wrapping radio/checkbox groups inside <code>&lt;form-field&gt;</code></li>
+      <li><strong>Third-party widgets:</strong> When external libraries require a container div</li>
+      <li><strong>CSS Grid/Flex children:</strong> When you genuinely need a non-semantic grid cell</li>
+    </ul>
+
+    <code-block language="html" show-lines label="Legitimate div uses">{{ legitimateCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Conformance Enforcement</h2>
+    <p>VB enforces semantic HTML through automated tooling:</p>
+
+    <code-block language="text" label="Conformance rules">{{ conformanceCode | escape }}</code-block>
+
+    <ul>
+      <li><strong><code>vb/no-div</code></strong> &mdash; Flags any <code>&lt;div&gt;</code> element. Suggests semantic alternatives.</li>
+      <li><strong><code>vb/no-div-wrapper</code></strong> &mdash; Flags <code>&lt;div&gt;</code> wrapping a single semantic child (the div is unnecessary).</li>
+      <li><strong>Allowlist:</strong> Known legitimate uses can be added to <code>.claude/vb-conformance-allowlist.json</code></li>
+    </ul>
+    <p>Run <code>npm run conformance</code> to check your HTML files.</p>
+  </section>
+
+  <section>
+    <h2>The VB Refinement Checklist</h2>
+    <p>When auditing existing code with divs, follow this order:</p>
+    <ol>
+      <li><strong>Div audit:</strong> Can each div be replaced with a semantic element?</li>
+      <li><strong>Wrapper audit:</strong> Is a div wrapping a single child that could receive the attributes directly?</li>
+      <li><strong>data-layout audit:</strong> Is <code>data-layout</code> on a div when it could be on the semantic parent?</li>
+      <li><strong>Class audit:</strong> Are VB element-scoped classes available (e.g., <code>form.stacked</code>)?</li>
+      <li><strong>Semantic opportunities:</strong> Can <code>&lt;footer&gt;</code> replace a button group div? Can <code>&lt;header&gt;</code> replace a title wrapper?</li>
+    </ol>
+  </section>
+
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;div&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><code>&lt;div&gt;</code> has no implicit ARIA role &mdash; it is invisible to screen readers</li>
+      <li>Screen readers cannot navigate by divs; they <em>can</em> navigate by landmarks, headings, lists, and other semantic elements</li>
+      <li>Every div you replace with a semantic element improves the accessibility tree</li>
+    </ul>
   </section>
 
-  <!-- Related Elements Section -->
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/span/"><code>&lt;span&gt;</code></a> &mdash; Generic inline container (same philosophy: last resort)</li>
+      <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> &mdash; Thematic grouping of content</li>
+      <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> &mdash; Self-contained content</li>
+      <li><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a> &mdash; Tangentially related content</li>
+      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; Navigation sections</li>
+      <li><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> &mdash; Introductory content</li>
+      <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> &mdash; Footer content and action groups</li>
+      <li><a href="/docs/elements/native/main/"><code>&lt;main&gt;</code></a> &mdash; Dominant content of the page</li>
+      <li><a href="/docs/elements/native/menu/"><code>&lt;menu&gt;</code></a> &mdash; Action button groups</li>
+      <li><a href="/docs/elements/native/fieldset/"><code>&lt;fieldset&gt;</code></a> &mdash; Form field grouping</li>
+    </ul>
   </section>

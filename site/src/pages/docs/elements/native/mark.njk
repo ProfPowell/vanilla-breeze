@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "mark"
-description: "The mark element represents text highlighted for reference or notation purposes, typically displayed with a yellow background like a highlighter pen."
+description: "The mark element represents text highlighted for reference or notation purposes, with VB status variants for success, warning, and error states."
 elementName: mark
 category: native
 nativeGroup: Text Semantics
@@ -9,7 +9,7 @@ currentPath: /docs/elements/native/mark/
 permalink: /docs/elements/native/mark/
 ---
 
-{% set defaultMarkCode %}<mark>progressive</mark>{% endset %}
+{% set defaultMarkCode %}<p>Search results: The <mark>progressive</mark> enhancement approach.</p>{% endset %}
 
 {% set successMarkCode %}<mark class="success">Passed all tests</mark>{% endset %}
 
@@ -22,20 +22,27 @@ permalink: /docs/elements/native/mark/
   Invalid input detected
 </mark>{% endset %}
 
+{% set markCssCode %}mark {
+  background: oklch(from var(--color-interactive) l c h / 0.2);
+  padding-inline: var(--size-2xs);
+  border-radius: var(--radius-s);
+}
+
+mark.success {
+  background: oklch(60% 0.18 145 / 0.2);
+}
+
+mark.warning {
+  background: oklch(75% 0.18 75 / 0.2);
+}
+
+mark.error {
+  background: oklch(55% 0.2 25 / 0.2);
+}{% endset %}
+
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;mark&gt;</code> element represents text that is marked or highlighted for reference purposes due to its relevance in a particular context. The most common use is highlighting search terms in results, but it can also indicate text relevant to the user's current activity.</p>
-  </section>
-
-  <section>
-    <h2>Semantic Meaning</h2>
-    <p>The mark element conveys that text has special relevance:</p>
-    <ul>
-      <li>Indicates text highlighted for the user's attention</li>
-      <li>Screen readers may announce "highlight" or similar to indicate marked content</li>
-      <li>Distinguishes content that's relevant to the current context</li>
-      <li>Not for stylistic highlighting - use CSS for that</li>
-    </ul>
+    <p>The <code>&lt;mark&gt;</code> element represents text highlighted for reference due to its relevance in a particular context. VB styles it with a subtle background derived from <code>var(--color-interactive)</code> using relative oklch colors, plus <code>padding-inline</code> and <code>border-radius</code> for a polished highlight. Three status variants provide semantic color coding.</p>
   </section>
 
   <section>
@@ -43,171 +50,101 @@ permalink: /docs/elements/native/mark/
     <ul>
       <li><strong>Search results:</strong> Highlight matching search terms</li>
       <li><strong>Quotations:</strong> Mark parts of a quote that are particularly relevant</li>
-      <li><strong>User selections:</strong> Show text the user has selected or bookmarked</li>
-      <li><strong>Important information:</strong> Draw attention to key points</li>
+      <li><strong>Status indicators:</strong> Build, test, security status badges</li>
       <li><strong>Comparisons:</strong> Highlight differences between items</li>
+      <li><strong>User selections:</strong> Show text the user has bookmarked or selected</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
-      <li><strong>Emphasis:</strong> Use <code>&lt;strong&gt;</code> or <code>&lt;em&gt;</code> for semantic emphasis</li>
-      <li><strong>Purely decorative:</strong> Use CSS background-color for styling only</li>
-      <li><strong>Code syntax:</strong> Use proper code highlighting libraries</li>
+      <li>For semantic emphasis &mdash; use <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> or <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
+      <li>For purely decorative highlighting &mdash; use CSS <code>background-color</code></li>
+      <li>For inserted text &mdash; use <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a></li>
     </ul>
   </section>
 
   <section>
-    <h2>Variants</h2>
+    <h2>Examples</h2>
 
-    <h3>Default</h3>
-    <p>Standard yellow highlight, like a highlighter pen.</p>
-    <div class="example">
-      <p>Search results: The <mark>progressive</mark> enhancement approach.</p>
-    </div>
-    <code-block language="html" show-lines label="Default mark element">{{ defaultMarkCode | escape }}</code-block>
+    <browser-window src="/docs/snippets/demos/mark-variants.html" url="mark-variants.html" title="Mark variants" shadow></browser-window>
 
-    <h3>.success</h3>
-    <p>Green highlight for positive or successful content.</p>
-    <div class="example">
-      <p>Status: <mark class="success">Passed all tests</mark></p>
-    </div>
-    <code-block language="html" show-lines label="Success mark variant">{{ successMarkCode | escape }}</code-block>
-
-    <h3>.warning</h3>
-    <p>Orange/amber highlight for warnings or cautions.</p>
-    <div class="example">
-      <p>Note: <mark class="warning">This feature is experimental</mark></p>
-    </div>
-    <code-block language="html" show-lines label="Warning mark variant">{{ warningMarkCode | escape }}</code-block>
-
-    <h3>.error</h3>
-    <p>Red highlight for errors or critical information.</p>
-    <div class="example">
-      <p>Error: <mark class="error">Invalid input detected</mark></p>
-    </div>
-    <code-block language="html" show-lines label="Error mark variant">{{ errorMarkCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Default highlight">{{ defaultMarkCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Live Examples</h2>
+    <h2>Status Variants</h2>
 
-    <h3>Search Results</h3>
-    <div class="example">
-      <p>Found 3 results for "progressive enhancement":</p>
-      <ul>
-        <li><mark>Progressive enhancement</mark> is a design philosophy...</li>
-        <li>Learn about <mark>progressive</mark> web apps and <mark>enhancement</mark> techniques...</li>
-        <li>The <mark>progressive enhancement</mark> approach starts with HTML...</li>
-      </ul>
-    </div>
-
-    <h3>Relevant Quote Section</h3>
-    <div class="example">
-      <blockquote>
-        <p>The web is not a platform. It's a continuum of devices and capabilities. <mark>Design for the edges, and the middle will take care of itself.</mark></p>
-      </blockquote>
-    </div>
-
-    <h3>Status Variants</h3>
-    <div class="example">
-      <p>Build status: <mark class="success">Passing</mark></p>
-      <p>Browser support: <mark class="warning">Partial</mark></p>
-      <p>Security scan: <mark class="error">Vulnerabilities found</mark></p>
-    </div>
-
-    <h3>Comparison Highlighting</h3>
-    <div class="example">
-      <table class="props-table">
-        <thead>
-          <tr>
-            <th>Feature</th>
-            <th>Plan A</th>
-            <th>Plan B</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Storage</td>
-            <td>10 GB</td>
-            <td><mark>50 GB</mark></td>
-          </tr>
-          <tr>
-            <td>Users</td>
-            <td>5</td>
-            <td><mark>Unlimited</mark></td>
-          </tr>
-          <tr>
-            <td>Support</td>
-            <td>Email</td>
-            <td><mark class="success">24/7 Phone</mark></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Multiple Highlights in Text</h3>
-    <div class="example">
-      <p>When reviewing code, watch for <mark class="error">security issues</mark>, <mark class="warning">performance concerns</mark>, and <mark class="success">best practices</mark>.</p>
-    </div>
-
-    <h3>Interactive Search Demo</h3>
-    <div class="example">
-      <p>Original text: "The quick brown fox jumps over the lazy dog."</p>
-      <p>Search for "the": "<mark>The</mark> quick brown fox jumps over <mark>the</mark> lazy dog."</p>
-    </div>
-  </section>
-
-  <section>
-    <h2>CSS Properties</h2>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Variant</th>
-          <th>Background Color</th>
+          <th>Class</th>
+          <th>Background</th>
+          <th>Use Case</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Default</td>
-          <td>Browser default yellow (typically <code>#ff0</code> or similar)</td>
+          <td>(default)</td>
+          <td><code>oklch(from var(--color-interactive) l c h / 0.2)</code></td>
+          <td>Search highlights, general relevance</td>
         </tr>
         <tr>
           <td><code>.success</code></td>
           <td><code>oklch(60% 0.18 145 / 0.2)</code> (green)</td>
+          <td>Passed, approved, complete</td>
         </tr>
         <tr>
           <td><code>.warning</code></td>
           <td><code>oklch(75% 0.18 75 / 0.2)</code> (amber)</td>
+          <td>Partial, experimental, caution</td>
         </tr>
         <tr>
           <td><code>.error</code></td>
           <td><code>oklch(55% 0.2 25 / 0.2)</code> (red)</td>
+          <td>Failed, vulnerabilities, errors</td>
         </tr>
       </tbody>
     </table>
+
+    <code-block language="html" show-lines label="Success variant">{{ successMarkCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Warning variant">{{ warningMarkCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Error variant">{{ errorMarkCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="mark CSS">{{ markCssCode | escape }}</code-block>
+    <p>The default highlight uses relative oklch color derived from the theme's interactive color, so it adapts automatically to each theme. The status variants use fixed oklch values at 20% opacity for consistent, transparent overlays.</p>
+  </section>
+
+  <section>
+    <h2>Highlight Effect</h2>
+    <p>VB's <a href="/docs/attributes/data-effect/#highlight"><code>data-effect="highlight"</code></a> provides an animated version of mark-style highlighting that draws in on scroll. This is a CSS animation, not the <code>&lt;mark&gt;</code> element &mdash; but they share the same visual language.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Screen reader support:</strong> Some screen readers announce marked text, though support varies</li>
-      <li><strong>Color alone:</strong> Don't rely solely on highlight color to convey meaning - add text labels for variants</li>
-      <li><strong>High contrast:</strong> Ensure sufficient contrast between highlighted text and background</li>
-      <li><strong>Context:</strong> Provide context for why text is highlighted (e.g., "Search results for...")</li>
+      <li>Some screen readers announce marked text, though support varies</li>
+      <li>Don't rely solely on highlight color to convey meaning &mdash; add text labels for status variants</li>
+      <li>Ensure sufficient contrast between highlighted text and background</li>
+      <li>Provide context for why text is highlighted (e.g., "Search results for...")</li>
     </ul>
 
-    <h3>Improving Screen Reader Announcements</h3>
-    <p>For critical highlighted content, consider adding visually hidden context:</p>
-    <div class="example">
-      <p>Status: <mark class="error"><span class="visually-hidden">Error: </span>Invalid input detected</mark></p>
-    </div>
+    <h3>Adding Screen Reader Context</h3>
+    <p>For status variants, add a <code>visually-hidden</code> label so screen readers announce the state:</p>
+
+    <browser-window src="/docs/snippets/demos/mark-accessible.html" url="mark-accessible.html" title="Accessible mark" shadow></browser-window>
+
     <code-block language="html" show-lines label="Accessible mark with hidden context">{{ accessibleMarkCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> - For semantic importance (not visual highlighting)</li>
-      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> - For semantic emphasis</li>
-      <li><a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> - For inserted text (similar appearance but different meaning)</li>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; For semantic importance (not visual highlighting)</li>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; For semantic emphasis</li>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Draw attention without importance</li>
+      <li><a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; For inserted text (similar appearance, different meaning)</li>
+      <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> &mdash; For deleted text (often paired with <code>&lt;ins&gt;</code>)</li>
     </ul>
   </section>

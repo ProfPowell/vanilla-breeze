@@ -1,0 +1,366 @@
+---
+layout: layouts/element.njk
+title: "image-map"
+description: "Modern responsive image map with percentage-based coordinates, rich HTML tooltips, keyboard navigation, and progressive enhancement."
+elementName: image-map
+category: component
+currentPath: /docs/elements/web-components/image-map/
+permalink: /docs/elements/web-components/image-map/
+---
+
+{% set basicCode %}<image-map>
+  <img src="/maps/floor-plan.svg" alt="Office floor plan" />
+
+  <map-area shape="rect" coords="5 8 40 44"
+    label="Conference Hall" href="/rooms/conference">
+    <strong>Conference Hall</strong>
+    <p>Seats 120 people. AV equipment available.</p>
+  </map-area>
+
+  <map-area shape="circle" coords="62.5 32 10"
+    label="Server Room" href="/rooms/server">
+    <strong>Server Room</strong>
+    <p>24 racks, climate controlled.</p>
+  </map-area>
+
+  <map-area shape="rect" coords="60 56 95 92"
+    label="Open Office" href="/rooms/office">
+    <strong>Open Office</strong>
+    <p>80 hot-desk workstations.</p>
+  </map-area>
+</image-map>{% endset %}
+
+{% set shapesCode %}<!-- Rectangle: x1 y1 x2 y2 -->
+<map-area shape="rect" coords="5 8 40 44"
+  label="Conference Hall">...</map-area>
+
+<!-- Circle: cx cy radius -->
+<map-area shape="circle" coords="62.5 32 10"
+  label="Server Room">...</map-area>
+
+<!-- Polygon: x1 y1 x2 y2 x3 y3 ... -->
+<map-area shape="poly" coords="60 56 95 56 95 92 70 92 60 76"
+  label="Open Office">...</map-area>{% endset %}
+
+{% set tooltipClickCode %}<map-area shape="rect" coords="5 8 40 44"
+  label="Conference Hall" tooltip="click">
+  <strong>Conference Hall</strong>
+  <p>Click to see details. Click again to dismiss.</p>
+  <p><a href="/book">Book this room</a></p>
+</map-area>{% endset %}
+
+{% set eventCode %}{% raw %}const map = document.querySelector('image-map');
+
+map.addEventListener('image-map:area-enter', (e) => {
+  console.log('Entered:', e.detail.area.label);
+});
+
+map.addEventListener('image-map:area-activate', (e) => {
+  console.log('Activated:', e.detail.area.label);
+});{% endraw %}{% endset %}
+
+{% set stylingCode %}{% raw %}image-map {
+  --map-area-color: oklch(55% 0.2 140 / 0.3);
+  --map-area-color-hover: oklch(55% 0.2 140 / 0.6);
+  --map-tooltip-bg: oklch(20% 0.02 220 / 0.95);
+  --map-tooltip-radius: 0.75rem;
+  --map-tooltip-max-width: 24rem;
+}{% endraw %}{% endset %}
+
+{% set fallbackCode %}{% raw %}<!-- Without JS, image renders normally -->
+<!-- map-area elements display as a labeled list -->
+
+<image-map>
+  <img src="plan.svg" alt="Floor plan" />
+  <map-area shape="rect" coords="..." label="Room A" href="/a">
+    tooltip content (hidden without JS)
+  </map-area>
+</image-map>
+
+<!-- Renders as:
+     [image]
+     • Room A
+-->{% endraw %}{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;image-map&gt;</code> component replaces native HTML <code>&lt;map&gt;</code>/<code>&lt;area&gt;</code> with percentage-based coordinates that scale responsively. Areas are defined as <code>&lt;map-area&gt;</code> children with rich HTML tooltip content, full keyboard navigation, and progressive enhancement.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/image-map-basic.html"
+    url="https://vanilla-breeze.dev/image-map"
+    title="Image Map Demo"
+    style="min-height: 38rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic image map">{{ basicCode | escape }}</code-block>
+
+  <aside class="note">
+    <strong>Progressive enhancement:</strong> Without JavaScript, the image renders normally and each <code>&lt;map-area&gt;</code> displays as a labeled list item below. The overlay and tooltips only activate when JS registers the components.
+  </aside>
+</section>
+
+<section>
+  <h2>Markup Pattern</h2>
+  <p>Place an <code>&lt;img&gt;</code> as a direct child of <code>&lt;image-map&gt;</code>. The component adopts it and overlays an SVG hit-testing layer. Each <code>&lt;map-area&gt;</code> defines a hotspot region &mdash; its inner HTML becomes the tooltip content.</p>
+  <p>Alternatively, <code>src</code> and <code>alt</code> attributes on <code>&lt;image-map&gt;</code> itself can create the image, but placing <code>&lt;img&gt;</code> as a child gives better progressive enhancement.</p>
+</section>
+
+<section>
+  <h2>Coordinate System</h2>
+  <p>All coordinates are <strong>percentages (0&ndash;100)</strong> of the rendered image dimensions &mdash; not pixels. Values are unitless numbers separated by spaces or commas. The SVG overlay uses <code>viewBox=&quot;0 0 100 100&quot;</code> so percentage coordinates map directly to SVG units with no runtime conversion.</p>
+
+  <code-block language="html" show-lines label="All shape types">{{ shapesCode | escape }}</code-block>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Shape</th><th>Coords format</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>rect</code></td>
+        <td><code>x1 y1 x2 y2</code></td>
+        <td>Top-left and bottom-right corners</td>
+      </tr>
+      <tr>
+        <td><code>circle</code></td>
+        <td><code>cx cy r</code></td>
+        <td>Centre point and radius (radius is % of image width)</td>
+      </tr>
+      <tr>
+        <td><code>poly</code></td>
+        <td><code>x1 y1 x2 y2 ...</code></td>
+        <td>Series of points (minimum 3), auto-closes</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>All Shapes Demo</h2>
+
+  <browser-window
+    src="/docs/snippets/demos/image-map-shapes.html"
+    url="https://vanilla-breeze.dev/shapes"
+    title="All Shape Types"
+    style="min-height: 38rem;"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Tooltip Content</h2>
+  <p>The inner HTML of each <code>&lt;map-area&gt;</code> becomes the tooltip content. Use any HTML: headings, paragraphs, lists, images, links.</p>
+
+  <h3>Tooltip modes</h3>
+  <p>By default, tooltips show on hover (<code>tooltip=&quot;hover&quot;</code>). Set <code>tooltip=&quot;click&quot;</code> for click-to-toggle, which is better for tooltips with interactive content like links. Set <code>tooltip=&quot;none&quot;</code> to disable tooltips entirely.</p>
+
+  <code-block language="html" show-lines label="Click-mode tooltip">{{ tooltipClickCode | escape }}</code-block>
+
+  <browser-window
+    src="/docs/snippets/demos/image-map-rich-tooltips.html"
+    url="https://vanilla-breeze.dev/rich-tooltips"
+    title="Rich Tooltip Content"
+    style="min-height: 44rem;"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>CSS Custom Properties</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--map-area-color</code></td>
+        <td><code>oklch(60% 0.2 250 / 0.08)</code></td>
+        <td>Default area fill (subtle hint)</td>
+      </tr>
+      <tr>
+        <td><code>--map-area-color-hover</code></td>
+        <td><code>oklch(60% 0.2 250 / 0.35)</code></td>
+        <td>Hover/focus area fill</td>
+      </tr>
+      <tr>
+        <td><code>--map-area-stroke</code></td>
+        <td><code>oklch(60% 0.2 250 / 0.3)</code></td>
+        <td>Default area outline stroke</td>
+      </tr>
+      <tr>
+        <td><code>--map-tooltip-bg</code></td>
+        <td><code>oklch(15% 0 0 / 0.92)</code></td>
+        <td>Tooltip background</td>
+      </tr>
+      <tr>
+        <td><code>--map-tooltip-color</code></td>
+        <td><code>white</code></td>
+        <td>Tooltip text colour</td>
+      </tr>
+      <tr>
+        <td><code>--map-tooltip-radius</code></td>
+        <td><code>0.5rem</code></td>
+        <td>Tooltip border radius</td>
+      </tr>
+      <tr>
+        <td><code>--map-tooltip-max-width</code></td>
+        <td><code>20rem</code></td>
+        <td>Tooltip maximum width</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="css" show-lines label="Custom styling">{{ stylingCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+
+  <h3>&lt;image-map&gt;</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>src</code></td>
+        <td>string</td>
+        <td>Image URL (fallback if no child <code>&lt;img&gt;</code>)</td>
+      </tr>
+      <tr>
+        <td><code>alt</code></td>
+        <td>string</td>
+        <td>Image alt text (fallback if no child <code>&lt;img&gt;</code>)</td>
+      </tr>
+      <tr>
+        <td><code>aria-label</code></td>
+        <td>string</td>
+        <td>Accessible label for the map group (defaults to img alt)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>&lt;map-area&gt;</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>shape</code></td>
+        <td>string</td>
+        <td>Yes</td>
+        <td><code>rect</code>, <code>circle</code>, or <code>poly</code></td>
+      </tr>
+      <tr>
+        <td><code>coords</code></td>
+        <td>string</td>
+        <td>Yes</td>
+        <td>Space or comma-separated percentage values (0&ndash;100)</td>
+      </tr>
+      <tr>
+        <td><code>label</code></td>
+        <td>string</td>
+        <td>Yes</td>
+        <td>Accessible name for the hotspot</td>
+      </tr>
+      <tr>
+        <td><code>href</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Navigation target. Creates an <code>&lt;a&gt;</code> focus anchor</td>
+      </tr>
+      <tr>
+        <td><code>target</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Link target (<code>_blank</code>, etc.)</td>
+      </tr>
+      <tr>
+        <td><code>tooltip</code></td>
+        <td>string</td>
+        <td>No</td>
+        <td><code>hover</code> (default), <code>click</code>, or <code>none</code></td>
+      </tr>
+      <tr>
+        <td><code>disabled</code></td>
+        <td>boolean</td>
+        <td>No</td>
+        <td>Suppresses interaction and tooltip</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>image-map:area-enter</code></td>
+        <td><code>{ area }</code></td>
+        <td>Pointer or focus entered an area</td>
+      </tr>
+      <tr>
+        <td><code>image-map:area-leave</code></td>
+        <td><code>{ area }</code></td>
+        <td>Pointer or focus left an area</td>
+      </tr>
+      <tr>
+        <td><code>image-map:area-activate</code></td>
+        <td><code>{ area }</code></td>
+        <td>Area clicked or Enter pressed</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="javascript" show-lines label="Event handling">{{ eventCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Keyboard Navigation</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Key</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>Tab</kbd></td><td>Move focus between area anchors</td></tr>
+      <tr><td><kbd>&darr;</kbd> / <kbd>&rarr;</kbd></td><td>Focus next area</td></tr>
+      <tr><td><kbd>&uarr;</kbd> / <kbd>&larr;</kbd></td><td>Focus previous area</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate area (follow link or dispatch event)</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Dismiss tooltip</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <p>Each <code>&lt;map-area&gt;</code> generates a focusable anchor element (<code>&lt;a&gt;</code> when <code>href</code> is set, <code>&lt;button&gt;</code> otherwise) with <code>aria-label</code> matching the area&rsquo;s <code>label</code> attribute. The SVG overlay is <code>aria-hidden</code> &mdash; it handles only pointer hit-testing. The tooltip uses <code>role=&quot;tooltip&quot;</code> and <code>aria-live=&quot;polite&quot;</code> for screen reader announcements.</p>
+  <p>The host element uses <code>role=&quot;group&quot;</code> with an <code>aria-label</code> derived from the image alt text.</p>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <code-block language="html" show-lines label="Without JavaScript">{{ fallbackCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Touch Behaviour</h2>
+  <p>On touch devices with <code>tooltip=&quot;hover&quot;</code>, a two-tap pattern is used: the first tap shows the tooltip, the second tap navigates (if <code>href</code> is set). For <code>tooltip=&quot;click&quot;</code>, tapping toggles the tooltip on/off. Press <kbd>Escape</kbd> or tap elsewhere to dismiss.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/tooltip/">tool-tip</a> &mdash; General-purpose tooltip component</li>
+    <li><a href="/docs/elements/web-components/geo-map/">geo-map</a> &mdash; Interactive geographic maps</li>
+    <li><a href="/docs/elements/web-components/comparison/">compare-surface</a> &mdash; Before/after image comparison</li>
+    <li><a href="/docs/elements/native/map/">map</a> &mdash; Native HTML image map (pixel-based)</li>
+    <li><a href="/docs/elements/native/area/">area</a> &mdash; Native HTML area element</li>
+  </ul>
+</section>

@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "rt"
-description: "Specifies the ruby text (annotation) in a ruby annotation."
+description: "Specifies the ruby text (annotation) in a ruby annotation, providing pronunciation or other guidance above base text."
 elementName: rt
 category: native
 nativeGroup: Text Semantics
@@ -22,92 +22,72 @@ permalink: /docs/elements/native/rt/
   字 <rt>じ</rt>
 </ruby>{% endset %}
 
-{% set styledRtCode %}<style>
-  rt {
-    font-size: 0.5em;
-    color: #666;
-    font-style: normal;
-  }
-</style>
-
-<ruby>
-  日本語 <rt>にほんご</rt>
-</ruby>{% endset %}
-
 {% set pinyinRtCode %}<ruby>
   中文 <rt>zhōngwén</rt>
 </ruby>{% endset %}
 
+{% set rtCssCode %}rt {
+  font-size: 0.5em;
+  line-height: 1;
+  ruby-align: center;
+}
+
+/* CJK script font for ruby text */
+:lang(ja) rt, :lang(zh) rt, :lang(ko) rt {
+  font-family: var(--font-cjk);
+}{% endset %}
+
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;rt&gt;</code> element specifies the ruby text component of a ruby annotation. This is the small text that appears above (or beside) the base text to provide pronunciation or other annotation. It must be contained within a <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> element.</p>
+    <p>The <code>&lt;rt&gt;</code> element specifies the ruby text &mdash; the small annotation that appears above (or beside) base text. It must be contained within a <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> element.</p>
+    <p>VB styles <code>&lt;rt&gt;</code> at <code>0.5em</code> font size with centered alignment, and applies CJK script fonts when inside a CJK language context. The <a href="/docs/i18n/">i18n system</a> can control <code>&lt;rt&gt;</code> visibility via <code>data-ruby</code> on <code>&lt;html&gt;</code>.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <ruby>
-        漢字 <rt>かんじ</rt>
-      </ruby>
-    </div>
-    <code-block language="html" label="Basic rt example">{{ basicRtCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Inside <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> to provide pronunciation guides</li>
+      <li>Japanese furigana (hiragana readings for kanji)</li>
+      <li>Chinese pinyin (romanized pronunciation)</li>
+      <li>Pronunciation guides for words in any language</li>
+    </ul>
   </section>
 
   <section>
-    <h2>With Fallback Parentheses</h2>
-    <p>Use <code>&lt;rp&gt;</code> elements to provide fallback parentheses for browsers that don't support ruby:</p>
-    <div class="example">
-      <ruby>
-        東京 <rp>(</rp><rt>とうきょう</rt><rp>)</rp>
-      </ruby>
-    </div>
-    <code-block language="html" label="RT with fallback">{{ withRpCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/ruby-annotations.html" url="ruby-annotations.html" title="Ruby text examples" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic rt">{{ basicRtCode | escape }}</code-block>
+    <code-block language="html" show-lines label="With fallback parentheses">{{ withRpCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Per-character annotations">{{ individualRtCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Pinyin annotation">{{ pinyinRtCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Individual Character Annotations</h2>
-    <p>Each character can have its own ruby text:</p>
-    <div class="example">
-      <ruby>
-        漢 <rt>かん</rt>
-        字 <rt>じ</rt>
-      </ruby>
-    </div>
-    <code-block language="html" label="Individual annotations">{{ individualRtCode | escape }}</code-block>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="rt CSS">{{ rtCssCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Pinyin Annotations</h2>
-    <p>Ruby text is also used for Chinese pinyin:</p>
-    <div class="example">
-      <ruby>
-        中文 <rt>zhōngwén</rt>
-      </ruby>
-    </div>
-    <code-block language="html" label="Pinyin annotation">{{ pinyinRtCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Styling Ruby Text</h2>
-    <p>The <code>&lt;rt&gt;</code> element can be styled with CSS:</p>
-    <code-block language="css" label="Styled rt">{{ styledRtCode | escape }}</code-block>
-    <p>Common styling adjustments include font size, color, and position.</p>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Visibility Control</h2>
+    <p>The <a href="/docs/i18n/">i18n system</a> provides <code>data-ruby</code> on <code>&lt;html&gt;</code> to control when <code>&lt;rt&gt;</code> annotations display: <code>show</code> (always), <code>hide</code> (visually hidden but accessible), or <code>auto</code> (CJK languages only). See the <a href="/docs/elements/native/ruby/">ruby element page</a> for details.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Screen readers handle ruby text differently. Some may read the base text followed by the ruby text, others may skip the ruby text or provide options for users to hear it. The ruby text is valuable for language learners and those who need pronunciation assistance.</p>
+    <ul>
+      <li>Screen readers may read base text followed by ruby text, or offer options to hear annotations</li>
+      <li>Ruby text is valuable for language learners and those with reading difficulties</li>
+      <li>When <code>data-ruby="hide"</code> is used, <code>&lt;rt&gt;</code> is visually hidden but remains in the DOM for screen readers</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> - Parent element for ruby annotations</li>
-      <li><a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a> - Fallback parentheses</li>
+      <li><a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a> &mdash; Parent element for ruby annotations (required)</li>
+      <li><a href="/docs/elements/native/rp/"><code>&lt;rp&gt;</code></a> &mdash; Fallback parentheses for non-supporting browsers</li>
+      <li><a href="/docs/i18n/">Internationalization guide</a> &mdash; Ruby visibility control, script-specific typography</li>
     </ul>
   </section>

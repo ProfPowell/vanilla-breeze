@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "q"
-description: "Represents an inline quotation."
+description: "Represents an inline quotation with locale-aware quotation marks via VB's i18n system."
 elementName: q
 category: native
 nativeGroup: Text Semantics
@@ -20,85 +20,118 @@ permalink: /docs/elements/native/q/
   He asked, <q>Did she really say <q>I'll be there</q>?</q>
 </p>{% endset %}
 
-{% set languageQCode %}<p>
-  The French phrase <q lang="fr">C'est la vie</q> means "That's life."
-</p>{% endset %}
+{% set localeCode %}<p lang="en">English: <q>Hello</q></p>
+<p lang="de">German: <q>Hallo</q></p>
+<p lang="fr">French: <q>Bonjour</q></p>
+<p lang="ja">Japanese: <q>こんにちは</q></p>{% endset %}
+
+{% set qCssCode %}q { quotes: "\201C" "\201D" "\2018" "\2019"; }  /* English "..." '...' */
+
+:lang(de) q { quotes: "\201E" "\201C" "\201A" "\2018"; }  /* German „..." */
+:lang(fr) q { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; }  /* French «...» */
+:lang(ja) q { quotes: "\300C" "\300D" "\300E" "\300F"; }  /* Japanese 「...」 */
+:lang(ru) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }  /* Russian «...» */
+
+q::before { content: open-quote; }
+q::after  { content: close-quote; }{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;q&gt;</code> element indicates that the enclosed text is a short inline quotation. Most modern browsers implement this by surrounding the text in quotation marks. This element is intended for short quotations that don't require paragraph breaks; for longer quotations use the <a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> element.</p>
+    <p>The <code>&lt;q&gt;</code> element marks an inline quotation. The browser inserts quotation marks automatically via CSS <code>quotes</code>. VB's <a href="/docs/i18n/">i18n system</a> provides locale-specific quotation marks for 11+ languages &mdash; English, German, French, Italian, Spanish, Portuguese, Polish, Japanese, Chinese, Korean, Russian, and Arabic.</p>
+    <p>For longer quotations that require paragraph breaks, use <a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a>.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>She said <q>Hello, world!</q> and smiled.</p>
-    </div>
-    <code-block language="html" label="Basic q example">{{ basicQCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Short quotations:</strong> Quotes within running text</li>
+      <li><strong>Attributed speech:</strong> "She said..." patterns</li>
+      <li><strong>Multilingual content:</strong> Quotes that need locale-correct marks</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For long, block-level quotations &mdash; use <a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a></li>
+      <li>For titles of works &mdash; use <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a></li>
+      <li>For scare quotes or air quotes &mdash; type the quote characters directly</li>
+    </ul>
   </section>
 
   <section>
-    <h2>With Citation</h2>
-    <p>The <code>cite</code> attribute provides a URL for the source of the quotation:</p>
-    <div class="example">
-      <p>
-        According to the documentation,
-        <q cite="https://example.com/docs">this feature is experimental</q>.
-      </p>
-    </div>
-    <code-block language="html" label="Q with cite attribute">{{ citedQCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/q-examples.html" url="q-examples.html" title="Inline quotations" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic quotation">{{ basicQCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Nested quotation">{{ nestedQCode | escape }}</code-block>
+    <code-block language="html" show-lines label="With cite attribute">{{ citedQCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Nested Quotations</h2>
-    <p>Browsers will alternate between single and double quotation marks for nested quotes:</p>
-    <div class="example">
-      <p>
-        He asked, <q>Did she really say <q>I'll be there</q>?</q>
-      </p>
-    </div>
-    <code-block language="html" label="Nested quotations">{{ nestedQCode | escape }}</code-block>
+    <h2>Locale-Aware Quotes</h2>
+    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets the CSS <code>quotes</code> property per language using <code>:lang()</code> selectors. Set <code>lang</code> on the element or any ancestor and the correct quotation marks appear automatically.</p>
+
+    <code-block language="html" show-lines label="Locale examples">{{ localeCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Outer</th>
+          <th>Inner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>English (US)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>English (GB, AU, NZ)</td><td>&lsquo;...&rsquo;</td><td>&ldquo;...&rdquo;</td></tr>
+        <tr><td>German</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
+        <tr><td>French</td><td>&laquo;&#x202F;...&#x202F;&raquo;</td><td>&lsaquo;&#x202F;...&#x202F;&rsaquo;</td></tr>
+        <tr><td>Japanese / Chinese</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+        <tr><td>Russian</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
+        <tr><td>Arabic</td><td>&laquo;...&raquo;</td><td>&lsquo;...&rsquo;</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>With Language Attribute</h2>
-    <p>Use the <code>lang</code> attribute to specify the language of the quotation. Browsers may use language-appropriate quotation marks:</p>
-    <div class="example">
-      <p>
-        The French phrase <q lang="fr">C'est la vie</q> means "That's life."
-      </p>
-    </div>
-    <code-block language="html" label="Q with language">{{ languageQCode | escape }}</code-block>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Locale-aware quotes CSS">{{ qCssCode | escape }}</code-block>
+    <p>French quotes include narrow non-breaking spaces (<code>\202F</code>) inside the guillemets, matching French typographic convention.</p>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <table>
+    <table class="props-table">
       <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Attribute</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>cite</code></td>
-          <td>A URL pointing to the source of the quotation</td>
+          <td>URL pointing to the source of the quotation (not displayed, but available to scripts)</td>
+        </tr>
+        <tr>
+          <td><code>lang</code></td>
+          <td>Language of the quotation &mdash; drives locale-appropriate quote marks</td>
         </tr>
       </tbody>
     </table>
-    <p>This element also supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Screen readers typically announce the quotation marks that browsers add around <code>&lt;q&gt;</code> content. The semantic markup helps convey that the text is a quotation rather than regular content.</p>
+    <ul>
+      <li>Screen readers typically announce the quotation marks the browser inserts</li>
+      <li>The semantic markup distinguishes quoted text from regular content</li>
+      <li>Nested quotes alternate between outer and inner quote styles</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> - For longer, block-level quotations</li>
-      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> - For citing the title of a work</li>
+      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> &mdash; For longer, block-level quotations</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; For citing the title of a work</li>
+      <li><a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> &mdash; For isolating quoted text in mixed-direction contexts</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Full i18n reference with quote tables for all supported languages</li>
     </ul>
   </section>

@@ -1,0 +1,272 @@
+---
+layout: layouts/element.njk
+title: "h1–h6"
+description: "Heading elements define the hierarchical structure of a document. Six levels from h1 (most important) to h6 (least), used for titles, sections, and content organization."
+elementName: headings
+category: native
+nativeGroup: Headings
+currentPath: /docs/elements/native/headings/
+permalink: /docs/elements/native/headings/
+---
+
+{% set scaleCode %}<h1>Heading Level 1</h1>
+<h2>Heading Level 2</h2>
+<h3>Heading Level 3</h3>
+<h4>Heading Level 4</h4>
+<h5>Heading Level 5</h5>
+<h6>Heading Level 6</h6>{% endset %}
+
+{% set hierarchyCode %}<article>
+  <h1>The History of Typography</h1>
+  <p>Typography has evolved over centuries...</p>
+
+  <h2>Early Printing</h2>
+  <p>Gutenberg's movable type press...</p>
+
+  <h3>The Gutenberg Bible</h3>
+  <p>Printed around 1455...</p>
+
+  <h2>Modern Typography</h2>
+  <p>The digital revolution brought new possibilities...</p>
+
+  <h3>Variable Fonts</h3>
+  <p>A single font file with multiple variations...</p>
+
+  <h3>System Font Stacks</h3>
+  <p>Using native fonts for performance...</p>
+</article>{% endset %}
+
+{% set headingLinksCode %}<heading-links>
+  <h2>Getting Started</h2>
+  <p>Install Vanilla Breeze and start building.</p>
+
+  <h3>Installation</h3>
+  <p>Add the stylesheet and script to your page.</p>
+
+  <h3>Configuration</h3>
+  <p>Customize tokens and theme settings.</p>
+
+  <h2>Components</h2>
+  <p>Explore the available components.</p>
+</heading-links>{% endset %}
+
+{% set pageTocCode %}<page-toc></page-toc>
+
+<!-- Auto-generates a table of contents from h2/h3
+     headings within <main>. Uses IntersectionObserver
+     for scroll-spy highlighting. -->{% endset %}
+
+{% set ornamentCode %}/* Theme file — add decorative glyphs before headings */
+:root {
+  --heading-ornament-before: "§ ";
+}
+
+/* Per-level overrides */
+:root {
+  --h1-ornament-before: "❧ ";
+  --h2-ornament-before: "§ ";
+  --h3-ornament-before: "› ";
+}{% endset %}
+
+{% set cssCode %}h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  text-wrap: balance;
+  font-variant-numeric: lining-nums;
+  hyphens: none;
+}
+
+h1 {
+  font-size: var(--font-size-4xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+h2 {
+  font-size: var(--font-size-3xl);
+  letter-spacing: -0.01em;
+}
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-md); font-weight: 700; }{% endset %}
+
+{% set hgroupCode %}<hgroup>
+  <h2>Progressive Enhancement</h2>
+  <p>Building resilient interfaces that work
+  for everyone.</p>
+</hgroup>
+
+<!-- Variants: .eyebrow, .byline, .section-header,
+     .display, .centered, .reversed, .divided -->{% endset %}
+
+  <section>
+    <h2>Heading Scale</h2>
+    <p>VB provides six heading levels, each mapped to a font-size token. All headings share <code>font-weight: 600</code>, <code>text-wrap: balance</code>, lining numerals, and disabled hyphenation.</p>
+
+    <browser-window src="/docs/snippets/demos/headings-scale.html" url="https://vanilla-breeze.dev/headings/scale" title="Heading scale" shadow></browser-window>
+    <code-block language="html" label="Heading scale">{{ scaleCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Font Size Token</th>
+          <th>Computed</th>
+          <th>Letter Spacing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;h1&gt;</code></td>
+          <td><code>--font-size-4xl</code></td>
+          <td>2.25rem (36px)</td>
+          <td><code>-0.025em</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;h2&gt;</code></td>
+          <td><code>--font-size-3xl</code></td>
+          <td>1.875rem (30px)</td>
+          <td><code>-0.01em</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;h3&gt;</code></td>
+          <td><code>--font-size-2xl</code></td>
+          <td>1.5rem (24px)</td>
+          <td>normal</td>
+        </tr>
+        <tr>
+          <td><code>&lt;h4&gt;</code></td>
+          <td><code>--font-size-xl</code></td>
+          <td>1.25rem (20px)</td>
+          <td>normal</td>
+        </tr>
+        <tr>
+          <td><code>&lt;h5&gt;</code></td>
+          <td><code>--font-size-lg</code></td>
+          <td>1.125rem (18px)</td>
+          <td>normal</td>
+        </tr>
+        <tr>
+          <td><code>&lt;h6&gt;</code></td>
+          <td><code>--font-size-md</code></td>
+          <td>1rem (16px)</td>
+          <td>normal</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>h1 and h2 get tighter letter-spacing (tracking) because large text has more apparent whitespace between characters. h6 uses <code>font-weight: 700</code> instead of 600 for visual differentiation at body-text size.</p>
+  </section>
+
+  <section>
+    <h2>Document Hierarchy</h2>
+    <p>Headings create the document outline. Use them in order without skipping levels &mdash; an <code>&lt;h3&gt;</code> should always follow an <code>&lt;h2&gt;</code>, never an <code>&lt;h1&gt;</code> directly.</p>
+
+    <browser-window src="/docs/snippets/demos/headings-in-article.html" url="https://vanilla-breeze.dev/headings/hierarchy" title="Heading hierarchy in article" shadow></browser-window>
+    <code-block language="html" label="Heading hierarchy">{{ hierarchyCode | escape }}</code-block>
+
+    <p><strong>Rule of thumb:</strong> Each page should have exactly one <code>&lt;h1&gt;</code>. Sections use <code>&lt;h2&gt;</code>. Subsections use <code>&lt;h3&gt;</code>. Levels 4&ndash;6 are for fine-grained structure within long documents.</p>
+  </section>
+
+  <section>
+    <h2>Heading Links</h2>
+    <p>Wrap content in the <a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a> web component to add hover-reveal anchor links to headings. It auto-generates <code>id</code> attributes from heading text and supports click-to-copy URL.</p>
+
+    <browser-window src="/docs/snippets/demos/headings-with-links.html" url="https://vanilla-breeze.dev/headings/links" title="Heading links" shadow></browser-window>
+    <code-block language="html" label="Heading links">{{ headingLinksCode | escape }}</code-block>
+
+    <p>By default, <code>&lt;heading-links&gt;</code> processes <code>h2</code> and <code>h3</code>. Use <code>data-levels="h2,h3,h4"</code> to include additional levels.</p>
+  </section>
+
+  <section>
+    <h2>Table of Contents</h2>
+    <p>The <a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> web component auto-generates a table of contents from headings with scroll-spy highlighting. It pairs with <code>&lt;heading-links&gt;</code> which provides the heading IDs.</p>
+
+    <code-block language="html" label="Page table of contents">{{ pageTocCode | escape }}</code-block>
+
+    <p>Both components default to <code>h2</code> and <code>h3</code> because <code>h1</code> is the page title (not a section) and <code>h4&ndash;h6</code> are too granular for most navigation.</p>
+  </section>
+
+  <section>
+    <h2>Theme Ornament Hooks</h2>
+    <p>Themes can add decorative glyphs before or after headings using CSS custom properties. These tokens are theme-controlled &mdash; the base VB stylesheet sets them to <code>none</code>.</p>
+
+    <browser-window src="/docs/snippets/demos/headings-ornaments.html" url="https://vanilla-breeze.dev/headings/ornaments" title="Heading ornaments" shadow></browser-window>
+    <code-block language="css" label="Theme ornament tokens">{{ ornamentCode | escape }}</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Scope</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--heading-ornament-before</code></td>
+          <td>All headings (h1&ndash;h6)</td>
+        </tr>
+        <tr>
+          <td><code>--heading-ornament-after</code></td>
+          <td>All headings (h1&ndash;h6)</td>
+        </tr>
+        <tr>
+          <td><code>--h1-ornament-before</code> / <code>after</code></td>
+          <td>h1 only (overrides global)</td>
+        </tr>
+        <tr>
+          <td><code>--h2-ornament-before</code> / <code>after</code></td>
+          <td>h2 only (overrides global)</td>
+        </tr>
+        <tr>
+          <td><code>--h3-ornament-before</code> / <code>after</code></td>
+          <td>h3 only (overrides global)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Typography Features</h2>
+    <p>Headings include several typographic refinements applied automatically:</p>
+    <ul>
+      <li><strong><code>font-variant-numeric: lining-nums</code></strong> &mdash; Numbers align with capital letters rather than descending like oldstyle numerals</li>
+      <li><strong><code>hyphens: none</code></strong> &mdash; Headings are never hyphenated, even when the parent has <code>hyphens: auto</code></li>
+      <li><strong><code>text-wrap: balance</code></strong> &mdash; Text distributes evenly across lines, preventing short orphan lines</li>
+      <li><strong><code>letter-spacing</code></strong> &mdash; h1 and h2 get tighter tracking at large sizes for better visual density</li>
+    </ul>
+
+    <code-block language="css" label="Heading CSS">{{ cssCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Heading Groups</h2>
+    <p>Use <a href="/docs/elements/native/hgroup/"><code>&lt;hgroup&gt;</code></a> to pair a heading with a subtitle, eyebrow label, byline, or other secondary text. Only the heading contributes to the document outline.</p>
+
+    <code-block language="html" label="Heading group">{{ hgroupCode | escape }}</code-block>
+
+    <p>See the <a href="/docs/elements/native/hgroup/">hgroup documentation</a> for all variants including <code>.eyebrow</code>, <code>.byline</code>, <code>.section-header</code>, and <code>.display</code>.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>One h1 per page</strong> &mdash; The page title. Screen readers use it as the primary landmark</li>
+      <li><strong>Sequential levels</strong> &mdash; Never skip levels (h1 &rarr; h3). Screen reader users navigate by heading level</li>
+      <li><strong>Descriptive text</strong> &mdash; Headings should summarize the section content. Avoid generic text like "Section 1"</li>
+      <li><strong>Don't use for styling</strong> &mdash; Choose heading level by hierarchy, not visual size. Use CSS to adjust appearance</li>
+      <li><strong>heading-links</strong> &mdash; The anchor links added by <code>&lt;heading-links&gt;</code> include descriptive <code>aria-label</code> attributes</li>
+      <li><strong>Heading count</strong> &mdash; Screen readers can list all headings on a page. Well-structured headings serve as an alternative navigation method</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related Elements</h2>
+    <ul>
+      <li><a href="/docs/elements/native/hgroup/"><code>&lt;hgroup&gt;</code></a> &mdash; Pair headings with subtitles, eyebrow labels, or bylines</li>
+      <li><a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a> &mdash; Add anchor links to headings with auto-generated IDs</li>
+      <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; Auto-generate table of contents from headings with scroll-spy</li>
+      <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> &mdash; Self-contained content that typically starts with a heading</li>
+      <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> &mdash; Thematic grouping identified by its heading</li>
+      <li><a href="/docs/typography/">Typography</a> &mdash; Lining numerals, letter-spacing, and other typographic refinements</li>
+    </ul>
+  </section>

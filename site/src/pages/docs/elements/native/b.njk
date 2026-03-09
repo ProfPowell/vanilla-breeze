@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "b"
-description: "Draws attention to text without conveying extra importance."
+description: "Draws attention to text without conveying extra importance. Used for keywords, product names, or lead text in article summaries."
 elementName: b
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,177 @@ currentPath: /docs/elements/native/b/
 permalink: /docs/elements/native/b/
 ---
 
-{% set basicExample %}<b>...</b>{% endset %}
+{% set basicBoldCode %}<p>A <b>product name</b> in a review.</p>
+<p>A <b>keyword</b> in a paragraph summary.</p>
+<p>The <b>lead sentence</b> of a news article.</p>{% endset %}
+
+{% set strongVsBCode %}<!-- b: draw attention, no semantic importance -->
+<p>Try the <b>Classic Burger</b> — our most popular item.</p>
+
+<!-- strong: convey importance or urgency -->
+<p><strong>Warning:</strong> This action cannot be undone.</p>{% endset %}
+
+{% set boldInCodeCode %}<pre><code>const result = <b>calculateTotal</b>(items);
+console.log(<strong>result</strong>);</code></pre>{% endset %}
+
+{% set combinedCode %}<p>Nested bold and italic combine properly:</p>
+<p><b><i>bold italic via b+i</i></b></p>
+<p><strong><em>bold italic via strong+em</em></strong></p>{% endset %}
+
+{% set boldCssCode %}strong, b {
+  font-weight: 600;
+  font-synthesis: none;     /* prevent faux bold */
+  font-optical-sizing: auto;
+}
+
+/* Combined bold + italic */
+:where(b i, i b, strong em, em strong) {
+  font-weight: 600;
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Bold in code — highlight background instead of just weight */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}
+
+/* Italic in blockquote — de-emphasize */
+:where(blockquote) :where(i, em) {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;b&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;b&gt;</code> element draws attention to text without conveying extra importance or urgency. It is styled with <code>font-weight: 600</code> and includes typographic refinements: <code>font-synthesis: none</code> prevents faux bold in fonts that lack a bold weight, and <code>font-optical-sizing: auto</code> enables optical size adjustments.</p>
+
+    <p>In Vanilla Breeze, <code>&lt;b&gt;</code> also has special behavior inside code blocks &mdash; bold text gets a subtle highlight background instead of relying on weight alone, which is more visible in monospace fonts.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <b>Example b content</b>
-    </div>
-    <code-block language="html" label="Basic b example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Product names</strong> in reviews or listings</li>
+      <li><strong>Keywords</strong> in paragraph summaries or abstracts</li>
+      <li><strong>Lead sentences</strong> in news articles</li>
+      <li><strong>UI labels</strong> that need visual weight without semantic emphasis</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For important or urgent text &mdash; use <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a></li>
+      <li>For emphasis that changes meaning &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
+      <li>For headings &mdash; use <code>&lt;h1&gt;</code>&ndash;<code>&lt;h6&gt;</code></li>
+      <li>Purely for visual styling &mdash; use CSS <code>font-weight</code> instead</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>b vs strong</h2>
+    <p>Both render as bold, but they carry different semantics:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Semantics</th>
+          <th>Screen Reader Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;b&gt;</code></td>
+          <td>Draw attention &mdash; no extra importance</td>
+          <td>Not announced differently</td>
+        </tr>
+        <tr>
+          <td><code>&lt;strong&gt;</code></td>
+          <td>Strong importance or urgency</td>
+          <td>May be announced with emphasis</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="b vs strong usage">{{ strongVsBCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/b-and-strong.html" url="b-and-strong.html" title="Bold and strong" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Use cases for b">{{ basicBoldCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Bold in Code Blocks</h2>
+    <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, bold text gets a subtle highlight background (using <code>var(--color-interactive)</code> at 12% opacity) instead of relying on font weight alone. This is more visible in monospace fonts where weight differences can be subtle.</p>
+
+    <code-block language="html" show-lines label="Bold highlighting in code">{{ boldInCodeCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Combined Bold + Italic</h2>
+    <p>When <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> (or <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code>) are nested, VB ensures the combined style renders correctly with <code>font-synthesis: none</code> to prevent browser-generated faux bold-italic.</p>
+
+    <code-block language="html" show-lines label="Combined bold and italic">{{ combinedCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Bold and italic CSS">{{ boldCssCode | escape }}</code-block>
+
+    <h3>Key Styling Features</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Implementation</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>font-synthesis: none</code></td>
+          <td>Applied to b, strong, i, em</td>
+          <td>Prevents browser from generating faux bold/italic glyphs</td>
+        </tr>
+        <tr>
+          <td><code>font-optical-sizing: auto</code></td>
+          <td>Applied to b, strong</td>
+          <td>Enables optical size adjustments in variable fonts</td>
+        </tr>
+        <tr>
+          <td>Code highlight</td>
+          <td><code>background-color</code> in code/pre</td>
+          <td>More visible bold in monospace contexts</td>
+        </tr>
+        <tr>
+          <td>Blockquote italic reset</td>
+          <td><code>font-style: normal</code> in blockquote</td>
+          <td>Prevents double-emphasis (blockquote offset + italic)</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;b&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><code>&lt;b&gt;</code> does not convey importance to screen readers &mdash; it is purely visual</li>
+      <li>For text that must be announced with emphasis, use <code>&lt;strong&gt;</code> instead</li>
+      <li>Do not rely on bold alone to convey meaning &mdash; combine with context or additional markup</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Strong importance (announced by screen readers)</li>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; Emphasis that changes meaning</li>
+      <li><a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> &mdash; Alternate voice (technical terms, thoughts, ship names)</li>
+      <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a> &mdash; Highlight for relevance (search results, references)</li>
+    </ul>
   </section>

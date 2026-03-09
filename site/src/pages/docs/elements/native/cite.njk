@@ -15,70 +15,88 @@ permalink: /docs/elements/native/cite/
   <blockquote>
     <p>It was the best of times, it was the worst of times.</p>
   </blockquote>
-  <figcaption>— Charles Dickens, <cite>A Tale of Two Cities</cite></figcaption>
+  <figcaption>&mdash; Charles Dickens, <cite>A Tale of Two Cities</cite></figcaption>
 </figure>{% endset %}
 
-{% set multipleCiteCode %}<p>
-  Classic works like <cite>Pride and Prejudice</cite>,
-  <cite>1984</cite>, and <cite>To Kill a Mockingbird</cite>
-  continue to influence modern literature.
-</p>{% endset %}
+{% set quotedCiteCode %}<p>I watched <cite class="quoted">The Shawshank Redemption</cite> last night.</p>
+<p>The article <cite class="quoted">Why CSS is Awesome</cite> changed my perspective.</p>{% endset %}
+
+{% set citeCssCode %}cite {
+  font-style: italic;
+}
+
+/* Quoted variant — adds typographic quotes */
+cite.quoted::before {
+  content: "\201C"; /* left double quote */
+}
+
+cite.quoted::after {
+  content: "\201D"; /* right double quote */
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;cite&gt;</code> element represents the title of a creative work such as a book, paper, essay, poem, score, song, script, film, TV show, game, sculpture, painting, theatre production, play, opera, musical, exhibition, legal case report, computer program, website, web page, blog post, or comment.</p>
-    <p>The element should only contain the title of the work, not the author's name (though you can include the author nearby).</p>
+    <p>The <code>&lt;cite&gt;</code> element represents the title of a creative work: a book, paper, essay, poem, song, film, TV show, game, painting, musical, exhibition, legal case, website, or blog post. It is rendered in italic by default.</p>
+    <p>The element should contain only the title of the work, not the author's name (though the author can appear nearby).</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <p>My favorite book is <cite>The Great Gatsby</cite> by F. Scott Fitzgerald.</p>
-    </div>
-    <code-block language="html" label="Basic cite example">{{ basicCiteCode | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Book titles:</strong> <cite>The Great Gatsby</cite></li>
+      <li><strong>Film/TV:</strong> <cite>Inception</cite>, <cite>Breaking Bad</cite></li>
+      <li><strong>Music:</strong> Album titles like <cite>Abbey Road</cite></li>
+      <li><strong>Art:</strong> <cite>Starry Night</cite>, <cite>The Thinker</cite></li>
+      <li><strong>Games:</strong> <cite>The Legend of Zelda</cite></li>
+      <li><strong>Attribution:</strong> Inside <code>&lt;figcaption&gt;</code> for blockquote sources</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For author names alone &mdash; use plain text or <code>&lt;b&gt;</code></li>
+      <li>For inline quotations &mdash; use <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a></li>
+      <li>For emphasis &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
+    </ul>
   </section>
 
   <section>
-    <h2>With Blockquote</h2>
-    <p>A common pattern is using <code>&lt;cite&gt;</code> with blockquotes to attribute the source:</p>
-    <div class="example">
-      <figure>
-        <blockquote>
-          <p>It was the best of times, it was the worst of times.</p>
-        </blockquote>
-        <figcaption>— Charles Dickens, <cite>A Tale of Two Cities</cite></figcaption>
-      </figure>
-    </div>
-    <code-block language="html" label="Cite with blockquote">{{ blockquoteCiteCode | escape }}</code-block>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/cite-examples.html" url="cite-examples.html" title="Citation examples" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Inline citation">{{ basicCiteCode | escape }}</code-block>
+    <code-block language="html" show-lines label="With blockquote and figcaption">{{ blockquoteCiteCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Multiple Citations</h2>
-    <div class="example">
-      <p>
-        Classic works like <cite>Pride and Prejudice</cite>,
-        <cite>1984</cite>, and <cite>To Kill a Mockingbird</cite>
-        continue to influence modern literature.
-      </p>
-    </div>
-    <code-block language="html" label="Multiple citations">{{ multipleCiteCode | escape }}</code-block>
+    <h2>Variants</h2>
+
+    <h3><code>.quoted</code></h3>
+    <p>Adds typographic double quotes around the title via CSS <code>::before</code> and <code>::after</code>. Useful when house style requires titles in quotes rather than (or in addition to) italics.</p>
+
+    <code-block language="html" show-lines label="Quoted cite variant">{{ quotedCiteCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Cite CSS">{{ citeCssCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The <code>&lt;cite&gt;</code> element has no special accessibility role. Screen readers will typically render the text in italics visually but may not announce it differently. The semantic meaning helps search engines and other tools understand that the text is a title.</p>
+    <ul>
+      <li><code>&lt;cite&gt;</code> has no special ARIA role &mdash; screen readers render it as italic text</li>
+      <li>The semantic meaning helps search engines understand the text is a title</li>
+      <li>The italic styling provides a visual convention familiar to readers</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> - For longer quotations</li>
-      <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> - For inline quotations</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - For self-contained content with optional caption</li>
+      <li><a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a> &mdash; For longer quotations (cite provides the source title)</li>
+      <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> &mdash; For inline quotations with locale-aware quote marks</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; For self-contained content with optional <code>&lt;figcaption&gt;</code></li>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; For emphasis (not titles)</li>
+      <li><a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> &mdash; For alternate voice text (taxonomic names, thoughts)</li>
     </ul>
   </section>

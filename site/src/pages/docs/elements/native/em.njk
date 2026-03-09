@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "em"
-description: "Marks text with stress emphasis, typically rendered as italic."
+description: "Marks text with stress emphasis that changes the meaning of a sentence. Rendered as italic with font-synthesis protection."
 elementName: em
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,140 @@ currentPath: /docs/elements/native/em/
 permalink: /docs/elements/native/em/
 ---
 
-{% set basicExample %}<em>...</em>{% endset %}
+{% set stressCode %}<p>I <em>love</em> chocolate.</p>
+<p>I love <em>chocolate</em>.</p>{% endset %}
+
+{% set nestedCode %}<p>This is <em>really <em>very</em> important</em>.</p>{% endset %}
+
+{% set emVsICode %}<!-- em: stress emphasis (changes meaning) -->
+<p>Do <em>not</em> press that button.</p>
+
+<!-- i: alternate voice (no meaning change) -->
+<p>The word <i lang="la">persona</i> is Latin for "mask."</p>{% endset %}
+
+{% set blockquoteCode %}<!-- In blockquotes, em is de-emphasized -->
+<blockquote>
+  <p>In VB, <em>italic text</em> inside a blockquote becomes
+  normal-style with medium weight instead.</p>
+</blockquote>{% endset %}
+
+{% set combinedCode %}<p><strong><em>Bold italic via strong+em</em></strong></p>
+<p><b><i>Bold italic via b+i</i></b></p>{% endset %}
+
+{% set emCssCode %}em, i {
+  font-style: italic;
+  font-synthesis: none;     /* prevent faux italic */
+  font-optical-sizing: auto;
+}
+
+/* Combined bold + italic */
+:where(b i, i b, strong em, em strong) {
+  font-weight: 600;
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Italic in blockquote — de-emphasize */
+:where(blockquote) :where(i, em) {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;em&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;em&gt;</code> element marks text with stress emphasis &mdash; the kind that changes the meaning of a sentence when spoken aloud. Moving the emphasis to a different word changes what the sentence communicates.</p>
+    <p>VB styles <code>&lt;em&gt;</code> with <code>font-synthesis: none</code> to prevent browsers from generating faux italic glyphs, and <code>font-optical-sizing: auto</code> for proper rendering in variable fonts.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <em>Example em content</em>
-    </div>
-    <code-block language="html" label="Basic em example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Stress emphasis:</strong> When the emphasis changes meaning &mdash; "I <em>love</em> chocolate" vs "I love <em>chocolate</em>"</li>
+      <li><strong>Corrective emphasis:</strong> "Do <em>not</em> press that button"</li>
+      <li><strong>Contrastive stress:</strong> "It's not the <em>what</em>, it's the <em>how</em>"</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For alternate voice, foreign words, thoughts, ship names &mdash; use <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a></li>
+      <li>For importance or urgency &mdash; use <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a></li>
+      <li>For defining terms &mdash; use <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a></li>
+      <li>For work titles &mdash; use <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a></li>
+      <li>Purely for visual styling &mdash; use CSS <code>font-style: italic</code></li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>em vs i</h2>
+    <p>Both render as italic, but carry different semantics:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Semantics</th>
+          <th>Screen Reader</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;em&gt;</code></td>
+          <td>Stress emphasis &mdash; changes meaning</td>
+          <td>May be announced with emphasis</td>
+        </tr>
+        <tr>
+          <td><code>&lt;i&gt;</code></td>
+          <td>Alternate voice &mdash; no meaning change</td>
+          <td>Not announced differently</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="em vs i usage">{{ emVsICode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/em-and-i.html" url="em-and-i.html" title="Emphasis and alternate voice" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Stress emphasis">{{ stressCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Blockquote Behavior</h2>
+    <p>Inside <code>&lt;blockquote&gt;</code>, VB de-emphasizes italic text &mdash; <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> become normal-style with <code>font-weight: var(--font-weight-medium)</code>. This prevents double-emphasis, since the blockquote itself is already visually offset.</p>
+
+    <code-block language="html" show-lines label="Italic in blockquote">{{ blockquoteCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Combined Bold + Italic</h2>
+    <p>When <code>&lt;em&gt;</code> is nested inside <code>&lt;strong&gt;</code> (or vice versa), VB ensures the combined style renders correctly with <code>font-synthesis: none</code>:</p>
+    <code-block language="html" show-lines label="Combined bold and italic">{{ combinedCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="em and i CSS">{{ emCssCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;em&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Some screen readers announce <code>&lt;em&gt;</code> with a change in voice tone or pitch</li>
+      <li>This distinguishes it from <code>&lt;i&gt;</code> which is not announced differently</li>
+      <li>Nesting <code>&lt;em&gt;</code> increases the degree of emphasis</li>
+      <li>Do not rely on emphasis alone to convey critical meaning &mdash; combine with context</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> &mdash; Alternate voice (foreign words, thoughts, ship names)</li>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Strong importance or urgency</li>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Draw attention without importance</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Titles of creative works (also italic)</li>
+      <li><a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> &mdash; Defining instance of a term (italic + semi-bold)</li>
+    </ul>
   </section>

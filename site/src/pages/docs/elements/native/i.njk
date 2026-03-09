@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "i"
-description: "Represents text in an alternate voice, mood, or language."
+description: "Represents text in an alternate voice, mood, or language — foreign words, technical terms, thoughts, ship names, or taxonomic designations."
 elementName: i
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,122 @@ currentPath: /docs/elements/native/i/
 permalink: /docs/elements/native/i/
 ---
 
-{% set basicExample %}<i>...</i>{% endset %}
+{% set foreignCode %}<p>The word <i lang="la">persona</i> is Latin for "mask."</p>
+<p>In French, <i lang="fr">c'est la vie</i> means "that's life."</p>{% endset %}
+
+{% set thoughtCode %}<p>She thought, <i>this can't be happening</i>, as the screen went black.</p>{% endset %}
+
+{% set shipCode %}<p>The <i>USS Enterprise</i> set sail at dawn.</p>
+<p>The <i>Titanic</i> sank in 1912.</p>{% endset %}
+
+{% set taxonomyCode %}<p>The species <i>Tyrannosaurus rex</i> lived during the Cretaceous period.</p>
+<p>The common daisy (<i>Bellis perennis</i>) blooms in spring.</p>{% endset %}
+
+{% set iVsEmCode %}<!-- i: alternate voice (no meaning change) -->
+<p>The word <i lang="la">persona</i> is Latin for "mask."</p>
+
+<!-- em: stress emphasis (changes meaning) -->
+<p>I <em>love</em> chocolate. (not just "like")</p>{% endset %}
+
+{% set iCssCode %}em, i {
+  font-style: italic;
+  font-synthesis: none;     /* prevent faux italic */
+  font-optical-sizing: auto;
+}
+
+/* Italic in blockquote — de-emphasize */
+:where(blockquote) :where(i, em) {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;i&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;i&gt;</code> element represents text in an alternate voice, mood, or quality &mdash; a span of text that is offset from normal prose without conveying extra emphasis or importance. Common uses include foreign language phrases, technical terms, thoughts, and ship names.</p>
+    <p>VB styles <code>&lt;i&gt;</code> with <code>font-synthesis: none</code> to prevent faux italic glyphs and <code>font-optical-sizing: auto</code> for variable fonts. Inside blockquotes, italic is de-emphasized to prevent double visual offset.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <i>Example i content</i>
-    </div>
-    <code-block language="html" label="Basic i example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Foreign words:</strong> <i lang="la">et cetera</i>, <i lang="fr">c'est la vie</i> (add <code>lang</code> attribute)</li>
+      <li><strong>Thoughts:</strong> Internal monologue in fiction</li>
+      <li><strong>Ship names:</strong> <i>USS Enterprise</i>, <i>Titanic</i></li>
+      <li><strong>Taxonomic names:</strong> <i>Tyrannosaurus rex</i>, <i>Homo sapiens</i></li>
+      <li><strong>Technical terms:</strong> First use of a term in a non-definitional context</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For stress emphasis &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
+      <li>For importance &mdash; use <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a></li>
+      <li>For defining terms &mdash; use <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a></li>
+      <li>For work titles &mdash; use <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a></li>
+      <li>Purely for visual styling &mdash; use CSS <code>font-style: italic</code></li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/em-and-i.html" url="em-and-i.html" title="Alternate voice examples" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Foreign language">{{ foreignCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Internal thoughts">{{ thoughtCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Ship names">{{ shipCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Taxonomic designations">{{ taxonomyCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>i vs em</h2>
+    <p>Both render as italic, but they have different semantics:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Semantics</th>
+          <th>Screen Reader</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;i&gt;</code></td>
+          <td>Alternate voice &mdash; no meaning change</td>
+          <td>Not announced differently</td>
+        </tr>
+        <tr>
+          <td><code>&lt;em&gt;</code></td>
+          <td>Stress emphasis &mdash; changes meaning</td>
+          <td>May be announced with emphasis</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="i vs em usage">{{ iVsEmCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="i and em CSS">{{ iCssCode | escape }}</code-block>
+    <p>The blockquote reset prevents double visual offset &mdash; since the blockquote is already indented/styled, italic inside it uses <code>font-weight: medium</code> instead of <code>font-style: italic</code>.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;i&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><code>&lt;i&gt;</code> does not convey emphasis to screen readers &mdash; it is purely visual</li>
+      <li>For foreign words, always add the <code>lang</code> attribute so screen readers can switch pronunciation</li>
+      <li>Do not rely on italic alone to convey meaning &mdash; combine with context</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; Stress emphasis that changes meaning</li>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Draw attention without importance (bold counterpart to <code>&lt;i&gt;</code>)</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Titles of creative works (also italic)</li>
+      <li><a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> &mdash; Defining instance of a term (italic + semi-bold)</li>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Strong importance (bold counterpart to <code>&lt;em&gt;</code>)</li>
+    </ul>
   </section>

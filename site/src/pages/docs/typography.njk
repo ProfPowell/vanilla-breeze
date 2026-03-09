@@ -1,0 +1,322 @@
+---
+layout: layouts/docs.njk
+title: "Typography"
+description: "How Vanilla Breeze handles typographic refinement: font synthesis control, context-sensitive emphasis, sub/sup positioning, prose hyphenation, drop caps, heading tracking, and character tokens."
+currentPath: /docs/typography/
+permalink: /docs/typography/
+toc: true
+---
+
+{% set fontSynthesisExample %}strong, b {
+  font-weight: 600;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+}
+
+em, i {
+  font-style: italic;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+}{% endset %}
+
+{% set contextBoldExample %}<pre><code>The <strong>important</strong> part is highlighted.</code></pre>
+
+<blockquote>
+  <p>This quote contains <em>emphasis</em> that de-emphasizes gracefully.</p>
+</blockquote>{% endset %}
+
+{% set subSupExample %}<p>Water is H<sub>2</sub>O. Einstein's E=mc<sup>2</sup>.</p>
+
+<p>See footnote<sup class="footnote-ref"><a href="#fn1">1</a></sup>.</p>{% endset %}
+
+{% set dropCapExample %}<article data-drop-cap>
+  <p>Once upon a time, in a land far away, there lived a great
+  typographer who cared deeply about the first letter of every
+  paragraph...</p>
+</article>
+
+<!-- Or on a single paragraph -->
+<p data-drop-cap>The quick brown fox jumps over the lazy dog.</p>{% endset %}
+
+{% set hyphenationExample %}<html lang="en">
+<body>
+  <article class="blog">
+    <!-- Automatically hyphenates long words at line breaks -->
+    <p>The constitutionality of the telecommunications
+    infrastructure was unprecedented.</p>
+  </article>
+
+  <!-- Or use data-prose for non-blog articles -->
+  <article data-prose>
+    <p>Prose content with automatic hyphenation.</p>
+  </article>
+</body>
+</html>{% endset %}
+
+{% set headingExample %}<h1>Chapter 1: The Year 2025</h1>
+<!-- Lining numerals ensure "2025" aligns with capital letters -->
+<!-- letter-spacing: -0.025em tightens the large display text -->
+
+<h2>Section 3.2 — Implementation</h2>
+<!-- letter-spacing: -0.01em for h2 -->{% endset %}
+
+{% set charTokensExample %}/* Use in CSS content property */
+nav.breadcrumb li:not(:last-child)::after {
+  content: var(--sep-breadcrumb); /* > */
+}
+
+ul.inline li + li::before {
+  content: var(--sep-list); /* middle dot */
+}
+
+/* Keyboard shortcut display */
+kbd::before {
+  content: var(--key-cmd); /* Apple command symbol */
+}{% endset %}
+
+{% set lhTokenExample %}/* Vertical rhythm using --lh */
+.prose p + p {
+  margin-block-start: var(--lh); /* 1.5rem = one line height */
+}
+
+.prose h2 {
+  margin-block-start: calc(var(--lh) * 2); /* two line heights */
+}{% endset %}
+
+{% set boldItalicExample %}<p>This has <b><i>bold italic</i></b> text with proper synthesis control.</p>
+<p>This also works: <strong><em>strong emphasis</em></strong>.</p>{% endset %}
+
+{% set statusExample %}<span class="status" data-status="success">Deployed</span>
+<span class="status" data-status="warning">Pending review</span>
+<span class="status" data-status="error">Build failed</span>
+<span class="status" data-status="inactive">Offline</span>
+<span class="status" data-status="check">Tests passed</span>
+<span class="status" data-status="fail">Lint errors</span>{% endset %}
+
+{% set metaExample %}<ul class="meta">
+  <li><time datetime="2026-03-07">March 7, 2026</time></li>
+  <li>Thomas Powell</li>
+  <li>8 min read</li>
+  <li><a href="/tags/css">CSS</a></li>
+</ul>
+
+<!-- Separator variants -->
+<ul class="meta" data-separator="pipe">...</ul>
+<ul class="meta" data-separator="dash">...</ul>
+<ul class="meta" data-separator="slash">...</ul>{% endset %}
+
+{% set markerExample %}<ul data-marker="check">
+  <li>Task completed</li>
+  <li>All tests passing</li>
+</ul>
+
+<ul data-marker="arrow">
+  <li>Feature one</li>
+  <li>Feature two</li>
+</ul>{% endset %}
+
+{% set sectionNumbersExample %}<article data-section-numbers>
+  <h2>Definitions</h2>
+  <p>For the purposes of this agreement...</p>
+  <h3>Scope</h3>
+  <p>This section defines the scope.</p>
+  <h3>Exclusions</h3>
+  <p>The following are excluded.</p>
+  <h2>Terms of Service</h2>
+  <p>By using this service you agree...</p>
+</article>{% endset %}
+
+{% set blockProgressExample %}<span class="block-progress" role="meter"
+  aria-valuenow="70" aria-valuemin="0"
+  aria-valuemax="100" aria-label="Build progress">
+  <span aria-hidden="true" data-filled>&block;&block;&block;&block;&block;&block;&block;</span>
+  <span aria-hidden="true" data-empty>&blk14;&blk14;&blk14;</span>
+  <small>70%</small>
+</span>{% endset %}
+
+<browser-window src="/docs/snippets/demos/typography-features.html" url="https://vanilla-breeze.dev/typography" title="Typography Features" shadow></browser-window>
+
+<h2>Philosophy</h2>
+<p>VB uses progressive CSS enhancement for typography. Every feature in this guide is additive: browsers that don't support a property simply ignore it and fall back to the base style. No JavaScript is required.</p>
+
+<h2>Font Synthesis Control</h2>
+<p>When a font family lacks a true bold or italic variant, browsers synthesize (fake) one by algorithmically thickening or slanting glyphs. This often looks poor. VB sets <code>font-synthesis: none</code> on <code>&lt;strong&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;em&gt;</code>, and <code>&lt;i&gt;</code> to prevent faux bold/italic rendering.</p>
+<p><code>font-optical-sizing: auto</code> lets OpenType variable fonts adjust stroke weight and contrast based on the rendered size, producing crisper text at small sizes and better proportions at display sizes.</p>
+
+<code-block language="css" label="Font synthesis and optical sizing">{{ fontSynthesisExample | escape }}</code-block>
+
+<h3>Combined Bold-Italic</h3>
+<p>When <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> are nested (in either order), VB applies both weight and style with synthesis control:</p>
+
+<code-block language="html" label="Nested bold-italic">{{ boldItalicExample | escape }}</code-block>
+
+<h2>Context-Sensitive Emphasis</h2>
+<p>Bold and italic render differently depending on their surrounding context:</p>
+
+<h3>Bold in Code</h3>
+<p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, bold text gets a subtle highlight background instead of relying solely on weight. This is more visible in monospace fonts where weight differences are subtle.</p>
+
+<h3>Italic in Blockquote</h3>
+<p>Inside blockquotes, italic text is de-emphasized: it renders as normal style with medium weight. Since blockquotes are already visually offset, additional italic can feel overwrought.</p>
+
+<code-block language="html" label="Context-sensitive emphasis">{{ contextBoldExample | escape }}</code-block>
+
+<h2>Subscript and Superscript</h2>
+<p>VB uses <code>font-variant-position</code> for sub/sup when the browser supports it. This produces properly designed glyphs from the font's glyph table rather than shrunk-and-shifted text. The fallback uses the traditional <code>font-size</code> + <code>position: relative</code> approach.</p>
+
+<code-block language="html" label="Sub and sup elements">{{ subSupExample | escape }}</code-block>
+
+<h2>Headings</h2>
+<p>All headings (<code>h1</code>&ndash;<code>h6</code>) receive two typographic enhancements:</p>
+<ul>
+  <li><strong><code>font-variant-numeric: lining-nums</code></strong> &mdash; Ensures numbers in headings align with capital letters rather than descending like oldstyle numerals</li>
+  <li><strong><code>hyphens: none</code></strong> &mdash; Prevents headings from being hyphenated (hyphenation is for body text, not display text)</li>
+</ul>
+<p>Additionally, <code>h1</code> and <code>h2</code> get tighter letter-spacing (tracking) to improve their visual density at large sizes:</p>
+
+<table>
+  <thead>
+    <tr><th>Element</th><th>Letter Spacing</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>h1</code></td><td><code>-0.025em</code> (<code>var(--letter-spacing-tight)</code>)</td></tr>
+    <tr><td><code>h2</code></td><td><code>-0.01em</code></td></tr>
+    <tr><td><code>h3</code>&ndash;<code>h6</code></td><td>Normal (inherited)</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Heading typography">{{ headingExample | escape }}</code-block>
+
+<h2>Drop Caps</h2>
+<p>Use <code>data-drop-cap</code> on an <code>&lt;article&gt;</code> or individual <code>&lt;p&gt;</code> to enlarge the first letter. VB uses the CSS <code>initial-letter</code> property when supported (Safari, Chrome 110+), falling back to <code>float</code> + <code>font-size</code> in other browsers.</p>
+
+<code-block language="html" label="Drop cap patterns">{{ dropCapExample | escape }}</code-block>
+
+<h2>Prose Hyphenation</h2>
+<p>Blog-style articles (<code>article.blog</code>) and prose articles (<code>article[data-prose]</code>) get automatic hyphenation. This requires the <code>lang</code> attribute on <code>&lt;html&gt;</code> so the browser knows which language's hyphenation dictionary to use.</p>
+
+<table>
+  <thead>
+    <tr><th>Property</th><th>Value</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>hyphens</code></td><td><code>auto</code></td><td>Enable automatic hyphenation</td></tr>
+    <tr><td><code>hyphenate-limit-chars</code></td><td><code>6 3 2</code></td><td>Min 6 chars, at least 3 before and 2 after break</td></tr>
+    <tr><td><code>hyphenate-limit-lines</code></td><td><code>2</code></td><td>No more than 2 consecutive hyphenated lines</td></tr>
+    <tr><td><code>hyphenate-limit-zone</code></td><td><code>8%</code></td><td>Only hyphenate in rightmost 8% of line</td></tr>
+  </tbody>
+</table>
+
+<code-block language="html" label="Prose hyphenation">{{ hyphenationExample | escape }}</code-block>
+<p><strong>Note:</strong> Hyphenation only works when <code>&lt;html lang="..."&gt;</code> is set. Without it, the browser has no dictionary to consult.</p>
+
+<h2>Character Tokens</h2>
+<p>VB provides CSS custom properties for commonly needed typographic characters. Use them in <code>content</code> properties or anywhere CSS accepts string values. Themes can override these tokens to change separators globally.</p>
+
+<h3>Separators</h3>
+<table>
+  <thead>
+    <tr><th>Token</th><th>Character</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--sep-breadcrumb</code></td><td>&#x203A;</td><td>Single right-pointing angle (breadcrumb default)</td></tr>
+    <tr><td><code>--sep-list</code></td><td>&#x00B7;</td><td>Middle dot (inline list separator)</td></tr>
+    <tr><td><code>--sep-pipe</code></td><td>|</td><td>Vertical bar</td></tr>
+    <tr><td><code>--sep-mdash</code></td><td>&#x2014;</td><td>Em dash</td></tr>
+    <tr><td><code>--sep-ndash</code></td><td>&#x2013;</td><td>En dash</td></tr>
+    <tr><td><code>--sep-section</code></td><td>&#x00A7;</td><td>Section sign</td></tr>
+    <tr><td><code>--sep-para</code></td><td>&#x00B6;</td><td>Pilcrow / paragraph sign</td></tr>
+  </tbody>
+</table>
+
+<h3>List Markers</h3>
+<table>
+  <thead>
+    <tr><th>Token</th><th>Character</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--marker-default</code></td><td>&#x2022;</td><td>Bullet</td></tr>
+    <tr><td><code>--marker-check</code></td><td>&#x2714;</td><td>Check mark</td></tr>
+    <tr><td><code>--marker-arrow</code></td><td>&#x27A4;</td><td>Right-pointing arrow</td></tr>
+    <tr><td><code>--marker-dash</code></td><td>&#x2043;</td><td>Hyphen bullet</td></tr>
+  </tbody>
+</table>
+
+<h3>Math and Keyboard</h3>
+<table>
+  <thead>
+    <tr><th>Token</th><th>Character</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--char-times</code></td><td>&#x00D7;</td><td>Multiplication sign</td></tr>
+    <tr><td><code>--char-minus</code></td><td>&#x2212;</td><td>True minus sign</td></tr>
+    <tr><td><code>--char-degree</code></td><td>&#x00B0;</td><td>Degree symbol</td></tr>
+    <tr><td><code>--key-cmd</code></td><td>&#x2318;</td><td>Command (Mac)</td></tr>
+    <tr><td><code>--key-option</code></td><td>&#x2325;</td><td>Option (Mac)</td></tr>
+    <tr><td><code>--key-shift</code></td><td>&#x21E7;</td><td>Shift</td></tr>
+    <tr><td><code>--key-ctrl</code></td><td>&#x2303;</td><td>Control</td></tr>
+    <tr><td><code>--key-return</code></td><td>&#x21A9;</td><td>Return / Enter</td></tr>
+  </tbody>
+</table>
+
+<code-block language="css" label="Using character tokens">{{ charTokensExample | escape }}</code-block>
+
+<h2>Baseline Unit (<code>--lh</code>)</h2>
+<p>The <code>--lh</code> token equals <code>1.5rem</code> (one body line-height). Use it for vertical rhythm in prose contexts where spacing should align to the text baseline grid:</p>
+
+<code-block language="css" label="Vertical rhythm with --lh">{{ lhTokenExample | escape }}</code-block>
+
+<h2>Blockquote Hanging Punctuation</h2>
+<p>Blockquotes apply <code>hanging-punctuation: first last</code> so that opening and closing quotation marks hang into the margin. This is a progressive enhancement supported in Safari.</p>
+
+<h2>Status Indicator</h2>
+<p>An inline status dot for dashboards, deploy statuses, and similar UI. Uses the <code>.status</code> class with <code>data-status</code>.</p>
+
+<code-block language="html" label="Status indicator">{{ statusExample | escape }}</code-block>
+
+<table>
+  <thead>
+    <tr><th>data-status</th><th>Icon</th><th>Color</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>success</code></td><td>&#x25CF; filled circle</td><td><code>--color-success</code></td></tr>
+    <tr><td><code>warning</code></td><td>&#x25CF; filled circle</td><td><code>--color-warning</code></td></tr>
+    <tr><td><code>error</code></td><td>&#x25CF; filled circle</td><td><code>--color-error</code></td></tr>
+    <tr><td><code>inactive</code></td><td>&#x25CB; empty circle</td><td><code>--color-text-muted</code></td></tr>
+    <tr><td><code>check</code></td><td>&#x2714; check mark</td><td><code>--color-success</code></td></tr>
+    <tr><td><code>fail</code></td><td>&#x2718; cross mark</td><td><code>--color-error</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Metadata List</h2>
+<p>An inline list of items separated by middle dots. Use <code>ul.meta</code> for article metadata, tag lists, or similar horizontal data.</p>
+
+<code-block language="html" label="Metadata list">{{ metaExample | escape }}</code-block>
+
+<h2>List Marker Variants</h2>
+<p>Override default bullet markers with <code>data-marker</code> on a <code>&lt;ul&gt;</code>.</p>
+
+<code-block language="html" label="List marker variants">{{ markerExample | escape }}</code-block>
+
+<h2>Section Numbering</h2>
+<p>Use <code>data-section-numbers</code> on an <code>&lt;article&gt;</code> for &sect;-style legal/document numbering. Each <code>h2</code> gets a section number; <code>h3</code> headings get alphabetic sub-numbers.</p>
+<p>This is distinct from <code>data-numbered</code> (outline-style <code>1.1</code>, <code>1.2</code> numbering).</p>
+
+<code-block language="html" label="Section numbering">{{ sectionNumbersExample | escape }}</code-block>
+
+<h2>Block Progress</h2>
+<p>A Unicode block-character progress bar for terminal-style UI. Uses <code>role="meter"</code> for accessibility.</p>
+
+<code-block language="html" label="Block progress">{{ blockProgressExample | escape }}</code-block>
+
+<h2>Print URL Expansion</h2>
+<p>When printing, VB automatically expands external, email, and phone link URLs after the link text so readers can see the destination. This is suppressed for image links and same-page anchors.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="/docs/tokens/">Design Tokens</a> &mdash; Full token reference including font sizes, line heights, and measure</li>
+  <li><a href="/docs/i18n/">i18n</a> &mdash; Locale-aware quotes, script-specific typography</li>
+  <li><a href="/docs/elements/native/a/">Anchor element</a> &mdash; Link auto-indicators for mailto, tel, PDF</li>
+  <li><a href="/docs/fluid-scaling/">Fluid Scaling</a> &mdash; Responsive typography with <code>clamp()</code></li>
+  <li><a href="/docs/elements/native/hgroup/">hgroup</a> &mdash; Heading group patterns (eyebrow, byline, display, section-header)</li>
+</ul>

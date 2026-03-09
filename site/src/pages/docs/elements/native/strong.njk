@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "strong"
-description: "Indicates strong importance, seriousness, or urgency."
+description: "Indicates strong importance, seriousness, or urgency. Rendered as bold with font-synthesis protection."
 elementName: strong
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,128 @@ currentPath: /docs/elements/native/strong/
 permalink: /docs/elements/native/strong/
 ---
 
-{% set basicExample %}<strong>...</strong>{% endset %}
+{% set warningCode %}<p><strong>Warning:</strong> This action cannot be undone.</p>
+<p><strong>Do not</strong> share your password with anyone.</p>{% endset %}
+
+{% set nestedCode %}<p><strong>This is important.
+  <strong>This is very important.</strong>
+</strong></p>{% endset %}
+
+{% set strongVsBCode %}<!-- strong: importance / urgency -->
+<p><strong>Warning:</strong> This action is destructive.</p>
+
+<!-- b: attention without importance -->
+<p>Try the <b>Classic Burger</b> — our most popular item.</p>{% endset %}
+
+{% set boldInCodeCode %}<pre><code>const result = <strong>calculateTotal</strong>(items);</code></pre>{% endset %}
+
+{% set strongCssCode %}strong, b {
+  font-weight: 600;
+  font-synthesis: none;     /* prevent faux bold */
+  font-optical-sizing: auto;
+}
+
+/* Combined bold + italic */
+:where(strong em, em strong) {
+  font-weight: 600;
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Bold in code — highlight background */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;strong&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;strong&gt;</code> element indicates strong importance, seriousness, or urgency. Screen readers may announce it with a change in voice. VB styles it with <code>font-weight: 600</code>, <code>font-synthesis: none</code> (prevents faux bold), and <code>font-optical-sizing: auto</code> for variable fonts.</p>
+    <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, strong gets a subtle highlight background instead of relying on weight alone.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <strong>Example strong content</strong>
-    </div>
-    <code-block language="html" label="Basic strong example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Warnings:</strong> "Warning: This action cannot be undone"</li>
+      <li><strong>Urgency:</strong> "Do not share your password"</li>
+      <li><strong>Important labels:</strong> "Important:", "Note:", "Critical:"</li>
+      <li><strong>Key facts:</strong> The most important sentence in a paragraph</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>To draw attention without importance &mdash; use <a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a></li>
+      <li>For stress emphasis that changes meaning &mdash; use <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
+      <li>For headings &mdash; use <code>&lt;h1&gt;</code>&ndash;<code>&lt;h6&gt;</code></li>
+      <li>Purely for visual styling &mdash; use CSS <code>font-weight</code></li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>strong vs b</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Semantics</th>
+          <th>Screen Reader</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;strong&gt;</code></td>
+          <td>Importance, urgency, seriousness</td>
+          <td>May be announced with emphasis</td>
+        </tr>
+        <tr>
+          <td><code>&lt;b&gt;</code></td>
+          <td>Draw attention &mdash; no extra importance</td>
+          <td>Not announced differently</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="strong vs b usage">{{ strongVsBCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/strong-examples.html" url="strong-examples.html" title="Strong importance" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Warnings and urgency">{{ warningCode | escape }}</code-block>
+
+    <h3>Nested Strong</h3>
+    <p>Nesting <code>&lt;strong&gt;</code> increases the degree of importance:</p>
+    <code-block language="html" show-lines label="Nested strong">{{ nestedCode | escape }}</code-block>
+
+    <h3>Bold in Code</h3>
+    <p>Inside code blocks, <code>&lt;strong&gt;</code> gets a highlight background for better visibility in monospace:</p>
+    <code-block language="html" show-lines label="Strong in code">{{ boldInCodeCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="strong CSS">{{ strongCssCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;strong&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Some screen readers announce <code>&lt;strong&gt;</code> with a change in voice tone</li>
+      <li>This distinguishes it from <code>&lt;b&gt;</code> which is not announced differently</li>
+      <li>Nesting <code>&lt;strong&gt;</code> increases the degree of importance semantically</li>
+      <li>Do not use strong for every bold word &mdash; overuse dilutes the signal</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Draw attention without importance</li>
+      <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; Stress emphasis that changes meaning</li>
+      <li><a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> &mdash; Alternate voice (bold counterpart pairing)</li>
+      <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a> &mdash; Highlighted for reference</li>
+    </ul>
   </section>

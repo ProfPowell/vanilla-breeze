@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "optgroup"
-description: "Groups related options within a select element. Option groups help organize long lists of choices into logical categories."
+description: "Groups related options within a select element under a visible label. Helps users scan long option lists organized into logical categories."
 elementName: optgroup
 category: native
 nativeGroup: Forms
@@ -10,6 +10,7 @@ permalink: /docs/elements/native/optgroup/
 ---
 
 {% set basicOptgroupCode %}<select id="category">
+  <option value="">Select a category...</option>
   <optgroup label="Fruits">
     <option value="apple">Apple</option>
     <option value="banana">Banana</option>
@@ -23,11 +24,13 @@ permalink: /docs/elements/native/optgroup/
 </select>{% endset %}
 
 {% set disabledOptgroupCode %}<select>
-  <optgroup label="Available">
-    <option value="a">Option A</option>
+  <optgroup label="Standard Shipping">
+    <option value="ground">Ground (5-7 days) - Free</option>
+    <option value="priority">Priority (3-5 days) - $9.99</option>
   </optgroup>
-  <optgroup label="Unavailable" disabled>
-    <option value="b">Option B</option>
+  <optgroup label="Express Shipping" disabled>
+    <option value="express">Express (2 days) - $19.99</option>
+    <option value="overnight">Overnight - $34.99</option>
   </optgroup>
 </select>{% endset %}
 
@@ -35,241 +38,94 @@ permalink: /docs/elements/native/optgroup/
   font-weight: 600;
 }
 
-/* Note: optgroup styling is limited and varies by browser.
-   Most browsers display the label in bold by default. */{% endset %}
+/* Note: optgroup styling is largely controlled by the browser/OS.
+   Most browsers display the label in bold by default.
+   VB reinforces this with font-weight: 600. */{% endset %}
 
 <section>
-    <h2>When to Use</h2>
-    <ul>
-      <li>Organizing options into logical categories</li>
-      <li>Long select lists with distinct groupings (countries by continent, items by category)</li>
-      <li>Making it easier to scan and find options</li>
-    </ul>
-  </section>
+  <h2>When to Use</h2>
+  <ul>
+    <li>Organizing options into logical categories (countries by continent, products by type)</li>
+    <li>Long <a href="/docs/elements/native/select/">select</a> lists with distinct groupings</li>
+    <li>Making it easier to scan and locate options in a large list</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Basic Usage</h2>
-    <p>The <code>label</code> attribute provides the group heading displayed in bold.</p>
+<section>
+  <h2>Examples</h2>
+  <p>The shared select demo below includes an optgroup example showing countries grouped by region.</p>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-basic">Category</label>
-        <select id="optgroup-basic">
-          <optgroup label="Fruits">
-            <option value="apple">Apple</option>
-            <option value="banana">Banana</option>
-            <option value="orange">Orange</option>
-          </optgroup>
-          <optgroup label="Vegetables">
-            <option value="carrot">Carrot</option>
-            <option value="broccoli">Broccoli</option>
-            <option value="spinach">Spinach</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
+  <browser-window src="/docs/snippets/demos/select-examples.html" url="https://vanilla-breeze.dev/select/examples" title="Select with optgroups" shadow></browser-window>
 
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Basic optgroup usage">{{ basicOptgroupCode | escape }}</code-block>
-  </section>
+  <h3>Basic Usage</h3>
+  <p>The required <code>label</code> attribute provides the group heading displayed in bold above the options.</p>
+  <code-block language="html" label="Basic optgroup usage">{{ basicOptgroupCode | escape }}</code-block>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Purpose</th>
-          <th>Required</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>label</code></td>
-          <td>The group heading text</td>
-          <td>Yes</td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>Disables all options in the group</td>
-          <td>No</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Purpose</th>
+        <th>Required</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>label</code></td>
+        <td>The group heading text displayed above the options</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>disabled</code></td>
+        <td>Disables all <a href="/docs/elements/native/option/">options</a> in the group</td>
+        <td>No</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
-  <section>
-    <h2>Countries by Region</h2>
-    <p>A common use case for organizing geographical data.</p>
+<section>
+  <h2>Disabled Optgroup</h2>
+  <p>Disabling an optgroup makes every option within it unselectable. This is useful for showing choices that exist but are not currently available.</p>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-countries">Country</label>
-        <select id="optgroup-countries">
-          <option value="">Select a country...</option>
-          <optgroup label="North America">
-            <option value="us">United States</option>
-            <option value="ca">Canada</option>
-            <option value="mx">Mexico</option>
-          </optgroup>
-          <optgroup label="Europe">
-            <option value="uk">United Kingdom</option>
-            <option value="de">Germany</option>
-            <option value="fr">France</option>
-            <option value="es">Spain</option>
-          </optgroup>
-          <optgroup label="Asia">
-            <option value="jp">Japan</option>
-            <option value="cn">China</option>
-            <option value="kr">South Korea</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-  </section>
+  <code-block language="html" label="Disabled optgroup">{{ disabledOptgroupCode | escape }}</code-block>
+</section>
 
-  <section>
-    <h2>Products by Category</h2>
-    <p>Organizing product options for e-commerce.</p>
+<section>
+  <h2>Limitations</h2>
+  <ul>
+    <li><strong>No nesting</strong>: You cannot nest an optgroup inside another optgroup. HTML does not support it</li>
+    <li><strong>Limited styling</strong>: Browser and OS rendering controls most of the appearance. VB sets <code>font-weight: 600</code> on the group label but cannot change backgrounds, colors, or add icons</li>
+    <li><strong>Options only</strong>: An optgroup can only contain <a href="/docs/elements/native/option/">option</a> elements</li>
+    <li><strong>Label is required</strong>: The <code>label</code> attribute must be provided; there is no fallback text</li>
+    <li><strong>Not in datalist</strong>: Optgroups are not supported inside <a href="/docs/elements/native/datalist/">datalist</a></li>
+  </ul>
+  <p>For fully custom grouped dropdowns with arbitrary styling, consider the <a href="/docs/elements/web-components/combo-box/">combo-box</a> web component.</p>
+</section>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-products">Product</label>
-        <select id="optgroup-products">
-          <option value="">Choose a product...</option>
-          <optgroup label="Electronics">
-            <option value="laptop">Laptop - $999</option>
-            <option value="phone">Smartphone - $699</option>
-            <option value="tablet">Tablet - $449</option>
-          </optgroup>
-          <optgroup label="Accessories">
-            <option value="case">Phone Case - $29</option>
-            <option value="charger">Wireless Charger - $49</option>
-            <option value="headphones">Headphones - $199</option>
-          </optgroup>
-          <optgroup label="Services">
-            <option value="warranty">Extended Warranty - $99/yr</option>
-            <option value="support">Premium Support - $49/yr</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-  </section>
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Screen reader support</strong>: Groups are announced as categories, helping users understand the structure</li>
+    <li><strong>Keyboard navigation</strong>: Arrow keys move through all options across groups; groups act as visual separators</li>
+    <li><strong>Meaningful labels</strong>: The <code>label</code> attribute should clearly describe what the group contains</li>
+    <li><strong>Disabled groups</strong>: All options within a disabled group are announced as unavailable</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Disabled Option Groups</h2>
-    <p>Disable an entire group when its options should not be selectable.</p>
+<section>
+  <h2>CSS Reference</h2>
+  <code-block language="css" label="Optgroup CSS styling">{{ cssReferenceCode | escape }}</code-block>
+</section>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-disabled">Shipping Method</label>
-        <select id="optgroup-disabled">
-          <optgroup label="Standard Shipping">
-            <option value="ground">Ground (5-7 days) - Free</option>
-            <option value="priority">Priority (3-5 days) - $9.99</option>
-          </optgroup>
-          <optgroup label="Express Shipping" disabled>
-            <option value="express">Express (2 days) - $19.99</option>
-            <option value="overnight">Overnight - $34.99</option>
-          </optgroup>
-        </select>
-        <span class="help">Express shipping not available for your location</span>
-      </div>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Disabled optgroup">{{ disabledOptgroupCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Multiple Option Groups</h2>
-    <p>Use multiple groups for complex categorization.</p>
-
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-timezone">Time Zone</label>
-        <select id="optgroup-timezone">
-          <optgroup label="Americas">
-            <option value="america/new_york">Eastern Time (ET)</option>
-            <option value="america/chicago">Central Time (CT)</option>
-            <option value="america/denver">Mountain Time (MT)</option>
-            <option value="america/los_angeles">Pacific Time (PT)</option>
-          </optgroup>
-          <optgroup label="Europe">
-            <option value="europe/london">London (GMT)</option>
-            <option value="europe/paris">Paris (CET)</option>
-            <option value="europe/berlin">Berlin (CET)</option>
-          </optgroup>
-          <optgroup label="Asia/Pacific">
-            <option value="asia/tokyo">Tokyo (JST)</option>
-            <option value="asia/shanghai">Shanghai (CST)</option>
-            <option value="australia/sydney">Sydney (AEST)</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>With Multiple Select</h2>
-    <p>Option groups work well with <code>multiple</code> select for multi-category selection.</p>
-
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="optgroup-multiple">Select Skills</label>
-        <select id="optgroup-multiple" multiple size="8">
-          <optgroup label="Frontend">
-            <option value="html">HTML</option>
-            <option value="css">CSS</option>
-            <option value="js">JavaScript</option>
-            <option value="react">React</option>
-          </optgroup>
-          <optgroup label="Backend">
-            <option value="nodejs">Node.js</option>
-            <option value="python">Python</option>
-            <option value="go">Go</option>
-          </optgroup>
-          <optgroup label="Database">
-            <option value="postgres">PostgreSQL</option>
-            <option value="mongodb">MongoDB</option>
-          </optgroup>
-        </select>
-        <span class="help">Hold Ctrl/Cmd to select multiple</span>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Accessibility Notes</h2>
-    <ul>
-      <li><strong>Screen reader support</strong>: Option groups are announced as categories</li>
-      <li><strong>Keyboard navigation</strong>: Arrow keys move through options, groups act as visual separators</li>
-      <li><strong>Use meaningful labels</strong>: The <code>label</code> attribute should clearly describe the group</li>
-      <li><strong>Don't nest optgroups</strong>: Nesting is not supported in HTML</li>
-      <li><strong>Disabled groups</strong>: All options within a disabled group are unselectable</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Optgroup CSS styling">{{ cssReferenceCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Limitations</h2>
-    <ul>
-      <li><strong>No nesting</strong>: Cannot nest optgroups within optgroups</li>
-      <li><strong>Limited styling</strong>: Browser-dependent appearance with limited CSS control</li>
-      <li><strong>Label is required</strong>: The <code>label</code> attribute must be provided</li>
-      <li><strong>Options only</strong>: Can only contain <a href="/docs/elements/native/option/">option</a> elements</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/select/">select</a> - Parent element containing optgroups</li>
-      <li><a href="/docs/elements/native/option/">option</a> - Individual options within groups</li>
-      <li><a href="/docs/elements/native/datalist/">datalist</a> - Alternative for autocomplete (no optgroups)</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/elements/native/select/">select</a> - Parent element containing optgroups</li>
+    <li><a href="/docs/elements/native/option/">option</a> - Individual choices within groups</li>
+    <li><a href="/docs/elements/web-components/combo-box/">combo-box</a> - Fully custom filterable dropdown with arbitrary group styling</li>
+  </ul>
+</section>

@@ -50,6 +50,83 @@ permalink: /docs/elements/native/datalist/
   </output>
 </form-field>{% endset %}
 
+{% set matchDetectionCode %}const input = document.getElementById('country-input');
+const options = [...document.querySelectorAll('#country-list option')].map(o => o.value);
+
+input.addEventListener('input', () => {
+  const v = input.value.trim();
+  const isMatch = options.includes(v);
+  // isMatch === true  → user picked from the list
+  // isMatch === false → user typed a custom value
+});{% endset %}
+
+{% set dynamicCode %}<input type="search" id="city-input" list="city-suggestions"
+       autocomplete="off" />
+<datalist id="city-suggestions"></datalist>
+
+<script>
+  const input = document.getElementById('city-input');
+  const datalist = document.getElementById('city-suggestions');
+  let timer;
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    if (input.value.length < 2) { datalist.innerHTML = ''; return; }
+    timer = setTimeout(async () => {
+      const res = await fetch(`/api/cities?q=${input.value}`);
+      const cities = await res.json();
+      datalist.innerHTML = cities
+        .map(c => `<option value="${c}">`)
+        .join('');
+    }, 300);
+  });
+</script>{% endset %}
+
+{% set rangeTicsCode %}<input type="range" min="0" max="5000" step="500"
+       value="2500" list="budget-ticks" />
+<datalist id="budget-ticks">
+  <option value="0"></option>
+  <option value="500"></option>
+  <option value="1000"></option>
+  <!-- ... -->
+  <option value="5000"></option>
+</datalist>
+<output id="budget-value" for="budget-range">$2,500</output>
+
+<script>
+  const range = document.querySelector('input[type="range"]');
+  const output = document.getElementById('budget-value');
+  const fmt = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'USD', maximumFractionDigits: 0
+  });
+  range.addEventListener('input', () => {
+    output.textContent = fmt.format(range.value);
+  });
+</script>{% endset %}
+
+{% set colorSwatchesCode %}<input type="color" id="color-picker" list="brand-palette"
+       value="#c84b2f" />
+<datalist id="brand-palette">
+  <option value="#c84b2f"></option>
+  <option value="#2d6a4f"></option>
+  <option value="#4a7fbd"></option>
+</datalist>
+
+<script>
+  // Cross-browser swatch companion
+  const picker = document.getElementById('color-picker');
+  const colors = [...document.querySelectorAll('#brand-palette option')]
+    .map(o => o.value);
+
+  colors.forEach(hex => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.background = hex;
+    btn.addEventListener('click', () => { picker.value = hex; });
+    container.appendChild(btn);
+  });
+</script>{% endset %}
+
 {% set cssReferenceCode %}/* Input with datalist indicator */
 input[list] {
   background-image: url("data:image/svg+xml,..."); /* dropdown arrow */
@@ -86,26 +163,14 @@ datalist {
       <li>When users might enter values not in the predefined list</li>
     </ul>
     <p><strong>Use <a href="/docs/elements/native/select/">select</a> instead</strong> when users must choose from a fixed set of options.</p>
+    <p><strong>Need more control?</strong> The <a href="/docs/elements/custom-elements/combo-box/">combo-box</a> web component offers keyboard navigation, filtering, custom rendering, and full styling control &mdash; a good upgrade path when native datalist falls short.</p>
   </section>
 
   <section>
     <h2>Basic Usage</h2>
     <p>Connect an input to a datalist using the <code>list</code> attribute on the input and an <code>id</code> on the datalist.</p>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="browser-basic">Browser</label>
-        <input type="text" id="browser-basic" list="browsers-basic" placeholder="Start typing..." />
-        <datalist id="browsers-basic">
-          <option value="Chrome"></option>
-          <option value="Firefox"></option>
-          <option value="Safari"></option>
-          <option value="Edge"></option>
-          <option value="Opera"></option>
-          <option value="Brave"></option>
-        </datalist>
-      </div>
-    </div>
+    <browser-window src="/docs/snippets/demos/datalist-basic.html" url="datalist-basic.html" title="Basic datalist" shadow></browser-window>
 
     <h3>Code</h3>
     <code-block language="html" show-lines label="Basic datalist with input">{{ basicDatalistCode | escape }}</code-block>
@@ -113,54 +178,9 @@ datalist {
 
   <section>
     <h2>Input Variants</h2>
+    <p>Inputs with a <code>list</code> attribute display a dropdown arrow by default. Use <code>.no-arrow</code> to hide it, or <code>.search</code> for a search icon on the left.</p>
 
-    <h3>Default (with dropdown arrow)</h3>
-    <p>Inputs with a <code>list</code> attribute display a dropdown arrow to indicate suggestions are available.</p>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="color-arrow">Color</label>
-        <input type="text" id="color-arrow" list="colors-arrow" placeholder="Pick a color..." />
-        <datalist id="colors-arrow">
-          <option value="Red"></option>
-          <option value="Blue"></option>
-          <option value="Green"></option>
-          <option value="Yellow"></option>
-          <option value="Purple"></option>
-        </datalist>
-      </div>
-    </div>
-
-    <h3>.no-arrow</h3>
-    <p>Hide the dropdown indicator for a cleaner text input appearance.</p>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="color-no-arrow">Color</label>
-        <input type="text" id="color-no-arrow" list="colors-no-arrow" class="no-arrow" placeholder="Pick a color..." />
-        <datalist id="colors-no-arrow">
-          <option value="Red"></option>
-          <option value="Blue"></option>
-          <option value="Green"></option>
-          <option value="Yellow"></option>
-          <option value="Purple"></option>
-        </datalist>
-      </div>
-    </div>
-
-    <h3>.search</h3>
-    <p>Search-style input with a magnifying glass icon on the left.</p>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="product-search">Search Products</label>
-        <input type="search" id="product-search" list="products-search" class="search" placeholder="Search..." />
-        <datalist id="products-search">
-          <option value="Laptop"></option>
-          <option value="Laptop Stand"></option>
-          <option value="Laptop Bag"></option>
-          <option value="Wireless Mouse"></option>
-          <option value="Mechanical Keyboard"></option>
-        </datalist>
-      </div>
-    </div>
+    <browser-window src="/docs/snippets/demos/datalist-variants.html" url="datalist-variants.html" title="Input variants" shadow></browser-window>
 
     <h3>Code</h3>
     <code-block language="html" show-lines label="Input variants with datalist">{{ inputVariantsCode | escape }}</code-block>
@@ -168,21 +188,9 @@ datalist {
 
   <section>
     <h2>Options with Labels</h2>
-    <p>Options can include a label that is displayed alongside the value. The value is what gets submitted, while the label provides additional context.</p>
+    <p>Options can include a label displayed alongside the value. The value is what gets submitted, while the label provides additional context.</p>
 
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="airport">Airport</label>
-        <input type="text" id="airport" list="airports" placeholder="Enter airport code..." />
-        <datalist id="airports">
-          <option value="JFK" label="John F. Kennedy International"></option>
-          <option value="LAX" label="Los Angeles International"></option>
-          <option value="ORD" label="Chicago O'Hare"></option>
-          <option value="DFW" label="Dallas/Fort Worth"></option>
-          <option value="SFO" label="San Francisco International"></option>
-        </datalist>
-      </div>
-    </div>
+    <browser-window src="/docs/snippets/demos/datalist-labels.html" url="datalist-labels.html" title="Options with labels" shadow></browser-window>
 
     <h3>Code</h3>
     <code-block language="html" show-lines label="Options with labels">{{ optionsWithLabelsCode | escape }}</code-block>
@@ -190,83 +198,109 @@ datalist {
 
   <section>
     <h2>With Different Input Types</h2>
-    <p>Datalist works with various input types beyond text.</p>
+    <p>Datalist works with various input types beyond text: email, URL, and range.</p>
 
-    <h3>Email Input</h3>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="email-suggest">Email</label>
-        <input type="email" id="email-suggest" list="email-domains" placeholder="you@" />
-        <datalist id="email-domains">
-          <option value="@gmail.com"></option>
-          <option value="@outlook.com"></option>
-          <option value="@yahoo.com"></option>
-          <option value="@icloud.com"></option>
-        </datalist>
-      </div>
-    </div>
-
-    <h3>URL Input</h3>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="url-suggest">Website</label>
-        <input type="url" id="url-suggest" list="common-urls" placeholder="https://" />
-        <datalist id="common-urls">
-          <option value="https://github.com"></option>
-          <option value="https://gitlab.com"></option>
-          <option value="https://bitbucket.org"></option>
-        </datalist>
-      </div>
-    </div>
-
-    <h3>Number Input (Range)</h3>
-    <div class="example">
-      <div class="group" style="max-inline-size: 25rem;">
-        <label for="range-suggest">Volume: <output id="volume-output">50</output></label>
-        <input type="range" id="range-suggest" list="volume-values" min="0" max="100" value="50" oninput="document.getElementById('volume-output').value = this.value" />
-        <datalist id="volume-values">
-          <option value="0" label="Mute"></option>
-          <option value="25" label="Low"></option>
-          <option value="50" label="Medium"></option>
-          <option value="75" label="High"></option>
-          <option value="100" label="Max"></option>
-        </datalist>
-      </div>
-    </div>
+    <browser-window src="/docs/snippets/demos/datalist-input-types.html" url="datalist-input-types.html" title="Input types" shadow></browser-window>
   </section>
 
   <section>
     <h2>Using with form-field</h2>
     <p>For enhanced accessibility and validation, wrap datalist inputs in the <a href="/docs/elements/custom-elements/form-field/">form-field custom element</a>.</p>
 
-    <div class="example">
-      <form style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="country-ff">Country</label>
-          <input type="text"
-                 id="country-ff"
-                 name="country"
-                 list="countries-ff"
-                 required
-                 autocomplete="country-name"
-                 aria-describedby="country-ff-msg" />
-          <datalist id="countries-ff">
-            <option value="United States"></option>
-            <option value="Canada"></option>
-            <option value="United Kingdom"></option>
-            <option value="Australia"></option>
-            <option value="Germany"></option>
-            <option value="France"></option>
-          </datalist>
-          <output id="country-ff-msg" for="country-ff" aria-live="polite">
-            Start typing to see suggestions
-          </output>
-        </form-field>
-      </form>
-    </div>
+    <browser-window src="/docs/snippets/demos/datalist-form-field.html" url="datalist-form-field.html" title="Datalist with form-field" shadow></browser-window>
 
     <h3>Code</h3>
     <code-block language="html" show-lines label="Datalist with form-field">{{ formFieldCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Recipes</h2>
+    <p>These patterns extend the basic datalist with small amounts of JavaScript. The scripts live in the demo page, not in VB core &mdash; copy and adapt as needed.</p>
+
+    <section>
+      <h3>Detect List Match vs Custom Entry</h3>
+      <p>Check whether the user picked a value from the suggestion list or typed their own. Useful for conditional validation or analytics.</p>
+
+      <browser-window src="/docs/snippets/demos/datalist-match-detection.html" url="datalist-match-detection.html" title="Match detection" shadow></browser-window>
+
+      <code-block language="js" show-lines label="Match detection pattern">{{ matchDetectionCode | escape }}</code-block>
+    </section>
+
+    <section>
+      <h3>Dynamic Server-Driven Suggestions</h3>
+      <p>Populate datalist options from an API endpoint with debounced input. The demo simulates a 150ms fetch; replace with a real endpoint in production.</p>
+
+      <browser-window src="/docs/snippets/demos/datalist-dynamic.html" url="datalist-dynamic.html" title="Dynamic suggestions" shadow></browser-window>
+
+      <code-block language="html" show-lines label="Dynamic datalist pattern">{{ dynamicCode | escape }}</code-block>
+    </section>
+
+    <section>
+      <h3>Range with Visible Tick Labels</h3>
+      <p>Datalist on a range input adds tick marks at each <code>&lt;option&gt;</code> value. Pair with visible labels and a live <code>&lt;output&gt;</code> for clear feedback.</p>
+
+      <browser-window src="/docs/snippets/demos/datalist-range-ticks.html" url="datalist-range-ticks.html" title="Range with ticks" shadow></browser-window>
+
+      <code-block language="html" show-lines label="Range with tick marks">{{ rangeTicsCode | escape }}</code-block>
+    </section>
+
+    <section>
+      <h3>Color Palette with Swatch Companion</h3>
+      <p>A <code>&lt;input type="color" list="..."&gt;</code> shows palette swatches inside the native color picker on Chromium. The JS-rendered swatch buttons work cross-browser as a progressive enhancement companion.</p>
+
+      <browser-window src="/docs/snippets/demos/datalist-color-swatches.html" url="datalist-color-swatches.html" title="Color swatches" shadow></browser-window>
+
+      <code-block language="html" show-lines label="Color palette with swatches">{{ colorSwatchesCode | escape }}</code-block>
+    </section>
+  </section>
+
+  <section>
+    <h2>Datalist vs combo-box</h2>
+    <p>Choose based on the level of control you need:</p>
+
+    <data-table>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>datalist</th>
+            <th>combo-box</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>JavaScript required</td>
+            <td>No</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Custom styling</td>
+            <td>Browser-controlled</td>
+            <td>Full control</td>
+          </tr>
+          <tr>
+            <td>Keyboard navigation</td>
+            <td>Browser default</td>
+            <td>ARIA combobox pattern</td>
+          </tr>
+          <tr>
+            <td>Custom filtering</td>
+            <td>Browser default</td>
+            <td>Configurable</td>
+          </tr>
+          <tr>
+            <td>Rich option content</td>
+            <td>Text only</td>
+            <td>HTML templates</td>
+          </tr>
+          <tr>
+            <td>Free-text entry</td>
+            <td>Always allowed</td>
+            <td>Configurable</td>
+          </tr>
+        </tbody>
+      </table>
+    </data-table>
   </section>
 
   <section>
@@ -292,6 +326,7 @@ datalist {
       <li>Visual appearance varies between browsers (cannot be fully styled)</li>
       <li>The dropdown behavior is controlled by the browser</li>
       <li>On mobile devices, the suggestions may appear in a different format</li>
+      <li><code>type="color"</code> with datalist shows palette swatches in Chromium browsers; Firefox and Safari fall back to the standard color picker</li>
     </ul>
   </section>
 
@@ -303,5 +338,6 @@ datalist {
       <li><a href="/docs/elements/native/select/">select</a> - For fixed option lists (no custom values)</li>
       <li><a href="/docs/elements/native/label/">label</a> - Associates text with the input</li>
       <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper</li>
+      <li><a href="/docs/elements/custom-elements/combo-box/">combo-box</a> - Full-featured combobox with custom styling and keyboard support</li>
     </ul>
   </section>

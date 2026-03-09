@@ -17,7 +17,10 @@ permalink: /docs/elements/native/code/
 
 console.log(greet('World'));</code></pre>{% endset %}
 
-{% set cssExample %}code {
+{% set boldInCodeExample %}<pre><code>const result = <b>calculateTotal</b>(items);
+console.log(<strong>result</strong>);</code></pre>{% endset %}
+
+{% set cssCode %}code {
   font-family: var(--font-mono);
   font-size: 0.9em;
   background: var(--color-surface-raised);
@@ -28,20 +31,27 @@ console.log(greet('World'));</code></pre>{% endset %}
 pre {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Code blocks: pre containing code gets full treatment */
+pre:has(code) {
   background: var(--color-surface-raised);
   padding: var(--size-m);
   border-radius: var(--radius-m);
-  overflow-x: auto;
+  white-space: pre;
+  word-wrap: normal;
 
-  /* Reset code styling when inside pre */
   & code {
     background: transparent;
     padding: 0;
     font-size: inherit;
   }
-}
+}{% endset %}
 
-kbd {
+{% set kbdCssCode %}kbd {
   font-family: var(--font-mono);
   font-size: 0.85em;
   background: var(--color-surface-raised);
@@ -49,9 +59,9 @@ kbd {
   border-radius: var(--radius-s);
   border: var(--border-width-thin) solid var(--color-border);
   box-shadow: 0 1px 0 var(--color-border);
-}
+}{% endset %}
 
-samp {
+{% set varSampCssCode %}samp {
   font-family: var(--font-mono);
   font-size: 0.9em;
 }
@@ -61,45 +71,41 @@ var {
   color: var(--color-interactive);
 }{% endset %}
 
-{% set syntaxHighlightExample %}<!-- Add language class to code element -->
-<pre><code class="language-javascript">
-function example() {
-  return true;
-}
-</code></pre>
+{% set boldInCodeCssCode %}/* Bold in code — highlight instead of just weight */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}{% endset %}
 
-<!-- Include Prism.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>{% endset %}
+{% set translateCode %}/* Code elements are never machine-translated */
+code, kbd, samp, pre, var {
+  translate: no;
+}{% endset %}
 
 <section>
-    <h2 id="overview">Overview</h2>
-    <p>Vanilla Breeze provides styling for several code-related elements:</p>
+    <h2>Overview</h2>
+    <p>Vanilla Breeze provides coordinated styling for code-related elements. All share <code>var(--font-mono)</code> and are automatically excluded from machine translation via the <a href="/docs/i18n/">i18n system</a>.</p>
     <ul>
-      <li><code>&lt;code&gt;</code> - Inline code snippets</li>
-      <li><code>&lt;pre&gt;</code> - Preformatted text blocks</li>
-      <li><code>&lt;kbd&gt;</code> - Keyboard input</li>
-      <li><code>&lt;samp&gt;</code> - Sample output</li>
-      <li><code>&lt;var&gt;</code> - Variables</li>
+      <li><code>&lt;code&gt;</code> &mdash; Inline code snippets</li>
+      <li><code>&lt;pre&gt;</code> &mdash; Preformatted text blocks</li>
+      <li><code>&lt;kbd&gt;</code> &mdash; Keyboard input</li>
+      <li><code>&lt;samp&gt;</code> &mdash; Sample output</li>
+      <li><code>&lt;var&gt;</code> &mdash; Variables</li>
     </ul>
   </section>
 
   <section>
-    <h2 id="inline-code">Inline Code</h2>
-    <p>Use the <code>&lt;code&gt;</code> element for inline code within text. It displays in a monospace font with a subtle background.</p>
+    <h2>Inline Code</h2>
+    <p>Use <code>&lt;code&gt;</code> for inline code within text. It displays in a monospace font with a subtle background.</p>
 
-    <div class="example">
-      <p>Use the <code>console.log()</code> function to debug your code.</p>
-      <p>The <code>Array.prototype.map()</code> method creates a new array.</p>
-      <p>Set <code>display: flex</code> on the container element.</p>
-    </div>
-
-    <code-block language="html" label="Inline code element">{{ inlineCodeExample | escape }}</code-block>
+    <code-block language="html" label="Inline code">{{ inlineCodeExample | escape }}</code-block>
 
     <h3>When to Use Inline Code</h3>
     <ul>
       <li>Function and method names</li>
-      <li>Variable names</li>
-      <li>CSS property names and values</li>
+      <li>Variable and property names</li>
+      <li>CSS property-value pairs</li>
       <li>File names and paths</li>
       <li>HTML element and attribute names</li>
       <li>Command-line commands</li>
@@ -107,180 +113,115 @@ function example() {
   </section>
 
   <section>
-    <h2 id="code-blocks">Code Blocks</h2>
-    <p>Wrap <code>&lt;code&gt;</code> inside <code>&lt;pre&gt;</code> for multi-line code blocks. The code element's background is removed when nested inside pre.</p>
+    <h2>Code Blocks</h2>
+    <p>Wrap <code>&lt;code&gt;</code> inside <code>&lt;pre&gt;</code> for multi-line code blocks. VB distinguishes between <code>&lt;pre&gt;&lt;code&gt;</code> (full code block treatment with background, padding, border-radius) and bare <code>&lt;pre&gt;</code> (lighter treatment for ASCII art, poetry).</p>
 
-    <p>Vanilla Breeze distinguishes between <code>&lt;pre&gt;&lt;code&gt;</code> (code blocks) and bare <code>&lt;pre&gt;</code> (preformatted text like ASCII art or poetry). Code blocks get full treatment with background, padding, and border-radius. Bare <code>&lt;pre&gt;</code> gets a lighter treatment with <code>pre-wrap</code> and no background.</p>
-
-    <div class="example">
-      <pre><code>function greet(name) &#123;
-  return `Hello, $&#123;name&#125;!`;
-&#125;
-
-console.log(greet('World'));</code></pre>
-    </div>
+    <browser-window src="/docs/snippets/demos/code-inline-block.html" url="code-inline-block.html" title="Code elements" shadow></browser-window>
 
     <code-block language="html" label="Code block structure">{{ codeBlockExample | escape }}</code-block>
-
-    <h3>HTML Example</h3>
-    <div class="example">
-      <pre><code>&lt;article&gt;
-  &lt;h1&gt;Article Title&lt;/h1&gt;
-  &lt;p&gt;Article content goes here.&lt;/p&gt;
-&lt;/article&gt;</code></pre>
-    </div>
-
-    <h3>CSS Example</h3>
-    <div class="example">
-      <pre><code>.button &#123;
-  display: inline-flex;
-  align-items: center;
-  padding: var(--size-xs) var(--size-m);
-  border-radius: var(--radius-m);
-  background: var(--color-interactive);
-  color: white;
-&#125;</code></pre>
-    </div>
-
-    <h3>Bare Pre (No Code Element)</h3>
-    <p>A <code>&lt;pre&gt;</code> without a <code>&lt;code&gt;</code> child gets lighter styling — no background or padding. This is appropriate for ASCII art, poetry, or other preformatted text that isn't code.</p>
-    <div class="example">
-      <pre>    *
-   ***
-  *****
- *******
-*********
-   |||</pre>
-    </div>
-
-    <h3>Code Block with Horizontal Scroll</h3>
-    <p>Long lines automatically enable horizontal scrolling.</p>
-    <div class="example">
-      <pre><code>const longVariableName = someFunction(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);</code></pre>
-    </div>
   </section>
 
   <section>
-    <h2 id="keyboard-input">Keyboard Input (kbd)</h2>
-    <p>The <code>&lt;kbd&gt;</code> element represents keyboard input. It has a raised appearance like a physical key.</p>
+    <h2>Bold in Code</h2>
+    <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, <a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> and <code>&lt;strong&gt;</code> get a subtle highlight background instead of relying on font weight alone. This is more visible in monospace fonts where weight differences can be subtle.</p>
 
-    <div class="example">
-      <p>Press <kbd>Ctrl</kbd> + <kbd>S</kbd> to save.</p>
-      <p>Use <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open the command palette.</p>
-      <p>Press <kbd>Enter</kbd> to submit the form.</p>
-    </div>
-
-    <h3>Key Combinations</h3>
-    <div class="example">
-      <p>Copy: <kbd>Ctrl</kbd> + <kbd>C</kbd> (Windows) or <kbd>Cmd</kbd> + <kbd>C</kbd> (Mac)</p>
-      <p>Paste: <kbd>Ctrl</kbd> + <kbd>V</kbd> (Windows) or <kbd>Cmd</kbd> + <kbd>V</kbd> (Mac)</p>
-      <p>Undo: <kbd>Ctrl</kbd> + <kbd>Z</kbd> (Windows) or <kbd>Cmd</kbd> + <kbd>Z</kbd> (Mac)</p>
-    </div>
-
-    <h3>Nested kbd for Key Sequences</h3>
-    <div class="example">
-      <p>Press <kbd><kbd>Ctrl</kbd> + <kbd>X</kbd></kbd>, then <kbd><kbd>Ctrl</kbd> + <kbd>V</kbd></kbd> to cut and paste.</p>
-    </div>
+    <code-block language="html" label="Bold highlighting in code">{{ boldInCodeExample | escape }}</code-block>
+    <code-block language="css" label="Bold-in-code CSS">{{ boldInCodeCssCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2 id="sample-output">Sample Output (samp)</h2>
-    <p>The <code>&lt;samp&gt;</code> element represents sample output from a computer program.</p>
+    <h2>Keyboard Input (kbd)</h2>
+    <p>The <code>&lt;kbd&gt;</code> element represents keyboard input. It has a raised appearance like a physical key, with border and box-shadow.</p>
 
-    <div class="example">
-      <p>The command returned: <samp>Hello, World!</samp></p>
-      <p>Error message: <samp>File not found: config.json</samp></p>
-    </div>
-
-    <h3>Block Output</h3>
-    <div class="example">
-      <p>Terminal output:</p>
-      <pre><samp>$ npm install
-added 125 packages in 3.2s
-
-$ npm run build
-Build completed successfully.
-Output: dist/bundle.js (45.2 KB)</samp></pre>
-    </div>
+    <code-block language="css" label="kbd CSS">{{ kbdCssCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2 id="variables">Variables (var)</h2>
-    <p>The <code>&lt;var&gt;</code> element represents a variable in a mathematical expression or programming context. Variables are styled in italic with an accent color (<code>var(--color-interactive)</code>) to visually distinguish them from regular italic text like <code>&lt;em&gt;</code>.</p>
+    <h2>Sample Output (samp) and Variables (var)</h2>
+    <p><code>&lt;samp&gt;</code> represents sample output from a program. <code>&lt;var&gt;</code> represents a variable in a mathematical or programming context &mdash; styled in italic with <code>var(--color-interactive)</code> to distinguish it from general italic text.</p>
 
-    <div class="example">
-      <p>The area of a circle is <var>A</var> = <var>pi</var> <var>r</var><sup>2</sup>.</p>
-      <p>Let <var>x</var> equal the number of items.</p>
-      <p>The function returns <var>result</var> after processing.</p>
-    </div>
-
-    <h3>Mathematical Formulas</h3>
-    <div class="example">
-      <p>Quadratic formula: <var>x</var> = (-<var>b</var> +/- sqrt(<var>b</var><sup>2</sup> - 4<var>a</var><var>c</var>)) / 2<var>a</var></p>
-      <p>Pythagorean theorem: <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> = <var>c</var><sup>2</sup></p>
-    </div>
+    <code-block language="css" label="samp and var CSS">{{ varSampCssCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2 id="css-properties">CSS Properties</h2>
+    <h2>CSS Reference</h2>
 
-    <code-block language="css" label="Code elements CSS styling">{{ cssExample | escape }}</code-block>
+    <code-block language="css" show-lines label="Code elements CSS">{{ cssCode | escape }}</code-block>
 
     <h3>Key Features</h3>
-    <ul>
-      <li><strong>Monospace font</strong> - All code elements use <code>var(--font-mono)</code></li>
-      <li><strong>Nested code reset</strong> - Code inside pre loses its background and padding</li>
-      <li><strong>Keyboard styling</strong> - kbd has a border and shadow for a 3D key appearance</li>
-      <li><strong>Horizontal scroll</strong> - pre blocks scroll horizontally for long lines</li>
-    </ul>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Monospace font</td>
+          <td>All code elements use <code>var(--font-mono)</code></td>
+        </tr>
+        <tr>
+          <td>Nested code reset</td>
+          <td><code>code</code> inside <code>pre</code> loses background and padding</td>
+        </tr>
+        <tr>
+          <td><code>pre:has(code)</code> vs bare <code>pre</code></td>
+          <td>Code blocks get full treatment; bare pre gets light styling</td>
+        </tr>
+        <tr>
+          <td>Bold highlight</td>
+          <td><code>b</code>/<code>strong</code> in code get background color instead of weight</td>
+        </tr>
+        <tr>
+          <td>Keyboard styling</td>
+          <td><code>kbd</code> has border + shadow for 3D key appearance</td>
+        </tr>
+        <tr>
+          <td>Variable accent</td>
+          <td><code>var</code> uses <code>--color-interactive</code> to distinguish from <code>em</code></td>
+        </tr>
+        <tr>
+          <td>Translation protection</td>
+          <td>All code elements set <code>translate: no</code></td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2 id="syntax-highlighting">Syntax Highlighting</h2>
-    <p>For syntax highlighting, integrate a library like Prism.js or highlight.js. Vanilla Breeze provides the base styling; syntax highlighting adds color.</p>
+    <h2>Translation Protection</h2>
+    <p>VB's <a href="/docs/i18n/">i18n system</a> automatically sets <code>translate: no</code> on all code-family elements, preventing browser or machine translation from breaking code content:</p>
 
-    <h3>Integration Example</h3>
-    <code-block language="html" label="Syntax highlighting integration">{{ syntaxHighlightExample | escape }}</code-block>
+    <code-block language="css" label="Translation protection">{{ translateCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2 id="accessibility">Accessibility</h2>
-
-    <h3>Best Practices</h3>
-    <ul>
-      <li><strong>Use semantic elements</strong> - Choose the right element for the content type</li>
-      <li><strong>Provide context</strong> - Introduce code blocks with explanatory text</li>
-      <li><strong>Label code language</strong> - Use class="language-*" to indicate the programming language</li>
-      <li><strong>Avoid code-only instructions</strong> - Don't rely solely on code formatting to convey meaning</li>
-    </ul>
+    <h2>Accessibility</h2>
 
     <h3>Screen Reader Behavior</h3>
     <ul>
-      <li><code>&lt;code&gt;</code> - Usually read as regular text (monospace is visual only)</li>
-      <li><code>&lt;kbd&gt;</code> - Some screen readers announce "keyboard" or the key name</li>
-      <li><code>&lt;samp&gt;</code> - Read as regular text</li>
-      <li><code>&lt;var&gt;</code> - Usually read as regular text with italic emphasis</li>
+      <li><code>&lt;code&gt;</code> &mdash; Read as regular text (monospace is visual only)</li>
+      <li><code>&lt;kbd&gt;</code> &mdash; Some screen readers announce "keyboard" or the key name</li>
+      <li><code>&lt;samp&gt;</code> &mdash; Read as regular text</li>
+      <li><code>&lt;var&gt;</code> &mdash; Read as regular text with italic emphasis</li>
     </ul>
 
-    <h3>Keyboard Navigation</h3>
-    <p>Code blocks with horizontal scroll should be keyboard accessible:</p>
+    <h3>Best Practices</h3>
     <ul>
-      <li>Add <code>tabindex="0"</code> to make scrollable pre focusable</li>
-      <li>Users can then use arrow keys to scroll</li>
+      <li>Use the right element for the content type</li>
+      <li>Introduce code blocks with explanatory text</li>
+      <li>Use <code>class="language-*"</code> to indicate the programming language</li>
+      <li>Add <code>tabindex="0"</code> to scrollable <code>&lt;pre&gt;</code> for keyboard accessibility</li>
     </ul>
-
-    <div class="example">
-      <pre tabindex="0"><code>// This code block is keyboard focusable for scrolling
-const example = "Users can tab to this block and use arrow keys to scroll horizontally if needed";</code></pre>
-    </div>
   </section>
 
   <section>
-    <h2 id="related">Related Elements</h2>
+    <h2>Related Elements</h2>
     <ul>
-      <li><a href="/docs/elements/native/p/"><code>&lt;p&gt;</code></a> - Surrounding text that explains code</li>
-      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> - Machine-readable data values</li>
-      <li><a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> - Numbered lists for step-by-step code instructions</li>
-      <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> - Abbreviations in code documentation</li>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> / <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Bold highlighting inside code blocks</li>
+      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; Machine-readable data values (styled with <code>var(--font-mono)</code>)</li>
+      <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; Abbreviations in code documentation</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Translation protection for code elements</li>
     </ul>
   </section>

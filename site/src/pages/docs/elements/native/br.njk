@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "br"
-description: "Produces a line break in text content."
+description: "Produces a line break in text content. Use only where the line break is part of the content's meaning."
 elementName: br
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,81 @@ currentPath: /docs/elements/native/br/
 permalink: /docs/elements/native/br/
 ---
 
-{% set basicExample %}<br>{% endset %}
+{% set addressCode %}<address>
+  John Smith<br />
+  123 Main Street<br />
+  Springfield, IL 62704
+</address>{% endset %}
+
+{% set poetryCode %}<p>
+  Roses are red,<br />
+  Violets are blue,<br />
+  Sugar is sweet,<br />
+  And so are you.
+</p>{% endset %}
+
+{% set antiPatternCode %}<!-- Wrong: using br for spacing -->
+<p>First paragraph</p>
+<br /><br />
+<p>Second paragraph</p>
+
+<!-- Right: use margin or layout -->
+<layout-stack data-layout-gap="l">
+  <p>First paragraph</p>
+  <p>Second paragraph</p>
+</layout-stack>{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;br&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;br&gt;</code> element produces a line break in text. It is a void element (no closing tag). Use it only where the line break is an intrinsic part of the content &mdash; addresses, poetry, song lyrics &mdash; not for visual spacing between blocks.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <br />
-    </div>
-    <code-block language="html" label="Basic br example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Postal addresses:</strong> Line breaks between street, city, postal code</li>
+      <li><strong>Poetry and lyrics:</strong> Line breaks within stanzas</li>
+      <li><strong>Structured text:</strong> Where line breaks carry meaning in the content</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li><strong>Spacing between paragraphs:</strong> Use <code>&lt;p&gt;</code> elements or <a href="/docs/elements/custom-elements/layout-stack/"><code>&lt;layout-stack&gt;</code></a></li>
+      <li><strong>Visual gaps:</strong> Use CSS <code>margin</code> or <code>gap</code></li>
+      <li><strong>Separating sections:</strong> Use <a href="/docs/elements/native/hr/"><code>&lt;hr&gt;</code></a> for thematic breaks</li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/br-examples.html" url="br-examples.html" title="Line break examples" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Address formatting">{{ addressCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Poetry">{{ poetryCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Anti-Pattern: Spacing</h2>
+    <p>Never use multiple <code>&lt;br&gt;</code> elements for vertical spacing. Use semantic structure and CSS instead:</p>
+    <code-block language="html" show-lines label="Wrong vs right spacing">{{ antiPatternCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;br&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Screen readers typically announce a line break as a pause</li>
+      <li>Multiple consecutive <code>&lt;br&gt;</code> elements are confusing for screen reader users &mdash; they may hear multiple pauses with no content</li>
+      <li>Use <code>&lt;p&gt;</code> elements for distinct paragraphs so screen readers can navigate by paragraph</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/p/"><code>&lt;p&gt;</code></a> &mdash; Paragraph element (preferred for content separation)</li>
+      <li><a href="/docs/elements/native/hr/"><code>&lt;hr&gt;</code></a> &mdash; Thematic break between sections</li>
+      <li><a href="/docs/elements/native/address/"><code>&lt;address&gt;</code></a> &mdash; Contact information (common br context)</li>
+      <li><a href="/docs/elements/native/wbr/"><code>&lt;wbr&gt;</code></a> &mdash; Word break opportunity (optional break, not forced)</li>
+      <li><a href="/docs/elements/custom-elements/layout-stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; Vertical spacing between elements</li>
+    </ul>
   </section>

@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "td"
-description: "The td element defines a data cell in a table. It contains the actual values that headers describe. Use the data-numeric attribute for right-aligned numeric content with tabular numerals."
+description: "The td element defines a data cell in a table. Vanilla Breeze styles cells with a thin bottom border and top vertical alignment. Supports data attributes for numeric alignment, custom sort/filter values, and responsive card-mode labels."
 elementName: td
 category: native
 nativeGroup: Tables
@@ -18,24 +18,43 @@ permalink: /docs/elements/native/td/
   </tr>
 </tbody>{% endset %}
 
-{% set numericDataCode %}<td data-numeric>$37,500.00</td>
-<td data-numeric>+12.5%</td>{% endset %}
+{% set numericCode %}<td data-numeric>$37,500.00</td>
+<td data-numeric>+12.5%</td>
+<td data-numeric>1,480</td>{% endset %}
 
-{% set colspanCode %}<td colspan="2">Conference (2 days)</td>
-<td colspan="3">Vacation</td>{% endset %}
+{% set alignCode %}<td data-align="start">Left-aligned text</td>
+<td data-align="center">Centered status</td>
+<td data-align="end">Right-aligned value</td>{% endset %}
 
-{% set rowspanCode %}<tr>
-  <td rowspan="3">Electronics</td>
-  <td>Mouse</td>
-  <td data-numeric>$29.99</td>
-</tr>
+{% set sortValueCode %}<!-- Display shows friendly text, sort uses ISO date -->
+<td data-sort-value="2026-03-08">Mar 8, 2026</td>
+
+<!-- Display shows formatted number, sort uses raw value -->
+<td data-numeric data-sort-value="37500">$37,500</td>
+
+<!-- Display shows status text, sort uses numeric priority -->
+<td data-sort-value="1">Critical</td>{% endset %}
+
+{% set filterValueCode %}<!-- Filter matches on normalized value, not display text -->
+<td data-filter-value="electronics peripherals">
+  <strong>Wireless Mouse</strong><br />
+  <small>Peripherals &middot; Electronics</small>
+</td>
+
+<!-- Filter matches alternate spellings or abbreviations -->
+<td data-filter-value="united states usa america">
+  United States
+</td>{% endset %}
+
+{% set dataLabelCode %}<!-- data-label provides column headers in card mode -->
 <tr>
-  <!-- No first cell - spanned from above -->
-  <td>Keyboard</td>
-  <td data-numeric>$79.99</td>
+  <td data-label="Product">Wireless Mouse</td>
+  <td data-label="Category">Peripherals</td>
+  <td data-label="SKU">WM-001</td>
+  <td data-label="Stock" data-numeric>245</td>
 </tr>{% endset %}
 
-{% set headersAttributeCode %}<table>
+{% set headersAttrCode %}<table>
   <thead>
     <tr>
       <th id="product">Product</th>
@@ -52,10 +71,36 @@ permalink: /docs/elements/native/td/
   </tbody>
 </table>{% endset %}
 
+{% set tdCss %}td {
+  padding: var(--size-s) var(--size-m);
+  border-block-end: var(--border-width-thin) solid
+    var(--color-border);
+  vertical-align: top;
+  text-align: start;
+}
+
+/* Numeric alignment */
+td[data-numeric] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Explicit alignment */
+td[data-align="start"]  { text-align: start; }
+td[data-align="center"] { text-align: center; }
+td[data-align="end"]    { text-align: end; }
+
+/* Card-mode label (responsive tables) */
+td[data-label]::before {
+  content: attr(data-label);
+  font-weight: 600;
+  display: block;
+}{% endset %}
+
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;td&gt;</code> (table data) element contains a cell of data in a table. Data cells are associated with header cells (<a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a>) through the table structure, primarily using the <code>scope</code> attribute on headers.</p>
-    <p>Vanilla Breeze styles data cells with consistent padding, top vertical alignment, and a thin bottom border. Row hover effects highlight the entire row containing the cell.</p>
+    <p>The <code>&lt;td&gt;</code> (table data) element contains a cell of data in a table. Data cells are associated with header cells (<a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a>) through the table structure, primarily via the <code>scope</code> attribute on headers.</p>
+    <p>Vanilla Breeze styles data cells with consistent padding (<code>var(--size-s) var(--size-m)</code>), top vertical alignment, and a thin bottom border (<code>var(--border-width-thin)</code>). Row hover effects highlight the entire <a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> containing the cell.</p>
   </section>
 
   <section>
@@ -64,7 +109,7 @@ permalink: /docs/elements/native/td/
       <li><strong>Data values:</strong> All cells containing actual data (not headers)</li>
       <li><strong>tbody cells:</strong> The primary content within <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> rows</li>
       <li><strong>tfoot cells:</strong> Summary/total values in <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a></li>
-      <li><strong>Empty cells:</strong> Placeholder cells to maintain column alignment</li>
+      <li><strong>Empty cells:</strong> Placeholder cells to maintain column alignment (use "N/A" or "-" rather than leaving blank)</li>
     </ul>
 
     <h3>When to Use th Instead</h3>
@@ -75,378 +120,91 @@ permalink: /docs/elements/native/td/
   </section>
 
   <section>
-    <h2>Basic Example</h2>
+    <h2>Examples</h2>
+
+    <h3>Basic Data Cells</h3>
     <p>Data cells contain the values described by column and row headers.</p>
-
-    <div class="example">
-      <table>
-        <caption>Product Inventory</caption>
-        <thead>
-          <tr>
-            <th scope="col">Product</th>
-            <th scope="col">Category</th>
-            <th scope="col">SKU</th>
-            <th scope="col" data-numeric>Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Wireless Mouse</td>
-            <td>Peripherals</td>
-            <td>WM-001</td>
-            <td data-numeric>245</td>
-          </tr>
-          <tr>
-            <td>USB-C Hub</td>
-            <td>Accessories</td>
-            <td>UC-002</td>
-            <td data-numeric>128</td>
-          </tr>
-          <tr>
-            <td>Monitor Stand</td>
-            <td>Furniture</td>
-            <td>MS-003</td>
-            <td data-numeric>56</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
+    <browser-window src="/docs/snippets/demos/table-basic.html" url="https://vanilla-breeze.dev/table/basic" title="Basic table with data cells" shadow></browser-window>
     <code-block language="html" show-lines label="Basic td usage">{{ basicTdCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Numeric Data Alignment</h2>
-    <p>Use the <code>data-numeric</code> attribute for cells containing numbers. This right-aligns the content and applies tabular numerals for proper digit alignment.</p>
-
-    <div class="example">
-      <table>
-        <caption>Sales Report</caption>
-        <thead>
-          <tr>
-            <th scope="col">Month</th>
-            <th scope="col" data-numeric>Units</th>
-            <th scope="col" data-numeric>Revenue</th>
-            <th scope="col" data-numeric>Growth</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>January</td>
-            <td data-numeric>1,250</td>
-            <td data-numeric>$37,500.00</td>
-            <td data-numeric>+12.5%</td>
-          </tr>
-          <tr>
-            <td>February</td>
-            <td data-numeric>1,480</td>
-            <td data-numeric>$44,400.00</td>
-            <td data-numeric>+18.4%</td>
-          </tr>
-          <tr>
-            <td>March</td>
-            <td data-numeric>1,320</td>
-            <td data-numeric>$39,600.00</td>
-            <td data-numeric>-10.8%</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>Total</td>
-            <td data-numeric>4,050</td>
-            <td data-numeric>$121,500.00</td>
-            <td data-numeric>+6.7%</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <code-block language="html" show-lines label="Numeric data cells">{{ numericDataCode | escape }}</code-block>
-
-    <h3>Why Tabular Numerals Matter</h3>
-    <p>Tabular numerals (monospaced numbers) ensure that digits align vertically, making it easier to compare values in a column. The <code>data-numeric</code> attribute applies <code>font-variant-numeric: tabular-nums</code> automatically.</p>
-
-    <div class="example">
-      <table>
-        <caption>Tabular vs. Proportional Numerals</caption>
-        <thead>
-          <tr>
-            <th scope="col" data-numeric>Tabular (data-numeric)</th>
-            <th scope="col">Proportional (default)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td data-numeric>$1,234.56</td>
-            <td style="text-align: end;">$1,234.56</td>
-          </tr>
-          <tr>
-            <td data-numeric>$12.34</td>
-            <td style="text-align: end;">$12.34</td>
-          </tr>
-          <tr>
-            <td data-numeric>$123,456.78</td>
-            <td style="text-align: end;">$123,456.78</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <h2>Numeric Data</h2>
+    <p>Use the <code>data-numeric</code> attribute for cells containing numbers. This right-aligns the content and applies <code>font-variant-numeric: tabular-nums</code> so digits align vertically across rows.</p>
+    <code-block language="html" show-lines label="Numeric data cells">{{ numericCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Spanning Cells</h2>
-    <p>Use <code>colspan</code> and <code>rowspan</code> to create cells that span multiple columns or rows.</p>
-
-    <h3>Column Span</h3>
-    <div class="example">
-      <table class="bordered">
-        <caption>Merged Cells Example</caption>
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Mon</th>
-            <th scope="col">Tue</th>
-            <th scope="col">Wed</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Alice</td>
-            <td>Work</td>
-            <td colspan="2">Conference (2 days)</td>
-          </tr>
-          <tr>
-            <td>Bob</td>
-            <td colspan="3">Vacation</td>
-          </tr>
-          <tr>
-            <td>Carol</td>
-            <td>Work</td>
-            <td>Work</td>
-            <td>Remote</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <code-block language="html" show-lines label="Column spanning cells">{{ colspanCode | escape }}</code-block>
-
-    <h3>Row Span</h3>
-    <div class="example">
-      <table class="bordered">
-        <caption>Row Spanning Example</caption>
-        <thead>
-          <tr>
-            <th scope="col">Category</th>
-            <th scope="col">Item</th>
-            <th scope="col" data-numeric>Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td rowspan="3">Electronics</td>
-            <td>Mouse</td>
-            <td data-numeric>$29.99</td>
-          </tr>
-          <tr>
-            <td>Keyboard</td>
-            <td data-numeric>$79.99</td>
-          </tr>
-          <tr>
-            <td>Webcam</td>
-            <td data-numeric>$59.99</td>
-          </tr>
-          <tr>
-            <td rowspan="2">Furniture</td>
-            <td>Desk</td>
-            <td data-numeric>$299.99</td>
-          </tr>
-          <tr>
-            <td>Chair</td>
-            <td data-numeric>$199.99</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <code-block language="html" show-lines label="Row spanning cells">{{ rowspanCode | escape }}</code-block>
+    <h2>Explicit Alignment</h2>
+    <p>Use <code>data-align</code> when the default (<code>start</code>) or <code>data-numeric</code> (<code>end</code>) are not appropriate for the content.</p>
+    <code-block language="html" show-lines label="Explicit alignment">{{ alignCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Empty Cells</h2>
-    <p>When data is not available, use appropriate content rather than leaving cells empty.</p>
-
-    <div class="example">
-      <table>
-        <caption>Data Availability</caption>
-        <thead>
-          <tr>
-            <th scope="col">Product</th>
-            <th scope="col" data-numeric>Q1</th>
-            <th scope="col" data-numeric>Q2</th>
-            <th scope="col" data-numeric>Q3</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Widget A</td>
-            <td data-numeric>$12,500</td>
-            <td data-numeric>$15,200</td>
-            <td data-numeric>$14,800</td>
-          </tr>
-          <tr>
-            <td>Widget B (new)</td>
-            <td data-numeric>N/A</td>
-            <td data-numeric>$8,900</td>
-            <td data-numeric>$10,200</td>
-          </tr>
-          <tr>
-            <td>Widget C (discontinued)</td>
-            <td data-numeric>$6,200</td>
-            <td data-numeric>$4,100</td>
-            <td data-numeric>-</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p>Use meaningful placeholders:</p>
-    <ul>
-      <li><strong>N/A:</strong> Not applicable (data doesn't apply to this cell)</li>
-      <li><strong>-:</strong> No data or not recorded</li>
-      <li><strong>TBD:</strong> To be determined</li>
-      <li><strong>$0:</strong> Actual zero value (don't leave blank)</li>
-    </ul>
+    <h2>Custom Sort Values</h2>
+    <p>Use <code>data-sort-value</code> when the display text differs from the value that should be used for sorting. The <a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> component reads this attribute during sort operations.</p>
+    <code-block language="html" show-lines label="Custom sort values">{{ sortValueCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Rich Content in Cells</h2>
-    <p>Data cells can contain various types of content beyond plain text.</p>
-
-    <div class="example">
-      <table>
-        <caption>Product Details</caption>
-        <thead>
-          <tr>
-            <th scope="col">Product</th>
-            <th scope="col">Status</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <strong>Widget Pro</strong><br />
-              <small>SKU: WP-001</small>
-            </td>
-            <td><mark class="success">In Stock</mark></td>
-            <td>
-              <button type="button">Edit</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <strong>Gadget Plus</strong><br />
-              <small>SKU: GP-002</small>
-            </td>
-            <td><mark class="warning">Low Stock</mark></td>
-            <td>
-              <button type="button">Edit</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <strong>Tool Basic</strong><br />
-              <small>SKU: TB-003</small>
-            </td>
-            <td><mark class="error">Out of Stock</mark></td>
-            <td>
-              <button type="button">Edit</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <h2>Custom Filter Values</h2>
+    <p>Use <code>data-filter-value</code> when the cell's display content does not capture all the text a user might search for. The <a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> component uses this for its filter/search feature.</p>
+    <code-block language="html" show-lines label="Custom filter values">{{ filterValueCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li><strong>Header associations:</strong> Data cells are automatically associated with their column and row headers through the table structure</li>
-      <li><strong>Screen reader navigation:</strong> When navigating to a td, screen readers announce the associated headers</li>
-      <li><strong>Complex tables:</strong> For tables where automatic association is insufficient, use the <code>headers</code> attribute</li>
-      <li><strong>Avoid empty cells:</strong> Use meaningful placeholders like "N/A" or "-" for better screen reader experience</li>
-    </ul>
-
-    <h3>The headers Attribute</h3>
-    <p>For complex tables with multiple levels of headers, explicitly associate data cells with their headers:</p>
-
-    <code-block language="html" show-lines label="Headers attribute for complex tables">{{ headersAttributeCode | escape }}</code-block>
+    <h2>Responsive Card-Mode Labels</h2>
+    <p>On narrow screens, the <a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> component can switch from a traditional table layout to a stacked card layout. Add <code>data-label</code> to each <code>&lt;td&gt;</code> to provide the column header text that appears as a label in card mode.</p>
+    <code-block language="html" show-lines label="Card-mode labels">{{ dataLabelCode | escape }}</code-block>
   </section>
 
   <section>
-    <h2>Styling</h2>
-    <p>Vanilla Breeze applies these styles to td elements:</p>
+    <h2>Complex Header Associations</h2>
+    <p>For tables with multiple levels of headers where automatic association via <code>scope</code> is insufficient, use the <code>headers</code> attribute to explicitly list the IDs of the associated header cells.</p>
+    <code-block language="html" show-lines label="headers attribute for complex tables">{{ headersAttrCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>VB Data Attributes</h2>
 
     <table class="props-table">
       <thead>
         <tr>
-          <th scope="col">Property</th>
-          <th scope="col">Value</th>
-          <th scope="col">Purpose</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">Values</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>padding</code></td>
-          <td><code>var(--size-s) var(--size-m)</code></td>
-          <td>Consistent spacing</td>
+          <td><code>data-numeric</code></td>
+          <td>Boolean attribute</td>
+          <td>Right-aligns content and uses tabular numerals</td>
         </tr>
         <tr>
-          <td><code>text-align</code></td>
-          <td><code>start</code></td>
-          <td>Left-aligned by default (RTL-aware)</td>
+          <td><code>data-align</code></td>
+          <td><code>start</code>, <code>center</code>, <code>end</code></td>
+          <td>Explicit text alignment override</td>
         </tr>
         <tr>
-          <td><code>vertical-align</code></td>
-          <td><code>top</code></td>
-          <td>Content aligns to top of cell</td>
+          <td><code>data-sort-value</code></td>
+          <td>String</td>
+          <td>Value used for sorting (overrides display text)</td>
         </tr>
         <tr>
-          <td><code>border-block-end</code></td>
-          <td><code>var(--border-width-thin)</code></td>
-          <td>Thin bottom border</td>
+          <td><code>data-filter-value</code></td>
+          <td>String</td>
+          <td>Value used for filtering/search (overrides display text)</td>
+        </tr>
+        <tr>
+          <td><code>data-label</code></td>
+          <td>String</td>
+          <td>Column header label for responsive card mode</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>Numeric Data Styling</h3>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th scope="col">Property</th>
-          <th scope="col">Value</th>
-          <th scope="col">Applied When</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>text-align</code></td>
-          <td><code>end</code></td>
-          <td><code>data-numeric</code> attribute present</td>
-        </tr>
-        <tr>
-          <td><code>font-variant-numeric</code></td>
-          <td><code>tabular-nums</code></td>
-          <td><code>data-numeric</code> attribute present</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-
+    <h3>Standard HTML Attributes</h3>
     <table class="props-table">
       <thead>
         <tr>
@@ -471,13 +229,24 @@ permalink: /docs/elements/native/td/
           <td>Space-separated IDs</td>
           <td>Explicitly associates cell with header cells</td>
         </tr>
-        <tr>
-          <td><code>data-numeric</code></td>
-          <td>Boolean attribute</td>
-          <td>Right-aligns content and uses tabular numerals</td>
-        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="td CSS styles">{{ tdCss | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Header associations:</strong> Data cells are automatically associated with their column and row headers through the table structure and <code>scope</code></li>
+      <li><strong>Screen reader navigation:</strong> When navigating to a <code>&lt;td&gt;</code>, screen readers announce the associated headers</li>
+      <li><strong>Complex tables:</strong> Use the <code>headers</code> attribute when automatic association is insufficient</li>
+      <li><strong>Avoid empty cells:</strong> Use meaningful placeholders like "N/A" or "-" for better screen reader experience</li>
+      <li><strong>Rich content:</strong> When cells contain structured content (links, buttons, status badges), ensure all interactive elements are keyboard accessible</li>
+    </ul>
   </section>
 
   <section>
@@ -488,12 +257,6 @@ permalink: /docs/elements/native/td/
       <li><a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> - Primary container for data rows</li>
       <li><a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> - Contains summary/total cells</li>
       <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - The table container</li>
-    </ul>
-
-    <h3>Layout Alternatives</h3>
-    <p>For non-tabular data that might seem table-like:</p>
-    <ul>
-      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> - For card layouts that adapt to screen size</li>
-      <li><code>&lt;dl&gt;</code> - For key-value pairs (definition lists)</li>
+      <li><a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> - Interactive table component that uses <code>data-sort-value</code>, <code>data-filter-value</code>, and <code>data-label</code></li>
     </ul>
   </section>

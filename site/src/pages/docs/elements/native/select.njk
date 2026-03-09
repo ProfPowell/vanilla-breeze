@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "select"
-description: "Dropdown menu for choosing from a list of predefined options. Use when the user must select from a fixed set of choices."
+description: "Dropdown menu for choosing from a list of predefined options. Vanilla Breeze resets the native appearance and adds a custom SVG chevron, consistent sizing, and focus styling via design tokens."
 elementName: select
 category: native
 nativeGroup: Forms
@@ -17,13 +17,8 @@ permalink: /docs/elements/native/select/
   <option value="uk">United Kingdom</option>
 </select>{% endset %}
 
-{% set requiredSelectCode %}<select required>
-  <option value="" disabled selected>Choose a category...</option>
-  <option value="tech">Technology</option>
-  <option value="design">Design</option>
-</select>{% endset %}
-
-{% set optionGroupsCode %}<select>
+{% set optgroupCode %}<select id="product">
+  <option value="">Select a product...</option>
   <optgroup label="Electronics">
     <option value="laptop">Laptop</option>
     <option value="phone">Smartphone</option>
@@ -34,25 +29,27 @@ permalink: /docs/elements/native/select/
   </optgroup>
 </select>{% endset %}
 
-{% set multipleSelectCode %}<select multiple size="5">
+{% set multipleCode %}<select multiple size="5">
   <option value="html">HTML</option>
   <option value="css">CSS</option>
   <option value="js">JavaScript</option>
-  <!-- more options -->
+  <option value="python">Python</option>
+  <option value="rust">Rust</option>
 </select>{% endset %}
 
-{% set disabledSelectCode %}<!-- Disabled select -->
+{% set disabledCode %}<!-- Entire select disabled -->
 <select disabled>
   <option>Cannot change</option>
 </select>
 
-<!-- Disabled option -->
+<!-- Individual option disabled -->
 <select>
-  <option value="available">Available</option>
-  <option value="unavailable" disabled>Unavailable</option>
+  <option value="free">Free</option>
+  <option value="pro">Pro - $29/mo</option>
+  <option value="enterprise" disabled>Enterprise (Contact us)</option>
 </select>{% endset %}
 
-{% set formFieldSelectCode %}<form-field>
+{% set formFieldCode %}<form-field>
   <label for="department">Department</label>
   <select id="department" name="department" required>
     <option value="" disabled selected>Select department...</option>
@@ -61,31 +58,23 @@ permalink: /docs/elements/native/select/
   </select>
 </form-field>{% endset %}
 
-{% set cssReferenceCode %}select {
-  display: block;
-  inline-size: 100%;
-  padding-block: var(--size-s);
-  padding-inline: var(--size-s);
-  min-block-size: var(--size-touch-min);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  background: var(--color-surface);
-  font: inherit;
-  cursor: pointer;
-  transition: border-color var(--duration-fast);
-}
+{% set cssReferenceCode %}/* Select inherits shared input styles, then overrides: */
 
-select:focus {
-  outline: none;
-  border-color: var(--color-interactive);
-  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+select {
+  appearance: none;
+  padding-inline-end: var(--size-xl);
+  background-image: url("data:image/svg+xml,...chevron-svg...");
+  background-repeat: no-repeat;
+  background-position: right var(--size-xs) center;
+  background-size: 1.25rem;
+  cursor: pointer;
 }
 
 select:disabled {
-  background: var(--color-surface-raised);
   cursor: not-allowed;
 }
 
+/* Multiple select removes the custom chevron */
 select[multiple] {
   padding: var(--size-xs);
 }
@@ -95,306 +84,122 @@ optgroup {
 }{% endset %}
 
 <section>
-    <h2>When to Use</h2>
-    <ul>
-      <li>Choosing from a predefined list (countries, categories, sizes)</li>
-      <li>When the list has more than 5 options (otherwise consider radio buttons)</li>
-      <li>When screen space is limited</li>
-      <li>When the user cannot enter custom values</li>
-    </ul>
-    <p><strong>Consider alternatives:</strong></p>
-    <ul>
-      <li>Radio buttons for 2-5 options when space allows</li>
-      <li><a href="/docs/elements/native/datalist/">datalist</a> when users can enter custom values</li>
-    </ul>
-  </section>
+  <h2>When to Use</h2>
+  <ul>
+    <li>Choosing from a predefined list (countries, categories, sizes)</li>
+    <li>When the list has more than 5 options (otherwise consider radio buttons)</li>
+    <li>When screen space is limited</li>
+    <li>When the user cannot enter custom values</li>
+  </ul>
+  <p><strong>Consider alternatives:</strong></p>
+  <ul>
+    <li>Radio buttons for 2-5 options when space allows</li>
+    <li><a href="/docs/elements/native/datalist/">datalist</a> when users can type custom values alongside suggestions</li>
+    <li><a href="/docs/elements/web-components/combo-box/">combo-box</a> for a fully custom filterable dropdown</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Basic Usage</h2>
-    <p>A single-selection dropdown with a placeholder option.</p>
+<section>
+  <h2>Examples</h2>
+  <p>Basic select, optgroup categorization, multiple selection, and disabled states.</p>
 
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-basic">Country</label>
-        <select id="select-basic" name="country">
-          <option value="">Select a country...</option>
-          <option value="us">United States</option>
-          <option value="ca">Canada</option>
-          <option value="uk">United Kingdom</option>
-          <option value="au">Australia</option>
-        </select>
-      </form-field>
-    </div>
+  <browser-window src="/docs/snippets/demos/select-examples.html" url="https://vanilla-breeze.dev/select/examples" title="Select examples: basic, optgroup, multiple, disabled" shadow></browser-window>
 
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Basic select with label">{{ basicSelectCode | escape }}</code-block>
-  </section>
+  <h3>Basic Select</h3>
+  <code-block language="html" label="Basic select with label">{{ basicSelectCode | escape }}</code-block>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Purpose</th>
-          <th>Example</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>name</code></td>
-          <td>Form field name for submission</td>
-          <td><code>name="country"</code></td>
-        </tr>
-        <tr>
-          <td><code>required</code></td>
-          <td>Field must have a non-empty value</td>
-          <td><code>required</code></td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>Prevents selection</td>
-          <td><code>disabled</code></td>
-        </tr>
-        <tr>
-          <td><code>multiple</code></td>
-          <td>Allow selecting multiple options</td>
-          <td><code>multiple</code></td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td>Number of visible options</td>
-          <td><code>size="5"</code></td>
-        </tr>
-        <tr>
-          <td><code>autocomplete</code></td>
-          <td>Autofill hint</td>
-          <td><code>autocomplete="country"</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <h3>With Option Groups</h3>
+  <p>Organize options into categories using <a href="/docs/elements/native/optgroup/">optgroup</a>.</p>
+  <code-block language="html" label="Select with optgroups">{{ optgroupCode | escape }}</code-block>
 
-  <section>
-    <h2>Required Select</h2>
-    <p>Use a disabled placeholder option to require selection.</p>
+  <h3>Multiple Selection</h3>
+  <p>Allow selecting multiple options with the <code>multiple</code> attribute. Use <code>size</code> to control how many options are visible.</p>
+  <code-block language="html" label="Multiple selection select">{{ multipleCode | escape }}</code-block>
 
-    <div class="example">
-      <form style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="select-required">Category *</label>
-          <select id="select-required" name="category" required>
-            <option value="" disabled selected>Choose a category...</option>
-            <option value="tech">Technology</option>
-            <option value="design">Design</option>
-            <option value="business">Business</option>
-          </select>
-        </form-field>
-      </form>
-    </div>
+  <h3>Disabled States</h3>
+  <p>Disable the entire select or individual options within it.</p>
+  <code-block language="html" label="Disabled select and options">{{ disabledCode | escape }}</code-block>
+</section>
 
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Required select with disabled placeholder">{{ requiredSelectCode | escape }}</code-block>
-  </section>
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Purpose</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>name</code></td>
+        <td>Form field name for submission</td>
+        <td><code>name="country"</code></td>
+      </tr>
+      <tr>
+        <td><code>required</code></td>
+        <td>Field must have a non-empty value</td>
+        <td><code>required</code></td>
+      </tr>
+      <tr>
+        <td><code>disabled</code></td>
+        <td>Prevents selection</td>
+        <td><code>disabled</code></td>
+      </tr>
+      <tr>
+        <td><code>multiple</code></td>
+        <td>Allow selecting multiple options</td>
+        <td><code>multiple</code></td>
+      </tr>
+      <tr>
+        <td><code>size</code></td>
+        <td>Number of visible options (useful with <code>multiple</code>)</td>
+        <td><code>size="5"</code></td>
+      </tr>
+      <tr>
+        <td><code>autocomplete</code></td>
+        <td>Autofill hint</td>
+        <td><code>autocomplete="country"</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
-  <section>
-    <h2>With Option Groups</h2>
-    <p>Organize options into categories using <a href="/docs/elements/native/optgroup/">optgroup</a>.</p>
+<section>
+  <h2>With form-field</h2>
+  <p>Wrap a select in the <a href="/docs/elements/custom-elements/form-field/">form-field</a> custom element for enhanced validation, required indicators, and helper text.</p>
 
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-groups">Product</label>
-        <select id="select-groups">
-          <option value="">Select a product...</option>
-          <optgroup label="Electronics">
-            <option value="laptop">Laptop</option>
-            <option value="phone">Smartphone</option>
-            <option value="tablet">Tablet</option>
-          </optgroup>
-          <optgroup label="Accessories">
-            <option value="case">Phone Case</option>
-            <option value="charger">Charger</option>
-            <option value="headphones">Headphones</option>
-          </optgroup>
-        </select>
-      </form-field>
-    </div>
+  <code-block language="html" label="Select with form-field">{{ formFieldCode | escape }}</code-block>
+</section>
 
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Select with option groups">{{ optionGroupsCode | escape }}</code-block>
-  </section>
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Always use a <a href="/docs/elements/native/label/">label</a></strong>: Every select needs an associated label, either wrapping or via <code>for</code>/<code>id</code></li>
+    <li><strong>Use autocomplete</strong>: Add appropriate <code>autocomplete</code> values for autofill (e.g., <code>country</code>)</li>
+    <li><strong>Keyboard navigation</strong>: Arrow keys navigate options; typing jumps to matching text</li>
+    <li><strong>Option groups</strong>: Help screen readers understand option categories</li>
+    <li><strong>Avoid onChange submission</strong>: Do not submit forms automatically on select change without warning</li>
+    <li><strong>Multiple select guidance</strong>: Provide visible instructions for Ctrl/Cmd-click</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Multiple Selection</h2>
-    <p>Allow selecting multiple options with the <code>multiple</code> attribute. Use <code>size</code> to show more options.</p>
+<section>
+  <h2>CSS Reference</h2>
+  <p>VB sets <code>appearance: none</code> to remove the native dropdown arrow and replaces it with a custom SVG chevron positioned via <code>background-image</code>. The select inherits shared input styles (border, radius, focus ring) from the form layer.</p>
 
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-multiple">Select Skills</label>
-        <select id="select-multiple" name="skills" multiple size="5">
-          <option value="html">HTML</option>
-          <option value="css">CSS</option>
-          <option value="js">JavaScript</option>
-          <option value="react">React</option>
-          <option value="vue">Vue</option>
-          <option value="node">Node.js</option>
-          <option value="python">Python</option>
-        </select>
-        <span class="help">Hold Ctrl/Cmd to select multiple</span>
-      </form-field>
-    </div>
+  <code-block language="css" label="Select-specific CSS overrides">{{ cssReferenceCode | escape }}</code-block>
+</section>
 
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Multiple selection select">{{ multipleSelectCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Disabled States</h2>
-
-    <h3>Disabled Select</h3>
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-disabled">Status (locked)</label>
-        <select id="select-disabled" disabled>
-          <option value="active" selected>Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </form-field>
-    </div>
-
-    <h3>Disabled Options</h3>
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-disabled-options">Plan</label>
-        <select id="select-disabled-options">
-          <option value="free">Free</option>
-          <option value="basic">Basic - $9/mo</option>
-          <option value="pro">Pro - $29/mo</option>
-          <option value="enterprise" disabled>Enterprise (Contact us)</option>
-        </select>
-      </form-field>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Disabled select and options">{{ disabledSelectCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>With form-field</h2>
-    <p>Use the <a href="/docs/elements/custom-elements/form-field/">form-field custom element</a> for enhanced validation.</p>
-
-    <div class="example">
-      <form style="max-inline-size: 25rem;">
-        <form-field>
-          <label for="ff-select">Department</label>
-          <select id="ff-select" name="department" required>
-            <option value="" disabled selected>Select department...</option>
-            <option value="sales">Sales</option>
-            <option value="engineering">Engineering</option>
-            <option value="marketing">Marketing</option>
-            <option value="support">Support</option>
-          </select>
-        </form-field>
-      </form>
-    </div>
-
-    <h3>Code</h3>
-    <code-block language="html" show-lines label="Select with form-field element">{{ formFieldSelectCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Common Use Cases</h2>
-
-    <h3>Country Selector</h3>
-    <div class="example">
-      <form-field style="max-inline-size: 25rem;">
-        <label for="select-country">Country</label>
-        <select id="select-country" autocomplete="country">
-          <option value="">Select country...</option>
-          <optgroup label="North America">
-            <option value="us">United States</option>
-            <option value="ca">Canada</option>
-            <option value="mx">Mexico</option>
-          </optgroup>
-          <optgroup label="Europe">
-            <option value="uk">United Kingdom</option>
-            <option value="de">Germany</option>
-            <option value="fr">France</option>
-          </optgroup>
-        </select>
-      </form-field>
-    </div>
-
-    <h3>Date Selectors</h3>
-    <div class="example">
-      <layout-cluster data-layout-gap="m" style="max-inline-size: 30rem;">
-        <form-field>
-          <label for="select-month">Month</label>
-          <select id="select-month">
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-        </form-field>
-        <form-field>
-          <label for="select-year">Year</label>
-          <select id="select-year">
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-          </select>
-        </form-field>
-      </layout-cluster>
-    </div>
-
-    <h3>Sorting Options</h3>
-    <div class="example">
-      <form-field style="max-inline-size: 20rem;">
-        <label for="select-sort">Sort by</label>
-        <select id="select-sort">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="name">Name (A-Z)</option>
-        </select>
-      </form-field>
-    </div>
-  </section>
-
-  <section>
-    <h2>Accessibility Notes</h2>
-    <ul>
-      <li><strong>Always use a label</strong>: Every select needs an associated <a href="/docs/elements/native/label/">label</a></li>
-      <li><strong>Use autocomplete</strong>: Add appropriate <code>autocomplete</code> values for autofill</li>
-      <li><strong>Keyboard navigation</strong>: Arrow keys navigate options, typing jumps to matching text</li>
-      <li><strong>Option groups</strong>: Help screen readers understand option categories</li>
-      <li><strong>Avoid onChange submission</strong>: Don't submit forms on select change without warning</li>
-      <li><strong>Multiple select guidance</strong>: Provide instructions for Ctrl/Cmd-click</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Select CSS styles">{{ cssReferenceCode | escape }}</code-block>
-  </section>
-
-  <section>
-    <h2>Related Elements</h2>
-    <ul>
-      <li><a href="/docs/elements/native/option/">option</a> - Individual options within a select</li>
-      <li><a href="/docs/elements/native/optgroup/">optgroup</a> - Group related options</li>
-      <li><a href="/docs/elements/native/datalist/">datalist</a> - For autocomplete with custom values</li>
-      <li><a href="/docs/elements/native/label/">label</a> - Required for accessibility</li>
-      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced select with validation</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related Elements</h2>
+  <ul>
+    <li><a href="/docs/elements/native/option/">option</a> - Individual options within a select</li>
+    <li><a href="/docs/elements/native/optgroup/">optgroup</a> - Group related options with a label</li>
+    <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete with custom values</li>
+    <li><a href="/docs/elements/web-components/combo-box/">combo-box</a> - Fully custom filterable dropdown</li>
+    <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced select with validation</li>
+    <li><a href="/docs/elements/native/label/">label</a> - Required for accessibility</li>
+  </ul>
+</section>

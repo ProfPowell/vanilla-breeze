@@ -1,7 +1,7 @@
 ---
 layout: layouts/element.njk
 title: "samp"
-description: "Represents sample or quoted output from a computer program."
+description: "Represents sample or quoted output from a computer program. Rendered in monospace font."
 elementName: samp
 category: native
 nativeGroup: Text Semantics
@@ -9,32 +9,83 @@ currentPath: /docs/elements/native/samp/
 permalink: /docs/elements/native/samp/
 ---
 
-{% set basicExample %}<samp>...</samp>{% endset %}
+{% set inlineCode %}<p>The command returned: <samp>Hello, World!</samp></p>
+<p>Error message: <samp>File not found: config.json</samp></p>{% endset %}
+
+{% set blockCode %}<pre><samp>$ npm install
+added 125 packages in 3.2s
+
+$ npm run build
+Build completed successfully.
+Output: dist/bundle.js (45.2 KB)</samp></pre>{% endset %}
+
+{% set mixedCode %}<p>Type <kbd>git status</kbd> and the system responds with
+<samp>On branch main</samp>.</p>{% endset %}
+
+{% set sampCssCode %}samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* samp is never machine-translated */
+code, kbd, samp, pre, var {
+  translate: no;
+}{% endset %}
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;samp&gt;</code> element is part of the Text Semantics category in HTML.</p>
+    <p>The <code>&lt;samp&gt;</code> element represents sample output from a computer program. VB styles it in <code>var(--font-mono)</code> at <code>0.9em</code>. It is part of VB's code-family elements alongside <a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a>, <a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a>, and <code>&lt;var&gt;</code>, and is automatically protected from machine translation via the <a href="/docs/i18n/">i18n system</a>.</p>
   </section>
 
   <section>
-    <h2>Basic Example</h2>
-    <div class="example">
-      <samp>Example samp content</samp>
-    </div>
-    <code-block language="html" label="Basic samp example">{{ basicExample | escape }}</code-block>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Command output:</strong> Results from terminal commands</li>
+      <li><strong>Error messages:</strong> System error text</li>
+      <li><strong>Status messages:</strong> Build output, test results</li>
+      <li><strong>API responses:</strong> Showing what a system returns</li>
+    </ul>
+    <h3>When NOT to Use</h3>
+    <ul>
+      <li>For code the user writes &mdash; use <a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a></li>
+      <li>For keyboard input &mdash; use <a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a></li>
+      <li>For variables &mdash; use <code>&lt;var&gt;</code></li>
+    </ul>
   </section>
 
   <section>
-    <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/elements/native/states/">global attributes</a>.</p>
+    <h2>Examples</h2>
+
+    <browser-window src="/docs/snippets/demos/samp-examples.html" url="samp-examples.html" title="Sample output" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Inline output">{{ inlineCode | escape }}</code-block>
+    <code-block language="html" show-lines label="Block output">{{ blockCode | escape }}</code-block>
+
+    <h3>Mixed with kbd</h3>
+    <p>Pair <code>&lt;kbd&gt;</code> (user input) with <code>&lt;samp&gt;</code> (system response) to document command-line workflows:</p>
+    <code-block language="html" show-lines label="Input + output">{{ mixedCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="samp CSS">{{ sampCssCode | escape }}</code-block>
+    <p>Unlike <code>&lt;code&gt;</code>, <code>&lt;samp&gt;</code> has no background or padding &mdash; output text should feel like raw system text, not highlighted code.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;samp&gt;</code> element will be documented here.</p>
+    <ul>
+      <li>Screen readers read <code>&lt;samp&gt;</code> as regular text &mdash; the monospace styling is visual only</li>
+      <li>Provide context: "The system responded with..." or "Error:" before the output</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related Elements</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; For source code the user writes</li>
+      <li><a href="/docs/elements/native/kbd/"><code>&lt;kbd&gt;</code></a> &mdash; For keyboard input from the user</li>
+      <li><a href="/docs/elements/native/var/"><code>&lt;var&gt;</code></a> &mdash; For variables in code or math</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Translation protection for code-family elements</li>
+    </ul>
   </section>
