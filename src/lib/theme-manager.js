@@ -87,12 +87,9 @@ export const ThemeManager = {
   apply({ mode = 'auto', brand = 'default', borderStyle = '', iconSet = '', fluid = '', backdrop = '', backdropChrome = '', pageBgType = '', pageBgColor = '', pageBgGradStart = '', pageBgGradEnd = '', pageBgGradDir = '' } = {}) {
     const root = document.documentElement;
 
-    // Apply mode
-    if (mode === 'auto') {
-      delete root.dataset.mode;
-    } else {
-      root.dataset.mode = mode;
-    }
+    // Apply mode — always set data-mode to effective value so theme
+    // light/dark selectors match even in auto mode (OS-preference-driven)
+    root.dataset.mode = mode === 'auto' ? this.getEffectiveMode() : mode;
 
     // Brand — preserve a11y theme suffixes
     const current = root.dataset.theme || '';
@@ -303,12 +300,10 @@ export const ThemeManager = {
   _watchSystemPreference() {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', () => {
-      const { mode, brand } = this.load();
-      // Only dispatch event if in auto mode (system preference matters)
-      if (mode === 'auto') {
-        window.dispatchEvent(new CustomEvent('theme-change', {
-          detail: { mode, brand, effectiveMode: this.getEffectiveMode() }
-        }));
+      const saved = this.load();
+      if (saved.mode === 'auto') {
+        // Re-apply to update data-mode and dispatch theme-change event
+        this.apply(saved);
       }
     });
   }
