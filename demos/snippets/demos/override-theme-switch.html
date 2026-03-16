@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Level 1: Named Theme Override</title>
+  <link rel="stylesheet" href="/src/main-full.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    .label {
+      font-size: var(--text-sm, 0.875rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <layout-stack data-layout-gap="l">
+      <header>
+        <h2>Level 1: Named Theme Override</h2>
+        <p>The <code>data-theme</code> attribute switches all tokens for an element and its subtree.</p>
+      </header>
+
+      <!-- Default (no theme attribute — inherits from html) -->
+      <section>
+        <p class="label">Default (no theme set)</p>
+        <layout-card>
+          <layout-stack data-layout-gap="s">
+            <h3>Card Heading</h3>
+            <p>This card uses whatever tokens the page inherits by default — no <code>data-theme</code> is set.</p>
+            <footer>
+              <button type="button">Action</button>
+            </footer>
+          </layout-stack>
+        </layout-card>
+      </section>
+
+      <!-- Swiss theme -->
+      <section data-theme="swiss">
+        <p class="label">data-theme="swiss"</p>
+        <layout-card>
+          <layout-stack data-layout-gap="s">
+            <h3>Card Heading</h3>
+            <p>Swiss: Helvetica, red accent, zero border-radius, no shadows. Clean and precise.</p>
+            <footer>
+              <button type="button">Action</button>
+            </footer>
+          </layout-stack>
+        </layout-card>
+      </section>
+
+      <!-- Cyber theme -->
+      <section data-theme="cyber">
+        <p class="label">data-theme="cyber"</p>
+        <layout-card>
+          <layout-stack data-layout-gap="s">
+            <h3>Card Heading</h3>
+            <p>Cyber: monospace type, cyan neon accent, dark surfaces, glowing shadows.</p>
+            <footer>
+              <button type="button">Action</button>
+            </footer>
+          </layout-stack>
+        </layout-card>
+      </section>
+
+      <!-- Nested themes -->
+      <section data-theme="swiss">
+        <p class="label">Nested: Swiss > Cyber > Swiss</p>
+        <layout-card>
+          <layout-stack data-layout-gap="m">
+            <h3>Outer: Swiss</h3>
+            <p>This card is Swiss-themed.</p>
+            <article data-theme="cyber">
+              <layout-card>
+                <layout-stack data-layout-gap="s">
+                  <h3>Inner: Cyber</h3>
+                  <p>Switched to Cyber inside the Swiss card.</p>
+                  <aside data-theme="swiss">
+                    <layout-card>
+                      <layout-stack data-layout-gap="s">
+                        <h3>Innermost: Swiss Again</h3>
+                        <p>Back to Swiss. The nearest <code>data-theme</code> always wins.</p>
+                      </layout-stack>
+                    </layout-card>
+                  </aside>
+                </layout-stack>
+              </layout-card>
+            </article>
+          </layout-stack>
+        </layout-card>
+      </section>
+    </layout-stack>
+  </main>
+</body>
+</html>

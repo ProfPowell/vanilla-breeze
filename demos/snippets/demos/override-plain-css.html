@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" data-theme="swiss">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Level 3: Unlayered CSS Beats @layer</title>
+  <link rel="stylesheet" href="/src/main-full.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+    .label {
+      font-size: var(--text-sm, 0.875rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    /*
+     * ─── THE PROOF ───────────────────────────────────
+     *
+     * These rules are UNLAYERED — written outside any @layer.
+     * The framework's card, blockquote, and button styles
+     * live inside @layer (reset, base, theme, components).
+     *
+     * Per the CSS cascade spec, unlayered styles ALWAYS
+     * beat layered styles, regardless of specificity.
+     * No !important needed.
+     * ─────────────────────────────────────────────────
+     */
+
+    .custom-card {
+      border: 2px solid oklch(55% 0.25 300);
+      border-radius: 16px;
+      background: oklch(97% 0.02 300);
+    }
+
+    .pull-quote {
+      font-size: 1.5rem;
+      font-style: italic;
+      border-left: 4px solid oklch(55% 0.25 300);
+      border-top: none;
+      border-right: none;
+      border-bottom: none;
+      padding-left: 1.5rem;
+      background: transparent;
+      color: oklch(35% 0.1 300);
+    }
+
+    .accent-button {
+      background: oklch(55% 0.25 300);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 0.75rem 2rem;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <layout-stack data-layout-gap="l">
+      <header>
+        <h2>Level 3: Unlayered CSS Beats @layer</h2>
+        <p>CSS written outside any <code>@layer</code> automatically overrides all framework styles. No <code>!important</code> needed.</p>
+      </header>
+
+      <layout-grid data-layout-min-width="300px">
+        <!-- Left: framework defaults -->
+        <section>
+          <p class="label">Framework Default</p>
+          <layout-stack data-layout-gap="m">
+            <layout-card>
+              <layout-stack data-layout-gap="s">
+                <h3>Standard Card</h3>
+                <p>Framework styles from <code>@layer components</code>.</p>
+              </layout-stack>
+            </layout-card>
+
+            <blockquote>
+              <p>A blockquote styled by the Swiss theme inside <code>@layer</code>.</p>
+            </blockquote>
+
+            <footer>
+              <button type="button">Framework Button</button>
+            </footer>
+          </layout-stack>
+        </section>
+
+        <!-- Right: with CSS overrides -->
+        <section>
+          <p class="label">With CSS Overrides (unlayered)</p>
+          <layout-stack data-layout-gap="m">
+            <layout-card class="custom-card">
+              <layout-stack data-layout-gap="s">
+                <h3>Custom Card</h3>
+                <p>Purple border, rounded corners, tinted background — all from unlayered CSS classes.</p>
+              </layout-stack>
+            </layout-card>
+
+            <blockquote class="pull-quote">
+              <p>A pull-quote restyled with unlayered CSS. The class wins over the Swiss blockquote styles automatically.</p>
+            </blockquote>
+
+            <footer>
+              <button type="button" class="accent-button">Pill Button</button>
+            </footer>
+          </layout-stack>
+        </section>
+      </layout-grid>
+    </layout-stack>
+  </main>
+</body>
+</html>
