@@ -22,25 +22,56 @@
  *
  * THEME CATEGORIES
  * ────────────────
- * 1. BRAND THEMES (simple) — Only override hue values. Shape, shadows,
- *    typography stay default. Examples: ocean, forest, sunset, coral.
+ * 1. BRAND THEMES (simple) — Override hue + lightness/chroma seeds.
+ *    Core derives all states (hover, active, subtle, interactive).
+ *    Shape, shadows, typography stay default.
+ *    Examples: ocean, forest, sunset, coral.
  *
- * 2. PERSONALITY THEMES (moderate) — Override colors + shape + typography
- *    for a distinct feel. Examples: modern, minimal, classic.
+ * 2. PERSONALITY THEMES (moderate) — Seeds + shape + typography.
+ *    May override hover formulas if non-standard (e.g. lightening
+ *    instead of darkening). Examples: modern, minimal, classic.
  *
- * 3. EXTREME THEMES (comprehensive) — Dramatic overhauls of every token
- *    category. Examples: brutalist, swiss, cyber, nord, kawaii, 8bit.
+ * 3. EXTREME THEMES (comprehensive) — Set --color-primary directly
+ *    with hardcoded OKLCH values. Override every token category.
+ *    Examples: brutalist, swiss, cyber, nord, kawaii, 8bit.
  *
- * COMPLETE OVERRIDE PRINCIPLE
- * ──────────────────────────
- * Any theme providing a dark mode variant MUST completely override all
- * surface, text, and border tokens. You cannot rely on the base neutrals
- * because theme-tinted OKLCH values (e.g. oklch(12% 0.02 280)) will
- * clash with achromatic grays. Required tokens in every mode variant:
+ * SEED-AND-DERIVE ARCHITECTURE
+ * ────────────────────────────
+ * Themes declare SEED tokens; core derives everything else.
  *
- *   --color-surface, --color-surface-raised, --color-surface-sunken,
- *   --color-background, --color-text, --color-text-muted,
- *   --color-border, --color-border-strong, --shadow-sm, --shadow-md
+ * SEEDS (declare in theme):
+ *   --hue-primary, --hue-secondary, --hue-accent
+ *   --lightness-primary, --chroma-primary
+ *   --lightness-secondary, --chroma-secondary
+ *   --lightness-accent, --chroma-accent
+ *
+ * DERIVED (do NOT declare — auto-computed from seeds):
+ *   --color-primary, --color-primary-hover, --color-primary-active,
+ *   --color-primary-subtle, --color-secondary-*, --color-accent-*,
+ *   --color-interactive, --color-interactive-hover
+ *
+ * DARK MODE: Core provides hue-tinted surfaces. Brand themes only
+ * need to override --lightness-primary and --chroma-primary. Set
+ * --chroma-surface-tint to control surface tinting (default 0.02,
+ * 0 for pure untinted darks).
+ *
+ * COMPLETE OVERRIDE PRINCIPLE (extreme themes only)
+ * ─────────────────────────────────────────────────
+ * Extreme themes with bespoke palettes MUST completely override all
+ * surface, text, and border tokens in their dark variant.
+ * Brand themes using seeds do NOT need this — core handles it.
+ *
+ * COMPONENT COLOR CONTRACT
+ * ────────────────────────
+ * Components use --btn-color (or similar) seeds internally:
+ *   button { --btn-color: var(--color-error); } /* danger button */
+ * The component derives hover/active/ring from that seed.
+ *
+ * HARMONIC COLORS (opt-in)
+ * ────────────────────────
+ * Derived from --color-primary via hue rotation:
+ *   --color-complement, --color-triad-a, --color-triad-b,
+ *   --color-analog-a, --color-analog-b
  *
  * COLOR SPACE
  * ──────────
@@ -113,17 +144,29 @@
    *   300-360 Purple/Red
    */
 
-  /* Brand colors (derived from hues) */
-  --color-primary: oklch(50% 0.2 var(--hue-primary));
+  /* Brand seeds (themes override these — core derives all states) */
+  --lightness-primary: 50%;
+  --chroma-primary: 0.2;
+  --lightness-secondary: 50%;
+  --chroma-secondary: 0.08;
+  --lightness-accent: 65%;
+  --chroma-accent: 0.18;
+
+  /* Brand colors (derived from seeds + hues — do NOT set in themes) */
+  --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
   --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
   --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
   --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
 
-  --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+  --color-secondary: oklch(var(--lightness-secondary) var(--chroma-secondary) var(--hue-secondary));
   --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+  --color-secondary-active: oklch(from var(--color-secondary) calc(l - 0.12) c h);
+  --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
 
-  --color-accent: oklch(65% 0.18 var(--hue-accent));
+  --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
   --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+  --color-accent-active: oklch(from var(--color-accent) calc(l - 0.12) c h);
+  --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
 
   /* Status colors (fixed hues, not theme-dependent) */
   --color-success: oklch(55% 0.2 145);
@@ -537,8 +580,24 @@
 [data-mode="dark"] {
   color-scheme: dark;
 
-  /* Brighter primary for dark mode contrast */
-  --color-primary: oklch(65% 0.18 var(--hue-primary));
+  /* Brand seeds shift for dark mode contrast */
+  --lightness-primary: 65%;
+  --chroma-primary: 0.18;
+
+  /* Surface tint chroma — themes can override (0 = pure untinted darks) */
+  --chroma-surface-tint: 0.02;
+
+  /* Hue-tinted dark surfaces (derived from --hue-primary) */
+  --color-background: oklch(12% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface: oklch(16% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-raised: oklch(20% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-sunken: oklch(10% var(--chroma-surface-tint) var(--hue-primary));
+
+  --color-text: oklch(93% 0.01 var(--hue-primary));
+  --color-text-muted: oklch(70% var(--chroma-surface-tint) var(--hue-primary));
+
+  --color-border: oklch(30% var(--chroma-surface-tint) var(--hue-primary));
+  --color-border-strong: oklch(50% var(--chroma-surface-tint) var(--hue-primary));
 
   /* Deeper shadows */
   --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
@@ -546,6 +605,8 @@
   --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
   --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
   --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+
+  --page-bg-color: oklch(14% 0.03 var(--hue-primary));
 
   /* Glass adjustments */
   --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
@@ -560,107 +621,68 @@
  */
 
 /*
+── MINIMAL BRAND THEME (seeds only — ~10 lines) ──────────────
+
 :root[data-theme~="THEME_NAME"],
 [data-theme~="THEME_NAME"] {
-  color-scheme: light;
-
-  --theme-border-style: soft;
-  --theme-icon-set: lucide;
-
   --hue-primary: 200;
   --hue-secondary: 180;
   --hue-accent: 45;
 
-  --color-primary: oklch(50% 0.15 var(--hue-primary));
-  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
-  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
-  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
+  --lightness-primary: 50%;
+  --chroma-primary: 0.15;
+  --lightness-secondary: 50%;
+  --chroma-secondary: 0.10;
+  --lightness-accent: 65%;
+  --chroma-accent: 0.15;
+}
 
-  --color-secondary: oklch(50% 0.10 var(--hue-secondary));
-  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
-
-  --color-accent: oklch(65% 0.15 var(--hue-accent));
-  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
-
-  --color-interactive: var(--color-primary);
-  --color-interactive-hover: var(--color-primary-hover);
-
-  --color-background: oklch(97% 0.01 var(--hue-primary));
-  --color-surface: oklch(95% 0.01 var(--hue-primary));
-  --color-surface-raised: oklch(98% 0.008 var(--hue-primary));
-  --color-surface-sunken: oklch(92% 0.015 var(--hue-primary));
-
-  --color-text: oklch(20% 0.02 var(--hue-primary));
-  --color-text-muted: oklch(40% 0.02 var(--hue-primary));
-  --color-text-subtle: oklch(55% 0.015 var(--hue-primary));
-
-  --color-border: oklch(82% 0.012 var(--hue-primary));
-  --color-border-strong: oklch(65% 0.02 var(--hue-primary));
-
-  --font-sans: system-ui, sans-serif;
-  --font-serif: Charter, serif;
-  --font-mono: ui-monospace, monospace;
-
-  --radius-xs: 0.125rem;
-  --radius-s: 0.25rem;
-  --radius-m: 0.5rem;
-  --radius-l: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-
-  --shadow-xs: 0 1px 2px oklch(20% 0.02 var(--hue-primary) / 0.06);
-  --shadow-sm: 0 1px 3px oklch(20% 0.02 var(--hue-primary) / 0.08);
-  --shadow-md: 0 4px 6px oklch(20% 0.02 var(--hue-primary) / 0.08);
-  --shadow-lg: 0 10px 15px oklch(20% 0.02 var(--hue-primary) / 0.08);
-
-  --duration-instant: 50ms;
-  --duration-fast: 100ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
-  --duration-slower: 500ms;
-
-  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-
-  --motion-hover-lift: translateY(-2px);
-  --motion-hover-scale: scale(1.02);
-  --motion-enter-duration: 300ms;
-  --motion-exit-duration: 200ms;
-
-  --page-bg-gradient: linear-gradient(180deg,
-    oklch(95% 0.015 var(--hue-primary)) 0%,
-    oklch(90% 0.02 var(--hue-secondary)) 100%);
+:root[data-theme~="THEME_NAME"][data-mode="dark"],
+[data-theme~="THEME_NAME"][data-mode="dark"] {
+  --lightness-primary: 60%;
+  --chroma-primary: 0.12;
 }
 */
 
-/* Dark variant — MUST provide complete surface/text/border overrides */
 /*
+── PERSONALITY THEME (seeds + overrides) ──────────────────────
+Personality themes can also override shape, typography, motion, etc.
+Only declare hover formulas when they differ from core defaults.
+
+:root[data-theme~="THEME_NAME"],
+[data-theme~="THEME_NAME"] {
+  --hue-primary: 220;
+  --hue-secondary: 200;
+  --hue-accent: 35;
+
+  --lightness-primary: 40%;
+  --chroma-primary: 0.12;
+  --lightness-secondary: 45%;
+  --chroma-secondary: 0.08;
+  --lightness-accent: 60%;
+  --chroma-accent: 0.14;
+
+  /* Non-standard hover: dark primary lightens instead of darkening */
+  --color-primary-hover: oklch(from var(--color-primary) calc(l + 0.08) calc(c + 0.02) h);
+  --color-primary-active: oklch(from var(--color-primary) calc(l + 0.12) c h);
+
+  --font-sans: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+  --radius-m: 0.25rem;
+  --shadow-md: 0 3px 6px -1px oklch(0% 0 0 / 0.07), ...;
+}
+
 :root[data-theme~="THEME_NAME"][data-mode="dark"],
 [data-theme~="THEME_NAME"][data-mode="dark"] {
-  color-scheme: dark;
+  --lightness-primary: 60%;
+  --chroma-primary: 0.10;
+  --chroma-surface-tint: 0.015;
 
-  --color-primary: oklch(65% 0.15 var(--hue-primary));
-  --color-primary-hover: oklch(70% 0.16 var(--hue-primary));
-  --color-primary-subtle: oklch(25% 0.04 var(--hue-primary));
-
-  --color-background: oklch(12% 0.02 var(--hue-primary));
-  --color-surface: oklch(16% 0.02 var(--hue-primary));
-  --color-surface-raised: oklch(20% 0.02 var(--hue-primary));
-  --color-surface-sunken: oklch(10% 0.02 var(--hue-primary));
-
-  --color-text: oklch(95% 0.01 var(--hue-primary));
-  --color-text-muted: oklch(75% 0.01 var(--hue-primary));
-  --color-text-subtle: oklch(60% 0.015 var(--hue-primary));
-
-  --color-border: oklch(30% 0.02 var(--hue-primary));
-  --color-border-strong: oklch(45% 0.02 var(--hue-primary));
-
-  --shadow-sm: 0 1px 3px oklch(5% 0.02 var(--hue-primary) / 0.3);
-  --shadow-md: 0 4px 6px oklch(5% 0.02 var(--hue-primary) / 0.3);
-
-  --page-bg-gradient: linear-gradient(180deg,
-    oklch(14% 0.025 var(--hue-primary)) 0%,
-    oklch(10% 0.02 var(--hue-secondary)) 100%);
+  /* Only needed when surface lightness differs from core defaults */
+  --color-background: oklch(10% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface: oklch(14% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-raised: oklch(18% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-sunken: oklch(8% var(--chroma-surface-tint) var(--hue-primary));
+  ...
 }
 */
 
@@ -879,19 +901,25 @@
  * ║  SECTION 5: QUICK REFERENCE — TOKEN CHECKLIST                   ║
  * ╚══════════════════════════════════════════════════════════════════╝
  *
- * BRAND THEME (simple — just hues):
+ * BRAND THEME (simple — seeds only):
  *   --hue-primary, --hue-secondary, --hue-accent
+ *   --lightness-primary, --chroma-primary
+ *   --lightness-secondary, --chroma-secondary
+ *   --lightness-accent, --chroma-accent
+ *   Dark: --lightness-primary, --chroma-primary (core handles surfaces)
  *
- * PERSONALITY THEME (moderate — hues + shape + typography):
- *   Colors: --hue-*, --color-primary/secondary/accent + hover variants
- *   Surfaces: --color-background, --color-surface, -raised, -sunken
- *   Text: --color-text, -muted, -subtle
- *   Borders: --color-border, -strong, -subtle
+ * PERSONALITY THEME (moderate — seeds + shape + typography):
+ *   Colors: seeds above + optional hover formula overrides
  *   Shape: --radius-xs through --radius-full
  *   Shadows: --shadow-xs through --shadow-2xl
  *   Typography: --font-sans, --font-serif, --font-mono
+ *   Dark: seeds + optional --chroma-surface-tint + surface overrides
  *
  * EXTREME THEME (comprehensive — everything above plus):
+ *   Colors: set --color-primary directly (bypasses seeds)
+ *   Surfaces: --color-background, --color-surface, -raised, -sunken
+ *   Text: --color-text, -muted, -subtle
+ *   Borders: --color-border, -strong, -subtle
  *   Motion: --duration-*, --ease-*, --motion-hover-*, --motion-enter/exit-*
  *   Extensions: --font-display/heading/body/code, --glass-*, --surface-*,
  *               --page-bg-*, --border-roughness, --filter-rough,
@@ -899,11 +927,17 @@
  *   Component overrides: element-specific rules nested under theme selector
  *   Dark variant: COMPLETE override of all surface/text/border/shadow tokens
  *
+ * COMPONENT COLOR CONTRACT:
+ *   button { --btn-color: var(--color-error); }  /* sets entire palette */
+ *   The component derives --_hover, --_active, --_ring from --btn-color
+ *
  * REMEMBER:
  *   - Use OKLCH for all colors
+ *   - Brand themes: use seeds, NOT explicit --color-primary values
+ *   - Do NOT declare hover/active/subtle/interactive in brand themes
+ *   - Extreme themes: set --color-primary directly with hardcoded OKLCH
  *   - Tint shadows to match palette hue for visual cohesion
  *   - Selector: :root[data-theme~="name"], [data-theme~="name"]
  *   - Dark variant: append [data-mode="dark"] to both selectors
- *   - Set color-scheme: light or color-scheme: dark in each variant
  *   - Test at both light and dark, compact and spacious fluid presets
  */

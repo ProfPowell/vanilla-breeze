@@ -123,7 +123,7 @@ function measurePack(packName) {
     status: {
       within_theme_budget: withinBudget,
       theme_share_of_page_budget_percent: shareOfPage,
-      notes: []
+      notes: /** @type {string[]} */ ([])
     }
   };
 

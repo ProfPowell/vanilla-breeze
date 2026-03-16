@@ -66,4 +66,4 @@ This could be for HTML-star as well but are we using view-transitions well enoug
 
 Are we using container queries well enough in the library - https://developer.chrome.com/blog/new-in-chrome-142?hl=en#range-syntax
 
-CHrome supports interestfor="" on <a> and <button> this seems useful are we using it properly?
+Chrome supports interestfor="" on <a> and <button> this seems useful are we using it properly?

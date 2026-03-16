@@ -10,6 +10,8 @@ Before writing code, run through these checklists to validate your approach and 
 
 ## ⚠️ MANDATORY: Git Workflow Check (DO THIS FIRST)
 
+> For the full session workflow, see `.claude/AGENTS.md`.
+
 **STOP! Before ANY code changes, complete this checklist:**
 
 ### 1. Issue Check
@@ -32,13 +34,6 @@ git checkout -b feature/<issue-id>-short-description
 ```
 - [ ] On a feature branch (NOT main)
 - [ ] Branch follows naming: `<type>/<issue-id>-description`
-
-### 3. Worklog Check
-```bash
-# Does a worklog entry exist for this issue?
-ls .worklog/*<issue-id>*
-```
-- [ ] Worklog entry exists or will be created before completing work
 
 ### Red Flags - STOP if any are true:
 | Situation | Action Required |
@@ -423,12 +418,7 @@ npm run test:coverage  # Check for missing tests
 - [ ] All linters pass
 - [ ] New scripts have corresponding test files
 
-### 2. Worklog Updated
-- [ ] Worklog entry in `.worklog/` documents changes made
-- [ ] Files modified are listed
-- [ ] Any decisions/issues are noted
-
-### 3. Commit Changes
+### 2. Commit Changes
 ```bash
 git add <files>
 git commit -m "type(scope): description"
@@ -436,16 +426,15 @@ git commit -m "type(scope): description"
 - [ ] Changes committed with conventional commit format
 - [ ] Commit message references issue if applicable
 
-### 4. Request UAT
+### 3. Request UAT
 ```bash
 /uat request <feature-name>
 # This adds uat:requested label to the issue
 ```
 - [ ] UAT requested via `/uat request <feature-name>`
 - [ ] Issue has `uat:requested` label
-- [ ] Testing instructions provided for human in `.worklog/uat-<feature>.md`
 
-### 5. Wait for Approval
+### 4. Wait for Approval
 ```bash
 # Check UAT status
 /uat status <feature-name>
@@ -460,7 +449,6 @@ bd show <issue-id>
 | Situation | Action Required |
 |-----------|-----------------|
 | Tests failing | Fix before proceeding |
-| No worklog entry | Create one now |
 | On main branch | Should have been on feature branch |
 | No UAT requested | Run `/uat request <feature-name>` |
 | Closing without approval | STOP - check `bd show <id>` for `uat:approved` label |

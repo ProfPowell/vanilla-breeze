@@ -61,9 +61,9 @@ When this command is invoked, parse the action and feature name from the argumen
    bd label add <issue-id> uat:requested
    ```
 
-3. Create or update `.worklog/uat-<feature>.md` with:
-   - Feature description (from recent worklog or commits)
-   - Testing steps for the human
+3. Display the testing instructions directly to the user:
+   - Feature description (from recent commits)
+   - Testing steps
    - Expected results
    - How to approve/deny
 
@@ -79,12 +79,7 @@ When this command is invoked, parse the action and feature name from the argumen
    bd label add <issue-id> uat:approved
    ```
 
-3. Update `.worklog/uat-<feature>.md`:
-   - Set status to "APPROVED"
-   - Add approval timestamp
-   - Note the approver
-
-4. Display next steps:
+3. Display next steps:
    - Merge the feature branch
    - Close the issue with: `bd close <issue-id>`
    - Update version if needed
@@ -101,12 +96,7 @@ When this command is invoked, parse the action and feature name from the argumen
    bd label add <issue-id> uat:denied
    ```
 
-4. Update `.worklog/uat-<feature>.md`:
-   - Set status to "DENIED"
-   - Add denial timestamp
-   - Include the feedback
-
-5. Display next steps:
+4. Display next steps:
    - Review feedback
    - Make changes
    - Request UAT again when ready (will replace uat:denied with uat:requested)
@@ -121,9 +111,7 @@ When this command is invoked, parse the action and feature name from the argumen
    ```
    Look for labels: `uat:requested`, `uat:approved`, or `uat:denied`
 
-3. Read `.worklog/uat-<feature>.md` if it exists
-
-4. Display current status:
+3. Display current status:
    - If `uat:approved`: "UAT approved - ready to merge and close"
    - If `uat:requested`: "UAT pending - waiting for human review"
    - If `uat:denied`: "UAT denied - see feedback below"

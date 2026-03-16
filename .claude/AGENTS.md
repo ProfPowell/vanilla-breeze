@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This project uses **bd** (beads) for issue tracking.
 
 ## Quick Reference
 
@@ -11,6 +11,13 @@ bd update <id> --status in_progress  # Claim work
 bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
+
+## Starting a Session
+
+1. Check for in-progress work: `bd list --status in_progress`
+2. If resuming: `bd show <id>` to get context
+3. If starting fresh: `bd ready` for available work, or ask the user
+4. Claim the issue: `bd update <id> --status in_progress`
 
 ## Landing the Plane (Session Completion)
 
@@ -38,3 +45,24 @@ bd sync               # Sync with git
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 
+## Memory Protocol
+
+When closing an issue or ending a significant work session:
+
+1. **Close with context**: Include what was learned, not just what was done:
+   ```bash
+   bd close <id> --reason "Implemented X. Learned: Y causes Z. Workaround: W."
+   ```
+
+2. **Update memory files** if the session revealed:
+   - A non-obvious gotcha → add to relevant `memory/<topic>.md`
+   - A user correction → add to `memory/workflow-feedback.md`
+   - A new subsystem insight → create `memory/<subsystem>-notes.md`
+
+3. **Don't duplicate** what is in CLAUDE.md. Memory is for *learned* knowledge.
+
+## Resuming Work
+
+1. `bd show <id>` — read description and close_reason of related issues
+2. Check memory files for relevant gotchas
+3. Check recent git log for prior commits on this work

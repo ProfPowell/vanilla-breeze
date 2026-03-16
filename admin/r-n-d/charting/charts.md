@@ -154,6 +154,17 @@ Use a tiered model so VB stays lightweight by default.
 2. Add optional SVC bridge package/docs for advanced charts.
 3. Evaluate adding scatter/bubble only through optional SVG path, not core CSS add-on.
 
-## 7) Recommendation summary
+## P3 (Ultimate)
 
-Vanilla Breeze already has a strong lightweight chart base. The right next move is not a new chart engine in core. The right move is to polish the existing CSS-first/table-first model, ship a small optional JS helper that matches it, and keep advanced SVG charts as an opt-in integration lane.
+The SVC charting technology is philosophical aligned with Vanilla Breeze but it should be more of an opt in.  Develop a component <chart-wc> which can insert charts of various types.  It could pull data from tables would suggest vb has the idea of
+
+    ```
+     <table data-chart="replace" data-chart-type="line">
+
+      <!-- have mechanisms to natively pull data from only certain columns with data-* attributes and to control the chart to some degree with attributes like legend or not or tooltips or not -->
+     ```
+We would also need to support chart data to be pulled in via a <script> or <template> block
+
+More complex charts and interactions would be handled by extending this to be a light-weight JavaScript charting engine. Our goal is to provide most of what chart.js provides for low volume data, but do so in a progressive enhancement fashion and maintain a platform first, accessibility friendly approach that directly integrates with the them.
+
+Given the common use of charts this will be in vanilla breeze directly, but loaded separately.  We will maintain a separate repo for it like <code-block> and <browser-window> so that is easier to test and maintain

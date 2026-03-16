@@ -1,10 +1,10 @@
 # New Task
 
-Interview the user and create a new task file from the template.
+Interview the user and create a new beads issue.
 
 ## Instructions
 
-You are helping the user create a new task file. Follow these steps exactly.
+You are helping the user create a new issue. Follow these steps exactly.
 
 ### Step 1 — Interview
 
@@ -12,76 +12,34 @@ Ask these questions **one group at a time**. Wait for answers before continuing.
 
 **Group 1:**
 - What is the task? (one sentence)
-- Which project does it belong to? (check `tasks/_index.md` for the project registry)
+- Type: `feature`, `bug`, or `task`?
 
 **Group 2:**
-- Priority: p0 (critical), p1 (next up), p2 (queued), or p3 (someday)?
-- Does this depend on any other tasks completing first?
+- Priority: 0 (critical), 1 (next up), 2 (queued), 3 (someday), or 4 (backlog)?
+- Does this depend on any other issues completing first?
 
 **Group 3:**
 - What's the context Claude needs to approach this correctly? (decisions made, constraints, links)
 - What are the acceptance criteria? (list them — be specific and verifiable)
 - Anything explicitly out of scope?
 
-### Step 2 — Generate slug
+### Step 2 — Create the issue
 
-Derive a short kebab-case slug from the task title. Max 4–5 words. Examples:
-- "Add form validation to checkout" → `form-validation-checkout`
-- "Fix anchor positioning in popover" → `fix-anchor-popover`
+Build the description from the interview answers and create the issue:
 
-### Step 3 — Write the file
-
-Create the file at `tasks/active/<slug>.md` using this exact structure:
-
-```markdown
----
-id: <slug>
-project: <project>
-status: backlog
-priority: <priority>
-depends: [<depends or empty>]
-created: <today's date YYYY-MM-DD>
-updated: <today's date YYYY-MM-DD>
----
-
-# <Task Title>
-
-<One sentence description from the interview.>
-
-## Context
-
-<Context from the interview.>
-
-## Acceptance Criteria
-
-<Checklist from the interview — each item as `- [ ] ...`>
-
-## Out of Scope
-
-<Out of scope items, or "Nothing identified yet." if none given.>
-
-## Notes
-
-> Add discoveries, decisions, or blockers here during work.
-
----
-
-## Session Log
-
-_No sessions yet._
+```bash
+bd create --title="<one sentence from Group 1>" --type=<type> --priority=<priority>
 ```
 
-### Step 4 — Update the index
+If dependencies were specified, add them:
 
-Add a row to the **Backlog** table in `tasks/_index.md`:
-
-```
-| [<slug>](./active/<slug>.md) | <project> | <priority> | <one-line summary> |
+```bash
+bd dep add <new-issue-id> <depends-on-id>
 ```
 
-### Step 5 — Confirm
+### Step 3 — Confirm
 
 Tell the user:
-- The file path created
-- The slug
+- The beads issue ID
+- The title and type
 - A summary of the acceptance criteria so they can verify it captured things correctly

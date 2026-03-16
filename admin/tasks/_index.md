@@ -1,3 +1,5 @@
+> DEPRECATED: Use `bd create` for new issues. Kept for historical reference.
+
 # Task Index
 
 Master backlog across all projects. Sorted by priority within each status group.

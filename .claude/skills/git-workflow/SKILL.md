@@ -6,7 +6,9 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 # Git Workflow Skill
 
-Structured development workflow using git, conventional commits, and work logging.
+> For the full session workflow, see `.claude/AGENTS.md`.
+
+Structured development workflow using git, conventional commits, and semantic versioning.
 
 ## Core Principles
 
@@ -16,7 +18,6 @@ Structured development workflow using git, conventional commits, and work loggin
 | Feature Branches | One branch per issue/feature |
 | Conventional Commits | Structured commit messages |
 | Semver Versioning | Semantic version numbers |
-| Work Logging | Document all changes in `.worklog/` |
 | UAT Workflow | Human acceptance testing before merge |
 
 ## Workflow Overview
@@ -29,13 +30,11 @@ Structured development workflow using git, conventional commits, and work loggin
 │                     ↓                                       │
 │  3. Make changes, commit with conventional format           │
 │                     ↓                                       │
-│  4. Create worklog entry documenting changes                │
+│  4. Request UAT (/uat request <feature>)                    │
 │                     ↓                                       │
-│  5. Request UAT (/uat request <feature>)                    │
+│  5. Human tests and approves (/uat approve) or denies       │
 │                     ↓                                       │
-│  6. Human tests and approves (/uat approve) or denies       │
-│                     ↓                                       │
-│  7. Merge to main, close issue, tag if release              │
+│  6. Merge to main, close issue, tag if release              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,48 +119,6 @@ git tag -a v1.2.0 -m "Release v1.2.0: Add dark mode support"
 git push origin --tags
 ```
 
-## Work Logging
-
-Every significant change creates a worklog entry in `.worklog/`.
-
-### Worklog File Format
-
-File: `.worklog/YYYY-MM-DD-issue-id-description.md`
-
-```markdown
-# Worklog: [Issue ID] - Short Description
-
-**Date**: YYYY-MM-DD HH:MM
-**Issue**: {issue-id}
-**Branch**: feature/{issue-id}-description
-**Status**: in_progress | complete | blocked
-
-## Summary
-Brief description of what was done.
-
-## Changes Made
-- List of files modified
-- Key decisions made
-- Problems solved
-
-## Files Modified
-- `path/to/file1.js` - Description of change
-- `path/to/file2.css` - Description of change
-
-## Testing Done
-- [ ] Unit tests pass
-- [ ] Manual testing complete
-- [ ] UAT requested
-
-## Notes
-Any additional context for future reference.
-
-## Recovery Instructions
-If this work needs to be recovered:
-1. Checkout branch: `git checkout feature/{issue-id}`
-2. Key commits: `abc1234`, `def5678`
-```
-
 ## Git Commands Reference
 
 ### Starting Work
@@ -200,9 +157,6 @@ git push
 ```bash
 # Ensure all tests pass
 npm test
-
-# Update worklog
-# Create/update .worklog/YYYY-MM-DD-xxx.md
 
 # Request UAT
 # /uat request <feature-name>
@@ -257,7 +211,7 @@ When starting an AI assistant session:
 1. **Check git status**: Any uncommitted changes?
 2. **Review open issues**: `bd ready` or `bd list --status open`
 3. **Check current branch**: On main or a feature branch?
-4. **Review recent worklogs**: `.worklog/` for context
+4. **Review recent commits**: `git log --oneline -10` for context
 
 ## Red Flags
 
@@ -265,7 +219,6 @@ When starting an AI assistant session:
 |-----------|--------|
 | Working without an issue | Create issue first with `bd create` |
 | Commits directly to main | Use feature branch |
-| No worklog entry | Create before requesting UAT |
 | Large uncommitted changes | Commit incrementally |
 | Merge conflicts | Resolve carefully, test after |
 
@@ -281,7 +234,6 @@ git add . && git commit -m "feat(scope): description"
 
 # Complete work
 git push -u origin HEAD
-# Create worklog entry
 # /uat request <feature>
 # After approval: merge, close issue, cleanup
 ```

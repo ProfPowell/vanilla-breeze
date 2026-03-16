@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:4321',
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -31,7 +31,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    port: 5173,
+    port: 4321,
     reuseExistingServer: true,
     timeout: 30000,
   },

@@ -1,3 +1,5 @@
+> DEPRECATED: Use `bd create` for new issues. Kept for historical reference.
+
 ---
 id: task-slug
 project: project-name
