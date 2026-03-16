@@ -100,7 +100,7 @@ const dataAttributes = {
       { name: 'data-layout', type: 'layout', href: '/docs/attributes/data-layout/', description: 'Apply stack, cluster, grid, center, sidebar, split, cover, and other layouts to any element' },
       { name: 'data-page-layout', type: 'layout', href: '/docs/attributes/data-page-layout/', description: 'Full-page grid layouts with semantic area assignment' },
       { name: 'data-layout-density', type: 'layout', href: '/docs/attributes/data-layout-density/', description: 'Compact or spacious spacing modes that cascade to descendants' },
-      { name: 'data-sticky', type: 'layout', href: '/docs/elements/native/header/#data-sticky', description: 'Sticky positioning for header and footer elements — sticks to top or bottom on scroll' },
+      { name: 'data-sticky', type: 'layout', href: '/docs/attributes/data-sticky/', description: 'Sticky positioning for header and footer elements — sticks to top or bottom on scroll' },
     ],
   },
   formatting: {
