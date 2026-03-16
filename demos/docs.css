@@ -16,17 +16,24 @@
 
     & > * {
       min-inline-size: 0;
-      /* canvas-width constrains regions when backdrop is active;
-         justify-self centers in grid (margin-inline: auto doesn't work
-         on grid items with width: 100% — the item claims the full track,
-         leaving 0px for auto margins) */
+    }
+
+    /* Main content is width-constrained and centered */
+    & > main {
       max-inline-size: min(var(--canvas-width, 100%), 100%);
       justify-self: center;
+    }
+
+    /* Header/footer stretch full viewport; padding centers their content */
+    & > header,
+    & > footer {
+      inline-size: 100%;
+      padding-inline: max(var(--size-l), calc(50% - var(--canvas-width, 72rem) / 2));
     }
   }
 
   body > header {
-    padding: var(--size-m) var(--size-l);
+    padding-block: var(--size-m);
     border-block-end: var(--border-width-thin) solid var(--color-border);
     display: flex;
     align-items: center;
@@ -109,7 +116,7 @@
   }
 
   footer {
-    padding: var(--size-l) var(--size-l);
+    padding-block: var(--size-l);
     border-block-start: var(--border-width-thin) solid var(--color-border);
     text-align: center;
     color: var(--color-text-muted);
