@@ -4,7 +4,7 @@
  * Each entry provides: label, iconName, optional iconSet,
  * and a buildUrl function that returns the share URL.
  *
- * @typedef {{ label: string, iconName: string, iconSet?: string, buildUrl: (opts: { url: string, title: string, text: string }) => string }} Platform
+ * @typedef {{ label: string, iconName: string, iconSet?: string, buildUrl: (opts: { url: string, title: string, text: string }, instance?: string) => string }} Platform
  */
 
 /** @type {Map<string, Platform>} */

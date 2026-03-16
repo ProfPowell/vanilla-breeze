@@ -48,7 +48,7 @@ function initPlaylist(root) {
   });
 
   trackList.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href]');
+    const link = /** @type {HTMLAnchorElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('a[href]'));
     if (!link) return;
     e.preventDefault();
 
@@ -67,7 +67,7 @@ function initPlaylist(root) {
  * @param {Element|Document} scope
  */
 function initAllPlaylists(scope = document) {
-  scope.querySelectorAll(CONTAINER_SELECTOR).forEach(initPlaylist);
+  scope.querySelectorAll(CONTAINER_SELECTOR).forEach(el => initPlaylist(/** @type {HTMLElement} */ (el)));
 }
 
 // Auto-init

@@ -1,4 +1,11 @@
 button, .button {
+  /* Color contract: set --btn-color to change the entire button palette */
+  --_color: var(--btn-color, var(--color-interactive));
+  --_hover: oklch(from var(--_color) calc(l - 0.08) calc(c + 0.02) h);
+  --_active: oklch(from var(--_color) calc(l - 0.12) c h);
+  --_ring: oklch(from var(--_color) l c h / 0.3);
+  --_subtle: oklch(from var(--_color) l c h / 0.1);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -8,7 +15,7 @@ button, .button {
   padding-inline-end: var(--btn-padding-inline-end, var(--btn-padding-inline, var(--size-m)));
   min-block-size: var(--size-touch-min);
   min-inline-size: var(--size-touch-min);
-  background: var(--color-interactive);
+  background: var(--_color);
   color: white;
   border: none;
   border-radius: var(--radius-m);
@@ -20,11 +27,15 @@ button, .button {
   transition: background var(--duration-fast) var(--ease-default);
 
   &:hover {
-    background: var(--color-interactive-hover);
+    background: var(--_hover);
+  }
+
+  &:active {
+    background: var(--_active);
   }
 
   &:focus-visible {
-    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline: var(--border-width-medium) solid var(--_color);
     outline-offset: var(--border-width-medium);
   }
 
@@ -35,11 +46,11 @@ button, .button {
 
   &.secondary {
     background: transparent;
-    color: var(--color-interactive);
+    color: var(--_color);
     border: var(--border-width-thin) solid currentColor;
 
     &:hover {
-      background: oklch(from var(--color-interactive) l c h / 0.1);
+      background: var(--_subtle);
     }
   }
 

@@ -27,6 +27,7 @@
  */
 
 import { startSwapTransition } from '../../utils/swap-transition.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 let swapInstanceId = 0;
 
@@ -162,7 +163,7 @@ class ContentSwap extends HTMLElement {
   set swapped(value) { swapTo(this, !!value); }
 }
 
-customElements.define('content-swap', ContentSwap);
+registerComponent('content-swap', ContentSwap);
 
 /**
  * Auto-init [data-swap] attribute form

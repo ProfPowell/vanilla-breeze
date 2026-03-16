@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * settings-panel: Compact settings panel
  *
@@ -41,8 +43,10 @@ const COLOR_ACCENTS = [
 const ACCENT_IDS = new Set(COLOR_ACCENTS.map(a => a.id));
 
 class SettingsPanel extends HTMLElement {
-  #trigger;
-  #panel;
+  /** @type {HTMLElement} */
+  #trigger = /** @type {*} */ (null);
+  /** @type {HTMLDivElement} */
+  #panel = /** @type {*} */ (null);
   #isOpen = false;
 
   connectedCallback() {
@@ -148,7 +152,7 @@ class SettingsPanel extends HTMLElement {
 
   #render() {
     // Find or create trigger
-    this.#trigger = this.querySelector(':scope > [data-trigger]') || this.querySelector(':scope > button');
+    this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > [data-trigger]') || this.querySelector(':scope > button'));
     if (!this.#trigger) {
       this.#trigger = document.createElement('button');
       this.#trigger.setAttribute('data-trigger', '');
@@ -549,7 +553,7 @@ class SettingsPanel extends HTMLElement {
     try {
       const theme = select.value;
       if (theme === 'default') {
-        const accentInput = this.#panel.querySelector('input[name="settings-accent"]:checked');
+        const accentInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[name="settings-accent"]:checked'));
         const accent = accentInput?.value || '';
         await ThemeManager.setBrand(accent || 'default');
       } else {
@@ -610,12 +614,12 @@ class SettingsPanel extends HTMLElement {
     const type = e.target.value;
     this.#updatePageBgVisibility(type);
     if (type === 'color') {
-      const color = this.#panel.querySelector('[name="settings-page-bg-color"]')?.value || '#1a1a2e';
+      const color = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'))?.value || '#1a1a2e';
       ThemeManager.setPageBg({ type, color });
     } else if (type === 'gradient') {
-      const gradStart = this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.value || '#1a1a2e';
-      const gradEnd = this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.value || '#16213e';
-      const gradDir = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.value || 'to bottom';
+      const gradStart = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'))?.value || '#1a1a2e';
+      const gradEnd = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'))?.value || '#16213e';
+      const gradDir = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'))?.value || 'to bottom';
       ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
     } else {
       ThemeManager.setPageBg({});
@@ -623,14 +627,14 @@ class SettingsPanel extends HTMLElement {
   };
 
   #handlePageBgChange = () => {
-    const type = this.#panel.querySelector('[name="settings-page-bg"]')?.value || '';
+    const type = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'))?.value || '';
     if (type === 'color') {
-      const color = this.#panel.querySelector('[name="settings-page-bg-color"]')?.value || '';
+      const color = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'))?.value || '';
       ThemeManager.setPageBg({ type, color });
     } else if (type === 'gradient') {
-      const gradStart = this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.value || '';
-      const gradEnd = this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.value || '';
-      const gradDir = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.value || 'to bottom';
+      const gradStart = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'))?.value || '';
+      const gradEnd = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'))?.value || '';
+      const gradDir = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'))?.value || 'to bottom';
       ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
     }
   };
@@ -704,100 +708,105 @@ class SettingsPanel extends HTMLElement {
     const backdropPreset = this.#getBackdropPreset(backdrop);
 
     // Mode
-    const modeInput = this.#panel.querySelector(`input[name="settings-mode"][value="${mode}"]`);
+    const modeInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-mode"][value="${mode}"]`));
     if (modeInput) modeInput.checked = true;
 
     // Theme select
-    const themeSelect = this.#panel.querySelector('#settings-theme');
+    const themeSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('#settings-theme'));
     if (themeSelect) themeSelect.value = selectValue;
 
     // Accent
-    const accentInput = this.#panel.querySelector(`input[name="settings-accent"][value="${accent}"]`);
+    const accentInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-accent"][value="${accent}"]`));
     if (accentInput) accentInput.checked = true;
     this.#updateAccentVisibility(selectValue === 'default');
 
     // Fluid toggle
-    const fluidToggle = this.#panel.querySelector('input[data-fluid-toggle]');
+    const fluidToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-fluid-toggle]'));
     if (fluidToggle) fluidToggle.checked = fluidOn;
 
     // Density
-    const densityInput = this.#panel.querySelector(`input[name="settings-density"][value="${density}"]`);
+    const densityInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-density"][value="${density}"]`));
     if (densityInput) densityInput.checked = true;
     this.#updateDensityVisibility(fluidOn);
 
     // Backdrop toggle
-    const backdropToggle = this.#panel.querySelector('input[data-backdrop-toggle]');
+    const backdropToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-backdrop-toggle]'));
     if (backdropToggle) backdropToggle.checked = backdropOn;
 
     // Backdrop preset
-    const backdropInput = this.#panel.querySelector(`input[name="settings-backdrop"][value="${backdropPreset}"]`);
+    const backdropInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-backdrop"][value="${backdropPreset}"]`));
     if (backdropInput) backdropInput.checked = true;
 
     // Backdrop chrome mode (parse space-separated value)
     const chromeMode = this.#getChromeMode(backdropChrome);
-    const chromeInput = this.#panel.querySelector(`input[name="settings-backdrop-chrome"][value="${chromeMode}"]`);
+    const chromeInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-backdrop-chrome"][value="${chromeMode}"]`));
     if (chromeInput) chromeInput.checked = true;
 
     // Backdrop fixed header toggle
-    const fixedToggle = this.#panel.querySelector('input[data-backdrop-fixed]');
+    const fixedToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-backdrop-fixed]'));
     if (fixedToggle) fixedToggle.checked = this.#isFixedOn(backdropChrome);
     this.#updateBackdropVisibility(backdropOn);
 
     // Page background
-    const pageBgSelect = this.#panel.querySelector('[name="settings-page-bg"]');
+    const pageBgSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'));
     if (pageBgSelect) pageBgSelect.value = pageBgType || '';
-    const pageBgColorInput = this.#panel.querySelector('[name="settings-page-bg-color"]');
+    const pageBgColorInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'));
     if (pageBgColorInput && pageBgColor) pageBgColorInput.value = pageBgColor;
-    const gradStartInput = this.#panel.querySelector('[name="settings-page-bg-grad-start"]');
+    const gradStartInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'));
     if (gradStartInput && pageBgGradStart) gradStartInput.value = pageBgGradStart;
-    const gradEndInput = this.#panel.querySelector('[name="settings-page-bg-grad-end"]');
+    const gradEndInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'));
     if (gradEndInput && pageBgGradEnd) gradEndInput.value = pageBgGradEnd;
-    const gradDirSelect = this.#panel.querySelector('[name="settings-page-bg-grad-dir"]');
+    const gradDirSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'));
     if (gradDirSelect && pageBgGradDir) gradDirSelect.value = pageBgGradDir;
     if (backdropOn) this.#updatePageBgVisibility(pageBgType || '');
 
     // A11y toggles
-    this.#panel.querySelectorAll('input[data-a11y]').forEach(input => {
+    this.#panel.querySelectorAll('input[data-a11y]').forEach(el => {
+      const input = /** @type {HTMLInputElement} */ (el);
       input.checked = a11yThemes.includes(input.dataset.a11y);
     });
 
     // Extension toggles
-    this.#panel.querySelectorAll('input[data-ext]').forEach(input => {
-      const val = extensions[input.dataset.ext];
-      input.checked = val ?? EXTENSION_DEFAULTS[input.dataset.ext];
+    this.#panel.querySelectorAll('input[data-ext]').forEach(el => {
+      const input = /** @type {HTMLInputElement} */ (el);
+      const key = /** @type {string} */ (input.dataset.ext);
+      const val = extensions[key];
+      input.checked = val ?? EXTENSION_DEFAULTS[key];
     });
 
     // Environment toggles
     const envPrefs = this.#loadEnvPrefs();
-    this.#panel.querySelectorAll('input[data-env]').forEach(input => {
-      input.checked = envPrefs[input.dataset.env] ?? false;
+    this.#panel.querySelectorAll('input[data-env]').forEach(el => {
+      const input = /** @type {HTMLInputElement} */ (el);
+      const key = /** @type {string} */ (input.dataset.env);
+      input.checked = envPrefs[key] ?? false;
     });
   }
 
   #updateAccentVisibility(show) {
-    const row = this.#panel.querySelector('.accent-row');
+    const row = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.accent-row'));
     if (row) row.hidden = !show;
   }
 
   #updateDensityVisibility(show) {
-    const row = this.#panel.querySelector('.density-row');
+    const row = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.density-row'));
     if (row) row.hidden = !show;
   }
 
   #updateBackdropVisibility(show) {
-    this.#panel.querySelectorAll('.backdrop-row').forEach(row => {
-      row.hidden = !show;
+    this.#panel.querySelectorAll('.backdrop-row').forEach(el => {
+      /** @type {HTMLElement} */ (el).hidden = !show;
     });
     if (show) {
-      const pageBgType = this.#panel.querySelector('[name="settings-page-bg"]')?.value || '';
+      const pageBgType = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'))?.value || '';
       this.#updatePageBgVisibility(pageBgType);
     }
   }
 
   #updatePageBgVisibility(type) {
-    const colorRow = this.#panel.querySelector('.page-bg-color-row');
-    const gradRow = this.#panel.querySelector('.page-bg-grad-row');
-    const gradDirRow = this.#panel.querySelector('.page-bg-grad-dir-row');
+    const colorRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-color-row'));
+    const gradRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-grad-row'));
+    const gradDirRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-grad-dir-row'));
     if (colorRow) colorRow.hidden = type !== 'color';
     if (gradRow) gradRow.hidden = type !== 'gradient';
     if (gradDirRow) gradDirRow.hidden = type !== 'gradient';
@@ -988,6 +997,6 @@ class SettingsPanel extends HTMLElement {
   }
 }
 
-customElements.define('settings-panel', SettingsPanel);
+registerComponent('settings-panel', SettingsPanel);
 
 export { SettingsPanel };

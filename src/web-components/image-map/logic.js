@@ -18,6 +18,8 @@
  * </image-map>
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // --- Coordinate parsing ---
@@ -142,18 +144,26 @@ class MapAreaWc extends HTMLElement {
 // --- ImageMapWc ---
 
 class ImageMapWc extends HTMLElement {
-  #img;
-  #svg;
-  #tooltip;
+  /** @type {HTMLImageElement} */
+  #img = /** @type {*} */ (null);
+  /** @type {SVGSVGElement} */
+  #svg = /** @type {*} */ (null);
+  /** @type {HTMLDivElement} */
+  #tooltip = /** @type {*} */ (null);
+  /** @type {any[]} */
   #focusAnchors = [];
-  #areaData = []; // { area, parsed, svgShape, anchor, contentHTML }
+  /** @type {any[]} */
+  #areaData = [];
+  /** @type {any} */
   #activeArea = null;
-  #resizeObs;
+  /** @type {ResizeObserver | null} */
+  #resizeObs = null;
+  /** @type {object | null} */
   #touchedArea = null;
 
   connectedCallback() {
     // Find child <img> or create from src/alt attrs
-    this.#img = this.querySelector(':scope > img');
+    this.#img = /** @type {HTMLImageElement} */ (this.querySelector(':scope > img'));
     if (!this.#img) {
       const src = this.getAttribute('src');
       const alt = this.getAttribute('alt');
@@ -184,12 +194,12 @@ class ImageMapWc extends HTMLElement {
 
     // Clean up event listeners on SVG shapes
     for (const data of this.#areaData) {
-      data.svgShape?.removeEventListener('pointerenter', data._onEnter);
-      data.svgShape?.removeEventListener('pointerleave', data._onLeave);
-      data.svgShape?.removeEventListener('click', data._onClick);
-      data.svgShape?.removeEventListener('touchstart', data._onTouch);
-      data.anchor?.removeEventListener('focus', data._onFocus);
-      data.anchor?.removeEventListener('blur', data._onBlur);
+      if (data._onEnter) data.svgShape?.removeEventListener('pointerenter', data._onEnter);
+      if (data._onLeave) data.svgShape?.removeEventListener('pointerleave', data._onLeave);
+      if (data._onClick) data.svgShape?.removeEventListener('click', data._onClick);
+      if (data._onTouch) data.svgShape?.removeEventListener('touchstart', data._onTouch);
+      if (data._onFocus) data.anchor?.removeEventListener('focus', data._onFocus);
+      if (data._onBlur) data.anchor?.removeEventListener('blur', data._onBlur);
     }
 
     // Remove generated DOM
@@ -227,8 +237,9 @@ class ImageMapWc extends HTMLElement {
 
     // Process each area
     for (const area of areas) {
-      const shape = area.shape;
-      const coords = area.coords;
+      const /** @type {MapAreaWc} */ mapArea = /** @type {MapAreaWc} */ (area);
+      const shape = mapArea.shape;
+      const coords = mapArea.coords;
       const parsed = parseCoords(shape, coords);
       const svgShape = createSvgShape(parsed);
       if (!svgShape) continue;
@@ -236,19 +247,19 @@ class ImageMapWc extends HTMLElement {
       const bbox = calcBoundingBox(parsed);
 
       // Create focus anchor
-      const anchor = area.href
+      const anchor = mapArea.href
         ? document.createElement('a')
         : document.createElement('button');
 
-      if (area.href) {
-        anchor.href = area.href;
-        if (area.target) anchor.target = area.target;
+      if (mapArea.href) {
+        /** @type {HTMLAnchorElement} */ (anchor).href = mapArea.href;
+        if (mapArea.target) /** @type {HTMLAnchorElement} */ (anchor).target = mapArea.target;
       }
 
       anchor.className = 'image-map-anchor';
-      anchor.setAttribute('aria-label', area.label);
+      anchor.setAttribute('aria-label', mapArea.label);
       anchor.setAttribute('aria-describedby', this.#tooltip.id);
-      anchor.textContent = area.label;
+      anchor.textContent = mapArea.label;
 
       // Position anchor over the bounding box
       anchor.style.left = `${bbox.x}%`;
@@ -256,7 +267,7 @@ class ImageMapWc extends HTMLElement {
       anchor.style.width = `${bbox.width}%`;
       anchor.style.height = `${bbox.height}%`;
 
-      if (area.disabled) {
+      if (mapArea.disabled) {
         svgShape.setAttribute('data-disabled', '');
         anchor.setAttribute('tabindex', '-1');
         anchor.setAttribute('aria-disabled', 'true');
@@ -271,24 +282,30 @@ class ImageMapWc extends HTMLElement {
         svgShape,
         anchor,
         contentHTML,
+        /** @type {EventListener | null} */
         _onEnter: null,
+        /** @type {EventListener | null} */
         _onLeave: null,
+        /** @type {EventListener | null} */
         _onClick: null,
+        /** @type {EventListener | null} */
         _onTouch: null,
+        /** @type {EventListener | null} */
         _onFocus: null,
+        /** @type {EventListener | null} */
         _onBlur: null,
       };
 
       // Pointer events on SVG shape
-      if (!area.disabled) {
-        const tooltipMode = area.tooltipMode;
+      if (!mapArea.disabled) {
+        const tooltipMode = mapArea.tooltipMode;
 
         data._onEnter = () => {
           if (tooltipMode === 'hover') {
             this.#showTooltip(data);
           }
           svgShape.setAttribute('data-hover', '');
-          this.#dispatch('image-map:area-enter', area);
+          this.#dispatch('image-map:area-enter', mapArea);
         };
 
         data._onLeave = () => {
@@ -296,7 +313,7 @@ class ImageMapWc extends HTMLElement {
             this.#hideTooltip();
           }
           svgShape.removeAttribute('data-hover');
-          this.#dispatch('image-map:area-leave', area);
+          this.#dispatch('image-map:area-leave', mapArea);
         };
 
         data._onClick = (e) => {
@@ -307,14 +324,14 @@ class ImageMapWc extends HTMLElement {
               this.#showTooltip(data);
             }
           }
-          this.#dispatch('image-map:area-activate', area);
+          this.#dispatch('image-map:area-activate', mapArea);
 
           // Navigate if has href and not click-mode tooltip
-          if (area.href && tooltipMode !== 'click') {
-            if (area.target === '_blank') {
-              window.open(area.href, '_blank', 'noopener');
+          if (mapArea.href && tooltipMode !== 'click') {
+            if (mapArea.target === '_blank') {
+              window.open(mapArea.href, '_blank', 'noopener');
             } else {
-              window.location.href = area.href;
+              window.location.href = mapArea.href;
             }
           }
         };
@@ -477,7 +494,7 @@ class ImageMapWc extends HTMLElement {
   }
 }
 
-customElements.define('map-area', MapAreaWc);
-customElements.define('image-map', ImageMapWc);
+registerComponent('map-area', MapAreaWc);
+registerComponent('image-map', ImageMapWc);
 
 export { ImageMapWc, MapAreaWc };

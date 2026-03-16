@@ -20,6 +20,7 @@
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 class CommandPalette extends HTMLElement {
   #dialog;
@@ -381,8 +382,8 @@ class CommandPalette extends HTMLElement {
 class CommandGroup extends HTMLElement {}
 class CommandItem extends HTMLElement {}
 
-customElements.define('command-palette', CommandPalette);
-customElements.define('command-group', CommandGroup);
-customElements.define('command-item', CommandItem);
+registerComponent('command-palette', CommandPalette);
+registerComponent('command-group', CommandGroup);
+registerComponent('command-item', CommandItem);
 
 export { CommandPalette };

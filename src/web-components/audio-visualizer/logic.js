@@ -16,6 +16,8 @@
  * <audio-visualizer for="my-track" data-mode="bars"></audio-visualizer>
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 // Page-level AudioContext singleton registry
 const audioContextRegistry = new Map()
 
@@ -42,17 +44,26 @@ function getMediaSource(audio, ctx) {
 
 class AudioVisualizerElement extends HTMLElement {
 
-  #canvas = null
-  #ctx = null
-  #audio = null
-  #audioCtx = null
-  #analyser = null
-  #source = null
+  /** @type {HTMLCanvasElement} */
+  #canvas = /** @type {*} */ (null)
+  /** @type {CanvasRenderingContext2D} */
+  #ctx = /** @type {*} */ (null)
+  /** @type {HTMLAudioElement} */
+  #audio = /** @type {*} */ (null)
+  /** @type {AudioContext} */
+  #audioCtx = /** @type {*} */ (null)
+  /** @type {AnalyserNode} */
+  #analyser = /** @type {*} */ (null)
+  /** @type {MediaElementAudioSourceNode} */
+  #source = /** @type {*} */ (null)
+  /** @type {number | null} */
   #rafId = null
+  /** @type {IntersectionObserver | null} */
   #observer = null
   #visible = true
   #started = false
   #reducedMotion = false
+  /** @type {(() => void) | null} */
   #onThemeChange = null
 
   // ─── Observed attributes ───────────────────────────────────────────────
@@ -66,10 +77,13 @@ class AudioVisualizerElement extends HTMLElement {
   connectedCallback() {
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+    const firstConnect = !this.shadowRoot
     this.#buildShadow()
     this.#findAudio()
-    this.#setupIntersectionObserver()
-    this.#watchMotionPreference()
+    if (firstConnect) {
+      this.#setupIntersectionObserver()
+      this.#watchMotionPreference()
+    }
 
     // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
     this.#onThemeChange = () => {
@@ -100,6 +114,7 @@ class AudioVisualizerElement extends HTMLElement {
   // ─── Shadow DOM ────────────────────────────────────────────────────────
 
   #buildShadow() {
+    if (this.shadowRoot) return
     const shadow = this.attachShadow({ mode: 'open' })
     shadow.innerHTML = `
       <style>
@@ -120,7 +135,7 @@ class AudioVisualizerElement extends HTMLElement {
       </style>
       <canvas aria-hidden="true"></canvas>
     `
-    this.#canvas = shadow.querySelector('canvas')
+    this.#canvas = /** @type {HTMLCanvasElement} */ (shadow.querySelector('canvas'))
   }
 
   // ─── Audio connection ──────────────────────────────────────────────────
@@ -129,7 +144,7 @@ class AudioVisualizerElement extends HTMLElement {
     const forId = this.getAttribute('for')
     if (!forId) return
 
-    this.#audio = document.getElementById(forId)
+    this.#audio = /** @type {HTMLAudioElement} */ (document.getElementById(forId))
     if (!this.#audio || this.#audio.tagName !== 'AUDIO') return
 
     // Set up AudioContext lazily on first play
@@ -188,6 +203,7 @@ class AudioVisualizerElement extends HTMLElement {
   #drawFrame() {
     const canvas = this.#canvas
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     const W = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1)
     const H = canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1)
 
@@ -298,6 +314,6 @@ class AudioVisualizerElement extends HTMLElement {
   }
 }
 
-customElements.define('audio-visualizer', AudioVisualizerElement)
+registerComponent('audio-visualizer', AudioVisualizerElement)
 
 export { AudioVisualizerElement }

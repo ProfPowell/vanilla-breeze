@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * tool-tip: Enhanced tooltip with Popover API + interestfor
  *
@@ -379,6 +381,6 @@ class ToolTip extends HTMLElement {
   }
 }
 
-customElements.define('tool-tip', ToolTip);
+registerComponent('tool-tip', ToolTip);
 
 export { ToolTip };

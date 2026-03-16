@@ -16,6 +16,8 @@
  * <type-specimen font-family="Georgia" label="Georgia" show-characters show-weights></type-specimen>
  * <type-specimen font-family="'Inter', sans-serif" show-scale></type-specimen>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class TypeSpecimen extends HTMLElement {
   static observedAttributes = ['font-family', 'label', 'sample', 'show-scale', 'show-weights', 'show-characters', 'weights'];
 
@@ -99,4 +101,4 @@ class TypeSpecimen extends HTMLElement {
   }
 }
 
-customElements.define('type-specimen', TypeSpecimen);
+registerComponent('type-specimen', TypeSpecimen);

@@ -81,7 +81,7 @@ class BrandMark extends HTMLElement {
     for (const node of this.childNodes) {
       if (node.nodeType === Node.TEXT_NODE) {
         text += node.textContent;
-      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'IMG') {
+      } else if (node.nodeType === Node.ELEMENT_NODE && /** @type {Element} */ (node).tagName !== 'IMG') {
         text += node.textContent;
       }
     }

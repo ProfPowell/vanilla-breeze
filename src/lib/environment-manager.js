@@ -22,9 +22,13 @@ export function lerp(a, b, t) {
 }
 
 export const EnvironmentManager = {
+  /** @type {ReturnType<typeof setInterval> | null} */
   _timer: null,
+  /** @type {{ primary: number, secondary: number, accent: number } | null} */
   _baseHues: null,
+  /** @type {number | null} */
   _timeOverride: null,
+  /** @type {number | null} */
   _monthOverride: null,
 
   /** Initialize — read prefs, start tick loop if any source enabled */
@@ -119,14 +123,15 @@ export const EnvironmentManager = {
       const selector = `[data-theme~="${theme}"]`;
       for (const sheet of document.styleSheets) {
         try {
-          for (const rule of sheet.cssRules) {
-            if (rule.selectorText?.includes(selector) && !rule.selectorText.includes('dark')) {
-              const h = rule.style?.getPropertyValue('--hue-primary');
+          for (let i = 0; i < sheet.cssRules.length; i++) {
+            const sr = /** @type {CSSStyleRule} */ (sheet.cssRules[i]);
+            if (sr.selectorText?.includes(selector) && !sr.selectorText.includes('dark')) {
+              const h = sr.style?.getPropertyValue('--hue-primary');
               if (h) {
                 this._baseHues = {
                   primary: parseFloat(h) || 260,
-                  secondary: parseFloat(rule.style.getPropertyValue('--hue-secondary')) || 200,
-                  accent: parseFloat(rule.style.getPropertyValue('--hue-accent')) || 30,
+                  secondary: parseFloat(sr.style.getPropertyValue('--hue-secondary')) || 200,
+                  accent: parseFloat(sr.style.getPropertyValue('--hue-accent')) || 30,
                 };
                 return;
               }
@@ -219,7 +224,7 @@ export const EnvironmentManager = {
   },
 
   _stopLoop() {
-    clearInterval(this._timer);
+    if (this._timer) clearInterval(this._timer);
     this._timer = null;
   },
 };

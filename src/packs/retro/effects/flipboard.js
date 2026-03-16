@@ -52,7 +52,7 @@ function flipChar(cell, from, to) {
       bottomHalf.textContent = to || '\u00A0'
       flipTop.classList.remove('vb-flap-flipping')
       flipBottom.classList.remove('vb-flap-flipping')
-      resolve()
+      resolve(undefined)
     }, FLIP_MS)
   })
 }
@@ -92,7 +92,7 @@ async function runFlipSequence(el, text, cells, generation) {
   const promises = cells.map((cell, i) => {
     return new Promise(resolve => {
       setTimeout(() => {
-        if (el._flipGeneration !== generation) { resolve(); return }
+        if (el._flipGeneration !== generation) { resolve(undefined); return }
         const flips = 4 + Math.floor(Math.random() * 7)
         cycleChar(cell, text[i], flips, generation, el).then(resolve)
       }, i * STAGGER_MS)

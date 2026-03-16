@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * short-cuts: Keyboard shortcuts help overlay
  *
@@ -111,6 +113,6 @@ class ShortCuts extends HTMLElement {
   }
 }
 
-customElements.define('short-cuts', ShortCuts);
+registerComponent('short-cuts', ShortCuts);
 
 export { ShortCuts };

@@ -1,5 +1,6 @@
 import { styles } from './styles.js';
 import { latLngToTile, getTileUrl } from './tile-math.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 /**
  * Inline SVG marker pin (teardrop shape)
@@ -454,6 +455,6 @@ class GeoMap extends HTMLElement {
     }
 }
 
-customElements.define('geo-map', GeoMap);
+registerComponent('geo-map', GeoMap);
 
 export { GeoMap };

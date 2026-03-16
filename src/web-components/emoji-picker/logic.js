@@ -19,6 +19,8 @@
  * @fires emoji-picker:close - When picker closes
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 // Lazy-loaded: emoji data is only imported when picker is first connected
 let emojiModule = null;
 
@@ -464,6 +466,6 @@ class EmojiPicker extends HTMLElement {
   }
 }
 
-customElements.define('emoji-picker', EmojiPicker);
+registerComponent('emoji-picker', EmojiPicker);
 
 export { EmojiPicker };

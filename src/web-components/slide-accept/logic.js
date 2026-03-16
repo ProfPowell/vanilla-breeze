@@ -18,6 +18,8 @@
  *   Slide to confirm
  * </slide-accept>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class SlideAccept extends HTMLElement {
   #handle;
   #label;
@@ -188,6 +190,6 @@ class SlideAccept extends HTMLElement {
   }
 }
 
-customElements.define('slide-accept', SlideAccept);
+registerComponent('slide-accept', SlideAccept);
 
 export { SlideAccept };

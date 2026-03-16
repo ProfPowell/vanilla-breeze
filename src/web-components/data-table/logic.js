@@ -44,6 +44,9 @@
  *   </table>
  * </data-table>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class DataTable extends HTMLElement {
   #table;
   #tbody;
@@ -780,6 +783,6 @@ class DataTable extends HTMLElement {
   }
 }
 
-customElements.define('data-table', DataTable);
+registerComponent('data-table', DataTable);
 
 export { DataTable };

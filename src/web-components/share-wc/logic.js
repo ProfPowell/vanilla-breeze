@@ -24,16 +24,22 @@
  * <share-wc data-tier="platforms" data-platforms="x,linkedin,copy"></share-wc>
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
 import { PLATFORMS, DEFAULT_PLATFORMS } from './platforms.js';
 
 class ShareWc extends HTMLElement {
+  /** @type {string | undefined} */
   #url;
+  /** @type {string | undefined} */
   #title;
+  /** @type {string | undefined} */
   #text;
+  /** @type {string | undefined} */
   #tier;
   /** @type {ReturnType<typeof setTimeout> | null} */
   #copyTimer = null;
-  #nav;
+  /** @type {HTMLElement} */
+  #nav = /** @type {*} */ (null);
 
   get url() {
     return this.#url;
@@ -43,10 +49,12 @@ class ShareWc extends HTMLElement {
     this.#url = val;
   }
 
+  /** @returns {string} */
   get title() {
-    return this.#title;
+    return this.#title ?? '';
   }
 
+  /** @param {string} val */
   set title(val) {
     this.#title = val;
   }
@@ -128,11 +136,11 @@ class ShareWc extends HTMLElement {
     const platforms = this.dataset.platforms || DEFAULT_PLATFORMS;
 
     if (platforms === 'native-only') {
-      this.#tier = navigator.share ? 'native' : 'hidden';
+      this.#tier = typeof navigator.share === 'function' ? 'native' : 'hidden';
       return;
     }
 
-    this.#tier = navigator.share ? 'native' : 'platforms';
+    this.#tier = typeof navigator.share === 'function' ? 'native' : 'platforms';
   }
 
   #renderNative() {
@@ -187,7 +195,7 @@ class ShareWc extends HTMLElement {
       this.appendChild(nav);
       this.#nav = nav;
     } else {
-      this.#nav = this.querySelector('nav');
+      this.#nav = /** @type {HTMLElement} */ (this.querySelector('nav'));
     }
 
     // Substitute URL tokens in href attributes
@@ -196,9 +204,9 @@ class ShareWc extends HTMLElement {
       const href = link.getAttribute('href') || '';
       link.setAttribute('href',
         href
-          .replace(/\{url\}/g, encodeURIComponent(this.#url))
-          .replace(/\{title\}/g, encodeURIComponent(this.#title))
-          .replace(/\{text\}/g, encodeURIComponent(this.#text))
+          .replace(/\{url\}/g, encodeURIComponent(this.#url || ''))
+          .replace(/\{title\}/g, encodeURIComponent(this.#title || ''))
+          .replace(/\{text\}/g, encodeURIComponent(this.#text || ''))
       );
     }
 
@@ -216,7 +224,7 @@ class ShareWc extends HTMLElement {
   };
 
   async #doNativeShare() {
-    const payload = { url: this.#url, title: this.#title, text: this.#text };
+    const payload = { url: this.#url || '', title: this.#title || '', text: this.#text || '' };
 
     this.dispatchEvent(new CustomEvent('share-wc:open', {
       detail: { platform: 'native' },
@@ -243,7 +251,7 @@ class ShareWc extends HTMLElement {
   }
 
   #handlePlatformClick = (e) => {
-    const btn = /** @type {HTMLElement} */ (e.target).closest('[data-platform]');
+    const btn = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('[data-platform]'));
     if (!btn) return;
 
     const id = btn.dataset.platform;
@@ -256,6 +264,7 @@ class ShareWc extends HTMLElement {
     // For slotted <a> elements, let the default action happen
     if (btn.tagName === 'A') return;
 
+    if (!id) return;
     const platform = PLATFORMS.get(id);
     if (!platform) return;
 
@@ -264,13 +273,13 @@ class ShareWc extends HTMLElement {
       bubbles: true,
     }));
 
-    const opts = { url: this.#url, title: this.#title, text: this.#text };
+    const opts = { url: this.#url || '', title: this.#title || '', text: this.#text || '' };
 
     if (id === 'email') {
       location.href = platform.buildUrl(opts);
     } else if (id === 'mastodon') {
       const instance = this.dataset.mastodonInstance || 'mastodon.social';
-      const url = platform.buildUrl(opts, instance);
+      const url = /** @type {(opts: { url: string, title: string, text: string }, instance?: string) => string} */ (platform.buildUrl)(opts, instance);
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.open(platform.buildUrl(opts), '_blank', 'noopener,noreferrer');
@@ -284,11 +293,11 @@ class ShareWc extends HTMLElement {
 
   /** @param {Event} _e @param {HTMLElement} [target] */
   #handleCopy = async (_e, target) => {
-    const btn = target || /** @type {HTMLElement} */ (_e?.target)?.closest('[data-platform="copy"]');
+    const btn = target || /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (_e?.target)?.closest('[data-platform="copy"]'));
     if (!btn) return;
 
     try {
-      await navigator.clipboard.writeText(this.#url);
+      await navigator.clipboard.writeText(this.#url || '');
       btn.dataset.state = 'copied';
 
       // Update label text
@@ -309,7 +318,7 @@ class ShareWc extends HTMLElement {
 
       if (this.#copyTimer) clearTimeout(this.#copyTimer);
       this.#copyTimer = setTimeout(() => {
-        delete btn.dataset.state;
+        delete /** @type {HTMLElement} */ (btn).dataset.state;
         if (label && originalText) label.textContent = originalText;
         btn.removeAttribute('aria-live');
         this.#copyTimer = null;
@@ -323,6 +332,6 @@ class ShareWc extends HTMLElement {
   };
 }
 
-customElements.define('share-wc', ShareWc);
+registerComponent('share-wc', /** @type {typeof HTMLElement} */ (/** @type {unknown} */ (ShareWc)));
 
 export { ShareWc };

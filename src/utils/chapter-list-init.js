@@ -24,7 +24,7 @@ const SELECTOR = 'track[kind="chapters"][data-chapter-list]';
  * @param {Element|Document} root
  */
 function initChapterLists(root = document) {
-  root.querySelectorAll(SELECTOR).forEach(enhanceTrack);
+  root.querySelectorAll(SELECTOR).forEach(el => enhanceTrack(/** @type {HTMLTrackElement} */ (el)));
 }
 
 /**
@@ -35,7 +35,7 @@ function enhanceTrack(trackEl) {
   if (trackEl.hasAttribute('data-chapter-list-init')) return;
   trackEl.setAttribute('data-chapter-list-init', '');
 
-  const video = trackEl.parentElement;
+  const video = /** @type {HTMLVideoElement | null} */ (trackEl.parentElement);
   if (!video || video.tagName !== 'VIDEO') return;
 
   const textTrack = trackEl.track;
@@ -75,7 +75,7 @@ function buildChapterList(video, textTrack) {
     button.type = 'button';
 
     const titleSpan = document.createElement('span');
-    titleSpan.textContent = cue.text;
+    titleSpan.textContent = /** @type {VTTCue} */ (cue).text;
 
     const timeEl = document.createElement('time');
     timeEl.textContent = formatTime(cue.startTime);
@@ -97,6 +97,7 @@ function buildChapterList(video, textTrack) {
   video.insertAdjacentElement('afterend', nav);
 
   // Highlight current chapter during playback
+  /** @type {Element | null} */
   let activeLi = null;
 
   video.addEventListener('timeupdate', () => {

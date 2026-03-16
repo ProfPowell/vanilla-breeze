@@ -10,6 +10,7 @@
  * @attr {boolean} data-loaded - Added after successful load
  * @attr {boolean} data-error - Added if fetch fails
  * @attr {boolean} data-lazy - If present, defers loading until element is in viewport
+ * @attr {boolean} data-allow-scripts - If present, re-executes inline scripts in loaded content (TRUSTED sources only)
  *
  * @fires include-file:load - Dispatched after successful load
  * @fires include-file:error - Dispatched if fetch fails
@@ -19,6 +20,8 @@
  *   <p>Loading...</p>
  * </include-file>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 class IncludeFile extends HTMLElement {
   #observer;
@@ -95,15 +98,20 @@ class IncludeFile extends HTMLElement {
         this.insertAdjacentHTML('afterbegin', html);
       }
 
-      // Run any inline scripts in the loaded content
-      this.querySelectorAll('script').forEach(oldScript => {
-        const newScript = document.createElement('script');
-        for (const attr of oldScript.attributes) {
-          newScript.setAttribute(attr.name, attr.value);
-        }
-        newScript.textContent = oldScript.textContent;
-        oldScript.replaceWith(newScript);
-      });
+      // Re-execute inline scripts only when explicitly opted in
+      if (this.hasAttribute('data-allow-scripts')) {
+        this.querySelectorAll('script').forEach(oldScript => {
+          const newScript = document.createElement('script');
+          for (const attr of oldScript.attributes) {
+            newScript.setAttribute(attr.name, attr.value);
+          }
+          newScript.textContent = oldScript.textContent;
+          oldScript.replaceWith(newScript);
+        });
+      } else {
+        // Strip scripts entirely when not trusted
+        this.querySelectorAll('script').forEach(s => s.remove());
+      }
 
       this.removeAttribute('data-loading');
       this.setAttribute('data-loaded', '');
@@ -132,6 +140,6 @@ class IncludeFile extends HTMLElement {
   }
 }
 
-customElements.define('include-file', IncludeFile);
+registerComponent('include-file', IncludeFile);
 
 export { IncludeFile };

@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * combo-box: Form-associated autocomplete combobox
  *
@@ -742,6 +744,6 @@ class ComboBox extends HTMLElement {
   }
 }
 
-customElements.define('combo-box', ComboBox);
+registerComponent('combo-box', ComboBox);
 
 export { ComboBox };

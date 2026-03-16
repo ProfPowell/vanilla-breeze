@@ -1,4 +1,5 @@
 import { styles } from './styles.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 /**
  * SVG icon cache to avoid refetching
@@ -301,6 +302,6 @@ class IconWc extends HTMLElement {
     }
 }
 
-customElements.define('icon-wc', IconWc);
+registerComponent('icon-wc', IconWc);
 
 export { IconWc };

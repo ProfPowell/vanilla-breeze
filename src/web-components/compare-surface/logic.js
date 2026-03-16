@@ -13,6 +13,9 @@
  *   <img src="after.jpg" alt="After" />
  * </compare-surface>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class CompareSurface extends HTMLElement {
   #divider;
   #dragging = false;
@@ -98,6 +101,6 @@ class CompareSurface extends HTMLElement {
   }
 }
 
-customElements.define('compare-surface', CompareSurface);
+registerComponent('compare-surface', CompareSurface);
 
 export { CompareSurface };

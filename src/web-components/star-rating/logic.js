@@ -18,6 +18,9 @@
  * <star-rating name="rating" label="Rate this product"></star-rating>
  * <star-rating value="4.2" data-readonly label="Average rating"></star-rating>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class StarRating extends HTMLElement {
   static formAssociated = true;
 
@@ -252,6 +255,6 @@ class StarRating extends HTMLElement {
   }
 }
 
-customElements.define('star-rating', StarRating);
+registerComponent('star-rating', StarRating);
 
 export { StarRating };

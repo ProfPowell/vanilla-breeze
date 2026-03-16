@@ -16,6 +16,9 @@
  * - data-field-unless="propertyPath" - Hide element if truthy
  */
 
+import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 // Strict regex for safe property paths only
 // Allows: name, user.email, items[0].title
 // Rejects: price.toFixed(2), `${price}`, price * 1.1
@@ -50,33 +53,6 @@ function getValueByPath(obj, path) {
   }
 
   return value;
-}
-
-/**
- * Basic HTML sanitization - strips dangerous elements and attributes
- * For production use, consider DOMPurify
- */
-function sanitizeHTML(html) {
-  if (!html || typeof html !== 'string') return '';
-
-  const template = document.createElement('template');
-  template.innerHTML = html;
-
-  // Remove dangerous elements
-  const dangerous = template.content.querySelectorAll('script, iframe, object, embed, form');
-  dangerous.forEach(el => el.remove());
-
-  // Remove event handlers and dangerous attributes
-  const allElements = template.content.querySelectorAll('*');
-  allElements.forEach(el => {
-    [...el.attributes].forEach(attr => {
-      if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.startsWith('javascript:')) {
-        el.removeAttribute(attr.name);
-      }
-    });
-  });
-
-  return template.innerHTML;
 }
 
 /**
@@ -259,7 +235,8 @@ class CardList extends HTMLElement {
   }
 }
 
-customElements.define('card-list', CardList);
+registerComponent('card-list', CardList);
 
 // Export for testing
-export { CardList, isValidPath, getValueByPath, sanitizeHTML };
+export { CardList, isValidPath, getValueByPath };
+export { sanitizeHTML } from '../../lib/sanitize-html.js';

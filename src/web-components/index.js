@@ -63,6 +63,8 @@ import './chat-window/logic.js';
 import './share-wc/logic.js';
 import './audio-player/logic.js';
 import './audio-visualizer/logic.js';
+import './video-player/logic.js';
 import './consent-banner/logic.js';
 import './image-map/logic.js';
+import './youtube-player/logic.js';
 import '../custom-elements/brand-mark/logic.js';

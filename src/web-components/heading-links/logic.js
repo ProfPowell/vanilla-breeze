@@ -14,6 +14,8 @@
  *   <h3>Example</h3>
  * </heading-links>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class HeadingLinks extends HTMLElement {
   #observer;
   #processedHeadings = new WeakSet();
@@ -155,6 +157,6 @@ class HeadingLinks extends HTMLElement {
   }
 }
 
-customElements.define('heading-links', HeadingLinks);
+registerComponent('heading-links', HeadingLinks);
 
 export { HeadingLinks };

@@ -17,6 +17,8 @@
  * <color-palette colors="#ff6b6b,#4ecdc4,#45b7d1" names="Red,Teal,Sky"></color-palette>
  * <color-palette colors="oklch(50% 0.2 260),oklch(65% 0.18 30)" layout="grid" show-values></color-palette>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class ColorPalette extends HTMLElement {
   static observedAttributes = ['colors', 'names', 'layout', 'show-values', 'show-names', 'size'];
 
@@ -125,4 +127,4 @@ class ColorPalette extends HTMLElement {
   }
 }
 
-customElements.define('color-palette', ColorPalette);
+registerComponent('color-palette', ColorPalette);

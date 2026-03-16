@@ -27,6 +27,9 @@
  *   <article class="card" draggable="true" data-id="c">Item C</article>
  * </drag-surface>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class DragSurface extends HTMLElement {
   /** @type {HTMLDivElement | null} */
   #liveRegion = null;
@@ -486,5 +489,5 @@ class DragSurface extends HTMLElement {
   static #activeDrag = null;
 }
 
-customElements.define('drag-surface', DragSurface);
+registerComponent('drag-surface', DragSurface);
 export { DragSurface };

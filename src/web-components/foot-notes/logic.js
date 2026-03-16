@@ -13,6 +13,8 @@
  * With JS: footnotes become superscript links, collected at foot-notes
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class FootNotes extends HTMLElement {
   static #instanceCount = 0;
   #instanceId;
@@ -180,7 +182,7 @@ class FootNote extends HTMLElement {
   // Degrades gracefully to show content in parentheses via CSS
 }
 
-customElements.define('foot-notes', FootNotes);
-customElements.define('foot-note', FootNote);
+registerComponent('foot-notes', FootNotes);
+registerComponent('foot-note', FootNote);
 
 export { FootNotes, FootNote };

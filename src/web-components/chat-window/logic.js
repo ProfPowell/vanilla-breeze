@@ -27,12 +27,19 @@
  * </chat-window>
  */
 
+import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class ChatWindow extends HTMLElement {
-  #thread;
-  #chatInput;
-  #modelSelect;
+  /** @type {HTMLElement} */
+  #thread = /** @type {*} */ (null);
+  /** @type {HTMLElement} */
+  #chatInput = /** @type {*} */ (null);
+  /** @type {HTMLSelectElement} */
+  #modelSelect = /** @type {*} */ (null);
   #participants = new Map();
-  #emptyEl;
+  /** @type {HTMLElement | null} */
+  #emptyEl = null;
 
   connectedCallback() {
     this.#discoverChildren();
@@ -55,9 +62,9 @@ class ChatWindow extends HTMLElement {
   // --- Child discovery ---
 
   #discoverChildren() {
-    this.#thread = this.querySelector(':scope > chat-thread');
-    this.#chatInput = this.querySelector(':scope > chat-input');
-    this.#modelSelect = this.querySelector(':scope > header select[data-model-select]');
+    this.#thread = /** @type {HTMLElement} */ (this.querySelector(':scope > chat-thread'));
+    this.#chatInput = /** @type {HTMLElement} */ (this.querySelector(':scope > chat-input'));
+    this.#modelSelect = /** @type {HTMLSelectElement} */ (this.querySelector(':scope > header select[data-model-select]'));
   }
 
   // --- Participant data ---
@@ -135,7 +142,7 @@ class ChatWindow extends HTMLElement {
     this.#scrollToBottom();
 
     // 3. Disable input
-    if (this.#chatInput) this.#chatInput.disabled = true;
+    if (this.#chatInput) /** @type {any} */ (this.#chatInput).disabled = true;
 
     // 4. Fetch response (if endpoint configured)
     const endpoint = this.dataset.endpoint;
@@ -148,7 +155,7 @@ class ChatWindow extends HTMLElement {
         typingMsg.setAttribute('data-status', 'error');
         this.dispatchEvent(new CustomEvent('chat-input:error', {
           bubbles: true,
-          detail: { error: err.message, status: err.status ?? 0 },
+          detail: { error: err.message, status: /** @type {any} */ (err).status ?? 0 },
         }));
       }
     }
@@ -156,7 +163,7 @@ class ChatWindow extends HTMLElement {
 
     // 5. Re-enable input and focus
     if (this.#chatInput) {
-      this.#chatInput.disabled = false;
+      /** @type {any} */ (this.#chatInput).disabled = false;
       this.#chatInput.focus();
     }
 
@@ -191,7 +198,7 @@ class ChatWindow extends HTMLElement {
       p.textContent = html;
       bubble.appendChild(p);
     } else {
-      bubble.innerHTML = html;
+      bubble.innerHTML = sanitizeHTML(html);
     }
     msg.appendChild(bubble);
 
@@ -226,7 +233,7 @@ class ChatWindow extends HTMLElement {
   #populateTypingMessage(msgEl, html) {
     const bubble = msgEl.querySelector('chat-bubble');
     if (bubble) {
-      bubble.innerHTML = html;
+      bubble.innerHTML = sanitizeHTML(html);
     }
     msgEl.removeAttribute('data-status');
     msgEl.removeAttribute('aria-label');
@@ -287,7 +294,7 @@ class ChatWindow extends HTMLElement {
 
     if (!res.ok) {
       const err = new Error(`Chat request failed: ${res.status}`);
-      err.status = res.status;
+      /** @type {any} */ (err).status = res.status;
       throw err;
     }
 
@@ -332,6 +339,6 @@ class ChatWindow extends HTMLElement {
   }
 }
 
-customElements.define('chat-window', ChatWindow);
+registerComponent('chat-window', ChatWindow);
 
 export { ChatWindow };

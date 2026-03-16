@@ -23,6 +23,7 @@
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 import { supportsPopover } from '../../utils/popover-support.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 class ContextMenuWc extends HTMLElement {
   #trigger;
@@ -264,6 +265,6 @@ class ContextMenuWc extends HTMLElement {
   }
 }
 
-customElements.define('context-menu', ContextMenuWc);
+registerComponent('context-menu', ContextMenuWc);
 
 export { ContextMenuWc };

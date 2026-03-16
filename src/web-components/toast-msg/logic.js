@@ -18,6 +18,8 @@
  *   duration: 3000
  * });
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class ToastMsg extends HTMLElement {
   #queue = [];
   #visible = [];
@@ -200,6 +202,6 @@ class ToastMsg extends HTMLElement {
   }
 }
 
-customElements.define('toast-msg', ToastMsg);
+registerComponent('toast-msg', ToastMsg);
 
 export { ToastMsg };

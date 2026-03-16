@@ -34,6 +34,7 @@
  */
 
 import { supportsPopover } from '../../utils/popover-support.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 class DropDown extends HTMLElement {
   #trigger;
@@ -407,6 +408,6 @@ class DropDown extends HTMLElement {
   }
 }
 
-customElements.define('drop-down', DropDown);
+registerComponent('drop-down', DropDown);
 
 export { DropDown };

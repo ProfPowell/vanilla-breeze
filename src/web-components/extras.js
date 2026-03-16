@@ -9,6 +9,7 @@
 // Niche/heavy components
 import './audio-player/logic.js';
 import './audio-visualizer/logic.js';
+import './video-player/logic.js';
 import './geo-map/logic.js';
 import './emoji-picker/logic.js';
 import './drag-surface/logic.js';
@@ -21,6 +22,7 @@ import './slide-accept/logic.js';
 import './color-palette/logic.js';
 import './type-specimen/logic.js';
 import './consent-banner/logic.js';
+import './youtube-player/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';

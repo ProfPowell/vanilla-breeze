@@ -27,6 +27,9 @@
  *   </details>
  * </page-toc>
  */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class PageToc extends HTMLElement {
   #observer;
   #headings = [];
@@ -122,8 +125,6 @@ class PageToc extends HTMLElement {
    */
   #setupResponsive() {
     this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-lg */
-    this.#handleMediaChange = this.#handleMediaChange.bind(this);
-    this.#handleResize = this.#handleResize.bind(this);
     this.#mediaQuery.addEventListener('change', this.#handleMediaChange);
     window.addEventListener('resize', this.#handleResize);
   }
@@ -145,7 +146,6 @@ class PageToc extends HTMLElement {
    * Sync active state with URL hash for reliable state across resizes
    */
   #setupHashSync() {
-    this.#handleHashChange = this.#handleHashChange.bind(this);
     window.addEventListener('hashchange', this.#handleHashChange);
     // Initial sync
     this.#syncFromHash();
@@ -331,6 +331,6 @@ class PageToc extends HTMLElement {
   }
 }
 
-customElements.define('page-toc', PageToc);
+registerComponent('page-toc', PageToc);
 
 export { PageToc };

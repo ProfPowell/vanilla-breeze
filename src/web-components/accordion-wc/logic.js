@@ -21,6 +21,7 @@
  * </accordion-wc>
  */
 import { startSwapTransition } from '../../utils/swap-transition.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 let accordionVtId = 0;
 
@@ -203,6 +204,6 @@ class AccordionWc extends HTMLElement {
   }
 }
 
-customElements.define('accordion-wc', AccordionWc);
+registerComponent('accordion-wc', AccordionWc);
 
 export { AccordionWc };

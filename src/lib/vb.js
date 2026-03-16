@@ -26,6 +26,7 @@ const VB = {
   _instances: new WeakMap(),    // el → Map<effectName, { activate, cleanup }>
   _triggerCleanups: new WeakMap(), // el → cleanup function
   _transitionCleanups: new WeakMap(), // el → cleanup function
+  /** @type {MutationObserver | null} */
   _observer: null,
 
   /**
@@ -37,7 +38,7 @@ const VB = {
     this._effects.set(name, handler)
     // Initialize on existing matching elements
     document.querySelectorAll('[data-effect]').forEach(el => {
-      const names = el.getAttribute('data-effect').split(/\s+/)
+      const names = (el.getAttribute('data-effect') || '').split(/\s+/)
       if (names.includes(name)) {
         this._initEffect(el, name)
       }
@@ -94,7 +95,7 @@ const VB = {
     const tokens = this._themes?.get(name)
     if (!tokens) return
     for (const [prop, value] of Object.entries(tokens)) {
-      scope.style.setProperty(prop, value)
+      /** @type {HTMLElement} */ (scope).style.setProperty(prop, value)
     }
   },
 

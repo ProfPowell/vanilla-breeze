@@ -27,6 +27,7 @@
  * </theme-picker>
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
@@ -702,6 +703,6 @@ class ThemePicker extends HTMLElement {
   }
 }
 
-customElements.define('theme-picker', ThemePicker);
+registerComponent('theme-picker', ThemePicker);
 
 export { ThemePicker };

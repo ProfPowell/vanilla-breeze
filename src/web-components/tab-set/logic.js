@@ -1,4 +1,5 @@
 import { startSwapTransition } from '../../utils/swap-transition.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 let tabsVtId = 0;
 
@@ -155,6 +156,6 @@ class TabSet extends HTMLElement {
   }
 }
 
-customElements.define('tab-set', TabSet);
+registerComponent('tab-set', TabSet);
 
 export { TabSet };

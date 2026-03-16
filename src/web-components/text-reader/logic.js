@@ -13,6 +13,8 @@
  * @attr {string} scroll - Set to "false" to disable auto-scroll
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class TextReader extends HTMLElement {
 
   // ---------- private fields ----------
@@ -610,5 +612,5 @@ class TextReader extends HTMLElement {
   };
 }
 
-customElements.define('text-reader', TextReader);
+registerComponent('text-reader', TextReader);
 export { TextReader };

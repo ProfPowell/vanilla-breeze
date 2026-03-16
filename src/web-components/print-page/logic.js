@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * print-page: Print button with optional raw-mode toggle
  *
@@ -71,6 +73,6 @@ class PrintPage extends HTMLElement {
   }
 }
 
-customElements.define('print-page', PrintPage);
+registerComponent('print-page', PrintPage);
 
 export { PrintPage };

@@ -14,6 +14,8 @@
  * <qr-code data-value="https://example.com">https://example.com</qr-code>
  */
 
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class QrCodeWc extends HTMLElement {
   #canvas;
 
@@ -490,6 +492,6 @@ function applyBestMask(matrix, reserved, size, ecl) {
   return bestResult;
 }
 
-customElements.define('qr-code', QrCodeWc);
+registerComponent('qr-code', QrCodeWc);
 
 export { QrCodeWc };

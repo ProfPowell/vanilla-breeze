@@ -17,13 +17,15 @@ function startObserver() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue
-        matchEffects(node)
-        node.querySelectorAll?.('*').forEach(matchEffects)
+        const el = /** @type {Element} */ (node)
+        matchEffects(el)
+        el.querySelectorAll('*').forEach(matchEffects)
       }
       for (const node of mutation.removedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue
-        unmatchEffects(node)
-        node.querySelectorAll?.('*').forEach(unmatchEffects)
+        const el = /** @type {Element} */ (node)
+        unmatchEffects(el)
+        el.querySelectorAll('*').forEach(unmatchEffects)
       }
     }
   })

@@ -17,6 +17,8 @@
  *   <main>Content</main>
  * </split-surface>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 class SplitSurface extends HTMLElement {
   #divider;
   #first;
@@ -236,6 +238,6 @@ class SplitSurface extends HTMLElement {
   }
 }
 
-customElements.define('split-surface', SplitSurface);
+registerComponent('split-surface', SplitSurface);
 
 export { SplitSurface };

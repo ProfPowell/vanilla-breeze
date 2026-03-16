@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * audio-player: Platform audio player web component
  *
@@ -43,23 +45,34 @@ class AudioPlayerElement extends HTMLElement {
 
   // ─── State ─────────────────────────────────────────────────────────────────
 
-  #audio = null
+  /** @type {HTMLAudioElement} */
+  #audio = /** @type {*} */ (null)
+  /** @type {Element | null} */
   #trackList = null
   #playing = false
-  #controls = null
-  #playBtn = null
-  #timeline = null
-  #timelineFill = null
-  #volumeSlider = null
-  #currentTimeEl = null
-  #durationEl = null
-  #trackTitleEl = null
+  /** @type {Element} */
+  #controls = /** @type {*} */ (null)
+  /** @type {HTMLButtonElement} */
+  #playBtn = /** @type {*} */ (null)
+  /** @type {HTMLInputElement} */
+  #timeline = /** @type {*} */ (null)
+  /** @type {HTMLElement} */
+  #timelineFill = /** @type {*} */ (null)
+  /** @type {HTMLInputElement} */
+  #volumeSlider = /** @type {*} */ (null)
+  /** @type {HTMLElement} */
+  #currentTimeEl = /** @type {*} */ (null)
+  /** @type {HTMLElement} */
+  #durationEl = /** @type {*} */ (null)
+  /** @type {HTMLElement} */
+  #trackTitleEl = /** @type {*} */ (null)
+  /** @type {(() => void) | null} */
   #onThemeChange = null
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
   connectedCallback() {
-    this.#audio = this.querySelector('audio')
+    this.#audio = /** @type {HTMLAudioElement} */ (this.querySelector('audio'))
     if (!this.#audio) return
 
     this.#trackList = this.querySelector('.track-list')
@@ -67,10 +80,13 @@ class AudioPlayerElement extends HTMLElement {
     // Suppress native controls — we provide our own
     this.#audio.removeAttribute('controls')
 
+    const firstConnect = !this.shadowRoot
     this.#buildShadow()
-    this.#attachAudioEvents()
-    this.#attachControlEvents()
-    this.#attachTrackListEvents()
+    if (firstConnect) {
+      this.#attachAudioEvents()
+      this.#attachControlEvents()
+      this.#attachTrackListEvents()
+    }
     this.#updateTrackTitle()
 
     if (this.hasAttribute('data-autoplay')) {
@@ -79,7 +95,7 @@ class AudioPlayerElement extends HTMLElement {
 
     // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
     this.#onThemeChange = () => {
-      const player = this.shadowRoot?.querySelector('.player')
+      const player = /** @type {HTMLElement | null} */ (this.shadowRoot?.querySelector('.player'))
       if (player) {
         player.style.display = 'none'
         player.offsetHeight
@@ -104,6 +120,7 @@ class AudioPlayerElement extends HTMLElement {
   // ─── Shadow DOM ────────────────────────────────────────────────────────────
 
   #buildShadow() {
+    if (this.shadowRoot) return
     const shadow = this.attachShadow({ mode: 'open' })
     shadow.innerHTML = `
       <style>${this.#styles()}</style>
@@ -151,14 +168,14 @@ class AudioPlayerElement extends HTMLElement {
       </div>
     `
 
-    this.#controls = shadow.querySelector('.controls')
-    this.#playBtn = shadow.querySelector('.play-btn')
-    this.#timeline = shadow.querySelector('.timeline')
-    this.#timelineFill = shadow.querySelector('.timeline-fill')
-    this.#volumeSlider = shadow.querySelector('.volume')
-    this.#currentTimeEl = shadow.querySelector('.current-time')
-    this.#durationEl = shadow.querySelector('.duration')
-    this.#trackTitleEl = shadow.querySelector('.track-title')
+    this.#controls = /** @type {Element} */ (shadow.querySelector('.controls'))
+    this.#playBtn = /** @type {HTMLButtonElement} */ (shadow.querySelector('.play-btn'))
+    this.#timeline = /** @type {HTMLInputElement} */ (shadow.querySelector('.timeline'))
+    this.#timelineFill = /** @type {HTMLElement} */ (shadow.querySelector('.timeline-fill'))
+    this.#volumeSlider = /** @type {HTMLInputElement} */ (shadow.querySelector('.volume'))
+    this.#currentTimeEl = /** @type {HTMLElement} */ (shadow.querySelector('.current-time'))
+    this.#durationEl = /** @type {HTMLElement} */ (shadow.querySelector('.duration'))
+    this.#trackTitleEl = /** @type {HTMLElement} */ (shadow.querySelector('.track-title'))
   }
 
   // ─── Styles ────────────────────────────────────────────────────────────────
@@ -516,19 +533,20 @@ class AudioPlayerElement extends HTMLElement {
     // Seek
     this.#timeline.addEventListener('input', () => {
       if (!this.#audio.duration) return
-      this.#audio.currentTime = (this.#timeline.value / 100) * this.#audio.duration
+      this.#audio.currentTime = (Number(this.#timeline.value) / 100) * this.#audio.duration
     })
 
     // Volume
     this.#volumeSlider.addEventListener('input', () => {
-      this.#audio.volume = this.#volumeSlider.value
+      this.#audio.volume = Number(this.#volumeSlider.value)
       this.#audio.muted = false
       this.removeAttribute('data-muted')
       this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
     })
 
     // Mute toggle
-    const muteBtn = this.shadowRoot.querySelector('.mute-btn')
+    const muteBtn = /** @type {HTMLButtonElement} */ (this.shadowRoot?.querySelector('.mute-btn'))
+    if (!muteBtn) return
     muteBtn.addEventListener('click', () => {
       this.#audio.muted = !this.#audio.muted
       this.toggleAttribute('data-muted', this.#audio.muted)
@@ -537,7 +555,8 @@ class AudioPlayerElement extends HTMLElement {
 
     // Keyboard shortcuts
     this.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      const target = /** @type {Element | null} */ (e.target)
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
 
       switch (e.key) {
         case ' ':
@@ -577,7 +596,8 @@ class AudioPlayerElement extends HTMLElement {
     if (!this.#trackList) return
 
     this.#trackList.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]')
+      const target = /** @type {Element | null} */ (e.target)
+      const link = /** @type {HTMLAnchorElement | null} */ (target?.closest('a[href]'))
       if (!link) return
       e.preventDefault()
 
@@ -587,6 +607,7 @@ class AudioPlayerElement extends HTMLElement {
 
   #loadTrack(src, li) {
     // Update active state
+    if (!this.#trackList) return
     const items = this.#trackList.querySelectorAll('li')
     items.forEach(item => item.removeAttribute('data-audio-active'))
     if (li) li.setAttribute('data-audio-active', '')
@@ -611,7 +632,7 @@ class AudioPlayerElement extends HTMLElement {
       const remaining = items.filter((_, i) => i !== activeIdx)
       if (remaining.length) {
         const next = remaining[Math.floor(Math.random() * remaining.length)]
-        const link = next.querySelector('a[href]')
+        const link = /** @type {HTMLAnchorElement | null} */ (next.querySelector('a[href]'))
         if (link) this.#loadTrack(link.href, next)
       }
       return
@@ -619,10 +640,10 @@ class AudioPlayerElement extends HTMLElement {
 
     const nextIdx = activeIdx + 1
     if (nextIdx < items.length) {
-      const link = items[nextIdx].querySelector('a[href]')
+      const link = /** @type {HTMLAnchorElement | null} */ (items[nextIdx].querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[nextIdx])
     } else if (this.hasAttribute('data-loop')) {
-      const link = items[0]?.querySelector('a[href]')
+      const link = /** @type {HTMLAnchorElement | null} */ (items[0]?.querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[0])
     }
   }
@@ -635,7 +656,7 @@ class AudioPlayerElement extends HTMLElement {
     const pct = d ? (t / d) * 100 : 0
 
     this.#currentTimeEl.textContent = this.#formatTime(t)
-    this.#timeline.value = pct
+    this.#timeline.value = String(pct)
     this.#timelineFill.style.width = `${pct}%`
   }
 
@@ -659,7 +680,7 @@ class AudioPlayerElement extends HTMLElement {
     // Fall back to filename from src
     const src = this.#audio.currentSrc || this.#audio.querySelector('source')?.src || ''
     if (src) {
-      const file = src.split('/').pop().split('?')[0]
+      const file = /** @type {string} */ (src.split('/').pop()).split('?')[0]
       this.#trackTitleEl.textContent = file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
     }
   }
@@ -682,6 +703,6 @@ class AudioPlayerElement extends HTMLElement {
   }
 }
 
-customElements.define('audio-player', AudioPlayerElement)
+registerComponent('audio-player', AudioPlayerElement)
 
 export { AudioPlayerElement }

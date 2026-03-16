@@ -25,6 +25,7 @@
  *   <div>Slide 3</div>
  * </carousel-wc>
  */
+import { registerComponent } from '../../lib/bundle-registry.js';
 import { startSwapTransition } from '../../utils/swap-transition.js';
 
 let carouselVtId = 0;
@@ -382,6 +383,6 @@ class CarouselWc extends HTMLElement {
   }
 }
 
-customElements.define('carousel-wc', CarouselWc);
+registerComponent('carousel-wc', CarouselWc);
 
 export { CarouselWc };

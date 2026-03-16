@@ -29,15 +29,21 @@
  */
 
 import { bindHotkey, getBoundHotkeys } from '../../utils/hotkey-bind.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
 
 class SiteSearch extends HTMLElement {
   static #DEBOUNCE_MS = 150;
   static #MAX_RESULTS = 8;
 
-  #trigger;
-  #dialog;
-  #input;
-  #resultsList;
+  /** @type {HTMLElement} */
+  #trigger = /** @type {*} */ (null);
+  /** @type {HTMLElement} */
+  #dialog = /** @type {*} */ (null);
+  /** @type {HTMLInputElement} */
+  #input = /** @type {*} */ (null);
+  /** @type {HTMLElement} */
+  #resultsList = /** @type {*} */ (null);
+  /** @type {any[]} */
   #results = [];
   #activeIndex = -1;
   #isOpen = false;
@@ -63,9 +69,9 @@ class SiteSearch extends HTMLElement {
 
   #render() {
     // Find or create trigger
-    this.#trigger = this.querySelector(':scope > [data-trigger]');
+    this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > [data-trigger]'));
     if (!this.#trigger) {
-      this.#trigger = this.querySelector(':scope > button');
+      this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > button'));
     }
     if (!this.#trigger) {
       this.#trigger = document.createElement('button');
@@ -124,8 +130,8 @@ class SiteSearch extends HTMLElement {
     this.appendChild(this.#dialog);
 
     // Cache references
-    this.#input = this.#dialog.querySelector('.input');
-    this.#resultsList = this.#dialog.querySelector('.results');
+    this.#input = /** @type {HTMLInputElement} */ (this.#dialog.querySelector('.input'));
+    this.#resultsList = /** @type {HTMLElement} */ (this.#dialog.querySelector('.results'));
   }
 
   #bindEvents() {
@@ -147,7 +153,7 @@ class SiteSearch extends HTMLElement {
     document.addEventListener('keydown', this.#handleEscape);
 
     // Dialog events
-    this.#dialog.querySelector('.backdrop').addEventListener('click', () => this.close());
+    this.#dialog.querySelector('.backdrop')?.addEventListener('click', () => this.close());
     this.#input.addEventListener('input', this.#handleInput);
     this.#input.addEventListener('keydown', this.#handleInputKeyDown);
     this.#resultsList.addEventListener('click', this.#handleResultClick);
@@ -205,15 +211,14 @@ class SiteSearch extends HTMLElement {
     if (this.#pagefind) return;
 
     try {
-      // Use Function constructor to create a dynamic import that bypasses Vite
-      // This is necessary because Vite blocks imports from public/ during dev
-      const importPagefind = new Function('return import("/pagefind/pagefind.js")');
-      this.#pagefind = await importPagefind();
+      // Dynamic import with @vite-ignore to prevent Vite from rewriting the path
+      // @ts-ignore — Pagefind is generated at build time; path won't resolve in TS
+      this.#pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js');
       await this.#pagefind.options({
         excerptLength: 20
       });
     } catch (error) {
-      console.warn('Pagefind not available. Run `npm run search:dev` to build the search index.');
+      console.warn('Pagefind not available. Run `npm run search:index` to build the search index.');
       this.#pagefind = null;
     }
   }
@@ -277,7 +282,7 @@ class SiteSearch extends HTMLElement {
     this.#resultsList.innerHTML = `
       <div class="error">
         Search index not found.<br>
-        Run <code>npx pagefind --site dist</code> after building.
+        Run <code>npm run search:index</code> after building.
       </div>
     `;
   }
@@ -366,6 +371,6 @@ class SiteSearch extends HTMLElement {
   }
 }
 
-customElements.define('site-search', SiteSearch);
+registerComponent('site-search', SiteSearch);
 
 export { SiteSearch };

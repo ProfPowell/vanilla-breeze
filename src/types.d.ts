@@ -17,6 +17,8 @@ interface Window {
   __VB_COMPONENT_BASE?: string;
   __VB_THEME_BASE?: string;
   __VB_SERVICE_WORKER?: string;
+  __VB_ENV_LOCATION?: { hemisphere?: 'north' | 'south' };
+  VB?: typeof import('./lib/vb.js').VB;
   __commandRegistry?: VBCommandRegistry;
   webkitAudioContext?: typeof AudioContext;
   VBMath?: VBMathGlobal;
@@ -194,6 +196,13 @@ interface VBThemePrefs {
   borderStyle: string;
   iconSet: string;
   fluid: string;
+  backdrop: string;
+  backdropChrome: string;
+  pageBgType: string;
+  pageBgColor: string;
+  pageBgGradStart: string;
+  pageBgGradEnd: string;
+  pageBgGradDir: string;
 }
 
 /** Theme state including computed effective mode */

@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * chat-input: Form-associated chat input with auto-growing textarea
  *
@@ -225,6 +227,6 @@ class ChatInput extends HTMLElement {
   }
 }
 
-customElements.define('chat-input', ChatInput);
+registerComponent('chat-input', ChatInput);
 
 export { ChatInput };

@@ -1,3 +1,5 @@
+import { registerComponent } from '../../lib/bundle-registry.js';
+
 /**
  * consent-banner: Cookie/privacy consent banner
  *
@@ -48,7 +50,8 @@
  * </consent-banner>
  */
 class ConsentBanner extends HTMLElement {
-  #dialog;
+  /** @type {HTMLDialogElement} */
+  #dialog = /** @type {*} */ (null);
 
   static get observedAttributes() {
     return ['data-position'];
@@ -65,7 +68,7 @@ class ConsentBanner extends HTMLElement {
   }
 
   connectedCallback() {
-    this.#dialog = this.querySelector('dialog');
+    this.#dialog = /** @type {HTMLDialogElement} */ (this.querySelector('dialog'));
     if (!this.#dialog) return;
 
     if (this.dataset.trigger) {
@@ -122,13 +125,13 @@ class ConsentBanner extends HTMLElement {
   };
 
   #onClick = (e) => {
-    const btn = e.target.closest('button[value]');
+    const btn = /** @type {HTMLButtonElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('button[value]'));
     if (!btn) return;
 
     const action = btn.value;
     if (!['accept', 'reject', 'save'].includes(action)) return;
 
-    const checkboxes = [...this.querySelectorAll('input[type="checkbox"]')];
+    const checkboxes = /** @type {HTMLInputElement[]} */ ([...this.querySelectorAll('input[type="checkbox"]')]);
     const preferences = {};
 
     if (action === 'accept') {
@@ -153,7 +156,7 @@ class ConsentBanner extends HTMLElement {
     const sel = this.dataset.trigger;
     if (!sel) return;
 
-    const trigger = e.target.closest(sel);
+    const trigger = /** @type {HTMLElement} */ (e.target).closest(sel);
     if (!trigger) return;
 
     e.preventDefault();
@@ -162,10 +165,10 @@ class ConsentBanner extends HTMLElement {
     const stored = this.#read();
     if (stored?.preferences) {
       for (const [name, checked] of Object.entries(stored.preferences)) {
-        const cb = this.querySelector(
+        const cb = /** @type {HTMLInputElement | null} */ (this.querySelector(
           `input[type="checkbox"][name="${CSS.escape(name)}"]`
-        );
-        if (cb && !cb.disabled) cb.checked = checked;
+        ));
+        if (cb && !cb.disabled) cb.checked = /** @type {boolean} */ (checked);
       }
     }
 
@@ -224,6 +227,6 @@ class ConsentBanner extends HTMLElement {
   }
 }
 
-customElements.define('consent-banner', ConsentBanner);
+registerComponent('consent-banner', ConsentBanner);
 
 export { ConsentBanner };

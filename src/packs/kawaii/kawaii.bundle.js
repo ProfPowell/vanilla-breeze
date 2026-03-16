@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-exports */
 /**
  * Kawaii Bundle — Manifest
  * Vanilla Breeze · Kawaii / Cute
