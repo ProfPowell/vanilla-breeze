@@ -17,9 +17,15 @@
  *    - 180-240: Cyan/Blue
  *    - 240-300: Blue/Purple
  *    - 300-360: Purple/Red
- * 4. Adjust lightness (l) and chroma (c) values as needed
+ * 4. Set lightness and chroma seeds for each color
  * 5. Add import to themes/index.css
  * 6. Register in theme-picker (optional)
+ *
+ * SEED-AND-DERIVE ARCHITECTURE:
+ * Core derives hover/active/subtle/interactive states from your seeds.
+ * You only need to declare hues + lightness + chroma values.
+ * Override hover formulas only if you need a non-standard pattern
+ * (e.g., lightening instead of darkening for very dark primaries).
  */
 
 :root[data-theme="THEME_SLUG"],
@@ -29,36 +35,21 @@
   --hue-secondary: 180;
   --hue-accent: 45;
 
-  /* Recalculate brand colors with new hues */
-  /* Adjust lightness (first number) for visibility */
-  /* Adjust chroma (second number) for saturation */
-  --color-primary: oklch(50% 0.15 var(--hue-primary));
-  --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
-  --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
-  --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
-
-  --color-secondary: oklch(50% 0.10 var(--hue-secondary));
-  --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
-
-  --color-accent: oklch(65% 0.15 var(--hue-accent));
-  --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
-
-  /* Update interactive to use new primary */
-  --color-interactive: var(--color-primary);
-  --color-interactive-hover: var(--color-primary-hover);
+  /* Set lightness (0-100%) and chroma (0-0.37) seeds */
+  /* Core derives --color-primary, hover, active, subtle from these */
+  --lightness-primary: 50%;
+  --chroma-primary: 0.15;
+  --lightness-secondary: 50%;
+  --chroma-secondary: 0.10;
+  --lightness-accent: 65%;
+  --chroma-accent: 0.15;
 }
 
 /* Theme + Dark mode combination */
+/* Core provides hue-tinted surfaces, text, borders, and shadows */
+/* Only override seeds here — set --chroma-surface-tint for surface tint control */
 :root[data-theme="THEME_SLUG"][data-mode="dark"],
 [data-theme="THEME_SLUG"][data-mode="dark"] {
-  color-scheme: dark;
-
-  /* Brighter primary for dark mode contrast */
-  --color-primary: oklch(60% 0.12 var(--hue-primary));
-
-  /* Tinted surfaces for brand cohesion (optional) */
-  /* Remove these lines for neutral dark surfaces */
-  --color-background: oklch(12% 0.02 var(--hue-primary));
-  --color-surface: oklch(16% 0.02 var(--hue-primary));
-  --color-surface-raised: oklch(20% 0.02 var(--hue-primary));
+  --lightness-primary: 60%;
+  --chroma-primary: 0.12;
 }

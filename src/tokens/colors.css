@@ -1,12 +1,13 @@
 /**
  * Color Design Tokens
- * OKLCH-based hue system with light-dark() for automatic mode switching
+ * OKLCH-based seed-and-derive architecture
  *
- * Themes override --hue-* variables to change the brand palette.
+ * Themes set hue, lightness, and chroma seeds. Core derives all state
+ * variants (hover, active, subtle) so themes never need to redeclare them.
  * Use data-mode="light|dark" to force a specific mode.
  */
 
-/* @property registrations for --hue-* are in src/main.css (top-level) */
+/* @property registrations for hue/seed tokens are in src/main.css (top-level) */
 
 :root {
   /* Enable light-dark() function */
@@ -48,20 +49,33 @@
   --hue-secondary: 200;
   --hue-accent: 30;
 
+  /* ==================== BRAND SEEDS ==================== */
+  /* Lightness and chroma seeds — brand themes override these */
+  --lightness-primary: 50%;
+  --chroma-primary: 0.2;
+  --lightness-secondary: 50%;
+  --chroma-secondary: 0.08;
+  --lightness-accent: 65%;
+  --chroma-accent: 0.18;
+
   /* ==================== BRAND COLORS ==================== */
-  /* Primary with relative color variations */
-  --color-primary: oklch(50% 0.2 var(--hue-primary));
+  /* Derived from seeds + hues — themes set seeds, core derives states */
+  --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
   --color-primary-hover: oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
   --color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);
   --color-primary-subtle: oklch(from var(--color-primary) 0.95 0.03 h);
 
   /* Secondary */
-  --color-secondary: oklch(50% 0.08 var(--hue-secondary));
+  --color-secondary: oklch(var(--lightness-secondary) var(--chroma-secondary) var(--hue-secondary));
   --color-secondary-hover: oklch(from var(--color-secondary) calc(l - 0.08) c h);
+  --color-secondary-active: oklch(from var(--color-secondary) calc(l - 0.12) c h);
+  --color-secondary-subtle: oklch(from var(--color-secondary) 0.95 0.03 h);
 
   /* Accent */
-  --color-accent: oklch(65% 0.18 var(--hue-accent));
+  --color-accent: oklch(var(--lightness-accent) var(--chroma-accent) var(--hue-accent));
   --color-accent-hover: oklch(from var(--color-accent) calc(l - 0.08) c h);
+  --color-accent-active: oklch(from var(--color-accent) calc(l - 0.12) c h);
+  --color-accent-subtle: oklch(from var(--color-accent) 0.95 0.03 h);
 
   /* ==================== STATUS COLORS ==================== */
   --color-success: oklch(55% 0.2 145);
@@ -165,8 +179,24 @@
 [data-mode="dark"] {
   color-scheme: dark;
 
-  /* Adjust primary for better dark mode contrast */
-  --color-primary: oklch(65% 0.18 var(--hue-primary));
+  /* Brand seeds shift for dark mode contrast */
+  --lightness-primary: 65%;
+  --chroma-primary: 0.18;
+
+  /* Surface tint chroma — themes can override for stronger/weaker brand tinting */
+  --chroma-surface-tint: 0.02;
+
+  /* Hue-tinted dark surfaces (derived from --hue-primary) */
+  --color-background: oklch(12% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface: oklch(16% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-raised: oklch(20% var(--chroma-surface-tint) var(--hue-primary));
+  --color-surface-sunken: oklch(10% var(--chroma-surface-tint) var(--hue-primary));
+
+  --color-text: oklch(93% 0.01 var(--hue-primary));
+  --color-text-muted: oklch(70% var(--chroma-surface-tint) var(--hue-primary));
+
+  --color-border: oklch(30% var(--chroma-surface-tint) var(--hue-primary));
+  --color-border-strong: oklch(50% var(--chroma-surface-tint) var(--hue-primary));
 
   /* Darker shadows for dark mode */
   --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
@@ -174,15 +204,25 @@
   --shadow-md: 0 4px 6px oklch(0% 0 0 / 0.4), 0 2px 4px oklch(0% 0 0 / 0.3);
   --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.4), 0 4px 6px oklch(0% 0 0 / 0.3);
   --shadow-xl: 0 20px 25px oklch(0% 0 0 / 0.4), 0 10px 10px oklch(0% 0 0 / 0.3);
+
+  --page-bg-color: oklch(14% 0.03 var(--hue-primary));
+
 }
 
 /* ==================== THEME TRANSITIONS ==================== */
-/* Smooth hue interpolation when switching themes */
+/* Smooth interpolation when switching themes (hues + seeds) */
 :root {
   transition:
     --hue-primary var(--duration-slow) var(--ease-default),
     --hue-secondary var(--duration-slow) var(--ease-default),
-    --hue-accent var(--duration-slow) var(--ease-default);
+    --hue-accent var(--duration-slow) var(--ease-default),
+    --lightness-primary var(--duration-slow) var(--ease-default),
+    --chroma-primary var(--duration-slow) var(--ease-default),
+    --lightness-secondary var(--duration-slow) var(--ease-default),
+    --chroma-secondary var(--duration-slow) var(--ease-default),
+    --lightness-accent var(--duration-slow) var(--ease-default),
+    --chroma-accent var(--duration-slow) var(--ease-default),
+    --chroma-surface-tint var(--duration-slow) var(--ease-default);
 }
 
 @media (prefers-reduced-motion: reduce) {
