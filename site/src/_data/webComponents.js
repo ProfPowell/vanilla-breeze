@@ -20,6 +20,8 @@ export default [
   { name: 'toast-msg', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
   { name: 'type-specimen', href: '/docs/elements/web-components/type-specimen/', desc: 'Typography specimen with character grid, weight scale, and type scale' },
   { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
+  { name: 'video-player', href: '/docs/elements/web-components/video-player/', desc: 'Video player with overlay controls, captions, fullscreen, and playlist support' },
+  { name: 'youtube-player', href: '/docs/elements/web-components/youtube-player/', desc: 'Privacy-first YouTube embed with facade pattern — zero iframe bytes until click' },
   { name: 'foot-notes', href: '/docs/elements/web-components/footnotes/', desc: 'Inline footnotes with popup' },
   { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },
   { name: 'heading-links', href: '/docs/elements/web-components/heading-links/', desc: 'Auto-generate heading anchors' },

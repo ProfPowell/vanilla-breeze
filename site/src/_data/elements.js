@@ -220,6 +220,8 @@ const elementsByLetter = {
   V: [
     { name: 'var', type: 'native', href: '/docs/elements/native/var/' },
     { name: 'video', type: 'native', href: '/docs/elements/native/video/' },
+    { name: 'video-player', type: 'component', href: '/docs/elements/web-components/video-player/' },
+    { name: 'youtube-player', type: 'component', href: '/docs/elements/web-components/youtube-player/' },
   ],
   W: [
     { name: 'wbr', type: 'native', href: '/docs/elements/native/wbr/' },

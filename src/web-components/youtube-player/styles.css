@@ -1,0 +1,103 @@
+@layer web-components {
+  /* Hide until JS loads — show fallback anchor */
+  youtube-player:not(:defined) {
+    display: block;
+    aspect-ratio: 16 / 9;
+    background: var(--color-gray-900, #111);
+  }
+
+  youtube-player {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--color-gray-900, #111);
+    overflow: hidden;
+    cursor: pointer;
+    container-type: normal;
+  }
+
+  /* Aspect-ratio variants (from video native-element vocabulary) */
+  youtube-player.standard {
+    aspect-ratio: 4 / 3;
+  }
+
+  youtube-player.ultrawide {
+    aspect-ratio: 21 / 9;
+  }
+
+  youtube-player.rounded {
+    border-radius: var(--radius-m, 0.5rem);
+  }
+
+  youtube-player.full {
+    inline-size: 100%;
+  }
+
+  /* Thumbnail */
+  youtube-player img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity var(--duration-fast, 150ms) var(--ease-default, ease);
+  }
+
+  youtube-player:hover img,
+  youtube-player:focus-within img {
+    opacity: 0.85;
+  }
+
+  /* Play button */
+  youtube-player button {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: scale var(--duration-fast, 150ms) var(--ease-default, ease);
+  }
+
+  youtube-player button svg {
+    display: block;
+    pointer-events: none;
+  }
+
+  youtube-player:hover button,
+  youtube-player:focus-visible button {
+    scale: 1.08;
+  }
+
+  /* Active state — iframe fills container */
+  youtube-player[data-state="active"] {
+    cursor: auto;
+  }
+
+  youtube-player iframe {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: none;
+  }
+
+  /* No-JS fallback link */
+  youtube-player a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    block-size: 100%;
+    inline-size: 100%;
+    color: var(--color-text-inverse, #fff);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
+  /* Focus ring on host in facade state */
+  youtube-player[data-state="ready"]:focus-visible {
+    outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+    outline-offset: 2px;
+  }
+}
