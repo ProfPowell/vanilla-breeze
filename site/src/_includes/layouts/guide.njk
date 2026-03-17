@@ -1,40 +1,40 @@
 {#
-  Pattern layout — for pattern documentation pages.
-  Includes sidebar navigation (6 pattern categories) and TOC.
+  Guide layout — for guide documentation pages with sidebar navigation.
+  Includes sidebar navigation (5 topic groups) and optional TOC.
 
   Front matter variables:
-    patternName — pattern display name (e.g., "Breadcrumb")
-    category    — 'navigation', 'forms', 'marketing', 'application', 'feedback', or 'data'
+    guideGroup  — which topic group to open ('Layouts', 'Styling', etc.)
     currentPath — current page path for aria-current
     title       — page title
-    description — pattern description
+    description — page description
+    toc         — if true, adds TOC sidebar and auto h1/description
 #}
 {% extends "layouts/base.njk" %}
 
 {% set dataPage = "docs" %}
-{% set currentSection = "explore" %}
+{% set currentSection = "guide" %}
 {% set includeDocs = true %}
 
-{%- set patterns = navigation.patterns -%}
+{%- set sidebar = navigation.guideSidebar -%}
 
 {% block pageContent %}
 <main data-pagefind-body>
   {% include "partials/sidebar-nav-drawer.njk" %}
 
   <layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="narrow" data-layout-content-min="60">
-    <nav class="tree" id="nav-drawer" data-layout-density="compact" aria-label="Patterns navigation" data-vt="sidebar">
+    <nav class="tree" id="nav-drawer" data-layout-density="compact" aria-label="Guide navigation" data-vt="sidebar">
       <label for="nav-drawer-toggle" class="nav-drawer-close" aria-label="Close navigation">
         <icon-wc name="x"></icon-wc>
       </label>
 
-      {% for key, cat in patterns %}
-      <details{% if category == key %} open{% endif %}>
-        <summary>{{ cat.label }}</summary>
+      {% for group in sidebar %}
+      <details{% if guideGroup == group.label %} open{% endif %}>
+        <summary>{{ group.label }}</summary>
         <ul>
-          {% for item in cat.items %}
+          {% for item in group.items %}
           <li>
             <a href="{{ item.href }}"{% if currentPath == item.href %} aria-current="page"{% endif %}>
-              {{ item.name }}
+              {{ item.label }}
             </a>
           </li>
           {% endfor %}
@@ -43,25 +43,24 @@
       {% endfor %}
     </nav>
 
+    {% if toc %}
     <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow" data-layout-gap="xl">
       <aside>
         <page-toc data-levels="h2,h3" data-scope="article"></page-toc>
       </aside>
       <article>
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="/docs/patterns/">Patterns</a></li>
-            <li><span aria-current="page">{{ patternName }}</span></li>
-          </ol>
-        </nav>
-        <h1>{{ patternName }}</h1>
+        <h1>{{ title }}</h1>
         <p class="lead">{{ description | escape }}</p>
-
         <heading-links data-levels="h2,h3">
           {{ content | safe }}
         </heading-links>
       </article>
     </layout-sidebar>
+    {% else %}
+    <article>
+      {{ content | safe }}
+    </article>
+    {% endif %}
   </layout-sidebar>
 </main>
 {% endblock %}
