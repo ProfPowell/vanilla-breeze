@@ -152,6 +152,7 @@ const dataAttributes = {
       { name: 'data-stepper', type: 'behavior', href: '/docs/attributes/data-stepper/', description: 'Custom increment and decrement buttons for number inputs' },
       { name: 'data-color', type: 'behavior', href: '/docs/attributes/data-color/', description: 'Styled color swatch with hex display for color inputs' },
       { name: 'data-mask', type: 'behavior', href: '/docs/attributes/data-mask/', description: 'Input masking for phone, credit card, date, and custom patterns' },
+      { name: 'data-accept', type: 'behavior', href: '/docs/attributes/data-accept/', description: 'Character filtering for phone, date, credit card, hex, and custom character classes' },
       { name: 'data-upload', type: 'behavior', href: '/docs/attributes/data-upload/', description: 'Drag-and-drop file upload zone with file list display' },
       { name: 'data-toggle-tags', type: 'behavior', href: '/docs/attributes/data-toggle-tags/', description: 'Checkbox pill chips for tag-based multi-select filtering' },
       { name: 'data-strength', type: 'behavior', href: '/docs/attributes/data-strength/', description: 'Real-time password strength meter with configurable rules' },
