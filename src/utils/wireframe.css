@@ -294,7 +294,7 @@ html[data-wireframe] {
 /* --- Annotations: Label elements with their tag name --- */
 /* Optional: Add data-wireframe="annotate" for element labels */
 [data-wireframe="annotate"] *:not(script):not(style):not(br):not(hr)::before {
-  content: "<" attr(data-label, "") ">";
+  content: var(--wf-label-text, "");
   position: absolute;
   inset-block-start: -1.2em;
   inset-inline-start: 0;
@@ -304,7 +304,7 @@ html[data-wireframe] {
   pointer-events: none;
 }
 
-/* Label common elements automatically when annotating */
+/* Label common semantic elements automatically when annotating */
 [data-wireframe="annotate"] header::before { content: "<header>"; }
 [data-wireframe="annotate"] nav::before { content: "<nav>"; }
 [data-wireframe="annotate"] main::before { content: "<main>"; }
@@ -312,6 +312,26 @@ html[data-wireframe] {
 [data-wireframe="annotate"] footer::before { content: "<footer>"; }
 [data-wireframe="annotate"] article::before { content: "<article>"; }
 [data-wireframe="annotate"] section::before { content: "<section>"; }
+[data-wireframe="annotate"] form::before { content: "<form>"; }
+[data-wireframe="annotate"] fieldset::before { content: "<fieldset>"; }
+[data-wireframe="annotate"] figure::before { content: "<figure>"; }
+[data-wireframe="annotate"] table::before { content: "<table>"; }
+[data-wireframe="annotate"] details::before { content: "<details>"; }
+[data-wireframe="annotate"] dialog::before { content: "<dialog>"; }
+[data-wireframe="annotate"] blockquote::before { content: "<blockquote>"; }
+[data-wireframe="annotate"] ul::before { content: "<ul>"; }
+[data-wireframe="annotate"] ol::before { content: "<ol>"; }
+[data-wireframe="annotate"] dl::before { content: "<dl>"; }
+/* VB layout custom elements */
+[data-wireframe="annotate"] layout-card::before { content: "<layout-card>"; }
+[data-wireframe="annotate"] layout-sidebar::before { content: "<layout-sidebar>"; }
+[data-wireframe="annotate"] layout-stack::before { content: "<layout-stack>"; }
+[data-wireframe="annotate"] layout-grid::before { content: "<layout-grid>"; }
+[data-wireframe="annotate"] layout-center::before { content: "<layout-center>"; }
+[data-wireframe="annotate"] layout-cluster::before { content: "<layout-cluster>"; }
+[data-wireframe="annotate"] layout-cover::before { content: "<layout-cover>"; }
+[data-wireframe="annotate"] layout-switcher::before { content: "<layout-switcher>"; }
+[data-wireframe="annotate"] layout-reel::before { content: "<layout-reel>"; }
 
 /* --- Scoped wireframe mode --- */
 /* Apply wireframe only to a specific container */
@@ -556,10 +576,24 @@ html[data-wireframe="hi"] {
 /* ============================================== */
 
 /*
- * Note: Image dimensions overlay requires JavaScript since
- * <img> elements cannot have pseudo-elements.
- * The wireframe.js labelElements() function handles this.
+ * Image dimensions overlay requires JavaScript (labelElements()).
+ * When a figure has dimensions but no label, show dimensions via ::after.
  */
+[data-wireframe] figure[data-wf-img-dims]:not(:has(img[data-wf-label]))::after {
+  content: attr(data-wf-img-dims);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  color: var(--wireframe-muted);
+  font-size: var(--font-size-xs, 12px);
+  font-family: system-ui, sans-serif;
+  font-weight: 400;
+  text-align: center;
+  pointer-events: none;
+}
 
 /* ============================================== */
 /* PROTOTYPING TOOLS INTEGRATION                  */

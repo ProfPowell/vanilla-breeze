@@ -25,13 +25,13 @@ export const wireframe = {
       this.applyLabel(el, /** @type {HTMLElement} */ (el).dataset.wfLabel ?? '');
     });
 
-    // Use alt text for images without explicit labels
+    // Use alt text for images without explicit labels, then add dimensions
     document.querySelectorAll('img[alt]').forEach((rawImg) => {
       const img = /** @type {HTMLImageElement} */ (rawImg);
       if (!img.dataset.wfLabel && img.alt) {
         this.applyLabel(img, img.alt);
       }
-      // Add dimension info for images
+      // Add dimension info — must run after applyLabel so dims merge with label
       this.applyImageDimensions(img);
     });
   },
@@ -75,13 +75,22 @@ export const wireframe = {
 
   /**
    * Add dimension overlay to images
+   * Propagates dimensions to parent <figure> so CSS can render them.
    * @param {HTMLImageElement} img - Image element
    */
   applyImageDimensions(img) {
     const updateDimensions = () => {
       if (img.naturalWidth && img.naturalHeight) {
-        const dims = `${img.naturalWidth}×${img.naturalHeight}`;
-        img.style.setProperty('--wf-img-overlay', `"${dims}"`);
+        const dims = `${img.naturalWidth}\u00d7${img.naturalHeight}`;
+        const figure = img.closest('figure');
+        if (figure) {
+          figure.setAttribute('data-wf-img-dims', dims);
+          // Merge dims into label if one exists
+          const existing = figure.getAttribute('data-wf-img-label');
+          if (existing) {
+            figure.setAttribute('data-wf-img-label', `${existing} \u2014 ${dims}`);
+          }
+        }
       }
     };
 

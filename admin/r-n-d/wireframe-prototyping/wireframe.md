@@ -38,17 +38,18 @@ Wireframe mode is implemented primarily as CSS, with an optional JS helper that 
 6. Composer integration:
 - Grid composer has a wireframe toggle that adds/removes `data-wireframe` on `vb-canvas`.
 
-### Optional JS helper (exists, but not distributed)
+### JS helper (bundled in dev.js)
 
-`src/lib/wireframe.js` provides:
+`src/lib/wireframe.js` is imported by `src/dev.js` and provides:
 - `labelElements()`
 - `label(target, text)`
 - `setFidelity(level)`
 - `toggle(level?)`
 - `isActive()`
 - `getFidelity()`
+- `toggleAnnotations()` — composable annotation layer
 
-It also attaches `window.VanillaBreeze.wireframe` when executed.
+It attaches `window.VanillaBreeze.wireframe` on load.
 
 ## Packaging and Availability
 
@@ -58,48 +59,38 @@ It also attaches `window.VanillaBreeze.wireframe` when executed.
 
 2. Not included:
 - `vanilla-breeze-core.css` does not include wireframe mode.
-- JS bundles (`vanilla-breeze.js`, `core.js`, `extras.js`, `dev.js`) do not include `src/lib/wireframe.js`.
-- There is no package export path for wireframe JS API.
+- Main JS bundles (`vanilla-breeze.js`, `core.js`, `extras.js`) do not include `src/lib/wireframe.js`.
+- `dev.js` **does** include wireframe JS API (fixed).
 
 ## Documentation and Reality Gaps
 
-1. Docs show a wireframe JS API import from `/src/lib/wireframe.js`, but this is repo-local and not package-consumer friendly.
+1. ~~Docs show a wireframe JS API import from `/src/lib/wireframe.js`, but this is repo-local and not package-consumer friendly.~~ **Fixed**: dev.js bundles wireframe.js.
 
-2. “Images auto-use alt text” is only true if JS helper logic runs (`labelElements()`); CSS alone cannot pull `img[alt]` into overlay text.
+2. “Images auto-use alt text” is only true if JS helper logic runs (`labelElements()`); CSS alone cannot pull `img[alt]` into overlay text. (Documented.)
 
-3. `wireframe.js` sets `--wf-img-overlay` dimensions, but current wireframe CSS does not render that variable anywhere.
+3. ~~`wireframe.js` sets `--wf-img-overlay` dimensions, but current wireframe CSS does not render that variable anywhere.~~ **Fixed**: Dimensions propagated to `data-wf-img-dims` on figure, CSS renders them.
 
-4. Annotate mode’s generic rule uses `attr(data-label, "")`, but no standard `data-label` population exists for most elements.
+4. ~~Annotate mode’s generic rule uses `attr(data-label, “”)`, but no standard `data-label` population exists for most elements.~~ **Fixed**: Now uses `var(--wf-label-text, “”)` and expanded hardcoded label list (18 semantic + 9 VB layout elements).
 
-5. The standalone demo in `docs/examples/demos/wireframe-mode.html` links `/src/main.css` (core), while wireframe styles live in full/dev CSS.
+5. ~~The standalone demo links `/src/main.css` (core), while wireframe styles live in full/dev CSS.~~ **Fixed**: Demo loads dev.css and dev.js.
 
-6. No automated tests currently cover wireframe behavior.
+6. ~~No automated tests currently cover wireframe behavior.~~ **Fixed**: Unit and Playwright component tests added.
 
 ## Extension Opportunities
 
 ### Near-term (high value, low-to-medium effort)
 
-1. Ship wireframe JS API properly:
-- Bundle `src/lib/wireframe.js` in a distributable entry.
-- Add package export (for example `vanilla-breeze/wireframe-js`).
+1. ~~Ship wireframe JS API properly~~ **Done**: Bundled in dev.js.
 
-2. Add optional auto-init behavior:
-- In dev JS (or explicit enhancer), run `labelElements()` when `data-wireframe` is present.
+2. ~~Add optional auto-init behavior~~ Partial: Demo calls `labelElements()` on init. Auto-init on attribute detection is a future enhancement.
 
-3. Fix docs/demo accuracy:
-- Update demo to load full/dev CSS where wireframe styles exist.
-- Clarify that alt-text overlays and dimensions need JS helper execution.
+3. ~~Fix docs/demo accuracy~~ **Done**: Demo loads dev CSS/JS, docs clarify JS requirement.
 
-4. Complete annotate mode:
-- Replace/augment `data-label` dependency with a reliable labeling strategy.
-- Ensure generic annotate output always has useful content.
+4. ~~Complete annotate mode~~ **Done**: Uses `var(--wf-label-text)`, expanded to 27 elements. Composable `data-wf-annotate` added.
 
-5. Render image dimensions:
-- Use `--wf-img-overlay` in CSS (or move to `data-*` attribute consumed by CSS).
+5. ~~Render image dimensions~~ **Done**: Propagated to `data-wf-img-dims`, CSS renders them.
 
-6. Add tests:
-- Playwright component test for fidelity toggles and `data-wf-label`.
-- Test for JS helper availability/behavior once exported.
+6. ~~Add tests~~ **Done**: Unit tests + Playwright component tests.
 
 ### Mid-term (feature expansion)
 
