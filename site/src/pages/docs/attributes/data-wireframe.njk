@@ -56,6 +56,18 @@ VanillaBreeze.wireframe.label(element, 'Primary Navigation');{% endraw %}{% ends
 VanillaBreeze.wireframe.getFidelity();
 // → 'lo' | 'mid' | 'hi' | 'annotate' | null{% endraw %}{% endset %}
 
+{% set codeAnnotate %}{% raw %}// Toggle annotations independently of fidelity
+VanillaBreeze.wireframe.toggleAnnotations();
+
+// Combine: lo-fi wireframe WITH element labels
+VanillaBreeze.wireframe.setFidelity('lo');
+VanillaBreeze.wireframe.toggleAnnotations();{% endraw %}{% endset %}
+
+{% set codeAnnotateHtml %}<!-- Composable annotation attribute -->
+<html data-wireframe="lo" data-wf-annotate>
+  <!-- Lo-fi styles WITH element labels overlaid -->
+</html>{% endset %}
+
 {% set codeWfLabel %}<section data-wf-label="Hero Section">
   <h1>Page Title</h1>
   <p>Subtitle text here.</p>
@@ -132,6 +144,11 @@ VanillaBreeze.wireframe.getFidelity();
         <td><code>data-wf-label</code></td>
         <td>string</td>
         <td>Element label text shown in annotate mode via <code>::before</code> pseudo-element.</td>
+      </tr>
+      <tr>
+        <td><code>data-wf-annotate</code></td>
+        <td>boolean</td>
+        <td>Composable annotation layer. Unlike <code>annotate</code> fidelity, this overlays element labels on top of any fidelity level.</td>
       </tr>
     </tbody>
   </table>
@@ -232,8 +249,21 @@ VanillaBreeze.wireframe.getFidelity();
         <td><code>void</code></td>
         <td>Label a specific element or CSS selector.</td>
       </tr>
+      <tr>
+        <td><code>toggleAnnotations()</code></td>
+        <td><code>boolean</code></td>
+        <td>Toggle composable annotations. Returns whether now enabled.</td>
+      </tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Composable Annotations</h2>
+  <p>The <code>data-wf-annotate</code> attribute layers element labels on top of any fidelity level. Unlike the <code>annotate</code> fidelity mode, this lets you see lo-fi or hi-fi styling with labels overlaid.</p>
+
+  <code-block language="html" show-lines label="Composable annotations">{{ codeAnnotateHtml | escape }}</code-block>
+  <code-block language="javascript" show-lines label="Toggle annotations via JS">{{ codeAnnotate | escape }}</code-block>
 </section>
 
 <section>

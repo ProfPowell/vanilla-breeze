@@ -333,6 +333,50 @@ html[data-wireframe] {
 [data-wireframe="annotate"] layout-switcher::before { content: "<layout-switcher>"; }
 [data-wireframe="annotate"] layout-reel::before { content: "<layout-reel>"; }
 
+/* ============================================== */
+/* COMPOSABLE ANNOTATIONS                         */
+/* ============================================== */
+
+/* data-wf-annotate layers annotations on TOP of any fidelity level */
+[data-wf-annotate] *:not(script):not(style):not(br):not(hr)::before {
+  content: var(--wf-label-text, "");
+  position: absolute;
+  inset-block-start: -1.2em;
+  inset-inline-start: 0;
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--wireframe-muted, oklch(50% 0 0));
+  pointer-events: none;
+}
+
+/* Hardcoded labels for composable annotations */
+[data-wf-annotate] header::before { content: "<header>"; }
+[data-wf-annotate] nav::before { content: "<nav>"; }
+[data-wf-annotate] main::before { content: "<main>"; }
+[data-wf-annotate] aside::before { content: "<aside>"; }
+[data-wf-annotate] footer::before { content: "<footer>"; }
+[data-wf-annotate] article::before { content: "<article>"; }
+[data-wf-annotate] section::before { content: "<section>"; }
+[data-wf-annotate] form::before { content: "<form>"; }
+[data-wf-annotate] fieldset::before { content: "<fieldset>"; }
+[data-wf-annotate] figure::before { content: "<figure>"; }
+[data-wf-annotate] table::before { content: "<table>"; }
+[data-wf-annotate] details::before { content: "<details>"; }
+[data-wf-annotate] dialog::before { content: "<dialog>"; }
+[data-wf-annotate] blockquote::before { content: "<blockquote>"; }
+[data-wf-annotate] ul::before { content: "<ul>"; }
+[data-wf-annotate] ol::before { content: "<ol>"; }
+[data-wf-annotate] dl::before { content: "<dl>"; }
+[data-wf-annotate] layout-card::before { content: "<layout-card>"; }
+[data-wf-annotate] layout-sidebar::before { content: "<layout-sidebar>"; }
+[data-wf-annotate] layout-stack::before { content: "<layout-stack>"; }
+[data-wf-annotate] layout-grid::before { content: "<layout-grid>"; }
+[data-wf-annotate] layout-center::before { content: "<layout-center>"; }
+[data-wf-annotate] layout-cluster::before { content: "<layout-cluster>"; }
+[data-wf-annotate] layout-cover::before { content: "<layout-cover>"; }
+[data-wf-annotate] layout-switcher::before { content: "<layout-switcher>"; }
+[data-wf-annotate] layout-reel::before { content: "<layout-reel>"; }
+
 /* --- Scoped wireframe mode --- */
 /* Apply wireframe only to a specific container */
 :not(html)[data-wireframe] {
@@ -593,6 +637,28 @@ html[data-wireframe="hi"] {
   font-weight: 400;
   text-align: center;
   pointer-events: none;
+}
+
+/* Standalone image wrapper (added by JS for non-figure images) */
+[data-wireframe] [data-wf-img-wrap] {
+  position: relative;
+}
+
+[data-wireframe] [data-wf-img-wrap][data-wf-label]::before {
+  content: var(--wf-label-text, attr(data-wf-label));
+  position: absolute;
+  inset-block-start: var(--size-2xs, 4px);
+  inset-inline-start: var(--size-2xs, 4px);
+  padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
+  background: var(--wireframe-label-bg);
+  color: var(--wireframe-label-color);
+  font-size: var(--font-size-2xs, 10px);
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 2px;
 }
 
 /* ============================================== */

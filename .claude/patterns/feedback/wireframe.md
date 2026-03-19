@@ -19,12 +19,25 @@ Wireframe mode provides a sketch-like aesthetic for rapid HTML prototyping. Add 
 | On | Full wireframe mode with grayscale |
 | Annotate | Wireframe with element labels visible |
 
+## Fidelity Levels
+
+| Level | Fonts | Borders | Colors | Best For |
+|-------|-------|---------|--------|----------|
+| `lo` | Redacted Script (scribble) | Rough dashed | Pure B&W | Early concept sketches |
+| `mid` (default) | Flow Block | Dashed | Grayscale | Layout review |
+| `hi` | System fonts | Subtle | Near-production | Content review, stakeholder demos |
+| `annotate` | System fonts | Labeled | Grayscale + labels | Design specs, developer handoff |
+
 ## Variants
 
 | Variant | Use Case |
 |---------|----------|
-| `data-wireframe` | Standard wireframe mode |
+| `data-wireframe` | Standard wireframe mode (same as mid) |
+| `data-wireframe="lo"` | Sketch-like lo-fi wireframe |
+| `data-wireframe="mid"` | Block-font wireframe |
+| `data-wireframe="hi"` | Near-production preview |
 | `data-wireframe="annotate"` | Shows element labels for HTML structure review |
+| `data-wf-annotate` | Composable annotation layer (works with any fidelity) |
 
 ## Baseline HTML
 
@@ -75,36 +88,29 @@ html[data-wireframe] {
 }
 ```
 
-## JavaScript (Optional)
+## JavaScript API
 
-Toggle wireframe mode dynamically:
-
-```javascript
-// Enable wireframe mode
-document.documentElement.setAttribute('data-wireframe', '');
-
-// Enable with annotations
-document.documentElement.setAttribute('data-wireframe', 'annotate');
-
-// Disable wireframe mode
-document.documentElement.removeAttribute('data-wireframe');
-```
-
-Keyboard shortcut example:
+The JS API is available via `VanillaBreeze.wireframe` when `dev.js` is loaded.
 
 ```javascript
-document.addEventListener('keydown', (e) => {
-  // Ctrl/Cmd + Shift + W toggles wireframe
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'W') {
-    e.preventDefault();
-    const html = document.documentElement;
-    if (html.hasAttribute('data-wireframe')) {
-      html.removeAttribute('data-wireframe');
-    } else {
-      html.setAttribute('data-wireframe', '');
-    }
-  }
-});
+// Toggle wireframe on/off (returns boolean)
+VanillaBreeze.wireframe.toggle();
+VanillaBreeze.wireframe.toggle('lo'); // toggle with specific fidelity
+
+// Set fidelity directly
+VanillaBreeze.wireframe.setFidelity('hi');
+VanillaBreeze.wireframe.setFidelity(''); // disable
+
+// Query state
+VanillaBreeze.wireframe.isActive();   // → true/false
+VanillaBreeze.wireframe.getFidelity(); // → 'lo'|'mid'|'hi'|'annotate'|null
+
+// Label elements
+VanillaBreeze.wireframe.labelElements(); // auto-label all
+VanillaBreeze.wireframe.label('.hero', 'Hero Banner'); // manual
+
+// Composable annotations (layers on top of any fidelity)
+VanillaBreeze.wireframe.toggleAnnotations();
 ```
 
 ## Accessibility

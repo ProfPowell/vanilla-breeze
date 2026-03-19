@@ -20,6 +20,9 @@ export const wireframe = {
    * For images, adds dimension info to the overlay.
    */
   labelElements() {
+    // Wrap standalone images so pseudo-elements work for labels
+    this.wrapStandaloneImages();
+
     // Apply labels to elements with data-wf-label
     document.querySelectorAll('[data-wf-label]').forEach((el) => {
       this.applyLabel(el, /** @type {HTMLElement} */ (el).dataset.wfLabel ?? '');
@@ -143,6 +146,36 @@ export const wireframe = {
    */
   getFidelity() {
     return document.documentElement.dataset.wireframe || null;
+  },
+
+  /**
+   * Toggle composable annotations on/off.
+   * Unlike annotate fidelity, this layers on top of any fidelity level.
+   * @returns {boolean} Whether annotations are now enabled
+   */
+  toggleAnnotations() {
+    const html = document.documentElement;
+    if (html.hasAttribute('data-wf-annotate')) {
+      html.removeAttribute('data-wf-annotate');
+      return false;
+    }
+    html.setAttribute('data-wf-annotate', '');
+    return true;
+  },
+
+  /**
+   * Wrap standalone images (not in <figure>) so labels can render via pseudo-elements.
+   * Called automatically by labelElements().
+   */
+  wrapStandaloneImages() {
+    document.querySelectorAll('img:not(figure img):not([data-wf-wrapped])').forEach((img) => {
+      const wrap = document.createElement('span');
+      wrap.setAttribute('data-wf-img-wrap', '');
+      wrap.style.cssText = 'position:relative;display:inline-block';
+      img.setAttribute('data-wf-wrapped', '');
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
+    });
   }
 };
 
