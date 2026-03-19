@@ -1,7 +1,7 @@
 # Input Transformations — Design Reference
 
-> Status: R&D / future design reference
-> Related: `data-emoji` (live input mode), `data-mask`
+> Status: Partially implemented — shared init registry + `data-accept` shipped (2026-03-19)
+> Related: `data-emoji` (live input mode), `data-mask`, `data-accept`
 
 ## Context
 
@@ -10,22 +10,30 @@ VB has several input-watching utilities that each solve one narrow problem:
 | Utility | Target | Event | What it does |
 |---------|--------|-------|-------------|
 | `data-mask` | `<input>` | `input` | Character-level structural masks (phone, date, SSN) |
+| `data-accept` | `<input>` | `beforeinput` / `input` | Character filtering — allow only valid chars, flexible format |
 | `data-grow` | `<textarea>` | `input` | Auto-expand height |
 | `data-count` | `<textarea>` | `input` | Live char/word counter |
 | `data-stepper` | `<input type=number>` | `click` | +/- buttons around number input |
 | `data-range` | `<input type=range>` | `input` | Value bubble + tick marks |
 | `data-emoji` | any + input/textarea | `input` / TreeWalker | `:shortcode:` → emoji (static + live) |
 
-They all follow the same init pattern (DOMContentLoaded + MutationObserver for dynamic elements) but share **zero** event-handling infrastructure.
+They all follow the same init pattern (DOMContentLoaded + MutationObserver for dynamic elements). The shared init boilerplate has been extracted into `src/utils/_init-registry.js` — one MutationObserver instead of N. The 7 utils above have been migrated; remaining ~18 utils use the old self-managing pattern and can be migrated opportunistically.
 
 ## Three Tiers of Input Transformation
 
-### Tier 1: Character Masks (have this — `data-mask`)
+### Tier 1: Structural Masks (`data-mask` — implemented)
 Fixed structural patterns. Every keystroke is constrained.
 - `(###) ###-####` for phone
 - `##/##/####` for date
 
 **Key trait:** The mask is the shape. The input never contains "illegal" characters. Cursor management is critical because literal characters get injected.
+
+### Tier 1.5: Character Filtering (`data-accept` — implemented 2026-03-19)
+Allow only valid characters, but the user decides the format.
+- `data-accept="phone"` → digits, +, (), -, space
+- `data-accept="[0-9a-fA-F]"` → custom character class
+
+**Key trait:** Blocks invalid chars via `beforeinput` (no flicker). Paste is filtered character-by-character. No cursor repositioning needed for the primary path. Falls back to `input` event stripping with cursor correction.
 
 ### Tier 2: Token Replacement (have emoji, could generalize)
 Watch for **delimited patterns** and replace them after completion.
@@ -70,7 +78,7 @@ Each transform is a pure function: `(value, cursorPos) → { value, cursorPos }`
 
 ### Recommendation
 
-Wait until there are 3+ concrete transform types before introducing the composable API. If/when smart quotes or em dashes emerge as real needs, extract the shared plumbing from `data-emoji` and `data-mask` into a tiny `input-transform-core.js`.
+~~Wait until there are 3+ concrete transform types before introducing the composable API.~~ **Done** — with `data-mask`, `data-accept`, and `data-emoji` we have 3 concrete types. The shared init boilerplate (`_init-registry.js`) has been extracted. The composable *event-handling* pipeline (Option C) remains future work — the current extraction only covers the mechanical init pattern (DOMContentLoaded + MutationObserver), not cursor/composition helpers.
 
 ## Patterns Worth Watching
 

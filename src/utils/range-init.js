@@ -22,6 +22,8 @@
  * </datalist>
  */
 
+import { registerInit } from './_init-registry.js';
+
 const SELECTOR = 'input[type="range"][data-range]';
 
 /**
@@ -123,25 +125,6 @@ function initRangeSliders(root = document) {
   root.querySelectorAll(SELECTOR).forEach(enhanceRange);
 }
 
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initRangeSliders());
-} else {
-  initRangeSliders();
-}
-
-// Watch for dynamically added ranges
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceRange(/** @type {HTMLInputElement} */ (el));
-      el.querySelectorAll(SELECTOR).forEach(child => enhanceRange(/** @type {HTMLInputElement} */ (child)));
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceRange);
 
 export { initRangeSliders };

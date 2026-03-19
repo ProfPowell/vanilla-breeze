@@ -1,0 +1,282 @@
+---
+layout: layouts/attribute.njk
+title: "data-accept"
+description: "Restrict input to allowed characters without enforcing a rigid format. Named presets for phone, date, credit card, and more. Custom character classes via bracket syntax."
+attributeName: data-accept
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-accept/
+permalink: /docs/attributes/data-accept/
+---
+
+{% set phoneCode %}<label for="phone">Phone number</label>
+<input type="text" id="phone" data-accept="phone" placeholder="+1 (555) 123-4567">{% endset %}
+
+{% set dateCode %}<label for="date">Date</label>
+<input type="text" id="date" data-accept="date" placeholder="03/19/2026 or 03-19-2026">{% endset %}
+
+{% set ccCode %}<label for="cc">Credit card</label>
+<input type="text" id="cc" data-accept="cc" placeholder="1234 5678 9012 3456">{% endset %}
+
+{% set customCode %}<label for="hex">Hex color</label>
+<input type="text" id="hex" data-accept="[0-9a-fA-F]" maxlength="6"
+  placeholder="FF00AA">{% endset %}
+
+{% set allPresetsCode %}<label for="phone-demo">Phone</label>
+<input type="text" id="phone-demo" data-accept="phone" placeholder="+1 (555) 123-4567">
+
+<label for="date-demo">Date</label>
+<input type="text" id="date-demo" data-accept="date" placeholder="MM/DD/YYYY">
+
+<label for="cc-demo">Credit card</label>
+<input type="text" id="cc-demo" data-accept="cc" placeholder="1234 5678 9012 3456">
+
+<label for="currency-demo">Currency</label>
+<input type="text" id="currency-demo" data-accept="currency" placeholder="1,234.56">
+
+<label for="digits-demo">Digits</label>
+<input type="text" id="digits-demo" data-accept="digits" placeholder="123456">
+
+<label for="hex-demo">Hex</label>
+<input type="text" id="hex-demo" data-accept="hex" placeholder="FF00AA">{% endset %}
+
+{% set formFieldCode %}<form-field>
+  <label for="phone-field">Phone number</label>
+  <input type="text" id="phone-field" data-accept="phone" required
+    placeholder="+1 (555) 123-4567">
+  <small slot="help">Digits, +, parentheses, hyphens, and spaces.</small>
+</form-field>{% endset %}
+
+{% set pasteCode %}<!-- Paste "abc123def456" into this field — only digits are kept -->
+<label for="paste-demo">Digits only (try pasting)</label>
+<input type="text" id="paste-demo" data-accept="digits" placeholder="Paste mixed content">{% endset %}
+
+{% set dynamicCode %}// Dynamically added accept inputs are auto-enhanced via MutationObserver
+const input = document.createElement('input');
+input.type = 'text';
+input.dataset.accept = 'digits';
+document.body.appendChild(input);
+// input is ready to use — no manual init needed{% endset %}
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-accept</code> attribute restricts an input to a set of allowed characters without enforcing a rigid format. Unlike <code>data-mask</code>, which auto-injects separators and dictates the shape of the value, <code>data-accept</code> lets the user format freely &mdash; only invalid characters are blocked.</p>
+
+    <browser-window
+      src="/docs/examples/demos/accept-filter.html"
+      url="https://vanilla-breeze.dev/accept"
+      title="Character Filter"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Phone character filter">{{ phoneCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>Add <code>data-accept</code> with a preset name or custom character class to any text input. The init script:</p>
+    <ol>
+      <li>Resolves the allowed character set from the preset name or bracket syntax</li>
+      <li>Intercepts <code>beforeinput</code> events to block invalid characters before they appear &mdash; no flicker, no cursor jump</li>
+      <li>Filters pasted text character-by-character, keeping only valid characters</li>
+      <li>Falls back to <code>input</code> event stripping for browsers where <code>beforeinput</code> is not cancelable</li>
+      <li>Handles IME composition events to avoid interfering with multi-byte input</li>
+      <li>Sets <code>inputmode</code> automatically from the preset</li>
+      <li>Stores the regex source in <code>data-accept-pattern</code> for external consumption</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-accept</code></td>
+          <td>string</td>
+          <td>Preset name or custom character class (e.g., <code>[0-9a-fA-F]</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-accept-pattern</code></td>
+          <td>string</td>
+          <td>Set automatically. Contains the regex source for the allowed character set.</td>
+        </tr>
+        <tr>
+          <td><code>data-accept-init</code></td>
+          <td>boolean</td>
+          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Presets</h2>
+    <p>The following presets are available out of the box:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Preset</th>
+          <th>Allowed characters</th>
+          <th>inputmode</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>digits</code></td>
+          <td><code>[0-9]</code></td>
+          <td><code>numeric</code></td>
+        </tr>
+        <tr>
+          <td><code>alpha</code></td>
+          <td><code>[a-zA-Z]</code></td>
+          <td><code>text</code></td>
+        </tr>
+        <tr>
+          <td><code>alphanum</code></td>
+          <td><code>[a-zA-Z0-9]</code></td>
+          <td><code>text</code></td>
+        </tr>
+        <tr>
+          <td><code>phone</code></td>
+          <td><code>[0-9+()-&nbsp;]</code> (digits, plus, parens, hyphen, space)</td>
+          <td><code>tel</code></td>
+        </tr>
+        <tr>
+          <td><code>date</code></td>
+          <td><code>[0-9/-.]</code> (digits, slash, hyphen, period)</td>
+          <td><code>numeric</code></td>
+        </tr>
+        <tr>
+          <td><code>hex</code></td>
+          <td><code>[0-9a-fA-F]</code></td>
+          <td><code>text</code></td>
+        </tr>
+        <tr>
+          <td><code>currency</code></td>
+          <td><code>[0-9.,]</code> (digits, comma, period)</td>
+          <td><code>decimal</code></td>
+        </tr>
+        <tr>
+          <td><code>cc</code></td>
+          <td><code>[0-9&nbsp;-]</code> (digits, space, hyphen)</td>
+          <td><code>numeric</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="example">
+      <layout-stack data-layout-gap="m">
+        <div>
+          <label for="phone-ex">Phone</label>
+          <input type="text" id="phone-ex" data-accept="phone" placeholder="+1 (555) 123-4567">
+        </div>
+        <div>
+          <label for="date-ex">Date</label>
+          <input type="text" id="date-ex" data-accept="date" placeholder="03/19/2026">
+        </div>
+        <div>
+          <label for="cc-ex">Credit card</label>
+          <input type="text" id="cc-ex" data-accept="cc" placeholder="1234 5678 9012 3456">
+        </div>
+      </layout-stack>
+    </div>
+
+    <code-block language="html" show-lines label="All presets">{{ allPresetsCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Custom Patterns</h2>
+    <p>For character sets not covered by a preset, pass a character class directly. The value must start with <code>[</code> and is parsed as a JavaScript <code>RegExp</code>.</p>
+
+    <div class="example">
+      <label for="hex-ex">Hex color</label>
+      <input type="text" id="hex-ex" data-accept="[0-9a-fA-F]" maxlength="6" placeholder="FF00AA">
+    </div>
+
+    <code-block language="html" show-lines label="Custom character class">{{ customCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>With Form Field</h2>
+    <p>Wrap in <code>&lt;form-field&gt;</code> for validation feedback, helper text, and required indicators.</p>
+
+    <code-block language="html" show-lines label="Accept input inside form-field">{{ formFieldCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Paste Behavior</h2>
+    <p>When the user pastes content, the filter runs character-by-character: valid characters are kept, invalid ones are silently stripped. The paste uses <code>document.execCommand('insertText')</code> to preserve the browser's undo history.</p>
+
+    <div class="example">
+      <label for="paste-ex">Digits only (try pasting mixed content)</label>
+      <input type="text" id="paste-ex" data-accept="digits" placeholder="Paste abc123def456 — only digits kept">
+    </div>
+
+    <code-block language="html" show-lines label="Paste filtering">{{ pasteCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>data-accept vs data-mask</h2>
+    <p>Both attributes filter input, but they serve different purposes:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th><code>data-mask</code></th>
+          <th><code>data-accept</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Separators</strong></td>
+          <td>Auto-injected</td>
+          <td>User types them</td>
+        </tr>
+        <tr>
+          <td><strong>Format</strong></td>
+          <td>Rigid, one shape</td>
+          <td>Flexible, user decides</td>
+        </tr>
+        <tr>
+          <td><strong>Core logic</strong></td>
+          <td>Strip &rarr; reformat &rarr; reposition</td>
+          <td>Block or strip invalid chars</td>
+        </tr>
+        <tr>
+          <td><strong>Use when</strong></td>
+          <td>You dictate the format</td>
+          <td>User picks the format</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>If both <code>data-mask</code> and <code>data-accept</code> are present on the same input, <code>data-mask</code> wins and a console warning is logged.</p>
+  </section>
+
+  <section>
+    <h2>Dynamic Elements</h2>
+    <p>Accept inputs added to the DOM after page load are automatically enhanced via a shared MutationObserver. No manual initialization is needed.</p>
+
+    <code-block language="javascript" show-lines label="Dynamically added accept inputs">{{ dynamicCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>inputmode</code> is set automatically from the preset, showing the appropriate keyboard on mobile devices</li>
+      <li>IME composition is handled correctly &mdash; filtering pauses during <code>compositionstart</code> and resumes after <code>compositionend</code></li>
+      <li>Cursor position is preserved when the fallback filter strips characters</li>
+      <li>A visible <code>&lt;label&gt;</code> is required for the input</li>
+      <li>The <code>placeholder</code> attribute should hint at what characters are accepted</li>
+      <li>Without JavaScript, the input accepts freeform text &mdash; progressive enhancement</li>
+    </ul>
+  </section>

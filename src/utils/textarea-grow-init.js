@@ -11,6 +11,8 @@
  * <textarea data-grow rows="2" data-max-rows="10"></textarea>
  */
 
+import { registerInit } from './_init-registry.js';
+
 const SELECTOR = 'textarea[data-grow]';
 const supportsFieldSizing = CSS.supports('field-sizing', 'content');
 
@@ -72,25 +74,6 @@ function initTextareaGrow(root = document) {
   root.querySelectorAll(SELECTOR).forEach(enhanceTextarea);
 }
 
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initTextareaGrow());
-} else {
-  initTextareaGrow();
-}
-
-// Watch for dynamically added textareas
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceTextarea(/** @type {HTMLTextAreaElement} */ (el));
-      el.querySelectorAll(SELECTOR).forEach(child => enhanceTextarea(/** @type {HTMLTextAreaElement} */ (child)));
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceTextarea);
 
 export { initTextareaGrow };

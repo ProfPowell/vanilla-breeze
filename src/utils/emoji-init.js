@@ -23,6 +23,8 @@
  * <textarea data-emoji>Type :smile: and it becomes 😄</textarea>
  */
 
+import { registerInit } from './_init-registry.js';
+
 // Lazy-loaded: emoji data (~31 KB) is only imported when [data-emoji] elements exist
 let resolveEmoji = null;
 
@@ -252,29 +254,14 @@ function replaceShortcodes(textNode, unknownMode) {
   textNode.textContent = parts.join('');
 }
 
-// Auto-init on DOMContentLoaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initEmoji());
-} else {
-  initEmoji();
+/**
+ * Async wrapper for the registry — loads emoji data before enhancing.
+ * @param {Element} el
+ */
+function enhanceAsync(el) {
+  loadEmojiData().then(() => enhanceEmoji(el));
 }
 
-// Watch for dynamically added [data-emoji] containers
-const observer = new MutationObserver((mutations) => {
-  const pending = [];
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) pending.push(el);
-      el.querySelectorAll(SELECTOR).forEach(child => pending.push(child));
-    }
-  }
-  if (pending.length === 0) return;
-  loadEmojiData().then(() => pending.forEach(enhanceEmoji));
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceAsync);
 
 export { initEmoji };

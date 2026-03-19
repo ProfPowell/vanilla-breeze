@@ -15,6 +15,8 @@
  * <input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234">
  */
 
+import { registerInit } from './_init-registry.js';
+
 const SELECTOR = 'input[data-mask]';
 
 const MASKS = {
@@ -171,25 +173,6 @@ function initMaskInputs(root = document) {
   root.querySelectorAll(SELECTOR).forEach(enhanceInput);
 }
 
-// Auto-init on DOMContentLoaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initMaskInputs());
-} else {
-  initMaskInputs();
-}
-
-// Watch for dynamically added mask inputs
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceInput(/** @type {HTMLInputElement} */ (el));
-      el.querySelectorAll(SELECTOR).forEach(child => enhanceInput(/** @type {HTMLInputElement} */ (child)));
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceInput);
 
 export { initMaskInputs };

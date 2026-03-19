@@ -14,6 +14,8 @@
  * <textarea data-count="words" data-maxwords="200"></textarea>
  */
 
+import { registerInit } from './_init-registry.js';
+
 const SELECTOR = 'textarea[data-count]';
 
 /**
@@ -74,25 +76,6 @@ function initTextareaCounts(root = document) {
   root.querySelectorAll(SELECTOR).forEach(enhanceTextarea);
 }
 
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initTextareaCounts());
-} else {
-  initTextareaCounts();
-}
-
-// Watch for dynamically added textareas
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceTextarea(/** @type {HTMLTextAreaElement} */ (el));
-      el.querySelectorAll(SELECTOR).forEach(child => enhanceTextarea(/** @type {HTMLTextAreaElement} */ (child)));
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceTextarea);
 
 export { initTextareaCounts };

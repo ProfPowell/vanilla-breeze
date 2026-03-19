@@ -10,6 +10,8 @@
  * <input type="number" min="0" max="50" step="1" value="0" data-stepper>
  */
 
+import { registerInit } from './_init-registry.js';
+
 const SELECTOR = 'input[type="number"][data-stepper]';
 
 const MINUS_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
@@ -73,25 +75,6 @@ function initNumberSteppers(root = document) {
   root.querySelectorAll(SELECTOR).forEach(enhanceNumber);
 }
 
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initNumberSteppers());
-} else {
-  initNumberSteppers();
-}
-
-// Watch for dynamically added elements
-const observer = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== Node.ELEMENT_NODE) continue;
-      const el = /** @type {Element} */ (node);
-      if (el.matches(SELECTOR)) enhanceNumber(el);
-      el.querySelectorAll(SELECTOR).forEach(enhanceNumber);
-    }
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+registerInit(SELECTOR, enhanceNumber);
 
 export { initNumberSteppers };
