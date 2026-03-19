@@ -179,8 +179,22 @@ export const wireframe = {
   }
 };
 
-// Expose on VanillaBreeze namespace if available
+/**
+ * Register Ctrl/Cmd+Shift+W keyboard shortcut to toggle wireframe.
+ * Auto-registered on module init.
+ */
+function registerKeyboardShortcut() {
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'W') {
+      e.preventDefault();
+      wireframe.toggle();
+    }
+  });
+}
+
+// Expose on VanillaBreeze namespace and register shortcut
 if (typeof window !== 'undefined') {
   window.VanillaBreeze = window.VanillaBreeze || {};
   window.VanillaBreeze.wireframe = wireframe;
+  registerKeyboardShortcut();
 }

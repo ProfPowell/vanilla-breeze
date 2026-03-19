@@ -82,6 +82,20 @@
       <input type="checkbox" id="annotate-toggle"/>
       Overlay Annotations
     </label>
+    <fieldset>
+      <legend>Palette</legend>
+      <label><input type="radio" name="palette" value="" checked/> Default</label>
+      <label><input type="radio" name="palette" value="blueprint"/> Blueprint</label>
+      <label><input type="radio" name="palette" value="sepia"/> Sepia</label>
+    </fieldset>
+    <label>
+      <input type="checkbox" id="grid-toggle"/>
+      Grid
+    </label>
+    <label>
+      <input type="checkbox" id="spacing-toggle"/>
+      Spacing
+    </label>
   </div>
 
   <header data-wf-label="Site Header">
@@ -276,6 +290,36 @@
         document.documentElement.setAttribute('data-wf-annotate', '');
       } else {
         document.documentElement.removeAttribute('data-wf-annotate');
+      }
+    });
+
+    // Palette radios
+    document.querySelectorAll('input[name="palette"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        const val = radio.value;
+        if (val) {
+          document.documentElement.setAttribute('data-wf-palette', val);
+        } else {
+          document.documentElement.removeAttribute('data-wf-palette');
+        }
+      });
+    });
+
+    // Grid overlay toggle
+    document.getElementById('grid-toggle').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.body.setAttribute('data-show-grid', '');
+      } else {
+        document.body.removeAttribute('data-show-grid');
+      }
+    });
+
+    // Spacing overlay toggle
+    document.getElementById('spacing-toggle').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.body.setAttribute('data-show-spacing', '');
+      } else {
+        document.body.removeAttribute('data-show-spacing');
       }
     });
 
