@@ -259,7 +259,7 @@ class ReaderView extends HTMLElement {
 
     this.#updateChromeState();
     this.#persistState();
-    this.#emit('vb:reader:mode', { mode });
+    this.#emit('reader-view:mode', { mode });
   }
 
   // ── Column management ─────────────────────────────────────────
@@ -365,7 +365,7 @@ class ReaderView extends HTMLElement {
         btn.toggleAttribute('disabled', this.#page === this.#totalPages - 1);
       });
 
-    this.#emit('vb:reader:page', {
+    this.#emit('reader-view:page', {
       page: this.#page + 1,
       total: this.#totalPages
     });
@@ -400,7 +400,7 @@ class ReaderView extends HTMLElement {
       requestAnimationFrame(() => this.#recalcPages(ratio));
     }
     this.#persistState();
-    this.#emit('vb:reader:font', {
+    this.#emit('reader-view:font', {
       size: ReaderView.FONT_SIZES[this.#sizeIdx],
       index: this.#sizeIdx
     });

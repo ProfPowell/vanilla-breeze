@@ -153,7 +153,7 @@ class ChatWindow extends HTMLElement {
       } catch (err) {
         this.#populateTypingMessage(typingMsg, '<p>Sorry, something went wrong.</p>');
         typingMsg.setAttribute('data-status', 'error');
-        this.dispatchEvent(new CustomEvent('chat-input:error', {
+        this.dispatchEvent(new CustomEvent('chat-window:error', {
           bubbles: true,
           detail: { error: err.message, status: /** @type {any} */ (err).status ?? 0 },
         }));

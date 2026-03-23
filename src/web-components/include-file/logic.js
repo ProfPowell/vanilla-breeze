@@ -12,7 +12,7 @@
  * @attr {boolean} lazy - If present, defers loading until element is in viewport
  * @attr {boolean} allow-scripts - If present, re-executes inline scripts in loaded content (TRUSTED sources only)
  *
- * @fires include-file:load - Dispatched after successful load
+ * @fires include-file:loaded - Dispatched after successful load
  * @fires include-file:error - Dispatched if fetch fails
  *
  * @example
@@ -116,7 +116,7 @@ class IncludeFile extends HTMLElement {
       this.removeAttribute('data-loading');
       this.setAttribute('data-loaded', '');
 
-      this.dispatchEvent(new CustomEvent('include-file:load', {
+      this.dispatchEvent(new CustomEvent('include-file:loaded', {
         bubbles: true,
         detail: { src, html }
       }));

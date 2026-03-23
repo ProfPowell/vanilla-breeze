@@ -18,7 +18,7 @@
  * await ThemeManager.setBrand('ocean');
  *
  * // Listen for changes
- * window.addEventListener('theme-change', (e) => {
+ * window.addEventListener('vb:theme-change', (e) => {
  *   console.log(e.detail); // { mode: 'dark', brand: 'ocean' }
  * });
  */
@@ -153,7 +153,7 @@ export const ThemeManager = {
     }
 
     // Dispatch event for listeners
-    window.dispatchEvent(new CustomEvent('theme-change', {
+    window.dispatchEvent(new CustomEvent('vb:theme-change', {
       detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, backdropChrome, pageBgType, effectiveMode: this.getEffectiveMode() }
     }));
   },

@@ -9,7 +9,7 @@
  * EnvironmentManager reads the theme's base hues, applies additive offsets,
  * and sets them as inline styles on :root. CSS handles the smooth shift.
  *
- * Listens for 'theme-change' events to re-capture base hues when the user
+ * Listens for 'vb:theme-change' events to re-capture base hues when the user
  * switches themes. Manages its own localStorage key independently of ThemeManager.
  */
 
@@ -41,7 +41,7 @@ export const EnvironmentManager = {
     }
 
     // Re-capture base hues whenever the theme changes
-    window.addEventListener('theme-change', () => {
+    window.addEventListener('vb:theme-change', () => {
       if (!this._hasActiveSource()) return;
       requestAnimationFrame(() => {
         this._captureBaseHues();

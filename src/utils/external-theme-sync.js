@@ -39,7 +39,7 @@ export function initExternalThemeSync() {
   syncComponents(/** @type {'light' | 'dark'} */ (effectiveMode));
 
   // Listen for theme changes
-  window.addEventListener('theme-change', (/** @type {CustomEvent} */ e) => {
+  window.addEventListener('vb:theme-change', (/** @type {CustomEvent} */ e) => {
     syncComponents(e.detail.effectiveMode);
   });
 

@@ -69,7 +69,7 @@ class ThemePicker extends HTMLElement {
     this.#syncState();
 
     // Listen for external theme changes
-    window.addEventListener('theme-change', this.#handleThemeChange);
+    window.addEventListener('vb:theme-change', this.#handleThemeChange);
 
     // Apply extension preferences on load
     this.#applyExtensions();
@@ -81,7 +81,7 @@ class ThemePicker extends HTMLElement {
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
-    window.removeEventListener('theme-change', this.#handleThemeChange);
+    window.removeEventListener('vb:theme-change', this.#handleThemeChange);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);
     this.#clearAutoDismiss();
@@ -535,7 +535,7 @@ class ThemePicker extends HTMLElement {
     }
 
     // Dispatch event for listeners
-    window.dispatchEvent(new CustomEvent('extensions-change', {
+    window.dispatchEvent(new CustomEvent('vb:extensions-change', {
       detail: prefs
     }));
   }

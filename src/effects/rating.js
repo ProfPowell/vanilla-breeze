@@ -1,6 +1,6 @@
 /**
  * Rating effect — progressive enhancement for star rating fieldsets.
- * Adds clear/unrate, rating-change events, and screen reader announcements.
+ * Adds clear/unrate, rating:change events, and screen reader announcements.
  */
 
 import { VB } from '../lib/vb.js'
@@ -22,7 +22,7 @@ function announce(message) {
 }
 
 function dispatch(fieldset, value) {
-  fieldset.dispatchEvent(new CustomEvent('rating-change', {
+  fieldset.dispatchEvent(new CustomEvent('rating:change', {
     bubbles: true, detail: { value },
   }))
 }

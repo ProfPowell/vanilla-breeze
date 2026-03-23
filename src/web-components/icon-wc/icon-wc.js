@@ -260,7 +260,7 @@ class IconWc extends HTMLElement {
                 requestAnimationFrame(() => { svg.style.stroke = ''; });
             }
         };
-        window.addEventListener('theme-change', this._onThemeChange);
+        window.addEventListener('vb:theme-change', this._onThemeChange);
         this.setAttribute('data-upgraded', '');
     }
 
@@ -271,7 +271,7 @@ class IconWc extends HTMLElement {
         this.removeAttribute('data-upgraded');
         IconWc.#instances.delete(this);
         if (this._onThemeChange) {
-            window.removeEventListener('theme-change', this._onThemeChange);
+            window.removeEventListener('vb:theme-change', this._onThemeChange);
         }
     }
 

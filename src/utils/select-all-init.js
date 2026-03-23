@@ -70,7 +70,7 @@ function enhance(master) {
     }
 
     // Dispatch event
-    master.dispatchEvent(new CustomEvent('select-all-change', {
+    master.dispatchEvent(new CustomEvent('select-all:change', {
       bubbles: true,
       detail: { checked, total, selected: [...targets].filter(cb => cb.checked) }
     }));

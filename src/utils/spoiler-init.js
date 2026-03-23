@@ -158,7 +158,7 @@ function reveal(el) {
 
   announce('Spoiler revealed');
 
-  el.dispatchEvent(new CustomEvent('spoiler-toggle', {
+  el.dispatchEvent(new CustomEvent('spoiler:toggle', {
     bubbles: true,
     detail: { visible: true }
   }));
@@ -184,7 +184,7 @@ function conceal(el) {
   if (hideBtn) hideBtn.remove();
   el.removeAttribute('data-spoiler-visible');
 
-  el.dispatchEvent(new CustomEvent('spoiler-toggle', {
+  el.dispatchEvent(new CustomEvent('spoiler:toggle', {
     bubbles: true,
     detail: { visible: false }
   }));

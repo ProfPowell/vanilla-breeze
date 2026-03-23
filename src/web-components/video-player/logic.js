@@ -9,13 +9,13 @@
  * @attr {boolean} loop - Loop single track or entire playlist
  * @attr {boolean} muted - Start muted
  *
- * @fires vb:video:play - Video playback started
- * @fires vb:video:pause - Video playback paused
- * @fires vb:video:ended - Video playback ended
- * @fires vb:video:track-change - Track changed in playlist mode
- * @fires vb:video:fullscreen - Fullscreen state changed
- * @fires vb:video:speed - Playback speed changed
- * @fires vb:video:captions - Captions toggled
+ * @fires video-player:play - Video playback started
+ * @fires video-player:pause - Video playback paused
+ * @fires video-player:ended - Video playback ended
+ * @fires video-player:track-change - Track changed in playlist mode
+ * @fires video-player:fullscreen - Fullscreen state changed
+ * @fires video-player:speed - Playback speed changed
+ * @fires video-player:captions - Captions toggled
  *
  * @example Single video
  * <video-player>
@@ -134,14 +134,14 @@ class VideoPlayerElement extends HTMLElement {
         player.style.display = ''
       }
     }
-    window.addEventListener('theme-change', this.#onThemeChange)
+    window.addEventListener('vb:theme-change', this.#onThemeChange)
 
     // Fullscreen change — may exit from Escape key without our button
     this.#onFullscreenChange = () => {
       const active = !!document.fullscreenElement
       this.toggleAttribute('data-fullscreen', active)
       this.#fullscreenBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Fullscreen')
-      this.#emit('vb:video:fullscreen', { active })
+      this.#emit('video-player:fullscreen', { active })
     }
     document.addEventListener('fullscreenchange', this.#onFullscreenChange)
 
@@ -156,7 +156,7 @@ class VideoPlayerElement extends HTMLElement {
       this.#video.setAttribute('controls', '')
     }
     if (this.#onThemeChange) {
-      window.removeEventListener('theme-change', this.#onThemeChange)
+      window.removeEventListener('vb:theme-change', this.#onThemeChange)
     }
     if (this.#onFullscreenChange) {
       document.removeEventListener('fullscreenchange', this.#onFullscreenChange)
@@ -721,7 +721,7 @@ class VideoPlayerElement extends HTMLElement {
       this.setAttribute('state', 'playing')
       this.#playBtn.setAttribute('aria-label', 'Pause')
       this.#announce('Playing')
-      this.#emit('vb:video:play', {
+      this.#emit('video-player:play', {
         currentTime: this.#video.currentTime,
         src: this.#video.currentSrc
       })
@@ -733,7 +733,7 @@ class VideoPlayerElement extends HTMLElement {
       this.#playBtn.setAttribute('aria-label', 'Play')
       this.#showControls()
       this.#announce('Paused')
-      this.#emit('vb:video:pause', {
+      this.#emit('video-player:pause', {
         currentTime: this.#video.currentTime
       })
     })
@@ -754,7 +754,7 @@ class VideoPlayerElement extends HTMLElement {
       }
 
       this.#announce('Ended')
-      this.#emit('vb:video:ended', { src: this.#video.currentSrc })
+      this.#emit('video-player:ended', { src: this.#video.currentSrc })
     })
 
     this.#video.addEventListener('waiting', () => {
@@ -841,7 +841,7 @@ class VideoPlayerElement extends HTMLElement {
       const speedLabel = /** @type {HTMLElement} */ (this.#speedBtn.querySelector('span'))
       speedLabel.textContent = `${rate}x`
       this.#speedBtn.setAttribute('aria-label', `Playback speed ${rate}x`)
-      this.#emit('vb:video:speed', { rate })
+      this.#emit('video-player:speed', { rate })
     })
 
     // Captions toggle
@@ -854,7 +854,7 @@ class VideoPlayerElement extends HTMLElement {
       const active = !showing
       this.toggleAttribute('captions', active)
       this.#captionsBtn.setAttribute('aria-pressed', String(active))
-      this.#emit('vb:video:captions', { active, label: track.label })
+      this.#emit('video-player:captions', { active, label: track.label })
     })
 
     // Fullscreen
@@ -954,7 +954,7 @@ class VideoPlayerElement extends HTMLElement {
 
     this.#video.play().catch(() => {})
 
-    this.#emit('vb:video:track-change', {
+    this.#emit('video-player:track-change', {
       src,
       title: link?.textContent ?? ''
     })

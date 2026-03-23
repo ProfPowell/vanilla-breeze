@@ -11,10 +11,10 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * @attr {boolean} loop - Loop single track or entire playlist
  * @attr {boolean} shuffle - Randomize playlist order
  *
- * @fires vb:audio:play - Audio playback started
- * @fires vb:audio:pause - Audio playback paused
- * @fires vb:audio:ended - Audio playback ended
- * @fires vb:audio:track-change - Track changed in playlist mode
+ * @fires audio-player:play - Audio playback started
+ * @fires audio-player:pause - Audio playback paused
+ * @fires audio-player:ended - Audio playback ended
+ * @fires audio-player:track-change - Track changed in playlist mode
  *
  * @example Single track
  * <audio-player>
@@ -102,7 +102,7 @@ class AudioPlayerElement extends HTMLElement {
         player.style.display = ''
       }
     }
-    window.addEventListener('theme-change', this.#onThemeChange)
+    window.addEventListener('vb:theme-change', this.#onThemeChange)
     this.setAttribute('data-upgraded', '');
   }
 
@@ -113,7 +113,7 @@ class AudioPlayerElement extends HTMLElement {
       this.#audio.setAttribute('controls', '')
     }
     if (this.#onThemeChange) {
-      window.removeEventListener('theme-change', this.#onThemeChange)
+      window.removeEventListener('vb:theme-change', this.#onThemeChange)
     }
   }
 
@@ -487,7 +487,7 @@ class AudioPlayerElement extends HTMLElement {
       this.#playing = true
       this.setAttribute('state', 'playing')
       this.#playBtn.setAttribute('aria-label', 'Pause')
-      this.#emit('vb:audio:play', {
+      this.#emit('audio-player:play', {
         currentTime: this.#audio.currentTime,
         src: this.#audio.currentSrc
       })
@@ -496,7 +496,7 @@ class AudioPlayerElement extends HTMLElement {
       this.#playing = false
       this.setAttribute('state', 'paused')
       this.#playBtn.setAttribute('aria-label', 'Play')
-      this.#emit('vb:audio:pause', {
+      this.#emit('audio-player:pause', {
         currentTime: this.#audio.currentTime
       })
     })
@@ -514,7 +514,7 @@ class AudioPlayerElement extends HTMLElement {
         this.#playNext()
       }
 
-      this.#emit('vb:audio:ended', { src: this.#audio.currentSrc })
+      this.#emit('audio-player:ended', { src: this.#audio.currentSrc })
     })
   }
 
@@ -616,7 +616,7 @@ class AudioPlayerElement extends HTMLElement {
     this.#audio.play().catch(() => {})
     this.#updateTrackTitle()
 
-    this.#emit('vb:audio:track-change', {
+    this.#emit('audio-player:track-change', {
       src,
       title: li?.querySelector('a')?.textContent ?? ''
     })

@@ -1978,7 +1978,7 @@ export default {
     ],
     "events": [
       {
-        "name": "include-file:load",
+        "name": "include-file:loaded",
         "detail": "{ src, html }",
         "description": "Fired after successful content load"
       },

@@ -94,7 +94,7 @@ class AudioVisualizerElement extends HTMLElement {
         canvas.style.display = ''
       }
     }
-    window.addEventListener('theme-change', this.#onThemeChange)
+    window.addEventListener('vb:theme-change', this.#onThemeChange)
     this.setAttribute('data-upgraded', '');
   }
 
@@ -103,7 +103,7 @@ class AudioVisualizerElement extends HTMLElement {
     this.#stopAnimation()
     this.#observer?.disconnect()
     if (this.#onThemeChange) {
-      window.removeEventListener('theme-change', this.#onThemeChange)
+      window.removeEventListener('vb:theme-change', this.#onThemeChange)
     }
   }
 

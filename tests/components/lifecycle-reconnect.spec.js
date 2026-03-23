@@ -100,7 +100,7 @@ test.describe('lifecycle: remove and reinsert', () => {
       let count = 0;
       const orig = window.addEventListener;
       window.addEventListener = function(type) {
-        if (type === 'theme-change') count++;
+        if (type === 'vb:theme-change') count++;
         return orig.apply(this, arguments);
       };
       return count;

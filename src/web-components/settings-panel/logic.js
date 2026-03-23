@@ -41,17 +41,17 @@ class SettingsPanel extends HTMLElement {
     this.#bindEvents();
     this.#syncState();
 
-    window.addEventListener('theme-change', this.#handleExternalChange);
-    window.addEventListener('extensions-change', this.#handleExternalChange);
-    window.addEventListener('a11y-themes-change', this.#handleExternalChange);
+    window.addEventListener('vb:theme-change', this.#handleExternalChange);
+    window.addEventListener('vb:extensions-change', this.#handleExternalChange);
+    window.addEventListener('vb:a11y-themes-change', this.#handleExternalChange);
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
-    window.removeEventListener('theme-change', this.#handleExternalChange);
-    window.removeEventListener('extensions-change', this.#handleExternalChange);
-    window.removeEventListener('a11y-themes-change', this.#handleExternalChange);
+    window.removeEventListener('vb:theme-change', this.#handleExternalChange);
+    window.removeEventListener('vb:extensions-change', this.#handleExternalChange);
+    window.removeEventListener('vb:a11y-themes-change', this.#handleExternalChange);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);
   }
@@ -542,7 +542,7 @@ class SettingsPanel extends HTMLElement {
 
     this.#saveA11yThemes(current);
     this.#applyA11yThemes();
-    window.dispatchEvent(new CustomEvent('a11y-themes-change', { detail: current }));
+    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: current }));
   };
 
   #handleExtensionChange = (e) => {
@@ -566,7 +566,7 @@ class SettingsPanel extends HTMLElement {
     // Clear a11y themes
     this.#saveA11yThemes([]);
     this.#applyA11yThemes();
-    window.dispatchEvent(new CustomEvent('a11y-themes-change', { detail: [] }));
+    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [] }));
 
     // Reset extensions
     try { localStorage.removeItem(EXTENSIONS_KEY); } catch { /* ignore */ }
@@ -762,7 +762,7 @@ class SettingsPanel extends HTMLElement {
       _SoundManager.disable();
     }
 
-    window.dispatchEvent(new CustomEvent('extensions-change', { detail: prefs }));
+    window.dispatchEvent(new CustomEvent('vb:extensions-change', { detail: prefs }));
   }
 
   // --- System section ---

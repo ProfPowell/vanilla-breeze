@@ -53,7 +53,7 @@ function registerCommand(el) {
   const entry = { element: el, label, group, icon, shortcut, unbind };
   registry.set(el, entry);
 
-  document.dispatchEvent(new CustomEvent('command-registry-change', {
+  document.dispatchEvent(new CustomEvent('vb:command-registry-change', {
     detail: { action: 'add', entry }
   }));
 }
@@ -69,7 +69,7 @@ function unregisterCommand(el) {
   registry.delete(el);
   el.removeAttribute('data-command-init');
 
-  document.dispatchEvent(new CustomEvent('command-registry-change', {
+  document.dispatchEvent(new CustomEvent('vb:command-registry-change', {
     detail: { action: 'remove', element: el }
   }));
 }

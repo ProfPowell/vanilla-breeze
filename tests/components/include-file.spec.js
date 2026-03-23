@@ -20,7 +20,7 @@ test.describe('include-file', () => {
     const content = await page.evaluate(() => {
       return new Promise(resolve => {
         const el = document.createElement('include-file');
-        el.addEventListener('include-file:load', () => {
+        el.addEventListener('include-file:loaded', () => {
           resolve(el.innerHTML.trim());
         });
         el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
@@ -38,7 +38,7 @@ test.describe('include-file', () => {
     const state = await page.evaluate(() => {
       return new Promise(resolve => {
         const el = document.createElement('include-file');
-        el.addEventListener('include-file:load', () => {
+        el.addEventListener('include-file:loaded', () => {
           resolve({
             hasLoaded: el.hasAttribute('data-loaded'),
             hasLoading: el.hasAttribute('data-loading'),
@@ -71,7 +71,7 @@ test.describe('include-file', () => {
     const eventFired = await page.evaluate(() => {
       return new Promise(resolve => {
         const el = document.createElement('include-file');
-        el.addEventListener('include-file:load', (e) => {
+        el.addEventListener('include-file:loaded', (e) => {
           resolve({ src: e.detail.src, hasHtml: !!e.detail.html });
         });
         el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
@@ -112,7 +112,7 @@ test.describe('include-file', () => {
       return new Promise(resolve => {
         const el = document.createElement('include-file');
         el.innerHTML = '<p class="fallback-test">Original content</p>';
-        el.addEventListener('include-file:load', () => {
+        el.addEventListener('include-file:loaded', () => {
           resolve({ hasFallback: el.querySelector('.fallback-test') !== null });
         });
         el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
@@ -133,7 +133,7 @@ test.describe('include-file', () => {
         const el = document.createElement('include-file');
         el.setAttribute('mode', 'append');
         el.innerHTML = '<p class="original-test">Original</p>';
-        el.addEventListener('include-file:load', () => {
+        el.addEventListener('include-file:loaded', () => {
           resolve({
             hasOriginal: el.querySelector('.original-test') !== null,
             childCount: el.children.length,

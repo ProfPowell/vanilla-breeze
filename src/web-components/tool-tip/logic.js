@@ -231,11 +231,9 @@ class ToolTip extends HTMLElement {
       } else if (this.#useJsPositioning) {
         this.#updatePosition();
       }
-      const eventName = this.#isCard ? 'tool-tip:hover-show' : 'tool-tip:show';
-      this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
     } else {
-      const eventName = this.#isCard ? 'tool-tip:hover-hide' : 'tool-tip:hide';
-      this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+      this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
     }
   };
 
@@ -283,8 +281,7 @@ class ToolTip extends HTMLElement {
       this.#updatePosition();
     }
 
-    const eventName = this.#isCard ? 'tool-tip:hover-show' : 'tool-tip:show';
-    this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
   }
 
   hide() {
@@ -292,8 +289,7 @@ class ToolTip extends HTMLElement {
 
     this.#tooltip.hidePopover();
 
-    const eventName = this.#isCard ? 'tool-tip:hover-hide' : 'tool-tip:hide';
-    this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
   }
 
   /**

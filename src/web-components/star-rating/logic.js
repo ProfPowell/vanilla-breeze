@@ -3,7 +3,7 @@
  *
  * Layer 3 convenience wrapper that generates a data-rating fieldset
  * (Layer 1 CSS) and opts it into the rating enhancement (Layer 2 JS)
- * for clear/unrate behavior and rating-change events.
+ * for clear/unrate behavior and rating:change events.
  *
  * Participates in native form submission via ElementInternals.
  *
@@ -133,8 +133,8 @@ class StarRating extends HTMLElement {
     this.appendChild(fieldset);
     this.#fieldset = fieldset;
 
-    // Listen for rating-change from the enhancement layer (Layer 2)
-    fieldset.addEventListener('rating-change', (e) => {
+    // Listen for rating:change from the enhancement layer (Layer 2)
+    fieldset.addEventListener('rating:change', (e) => {
       this.#syncFormValue(/** @type {CustomEvent} */ (e).detail.value);
       this.#validate();
     });

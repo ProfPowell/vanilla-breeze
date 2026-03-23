@@ -45,7 +45,7 @@ class CommandPalette extends HTMLElement {
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
     this.#unbindHotkey?.();
-    document.removeEventListener('command-registry-change', this.#handleRegistryChange);
+    document.removeEventListener('vb:command-registry-change', this.#handleRegistryChange);
   }
 
   #build() {
@@ -233,7 +233,7 @@ class CommandPalette extends HTMLElement {
   }
 
   #listenForRegistryChanges() {
-    document.addEventListener('command-registry-change', this.#handleRegistryChange);
+    document.addEventListener('vb:command-registry-change', this.#handleRegistryChange);
   }
 
   #handleRegistryChange = () => {

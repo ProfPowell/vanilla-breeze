@@ -462,7 +462,7 @@ class WizardController {
     this.#currentIndex = index;
     this.#updateVisibility();
 
-    this.#dispatchEvent('wizard:stepchange', {
+    this.#dispatchEvent('wizard:step-change', {
       from: fromIndex,
       to: index,
     });
