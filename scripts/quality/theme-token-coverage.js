@@ -21,11 +21,13 @@ const REQUIRED_TOKENS = [
   "--color-surface",
   "--color-surface-raised",
   "--color-surface-sunken",
+  "--color-surface-alt",
   "--color-background",
   "--color-text",
   "--color-text-muted",
   "--color-border",
   "--color-border-strong",
+  "--color-border-muted",
   "--shadow-sm",
   "--shadow-md",
 ];

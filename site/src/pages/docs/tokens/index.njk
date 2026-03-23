@@ -100,7 +100,37 @@ p  { font-size: var(--font-size-md); }
 <!-- Colors Section -->
 <section id="colors">
   <h2>Colors</h2>
-  <p>OKLCH-based color system with automatic light/dark mode switching via <code>light-dark()</code> function.</p>
+  <p>OKLCH-based seed-and-derive architecture with automatic light/dark mode switching via <code>light-dark()</code> function.</p>
+
+  <h3>Architecture</h3>
+  <p>VB's color system has four layers. Components should use the highest applicable layer:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Layer</th><th>Examples</th><th>Who uses it</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Primitives &amp; seeds</strong></td>
+        <td><code>--color-gray-*</code>, <code>--hue-primary</code>, <code>--lightness-primary</code>, <code>--chroma-primary</code></td>
+        <td>Token files only. Themes set seeds; core derives everything else.</td>
+      </tr>
+      <tr>
+        <td><strong>2. Brand slots</strong></td>
+        <td><code>--color-primary</code>, <code>--color-secondary</code>, <code>--color-accent</code> + hover/active/subtle</td>
+        <td>Components when brand identity is intentional.</td>
+      </tr>
+      <tr>
+        <td><strong>3. Semantic UI tokens</strong></td>
+        <td><code>--color-surface</code>, <code>--color-text</code>, <code>--color-border</code>, <code>--color-interactive</code></td>
+        <td>Components for role-based colors. Preferred layer.</td>
+      </tr>
+      <tr>
+        <td><strong>4. Component-local tokens</strong></td>
+        <td><code>--_color</code>, <code>--btn-color</code></td>
+        <td>A single component seed derived from a semantic token.</td>
+      </tr>
+    </tbody>
+  </table>
 
   <h3>Gray Scale</h3>
   <div class="example">
@@ -155,11 +185,13 @@ p  { font-size: var(--font-size-md); }
       <tr><td><code>--color-surface</code></td><td>Card/component surface</td></tr>
       <tr><td><code>--color-surface-raised</code></td><td>Elevated surface</td></tr>
       <tr><td><code>--color-surface-sunken</code></td><td>Recessed surface</td></tr>
+      <tr><td><code>--color-surface-alt</code></td><td>Alternate surface (hover backgrounds, skeletons)</td></tr>
       <tr><td><code>--color-text</code></td><td>Primary text</td></tr>
       <tr><td><code>--color-text-muted</code></td><td>Secondary text</td></tr>
       <tr><td><code>--color-text-subtle</code></td><td>Tertiary text</td></tr>
       <tr><td><code>--color-border</code></td><td>Default borders</td></tr>
       <tr><td><code>--color-border-strong</code></td><td>Emphasized borders</td></tr>
+      <tr><td><code>--color-border-muted</code></td><td>Subtle/muted borders</td></tr>
       <tr><td><code>--color-interactive</code></td><td>Buttons, links</td></tr>
       <tr><td><code>--color-interactive-hover</code></td><td>Interactive hover state</td></tr>
     </tbody>
