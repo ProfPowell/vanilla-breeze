@@ -14,20 +14,20 @@ permalink: /docs/elements/web-components/carousel/
   <div>Slide 3</div>
 </carousel-wc>{% endset %}
 
-{% set autoplayCode %}<carousel-wc data-autoplay data-loop data-autoplay-delay="3000">
+{% set autoplayCode %}<carousel-wc autoplay loop autoplay-delay="3000">
   <div>Slide A</div>
   <div>Slide B</div>
   <div>Slide C</div>
 </carousel-wc>{% endset %}
 
-{% set multiItemCode %}<carousel-wc data-layout-item-width="auto" data-layout-gap="m" data-loop>
+{% set multiItemCode %}<carousel-wc item-width="auto" gap="m" loop>
   <div class="card">Card 1</div>
   <div class="card">Card 2</div>
   <div class="card">Card 3</div>
   <div class="card">Card 4</div>
 </carousel-wc>{% endset %}
 
-{% set noIndicatorsCode %}<carousel-wc data-indicators="false">
+{% set noIndicatorsCode %}<carousel-wc indicators="false">
   <div>Slide 1</div>
   <div>Slide 2</div>
 </carousel-wc>{% endset %}
@@ -113,50 +113,30 @@ carousel-wc:not(:defined) > * {
     <code-block language="html" show-lines label="Basic carousel">{{ basicCode | escape }}</code-block>
 
     <h3>Autoplay with Looping</h3>
-    <p>Add <code>data-autoplay</code> and <code>data-loop</code> to cycle slides automatically. Autoplay pauses on hover and focus, and is disabled entirely when <code>prefers-reduced-motion</code> is active.</p>
+    <p>Add <code>autoplay</code> and <code>loop</code> to cycle slides automatically. Autoplay pauses on hover and focus, and is disabled entirely when <code>prefers-reduced-motion</code> is active.</p>
     <code-block language="html" show-lines label="Autoplay + loop">{{ autoplayCode | escape }}</code-block>
 
     <h3>Multi-item Carousel</h3>
-    <p>Set <code>data-layout-item-width="auto"</code> to show multiple items at once with a gap.</p>
+    <p>Set <code>item-width="auto"</code> to show multiple items at once with a gap.</p>
     <code-block language="html" show-lines label="Multi-item">{{ multiItemCode | escape }}</code-block>
 
     <h3>No Indicators</h3>
-    <p>Set <code>data-indicators="false"</code> to hide dot indicators.</p>
+    <p>Set <code>indicators="false"</code> to hide dot indicators.</p>
     <code-block language="html" show-lines label="No indicators">{{ noIndicatorsCode | escape }}</code-block>
   </section>
 
+  {% from "partials/attribute-table.njk" import attributeTable, structureTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>data-autoplay</code></td><td>boolean</td><td>&mdash;</td><td>Enable autoplay</td></tr>
-        <tr><td><code>data-autoplay-delay</code></td><td>number (ms)</td><td><code>5000</code></td><td>Autoplay interval</td></tr>
-        <tr><td><code>data-loop</code></td><td>boolean</td><td>&mdash;</td><td>Wrap around at ends</td></tr>
-        <tr><td><code>data-indicators</code></td><td><code>"true"</code>, <code>"false"</code></td><td><code>"true"</code></td><td>Show dot indicators</td></tr>
-        <tr><td><code>data-item-width</code></td><td><code>full</code>, <code>auto</code>, CSS length</td><td><code>full</code></td><td>Slide width</td></tr>
-        <tr><td><code>data-gap</code></td><td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td>&mdash;</td><td>Gap between slides</td></tr>
-        <tr><td><code>data-start</code></td><td>number</td><td><code>0</code></td><td>Initial slide index</td></tr>
-        <tr><td><code>data-persist</code></td><td>string key</td><td>&mdash;</td><td>localStorage key for slide persistence</td></tr>
-        <tr><td><code>data-transition</code></td><td><code>fade</code>, <code>slide</code>, <code>scale</code></td><td>&mdash;</td><td>Enable View Transition animations (switches to stacked-grid layout)</td></tr>
-      </tbody>
-    </table>
+    {{ attributeTable("carousel-wc", apiRegistry) }}
+
+    <h3>Required Structure</h3>
+    {{ structureTable("carousel-wc", apiRegistry) }}
   </section>
 
   <section>
     <h2>Events</h2>
-    <table class="props-table">
-      <thead>
-        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>carousel-wc:change</code></td><td><code>{ index, slide }</code></td><td>Fired when the active slide changes.</td></tr>
-        <tr><td><code>carousel-wc:play</code></td><td><code>{ }</code></td><td>Fired when autoplay starts.</td></tr>
-        <tr><td><code>carousel-wc:pause</code></td><td><code>{ }</code></td><td>Fired when autoplay pauses.</td></tr>
-      </tbody>
-    </table>
+    {{ eventsTable("carousel-wc", apiRegistry) }}
 
     <code-block language="javascript" show-lines label="Event listeners">{{ eventCode | escape }}</code-block>
   </section>
@@ -226,7 +206,7 @@ carousel-wc:not(:defined) > * {
 
   <section>
     <h2>View Transitions</h2>
-    <p>Add <code>data-transition</code> to switch from scroll-snap to View Transition animations. When active, the carousel uses a stacked-grid layout and animates between slides using the View Transitions API.</p>
+    <p>Add <code>transition</code> to switch from scroll-snap to View Transition animations. When active, the carousel uses a stacked-grid layout and animates between slides using the View Transitions API.</p>
 
     <table class="props-table">
       <thead>
@@ -240,10 +220,10 @@ carousel-wc:not(:defined) > * {
     </table>
 
     <h3>Dual-Mode Behavior</h3>
-    <p>Without <code>data-transition</code>, the carousel uses scroll-snap with IntersectionObserver — slides are arranged in a horizontal row and the user scrolls between them. With <code>data-transition</code>, the carousel switches to a stacked CSS Grid layout where slides occupy the same grid cell and are shown/hidden with View Transition animations.</p>
+    <p>Without <code>transition</code>, the carousel uses scroll-snap with IntersectionObserver — slides are arranged in a horizontal row and the user scrolls between them. With <code>transition</code>, the carousel switches to a stacked CSS Grid layout where slides occupy the same grid cell and are shown/hidden with View Transition animations.</p>
 
     <div class="example">
-      <carousel-wc data-transition="slide" data-loop>
+      <carousel-wc transition="slide" loop>
         <div style="padding: var(--size-xl); background: linear-gradient(135deg, oklch(55% 0.2 250), oklch(65% 0.15 290)); color: white; border-radius: var(--radius-m); text-align: center;">
           <strong style="font-size: var(--font-size-xl);">Slide 1</strong>
           <p>Directional slide transitions</p>

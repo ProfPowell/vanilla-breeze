@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "data-table",
+  "type": "web-component",
+  "description": "Enhanced HTML table with sorting, filtering, pagination, row expansion, and selection",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "data-filterable", "kind": "data",  "purpose": "config", "type": "boolean", "description": "Enable text search filtering" },
+    { "name": "data-paginate",   "kind": "data",  "purpose": "config", "type": "number",  "description": "Enable pagination with N rows per page" }
+  ],
+  "structure": [
+    { "element": "<table>", "description": "Standard HTML table — the component enhances it in place" }
+  ],
+  "childAttributes": [
+    { "name": "data-sort",           "on": "th", "type": "enum", "values": ["string", "number", "date"], "description": "Enable sorting on this column with the specified comparator" },
+    { "name": "data-sort-value",     "on": "td", "type": "string",  "description": "Custom sort value overriding cell text" },
+    { "name": "data-filter-value",   "on": "td", "type": "string",  "description": "Custom filter value overriding cell text" },
+    { "name": "data-expandable",     "on": "tr", "type": "boolean", "description": "Mark row as expandable (followed by a data-expand-content row)" },
+    { "name": "data-expand-content", "on": "tr", "type": "boolean", "description": "Hidden row revealed when its preceding expandable row is toggled" },
+    { "name": "data-selectable",     "on": "tr", "type": "boolean", "description": "Mark row as selectable via checkbox" }
+  ],
+  "events": [
+    { "name": "data-table:sort",      "detail": "{ column, direction, columnName }", "description": "Fired when a column is sorted" },
+    { "name": "data-table:filter",    "detail": "{ query, count }",    "description": "Fired when filter text changes" },
+    { "name": "data-table:page",      "detail": "{ page }",            "description": "Fired when page changes" },
+    { "name": "data-table:expand",    "detail": "{ row, expanded }",   "description": "Fired when a row is expanded or collapsed" },
+    { "name": "data-table:selection", "detail": "{ count, rows[] }",   "description": "Fired when row selection changes" }
+  ]
+}

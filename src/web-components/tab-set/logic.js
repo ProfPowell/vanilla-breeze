@@ -26,11 +26,11 @@ class TabSet extends HTMLElement {
   }
 
   #initVT() {
-    if (!this.hasAttribute('data-transition') || !document.startViewTransition) return;
+    if (!this.hasAttribute('transition') || !document.startViewTransition) return;
 
     this.#vtEnabled = true;
     const id = ++tabsVtId;
-    const type = this.dataset.transition || 'fade';
+    const type = this.getAttribute('transition') || 'fade';
     const vtClass = type === 'slide' ? 'vt-tabs-slide' : type === 'scale' ? 'vt-tabs-scale' : 'vt-tabs';
 
     this.#details.forEach((detail) => {
@@ -76,6 +76,7 @@ class TabSet extends HTMLElement {
       summary.id = tabId;
       summary.setAttribute('aria-controls', panelId);
       summary.setAttribute('tabindex', detail.open ? '0' : '-1');
+      summary.setAttribute('aria-selected', detail.open ? 'true' : 'false');
 
       panel.id = panelId;
       panel.setAttribute('aria-labelledby', tabId);
@@ -121,6 +122,7 @@ class TabSet extends HTMLElement {
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
       summary.setAttribute('tabindex', detail.open ? '0' : '-1');
+      summary.setAttribute('aria-selected', detail.open ? 'true' : 'false');
     });
   }
 

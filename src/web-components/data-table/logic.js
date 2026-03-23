@@ -15,7 +15,7 @@
  * @attr {string} data-filter-value - Custom value for filtering
  *
  * State attributes (set by component):
- * @attr {string} data-state-sorted - Sort direction: "asc" or "desc"
+ * @attr {string} aria-sort - Sort direction on <th>: "none", "ascending", "descending"
  * @attr {boolean} data-state-hidden - Row is hidden (filtered or paginated)
  *
  * @fires data-table:sort - When a column is sorted { column, direction, columnName }
@@ -223,12 +223,10 @@ class DataTable extends HTMLElement {
 
     // Clear previous sort state
     this.#sortableHeaders.forEach(({ th }) => {
-      th.removeAttribute('data-state-sorted');
       th.setAttribute('aria-sort', 'none');
     });
 
     // Set new sort state
-    headerInfo.th.setAttribute('data-state-sorted', direction);
     headerInfo.th.setAttribute('aria-sort', direction === 'asc' ? 'ascending' : 'descending');
 
     this.#currentSortColumn = columnIndex;

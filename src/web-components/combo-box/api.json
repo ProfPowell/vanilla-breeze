@@ -1,0 +1,34 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "combo-box",
+  "type": "web-component",
+  "description": "Autocomplete combobox with filtering, keyboard navigation, and native form association",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "name",        "kind": "native",   "purpose": "config",         "type": "string",  "description": "Form field name" },
+    { "name": "required",    "kind": "native",   "purpose": "semantic-state", "type": "boolean", "description": "Require a selection for form validation" },
+    { "name": "filter",      "kind": "host-api", "purpose": "config",         "type": "enum",    "values": ["contains", "startsWith"], "default": "contains", "description": "How typing filters the options" },
+    { "name": "value",       "kind": "host-api", "purpose": "config",         "type": "string",  "direction": "both", "description": "Selected value (single mode)" },
+    { "name": "placeholder", "kind": "host-api", "purpose": "config",         "type": "string",  "description": "Input placeholder text" },
+    { "name": "multiple",    "kind": "native",   "purpose": "config",         "type": "boolean", "description": "Enable multi-select tag mode" },
+    { "name": "max",         "kind": "host-api", "purpose": "config",         "type": "number",  "description": "Maximum number of tags (multi mode)" },
+    { "name": "custom",      "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Allow typed entries via Enter/comma (multi mode)" },
+    { "name": "open",        "kind": "host-api", "purpose": "output-state",   "type": "boolean", "direction": "output", "public": false, "description": "Reflected when the listbox is open" }
+  ],
+  "structure": [
+    { "element": "<input type=\"text\">", "description": "Text input for filtering and display" },
+    { "element": "<ul> or <ol>",          "description": "Options list container" },
+    { "element": "<li data-value>",       "description": "Individual option — one per selectable choice" }
+  ],
+  "childAttributes": [
+    { "name": "data-value", "on": "li", "type": "string", "required": true, "description": "Option value identifier placed on each <li> in the options list" }
+  ],
+  "events": [
+    { "name": "combo-box:change", "detail": "{ value, label } | { values[], labels[] }", "description": "Fired when selection changes" },
+    { "name": "combo-box:open",   "description": "Fired when the listbox opens" },
+    { "name": "combo-box:close",  "description": "Fired when the listbox closes" }
+  ]
+}

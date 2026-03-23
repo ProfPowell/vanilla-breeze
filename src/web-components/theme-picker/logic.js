@@ -5,8 +5,9 @@
  * brand theme (default/ocean/forest/sunset). Integrates with ThemeManager
  * for persistence and system preference detection.
  *
- * @attr {string} data-variant - Display variant: 'popover' (default), 'inline'
- * @attr {boolean} data-open - Whether popover is open (reflected, popover variant only)
+ * @attr {string} variant - Display variant: 'popover' (default), 'inline'
+ * @attr {boolean} compact - Render theme section as grouped select dropdown
+ * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)
  *
  * @example Popover variant (default)
  * <theme-picker>
@@ -17,7 +18,10 @@
  * </theme-picker>
  *
  * @example Inline variant (for settings pages)
- * <theme-picker data-variant="inline"></theme-picker>
+ * <theme-picker variant="inline"></theme-picker>
+ *
+ * @example Compact variant (select dropdown)
+ * <theme-picker compact></theme-picker>
  *
  * @example Icon-only trigger
  * <theme-picker>
@@ -29,6 +33,11 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
+import {
+  MODES, COLOR_THEMES, PERSONALITY_THEMES,
+  COMMUNITY_THEMES, FLUID_PRESETS, ACCESSIBILITY_THEMES,
+  EXTENSIONS, THEME_GROUPS
+} from '../../lib/theme-data.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
@@ -40,110 +49,6 @@ const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 const A11Y_THEMES_KEY = 'vb-a11y-themes';
 
 class ThemePicker extends HTMLElement {
-  static #MODES = [
-    { id: 'auto', name: 'Auto', icon: 'monitor' },
-    { id: 'light', name: 'Light', icon: 'sun' },
-    { id: 'dark', name: 'Dark', icon: 'moon' }
-  ];
-
-  // Color themes - override hue values only
-  static #COLOR_THEMES = [
-    { id: 'default', name: 'Default', hue: 260, swatchBg: '#3b82f6' },
-    { id: 'ocean', name: 'Ocean', hue: 200, swatchBg: '#0891b2' },
-    { id: 'forest', name: 'Forest', hue: 145, swatchBg: '#059669' },
-    { id: 'sunset', name: 'Sunset', hue: 25, swatchBg: '#ea580c' },
-    { id: 'rose', name: 'Rose', hue: 350, swatchBg: '#e11d48' },
-    { id: 'lavender', name: 'Lavender', hue: 280, swatchBg: '#a855f7' },
-    { id: 'coral', name: 'Coral', hue: 15, swatchBg: '#f97316' },
-    { id: 'slate', name: 'Slate', hue: 220, swatchBg: '#64748b' },
-    { id: 'emerald', name: 'Emerald', hue: 160, swatchBg: '#10b981' },
-    { id: 'amber', name: 'Amber', hue: 45, swatchBg: '#f59e0b' },
-    { id: 'indigo', name: 'Indigo', hue: 250, swatchBg: '#6366f1' }
-  ];
-
-  // Personality themes - comprehensive design systems
-  static #PERSONALITY_THEMES = [
-    { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated', swatchBg: '#6366f1' },
-    { id: 'minimal', name: 'Minimal', hue: 240, shape: 'sharp', character: 'Clean & flat', swatchBg: '#71717a' },
-    { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant', swatchBg: '#92400e' }
-  ];
-
-  // Extreme themes - dramatic visual transformations
-  static #EXTREME_THEMES = [
-    { id: 'swiss', name: 'Swiss', icon: 'grid-3x3', character: 'Precision grid', swatchBg: '#ff3e00', swatchFg: 'white' },
-    { id: 'brutalist', name: 'Brutalist', icon: 'square', character: 'Raw, industrial', swatchBg: '#1a1a1a', swatchFg: '#f5f5f5' },
-    { id: 'cyber', name: 'Cyber', icon: 'zap', character: 'Neon futuristic', swatchBg: '#0a0a1a', swatchFg: '#00ff88' },
-    { id: 'terminal', name: 'Terminal', icon: 'terminal', character: 'Retro CRT', swatchBg: '#0d1117', swatchFg: '#00ff00' },
-    { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted', swatchBg: '#2d5016', swatchFg: '#faf5e6' },
-    { id: 'editorial', name: 'Editorial', icon: 'newspaper', character: 'Magazine elegance', swatchBg: '#1a1a1a', swatchFg: '#c9a227' },
-    { id: '8bit', name: '8-Bit', icon: 'gamepad-2', character: 'Retro pixel art', swatchBg: '#000080', swatchFg: '#ffff00' },
-    { id: 'nes', name: 'NES', icon: 'joystick', character: 'Console pixels', swatchBg: '#bcbcbc', swatchFg: '#e40521' },
-    { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0' },
-    { id: 'rough', name: 'Rough', icon: 'pencil', character: 'Hand-drawn sketch', swatchBg: '#f5f0e8', swatchFg: '#3a3a3a' },
-    { id: 'nord', name: 'Nord', icon: 'snowflake', character: 'Arctic calm', swatchBg: '#2E3440', swatchFg: '#81A1C1' },
-    { id: 'solarized', name: 'Solarized', icon: 'sun-dim', character: 'Engineered precision', swatchBg: '#002B36', swatchFg: '#268BD2' },
-    { id: 'dracula', name: 'Dracula', icon: 'moon-star', character: 'Dark elegance', swatchBg: '#282A36', swatchFg: '#BD93F9' },
-    { id: 'catppuccin-mocha', name: 'Catppuccin', icon: 'coffee', character: 'Warm pastels', swatchBg: '#1E1E2E', swatchFg: '#CBA6F7' },
-    { id: 'glassmorphism', name: 'Glass', icon: 'glass-water', character: 'Frosted surfaces', swatchBg: '#667eea', swatchFg: '#ffffff' },
-    { id: 'art-deco', name: 'Art Deco', icon: 'crown', character: '1920s luxury', swatchBg: '#1A1A1A', swatchFg: '#C9A84C' },
-    { id: 'genai', name: 'GenAI', icon: 'sparkles', character: 'AI aesthetic', swatchBg: '#1a0a2e', swatchFg: '#a855f7' },
-    { id: 'gruvbox', name: 'Gruvbox', icon: 'palette', character: 'Retro warmth', swatchBg: '#282828', swatchFg: '#ebdbb2' },
-    { id: 'tokyo-night', name: 'Tokyo Night', icon: 'moon', character: 'Night-owl vibes', swatchBg: '#1a1b26', swatchFg: '#7aa2f7' },
-    { id: 'rose-pine', name: 'Rosé Pine', icon: 'flower-2', character: 'Muted elegance', swatchBg: '#191724', swatchFg: '#ebbcba' },
-    { id: 'vaporwave', name: 'Vaporwave', icon: 'radio', character: 'Neon dreamy', swatchBg: '#2b0040', swatchFg: '#ff6ad5' },
-    { id: 'neumorphism', name: 'Neumorph', icon: 'circle', character: 'Soft embossed', swatchBg: '#e0e0e0', swatchFg: '#a0a0a0' },
-    { id: 'catppuccin-latte', name: 'Ctp Latte', icon: 'coffee', character: 'Cozy daytime', swatchBg: '#eff1f5', swatchFg: '#8839ef' },
-    { id: 'catppuccin-frappe', name: 'Ctp Frappé', icon: 'coffee', character: 'Cool twilight', swatchBg: '#303446', swatchFg: '#ca9ee6' },
-    { id: 'catppuccin-macchiato', name: 'Ctp Macchiato', icon: 'coffee', character: 'Deep blue', swatchBg: '#24273a', swatchFg: '#c6a0f6' },
-    { id: 'bauhaus', name: 'Bauhaus', icon: 'shapes', character: 'Geometric', swatchBg: '#F1FAEE', swatchFg: '#E63946' },
-    { id: 'memphis', name: 'Memphis', icon: 'star', character: 'Bold playful', swatchBg: '#FFF8F0', swatchFg: '#FF6B9D' },
-    { id: 'cottagecore', name: 'Cottagecore', icon: 'flower-2', character: 'Pastoral', swatchBg: '#fdf8f0', swatchFg: '#7d8c6d' },
-    { id: 'claymorphism', name: 'Clay', icon: 'circle-dot', character: 'Puffy 3D', swatchBg: '#f0f0f5', swatchFg: '#FF6B9D' },
-    { id: 'clinical', name: 'Clinical', icon: 'heart-pulse', character: 'Sterile precision', swatchBg: '#ffffff', swatchFg: '#0077b6' },
-    { id: 'financial', name: 'Financial', icon: 'landmark', character: 'Navy + gold', swatchBg: '#1b2a4a', swatchFg: '#c9a84c' },
-    { id: 'government', name: 'Government', icon: 'shield', character: 'Official', swatchBg: '#002868', swatchFg: '#bf0a30' },
-    { id: 'startup', name: 'Startup', icon: 'rocket', character: 'SaaS energy', swatchBg: '#4f46e5', swatchFg: '#ffffff' },
-    { id: 'dawn', name: 'Dawn', icon: 'sunrise', character: 'Golden morning', swatchBg: '#fef3e2', swatchFg: '#d4a574' },
-    { id: 'dusk', name: 'Dusk', icon: 'sunset', character: 'Twilight', swatchBg: '#1a1b2e', swatchFg: '#e5a858' },
-    { id: 'midnight', name: 'Midnight', icon: 'moon', character: 'Deep night', swatchBg: '#0d1117', swatchFg: '#58a6ff' },
-    { id: 'high-noon', name: 'High Noon', icon: 'sun', character: 'Maximum bright', swatchBg: '#ffffff', swatchFg: '#e63946' }
-  ];
-
-  // Pack themes - loaded on demand from /cdn/packs/
-  static #BUNDLE_THEMES = [
-    { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4' },
-    { id: 'retro', name: 'Retro', icon: 'tv', character: 'CRT terminal', swatchBg: '#0a0a14', swatchFg: '#00ff66' },
-  ];
-
-  // Fluid scaling presets
-  static #FLUID_PRESETS = [
-    { id: '', name: 'Fixed', icon: 'ruler', description: 'Static token values' },
-    { id: 'default', name: 'Fluid', icon: 'move-diagonal-2', description: 'Smooth viewport scaling' },
-    { id: 'compact', name: 'Compact', icon: 'minimize-2', description: 'Tighter fluid range' },
-    { id: 'spacious', name: 'Spacious', icon: 'maximize-2', description: 'Generous fluid range' }
-  ];
-
-  // Accessibility themes - composable with other themes
-  static #ACCESSIBILITY_THEMES = [
-    { id: 'a11y-high-contrast', name: 'High Contrast', icon: 'contrast', description: 'AAA contrast (7:1+)' },
-    { id: 'a11y-large-text', name: 'Large Text', icon: 'type', description: '25% larger fonts' },
-    { id: 'a11y-dyslexia', name: 'Dyslexia', icon: 'book-open', description: 'Readable typography' }
-  ];
-
-  // Combined list for backwards compatibility
-  static #THEMES = [
-    ...ThemePicker.#COLOR_THEMES,
-    ...ThemePicker.#PERSONALITY_THEMES,
-    ...ThemePicker.#EXTREME_THEMES,
-    ...ThemePicker.#BUNDLE_THEMES
-  ];
-
-  // Extension toggles
-  static #EXTENSIONS = [
-    { id: 'motionFx', name: 'Motion Effects', icon: 'sparkles', description: 'Hover & enter animations' },
-    { id: 'sounds', name: 'Sound Effects', icon: 'volume-2', description: 'Audio feedback' }
-  ];
-
   // Delay before auto-dismissing after selection (ms)
   static #AUTO_DISMISS_DELAY = 200;
 
@@ -151,12 +56,14 @@ class ThemePicker extends HTMLElement {
   #panel;
   #isOpen = false;
   #isInline = false;
+  #isCompact = false;
   /** @type {ReturnType<typeof setTimeout> | null} */
   #autoDismissTimer = null;
   #extensionsExpanded = false;
 
   connectedCallback() {
-    this.#isInline = this.getAttribute('data-variant') === 'inline';
+    this.#isInline = this.getAttribute('variant') === 'inline';
+    this.#isCompact = this.hasAttribute('compact');
     this.#render();
     this.#bindEvents();
     this.#syncState();
@@ -219,19 +126,39 @@ class ThemePicker extends HTMLElement {
   }
 
   #renderContent() {
+    return this.#isCompact ? this.#renderCompactContent() : this.#renderFullContent();
+  }
+
+  #renderSwatch(t, brand) {
+    const bg = t.swatchBg;
+    const fg = t.swatchFg || 'white';
+    const icon = t.icon || '';
+    const label = t.character ? `${t.name} — ${t.character}` : t.name;
+    return `
+      <label class="swatch-cell" title="${label}">
+        <input
+          type="radio"
+          name="theme-brand"
+          value="${t.id}"
+          ${brand === t.id ? 'checked' : ''}
+        />
+        <span class="swatch-visual" style="--swatch-bg: ${bg}; --swatch-fg: ${fg}">
+          ${icon ? `<icon-wc name="${icon}"></icon-wc>` : ''}
+          <span class="sr-only">${t.name}</span>
+        </span>
+      </label>
+    `;
+  }
+
+  #renderFullContent() {
     const { mode, brand, fluid } = ThemeManager.getState();
-    const allBrands = [
-      ...ThemePicker.#COLOR_THEMES,
-      ...ThemePicker.#PERSONALITY_THEMES,
-      ...ThemePicker.#EXTREME_THEMES,
-      ...ThemePicker.#BUNDLE_THEMES
-    ];
+    const showcaseGroups = THEME_GROUPS.filter(g => g.tier === 'showcase');
 
     return `
       <fieldset class="section">
         <legend>Color Mode</legend>
         <div class="options" role="radiogroup" aria-label="Color mode">
-          ${ThemePicker.#MODES.map(m => `
+          ${MODES.map(m => `
             <label class="option">
               <input
                 type="radio"
@@ -249,34 +176,45 @@ class ThemePicker extends HTMLElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Theme</legend>
-        <div class="options options--swatch-grid" role="radiogroup" aria-label="Theme">
-          ${allBrands.map(t => {
-            const bg = t.swatchBg;
-            const fg = t.swatchFg || 'white';
-            const icon = t.icon || '';
-            const label = t.character ? `${t.name} — ${t.character}` : t.name;
-            return `
-            <label class="swatch-cell" title="${label}">
-              <input
-                type="radio"
-                name="theme-brand"
-                value="${t.id}"
-                ${brand === t.id ? 'checked' : ''}
-              />
-              <span class="swatch-visual" style="--swatch-bg: ${bg}; --swatch-fg: ${fg}">
-                ${icon ? `<icon-wc name="${icon}"></icon-wc>` : ''}
-                <span class="sr-only">${t.name}</span>
-              </span>
-            </label>
-          `}).join('')}
+        <legend>Colors</legend>
+        <div class="options options--swatch-grid" role="radiogroup" aria-label="Color theme">
+          ${COLOR_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
         </div>
       </fieldset>
+
+      <fieldset class="section">
+        <legend>Style</legend>
+        <div class="options options--swatch-grid" role="radiogroup" aria-label="Style">
+          ${PERSONALITY_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Featured</legend>
+        ${showcaseGroups.map(group => `
+          <div class="theme-category">
+            <span class="category-label">${group.label}</span>
+            <div class="options options--swatch-grid">
+              ${group.themes.map(t => this.#renderSwatch(t, brand)).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </fieldset>
+
+      <details class="section section--more-themes">
+        <summary class="more-themes-toggle">
+          <span>More Themes</span>
+          <icon-wc name="chevron-down" class="chevron"></icon-wc>
+        </summary>
+        <div class="options options--swatch-grid">
+          ${COMMUNITY_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
+        </div>
+      </details>
 
       <fieldset class="section section--a11y">
         <legend>Accessibility</legend>
         <div class="options options--a11y" aria-label="Accessibility themes">
-          ${ThemePicker.#ACCESSIBILITY_THEMES.map(t => {
+          ${ACCESSIBILITY_THEMES.map(t => {
             const a11yThemes = this.#loadA11yThemes();
             const isChecked = a11yThemes.includes(t.id);
             return `
@@ -300,7 +238,7 @@ class ThemePicker extends HTMLElement {
       <fieldset class="section">
         <legend>Sizing</legend>
         <div class="options options--sizing" role="radiogroup" aria-label="Fluid sizing">
-          ${ThemePicker.#FLUID_PRESETS.map(f => `
+          ${FLUID_PRESETS.map(f => `
             <label class="option option--sizing">
               <input
                 type="radio"
@@ -327,7 +265,7 @@ class ThemePicker extends HTMLElement {
           <icon-wc name="chevron-down" class="chevron"></icon-wc>
         </summary>
         <div class="extensions-content">
-          ${ThemePicker.#EXTENSIONS.map(ext => {
+          ${EXTENSIONS.map(ext => {
             const prefs = this.#loadExtensions();
             const isChecked = prefs[ext.id] ?? EXTENSION_DEFAULTS[ext.id];
             return `
@@ -340,13 +278,83 @@ class ThemePicker extends HTMLElement {
                 type="checkbox"
                 name="ext-${ext.id}"
                 data-extension="${ext.id}"
+                data-switch="sm"
                 ${isChecked ? 'checked' : ''}
               />
-              <span class="toggle-switch"></span>
             </label>
           `}).join('')}
         </div>
       </details>
+    `;
+  }
+
+  #renderCompactContent() {
+    const { mode, brand, fluid } = ThemeManager.getState();
+    const a11yThemes = this.#loadA11yThemes();
+    const prefs = this.#loadExtensions();
+
+    return `
+      <fieldset class="section">
+        <legend>Color Mode</legend>
+        <div class="compact-segmented" role="radiogroup" aria-label="Color mode">
+          ${MODES.map(m => `
+            <label class="compact-seg">
+              <input type="radio" name="theme-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
+              <span><icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}</span>
+            </label>
+          `).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Theme</legend>
+        <select class="compact-select" name="theme-brand-select" aria-label="Theme">
+          ${THEME_GROUPS.map(group => `
+            <optgroup label="${group.label}">
+              ${group.themes.map(t => `
+                <option value="${t.id}" ${brand === t.id ? 'selected' : ''}>${t.name}</option>
+              `).join('')}
+            </optgroup>
+          `).join('')}
+        </select>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Sizing</legend>
+        <select class="compact-select" name="theme-fluid-select" aria-label="Sizing">
+          ${FLUID_PRESETS.map(f => `
+            <option value="${f.id}" ${fluid === f.id ? 'selected' : ''}>${f.name}</option>
+          `).join('')}
+        </select>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Accessibility</legend>
+        <div class="compact-toggles">
+          ${ACCESSIBILITY_THEMES.map(t => `
+            <label class="extension-toggle">
+              <span class="extension-info">
+                <span class="extension-name">${t.name}</span>
+              </span>
+              <input type="checkbox" name="a11y-theme" value="${t.id}" data-a11y-theme="${t.id}" data-switch="sm" ${a11yThemes.includes(t.id) ? 'checked' : ''} />
+            </label>
+          `).join('')}
+        </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Extensions</legend>
+        <div class="compact-toggles">
+          ${EXTENSIONS.map(ext => `
+            <label class="extension-toggle">
+              <span class="extension-info">
+                <span class="extension-name">${ext.name}</span>
+              </span>
+              <input type="checkbox" name="ext-${ext.id}" data-extension="${ext.id}" data-switch="sm" ${prefs[ext.id] ?? EXTENSION_DEFAULTS[ext.id] ? 'checked' : ''} />
+            </label>
+          `).join('')}
+        </div>
+      </fieldset>
     `;
   }
 
@@ -356,15 +364,27 @@ class ThemePicker extends HTMLElement {
       input.addEventListener('change', this.#handleModeChange);
     });
 
-    // Brand change
+    // Brand change — swatch grid (radio buttons)
     this.#panel.querySelectorAll('input[name="theme-brand"]').forEach(input => {
       input.addEventListener('change', this.#handleBrandChange);
     });
 
-    // Fluid change
+    // Brand change — compact select
+    const brandSelect = this.#panel.querySelector('select[name="theme-brand-select"]');
+    if (brandSelect) {
+      brandSelect.addEventListener('change', this.#handleBrandSelect);
+    }
+
+    // Fluid change — radio buttons (full mode)
     this.#panel.querySelectorAll('input[name="theme-fluid"]').forEach(input => {
       input.addEventListener('change', this.#handleFluidChange);
     });
+
+    // Fluid change — select (compact mode)
+    const fluidSelect = this.#panel.querySelector('select[name="theme-fluid-select"]');
+    if (fluidSelect) {
+      fluidSelect.addEventListener('change', this.#handleFluidChange);
+    }
 
     // Extension toggles
     this.#panel.querySelectorAll('input[data-extension]').forEach(input => {
@@ -428,6 +448,22 @@ class ThemePicker extends HTMLElement {
     }
 
     // Reapply a11y themes to combine with new brand
+    this.#applyA11yThemes();
+    this.#autoDismiss();
+  };
+
+  #handleBrandSelect = async (e) => {
+    const select = e.target;
+    select.disabled = true;
+
+    try {
+      await ThemeManager.setBrand(select.value);
+    } catch {
+      console.warn('[VB] Theme load failed, using default');
+    } finally {
+      select.disabled = false;
+    }
+
     this.#applyA11yThemes();
     this.#autoDismiss();
   };
@@ -602,20 +638,28 @@ class ThemePicker extends HTMLElement {
     const modeInput = this.#panel.querySelector(`input[name="theme-mode"][value="${mode}"]`);
     if (modeInput) modeInput.checked = true;
 
-    // Update brand radios
+    // Update brand radios (swatch mode)
     const brandInput = this.#panel.querySelector(`input[name="theme-brand"][value="${brand}"]`);
     if (brandInput) brandInput.checked = true;
 
-    // Update fluid radios
+    // Update brand select (compact mode)
+    const brandSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('select[name="theme-brand-select"]'));
+    if (brandSelect) brandSelect.value = brand;
+
+    // Update fluid radios (full mode)
     const fluidInput = this.#panel.querySelector(`input[name="theme-fluid"][value="${fluid}"]`);
     if (fluidInput) fluidInput.checked = true;
+
+    // Update fluid select (compact mode)
+    const fluidSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('select[name="theme-fluid-select"]'));
+    if (fluidSelect) fluidSelect.value = fluid;
   }
 
   open() {
     if (this.#isInline || this.#isOpen) return;
 
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
 
     // Position panel after browser renders it (needs accurate dimensions)
@@ -684,7 +728,7 @@ class ThemePicker extends HTMLElement {
 
     this.#clearAutoDismiss();
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
 
     this.dispatchEvent(new CustomEvent('theme-picker:close', { bubbles: true }));

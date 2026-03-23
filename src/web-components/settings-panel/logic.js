@@ -10,6 +10,8 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * @example Footer integration (auto-generates gear trigger)
  * <settings-panel></settings-panel>
  *
+ * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup
+ *
  * @example With custom trigger
  * <settings-panel>
  *   <button data-trigger>Settings</button>
@@ -19,28 +21,13 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
 import { EnvironmentManager } from '../../lib/environment-manager.js';
 import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
+import { THEME_GROUPS } from '../../lib/theme-data.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
 const EXTENSIONS_KEY = 'vb-extensions';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 const A11Y_THEMES_KEY = 'vb-a11y-themes';
-
-// Color accent themes — hue variants of the default base theme
-const COLOR_ACCENTS = [
-  { id: 'ocean', name: 'Ocean', color: '#0891b2' },
-  { id: 'forest', name: 'Forest', color: '#059669' },
-  { id: 'sunset', name: 'Sunset', color: '#ea580c' },
-  { id: 'rose', name: 'Rose', color: '#e11d48' },
-  { id: 'lavender', name: 'Lavender', color: '#a855f7' },
-  { id: 'coral', name: 'Coral', color: '#f97316' },
-  { id: 'slate', name: 'Slate', color: '#64748b' },
-  { id: 'emerald', name: 'Emerald', color: '#10b981' },
-  { id: 'amber', name: 'Amber', color: '#f59e0b' },
-  { id: 'indigo', name: 'Indigo', color: '#6366f1' }
-];
-
-const ACCENT_IDS = new Set(COLOR_ACCENTS.map(a => a.id));
 
 class SettingsPanel extends HTMLElement {
   /** @type {HTMLElement} */
@@ -70,19 +57,6 @@ class SettingsPanel extends HTMLElement {
   }
 
   // --- Mapping helpers ---
-
-  /** Map a brand value to the select dropdown value */
-  #getSelectValue(brand) {
-    if (!brand || brand === 'default') return 'default';
-    if (ACCENT_IDS.has(brand)) return 'default';
-    return brand;
-  }
-
-  /** Map a brand value to the accent id (or empty) */
-  #getAccent(brand) {
-    if (ACCENT_IDS.has(brand)) return brand;
-    return '';
-  }
 
   /** Is fluid scaling enabled? (any non-empty fluid value) */
   #isFluidOn(fluid) {
@@ -181,11 +155,8 @@ class SettingsPanel extends HTMLElement {
 
   #renderPanel() {
     const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
-    const selectValue = this.#getSelectValue(brand);
-    const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
     const extensions = this.#loadExtensions();
-    const showAccents = selectValue === 'default';
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
     const backdropOn = this.#isBackdropOn(backdrop);
@@ -206,86 +177,28 @@ class SettingsPanel extends HTMLElement {
           <div class="settings-section">
             <span class="settings-label">Color Mode</span>
             <div class="segmented-control" role="radiogroup" aria-label="Color mode">
-              ${['auto', 'light', 'dark'].map(m => `
+              ${[
+                { id: 'auto', name: 'Auto', icon: 'monitor' },
+                { id: 'light', name: 'Light', icon: 'sun' },
+                { id: 'dark', name: 'Dark', icon: 'moon' },
+              ].map(m => `
                 <label class="segment">
-                  <input type="radio" name="settings-mode" value="${m}" ${mode === m ? 'checked' : ''} />
-                  <span>${m[0].toUpperCase() + m.slice(1)}</span>
+                  <input type="radio" name="settings-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
+                  <span><icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}</span>
                 </label>
               `).join('')}
             </div>
 
             <label class="settings-label" for="settings-theme">Theme</label>
             <select id="settings-theme" name="settings-theme">
-              <optgroup label="Base">
-                <option value="default" ${selectValue === 'default' ? 'selected' : ''}>Default</option>
-              </optgroup>
-              <optgroup label="Personality">
-                <option value="modern" ${selectValue === 'modern' ? 'selected' : ''}>Modern</option>
-                <option value="minimal" ${selectValue === 'minimal' ? 'selected' : ''}>Minimal</option>
-                <option value="classic" ${selectValue === 'classic' ? 'selected' : ''}>Classic</option>
-              </optgroup>
-              <optgroup label="Extreme">
-                <option value="swiss" ${selectValue === 'swiss' ? 'selected' : ''}>Swiss</option>
-                <option value="brutalist" ${selectValue === 'brutalist' ? 'selected' : ''}>Brutalist</option>
-                <option value="cyber" ${selectValue === 'cyber' ? 'selected' : ''}>Cyber</option>
-                <option value="terminal" ${selectValue === 'terminal' ? 'selected' : ''}>Terminal</option>
-                <option value="organic" ${selectValue === 'organic' ? 'selected' : ''}>Organic</option>
-                <option value="editorial" ${selectValue === 'editorial' ? 'selected' : ''}>Editorial</option>
-                <option value="8bit" ${selectValue === '8bit' ? 'selected' : ''}>8-Bit</option>
-                <option value="nes" ${selectValue === 'nes' ? 'selected' : ''}>NES</option>
-                <option value="win9x" ${selectValue === 'win9x' ? 'selected' : ''}>Win9x</option>
-                <option value="rough" ${selectValue === 'rough' ? 'selected' : ''}>Rough</option>
-                <option value="nord" ${selectValue === 'nord' ? 'selected' : ''}>Nord</option>
-                <option value="solarized" ${selectValue === 'solarized' ? 'selected' : ''}>Solarized</option>
-                <option value="dracula" ${selectValue === 'dracula' ? 'selected' : ''}>Dracula</option>
-                <option value="catppuccin-mocha" ${selectValue === 'catppuccin-mocha' ? 'selected' : ''}>Catppuccin Mocha</option>
-                <option value="glassmorphism" ${selectValue === 'glassmorphism' ? 'selected' : ''}>Glassmorphism</option>
-                <option value="art-deco" ${selectValue === 'art-deco' ? 'selected' : ''}>Art Deco</option>
-                <option value="genai" ${selectValue === 'genai' ? 'selected' : ''}>GenAI</option>
-                <option value="gruvbox" ${selectValue === 'gruvbox' ? 'selected' : ''}>Gruvbox</option>
-                <option value="tokyo-night" ${selectValue === 'tokyo-night' ? 'selected' : ''}>Tokyo Night</option>
-                <option value="rose-pine" ${selectValue === 'rose-pine' ? 'selected' : ''}>Rosé Pine</option>
-                <option value="vaporwave" ${selectValue === 'vaporwave' ? 'selected' : ''}>Vaporwave</option>
-                <option value="neumorphism" ${selectValue === 'neumorphism' ? 'selected' : ''}>Neumorphism</option>
-                <option value="catppuccin-latte" ${selectValue === 'catppuccin-latte' ? 'selected' : ''}>Catppuccin Latte</option>
-                <option value="catppuccin-frappe" ${selectValue === 'catppuccin-frappe' ? 'selected' : ''}>Catppuccin Frappé</option>
-                <option value="catppuccin-macchiato" ${selectValue === 'catppuccin-macchiato' ? 'selected' : ''}>Catppuccin Macchiato</option>
-                <option value="bauhaus" ${selectValue === 'bauhaus' ? 'selected' : ''}>Bauhaus</option>
-                <option value="memphis" ${selectValue === 'memphis' ? 'selected' : ''}>Memphis</option>
-                <option value="cottagecore" ${selectValue === 'cottagecore' ? 'selected' : ''}>Cottagecore</option>
-                <option value="claymorphism" ${selectValue === 'claymorphism' ? 'selected' : ''}>Claymorphism</option>
-                <option value="clinical" ${selectValue === 'clinical' ? 'selected' : ''}>Clinical</option>
-                <option value="financial" ${selectValue === 'financial' ? 'selected' : ''}>Financial</option>
-                <option value="government" ${selectValue === 'government' ? 'selected' : ''}>Government</option>
-                <option value="startup" ${selectValue === 'startup' ? 'selected' : ''}>Startup</option>
-                <option value="dawn" ${selectValue === 'dawn' ? 'selected' : ''}>Dawn</option>
-                <option value="dusk" ${selectValue === 'dusk' ? 'selected' : ''}>Dusk</option>
-                <option value="midnight" ${selectValue === 'midnight' ? 'selected' : ''}>Midnight</option>
-                <option value="high-noon" ${selectValue === 'high-noon' ? 'selected' : ''}>High Noon</option>
-              </optgroup>
-              <optgroup label="Packs">
-                <option value="kawaii" ${selectValue === 'kawaii' ? 'selected' : ''}>Kawaii</option>
-                <option value="retro" ${selectValue === 'retro' ? 'selected' : ''}>Retro</option>
-              </optgroup>
+              ${THEME_GROUPS.map(group => `
+                <optgroup label="${group.label}">
+                  ${group.themes.map(t => `
+                    <option value="${t.id}" ${brand === t.id ? 'selected' : ''}>${t.name}</option>
+                  `).join('')}
+                </optgroup>
+              `).join('')}
             </select>
-
-            <div class="accent-row" ${showAccents ? '' : 'hidden'}>
-              <span class="settings-label">Accent Color</span>
-              <div class="accent-swatches" role="radiogroup" aria-label="Accent color">
-                <label class="accent-swatch accent-swatch--none" title="None (default blue)">
-                  <input type="radio" name="settings-accent" value="" ${accent === '' ? 'checked' : ''} />
-                  <span class="accent-dot" style="background: var(--color-interactive, #3b82f6)">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </span>
-                </label>
-                ${COLOR_ACCENTS.map(a => `
-                  <label class="accent-swatch" title="${a.name}">
-                    <input type="radio" name="settings-accent" value="${a.id}" ${accent === a.id ? 'checked' : ''} />
-                    <span class="accent-dot" style="background: ${a.color}"></span>
-                  </label>
-                `).join('')}
-              </div>
-            </div>
           </div>
         </details>
 
@@ -459,11 +372,6 @@ class SettingsPanel extends HTMLElement {
     // Theme select
     this.#panel.querySelector('#settings-theme')?.addEventListener('change', this.#handleThemeChange);
 
-    // Accent swatches
-    this.#panel.querySelectorAll('input[name="settings-accent"]').forEach(input => {
-      input.addEventListener('change', this.#handleAccentChange);
-    });
-
     // Fluid toggle
     this.#panel.querySelector('input[data-fluid-toggle]')?.addEventListener('change', this.#handleFluidToggle);
 
@@ -551,31 +459,13 @@ class SettingsPanel extends HTMLElement {
     select.disabled = true;
 
     try {
-      const theme = select.value;
-      if (theme === 'default') {
-        const accentInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[name="settings-accent"]:checked'));
-        const accent = accentInput?.value || '';
-        await ThemeManager.setBrand(accent || 'default');
-      } else {
-        await ThemeManager.setBrand(theme);
-      }
-      this.#updateAccentVisibility(select.value === 'default');
+      await ThemeManager.setBrand(select.value);
       this.#reapplyA11yThemes();
     } catch {
       console.warn('[VB] Theme load failed, using default');
     } finally {
       select.disabled = false;
     }
-  };
-
-  #handleAccentChange = async (e) => {
-    const accent = e.target.value;
-    try {
-      await ThemeManager.setBrand(accent || 'default');
-    } catch {
-      console.warn('[VB] Theme load failed');
-    }
-    this.#reapplyA11yThemes();
   };
 
   #handleFluidToggle = (e) => {
@@ -698,8 +588,6 @@ class SettingsPanel extends HTMLElement {
 
   #syncState() {
     const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
-    const selectValue = this.#getSelectValue(brand);
-    const accent = this.#getAccent(brand);
     const a11yThemes = this.#loadA11yThemes();
     const extensions = this.#loadExtensions();
     const fluidOn = this.#isFluidOn(fluid);
@@ -713,12 +601,7 @@ class SettingsPanel extends HTMLElement {
 
     // Theme select
     const themeSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('#settings-theme'));
-    if (themeSelect) themeSelect.value = selectValue;
-
-    // Accent
-    const accentInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-accent"][value="${accent}"]`));
-    if (accentInput) accentInput.checked = true;
-    this.#updateAccentVisibility(selectValue === 'default');
+    if (themeSelect) themeSelect.value = brand || 'default';
 
     // Fluid toggle
     const fluidToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-fluid-toggle]'));
@@ -781,11 +664,6 @@ class SettingsPanel extends HTMLElement {
       const key = /** @type {string} */ (input.dataset.env);
       input.checked = envPrefs[key] ?? false;
     });
-  }
-
-  #updateAccentVisibility(show) {
-    const row = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.accent-row'));
-    if (row) row.hidden = !show;
   }
 
   #updateDensityVisibility(show) {
@@ -941,7 +819,7 @@ class SettingsPanel extends HTMLElement {
   open() {
     if (this.#isOpen) return;
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
     this.#syncState();
     this.#positionPanel();
@@ -988,7 +866,7 @@ class SettingsPanel extends HTMLElement {
   close() {
     if (!this.#isOpen) return;
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
   }
 

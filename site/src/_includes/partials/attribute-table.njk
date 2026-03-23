@@ -1,0 +1,108 @@
+{#
+  Renders tables from apiRegistry for a given element.
+  Usage: {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable, eventsTable %}
+         {{ attributeTable("combo-box", apiRegistry) }}
+         {{ structureTable("combo-box", apiRegistry) }}
+         {{ childAttributeTable("combo-box", apiRegistry) }}
+         {{ eventsTable("combo-box", apiRegistry) }}
+#}
+
+{% macro structureTable(elementName, registry) %}
+  {% set api = registry[elementName] %}
+  {% if api and api.structure and api.structure.length %}
+    <table class="props-table">
+      <thead>
+        <tr><th>Element</th><th>Required</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for child in api.structure %}
+          <tr>
+            <td><code>{{ child.element | e }}</code></td>
+            <td>{% if child.required !== false %}yes{% else %}no{% endif %}</td>
+            <td>{{ child.description | e }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endmacro %}
+
+{% macro attributeTable(elementName, registry) %}
+  {% set api = registry[elementName] %}
+  {% if api and api.attributes and api.attributes.length %}
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for attr in api.attributes %}
+          {% if attr.public !== false and attr.purpose !== 'internal-hook' %}
+            <tr>
+              <td><code>{{ attr.name }}</code>{% if attr.direction == 'output' %} <small>(reflected)</small>{% endif %}</td>
+              <td>
+                {%- if attr.type == 'enum' and attr.values -%}
+                  {%- for v in attr.values -%}<code>"{{ v }}"</code>{% if not loop.last %}, {% endif %}{%- endfor -%}
+                {%- elif attr.type -%}
+                  {{ attr.type }}
+                {%- else -%}
+                  &mdash;
+                {%- endif -%}
+              </td>
+              <td>{% if attr.default is defined and attr.default !== null %}<code>{{ attr.default }}</code>{% else %}&mdash;{% endif %}</td>
+              <td>{{ attr.description | e }}{% if attr.deprecated %} <em>(deprecated)</em>{% endif %}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endmacro %}
+
+{% macro childAttributeTable(elementName, registry) %}
+  {% set api = registry[elementName] %}
+  {% if api and api.childAttributes and api.childAttributes.length %}
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Values</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for attr in api.childAttributes %}
+          <tr>
+            <td><code>{{ attr.name }}</code></td>
+            <td><code>{{ attr.on | e }}</code></td>
+            <td>
+              {%- if attr.type == 'enum' and attr.values -%}
+                {%- for v in attr.values -%}<code>"{{ v }}"</code>{% if not loop.last %}, {% endif %}{%- endfor -%}
+              {%- elif attr.type -%}
+                {{ attr.type }}
+              {%- else -%}
+                &mdash;
+              {%- endif -%}
+            </td>
+            <td>{{ attr.description | e }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endmacro %}
+
+{% macro eventsTable(elementName, registry) %}
+  {% set api = registry[elementName] %}
+  {% if api and api.events and api.events.length %}
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for evt in api.events %}
+          <tr>
+            <td><code>{{ evt.name }}</code></td>
+            <td>{% if evt.detail %}<code>{{ evt.detail | e }}</code>{% else %}&mdash;{% endif %}</td>
+            <td>{{ evt.description | e }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endmacro %}

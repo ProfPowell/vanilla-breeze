@@ -4,7 +4,7 @@
  * Provides a search interface with keyboard shortcuts, result highlighting,
  * and keyboard navigation. Uses Pagefind for fast client-side search.
  *
- * @attr {boolean} data-open - Whether search dialog is open (reflected)
+ * @attr {boolean} open - Reflected state only — set by open()/close() methods, not intended as initial markup
  *
  * @example Basic usage
  * <site-search>
@@ -266,6 +266,7 @@ class SiteSearch extends HTMLElement {
 
     this.#resultsList.innerHTML = results.map((result, index) => `
       <a
+        id="search-result-${index}"
         href="${result.url}"
         class="result"
         role="option"
@@ -296,13 +297,17 @@ class SiteSearch extends HTMLElement {
 
     // Remove previous active
     const prevActive = this.#resultsList.querySelector('[data-active]');
-    if (prevActive) prevActive.removeAttribute('data-active');
+    if (prevActive) {
+      prevActive.removeAttribute('data-active');
+    }
+    this.#input?.removeAttribute('aria-activedescendant');
 
     // Set new active
     this.#activeIndex = index;
     const resultEl = this.#resultsList.querySelector(`[data-result-index="${index}"]`);
     if (resultEl) {
       resultEl.setAttribute('data-active', '');
+      this.#input?.setAttribute('aria-activedescendant', resultEl.id);
       resultEl.scrollIntoView({ block: 'nearest' });
     }
   }
@@ -325,7 +330,7 @@ class SiteSearch extends HTMLElement {
     if (this.#isOpen) return;
 
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
 
     // Prevent body scroll
@@ -347,7 +352,7 @@ class SiteSearch extends HTMLElement {
     if (!this.#isOpen) return;
 
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
 
     // Restore body scroll
@@ -356,6 +361,7 @@ class SiteSearch extends HTMLElement {
     // Clear state
     this.#clearDebounce();
     this.#input.value = '';
+    this.#input?.removeAttribute('aria-activedescendant');
     this.#results = [];
     this.#activeIndex = -1;
     this.#resultsList.innerHTML = '';

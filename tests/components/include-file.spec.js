@@ -131,7 +131,7 @@ test.describe('include-file', () => {
     const result = await page.evaluate(() => {
       return new Promise(resolve => {
         const el = document.createElement('include-file');
-        el.setAttribute('data-mode', 'append');
+        el.setAttribute('mode', 'append');
         el.innerHTML = '<p class="original-test">Original</p>';
         el.addEventListener('include-file:load', () => {
           resolve({

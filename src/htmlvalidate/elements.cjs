@@ -1,29 +1,61 @@
+// @generated from api.json manifests — do not edit by hand
 module.exports = {
-  // ── Layout Custom Elements ────────────────────────────────────────
+  // ── Layout Custom Elements ──────────────────────────────────────
+
+  "layout-text": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "layout-switcher": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-threshold": {},
+      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
+      "data-limit": { enum: ["2", "3", "4", "5"] }
+    }
+  },
 
   "layout-stack": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": {
-        enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"]
-      },
-      "data-align": {
-        enum: ["start", "center", "end", "stretch"]
-      }
+      "data-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-align": { enum: ["start", "center", "end", "stretch"] }
     }
   },
 
-  "layout-card": {
+  "layout-sidebar": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-variant": {
-        enum: ["elevated", "outlined", "ghost"]
-      },
-      "data-padding": {
-        enum: ["none", "s", "m", "l", "xl"]
-      }
+      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
+      "data-side": { enum: ["start", "end"] },
+      "data-sidebar-width": { enum: ["narrow", "normal", "wide"] },
+      "data-content-min": { enum: ["40", "50", "60"] },
+      "data-nowrap": { boolean: true }
+    }
+  },
+
+  "layout-reel": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
+      "data-padding": { enum: ["none", "s", "m", "l"] },
+      "data-item-width": { enum: ["auto", "s", "m", "l", "xl", "full"] },
+      "data-align": { enum: ["start", "center", "end", "stretch"] },
+      "data-scrollbar": { boolean: true }
+    }
+  },
+
+  "layout-imposter": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-fixed": { boolean: true },
+      "data-contain": { boolean: true }
     }
   },
 
@@ -32,69 +64,7 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-min": {},
-      "data-gap": {
-        enum: ["none", "xs", "s", "m", "l", "xl"]
-      }
-    }
-  },
-
-  "layout-cluster": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-gap": {
-        enum: ["xs", "s", "m", "l", "xl"]
-      },
-      "data-justify": {
-        enum: ["start", "end", "center", "between"]
-      },
-      "data-align": {
-        enum: ["start", "end", "center", "stretch", "baseline"]
-      },
-      "data-nowrap": {
-        boolean: true
-      }
-    }
-  },
-
-  "layout-center": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-max": {
-        enum: ["narrow", "normal", "wide"]
-      },
-      "data-intrinsic": {
-        boolean: true
-      },
-      "data-text": {
-        boolean: true
-      },
-      "data-gutter": {
-        enum: ["none", "s", "l"]
-      }
-    }
-  },
-
-  "layout-sidebar": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-gap": {
-        enum: ["xs", "s", "m", "l", "xl"]
-      },
-      "data-side": {
-        enum: ["start", "end"]
-      },
-      "data-sidebar-width": {
-        enum: ["narrow", "normal", "wide"]
-      },
-      "data-content-min": {
-        enum: ["40", "50", "60"]
-      },
-      "data-nowrap": {
-        boolean: true
-      }
+      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] }
     }
   },
 
@@ -103,93 +73,40 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-min-block": {},
-      "data-gap": {
-        enum: ["none", "xs", "s", "m", "l", "xl"]
-      },
-      "data-npad": {
-        boolean: true
-      }
+      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
+      "data-npad": { boolean: true }
     }
   },
 
-  "layout-switcher": {
+  "layout-cluster": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-threshold": {},
-      "data-gap": {
-        enum: ["none", "xs", "s", "m", "l", "xl"]
-      },
-      "data-limit": {
-        enum: ["2", "3", "4", "5"]
-      }
+      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
+      "data-justify": { enum: ["start", "end", "center", "between"] },
+      "data-align": { enum: ["start", "end", "center", "stretch", "baseline"] },
+      "data-nowrap": { boolean: true }
     }
   },
 
-  "layout-imposter": {
+  "layout-center": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-fixed": {
-        boolean: true
-      },
-      "data-contain": {
-        boolean: true
-      }
+      "data-max": { enum: ["narrow", "normal", "wide"] },
+      "data-intrinsic": { boolean: true },
+      "data-text": { boolean: true },
+      "data-gutter": { enum: ["none", "s", "l"] }
     }
   },
 
-  "layout-text": {
-    flow: true,
-    permittedContent: ["@flow"]
-  },
-
-  "layout-reel": {
+  "layout-card": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": {
-        enum: ["none", "xs", "s", "m", "l", "xl"]
-      },
-      "data-padding": {
-        enum: ["none", "s", "m", "l"]
-      },
-      "data-item-width": {
-        enum: ["auto", "s", "m", "l", "xl", "full"]
-      },
-      "data-align": {
-        enum: ["start", "center", "end", "stretch"]
-      },
-      "data-scrollbar": {
-        boolean: true
-      }
+      "data-variant": { enum: ["elevated", "outlined", "ghost"] },
+      "data-padding": { enum: ["none", "s", "m", "l", "xl"] }
     }
-  },
-
-  // ── Other Custom Elements ─────────────────────────────────────────
-
-  "brand-mark": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-size": { enum: ["s", "l", "xl"] },
-      "data-stack": { boolean: true }
-    }
-  },
-
-  "dl": {
-    flow: true,
-    permittedContent: ["@script", "dt", "dd", "div", "dl-item"]
-  },
-
-  "dl-item": {
-    flow: true,
-    permittedContent: ["dt", "dd"]
-  },
-
-  "form-field": {
-    flow: true,
-    permittedContent: ["@flow"]
   },
 
   "layout-badge": {
@@ -201,6 +118,25 @@ module.exports = {
       "data-color": { enum: ["primary", "success", "warning", "danger", "info"] },
       "data-variant": {}
     }
+  },
+
+  "brand-mark": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-size": { enum: ["s", "l", "xl"] },
+      "data-stack": { boolean: true }
+    }
+  },
+
+  "dl-item": {
+    flow: true,
+    permittedContent: ["dt", "dd"]
+  },
+
+  "form-field": {
+    flow: true,
+    permittedContent: ["@flow"]
   },
 
   "loading-spinner": {
@@ -239,15 +175,23 @@ module.exports = {
     permittedContent: ["@flow"]
   },
 
-  // ── Web Components ────────────────────────────────────────────────
+  "dl": {
+    flow: true,
+    permittedContent: ["@script", "dt", "dd", "div", "dl-item"]
+  },
+
+  // ── Web Components ──────────────────────────────────────────────
 
   "accordion-wc": {
     flow: true,
     permittedContent: ["details"],
     attributes: {
-      "data-single": { boolean: true },
-      "data-bordered": { boolean: true },
-      "data-compact": { boolean: true }
+      "single": { boolean: true },
+      "bordered": { boolean: true },
+      "flush": { boolean: true },
+      "compact": { boolean: true },
+      "indicator": { enum: ["plus-minus", "none", "custom"] },
+      "transition": { enum: ["fade", "slide", "scale"] }
     }
   },
 
@@ -266,15 +210,25 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-autoplay": { boolean: true },
-      "data-autoplay-delay": {},
-      "data-loop": { boolean: true },
-      "data-indicators": {},
-      "data-item-width": {},
-      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
-      "data-start": {},
-      "data-persist": {},
-      "data-transition": { enum: ["fade", "slide", "scale"] }
+      "autoplay": { boolean: true },
+      "autoplay-delay": {},
+      "loop": { boolean: true },
+      "indicators": {},
+      "item-width": {},
+      "gap": { enum: ["xs", "s", "m", "l", "xl"] },
+      "start": {},
+      "persist": {},
+      "transition": { enum: ["fade", "slide", "scale"] }
+    }
+  },
+
+  "chat-window": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "endpoint": {},
+      "model": {},
+      "empty-message": {}
     }
   },
 
@@ -296,23 +250,13 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "name": {},
-      "data-required": { boolean: true },
-      "data-filter": { enum: ["startsWith", "contains"] },
-      "data-value": {},
-      "data-placeholder": {},
-      "data-multiple": { boolean: true },
-      "data-max": {},
-      "data-allow-custom": { boolean: true }
-    }
-  },
-
-  "command-palette": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-hotkey": {},
-      "data-placeholder": {},
-      "data-discover": { boolean: true }
+      "required": { boolean: true },
+      "filter": { enum: ["contains", "startsWith"] },
+      "value": {},
+      "placeholder": {},
+      "multiple": { boolean: true },
+      "max": {},
+      "custom": { boolean: true }
     }
   },
 
@@ -333,11 +277,32 @@ module.exports = {
     }
   },
 
+  "command-palette": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-hotkey": {},
+      "data-placeholder": {},
+      "data-discover": { boolean: true }
+    }
+  },
+
   "compare-surface": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-position": {}
+      "position": {}
+    }
+  },
+
+  "consent-banner": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "persist": {},
+      "position": { enum: ["bottom", "top", "center"] },
+      "trigger": {},
+      "expires": {}
     }
   },
 
@@ -345,11 +310,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-transition": {
-        enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"]
-      },
-      "data-swapped": { boolean: true },
-      "data-card": { boolean: true },
+      "transition": { enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"] },
+      "swapped": { boolean: true },
+      "card": { boolean: true },
       "data-variant": { enum: ["elevated", "outlined", "ghost"] }
     }
   },
@@ -372,9 +335,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-group": {},
-      "data-orientation": { enum: ["horizontal"] },
-      "data-drag-disabled": { boolean: true }
+      "group": {},
+      "orientation": { enum: ["horizontal"] },
+      "disabled": { boolean: true }
     }
   },
 
@@ -382,9 +345,10 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-position": {
-        enum: ["bottom-start", "bottom-end", "top-start", "top-end"]
-      }
+      "position": { enum: ["bottom-start", "bottom-end", "top-start", "top-end"] },
+      "hover": { boolean: true },
+      "no-flip": { boolean: true },
+      "open": { boolean: true }
     }
   },
 
@@ -393,9 +357,15 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "for": {},
-      "data-open": { boolean: true },
+      "open": { boolean: true },
       "recent-limit": {}
     }
+  },
+
+  "foot-note": {
+    flow: true,
+    phrasing: true,
+    permittedContent: ["@phrasing"]
   },
 
   "foot-notes": {
@@ -404,12 +374,6 @@ module.exports = {
     attributes: {
       "data-back-label": {}
     }
-  },
-
-  "foot-note": {
-    flow: true,
-    phrasing: true,
-    permittedContent: ["@phrasing"]
   },
 
   "geo-map": {
@@ -426,7 +390,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-levels": {}
+      "levels": {}
     }
   },
 
@@ -448,8 +412,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "src": {},
-      "data-mode": { enum: ["replace", "append", "prepend"] },
-      "data-lazy": { boolean: true }
+      "mode": { enum: ["replace", "append", "prepend"] },
+      "lazy": { boolean: true },
+      "allow-scripts": { boolean: true }
     }
   },
 
@@ -457,9 +422,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-levels": {},
-      "data-scope": {},
-      "data-title": {}
+      "levels": {},
+      "scope": {},
+      "title": {}
     }
   },
 
@@ -467,8 +432,8 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-raw-toggle": { boolean: true },
-      "data-label": {}
+      "raw-toggle": { boolean: true },
+      "label": {}
     }
   },
 
@@ -476,17 +441,20 @@ module.exports = {
     flow: true,
     permittedContent: ["@phrasing"],
     attributes: {
-      "data-value": {},
-      "data-size": {},
-      "data-color": {},
-      "data-background": {},
-      "data-error-correction": {}
+      "value": {},
+      "size": {},
+      "color": {},
+      "background": {},
+      "error-correction": {}
     }
   },
 
   "settings-panel": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "open": { boolean: true }
+    }
   },
 
   "short-cuts": {
@@ -498,7 +466,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-open": { boolean: true }
+      "open": { boolean: true }
     }
   },
 
@@ -506,10 +474,22 @@ module.exports = {
     flow: true,
     permittedContent: ["@phrasing"],
     attributes: {
-      "data-label": {},
-      "data-activated-label": {},
-      "data-attention": { enum: ["shimmer", "pulse"] },
-      "data-threshold": {}
+      "label": {},
+      "activated-label": {},
+      "attention": { enum: ["shimmer", "pulse"] },
+      "threshold": {}
+    }
+  },
+
+  "social-embed": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "url": { required: true },
+      "provider": {},
+      "theme": { enum: ["light", "dark", "auto"] },
+      "activate": { enum: ["click", "visible", "eager"] },
+      "state": { enum: ["idle", "loading", "loaded", "error", "unsupported"] }
     }
   },
 
@@ -517,25 +497,36 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-direction": { enum: ["horizontal", "vertical"] },
-      "data-position": {},
-      "data-min": {},
-      "data-max": {},
-      "data-persist": {},
-      "data-collapsible": { boolean: true }
+      "direction": { enum: ["horizontal", "vertical"] },
+      "position": {},
+      "min": {},
+      "max": {},
+      "persist": {},
+      "collapsible": { boolean: true }
     }
   },
 
   "star-rating": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "value": {},
+      "max": {},
+      "label": {},
+      "allow-half": { boolean: true },
+      "readonly": { boolean: true },
+      "icon": {},
+      "required": { boolean: true }
+    }
   },
 
   "tab-set": {
     flow: true,
     permittedContent: ["details"],
     attributes: {
-      "aria-label": {}
+      "aria-label": {},
+      "transition": { enum: ["fade", "slide", "scale"] }
     }
   },
 
@@ -556,8 +547,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-variant": { enum: ["popover", "inline"] },
-      "data-open": { boolean: true }
+      "variant": { enum: ["popover", "inline"] },
+      "compact": { boolean: true },
+      "open": { boolean: true }
     }
   },
 
@@ -565,11 +557,9 @@ module.exports = {
     flow: true,
     permittedContent: [],
     attributes: {
-      "data-position": {
-        enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"]
-      },
-      "data-duration": {},
-      "data-max": {}
+      "position": { enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"] },
+      "duration": {},
+      "max": {}
     }
   },
 
@@ -577,8 +567,10 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow", "template"],
     attributes: {
-      "data-tooltip-position": { enum: ["top", "bottom", "left", "right"] },
-      "data-tooltip-delay": {}
+      "variant": { enum: ["card"] },
+      "content": {},
+      "position": { enum: ["top", "bottom", "left", "right"] },
+      "delay": {}
     }
   },
 
@@ -596,7 +588,7 @@ module.exports = {
     }
   },
 
-  // ── Doc-Site Components ───────────────────────────────────────────
+  // ── Doc-Site Components ─────────────────────────────────────────
 
   "browser-window": {
     flow: true,
@@ -619,11 +611,6 @@ module.exports = {
     }
   },
 
-  "vb-composer": {
-    flow: true,
-    permittedContent: ["@flow"]
-  },
-
   "vb-canvas": {
     flow: true,
     permittedContent: ["@flow"],
@@ -632,11 +619,17 @@ module.exports = {
     }
   },
 
+  "vb-composer": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "vb-inspector": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
       "aria-label": {}
     }
-  }
+  },
+
 };

@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "drop-down",
+  "type": "web-component",
+  "description": "Accessible dropdown menu with keyboard navigation and Popover API support",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "position", "kind": "host-api", "purpose": "config",         "type": "enum",    "values": ["bottom-start", "bottom-end", "top-start", "top-end"], "default": "bottom-start", "description": "Menu position relative to trigger" },
+    { "name": "hover",    "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Open on hover/focus instead of click (useful for nav menus)" },
+    { "name": "no-flip",  "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Disable automatic flip when menu overflows viewport" },
+    { "name": "open",     "kind": "host-api", "purpose": "output-state",   "type": "boolean", "direction": "output", "description": "Reflected state — set by open()/close()/toggle() methods, not intended as initial markup" }
+  ],
+  "structure": [
+    { "element": "<button data-trigger> or <a data-trigger>", "description": "Trigger element that opens the menu" },
+    { "element": "<menu>",                                     "description": "Menu container with <li> items holding <button> or <a> actions" }
+  ],
+  "childAttributes": [
+    { "name": "data-trigger", "on": "button | a", "type": "boolean", "required": true, "description": "Marks the element that opens the menu. Falls back to first <button> if absent." }
+  ],
+  "events": [
+    { "name": "drop-down:open",   "description": "Fired when the menu opens" },
+    { "name": "drop-down:close",  "description": "Fired when the menu closes" },
+    { "name": "drop-down:select", "detail": "{ item }", "description": "Fired when a menu item is selected" }
+  ]
+}

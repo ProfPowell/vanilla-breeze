@@ -56,6 +56,7 @@ class ContextMenuWc extends HTMLElement {
     }
 
     // ARIA setup
+    this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#menu.setAttribute('role', 'menu');
     if (!this.#menu.id) {
       this.#menu.id = `ctx-menu-${crypto.randomUUID().slice(0, 8)}`;
@@ -75,6 +76,8 @@ class ContextMenuWc extends HTMLElement {
     this.#items.forEach(item => {
       item.setAttribute('role', 'menuitem');
       item.setAttribute('tabindex', '-1');
+      // Reset theme button styles (border/shadow leak from unlayered theme rules)
+      item.style.cssText += ';border:none;box-shadow:none;transform:none;border-radius:0;';
       item.addEventListener('click', this.#handleItemClick);
 
       // Shortcut badges + real bindings
@@ -136,6 +139,7 @@ class ContextMenuWc extends HTMLElement {
   #openAt(x, y) {
     this.#isOpen = true;
     this.setAttribute('data-open', '');
+    this.#trigger?.setAttribute('aria-expanded', 'true');
 
     // Position at cursor
     this.#menu.style.setProperty('--ctx-top', `${y}px`);
@@ -170,6 +174,7 @@ class ContextMenuWc extends HTMLElement {
     if (!this.#isOpen) return;
     this.#isOpen = false;
     this.removeAttribute('data-open');
+    this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
 
     if (this.#usePopover) {

@@ -13,20 +13,20 @@ permalink: /docs/elements/web-components/include-file/
 </include-file>{% endset %}
 
 {% set lazyCode %}<!-- Only loads when scrolled into view -->
-<include-file src="/partials/comments.html" data-lazy>
+<include-file src="/partials/comments.html" lazy>
   <p>Comments loading...</p>
 </include-file>{% endset %}
 
 {% set modeCode %}<!-- Replace (default) -->
-<include-file src="/partials/content.html" data-mode="replace"></include-file>
+<include-file src="/partials/content.html" mode="replace"></include-file>
 
 <!-- Append to existing content -->
-<include-file src="/partials/more.html" data-mode="append">
+<include-file src="/partials/more.html" mode="append">
   <p>Existing content stays.</p>
 </include-file>
 
 <!-- Prepend before existing content -->
-<include-file src="/partials/banner.html" data-mode="prepend">
+<include-file src="/partials/banner.html" mode="prepend">
   <p>This moves down.</p>
 </include-file>{% endset %}
 
@@ -47,95 +47,29 @@ include.addEventListener('include-file:error', (e) => {
     <code-block language="html" show-lines label="Basic include">{{ basicCode | escape }}</code-block>
   </section>
 
+  {% from "partials/attribute-table.njk" import attributeTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>src</code></td>
-          <td>URL</td>
-          <td>&mdash;</td>
-          <td>URL to fetch HTML from.</td>
-        </tr>
-        <tr>
-          <td><code>data-mode</code></td>
-          <td>string</td>
-          <td><code>replace</code></td>
-          <td>How to insert content: <code>replace</code>, <code>append</code>, or <code>prepend</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-lazy</code></td>
-          <td>boolean</td>
-          <td>&mdash;</td>
-          <td>Defer loading until the element enters the viewport.</td>
-        </tr>
-        <tr>
-          <td><code>data-loading</code></td>
-          <td>boolean</td>
-          <td>&mdash;</td>
-          <td>Auto-set while fetching. Can be styled with VB loading utilities.</td>
-        </tr>
-        <tr>
-          <td><code>data-loaded</code></td>
-          <td>boolean</td>
-          <td>&mdash;</td>
-          <td>Auto-set after successful load.</td>
-        </tr>
-        <tr>
-          <td><code>data-error</code></td>
-          <td>boolean</td>
-          <td>&mdash;</td>
-          <td>Auto-set if fetch fails.</td>
-        </tr>
-      </tbody>
-    </table>
+    {{ attributeTable("include-file", apiRegistry) }}
   </section>
 
   <section>
     <h2>Lazy Loading</h2>
-    <p>Add <code>data-lazy</code> to defer the fetch until the element scrolls into view (with a 200px root margin).</p>
+    <p>Add <code>lazy</code> to defer the fetch until the element scrolls into view (with a 200px root margin).</p>
 
     <code-block language="html" show-lines label="Lazy loading">{{ lazyCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Insert Modes</h2>
-    <p>Control how the fetched HTML is inserted with <code>data-mode</code>.</p>
+    <p>Control how the fetched HTML is inserted with <code>mode</code>.</p>
 
     <code-block language="html" show-lines label="Insert modes">{{ modeCode | escape }}</code-block>
   </section>
 
   <section>
     <h2>Events</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>include-file:load</code></td>
-          <td><code>{ src, html }</code></td>
-          <td>Fired after successful load.</td>
-        </tr>
-        <tr>
-          <td><code>include-file:error</code></td>
-          <td><code>{ src, error }</code></td>
-          <td>Fired if the fetch fails.</td>
-        </tr>
-      </tbody>
-    </table>
+    {{ eventsTable("include-file", apiRegistry) }}
 
     <code-block language="javascript" show-lines label="Event handling">{{ eventsCode | escape }}</code-block>
   </section>

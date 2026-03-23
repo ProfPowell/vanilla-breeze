@@ -81,7 +81,7 @@ These attributes go on `<tr>` elements in `<tbody>`.
 
 | Attribute | Description |
 |-----------|-------------|
-| `data-state-sorted` | Set on `<th>` with value `asc` or `desc` |
+| `aria-sort` | Set on `<th>` — `none`, `ascending`, or `descending` |
 | `data-state-hidden` | Set on filtered/paginated out rows |
 | `data-state-selected` | Set on selected rows |
 | `data-state-expanded` | Set on expanded rows |

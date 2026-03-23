@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "context-menu",
+  "type": "web-component",
+  "description": "Right-click context menu with keyboard navigation and shortcut bindings",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "data-open", "kind": "data", "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Reflected when context menu is visible. Uses data-open because the host is not a native dialog/details — open would be semantically misleading." }
+  ],
+  "structure": [
+    { "element": "<div data-trigger> or <section data-trigger>", "description": "Wrapper defining the right-click target area" },
+    { "element": "<menu>",                                        "description": "Context menu with <li> items holding <button> actions" }
+  ],
+  "childAttributes": [
+    { "name": "data-trigger",  "on": "div | section", "type": "boolean", "required": true, "description": "Wrapper element defining the right-click target area" },
+    { "name": "data-shortcut", "on": "button",        "type": "string",                    "description": "Keyboard shortcut to bind, e.g. 'meta+c'. Displayed as formatted hint." }
+  ],
+  "events": [
+    { "name": "context-menu:open",   "description": "Fired when the menu opens" },
+    { "name": "context-menu:close",  "description": "Fired when the menu closes" },
+    { "name": "context-menu:select", "detail": "{ item }", "description": "Fired when a menu item is selected" }
+  ]
+}

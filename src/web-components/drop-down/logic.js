@@ -7,10 +7,10 @@
  * Progressive enhancement: uses Popover API when available for native
  * top-layer positioning and light-dismiss. Falls back to visibility/z-index.
  *
- * @attr {string} data-position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
- * @attr {boolean} data-open - Whether menu is open (reflected)
- * @attr {boolean} data-no-flip - Disable automatic flip when menu doesn't fit
- * @attr {boolean} data-hover - Open on hover/focus instead of click (useful for nav menus)
+ * @attr {string} position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
+ * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup
+ * @attr {boolean} no-flip - Disable automatic flip when menu doesn't fit
+ * @attr {boolean} hover - Open on hover/focus instead of click (useful for nav menus)
  *
  * @example
  * <drop-down>
@@ -24,7 +24,7 @@
  * </drop-down>
  *
  * @example Hover-activated (for navigation)
- * <drop-down data-hover>
+ * <drop-down hover>
  *   <a href="/section/" data-trigger>Section</a>
  *   <menu>
  *     <li><a href="/section/page1">Page 1</a></li>
@@ -70,7 +70,7 @@ class DropDown extends HTMLElement {
     if (!this.#menu) return;
 
     // Check for hover mode
-    this.#hoverMode = this.hasAttribute('data-hover');
+    this.#hoverMode = this.hasAttribute('hover');
 
     // Progressive enhancement: use Popover API when available (not for hover mode)
     this.#usePopover = supportsPopover && !this.#hoverMode;
@@ -144,6 +144,8 @@ class DropDown extends HTMLElement {
     this.#items.forEach((item, index) => {
       item.setAttribute('role', 'menuitem');
       item.setAttribute('tabindex', '-1');
+      // Reset theme button styles (border/shadow leak from unlayered theme rules)
+      item.style.cssText += ';border:none;box-shadow:none;transform:none;border-radius:0;';
       item.addEventListener('click', this.#handleItemClick);
     });
 
@@ -264,7 +266,7 @@ class DropDown extends HTMLElement {
     // Sync internal state when popover is dismissed natively (light-dismiss)
     if (e.newState === 'closed' && this.#isOpen) {
       this.#isOpen = false;
-      this.removeAttribute('data-open');
+      this.removeAttribute('open');
       this.#trigger?.setAttribute('aria-expanded', 'false');
       this.#activeIndex = -1;
       this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
@@ -294,7 +296,7 @@ class DropDown extends HTMLElement {
     if (this.#isOpen || !this.#menu) return;
 
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
     this.#activeIndex = -1;
 
@@ -313,7 +315,7 @@ class DropDown extends HTMLElement {
     if (!this.#isOpen || !this.#menu) return;
 
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
 
@@ -336,8 +338,8 @@ class DropDown extends HTMLElement {
   #positionMenu() {
     if (!this.#trigger || !this.#menu) return;
 
-    const position = this.getAttribute('data-position') || 'bottom-start';
-    const noFlip = this.hasAttribute('data-no-flip');
+    const position = this.getAttribute('position') || 'bottom-start';
+    const noFlip = this.hasAttribute('no-flip');
     const triggerRect = this.#trigger.getBoundingClientRect();
     const menuRect = this.#menu.getBoundingClientRect();
     const viewportHeight = window.innerHeight;

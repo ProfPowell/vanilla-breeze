@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "include-file",
+  "type": "web-component",
+  "description": "Fetch and inject HTML content from a URL into the page",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "src",           "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL to fetch HTML from" },
+    { "name": "mode",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["replace", "append", "prepend"], "default": "replace", "description": "How fetched content is inserted" },
+    { "name": "lazy",          "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Defer loading until element enters viewport" },
+    { "name": "allow-scripts", "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Re-execute inline scripts in loaded content (trusted sources only)" },
+    { "name": "data-loading",  "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present while content is loading" },
+    { "name": "data-loaded",   "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present after successful load" },
+    { "name": "data-error",    "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present if fetch fails" }
+  ],
+  "events": [
+    { "name": "include-file:load",  "detail": "{ src, html }", "description": "Fired after successful content load" },
+    { "name": "include-file:error", "detail": "{ src, error }", "description": "Fired if fetch fails" }
+  ]
+}

@@ -1056,10 +1056,12 @@ Resizable split panes.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-direction` | `horizontal`, `vertical` | Split direction |
-| `data-collapsible` | (boolean) | Allow panel collapse |
-| `data-persist` | (string key) | Remember size in localStorage |
-| `data-min` | 0-100 | Minimum panel size % |
+| `direction` | `horizontal`, `vertical` | Split direction |
+| `position` | 0-100 | Initial split position % |
+| `min` | 0-100 | Minimum panel size % |
+| `max` | 0-100 | Maximum panel size % |
+| `collapsible` | (boolean) | Allow panel collapse |
+| `persist` | (string key) | Remember size in localStorage |
 
 | Events | Detail |
 |--------|--------|
@@ -1071,21 +1073,28 @@ Interactive star rating (form-associated).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-value` | `0`–`5` | Current value |
-| `data-readonly` | (boolean) | Read-only mode |
-| `data-size` | `sm`, `lg` | Size |
+| `value` | `0`–`5` | Current value |
+| `max` | number | Maximum stars (default: 5) |
+| `readonly` | (boolean) | Read-only mode |
+| `allow-half` | (boolean) | Half-star increments |
+| `icon` | string | Custom icon name |
+| `label` | string | Accessible label |
+| `name` | string | Form field name |
+| `required` | (boolean) | Required for form validation |
 
 ### `<combo-box>`
-Form-associated combobox/autocomplete. Single-select by default; add `data-multiple` for multi-select tag mode.
+Form-associated combobox/autocomplete. Single-select by default; add `multiple` for multi-select tag mode.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-value` | string | Selected value (single mode) |
-| `data-filter` | `startsWith`, `contains` | Filter mode |
-| `data-required` | (boolean) | Required validation |
-| `data-multiple` | (boolean) | Multi-select tag mode |
-| `data-max` | number | Maximum tags (multi mode) |
-| `data-allow-custom` | (boolean) | Allow custom entries (multi mode) |
+| `name` | string | Form field name |
+| `value` | string | Selected value (single mode) |
+| `filter` | `startsWith`, `contains` | Filter mode (default: `contains`) |
+| `required` | (boolean) | Required validation |
+| `placeholder` | string | Input placeholder text |
+| `multiple` | (boolean) | Multi-select tag mode |
+| `max` | number | Maximum tags (multi mode) |
+| `custom` | (boolean) | Allow custom entries (multi mode) |
 
 | Events | Detail |
 |--------|--------|
@@ -1113,7 +1122,7 @@ Adds anchor links to headings.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-scope` | CSS selector | Scope to specific container |
+| `levels` | Comma-separated selectors | Heading levels to process |
 
 | Events | Detail |
 |--------|--------|
@@ -1124,8 +1133,9 @@ Auto-generated table of contents from headings.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-levels` | e.g. `2,3` | Heading levels to include |
-| `data-scope` | CSS selector | Container to scan |
+| `levels` | e.g. `h2,h3` | Heading levels to include |
+| `scope` | CSS selector | Container to scan |
+| `title` | string | ToC title text |
 
 | Events | Detail |
 |--------|--------|
@@ -1528,20 +1538,20 @@ Alphabetical index of every `data-*` attribute with where it applies.
 |-----------|------------|
 | `data-a11y-theme` | `<html>` — accessibility theme |
 | `data-align` | Table cells — text alignment |
-| `data-allow-custom` | `<combo-box>` — allow typed entries (multi mode) |
+| ~~`data-allow-custom`~~ | **Removed** — use `custom` on `<combo-box>` |
 | `data-anchor` | Tooltip — CSS anchor positioning |
 | `data-animate-image` | `<img>` — play/pause control |
 | `data-attention` | UI elements — attention indicator |
 | `data-auto` | Various — auto behavior |
-| `data-autoplay` | `<carousel-wc>` — auto-advance |
-| `data-autoplay-delay` | `<carousel-wc>` — delay ms |
+| ~~`data-autoplay`~~ | **Removed** — use `autoplay` on `<carousel-wc>` |
+| ~~`data-autoplay-delay`~~ | **Removed** — use `autoplay-delay` on `<carousel-wc>` |
 | `data-autosave` | `<form>` — localStorage save |
 | `data-axes` | `.vb-chart` — axis display |
 | `data-blur-reveal` | Text — blur-to-clear entrance |
 | `data-bordered` | Various — border variant |
 | `data-center-label` | Pie chart — donut center text |
 | `data-collapsed` | Breadcrumb — hide middle items |
-| `data-collapsible` | `<split-surface>` — allow panel collapse |
+| ~~`data-collapsible`~~ | **Removed** — use `collapsible` on `<split-surface>` |
 | `data-color` | `<input type="color">` — enhanced picker |
 | `data-command` | `<button>` — command palette trigger |
 | `data-compact` | Various — reduced spacing |
@@ -1578,7 +1588,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
 | `data-feedback` | State container — presentation mode |
 | `data-filled` | `<status-message>` — solid fill |
-| `data-filter` | `<combo-box>` — filter mode |
+| ~~`data-filter`~~ | **Removed** — use `filter` on `<combo-box>` |
 | `data-fit` | `[data-media]` — object-fit |
 | `data-swap` | `<content-swap>` trigger or any element — swap behavior |
 | `data-flush` | Accordion — no borders |
@@ -1599,7 +1609,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-hotkey` | `<kbd>` — platform key display |
 | `data-icon` | `<status-message>` child — icon slot |
 | `data-indeterminate` | `<progress-ring>` — spinning |
-| `data-indicators` | `<carousel-wc>` — dot indicators |
+| ~~`data-indicators`~~ | **Removed** — use `indicators` on `<carousel-wc>` |
 | `data-info` | Pagination — info text |
 | `data-interactive` | Chart legend — clickable toggle |
 | `data-items` | `<card-list>` — inline JSON data |
@@ -1608,15 +1618,14 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-labels` | Chart — show value labels |
 | `data-layout` | Any — layout mode (see §5) |
 | `data-layout-*` | Layout elements — modifiers (see §5) |
-| `data-lazy` | `<html-include-wc>` — lazy load |
+| ~~`data-lazy`~~ | **Removed** — use `lazy` on `<include-file>` |
 | `data-legend` | Chart — `inline` legend display |
 | `data-legend-position` | Chart — legend position |
 | `data-level` | `<page-toc>` heading indent; `<form-field>` password strength |
-| `data-levels` | `<page-toc>` — heading levels |
 | `data-loading` | Any — loading state |
-| `data-loop` | `<carousel-wc>` — loop slides |
+| ~~`data-loop`~~ | **Removed** — use `loop` on `<carousel-wc>` |
 | `data-mask` | `<input>` — input masking |
-| `data-max` | `<toast-msg>`, `<combo-box>` — maximum count |
+| `data-max` | `<toast-msg>` — maximum count (combo-box uses `max`) |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |
@@ -1628,12 +1637,12 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
-| `data-direction` | `<split-surface>` — axis |
+| ~~`data-direction`~~ | **Removed** — use `direction` on `<split-surface>` |
 | `data-overlay` | `<loading-spinner>` — overlay mode |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |
 | `data-pattern` | `[data-mask]` — mask format |
-| `data-persist` | `<split-surface>` — remember size |
+| ~~`data-persist`~~ | **Removed** — use `persist` on `<split-surface>` |
 | `data-position` | Various — positioning |
 | `data-prev` | Pagination button — previous page |
 | `data-radius` | `[data-media]` — border radius |
@@ -1642,12 +1651,11 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating-half` | Rating — half-star precision |
 | `data-rating-readonly` | Rating — read-only |
 | `data-ratio` | `[data-media]` — aspect ratio |
-| `data-readonly` | `<star-rating>` — read-only |
-| `data-required` | `<combo-box>` — validation |
+| ~~`data-readonly`~~ | **Removed** — use `readonly` on `<star-rating>` |
+| ~~`data-required`~~ | **Removed** — use `required` on `<combo-box>` |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
 | `data-ring` | `<user-avatar>` — border ring |
-| `data-scope` | `<heading-links>`, `<page-toc>` — scope selector |
 | `data-scramble` | Text — decode effect |
 | `data-select-all` | Checkbox — select-all toggle |
 | `data-selected` | Table row — row highlight |
@@ -1659,7 +1667,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-shortcut` | Elements — keyboard shortcut |
 | `data-show-when` | Any — conditional show |
 | `data-sidebar` | Body — sidebar state |
-| `data-single` | `<accordion-wc>` — one-at-a-time |
+| ~~`data-single`~~ | **Removed** — use `single` on `<accordion-wc>` |
 | `data-size` | Various — size variant |
 | `data-sort` | Table th — sortable column |
 | `data-sort-value` | Table td — custom sort value |

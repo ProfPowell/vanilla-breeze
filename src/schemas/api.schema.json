@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "api.schema.json",
+  "title": "VB Component API Manifest",
+  "description": "Canonical attribute contract for a Vanilla Breeze component. One per component directory.",
+  "type": "object",
+  "required": ["element", "type", "attributes"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "element": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "HTML tag name"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["web-component", "custom-element", "native"],
+      "description": "Element category"
+    },
+    "description": {
+      "type": "string",
+      "description": "One-line element description for docs and listings"
+    },
+    "htmlvalidate": {
+      "type": "object",
+      "description": "html-validate element metadata",
+      "properties": {
+        "flow": { "type": "boolean" },
+        "phrasing": { "type": "boolean" },
+        "void": { "type": "boolean" },
+        "permittedContent": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "attributes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/attribute" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" },
+      "description": "Custom events the component fires"
+    },
+    "childAttributes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/childAttribute" },
+      "description": "Attributes users place on child elements inside the component"
+    },
+    "structure": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/childElement" },
+      "description": "Required or expected child elements that the component needs to function"
+    }
+  },
+  "$defs": {
+    "attribute": {
+      "type": "object",
+      "required": ["name", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Attribute name as written in HTML"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["native", "aria", "host-api", "data", "class"],
+          "description": "Classification per the VB attribute hierarchy"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": ["semantic-state", "config", "visual-variant", "output-state", "internal-hook"],
+          "description": "What role this attribute plays"
+        },
+        "public": {
+          "type": "boolean",
+          "default": true,
+          "description": "Part of the documented public API"
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["input", "output", "both"],
+          "default": "input",
+          "description": "Authored by users, reflected by runtime, or both"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["boolean", "string", "number", "enum"],
+          "description": "Value type for docs and validation"
+        },
+        "values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed enum values (when type is enum)"
+        },
+        "default": {
+          "description": "Default value"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable attribute description"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Marks stale shadow APIs during migration"
+        },
+        "deprecatedAlias": {
+          "type": "string",
+          "description": "The old attribute name this replaces"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "detail": { "type": "string", "description": "Shape of event.detail" },
+        "description": { "type": "string" }
+      }
+    },
+    "childElement": {
+      "type": "object",
+      "required": ["element", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "element": {
+          "type": "string",
+          "description": "Tag or selector, e.g. 'button[data-trigger]', 'menu', 'details', 'input[type=text]'"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Component fails without this child"
+        },
+        "description": {
+          "type": "string",
+          "description": "What role this child plays"
+        }
+      }
+    },
+    "childAttribute": {
+      "type": "object",
+      "required": ["name", "on"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Attribute name as written in HTML"
+        },
+        "on": {
+          "type": "string",
+          "description": "Which child element this goes on, e.g. 'button', 'li', 'th', 'tr'"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["boolean", "string", "number", "enum"],
+          "description": "Value type"
+        },
+        "values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed enum values"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether users must include this for the component to work"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description"
+        }
+      }
+    }
+  }
+}
