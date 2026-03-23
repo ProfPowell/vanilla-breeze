@@ -1,0 +1,74 @@
+/* change-set: Grouped change tracking with view states */
+
+@scope (change-set) {
+  :scope {
+    display: block;
+    position: relative;
+    border-inline-start: var(--size-3xs) solid var(--color-border);
+    padding-inline-start: var(--size-s);
+    margin-block: var(--size-xs);
+  }
+
+  /* --- View state: final (hide deletions, normalize insertions) --- */
+
+  :scope[view="final"] del {
+    display: none;
+  }
+
+  :scope[view="final"] ins {
+    text-decoration: none;
+    background: none;
+    border: none;
+  }
+
+  /* --- View state: original (hide insertions, normalize deletions) --- */
+
+  :scope[view="original"] ins {
+    display: none;
+  }
+
+  :scope[view="original"] del {
+    text-decoration: none;
+    background: none;
+    border: none;
+  }
+
+  /* --- Toggle controls (injected by JS) --- */
+
+  [data-controls] {
+    display: flex;
+    gap: var(--size-2xs);
+    margin-block-end: var(--size-s);
+    font-size: var(--font-size-xs);
+  }
+
+  [data-controls] button {
+    padding: var(--size-3xs) var(--size-xs);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-s);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: inherit;
+    line-height: 1.4;
+  }
+
+  [data-controls] button[aria-pressed="true"] {
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    border-color: var(--color-border-strong, var(--color-border));
+    font-weight: 500;
+  }
+
+  [data-controls] button:hover {
+    background: var(--color-surface-raised);
+  }
+}
+
+/* No-JS fallback: show default tracking view */
+change-set:not(:defined) {
+  display: block;
+  border-inline-start: var(--size-3xs) solid var(--color-border);
+  padding-inline-start: var(--size-s);
+  margin-block: var(--size-xs);
+}

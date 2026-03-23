@@ -92,14 +92,18 @@ export async function getThemeManifest() {
 }
 
 /**
- * Core themes that are always in the core CSS bundle (accessibility themes).
- * These never need loading.
+ * Core themes that are always in the core CSS bundle.
+ * Includes default, color themes, personality themes, and accessibility themes.
+ * These never need loading — they switch instantly with zero network requests.
  */
 const CORE_THEMES = new Set([
   'default',
   'a11y-high-contrast',
   'a11y-large-text',
   'a11y-dyslexia',
+  'ocean', 'forest', 'sunset', 'rose', 'lavender',
+  'coral', 'slate', 'emerald', 'amber', 'indigo',
+  'modern', 'minimal', 'classic',
 ]);
 
 /**
@@ -183,9 +187,6 @@ async function getPackManifest() {
   }
   return bundleManifestCache;
 }
-
-/** @deprecated Use getPackManifest() */
-const getBundleManifest = getPackManifest;
 
 /**
  * Internal: load and inject theme CSS

@@ -1,0 +1,120 @@
+/**
+ * Fonts Expressive Bundle — Theme Tokens
+ * Vanilla Breeze · Expressive & Color Fonts
+ *
+ * Nabla (COLR v1 color font with 3D depth axis),
+ * Honk (inflatable neon morphology font),
+ * Kablammo (comic impact morphology font).
+ *
+ * For hero sections, marketing, and creative contexts only.
+ * Not appropriate for body text.
+ */
+
+/* ===== FONTS (outside @layer) ===== */
+
+@font-face {
+  font-family: 'Nabla';
+  src: url('./fonts/nabla-variable.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Honk';
+  src: url('./fonts/honk-variable.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kablammo';
+  src: url('./fonts/kablammo-variable.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== @property for animatable axes (outside @layer) ===== */
+
+@property --vb-nabla-depth {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 100;
+}
+
+@property --vb-nabla-flat {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --vb-honk-morf {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --vb-honk-shln {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --vb-kablammo-morf {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ===== Token assignments + COLR v1 gate ===== */
+
+@layer tokens {
+  :root {
+    --vb-font-nabla: 'Nabla', cursive;
+    --vb-font-honk: 'Honk', cursive;
+    --vb-font-kablammo: 'Kablammo', cursive;
+  }
+}
+
+/* ===== Nabla depth animation helper ===== */
+
+@layer bundle-effects {
+
+  /* COLR v1 support gate — Nabla renders as flat outline in older browsers */
+  @supports (font-palette: normal) {
+    .vb-nabla {
+      font-family: var(--vb-font-nabla);
+      font-variation-settings: 'EDPT' var(--vb-nabla-depth), 'FLAT' var(--vb-nabla-flat);
+    }
+
+    .vb-nabla[data-effect~="depth-pulse"] {
+      animation: vb-nabla-depth-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes vb-nabla-depth-pulse {
+      0%, 100% { --vb-nabla-depth: 80; }
+      50%      { --vb-nabla-depth: 140; }
+    }
+  }
+
+  /* Honk: morphology + shine animation */
+  .vb-honk {
+    font-family: var(--vb-font-honk);
+    font-variation-settings: 'MORF' var(--vb-honk-morf), 'SHLN' var(--vb-honk-shln);
+  }
+
+  /* Kablammo: morphology animation */
+  .vb-kablammo {
+    font-family: var(--vb-font-kablammo);
+    font-variation-settings: 'MORF' var(--vb-kablammo-morf);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .vb-nabla[data-effect~="depth-pulse"] { animation: none; }
+  }
+
+  :root[data-motion-reduced] .vb-nabla[data-effect~="depth-pulse"] { animation: none; }
+}

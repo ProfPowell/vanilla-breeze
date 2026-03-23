@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animated Borders &amp; Cursor Theming Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-block-end: var(--size-xs);
+    }
+
+    .lead {
+      color: var(--color-text-muted);
+      max-inline-size: var(--measure-normal);
+      margin-block-end: var(--size-2xl);
+    }
+
+    h2 {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+      margin-block-end: var(--size-m);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    section {
+      margin-block-end: var(--size-3xl);
+    }
+
+    h3 {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-muted);
+      margin-block: var(--size-l) var(--size-m);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+      gap: var(--size-l);
+      margin-block-end: var(--size-l);
+    }
+
+    /* ── Base demo card ── */
+    .card {
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-l);
+      padding: var(--size-l);
+    }
+
+    .card strong {
+      display: block;
+      margin-block-end: var(--size-xs);
+    }
+
+    .card p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height-relaxed);
+    }
+
+    /* ── Spin border demos ── */
+    .spin-theme {
+      border: var(--border-anim-spin-width) solid transparent;
+      background:
+        linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+        conic-gradient(
+          from var(--vb-border-angle),
+          var(--color-primary),
+          var(--color-secondary),
+          var(--color-accent),
+          var(--color-primary)
+        ) border-box;
+      animation: vb-border-spin var(--border-anim-spin-duration) linear infinite;
+    }
+
+    .spin-slow {
+      border: var(--border-anim-spin-width) solid transparent;
+      background:
+        linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+        conic-gradient(
+          from var(--vb-border-angle),
+          oklch(55% 0.22 260),
+          oklch(65% 0.18 310),
+          oklch(60% 0.24 350),
+          oklch(55% 0.22 260)
+        ) border-box;
+      animation: vb-border-spin 6s linear infinite;
+    }
+
+    .spin-rainbow {
+      border: 3px solid transparent;
+      background:
+        linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+        conic-gradient(
+          from var(--vb-border-angle),
+          oklch(60% 0.27 0),
+          oklch(70% 0.20 60),
+          oklch(80% 0.18 120),
+          oklch(65% 0.22 180),
+          oklch(55% 0.24 240),
+          oklch(60% 0.22 300),
+          oklch(60% 0.27 360)
+        ) border-box;
+      animation: vb-border-spin 2.5s linear infinite;
+    }
+
+    /* ── Pulse border demos ── */
+    .pulse-primary {
+      border-color: var(--border-anim-pulse-color);
+      animation: vb-border-pulse var(--border-anim-pulse-duration) ease-in-out infinite;
+    }
+
+    .pulse-danger {
+      --border-anim-pulse-color: var(--color-error);
+      border-color: var(--color-error);
+      animation: vb-border-pulse 1.5s ease-in-out infinite;
+    }
+
+    .pulse-accent {
+      --border-anim-pulse-color: var(--color-accent);
+      --border-anim-pulse-size: 12px;
+      border-color: var(--color-accent);
+      animation: vb-border-pulse 2.5s ease-in-out infinite;
+    }
+
+    /* ── Cursor demo zones ── */
+    .cursor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+      gap: var(--size-m);
+    }
+
+    .cursor-zone {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--size-2xs);
+      min-block-size: 5rem;
+      text-align: center;
+      transition: background var(--duration-normal) var(--ease-default);
+    }
+
+    .cursor-zone:hover {
+      background: var(--color-primary-subtle);
+    }
+
+    .cursor-zone strong {
+      font-size: var(--font-size-sm);
+    }
+
+    .cursor-zone small {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .cursor-crosshair {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='16' y1='0' x2='16' y2='10' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='16' y1='22' x2='16' y2='32' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='0' y1='16' x2='10' y2='16' stroke='%237c3aed' stroke-width='2'/%3E%3Cline x1='22' y1='16' x2='32' y2='16' stroke='%237c3aed' stroke-width='2'/%3E%3C/svg%3E") 16 16, crosshair;
+    }
+
+    .cursor-dot {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5' fill='%23d97706'/%3E%3Ccircle cx='8' cy='8' r='2' fill='%23fff'/%3E%3C/svg%3E") 8 8, crosshair;
+    }
+
+    .cursor-branded {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3l14 9-8 1-3 8z' fill='%237c3aed' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, auto;
+    }
+
+    .cursor-large {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='18' fill='none' stroke='%23059669' stroke-width='3'/%3E%3Ccircle cx='24' cy='24' r='4' fill='%23059669'/%3E%3C/svg%3E") 24 24, crosshair;
+    }
+
+    /* ── Theme override demo ── */
+    .theme-demo {
+      padding: var(--size-l);
+      border-radius: var(--radius-l);
+      margin-block-end: var(--size-l);
+    }
+
+    .theme-demo-cyber {
+      --color-primary: oklch(75% 0.30 290);
+      --color-secondary: oklch(70% 0.28 180);
+      --color-accent: oklch(80% 0.25 160);
+      --color-surface-raised: oklch(16% 0.02 250);
+      --color-border: oklch(28% 0.04 250);
+      --color-text: oklch(95% 0.01 250);
+      --color-text-muted: oklch(65% 0.02 250);
+      --cursor-custom-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8' fill='none' stroke='%23a855f7' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23a855f7'/%3E%3C/svg%3E") 10 10, pointer;
+      background: oklch(10% 0.02 250);
+    }
+
+    .theme-demo-kawaii {
+      --color-primary: oklch(72% 0.22 340);
+      --border-anim-pulse-color: oklch(72% 0.22 340);
+      --color-surface-raised: oklch(99% 0.01 330);
+      --color-border: oklch(88% 0.04 330);
+      --color-text: oklch(30% 0.05 330);
+      --color-text-muted: oklch(55% 0.04 330);
+      background: oklch(96% 0.02 330);
+    }
+
+    .theme-demo-kawaii .card {
+      border-radius: 1.5rem;
+    }
+
+    /* ── Notes ── */
+    .note {
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-start: var(--size-l);
+    }
+
+    .note code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--color-surface-sunken);
+      padding: 0.1em 0.35em;
+      border-radius: var(--radius-xs);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Animated Borders &amp; Cursor Theming</h1>
+    <p class="lead">
+      Extension tokens for CSS-only animated borders (spin + pulse) and themeable
+      cursors. All defaults are inert — themes opt in.
+    </p>
+  </header>
+
+
+  <!-- ═══ SPIN BORDERS ═══ -->
+  <section aria-labelledby="spin-h">
+    <h2 id="spin-h">Spin Border</h2>
+    <p class="lead">Rotating conic-gradient via <code>@property --vb-border-angle</code>. GPU-composited, zero JS.</p>
+
+    <nav class="grid">
+      <article class="card spin-theme">
+        <strong>Theme-aware</strong>
+        <p>Uses <code>--color-primary</code>, <code>--color-secondary</code>, <code>--color-accent</code>. Swap the theme and the border follows.</p>
+      </article>
+
+      <article class="card spin-slow">
+        <strong>Slow (6s)</strong>
+        <p>Almost imperceptible motion. A quiet sign of life on dashboard widgets or ambient cards.</p>
+      </article>
+
+      <article class="card spin-rainbow">
+        <strong>Rainbow (2.5s)</strong>
+        <p>Full spectrum, 7 hue stops. Retro and kawaii themes use this; professional themes skip it.</p>
+      </article>
+    </nav>
+  </section>
+
+
+  <!-- ═══ PULSE BORDERS ═══ -->
+  <section aria-labelledby="pulse-h">
+    <h2 id="pulse-h">Pulse Border</h2>
+    <p class="lead">Animated <code>box-shadow</code> glow ring. Communicates active, selected, or alert states.</p>
+
+    <nav class="grid">
+      <article class="card pulse-primary">
+        <strong>Primary pulse</strong>
+        <p>Ring expands to <code>--border-anim-pulse-size</code> then fades. Selected or focused states.</p>
+      </article>
+
+      <article class="card pulse-danger">
+        <strong>Danger pulse</strong>
+        <p>Red, faster (1.5s). Urgency without a modal. Critical inputs or system alerts.</p>
+      </article>
+
+      <article class="card pulse-accent">
+        <strong>Accent pulse</strong>
+        <p>Larger spread (12px) with accent color. Override <code>--border-anim-pulse-color</code> and <code>--border-anim-pulse-size</code>.</p>
+      </article>
+    </nav>
+  </section>
+
+
+  <!-- ═══ CURSOR THEMING ═══ -->
+  <section aria-labelledby="cursor-h">
+    <h2 id="cursor-h">Cursor Theming</h2>
+    <p class="lead">SVG data URI cursors via <code>--cursor-custom-*</code> tokens. Hover each zone to see the cursor change.</p>
+
+    <nav class="cursor-grid">
+      <article class="cursor-zone cursor-crosshair">
+        <strong>Crosshair</strong>
+        <small>SVG ring + lines</small>
+      </article>
+
+      <article class="cursor-zone cursor-dot">
+        <strong>Dot</strong>
+        <small>Orange dot, white center</small>
+      </article>
+
+      <article class="cursor-zone cursor-branded">
+        <strong>Branded arrow</strong>
+        <small>Custom arrow in primary</small>
+      </article>
+
+      <article class="cursor-zone cursor-large">
+        <strong>Large a11y</strong>
+        <small>48px ring, high visibility</small>
+      </article>
+    </nav>
+
+    <aside class="note">
+      Themes override <code>--cursor-custom-default</code> and <code>--cursor-custom-pointer</code>
+      in their token block. The reset applies them to <code>:root</code> and interactive elements.
+      SVG cursors use hex colors (SVG fill doesn't accept OKLCH in cursor URLs).
+    </aside>
+  </section>
+
+
+  <!-- ═══ THEME ACTIVATION DEMO ═══ -->
+  <section aria-labelledby="theme-h">
+    <h2 id="theme-h">Theme Activation Pattern</h2>
+    <p class="lead">How themes use the tokens — no extra classes needed on cards.</p>
+
+    <h3>Cyber theme — spin border on cards</h3>
+    <nav class="grid theme-demo theme-demo-cyber">
+      <article class="card spin-theme">
+        <strong>Neon card</strong>
+        <p>Spin border auto-applied via theme selector. Hover the card to see the custom cursor.</p>
+        <p><a href="#">Link with custom pointer</a></p>
+      </article>
+      <article class="card spin-theme">
+        <strong>Dashboard widget</strong>
+        <p>Every card gets animated borders; themes override the conic-gradient color stops.</p>
+      </article>
+    </nav>
+
+    <h3>Kawaii theme — pulse border on cards</h3>
+    <nav class="grid theme-demo theme-demo-kawaii">
+      <article class="card pulse-primary">
+        <strong>Kawaii card</strong>
+        <p>Pulse border on a soft pink surface with large radius. Friendly and alive.</p>
+      </article>
+      <article class="card pulse-primary">
+        <strong>Notification</strong>
+        <p>The gentle pulse draws attention without urgency. Override color per card if needed.</p>
+      </article>
+    </nav>
+  </section>
+
+
+  <!-- ═══ REDUCED MOTION ═══ -->
+  <section aria-labelledby="rm-h">
+    <h2 id="rm-h">Reduced Motion</h2>
+    <aside class="note">
+      All animated borders respect <code>prefers-reduced-motion: reduce</code> and
+      <code>data-motion-reduced</code>. When active, <code>--border-anim-spin-duration</code>
+      and <code>--border-anim-pulse-duration</code> are set to <code>0s</code> — the animation
+      completes instantly, leaving a static border. No JS gating needed.
+    </aside>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

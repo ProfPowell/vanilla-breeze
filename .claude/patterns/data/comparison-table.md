@@ -161,7 +161,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
 
   comparison-table [data-plan-name] {
     display: block;
-    font-size: var(--text-xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--text);
   }
@@ -199,7 +199,7 @@ Side-by-side feature comparison table for products, plans, or options. Uses stic
   comparison-table [data-badge] {
     display: inline-block;
     padding: var(--size-2xs) var(--size-xs);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     background: var(--primary);
     color: var(--primary-contrast);

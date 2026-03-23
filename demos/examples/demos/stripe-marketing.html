@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stripe-Inspired Marketing Page — Vanilla Breeze Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    /* Demo-specific overrides — production sites use theme tokens */
+    :root {
+      --demo-gradient: linear-gradient(135deg, oklch(35% 0.2 260) 0%, oklch(40% 0.25 290) 100%);
+    }
+
+    /* Prevent rubber-band overscroll revealing canvas behind hero/footer */
+    html { overscroll-behavior-y: none; }
+
+    /* Hero visual polish — color: inherit ensures children beat framework p/a resets */
+    section.hero[data-bleed] {
+      background: var(--demo-gradient);
+      color: #fff;
+    }
+
+    section.hero[data-bleed] :is(p, a, strong, small) {
+      color: inherit;
+    }
+
+    section.hero h1 {
+      font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+      line-height: 1.1;
+      text-wrap: balance;
+    }
+
+    section.hero p {
+      font-size: clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem);
+      max-inline-size: 50ch;
+    }
+
+    /* Feature icon circles */
+    .feature-icon {
+      inline-size: 3rem;
+      block-size: 3rem;
+      border-radius: 50%;
+      background: var(--color-accent, oklch(60% 0.2 260));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    /* Angled section color */
+    section[data-angle] {
+      background: var(--color-surface-raised, #f8f9fa);
+    }
+
+    /* Pricing cards equal height */
+    .pricing-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-l, 0.75rem);
+      padding: var(--size-xl);
+      text-align: center;
+    }
+
+    .pricing-card.featured {
+      border-color: var(--color-accent, oklch(60% 0.2 260));
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* CTA gradient — color: inherit on children to beat framework resets */
+    section.cta-section {
+      background: var(--demo-gradient);
+      color: #fff;
+      text-align: center;
+    }
+
+    section.cta-section :is(p, a, strong, small) {
+      color: inherit;
+    }
+
+    /* Site header — white text when transparent over hero */
+    .site-header {
+      z-index: 10;
+      padding-block: var(--size-s);
+      color: #fff;
+    }
+
+    .site-header :is(a, strong, button) {
+      color: inherit;
+    }
+
+    [data-scrolled] .site-header {
+      color: var(--color-text);
+    }
+
+    [data-scrolled] .site-header :is(a, strong) {
+      color: inherit;
+    }
+
+    /* Brand logo */
+    .brand { font-size: 1.25rem; }
+
+    /* Hero CTA buttons group */
+    .hero-actions { margin-block-start: var(--size-l); }
+
+    /* Section headings centered */
+    .section-heading { text-align: center; }
+
+    /* Step numbers — 0.6 opacity keeps decorative feel while meeting 3:1 for large text */
+    .step-number {
+      font-size: 2rem;
+      opacity: 0.6;
+    }
+
+    /* Step cards centered text */
+    .step-card { text-align: center; }
+
+    /* Bleed image fill */
+    .bleed-img {
+      inline-size: 100%;
+      block-size: auto;
+      display: block;
+    }
+
+    /* Bleed caption */
+    .bleed-caption {
+      text-align: center;
+      padding: var(--size-s);
+    }
+
+    /* Price display */
+    .price { font-size: 2rem; }
+
+    /* Full-width button */
+    .btn-full { inline-size: 100%; }
+
+    /* Outline button on dark */
+    .btn-outline-light {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+    }
+
+    /* Footer — explicit dark surface since data-mode alone sets tokens, not background */
+    footer[data-mode="dark"] {
+      background: var(--color-surface);
+    }
+
+    footer[data-mode="dark"] a {
+      color: inherit;
+    }
+
+    /* Footer divider */
+    .footer-rule { margin-block: var(--size-l); }
+  </style>
+</head>
+<body data-page-layout="stack" data-layout-gap="none">
+
+  <!-- ─── Header: transparent over hero, opaque on scroll ─── -->
+  <header class="site-header" data-layout-sticky data-layout="center" data-layout-gap="none">
+    <nav data-layout="cluster" data-layout-justify="between">
+      <strong class="brand">Acme</strong>
+      <menu data-layout="cluster" data-layout-gap="m">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact"><button>Get Started</button></a></li>
+      </menu>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ─── Hero: bleeds behind nav ─── -->
+    <section class="hero" data-bleed data-padding
+             data-layout="cover" data-layout-min="80vh" data-layout-centered>
+      <hgroup data-layout-principal>
+        <h1>Infrastructure for the Internet</h1>
+        <p>Millions of companies use Acme's software and APIs to accept payments,
+           send payouts, and manage their businesses online.</p>
+        <nav class="hero-actions" data-layout="cluster" data-layout-justify="center" data-layout-gap="m">
+          <a href="#pricing"><button>Start now</button></a>
+          <a href="#contact"><button data-variant="outline">Contact sales</button></a>
+        </nav>
+      </hgroup>
+    </section>
+
+    <!-- ─── Features: alternating dark/light ─── -->
+    <section id="features" data-padding data-mode="light">
+      <hr data-position="top" />
+      <article data-layout="center" data-layout-gap="2xl">
+        <hgroup class="section-heading">
+          <h2>Why teams choose Acme</h2>
+          <p>A fully integrated suite of financial and payments products.</p>
+        </hgroup>
+        <section data-layout="grid" data-layout-min="18rem" data-layout-gap="xl">
+          <article data-layout="stack" data-layout-gap="s">
+            <span class="feature-icon" aria-hidden="true">&#9889;</span>
+            <h3>Fast setup</h3>
+            <p>Start integrating Acme's products in minutes, not weeks.
+               Pre-built UI components and hosted payment pages speed delivery.</p>
+          </article>
+          <article data-layout="stack" data-layout-gap="s">
+            <span class="feature-icon" aria-hidden="true">&#128274;</span>
+            <h3>Battle-tested security</h3>
+            <p>Every transaction is encrypted end-to-end, certified to the highest
+               industry standards.</p>
+          </article>
+          <article data-layout="stack" data-layout-gap="s">
+            <span class="feature-icon" aria-hidden="true">&#127760;</span>
+            <h3>Global reach</h3>
+            <p>Accept payments in 135+ currencies and offer dozens of local
+               payment methods from a single integration.</p>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <!-- ─── How It Works: angled transition, dark mode ─── -->
+    <section id="how-it-works" data-angle="down" data-padding data-mode="dark">
+      <article data-layout="center" data-layout-gap="2xl">
+        <hgroup class="section-heading">
+          <h2>How it works</h2>
+          <p>Three steps to get from zero to revenue.</p>
+        </hgroup>
+        <section data-layout="grid" data-layout-min="15rem" data-layout-gap="xl">
+          <article class="step-card" data-layout="stack" data-layout-gap="s">
+            <strong class="step-number">1</strong>
+            <h3>Create an account</h3>
+            <p>Sign up in under two minutes. No contracts, no hidden fees.</p>
+          </article>
+          <article class="step-card" data-layout="stack" data-layout-gap="s">
+            <strong class="step-number">2</strong>
+            <h3>Integrate</h3>
+            <p>Drop in our pre-built components or use our APIs for full control.</p>
+          </article>
+          <article class="step-card" data-layout="stack" data-layout-gap="s">
+            <strong class="step-number">3</strong>
+            <h3>Go live</h3>
+            <p>Start accepting payments immediately. Scale as you grow.</p>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <!-- ─── Prose: article with data-measure + data-bleed figure ─── -->
+    <section data-padding data-mode="light">
+      <article data-measure data-layout="stack" data-layout-gap="l">
+        <hgroup>
+          <h2>Built for developers</h2>
+          <p>Clean APIs, comprehensive docs, and first-class SDKs mean you
+             spend less time reading and more time building.</p>
+        </hgroup>
+        <p>Our API follows RESTful conventions. Every endpoint uses
+           standard HTTP verbs, returns JSON responses, and supports
+           idempotency keys for safe retries. Webhooks keep your systems
+           in sync without polling.</p>
+
+        <figure data-bleed>
+          <img class="bleed-img" src="https://picsum.photos/1200/400?grayscale"
+               alt="Code editor showing API integration example" />
+          <figcaption class="bleed-caption">
+            Full-width breakout image inside a measured article
+          </figcaption>
+        </figure>
+
+        <p>Whether you prefer Node.js, Python, Ruby, Go, or Java — we
+           publish idiomatic SDKs with type definitions and detailed
+           changelogs for every release.</p>
+      </article>
+    </section>
+
+    <!-- ─── Pricing: angled up, light ─── -->
+    <section id="pricing" data-angle="up" data-padding>
+      <hr data-position="bottom" />
+      <article data-layout="center" data-layout-gap="2xl">
+        <hgroup class="section-heading">
+          <h2>Simple, transparent pricing</h2>
+          <p>No setup fees. No monthly fees. No hidden fees.</p>
+        </hgroup>
+        <section data-layout="grid" data-layout-min="15rem" data-layout-gap="l">
+          <article class="pricing-card" data-layout="stack" data-layout-gap="m">
+            <h3>Starter</h3>
+            <p><strong class="price">2.9%</strong> + 30¢</p>
+            <p>Per successful card charge</p>
+            <a href="#contact"><button class="btn-full" data-variant="outline">Get started</button></a>
+          </article>
+          <article class="pricing-card featured" data-layout="stack" data-layout-gap="m">
+            <h3>Scale</h3>
+            <p><strong class="price">2.5%</strong> + 30¢</p>
+            <p>Volume discounts + premium support</p>
+            <a href="#contact"><button class="btn-full">Contact sales</button></a>
+          </article>
+          <article class="pricing-card" data-layout="stack" data-layout-gap="m">
+            <h3>Enterprise</h3>
+            <p><strong class="price">Custom</strong></p>
+            <p>Dedicated infrastructure &amp; SLAs</p>
+            <a href="#contact"><button class="btn-full" data-variant="outline">Talk to us</button></a>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <!-- ─── CTA: gradient, fluid padding ─── -->
+    <section class="cta-section" data-padding>
+      <article data-layout="center" data-layout-text data-layout-gap="l">
+        <h2>Ready to get started?</h2>
+        <p>Create an account instantly, or talk to our experts about your unique needs.</p>
+        <nav data-layout="cluster" data-layout-justify="center" data-layout-gap="m">
+          <a href="#"><button>Start now</button></a>
+          <a href="#contact"><button class="btn-outline-light" data-variant="outline">Contact sales</button></a>
+        </nav>
+      </article>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ─── -->
+  <footer data-padding="small" data-mode="dark">
+    <article data-layout="center">
+      <section data-layout="grid" data-layout-min="12rem" data-layout-gap="l">
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Products</strong>
+          <a href="#">Payments</a>
+          <a href="#">Billing</a>
+          <a href="#">Connect</a>
+          <a href="#">Radar</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Developers</strong>
+          <a href="#">Documentation</a>
+          <a href="#">API Reference</a>
+          <a href="#">Status</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Company</strong>
+          <a href="#">About</a>
+          <a href="#">Customers</a>
+          <a href="#">Blog</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Support</strong>
+          <a href="#contact" id="contact">Contact</a>
+          <a href="#">FAQ</a>
+          <a href="#">Community</a>
+        </nav>
+      </section>
+      <hr class="footer-rule" />
+      <p><small>&copy; 2026 Acme, Inc. All rights reserved.</small></p>
+    </article>
+  </footer>
+
+  <!-- ─── Scroll detection: sets data-scrolled on html when hero is out of view ─── -->
+  <script>
+    (function () {
+      const hero = document.querySelector('section.hero[data-bleed]');
+      if (!hero) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          document.documentElement.toggleAttribute('data-scrolled', !entry.isIntersecting);
+        },
+        { threshold: 0 }
+      );
+      observer.observe(hero);
+    })();
+  </script>
+
+</body>
+</html>

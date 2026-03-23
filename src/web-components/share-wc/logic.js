@@ -6,22 +6,22 @@
  * - Tier 2 (platforms): Individual platform buttons with share URLs
  * - Tier 3 (no JS): Static <a> links in light DOM work as-is
  *
- * @attr {string} data-url        - URL to share (default: location.href)
- * @attr {string} data-title      - Share title (default: document.title)
- * @attr {string} data-text       - Share description (default: meta description)
- * @attr {string} data-platforms  - Comma-separated platform list (default: "x,linkedin,bluesky,mastodon,whatsapp,email,copy")
- * @attr {string} data-variant    - Visual variant: "icon", "label", "icon-label" (default: "icon-label")
- * @attr {string} data-size       - Button size: "s", "m", "l" (default: "m")
- * @attr {string} data-label      - Label for native share button (default: "Share")
- * @attr {boolean} data-color     - Present = use platform brand colours
- * @attr {string} data-mastodon-instance - Mastodon instance (default: "mastodon.social")
- * @attr {string} data-tier      - Force tier: "native", "platforms" (overrides auto-detection)
+ * @attr {string} url              - URL to share (default: location.href)
+ * @attr {string} title            - Share title (default: document.title)
+ * @attr {string} text             - Share description (default: meta description)
+ * @attr {string} platforms        - Comma-separated platform list (default: "x,linkedin,bluesky,mastodon,whatsapp,email,copy")
+ * @attr {string} variant          - Visual variant: "icon", "label", "icon-label" (default: "icon-label")
+ * @attr {string} size             - Button size: "s", "m", "l" (default: "m")
+ * @attr {string} label            - Label for native share button (default: "Share")
+ * @attr {boolean} color           - Present = use platform brand colours
+ * @attr {string} mastodon-instance - Mastodon instance (default: "mastodon.social")
+ * @attr {string} tier             - Force tier: "native", "platforms" (overrides auto-detection)
  *
  * @example
  * <share-wc></share-wc>
  *
  * @example Force platform buttons even on devices with Web Share API
- * <share-wc data-tier="platforms" data-platforms="x,linkedin,copy"></share-wc>
+ * <share-wc tier="platforms" platforms="x,linkedin,copy"></share-wc>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -81,7 +81,7 @@ class ShareWc extends HTMLElement {
       this.#renderPlatforms();
     }
 
-    this.dataset.tier = this.#tier;
+    this.setAttribute('tier', this.#tier);
     this.setAttribute('data-upgraded', '');
   }
 
@@ -105,25 +105,25 @@ class ShareWc extends HTMLElement {
 
   #resolveMeta() {
     // URL: attribute → canonical → location
-    this.#url = this.dataset.url
+    this.#url = this.getAttribute('url')
       || document.querySelector('link[rel="canonical"]')?.getAttribute('href')
       || location.href;
 
     // Title: attribute → og:title → document.title
-    this.#title = this.dataset.title
+    this.#title = this.getAttribute('title')
       || document.querySelector('meta[property="og:title"]')?.getAttribute('content')
       || document.title;
 
     // Text: attribute → meta description → og:description → empty
-    this.#text = this.dataset.text
+    this.#text = this.getAttribute('text')
       || document.querySelector('meta[name="description"]')?.getAttribute('content')
       || document.querySelector('meta[property="og:description"]')?.getAttribute('content')
       || '';
   }
 
   #detectTier() {
-    // Explicit override: data-tier="platforms" forces Tier 2
-    const override = this.dataset.tier;
+    // Explicit override: tier="platforms" forces Tier 2
+    const override = this.getAttribute('tier');
     if (override === 'platforms' || override === 'native') {
       if (override === 'native' && !navigator.share) {
         this.#tier = 'hidden';
@@ -133,7 +133,7 @@ class ShareWc extends HTMLElement {
       return;
     }
 
-    const platforms = this.dataset.platforms || DEFAULT_PLATFORMS;
+    const platforms = this.getAttribute('platforms') || DEFAULT_PLATFORMS;
 
     if (platforms === 'native-only') {
       this.#tier = typeof navigator.share === 'function' ? 'native' : 'hidden';
@@ -144,7 +144,7 @@ class ShareWc extends HTMLElement {
   }
 
   #renderNative() {
-    const label = this.dataset.label || 'Share';
+    const label = this.getAttribute('label') || 'Share';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'share-trigger';
@@ -155,7 +155,7 @@ class ShareWc extends HTMLElement {
   }
 
   #renderPlatforms() {
-    const platformList = (this.dataset.platforms || DEFAULT_PLATFORMS)
+    const platformList = (this.getAttribute('platforms') || DEFAULT_PLATFORMS)
       .split(',')
       .map(p => p.trim())
       .filter(Boolean);
@@ -278,7 +278,7 @@ class ShareWc extends HTMLElement {
     if (id === 'email') {
       location.href = platform.buildUrl(opts);
     } else if (id === 'mastodon') {
-      const instance = this.dataset.mastodonInstance || 'mastodon.social';
+      const instance = this.getAttribute('mastodon-instance') || 'mastodon.social';
       const url = /** @type {(opts: { url: string, title: string, text: string }, instance?: string) => string} */ (platform.buildUrl)(opts, instance);
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {

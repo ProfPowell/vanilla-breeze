@@ -8,18 +8,18 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * the browser (or polyfill) handle hover/focus timing and show/hide.
  * Falls back to JS event listeners when interestfor is unavailable.
  *
- * @attr {string} data-content - Simple text tooltip content
- * @attr {string} data-tooltip-position - Position: 'top' (default), 'bottom', 'left', 'right'
- * @attr {number} data-tooltip-delay - Show delay in ms (default: 200)
- * @attr {string} data-variant - Variant: omit for tooltip (default), 'card' for hover card
+ * @attr {string} content - Simple text tooltip content
+ * @attr {string} position - Position: 'top' (default), 'bottom', 'left', 'right'
+ * @attr {number} delay - Show delay in ms (default: 200)
+ * @attr {string} variant - Variant: omit for tooltip (default), 'card' for hover card
  *
  * @example Simple text tooltip
- * <tool-tip data-content="Save your changes">
+ * <tool-tip content="Save your changes">
  *   <button>Save</button>
  * </tool-tip>
  *
  * @example Rich content tooltip (use template for HTML)
- * <tool-tip data-tooltip-position="top">
+ * <tool-tip position="top">
  *   <button>Hover me</button>
  *   <template data-tooltip>
  *     <strong>Formatted</strong> content with <kbd>Ctrl+S</kbd>
@@ -27,7 +27,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </tool-tip>
  *
  * @example Card variant (rich hover card)
- * <tool-tip data-variant="card">
+ * <tool-tip variant="card">
  *   <a href="/user/jane" data-trigger>Jane Smith</a>
  *   <div data-content>
  *     <h4>Jane Smith</h4>
@@ -74,7 +74,7 @@ class ToolTip extends HTMLElement {
   }
 
   #setup() {
-    this.#isCard = this.dataset.variant === 'card';
+    this.#isCard = this.getAttribute('variant') === 'card';
 
     if (this.#isCard) {
       this.#setupCard();
@@ -93,7 +93,7 @@ class ToolTip extends HTMLElement {
 
     // Content priority: template > data-content > title on trigger
     const template = this.querySelector(':scope > template[data-tooltip]');
-    const dataContent = this.dataset.content;
+    const dataContent = this.getAttribute('content');
     const titleContent = this.#trigger.getAttribute('title');
 
     if (!template && !dataContent && !titleContent) return;
@@ -117,7 +117,7 @@ class ToolTip extends HTMLElement {
     this.#tooltip.id = `tooltip-${crypto.randomUUID().slice(0, 8)}`;
 
     // Position
-    const position = this.dataset.tooltipPosition || 'top';
+    const position = this.getAttribute('position') || 'top';
     this.#tooltip.dataset.tooltipPosition = position;
 
     // Add arrow
@@ -242,7 +242,7 @@ class ToolTip extends HTMLElement {
   #scheduleShow = () => {
     clearTimeout(this.#hideTimer);
     const defaultDelay = this.#isCard ? 300 : 200;
-    const delay = parseInt(this.dataset.tooltipDelay || String(defaultDelay), 10);
+    const delay = parseInt(this.getAttribute('delay') || String(defaultDelay), 10);
     this.#showTimer = setTimeout(() => this.show(), delay);
   };
 
@@ -305,7 +305,7 @@ class ToolTip extends HTMLElement {
 
     const triggerRect = this.#trigger.getBoundingClientRect();
     const tooltipRect = this.#tooltip.getBoundingClientRect();
-    const position = this.dataset.tooltipPosition || 'top';
+    const position = this.getAttribute('position') || 'top';
     const gap = 8;
 
     let top, left;
@@ -348,7 +348,7 @@ class ToolTip extends HTMLElement {
 
     const triggerRect = this.#trigger.getBoundingClientRect();
     const cardRect = this.#tooltip.getBoundingClientRect();
-    const preferred = this.dataset.tooltipPosition || 'bottom';
+    const preferred = this.getAttribute('position') || 'bottom';
     const gap = 8;
     const padding = 8;
 

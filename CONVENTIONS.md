@@ -172,7 +172,7 @@ Design tokens follow a consistent pattern:
 --radius-s, --radius-m, --radius-l, --radius-full
 
 /* Border */
---border-thin, --border-medium
+--border-width-thin, --border-width-medium
 
 /* Shadows */
 --shadow-s, --shadow-m, --shadow-l

@@ -6,12 +6,12 @@ const DEMO = '/docs/examples/demos/youtube-player-basic.html';
 test.describe('youtube-player', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(DEMO);
-    await page.waitForSelector('youtube-player[data-state]');
+    await page.waitForSelector('youtube-player[state]');
   });
 
   test('renders facade state with thumbnail and play button', async ({ page }) => {
     const player = page.locator('youtube-player').first();
-    await expect(player).toHaveAttribute('data-state', 'ready');
+    await expect(player).toHaveAttribute('state', 'ready');
     await expect(player.locator('img')).toBeVisible();
     await expect(player.locator('button')).toBeVisible();
   });
@@ -38,7 +38,7 @@ test.describe('youtube-player', () => {
   test('click activates iframe with youtube-nocookie.com', async ({ page }) => {
     const player = page.locator('youtube-player').first();
     await player.click();
-    await expect(player).toHaveAttribute('data-state', 'active');
+    await expect(player).toHaveAttribute('state', 'active');
 
     const iframe = player.locator('iframe');
     await expect(iframe).toBeVisible();
@@ -66,7 +66,7 @@ test.describe('youtube-player', () => {
     const player = page.locator('youtube-player').first();
     await player.focus();
     await page.keyboard.press('Enter');
-    await expect(player).toHaveAttribute('data-state', 'active');
+    await expect(player).toHaveAttribute('state', 'active');
     await expect(player.locator('iframe')).toBeVisible();
   });
 
@@ -75,20 +75,20 @@ test.describe('youtube-player', () => {
     const player = page.locator('youtube-player').nth(1);
     await player.focus();
     await page.keyboard.press(' ');
-    await expect(player).toHaveAttribute('data-state', 'active');
+    await expect(player).toHaveAttribute('state', 'active');
     await expect(player.locator('iframe')).toBeVisible();
   });
 
-  test('data-start passes through to embed URL', async ({ page }) => {
-    // The "Start at Timestamp" player has data-start="30"
-    const player = page.locator('youtube-player[data-start="30"]');
+  test('start passes through to embed URL', async ({ page }) => {
+    // The "Start at Timestamp" player has start="30"
+    const player = page.locator('youtube-player[start="30"]');
     await player.click();
     const src = await player.locator('iframe').getAttribute('src');
     expect(src).toContain('start=30');
   });
 
-  test('data-list passes through to embed URL', async ({ page }) => {
-    const player = page.locator('youtube-player[data-list]');
+  test('list passes through to embed URL', async ({ page }) => {
+    const player = page.locator('youtube-player[list]');
     await player.click();
     const src = await player.locator('iframe').getAttribute('src');
     expect(src).toContain('list=');
@@ -101,7 +101,7 @@ test.describe('youtube-player', () => {
   });
 
   test('no iframe present before click (privacy)', async ({ page }) => {
-    const iframes = await page.locator('youtube-player[data-state="ready"] iframe').count();
+    const iframes = await page.locator('youtube-player[state="ready"] iframe').count();
     expect(iframes).toBe(0);
   });
 });

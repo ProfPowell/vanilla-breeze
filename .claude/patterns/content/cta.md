@@ -170,7 +170,7 @@ Prominent section encouraging user action. Typically contains a headline, suppor
       }
 
       & h2 {
-        font-size: var(--text-xl);
+        font-size: var(--font-size-xl);
         margin: 0;
       }
 

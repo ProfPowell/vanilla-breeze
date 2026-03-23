@@ -5,7 +5,7 @@
  * JS adds the drag handle and pointer events.
  * Without JS, both children display side-by-side.
  *
- * @attr {number} data-position - Initial slider position (0-100), default 50
+ * @attr {number} position - Initial slider position (0-100), default 50
  *
  * @example
  * <compare-surface>
@@ -24,7 +24,7 @@ class CompareSurface extends HTMLElement {
     const children = [...this.children];
     if (children.length < 2) return;
 
-    const position = Number(this.dataset.position) || 50;
+    const position = Number(this.getAttribute('position')) || 50;
 
     // Inject the divider handle
     this.#divider = document.createElement('div');

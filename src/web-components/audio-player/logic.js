@@ -7,9 +7,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * shadow DOM. The <audio> and optional <details class="track-list"> stay in
  * light DOM — if JS is unavailable, native controls and track links work.
  *
- * @attr {boolean} data-autoplay - Start playing on load (subject to browser autoplay policy)
- * @attr {boolean} data-loop - Loop single track or entire playlist
- * @attr {boolean} data-shuffle - Randomize playlist order
+ * @attr {boolean} autoplay - Start playing on load (subject to browser autoplay policy)
+ * @attr {boolean} loop - Loop single track or entire playlist
+ * @attr {boolean} shuffle - Randomize playlist order
  *
  * @fires vb:audio:play - Audio playback started
  * @fires vb:audio:pause - Audio playback paused
@@ -89,7 +89,7 @@ class AudioPlayerElement extends HTMLElement {
     }
     this.#updateTrackTitle()
 
-    if (this.hasAttribute('data-autoplay')) {
+    if (this.hasAttribute('autoplay')) {
       this.#audio.play().catch(() => {})
     }
 
@@ -241,8 +241,8 @@ class AudioPlayerElement extends HTMLElement {
       }
 
       .icon-pause { display: none; }
-      :host([data-state="playing"]) .icon-play { display: none; }
-      :host([data-state="playing"]) .icon-pause { display: block; }
+      :host([state="playing"]) .icon-play { display: none; }
+      :host([state="playing"]) .icon-pause { display: block; }
 
       /* ── Timeline group ───────────────────────── */
       .timeline-group {
@@ -258,7 +258,7 @@ class AudioPlayerElement extends HTMLElement {
         justify-content: space-between;
         align-items: center;
         gap: var(--size-xs, 0.5rem);
-        font-size: var(--text-xs, 0.75rem);
+        font-size: var(--font-size-xs, 0.75rem);
         line-height: 1.2;
       }
 
@@ -391,8 +391,8 @@ class AudioPlayerElement extends HTMLElement {
       }
 
       .icon-muted { display: none; }
-      :host([data-muted]) .icon-vol { display: none; }
-      :host([data-muted]) .icon-muted { display: block; }
+      :host([muted]) .icon-vol { display: none; }
+      :host([muted]) .icon-muted { display: block; }
 
       .volume {
         flex: 1;
@@ -485,7 +485,7 @@ class AudioPlayerElement extends HTMLElement {
     this.#audio.addEventListener('loadedmetadata', () => this.#updateDuration())
     this.#audio.addEventListener('play', () => {
       this.#playing = true
-      this.setAttribute('data-state', 'playing')
+      this.setAttribute('state', 'playing')
       this.#playBtn.setAttribute('aria-label', 'Pause')
       this.#emit('vb:audio:play', {
         currentTime: this.#audio.currentTime,
@@ -494,7 +494,7 @@ class AudioPlayerElement extends HTMLElement {
     })
     this.#audio.addEventListener('pause', () => {
       this.#playing = false
-      this.setAttribute('data-state', 'paused')
+      this.setAttribute('state', 'paused')
       this.#playBtn.setAttribute('aria-label', 'Play')
       this.#emit('vb:audio:pause', {
         currentTime: this.#audio.currentTime
@@ -502,7 +502,7 @@ class AudioPlayerElement extends HTMLElement {
     })
     this.#audio.addEventListener('ended', () => {
       this.#playing = false
-      this.setAttribute('data-state', 'ended')
+      this.setAttribute('state', 'ended')
       this.#playBtn.setAttribute('aria-label', 'Play')
 
       // Mark track as played
@@ -540,7 +540,7 @@ class AudioPlayerElement extends HTMLElement {
     this.#volumeSlider.addEventListener('input', () => {
       this.#audio.volume = Number(this.#volumeSlider.value)
       this.#audio.muted = false
-      this.removeAttribute('data-muted')
+      this.removeAttribute('muted')
       this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
     })
 
@@ -549,7 +549,7 @@ class AudioPlayerElement extends HTMLElement {
     if (!muteBtn) return
     muteBtn.addEventListener('click', () => {
       this.#audio.muted = !this.#audio.muted
-      this.toggleAttribute('data-muted', this.#audio.muted)
+      this.toggleAttribute('muted', this.#audio.muted)
       this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
     })
 
@@ -578,7 +578,7 @@ class AudioPlayerElement extends HTMLElement {
         case 'm':
         case 'M':
           this.#audio.muted = !this.#audio.muted
-          this.toggleAttribute('data-muted', this.#audio.muted)
+          this.toggleAttribute('muted', this.#audio.muted)
           this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
           break
       }
@@ -628,7 +628,7 @@ class AudioPlayerElement extends HTMLElement {
     const items = [...this.#trackList.querySelectorAll('li')]
     const activeIdx = items.findIndex(li => li.hasAttribute('data-audio-active'))
 
-    if (this.hasAttribute('data-shuffle')) {
+    if (this.hasAttribute('shuffle')) {
       const remaining = items.filter((_, i) => i !== activeIdx)
       if (remaining.length) {
         const next = remaining[Math.floor(Math.random() * remaining.length)]
@@ -642,7 +642,7 @@ class AudioPlayerElement extends HTMLElement {
     if (nextIdx < items.length) {
       const link = /** @type {HTMLAnchorElement | null} */ (items[nextIdx].querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[nextIdx])
-    } else if (this.hasAttribute('data-loop')) {
+    } else if (this.hasAttribute('loop')) {
       const link = /** @type {HTMLAnchorElement | null} */ (items[0]?.querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[0])
     }

@@ -43,7 +43,7 @@ The `:not(:defined)` CSS provides `display: flex; overflow-x: auto; scroll-snap-
 After upgrade, the component builds a track, prev/next buttons, dot indicators, and a live region for screen reader announcements.
 
 ```html
-<carousel-wc data-loop data-autoplay data-autoplay-delay="5000">
+<carousel-wc loop autoplay autoplay-delay="5000">
   <article>Slide 1</article>
   <article>Slide 2</article>
   <article>Slide 3</article>
@@ -54,15 +54,15 @@ After upgrade, the component builds a track, prev/next buttons, dot indicators, 
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `data-autoplay` | boolean | -- | Enable autoplay |
-| `data-autoplay-delay` | number | 5000 | Autoplay interval in ms |
-| `data-loop` | boolean | -- | Wrap around at ends |
-| `data-indicators` | string | "true" | Show dot indicators |
-| `data-item-width` | string | "full" | Slide width: "full", "auto", or CSS length |
-| `data-gap` | string | -- | Gap token: xs, s, m, l, xl |
-| `data-start` | number | 0 | Initial slide index |
-| `data-persist` | string | -- | localStorage key for slide persistence |
-| `data-transition` | string | -- | View Transition type: "fade", "slide", "scale" |
+| `autoplay` | boolean | -- | Enable autoplay |
+| `autoplay-delay` | number | 5000 | Autoplay interval in ms |
+| `loop` | boolean | -- | Wrap around at ends |
+| `indicators` | string | "true" | Show dot indicators |
+| `item-width` | string | "full" | Slide width: "full", "auto", or CSS length |
+| `gap` | string | -- | Gap token: xs, s, m, l, xl |
+| `start` | number | 0 | Initial slide index |
+| `persist` | string | -- | localStorage key for slide persistence |
+| `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
 
 **JS API:** `next()`, `prev()`, `goTo(index)`, `play()`, `pause()`, `reset()`, `currentIndex`, `slideCount`, `playing`
 
@@ -144,7 +144,7 @@ Basic carousel:
 
 Autoplay with loop:
 ```html
-<carousel-wc data-autoplay data-loop data-autoplay-delay="3000">
+<carousel-wc autoplay loop autoplay-delay="3000">
   <article>Testimonial 1</article>
   <article>Testimonial 2</article>
   <article>Testimonial 3</article>

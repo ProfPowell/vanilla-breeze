@@ -5,7 +5,7 @@
  * Click navigates to the section and copies the URL to clipboard.
  * Uses existing IDs or auto-generates from heading text.
  *
- * @attr {string} data-levels - Heading levels to process (default: 'h2,h3')
+ * @attr {string} levels - Heading levels to process (default: 'h2,h3')
  *
  * @example
  * <heading-links>
@@ -51,7 +51,7 @@ class HeadingLinks extends HTMLElement {
   }
 
   #processHeadings() {
-    const levels = this.dataset.levels || 'h2,h3';
+    const levels = this.getAttribute('levels') || 'h2,h3';
     const selector = levels.split(',').map(l => l.trim()).join(',');
     const headings = this.querySelectorAll(selector);
 

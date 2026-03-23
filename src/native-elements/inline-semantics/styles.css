@@ -166,6 +166,65 @@ ins.diff {
   border-radius: var(--radius-s);
 }
 
+/* --- Block-level change variants --- */
+
+del.block,
+ins.block {
+  display: block;
+  padding: var(--size-s);
+  margin-block: var(--size-xs);
+  border-radius: var(--radius-s);
+}
+
+del.block {
+  background: oklch(55% 0.2 25 / 0.08);
+  border-inline-start: var(--size-3xs) solid oklch(55% 0.2 25);
+  text-decoration: line-through;
+  text-decoration-color: oklch(55% 0.2 25 / 0.5);
+}
+
+ins.block {
+  background: oklch(60% 0.18 145 / 0.08);
+  border-inline-start: var(--size-3xs) solid oklch(60% 0.18 145);
+  text-decoration: none;
+}
+
+/* --- Annotated changes --- */
+
+/* Show author on hover via ::after */
+ins[data-author]::after,
+del[data-author]::after {
+  content: " \2014 " attr(data-author);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+ins[data-author]:hover::after,
+del[data-author]:hover::after {
+  opacity: 1;
+}
+
+/* Reason tags */
+ins[data-reason]::before,
+del[data-reason]::before {
+  content: attr(data-reason);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-inline-end: var(--size-2xs);
+}
+
+/* Print: always show annotations */
+@media print {
+  ins[data-author]::after,
+  del[data-author]::after {
+    opacity: 1;
+  }
+}
+
 /* Time variants */
 time.relative {
   color: var(--color-text-muted);

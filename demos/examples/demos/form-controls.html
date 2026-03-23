@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Form Controls — Appearance Normalization</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body { padding: var(--size-l); background: var(--color-background); }
+    section + section { margin-block-start: var(--size-xl); }
+    h2 { margin-block-end: var(--size-s); }
+    h3 { margin-block-end: var(--size-xs); color: var(--color-text-muted); }
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: var(--size-l);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Form Controls</h1>
+    <p>Every styleable form control renders through VB's token system. Themes override tokens, not selectors.</p>
+  </header>
+
+  <main data-layout="stack" data-layout-gap="xl">
+
+    <!-- Checkboxes -->
+    <section>
+      <h2>Checkboxes</h2>
+      <p>Styled via <code>appearance: none</code> + <code>::after</code> clip-path checkmark. Switch (<code>data-switch</code>) is excluded.</p>
+      <layout-stack data-layout-gap="s">
+        <label><input type="checkbox" name="cb" value="a"/> Unchecked</label>
+        <label><input type="checkbox" name="cb" value="b" checked/> Checked</label>
+        <label><input type="checkbox" name="cb" value="c" disabled/> Disabled</label>
+        <label><input type="checkbox" name="cb" value="d" checked disabled/> Checked + Disabled</label>
+      </layout-stack>
+      <p>Indeterminate (set via JS):</p>
+      <label><input type="checkbox" id="indeterminate-demo"/> Indeterminate</label>
+    </section>
+
+    <!-- Radios -->
+    <section>
+      <h2>Radio Buttons</h2>
+      <p>Inner dot via <code>::after</code> with <code>inset: 3px; border-radius: 50%</code>.</p>
+      <fieldset>
+        <legend>Select option</legend>
+        <layout-stack data-layout-gap="s">
+          <label><input type="radio" name="radio" value="a" checked/> Option A</label>
+          <label><input type="radio" name="radio" value="b"/> Option B</label>
+          <label><input type="radio" name="radio" value="c"/> Option C</label>
+          <label><input type="radio" name="radio" value="d" disabled/> Option D (disabled)</label>
+        </layout-stack>
+      </fieldset>
+    </section>
+
+    <!-- Switch (unchanged) -->
+    <section>
+      <h2>Switch (data-switch)</h2>
+      <p>Excluded from checkbox normalization via <code>:not([data-switch])</code>. Unchanged.</p>
+      <layout-stack data-layout-gap="s">
+        <label><input type="checkbox" data-switch="sm" name="sw1"/> Small switch</label>
+        <label><input type="checkbox" data-switch name="sw2" checked/> Default switch</label>
+        <label><input type="checkbox" data-switch="lg" name="sw3"/> Large switch</label>
+      </layout-stack>
+    </section>
+
+    <!-- Text Inputs -->
+    <section>
+      <h2>Text Inputs (token-driven)</h2>
+      <p>Now use <code>--input-*</code> tokens for border, background, radius, focus.</p>
+      <layout-stack data-layout-gap="m">
+        <form-field>
+          <label for="demo-text">Text input</label>
+          <input type="text" id="demo-text" placeholder="Placeholder text"/>
+        </form-field>
+        <form-field>
+          <label for="demo-email">Email input</label>
+          <input type="email" id="demo-email" placeholder="name@example.com"/>
+        </form-field>
+        <form-field>
+          <label for="demo-search">Search input</label>
+          <input type="search" id="demo-search" placeholder="Search..."/>
+        </form-field>
+        <form-field>
+          <label for="demo-number">Number input</label>
+          <input type="number" id="demo-number" min="0" max="100" step="1" value="42"/>
+        </form-field>
+        <form-field>
+          <label for="demo-disabled">Disabled input</label>
+          <input type="text" id="demo-disabled" disabled value="Cannot edit"/>
+        </form-field>
+      </layout-stack>
+    </section>
+
+    <!-- Select -->
+    <section>
+      <h2>Select</h2>
+      <p>Chevron sourced from <code>--select-chevron</code> token.</p>
+      <form-field>
+        <label for="demo-select">Choose an option</label>
+        <select id="demo-select">
+          <option value="">Select...</option>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+          <option value="c">Option C</option>
+        </select>
+      </form-field>
+    </section>
+
+    <!-- Range -->
+    <section>
+      <h2>Range Slider</h2>
+      <p>Token-driven track and thumb. CSS-only fill via <code>--_pct</code> custom property (JS syncs it).</p>
+      <layout-stack data-layout-gap="m">
+        <form-field>
+          <label for="demo-range">Volume</label>
+          <input type="range" id="demo-range" min="0" max="100" value="60"/>
+        </form-field>
+        <form-field>
+          <label for="demo-range-disabled">Disabled range</label>
+          <input type="range" id="demo-range-disabled" min="0" max="100" value="30" disabled/>
+        </form-field>
+      </layout-stack>
+    </section>
+
+    <!-- File Input -->
+    <section>
+      <h2>File Input</h2>
+      <p><code>::file-selector-button</code> styled to match VB button appearance.</p>
+      <layout-stack data-layout-gap="m">
+        <form-field>
+          <label for="demo-file">Upload document</label>
+          <input type="file" id="demo-file" accept=".pdf,.doc,.docx"/>
+        </form-field>
+        <form-field>
+          <label for="demo-file-multi">Upload images</label>
+          <input type="file" id="demo-file-multi" accept="image/*" multiple/>
+        </form-field>
+      </layout-stack>
+    </section>
+
+    <!-- Color Input -->
+    <section>
+      <h2>Color Input</h2>
+      <p><code>appearance: none</code> + swatch pseudo-element. Native OS picker preserved.</p>
+      <layout-stack data-layout-gap="m" style="max-inline-size: 20rem;">
+        <form-field>
+          <label for="demo-color">Pick a color</label>
+          <input type="color" id="demo-color" value="#6366f1"/>
+        </form-field>
+      </layout-stack>
+    </section>
+
+    <!-- Progress -->
+    <section>
+      <h2>Progress</h2>
+      <p>Uses <code>--progress-h</code>, <code>--progress-track-bg</code>, <code>--progress-fill</code> tokens. Color variants use semantic tokens.</p>
+      <layout-stack data-layout-gap="m">
+        <progress value="70" max="100">70%</progress>
+        <progress class="success" value="100" max="100">Complete</progress>
+        <progress class="warning" value="60" max="100">60%</progress>
+        <progress class="error" value="30" max="100">30%</progress>
+        <progress>Loading...</progress>
+      </layout-stack>
+    </section>
+
+    <!-- Meter -->
+    <section>
+      <h2>Meter</h2>
+      <p>Uses <code>--meter-h</code> and <code>--progress-track-bg</code> tokens. Semantic colors via <code>--color-success/warning/error</code>.</p>
+      <layout-stack data-layout-gap="m">
+        <meter min="0" max="100" low="25" high="75" optimum="90" value="90">90%</meter>
+        <meter min="0" max="100" low="25" high="75" optimum="90" value="50">50%</meter>
+        <meter min="0" max="100" low="25" high="75" optimum="90" value="15">15%</meter>
+      </layout-stack>
+    </section>
+
+    <!-- Token Override Demo -->
+    <section>
+      <h2>Token Override Demo</h2>
+      <p>Override form tokens inline to see how theming works.</p>
+      <article style="--control-checked-bg: var(--color-accent); --control-checked-border: var(--color-accent); --input-border-focus: var(--color-accent); --input-radius: var(--radius-full); padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-l);">
+        <h3>Custom token scope</h3>
+        <layout-stack data-layout-gap="s">
+          <label><input type="checkbox" checked/> Accent-colored checkbox</label>
+          <label><input type="radio" name="custom" checked/> Accent-colored radio</label>
+          <input type="text" placeholder="Pill-shaped input (radius-full)"/>
+        </layout-stack>
+      </article>
+    </section>
+
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    // Set indeterminate state
+    document.getElementById('indeterminate-demo').indeterminate = true;
+
+    // Sync range fill
+    document.querySelectorAll('input[type="range"]').forEach(el => {
+      function sync() {
+        const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+        el.style.setProperty('--_pct', pct + '%');
+      }
+      el.addEventListener('input', sync);
+      sync();
+    });
+  </script>
+</body>
+</html>

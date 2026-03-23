@@ -91,63 +91,6 @@ class SoundManager {
 }
 
 /**
- * Theme Preview Manager
- *
- * Provides live theme preview without committing changes.
- * Useful for theme builders and preview interfaces.
- *
- * @example
- * // Preview a theme
- * VBLabs.themePreview.preview('cyber');
- *
- * // Commit the previewed theme
- * VBLabs.themePreview.commit();
- *
- * // Cancel preview and restore original
- * VBLabs.themePreview.cancel();
- */
-class ThemePreviewManager {
-  constructor() {
-    this.originalTheme = null;
-    this.previewTheme = null;
-  }
-
-  preview(themeName) {
-    if (this.originalTheme === null) {
-      this.originalTheme = document.body.dataset.theme || '';
-    }
-    this.previewTheme = themeName;
-
-    if (themeName) {
-      document.body.dataset.theme = themeName;
-    } else {
-      delete document.body.dataset.theme;
-    }
-
-    return this;
-  }
-
-  commit() {
-    this.originalTheme = this.previewTheme;
-    this.previewTheme = null;
-    return this;
-  }
-
-  cancel() {
-    if (this.originalTheme !== null) {
-      if (this.originalTheme) {
-        document.body.dataset.theme = this.originalTheme;
-      } else {
-        delete document.body.dataset.theme;
-      }
-    }
-    this.originalTheme = null;
-    this.previewTheme = null;
-    return this;
-  }
-}
-
-/**
  * Stagger Animation Controller
  *
  * Programmatically control stagger animations.
@@ -193,7 +136,6 @@ class StaggerController {
  */
 const VBLabs = {
   sound: new SoundManager(),
-  themePreview: new ThemePreviewManager(),
   stagger: new StaggerController(),
 
   /**
@@ -215,7 +157,7 @@ const VBLabs = {
 };
 
 // Export for ES modules
-export { VBLabs, SoundManager, ThemePreviewManager, StaggerController };
+export { VBLabs, SoundManager, StaggerController };
 
 // Also attach to window for script tag usage
 if (typeof window !== 'undefined') {

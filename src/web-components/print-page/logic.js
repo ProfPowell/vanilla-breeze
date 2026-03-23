@@ -6,15 +6,15 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * A progressive enhancement wrapper around window.print(). Renders a print
  * button and an optional toggle to disable VB's print optimizations.
  *
- * @attr {boolean} data-raw-toggle - If present, shows a checkbox to disable VB print styles
- * @attr {string} data-label - Custom button label (default: "Print this page")
+ * @attr {boolean} raw-toggle - If present, shows a checkbox to disable VB print styles
+ * @attr {string} label - Custom button label (default: "Print this page")
  *
  * @example
  * <print-page>Print this page</print-page>
  *
  * @example
  * <!-- With raw-mode toggle -->
- * <print-page data-raw-toggle>Print this page</print-page>
+ * <print-page raw-toggle>Print this page</print-page>
  */
 
 class PrintPage extends HTMLElement {
@@ -22,8 +22,8 @@ class PrintPage extends HTMLElement {
   #checkbox;
 
   connectedCallback() {
-    const label = this.dataset.label || this.textContent.trim() || 'Print this page';
-    const showRawToggle = this.hasAttribute('data-raw-toggle');
+    const label = this.getAttribute('label') || this.textContent.trim() || 'Print this page';
+    const showRawToggle = this.hasAttribute('raw-toggle');
 
     this.innerHTML = '';
     this.setAttribute('role', 'group');

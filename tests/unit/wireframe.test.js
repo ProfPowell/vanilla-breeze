@@ -137,4 +137,46 @@ describe('combineLabelAndDims', () => {
   });
 });
 
+/**
+ * Escape callout text for safe display.
+ * Strips HTML tags and trims whitespace.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeCalloutText(text) {
+  if (!text) return '';
+  return text.replace(/<[^>]*>/g, '').trim();
+}
+
+describe('escapeCalloutText', () => {
+  it('passes through plain text unchanged', () => {
+    assert.equal(escapeCalloutText('Add phone field'), 'Add phone field');
+  });
+
+  it('strips HTML tags', () => {
+    assert.equal(escapeCalloutText('Use <strong>bold</strong> CTA'), 'Use bold CTA');
+  });
+
+  it('strips self-closing tags', () => {
+    assert.equal(escapeCalloutText('Before<br/>After'), 'BeforeAfter');
+  });
+
+  it('handles empty string', () => {
+    assert.equal(escapeCalloutText(''), '');
+  });
+
+  it('handles null/undefined', () => {
+    assert.equal(escapeCalloutText(null), '');
+    assert.equal(escapeCalloutText(undefined), '');
+  });
+
+  it('trims whitespace', () => {
+    assert.equal(escapeCalloutText('  padded text  '), 'padded text');
+  });
+
+  it('preserves special characters', () => {
+    assert.equal(escapeCalloutText('Cost > $100 & < $200'), 'Cost > $100 & < $200');
+  });
+});
+
 console.log('Running wireframe unit tests...');

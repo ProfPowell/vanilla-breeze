@@ -1,0 +1,71 @@
+/* provenance: Trust indicators and content provenance styling */
+
+/* --- Trust indicator custom properties (theme-overridable) --- */
+
+[data-trust] {
+  --trust-color: var(--color-text-muted);
+  --trust-border: var(--border-width-thin) solid var(--trust-color);
+  position: relative;
+}
+
+/* Human is the default — no visual noise */
+[data-trust="human"] {
+  --trust-color: transparent;
+}
+
+/* AI-assisted: subtle accent */
+[data-trust~="ai-assisted"] {
+  --trust-color: var(--trust-color-ai-assisted, oklch(65% 0.15 250));
+  border-inline-start: var(--size-3xs) solid var(--trust-color);
+  padding-inline-start: var(--size-s);
+}
+
+/* AI-generated: visible background tint */
+[data-trust~="ai-generated"] {
+  --trust-color: var(--trust-color-ai-generated, oklch(65% 0.18 290));
+  background: oklch(from var(--trust-color) l c h / 0.05);
+  border-inline-start: var(--size-3xs) solid var(--trust-color);
+  padding-inline-start: var(--size-s);
+}
+
+/* Editor-reviewed: approval indicator */
+[data-trust~="editor-reviewed"] {
+  border-inline-start-color: var(--trust-color-reviewed, oklch(60% 0.18 145));
+}
+
+/* Draft: work-in-progress styling */
+[data-trust~="draft"] {
+  --trust-color: var(--trust-color-draft, oklch(70% 0.15 75));
+  border: var(--border-width-thin) dashed var(--trust-color);
+  padding: var(--size-s);
+  opacity: 0.85;
+}
+
+/* --- Trust badge labels via ::before (opt-in with .labeled) --- */
+
+[data-trust~="ai-assisted"].labeled::before {
+  content: "AI-Assisted";
+}
+
+[data-trust~="ai-generated"].labeled::before {
+  content: "AI-Generated";
+}
+
+[data-trust~="editor-reviewed"].labeled::before {
+  content: "Reviewed \2713";
+}
+
+[data-trust~="draft"].labeled::before {
+  content: "Draft";
+}
+
+[data-trust].labeled::before {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--trust-color);
+  padding: var(--size-3xs) var(--size-2xs);
+  border: var(--border-width-thin) solid var(--trust-color);
+  border-radius: var(--radius-s);
+  margin-block-end: var(--size-xs);
+}

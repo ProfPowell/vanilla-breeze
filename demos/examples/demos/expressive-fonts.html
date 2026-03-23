@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expressive Fonts Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/src/packs/fonts-expressive/fonts-expressive.theme.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    section {
+      margin-block-end: var(--size-2xl);
+    }
+    h2 {
+      border-block-end: 1px solid var(--color-border);
+      padding-block-end: var(--size-xs);
+      margin-block-end: var(--size-m);
+    }
+    .hero-text {
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 1;
+      text-align: center;
+      margin-block: var(--size-l);
+    }
+    .nabla-text {
+      font-family: var(--vb-font-nabla);
+    }
+    .nabla-depth {
+      font-family: var(--vb-font-nabla);
+      font-variation-settings: 'EDPT' var(--vb-nabla-depth), 'FLAT' var(--vb-nabla-flat);
+    }
+    .honk-text {
+      font-family: var(--vb-font-honk);
+    }
+    .kablammo-text {
+      font-family: var(--vb-font-kablammo);
+    }
+    .axis-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+      align-items: center;
+      padding: var(--size-m);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+      margin-block-end: var(--size-m);
+    }
+    .axis-controls label {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      font-size: 0.875rem;
+    }
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: var(--size-l);
+      text-align: center;
+    }
+    .showcase-card {
+      padding: var(--size-l);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+    }
+    .showcase-card p:first-child {
+      font-size: 3rem;
+      line-height: 1.2;
+      margin-block-end: var(--size-s);
+    }
+    .showcase-card figcaption {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+    .depth-pulse-sample {
+      font-family: var(--vb-font-nabla);
+      font-size: clamp(3rem, 8vw, 5rem);
+      text-align: center;
+      line-height: 1;
+    }
+    .support-note {
+      padding: var(--size-m);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+      border-inline-start: 4px solid var(--color-accent, var(--color-primary));
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Expressive Fonts</h1>
+  <p>Color and morphology fonts for hero sections and creative contexts. Not for body text.</p>
+
+  <section>
+    <h2>Nabla &mdash; COLR v1 Color Font</h2>
+    <aside class="support-note">
+      <strong>Browser support:</strong> COLR v1 requires Chrome 98+, Firefox 107+, Safari 17.2+. Older browsers render a flat black outline.
+    </aside>
+    <p class="hero-text nabla-text">NABLA</p>
+    <p>Axes: <code>EDPT</code> (0&ndash;200, extrusion depth), <code>FLAT</code> (0&ndash;100, flattens perspective). Gated behind <code>@supports (font-palette: normal)</code>.</p>
+
+    <h3>Depth Pulse Animation</h3>
+    <p class="depth-pulse-sample vb-nabla" data-effect="depth-pulse">DEPTH</p>
+    <p>Apply with <code>class="vb-nabla" data-effect="depth-pulse"</code>.</p>
+
+    <h3>Interactive Axes</h3>
+    <article class="axis-controls">
+      <label>EDPT (depth): <input type="range" id="nabla-edpt" min="0" max="200" value="100"></label>
+      <label>FLAT: <input type="range" id="nabla-flat" min="0" max="100" value="0"></label>
+    </article>
+    <p class="hero-text nabla-depth" id="nabla-interactive">ABC</p>
+  </section>
+
+  <section>
+    <h2>Honk &mdash; Inflatable Neon</h2>
+    <p class="hero-text honk-text">HONK!</p>
+    <p>Axes: <code>MORF</code> (&minus;40&ndash;40, morphology), <code>SHLN</code> (0&ndash;50, shine). Rounded, inflatable, neon-adjacent.</p>
+  </section>
+
+  <section>
+    <h2>Kablammo &mdash; Comic Impact</h2>
+    <p class="hero-text kablammo-text">POW!</p>
+    <p>Axis: <code>MORF</code> (&minus;40&ndash;40, morphology). High-energy, comic-style display font.</p>
+  </section>
+
+  <section>
+    <h2>All Three</h2>
+    <article class="showcase-grid">
+      <figure class="showcase-card">
+        <p class="nabla-text">Aa</p>
+        <figcaption>Nabla</figcaption>
+      </figure>
+      <figure class="showcase-card">
+        <p class="honk-text">Aa</p>
+        <figcaption>Honk</figcaption>
+      </figure>
+      <figure class="showcase-card">
+        <p class="kablammo-text">Aa</p>
+        <figcaption>Kablammo</figcaption>
+      </figure>
+    </article>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const edpt = document.getElementById('nabla-edpt');
+    const flat = document.getElementById('nabla-flat');
+    const target = document.getElementById('nabla-interactive');
+
+    function update() {
+      target.style.fontVariationSettings =
+        "'EDPT' " + edpt.value + ", 'FLAT' " + flat.value;
+    }
+    edpt.addEventListener('input', update);
+    flat.addEventListener('input', update);
+  </script>
+</body>
+</html>

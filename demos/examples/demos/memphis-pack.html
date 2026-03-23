@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Memphis Pack — Vanilla Breeze</title>
+
+  <!-- Core VB -->
+  <link rel="stylesheet" href="/src/main.css">
+
+  <!-- Memphis bundle CSS (theme + effects) -->
+  <link rel="stylesheet" href="/src/packs/memphis/memphis.theme.css">
+  <link rel="stylesheet" href="/src/packs/memphis/memphis.effects.css">
+
+  <style>
+    body {
+      font-family: var(--font-sans, system-ui, sans-serif);
+      line-height: 1.6;
+      padding-block: var(--size-xl, 2.5rem);
+      padding-inline: clamp(var(--size-m, 1rem), 5vw, var(--size-2xl, 4rem));
+      max-width: 960px;
+      margin-inline: auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    .page-header h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-family: var(--font-display, var(--font-sans));
+      color: var(--m-black);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 0.95;
+      margin-block-end: var(--size-xs, 0.5rem);
+    }
+
+    .page-header h1 em {
+      font-style: normal;
+      color: var(--m-red);
+      display: block;
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      max-width: 50ch;
+      margin-inline: auto;
+    }
+
+    section {
+      margin-block-end: var(--size-2xl, 4rem);
+    }
+
+    h2 {
+      margin-block-end: var(--size-m, 1rem);
+    }
+
+    h3 {
+      margin-block-end: var(--size-s, 0.5rem);
+      margin-block-start: var(--size-l, 1.5rem);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--size-m, 1rem);
+    }
+
+    .swatch {
+      border: 2.5px solid var(--m-black);
+      box-shadow: 4px 4px 0 var(--m-black);
+      overflow: hidden;
+      aspect-ratio: 3 / 2;
+      position: relative;
+    }
+
+    .swatch-face {
+      height: 100%;
+    }
+
+    .swatch-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--m-black);
+      color: var(--m-yellow);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.65rem;
+      padding: 0.3em 0.6em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .colour-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: var(--size-m, 1rem);
+    }
+
+    .colour-chip {
+      border: 2.5px solid var(--m-black);
+      box-shadow: 2px 2px 0 var(--m-black);
+      overflow: hidden;
+    }
+
+    .colour-chip-face {
+      height: 60px;
+    }
+
+    .colour-chip-meta {
+      padding: 0.4rem 0.5rem;
+      background: var(--m-cream);
+      border-block-start: 1.5px solid var(--m-black);
+    }
+
+    .colour-chip-name {
+      font-family: var(--font-display, var(--font-sans));
+      font-size: 1rem;
+      display: block;
+    }
+
+    .colour-chip-var {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.6rem;
+      opacity: 0.6;
+      display: block;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-s, 0.5rem);
+      margin-block: var(--size-m, 1rem);
+    }
+
+    .m-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55em 1.4em 0.5em;
+      font-family: var(--font-display, var(--font-sans));
+      font-size: 1.15rem;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 2.5px solid var(--m-black);
+      cursor: pointer;
+      transition: transform 0.06s, box-shadow 0.06s;
+      box-shadow: 4px 4px 0 var(--m-black);
+      background: var(--m-cream);
+      color: var(--m-black);
+    }
+
+    .m-btn:hover { filter: brightness(0.94); }
+    .m-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 var(--m-black);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--size-l, 1.5rem);
+    }
+
+    .m-card {
+      border: 2.5px solid var(--m-black);
+      box-shadow: 6px 6px 0 var(--m-black);
+      overflow: hidden;
+      background: var(--m-cream);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .m-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 8px 8px 0 var(--m-black);
+    }
+
+    .card-face {
+      height: 100px;
+      border-block-end: 2.5px solid var(--m-black);
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .card-body h3 {
+      font-family: var(--font-display, var(--font-sans));
+      font-size: 1.5rem;
+      margin-block: 0 0.5rem;
+      line-height: 1;
+    }
+
+    .card-body p {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      line-height: 1.6;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--size-m, 1rem);
+    }
+
+    .m-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .m-field label {
+      font-family: var(--font-display, var(--font-sans));
+      font-size: 1rem;
+    }
+
+    .m-field input,
+    .m-field select,
+    .m-field textarea {
+      background: var(--m-white);
+      color: var(--m-black);
+      border: 2.5px solid var(--m-black);
+      padding: 0.6em 0.9em;
+      font-family: var(--font-sans, system-ui, sans-serif);
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      box-shadow: 2px 2px 0 var(--m-black);
+      transition: box-shadow 0.1s;
+    }
+
+    .m-field input:focus,
+    .m-field select:focus,
+    .m-field textarea:focus {
+      box-shadow: 4px 4px 0 var(--m-blue);
+      border-color: var(--m-blue);
+    }
+
+    .m-alert {
+      border: 2.5px solid var(--m-black);
+      box-shadow: 4px 4px 0 var(--m-black);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      background: var(--m-cream);
+      margin-block-end: var(--size-m, 1rem);
+    }
+
+    .alert-accent {
+      border-inline-end: 2.5px solid var(--m-black);
+    }
+
+    .alert-body {
+      padding: 1rem 1.5rem;
+    }
+
+    .alert-body strong {
+      font-family: var(--font-display, var(--font-sans));
+      font-size: 1.2rem;
+      display: block;
+      margin-block-end: 0.25rem;
+    }
+
+    .alert-body p {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin: 0;
+    }
+
+    .type-scale {
+      display: grid;
+      gap: var(--size-xl, 2.5rem);
+    }
+
+    .type-row {
+      border-block-end: 2.5px solid var(--m-black);
+      padding-block-end: var(--size-l, 1.5rem);
+    }
+
+    .type-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      margin-block-end: 0.5rem;
+      opacity: 0.6;
+      text-transform: uppercase;
+    }
+
+    .band-demo {
+      display: grid;
+      gap: var(--size-l, 1.5rem);
+    }
+  </style>
+</head>
+<body data-theme="memphis">
+<main>
+
+  <header class="page-header">
+    <h1>MEM<em>PHIS</em></h1>
+    <p>Memphis Group (1981&ndash;88) aesthetic: bold flat colour, geometric patterns on every surface, hard drop shadows, zigzag borders, anti-functionalist ornament.</p>
+  </header>
+
+
+  <!-- COLOUR PALETTE -->
+  <section>
+    <h2>Colour Palette</h2>
+    <p>Bold saturated primaries and secondaries applied in flat fields. No gradients, no subtlety.</p>
+
+    <nav class="colour-grid" aria-label="Memphis colour palette">
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-yellow);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Yellow</span><span class="colour-chip-var">--m-yellow</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-red);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Red</span><span class="colour-chip-var">--m-red</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-blue);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Blue</span><span class="colour-chip-var">--m-blue</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-teal);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Teal</span><span class="colour-chip-var">--m-teal</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-pink);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Pink</span><span class="colour-chip-var">--m-pink</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-mint);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Mint</span><span class="colour-chip-var">--m-mint</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-black);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Black</span><span class="colour-chip-var">--m-black</span></figcaption>
+      </figure>
+      <figure class="colour-chip">
+        <div class="colour-chip-face" style="background: var(--m-cream); border-block-end: 1.5px solid var(--m-black);"></div>
+        <figcaption class="colour-chip-meta"><span class="colour-chip-name">Cream</span><span class="colour-chip-var">--m-cream</span></figcaption>
+      </figure>
+    </nav>
+  </section>
+
+  <hr>
+
+  <!-- PATTERN SWATCHES -->
+  <section>
+    <h2>Pattern System</h2>
+    <p>The heart of Memphis. Every surface can carry a pattern &mdash; diagonal stripes, polka dots, squiggles, checkerboard, crosshatch, zigzag, confetti. All pure CSS.</p>
+
+    <nav class="swatch-grid" aria-label="Memphis pattern swatches">
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-stripe-y);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">stripe / diagonal</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-stripe-b);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">stripe / blue</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-stripe-p);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">stripe / pink</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-stripe-vert);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">stripe / vertical</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-dots-y);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">dots / yellow</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-dots-r);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">dots / red</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-dots-b);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">dots / blue</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-dots-sm);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">dots / small black</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-check-sm);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">checker / small</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-check-y);"></div>
+        <figcaption class="swatch-label">checker / yellow</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-check-p);"></div>
+        <figcaption class="swatch-label">checker / pink</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-cross);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">crosshatch</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-squiggle-r);background-color:var(--m-cream);background-size:40px 20px;"></div>
+        <figcaption class="swatch-label">squiggle / red</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-squiggle-b);background-color:var(--m-cream);background-size:40px 20px;"></div>
+        <figcaption class="swatch-label">squiggle / blue</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-zigzag-y);background-color:var(--m-cream);background-size:32px 16px;"></div>
+        <figcaption class="swatch-label">zigzag / yellow</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-zigzag-b);background-color:var(--m-cream);background-size:32px 16px;"></div>
+        <figcaption class="swatch-label">zigzag / blue</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-confetti);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">confetti</figcaption>
+      </figure>
+      <figure class="swatch">
+        <div class="swatch-face" style="background:var(--m-pat-dots-lg);background-color:var(--m-cream);"></div>
+        <figcaption class="swatch-label">dots / large</figcaption>
+      </figure>
+    </nav>
+  </section>
+
+  <div data-effect="memphis-zigzag" aria-hidden="true"></div>
+
+  <!-- TYPOGRAPHY -->
+  <section>
+    <h2>Typography</h2>
+    <p>Boogaloo (display), Outfit (body), Space Mono (code/data).</p>
+
+    <nav class="type-scale" aria-label="Memphis type scale">
+      <article class="type-row">
+        <p class="type-label">Display &mdash; Boogaloo</p>
+        <p style="font-family:var(--font-display);font-size:clamp(3rem,9vw,7rem);line-height:0.9;">MEMPHIS GROUP</p>
+      </article>
+
+      <article class="type-row">
+        <p class="type-label">Display / Multi-colour</p>
+        <p style="font-family:var(--font-display);font-size:clamp(2rem,7vw,5rem);line-height:0.95;">
+          <span style="color:var(--m-red);">BOLD.</span>
+          <span style="color:var(--m-blue);">FLAT.</span>
+          <span style="color:var(--m-teal);">FUN.</span>
+        </p>
+      </article>
+
+      <article class="type-row">
+        <p class="type-label">Body &mdash; Outfit 500</p>
+        <p style="font-size:1.15rem;font-weight:500;max-width:56ch;">Memphis rejected the austere good taste of Modernism. Sottsass declared: &ldquo;Design is a way of discussing life.&rdquo; Every surface became an opportunity for pattern, colour, and wit.</p>
+      </article>
+
+      <article class="type-row">
+        <p class="type-label">Mono &mdash; Space Mono</p>
+        <p style="font-family:var(--font-mono);font-size:1rem;color:var(--m-blue);">--m-font-display: 'Boogaloo', 'Futura', sans-serif;</p>
+        <p style="font-family:var(--font-mono);font-size:1rem;color:var(--m-red);">--m-font-body: 'Outfit', 'Century Gothic', sans-serif;</p>
+      </article>
+    </nav>
+  </section>
+
+  <div data-effect="memphis-dots" aria-hidden="true"></div>
+
+  <!-- BUTTONS -->
+  <section>
+    <h2>Buttons</h2>
+    <p>Solid fill and pattern-fill variants with hard offset shadows.</p>
+
+    <h3>Solid Fills</h3>
+    <nav class="btn-row" aria-label="Solid fill buttons">
+      <button class="m-btn" style="background:var(--m-yellow);">Yellow</button>
+      <button class="m-btn" style="background:var(--m-red);color:var(--m-white);">Red</button>
+      <button class="m-btn" style="background:var(--m-blue);color:var(--m-white);">Blue</button>
+      <button class="m-btn" style="background:var(--m-teal);">Teal</button>
+      <button class="m-btn" style="background:var(--m-pink);color:var(--m-white);">Pink</button>
+      <button class="m-btn" style="background:var(--m-mint);">Mint</button>
+    </nav>
+
+    <h3>Pattern Fills</h3>
+    <nav class="btn-row" aria-label="Pattern fill buttons">
+      <button class="m-btn" style="background:var(--m-pat-stripe-y);background-color:var(--m-cream);">Stripe</button>
+      <button class="m-btn" style="background:var(--m-pat-dots-b);background-color:var(--m-cream);">Dots</button>
+      <button class="m-btn" style="background:var(--m-pat-check-y);">Check</button>
+      <button class="m-btn" style="background:var(--m-pat-cross);background-color:var(--m-cream);">Cross</button>
+    </nav>
+  </section>
+
+  <div data-effect="memphis-stripe" aria-hidden="true"></div>
+
+  <!-- CARDS -->
+  <section>
+    <h2>Cards</h2>
+    <p>Cards with pattern-face headers and bold offset shadows.</p>
+
+    <nav class="card-grid" aria-label="Memphis cards">
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-stripe-y);background-color:var(--m-cream);"></div>
+        <div class="card-body">
+          <h3>Stripe Face</h3>
+          <p>Diagonal stripes on the card face, inspired by Memphis laminate tiles.</p>
+        </div>
+      </article>
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-dots-r);background-color:var(--m-cream);"></div>
+        <div class="card-body">
+          <h3>Polka Dots</h3>
+          <p>Red polka dots on cream, a Memphis staple from every catalogue.</p>
+        </div>
+      </article>
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-check-y);"></div>
+        <div class="card-body">
+          <h3>Checkerboard</h3>
+          <p>Yellow/cream conic-gradient checkerboard, referencing floor tiles.</p>
+        </div>
+      </article>
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-squiggle-r);background-color:var(--m-cream);background-size:40px 20px;"></div>
+        <div class="card-body">
+          <h3>Squiggle</h3>
+          <p>Inline SVG squiggle pattern, the most playful Memphis motif.</p>
+        </div>
+      </article>
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-confetti);background-color:var(--m-cream);"></div>
+        <div class="card-body">
+          <h3>Confetti</h3>
+          <p>Multi-colour scattered dots via layered radial gradients.</p>
+        </div>
+      </article>
+      <article class="m-card">
+        <div class="card-face" style="background:var(--m-pat-cross);background-color:var(--m-mint-lt);"></div>
+        <div class="card-body">
+          <h3>Crosshatch</h3>
+          <p>Grid lines crossing, referencing Memphis architectural drawings.</p>
+        </div>
+      </article>
+    </nav>
+  </section>
+
+  <div data-effect="memphis-zigzag" data-color="yellow" aria-hidden="true"></div>
+
+  <!-- ALERTS -->
+  <section>
+    <h2>Alerts</h2>
+
+    <article class="m-alert">
+      <div class="alert-accent" style="background:var(--m-yellow);"></div>
+      <div class="alert-body">
+        <strong style="color:var(--m-red);">Warning</strong>
+        <p>Memphis design may cause an irresistible urge to add patterns to everything.</p>
+      </div>
+    </article>
+
+    <article class="m-alert">
+      <div class="alert-accent" style="background:var(--m-blue);"></div>
+      <div class="alert-body">
+        <strong style="color:var(--m-blue);">Info</strong>
+        <p>The Memphis Group was active from 1981 to 1988 in Milan, Italy.</p>
+      </div>
+    </article>
+
+    <article class="m-alert">
+      <div class="alert-accent" style="background:var(--m-teal);"></div>
+      <div class="alert-body">
+        <strong style="color:var(--m-teal);">Success</strong>
+        <p>Pattern system loaded. All 18 pattern tokens are ready.</p>
+      </div>
+    </article>
+  </section>
+
+  <div data-effect="memphis-dots" data-color="blue" aria-hidden="true"></div>
+
+  <!-- FORMS -->
+  <section>
+    <h2>Form Controls</h2>
+
+    <form class="form-grid" onsubmit="return false">
+      <article class="m-field">
+        <label for="demo-name">Full Name</label>
+        <input type="text" id="demo-name" placeholder="Ettore Sottsass">
+      </article>
+      <article class="m-field">
+        <label for="demo-email">Email</label>
+        <input type="email" id="demo-email" placeholder="ettore@memphis.it">
+      </article>
+      <article class="m-field">
+        <label for="demo-role">Role</label>
+        <select id="demo-role">
+          <option>Designer</option>
+          <option>Architect</option>
+          <option>Artist</option>
+        </select>
+      </article>
+      <article class="m-field">
+        <label for="demo-bio">Bio</label>
+        <textarea id="demo-bio" rows="3" placeholder="Tell us about your relationship with pattern..."></textarea>
+      </article>
+    </form>
+  </section>
+
+  <div data-effect="memphis-stripe" data-color="teal" aria-hidden="true"></div>
+
+  <!-- DECORATIVE BAND DIVIDERS -->
+  <section>
+    <h2>Decorative Bands</h2>
+    <p>Zigzag, dots, and stripe band dividers via <code>data-effect</code> attributes.</p>
+
+    <nav class="band-demo" aria-label="Decorative band examples">
+      <article>
+        <p class="type-label">memphis-zigzag</p>
+        <div data-effect="memphis-zigzag" aria-hidden="true"></div>
+      </article>
+      <article>
+        <p class="type-label">memphis-zigzag (yellow)</p>
+        <div data-effect="memphis-zigzag" data-color="yellow" aria-hidden="true"></div>
+      </article>
+      <article>
+        <p class="type-label">memphis-dots</p>
+        <div data-effect="memphis-dots" aria-hidden="true"></div>
+      </article>
+      <article>
+        <p class="type-label">memphis-stripe</p>
+        <div data-effect="memphis-stripe" aria-hidden="true"></div>
+      </article>
+      <article>
+        <p class="type-label">memphis-stripe (pink)</p>
+        <div data-effect="memphis-stripe" data-color="pink" aria-hidden="true"></div>
+      </article>
+    </nav>
+  </section>
+
+</main>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

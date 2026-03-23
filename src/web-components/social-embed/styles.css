@@ -1,0 +1,73 @@
+@layer web-components {
+  social-embed {
+    display: block;
+  }
+
+  /* No-JS fallback — inner <a> visible as-is */
+  social-embed:not(:defined) {
+    display: block;
+  }
+
+  /* Idle: styled card inviting click */
+  social-embed[state="idle"] {
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: var(--radius-m);
+    padding: var(--size-m, 1rem);
+    cursor: pointer;
+    transition: border-color var(--duration-fast, 150ms);
+  }
+
+  social-embed[state="idle"]:hover {
+    border-color: var(--color-border-strong, var(--color-interactive));
+  }
+
+  social-embed[state="idle"]:focus-visible {
+    outline: 2px solid var(--color-interactive);
+    outline-offset: 2px;
+  }
+
+  /* Loading: skeleton pulse */
+  social-embed[state="loading"] {
+    min-block-size: 8rem;
+    background: var(--color-surface-raised, oklch(95% 0 0));
+    border-radius: var(--radius-m);
+    animation: social-embed-pulse var(--duration-slow, 1.5s) ease-in-out infinite alternate;
+  }
+
+  @keyframes social-embed-pulse {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
+  }
+
+  /* Loaded: constrain width */
+  social-embed[state="loaded"] {
+    max-inline-size: var(--embed-max-width, 550px);
+  }
+
+  /* Loaded iframes should fill the container */
+  social-embed[state="loaded"] iframe {
+    border: none;
+    max-inline-size: 100%;
+  }
+
+  /* Error */
+  social-embed[state="error"] {
+    border: var(--border-width-thin, 1px) solid var(--color-danger, oklch(55% 0.2 25));
+    border-radius: var(--radius-m);
+    padding: var(--size-s, 0.75rem);
+    color: var(--color-danger, oklch(55% 0.2 25));
+  }
+
+  /* Unsupported: no special treatment, fallback link shows naturally */
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    social-embed[state="loading"] {
+      animation: none;
+    }
+  }
+
+  :root[data-motion-reduced] social-embed[state="loading"] {
+    animation: none;
+  }
+}

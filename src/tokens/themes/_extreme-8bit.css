@@ -104,6 +104,23 @@
 
   --ease-default: steps(4);
   --ease-out: steps(4);
+
+  /* ===== FORM CONTROLS ===== */
+  --control-size: 1.5rem;
+  --control-border: oklch(70% 0.2 145);
+  --control-checked-bg: oklch(70% 0.2 145);
+  --control-checked-border: oklch(70% 0.2 145);
+  --input-bg: oklch(15% 0.02 250);
+  --input-border: oklch(40% 0.04 250);
+  --input-border-focus: oklch(70% 0.2 145);
+  --range-track-h: 0.5rem;
+  --range-track-bg: oklch(25% 0.03 250);
+  --range-track-fill: oklch(70% 0.2 145);
+  --range-thumb-size: 1.5rem;
+  --range-thumb-bg: oklch(20% 0.02 250);
+  --range-thumb-border: oklch(70% 0.2 145);
+  --progress-track-bg: oklch(25% 0.03 250);
+  --progress-fill: oklch(70% 0.2 145);
 }
 
 /* 8-bit page-level effects - only on :root */
@@ -186,7 +203,11 @@
     color: var(--color-primary);
 
     &::before {
-      content: "► ";
+      content: "■ ";
+    }
+
+    &::after {
+      content: " ■";
     }
   }
 
@@ -311,6 +332,46 @@
     }
   }
 
+  /* Customizable select: pixel-art picker */
+  @supports (appearance: base-select) {
+    & select:not([multiple])::picker-icon {
+      color: var(--color-text);
+    }
+
+    & select:not([multiple]):open {
+      border-color: var(--color-primary);
+    }
+
+    & select:not([multiple])::picker(select) {
+      background: var(--color-surface);
+      border: var(--border-pixel) solid var(--color-border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    & select:not([multiple]) option:hover {
+      background: var(--color-surface-raised);
+    }
+
+    & select:not([multiple]) option:checked {
+      color: var(--color-primary);
+    }
+
+    & select:not([multiple]) option::checkmark {
+      color: var(--color-primary);
+    }
+
+    & select:not([multiple]) optgroup > legend {
+      font-family: var(--font-sans);
+      font-size: 0.625rem;
+      color: var(--color-cyan);
+    }
+
+    & select:not([multiple]) optgroup:not(:first-of-type) {
+      border-color: var(--color-border);
+      border-width: var(--border-pixel);
+    }
+  }
+
   /* Pixel code blocks */
   & pre {
     background: oklch(8% 0 0);
@@ -420,39 +481,147 @@
 
 }
 
-/* Light mode (Game Boy inspired) */
+/* Light mode (Game Boy inspired)
+   Faithful 4-shade green palette:
+   Lightest #9BBC0F → screen bg / highlight
+   Light    #8BAC0F → surface / secondary
+   Dark     #306230 → text / detail
+   Darkest  #0F380F → emphasis / inverted bg
+   ---------------------------------------------------------------- */
 :root[data-theme~="8bit"][data-mode="light"],
 [data-theme~="8bit"][data-mode="light"] {
   color-scheme: light;
 
-  --color-surface: oklch(85% 0.05 115); /* GB green-ish */
-  --color-surface-alt: oklch(75% 0.06 115);
-  --color-surface-raised: oklch(90% 0.04 115);
-  --color-surface-sunken: oklch(70% 0.06 115);
-  --color-background: oklch(88% 0.05 115);
+  /* Game Boy 4-shade palette as tokens */
+  --gb-lightest: oklch(76% 0.12 115);
+  --gb-light:    oklch(68% 0.11 115);
+  --gb-dark:     oklch(38% 0.07 140);
+  --gb-darkest:  oklch(20% 0.05 145);
 
-  --color-text: oklch(15% 0.05 115);
-  --color-text-muted: oklch(30% 0.05 115);
-  --color-text-subtle: oklch(45% 0.05 115);
+  --color-surface: var(--gb-lightest);
+  --color-surface-alt: var(--gb-light);
+  --color-surface-raised: oklch(80% 0.10 115);
+  --color-surface-sunken: var(--gb-light);
+  --color-background: var(--gb-lightest);
 
-  --color-primary: oklch(30% 0.1 115);
-  --color-primary-hover: oklch(25% 0.12 115);
-  --color-primary-subtle: oklch(75% 0.06 115);
+  --color-text: var(--gb-darkest);
+  --color-text-muted: var(--gb-dark);
+  --color-text-subtle: oklch(48% 0.06 135);
 
-  --color-border: oklch(25% 0.05 115);
-  --color-border-muted: oklch(55% 0.05 115);
-  --color-border-strong: oklch(15% 0.05 115);
+  --color-primary: var(--gb-darkest);
+  --color-primary-hover: var(--gb-dark);
+  --color-primary-subtle: var(--gb-light);
 
-  /* Fix heading contrast: dark values for light Game Boy surface */
-  --color-yellow: oklch(40% 0.15 90);     /* Dark gold for h1 */
-  --color-cyan: oklch(30% 0.12 200);      /* Dark teal for h2 */
-  --color-accent: oklch(45% 0.2 25);      /* Darker red */
-  --color-magenta: oklch(40% 0.18 320);   /* Darker magenta */
-  --color-orange: oklch(45% 0.18 50);     /* Darker orange */
-  --color-blue: oklch(35% 0.15 250);      /* Darker blue */
+  --color-border: var(--gb-darkest);
+  --color-border-muted: var(--gb-dark);
+  --color-border-strong: var(--gb-darkest);
 
-  --shadow-sm: 4px 4px 0 oklch(15% 0.05 115 / 0.6);
-  --shadow-md: 4px 4px 0 oklch(15% 0.05 115 / 0.6);
+  /* Semantic colors — all mapped to the 4-shade palette */
+  --color-interactive: var(--gb-darkest);
+  --color-yellow: var(--gb-darkest);
+  --color-cyan: var(--gb-darkest);
+  --color-accent: var(--gb-darkest);
+  --color-magenta: var(--gb-darkest);
+  --color-orange: var(--gb-darkest);
+  --color-blue: var(--gb-darkest);
+
+  /* Form controls */
+  --input-bg: var(--gb-lightest);
+  --input-border: var(--gb-darkest);
+  --input-border-focus: var(--gb-darkest);
+  --control-border: var(--gb-darkest);
+  --control-checked-bg: var(--gb-darkest);
+  --range-track-bg: var(--gb-dark);
+  --range-track-fill: var(--gb-darkest);
+  --range-thumb-bg: var(--gb-lightest);
+  --range-thumb-border: var(--gb-darkest);
+
+  /* Pixel shadows in darkest shade */
+  --shadow-xs: 2px 2px 0 var(--gb-darkest);
+  --shadow-sm: 4px 4px 0 var(--gb-darkest);
+  --shadow-md: 4px 4px 0 var(--gb-darkest);
+  --shadow-lg: 8px 8px 0 var(--gb-darkest);
+
+  /* No CRT glow in Game Boy mode */
+  --glow-crt: none;
+
+  /* Buttons: darkest bg, lightest text — clear contrast */
+  & :is(main, article) button,
+  & :is(main, article) .button {
+    background: var(--gb-darkest);
+    color: var(--gb-lightest);
+    border-color: var(--gb-darkest);
+
+    &::before {
+      background: oklch(100% 0 0 / 0.08);
+    }
+
+    &:hover {
+      background: var(--gb-dark);
+      color: var(--gb-lightest);
+    }
+  }
+
+  /* Inputs: lightest bg, dark border, darkest text */
+  & :is(main, article) input,
+  & :is(main, article) textarea {
+    background: var(--gb-lightest);
+    color: var(--gb-darkest);
+    border-color: var(--gb-darkest);
+  }
+
+  /* Inline code: light shade bg, darkest text */
+  & :is(main, article) code {
+    background: var(--gb-light);
+    color: var(--gb-darkest);
+    border-color: var(--gb-dark);
+  }
+
+  /* Pre: inverted — darkest bg, lightest text */
+  & :is(main, article) pre {
+    background: var(--gb-darkest);
+    color: var(--gb-lightest);
+    border-color: var(--gb-dark);
+
+    & code {
+      background: transparent;
+      color: inherit;
+      border: none;
+    }
+  }
+
+  /* Code-block: inverted Game Boy — darkest bg, lightest text
+     All syntax highlighting uses only the 4 shades */
+  & :is(main, article) code-block {
+    --cb-bg: var(--gb-darkest);
+    --cb-code-bg: var(--gb-darkest);
+    --cb-header-bg: oklch(25% 0.05 145);
+    --cb-text-color: var(--gb-lightest);
+    --cb-border-color: var(--gb-dark);
+    --cb-border-radius: 0;
+    --cb-comment: var(--gb-dark);
+    --cb-keyword: var(--gb-lightest);
+    --cb-string: oklch(72% 0.10 115);
+    --cb-function: oklch(60% 0.08 115);
+    --cb-number: oklch(72% 0.10 115);
+    --cb-tag: var(--gb-light);
+    --cb-attribute: var(--gb-lightest);
+    --cb-button-bg: oklch(25% 0.05 145);
+    --cb-button-color: var(--gb-light);
+    --cb-button-hover-bg: var(--gb-dark);
+    --cb-scrollbar-track: var(--gb-darkest);
+    --cb-scrollbar-thumb: var(--gb-dark);
+  }
+
+  & :is(main, article) browser-window {
+    --browser-window-bg: var(--gb-lightest);
+    --browser-window-header-bg: var(--gb-darkest);
+    --browser-window-content-bg: var(--gb-lightest);
+    --browser-window-border-color: var(--gb-darkest);
+    --browser-window-text-color: var(--gb-lightest);
+    --browser-window-text-muted: var(--gb-light);
+    --browser-window-url-bg: var(--gb-dark);
+  }
 }
 
 /* Light mode: suppress CRT scanlines */

@@ -1,0 +1,297 @@
+/* reader-view: Immersive reading shell with scroll and paged modes */
+
+reader-view {
+  display: block;
+}
+
+reader-view:not(:defined) {
+  display: block;
+}
+
+/* ── Full-viewport shell (pages mode) ── */
+
+reader-view[mode="pages"] {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-reader, 10);
+  display: grid;
+  grid-template-rows: var(--_reader-chrome-h, 3.625rem) 2px 1fr;
+  background: var(--color-background, #fff);
+}
+
+/* ── Chrome bar ── */
+
+.reader-chrome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--size-m, 1rem);
+  padding-inline: max(var(--size-m, 1rem), env(safe-area-inset-left))
+                   max(var(--size-m, 1rem), env(safe-area-inset-right));
+  block-size: var(--_reader-chrome-h, 3.625rem);
+  background: var(--color-surface, #f5f5f5);
+  border-block-end: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  flex-shrink: 0;
+}
+
+.reader-chrome-copy {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.reader-chrome-kicker {
+  font-size: var(--font-size-2xs, 0.625rem);
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #888);
+}
+
+.reader-chrome-title {
+  font-size: var(--font-size-xs, 0.75rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #888);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reader-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s, 0.75rem);
+  min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.reader-controls::-webkit-scrollbar { display: none; }
+
+.reader-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-3xs, 0.125rem);
+  padding: var(--size-3xs, 0.125rem);
+  background: var(--color-surface-raised, rgba(0, 0, 0, 0.04));
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  border-radius: var(--radius-full, 999px);
+  flex: 0 0 auto;
+}
+
+.reader-control-label {
+  padding-inline: var(--size-xs, 0.5rem) var(--size-3xs, 0.125rem);
+  color: var(--color-text-muted, #888);
+  font-size: var(--font-size-2xs, 0.625rem);
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── Chrome buttons ── */
+
+.reader-seg-btn,
+.reader-icon-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted, #888);
+  cursor: pointer;
+  border-radius: var(--radius-full, 999px);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: var(--font-weight-semibold, 600);
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.reader-seg-btn {
+  min-inline-size: 2.2rem;
+  padding: 0.44rem 0.72rem;
+  font-size: var(--font-size-2xs, 0.625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reader-icon-btn {
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.reader-seg-btn:hover,
+.reader-icon-btn:hover {
+  color: var(--color-text, #222);
+  background: var(--color-surface-raised, rgba(0, 0, 0, 0.06));
+}
+
+.reader-seg-btn[data-reader-state="active"] {
+  color: var(--color-interactive-text, #fff);
+  background: var(--color-interactive, oklch(55% 0.2 260));
+}
+
+.reader-icon-btn:disabled,
+.reader-seg-btn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+/* ── Progress bar ── */
+
+.reader-progress {
+  background: var(--color-interactive, oklch(55% 0.2 260));
+  transform-origin: left;
+  transform: scaleX(var(--_progress, 0));
+  transition: transform var(--motion-duration-normal, 180ms) var(--motion-ease-out, ease-out);
+  pointer-events: none;
+}
+
+/* ── Scroll container ── */
+
+.reader-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding:
+    max(var(--size-m, 1rem), env(safe-area-inset-top))
+    max(var(--size-m, 1rem), env(safe-area-inset-right))
+    max(var(--size-m, 1rem), calc(var(--size-m, 1rem) + env(safe-area-inset-bottom)))
+    max(var(--size-m, 1rem), env(safe-area-inset-left));
+}
+
+/* ── Pager container ── */
+
+.reader-pager {
+  display: none;
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  background: var(--color-background, #fff);
+}
+
+.reader-pager::-webkit-scrollbar { display: none; }
+
+/* Inner layout-columns surface (pages mode)
+   Key constraint: column-gap = page-gutter * 2 so that the visual
+   space between the last column of page N and first column of page
+   N+1 (gutter + gutter) equals the inter-column gap. This makes
+   scrollWidth an exact multiple of clientWidth → clean page breaks.
+*/
+
+.reader-pager > layout-columns {
+  --_page-gutter: var(--_reader-page-gutter, clamp(1.5rem, 4vw, 4.5rem));
+  --_page-gap: calc(var(--_page-gutter) * 2);
+
+  inline-size: 100%;
+  min-inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  padding-block: clamp(1.25rem, 3.6vh, 2.375rem) clamp(1.75rem, 4.8vh, 3.25rem);
+  padding-inline: var(--_page-gutter);
+  column-fill: auto;
+  column-gap: var(--_page-gap);
+  column-rule: none;
+}
+
+.reader-pager > layout-columns > * {
+  max-inline-size: none;
+}
+
+/* ── Page nav pill ── */
+
+.reader-page-nav {
+  position: absolute;
+  inset-block-end: max(var(--size-l, 1.5rem), calc(var(--size-m, 1rem) + env(safe-area-inset-bottom)));
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  display: none;
+  align-items: center;
+  gap: var(--size-m, 1rem);
+  background: var(--color-surface, #f5f5f5);
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  border-radius: var(--radius-full, 999px);
+  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  box-shadow: var(--shadow-m, 0 4px 12px rgba(0, 0, 0, 0.12));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 5;
+}
+
+.reader-nav-btn {
+  inline-size: 2rem;
+  block-size: 2rem;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-full, 999px);
+  display: inline-grid;
+  place-items: center;
+  color: var(--color-text-muted, #888);
+  cursor: pointer;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: var(--font-weight-semibold, 600);
+  font-size: 1rem;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.reader-nav-btn:hover {
+  color: var(--color-text, #222);
+  background: var(--color-surface-raised, rgba(0, 0, 0, 0.06));
+}
+
+.reader-nav-btn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.reader-page-indicator {
+  min-inline-size: 6.5ch;
+  text-align: center;
+  color: var(--color-text-muted, #888);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: var(--font-weight-semibold, 600);
+  font-size: var(--font-size-2xs, 0.625rem);
+  letter-spacing: 0.12em;
+}
+
+/* ── Mobile chrome collapse ── */
+
+@media (max-width: 47.999rem) {
+  .reader-control-label { display: none; }
+  .reader-chrome-kicker { display: none; }
+  .reader-seg-btn {
+    min-inline-size: 2rem;
+    padding-inline: 0.62rem;
+  }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .reader-progress,
+  .reader-seg-btn,
+  .reader-icon-btn,
+  .reader-nav-btn { transition: none; }
+}
+
+/* ── Print: collapse to scroll mode ── */
+
+@media print {
+  reader-view {
+    position: static !important;
+    display: block !important;
+  }
+  .reader-chrome,
+  .reader-progress,
+  .reader-page-nav { display: none !important; }
+  .reader-pager { display: none !important; }
+  .reader-scroll {
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+}

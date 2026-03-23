@@ -178,7 +178,7 @@ Flexible list layout for displaying collections of records. More adaptable than 
     flex-wrap: wrap;
     gap: var(--size-xs);
     margin-block-start: var(--size-xs);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     color: var(--text-muted);
   }
 

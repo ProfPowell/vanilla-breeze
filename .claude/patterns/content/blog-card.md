@@ -141,7 +141,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
       display: inline-block;
       width: fit-content;
       padding: var(--size-2xs) var(--size-xs);
-      font-size: var(--text-xs);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-medium);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -152,7 +152,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
 
     /* Title */
     & h3 {
-      font-size: var(--text-xl);
+      font-size: var(--font-size-xl);
       font-weight: var(--font-weight-semibold);
       line-height: 1.3;
       margin: 0;
@@ -221,7 +221,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
 
     &[data-size="large"] {
       & h3 {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
       }
     }
 
@@ -239,7 +239,7 @@ Card specifically designed for blog post previews. Displays featured image, cate
       }
 
       & h3 {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
       }
     }
   }

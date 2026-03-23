@@ -4,16 +4,17 @@
  * Renders a thumbnail + play button on load, replacing with an iframe
  * only when the user clicks. Privacy-first: uses youtube-nocookie.com.
  *
- * @attr {string}  data-id        - YouTube video ID (required)
- * @attr {string}  data-title     - Accessible title for iframe + play button
- * @attr {number}  data-start     - Start playback at N seconds
- * @attr {string}  data-list      - YouTube playlist ID
- * @attr {string}  data-params    - Raw query string appended to embed URL
- * @attr {boolean} data-autoplay  - Auto-initialise iframe on load (no facade)
- * @attr {string}  data-thumbnail - Thumbnail resolution: hq | mq | sd | maxres
+ * @attr {string}  video-id   - YouTube video ID (required)
+ * @attr {string}  title      - Accessible title for iframe + play button
+ * @attr {number}  start      - Start playback at N seconds
+ * @attr {string}  list       - YouTube playlist ID
+ * @attr {string}  params     - Raw query string appended to embed URL
+ * @attr {boolean} autoplay   - Auto-initialise iframe on load (no facade)
+ * @attr {string}  thumbnail  - Thumbnail resolution: hq | mq | sd | maxres
+ * @attr {string}  state      - Component-managed: "ready" (facade) or "active" (iframe)
  *
  * @example
- * <youtube-player data-id="dQw4w9WgXcQ" data-title="Never Gonna Give You Up"></youtube-player>
+ * <youtube-player video-id="dQw4w9WgXcQ" title="Never Gonna Give You Up"></youtube-player>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -27,15 +28,15 @@ class YouTubePlayer extends HTMLElement {
   #title;
 
   connectedCallback() {
-    this.#id = this.dataset.id;
-    this.#title = this.dataset.title ?? 'Play video';
+    this.#id = this.getAttribute('video-id');
+    this.#title = this.getAttribute('title') ?? 'Play video';
 
     if (!this.#id) {
-      console.warn('youtube-player: missing required data-id attribute');
+      console.warn('youtube-player: missing required video-id attribute');
       return;
     }
 
-    if (this.hasAttribute('data-autoplay')) {
+    if (this.hasAttribute('autoplay')) {
       this.#activate();
     } else {
       this.#renderFacade();
@@ -45,26 +46,26 @@ class YouTubePlayer extends HTMLElement {
   #buildEmbedURL() {
     const params = new URLSearchParams({ autoplay: '1' });
 
-    const start = this.dataset.start;
+    const start = this.getAttribute('start');
     if (start) params.set('start', start);
 
-    const list = this.dataset.list;
+    const list = this.getAttribute('list');
     if (list) params.set('list', list);
 
-    if (this.dataset.params) {
-      new URLSearchParams(this.dataset.params).forEach((v, k) => params.set(k, v));
+    if (this.getAttribute('params')) {
+      new URLSearchParams(this.getAttribute('params')).forEach((v, k) => params.set(k, v));
     }
 
     return `https://www.youtube-nocookie.com/embed/${this.#id}?${params}`;
   }
 
   #thumbnailURL() {
-    const res = this.dataset.thumbnail ?? 'hq';
+    const res = this.getAttribute('thumbnail') ?? 'hq';
     return `https://i.ytimg.com/vi/${this.#id}/${THUMB_MAP[res] ?? 'hqdefault'}.jpg`;
   }
 
   #renderFacade() {
-    this.dataset.state = 'ready';
+    this.setAttribute('state', 'ready');
     this.setAttribute('tabindex', '0');
     this.setAttribute('role', 'button');
     this.setAttribute('aria-label', `Play ${this.#title}`);
@@ -89,7 +90,7 @@ class YouTubePlayer extends HTMLElement {
   };
 
   #activate() {
-    this.dataset.state = 'active';
+    this.setAttribute('state', 'active');
     this.removeAttribute('tabindex');
     this.removeAttribute('role');
     this.removeAttribute('aria-label');

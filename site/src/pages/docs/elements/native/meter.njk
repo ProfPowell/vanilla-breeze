@@ -36,35 +36,34 @@ permalink: /docs/elements/native/meter/
   <meter value="14.3" min="0" max="20">71.5%</meter>
 </section>{% endset %}
 
-{% set cssReferenceCode %}meter {
+{% set cssReferenceCode %}/* Tokens (defined in src/tokens/forms.css) */
+:root {
+  --meter-h:           var(--size-s);
+  --progress-track-bg: var(--color-surface-raised);
+}
+
+meter {
   appearance: none;
   display: block;
   inline-size: 100%;
-  block-size: var(--size-s);
+  block-size: var(--meter-h);
   border: none;
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--color-surface-raised);
+  background: var(--progress-track-bg);
 }
 
 /* WebKit/Blink meter styling */
 meter::-webkit-meter-bar {
-  background: var(--color-surface-raised);
+  background: var(--progress-track-bg);
   border-radius: var(--radius-full);
   border: none;
 }
 
-meter::-webkit-meter-optimum-value {
-  background: oklch(60% 0.18 145); /* green */
-}
-
-meter::-webkit-meter-suboptimum-value {
-  background: oklch(75% 0.18 75); /* yellow */
-}
-
-meter::-webkit-meter-even-less-good-value {
-  background: oklch(55% 0.2 25); /* red */
-}
+/* Semantic colors via tokens */
+meter::-webkit-meter-optimum-value      { background: var(--color-success); }
+meter::-webkit-meter-suboptimum-value   { background: var(--color-warning); }
+meter::-webkit-meter-even-less-good-value { background: var(--color-error); }
 
 /* Size variants */
 meter.xs { block-size: var(--size-3xs); }
@@ -76,8 +75,8 @@ meter.l { block-size: var(--size-m); }
 meter.segmented {
   background: repeating-linear-gradient(
     90deg,
-    var(--color-surface-raised),
-    var(--color-surface-raised) 9%,
+    var(--progress-track-bg),
+    var(--progress-track-bg) 9%,
     var(--color-surface) 9%,
     var(--color-surface) 10%
   );

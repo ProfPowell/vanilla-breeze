@@ -1,0 +1,175 @@
+/* Customizable Select — appearance: base-select
+   Progressive enhancement for Chrome 135+.
+   Unlocks full CSS control over trigger, picker, options, and checkmark
+   while retaining native semantics, keyboard nav, and form participation.
+   Wrapped in @supports — zero-risk for non-supporting browsers.
+   ---------------------------------------------------------------- */
+
+@supports (appearance: base-select) {
+
+  /* ================================================================
+     Section A — Core Enhancement
+     ================================================================ */
+
+  select:not([multiple]) {
+    appearance: base-select;
+
+    /* base-select needs flex to lay out selected value + ::picker-icon inline.
+       Our shared input styles set display: block — override it here. */
+    display: flex;
+    align-items: center;
+
+    /* Remove old SVG chevron — base-select provides ::picker-icon */
+    background-image: none;
+    padding-inline-end: var(--size-s);
+  }
+
+  /* Picker icon (built-in chevron) */
+  select:not([multiple])::picker-icon {
+    color: var(--color-text);
+    opacity: 0.55;
+    transition: rotate var(--duration-normal) var(--ease-out);
+  }
+
+  select:not([multiple]):open::picker-icon {
+    rotate: 180deg;
+  }
+
+  /* The dropdown picker */
+  select:not([multiple])::picker(select) {
+    appearance: base-select;
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--input-radius);
+    box-shadow: var(--shadow-md);
+    max-block-size: 16rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--size-xs);
+
+    /* Entry animation */
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity var(--duration-normal) var(--ease-out),
+      transform var(--duration-normal) var(--ease-out),
+      display var(--duration-normal) allow-discrete,
+      overlay var(--duration-normal) allow-discrete;
+  }
+
+  /* Starting-style for open animation */
+  @starting-style {
+    select:not([multiple])::picker(select) {
+      opacity: 0;
+      transform: translateY(-0.25rem);
+    }
+  }
+
+  /* Options */
+  select:not([multiple]) option {
+    padding: var(--size-xs) var(--size-s);
+    margin-inline: var(--size-xs);
+    border-radius: var(--radius-s);
+    transition: background var(--duration-fast) var(--ease-default);
+  }
+
+  select:not([multiple]) option:hover {
+    background: var(--color-surface-raised);
+  }
+
+  select:not([multiple]) option:checked {
+    background: transparent;
+    color: var(--color-interactive);
+    font-weight: 500;
+  }
+
+  /* Checkmark on selected option */
+  select:not([multiple]) option::checkmark {
+    color: var(--color-interactive);
+  }
+
+  /* Option groups */
+  select:not([multiple]) optgroup {
+    padding-block-start: var(--size-xs);
+  }
+
+  select:not([multiple]) optgroup:not(:first-of-type) {
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+    margin-block-start: var(--size-xs);
+  }
+
+  select:not([multiple]) optgroup > legend {
+    padding: var(--size-xs) var(--size-s);
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  /* Focus ring on open select */
+  select:not([multiple]):open {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px oklch(from var(--input-border-focus) l c h / 0.15);
+  }
+
+  /* Reduced motion: disable picker animation */
+  @media (prefers-reduced-motion: reduce) {
+    select:not([multiple])::picker(select) {
+      transition-duration: 0ms;
+    }
+
+    select:not([multiple])::picker-icon {
+      transition-duration: 0ms;
+    }
+  }
+
+
+  /* ================================================================
+     Section B — Rich Content (custom trigger + images in options)
+     ================================================================ */
+
+  /* Custom trigger button */
+  select:not([multiple]) > button {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    inline-size: 100%;
+  }
+
+  /* Mirror selected option content in trigger */
+  select:not([multiple]) selectedcontent {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  /* Hide detail text in closed trigger to keep it compact */
+  select:not([multiple]) selectedcontent .detail {
+    display: none;
+  }
+
+  /* Rich option layout */
+  select:not([multiple]) option {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+  }
+
+  /* Images / avatars / flags inside options */
+  select:not([multiple]) option img {
+    inline-size: 1.5em;
+    block-size: 1.5em;
+    border-radius: var(--radius-s);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+}

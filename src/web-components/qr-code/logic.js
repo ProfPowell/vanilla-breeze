@@ -4,14 +4,14 @@
  * Generates a QR code from text content or a URL. Progressive enhancement:
  * the text content is visible before JS loads, then replaced with a QR code.
  *
- * @attr {string} data-value - The text/URL to encode (or uses textContent)
- * @attr {number} data-size - Canvas size in pixels (default: 200)
- * @attr {string} data-color - Foreground color (default: currentColor resolved)
- * @attr {string} data-background - Background color (default: transparent)
- * @attr {number} data-error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M)
+ * @attr {string} value - The text/URL to encode (or uses textContent)
+ * @attr {number} size - Canvas size in pixels (default: 200)
+ * @attr {string} color - Foreground color (default: currentColor resolved)
+ * @attr {string} background - Background color (default: transparent)
+ * @attr {number} error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M)
  *
  * @example
- * <qr-code data-value="https://example.com">https://example.com</qr-code>
+ * <qr-code value="https://example.com">https://example.com</qr-code>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -20,11 +20,11 @@ class QrCodeWc extends HTMLElement {
   #canvas;
 
   connectedCallback() {
-    const value = this.dataset.value || this.textContent.trim();
+    const value = this.getAttribute('value') || this.textContent.trim();
     if (!value) return;
 
-    const size = parseInt(this.dataset.size ?? '200', 10) || 200;
-    const ecl = parseInt(this.dataset.errorCorrection ?? '1', 10) || 1;
+    const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
+    const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
 
     this.#canvas = document.createElement('canvas');
     this.#canvas.width = size;
@@ -41,15 +41,15 @@ class QrCodeWc extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['data-value', 'data-size'];
+    return ['value', 'size'];
   }
 
   attributeChangedCallback() {
     if (!this.#canvas) return;
-    const value = this.dataset.value || this.textContent.trim();
+    const value = this.getAttribute('value') || this.textContent.trim();
     if (!value) return;
-    const size = parseInt(this.dataset.size ?? '200', 10) || 200;
-    const ecl = parseInt(this.dataset.errorCorrection ?? '1', 10) || 1;
+    const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
+    const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
     this.#canvas.width = size;
     this.#canvas.height = size;
     this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
@@ -64,8 +64,8 @@ class QrCodeWc extends HTMLElement {
 
     // Resolve colors
     const style = getComputedStyle(this);
-    const fg = this.dataset.color || style.color || '#000';
-    const bg = this.dataset.background || 'transparent';
+    const fg = this.getAttribute('color') || style.color || '#000';
+    const bg = this.getAttribute('background') || 'transparent';
 
     // Clear
     ctx.clearRect(0, 0, size, size);

@@ -37,6 +37,7 @@ const elementsByLetter = {
     { name: 'chat-input', type: 'component', href: '/docs/elements/web-components/chat-input/' },
     { name: 'chat-message', type: 'custom', href: '/docs/elements/custom-elements/chat-message/' },
     { name: 'chat-thread', type: 'custom', href: '/docs/elements/custom-elements/chat-thread/' },
+    { name: 'change-set', type: 'component', href: '/docs/elements/web-components/change-set/' },
     { name: 'chat-window', type: 'component', href: '/docs/elements/web-components/chat-window/' },
     { name: 'cite', type: 'native', href: '/docs/elements/native/cite/' },
     { name: 'code', type: 'native', href: '/docs/elements/native/code/' },
@@ -81,6 +82,7 @@ const elementsByLetter = {
   ],
   G: [
     { name: 'geo-map', type: 'component', href: '/docs/elements/web-components/geo-map/' },
+    { name: 'glossary-index', type: 'component', href: '/docs/elements/web-components/glossary-index/' },
   ],
   H: [
     { name: 'h1', type: 'native', href: '/docs/elements/native/h1/' },
@@ -150,6 +152,8 @@ const elementsByLetter = {
   ],
   P: [
     { name: 'p', type: 'native', href: '/docs/elements/native/p/' },
+    { name: 'page-info', type: 'component', href: '/docs/elements/web-components/page-info/' },
+    { name: 'page-meta', type: 'component', href: '/docs/elements/web-components/page-meta/' },
     { name: 'page-toc', type: 'component', href: '/docs/elements/web-components/page-toc/' },
     { name: 'picture', type: 'native', href: '/docs/elements/native/picture/' },
     { name: 'pre', type: 'native', href: '/docs/elements/native/pre/' },
@@ -173,6 +177,7 @@ const elementsByLetter = {
     { name: 'search', type: 'native', href: '/docs/elements/native/search/' },
     { name: 'section', type: 'native', href: '/docs/elements/native/section/' },
     { name: 'select', type: 'native', href: '/docs/elements/native/select/' },
+    { name: 'selectedcontent', type: 'native', href: '/docs/elements/native/selectedcontent/' },
     { name: 'settings-panel', type: 'component', href: '/docs/elements/web-components/settings-panel/' },
     { name: 'short-cuts', type: 'component', href: '/docs/elements/web-components/shortcuts/' },
     { name: 'slide-accept', type: 'component', href: '/docs/elements/web-components/slide-accept/' },
@@ -180,6 +185,8 @@ const elementsByLetter = {
     { name: 'small', type: 'native', href: '/docs/elements/native/small/' },
     { name: 'source', type: 'native', href: '/docs/elements/native/source/' },
     { name: 'span', type: 'native', href: '/docs/elements/native/span/' },
+    { name: 'site-index', type: 'component', href: '/docs/elements/web-components/site-index/' },
+    { name: 'site-map', type: 'component', href: '/docs/elements/web-components/site-map/' },
     { name: 'site-search', type: 'component', href: '/docs/elements/web-components/site-search/' },
     { name: 'split-surface', type: 'component', href: '/docs/elements/web-components/splitter/' },
     { name: 'star-rating', type: 'component', href: '/docs/elements/web-components/rating/', pack: 'effects' },
@@ -194,6 +201,7 @@ const elementsByLetter = {
   T: [
     { name: 'table', type: 'native', href: '/docs/elements/native/table/' },
     { name: 'tab-set', type: 'component', href: '/docs/elements/web-components/tabs/' },
+    { name: 'spacing-specimen', type: 'component', href: '/docs/elements/web-components/spacing-specimen/' },
     { name: 'type-specimen', type: 'component', href: '/docs/elements/web-components/type-specimen/' },
     { name: 'tbody', type: 'native', href: '/docs/elements/native/tbody/' },
     { name: 'td', type: 'native', href: '/docs/elements/native/td/' },
@@ -206,6 +214,7 @@ const elementsByLetter = {
     { name: 'thead', type: 'native', href: '/docs/elements/native/thead/' },
     { name: 'theme-picker', type: 'component', href: '/docs/elements/web-components/theme-picker/', pack: 'ui' },
     { name: 'time', type: 'native', href: '/docs/elements/native/time/' },
+    { name: 'time-index', type: 'component', href: '/docs/elements/web-components/time-index/' },
     { name: 'title', type: 'native', href: '/docs/elements/native/title/' },
     { name: 'toast-msg', type: 'component', href: '/docs/elements/web-components/toast/' },
     { name: 'tool-tip', type: 'component', href: '/docs/elements/web-components/tooltip/' },

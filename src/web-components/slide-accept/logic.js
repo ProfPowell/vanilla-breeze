@@ -3,18 +3,22 @@
  *
  * A draggable handle users slide across a track to confirm an action.
  * Uses pointer capture for reliable drag, springs back if released early,
- * and fires `slide-accept` on activation.
+ * and fires `slide-accept:accept` on activation.
  *
- * @attr {string}  data-label           - Track label text (default: "Slide to confirm")
- * @attr {string}  data-activated-label - Label after activation (default: "Confirmed!")
- * @attr {string}  data-attention       - Attention animation: "shimmer" | "pulse"
- * @attr {number}  data-threshold       - Activation threshold 0-100 (default: 90)
+ * No-JS fallback: the element's text content is displayed as a readable
+ * label inside a styled pill. JavaScript replaces this with the
+ * interactive track + handle.
+ *
+ * @attr {string}  label           - Track label text (default: "Slide to confirm")
+ * @attr {string}  activated-label - Label after activation (default: "Confirmed!")
+ * @attr {string}  attention       - Attention animation: "shimmer" | "pulse"
+ * @attr {number}  threshold       - Activation threshold 0-100 (default: 90)
  *
  * @fires slide-accept:accept - Handle reached threshold
  * @fires slide-accept:reset  - After reset() called
  *
  * @example
- * <slide-accept data-label="Slide to confirm">
+ * <slide-accept label="Slide to confirm">
  *   Slide to confirm
  * </slide-accept>
  */
@@ -29,43 +33,25 @@ class SlideAccept extends HTMLElement {
   #startX = 0;
   #startPos = 0;
   #activated = false;
+  #setupDone = false;
 
   get activated() {
     return this.#activated;
   }
 
   get #threshold() {
-    return Number(this.dataset.threshold) || 90;
+    const raw = Number(this.getAttribute('threshold'));
+    if (Number.isNaN(raw) || raw < 0) return 90;
+    if (raw > 100) return 100;
+    return raw;
   }
 
   connectedCallback() {
-    // Build internal DOM
-    this.#track = document.createElement('div');
-    this.#track.className = 'slide-track';
+    if (!this.#setupDone) {
+      this.#build();
+      this.#setupDone = true;
+    }
 
-    this.#label = document.createElement('span');
-    this.#label.className = 'slide-label';
-    this.#label.textContent = this.dataset.label || 'Slide to confirm';
-
-    this.#handle = document.createElement('button');
-    this.#handle.className = 'slide-handle';
-    this.#handle.setAttribute('role', 'slider');
-    this.#handle.setAttribute('aria-valuemin', '0');
-    this.#handle.setAttribute('aria-valuemax', '100');
-    this.#handle.setAttribute('aria-valuenow', '0');
-    this.#handle.setAttribute('aria-label', this.dataset.label || 'Slide to confirm');
-    this.#handle.setAttribute('tabindex', '0');
-    this.#handle.innerHTML = '<icon-wc name="chevrons-right" size="sm"></icon-wc>';
-
-    this.#track.append(this.#label, this.#handle);
-
-    // Clear text content (progressive enhancement fallback) and inject track
-    this.textContent = '';
-    this.appendChild(this.#track);
-
-    this.#setPosition(0);
-
-    // Events
     this.#handle.addEventListener('pointerdown', this.#onPointerDown);
     this.#handle.addEventListener('keydown', this.#onKeyDown);
     this.#handle.addEventListener('transitionend', this.#onTransitionEnd);
@@ -81,11 +67,39 @@ class SlideAccept extends HTMLElement {
     }
   }
 
+  #build() {
+    this.#track = document.createElement('div');
+    this.#track.className = 'slide-track';
+
+    this.#label = document.createElement('span');
+    this.#label.className = 'slide-label';
+    this.#label.textContent = this.getAttribute('label') || 'Slide to confirm';
+
+    this.#handle = document.createElement('div');
+    this.#handle.className = 'slide-handle';
+    this.#handle.setAttribute('role', 'slider');
+    this.#handle.setAttribute('aria-valuemin', '0');
+    this.#handle.setAttribute('aria-valuemax', '100');
+    this.#handle.setAttribute('aria-valuenow', '0');
+    this.#handle.setAttribute('aria-label', this.getAttribute('label') || 'Slide to confirm');
+    this.#handle.setAttribute('tabindex', '0');
+    this.#handle.innerHTML = '<icon-wc name="chevrons-right" size="sm"></icon-wc>';
+
+    this.#track.append(this.#label, this.#handle);
+
+    // Clear text content (progressive enhancement fallback) and inject track
+    this.textContent = '';
+    this.appendChild(this.#track);
+
+    this.#setPosition(0);
+  }
+
   reset() {
     this.#activated = false;
     this.removeAttribute('data-activated');
-    this.#label.textContent = this.dataset.label || 'Slide to confirm';
-    this.#handle.disabled = false;
+    this.#label.textContent = this.getAttribute('label') || 'Slide to confirm';
+    this.#handle.removeAttribute('aria-disabled');
+    this.#handle.setAttribute('tabindex', '0');
     this.#setPosition(0);
     this.dispatchEvent(new CustomEvent('slide-accept:reset', { bubbles: true }));
   }
@@ -95,12 +109,18 @@ class SlideAccept extends HTMLElement {
     e.preventDefault();
 
     // Cancel any in-progress spring-back transition
-    if (this.hasAttribute('data-transitioning')) {
-      const computed = getComputedStyle(this.#handle);
-      const left = parseFloat(computed.left);
-      const trackWidth = this.#track.getBoundingClientRect().width - this.#handle.offsetWidth;
-      this.removeAttribute('data-transitioning');
-      this.#position = trackWidth > 0 ? (left / trackWidth) * 100 : 0;
+    if (this.hasAttribute('transitioning')) {
+      // Read the current animated position using the same property the CSS animates
+      const handleRect = this.#handle.getBoundingClientRect();
+      const trackRect = this.#track.getBoundingClientRect();
+      const handleInset = parseFloat(getComputedStyle(this.#track).getPropertyValue('--_handle-inset') || '0');
+      const handleSize = this.#handle.offsetWidth;
+      const maxTravel = trackRect.width - handleSize - (handleInset * 2);
+      const currentOffset = handleRect.left - trackRect.left - handleInset;
+      this.removeAttribute('transitioning');
+      this.#position = maxTravel > 0 ? Math.max(0, Math.min(100, (currentOffset / maxTravel) * 100)) : 0;
+      // Apply immediately so handle stays where it was
+      this.#setPosition(this.#position);
     }
 
     this.#dragging = true;
@@ -166,21 +186,30 @@ class SlideAccept extends HTMLElement {
   };
 
   #onTransitionEnd = () => {
-    this.removeAttribute('data-transitioning');
+    this.removeAttribute('transitioning');
   };
 
   #activate() {
     this.#activated = true;
     this.#setPosition(100);
     this.setAttribute('data-activated', '');
-    this.#label.textContent = this.dataset.activatedLabel || 'Confirmed!';
-    this.#handle.disabled = true;
+    this.#label.textContent = this.getAttribute('activated-label') || 'Confirmed!';
+    this.#handle.setAttribute('aria-disabled', 'true');
+    this.#handle.removeAttribute('tabindex');
     this.dispatchEvent(new CustomEvent('slide-accept:accept', { bubbles: true }));
   }
 
   #springBack() {
-    this.setAttribute('data-transitioning', '');
+    this.setAttribute('transitioning', '');
     this.#setPosition(0);
+
+    // Safety net: if transitionend doesn't fire (e.g. reduced motion,
+    // duration: 0s, or display: none), clean up after a timeout
+    setTimeout(() => {
+      if (this.hasAttribute('transitioning')) {
+        this.removeAttribute('transitioning');
+      }
+    }, 500);
   }
 
   #setPosition(percent) {

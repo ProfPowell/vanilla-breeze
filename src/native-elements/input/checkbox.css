@@ -1,0 +1,103 @@
+/* Checkbox & Radio Normalization
+   appearance: none + token-driven styling via pseudo-elements.
+   Switch component excluded via :not([data-switch]).
+   ---------------------------------------------------------------- */
+
+input[type="checkbox"]:not([data-switch]),
+input[type="radio"] {
+  appearance: none;
+  width: var(--control-size);
+  height: var(--control-size);
+  border: var(--border-width-medium) solid var(--control-border);
+  background: var(--input-bg);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
+}
+
+/* --- Shape --- */
+input[type="checkbox"]:not([data-switch]) {
+  border-radius: var(--control-radius-check);
+}
+
+input[type="radio"] {
+  border-radius: var(--control-radius-radio);
+}
+
+/* --- Hover --- */
+input[type="checkbox"]:not([data-switch]):hover,
+input[type="radio"]:hover {
+  border-color: var(--color-primary);
+}
+
+/* --- Checked state --- */
+input[type="checkbox"]:not([data-switch]):checked,
+input[type="radio"]:checked {
+  background: var(--control-checked-bg);
+  border-color: var(--control-checked-border);
+}
+
+/* --- Checkmark (clip-path — zero SVG assets) --- */
+input[type="checkbox"]:not([data-switch]):checked::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: var(--color-text-on-primary);
+  clip-path: polygon(14% 50%, 8% 60%, 38% 86%, 94% 20%, 86% 12%, 38% 70%);
+}
+
+/* --- Radio dot --- */
+input[type="radio"]:checked::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 3px;
+  background: var(--color-text-on-primary);
+  border-radius: 50%;
+}
+
+/* --- Indeterminate checkbox --- */
+input[type="checkbox"]:not([data-switch]):indeterminate {
+  background: var(--control-checked-bg);
+  border-color: var(--control-checked-border);
+}
+
+input[type="checkbox"]:not([data-switch]):indeterminate::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  margin-block-start: -1px;
+  background: var(--color-text-on-primary);
+  border-radius: 1px;
+}
+
+/* --- Focus --- */
+input[type="checkbox"]:not([data-switch]):focus-visible,
+input[type="radio"]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* --- Disabled --- */
+input[type="checkbox"]:not([data-switch]):disabled,
+input[type="radio"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  input[type="checkbox"]:not([data-switch]),
+  input[type="radio"] {
+    transition-duration: 0s;
+  }
+}

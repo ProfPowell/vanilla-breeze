@@ -88,6 +88,27 @@ VanillaBreeze.wireframe.toggle();{% endraw %}{% endset %}
   <!-- Lo-fi styles WITH element labels overlaid -->
 </html>{% endset %}
 
+{% set codeCalloutHtml %}<section data-wf-callout="Consider full-bleed hero with background image">
+  <h2>Hero</h2>
+</section>
+
+<form data-wf-callout="Add phone number field and CAPTCHA">
+  <!-- form fields -->
+</form>{% endset %}
+
+{% set codeCalloutJs %}{% raw %}// Add callouts programmatically
+VanillaBreeze.wireframe.addCallout('.hero', 'Needs larger CTA button');
+
+// Render markers and footnote panel
+VanillaBreeze.wireframe.renderCallouts();
+VanillaBreeze.wireframe.renderCalloutPanel();
+
+// Toggle all callouts on/off
+VanillaBreeze.wireframe.toggleCallouts();
+
+// Remove a callout
+VanillaBreeze.wireframe.removeCallout('.hero');{% endraw %}{% endset %}
+
 {% set codeWfLabel %}<section data-wf-label="Hero Section">
   <h1>Page Title</h1>
   <p>Subtitle text here.</p>
@@ -168,7 +189,12 @@ VanillaBreeze.wireframe.toggle();{% endraw %}{% endset %}
       <tr>
         <td><code>data-wf-annotate</code></td>
         <td>boolean</td>
-        <td>Composable annotation layer. Unlike <code>annotate</code> fidelity, this overlays element labels on top of any fidelity level.</td>
+        <td>Composable annotation layer. Unlike <code>annotate</code> fidelity, this overlays element labels on top of any fidelity level. Uses <code>::after</code> so it coexists with <code>data-wf-label</code> badges.</td>
+      </tr>
+      <tr>
+        <td><code>data-wf-callout</code></td>
+        <td>string</td>
+        <td>Design review comment. JS renders a numbered <code>&lt;mark&gt;</code> marker and collects text into a footnote panel.</td>
       </tr>
     </tbody>
   </table>
@@ -274,6 +300,31 @@ VanillaBreeze.wireframe.toggle();{% endraw %}{% endset %}
         <td><code>boolean</code></td>
         <td>Toggle composable annotations. Returns whether now enabled.</td>
       </tr>
+      <tr>
+        <td><code>addCallout(target, text)</code></td>
+        <td><code>void</code></td>
+        <td>Attach a design review comment to an element.</td>
+      </tr>
+      <tr>
+        <td><code>removeCallout(target)</code></td>
+        <td><code>void</code></td>
+        <td>Remove a callout from an element.</td>
+      </tr>
+      <tr>
+        <td><code>renderCallouts()</code></td>
+        <td><code>void</code></td>
+        <td>Inject numbered <code>&lt;mark&gt;</code> markers on all <code>[data-wf-callout]</code> elements.</td>
+      </tr>
+      <tr>
+        <td><code>renderCalloutPanel(container?)</code></td>
+        <td><code>void</code></td>
+        <td>Render <code>&lt;aside&gt;</code> footnote panel with ordered list of callout texts.</td>
+      </tr>
+      <tr>
+        <td><code>toggleCallouts()</code></td>
+        <td><code>boolean</code></td>
+        <td>Toggle callout markers and panel visibility. Returns whether now visible.</td>
+      </tr>
     </tbody>
   </table>
 </section>
@@ -281,9 +332,44 @@ VanillaBreeze.wireframe.toggle();{% endraw %}{% endset %}
 <section>
   <h2>Composable Annotations</h2>
   <p>The <code>data-wf-annotate</code> attribute layers element labels on top of any fidelity level. Unlike the <code>annotate</code> fidelity mode, this lets you see lo-fi or hi-fi styling with labels overlaid.</p>
+  <p>Annotations use <code>::after</code> pseudo-elements (positioned top-right), so they never collide with <code>data-wf-label</code> badges (which use <code>::before</code>, top-left). Both can appear simultaneously on the same element.</p>
 
   <code-block language="html" show-lines label="Composable annotations">{{ codeAnnotateHtml | escape }}</code-block>
   <code-block language="javascript" show-lines label="Toggle annotations via JS">{{ codeAnnotate | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Callouts &amp; Comments</h2>
+  <p>The callout system adds design review comments to wireframe elements. This creates a three-tier overlay model:</p>
+  <table>
+    <thead>
+      <tr><th>System</th><th>Attribute</th><th>Purpose</th><th>Rendering</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Labels</strong></td>
+        <td><code>data-wf-label</code></td>
+        <td>"What this IS" &mdash; structural name</td>
+        <td><code>::before</code> badge, top-left inside</td>
+      </tr>
+      <tr>
+        <td><strong>Annotations</strong></td>
+        <td><code>data-wf-annotate</code></td>
+        <td>"What tag this uses" &mdash; developer reference</td>
+        <td><code>::after</code> monospace label, top-right outside</td>
+      </tr>
+      <tr>
+        <td><strong>Callouts</strong></td>
+        <td><code>data-wf-callout</code></td>
+        <td>"What a reviewer thinks" &mdash; design comments</td>
+        <td>Injected <code>&lt;mark&gt;</code> numbered marker + footnote panel</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>All three can be active simultaneously without collision.</p>
+
+  <code-block language="html" show-lines label="Callout attributes">{{ codeCalloutHtml | escape }}</code-block>
+  <code-block language="javascript" show-lines label="Callout API">{{ codeCalloutJs | escape }}</code-block>
 </section>
 
 <section>
@@ -349,7 +435,8 @@ VanillaBreeze.wireframe.toggle();{% endraw %}{% endset %}
   <ul>
     <li>Wireframe mode is a visual-only transformation &mdash; the DOM structure and ARIA attributes are preserved</li>
     <li>Screen readers are unaffected by wireframe rendering</li>
-    <li>Element labels use <code>::before</code> pseudo-elements, not injected DOM nodes</li>
+    <li>Labels use <code>::before</code> and annotations use <code>::after</code> pseudo-elements, not injected DOM nodes</li>
+    <li>Callout markers use semantic <code>&lt;mark&gt;</code> elements with <code>aria-label</code></li>
     <li>The wireframe indicator badge at the bottom-right corner has <code>pointer-events: none</code></li>
   </ul>
 </section>

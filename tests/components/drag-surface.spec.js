@@ -188,7 +188,7 @@ test.describe('drag-surface', () => {
     await waitForSurface(page);
 
     await page.evaluate(() => {
-      document.querySelector('drag-surface').setAttribute('data-drag-disabled', '');
+      document.querySelector('drag-surface').setAttribute('disabled', '');
     });
 
     const firstItem = page.locator('drag-surface [draggable="true"]').first();
@@ -207,11 +207,11 @@ test.describe('drag-surface cross-surface transfer', () => {
     await page.goto(kanbanPage);
     await page.waitForSelector('drag-surface[role="list"]', { timeout: 5000 });
 
-    const surfaceCount = await page.locator('drag-surface[data-group]').count();
+    const surfaceCount = await page.locator('drag-surface[group]').count();
     if (surfaceCount < 2) return;
 
     const result = await page.evaluate(() => {
-      const surfaces = document.querySelectorAll('drag-surface[data-group]');
+      const surfaces = document.querySelectorAll('drag-surface[group]');
       const firstSurface = surfaces[0];
       const firstItem = firstSurface.querySelector('[draggable="true"]');
       return { itemId: firstItem?.dataset.id, surfaceCount: surfaces.length };
@@ -219,7 +219,7 @@ test.describe('drag-surface cross-surface transfer', () => {
 
     if (!result.itemId) return;
 
-    const firstItem = page.locator(`drag-surface[data-group] [data-id="${result.itemId}"]`);
+    const firstItem = page.locator(`drag-surface[group] [data-id="${result.itemId}"]`);
     await firstItem.focus();
     await page.keyboard.press('Space');
 
@@ -230,7 +230,7 @@ test.describe('drag-surface cross-surface transfer', () => {
     // Item should now be in a different surface
     const newParent = await page.evaluate((id) => {
       const item = document.querySelector(`[data-id="${id}"]`);
-      const surfaces = document.querySelectorAll('drag-surface[data-group]');
+      const surfaces = document.querySelectorAll('drag-surface[group]');
       for (let i = 0; i < surfaces.length; i++) {
         if (surfaces[i].contains(item)) return i;
       }

@@ -658,8 +658,8 @@ The component reads its `<dl>` content and emits a `<script type="application/ld
   "headline": "Migration Guide",
   "author": {
     "@type": "Person",
-    "name": "T. Powell",
-    "url": "https://example.com/team/tpowell"
+    "name": "Thomas A. Powell",
+    "url": "https://pint.com/team/tpowell"
   },
   "datePublished": "2026-01-15",
   "dateModified": "2026-02-20",
@@ -697,7 +697,7 @@ Schema.org doesn't have a `trust` field, but several properties carry the same i
     "headline": "Migration Guide",
     "author": {
       "@type": "Person",
-      "name": "T. Powell"
+      "name": "Thomas A. Powell"
     },
     "datePublished": "2026-01-15",
     "dateModified": "2026-02-20",
@@ -714,9 +714,9 @@ Schema.org doesn't have a `trust` field, but several properties carry the same i
     <page-meta>
       <dl>
         <dt>Author</dt>
-        <dd><address><a href="/team/tpowell" rel="author">T. Powell</a></address></dd>
+        <dd><address><a href="/team/tpowell" rel="author">Thomas A. Powell</a></address></dd>
         <dt>Published</dt>
-        <dd><time datetime="2026-01-15">January 15, 2026</time></dd>
+        <dd><time datetime="2026-01-05">January 5, 2026</time></dd>
         <dt>Updated</dt>
         <dd><time datetime="2026-02-20">February 20, 2026</time></dd>
         <dt>Trust</dt>
@@ -813,3 +813,5 @@ Everything in Phase 1 works without JavaScript. A static site using only VB's CS
 4. **Multiple authors.** The current `data-author` is a single value. Collaborative edits might need `data-authors` (comma-separated) or a different approach.
 
 5. **`creditText` adoption.** Schema.org's `creditText` is the best fit for AI trust signals today, but it's a free-text field. If a more structured property emerges (there's ongoing discussion in the Schema.org community), the JSON-LD mapping should adopt it.
+
+L

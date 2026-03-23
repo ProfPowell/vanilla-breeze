@@ -1,0 +1,132 @@
+/* layout-columns: Multi-column text flow with measure constraints */
+
+layout-columns {
+  display: block;
+  max-inline-size: var(--measure-normal, 65ch);
+  margin-inline: auto;
+  padding-inline: var(--size-m);
+  line-height: var(--line-height-relaxed, 1.625);
+  orphans: 3;
+  widows: 3;
+
+  --_column-width: var(--column-min-width, 38ch);
+  --_column-gap: var(--column-gap, var(--size-2xl));
+}
+
+/* ── Vertical rhythm (mirrors layout-text spacing) ── */
+
+layout-columns > * + * {
+  margin-block-start: var(--size-m);
+}
+
+layout-columns > * + h2 {
+  margin-block-start: var(--size-2xl);
+}
+
+layout-columns > * + h3 {
+  margin-block-start: var(--size-xl);
+}
+
+layout-columns > * + :is(h4, h5, h6) {
+  margin-block-start: var(--size-l);
+}
+
+layout-columns > :is(h2, h3, h4, h5, h6) + * {
+  margin-block-start: var(--size-s);
+}
+
+layout-columns > * + :is(figure, pre) {
+  margin-block-start: var(--size-l);
+}
+
+layout-columns > :is(figure, pre) + * {
+  margin-block-start: var(--size-l);
+}
+
+/* ── Measure variants ── */
+
+layout-columns[data-layout-measure="narrow"] { max-inline-size: var(--measure-narrow, 45ch); }
+layout-columns[data-layout-measure="wide"]   { max-inline-size: var(--measure-wide, 80ch); }
+
+/* ── Alignment variants ── */
+
+layout-columns[data-layout-align="justify"] {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  text-justify: inter-word;
+}
+
+/* ── Column: auto
+   Single column below 48rem, column-width-driven above.
+   max-inline-size lifted so columns can expand to fill.
+── */
+
+@media (min-width: 48rem) {
+  layout-columns[data-layout-column-count="auto"] {
+    max-inline-size: none;
+    columns: var(--_column-width);
+    column-gap: var(--_column-gap);
+    column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+}
+
+/* ── Column: explicit counts
+   column-width: unset prevents the column-width constraint
+   interfering with the explicit count.
+── */
+
+layout-columns[data-layout-column-count="1"] {
+  column-count: 1;
+  column-width: unset;
+}
+
+layout-columns[data-layout-column-count="2"] {
+  max-inline-size: none;
+  column-count: 2;
+  column-width: unset;
+  column-gap: var(--_column-gap);
+  column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+layout-columns[data-layout-column-count="3"] {
+  max-inline-size: none;
+  column-count: 3;
+  column-width: unset;
+  column-gap: var(--_column-gap);
+  column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+/* ── Prose reset: neutralise theme borders on flow content ──
+   Themes (brutalist, swiss, etc.) add borders to headings,
+   paragraphs, and block elements. Inside column flow these
+   borders clash with column-rules and fragment across breaks.
+   Preserve blockquote inline-start border (standard reading cue).
+── */
+
+layout-columns :is(article, section, header, footer, aside, nav, h1, h2, h3, h4, h5, h6, p, figure, pre, ul, ol, dl, details) {
+  border: none;
+}
+
+layout-columns blockquote {
+  border-block: none;
+  border-inline-end: none;
+}
+
+/* ── Column break hygiene ── */
+
+layout-columns blockquote,
+layout-columns figure,
+layout-columns pre,
+layout-columns table,
+layout-columns details,
+layout-columns ul,
+layout-columns ol {
+  break-inside: avoid;
+}
+
+layout-columns h2,
+layout-columns h3,
+layout-columns h4 {
+  break-after: avoid;
+}

@@ -4,12 +4,15 @@
  * Built on native <details>/<summary> for progressive enhancement.
  * Uses shared name attribute for single-open mode in supporting browsers.
  *
- * @attr {boolean} data-single - Only allow one panel open at a time
- * @attr {boolean} data-bordered - Add borders between items
- * @attr {string}  data-transition - View Transition type: "fade" (default), "slide", "scale"
+ * @attr {boolean} single - Only allow one panel open at a time
+ * @attr {boolean} bordered - Add borders between items
+ * @attr {boolean} flush - Remove inline padding
+ * @attr {boolean} compact - Use smaller padding
+ * @attr {string}  indicator - Indicator style: "plus-minus", "none", "custom"
+ * @attr {string}  transition - View Transition type: "fade" (default), "slide", "scale"
  *
  * @example
- * <accordion-wc data-single>
+ * <accordion-wc single>
  *   <details name="faq">
  *     <summary>Question 1</summary>
  *     <div>Answer 1</div>
@@ -46,11 +49,11 @@ class AccordionWc extends HTMLElement {
   }
 
   #initVT() {
-    if (!this.hasAttribute('data-transition') || !document.startViewTransition) return;
+    if (!this.hasAttribute('transition') || !document.startViewTransition) return;
 
     this.#vtEnabled = true;
     const id = ++accordionVtId;
-    const type = this.dataset.transition || 'fade';
+    const type = this.getAttribute('transition') || 'fade';
     const vtClass = type === 'slide' ? 'vt-accordion-slide' : type === 'scale' ? 'vt-accordion-scale' : 'vt-accordion';
 
     this.#details.forEach((detail, i) => {
@@ -108,7 +111,7 @@ class AccordionWc extends HTMLElement {
 
     // Single-open mode: close others when one opens
     // This is a polyfill for browsers that don't support name attribute on details
-    if (this.hasAttribute('data-single') && toggledDetail.open) {
+    if (this.hasAttribute('single') && toggledDetail.open) {
       this.#details.forEach((detail, i) => {
         if (i !== index && detail.open) {
           detail.open = false;
@@ -191,7 +194,7 @@ class AccordionWc extends HTMLElement {
    * Open all panels (only works when not in single mode)
    */
   openAll() {
-    if (!this.hasAttribute('data-single')) {
+    if (!this.hasAttribute('single')) {
       this.#details.forEach(d => { d.open = true; });
     }
   }

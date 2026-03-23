@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Classes, Data Attributes, ARIA, and Native HTML — A Decision Guide</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --text:    light-dark(oklch(20% 0 0),    oklch(92% 0 0));
+      --muted:   light-dark(oklch(50% 0 0),    oklch(60% 0 0));
+      --surface: light-dark(oklch(100% 0 0),   oklch(14% 0.01 260));
+      --raised:  light-dark(oklch(97% 0.005 260), oklch(18% 0.01 260));
+      --border:  light-dark(oklch(88% 0.01 260), oklch(28% 0.02 260));
+      --primary: oklch(55% 0.22 260);
+      --good:    oklch(58% 0.18 145);
+      --bad:     oklch(52% 0.20 25);
+      --warn:    oklch(60% 0.15 75);
+
+      font-family: system-ui, sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    body {
+      max-width: 860px;
+      margin-inline: auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.2; margin-block-end: 0.25em; }
+    h2 { font-size: 1.4rem; margin-block-start: 3rem; border-block-end: 1px solid var(--border); padding-block-end: 0.4rem; }
+    h3 { font-size: 1.1rem; color: var(--muted); margin-block-end: 0.5rem; }
+
+    p { max-width: 70ch; }
+
+    /* ── Hierarchy diagram ── */
+    ol.hierarchy {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-block: 1.5rem;
+    }
+    ol.hierarchy li {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      background: var(--raised);
+      border-inline-start: 4px solid var(--border);
+    }
+    ol.hierarchy li:nth-child(1) { border-color: var(--good); }
+    ol.hierarchy li:nth-child(2) { border-color: var(--primary); }
+    ol.hierarchy li:nth-child(3) { border-color: var(--warn); }
+    ol.hierarchy li:nth-child(4) { border-color: var(--muted); }
+    .rank { font-weight: 700; font-size: 0.8rem; min-width: 2ch; color: var(--muted); }
+    .label { font-weight: 600; min-width: 14ch; }
+    .desc { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── Code examples ── */
+    .example {
+      margin-block: 2rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .example-header {
+      padding: 0.6rem 1rem;
+      background: var(--raised);
+      border-block-end: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .example-header strong { font-size: 0.9rem; }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.15em 0.5em;
+      border-radius: 3px;
+    }
+    .tag-native  { background: color-mix(in oklch, var(--good) 20%, transparent);    color: var(--good); }
+    .tag-aria    { background: color-mix(in oklch, var(--primary) 20%, transparent);  color: var(--primary); }
+    .tag-data    { background: color-mix(in oklch, var(--warn) 20%, transparent);     color: var(--warn); }
+    .tag-class   { background: color-mix(in oklch, var(--muted) 20%, transparent);    color: var(--muted); }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
+
+    .col {
+      padding: 1rem;
+    }
+    .col + .col {
+      border-inline-start: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      .col + .col { border-inline-start: none; border-block-start: 1px solid var(--border); }
+    }
+
+    .col h3 {
+      margin-block-start: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .col.wrong h3 { color: var(--bad); }
+    .col.right h3 { color: var(--good); }
+
+    pre {
+      margin: 0;
+      padding: 0;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      font-family: ui-monospace, "Cascadia Code", monospace;
+    }
+
+    .note {
+      padding: 0.75rem 1rem;
+      background: var(--raised);
+      border-block-start: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .note strong { color: var(--text); }
+
+    /* ── Live demos ── */
+    .demo {
+      padding: 1rem;
+      background: var(--raised);
+      border-block-start: 1px solid var(--border);
+    }
+    .demo h3 {
+      margin-block-start: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    /* demo: nav */
+    nav.demo-nav { display: flex; gap: 1rem; flex-wrap: wrap; }
+    nav.demo-nav a {
+      text-decoration: none;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      color: var(--text);
+      border: 1px solid transparent;
+    }
+    nav.demo-nav a[aria-current="page"] {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* demo: details */
+    details.demo-details summary { cursor: pointer; user-select: none; font-weight: 600; }
+    details.demo-details[open] summary { color: var(--primary); }
+    details.demo-details p { margin-block-start: 0.5rem; margin-inline-start: 1rem; color: var(--muted); }
+
+    /* demo: dialog */
+    dialog.demo-dialog {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      padding: 1.5rem;
+      max-width: 320px;
+    }
+    dialog.demo-dialog::backdrop { background: oklch(0% 0 0 / 0.5); }
+    .demo button {
+      padding: 0.35rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .demo button:hover { background: var(--raised); }
+
+    /* demo: aria-pressed */
+    button[aria-pressed="true"] {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* demo: aria-expanded */
+    [aria-expanded] + ul {
+      display: none;
+      margin-block-start: 0.5rem;
+      padding-inline-start: 1rem;
+      list-style: disc;
+    }
+    [aria-expanded="true"] + ul { display: block; }
+
+    /* demo: aria-sort */
+    th[aria-sort="ascending"]::after  { content: " ↑"; color: var(--primary); }
+    th[aria-sort="descending"]::after { content: " ↓"; color: var(--primary); }
+    .demo table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    .demo th, .demo td { padding: 0.4rem 0.75rem; border: 1px solid var(--border); text-align: start; }
+    .demo th { background: var(--raised); cursor: pointer; user-select: none; }
+
+    /* demo: form validity */
+    .demo input {
+      padding: 0.35rem 0.6rem;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .demo input:valid   { border-color: var(--good); }
+    .demo input:invalid { border-color: var(--bad); }
+
+    /* demo: data-theme */
+    [data-theme="dark"]  { background: oklch(18% 0.01 260); color: oklch(92% 0 0); padding: 0.75rem 1rem; border-radius: 6px; }
+    [data-theme="light"] { background: oklch(97% 0 0); color: oklch(15% 0 0); padding: 0.75rem 1rem; border-radius: 6px; }
+
+    /* demo: data-loading */
+    [data-loading] { opacity: 0.5; pointer-events: none; position: relative; }
+    [data-loading]::after {
+      content: "Loading…";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: color-mix(in oklch, var(--surface) 70%, transparent);
+    }
+
+    /* demo: data-variant (genuinely custom) */
+    .demo-card { padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border); }
+    .demo-card[data-variant="warning"] { border-color: var(--warn); background: color-mix(in oklch, var(--warn) 10%, transparent); }
+    .demo-card[data-variant="error"]   { border-color: var(--bad);  background: color-mix(in oklch, var(--bad)  10%, transparent); }
+    .demo-card[data-variant="success"] { border-color: var(--good); background: color-mix(in oklch, var(--good) 10%, transparent); }
+
+    /* ── Summary table ── */
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-block: 1.5rem; }
+    .summary-table th { background: var(--raised); font-weight: 700; text-align: start; padding: 0.5rem 0.75rem; border: 1px solid var(--border); }
+    .summary-table td { padding: 0.45rem 0.75rem; border: 1px solid var(--border); vertical-align: top; }
+    .summary-table tr:hover td { background: var(--raised); }
+    .good { color: var(--good); font-weight: 600; }
+    .bad  { color: var(--bad);  font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Classes, Data Attributes, ARIA, and Native HTML</h1>
+  <p>A decision guide for expressing state, behavior, and visual variation on HTML elements — with concrete examples across a range of UI patterns.</p>
+</header>
+
+<main>
+
+  <h2>The Core Principle</h2>
+
+  <p>Every piece of information you attach to an HTML element has a natural home. Using the wrong container causes three problems: you lose semantics the browser would have given you for free, you create accessibility work for yourself, and your CSS becomes brittle class-name logic instead of meaning-driven selectors.</p>
+
+  <p>The hierarchy, from most to least preferred:</p>
+
+  <ol class="hierarchy">
+    <li><span class="rank">1</span><span class="label">Native HTML attribute</span><span class="desc"><code>disabled</code>, <code>open</code>, <code>selected</code>, <code>required</code>, <code>checked</code> — the platform already named this concept</span></li>
+    <li><span class="rank">2</span><span class="label">ARIA attribute</span><span class="desc"><code>aria-current</code>, <code>aria-expanded</code>, <code>aria-pressed</code>, <code>aria-sort</code> — standardised semantic state without a native attribute</span></li>
+    <li><span class="rank">3</span><span class="label"><code>data-*</code> attribute</span><span class="desc">Your custom state or configuration that has no platform equivalent</span></li>
+    <li><span class="rank">4</span><span class="label">Class</span><span class="desc">Visual variants only — things with no meaning beyond appearance</span></li>
+  </ol>
+
+  <p>A useful test: <em>if you removed the styling entirely, would this attribute still carry meaning?</em> If yes, it belongs in native HTML or ARIA. If the answer is purely visual, a class is fine.</p>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 1 — Navigation current page</h2>
+
+  <p>The classic case. "Which link represents where I am right now?" is a semantic question the platform already answered.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-aria">ARIA</span>
+      <strong>Use <code>aria-current="page"</code></strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong — class encodes meaning</h3>
+        <pre>&lt;nav&gt;
+  &lt;a href="/"&gt;Home&lt;/a&gt;
+  &lt;a href="/about" class="active"&gt;About&lt;/a&gt;
+  &lt;a href="/work"&gt;Work&lt;/a&gt;
+&lt;/nav&gt;
+
+/* CSS has to know about a made-up word */
+a.active { … }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right — ARIA expresses meaning</h3>
+        <pre>&lt;nav&gt;
+  &lt;a href="/"&gt;Home&lt;/a&gt;
+  &lt;a href="/about" aria-current="page"&gt;About&lt;/a&gt;
+  &lt;a href="/work"&gt;Work&lt;/a&gt;
+&lt;/nav&gt;
+
+/* CSS reads intent, not jargon */
+[aria-current="page"] { … }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo</h3>
+      <nav class="demo-nav">
+        <a href="#">Home</a>
+        <a href="#" aria-current="page">About</a>
+        <a href="#">Work</a>
+        <a href="#">Contact</a>
+      </nav>
+    </section>
+    <p class="note"><strong>Bonus:</strong> Screen readers announce "About, current page" automatically. You get that for free with zero extra work.</p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 2 — Accordion / disclosure</h2>
+
+  <p>Open or closed is a binary state. The platform has this covered twice: natively with <code>&lt;details&gt;</code>, and semantically with <code>aria-expanded</code> for custom patterns.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-native">Native</span>
+      <strong>Prefer <code>&lt;details open&gt;</code> when possible</strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong — JS + class for binary state</h3>
+        <pre>&lt;button class="accordion-toggle open"
+        onclick="toggle(this)"&gt;
+  What is a widget?
+&lt;/button&gt;
+&lt;div class="accordion-panel open"&gt;
+  &lt;p&gt;A small self-contained UI component.&lt;/p&gt;
+&lt;/div&gt;</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right — native element, zero JS</h3>
+        <pre>&lt;details&gt;
+  &lt;summary&gt;What is a widget?&lt;/summary&gt;
+  &lt;p&gt;A small self-contained UI component.&lt;/p&gt;
+&lt;/details&gt;
+
+/* Style with native pseudo or attribute */
+details[open] summary { color: var(--primary); }
+details:not([open]) p { display: none; }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo — no JavaScript</h3>
+      <details class="demo-details">
+        <summary>What is progressive enhancement?</summary>
+        <p>Building in layers: HTML first, CSS for presentation, JavaScript only for what neither can handle alone.</p>
+      </details>
+    </section>
+    <p class="note"><strong>When you can't use <code>&lt;details&gt;</code></strong> (e.g. animated panels, tab sets): use <code>aria-expanded="true|false"</code> on the trigger, toggled by a small JS attribute flip — never a class.</p>
+  </section>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-aria">ARIA</span>
+      <strong><code>aria-expanded</code> for custom accordion</strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong</h3>
+        <pre>&lt;button class="open" onclick="…"&gt;Section&lt;/button&gt;
+&lt;ul class="panel visible"&gt;…&lt;/ul&gt;
+
+.panel { display: none; }
+.panel.visible { display: block; }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right</h3>
+        <pre>&lt;button aria-expanded="false"
+        onclick="this.setAttribute(
+          'aria-expanded',
+          this.getAttribute('aria-expanded')
+            === 'true' ? 'false' : 'true')"&gt;
+  Section
+&lt;/button&gt;
+&lt;ul&gt;…&lt;/ul&gt;
+
+[aria-expanded="true"] + ul { display: block; }
+[aria-expanded="false"] + ul { display: none; }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo</h3>
+      <button aria-expanded="false"
+              onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true')">
+        Show frameworks list
+      </button>
+      <ul>
+        <li>Vanilla Breeze</li>
+        <li>html-star</li>
+        <li>montane</li>
+      </ul>
+    </section>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 3 — Toggle button (pressed state)</h2>
+
+  <p>A button that switches between on and off is not about appearance — it has a meaningful state: pressed or not pressed. ARIA names that precisely.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-aria">ARIA</span>
+      <strong><code>aria-pressed</code> on toggle buttons</strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong</h3>
+        <pre>&lt;button class="btn-toggle active"&gt;
+  Bold
+&lt;/button&gt;
+
+.btn-toggle.active { background: var(--primary); }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right</h3>
+        <pre>&lt;button aria-pressed="true"
+        onclick="this.setAttribute(
+          'aria-pressed',
+          this.getAttribute('aria-pressed')
+            === 'true' ? 'false' : 'true')"&gt;
+  Bold
+&lt;/button&gt;
+
+[aria-pressed="true"] { background: var(--primary); }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo</h3>
+      <button aria-pressed="false"
+              onclick="this.setAttribute('aria-pressed',this.getAttribute('aria-pressed')==='true'?'false':'true')">
+        Bold
+      </button>
+      <button aria-pressed="true"
+              onclick="this.setAttribute('aria-pressed',this.getAttribute('aria-pressed')==='true'?'false':'true')">
+        Italic
+      </button>
+    </section>
+    <p class="note">Screen readers announce "Bold, toggle button, not pressed" and "Italic, toggle button, pressed". The visual and semantic states are one.</p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 4 — Form field states</h2>
+
+  <p>Forms are perhaps the richest native semantic layer. <code>required</code>, <code>disabled</code>, <code>readonly</code>, and browser-driven <code>:valid</code>/<code>:invalid</code> pseudo-classes replace entire categories of class juggling.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-native">Native</span>
+      <strong>Native attributes + CSS pseudo-classes</strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong — classes mirror browser state</h3>
+        <pre>&lt;input type="email"
+       class="input input--error"
+       aria-describedby="err"/&gt;
+&lt;input type="text"
+       class="input input--disabled"
+       tabindex="-1" readonly/&gt;
+
+.input--error { border-color: red; }
+.input--disabled { opacity: 0.5; }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right — the browser tracks state</h3>
+        <pre>&lt;input type="email" required/&gt;
+&lt;input type="text" disabled/&gt;
+
+/* CSS reads built-in pseudo-classes */
+input:invalid { border-color: var(--bad); }
+input:disabled { opacity: 0.5; }
+input:required { outline: … }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo — type in each field</h3>
+      <p style="margin-block-start:0;font-size:0.9rem;color:var(--muted)">Border turns green when valid, red when invalid — zero JS.</p>
+      <p><label>Email (required) <br/><input type="email" required placeholder="you@example.com"/></label></p>
+      <p><label>Number 1–10 <br/><input type="number" min="1" max="10" placeholder="1–10"/></label></p>
+      <p><label>Disabled <br/><input type="text" disabled value="Cannot edit this"/></label></p>
+    </section>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 5 — Dialog open / closed</h2>
+
+  <p>The <code>&lt;dialog&gt;</code> element manages its own open state via the <code>open</code> attribute, set by <code>.showModal()</code> and <code>.close()</code>. You never need a class.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-native">Native</span>
+      <strong><code>&lt;dialog open&gt;</code> + <code>commandfor</code></strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong</h3>
+        <pre>&lt;div class="modal modal--visible"&gt;
+  &lt;div class="modal__overlay"&gt;&lt;/div&gt;
+  &lt;div class="modal__box"&gt;
+    &lt;button onclick="closeModal()"&gt;✕&lt;/button&gt;
+    &lt;p&gt;Content&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+.modal { display: none; }
+.modal--visible { display: flex; }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right</h3>
+        <pre>&lt;button commandfor="my-dialog"
+        command="show-modal"&gt;
+  Open
+&lt;/button&gt;
+
+&lt;dialog id="my-dialog"&gt;
+  &lt;p&gt;Content&lt;/p&gt;
+  &lt;button commandfor="my-dialog"
+          command="close"&gt;
+    Close
+  &lt;/button&gt;
+&lt;/dialog&gt;
+
+/* Style by element + native state */
+dialog[open] { … }
+dialog::backdrop { … }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo</h3>
+      <button onclick="document.getElementById('demo-dialog').showModal()">Open dialog</button>
+      <dialog id="demo-dialog" class="demo-dialog">
+        <p>This is a native <code>&lt;dialog&gt;</code>. Focus is trapped, backdrop is automatic, Escape closes it.</p>
+        <button onclick="document.getElementById('demo-dialog').close()">Close</button>
+      </dialog>
+    </section>
+    <p class="note"><strong>Fallback note:</strong> <code>commandfor</code>/<code>command</code> is still gaining browser support. Until then, the <code>.showModal()</code>/<code>.close()</code> JS API is the correct approach — still no classes needed.</p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 6 — Sortable table columns</h2>
+
+  <p><code>aria-sort</code> is purpose-built for this. It communicates sort direction to assistive technology and gives CSS a clean hook.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-aria">ARIA</span>
+      <strong><code>aria-sort="ascending|descending|none"</code></strong>
+    </header>
+    <section class="cols">
+      <section class="col wrong">
+        <h3>❌ Wrong</h3>
+        <pre>&lt;th class="sorted-asc" onclick="sort('name')"&gt;
+  Name ↑
+&lt;/th&gt;
+
+th.sorted-asc::after  { content: " ↑"; }
+th.sorted-desc::after { content: " ↓"; }</pre>
+      </section>
+      <section class="col right">
+        <h3>✅ Right</h3>
+        <pre>&lt;th aria-sort="ascending"
+    onclick="cycleSort(this)"&gt;
+  Name
+&lt;/th&gt;
+
+th[aria-sort="ascending"]::after  { content: " ↑"; }
+th[aria-sort="descending"]::after { content: " ↓"; }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo — click column headers</h3>
+      <table>
+        <thead>
+          <tr>
+            <th aria-sort="ascending"
+                onclick="var s=this.getAttribute('aria-sort');this.setAttribute('aria-sort',s==='ascending'?'descending':'ascending')">
+              Name
+            </th>
+            <th aria-sort="none"
+                onclick="var s=this.getAttribute('aria-sort');this.setAttribute('aria-sort',s==='ascending'?'descending':'ascending')">
+              Score
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Alice</td><td>92</td></tr>
+          <tr><td>Bob</td><td>78</td></tr>
+          <tr><td>Carol</td><td>88</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 7 — Where <code>data-*</code> genuinely belongs</h2>
+
+  <p>Now the case where <code>data-*</code> is correct: state or configuration that has no platform name. Theme preference, async loading state, and component variant type are all custom concepts.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-data">data-*</span>
+      <strong>Custom state with no platform equivalent</strong>
+    </header>
+    <section class="cols">
+      <section class="col right" style="grid-column: span 2;">
+        <h3>✅ These are correct uses of <code>data-*</code></h3>
+        <pre>&lt;!-- Theme: not in HTML spec, your concept --&gt;
+&lt;html data-theme="dark"&gt;
+[data-theme="dark"]  { background: #111; color: #eee; }
+
+&lt;!-- Async loading: not a native state --&gt;
+&lt;section data-loading&gt;…&lt;/section&gt;
+[data-loading] { opacity: 0.5; pointer-events: none; }
+
+&lt;!-- Card variant: purely your design system --&gt;
+&lt;article data-variant="warning"&gt;…&lt;/article&gt;
+[data-variant="warning"] { border-color: var(--warn); }</pre>
+      </section>
+    </section>
+    <section class="demo">
+      <h3>Live demo — data-variant</h3>
+      <p class="demo-card" data-variant="success">✓ Changes saved successfully</p>
+      <p class="demo-card" data-variant="warning" style="margin-block:0.5rem">⚠ Your session expires in 5 minutes</p>
+      <p class="demo-card" data-variant="error">✕ Failed to save — check your connection</p>
+    </section>
+    <p class="note"><strong>The tell:</strong> If you're inventing a term (<code>data-loading</code>, <code>data-theme</code>, <code>data-variant</code>), <code>data-*</code> is right. If the platform already has a word for it (<code>open</code>, <code>disabled</code>, <code>aria-current</code>), use that instead.</p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Example 8 — Where class genuinely belongs</h2>
+
+  <p>Classes are for purely visual variation with no semantic meaning. A <code>.lead</code> paragraph, a <code>.sr-only</code> visually-hidden element, a <code>.prose</code> typography scope — these are presentational, not state.</p>
+
+  <section class="example">
+    <header class="example-header">
+      <span class="tag tag-class">Class</span>
+      <strong>Visual-only variation</strong>
+    </header>
+    <section class="cols">
+      <section class="col right" style="grid-column: span 2;">
+        <h3>✅ Correct uses of class</h3>
+        <pre>&lt;!-- Typography scope: visual only --&gt;
+&lt;article class="prose"&gt;…&lt;/article&gt;
+
+&lt;!-- Screen-reader utility: purely presentational --&gt;
+&lt;span class="sr-only"&gt;(opens in new tab)&lt;/span&gt;
+
+&lt;!-- Layout helper: no meaning without CSS --&gt;
+&lt;section class="grid-2col"&gt;…&lt;/section&gt;
+
+&lt;!-- NOT this: "active" carries meaning → use aria-current --&gt;
+&lt;!-- NOT this: "open" carries meaning → use [open] or aria-expanded --&gt;
+&lt;!-- NOT this: "disabled" carries meaning → use [disabled] --&gt;</pre>
+      </section>
+    </section>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <h2>Decision table</h2>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Situation</th>
+        <th>Use</th>
+        <th>Because</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Current nav link</td>
+        <td class="good">aria-current="page"</td>
+        <td>ARIA names "where you are" precisely</td>
+      </tr>
+      <tr>
+        <td>Disclosure open/closed</td>
+        <td class="good">&lt;details open&gt; or aria-expanded</td>
+        <td>Native element or standardised state name</td>
+      </tr>
+      <tr>
+        <td>Toggle button on/off</td>
+        <td class="good">aria-pressed="true|false"</td>
+        <td>ARIA names pressed state precisely</td>
+      </tr>
+      <tr>
+        <td>Tab panel selected</td>
+        <td class="good">aria-selected="true|false"</td>
+        <td>ARIA names selection precisely</td>
+      </tr>
+      <tr>
+        <td>Table sort direction</td>
+        <td class="good">aria-sort="ascending|descending"</td>
+        <td>ARIA names sort state precisely</td>
+      </tr>
+      <tr>
+        <td>Dialog visible</td>
+        <td class="good">&lt;dialog&gt; [open]</td>
+        <td>Native element manages its own state</td>
+      </tr>
+      <tr>
+        <td>Field disabled</td>
+        <td class="good">disabled attribute</td>
+        <td>Native attribute, browser enforces semantics</td>
+      </tr>
+      <tr>
+        <td>Field invalid</td>
+        <td class="good">:invalid pseudo-class</td>
+        <td>Browser tracks validity natively</td>
+      </tr>
+      <tr>
+        <td>Dark/light theme</td>
+        <td class="good">data-theme="dark"</td>
+        <td>No platform name for this concept</td>
+      </tr>
+      <tr>
+        <td>Async loading</td>
+        <td class="good">data-loading (boolean)</td>
+        <td>No platform name for this concept</td>
+      </tr>
+      <tr>
+        <td>Design variant (warning, error)</td>
+        <td class="good">data-variant="warning"</td>
+        <td>No platform name; it's your design system</td>
+      </tr>
+      <tr>
+        <td>Typography scope</td>
+        <td class="good">.prose class</td>
+        <td>Purely visual, no semantic meaning</td>
+      </tr>
+      <tr>
+        <td>Visually hidden</td>
+        <td class="good">.sr-only class</td>
+        <td>Presentation technique, not semantic state</td>
+      </tr>
+      <tr>
+        <td>Current link → "active" class</td>
+        <td class="bad">❌ .active class</td>
+        <td>Invented name; aria-current already exists</td>
+      </tr>
+      <tr>
+        <td>Open → "open" class</td>
+        <td class="bad">❌ .open class</td>
+        <td>Duplicates native [open] or aria-expanded</td>
+      </tr>
+      <tr>
+        <td>Selected → "selected" class</td>
+        <td class="bad">❌ .selected class</td>
+        <td>Duplicates aria-selected or :checked</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>The test to run in your head</h2>
+
+  <ol>
+    <li>Does HTML have a native attribute or element for this? → Use it.</li>
+    <li>Does ARIA have a named attribute for this state? → Use it.</li>
+    <li>Is this genuinely your own invented concept with no platform name? → <code>data-*</code>.</li>
+    <li>Is it purely visual with no meaning if CSS is removed? → Class.</li>
+  </ol>
+
+  <p>Every <code>.active</code>, <code>.open</code>, <code>.selected</code>, or <code>.disabled</code> class in a codebase is a missed step 1 or 2. The platform already had the vocabulary — it just wasn't consulted.</p>
+
+</main>
+
+</body>
+</html>

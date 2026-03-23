@@ -156,7 +156,7 @@ E-commerce product display card with image, title, price, and purchase action. O
       top: var(--size-xs);
       left: var(--size-xs);
       padding: var(--size-2xs) var(--size-xs);
-      font-size: var(--text-xs);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-semibold);
       text-transform: uppercase;
       border-radius: var(--radius-sm);
@@ -184,7 +184,7 @@ E-commerce product display card with image, title, price, and purchase action. O
 
     /* Category */
     & [data-category] {
-      font-size: var(--text-xs);
+      font-size: var(--font-size-xs);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
@@ -339,7 +339,7 @@ E-commerce product display card with image, title, price, and purchase action. O
       }
 
       & h3 {
-        font-size: var(--text-xl);
+        font-size: var(--font-size-xl);
       }
     }
 

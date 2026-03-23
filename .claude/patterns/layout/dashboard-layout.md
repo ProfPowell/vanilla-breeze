@@ -160,7 +160,7 @@ Application shell layout with fixed header, optional sidebar navigation, and scr
 
   dashboard-layout [data-logo],
   .dashboard-layout [data-logo] {
-    font-size: var(--text-xl, 1.25rem);
+    font-size: var(--font-size-xl, 1.25rem);
     font-weight: var(--font-weight-bold, 700);
     color: var(--primary, oklch(0.55 0.2 250));
     text-decoration: none;

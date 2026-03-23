@@ -155,7 +155,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   }
 
   definition-list[data-compact] dt {
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
   }
 
   definition-list[data-compact] dd {
@@ -217,7 +217,7 @@ Semantic display of key-value pairs using the native `<dl>` element. Ideal for m
   definition-list [data-badge] {
     display: inline-block;
     padding: var(--size-2xs) var(--size-xs);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-full);
     background: var(--surface-alt);

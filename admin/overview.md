@@ -232,7 +232,7 @@ Web components support both modes:
 
 **Auto-generated** (empty element):
 ```html
-<page-toc data-levels="h2,h3"></page-toc>
+<page-toc levels="h2,h3"></page-toc>
 ```
 
 **Manual markup** (enhanced with scroll-spy):

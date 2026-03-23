@@ -10,10 +10,10 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * Bottom/top positions use dialog.show() (non-modal — page remains
  * interactive). Center uses dialog.showModal() (modal — user must choose).
  *
- * @attr {string} data-persist   - localStorage key (default: 'consent-banner')
- * @attr {string} data-position  - 'bottom' (default), 'top', 'center'
- * @attr {string} data-trigger   - CSS selector for a "manage cookies" re-open button
- * @attr {string} data-expires   - Days until consent expires (default: 365, 0 = never)
+ * @attr {string} persist   - localStorage key (default: 'consent-banner')
+ * @attr {string} position  - 'bottom' (default), 'top', 'center'
+ * @attr {string} trigger   - CSS selector for a "manage cookies" re-open button
+ * @attr {string} expires   - Days until consent expires (default: 365, 0 = never)
  *
  * @fires consent-banner:change - When user makes a consent choice
  *   detail: { preferences: Object, action: string }
@@ -30,7 +30,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </consent-banner>
  *
  * @example Granular preferences with trigger
- * <consent-banner data-persist="cookie-prefs" data-trigger="#manage-cookies">
+ * <consent-banner persist="cookie-prefs" trigger="#manage-cookies">
  *   <dialog>
  *     <header><h2>Cookie Preferences</h2></header>
  *     <section>
@@ -54,15 +54,15 @@ class ConsentBanner extends HTMLElement {
   #dialog = /** @type {*} */ (null);
 
   static get observedAttributes() {
-    return ['data-position'];
+    return ['position'];
   }
 
   get #key() {
-    return this.dataset.persist || 'consent-banner';
+    return this.getAttribute('persist') || 'consent-banner';
   }
 
   get #expiryDays() {
-    const val = this.dataset.expires;
+    const val = this.getAttribute('expires');
     if (val === '0' || val === 'never') return 0;
     return val ? parseInt(val, 10) : 365;
   }
@@ -71,13 +71,13 @@ class ConsentBanner extends HTMLElement {
     this.#dialog = /** @type {HTMLDialogElement} */ (this.querySelector('dialog'));
     if (!this.#dialog) return;
 
-    if (this.dataset.trigger) {
+    if (this.getAttribute('trigger')) {
       document.addEventListener('click', this.#onTriggerClick);
     }
 
     const stored = this.#read();
     if (stored && !this.#isExpired(stored)) {
-      if (this.dataset.trigger) {
+      if (this.getAttribute('trigger')) {
         this.hidden = true;
       } else {
         this.remove();
@@ -95,7 +95,7 @@ class ConsentBanner extends HTMLElement {
   }
 
   #open() {
-    const position = this.dataset.position || 'bottom';
+    const position = this.getAttribute('position') || 'bottom';
 
     if (position === 'center') {
       this.#dialog.showModal();
@@ -112,7 +112,7 @@ class ConsentBanner extends HTMLElement {
     this.removeEventListener('click', this.#onClick);
     this.#dialog.close();
 
-    if (this.dataset.trigger) {
+    if (this.getAttribute('trigger')) {
       this.hidden = true;
     } else {
       this.remove();
@@ -153,7 +153,7 @@ class ConsentBanner extends HTMLElement {
   };
 
   #onTriggerClick = (e) => {
-    const sel = this.dataset.trigger;
+    const sel = this.getAttribute('trigger');
     if (!sel) return;
 
     const trigger = /** @type {HTMLElement} */ (e.target).closest(sel);

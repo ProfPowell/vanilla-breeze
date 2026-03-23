@@ -48,11 +48,13 @@ nav a:focus-visible {
   border-radius: var(--radius-s);
 }
 
-/* Current page indicator */
+/* Current page indicator — color uses !important to override theme
+   link rules (e.g. Swiss a:not([class]) { color: var(--color-primary) })
+   that would make text invisible on colored pill backgrounds. */
 nav a[aria-current="page"],
 nav [aria-current="page"] > a {
   background: var(--_active-bg);
-  color: var(--_active-color);
+  color: var(--_active-color) !important;
   font-weight: 500;
 }
 
@@ -91,7 +93,13 @@ nav {
   &.pills {
     --_hover-bg: var(--color-surface-raised);
     --_active-bg: var(--color-interactive);
-    --_active-color: white;
+    --_active-color: var(--color-text-on-primary, white);
+  }
+
+  @supports (color: contrast-color(red)) {
+    &.pills {
+      --_active-color: contrast-color(var(--color-interactive));
+    }
   }
 
   &.pills a {
@@ -246,8 +254,14 @@ nav {
 
   &.pagination [aria-current="page"] {
     background: var(--color-interactive);
-    color: white;
+    color: var(--color-text-on-primary, white);
     border-color: var(--color-interactive);
+  }
+
+  @supports (color: contrast-color(red)) {
+    &.pagination [aria-current="page"] {
+      color: contrast-color(var(--color-interactive));
+    }
   }
 
   &.pagination [disabled] {
@@ -462,10 +476,17 @@ nav {
     --_future-color: var(--color-text-muted);
     --_active-bg: var(--color-interactive);
     --_active-border: var(--color-interactive);
-    --_active-text: white;
+    --_active-text: var(--color-text-on-primary, white);
     --_completed-bg: var(--color-success);
     --_completed-border: var(--color-success);
     --_completed-text: white;
+  }
+
+  @supports (color: contrast-color(red)) {
+    &.steps {
+      --_active-text: contrast-color(var(--color-interactive));
+      --_completed-text: contrast-color(var(--color-success));
+    }
   }
 
   /* Size variants */

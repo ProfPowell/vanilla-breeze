@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Column Reader — CSS Multi-Column Demo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper:        #f5f0e8;
+    --paper-dark:   #e8e2d6;
+    --ink:          #1a1814;
+    --ink-mid:      #4a4540;
+    --ink-light:    #8a837a;
+    --accent:       #8b2500;
+    --chrome-h:     52px;
+    --pad-x:        clamp(1.25rem, 4vw, 3.5rem);
+    --pad-y:        clamp(1.25rem, 3vw, 2.5rem);
+    --gap:          clamp(1.5rem, 3vw, 3rem);
+    --body-size:    1rem;
+    --lh:           1.72;
+  }
+
+  html, body {
+    height: 100%;
+    background: #1e1b18;
+    color: var(--ink);
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: var(--body-size);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─────────────────────────────────────────────
+     Chrome
+  ───────────────────────────────────────────── */
+  #chrome {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: var(--chrome-h);
+    background: #1a1714;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    gap: .75rem;
+    z-index: 200;
+  }
+
+  .chrome-title {
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .chrome-controls {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-shrink: 0;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: #2a2720;
+    border-radius: 6px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .mode-btn {
+    background: none;
+    border: none;
+    padding: .28rem .65rem;
+    border-radius: 4px;
+    font-size: .65rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #555;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    font-family: ui-monospace, 'SF Mono', monospace;
+  }
+  .mode-btn.active { background: #3d3830; color: #bbb; }
+  .mode-btn:hover:not(.active) { color: #888; }
+
+  .font-btn {
+    background: none;
+    border: 1px solid #333;
+    border-radius: 4px;
+    width: 30px; height: 28px;
+    color: #666;
+    cursor: pointer;
+    font-size: .9rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .12s, color .12s;
+    font-family: ui-monospace, monospace;
+  }
+  .font-btn:hover { border-color: #555; color: #bbb; }
+  .font-btn:disabled { opacity: .3; pointer-events: none; }
+
+  .col-ctrl { display: flex; align-items: center; gap: .25rem; }
+  .col-label {
+    font-size: .6rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #444;
+    font-family: ui-monospace, monospace;
+  }
+  .col-btn {
+    background: none;
+    border: 1px solid #333;
+    border-radius: 4px;
+    width: 26px; height: 26px;
+    color: #555;
+    cursor: pointer;
+    font-size: .65rem;
+    font-family: ui-monospace, monospace;
+    transition: background .12s, color .12s, border-color .12s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .col-btn.active { background: #3d3830; color: #bbb; border-color: #555; }
+  .col-btn:hover:not(.active) { color: #888; }
+
+  /* ─────────────────────────────────────────────
+     Book — position:fixed gives a definite height
+     that all percentage children can resolve against.
+     This is the key fix: overflow:auto parents have
+     no definite height, so height:100% children
+     can't resolve. Fixed elements always can.
+  ───────────────────────────────────────────── */
+  #book {
+    position: fixed;
+    inset: var(--chrome-h) 0 0 0;
+  }
+
+  /* ── Scroll mode ── */
+  #scroller {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #2a2520;
+  }
+  #scroller::-webkit-scrollbar { width: 3px; }
+  #scroller::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+  .scroll-inner {
+    max-width: 68ch;
+    margin: 0 auto;
+    padding: var(--pad-y) var(--pad-x);
+    background: var(--paper);
+    min-height: 100%;
+    box-shadow: 0 0 60px rgba(0,0,0,.5);
+  }
+
+  /* ── Pages mode ──
+     #pager has definite height (100% of #book which is fixed).
+     .pages-inner height:100% therefore resolves correctly.
+     column-fill:auto then fills that height before spilling right.
+  */
+  #pager {
+    display: none;
+    width: 100%;
+    height: 100%;          /* resolves: #book is position:fixed */
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Paper color here covers the entire scrollable area,
+       not just the element width — fixes dark background on page 2+ */
+    background: var(--paper);
+  }
+  #pager::-webkit-scrollbar { height: 2px; }
+  #pager::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+  .pages-inner {
+    height: 100%;
+    column-fill: auto;
+    column-gap: var(--gap);
+    padding: var(--pad-y) var(--pad-x);
+    width: 100%;
+    column-count: 1;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Auto multi-column on wider screens, no manual override */
+  @media (min-width: 600px) {
+    .pages-inner:not([data-cols]) {
+      column-count: auto;
+      column-width: 38ch;
+      column-rule: 1px solid var(--paper-dark);
+      width: max-content;
+    }
+  }
+
+  /* Manual overrides */
+  .pages-inner[data-cols="1"] {
+    column-count: 1; column-width: unset; width: 100%;
+  }
+  .pages-inner[data-cols="2"] {
+    column-count: 2; column-width: unset; width: max-content;
+    column-rule: 1px solid var(--paper-dark);
+  }
+  .pages-inner[data-cols="3"] {
+    column-count: 3; column-width: unset; width: max-content;
+    column-rule: 1px solid var(--paper-dark);
+  }
+
+  /* ── Shared article typography ── */
+  .article-kicker {
+    display: block;
+    font-size: .65rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .75rem;
+    font-family: ui-monospace, 'SF Mono', monospace;
+  }
+  .article-title {
+    font-size: clamp(1.5rem, 3.5vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    color: var(--ink);
+    margin-bottom: .5rem;
+    font-weight: normal;
+  }
+  .article-byline {
+    font-size: .75rem;
+    color: var(--ink-light);
+    font-style: italic;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--paper-dark);
+  }
+  .article-lede {
+    font-size: 1.1em;
+    line-height: var(--lh);
+    color: var(--ink-mid);
+    margin-bottom: 1.4em;
+    font-style: italic;
+  }
+  p {
+    line-height: var(--lh);
+    margin-bottom: 1em;
+    color: var(--ink-mid);
+    text-align: justify;
+    hyphens: auto;
+    hanging-punctuation: first allow-end;
+  }
+  p + p { text-indent: 1.5em; margin-top: -.5em; }
+
+  h2 {
+    font-size: 1.05em;
+    letter-spacing: .04em;
+    color: var(--ink);
+    margin: 1.8em 0 .5em;
+    font-weight: normal;
+    break-after: avoid;
+  }
+  h2::before { content: '§ '; color: var(--accent); }
+
+  blockquote {
+    margin: 1.25em 0;
+    padding: .9em 1.25em;
+    border-left: 3px solid var(--accent);
+    background: var(--paper-dark);
+    break-inside: avoid;
+  }
+  blockquote p {
+    font-size: 1em;
+    font-style: italic;
+    color: var(--ink);
+    margin: 0;
+    text-indent: 0 !important;
+  }
+  blockquote cite {
+    display: block;
+    font-size: .7em;
+    color: var(--ink-light);
+    font-style: normal;
+    margin-top: .4em;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .pull-quote {
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--paper-dark);
+    padding: 1em 0;
+    margin: 1.5em 0;
+    break-inside: avoid;
+  }
+  .pull-quote p {
+    font-size: 1.15em;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--ink);
+    text-align: center;
+    text-indent: 0 !important;
+    margin: 0;
+  }
+  .drop-cap::first-letter {
+    float: left;
+    font-size: 3.6em;
+    line-height: .82;
+    margin: .06em .1em -.04em 0;
+    color: var(--accent);
+  }
+
+  /* ── Progress bar ── */
+  #progress {
+    position: fixed;
+    top: var(--chrome-h);
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 0%;
+    transition: width .2s;
+    z-index: 150;
+    pointer-events: none;
+  }
+
+  /* ── Page nav ── */
+  #page-nav {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 1.25rem;
+    background: rgba(20,17,14,.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #333;
+    border-radius: 100px;
+    padding: .4rem 1.1rem;
+    z-index: 200;
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: .1rem .25rem;
+    transition: color .12s;
+    line-height: 1;
+    user-select: none;
+  }
+  .nav-btn:hover { color: #ccc; }
+  .nav-btn:disabled { opacity: .2; pointer-events: none; }
+  #page-indicator {
+    font-size: .65rem;
+    letter-spacing: .14em;
+    color: #777;
+    font-family: ui-monospace, monospace;
+    min-width: 6ch;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header id="chrome">
+  <span class="chrome-title">On the Nature of Slow Reading</span>
+  <div class="chrome-controls">
+    <button class="font-btn" id="font-down">A−</button>
+    <button class="font-btn" id="font-up">A+</button>
+
+    <div class="col-ctrl" id="col-ctrl" style="display:none">
+      <span class="col-label">Col</span>
+      <button class="col-btn active" data-cols="auto">A</button>
+      <button class="col-btn"        data-cols="1">1</button>
+      <button class="col-btn"        data-cols="2">2</button>
+      <button class="col-btn"        data-cols="3">3</button>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-scroll">Scroll</button>
+      <button class="mode-btn"        id="btn-pages">Pages</button>
+    </div>
+  </div>
+</header>
+
+<div id="progress"></div>
+
+<div id="book">
+  <div id="scroller">
+    <article class="scroll-inner" id="art-scroll"></article>
+  </div>
+  <div id="pager">
+    <article class="pages-inner" id="art-pages"></article>
+  </div>
+</div>
+
+<nav id="page-nav" aria-label="Page navigation">
+  <button class="nav-btn" id="prev-page">←</button>
+  <span id="page-indicator">1 / 1</span>
+  <button class="nav-btn" id="next-page">→</button>
+</nav>
+
+<script>
+const CONTENT = `
+<header>
+  <span class="article-kicker">Essay · Typography &amp; Reading</span>
+  <h1 class="article-title">On the Nature of Slow Reading</h1>
+  <p class="article-byline">by Eleanor Marsh · March 2026</p>
+</header>
+
+<p class="article-lede">There is a particular quality of attention that long-form reading demands — a patience the eye must relearn each time we return to it, like coming home to a house that has rearranged its furniture in our absence.</p>
+
+<p class="drop-cap">The column has always been the natural unit of reading. Before the infinite scroll and the boundless page, before even the codex, scribes understood that the human eye moves most comfortably across a measure of roughly sixty characters. This is not an aesthetic preference but a fact of physiology: the fovea, our region of sharpest focus, subtends only a few degrees. We do not read across a page so much as across a field of attention.</p>
+
+<p>Yet somewhere in the transition from print to screen, we abandoned this wisdom. We gave readers horizontal stretches of text that exhausted the eye and fractured the sentence. The modern web article, with its single-column expanse filling a 1440-pixel monitor, would be unreadable in print — and so, quite often, it is unread.</p>
+
+<h2>The Measure</h2>
+
+<p>Typographers have long called the optimal line length the <em>measure</em>. Robert Bringhurst, in <em>The Elements of Typographic Style</em>, places ideal prose at 45 to 75 characters. The original Penguin paperbacks ran to about 60. The columns of <em>The London Review of Books</em> — widely considered among the best-designed journals in English — sit at 65. These are not coincidences.</p>
+
+<p>When a line exceeds 80 characters, the eye must work harder to find its return. It sweeps left, hunting for the start of the next line, and occasionally lands on the wrong one. The text becomes, quite literally, harder to follow. Comprehension drops. The reader, without knowing why, feels tired.</p>
+
+<blockquote>
+  <p>The best that can be said for the internet's infinite column is that it democratised publishing. The worst is that it forgot everything typography had learned in five hundred years.</p>
+  <cite>— Robin Sloan, in conversation</cite>
+</blockquote>
+
+<p>Short lines create a different problem. Below 45 characters, the eye returns too frequently, disrupting the rhythmic scanning that allows fast reading. Sentences that spread comfortably across a longer measure become staccato and breathless when forced into a narrow column. Poetry belongs in short measures; prose does not.</p>
+
+<h2>Pagination and Flow</h2>
+
+<p>The page, unlike the scroll, imposes a contract. When a reader reaches the bottom of a page and turns it, something cognitive happens: a small act of completion, a breath between clauses. This is not mere sentiment. Studies of reading behaviour consistently show better retention when text is consumed in finite, bounded chunks than when it scrolls continuously.</p>
+
+<figure class="pull-quote">
+  <p>"The scroll is optimised for the producer's convenience. The page is optimised for the reader's comprehension."</p>
+</figure>
+
+<p>This may explain the success of e-readers. The Kindle's paginated interface — despite delivering content through the same glass screen as Twitter or Gmail — produces measurably different reading behaviour. Users slow down. Rereading rates increase. Readers report higher confidence in their grasp of material.</p>
+
+<p>The mechanism is probably attentional. Continuous scroll signals an environment of abundance where skim-reading is rewarded. Pagination signals a bounded space where depth is possible. The form shapes the expectation, and the expectation shapes the attention.</p>
+
+<h2>Multi-Column on Screen</h2>
+
+<p>CSS multi-column layout has existed since 2001, yet it remains conspicuously underused. The reasons are partly historical: early implementations were buggy, and horizontal scrolling felt alien on mouse-driven interfaces. Touch has changed that calculation. A finger swipe is as natural as a page turn; the left-right axis is no longer strange.</p>
+
+<p>But there is a deeper resistance. Designers trained on scroll-based interfaces treat the horizontal axis as navigation — links, carousels, product rows. To give the horizontal axis to prose is to repurpose it for a slower, more demanding use. It requires a different kind of trust from the reader.</p>
+
+<blockquote>
+  <p>We have spent twenty years teaching people that horizontal movement means navigation, not reading. Unlearning that association takes more than a gesture — it takes a frame that prepares the reader for depth rather than browsing.</p>
+  <cite>— from a design journal, 2024</cite>
+</blockquote>
+
+<p>When it works — and it does work — the effect is disorienting in the best possible way. The text feels substantial. Each page has weight. The reader does not sense the bottom approaching with dread, but turns to a fresh column with something like anticipation.</p>
+
+<h2>Technical Considerations</h2>
+
+<p>The CSS <code>columns</code> property is remarkably simple at its core: specify a column width, and the browser calculates how many fit. Set <code>column-fill: auto</code> on a fixed-height container, and the browser fills each column to capacity before beginning the next. Overflow flows horizontally.</p>
+
+<p>The subtleties accumulate quickly. <code>break-inside: avoid</code> prevents pull-quotes and block elements from fracturing across columns. <code>orphans</code> and <code>widows</code> control lone lines at column boundaries. The outstanding problem is measurement: to display a reliable page indicator requires knowing the total scrollable width divided by the viewport width — a calculation that must be defended against resize and orientation change events.</p>
+
+<p>Font size changes force a full recalculation: more text fits per column, changing total page count. The ResizeObserver API, watching the fixed book container, is the correct hook — it fires on orientation change and mobile toolbar show/hide, both of which alter available height without triggering a classic window resize event.</p>
+
+<h2>What Remains</h2>
+
+<p>The question is not whether multi-column layouts are technically feasible — they clearly are — but whether readers will follow. This is, ultimately, a question about habituation. The long-form internet has trained a generation of readers for scroll and skim; the column reader asks them to sit.</p>
+
+<p>There is cause for optimism. Substack, newsletters, e-readers, even the return of long-form magazines in digital formats — all point to a hunger for slower reading experiences. The audience exists. What has been missing is the design vocabulary to meet them.</p>
+
+<p>This page is a small experiment in that vocabulary. The column is its argument. The page turn is its hypothesis. Whether you reached the end by scrolling or by turning, the text is the same; only the quality of attention differs. That difference, if it exists, is the whole point.</p>
+`;
+
+// DOM refs
+const scroller  = document.getElementById('scroller');
+const pager     = document.getElementById('pager');
+const artScroll = document.getElementById('art-scroll');
+const artPages  = document.getElementById('art-pages');
+const pageNav   = document.getElementById('page-nav');
+const prevBtn   = document.getElementById('prev-page');
+const nextBtn   = document.getElementById('next-page');
+const indicator = document.getElementById('page-indicator');
+const progress  = document.getElementById('progress');
+const colCtrl   = document.getElementById('col-ctrl');
+const book      = document.getElementById('book');
+
+artScroll.innerHTML = CONTENT;
+artPages.innerHTML  = CONTENT;
+
+// Font size
+const SIZES = [.82, .9, 1, 1.08, 1.16, 1.25];
+let sizeIdx = 2;
+const fontDown = document.getElementById('font-down');
+const fontUp   = document.getElementById('font-up');
+
+function applySize() {
+  document.documentElement.style.setProperty('--body-size', SIZES[sizeIdx] + 'rem');
+  fontDown.disabled = sizeIdx === 0;
+  fontUp.disabled   = sizeIdx === SIZES.length - 1;
+  if (mode === 'pages') requestAnimationFrame(recalc);
+}
+fontDown.addEventListener('click', () => { if (sizeIdx > 0)              { sizeIdx--; applySize(); } });
+fontUp.addEventListener(  'click', () => { if (sizeIdx < SIZES.length-1) { sizeIdx++; applySize(); } });
+
+// Column picker
+document.querySelectorAll('.col-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.col-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const v = btn.dataset.cols;
+    if (v === 'auto') {
+      delete artPages.dataset.cols;   // remove attr → falls back to column-width
+    } else {
+      artPages.dataset.cols = v;
+    }
+    requestAnimationFrame(recalc);
+  });
+});
+
+// Mode
+let mode = 'scroll';
+let currentPage = 0;
+let totalPages  = 1;
+const btnScroll = document.getElementById('btn-scroll');
+const btnPages  = document.getElementById('btn-pages');
+
+function setMode(m) {
+  mode = m;
+  const isPages = m === 'pages';
+  btnScroll.classList.toggle('active', !isPages);
+  btnPages.classList.toggle( 'active',  isPages);
+  scroller.style.display = isPages ? 'none' : '';
+  pager.style.display    = isPages ? 'block' : 'none';
+  colCtrl.style.display  = isPages ? ''     : 'none';
+  pageNav.style.display  = isPages ? 'flex' : 'none';
+  if (!isPages) {
+    progress.style.width = '0%';
+  } else {
+    currentPage = 0;
+    requestAnimationFrame(() => { recalc(); scrollToPage(0, false); });
+  }
+}
+btnScroll.addEventListener('click', () => setMode('scroll'));
+btnPages.addEventListener( 'click', () => setMode('pages'));
+
+// Recalc page count
+function recalc() {
+  if (mode !== 'pages') return;
+  const vw = pager.clientWidth;
+  const sw = artPages.scrollWidth;
+  totalPages  = vw > 0 ? Math.max(1, Math.round(sw / vw)) : 1;
+  currentPage = Math.min(currentPage, totalPages - 1);
+  updateHUD();
+}
+
+function scrollToPage(n, smooth = true) {
+  currentPage = Math.max(0, Math.min(n, totalPages - 1));
+  // Distribute evenly across the actual scrollable range rather than
+  // using clientWidth steps, which drift when padding is in scrollWidth.
+  const maxScroll = pager.scrollWidth - pager.clientWidth;
+  const left = totalPages > 1 ? (currentPage / (totalPages - 1)) * maxScroll : 0;
+  pager.scrollTo({ left, behavior: smooth ? 'smooth' : 'instant' });
+  updateHUD();
+}
+
+function updateHUD() {
+  indicator.textContent = `${currentPage + 1} / ${totalPages}`;
+  prevBtn.disabled = currentPage === 0;
+  nextBtn.disabled = currentPage === totalPages - 1;
+  const pct = totalPages > 1 ? (currentPage / (totalPages - 1)) * 100 : 100;
+  progress.style.width = pct + '%';
+}
+
+prevBtn.addEventListener('click', () => scrollToPage(currentPage - 1));
+nextBtn.addEventListener('click', () => scrollToPage(currentPage + 1));
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (mode !== 'pages') return;
+  if (e.key === 'ArrowRight' || e.key === ' ')
+    { e.preventDefault(); scrollToPage(currentPage + 1); }
+  if (e.key === 'ArrowLeft')
+    { e.preventDefault(); scrollToPage(currentPage - 1); }
+});
+
+// Touch swipe
+let tx0 = 0;
+pager.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; }, { passive: true });
+pager.addEventListener('touchend', e => {
+  const dx = tx0 - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 44) scrollToPage(currentPage + (dx > 0 ? 1 : -1));
+});
+
+// Scroll progress
+scroller.addEventListener('scroll', () => {
+  if (mode !== 'scroll') return;
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  progress.style.width = (max > 0 ? scroller.scrollTop / max * 100 : 100) + '%';
+}, { passive: true });
+
+// ResizeObserver on #book — catches orientation change AND
+// mobile browser toolbar show/hide (neither fires window resize reliably)
+const ro = new ResizeObserver(() => {
+  if (mode === 'pages') {
+    requestAnimationFrame(() => { recalc(); scrollToPage(currentPage, false); });
+  }
+});
+ro.observe(book);
+
+// Boot
+applySize();
+</script>
+</body>
+</html>

@@ -262,6 +262,34 @@
 }
 
 /* ===========================================
+   Canvas Backdrop Fixes for Doc Pages
+   (Outside @scope — :root selectors need document-level matching)
+   =========================================== */
+
+/* Alignment: center header/footer to match centered main */
+:root[data-page="docs"][data-backdrop] > body > header,
+:root[data-page="docs"][data-backdrop] > body > footer,
+:root[data-page="lab"][data-backdrop] > body > header,
+:root[data-page="lab"][data-backdrop] > body > footer {
+  max-inline-size: var(--canvas-width, 72rem);
+  justify-self: center;
+}
+
+/* Fixed header: make body the scroll container so sticky works across grid rows */
+:root[data-page="docs"][data-backdrop-chrome~="fixed"] > body,
+:root[data-page="lab"][data-backdrop-chrome~="fixed"] > body {
+  overflow-y: auto;
+  max-block-size: 100dvh;
+}
+
+:root[data-page="docs"][data-backdrop-chrome~="fixed"] > body > header,
+:root[data-page="lab"][data-backdrop-chrome~="fixed"] > body > header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky, 100);
+}
+
+/* ===========================================
    Reusable Documentation Components
    =========================================== */
 

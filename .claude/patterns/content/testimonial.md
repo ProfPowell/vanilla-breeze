@@ -165,7 +165,7 @@ Customer quote or endorsement displaying feedback, attribution, and optional com
       border-radius: var(--radius-lg);
 
       & blockquote p {
-        font-size: var(--text-xl);
+        font-size: var(--font-size-xl);
         color: inherit;
 
         &::before {

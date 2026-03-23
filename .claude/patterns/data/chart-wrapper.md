@@ -188,7 +188,7 @@ Container pattern for embedding charts and data visualizations. Provides consist
     flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--size-xs);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     color: var(--text-muted);
   }
 

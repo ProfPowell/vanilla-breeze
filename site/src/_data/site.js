@@ -30,6 +30,9 @@ export default {
   prototypeJs: isDev ? null : '/cdn/packs/prototype.full.js',
   prototypeCss: isDev ? null : '/cdn/packs/prototype.full.css',
 
+  // Foundation fonts (variable fonts for polished typography)
+  fontsCss: '/cdn/packs/fonts-foundation.theme.css',
+
   // Charts CSS add-on (per-page via includeCharts front matter)
   chartsCss: isDev ? '/src/charts-standalone.css' : '/cdn/vanilla-breeze-charts.css',
 

@@ -4,19 +4,25 @@
  * Provides a trigger button that opens a dropdown panel for browsing, searching,
  * and selecting emoji. Can insert directly into a target input/textarea/contenteditable.
  *
- * @attr {string} for - ID of target input/textarea/contenteditable for insertion
- * @attr {boolean} data-open - Whether picker is open (reflected)
- * @attr {number} recent-limit - Max recent emoji stored (default: 24)
+ * No-JS fallback: the trigger button remains visible but non-functional.
+ * The underlying text field still works — users can use OS emoji keyboards.
+ * The picker is an optional enhancement.
+ *
+ * @attr {string}  for          - ID of target input/textarea/contenteditable for insertion
+ * @attr {number}  recent-limit - Max recent emoji stored (default: 24)
+ *
+ * `open` is reflected state only — set by open()/close()/toggle() methods,
+ * not intended as initial markup. Use the JS API for programmatic control.
+ *
+ * @fires emoji-picker:select - When an emoji is selected. Detail: { shortcode, emoji, name, keywords }
+ * @fires emoji-picker:open - When picker opens
+ * @fires emoji-picker:close - When picker closes
  *
  * @example
  * <textarea id="msg"></textarea>
  * <emoji-picker for="msg">
  *   <button data-trigger type="button">😀</button>
  * </emoji-picker>
- *
- * @fires emoji-picker:select - When an emoji is selected. Detail: { shortcode, emoji, name, keywords }
- * @fires emoji-picker:open - When picker opens
- * @fires emoji-picker:close - When picker closes
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -49,24 +55,42 @@ class EmojiPicker extends HTMLElement {
   #currentQuery = '';
   /** @type {any} */
   #emojiData = null;
+  #setupDone = false;
+
+  /* Saved selection state for insertion after picker interaction */
+  /** @type {{ start: number, end: number } | null} */
+  #savedInputSelection = null;
+  /** @type {Range | null} */
+  #savedRange = null;
 
   async connectedCallback() {
     this.#emojiData = await loadEmojiModule();
-    this.#setup();
+
+    if (!this.#setupDone) {
+      this.#build();
+      this.#setupDone = true;
+    }
+
+    // Bind global listeners (removed on disconnect)
+    this.#trigger?.addEventListener('click', this.#handleTriggerClick);
+    document.addEventListener('click', this.#handleOutsideClick);
+    document.addEventListener('keydown', this.#handleGlobalKeyDown);
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
-    this.#cleanup();
+    if (this.#searchTimer) clearTimeout(this.#searchTimer);
+    this.#trigger?.removeEventListener('click', this.#handleTriggerClick);
+    document.removeEventListener('click', this.#handleOutsideClick);
+    document.removeEventListener('keydown', this.#handleGlobalKeyDown);
   }
 
-  #setup() {
+  #build() {
     // Find or create trigger
-    this.#trigger = this.querySelector(':scope > [data-trigger]');
-    if (!this.#trigger) {
-      this.#trigger = this.querySelector(':scope > button');
-    }
+    this.#trigger = this.querySelector(':scope > [data-trigger]')
+      || this.querySelector(':scope > button');
+
     if (!this.#trigger) {
       this.#trigger = document.createElement('button');
       this.#trigger.type = 'button';
@@ -78,22 +102,11 @@ class EmojiPicker extends HTMLElement {
     // ARIA on trigger
     this.#trigger.setAttribute('aria-haspopup', 'dialog');
     this.#trigger.setAttribute('aria-expanded', 'false');
-    this.#trigger.setAttribute('aria-label', this.#trigger.getAttribute('aria-label') || 'Open emoji picker');
+    this.#trigger.setAttribute('aria-label',
+      this.#trigger.getAttribute('aria-label') || 'Open emoji picker');
 
     // Build picker panel
     this.#buildPicker();
-
-    // Event listeners
-    this.#trigger.addEventListener('click', this.#handleTriggerClick);
-    document.addEventListener('click', this.#handleOutsideClick);
-    document.addEventListener('keydown', this.#handleGlobalKeyDown);
-  }
-
-  #cleanup() {
-    if (this.#searchTimer) clearTimeout(this.#searchTimer);
-    this.#trigger?.removeEventListener('click', this.#handleTriggerClick);
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('keydown', this.#handleGlobalKeyDown);
   }
 
   #buildPicker() {
@@ -122,7 +135,8 @@ class EmojiPicker extends HTMLElement {
       const tab = document.createElement('button');
       tab.type = 'button';
       tab.setAttribute('role', 'tab');
-      tab.setAttribute('aria-selected', group === this.#emojiData.EMOJI_GROUPS[0] ? 'true' : 'false');
+      tab.setAttribute('aria-selected',
+        group === this.#emojiData.EMOJI_GROUPS[0] ? 'true' : 'false');
       tab.setAttribute('data-group', group);
       tab.setAttribute('aria-label', this.#emojiData.EMOJI_GROUP_LABELS[group]);
       tab.title = this.#emojiData.EMOJI_GROUP_LABELS[group];
@@ -212,6 +226,31 @@ class EmojiPicker extends HTMLElement {
     this.#gridCells.push(btn);
   }
 
+  // ── Selection preservation ────────────────────────────────────────
+
+  #saveTargetSelection() {
+    const targetId = this.getAttribute('for');
+    if (!targetId) return;
+
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      const input = /** @type {HTMLInputElement} */ (target);
+      this.#savedInputSelection = {
+        start: input.selectionStart ?? input.value.length,
+        end: input.selectionEnd ?? input.value.length
+      };
+      this.#savedRange = null;
+    } else if (target.isContentEditable) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        this.#savedRange = sel.getRangeAt(0).cloneRange();
+      }
+      this.#savedInputSelection = null;
+    }
+  }
+
   // ── Event handlers ─────────────────────────────────────────────────
 
   #handleTriggerClick = (e) => {
@@ -220,7 +259,7 @@ class EmojiPicker extends HTMLElement {
   };
 
   #handleOutsideClick = (e) => {
-    if (this.#isOpen && !this.contains(e.target)) {
+    if (this.#isOpen && !this.contains(/** @type {Node} */ (e.target))) {
       this.close();
     }
   };
@@ -260,7 +299,8 @@ class EmojiPicker extends HTMLElement {
 
     // Update active tab
     for (const tab of this.#categoryNav.querySelectorAll('[role="tab"]')) {
-      tab.setAttribute('aria-selected', tab === e.currentTarget ? 'true' : 'false');
+      tab.setAttribute('aria-selected',
+        tab === e.currentTarget ? 'true' : 'false');
     }
 
     // Clear search if active
@@ -297,7 +337,6 @@ class EmojiPicker extends HTMLElement {
       case 'ArrowUp':
         e.preventDefault();
         if (this.#activeGridIndex < COLUMNS) {
-          // Move focus back to search
           this.#searchInput.focus();
           this.#activeGridIndex = -1;
         } else {
@@ -320,7 +359,6 @@ class EmojiPicker extends HTMLElement {
         }
         break;
       case 'Tab':
-        // Close picker on Tab out
         this.close();
         break;
     }
@@ -331,13 +369,9 @@ class EmojiPicker extends HTMLElement {
     const entry = this.#emojiData.EMOJI_MAP.get(shortcode);
     if (!entry) return;
 
-    // Save to recents
     this.#addRecent(shortcode);
-
-    // Insert into target
     this.#insertEmoji(entry);
 
-    // Dispatch event
     this.dispatchEvent(new CustomEvent('emoji-picker:select', {
       bubbles: true,
       detail: {
@@ -348,6 +382,9 @@ class EmojiPicker extends HTMLElement {
       }
     }));
 
+    // Close after selection — deliberate choice for quick composition flows
+    this.close();
+    this.#refocusTarget();
   };
 
   // ── Grid navigation ────────────────────────────────────────────────
@@ -356,7 +393,6 @@ class EmojiPicker extends HTMLElement {
     const total = this.#gridCells.length;
     if (total === 0) return;
 
-    // Clamp
     if (index < 0) index = 0;
     if (index >= total) index = total - 1;
 
@@ -375,25 +411,54 @@ class EmojiPicker extends HTMLElement {
 
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
       const input = /** @type {HTMLInputElement} */ (target);
-      const start = input.selectionStart ?? input.value.length;
-      const end = input.selectionEnd ?? start;
+      // Use saved selection (preserved before picker opened)
+      const start = this.#savedInputSelection?.start ?? input.value.length;
+      const end = this.#savedInputSelection?.end ?? start;
       const before = input.value.slice(0, start);
       const after = input.value.slice(end);
       input.value = before + entry.emoji + after;
       const newPos = start + entry.emoji.length;
       input.setSelectionRange(newPos, newPos);
+      // Update saved selection for next insertion
+      this.#savedInputSelection = { start: newPos, end: newPos };
       target.dispatchEvent(new Event('input', { bubbles: true }));
-      target.focus();
     } else if (target.isContentEditable) {
       target.focus();
       const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
+      if (sel && this.#savedRange) {
+        // Restore saved range from before picker opened
+        sel.removeAllRanges();
+        sel.addRange(this.#savedRange);
         const range = sel.getRangeAt(0);
         range.deleteContents();
-        range.insertNode(document.createTextNode(entry.emoji));
+        const textNode = document.createTextNode(entry.emoji);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        // Update saved range for next insertion
+        this.#savedRange = range.cloneRange();
+      } else if (sel) {
+        // Fallback: append at end
+        const range = document.createRange();
+        range.selectNodeContents(target);
         range.collapse(false);
+        const textNode = document.createTextNode(entry.emoji);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
       }
     }
+  }
+
+  #refocusTarget() {
+    const targetId = this.getAttribute('for');
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (target) target.focus();
   }
 
   // ── Recents ────────────────────────────────────────────────────────
@@ -424,8 +489,11 @@ class EmojiPicker extends HTMLElement {
   open() {
     if (this.#isOpen) return;
 
+    // Preserve target selection before moving focus to picker
+    this.#saveTargetSelection();
+
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
     this.#picker.hidden = false;
 
@@ -446,7 +514,7 @@ class EmojiPicker extends HTMLElement {
     if (!this.#isOpen) return;
 
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#picker.hidden = true;
 

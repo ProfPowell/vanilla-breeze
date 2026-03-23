@@ -20,13 +20,17 @@ slide-accept:defined {
 
 /* --- Track --- */
 .slide-track {
+  --_track-height: 3.5rem;
+  --_handle-inset: var(--size-3xs, 0.125rem);
+  --_border: var(--border-width-thin, 1px);
+  --_handle-size: calc(var(--_track-height) - var(--_border) * 2 - var(--_handle-inset) * 2);
   position: relative;
   display: flex;
   align-items: center;
-  block-size: 3.5rem;
+  block-size: var(--_track-height);
   border-radius: var(--radius-pill, 999px);
   background: var(--color-surface-raised, oklch(95% 0 0));
-  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border: var(--_border) solid var(--color-border);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -46,14 +50,15 @@ slide-accept:defined {
   transition: opacity 200ms ease;
 }
 
-/* --- Handle --- */
-.slide-handle {
-  all: unset;
+/* --- Handle ---
+   The handle is a <div role="slider"> (not a <button>) to avoid
+   theme button style interference from the bundle-theme layer. */
+slide-accept .slide-handle {
   position: absolute;
-  inset-block-start: 4px;
-  inset-inline-start: calc(var(--_slide-position, 0) / 100 * (100% - 3.25rem));
-  inline-size: 3.25rem;
-  block-size: calc(3.5rem - 8px);
+  inset-block-start: var(--_handle-inset);
+  inset-inline-start: calc(var(--_slide-position, 0) / 100 * (100% - var(--_handle-size)));
+  inline-size: var(--_handle-size);
+  block-size: var(--_handle-size);
   border-radius: var(--radius-pill, 999px);
   background: var(--color-interactive, oklch(55% 0.2 260));
   color: white;
@@ -65,19 +70,20 @@ slide-accept:defined {
   z-index: 1;
   box-shadow: 0 2px 8px oklch(0% 0 0 / 0.15);
   transition: none;
+  transform: none;
 }
 
-.slide-handle:active {
+slide-accept .slide-handle:active {
   cursor: grabbing;
 }
 
 /* Spring-back transition */
-slide-accept[data-transitioning] .slide-handle {
+slide-accept[transitioning] .slide-handle {
   transition: inset-inline-start 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* --- Focus visible --- */
-.slide-handle:focus-visible {
+slide-accept .slide-handle:focus-visible {
   outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
   outline-offset: 2px;
 }
@@ -111,7 +117,7 @@ slide-accept[data-activated] .slide-label {
   transition: none;
 }
 
-slide-accept[data-transitioning] .slide-track::before {
+slide-accept[transitioning] .slide-track::before {
   transition: inline-size 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -120,7 +126,7 @@ slide-accept[data-activated] .slide-track::before {
 }
 
 /* --- Attention: Shimmer --- */
-slide-accept[data-attention="shimmer"]:not([data-activated]):not([data-dragging]) .slide-track::after {
+slide-accept[attention="shimmer"]:not([data-activated]):not([data-dragging]) .slide-track::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -131,9 +137,9 @@ slide-accept[data-attention="shimmer"]:not([data-activated]):not([data-dragging]
     transparent 65%
   );
   background-size: 200% 100%;
-  animation: slide-accept-shimmer 2.5s ease-in-out infinite;
   border-radius: inherit;
   pointer-events: none;
+  /* animation applied via @media (prefers-reduced-motion: no-preference) below */
 }
 
 @keyframes slide-accept-shimmer {
@@ -142,40 +148,41 @@ slide-accept[data-attention="shimmer"]:not([data-activated]):not([data-dragging]
 }
 
 /* --- Attention: Pulse --- */
-slide-accept[data-attention="pulse"]:not([data-activated]):not([data-dragging]) .slide-handle {
-  animation: slide-accept-pulse 1.8s ease-in-out infinite;
-}
+/* animation applied via @media (prefers-reduced-motion: no-preference) below */
 
 @keyframes slide-accept-pulse {
   0%, 100% { box-shadow: 0 2px 8px oklch(0% 0 0 / 0.15); }
   50% { box-shadow: 0 2px 16px oklch(from var(--color-interactive, oklch(55% 0.2 260)) l c h / 0.4); }
 }
 
-/* --- Reduced motion --- */
+/* --- Reduced motion ---
+   @media inside @layer is mis-hoisted by esbuild, causing animation:none
+   rules to leak out of the media query and kill animations unconditionally.
+   Use @media directly on each animation property instead. */
+
+@media (prefers-reduced-motion: no-preference) {
+  slide-accept[attention="shimmer"]:not([data-activated]):not([data-dragging]) .slide-track::after {
+    animation: slide-accept-shimmer 2.5s ease-in-out infinite;
+  }
+
+  slide-accept[attention="pulse"]:not([data-activated]):not([data-dragging]) .slide-handle {
+    animation: slide-accept-pulse 1.8s ease-in-out infinite;
+  }
+}
+
+:root[data-motion-reduced] slide-accept[attention="shimmer"] .slide-track::after,
+:root[data-motion-reduced] slide-accept[attention="pulse"] .slide-handle {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  slide-accept[data-transitioning] .slide-handle,
-  slide-accept[data-transitioning] .slide-track::before {
+  slide-accept[transitioning] .slide-handle,
+  slide-accept[transitioning] .slide-track::before {
     transition-duration: 0s;
   }
-
-  slide-accept[data-attention="shimmer"] .slide-track::after {
-    animation: none;
-  }
-
-  slide-accept[data-attention="pulse"] .slide-handle {
-    animation: none;
-  }
 }
 
-:root[data-motion-reduced] slide-accept[data-transitioning] .slide-handle,
-:root[data-motion-reduced] slide-accept[data-transitioning] .slide-track::before {
+:root[data-motion-reduced] slide-accept[transitioning] .slide-handle,
+:root[data-motion-reduced] slide-accept[transitioning] .slide-track::before {
   transition-duration: 0s;
-}
-
-:root[data-motion-reduced] slide-accept[data-attention="shimmer"] .slide-track::after {
-  animation: none;
-}
-
-:root[data-motion-reduced] slide-accept[data-attention="pulse"] .slide-handle {
-  animation: none;
 }

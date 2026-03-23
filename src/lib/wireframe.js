@@ -176,6 +176,109 @@ export const wireframe = {
       img.parentNode.insertBefore(wrap, img);
       wrap.appendChild(img);
     });
+  },
+
+  /**
+   * Add a callout comment to an element.
+   * @param {string|Element} target - CSS selector or element
+   * @param {string} text - Callout comment text
+   */
+  addCallout(target, text) {
+    const el = typeof target === 'string'
+      ? document.querySelector(target)
+      : target;
+    if (!el) return;
+    /** @type {HTMLElement} */ (el).dataset.wfCallout = text;
+  },
+
+  /**
+   * Remove a callout from an element.
+   * @param {string|Element} target - CSS selector or element
+   */
+  removeCallout(target) {
+    const el = typeof target === 'string'
+      ? document.querySelector(target)
+      : target;
+    if (!el) return;
+    delete /** @type {HTMLElement} */ (el).dataset.wfCallout;
+    // Remove any existing marker
+    const marker = el.querySelector('[data-wf-callout-marker]');
+    if (marker) marker.remove();
+  },
+
+  /**
+   * Render callouts using the <foot-note> / <foot-notes> system.
+   * Discovers [data-wf-callout] elements, injects a numbered <mark> marker
+   * and a <foot-note> next to each one, then appends a <foot-notes> container.
+   * Numbering, linking, and back-references are handled by the footnotes component.
+   */
+  renderCallouts() {
+    // Clear previous callout artifacts
+    document.querySelectorAll('[data-wf-callout-marker]').forEach((m) => m.remove());
+    document.querySelectorAll('foot-note[data-wf-generated]').forEach((f) => f.remove());
+    document.querySelectorAll('[data-wf-callout-panel]').forEach((p) => p.remove());
+
+    let index = 0;
+    document.querySelectorAll('[data-wf-callout]').forEach((el) => {
+      index++;
+      const text = /** @type {HTMLElement} */ (el).dataset.wfCallout;
+
+      // Numbered marker badge
+      const marker = document.createElement('mark');
+      marker.setAttribute('data-wf-callout-marker', '');
+      marker.textContent = String(index);
+      marker.title = text;
+      el.appendChild(marker);
+
+      // foot-note element for the footnotes system to collect
+      const fn = document.createElement('foot-note');
+      fn.setAttribute('data-wf-generated', '');
+      fn.textContent = text;
+      el.appendChild(fn);
+    });
+  },
+
+  /**
+   * Render the callout panel as a <foot-notes> container.
+   * The <foot-notes> web component auto-collects <foot-note> elements
+   * and renders a numbered, linked list with back-references.
+   * @param {Element} [container] - Where to append. Defaults to <main> or <body>.
+   */
+  renderCalloutPanel(container) {
+    // Remove existing panel
+    document.querySelectorAll('[data-wf-callout-panel]').forEach((p) => p.remove());
+
+    const callouts = document.querySelectorAll('[data-wf-callout]');
+    if (callouts.length === 0) return;
+
+    const panel = document.createElement('foot-notes');
+    panel.setAttribute('data-wf-callout-panel', '');
+    panel.setAttribute('data-back-label', 'Back to callout');
+
+    const target = container || document.querySelector('main') || document.body;
+    target.appendChild(panel);
+  },
+
+  /**
+   * Toggle visibility of callout markers and panel.
+   * @returns {boolean} Whether callouts are now visible
+   */
+  toggleCallouts() {
+    const markers = document.querySelectorAll('[data-wf-callout-marker]');
+    const panel = document.querySelector('[data-wf-callout-panel]');
+
+    if (markers.length === 0 && !panel) {
+      // Not rendered yet — render them
+      this.renderCallouts();
+      this.renderCalloutPanel();
+      return true;
+    }
+
+    // Toggle hidden state
+    const isHidden = markers.length > 0 && /** @type {HTMLElement} */ (markers[0]).hidden;
+    markers.forEach((m) => { /** @type {HTMLElement} */ (m).hidden = !isHidden; });
+    if (panel) /** @type {HTMLElement} */ (panel).hidden = !isHidden;
+    return !isHidden;
   }
 };
 

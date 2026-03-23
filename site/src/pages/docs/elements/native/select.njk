@@ -193,10 +193,177 @@ optgroup {
 </section>
 
 <section>
+  <h2>Customizable Select</h2>
+  <p>Chrome 135+ ships <code>appearance: base-select</code>, which unlocks full CSS control over the dropdown picker, options, checkmark icon, and open/close animations — while retaining native semantics, keyboard navigation, form participation, and accessibility.</p>
+  <p>VB wraps all customizable-select styles in <code>@supports (appearance: base-select)</code>, making this a zero-risk progressive enhancement. Non-supporting browsers keep the existing <code>appearance: none</code> + SVG chevron.</p>
+
+  <browser-window src="/docs/examples/demos/customizable-select.html" url="https://vanilla-breeze.dev/select/customizable" title="Customizable select with styled picker and animated dropdown" shadow></browser-window>
+
+  <h3>What Changes Automatically</h3>
+  <ul>
+    <li>Dropdown picker gets surface background, border, radius, shadow, and max-height scroll</li>
+    <li>Options gain hover highlight, checked color, and rounded corners</li>
+    <li>Checkmark icon uses <code>--color-interactive</code></li>
+    <li>Chevron rotates 180&deg; on open</li>
+    <li>Picker animates in with opacity + translateY (respects <code>prefers-reduced-motion</code>)</li>
+    <li><code>&lt;optgroup&gt;</code> headers render as uppercase muted section labels with dividers</li>
+  </ul>
+  <p>No markup changes are required — every existing <code>&lt;select&gt;</code> upgrades automatically.</p>
+</section>
+
+<section>
+  <h2>Rich Content</h2>
+  <p>For selects with images, icons, or descriptions inside options, add a <code>&lt;button&gt;</code> trigger with <code>&lt;selectedcontent&gt;</code> to mirror the selected option in the closed state.</p>
+
+{% set richSelectCode %}<select name="language">
+  <button>
+    <selectedcontent></selectedcontent>
+  </button>
+  <option value="en">
+    <span aria-hidden="true">&#x1F1FA;&#x1F1F8;</span>
+    English
+    <span class="detail"> — American English</span>
+  </option>
+  <option value="es">
+    <span aria-hidden="true">&#x1F1EA;&#x1F1F8;</span>
+    Espa&ntilde;ol
+    <span class="detail"> — Spanish</span>
+  </option>
+  <option value="fr">
+    <span aria-hidden="true">&#x1F1EB;&#x1F1F7;</span>
+    Fran&ccedil;ais
+    <span class="detail"> — French</span>
+  </option>
+</select>{% endset %}
+
+  <code-block language="html" label="Rich select with flags and descriptions">{{ richSelectCode | escape }}</code-block>
+
+  <ul>
+    <li><code>&lt;button&gt;</code> becomes the trigger — VB styles it as a flex container</li>
+    <li><code>&lt;selectedcontent&gt;</code> automatically clones the selected option's content</li>
+    <li>Elements with <code>class="detail"</code> are hidden in the closed trigger to keep it compact</li>
+    <li>Images inside options are sized to <code>1.5em</code> with <code>border-radius</code> and <code>object-fit: cover</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Styling Reference</h2>
+  <p>The <code>base-select</code> value exposes these pseudo-elements and states:</p>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Selector</th>
+        <th>What It Targets</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>::picker(select)</code></td>
+        <td>The dropdown popup container</td>
+      </tr>
+      <tr>
+        <td><code>::picker-icon</code></td>
+        <td>The built-in chevron arrow</td>
+      </tr>
+      <tr>
+        <td><code>::checkmark</code></td>
+        <td>The selected-option indicator</td>
+      </tr>
+      <tr>
+        <td><code>:open</code></td>
+        <td>Select while picker is visible</td>
+      </tr>
+      <tr>
+        <td><code>selectedcontent</code></td>
+        <td>Cloned content of selected option in trigger</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Select vs Combo Box</h2>
+  <p>Use this table to decide between the native customizable select and VB's <a href="/docs/elements/web-components/combo-box/">combo-box</a> web component.</p>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Customizable Select</th>
+        <th>combo-box</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>JavaScript required</td>
+        <td>No</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Filterable / searchable</td>
+        <td>No (type-ahead only)</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Rich content in options</td>
+        <td>Yes (images, icons, text)</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Form participation</td>
+        <td>Native</td>
+        <td>Manual (hidden input)</td>
+      </tr>
+      <tr>
+        <td>Browser support</td>
+        <td>Chrome 135+</td>
+        <td>All modern browsers</td>
+      </tr>
+      <tr>
+        <td>Styled dropdown</td>
+        <td>Yes (with @supports gate)</td>
+        <td>Yes</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Browser Support</h2>
+  <p><code>appearance: base-select</code> ships in Chrome 135 (April 2025). Other browsers are implementing it — check <a href="https://caniuse.com/?search=base-select">caniuse</a> for current status.</p>
+  <p>VB's implementation is fully gated behind <code>@supports</code>:</p>
+
+{% set supportsCode %}@supports (appearance: base-select) {
+  select:not([multiple]) {
+    appearance: base-select;
+    /* ... all customizations ... */
+  }
+}
+
+/* Non-supporting browsers keep: */
+select {
+  appearance: none;
+  background-image: var(--select-chevron);
+}{% endset %}
+
+  <code-block language="css" label="@supports progressive enhancement">{{ supportsCode | escape }}</code-block>
+
+  <p>Detect in JavaScript:</p>
+
+{% set jsDetectCode %}if (CSS.supports('appearance', 'base-select')) {
+  // Customizable select is active
+}{% endset %}
+
+  <code-block language="javascript" label="Feature detection">{{ jsDetectCode | escape }}</code-block>
+</section>
+
+<section>
   <h2>Related</h2>
   <ul>
     <li><a href="/docs/elements/native/option/">option</a> - Individual options within a select</li>
     <li><a href="/docs/elements/native/optgroup/">optgroup</a> - Group related options with a label</li>
+    <li><a href="/docs/elements/native/selectedcontent/">selectedcontent</a> - Clone selected option content in the trigger button</li>
     <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete with custom values</li>
     <li><a href="/docs/elements/web-components/combo-box/">combo-box</a> - Fully custom filterable dropdown</li>
     <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced select with validation</li>

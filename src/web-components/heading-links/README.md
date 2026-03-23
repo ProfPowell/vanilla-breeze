@@ -42,7 +42,7 @@ Without JavaScript, headings remain plain headings. If headings have `id` attrib
 After upgrade, the component scans child headings, generates IDs for those without them, and appends a link icon (`<a class="heading-anchor">`) to each heading. The icon appears on hover/focus.
 
 ```html
-<heading-links data-levels="h2,h3,h4">
+<heading-links levels="h2,h3,h4">
   <h2>Usage</h2>
   <p>Content here...</p>
 </heading-links>
@@ -52,7 +52,7 @@ After upgrade, the component scans child headings, generates IDs for those witho
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `data-levels` | string | "h2,h3" | Comma-separated heading levels to process |
+| `levels` | string | "h2,h3" | Comma-separated heading levels to process |
 
 **Events:** `heading-links:navigate` with `{ id, url }` detail
 
@@ -133,7 +133,7 @@ Default (h2, h3):
 
 Custom levels:
 ```html
-<heading-links data-levels="h2,h3,h4">
+<heading-links levels="h2,h3,h4">
   <h2>API Reference</h2>
   <h3>Methods</h3>
   <h4>connect()</h4>

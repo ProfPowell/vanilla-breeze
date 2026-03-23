@@ -24,7 +24,7 @@
  *
  * - `chat-window` — sanitizes endpoint responses before rendering bubbles
  * - `card-list`   — sanitizes `data-field-html` bindings from JSON data
- * - `include-file` — strips scripts unless `data-allow-scripts` is set
+ * - `include-file` — strips scripts unless `allow-scripts` is set
  *
  * ### What this strips
  *

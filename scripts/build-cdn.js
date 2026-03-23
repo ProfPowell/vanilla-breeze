@@ -81,6 +81,30 @@ function fixAtPropertyLeadingZeros(filePath) {
 /**
  * Build individual theme CSS files and manifest
  */
+// Theme tier classification for manifest metadata.
+// Core themes are bundled in vanilla-breeze-core.css (instant switching).
+// Showcase themes are prominently featured on-demand themes.
+// Community themes are available but not prominent.
+const CORE_THEME_IDS = new Set([
+  'default', 'ocean', 'forest', 'sunset', 'rose', 'lavender',
+  'coral', 'slate', 'emerald', 'amber', 'indigo',
+  'modern', 'minimal', 'classic',
+]);
+const SHOWCASE_THEME_IDS = new Set([
+  'swiss', 'brutalist', 'art-deco', 'editorial',
+  'genai', 'glassmorphism', 'startup',
+  'organic', 'rough', 'cyber',
+  'vaporwave', 'neumorphism', 'bauhaus', 'claymorphism',
+  'alpha1999', 'super2026',
+  'win9x', 'nes', '8bit',
+]);
+
+function getThemeTier(themeId) {
+  if (CORE_THEME_IDS.has(themeId)) return 'core';
+  if (SHOWCASE_THEME_IDS.has(themeId)) return 'showcase';
+  return 'community';
+}
+
 async function buildThemes() {
   const themesDir = join(SRC, 'tokens', 'themes');
   const outDir = join(CDN, 'themes');
@@ -114,7 +138,7 @@ async function buildThemes() {
 
     const outPath = join(outDir, name);
     const size = statSync(outPath).size;
-    manifest[themeId] = { file: name, size };
+    manifest[themeId] = { file: name, size, tier: getThemeTier(themeId) };
   }
 
   writeFileSync(

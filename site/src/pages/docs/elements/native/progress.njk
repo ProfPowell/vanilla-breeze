@@ -48,32 +48,39 @@ permalink: /docs/elements/native/progress/
   }, { passive: true });
 </script>{% endset %}
 
-{% set cssReferenceCode %}progress {
+{% set cssReferenceCode %}/* Tokens (defined in src/tokens/forms.css) */
+:root {
+  --progress-h:        var(--size-s);
+  --progress-track-bg: var(--color-surface-raised);
+  --progress-fill:     var(--color-interactive);
+}
+
+progress {
   appearance: none;
   display: block;
   inline-size: 100%;
-  block-size: var(--size-s);
+  block-size: var(--progress-h);
   border: none;
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--color-surface-raised);
+  background: var(--progress-track-bg);
 }
 
 /* WebKit/Blink progress bar */
 progress::-webkit-progress-bar {
-  background: var(--color-surface-raised);
+  background: var(--progress-track-bg);
   border-radius: var(--radius-full);
 }
 
 progress::-webkit-progress-value {
-  background: var(--color-interactive);
+  background: var(--progress-fill);
   border-radius: var(--radius-full);
   transition: inline-size var(--duration-normal) var(--ease-out);
 }
 
 /* Firefox */
 progress::-moz-progress-bar {
-  background: var(--color-interactive);
+  background: var(--progress-fill);
   border-radius: var(--radius-full);
 }
 
@@ -83,10 +90,10 @@ progress.s { block-size: var(--size-2xs); }
 progress.m { block-size: var(--size-s); }
 progress.l { block-size: var(--size-m); }
 
-/* Color variants */
-progress.success::-webkit-progress-value { background: oklch(60% 0.18 145); }
-progress.warning::-webkit-progress-value { background: oklch(75% 0.18 75); }
-progress.error::-webkit-progress-value { background: oklch(55% 0.2 25); }
+/* Color variants — now use semantic tokens */
+progress.success::-webkit-progress-value { background: var(--color-success); }
+progress.warning::-webkit-progress-value { background: var(--color-warning); }
+progress.error::-webkit-progress-value { background: var(--color-error); }
 
 /* Indeterminate animation */
 progress:indeterminate {

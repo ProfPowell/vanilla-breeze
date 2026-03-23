@@ -52,3 +52,92 @@ section.grid {
   gap: var(--size-l);
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
 }
+
+/* --- Fluid Section Padding (data-padding) --- */
+section[data-padding]              { padding-block: var(--section-padding-normal); }
+section[data-padding="small"]      { padding-block: var(--section-padding-small); }
+section[data-padding="xsmall"]     { padding-block: var(--section-padding-xsmall); }
+section[data-padding="none"]       { padding-block: 0; }
+section[data-padding-end="none"]   { padding-block-end: 0; }
+section[data-padding-start="none"] { padding-block-start: 0; }
+
+/* --- Hero Bleed Behind Transparent Nav --- */
+section.hero[data-bleed] {
+  position: relative;
+  isolation: isolate;
+}
+
+section.hero[data-bleed]::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--site-header-height, 4rem) * -1) 0 0;
+  z-index: -1;
+  background: inherit;
+  overflow: hidden;
+}
+
+/* Nav transparency when hero bleeds */
+body:has(section.hero[data-bleed]) > header {
+  background: transparent;
+  transition: background var(--duration-normal, 0.2s) var(--ease-default, ease);
+}
+
+[data-scrolled] > header {
+  background: var(--color-surface);
+}
+
+/* --- Angled Section Transitions (data-angle) --- */
+section[data-angle] {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+section[data-angle]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  z-index: -1;
+  overflow: hidden;
+}
+
+section[data-angle="down"]::before {
+  transform-origin: bottom right;
+  transform: skewY(var(--angle-normal));
+}
+
+section[data-angle="up"]::before {
+  transform-origin: top right;
+  transform: skewY(calc(var(--angle-normal) * -1));
+}
+
+section[data-angle="down-strong"]::before {
+  transform-origin: bottom right;
+  transform: skewY(var(--angle-strong));
+}
+
+section[data-angle="up-strong"]::before {
+  transform-origin: top right;
+  transform: skewY(calc(var(--angle-strong) * -1));
+}
+
+/* Extra padding to compensate for skew clipping */
+section[data-angle="down"]        { padding-block-start: calc(var(--section-padding-normal) + 100vw * var(--angle-sin)); }
+section[data-angle="up"]          { padding-block-end: calc(var(--section-padding-normal) + 100vw * var(--angle-sin)); }
+section[data-angle="down-strong"] { padding-block-start: calc(var(--section-padding-normal) + 100vw * var(--angle-strong-sin)); }
+section[data-angle="up-strong"]   { padding-block-end: calc(var(--section-padding-normal) + 100vw * var(--angle-strong-sin)); }
+
+/* --- Section Hairline Rules --- */
+section:has(> hr[data-position]) { position: relative; }
+
+section > hr[data-position] {
+  position: absolute;
+  inset-inline: 0;
+  border: none;
+  border-block-start: 1px solid var(--color-border-subtle, var(--color-border));
+  margin: 0;
+}
+
+section > hr[data-position="top"]    { inset-block-start: 0; }
+section > hr[data-position="bottom"] { inset-block-end: 0; }

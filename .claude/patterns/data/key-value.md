@@ -87,7 +87,7 @@ Single key-value pair display for showing labeled data. A building block for sta
 
   /* Size variants */
   key-value[data-size="small"] [data-key] {
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
   }
 
   key-value[data-size="small"] [data-value] {
@@ -99,7 +99,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   }
 
   key-value[data-size="large"] [data-value] {
-    font-size: var(--text-2xl);
+    font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
   }
 
@@ -111,7 +111,7 @@ Single key-value pair display for showing labeled data. A building block for sta
   }
 
   key-value[data-hero] [data-value] {
-    font-size: var(--text-3xl);
+    font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
     background: linear-gradient(135deg, var(--primary), oklch(0.6 0.2 280));
     -webkit-background-clip: text;

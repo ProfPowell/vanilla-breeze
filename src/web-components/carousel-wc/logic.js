@@ -5,18 +5,18 @@
  * keyboard navigation, and full ARIA. Progressive enhancement: renders
  * as a simple flex scroll without JS.
  *
- * When data-transition is set and View Transitions API is supported,
+ * When transition is set and View Transitions API is supported,
  * switches to stacked-grid layout with animated slide transitions.
  *
- * @attr {boolean} data-autoplay       - Enable autoplay
- * @attr {number}  data-autoplay-delay - Autoplay interval in ms (default: 5000)
- * @attr {boolean} data-loop           - Wrap around at ends
- * @attr {string}  data-indicators     - Show dot indicators ("true"/"false", default: "true")
- * @attr {string}  data-item-width     - Slide width: "full", "auto", or CSS length (default: "full")
- * @attr {string}  data-gap            - Gap token: xs, s, m, l, xl
- * @attr {number}  data-start          - Initial slide index (default: 0)
- * @attr {string}  data-persist        - localStorage key for slide persistence
- * @attr {string}  data-transition     - VT type: "fade" (default), "slide", "scale"
+ * @attr {boolean} autoplay       - Enable autoplay
+ * @attr {number}  autoplay-delay - Autoplay interval in ms (default: 5000)
+ * @attr {boolean} loop           - Wrap around at ends
+ * @attr {string}  indicators     - Show dot indicators ("true"/"false", default: "true")
+ * @attr {string}  item-width     - Slide width: "full", "auto", or CSS length (default: "full")
+ * @attr {string}  gap            - Gap token: xs, s, m, l, xl
+ * @attr {number}  start          - Initial slide index (default: 0)
+ * @attr {string}  persist        - localStorage key for slide persistence
+ * @attr {string}  transition     - VT type: "fade" (default), "slide", "scale"
  *
  * @example
  * <carousel-wc>
@@ -63,7 +63,7 @@ class CarouselWc extends HTMLElement {
     if (children.length === 0) return;
 
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.#vtMode = this.hasAttribute('data-transition') && !!document.startViewTransition;
+    this.#vtMode = this.hasAttribute('transition') && !!document.startViewTransition;
 
     // Region ARIA
     this.setAttribute('role', 'region');
@@ -101,7 +101,7 @@ class CarouselWc extends HTMLElement {
     this.#nextBtn.innerHTML = '<icon-wc name="chevron-right" size="sm"></icon-wc>';
 
     // Indicators
-    const showIndicators = this.dataset.indicators !== 'false';
+    const showIndicators = this.getAttribute('indicators') !== 'false';
     if (showIndicators) {
       this.#indicators = document.createElement('div');
       this.#indicators.className = 'carousel-indicators';
@@ -140,7 +140,7 @@ class CarouselWc extends HTMLElement {
     // VT mode: assign view-transition-name/class to track
     if (this.#vtMode) {
       const id = ++carouselVtId;
-      const type = this.dataset.transition || 'fade';
+      const type = this.getAttribute('transition') || 'fade';
       const vtClass = type === 'slide' ? 'vt-carousel-slide' : type === 'scale' ? 'vt-carousel-scale' : 'vt-carousel';
       this.#track.style.viewTransitionName = `carousel-${id}`;
       this.#track.style.viewTransitionClass = vtClass;
@@ -166,7 +166,7 @@ class CarouselWc extends HTMLElement {
 
     // Initial slide (persisted > attribute > 0)
     const persisted = this.#readPersist();
-    const start = persisted ?? (Number(this.dataset.start) || 0);
+    const start = persisted ?? (Number(this.getAttribute('start')) || 0);
 
     if (this.#vtMode) {
       // VT mode: hide all but starting slide
@@ -182,7 +182,7 @@ class CarouselWc extends HTMLElement {
     this.#updateControls();
 
     // Autoplay
-    if (this.hasAttribute('data-autoplay') && !this.#reducedMotion) {
+    if (this.hasAttribute('autoplay') && !this.#reducedMotion) {
       this.#setupAutoplay();
     }
     this.setAttribute('data-upgraded', '');
@@ -201,7 +201,7 @@ class CarouselWc extends HTMLElement {
   }
 
   next() {
-    const loop = this.hasAttribute('data-loop');
+    const loop = this.hasAttribute('loop');
     if (this.#currentIndex < this.#slides.length - 1) {
       this.goTo(this.#currentIndex + 1);
     } else if (loop) {
@@ -210,7 +210,7 @@ class CarouselWc extends HTMLElement {
   }
 
   prev() {
-    const loop = this.hasAttribute('data-loop');
+    const loop = this.hasAttribute('loop');
     if (this.#currentIndex > 0) {
       this.goTo(this.#currentIndex - 1);
     } else if (loop) {
@@ -253,7 +253,7 @@ class CarouselWc extends HTMLElement {
 
   play() {
     if (this.#autoplayTimer || this.#reducedMotion) return;
-    const delay = Number(this.dataset.autoplayDelay) || 5000;
+    const delay = Number(this.getAttribute('autoplay-delay')) || 5000;
     this.#autoplayTimer = setInterval(() => this.next(), delay);
     this.dispatchEvent(new CustomEvent('carousel-wc:play', { bubbles: true }));
   }
@@ -266,7 +266,7 @@ class CarouselWc extends HTMLElement {
   }
 
   reset() {
-    const initial = Number(this.dataset.start) || 0;
+    const initial = Number(this.getAttribute('start')) || 0;
     this.goTo(initial, false);
     this.#clearPersist();
   }
@@ -286,7 +286,7 @@ class CarouselWc extends HTMLElement {
   }
 
   #updateControls() {
-    const loop = this.hasAttribute('data-loop');
+    const loop = this.hasAttribute('loop');
     const atStart = this.#currentIndex === 0;
     const atEnd = this.#currentIndex === this.#slides.length - 1;
 
@@ -348,11 +348,11 @@ class CarouselWc extends HTMLElement {
     // Pause on hover/focus/touch
     this.addEventListener('mouseenter', () => this.pause());
     this.addEventListener('mouseleave', () => {
-      if (this.hasAttribute('data-autoplay')) this.play();
+      if (this.hasAttribute('autoplay')) this.play();
     });
     this.addEventListener('focusin', () => this.pause());
     this.addEventListener('focusout', (e) => {
-      if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('data-autoplay')) {
+      if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('autoplay')) {
         this.play();
       }
     });
@@ -360,7 +360,7 @@ class CarouselWc extends HTMLElement {
   }
 
   #readPersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return null;
     try {
       const val = localStorage.getItem(`carousel:${key}`);
@@ -369,7 +369,7 @@ class CarouselWc extends HTMLElement {
   }
 
   #writePersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return;
     try {
       localStorage.setItem(`carousel:${key}`, String(this.#currentIndex));
@@ -377,7 +377,7 @@ class CarouselWc extends HTMLElement {
   }
 
   #clearPersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return;
     try { localStorage.removeItem(`carousel:${key}`); } catch {}
   }

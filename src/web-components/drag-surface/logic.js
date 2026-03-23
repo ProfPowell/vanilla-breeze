@@ -3,11 +3,11 @@
  *
  * Wraps the native HTML Drag and Drop API with keyboard accessibility,
  * live region announcements, and clean custom events. Supports single-surface
- * reorder and cross-surface transfer via shared data-group attributes.
+ * reorder and cross-surface transfer via shared group attributes.
  *
- * @attr {string} data-group - Transfer group; items move between surfaces sharing a group
- * @attr {string} data-orientation - "horizontal" switches to Left/Right arrows and clientX
- * @attr {boolean} data-drag-disabled - Temporarily disables all dragging
+ * @attr {string} group - Transfer group; items move between surfaces sharing a group
+ * @attr {string} orientation - "horizontal" switches to Left/Right arrows and clientX
+ * @attr {boolean} disabled - Temporarily disables all dragging
  *
  * Children use:
  * @attr {boolean} draggable="true" - Marks an element as draggable
@@ -22,9 +22,9 @@
  *
  * @example
  * <drag-surface data-layout="stack" data-layout-gap="xs">
- *   <article class="card" draggable="true" data-id="a">Item A</article>
- *   <article class="card" draggable="true" data-id="b">Item B</article>
- *   <article class="card" draggable="true" data-id="c">Item C</article>
+ *   <article draggable="true" data-id="a">Item A</article>
+ *   <article draggable="true" data-id="b">Item B</article>
+ *   <article draggable="true" data-id="c">Item C</article>
  * </drag-surface>
  */
 
@@ -64,11 +64,11 @@ class DragSurface extends HTMLElement {
   }
 
   get group() {
-    return this.dataset.group || null;
+    return this.getAttribute('group') || null;
   }
 
   get orientation() {
-    return this.dataset.orientation || 'vertical';
+    return this.getAttribute('orientation') || 'vertical';
   }
 
   get sortedOrder() {
@@ -120,7 +120,7 @@ class DragSurface extends HTMLElement {
 
   #onDragStart(e) {
     const item = e.target.closest('[draggable="true"]');
-    if (!item || item.parentElement !== this || this.hasAttribute('data-drag-disabled')) return;
+    if (!item || item.parentElement !== this || this.hasAttribute('disabled')) return;
 
     // Handle drag-handle constraint — check the original pointerdown target,
     // not e.target (which is always the draggable element in dragstart)
@@ -238,7 +238,7 @@ class DragSurface extends HTMLElement {
 
   #onKeyDown(e) {
     const item = e.target.closest('[draggable="true"]');
-    if (!item || item.parentElement !== this || this.hasAttribute('data-drag-disabled')) return;
+    if (!item || item.parentElement !== this || this.hasAttribute('disabled')) return;
 
     const isGrabbed = item.getAttribute('aria-grabbed') === 'true';
     const isHorizontal = this.orientation === 'horizontal';
@@ -402,7 +402,7 @@ class DragSurface extends HTMLElement {
   /** @returns {DragSurface | null} */
   #findAdjacentSurface(direction) {
     if (!this.group) return null;
-    const all = /** @type {DragSurface[]} */ ([...document.querySelectorAll(`drag-surface[data-group="${this.group}"]`)]);
+    const all = /** @type {DragSurface[]} */ ([...document.querySelectorAll(`drag-surface[group="${this.group}"]`)]);
     if (all.length < 2) return null;
 
     // Sort by visual position (left-to-right, top-to-bottom)

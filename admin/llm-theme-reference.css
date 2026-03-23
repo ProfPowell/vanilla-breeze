@@ -249,6 +249,39 @@
 }
 
 
+/* ─────────────── 1A-ii. AUTO-CONTRAST (contrast-color()) ─────────── */
+/**
+ * contrast-color() returns black or white for maximum contrast against
+ * any surface color. Supported in Chrome 147+, Safari 26+, Firefox 146+.
+ *
+ * CONVENTION: `-auto` suffix signals a computed contrast value.
+ *   --color-text-on-primary-auto:  contrast-color(var(--color-primary));
+ *   --color-text-on-warning-auto:  contrast-color(var(--color-warning));
+ *   ... (one per brand/status color)
+ *
+ * These live behind @supports (color: contrast-color(red)) { ... }
+ * so browsers without support skip them entirely.
+ *
+ * FALLBACK PATTERN (use in components):
+ *   color: var(--color-text-on-X-auto, var(--color-text-on-X, white));
+ *
+ *   1. If contrast-color() is supported → auto black/white
+ *   2. Else if theme overrides --color-text-on-X → use that
+ *   3. Else → white (original default)
+ *
+ * WHEN TO USE:
+ *   ✓ Buttons, badges, filled alerts — any element on a colored surface
+ *   ✓ Navigation pills, pagination, step indicators
+ *   ✓ Anything where the surface color varies by theme
+ *
+ * WHEN NOT TO USE:
+ *   ✗ Body/prose text — contrast-color() only returns pure black/white,
+ *     too harsh for sustained reading. Use --color-text instead.
+ *   ✗ High-contrast accessibility theme — must keep explicit AAA tokens.
+ *   ✗ Extreme themes — they override everything explicitly by design.
+ */
+
+
 /* ────────────────────── 1B. TYPOGRAPHY ──────────────────────────── */
 
 :root {
@@ -508,6 +541,62 @@
    *   organic — wavy irregular borders
    */
 
+  /* --- Animated border effects (opt-in by theme) --- */
+  /*
+   * Two CSS-only animated border techniques. Both default to disabled
+   * (themes set durations > 0 and apply animations to elements).
+   *
+   * SPIN BORDER — conic-gradient rotating around element
+   *   Requires: @property --vb-border-angle (declared in animated-borders.css)
+   *   Keyframe: vb-border-spin
+   *
+   *   Theme activation pattern:
+   *     :root[data-theme~="cyber"] .card {
+   *       border: var(--border-anim-spin-width) solid transparent;
+   *       background:
+   *         linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+   *         conic-gradient(from var(--vb-border-angle),
+   *           var(--color-primary), var(--color-secondary),
+   *           var(--color-accent), var(--color-primary)) border-box;
+   *       animation: vb-border-spin var(--border-anim-spin-duration) linear infinite;
+   *     }
+   *
+   * PULSE BORDER — animated box-shadow glow
+   *   Keyframe: vb-border-pulse
+   *
+   *   Theme activation pattern:
+   *     :root[data-theme~="kawaii"] .card:focus-within {
+   *       border-color: var(--border-anim-pulse-color);
+   *       animation: vb-border-pulse var(--border-anim-pulse-duration) ease-in-out infinite;
+   *     }
+   */
+  --border-anim-spin-duration: 3s;    /* 0s = disabled */
+  --border-anim-spin-width: 2px;
+  --border-anim-pulse-duration: 2s;   /* 0s = disabled */
+  --border-anim-pulse-color: var(--color-primary);
+  --border-anim-pulse-size: 8px;      /* max glow radius */
+
+  /* --- Cursor theming (opt-in by theme) --- */
+  /*
+   * Themes override these to change cursors site-wide.
+   * Applied in reset.css to :root and interactive elements.
+   * SVG data URI pattern (hex colors only — SVG doesn't accept OKLCH in cursor URLs):
+   *   --cursor-custom-pointer: url("data:image/svg+xml,...") hotspot-x hotspot-y, pointer;
+   *
+   * SPOTLIGHT EFFECT (not in core — theme-specific JS):
+   *   Themes wanting a radial spotlight on mousemove include their own ~20-line script.
+   *   Pattern: JS reads mousemove → sets --spotlight-x/--spotlight-y on element →
+   *   CSS ::before renders radial-gradient. Tokens for reference:
+   *     --spotlight-enabled: 0;
+   *     --spotlight-color: oklch(60% 0.10 var(--hue-primary));
+   *     --spotlight-size: 300px;
+   */
+  --cursor-custom-default: default;   /* override with keyword or url() */
+  --cursor-custom-pointer: pointer;   /* override with keyword or url() */
+  --cursor-text: text;
+  --cursor-grab: grab;
+  --cursor-grabbing: grabbing;
+
   /* --- Canvas/backdrop (data-backdrop attribute) --- */
   --canvas-width: min(72rem, 100%);
   --canvas-radius: var(--radius-l);
@@ -527,6 +616,49 @@
   --marker-check: "\2714";
   --marker-arrow: "\27A4";
   --marker-dash: "\2043";
+
+  /* --- Form control tokens --- */
+  /*
+   * Themes can override these to restyle all form controls.
+   * All defaults derive from existing VB tokens — safe to ignore.
+   *
+   * Input geometry (text inputs, selects, textareas):
+   *   --input-height:          var(--size-touch-min)     min block-size
+   *   --input-padding-inline:  var(--size-s)             horizontal padding
+   *   --input-bg:              var(--color-surface)      background
+   *   --input-border:          var(--color-border)       border color
+   *   --input-border-focus:    var(--color-interactive)  focus border color
+   *   --input-radius:          var(--radius-m)           border-radius
+   *   --input-text:            inherit                   text color
+   *   --input-placeholder:     var(--color-text-muted)   placeholder color
+   *
+   * Checkbox / Radio:
+   *   --control-size:            1.125rem                   box/circle size
+   *   --control-border:          var(--color-border-strong) unchecked border
+   *   --control-checked-bg:      var(--color-primary)       checked fill
+   *   --control-checked-border:  var(--color-primary)       checked border
+   *   --control-radius-check:    var(--radius-s)            checkbox radius
+   *   --control-radius-radio:    var(--radius-full)         radio radius
+   *
+   * Select chevron:
+   *   --select-chevron: url("data:image/svg+xml,...")  inline SVG chevron
+   *
+   * Range slider:
+   *   --range-track-h:       0.375rem                 track height
+   *   --range-track-bg:      var(--color-border)      unfilled track
+   *   --range-track-fill:    var(--color-primary)     filled track
+   *   --range-thumb-size:    1.25rem                  thumb diameter
+   *   --range-thumb-bg:      var(--color-surface)     thumb background
+   *   --range-thumb-border:  var(--color-primary)     thumb border
+   *
+   * Progress bar:
+   *   --progress-h:          var(--size-s)              bar height
+   *   --progress-track-bg:   var(--color-surface-raised) track background
+   *   --progress-fill:       var(--color-interactive)    fill color
+   *
+   * Meter (shares --progress-track-bg for track):
+   *   --meter-h:             var(--size-s)              bar height
+   */
 
   /* --- Theme hint tokens (read by ThemeManager JS) --- */
   --theme-border-style: clean;    /* clean | soft | sharp | sketch | etc. */
@@ -923,6 +1055,8 @@ Only declare hover formulas when they differ from core defaults.
  *   Motion: --duration-*, --ease-*, --motion-hover-*, --motion-enter/exit-*
  *   Extensions: --font-display/heading/body/code, --glass-*, --surface-*,
  *               --page-bg-*, --border-roughness, --filter-rough,
+ *               --border-anim-spin-*, --border-anim-pulse-*,
+ *               --cursor-custom-default, --cursor-custom-pointer,
  *               --theme-border-style, --theme-icon-set
  *   Component overrides: element-specific rules nested under theme selector
  *   Dark variant: COMPLETE override of all surface/text/border/shadow tokens

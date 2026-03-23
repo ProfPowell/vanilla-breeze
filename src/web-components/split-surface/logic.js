@@ -4,12 +4,12 @@
  * Two-panel container with a draggable divider. Supports persistence,
  * collapsible panels, keyboard navigation, and full ARIA.
  *
- * @attr {string}  data-direction  - "horizontal" | "vertical" (default: horizontal)
- * @attr {number}  data-position   - Initial split position 0-100 (default: 50)
- * @attr {number}  data-min        - Minimum panel size % (default: 10)
- * @attr {number}  data-max        - Maximum panel size % (default: 90)
- * @attr {string}  data-persist    - localStorage key for position persistence
- * @attr {boolean} data-collapsible - Double-click divider to collapse first panel
+ * @attr {string}  direction  - "horizontal" | "vertical" (default: horizontal)
+ * @attr {number}  position   - Initial split position 0-100 (default: 50)
+ * @attr {number}  min        - Minimum panel size % (default: 10)
+ * @attr {number}  max        - Maximum panel size % (default: 90)
+ * @attr {string}  persist    - localStorage key for position persistence
+ * @attr {boolean} collapsible - Double-click divider to collapse first panel
  *
  * @example
  * <split-surface>
@@ -29,15 +29,15 @@ class SplitSurface extends HTMLElement {
   #preCollapsePosition = 50;
 
   get #vertical() {
-    return this.dataset.direction === 'vertical';
+    return this.getAttribute('direction') === 'vertical';
   }
 
   get #min() {
-    return Number(this.dataset.min) || 10;
+    return Number(this.getAttribute('min')) || 10;
   }
 
   get #max() {
-    return Number(this.dataset.max) || 90;
+    return Number(this.getAttribute('max')) || 90;
   }
 
   get position() {
@@ -58,7 +58,7 @@ class SplitSurface extends HTMLElement {
   }
 
   reset() {
-    const initial = Number(this.dataset.position) || 50;
+    const initial = Number(this.getAttribute('position')) || 50;
     this.#collapsed = false;
     this.#setPosition(initial);
     this.#clearPersist();
@@ -73,7 +73,7 @@ class SplitSurface extends HTMLElement {
 
     // Read initial position (persisted > attribute > 50)
     const persisted = this.#readPersist();
-    const initial = persisted ?? (Number(this.dataset.position) || 50);
+    const initial = persisted ?? (Number(this.getAttribute('position')) || 50);
 
     // Create divider
     this.#divider = document.createElement('div');
@@ -93,7 +93,7 @@ class SplitSurface extends HTMLElement {
     this.#divider.addEventListener('pointerdown', this.#onPointerDown);
     this.#divider.addEventListener('keydown', this.#onKeyDown);
 
-    if (this.hasAttribute('data-collapsible')) {
+    if (this.hasAttribute('collapsible')) {
       this.#divider.addEventListener('dblclick', this.#onDblClick);
     }
     this.setAttribute('data-upgraded', '');
@@ -215,7 +215,7 @@ class SplitSurface extends HTMLElement {
   }
 
   #readPersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return null;
     try {
       const val = localStorage.getItem(`split-surface:${key}`);
@@ -224,7 +224,7 @@ class SplitSurface extends HTMLElement {
   }
 
   #writePersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return;
     try {
       localStorage.setItem(`split-surface:${key}`, String(Math.round(this.#position)));
@@ -232,7 +232,7 @@ class SplitSurface extends HTMLElement {
   }
 
   #clearPersist() {
-    const key = this.dataset.persist;
+    const key = this.getAttribute('persist');
     if (!key) return;
     try { localStorage.removeItem(`split-surface:${key}`); } catch {}
   }

@@ -76,7 +76,7 @@ class StatCard extends HTMLElement {
         }
 
         [data-role="value"] {
-          font-size: var(--text-2xl, 1.5rem);
+          font-size: var(--font-size-2xl, 1.5rem);
           font-weight: var(--font-bold, 700);
           color: var(--text, #1a1a1a);
           line-height: 1.2;

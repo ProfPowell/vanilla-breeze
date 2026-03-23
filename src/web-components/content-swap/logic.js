@@ -4,9 +4,9 @@
  * Toggles between front and back content with configurable transition effects.
  * Manages `inert` on the hidden face so screen readers only see visible content.
  *
- * @attr {string} data-transition - Transition type: "flip" (default), "flip-vertical", "fade", "slide-left", "slide-up", "scale"
- * @attr {boolean} data-swapped - Reflects swap state
- * @attr {boolean} data-card - Apply layout-card visual shell
+ * @attr {string} transition - Transition type: "flip" (default), "flip-vertical", "fade", "slide-left", "slide-up", "scale"
+ * @attr {boolean} swapped - Reflects swap state
+ * @attr {boolean} card - Apply layout-card visual shell
  *
  * Child attributes:
  * @attr {string} data-face - "front" or "back" on child elements
@@ -14,7 +14,7 @@
  *                              or enables swap behavior on any element (on the element itself)
  *
  * @example
- * <content-swap data-transition="flip">
+ * <content-swap transition="flip">
  *   <div data-face="front">Front content</div>
  *   <div data-face="back">Back content</div>
  * </content-swap>
@@ -30,6 +30,14 @@ import { startSwapTransition } from '../../utils/swap-transition.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
 let swapInstanceId = 0;
+
+/**
+ * Return the attribute name for a given logical property.
+ * <content-swap> uses clean attributes; [data-swap] uses data-* attributes.
+ */
+function attrName(el, name) {
+  return el.matches('content-swap') ? name : `data-${name}`;
+}
 
 /**
  * Shared behavior mixin — used by both the <content-swap> element
@@ -76,7 +84,7 @@ function initSwapBehavior(el) {
 }
 
 function syncState(el, front, back) {
-  const swapped = el.hasAttribute('data-swapped');
+  const swapped = el.hasAttribute(attrName(el, 'swapped'));
   front.inert = swapped;
   back.inert = !swapped;
 }
@@ -92,14 +100,15 @@ function swapTo(el, show) {
   const { front, back } = getFaces(el);
   if (!front || !back) return;
 
-  if (show && el.hasAttribute('data-swapped')) return;
-  if (!show && !el.hasAttribute('data-swapped')) return;
+  const attr = attrName(el, 'swapped');
+  if (show && el.hasAttribute(attr)) return;
+  if (!show && !el.hasAttribute(attr)) return;
 
   const applySwap = () => {
     if (show) {
-      el.setAttribute('data-swapped', '');
+      el.setAttribute(attr, '');
     } else {
-      el.removeAttribute('data-swapped');
+      el.removeAttribute(attr);
     }
 
     syncState(el, front, back);
@@ -111,12 +120,12 @@ function swapTo(el, show) {
 }
 
 function toggleSwap(el) {
-  swapTo(el, !el.hasAttribute('data-swapped'));
+  swapTo(el, !el.hasAttribute(attrName(el, 'swapped')));
 }
 
 function dispatchSwapEvent(el) {
   el.dispatchEvent(new CustomEvent('content-swap:swap', {
-    detail: { swapped: el.hasAttribute('data-swapped') },
+    detail: { swapped: el.hasAttribute(attrName(el, 'swapped')) },
     bubbles: true,
   }));
 }
@@ -153,12 +162,12 @@ class ContentSwap extends HTMLElement {
   toggle() { toggleSwap(this); }
 
   /** @returns {boolean} Whether currently showing the back face */
-  get flipped() { return this.hasAttribute('data-swapped'); }
+  get flipped() { return this.hasAttribute('swapped'); }
 
   set flipped(value) { swapTo(this, !!value); }
 
   /** @returns {boolean} Alias for flipped */
-  get swapped() { return this.hasAttribute('data-swapped'); }
+  get swapped() { return this.hasAttribute('swapped'); }
 
   set swapped(value) { swapTo(this, !!value); }
 }

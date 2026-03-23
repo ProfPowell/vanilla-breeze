@@ -1,55 +1,50 @@
 /**
  * star-rating: Form-associated star rating web component
  *
- * Generates a data-rating fieldset internally and participates in
- * native form submission via ElementInternals. Supports half-stars,
- * read-only display, custom icons, and form validation.
+ * Layer 3 convenience wrapper that generates a data-rating fieldset
+ * (Layer 1 CSS) and opts it into the rating enhancement (Layer 2 JS)
+ * for clear/unrate behavior and rating-change events.
  *
- * @attr {string} name - Form field name (omit for read-only)
- * @attr {string} value - Current rating value (default: 0)
- * @attr {string} max - Number of stars (default: 5)
- * @attr {string} label - Legend text (default: "Rating")
- * @attr {boolean} data-half - Enable half-star increments
- * @attr {boolean} data-readonly - Display-only mode
- * @attr {string} data-icon - Lucide icon name for icon-wc (default: star text ★)
- * @attr {boolean} required - Makes rating required for form validation
+ * Participates in native form submission via ElementInternals.
+ *
+ * @attr {string}  name       - Form field name (omit for read-only)
+ * @attr {string}  value      - Current rating value (default: 0)
+ * @attr {string}  max        - Number of stars (default: 5)
+ * @attr {string}  label      - Legend text (default: "Rating")
+ * @attr {boolean} allow-half - Enable half-star increments
+ * @attr {boolean} readonly   - Display-only mode
+ * @attr {string}  icon       - Lucide icon name for icon-wc (default: star text)
+ * @attr {boolean} required   - Makes rating required for form validation
  *
  * @example
  * <star-rating name="rating" label="Rate this product"></star-rating>
- * <star-rating value="4.2" data-readonly label="Average rating"></star-rating>
+ * <star-rating value="4.2" readonly label="Average rating"></star-rating>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+
+let _instanceCounter = 0;
 
 class StarRating extends HTMLElement {
   static formAssociated = true;
 
   #internals;
   #initialValue;
+  #setupDone = false;
+  #fieldset;
+  #instanceId;
 
   constructor() {
     super();
     this.#internals = this.attachInternals();
+    this.#instanceId = ++_instanceCounter;
   }
 
   connectedCallback() {
-    const value = Number(this.getAttribute('value') || 0);
-    this.#initialValue = value;
-    const max = Number(this.getAttribute('max') || 5);
-    const label = this.getAttribute('label') || 'Rating';
-    const isHalf = this.hasAttribute('data-half');
-    const isReadonly = this.hasAttribute('data-readonly');
-    const iconName = this.getAttribute('data-icon');
-    const name = this.getAttribute('name') || 'rating';
-
-    if (isReadonly) {
-      this.#renderReadonly(value, max, label, iconName);
-    } else {
-      this.#renderInteractive(value, max, label, name, isHalf, iconName);
+    if (!this.#setupDone) {
+      this.#build();
+      this.#setupDone = true;
     }
-
-    this.#syncFormValue(value);
-    this.#validate();
     this.setAttribute('data-upgraded', '');
   }
 
@@ -57,10 +52,34 @@ class StarRating extends HTMLElement {
     this.removeAttribute('data-upgraded');
   }
 
-  #renderInteractive(value, max, label, name, isHalf, iconName) {
+  #build() {
+    const value = Number(this.getAttribute('value') || 0);
+    this.#initialValue = value;
+    const max = Number(this.getAttribute('max') || 5);
+    const label = this.getAttribute('label') || 'Rating';
+    const isHalf = this.hasAttribute('allow-half');
+    const isReadonly = this.hasAttribute('readonly');
+    const iconName = this.getAttribute('icon');
+    // Use a unique internal radio name per instance to prevent cross-talk
+    const name = this.getAttribute('name') || 'rating';
+    const internalName = `_sr_${name}_${this.#instanceId}`;
+
+    if (isReadonly) {
+      this.#renderReadonly(value, max, label, iconName);
+    } else {
+      this.#renderInteractive(value, max, label, internalName, isHalf, iconName);
+    }
+
+    this.#syncFormValue(value);
+    this.#validate();
+  }
+
+  #renderInteractive(value, max, label, internalName, isHalf, iconName) {
     const fieldset = document.createElement('fieldset');
     fieldset.setAttribute('data-rating', '');
     if (isHalf) fieldset.setAttribute('data-rating-half', '');
+    // Opt into the rating enhancement layer
+    fieldset.setAttribute('data-effect', 'rating');
 
     const legend = document.createElement('legend');
     legend.textContent = label;
@@ -75,7 +94,7 @@ class StarRating extends HTMLElement {
         leftLabel.setAttribute('data-half', 'left');
         const leftRadio = document.createElement('input');
         leftRadio.type = 'radio';
-        leftRadio.name = name;
+        leftRadio.name = internalName;
         leftRadio.value = String(halfVal);
         leftRadio.setAttribute('aria-label', `${halfVal} ${halfVal === 1 ? 'star' : 'stars'}`);
         if (value === halfVal) leftRadio.checked = true;
@@ -88,7 +107,7 @@ class StarRating extends HTMLElement {
         rightLabel.setAttribute('data-half', 'right');
         const rightRadio = document.createElement('input');
         rightRadio.type = 'radio';
-        rightRadio.name = name;
+        rightRadio.name = internalName;
         rightRadio.value = String(i);
         rightRadio.setAttribute('aria-label', `${i} ${i === 1 ? 'star' : 'stars'}`);
         if (value === i) rightRadio.checked = true;
@@ -101,7 +120,7 @@ class StarRating extends HTMLElement {
         const lbl = document.createElement('label');
         const radio = document.createElement('input');
         radio.type = 'radio';
-        radio.name = name;
+        radio.name = internalName;
         radio.value = String(i);
         radio.setAttribute('aria-label', `${i} ${i === 1 ? 'star' : 'stars'}`);
         if (value === i) radio.checked = true;
@@ -112,11 +131,22 @@ class StarRating extends HTMLElement {
     }
 
     this.appendChild(fieldset);
+    this.#fieldset = fieldset;
 
-    // Listen for rating-change from rating-init.js
+    // Listen for rating-change from the enhancement layer (Layer 2)
     fieldset.addEventListener('rating-change', (e) => {
       this.#syncFormValue(/** @type {CustomEvent} */ (e).detail.value);
       this.#validate();
+    });
+
+    // Resilient fallback: also listen for native radio change events
+    // in case the enhancement layer doesn't attach
+    fieldset.addEventListener('change', (e) => {
+      const target = /** @type {HTMLInputElement} */ (e.target);
+      if (target.type === 'radio' && target.checked) {
+        this.#syncFormValue(Number(target.value));
+        this.#validate();
+      }
     });
   }
 
@@ -139,23 +169,17 @@ class StarRating extends HTMLElement {
       span.setAttribute('aria-hidden', 'true');
 
       if (i <= fullStars) {
-        // Full star
-        span.style.color = 'var(--color-warning, oklch(75% 0.15 85))';
+        span.classList.add('star-filled');
       } else if (i === fullStars + 1 && fraction > 0) {
-        // Partial star via clip-path
-        span.style.position = 'relative';
-        span.style.color = 'var(--color-border, oklch(75% 0 0))';
+        span.classList.add('star-partial');
+        span.style.setProperty('--_star-fill', `${fraction * 100}%`);
 
         const filled = document.createElement('span');
-        filled.style.position = 'absolute';
-        filled.style.inset = '0';
-        filled.style.clipPath = `inset(0 ${(1 - fraction) * 100}% 0 0)`;
-        filled.style.color = 'var(--color-warning, oklch(75% 0.15 85))';
+        filled.classList.add('star-partial-fill');
         filled.append(this.#createIcon(iconName));
         span.appendChild(filled);
       } else {
-        // Empty star
-        span.style.color = 'var(--color-border, oklch(75% 0 0))';
+        span.classList.add('star-empty');
       }
 
       span.append(this.#createIcon(iconName));
@@ -163,6 +187,7 @@ class StarRating extends HTMLElement {
     }
 
     this.appendChild(container);
+    this.#fieldset = container;
   }
 
   #createIcon(iconName) {
@@ -185,13 +210,12 @@ class StarRating extends HTMLElement {
 
   #validate() {
     if (this.hasAttribute('required')) {
-      const fieldset = this.querySelector('fieldset');
-      const checked = fieldset?.querySelector('input[type="radio"]:checked');
+      const checked = this.#fieldset?.querySelector('input[type="radio"]:checked');
       if (!checked) {
         this.#internals.setValidity(
           { valueMissing: true },
           'Please select a rating',
-          fieldset || this
+          this.#fieldset || this
         );
       } else {
         this.#internals.setValidity({});
@@ -202,15 +226,16 @@ class StarRating extends HTMLElement {
   }
 
   formResetCallback() {
-    const fieldset = this.querySelector('fieldset');
-    if (!fieldset) return;
+    if (!this.#fieldset) return;
 
-    // Uncheck all radios
-    fieldset.querySelectorAll('input[type="radio"]').forEach((/** @type {HTMLInputElement} */ r) => { r.checked = false; });
+    this.#fieldset.querySelectorAll('input[type="radio"]').forEach(
+      (/** @type {HTMLInputElement} */ r) => { r.checked = false; }
+    );
 
-    // Re-check initial value if set
     if (this.#initialValue > 0) {
-      const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${this.#initialValue}"]`));
+      const target = /** @type {HTMLInputElement | null} */ (
+        this.#fieldset.querySelector(`input[value="${this.#initialValue}"]`)
+      );
       if (target) target.checked = true;
     }
 
@@ -219,11 +244,11 @@ class StarRating extends HTMLElement {
   }
 
   formStateRestoreCallback(state) {
-    if (!state) return;
-    const fieldset = this.querySelector('fieldset');
-    if (!fieldset) return;
+    if (!state || !this.#fieldset) return;
 
-    const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${state}"]`));
+    const target = /** @type {HTMLInputElement | null} */ (
+      this.#fieldset.querySelector(`input[value="${state}"]`)
+    );
     if (target) {
       target.checked = true;
       this.#syncFormValue(Number(state));
@@ -232,21 +257,25 @@ class StarRating extends HTMLElement {
   }
 
   get value() {
-    const fieldset = this.querySelector('fieldset');
-    if (!fieldset) return Number(this.getAttribute('value') || 0);
-    const checked = /** @type {HTMLInputElement | null} */ (fieldset.querySelector('input[type="radio"]:checked'));
+    if (!this.#fieldset) return Number(this.getAttribute('value') || 0);
+    const checked = /** @type {HTMLInputElement | null} */ (
+      this.#fieldset.querySelector('input[type="radio"]:checked')
+    );
     return checked ? Number(checked.value) : 0;
   }
 
   set value(val) {
-    const fieldset = this.querySelector('fieldset');
-    if (!fieldset) return;
+    if (!this.#fieldset) return;
 
-    fieldset.querySelectorAll('input[type="radio"]').forEach((/** @type {HTMLInputElement} */ r) => { r.checked = false; });
+    this.#fieldset.querySelectorAll('input[type="radio"]').forEach(
+      (/** @type {HTMLInputElement} */ r) => { r.checked = false; }
+    );
 
     const numVal = Number(val);
     if (numVal > 0) {
-      const target = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`input[value="${numVal}"]`));
+      const target = /** @type {HTMLInputElement | null} */ (
+        this.#fieldset.querySelector(`input[value="${numVal}"]`)
+      );
       if (target) target.checked = true;
     }
 

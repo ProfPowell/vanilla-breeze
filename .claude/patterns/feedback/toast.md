@@ -30,7 +30,7 @@ Temporary notification that appears and auto-dismisses. Used for non-critical fe
 
 ### Position
 
-**Attribute (on container):** `data-position`
+**Attribute (on container):** `position`
 **Values:** `top-end` (default), `top-start`, `bottom-end`, `bottom-start`, `top-center`, `bottom-center`
 
 > **Note:** Position values use logical properties (`start`/`end`) for RTL support.
@@ -41,7 +41,7 @@ Toasts require JavaScript to function. Provide an empty container:
 
 ```html
 <!-- Toast container -->
-<toast-msg data-position="bottom-end"></toast-msg>
+<toast-msg position="bottom-end"></toast-msg>
 ```
 
 ## JavaScript API
@@ -91,9 +91,9 @@ toasts.show({
 
 | Attribute | Default | Description |
 |-----------|---------|-------------|
-| `data-position` | `'top-end'` | Toast position on screen |
-| `data-duration` | `5000` | Default auto-dismiss duration |
-| `data-max` | `5` | Maximum visible toasts (others queue) |
+| `position` | `'top-end'` | Toast position on screen |
+| `duration` | `5000` | Default auto-dismiss duration |
+| `max` | `5` | Maximum visible toasts (others queue) |
 
 ## CSS
 
@@ -115,19 +115,19 @@ toasts.show({
     align-items: flex-end;
 
     /* Position variants */
-    &[data-position="top-start"] {
+    &[position="top-start"] {
       inset-inline-start: var(--size-m);
       inset-inline-end: auto;
       align-items: flex-start;
     }
 
-    &[data-position="bottom-end"] {
+    &[position="bottom-end"] {
       inset-block-start: auto;
       inset-block-end: var(--size-m);
       flex-direction: column-reverse;
     }
 
-    &[data-position="bottom-start"] {
+    &[position="bottom-start"] {
       inset-block-start: auto;
       inset-block-end: var(--size-m);
       inset-inline-start: var(--size-m);
@@ -136,15 +136,15 @@ toasts.show({
       flex-direction: column-reverse;
     }
 
-    &[data-position="top-center"],
-    &[data-position="bottom-center"] {
+    &[position="top-center"],
+    &[position="bottom-center"] {
       inset-inline-start: 50%;
       inset-inline-end: auto;
       transform: translateX(-50%);
       align-items: center;
     }
 
-    &[data-position="bottom-center"] {
+    &[position="bottom-center"] {
       inset-block-start: auto;
       inset-block-end: var(--size-m);
       flex-direction: column-reverse;

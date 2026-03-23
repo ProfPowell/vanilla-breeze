@@ -162,42 +162,78 @@ permalink: /docs/elements/native/input/
 
 {% set colorCode %}<input type="color" value="#6366f1" data-color>{% endset %}
 
-{% set cssReferenceCode %}/* Text inputs, select, textarea */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
-textarea,
-select {
-  display: block;
-  inline-size: 100%;
-  padding-block: var(--size-s);
-  padding-inline: var(--size-s);
-  min-block-size: var(--size-touch-min);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  background: var(--color-surface);
-  font: inherit;
-  transition: border-color var(--duration-fast);
+{% set cssReferenceCode %}/* Form control tokens (defined in src/tokens/forms.css) */
+:root {
+  --input-height:          var(--size-touch-min);
+  --input-padding-inline:  var(--size-s);
+  --input-bg:              var(--color-surface);
+  --input-border:          var(--color-border);
+  --input-border-focus:    var(--color-interactive);
+  --input-radius:          var(--radius-m);
+  --input-text:            inherit;
+  --input-placeholder:     var(--color-text-muted);
+
+  --control-size:            1.125rem;
+  --control-border:          var(--color-border-strong);
+  --control-checked-bg:      var(--color-primary);
+  --control-checked-border:  var(--color-primary);
+  --control-radius-check:    var(--radius-s);
+  --control-radius-radio:    var(--radius-full);
+
+  --select-chevron: url("data:image/svg+xml,...");
+
+  --range-track-h:      0.375rem;
+  --range-track-bg:     var(--color-border);
+  --range-track-fill:   var(--color-primary);
+  --range-thumb-size:   1.25rem;
+  --range-thumb-bg:     var(--color-surface);
+  --range-thumb-border: var(--color-primary);
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--color-interactive);
-  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+/* Text inputs, select, textarea — token-driven */
+input:not(:is([type="checkbox"], [type="radio"], [type="range"],
+  [type="file"], [type="color"], [type="submit"],
+  [type="button"], [type="reset"])),
+textarea, select {
+  border: var(--border-width-thin) solid var(--input-border);
+  border-radius: var(--input-radius);
+  background: var(--input-bg);
+  color: var(--input-text);
+  min-block-size: var(--input-height);
 }
 
-input::placeholder {
-  color: var(--color-text-muted);
+/* Checkbox & radio — appearance: none + pseudo-elements */
+input[type="checkbox"]:not([data-switch]),
+input[type="radio"] {
+  appearance: none;
+  width: var(--control-size);
+  height: var(--control-size);
+  border: var(--border-width-medium) solid var(--control-border);
 }
 
-input:disabled {
-  background: var(--color-surface-raised);
-  cursor: not-allowed;
+input[type="checkbox"]:not([data-switch]):checked,
+input[type="radio"]:checked {
+  background: var(--control-checked-bg);
+  border-color: var(--control-checked-border);
 }
 
-input[aria-invalid="true"],
-input:invalid:not(:placeholder-shown) {
-  border-color: oklch(55% 0.25 25);
+/* Checkmark via clip-path (zero SVG assets) */
+input[type="checkbox"]:not([data-switch]):checked::after {
+  clip-path: polygon(14% 50%, 8% 60%, 38% 86%, 94% 20%, 86% 12%, 38% 70%);
+}
+
+/* Radio dot */
+input[type="radio"]:checked::after {
+  inset: 3px;
+  border-radius: 50%;
+}
+
+/* Range — token-driven track and thumb */
+input[type="range"] {
+  appearance: none;
+  background: linear-gradient(to right,
+    var(--range-track-fill) var(--_pct, 50%),
+    var(--range-track-bg) var(--_pct, 50%));
 }{% endset %}
 
 <section>

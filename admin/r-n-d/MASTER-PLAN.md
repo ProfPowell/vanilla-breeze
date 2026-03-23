@@ -37,7 +37,7 @@
 
     A Prose Mirror AST based editor is in an Alpha shape and can roughly generate VB pages using a WYSIWYG style.  Development is on hold until VB and lower level concepts are stabilized.  The base idea being that do not automate page creation until the system itself is stable as the editor depends on something that should be done manual first.  A related editor "Grid Composer" was looked into at one point for layout purposes.
 
-    
+
 * Vanilla Analytics
 
 *

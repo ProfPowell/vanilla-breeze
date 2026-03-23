@@ -21,7 +21,12 @@ import './qr-code/logic.js';
 import './slide-accept/logic.js';
 import './color-palette/logic.js';
 import './type-specimen/logic.js';
+import './spacing-specimen/logic.js';
 import './consent-banner/logic.js';
+import './text-reader/logic.js';
+import './chat-window/logic.js';
+import './chat-input/logic.js';
+import './image-map/logic.js';
 import './youtube-player/logic.js';
 
 // Specialty utility inits

@@ -31,12 +31,12 @@ test.describe('print-page', () => {
     expect(text).toBeTruthy();
   });
 
-  test('renders raw-mode toggle when data-raw-toggle present', async ({ page }) => {
+  test('renders raw-mode toggle when raw-toggle present', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForSelector('print-page button', { timeout: 5000 });
 
     const hasToggle = await page.evaluate(() => {
-      const el = document.querySelector('print-page[data-raw-toggle]');
+      const el = document.querySelector('print-page[raw-toggle]');
       if (!el) return null;
       return {
         hasCheckbox: el.querySelector('input[type="checkbox"]') !== null,
@@ -95,13 +95,13 @@ test.describe('print-page', () => {
     await page.waitForSelector('print-page button', { timeout: 5000 });
 
     const hasToggle = await page.evaluate(() =>
-      document.querySelector('print-page[data-raw-toggle]') !== null
+      document.querySelector('print-page[raw-toggle]') !== null
     );
     if (!hasToggle) return;
 
     // Check the checkbox, mock print, click button
     await page.evaluate(() => {
-      const pp = document.querySelector('print-page[data-raw-toggle]');
+      const pp = document.querySelector('print-page[raw-toggle]');
       pp.querySelector('input[type="checkbox"]').checked = true;
       window.print = () => {}; // Mock to prevent dialog
       pp.querySelector('button').click();

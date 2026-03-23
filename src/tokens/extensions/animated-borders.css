@@ -1,0 +1,81 @@
+/**
+ * Animated Borders Extension
+ *
+ * CSS-only animated border techniques using @property and keyframes.
+ * Two techniques shipped: spin (conic-gradient) and pulse (box-shadow glow).
+ * All tokens default to disabled — themes opt in by overriding values.
+ *
+ * Usage (spin — theme applies to cards):
+ *   :root[data-theme~="cyber"] .card {
+ *     border: 2px solid transparent;
+ *     background:
+ *       linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+ *       conic-gradient(from var(--vb-border-angle),
+ *         var(--color-primary), var(--color-secondary),
+ *         var(--color-accent), var(--color-primary)) border-box;
+ *     animation: vb-border-spin var(--border-anim-spin-duration) linear infinite;
+ *   }
+ *
+ * Usage (pulse — selected/active state):
+ *   .card[aria-selected="true"] {
+ *     border-color: var(--border-anim-pulse-color);
+ *     animation: vb-border-pulse var(--border-anim-pulse-duration) ease-in-out infinite;
+ *   }
+ */
+
+/* ========================================
+ * @property declarations
+ * Required for animating conic-gradient angle.
+ * Must be at top level — cannot nest inside :root.
+ * ======================================== */
+@property --vb-border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ========================================
+ * Tokens
+ * ======================================== */
+:root {
+  /* Spin border (conic-gradient rotating around element) */
+  --border-anim-spin-duration: 3s;
+  --border-anim-spin-width: 2px;
+
+  /* Pulse border (box-shadow glow pulsing outward) */
+  --border-anim-pulse-duration: 2s;
+  --border-anim-pulse-color: var(--color-primary);
+  --border-anim-pulse-size: 8px;
+}
+
+/* ========================================
+ * Keyframe Animations
+ * Prefixed with vb- to avoid conflicts
+ * ======================================== */
+
+@keyframes vb-border-spin {
+  to { --vb-border-angle: 360deg; }
+}
+
+@keyframes vb-border-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(from var(--border-anim-pulse-color) l c h / 0.5); }
+  50% { box-shadow: 0 0 0 var(--border-anim-pulse-size) oklch(from var(--border-anim-pulse-color) l c h / 0); }
+}
+
+/* ========================================
+ * Reduced Motion
+ * Freeze animations for users who prefer reduced motion
+ * or when motion is disabled via the theme picker
+ * ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --border-anim-spin-duration: 0s;
+    --border-anim-pulse-duration: 0s;
+  }
+}
+
+/* User-toggled motion reduction via theme picker */
+:root[data-motion-reduced] {
+  --border-anim-spin-duration: 0s;
+  --border-anim-pulse-duration: 0s;
+}

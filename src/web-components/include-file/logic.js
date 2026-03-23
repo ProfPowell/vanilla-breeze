@@ -5,12 +5,12 @@
  * any existing content is shown as a fallback until the fetch completes.
  *
  * @attr {string} src - URL to fetch HTML from
- * @attr {string} data-mode - "replace" (default) replaces children, "append" appends, "prepend" prepends
+ * @attr {string} mode - "replace" (default) replaces children, "append" appends, "prepend" prepends
  * @attr {boolean} data-loading - Added while loading, removed when done
  * @attr {boolean} data-loaded - Added after successful load
  * @attr {boolean} data-error - Added if fetch fails
- * @attr {boolean} data-lazy - If present, defers loading until element is in viewport
- * @attr {boolean} data-allow-scripts - If present, re-executes inline scripts in loaded content (TRUSTED sources only)
+ * @attr {boolean} lazy - If present, defers loading until element is in viewport
+ * @attr {boolean} allow-scripts - If present, re-executes inline scripts in loaded content (TRUSTED sources only)
  *
  * @fires include-file:load - Dispatched after successful load
  * @fires include-file:error - Dispatched if fetch fails
@@ -31,7 +31,7 @@ class IncludeFile extends HTMLElement {
     const src = this.getAttribute('src');
     if (!src) return;
 
-    if (this.hasAttribute('data-lazy')) {
+    if (this.hasAttribute('lazy')) {
       this.#observeIntersection();
     } else {
       this.#load(src);
@@ -88,7 +88,7 @@ class IncludeFile extends HTMLElement {
       }
 
       const html = await response.text();
-      const mode = this.dataset.mode || 'replace';
+      const mode = this.getAttribute('mode') || 'replace';
 
       if (mode === 'replace') {
         this.innerHTML = html;
@@ -99,7 +99,7 @@ class IncludeFile extends HTMLElement {
       }
 
       // Re-execute inline scripts only when explicitly opted in
-      if (this.hasAttribute('data-allow-scripts')) {
+      if (this.hasAttribute('allow-scripts')) {
         this.querySelectorAll('script').forEach(oldScript => {
           const newScript = document.createElement('script');
           for (const attr of oldScript.attributes) {

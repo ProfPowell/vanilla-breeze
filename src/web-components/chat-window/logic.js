@@ -4,12 +4,12 @@
  * Wires chat-thread, chat-input, participant data, and an optional model
  * selector into a composed shell. Handles the send → typing → response cycle.
  *
- * @attr {string} data-endpoint - API endpoint for chat requests
- * @attr {string} data-model - Active model; synced with [data-model-select]
- * @attr {string} data-empty-message - Empty thread placeholder text
+ * @attr {string} endpoint - API endpoint for chat requests
+ * @attr {string} model - Active model; synced with [data-model-select]
+ * @attr {string} empty-message - Empty thread placeholder text
  *
  * @example
- * <chat-window data-endpoint="/api/ai">
+ * <chat-window endpoint="/api/ai">
  *   <script type="application/json" data-participants>
  *   { "user": { "name": "You", "role": "user" },
  *     "assistant": { "name": "Assistant", "role": "agent" } }
@@ -106,11 +106,11 @@ class ChatWindow extends HTMLElement {
   #syncModel() {
     if (!this.#modelSelect) return;
 
-    const attrModel = this.dataset.model;
+    const attrModel = this.getAttribute('model');
     if (attrModel) {
       this.#modelSelect.value = attrModel;
     } else if (this.#modelSelect.value) {
-      this.dataset.model = this.#modelSelect.value;
+      this.setAttribute('model', this.#modelSelect.value);
     }
   }
 
@@ -145,7 +145,7 @@ class ChatWindow extends HTMLElement {
     if (this.#chatInput) /** @type {any} */ (this.#chatInput).disabled = true;
 
     // 4. Fetch response (if endpoint configured)
-    const endpoint = this.dataset.endpoint;
+    const endpoint = this.getAttribute('endpoint');
     if (endpoint) {
       try {
         const response = await this.#fetchResponse(endpoint, message);
@@ -172,7 +172,7 @@ class ChatWindow extends HTMLElement {
 
   #handleModelChange = () => {
     const model = this.#modelSelect.value;
-    this.dataset.model = model;
+    this.setAttribute('model', model);
 
     this.dispatchEvent(new CustomEvent('chat-window:model-change', {
       bubbles: true,
@@ -221,7 +221,7 @@ class ChatWindow extends HTMLElement {
     }
 
     // Add model attribution if set
-    const model = this.dataset.model;
+    const model = this.getAttribute('model');
     if (model) msg.setAttribute('data-model', model);
 
     const bubble = document.createElement('chat-bubble');
@@ -263,7 +263,7 @@ class ChatWindow extends HTMLElement {
       if (!this.#emptyEl) {
         this.#emptyEl = document.createElement('p');
         this.#emptyEl.setAttribute('data-chat-empty', '');
-        this.#emptyEl.textContent = this.dataset.emptyMessage || 'Send a message to start.';
+        this.#emptyEl.textContent = this.getAttribute('empty-message') || 'Send a message to start.';
         this.#thread.insertAdjacentElement('afterend', this.#emptyEl);
       }
     }
@@ -283,7 +283,7 @@ class ChatWindow extends HTMLElement {
   async #fetchResponse(endpoint, message) {
     const body = {
       message,
-      model: this.dataset.model || undefined,
+      model: this.getAttribute('model') || undefined,
     };
 
     const res = await fetch(endpoint, {
@@ -305,11 +305,11 @@ class ChatWindow extends HTMLElement {
   // --- Public API ---
 
   get model() {
-    return this.dataset.model ?? '';
+    return this.getAttribute('model') ?? '';
   }
 
   set model(val) {
-    this.dataset.model = val;
+    this.setAttribute('model', val);
     if (this.#modelSelect) this.#modelSelect.value = val;
   }
 

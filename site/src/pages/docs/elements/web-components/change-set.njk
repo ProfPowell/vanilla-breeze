@@ -1,0 +1,188 @@
+---
+layout: layouts/element.njk
+title: "change-set"
+description: "Interactive change tracking group that wraps related ins and del elements with toggle controls for tracking, final, and original views."
+elementName: change-set
+category: component
+currentPath: /docs/elements/web-components/change-set/
+permalink: /docs/elements/web-components/change-set/
+---
+
+{% set codeBasic %}<change-set datetime="2026-02-20" author="tpowell">
+  <p>
+    Send requests to
+    <del>/api/v1/upload</del>
+    <ins>/api/v2/ingest</ins>
+    with a
+    <del>Content-Type: application/xml</del>
+    <ins>Content-Type: application/json</ins>
+    header.
+  </p>
+</change-set>{% endset %}
+
+{% set codeStatic %}<!-- Server-rendered final view (no JS needed) -->
+<change-set view="final">
+  <p>
+    <del>Old API endpoint</del>
+    <ins>New API endpoint</ins> is now live.
+  </p>
+</change-set>
+
+<!-- Original view -->
+<change-set view="original">
+  <p>
+    <del>Old API endpoint</del>
+    <ins>New API endpoint</ins> is now live.
+  </p>
+</change-set>{% endset %}
+
+{% set codeMultiple %}<change-set datetime="2026-03-01">
+  <section>
+    <h3>Endpoint</h3>
+    <p>
+      <del>POST /api/v1/upload</del>
+      <ins>POST /api/v2/ingest</ins>
+    </p>
+  </section>
+  <section>
+    <h3>Content Type</h3>
+    <p>
+      <del>application/xml</del>
+      <ins>application/json</ins>
+    </p>
+  </section>
+  <section>
+    <h3>Response</h3>
+    <p>
+      <del>Plain text status message</del>
+      <ins>Structured JSON with status, data, and errors</ins>
+    </p>
+  </section>
+</change-set>{% endset %}
+
+{% set codeJs %}{% raw %}// Listen for view changes
+document.addEventListener('change-set:view', (e) => {
+  console.log(e.detail.view);
+  // 'tracking' | 'final' | 'original'
+});
+
+// Programmatic control
+const cs = document.querySelector('change-set');
+cs.view = 'final';    // Show only insertions
+cs.view = 'original'; // Show only deletions
+cs.view = 'tracking'; // Show both{% endraw %}{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;change-set&gt;</code> element groups related <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code> elements into a reviewable unit. Users can toggle between three views: tracked changes (both visible), final text (only insertions), or original text (only deletions).</p>
+  <p>The view states are CSS-only via the <code>view</code> attribute. JavaScript adds interactive toggle buttons.</p>
+
+  <browser-window
+    src="/docs/examples/demos/document-provenance.html"
+    url="https://vanilla-breeze.dev/demos/document-provenance"
+    title="Document Provenance Demo"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage">{{ codeBasic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>View States</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>State</th><th>What's Visible</th><th>How to Set</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Tracking (default)</td>
+        <td>Both <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code></td>
+        <td>No <code>view</code> attribute</td>
+      </tr>
+      <tr>
+        <td>Final</td>
+        <td>Only <code>&lt;ins&gt;</code> content</td>
+        <td><code>view="final"</code></td>
+      </tr>
+      <tr>
+        <td>Original</td>
+        <td>Only <code>&lt;del&gt;</code> content</td>
+        <td><code>view="original"</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Static View (No JS)</h2>
+  <p>Set <code>view</code> directly in markup for server-rendered or static pages. No JavaScript is needed for the visual states.</p>
+
+  <code-block language="html" show-lines label="Static views">{{ codeStatic | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Multiple Changes</h2>
+  <p>A single <code>&lt;change-set&gt;</code> can group changes across multiple sections. All <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code> descendants are toggled together.</p>
+
+  <code-block language="html" show-lines label="Multiple changes">{{ codeMultiple | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>view</code></td>
+        <td><code>final</code>, <code>original</code></td>
+        <td>Omitted (tracking)</td>
+        <td>Controls which content is visible</td>
+      </tr>
+      <tr>
+        <td><code>datetime</code></td>
+        <td>ISO 8601 date</td>
+        <td>&mdash;</td>
+        <td>Date of the change set</td>
+      </tr>
+      <tr>
+        <td><code>author</code></td>
+        <td>String</td>
+        <td>&mdash;</td>
+        <td>Author of the changes</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <code-block language="javascript" show-lines label="Events and programmatic control">{{ codeJs | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>change-set:view</code></td>
+        <td><code>{ view: string }</code></td>
+        <td>Fired when the view mode changes. Bubbles.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Toggle buttons use <code>aria-pressed</code> to indicate the active view</li>
+    <li>The controls <code>&lt;nav&gt;</code> has <code>aria-label="Change view controls"</code></li>
+    <li>In final and original views, hidden content uses <code>display: none</code> &mdash; it is removed from both the visual and accessibility trees</li>
+    <li>Without JavaScript, all content is visible in tracking view</li>
+  </ul>
+</section>

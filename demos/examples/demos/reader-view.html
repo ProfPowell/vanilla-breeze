@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Reader View Demo — Vanilla Breeze</title>
+
+  <!-- Core VB -->
+  <link rel="stylesheet" href="/src/main.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <reader-view>
+    <article data-prose data-drop-cap>
+      <header>
+        <h1>On the Nature of Slow Reading</h1>
+        <p><em>by Eleanor Marsh — March 2026</em></p>
+      </header>
+
+      <p>There is a particular quality of attention that long-form reading demands — a patience the eye must relearn each time we return to it, like coming home to a house that has rearranged its furniture in our absence.</p>
+
+      <p>The column has always been the natural unit of reading. Before the infinite scroll and the boundless page, before even the codex, scribes understood that the human eye moves most comfortably across a measure of roughly sixty characters. This is not an aesthetic preference but a fact of physiology: the fovea, our region of sharpest focus, subtends only a few degrees. We do not read across a page so much as across a field of attention.</p>
+
+      <p>Yet somewhere in the transition from print to screen, we abandoned this wisdom. We gave readers horizontal stretches of text that exhausted the eye and fractured the sentence. The modern web article, with its single-column expanse filling a 1440-pixel monitor, would be unreadable in print — and so, quite often, it is unread.</p>
+
+      <h2>The Measure</h2>
+
+      <p>Typographers have long called the optimal line length the <em>measure</em>. Robert Bringhurst, in <em>The Elements of Typographic Style</em>, places ideal prose at 45 to 75 characters. The original Penguin paperbacks ran to about 60. The columns of <em>The London Review of Books</em> — widely considered among the best-designed journals in English — sit at 65. These are not coincidences.</p>
+
+      <p>When a line exceeds 80 characters, the eye must work harder to find its return. It sweeps left, hunting for the start of the next line, and occasionally lands on the wrong one. The text becomes, quite literally, harder to follow. Comprehension drops. The reader, without knowing why, feels tired.</p>
+
+      <blockquote>
+        <p>The best that can be said for the internet's infinite column is that it democratised publishing. The worst is that it forgot everything typography had learned in five hundred years.</p>
+      </blockquote>
+
+      <p>Short lines create a different problem. Below 45 characters, the eye returns too frequently, disrupting the rhythmic scanning that allows fast reading. Sentences that spread comfortably across a longer measure become staccato and breathless when forced into a narrow column. Poetry belongs in short measures; prose does not.</p>
+
+      <h2>Pagination and Flow</h2>
+
+      <p>The page, unlike the scroll, imposes a contract. When a reader reaches the bottom of a page and turns it, something cognitive happens: a small act of completion, a breath between clauses. This is not mere sentiment. Studies of reading behaviour consistently show better retention when text is consumed in finite, bounded chunks than when it scrolls continuously.</p>
+
+      <p>This may explain the success of e-readers. The Kindle's paginated interface — despite delivering content through the same glass screen as Twitter or Gmail — produces measurably different reading behaviour. Users slow down. Rereading rates increase. Readers report higher confidence in their grasp of material.</p>
+
+      <p>The mechanism is probably attentional. Continuous scroll signals an environment of abundance where skim-reading is rewarded. Pagination signals a bounded space where depth is possible. The form shapes the expectation, and the expectation shapes the attention.</p>
+
+      <h2>Multi-Column on Screen</h2>
+
+      <p>CSS multi-column layout has existed since 2001, yet it remains conspicuously underused. The reasons are partly historical: early implementations were buggy, and horizontal scrolling felt alien on mouse-driven interfaces. Touch has changed that calculation. A finger swipe is as natural as a page turn; the left-right axis is no longer strange.</p>
+
+      <p>But there is a deeper resistance. Designers trained on scroll-based interfaces treat the horizontal axis as navigation — links, carousels, product rows. To give the horizontal axis to prose is to repurpose it for a slower, more demanding use. It requires a different kind of trust from the reader.</p>
+
+      <blockquote>
+        <p>We have spent twenty years teaching people that horizontal movement means navigation, not reading. Unlearning that association takes more than a gesture — it takes a frame that prepares the reader for depth rather than browsing.</p>
+      </blockquote>
+
+      <p>When it works — and it does work — the effect is disorienting in the best possible way. The text feels substantial. Each page has weight. The reader does not sense the bottom approaching with dread, but turns to a fresh column with something like anticipation.</p>
+
+      <h2>Technical Considerations</h2>
+
+      <p>The CSS <code>columns</code> property is remarkably simple at its core: specify a column width, and the browser calculates how many fit. Set <code>column-fill: auto</code> on a fixed-height container, and the browser fills each column to capacity before beginning the next. Overflow flows horizontally.</p>
+
+      <p>The subtleties accumulate quickly. <code>break-inside: avoid</code> prevents pull-quotes and block elements from fracturing across columns. <code>orphans</code> and <code>widows</code> control lone lines at column boundaries. The outstanding problem is measurement: to display a reliable page indicator requires knowing the total scrollable width divided by the viewport width.</p>
+
+      <p>Font size changes force a full recalculation: more text fits per column, changing total page count. The ResizeObserver API, watching the fixed book container, is the correct hook — it fires on orientation change and mobile toolbar show/hide, both of which alter available height without triggering a classic window resize event.</p>
+
+      <h2>What Remains</h2>
+
+      <p>The question is not whether multi-column layouts are technically feasible — they clearly are — but whether readers will follow. This is, ultimately, a question about habituation. The long-form internet has trained a generation of readers for scroll and skim; the column reader asks them to sit.</p>
+
+      <p>There is cause for optimism. Substack, newsletters, e-readers, even the return of long-form magazines in digital formats — all point to a hunger for slower reading experiences. The audience exists. What has been missing is the design vocabulary to meet them.</p>
+
+      <p>This page is a small experiment in that vocabulary. The column is its argument. The page turn is its hypothesis. Whether you reached the end by scrolling or by turning, the text is the same; only the quality of attention differs. That difference, if it exists, is the whole point.</p>
+    </article>
+  </reader-view>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

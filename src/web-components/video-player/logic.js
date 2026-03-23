@@ -5,9 +5,9 @@
  * rendered in shadow DOM. The <video> and optional <details class="track-list">
  * stay in light DOM — if JS is unavailable, native controls and track links work.
  *
- * @attr {boolean} data-autoplay - Start playing on load (subject to browser autoplay policy)
- * @attr {boolean} data-loop - Loop single track or entire playlist
- * @attr {boolean} data-muted - Start muted
+ * @attr {boolean} autoplay - Start playing on load (subject to browser autoplay policy)
+ * @attr {boolean} loop - Loop single track or entire playlist
+ * @attr {boolean} muted - Start muted
  *
  * @fires vb:video:play - Video playback started
  * @fires vb:video:pause - Video playback paused
@@ -113,12 +113,12 @@ class VideoPlayerElement extends HTMLElement {
       this.#attachIdleTracking()
     }
 
-    if (this.hasAttribute('data-muted')) {
+    if (this.hasAttribute('muted')) {
       this.#video.muted = true
-      this.setAttribute('data-muted', '')
+      this.setAttribute('muted', '')
     }
 
-    if (this.hasAttribute('data-autoplay')) {
+    if (this.hasAttribute('autoplay')) {
       this.#video.play().catch(() => {})
     }
 
@@ -146,7 +146,7 @@ class VideoPlayerElement extends HTMLElement {
     document.addEventListener('fullscreenchange', this.#onFullscreenChange)
 
     this.setAttribute('data-upgraded', '')
-    this.setAttribute('data-state', 'idle')
+    this.setAttribute('state', 'idle')
   }
 
   disconnectedCallback() {
@@ -350,18 +350,18 @@ class VideoPlayerElement extends HTMLElement {
         outline-offset: 4px;
       }
 
-      :host([data-state="playing"]) .play-overlay,
-      :host([data-state="buffering"]) .play-overlay {
+      :host([state="playing"]) .play-overlay,
+      :host([state="buffering"]) .play-overlay {
         opacity: 0;
         pointer-events: none;
       }
 
-      :host([data-state="paused"]) .play-overlay {
+      :host([state="paused"]) .play-overlay {
         opacity: 0;
         pointer-events: none;
       }
 
-      :host([data-state="ended"]) .play-overlay {
+      :host([state="ended"]) .play-overlay {
         opacity: 1;
         pointer-events: auto;
       }
@@ -384,7 +384,7 @@ class VideoPlayerElement extends HTMLElement {
         animation: vp-spin 1s linear infinite;
       }
 
-      :host([data-state="buffering"]) .buffer-indicator {
+      :host([state="buffering"]) .buffer-indicator {
         opacity: 1;
       }
 
@@ -420,13 +420,13 @@ class VideoPlayerElement extends HTMLElement {
       }
 
       /* Controls hidden state */
-      :host([data-state="playing"]:not([data-controls-visible])) .controls,
-      :host([data-state="playing"]:not([data-controls-visible])) .controls-gradient {
+      :host([state="playing"]:not([controls])) .controls,
+      :host([state="playing"]:not([controls])) .controls-gradient {
         opacity: 0;
         visibility: hidden;
       }
 
-      :host([data-state="playing"]:not([data-controls-visible])) {
+      :host([state="playing"]:not([controls])) {
         cursor: none;
       }
 
@@ -553,8 +553,8 @@ class VideoPlayerElement extends HTMLElement {
 
       /* ── Play button (controls row) ─────────────── */
       .icon-pause { display: none; }
-      :host([data-state="playing"]) .icon-play { display: none; }
-      :host([data-state="playing"]) .icon-pause { display: block; }
+      :host([state="playing"]) .icon-play { display: none; }
+      :host([state="playing"]) .icon-pause { display: block; }
 
       /* ── Fullscreen icons ───────────────────────── */
       .icon-fs-exit { display: none; }
@@ -563,8 +563,8 @@ class VideoPlayerElement extends HTMLElement {
 
       /* ── Mute icons ─────────────────────────────── */
       .icon-muted { display: none; }
-      :host([data-muted]) .icon-vol { display: none; }
-      :host([data-muted]) .icon-muted { display: block; }
+      :host([muted]) .icon-vol { display: none; }
+      :host([muted]) .icon-muted { display: block; }
 
       /* ── Volume ─────────────────────────────────── */
       .volume-wrap {
@@ -635,7 +635,7 @@ class VideoPlayerElement extends HTMLElement {
 
       /* ── Time display ───────────────────────────── */
       .time-display {
-        font-size: var(--text-xs, 0.75rem);
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, ui-monospace, monospace);
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
@@ -646,14 +646,14 @@ class VideoPlayerElement extends HTMLElement {
 
       /* ── Speed button ───────────────────────────── */
       .speed-btn {
-        font-size: var(--text-xs, 0.75rem);
+        font-size: var(--font-size-xs, 0.75rem);
         font-weight: 600;
         min-width: 2.5rem;
         width: auto !important;
       }
 
       /* ── Captions button ────────────────────────── */
-      :host([data-captions-active]) .captions-btn {
+      :host([captions]) .captions-btn {
         background: oklch(100% 0 0 / 0.2);
       }
 
@@ -696,13 +696,13 @@ class VideoPlayerElement extends HTMLElement {
         }
 
         /* Keep controls permanently visible */
-        :host([data-state="playing"]:not([data-controls-visible])) .controls,
-        :host([data-state="playing"]:not([data-controls-visible])) .controls-gradient {
+        :host([state="playing"]:not([controls])) .controls,
+        :host([state="playing"]:not([controls])) .controls-gradient {
           opacity: 1;
           visibility: visible;
         }
 
-        :host([data-state="playing"]:not([data-controls-visible])) {
+        :host([state="playing"]:not([controls])) {
           cursor: auto;
         }
       }
@@ -718,7 +718,7 @@ class VideoPlayerElement extends HTMLElement {
 
     this.#video.addEventListener('play', () => {
       this.#playing = true
-      this.setAttribute('data-state', 'playing')
+      this.setAttribute('state', 'playing')
       this.#playBtn.setAttribute('aria-label', 'Pause')
       this.#announce('Playing')
       this.#emit('vb:video:play', {
@@ -729,7 +729,7 @@ class VideoPlayerElement extends HTMLElement {
 
     this.#video.addEventListener('pause', () => {
       this.#playing = false
-      this.setAttribute('data-state', 'paused')
+      this.setAttribute('state', 'paused')
       this.#playBtn.setAttribute('aria-label', 'Play')
       this.#showControls()
       this.#announce('Paused')
@@ -740,7 +740,7 @@ class VideoPlayerElement extends HTMLElement {
 
     this.#video.addEventListener('ended', () => {
       this.#playing = false
-      this.setAttribute('data-state', 'ended')
+      this.setAttribute('state', 'ended')
       this.#playBtn.setAttribute('aria-label', 'Play')
       this.#showControls()
 
@@ -759,14 +759,14 @@ class VideoPlayerElement extends HTMLElement {
 
     this.#video.addEventListener('waiting', () => {
       if (this.#playing) {
-        this.setAttribute('data-state', 'buffering')
+        this.setAttribute('state', 'buffering')
         this.#announce('Buffering')
       }
     })
 
     this.#video.addEventListener('playing', () => {
-      if (this.getAttribute('data-state') === 'buffering') {
-        this.setAttribute('data-state', 'playing')
+      if (this.getAttribute('state') === 'buffering') {
+        this.setAttribute('state', 'playing')
       }
     })
   }
@@ -821,7 +821,7 @@ class VideoPlayerElement extends HTMLElement {
     this.#volumeSlider.addEventListener('input', () => {
       this.#video.volume = Number(this.#volumeSlider.value)
       this.#video.muted = false
-      this.removeAttribute('data-muted')
+      this.removeAttribute('muted')
       this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
     })
 
@@ -829,7 +829,7 @@ class VideoPlayerElement extends HTMLElement {
     const muteBtn = /** @type {HTMLButtonElement} */ (this.shadowRoot?.querySelector('.mute-btn'))
     muteBtn.addEventListener('click', () => {
       this.#video.muted = !this.#video.muted
-      this.toggleAttribute('data-muted', this.#video.muted)
+      this.toggleAttribute('muted', this.#video.muted)
       this.#volumeSlider.style.setProperty('--_vol', this.#video.muted ? '0' : this.#volumeSlider.value)
     })
 
@@ -852,7 +852,7 @@ class VideoPlayerElement extends HTMLElement {
       const showing = track.mode === 'showing'
       track.mode = showing ? 'hidden' : 'showing'
       const active = !showing
-      this.toggleAttribute('data-captions-active', active)
+      this.toggleAttribute('captions', active)
       this.#captionsBtn.setAttribute('aria-pressed', String(active))
       this.#emit('vb:video:captions', { active, label: track.label })
     })
@@ -893,7 +893,7 @@ class VideoPlayerElement extends HTMLElement {
 
     // Touch: tap to toggle
     player.addEventListener('touchstart', () => {
-      if (this.hasAttribute('data-controls-visible')) {
+      if (this.hasAttribute('controls')) {
         this.#hideControls()
       } else {
         resetIdle()
@@ -913,11 +913,11 @@ class VideoPlayerElement extends HTMLElement {
   }
 
   #showControls() {
-    this.setAttribute('data-controls-visible', '')
+    this.setAttribute('controls', '')
   }
 
   #hideControls() {
-    this.removeAttribute('data-controls-visible')
+    this.removeAttribute('controls')
   }
 
   // ─── Track list events ─────────────────────────────────────────────────────
@@ -973,7 +973,7 @@ class VideoPlayerElement extends HTMLElement {
       track.setAttribute('data-dynamic', '')
       this.#video.appendChild(track)
 
-      if (this.hasAttribute('data-captions-active')) {
+      if (this.hasAttribute('captions')) {
         track.track.mode = 'showing'
       }
     }
@@ -989,7 +989,7 @@ class VideoPlayerElement extends HTMLElement {
     const items = [...this.#trackList.querySelectorAll('li')]
     const activeIdx = items.findIndex(li => li.hasAttribute('data-video-active'))
 
-    if (this.hasAttribute('data-shuffle')) {
+    if (this.hasAttribute('shuffle')) {
       const remaining = items.filter((_, i) => i !== activeIdx)
       if (remaining.length) {
         const next = remaining[Math.floor(Math.random() * remaining.length)]
@@ -1003,7 +1003,7 @@ class VideoPlayerElement extends HTMLElement {
     if (nextIdx < items.length) {
       const link = /** @type {HTMLAnchorElement | null} */ (items[nextIdx].querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[nextIdx], link)
-    } else if (this.hasAttribute('data-loop')) {
+    } else if (this.hasAttribute('loop')) {
       const link = /** @type {HTMLAnchorElement | null} */ (items[0]?.querySelector('a[href]'))
       if (link) this.#loadTrack(link.href, items[0], link)
     }
@@ -1101,7 +1101,7 @@ class VideoPlayerElement extends HTMLElement {
       case 'm':
       case 'M':
         this.#video.muted = !this.#video.muted
-        this.toggleAttribute('data-muted', this.#video.muted)
+        this.toggleAttribute('muted', this.#video.muted)
         this.#volumeSlider.style.setProperty('--_vol', this.#video.muted ? '0' : this.#volumeSlider.value)
         break
       case 'f':

@@ -3,75 +3,111 @@ color-palette:not(:defined) {
   display: block;
 }
 
-/* color-palette scoped styles */
 color-palette {
   display: block;
 }
 
+/* Palette container */
 color-palette .palette {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--size-2xs, 0.25rem);
+  gap: var(--size-xs, 0.5rem);
 }
 
 color-palette .palette.grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
 }
 
 color-palette .palette.list {
   flex-direction: column;
 }
 
-color-palette .palette.list .swatch {
-  inline-size: 100% !important;
-  block-size: auto !important;
-  min-block-size: 36px;
+color-palette .palette.list .swatch-wrap {
   flex-direction: row;
-  justify-content: space-between;
-  padding-inline: var(--size-s, 0.75rem);
+  align-items: center;
+  gap: var(--size-s, 0.75rem);
 }
 
-color-palette .swatch {
+color-palette .palette.list .color-box {
+  inline-size: 36px !important;
+  block-size: 36px !important;
+}
+
+/* Swatch wrapper — vertical stack of color box + name */
+color-palette .swatch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-2xs, 0.25rem);
+}
+
+/* Color box — the clickable swatch */
+color-palette .color-box {
+  position: relative;
   border: 1px solid oklch(0% 0 0 / 0.15);
   border-radius: var(--radius-s, 0.25rem);
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 2px;
+  padding: 0;
   font-family: var(--font-mono, monospace);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
 }
 
-color-palette .swatch:hover {
-  transform: scale(1.08);
-  box-shadow: var(--shadow-md, 0 4px 6px oklch(0% 0 0 / 0.15));
+color-palette .color-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px oklch(0% 0 0 / 0.15);
   z-index: 1;
 }
 
-color-palette .swatch:focus-visible {
+color-palette .color-box:focus-visible {
   outline: 2px solid var(--color-focus-ring, currentColor);
   outline-offset: 2px;
 }
 
-color-palette .swatch .name {
-  font-size: 0.5625rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1;
-  opacity: 0.9;
+/* Hex/value overlay — hidden by default, visible on hover */
+color-palette .color-value {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  text-align: center;
+  padding: 2px 4px;
+  word-break: break-all;
 }
 
-color-palette .swatch .value {
-  font-size: 0.5rem;
-  line-height: 1;
-  opacity: 0.75;
+color-palette .color-box:hover .color-value,
+color-palette .color-box:focus-visible .color-value,
+color-palette .color-value.visible {
+  opacity: 1;
+}
+
+/* "Copied!" feedback overlay */
+color-palette .color-box.copied::after {
+  content: 'Copied!';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0% 0 0 / 0.6);
+  color: white;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  font-family: var(--font-sans, system-ui);
+  border-radius: inherit;
+}
+
+/* Name label below the swatch */
+color-palette .color-name {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #666);
+  text-align: center;
+  max-inline-size: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-inline-size: 100%;
 }

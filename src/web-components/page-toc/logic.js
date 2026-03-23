@@ -7,12 +7,12 @@
  *
  * Uses IntersectionObserver for scroll-spy highlighting.
  *
- * @attr {string} data-levels - Heading levels to include (default: 'h2,h3')
- * @attr {string} data-scope - CSS selector for content scope (default: 'main')
- * @attr {string} data-title - ToC title (default: 'On this page')
+ * @attr {string} levels - Heading levels to include (default: 'h2,h3')
+ * @attr {string} scope - CSS selector for content scope (default: 'main')
+ * @attr {string} title - ToC title (default: 'On this page')
  *
  * @example Auto-generated
- * <page-toc data-levels="h2,h3" data-title="Contents"></page-toc>
+ * <page-toc levels="h2,h3" title="Contents"></page-toc>
  *
  * @example Manual markup (progressive enhancement)
  * <page-toc>
@@ -177,9 +177,9 @@ class PageToc extends HTMLElement {
   }
 
   #buildToc() {
-    const levels = this.dataset.levels || 'h2,h3';
-    const scope = this.dataset.scope || 'main';
-    const title = this.dataset.title || 'On this page';
+    const levels = this.getAttribute('levels') || 'h2,h3';
+    const scope = this.getAttribute('scope') || 'main';
+    const title = this.getAttribute('title') || 'On this page';
 
     // Find headings within scope
     const container = document.querySelector(scope);

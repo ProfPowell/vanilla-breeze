@@ -3,12 +3,14 @@
  *
  * Renders a row/grid of color swatches from a comma-separated list.
  * Supports hex, rgb, hsl, and oklch color formats. Click to copy.
+ * Names appear below swatches; hex values appear on hover inside.
+ * All layout styles are inline so the component works without external CSS.
  *
  * @attr {string} colors - Comma-separated color values (hex, rgb, oklch, etc.)
  * @attr {string} names - Comma-separated swatch labels (optional)
  * @attr {string} layout - Display mode: "inline" (default), "grid", "list"
- * @attr {boolean} show-values - Show color value text below swatches
- * @attr {boolean} show-names - Show name labels above swatches
+ * @attr {boolean} show-values - Always show color values (otherwise hover-only)
+ * @attr {boolean} show-names - Show name labels below swatches (auto-enabled if names attr set)
  * @attr {string} size - Swatch size: "sm", "md" (default), "lg"
  *
  * @fires color-palette:select - When a swatch is clicked, detail: { color, name, index }
@@ -41,31 +43,60 @@ class ColorPalette extends HTMLElement {
     const layout = this.getAttribute('layout') || 'inline';
     const size = this.getAttribute('size') || 'md';
     const showValues = this.hasAttribute('show-values');
-    const showNames = this.hasAttribute('show-names');
+    const showNames = this.hasAttribute('show-names') || namesRaw.length > 0;
 
-    // Parse colors — handle oklch() which contains commas
     const colors = this.#parseColorList(colorsRaw);
     const names = namesRaw ? namesRaw.split(',').map(n => n.trim()) : [];
 
-    const sizes = { sm: 32, md: 48, lg: 72 };
-    const px = sizes[size] || 48;
+    const sizes = { sm: 48, md: 80, lg: 120 };
+    const px = sizes[size] || 80;
+
+    // Layout styles — inline so no external CSS needed
+    let containerStyle = `display:flex;flex-wrap:wrap;gap:var(--size-xs,0.5rem)`;
+    if (layout === 'grid') {
+      containerStyle = `display:grid;grid-template-columns:repeat(auto-fill,minmax(${px}px,1fr));gap:var(--size-xs,0.5rem)`;
+    } else if (layout === 'list') {
+      containerStyle = `display:flex;flex-direction:column;gap:var(--size-xs,0.5rem)`;
+    }
 
     const swatches = colors.map((color, i) => {
       const name = names[i] || '';
       const contrast = this.#contrastColor(color);
-      return `<button type="button" class="swatch" data-index="${i}"
-        style="background:${color};color:${contrast};width:${px}px;height:${px}px"
-        title="${name ? name + ': ' : ''}${color}"
-        aria-label="${name || 'Color ' + (i + 1)}: ${color}">
-        ${showNames && name ? `<span class="name">${name}</span>` : ''}
-        ${showValues ? `<span class="value">${color}</span>` : ''}
-      </button>`;
+
+      const wrapStyle = layout === 'list'
+        ? `display:flex;flex-direction:row;align-items:center;gap:0.75rem`
+        : `display:flex;flex-direction:column;align-items:center;gap:0.25rem;max-inline-size:${px}px`;
+
+      const boxSize = layout === 'list' ? 36 : px;
+
+      return `<div class="swatch-wrap" role="listitem" style="${wrapStyle}">
+        <button type="button" class="color-box" data-index="${i}"
+          style="background:${color};color:${contrast};width:${boxSize}px;height:${boxSize}px;border:1px solid oklch(0% 0 0/0.15);border-radius:var(--radius-s,0.25rem);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:var(--font-mono,monospace);position:relative;overflow:hidden;flex-shrink:0"
+          title="Click to copy${name ? ': ' + name : ''}"
+          aria-label="${name || 'Color ' + (i + 1)}: ${color}">
+          <span class="color-value" style="font-size:0.625rem;line-height:1.2;opacity:${showValues ? '1' : '0'};text-align:center;padding:2px 4px;word-break:break-all;transition:opacity 0.15s ease">${this.#formatValue(color)}</span>
+        </button>
+        ${showNames && name ? `<span style="font-size:var(--font-size-xs,0.75rem);color:var(--color-text-muted,#666);text-align:center;max-inline-size:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>` : ''}
+      </div>`;
     }).join('');
 
-    this.innerHTML = `<div class="palette ${layout}" role="group" aria-label="Color palette">${swatches}</div>`;
+    this.innerHTML = `<div class="palette ${layout}" role="list" aria-label="Color palette" style="${containerStyle}">${swatches}</div>`;
 
-    // Click handler — copy + dispatch event
-    this.querySelectorAll('.swatch').forEach((/** @type {HTMLElement} */ btn) => {
+    // Hover effect for value reveal + copy handler
+    this.querySelectorAll('.color-box').forEach((/** @type {HTMLElement} */ btn) => {
+      // Hover: show value
+      if (!showValues) {
+        btn.addEventListener('pointerenter', () => {
+          const val = btn.querySelector('.color-value');
+          if (val) val.style.opacity = '1';
+        });
+        btn.addEventListener('pointerleave', () => {
+          const val = btn.querySelector('.color-value');
+          if (val) val.style.opacity = '0';
+        });
+      }
+
+      // Click: copy + feedback
       btn.addEventListener('click', () => {
         const idx = Number(btn.dataset.index);
         const color = colors[idx];
@@ -76,12 +107,19 @@ class ColorPalette extends HTMLElement {
           bubbles: true, detail: { color, name, index: idx }
         }));
 
-        // Flash feedback
         btn.style.outline = '3px solid currentColor';
         btn.style.outlineOffset = '2px';
-        setTimeout(() => { btn.style.outline = ''; btn.style.outlineOffset = ''; }, 400);
+        setTimeout(() => { btn.style.outline = ''; btn.style.outlineOffset = ''; }, 600);
       });
     });
+  }
+
+  /** Shorten oklch values for display */
+  #formatValue(color) {
+    if (color.startsWith('#')) return color;
+    const oklch = color.match(/oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/);
+    if (oklch) return `${oklch[1]}% .${oklch[2].replace('0.', '')}`;
+    return color.length > 12 ? color.slice(0, 12) + '…' : color;
   }
 
   /** Parse comma-separated color list, handling oklch() which contains commas */
@@ -106,15 +144,12 @@ class ColorPalette extends HTMLElement {
 
   /** Return black or white depending on perceived lightness */
   #contrastColor(color) {
-    // For oklch, parse lightness directly
     const oklchMatch = color.match(/oklch\(\s*([\d.]+)%?\s/);
     if (oklchMatch) {
       const L = parseFloat(oklchMatch[1]);
-      // If L is 0-1 range vs 0-100 range
       const lightness = L > 1 ? L / 100 : L;
       return lightness > 0.6 ? '#000' : '#fff';
     }
-    // For hex
     if (color.startsWith('#')) {
       const hex = color.replace('#', '');
       const r = parseInt(hex.substring(0, 2), 16) / 255;

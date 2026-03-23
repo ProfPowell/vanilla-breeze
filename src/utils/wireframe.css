@@ -128,7 +128,8 @@ html[data-wireframe] {
  */
 
 /* Base image styling - hide content, show X pattern */
-[data-wireframe] img {
+/* Exclude data-mock images — their placeholder rendering takes priority */
+[data-wireframe] img:not([data-mock]) {
   position: relative;
   opacity: 0.15 !important; /* Fade the actual image significantly */
   border: var(--wireframe-border) !important;
@@ -136,7 +137,7 @@ html[data-wireframe] {
 }
 
 /* X-pattern using SVG data URI on the image background */
-[data-wireframe] img {
+[data-wireframe] img:not([data-mock]) {
   background-image:
     linear-gradient(
       to bottom right,
@@ -156,12 +157,12 @@ html[data-wireframe] {
 }
 
 /* Lo-fi mode: Completely hide images */
-[data-wireframe="lo"] img {
+[data-wireframe="lo"] img:not([data-mock]) {
   opacity: 0 !important;
 }
 
 /* Hi-fi mode: Show images more clearly */
-[data-wireframe="hi"] img {
+[data-wireframe="hi"] img:not([data-mock]) {
   opacity: 0.4 !important;
   background-image: none !important;
 }
@@ -181,8 +182,8 @@ html[data-wireframe] {
   position: relative;
 }
 
-/* X-pattern overlay on figure elements */
-[data-wireframe] figure:has(img)::before {
+/* X-pattern overlay on figure elements (skip if image uses data-mock) */
+[data-wireframe] figure:has(img:not([data-mock]))::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -206,7 +207,7 @@ html[data-wireframe] {
 }
 
 /* Don't show double X on hi-fi */
-[data-wireframe="hi"] figure:has(img)::before {
+[data-wireframe="hi"] figure:has(img:not([data-mock]))::before {
   background: oklch(from var(--wireframe-fill) l c h / 0.3);
 }
 
@@ -292,90 +293,47 @@ html[data-wireframe] {
 }
 
 /* --- Annotations: Label elements with their tag name --- */
-/* Optional: Add data-wireframe="annotate" for element labels */
-[data-wireframe="annotate"] *:not(script):not(style):not(br):not(hr)::before {
+/* Uses ::after to avoid collision with data-wf-label badges on ::before */
+/* Deduplicated: both annotate fidelity and composable data-wf-annotate share rules */
+:is([data-wireframe="annotate"], [data-wf-annotate]) *:not(script):not(style):not(br):not(hr):not(figure):not(picture):not(img):not(input):not(select):not(textarea):not(video):not(iframe):not(canvas)::after {
   content: var(--wf-label-text, "");
   position: absolute;
   inset-block-start: -1.2em;
-  inset-inline-start: 0;
-  font-size: 10px;
-  font-family: monospace;
-  color: var(--wireframe-muted);
-  pointer-events: none;
-}
-
-/* Label common semantic elements automatically when annotating */
-[data-wireframe="annotate"] header::before { content: "<header>"; }
-[data-wireframe="annotate"] nav::before { content: "<nav>"; }
-[data-wireframe="annotate"] main::before { content: "<main>"; }
-[data-wireframe="annotate"] aside::before { content: "<aside>"; }
-[data-wireframe="annotate"] footer::before { content: "<footer>"; }
-[data-wireframe="annotate"] article::before { content: "<article>"; }
-[data-wireframe="annotate"] section::before { content: "<section>"; }
-[data-wireframe="annotate"] form::before { content: "<form>"; }
-[data-wireframe="annotate"] fieldset::before { content: "<fieldset>"; }
-[data-wireframe="annotate"] figure::before { content: "<figure>"; }
-[data-wireframe="annotate"] table::before { content: "<table>"; }
-[data-wireframe="annotate"] details::before { content: "<details>"; }
-[data-wireframe="annotate"] dialog::before { content: "<dialog>"; }
-[data-wireframe="annotate"] blockquote::before { content: "<blockquote>"; }
-[data-wireframe="annotate"] ul::before { content: "<ul>"; }
-[data-wireframe="annotate"] ol::before { content: "<ol>"; }
-[data-wireframe="annotate"] dl::before { content: "<dl>"; }
-/* VB layout custom elements */
-[data-wireframe="annotate"] layout-card::before { content: "<layout-card>"; }
-[data-wireframe="annotate"] layout-sidebar::before { content: "<layout-sidebar>"; }
-[data-wireframe="annotate"] layout-stack::before { content: "<layout-stack>"; }
-[data-wireframe="annotate"] layout-grid::before { content: "<layout-grid>"; }
-[data-wireframe="annotate"] layout-center::before { content: "<layout-center>"; }
-[data-wireframe="annotate"] layout-cluster::before { content: "<layout-cluster>"; }
-[data-wireframe="annotate"] layout-cover::before { content: "<layout-cover>"; }
-[data-wireframe="annotate"] layout-switcher::before { content: "<layout-switcher>"; }
-[data-wireframe="annotate"] layout-reel::before { content: "<layout-reel>"; }
-
-/* ============================================== */
-/* COMPOSABLE ANNOTATIONS                         */
-/* ============================================== */
-
-/* data-wf-annotate layers annotations on TOP of any fidelity level */
-[data-wf-annotate] *:not(script):not(style):not(br):not(hr)::before {
-  content: var(--wf-label-text, "");
-  position: absolute;
-  inset-block-start: -1.2em;
-  inset-inline-start: 0;
+  inset-inline-end: 0;
   font-size: 10px;
   font-family: monospace;
   color: var(--wireframe-muted, oklch(50% 0 0));
   pointer-events: none;
 }
 
-/* Hardcoded labels for composable annotations */
-[data-wf-annotate] header::before { content: "<header>"; }
-[data-wf-annotate] nav::before { content: "<nav>"; }
-[data-wf-annotate] main::before { content: "<main>"; }
-[data-wf-annotate] aside::before { content: "<aside>"; }
-[data-wf-annotate] footer::before { content: "<footer>"; }
-[data-wf-annotate] article::before { content: "<article>"; }
-[data-wf-annotate] section::before { content: "<section>"; }
-[data-wf-annotate] form::before { content: "<form>"; }
-[data-wf-annotate] fieldset::before { content: "<fieldset>"; }
-[data-wf-annotate] figure::before { content: "<figure>"; }
-[data-wf-annotate] table::before { content: "<table>"; }
-[data-wf-annotate] details::before { content: "<details>"; }
-[data-wf-annotate] dialog::before { content: "<dialog>"; }
-[data-wf-annotate] blockquote::before { content: "<blockquote>"; }
-[data-wf-annotate] ul::before { content: "<ul>"; }
-[data-wf-annotate] ol::before { content: "<ol>"; }
-[data-wf-annotate] dl::before { content: "<dl>"; }
-[data-wf-annotate] layout-card::before { content: "<layout-card>"; }
-[data-wf-annotate] layout-sidebar::before { content: "<layout-sidebar>"; }
-[data-wf-annotate] layout-stack::before { content: "<layout-stack>"; }
-[data-wf-annotate] layout-grid::before { content: "<layout-grid>"; }
-[data-wf-annotate] layout-center::before { content: "<layout-center>"; }
-[data-wf-annotate] layout-cluster::before { content: "<layout-cluster>"; }
-[data-wf-annotate] layout-cover::before { content: "<layout-cover>"; }
-[data-wf-annotate] layout-switcher::before { content: "<layout-switcher>"; }
-[data-wf-annotate] layout-reel::before { content: "<layout-reel>"; }
+/* Label common semantic elements automatically when annotating */
+/* Excludes figure and picture (their ::after is used for image labels/X-pattern) */
+:is([data-wireframe="annotate"], [data-wf-annotate]) header::after { content: "<header>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) nav::after { content: "<nav>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) main::after { content: "<main>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) aside::after { content: "<aside>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) footer::after { content: "<footer>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) article::after { content: "<article>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) section::after { content: "<section>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) form::after { content: "<form>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) fieldset::after { content: "<fieldset>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) table::after { content: "<table>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) details::after { content: "<details>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) dialog::after { content: "<dialog>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) blockquote::after { content: "<blockquote>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) ul::after { content: "<ul>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) ol::after { content: "<ol>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) dl::after { content: "<dl>"; }
+/* VB layout custom elements */
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-card::after { content: "<layout-card>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-sidebar::after { content: "<layout-sidebar>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-stack::after { content: "<layout-stack>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-grid::after { content: "<layout-grid>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-center::after { content: "<layout-center>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-cluster::after { content: "<layout-cluster>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-cover::after { content: "<layout-cover>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-switcher::after { content: "<layout-switcher>"; }
+:is([data-wireframe="annotate"], [data-wf-annotate]) layout-reel::after { content: "<layout-reel>"; }
 
 /* --- Scoped wireframe mode --- */
 /* Apply wireframe only to a specific container */
@@ -725,4 +683,81 @@ html[data-wireframe="hi"] {
 /* Spacing / box-model debug overlay */
 [data-show-spacing] * {
   outline: 1px solid oklch(65% 0.2 30 / 0.3) !important;
+}
+
+/* ============================================== */
+/* CALLOUT / COMMENT SYSTEM                       */
+/* ============================================== */
+/* Design review comments: numbered markers on elements + footnote panel */
+
+/* Numbered circle marker (injected <mark> elements) */
+/* Number text set by JS, not CSS counters (counters break with display toggling) */
+/* saturate() counteracts parent grayscale filter so markers stay colored */
+[data-wf-callout-marker] {
+  position: absolute;
+  inset-block-start: -0.75em;
+  inset-inline-end: -0.75em;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: oklch(45% 0.3 265) !important;
+  color: oklch(98% 0 0) !important;
+  filter: saturate(10);
+  font-size: var(--font-size-s, 14px);
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 3px solid oklch(98% 0 0) !important;
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.4) !important;
+  text-decoration: none;
+}
+
+/* Highlight target on marker hover */
+[data-wf-callout-marker]:hover {
+  background: oklch(40% 0.35 265) !important;
+}
+
+:has(> [data-wf-callout-marker]:hover) {
+  outline: 2px solid oklch(60% 0.2 260) !important;
+  outline-offset: 2px;
+}
+
+/* Blueprint palette markers */
+[data-wf-palette="blueprint"] [data-wf-callout-marker] {
+  background: oklch(55% 0.15 250);
+  border-color: oklch(25% 0.05 250);
+}
+
+/* Sepia palette markers */
+[data-wf-palette="sepia"] [data-wf-callout-marker] {
+  background: oklch(50% 0.1 50);
+  border-color: oklch(92% 0.03 70);
+}
+
+/* Callout panel uses <foot-notes> component — add wireframe-aware wrapper styling */
+[data-wf-callout-panel] {
+  margin-block-start: var(--size-xl, 2rem);
+}
+
+/* Callouts: hidden by default, visible inside wireframe mode */
+[data-wf-callout-marker],
+[data-wf-callout-panel] {
+  display: none;
+}
+[data-wireframe] [data-wf-callout-marker] {
+  display: flex;
+}
+[data-wireframe] [data-wf-callout-panel] {
+  display: block;
+}
+
+/* Ensure callout targets have positioning context */
+[data-wf-callout] {
+  position: relative;
 }

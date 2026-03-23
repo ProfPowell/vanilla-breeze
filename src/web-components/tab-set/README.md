@@ -46,7 +46,7 @@ Without JavaScript, `<tab-set>` renders as a native exclusive accordion using `<
 After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) with panels below (row 2). JS adds keyboard navigation (Arrow keys, Home, End) and View Transition support.
 
 ```html
-<tab-set data-transition="slide">
+<tab-set transition="slide">
   <details name="tabs" open>
     <summary>Tab 1</summary>
     <section>Panel 1</section>
@@ -62,7 +62,7 @@ After upgrade, CSS Grid reorders summaries into a horizontal tab bar (row 1) wit
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `data-transition` | string | -- | View Transition type: "fade", "slide", "scale" |
+| `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
 
 **Events:** `tab-set:change` with `{ index }` detail
 
@@ -150,7 +150,7 @@ Basic tabs:
 
 With View Transitions:
 ```html
-<tab-set data-transition="slide">
+<tab-set transition="slide">
   <details name="animated" open>
     <summary>Overview</summary>
     <section>Content slides in from the right</section>

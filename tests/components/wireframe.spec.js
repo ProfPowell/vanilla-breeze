@@ -79,24 +79,24 @@ test.describe('wireframe mode', () => {
     expect(filter).toContain('grayscale(0.3)');
   });
 
-  test('annotate mode shows element labels for semantic elements', async ({ page }) => {
+  test('annotate mode shows element labels via ::after', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
     await page.locator('input[name="fidelity"][value="annotate"]').check();
 
     const headerLabel = await page.locator('header').evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(headerLabel).toContain('<header>');
 
     const footerLabel = await page.locator('footer').evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(footerLabel).toContain('<footer>');
   });
 
-  test('annotate shows labels for expanded element list', async ({ page }) => {
+  test('annotate shows labels for expanded element list via ::after', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
@@ -104,27 +104,48 @@ test.describe('wireframe mode', () => {
 
     // form element
     const formLabel = await page.locator('form').first().evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(formLabel).toContain('<form>');
 
     // fieldset element
     const fieldsetLabel = await page.locator('fieldset').first().evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(fieldsetLabel).toContain('<fieldset>');
 
     // blockquote element
     const bqLabel = await page.locator('blockquote').first().evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(bqLabel).toContain('<blockquote>');
 
     // table element
     const tableLabel = await page.locator('table').first().evaluate(
-      (el) => getComputedStyle(el, '::before').content
+      (el) => getComputedStyle(el, '::after').content
     );
     expect(tableLabel).toContain('<table>');
+  });
+
+  test('labels and annotations coexist — ::before badge + ::after tag name', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForLoadState('networkidle');
+
+    // Enable overlay annotations with default fidelity
+    await page.locator('#annotate-toggle').check();
+
+    // Header has data-wf-label="Site Header" — should show badge on ::before
+    const headerBefore = await page.locator('header[data-wf-label]').evaluate(
+      (el) => getComputedStyle(el, '::before').content
+    );
+    expect(headerBefore).not.toBe('none');
+    expect(headerBefore).not.toBe('""');
+
+    // And annotation on ::after
+    const headerAfter = await page.locator('header').evaluate(
+      (el) => getComputedStyle(el, '::after').content
+    );
+    expect(headerAfter).toContain('<header>');
   });
 
   test('data-wf-label renders badge on elements', async ({ page }) => {
@@ -230,6 +251,77 @@ test.describe('wireframe JS API', () => {
     );
     // html should NOT have grayscale when wireframe is scoped
     expect(htmlFilter).not.toContain('grayscale');
+  });
+
+});
+
+test.describe('wireframe callouts', () => {
+
+  test('renderCallouts() injects numbered markers', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => VanillaBreeze.wireframe.renderCallouts());
+
+    // The demo has 5 elements with data-wf-callout
+    const markerCount = await page.locator('[data-wf-callout-marker]').count();
+    expect(markerCount).toBe(5);
+
+    // Markers should be <mark> elements
+    const tagName = await page.locator('[data-wf-callout-marker]').first().evaluate(
+      (el) => el.tagName
+    );
+    expect(tagName).toBe('MARK');
+  });
+
+  test('renderCalloutPanel() creates panel with ordered list', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => {
+      VanillaBreeze.wireframe.renderCallouts();
+      VanillaBreeze.wireframe.renderCalloutPanel();
+    });
+
+    const panel = page.locator('[data-wf-callout-panel]');
+    await expect(panel).toBeVisible();
+
+    // Panel should be an <aside>
+    const tagName = await panel.evaluate((el) => el.tagName);
+    expect(tagName).toBe('ASIDE');
+
+    // Should have an <ol> with 5 items
+    const itemCount = await panel.locator('ol li').count();
+    expect(itemCount).toBe(5);
+
+    // First item text should match the hero callout
+    const firstText = await panel.locator('ol li').first().textContent();
+    expect(firstText).toContain('full-bleed layout');
+  });
+
+  test('addCallout() and removeCallout() work programmatically', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForLoadState('networkidle');
+
+    // Add a callout to footer
+    await page.evaluate(() => {
+      VanillaBreeze.wireframe.addCallout('footer', 'Footer needs social links');
+    });
+
+    const calloutAttr = await page.locator('footer').evaluate(
+      (el) => el.dataset.wfCallout
+    );
+    expect(calloutAttr).toBe('Footer needs social links');
+
+    // Remove it
+    await page.evaluate(() => {
+      VanillaBreeze.wireframe.removeCallout('footer');
+    });
+
+    const removed = await page.locator('footer').evaluate(
+      (el) => el.hasAttribute('data-wf-callout')
+    );
+    expect(removed).toBe(false);
   });
 
 });

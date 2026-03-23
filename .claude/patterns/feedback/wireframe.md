@@ -19,6 +19,16 @@ Wireframe mode provides a sketch-like aesthetic for rapid HTML prototyping. Add 
 | On | Full wireframe mode with grayscale |
 | Annotate | Wireframe with element labels visible |
 
+## Three-Tier Overlay Model
+
+| System | Attribute | Purpose | Pseudo/Element | Position |
+|--------|-----------|---------|----------------|----------|
+| **Labels** | `data-wf-label` | "What this IS" — structural name | `::before` badge | Top-left inside |
+| **Annotations** | `data-wf-annotate` | "What tag this uses" — developer ref | `::after` monospace | Top-right outside |
+| **Callouts** | `data-wf-callout` | "What a reviewer thinks" — design comments | Injected `<mark>` | Top-right corner + footnote panel |
+
+All three can be active simultaneously without collision.
+
 ## Fidelity Levels
 
 | Level | Fonts | Borders | Colors | Best For |
@@ -38,6 +48,7 @@ Wireframe mode provides a sketch-like aesthetic for rapid HTML prototyping. Add 
 | `data-wireframe="hi"` | Near-production preview |
 | `data-wireframe="annotate"` | Shows element labels for HTML structure review |
 | `data-wf-annotate` | Composable annotation layer (works with any fidelity) |
+| `data-wf-callout="text"` | Design review comment with numbered marker |
 
 ## Baseline HTML
 
@@ -111,6 +122,13 @@ VanillaBreeze.wireframe.label('.hero', 'Hero Banner'); // manual
 
 // Composable annotations (layers on top of any fidelity)
 VanillaBreeze.wireframe.toggleAnnotations();
+
+// Callouts — design review comments
+VanillaBreeze.wireframe.addCallout('.hero', 'Needs larger CTA');
+VanillaBreeze.wireframe.renderCallouts();
+VanillaBreeze.wireframe.renderCalloutPanel();
+VanillaBreeze.wireframe.toggleCallouts();
+VanillaBreeze.wireframe.removeCallout('.hero');
 ```
 
 ## Accessibility

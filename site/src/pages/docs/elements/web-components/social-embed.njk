@@ -1,0 +1,216 @@
+---
+layout: layouts/element.njk
+title: "social-embed"
+description: "Privacy-first social content embed with click-to-activate. Supports Bluesky, Mastodon, X, Instagram, and YouTube via a provider registry."
+elementName: social-embed
+category: component
+currentPath: /docs/elements/web-components/social-embed/
+permalink: /docs/elements/web-components/social-embed/
+---
+
+{% set blueskyCode %}<social-embed url="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">
+  <a href="https://bsky.app/profile/bsky.app/post/3lb55bvibcs2w">View post on Bluesky</a>
+</social-embed>{% endset %}
+
+{% set mastodonCode %}<social-embed url="https://mastodon.social/@Mastodon/109838793196353548">
+  <a href="https://mastodon.social/@Mastodon/109838793196353548">View post on Mastodon</a>
+</social-embed>{% endset %}
+
+{% set xCode %}<social-embed url="https://x.com/github/status/1234567890">
+  <a href="https://x.com/github/status/1234567890">View post on X</a>
+</social-embed>{% endset %}
+
+{% set youtubeCode %}<social-embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+  <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Watch on YouTube</a>
+</social-embed>{% endset %}
+
+{% set explicitCode %}<social-embed provider="mastodon" url="https://mastodon.social/@user/12345">
+  <a href="https://mastodon.social/@user/12345">View post on Mastodon</a>
+</social-embed>{% endset %}
+
+{% set visibleCode %}<social-embed url="https://bsky.app/profile/user/post/3abc" activate="visible">
+  <a href="https://bsky.app/profile/user/post/3abc">View post on Bluesky</a>
+</social-embed>{% endset %}
+
+{% set darkCode %}<social-embed url="https://x.com/user/status/123" theme="dark">
+  <a href="https://x.com/user/status/123">View post on X</a>
+</social-embed>{% endset %}
+
+{% set figureCode %}<figure>
+  <social-embed url="https://bsky.app/profile/user/post/3abc">
+    <a href="https://bsky.app/profile/user/post/3abc">View post on Bluesky</a>
+  </social-embed>
+  <figcaption>A post about the new CSS features.</figcaption>
+</figure>{% endset %}
+
+<section>
+  <h2>Overview</h2>
+  <p>A <strong>privacy-first</strong> social content embed component. Click-to-activate by default — no third-party scripts or network requests execute until the user clicks the embed card. Supports Bluesky, Mastodon, X, Instagram, and YouTube out of the box, with an extensible provider registry for custom platforms.</p>
+  <p>The inner fallback content (typically an <code>&lt;a&gt;</code>) renders without JavaScript, is indexable by search engines, and remains accessible to all users.</p>
+</section>
+
+<section>
+  <h2>Bluesky</h2>
+  <p>Auto-detected from <code>bsky.app</code> URLs. Uses oEmbed — no third-party script injected.</p>
+  <code-block language="html" show-lines label="Bluesky post">{{ blueskyCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Mastodon</h2>
+  <p>Auto-detected from <code>@user/id</code> URL patterns. Parses the instance hostname from the URL and fetches oEmbed from the correct server.</p>
+  <code-block language="html" show-lines label="Mastodon post">{{ mastodonCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>X (Twitter)</h2>
+  <p>Auto-detected from <code>x.com</code> or <code>twitter.com</code> status URLs. Loads the X widgets script on activation.</p>
+  <code-block language="html" show-lines label="X post">{{ xCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>YouTube</h2>
+  <p>Automatically delegates to <code>&lt;youtube-player&gt;</code>. The YouTube provider sets <code>delegatesActivation: true</code>, so social-embed skips its own click gate — youtube-player handles its own facade pattern (thumbnail + play button). One click, not two.</p>
+  <code-block language="html" show-lines label="YouTube video">{{ youtubeCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Explicit Provider</h2>
+  <p>Use <code>provider</code> to bypass auto-detection when the URL pattern is ambiguous.</p>
+  <code-block language="html" show-lines label="Explicit provider">{{ explicitCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Activation Modes</h2>
+  <p>Control when the embed loads with <code>activate</code>.</p>
+  <table>
+    <thead><tr><th>Value</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td><code>click</code> (default)</td><td>User must click the idle card to trigger loading</td></tr>
+      <tr><td><code>visible</code></td><td>Loads when scrolled into viewport (IntersectionObserver with 200px margin)</td></tr>
+      <tr><td><code>eager</code></td><td>Loads immediately on page load</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="Visible activation">{{ visibleCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Dark Theme</h2>
+  <p>Pass <code>theme="dark"</code> to hint to providers that support themed embeds. The default <code>auto</code> reads <code>prefers-color-scheme</code>.</p>
+  <code-block language="html" show-lines label="Dark theme">{{ darkCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>With Caption</h2>
+  <p>Wrap in a <code>&lt;figure&gt;</code> with <code>&lt;figcaption&gt;</code> for semantic context.</p>
+  <code-block language="html" show-lines label="Captioned embed">{{ figureCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Required</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>url</code></td><td>Yes</td><td>string</td><td>—</td><td>URL of content to embed</td></tr>
+      <tr><td><code>provider</code></td><td>—</td><td>string</td><td>—</td><td>Explicit provider key. If omitted, auto-detection runs.</td></tr>
+      <tr><td><code>theme</code></td><td>—</td><td>string</td><td><code>auto</code></td><td><code>light</code>, <code>dark</code>, or <code>auto</code> (reads <code>prefers-color-scheme</code>)</td></tr>
+      <tr><td><code>activate</code></td><td>—</td><td>string</td><td><code>click</code></td><td><code>click</code>, <code>visible</code>, or <code>eager</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Component-Managed Attributes</h3>
+  <table>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>state</code></td><td><code>idle</code>, <code>loading</code>, <code>loaded</code>, <code>error</code>, <code>unsupported</code></td><td>Current lifecycle state (read-only)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>States</h2>
+  <table>
+    <thead><tr><th>State</th><th>When</th><th>Visual</th></tr></thead>
+    <tbody>
+      <tr><td><code>idle</code></td><td>Before activation trigger</td><td>Bordered card with pointer cursor</td></tr>
+      <tr><td><code>loading</code></td><td>Provider <code>render()</code> called</td><td>Skeleton pulse animation</td></tr>
+      <tr><td><code>loaded</code></td><td><code>render()</code> resolved</td><td>Embed content displayed</td></tr>
+      <tr><td><code>error</code></td><td><code>render()</code> rejected</td><td>Error border, fallback link restored</td></tr>
+      <tr><td><code>unsupported</code></td><td>No provider matched</td><td>Fallback link only (no error treatment)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Built-in Providers</h2>
+  <table>
+    <thead><tr><th>Key</th><th>Mechanism</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>bluesky</code></td><td>oEmbed fetch</td><td>No third-party script. Most private option.</td></tr>
+      <tr><td><code>mastodon</code></td><td>oEmbed fetch</td><td>Instance URL parsed automatically.</td></tr>
+      <tr><td><code>x</code></td><td>Script injection</td><td>Loads <code>platform.x.com/widgets.js</code>. Respects <code>theme</code>.</td></tr>
+      <tr><td><code>instagram</code></td><td>Script injection</td><td>Loads <code>instagram.com/embed.js</code>.</td></tr>
+      <tr><td><code>youtube</code></td><td>Delegates to <code>&lt;youtube-player&gt;</code></td><td>No double click — youtube-player handles its own facade.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Custom Provider</h2>
+  <p>Register a custom provider with <code>SocialEmbed.register()</code>:</p>
+{% set customCode %}import { SocialEmbed, loadScript, fetchOEmbed } from './social-embed/logic.js';
+
+SocialEmbed.register('my-platform', {
+  canHandle(url) {
+    return url.includes('my-platform.example');
+  },
+  async render(host, url, { theme }) {
+    const data = await fetchOEmbed('https://my-platform.example/oembed', url);
+    host.innerHTML = data.html;
+  }
+});{% endset %}
+  <code-block language="js" show-lines label="Custom provider">{{ customCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <table>
+    <thead><tr><th>Scenario</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>No JS</td><td>Fallback <code>&lt;a&gt;</code> link visible and clickable</td></tr>
+      <tr><td>JS + click-to-activate</td><td>Styled card with pointer cursor, loads on click</td></tr>
+      <tr><td>JS + <code>activate="visible"</code></td><td>Loads when scrolled near viewport</td></tr>
+      <tr><td>JS + <code>activate="eager"</code></td><td>Loads immediately</td></tr>
+      <tr><td>Error during render</td><td>Fallback content restored, error state styled</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Fallback <code>&lt;a&gt;</code> provides a meaningful link for all users regardless of JS state</li>
+    <li>In idle state, the host has <code>role="button"</code> and <code>tabindex="0"</code> for keyboard access</li>
+    <li>Enter and Space keys activate the embed</li>
+    <li>Screen reader live region announces "Loading embed..." and "Embed failed to load." on state changes</li>
+    <li>Skeleton animation respects <code>prefers-reduced-motion</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Privacy</h2>
+  <ul>
+    <li><strong>Click-to-activate by default</strong> — no third-party scripts or requests until user interaction</li>
+    <li><strong>oEmbed providers</strong> (Bluesky, Mastodon) make one API request and inject HTML — no third-party scripts</li>
+    <li><strong>Script-based providers</strong> (X, Instagram) inject platform scripts only after activation</li>
+    <li><strong>YouTube delegates</strong> to <code>&lt;youtube-player&gt;</code> which uses <code>youtube-nocookie.com</code></li>
+    <li>The component itself sets no cookies or localStorage</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a> — Standalone YouTube embed with facade pattern</li>
+    <li><a href="/docs/elements/web-components/share/"><code>&lt;share-wc&gt;</code></a> — Social sharing buttons</li>
+  </ul>
+</section>

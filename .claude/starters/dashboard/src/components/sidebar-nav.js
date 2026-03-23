@@ -65,7 +65,7 @@ class SidebarNav extends HTMLElement {
         }
 
         nav > section > h2 {
-          font-size: var(--text-xs, 0.75rem);
+          font-size: var(--font-size-xs, 0.75rem);
           font-weight: var(--font-semibold, 600);
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -151,7 +151,7 @@ class SidebarNav extends HTMLElement {
 
         footer > div > div > span:last-child {
           display: block;
-          font-size: var(--text-xs, 0.75rem);
+          font-size: var(--font-size-xs, 0.75rem);
           color: var(--text-muted, #666);
           white-space: nowrap;
           overflow: hidden;

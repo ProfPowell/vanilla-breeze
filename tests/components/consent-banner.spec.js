@@ -161,7 +161,7 @@ test.describe('consent-banner — positions', () => {
     await page.waitForLoadState('networkidle');
     await page.click('#show-top');
 
-    const dialog = page.locator('consent-banner[data-position="top"] dialog[open]');
+    const dialog = page.locator('consent-banner[position="top"] dialog[open]');
     await expect(dialog).toBeVisible();
 
     const position = await dialog.evaluate(el => getComputedStyle(el).position);
@@ -173,7 +173,7 @@ test.describe('consent-banner — positions', () => {
     await page.waitForLoadState('networkidle');
     await page.click('#show-center');
 
-    const dialog = page.locator('consent-banner[data-position="center"] dialog[open]');
+    const dialog = page.locator('consent-banner[position="center"] dialog[open]');
     await expect(dialog).toBeVisible();
   });
 });

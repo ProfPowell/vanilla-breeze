@@ -84,7 +84,7 @@ Placeholder content shown when there's no data to display. Provides context abou
 
     /* Title */
     & [data-title] {
-      font-size: var(--text-xl);
+      font-size: var(--font-size-xl);
       font-weight: var(--font-weight-semibold);
       color: var(--text);
       margin: 0 0 var(--size-xs);
@@ -159,7 +159,7 @@ Placeholder content shown when there's no data to display. Provides context abou
       }
 
       & [data-title] {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
       }
     }
 

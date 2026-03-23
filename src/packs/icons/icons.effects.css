@@ -1,0 +1,122 @@
+/**
+ * Icons Bundle — Attractor Effects
+ * Vanilla Breeze · Material Symbols
+ *
+ * Five attractor patterns: pulse, beat, breathe, bounce, wiggle.
+ * Uses @property for smooth axis interpolation.
+ * Works on .vb-icon (font) and icon-wc (SVG) elements.
+ */
+
+/* ===== @property for animated axes (outside @layer) ===== */
+
+@property --vb-icon-fill-anim {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --vb-icon-weight-anim {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 400;
+}
+
+@layer bundle-effects {
+
+  /* ── Keyframes ── */
+
+  /* pulse: fill breathes 0 → 1 → 0 with weight bump */
+  @keyframes vb-icon-pulse {
+    0%   { --vb-icon-fill-anim: 0;   --vb-icon-weight-anim: 400; }
+    40%  { --vb-icon-fill-anim: 1;   --vb-icon-weight-anim: 600; }
+    60%  { --vb-icon-fill-anim: 1;   --vb-icon-weight-anim: 600; }
+    100% { --vb-icon-fill-anim: 0;   --vb-icon-weight-anim: 400; }
+  }
+
+  /* beat: weight surges like a heartbeat */
+  @keyframes vb-icon-beat {
+    0%   { --vb-icon-weight-anim: 400; transform: scale(1); }
+    14%  { --vb-icon-weight-anim: 700; transform: scale(1.2); }
+    28%  { --vb-icon-weight-anim: 400; transform: scale(1); }
+    42%  { --vb-icon-weight-anim: 600; transform: scale(1.1); }
+    70%  { --vb-icon-weight-anim: 400; transform: scale(1); }
+    100% { --vb-icon-weight-anim: 400; transform: scale(1); }
+  }
+
+  /* breathe: slow fill oscillation — "active/live" signal */
+  @keyframes vb-icon-breathe {
+    0%, 100% { --vb-icon-fill-anim: 0.1; }
+    50%      { --vb-icon-fill-anim: 0.9; }
+  }
+
+  /* bounce: vertical nudge */
+  @keyframes vb-icon-bounce {
+    0%, 100% { transform: translateY(0); }
+    40%      { transform: translateY(-30%); }
+    60%      { transform: translateY(-15%); }
+  }
+
+  /* wiggle: rotation shake — error/warning signal */
+  @keyframes vb-icon-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    20%      { transform: rotate(-12deg); }
+    40%      { transform: rotate(10deg); }
+    60%      { transform: rotate(-8deg); }
+    80%      { transform: rotate(5deg); }
+  }
+
+
+  /* ── Apply animated properties to font-variation-settings ── */
+
+  [data-vb-attract] {
+    font-variation-settings:
+      'FILL' var(--vb-icon-fill-anim),
+      'wght' var(--vb-icon-weight-anim),
+      'GRAD' var(--vb-icon-grad, 0),
+      'opsz' var(--vb-icon-opsz, 24);
+  }
+
+
+  /* ── Attractor type assignments ── */
+
+  [data-vb-attract="pulse"]   { animation: vb-icon-pulse   0.8s ease-in-out 3; }
+  [data-vb-attract="beat"]    { animation: vb-icon-beat     0.8s ease-in-out 3; }
+  [data-vb-attract="breathe"] { animation: vb-icon-breathe  2.5s ease-in-out infinite; }
+  [data-vb-attract="bounce"]  { animation: vb-icon-bounce   0.6s ease        3; }
+  [data-vb-attract="wiggle"]  { animation: vb-icon-wiggle   0.5s ease        3; }
+
+
+  /* ── Reduced motion: disable animations, static fill fallback ── */
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-vb-attract] {
+      animation: none;
+    }
+
+    [data-vb-attract="pulse"],
+    [data-vb-attract="beat"],
+    [data-vb-attract="breathe"] {
+      --vb-icon-fill-anim: 1;
+    }
+  }
+
+  :root[data-motion-reduced] [data-vb-attract] {
+    animation: none;
+  }
+
+  :root[data-motion-reduced] [data-vb-attract="pulse"],
+  :root[data-motion-reduced] [data-vb-attract="beat"],
+  :root[data-motion-reduced] [data-vb-attract="breathe"] {
+    --vb-icon-fill-anim: 1;
+  }
+
+
+  /* ── Print override ── */
+
+  @media print {
+    [data-vb-attract] {
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+}

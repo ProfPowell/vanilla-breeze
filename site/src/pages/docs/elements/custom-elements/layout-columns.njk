@@ -1,0 +1,230 @@
+---
+layout: layouts/element.njk
+title: "layout-columns"
+description: "Multi-column text flow with measure constraints, column breaks, and vertical rhythm. Handles responsive column layout as a pure CSS layer — no JavaScript required."
+elementName: layout-columns
+category: custom
+currentPath: /docs/elements/custom-elements/layout-columns/
+permalink: /docs/elements/custom-elements/layout-columns/
+---
+
+{% set basicUsageCode %}<layout-columns>
+  <article>
+    <h2>Article Title</h2>
+    <p>Single-column content with measure constraint
+    and vertical rhythm applied automatically.</p>
+    <p>Line length stays readable at any viewport width.</p>
+  </article>
+</layout-columns>{% endset %}
+
+{% set autoColumnsCode %}<layout-columns data-layout-column-count="auto"
+               data-layout-align="justify">
+  <article data-prose>
+    <h2>Responsive Columns</h2>
+    <p>Browser determines column count from available width.
+    Single column on mobile, multi-column on wider screens.</p>
+  </article>
+</layout-columns>{% endset %}
+
+{% set twoColumnCode %}<layout-columns data-layout-column-count="2">
+  <article>
+    <h2>Two Columns</h2>
+    <p>Explicit two-column layout. Use when the column count
+    must be fixed regardless of viewport width.</p>
+  </article>
+</layout-columns>{% endset %}
+
+{% set narrowMeasureCode %}<layout-columns data-layout-measure="narrow">
+  <article>
+    <h2>Narrow Reading</h2>
+    <p>45ch measure. Appropriate for short articles,
+    captions, or sidebar content.</p>
+  </article>
+</layout-columns>{% endset %}
+
+{% set attributeFormCode %}<!-- Same layout, no wrapper element -->
+<article data-layout="columns"
+         data-layout-column-count="2"
+         data-layout-align="justify"
+         data-prose>
+  <h2>Two Columns via Attribute</h2>
+  <p>The data-layout attribute form applies the same
+  styles directly to a semantic element.</p>
+</article>{% endset %}
+
+{% set readerViewCode %}<reader-view mode="pages" columns="2">
+  <layout-columns data-layout-align="justify">
+    <article data-prose>
+      <h1>Article Title</h1>
+      <p>Content inside reader-view gets paged reading mode
+      with column controls and page navigation.</p>
+    </article>
+  </layout-columns>
+</reader-view>{% endset %}
+
+<browser-window
+  src="/docs/examples/demos/layout-columns.html"
+  url="https://vanilla-breeze.dev/columns"
+  title="Layout Columns Demo"
+  shadow>
+</browser-window>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-layout-column-count</code></td>
+        <td><code>auto</code>, <code>1</code>, <code>2</code>, <code>3</code></td>
+        <td><em>absent</em> (single column)</td>
+        <td>Column strategy. <code>auto</code> uses CSS column-width for responsive columns. Numbers set explicit column count.</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-measure</code></td>
+        <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
+        <td><code>normal</code> (65ch)</td>
+        <td>Constrains single-column line length. No effect when multi-column is active.</td>
+      </tr>
+      <tr>
+        <td><code>data-layout-align</code></td>
+        <td><code>start</code>, <code>justify</code></td>
+        <td><code>start</code></td>
+        <td>Text alignment. <code>justify</code> enables automatic hyphenation.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <p>The layout-columns element is a column flow primitive. It controls:</p>
+  <ul>
+    <li><strong>Measure</strong> — constrains line length to a readable width (65ch default)</li>
+    <li><strong>Column flow</strong> — responsive or explicit multi-column layout via CSS <code>columns</code></li>
+    <li><strong>Break hygiene</strong> — prevents blockquotes, figures, tables, lists from splitting across columns</li>
+    <li><strong>Vertical rhythm</strong> — intelligent spacing between headings, paragraphs, and blocks (same rules as <code>layout-text</code>)</li>
+    <li><strong>Inline padding</strong> — gutter so content doesn't touch screen edges on mobile</li>
+  </ul>
+  <p>It does <strong>not</strong> set font family, hyphenation defaults, or drop caps — those belong to the <code>&lt;article&gt;</code> element's existing <code>data-prose</code> and <code>data-drop-cap</code> attributes.</p>
+</section>
+
+<section>
+  <h2>Usage Examples</h2>
+
+  <h3>Single Column (Default)</h3>
+  <p>Without any attributes, layout-columns provides a measure-constrained container with vertical rhythm:</p>
+  <code-block language="html" show-lines label="Basic single column">{{ basicUsageCode | escape }}</code-block>
+
+  <h3>Auto Columns</h3>
+  <p>The recommended responsive pattern. The browser fits as many columns as the container allows, based on a minimum column width of 38ch:</p>
+  <code-block language="html" show-lines label="Responsive auto columns">{{ autoColumnsCode | escape }}</code-block>
+
+  <h3>Explicit Two Column</h3>
+  <p>Force a fixed column count. Best for controlled-width contexts:</p>
+  <code-block language="html" show-lines label="Explicit two columns">{{ twoColumnCode | escape }}</code-block>
+
+  <h3>Narrow Measure</h3>
+  <p>Tighter line length for sidebars and captions:</p>
+  <code-block language="html" show-lines label="Narrow measure">{{ narrowMeasureCode | escape }}</code-block>
+
+  <h3>Attribute Form</h3>
+  <p>Like other layout primitives, you can use <code>data-layout="columns"</code> directly on a semantic element instead of wrapping in <code>&lt;layout-columns&gt;</code>:</p>
+  <code-block language="html" show-lines label="Attribute form (no wrapper)">{{ attributeFormCode | escape }}</code-block>
+
+  <h3>Inside reader-view</h3>
+  <p>layout-columns is the inner surface for <a href="/docs/elements/web-components/reader-view/">reader-view</a>, which adds paged reading mode:</p>
+  <code-block language="html" show-lines label="With reader-view">{{ readerViewCode | escape }}</code-block>
+</section>
+
+<section>
+  <h2>Column Strategy</h2>
+  <p>The correct CSS multi-column idiom for responsive use is <code>column-width</code>, not <code>column-count</code>. The browser determines how many columns fit:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Viewport</th>
+        <th>Auto Columns</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>390px (iPhone)</td><td>~1 column</td></tr>
+      <tr><td>820px (iPad)</td><td>~2 columns</td></tr>
+      <tr><td>1200px (desktop)</td><td>~3 columns</td></tr>
+    </tbody>
+  </table>
+  <p>For explicit counts (<code>data-layout-column-count="2"</code>), <code>column-width: unset</code> is applied to prevent the two CSS properties from fighting each other.</p>
+</section>
+
+<section>
+  <h2>Custom Properties</h2>
+  <p>Override column behaviour per-instance without new attributes:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--column-min-width</code></td>
+        <td>38ch</td>
+        <td>Minimum column width for <code>auto</code> mode</td>
+      </tr>
+      <tr>
+        <td><code>--column-gap</code></td>
+        <td><code>var(--size-2xl)</code></td>
+        <td>Gap between columns</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Spacing Rules</h2>
+  <p>Vertical rhythm matches <code>layout-text</code>:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Context</th>
+        <th>Spacing</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Default (between elements)</td><td><code>var(--size-m)</code></td></tr>
+      <tr><td>Before h2</td><td><code>var(--size-2xl)</code></td></tr>
+      <tr><td>Before h3</td><td><code>var(--size-xl)</code></td></tr>
+      <tr><td>Before h4/h5/h6</td><td><code>var(--size-l)</code></td></tr>
+      <tr><td>After any heading</td><td><code>var(--size-s)</code></td></tr>
+      <tr><td>Before/after figures and pre</td><td><code>var(--size-l)</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Best Practices</h2>
+  <ul>
+    <li><strong>Prefer <code>auto</code> over explicit counts</strong> — let the browser choose. Use explicit counts only in known-width containers.</li>
+    <li><strong>Use <code>data-layout-align="justify"</code> with multi-column</strong> — ragged-right lines disrupt column rules in multi-column layouts.</li>
+    <li><strong>Pair with <code>article[data-prose]</code></strong> — layout-columns handles flow, article handles typographic quality (hyphenation, limits).</li>
+    <li><strong>Don't nest inside <code>layout-text</code></strong> — use one or the other. They serve the same rhythm role.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a> — Vertical rhythm container (no column support)</li>
+    <li><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> — Horizontally centered container</li>
+    <li><a href="/docs/elements/web-components/reader-view/"><code>&lt;reader-view&gt;</code></a> — Immersive reading shell that wraps layout-columns</li>
+  </ul>
+</section>

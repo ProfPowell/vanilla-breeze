@@ -167,6 +167,22 @@
   --focus-ring-color: var(--color-focus-ring);
 }
 
+/* Auto-contrast tokens — returns black or white for any colored surface.
+   Components use these via fallback chain: var(--color-text-on-X-auto, white)
+   so browsers without contrast-color() gracefully degrade. */
+@supports (color: contrast-color(red)) {
+  :root {
+    --color-text-on-primary-auto:     contrast-color(var(--color-primary));
+    --color-text-on-secondary-auto:   contrast-color(var(--color-secondary));
+    --color-text-on-accent-auto:      contrast-color(var(--color-accent));
+    --color-text-on-interactive-auto:  contrast-color(var(--color-interactive));
+    --color-text-on-success-auto:     contrast-color(var(--color-success));
+    --color-text-on-warning-auto:     contrast-color(var(--color-warning));
+    --color-text-on-error-auto:       contrast-color(var(--color-error));
+    --color-text-on-info-auto:        contrast-color(var(--color-info));
+  }
+}
+
 /* ==================== EXPLICIT MODE OVERRIDES ==================== */
 /* Force light mode */
 :root[data-mode="light"],

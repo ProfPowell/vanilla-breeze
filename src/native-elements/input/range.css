@@ -1,0 +1,83 @@
+/* Range Slider Normalization
+   appearance: none + token-driven track and thumb.
+   CSS-only baseline; JS can set --_pct for fill gradient.
+   ---------------------------------------------------------------- */
+
+input[type="range"] {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--range-thumb-size);
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    to right,
+    var(--range-track-fill) 0%,
+    var(--range-track-fill) var(--_pct, 50%),
+    var(--range-track-bg) var(--_pct, 50%),
+    var(--range-track-bg) 100%
+  );
+  background-size: 100% var(--range-track-h);
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  border: none;
+  margin: 0;
+}
+
+/* --- WebKit thumb --- */
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--range-thumb-size);
+  height: var(--range-thumb-size);
+  border-radius: 50%;
+  background: var(--range-thumb-bg);
+  border: var(--border-width-medium) solid var(--range-thumb-border);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary) 15%, transparent);
+}
+
+/* --- Firefox track --- */
+input[type="range"]::-moz-range-track {
+  height: var(--range-track-h);
+  background: var(--range-track-bg);
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+/* --- Firefox thumb --- */
+input[type="range"]::-moz-range-thumb {
+  appearance: none;
+  width: var(--range-thumb-size);
+  height: var(--range-thumb-size);
+  border-radius: 50%;
+  background: var(--range-thumb-bg);
+  border: var(--border-width-medium) solid var(--range-thumb-border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+/* --- Focus --- */
+input[type="range"]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* --- Disabled --- */
+input[type="range"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  input[type="range"]::-webkit-slider-thumb {
+    transition-duration: 0s;
+  }
+}

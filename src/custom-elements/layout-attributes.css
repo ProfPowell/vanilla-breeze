@@ -642,6 +642,109 @@
   margin-inline: auto;
 }
 
+/* Full-width breakout inside prose contexts */
+[data-layout="prose"] > [data-bleed],
+article[data-measure] > [data-bleed] {
+  max-inline-size: none;
+  inline-size: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* data-measure on article: reading width constraint */
+article[data-measure]          { max-inline-size: var(--measure-normal, 65ch); margin-inline: auto; }
+article[data-measure="narrow"] { max-inline-size: 55ch; }
+article[data-measure="wide"]   { max-inline-size: 80ch; }
+
+
+/* --------------------------------------------------------------------------
+   Columns: Multi-column text flow with measure constraints
+   Attribute equivalent of <layout-columns>
+   -------------------------------------------------------------------------- */
+[data-layout="columns"] {
+  display: block;
+  max-inline-size: var(--measure-normal, 65ch);
+  margin-inline: auto;
+  padding-inline: var(--size-m);
+  line-height: var(--line-height-relaxed, 1.625);
+  orphans: 3;
+  widows: 3;
+
+  --_column-width: var(--column-min-width, 38ch);
+  --_column-gap: var(--column-gap, var(--size-2xl));
+}
+
+/* Vertical rhythm */
+[data-layout="columns"] > * + * { margin-block-start: var(--size-m); }
+[data-layout="columns"] > * + h2 { margin-block-start: var(--size-2xl); }
+[data-layout="columns"] > * + h3 { margin-block-start: var(--size-xl); }
+[data-layout="columns"] > * + :is(h4, h5, h6) { margin-block-start: var(--size-l); }
+[data-layout="columns"] > :is(h2, h3, h4, h5, h6) + * { margin-block-start: var(--size-s); }
+[data-layout="columns"] > * + :is(figure, pre) { margin-block-start: var(--size-l); }
+[data-layout="columns"] > :is(figure, pre) + * { margin-block-start: var(--size-l); }
+
+/* Measure variants */
+[data-layout="columns"][data-layout-measure="narrow"] { max-inline-size: var(--measure-narrow, 45ch); }
+[data-layout="columns"][data-layout-measure="wide"]   { max-inline-size: var(--measure-wide, 80ch); }
+
+/* Alignment variants */
+[data-layout="columns"][data-layout-align="justify"] {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  text-justify: inter-word;
+}
+
+/* Column: auto — responsive, column-width-driven */
+@media (min-width: 48rem) {
+  [data-layout="columns"][data-layout-column-count="auto"] {
+    max-inline-size: none;
+    columns: var(--_column-width);
+    column-gap: var(--_column-gap);
+    column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+}
+
+/* Column: explicit counts */
+[data-layout="columns"][data-layout-column-count="1"] {
+  column-count: 1;
+  column-width: unset;
+}
+
+[data-layout="columns"][data-layout-column-count="2"] {
+  max-inline-size: none;
+  column-count: 2;
+  column-width: unset;
+  column-gap: var(--_column-gap);
+  column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+[data-layout="columns"][data-layout-column-count="3"] {
+  max-inline-size: none;
+  column-count: 3;
+  column-width: unset;
+  column-gap: var(--_column-gap);
+  column-rule: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+/* Prose reset: neutralise theme borders inside column flow */
+[data-layout="columns"] :is(article, section, header, footer, aside, nav, h1, h2, h3, h4, h5, h6, p, figure, pre, ul, ol, dl, details) {
+  border: none;
+}
+
+[data-layout="columns"] blockquote {
+  border-block: none;
+  border-inline-end: none;
+}
+
+/* Column break hygiene */
+[data-layout="columns"] :is(blockquote, figure, pre, table, details, ul, ol) {
+  break-inside: avoid;
+}
+
+[data-layout="columns"] :is(h2, h3, h4) {
+  break-after: avoid;
+}
+
 
 /* ==========================================================================
    PHASE 5: GRID IDENTITY SYSTEM (Zen Garden Patterns)

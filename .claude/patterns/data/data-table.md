@@ -259,7 +259,7 @@ Responsive table for displaying structured tabular data with optional sorting, f
   data-table [data-badge] {
     display: inline-block;
     padding: var(--size-2xs) var(--size-xs);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-full);
   }

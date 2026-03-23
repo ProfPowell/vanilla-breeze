@@ -91,8 +91,8 @@ Semantic children and slot escapes share styling. Use `:is()` to avoid repetitio
     --_padding: var(--card-padding, var(--space-m));
     --_radius: var(--card-radius, var(--radius-m));
     --_bg: var(--card-bg, var(--color-surface));
-    --_border: var(--card-border, var(--border-thin) solid var(--color-border));
-    --_divider: var(--card-divider, var(--border-thin) solid var(--color-border));
+    --_border: var(--card-border, var(--border-width-thin) solid var(--color-border));
+    --_divider: var(--card-divider, var(--border-width-thin) solid var(--color-border));
 
     display: grid;
     grid-template: 
@@ -625,7 +625,7 @@ customElements.define('card-list', CardList);
 <style>
   layout-card[data-status="done"] { opacity: 0.7; }
   layout-card[data-status="blocked"] { 
-    --card-border: var(--border-thin) solid var(--color-warning); 
+    --card-border: var(--border-width-thin) solid var(--color-warning); 
   }
 </style>
 ```

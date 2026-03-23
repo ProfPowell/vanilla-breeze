@@ -3,14 +3,14 @@
  *
  * Searchable, keyboard-navigable list of commands in a modal dialog.
  * Supports groups, keyboard shortcuts, and fuzzy filtering.
- * When data-discover is set, also shows commands from [data-command] elements.
+ * When discover is set, also shows commands from [data-command] elements.
  *
- * @attr {string} data-hotkey - Global keyboard shortcut to open (default: "meta+k")
- * @attr {string} data-placeholder - Search input placeholder text
- * @attr {boolean} data-discover - When present, auto-populate from [data-command] registry
+ * @attr {string} hotkey - Global keyboard shortcut to open (default: "meta+k")
+ * @attr {string} placeholder - Search input placeholder text
+ * @attr {boolean} discover - When present, auto-populate from [data-command] registry
  *
  * @example
- * <command-palette data-hotkey="meta+k" data-discover>
+ * <command-palette hotkey="meta+k" discover>
  *   <command-group label="Navigation">
  *     <command-item value="home">Go Home</command-item>
  *     <command-item value="settings">Settings</command-item>
@@ -36,7 +36,7 @@ class CommandPalette extends HTMLElement {
   connectedCallback() {
     this.#build();
     this.#registerHotkey();
-    if (this.hasAttribute('data-discover')) {
+    if (this.hasAttribute('discover')) {
       this.#listenForRegistryChanges();
     }
     this.setAttribute('data-upgraded', '');
@@ -62,7 +62,7 @@ class CommandPalette extends HTMLElement {
 
     this.#input = document.createElement('input');
     this.#input.type = 'search';
-    this.#input.placeholder = this.dataset.placeholder || 'Type a command...';
+    this.#input.placeholder = this.getAttribute('placeholder') || 'Type a command...';
     this.#input.setAttribute('aria-label', 'Search commands');
     this.#input.autocomplete = 'off';
     this.#input.addEventListener('input', this.#handleInput);
@@ -139,7 +139,7 @@ class CommandPalette extends HTMLElement {
   }
 
   #registerHotkey() {
-    const combo = this.dataset.hotkey || 'meta+k';
+    const combo = this.getAttribute('hotkey') || 'meta+k';
     this.#unbindHotkey = /** @type {() => void} */ (bindHotkey(combo, () => {
       if (this.#dialog.open) {
         this.close();
@@ -245,7 +245,7 @@ class CommandPalette extends HTMLElement {
   };
 
   #populateDiscovered() {
-    if (!this.hasAttribute('data-discover')) return;
+    if (!this.hasAttribute('discover')) return;
 
     // Lazy-import to avoid circular dependency at module load time
     const { getRegisteredCommands, scanAutoDiscoverable } = window.__commandRegistry || {};
@@ -284,8 +284,8 @@ class CommandPalette extends HTMLElement {
       }
     }
 
-    // Auto-discovery: nav links + headings (only when data-discover="auto")
-    if (this.dataset.discover === 'auto' && scanAutoDiscoverable) {
+    // Auto-discovery: nav links + headings (only when discover="auto")
+    if (this.getAttribute('discover') === 'auto' && scanAutoDiscoverable) {
       const autoItems = scanAutoDiscoverable();
       const autoGroups = new Map();
 

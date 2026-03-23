@@ -118,7 +118,7 @@ Dialog overlay for focused interactions requiring user attention. Uses the nativ
 
       & h2 {
         margin: 0;
-        font-size: var(--text-xl);
+        font-size: var(--font-size-xl);
         font-weight: var(--font-weight-semibold);
       }
     }

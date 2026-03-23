@@ -5,19 +5,19 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *
  * Light DOM combobox following the W3C ARIA combobox pattern.
  * Participates in native form submission via ElementInternals.
- * Supports single-select (default) and multi-select (data-multiple) modes.
+ * Supports single-select (default) and multi-select (multiple) modes.
  *
  * @attr {string} name - Form field name
- * @attr {boolean} data-required - Makes selection required
- * @attr {string} data-filter - Filter mode: "startsWith" | "contains" (default: "contains")
- * @attr {string} data-value - Get/set selected value programmatically (single mode)
- * @attr {string} data-placeholder - Input placeholder text
- * @attr {boolean} data-multiple - Enable multi-select tag mode
- * @attr {number} data-max - Maximum number of tags (multi mode)
- * @attr {boolean} data-allow-custom - Allow typed entries (multi mode)
+ * @attr {boolean} required - Makes selection required
+ * @attr {string} filter - Filter mode: "startsWith" | "contains" (default: "contains")
+ * @attr {string} value - Get/set selected value programmatically (single mode)
+ * @attr {string} placeholder - Input placeholder text
+ * @attr {boolean} multiple - Enable multi-select tag mode
+ * @attr {number} max - Maximum number of tags (multi mode)
+ * @attr {boolean} custom - Allow typed entries (multi mode)
  *
  * @example Single select
- * <combo-box name="country" data-required>
+ * <combo-box name="country" required>
  *   <input type="text" placeholder="Search countries...">
  *   <ul>
  *     <li data-value="us">United States</li>
@@ -26,7 +26,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </combo-box>
  *
  * @example Multi select
- * <combo-box name="topics" data-multiple data-max="5">
+ * <combo-box name="topics" multiple max="5">
  *   <input type="text" placeholder="Search topics...">
  *   <ul>
  *     <li data-value="js">JavaScript</li>
@@ -66,7 +66,7 @@ class ComboBox extends HTMLElement {
   }
 
   get #isMultiple() {
-    return this.hasAttribute('data-multiple');
+    return this.hasAttribute('multiple');
   }
 
   connectedCallback() {
@@ -110,7 +110,7 @@ class ComboBox extends HTMLElement {
     }
 
     // Apply placeholder from attribute
-    const placeholder = this.getAttribute('data-placeholder');
+    const placeholder = this.getAttribute('placeholder');
     if (placeholder && !this.#input.getAttribute('placeholder')) {
       this.#input.setAttribute('placeholder', placeholder);
     }
@@ -139,9 +139,9 @@ class ComboBox extends HTMLElement {
 
     // Read initial value (single mode only)
     if (!this.#isMultiple) {
-      const initialDataValue = this.getAttribute('data-value');
-      if (initialDataValue) {
-        this.#selectByValue(initialDataValue, false);
+      const initialValue = this.getAttribute('value');
+      if (initialValue) {
+        this.#selectByValue(initialValue, false);
       }
       this.#initialValue = this.#selectedValue;
     }
@@ -278,7 +278,7 @@ class ComboBox extends HTMLElement {
   }
 
   #getMax() {
-    const val = this.getAttribute('data-max');
+    const val = this.getAttribute('max');
     return val ? parseInt(val, 10) : 0;
   }
 
@@ -348,7 +348,7 @@ class ComboBox extends HTMLElement {
           } else {
             this.#selectOption(option);
           }
-        } else if (this.#isMultiple && this.hasAttribute('data-allow-custom') && this.#input.value.trim()) {
+        } else if (this.#isMultiple && this.hasAttribute('custom') && this.#input.value.trim()) {
           const text = this.#input.value.trim();
           this.#addTag(text, text);
         }
@@ -362,7 +362,7 @@ class ComboBox extends HTMLElement {
         break;
 
       case ',':
-        if (this.#isMultiple && this.hasAttribute('data-allow-custom') && this.#input.value.trim()) {
+        if (this.#isMultiple && this.hasAttribute('custom') && this.#input.value.trim()) {
           e.preventDefault();
           const text = this.#input.value.trim();
           this.#addTag(text, text);
@@ -432,7 +432,7 @@ class ComboBox extends HTMLElement {
   // --- Filtering ---
 
   #filterOptions(query) {
-    const mode = this.getAttribute('data-filter') || 'contains';
+    const mode = this.getAttribute('filter') || 'contains';
     const lowerQuery = query.toLowerCase();
     const selectedValues = this.#isMultiple
       ? new Set(this.#selectedTags.map(t => t.value))
@@ -511,7 +511,7 @@ class ComboBox extends HTMLElement {
     this.#selectedValue = value;
     this.#selectedLabel = label;
     this.#input.value = label;
-    this.setAttribute('data-value', value);
+    this.setAttribute('value', value);
 
     this.#syncFormValue();
     this.#validate();
@@ -534,7 +534,7 @@ class ComboBox extends HTMLElement {
         this.#selectedValue = value;
         this.#selectedLabel = option.textContent.trim();
         this.#input.value = this.#selectedLabel;
-        this.setAttribute('data-value', value);
+        this.setAttribute('value', value);
       }
     }
   }
@@ -545,7 +545,7 @@ class ComboBox extends HTMLElement {
     if (this.#isOpen) return;
 
     this.#isOpen = true;
-    this.setAttribute('data-open', '');
+    this.setAttribute('open', '');
     this.#input.setAttribute('aria-expanded', 'true');
     this.#listbox.hidden = false;
 
@@ -561,7 +561,7 @@ class ComboBox extends HTMLElement {
     if (!this.#isOpen && !this.#listbox.hidden === false) return;
 
     this.#isOpen = false;
-    this.removeAttribute('data-open');
+    this.removeAttribute('open');
     this.#input.setAttribute('aria-expanded', 'false');
     this.#listbox.hidden = true;
     this.#activeIndex = -1;
@@ -585,7 +585,7 @@ class ComboBox extends HTMLElement {
   #handlePopoverToggle = (e) => {
     if (e.newState === 'closed' && this.#isOpen) {
       this.#isOpen = false;
-      this.removeAttribute('data-open');
+      this.removeAttribute('open');
       this.#input.setAttribute('aria-expanded', 'false');
       this.#listbox.hidden = true;
       this.#activeIndex = -1;
@@ -618,7 +618,7 @@ class ComboBox extends HTMLElement {
   }
 
   #validate() {
-    if (this.hasAttribute('data-required')) {
+    if (this.hasAttribute('required')) {
       if (this.#isMultiple) {
         if (this.#selectedTags.length === 0) {
           this.#internals.setValidity(
@@ -666,7 +666,7 @@ class ComboBox extends HTMLElement {
       this.#selectedValue = '';
       this.#selectedLabel = '';
       this.#input.value = '';
-      this.removeAttribute('data-value');
+      this.removeAttribute('value');
     }
 
     // Reset options
@@ -711,7 +711,7 @@ class ComboBox extends HTMLElement {
       this.#selectedValue = '';
       this.#selectedLabel = '';
       this.#input.value = '';
-      this.removeAttribute('data-value');
+      this.removeAttribute('value');
       this.#syncFormValue();
       this.#validate();
     }
@@ -730,11 +730,11 @@ class ComboBox extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['data-value'];
+    return ['value'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'data-value' && this.#input && newValue !== this.#selectedValue) {
+    if (name === 'value' && this.#input && newValue !== this.#selectedValue) {
       if (newValue) {
         this.#selectByValue(newValue, false);
         this.#syncFormValue();

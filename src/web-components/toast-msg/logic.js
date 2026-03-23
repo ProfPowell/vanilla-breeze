@@ -4,12 +4,12 @@
  * A container for displaying non-modal notifications. Toasts appear in a
  * fixed position and auto-dismiss after a configurable duration.
  *
- * @attr {string} data-position - Position: 'top-end' (default), 'top-start', 'bottom-end', 'bottom-start', 'top-center', 'bottom-center'
- * @attr {number} data-duration - Default auto-dismiss duration in ms (default: 5000, 0 = no auto-dismiss)
- * @attr {number} data-max - Maximum number of visible toasts (default: 5)
+ * @attr {string} position - Position: 'top-end' (default), 'top-start', 'bottom-end', 'bottom-start', 'top-center', 'bottom-center'
+ * @attr {number} duration - Default auto-dismiss duration in ms (default: 5000, 0 = no auto-dismiss)
+ * @attr {number} max - Maximum number of visible toasts (default: 5)
  *
  * @example
- * <toast-msg data-position="bottom-end"></toast-msg>
+ * <toast-msg position="bottom-end"></toast-msg>
  *
  * // Show a toast programmatically:
  * document.querySelector('toast-msg').show({
@@ -25,7 +25,7 @@ class ToastMsg extends HTMLElement {
   #visible = [];
 
   static get observedAttributes() {
-    return ['data-position', 'data-max'];
+    return ['position', 'max'];
   }
 
   connectedCallback() {
@@ -186,12 +186,12 @@ class ToastMsg extends HTMLElement {
   }
 
   #getDefaultDuration() {
-    const attr = this.getAttribute('data-duration');
+    const attr = this.getAttribute('duration');
     return attr !== null ? parseInt(attr, 10) : 5000;
   }
 
   #getMaxVisible() {
-    const attr = this.getAttribute('data-max');
+    const attr = this.getAttribute('max');
     return attr !== null ? parseInt(attr, 10) : 5;
   }
 
