@@ -71,6 +71,9 @@ class DataTable extends HTMLElement {
   #selectedCountElement = null;
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
     this.#table = this.querySelector(':scope > table');
     if (!this.#table) return;
 
@@ -82,13 +85,17 @@ class DataTable extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
     this.#cleanup();
+    this.#sortableHeaders = [];
+    this.#allRows = [];
+    this.#filteredRows = [];
+    this.removeAttribute('data-upgraded');
   }
 
   #setup() {
-    // Collect all body rows
-    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr')];
+    // Collect data rows only — exclude expansion content rows
+    // This ensures sort/filter/pagination treat expandable + content as a group
+    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
     this.#filteredRows = [...this.#allRows];
 
     // Set up sorting
@@ -445,8 +452,8 @@ class DataTable extends HTMLElement {
     // Listen for row selection changes in tbody (event delegation)
     this.#tbody.addEventListener('change', this.#handleRowSelectChange);
 
-    // Find selected count element if present
-    this.#selectedCountElement = document.querySelector('[data-selected-count]');
+    // Find selected count element scoped to this component instance
+    this.#selectedCountElement = this.querySelector('[data-selected-count]');
 
     // Initial sync of selection state
     this.#syncSelectionState();
@@ -649,17 +656,23 @@ class DataTable extends HTMLElement {
       rowsToShow = this.#filteredRows;
     }
 
-    // Show visible rows and reorder DOM
+    // Show visible rows and reorder DOM — keep expansion content rows with parents
     rowsToShow.forEach(row => {
       row.removeAttribute('data-state-hidden');
-      // Move row to end of tbody to maintain sort order visually
       this.#tbody.appendChild(row);
+      // If this row has an expansion content row, move it right after
+      const contentRow = row.nextElementSibling?.hasAttribute?.('data-expand-content')
+        ? row.nextElementSibling
+        : this.#findContentRow(row);
+      if (contentRow) this.#tbody.appendChild(contentRow);
     });
 
-    // Move hidden filtered rows to end (maintains DOM order for hidden rows)
+    // Move hidden filtered rows to end (with their content rows)
     this.#filteredRows.forEach(row => {
       if (row.hasAttribute('data-state-hidden')) {
         this.#tbody.appendChild(row);
+        const contentRow = this.#findContentRow(row);
+        if (contentRow) this.#tbody.appendChild(contentRow);
       }
     });
 
@@ -667,11 +680,20 @@ class DataTable extends HTMLElement {
     this.#allRows.forEach(row => {
       if (!this.#filteredRows.includes(row)) {
         this.#tbody.appendChild(row);
+        const contentRow = this.#findContentRow(row);
+        if (contentRow) this.#tbody.appendChild(contentRow);
       }
     });
 
     // Update pagination
     this.#renderPagination();
+  }
+
+  /** Find the expansion content row for a given expandable row */
+  #findContentRow(row) {
+    if (!row.hasAttribute('data-expandable')) return null;
+    const next = row.nextElementSibling;
+    return next?.hasAttribute('data-expand-content') ? next : null;
   }
 
   // ==================== PUBLIC API ====================
