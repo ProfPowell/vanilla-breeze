@@ -12,3 +12,49 @@ drag-surface[data-layout] {
 drag-surface:not(:defined) {
   display: block;
 }
+
+/* --- Drag State Feedback --- */
+
+/* Item being dragged */
+drag-surface [data-dragging] {
+  opacity: 0.4;
+}
+
+/* Surface accepting a drop */
+drag-surface[data-drag-over] {
+  outline: 2px dashed var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: -2px;
+  background: var(--color-primary-subtle, oklch(from var(--color-interactive, oklch(55% 0.2 260)) 0.95 0.03 h));
+}
+
+/* Drop target indicator on individual items */
+drag-surface [data-drop-target] {
+  box-shadow: 0 -2px 0 0 var(--color-interactive, oklch(55% 0.2 260));
+}
+
+/* Keyboard reorder mode */
+drag-surface[data-reorder-mode] [aria-grabbed="true"] {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: 2px;
+}
+
+/* Flash animation on drop */
+@keyframes drag-surface-flash {
+  0% { background-color: var(--color-primary-subtle, oklch(from var(--color-interactive, oklch(55% 0.2 260)) 0.95 0.03 h)); }
+  100% { background-color: transparent; }
+}
+
+drag-surface [data-just-dropped] {
+  animation: drag-surface-flash 0.5s ease-out;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  drag-surface [data-just-dropped] {
+    animation: none;
+  }
+
+  drag-surface {
+    transition: none;
+  }
+}

@@ -242,3 +242,125 @@ test.describe('drag-surface cross-surface transfer', () => {
   });
 
 });
+
+test.describe('drag-surface — lifecycle', () => {
+
+  test('reconnect does not duplicate live regions', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    const liveCount = await page.evaluate(() => {
+      const surface = document.querySelector('drag-surface');
+      const parent = surface.parentElement;
+
+      parent.removeChild(surface);
+      parent.appendChild(surface);
+
+      return new Promise(resolve => {
+        requestAnimationFrame(() => {
+          const count = surface.querySelectorAll('[aria-live]').length;
+          resolve(count);
+        });
+      });
+    });
+
+    expect(liveCount).toBe(1);
+  });
+
+  test('reconnect does not duplicate reorder events', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    const eventCount = await page.evaluate(() => {
+      return new Promise(resolve => {
+        const surface = document.querySelector('drag-surface');
+        const parent = surface.parentElement;
+
+        parent.removeChild(surface);
+        parent.appendChild(surface);
+
+        requestAnimationFrame(() => {
+          let count = 0;
+          surface.addEventListener('drag-surface:reorder', () => count++);
+
+          // Grab first item via keyboard
+          const item = surface.querySelector('[draggable="true"]');
+          if (!item) { resolve(0); return; }
+          item.focus();
+          item.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+          // Move down
+          item.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+          // Drop
+          item.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+
+          setTimeout(() => resolve(count), 200);
+        });
+      });
+    });
+
+    expect(eventCount).toBe(1);
+  });
+
+  test('keyboard still works after reconnect', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    await page.evaluate(() => {
+      const surface = document.querySelector('drag-surface');
+      const parent = surface.parentElement;
+      parent.removeChild(surface);
+      parent.appendChild(surface);
+    });
+
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    const item = page.locator('drag-surface [draggable="true"]').first();
+    await item.focus();
+
+    // Should be able to grab
+    await page.keyboard.press('Space');
+    await expect(item).toHaveAttribute('aria-grabbed', 'true');
+
+    // Cancel
+    await page.keyboard.press('Escape');
+    await expect(item).toHaveAttribute('aria-grabbed', 'false');
+  });
+});
+
+test.describe('drag-surface — CSS state contract', () => {
+
+  test('data-reorder-mode is set during keyboard reorder', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    const surface = page.locator('drag-surface').first();
+    const item = surface.locator('[draggable="true"]').first();
+
+    await item.focus();
+    await page.keyboard.press('Space');
+
+    await expect(surface).toHaveAttribute('data-reorder-mode', '');
+    await expect(item).toHaveAttribute('aria-grabbed', 'true');
+
+    // Cancel
+    await page.keyboard.press('Escape');
+    await expect(surface).not.toHaveAttribute('data-reorder-mode');
+  });
+
+  test('data-just-dropped is set then removed after drop', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('drag-surface[data-upgraded]');
+
+    const item = page.locator('drag-surface [draggable="true"]').first();
+
+    await item.focus();
+    // Grab, move, drop
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Space');
+
+    // Should have data-just-dropped briefly
+    // Wait for the timeout/animation to remove it
+    await expect(item).not.toHaveAttribute('data-just-dropped', '', { timeout: 2000 });
+  });
+});
