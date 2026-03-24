@@ -29,23 +29,67 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 let accordionVtId = 0;
 
 class AccordionWc extends HTMLElement {
-  #details;
-  #summaries;
+  #details = [];
+  #summaries = [];
+  #panels = [];
   #vtEnabled = false;
+  #cleanups = [];
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
     this.#details = [...this.querySelectorAll(':scope > details')];
     this.#summaries = this.#details.map(d => d.querySelector('summary'));
 
     if (this.#details.length === 0) return;
 
+    this.#ensurePanelWrappers();
     this.#setup();
     this.#initVT();
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    // Remove all tracked listeners
+    for (const cleanup of this.#cleanups) cleanup();
+    this.#cleanups = [];
+    this.#details = [];
+    this.#summaries = [];
+    this.#panels = [];
+    this.#vtEnabled = false;
     this.removeAttribute('data-upgraded');
+  }
+
+  /**
+   * Ensure each <details> has a single panel wrapper after <summary>.
+   * If there are multiple siblings after summary, wrap them in a <div>.
+   * This gives VT and ARIA a stable single target per panel.
+   */
+  #ensurePanelWrappers() {
+    this.#panels = this.#details.map(detail => {
+      const summary = detail.querySelector('summary');
+      if (!summary) return null;
+
+      const afterSummary = [...detail.children].filter(c => c !== summary);
+
+      if (afterSummary.length === 1) {
+        // Already a single wrapper — use it
+        return afterSummary[0];
+      }
+
+      if (afterSummary.length > 1) {
+        // Multiple siblings — wrap them
+        const wrapper = document.createElement('div');
+        for (const child of afterSummary) {
+          wrapper.appendChild(child);
+        }
+        detail.appendChild(wrapper);
+        return wrapper;
+      }
+
+      return null;
+    });
   }
 
   #initVT() {
@@ -56,8 +100,7 @@ class AccordionWc extends HTMLElement {
     const type = this.getAttribute('transition') || 'fade';
     const vtClass = type === 'slide' ? 'vt-accordion-slide' : type === 'scale' ? 'vt-accordion-scale' : 'vt-accordion';
 
-    this.#details.forEach((detail, i) => {
-      const panel = detail.querySelector(':scope > :not(summary)');
+    this.#panels.forEach((panel, i) => {
       if (!panel) return;
       panel.style.viewTransitionName = `accordion-${id}-${i}`;
       panel.style.viewTransitionClass = vtClass;
@@ -70,38 +113,47 @@ class AccordionWc extends HTMLElement {
     });
   }
 
+  /** Track an event listener for cleanup on disconnect */
+  #listen(target, event, handler, options) {
+    target.addEventListener(event, handler, options);
+    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
+  }
+
   #setup() {
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
-      const panel = detail.querySelector(':scope > :not(summary)');
+      const panel = this.#panels[i];
 
-      if (!summary || !panel) return;
+      if (!summary) return;
 
-      // Generate IDs for accessibility
-      const headingId = summary.id || `accordion-heading-${crypto.randomUUID().slice(0, 8)}`;
-      const panelId = panel.id || `accordion-panel-${crypto.randomUUID().slice(0, 8)}`;
+      // Generate IDs for accessibility (only if panel exists)
+      if (panel) {
+        const headingId = summary.id || `accordion-heading-${crypto.randomUUID().slice(0, 8)}`;
+        const panelId = panel.id || `accordion-panel-${crypto.randomUUID().slice(0, 8)}`;
 
-      summary.id = headingId;
-      panel.id = panelId;
+        summary.id = headingId;
+        panel.id = panelId;
 
-      // Set ARIA attributes
-      summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
-      summary.setAttribute('aria-controls', panelId);
-      panel.setAttribute('aria-labelledby', headingId);
-      panel.setAttribute('role', 'region');
+        summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
+        summary.setAttribute('aria-controls', panelId);
+        panel.setAttribute('aria-labelledby', headingId);
+        panel.setAttribute('role', 'region');
+      } else {
+        summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
+      }
 
       // VT click interception
-      summary.addEventListener('click', (e) => {
+      this.#listen(summary, 'click', (e) => {
         if (!this.#vtEnabled) return;
         e.preventDefault();
         this.#vtToggle(detail);
       });
 
       // Keyboard navigation
-      summary.addEventListener('keydown', (e) => this.#handleKey(e, i));
+      this.#listen(summary, 'keydown', (e) => this.#handleKey(e, i));
 
       // Handle toggle events for single mode and ARIA updates
-      detail.addEventListener('toggle', () => this.#handleToggle(detail, i));
+      this.#listen(detail, 'toggle', () => this.#handleToggle(detail, i));
     });
   }
 
@@ -110,7 +162,7 @@ class AccordionWc extends HTMLElement {
     summary.setAttribute('aria-expanded', toggledDetail.open ? 'true' : 'false');
 
     // Single-open mode: close others when one opens
-    // This is a polyfill for browsers that don't support name attribute on details
+    // Polyfill for browsers that don't support name attribute on details
     if (this.hasAttribute('single') && toggledDetail.open) {
       this.#details.forEach((detail, i) => {
         if (i !== index && detail.open) {
