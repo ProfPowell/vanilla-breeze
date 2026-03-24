@@ -1,19 +1,25 @@
 /**
- * include-file: Load HTML fragments from URLs
+ * include-file: Load trusted HTML fragments from URLs
  *
  * Fetches remote HTML and injects it into the element. Progressive enhancement:
  * any existing content is shown as a fallback until the fetch completes.
  *
+ * Trust boundary: this component injects HTML via innerHTML/insertAdjacentHTML.
+ * It is designed for loading trusted first-party fragments (partials, includes).
+ * Do not use it to load untrusted or user-generated HTML from third-party sources.
+ *
  * @attr {string} src - URL to fetch HTML from
  * @attr {string} mode - "replace" (default) replaces children, "append" appends, "prepend" prepends
- * @attr {boolean} data-loading - Added while loading, removed when done
- * @attr {boolean} data-loaded - Added after successful load
- * @attr {boolean} data-error - Added if fetch fails
- * @attr {boolean} lazy - If present, defers loading until element is in viewport
+ * @attr {boolean} lazy - If present, defers loading until element is in viewport (honored on src changes too)
  * @attr {boolean} allow-scripts - If present, re-executes inline scripts in loaded content (TRUSTED sources only)
  *
- * @fires include-file:loaded - Dispatched after successful load
- * @fires include-file:error - Dispatched if fetch fails
+ * State attributes (set by component):
+ * @attr {boolean} data-loading - Present while fetching
+ * @attr {boolean} data-loaded - Present after successful load
+ * @attr {boolean} data-error - Present if fetch fails
+ *
+ * @fires include-file:loaded - Dispatched after successful load. Detail: { src, html }
+ * @fires include-file:error - Dispatched if fetch fails. Detail: { src, error }
  *
  * @example
  * <include-file src="/partials/header.html">
@@ -26,10 +32,24 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 class IncludeFile extends HTMLElement {
   #observer;
   #abortController;
+  /** @type {string | null} Saved original fallback content (captured once) */
+  #fallbackHTML = null;
+  #hasLoaded = false;
 
   connectedCallback() {
+    // Guard: don't re-fetch on reconnect if already loaded
+    if (this.#hasLoaded) {
+      this.setAttribute('data-upgraded', '');
+      return;
+    }
+
     const src = this.getAttribute('src');
     if (!src) return;
+
+    // Capture fallback content once before first load
+    if (this.#fallbackHTML === null) {
+      this.#fallbackHTML = this.innerHTML;
+    }
 
     if (this.hasAttribute('lazy')) {
       this.#observeIntersection();
@@ -51,11 +71,22 @@ class IncludeFile extends HTMLElement {
 
   attributeChangedCallback(name, oldVal, newVal) {
     if (name === 'src' && newVal && oldVal !== newVal && this.isConnected) {
-      this.#load(newVal);
+      // Honor lazy on src changes too — not just initial connect
+      if (this.hasAttribute('lazy') && !this.#isInViewport()) {
+        this.#observeIntersection();
+      } else {
+        this.#load(newVal);
+      }
     }
   }
 
+  #isInViewport() {
+    const rect = this.getBoundingClientRect();
+    return rect.top < window.innerHeight + 200 && rect.bottom > -200;
+  }
+
   #observeIntersection() {
+    this.#observer?.disconnect();
     this.#observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -115,6 +146,7 @@ class IncludeFile extends HTMLElement {
 
       this.removeAttribute('data-loading');
       this.setAttribute('data-loaded', '');
+      this.#hasLoaded = true;
 
       this.dispatchEvent(new CustomEvent('include-file:loaded', {
         bubbles: true,
@@ -125,6 +157,12 @@ class IncludeFile extends HTMLElement {
 
       this.removeAttribute('data-loading');
       this.setAttribute('data-error', '');
+
+      // Restore original fallback on error if available and mode is replace
+      const mode = this.getAttribute('mode') || 'replace';
+      if (mode === 'replace' && this.#fallbackHTML !== null && !this.#hasLoaded) {
+        this.innerHTML = this.#fallbackHTML;
+      }
 
       this.dispatchEvent(new CustomEvent('include-file:error', {
         bubbles: true,
