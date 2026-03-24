@@ -40,13 +40,14 @@ class SlideAccept extends HTMLElement {
   }
 
   get #threshold() {
-    const raw = Number(this.getAttribute('threshold'));
-    if (Number.isNaN(raw) || raw < 0) return 90;
-    if (raw > 100) return 100;
-    return raw;
+    const thresholdAttr = this.getAttribute('threshold');
+    const val = Number(thresholdAttr);
+    return thresholdAttr !== null && !isNaN(val) ? Math.min(100, Math.max(0, val)) : 90;
   }
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
+
     if (!this.#setupDone) {
       this.#build();
       this.#setupDone = true;

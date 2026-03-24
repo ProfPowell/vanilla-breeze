@@ -101,8 +101,18 @@ class SocialEmbed extends HTMLElement {
   #observer = null;
   /** @type {string} */
   #fallback = '';
+  /** @type {((e: MouseEvent) => void) | null} */
+  #clickHandler = null;
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
+
+    // Capture fallback once, before any live region or other DOM is prepended.
+    // On reconnect #fallback is already set — don't recapture.
+    if (!this.#fallback) {
+      this.#fallback = this.innerHTML;
+    }
+
     const url = this.getAttribute('url');
     if (!url) {
       console.warn('social-embed: missing required url attribute');
@@ -117,12 +127,14 @@ class SocialEmbed extends HTMLElement {
 
     if (!provider) {
       this.setAttribute('state', 'unsupported');
+      this.setAttribute('data-upgraded', '');
       return;
     }
 
     // Providers with delegatesActivation skip the click gate
     if (provider.delegatesActivation) {
       this.#init(provider);
+      this.setAttribute('data-upgraded', '');
       return;
     }
 
@@ -142,17 +154,28 @@ class SocialEmbed extends HTMLElement {
       }, { rootMargin: '200px' });
       this.#observer.observe(this);
     } else {
-      // click (default)
-      this.addEventListener('click', () => this.#init(provider), { once: true });
+      // click (default) — preventDefault stops the fallback <a> from navigating
+      this.#clickHandler = (e) => {
+        e.preventDefault();
+        this.#init(provider);
+      };
+      this.addEventListener('click', this.#clickHandler, { once: true });
       this.addEventListener('keydown', this.#handleKey);
       this.setAttribute('tabindex', '0');
       this.setAttribute('role', 'button');
       this.setAttribute('aria-label', 'Load embed');
     }
+
+    this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.removeAttribute('data-upgraded');
     this.#observer?.disconnect();
+    if (this.#clickHandler) {
+      this.removeEventListener('click', this.#clickHandler);
+      this.#clickHandler = null;
+    }
     this.removeEventListener('keydown', this.#handleKey);
   }
 
@@ -168,14 +191,17 @@ class SocialEmbed extends HTMLElement {
    * @param {EmbedProvider} provider
    */
   async #init(provider) {
-    // Clean up click-gate a11y attrs
+    // Clean up click-gate a11y attrs and listener
     this.removeAttribute('tabindex');
     this.removeAttribute('role');
     this.removeAttribute('aria-label');
+    if (this.#clickHandler) {
+      this.removeEventListener('click', this.#clickHandler);
+      this.#clickHandler = null;
+    }
     this.removeEventListener('keydown', this.#handleKey);
 
     const url = /** @type {string} */ (this.getAttribute('url'));
-    this.#fallback = this.innerHTML;
     this.setAttribute('state', 'loading');
     this.#announce('Loading embed\u2026');
 
