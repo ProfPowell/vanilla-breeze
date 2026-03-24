@@ -227,12 +227,28 @@ chat.clearThread();{% endset %}
       </thead>
       <tbody>
         <tr>
+          <td><code>chat-window:send</code></td>
+          <td><code>{ message, typingElement }</code></td>
+          <td>Dispatched when a message is sent and no <code>endpoint</code> is set. Use this for custom transport (WebSocket, worker, etc.). Populate the typing element's <code>chat-bubble</code> with the response.</td>
+        </tr>
+        <tr>
+          <td><code>chat-window:error</code></td>
+          <td><code>{ error, status }</code></td>
+          <td>Dispatched when the built-in fetch transport fails.</td>
+        </tr>
+        <tr>
           <td><code>chat-window:model-change</code></td>
           <td><code>{ model }</code></td>
-          <td>Model selector changed</td>
+          <td>Dispatched when the model selector value changes.</td>
         </tr>
       </tbody>
     </table>
+
+    <h3>Participant Identity</h3>
+    <p>The <code>data-participants</code> JSON map uses arbitrary string IDs as keys. User messages are created with <code>data-from="user"</code>, and the agent is resolved as the first participant whose <code>role</code> is <code>"agent"</code>. Match these conventions in your participant map.</p>
+
+    <h3>Model Property</h3>
+    <p>The <code>model</code> attribute is synced with the <code>&lt;select data-model-select&gt;</code> at connect time. After connect, use the <code>.model</code> property setter for updates — attribute mutations are not observed.</p>
   </section>
 
   <section>

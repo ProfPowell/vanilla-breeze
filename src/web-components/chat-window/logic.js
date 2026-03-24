@@ -4,9 +4,32 @@
  * Wires chat-thread, chat-input, participant data, and an optional model
  * selector into a composed shell. Handles the send → typing → response cycle.
  *
- * @attr {string} endpoint - API endpoint for chat requests
- * @attr {string} model - Active model; synced with [data-model-select]
+ * Transport: when `endpoint` is set, uses built-in fetch(). When omitted,
+ * dispatches `chat-window:send` so consumers can provide their own transport.
+ * In both cases, the typing indicator is shown while awaiting a response.
+ * Use `appendMessage()` or the typing element's `chat-bubble` to populate.
+ *
+ * Participants: the `data-participants` JSON map uses arbitrary string IDs.
+ * The local user's messages are always created with `data-from="user"`.
+ * The agent is resolved as the first participant with `role: "agent"`.
+ * Override these defaults by choosing matching keys in your participant map.
+ *
+ * Model: `model` is a property + attribute. Setting the property updates the
+ * `<select data-model-select>` if present. The attribute is set at connect
+ * time and updated when the select changes. There is no `observedAttributes`
+ * — post-connect attribute mutations are not observed; use the property setter.
+ *
+ * @attr {string} endpoint - API endpoint for chat requests (omit for custom transport)
+ * @attr {string} model - Active model; synced with [data-model-select] (property-driven after connect)
  * @attr {string} empty-message - Empty thread placeholder text
+ *
+ * @fires chat-window:send - Dispatched when user sends a message and no endpoint is set.
+ *   Consumer should handle transport and call appendMessage() or populate the typing bubble.
+ *   detail: { message, typingElement }
+ * @fires chat-window:error - Dispatched when built-in fetch fails.
+ *   detail: { error, status }
+ * @fires chat-window:model-change - Dispatched when model selector changes.
+ *   detail: { model }
  *
  * @example
  * <chat-window endpoint="/api/ai">
@@ -158,8 +181,13 @@ class ChatWindow extends HTMLElement {
           detail: { error: err.message, status: /** @type {any} */ (err).status ?? 0 },
         }));
       }
+    } else {
+      // No endpoint — dispatch event for consumer-driven transport
+      this.dispatchEvent(new CustomEvent('chat-window:send', {
+        bubbles: true,
+        detail: { message, typingElement: typingMsg },
+      }));
     }
-    // If no endpoint, leave typing message for consumer JS to handle
 
     // 5. Re-enable input and focus
     if (this.#chatInput) {
