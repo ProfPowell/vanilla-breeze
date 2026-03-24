@@ -50,14 +50,25 @@ test.describe('print-page', () => {
     }
   });
 
-  test('component has role="group"', async ({ page }) => {
+  test('role="group" only when raw-toggle is present', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForSelector('print-page button', { timeout: 5000 });
 
-    const role = await page.evaluate(() => {
-      return document.querySelector('print-page').getAttribute('role');
+    const result = await page.evaluate(() => {
+      const withToggle = document.querySelector('print-page[raw-toggle]');
+      const withoutToggle = document.querySelector('print-page:not([raw-toggle])');
+      return {
+        toggleRole: withToggle?.getAttribute('role') ?? null,
+        plainRole: withoutToggle?.getAttribute('role') ?? null,
+      };
     });
-    expect(role).toBe('group');
+
+    if (result.toggleRole !== null) {
+      expect(result.toggleRole).toBe('group');
+    }
+    if (result.plainRole !== null) {
+      expect(result.plainRole).not.toBe('group');
+    }
   });
 
   test('component is hidden in print media', async ({ page }) => {
@@ -122,4 +133,86 @@ test.describe('print-page', () => {
     expect(hasRawAfter).toBe(false);
   });
 
+  test('raw cleanup fallback works without afterprint', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('print-page button', { timeout: 5000 });
+
+    const hasToggle = await page.evaluate(() =>
+      document.querySelector('print-page[raw-toggle]') !== null
+    );
+    if (!hasToggle) return;
+
+    await page.evaluate(() => {
+      const pp = document.querySelector('print-page[raw-toggle]');
+      pp.querySelector('input[type="checkbox"]').checked = true;
+      window.print = () => {}; // Mock
+      pp.querySelector('button').click();
+      // Do NOT fire afterprint — rely on timeout fallback
+    });
+
+    const hasRaw = await page.evaluate(() =>
+      document.documentElement.hasAttribute('data-print-raw')
+    );
+    expect(hasRaw).toBe(true);
+
+    // Wait for timeout fallback (5s) + margin
+    await page.waitForTimeout(5500);
+
+    const hasRawAfter = await page.evaluate(() =>
+      document.documentElement.hasAttribute('data-print-raw')
+    );
+    expect(hasRawAfter).toBe(false);
+  });
+});
+
+test.describe('print-page — lifecycle', () => {
+
+  test('reconnect preserves the original label', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('print-page[data-upgraded]');
+
+    const result = await page.evaluate(() => {
+      const pp = document.querySelector('print-page');
+      const originalLabel = pp.querySelector('button').textContent.trim();
+
+      const parent = pp.parentElement;
+      parent.removeChild(pp);
+      parent.appendChild(pp);
+
+      return new Promise(resolve => {
+        requestAnimationFrame(() => {
+          const newLabel = pp.querySelector('button')?.textContent.trim();
+          resolve({ originalLabel, newLabel });
+        });
+      });
+    });
+
+    expect(result.newLabel).toBe(result.originalLabel);
+  });
+
+  test('reconnect does not duplicate controls', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('print-page[data-upgraded]');
+
+    const counts = await page.evaluate(() => {
+      const pp = document.querySelector('print-page');
+      const parent = pp.parentElement;
+
+      parent.removeChild(pp);
+      parent.appendChild(pp);
+
+      return new Promise(resolve => {
+        requestAnimationFrame(() => {
+          resolve({
+            buttons: pp.querySelectorAll('button').length,
+            checkboxes: pp.querySelectorAll('input[type="checkbox"]').length,
+          });
+        });
+      });
+    });
+
+    expect(counts.buttons).toBe(1);
+    // Checkbox should be 0 or 1, not more
+    expect(counts.checkboxes).toBeLessThanOrEqual(1);
+  });
 });

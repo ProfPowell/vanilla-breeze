@@ -20,19 +20,33 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 class PrintPage extends HTMLElement {
   #button;
   #checkbox;
+  /** @type {string | null} Saved authored label (captured once) */
+  #savedLabel = null;
 
   connectedCallback() {
-    const label = this.getAttribute('label') || this.textContent.trim() || 'Print this page';
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
+    // Capture authored label once before clearing DOM
+    if (this.#savedLabel === null) {
+      this.#savedLabel = this.getAttribute('label') || this.textContent.trim() || 'Print this page';
+    }
+
+    const label = this.#savedLabel;
     const showRawToggle = this.hasAttribute('raw-toggle');
 
     this.innerHTML = '';
-    this.setAttribute('role', 'group');
+
+    // Only apply role="group" when multiple controls are present
+    if (showRawToggle) {
+      this.setAttribute('role', 'group');
+    }
 
     // Print button
     this.#button = document.createElement('button');
     this.#button.type = 'button';
     this.#button.textContent = label;
-    this.#button.addEventListener('click', () => this.#print());
+    this.#button.addEventListener('click', this.#handlePrint);
     this.append(this.#button);
 
     // Optional: raw-mode toggle
@@ -49,10 +63,13 @@ class PrintPage extends HTMLElement {
   }
 
   disconnectedCallback() {
+    if (this.#button) {
+      this.#button.removeEventListener('click', this.#handlePrint);
+    }
     this.removeAttribute('data-upgraded');
   }
 
-  #print() {
+  #handlePrint = () => {
     const useRaw = this.#checkbox?.checked;
 
     if (useRaw) {
@@ -63,14 +80,19 @@ class PrintPage extends HTMLElement {
 
     // Clean up after print dialog closes
     if (useRaw) {
-      // Use both afterprint and a timeout fallback
       const cleanup = () => {
         document.documentElement.removeAttribute('data-print-raw');
         window.removeEventListener('afterprint', cleanup);
+        clearTimeout(fallbackTimer);
       };
+
+      // afterprint is the primary cleanup path
       window.addEventListener('afterprint', cleanup, { once: true });
+
+      // Timeout fallback — some browsers don't fire afterprint reliably
+      const fallbackTimer = setTimeout(cleanup, 5000);
     }
-  }
+  };
 }
 
 registerComponent('print-page', PrintPage);
