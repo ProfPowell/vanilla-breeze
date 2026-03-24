@@ -43,8 +43,7 @@ class CarouselWc extends HTMLElement {
   #currentIndex = 0;
   #reducedMotion = false;
   #vtMode = false;
-  /** @type {(() => void) | null} */
-  #cleanupSwipe = null;
+  #cleanups = [];
 
   get currentIndex() {
     return this.#currentIndex;
@@ -59,6 +58,9 @@ class CarouselWc extends HTMLElement {
   }
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
     const children = [...this.children];
     if (children.length === 0) return;
 
@@ -100,21 +102,19 @@ class CarouselWc extends HTMLElement {
     this.#nextBtn.setAttribute('aria-label', 'Next slide');
     this.#nextBtn.innerHTML = '<icon-wc name="chevron-right" size="sm"></icon-wc>';
 
-    // Indicators
+    // Indicators — simple buttons, not tab semantics
     const showIndicators = this.getAttribute('indicators') !== 'false';
     if (showIndicators) {
       this.#indicators = document.createElement('div');
       this.#indicators.className = 'carousel-indicators';
-      this.#indicators.setAttribute('role', 'tablist');
       this.#indicators.setAttribute('aria-label', 'Slide indicators');
 
       this.#slides.forEach((_, i) => {
         const dot = document.createElement('button');
         dot.className = 'carousel-dot';
-        dot.setAttribute('role', 'tab');
-        dot.setAttribute('aria-label', `Slide ${i + 1}`);
-        dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-        dot.addEventListener('click', () => this.goTo(i));
+        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        dot.setAttribute('aria-current', i === 0 ? 'true' : 'false');
+        this.#listen(dot, 'click', () => this.goTo(i));
         this.#indicators.appendChild(dot);
       });
     }
@@ -132,10 +132,10 @@ class CarouselWc extends HTMLElement {
     if (this.#indicators) this.appendChild(this.#indicators);
     this.appendChild(this.#liveRegion);
 
-    // Events
-    this.#prevBtn.addEventListener('click', () => this.prev());
-    this.#nextBtn.addEventListener('click', () => this.next());
-    this.#track.addEventListener('keydown', this.#onKeyDown);
+    // Events — all tracked for cleanup
+    this.#listen(this.#prevBtn, 'click', () => this.prev());
+    this.#listen(this.#nextBtn, 'click', () => this.next());
+    this.#listen(this.#track, 'keydown', this.#onKeyDown);
 
     // VT mode: assign view-transition-name/class to track
     if (this.#vtMode) {
@@ -149,9 +149,10 @@ class CarouselWc extends HTMLElement {
     // VT mode: add swipe navigation via gesture module
     if (this.#vtMode) {
       import('../../lib/vb-gestures.js').then(({ addSwipeListener }) => {
-        this.#cleanupSwipe = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
-        this.#track.addEventListener('swipe-left', () => this.next());
-        this.#track.addEventListener('swipe-right', () => this.prev());
+        const cleanup = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
+        this.#cleanups.push(cleanup);
+        this.#listen(this.#track, 'swipe-left', () => this.next());
+        this.#listen(this.#track, 'swipe-right', () => this.prev());
       });
     }
 
@@ -189,15 +190,23 @@ class CarouselWc extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
     this.pause();
-    this.#cleanupSwipe?.();
     if (this.#observer) {
       this.#observer.disconnect();
+      this.#observer = null;
     }
-    if (this.#track) {
-      this.#track.removeEventListener('keydown', this.#onKeyDown);
-    }
+    // Remove all tracked listeners
+    for (const cleanup of this.#cleanups) cleanup();
+    this.#cleanups = [];
+    this.#slides = [];
+    this.#vtMode = false;
+    this.removeAttribute('data-upgraded');
+  }
+
+  /** Track an event listener for cleanup on disconnect */
+  #listen(target, event, handler, options) {
+    target.addEventListener(event, handler, options);
+    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
   next() {
@@ -277,7 +286,9 @@ class CarouselWc extends HTMLElement {
     this.#writePersist();
 
     // Update live region
-    this.#liveRegion.textContent = `Slide ${index + 1} of ${this.#slides.length}`;
+    if (this.#liveRegion) {
+      this.#liveRegion.textContent = `Slide ${index + 1} of ${this.#slides.length}`;
+    }
 
     this.dispatchEvent(new CustomEvent('carousel-wc:change', {
       detail: { index, slide: this.#slides[index] },
@@ -290,12 +301,11 @@ class CarouselWc extends HTMLElement {
     const atStart = this.#currentIndex === 0;
     const atEnd = this.#currentIndex === this.#slides.length - 1;
 
-    if (!loop) {
-      this.#prevBtn.disabled = atStart;
-      this.#nextBtn.disabled = atEnd;
-    } else {
-      this.#prevBtn.disabled = false;
-      this.#nextBtn.disabled = false;
+    if (this.#prevBtn) {
+      this.#prevBtn.disabled = !loop && atStart;
+    }
+    if (this.#nextBtn) {
+      this.#nextBtn.disabled = !loop && atEnd;
     }
 
     // Update indicators
@@ -303,7 +313,7 @@ class CarouselWc extends HTMLElement {
       const dots = this.#indicators.children;
       for (let i = 0; i < dots.length; i++) {
         const active = i === this.#currentIndex;
-        dots[i].setAttribute('aria-selected', active ? 'true' : 'false');
+        dots[i].setAttribute('aria-current', active ? 'true' : 'false');
         if (active) dots[i].setAttribute('data-active', '');
         else dots[i].removeAttribute('data-active');
       }
@@ -345,18 +355,18 @@ class CarouselWc extends HTMLElement {
   #setupAutoplay() {
     this.play();
 
-    // Pause on hover/focus/touch
-    this.addEventListener('mouseenter', () => this.pause());
-    this.addEventListener('mouseleave', () => {
+    // Pause on hover/focus/touch — all tracked for cleanup
+    this.#listen(this, 'mouseenter', () => this.pause());
+    this.#listen(this, 'mouseleave', () => {
       if (this.hasAttribute('autoplay')) this.play();
     });
-    this.addEventListener('focusin', () => this.pause());
-    this.addEventListener('focusout', (e) => {
+    this.#listen(this, 'focusin', () => this.pause());
+    this.#listen(this, 'focusout', (e) => {
       if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('autoplay')) {
         this.play();
       }
     });
-    this.addEventListener('touchstart', () => this.pause(), { passive: true });
+    this.#listen(this, 'touchstart', () => this.pause(), { passive: true });
   }
 
   #readPersist() {
