@@ -37,6 +37,8 @@ class SettingsPanel extends HTMLElement {
   #isOpen = false;
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
+
     this.#render();
     this.#bindEvents();
     this.#syncState();

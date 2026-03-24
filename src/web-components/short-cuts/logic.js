@@ -22,6 +22,7 @@ class ShortCuts extends HTMLElement {
   #unbindHotkey = null;
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
     this.#build();
     this.#unbindHotkey = /** @type {() => void} */ (bindHotkey('shift+?', () => {
       if (this.#dialog.open) {
@@ -36,6 +37,9 @@ class ShortCuts extends HTMLElement {
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
     this.#unbindHotkey?.();
+    this.#unbindHotkey = null;
+    this.#dialog?.remove();
+    this.#dialog = null;
   }
 
   #build() {

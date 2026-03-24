@@ -68,6 +68,8 @@ class ShareWc extends HTMLElement {
   }
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
+
     this.#resolveMeta();
     this.#detectTier();
 
@@ -81,19 +83,24 @@ class ShareWc extends HTMLElement {
       this.#renderPlatforms();
     }
 
-    this.setAttribute('tier', this.#tier);
+    this.setAttribute('data-tier-resolved', this.#tier);
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
+    this.removeAttribute('data-tier-resolved');
     if (this.#copyTimer) {
       clearTimeout(this.#copyTimer);
       this.#copyTimer = null;
     }
     if (this.#nav) {
       this.#nav.removeEventListener('click', this.#handlePlatformClick);
+      this.#nav.remove();
+      this.#nav = /** @type {*} */ (null);
     }
+    // Remove native share button if it was rendered
+    this.querySelector('.share-trigger')?.remove();
   }
 
   /** Programmatically trigger share (native or first platform) */
