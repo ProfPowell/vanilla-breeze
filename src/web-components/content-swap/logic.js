@@ -42,6 +42,8 @@ function attrName(el, name) {
 /**
  * Shared behavior mixin — used by both the <content-swap> element
  * and [data-swap] attribute auto-init.
+ *
+ * @returns {(() => void) | undefined} Cleanup function to remove listeners
  */
 function initSwapBehavior(el) {
   // Assign unique view-transition-name per instance (avoids conflicts with multiple swaps)
@@ -52,6 +54,13 @@ function initSwapBehavior(el) {
   const back = el.querySelector(':scope > [data-face="back"]');
 
   if (!front || !back) return;
+
+  const cleanups = [];
+
+  function listen(target, event, handler, options) {
+    target.addEventListener(event, handler, options);
+    cleanups.push(() => target.removeEventListener(event, handler, options));
+  }
 
   const triggers = [...el.querySelectorAll('[data-swap]')].filter(
     t => t !== el && t.closest('content-swap, [data-swap]') === el
@@ -64,23 +73,34 @@ function initSwapBehavior(el) {
     if (!el.getAttribute('aria-label')) {
       el.setAttribute('aria-label', 'Toggle content');
     }
-    el.addEventListener('click', () => toggleSwap(el));
-    el.addEventListener('keydown', (e) => {
+    listen(el, 'click', () => toggleSwap(el, 'pointer'));
+    listen(el, 'keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        toggleSwap(el);
+        toggleSwap(el, 'keyboard');
       }
     });
   } else {
     triggers.forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
+      listen(trigger, 'click', (e) => {
         e.stopPropagation();
-        toggleSwap(el);
+        toggleSwap(el, 'pointer');
+      });
+      listen(trigger, 'keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleSwap(el, 'keyboard');
+        }
       });
     });
   }
 
   syncState(el, front, back);
+
+  return () => {
+    for (const fn of cleanups) fn();
+    cleanups.length = 0;
+  };
 }
 
 function syncState(el, front, back) {
@@ -96,7 +116,12 @@ function getFaces(el) {
   };
 }
 
-function swapTo(el, show) {
+/**
+ * @param {Element} el
+ * @param {boolean} show
+ * @param {'pointer' | 'keyboard' | 'api'} [source='api']
+ */
+function swapTo(el, show, source = 'api') {
   const { front, back } = getFaces(el);
   if (!front || !back) return;
 
@@ -113,14 +138,23 @@ function swapTo(el, show) {
 
     syncState(el, front, back);
     dispatchSwapEvent(el);
-    moveFocus(show ? back : front);
+
+    // Focus management: only move focus on keyboard-triggered swaps
+    // or when the target face has [autofocus]
+    const targetFace = show ? back : front;
+    const autofocusTarget = targetFace.querySelector('[autofocus]');
+    if (autofocusTarget) {
+      autofocusTarget.focus();
+    } else if (source === 'keyboard') {
+      moveFocus(targetFace);
+    }
   };
 
   startSwapTransition(applySwap);
 }
 
-function toggleSwap(el) {
-  swapTo(el, !el.hasAttribute(attrName(el, 'swapped')));
+function toggleSwap(el, source = 'api') {
+  swapTo(el, !el.hasAttribute(attrName(el, 'swapped')), source);
 }
 
 function dispatchSwapEvent(el) {
@@ -132,7 +166,7 @@ function dispatchSwapEvent(el) {
 
 function moveFocus(face) {
   const focusTarget = face.querySelector(
-    '[autofocus], [data-swap], button, a, input, select, textarea'
+    '[data-swap], button, a, input, select, textarea'
   );
   if (focusTarget) {
     focusTarget.focus();
@@ -143,12 +177,20 @@ function moveFocus(face) {
  * <content-swap> custom element
  */
 class ContentSwap extends HTMLElement {
+  /** @type {(() => void) | null} */
+  #cleanup = null;
+
   connectedCallback() {
-    initSwapBehavior(this);
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
+    this.#cleanup = initSwapBehavior(this) ?? null;
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
+    this.#cleanup?.();
+    this.#cleanup = null;
     this.removeAttribute('data-upgraded');
   }
 
