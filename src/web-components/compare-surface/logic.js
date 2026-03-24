@@ -5,7 +5,10 @@
  * JS adds the drag handle and pointer events.
  * Without JS, both children display side-by-side.
  *
- * @attr {number} position - Initial slider position (0-100), default 50
+ * Expects exactly two child elements. Extra children are ignored.
+ * Position reflects back to the host attribute on every change.
+ *
+ * @attr {number} position - Slider position (0-100), default 50. Reflected on change.
  *
  * @example
  * <compare-surface>
@@ -21,10 +24,21 @@ class CompareSurface extends HTMLElement {
   #dragging = false;
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
     const children = [...this.children];
     if (children.length < 2) return;
 
-    const position = Number(this.getAttribute('position')) || 50;
+    // Warn if more than two content children
+    if (children.length > 2) {
+      console.warn('[compare-surface] Expected exactly 2 children; extra children will be ignored.');
+    }
+
+    // Parse position — use nullish check so position="0" works
+    const posAttr = this.getAttribute('position');
+    const position = posAttr !== null ? Number(posAttr) : 50;
+    const clamped = Math.min(100, Math.max(0, isNaN(position) ? 50 : position));
 
     // Inject the divider handle
     this.#divider = document.createElement('div');
@@ -33,11 +47,11 @@ class CompareSurface extends HTMLElement {
     this.#divider.setAttribute('aria-label', 'Comparison slider');
     this.#divider.setAttribute('aria-valuemin', '0');
     this.#divider.setAttribute('aria-valuemax', '100');
-    this.#divider.setAttribute('aria-valuenow', String(position));
+    this.#divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
     this.#divider.setAttribute('tabindex', '0');
     this.appendChild(this.#divider);
 
-    this.#setPosition(position);
+    this.#setPosition(clamped);
 
     // Pointer events on divider
     this.#divider.addEventListener('pointerdown', this.#onPointerDown);
@@ -46,11 +60,16 @@ class CompareSurface extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
     if (this.#divider) {
       this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
       this.#divider.removeEventListener('keydown', this.#onKeyDown);
+      this.#divider.removeEventListener('pointermove', this.#onPointerMove);
+      this.#divider.removeEventListener('pointerup', this.#onPointerUp);
+      this.#divider.remove();
+      this.#divider = null;
     }
+    this.#dragging = false;
+    this.removeAttribute('data-upgraded');
   }
 
   #onPointerDown = (e) => {
@@ -90,14 +109,31 @@ class CompareSurface extends HTMLElement {
   };
 
   #setPosition(percent) {
+    const rounded = Math.round(percent);
     this.style.setProperty('--_position', `${percent}%`);
-    this.#divider.setAttribute('aria-valuenow', String(Math.round(percent)));
-    this.#divider.style.left = `${percent}%`;
+    if (this.#divider) {
+      this.#divider.setAttribute('aria-valuenow', String(rounded));
+      this.#divider.style.left = `${percent}%`;
+    }
+
+    // Reflect position to host attribute
+    this.setAttribute('position', String(rounded));
 
     this.dispatchEvent(new CustomEvent('compare-surface:change', {
       detail: { position: percent },
       bubbles: true
     }));
+  }
+
+  /** Get current position (0-100) */
+  get position() {
+    return Number(this.getAttribute('position')) || 0;
+  }
+
+  /** Set position programmatically */
+  set position(val) {
+    const clamped = Math.min(100, Math.max(0, Number(val) || 0));
+    this.#setPosition(clamped);
   }
 }
 
