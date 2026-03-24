@@ -62,15 +62,17 @@ class ToolTip extends HTMLElement {
   #useJsPositioning = !supportsAnchor;
   #isCard = false;
   #useInterestFor = false;
+  #savedTitle;
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
     this.#setup();
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
     this.#cleanup();
+    this.removeAttribute('data-upgraded');
   }
 
   #setup() {
@@ -99,7 +101,10 @@ class ToolTip extends HTMLElement {
     if (!template && !dataContent && !titleContent) return;
 
     // Remove title to prevent native double-tooltip
-    if (titleContent) this.#trigger.removeAttribute('title');
+    if (titleContent) {
+      this.#savedTitle = titleContent;
+      this.#trigger.removeAttribute('title');
+    }
 
     // Create tooltip element with Popover API
     this.#tooltip = document.createElement('div');
@@ -211,11 +216,19 @@ class ToolTip extends HTMLElement {
         this.#trigger.removeEventListener('focus', this.#showImmediate);
         this.#trigger.removeEventListener('blur', this.#hideImmediate);
       }
+      // Restore saved title on trigger
+      if (this.#savedTitle) {
+        this.#trigger.setAttribute('title', this.#savedTitle);
+        this.#savedTitle = undefined;
+      }
     }
     if (this.#tooltip) {
       this.#tooltip.removeEventListener('mouseenter', this.#cancelHide);
       this.#tooltip.removeEventListener('mouseleave', this.#scheduleHide);
       this.#tooltip.removeEventListener('toggle', this.#handleToggle);
+      // Remove generated popover to prevent duplication on reconnect
+      this.#tooltip.remove();
+      this.#tooltip = null;
     }
     if (this.#isCard && !this.#useInterestFor) {
       document.removeEventListener('keydown', this.#handleEscape);

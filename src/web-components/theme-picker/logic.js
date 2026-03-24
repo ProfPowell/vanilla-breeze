@@ -61,7 +61,11 @@ class ThemePicker extends HTMLElement {
   #autoDismissTimer = null;
   #extensionsExpanded = false;
 
+  /** Bound handler for scroll/resize repositioning */
+  #onReposition = () => this.#positionPanel();
+
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
     this.#render();
@@ -84,6 +88,8 @@ class ThemePicker extends HTMLElement {
     window.removeEventListener('vb:theme-change', this.#handleThemeChange);
     document.removeEventListener('click', this.#handleOutsideClick);
     document.removeEventListener('keydown', this.#handleEscape);
+    window.removeEventListener('scroll', this.#onReposition, { capture: true });
+    window.removeEventListener('resize', this.#onReposition);
     this.#clearAutoDismiss();
   }
 
@@ -666,6 +672,10 @@ class ThemePicker extends HTMLElement {
     requestAnimationFrame(() => {
       this.#positionPanel();
 
+      // Keep panel anchored during scroll/resize
+      window.addEventListener('scroll', this.#onReposition, { capture: true, passive: true });
+      window.addEventListener('resize', this.#onReposition, { passive: true });
+
       // Focus first option after positioning
       const firstInput = this.#panel.querySelector('input[type="radio"]:checked');
       firstInput?.focus();
@@ -730,6 +740,9 @@ class ThemePicker extends HTMLElement {
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
+
+    window.removeEventListener('scroll', this.#onReposition, { capture: true });
+    window.removeEventListener('resize', this.#onReposition);
 
     this.dispatchEvent(new CustomEvent('theme-picker:close', { bubbles: true }));
   }

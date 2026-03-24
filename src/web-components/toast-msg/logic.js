@@ -29,6 +29,7 @@ class ToastMsg extends HTMLElement {
   }
 
   connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
     this.setAttribute('role', 'region');
     this.setAttribute('aria-label', 'Notifications');
     this.setAttribute('aria-live', 'polite');
@@ -36,6 +37,11 @@ class ToastMsg extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.#visible.forEach(toast => {
+      if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+    });
+    this.#queue = [];
+    this.#visible = [];
     this.removeAttribute('data-upgraded');
   }
 
@@ -77,7 +83,7 @@ class ToastMsg extends HTMLElement {
   #createToast({ message, variant, dismissible, action, onAction }) {
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.setAttribute('role', 'alert');
+    toast.setAttribute('role', (variant === 'error' || variant === 'warning') ? 'alert' : 'status');
     toast.setAttribute('data-variant', variant);
 
     // Icon based on variant

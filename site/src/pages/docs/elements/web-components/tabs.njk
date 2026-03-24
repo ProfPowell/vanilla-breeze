@@ -90,7 +90,7 @@ tab-set details > div {
 
   <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;tab-set&gt;</code> component transforms a group of <code>&lt;details&gt;</code> elements into a tab interface. Without JavaScript, it works as an accordion. With JavaScript, it adds keyboard navigation and ARIA tab semantics.</p>
+    <p>The <code>&lt;tab-set&gt;</code> component transforms a group of <code>&lt;details&gt;</code> elements into a tab interface. Without JavaScript, it works as an accordion. With JavaScript, it adds keyboard navigation and ARIA linkage attributes while preserving native <code>&lt;details&gt;/&lt;summary&gt;</code> semantics.</p>
 
     <browser-window
       src="/docs/examples/demos/tabs-basic.html"
@@ -143,10 +143,11 @@ tab-set details > div {
 
     <h3>With JavaScript</h3>
     <ul>
-      <li>ARIA <code>role="tablist"</code>, <code>role="tab"</code>, and <code>role="tabpanel"</code> are applied</li>
-      <li>Keyboard navigation is enabled</li>
-      <li><code>aria-selected</code> state is managed</li>
-      <li>Focus management is handled</li>
+      <li>Native <code>&lt;details&gt;/&lt;summary&gt;</code> semantics are preserved (no role overrides)</li>
+      <li><code>aria-controls</code> and <code>aria-labelledby</code> link each tab to its panel</li>
+      <li><code>aria-selected</code> state is managed on each summary</li>
+      <li><code>tabindex</code> is managed for roving focus</li>
+      <li>Keyboard navigation (arrow keys, Home, End) is enabled</li>
     </ul>
   </section>
 
@@ -286,24 +287,17 @@ tab-set details > div {
   <section>
     <h2>Accessibility</h2>
 
-    <h3>ARIA Roles</h3>
-    <p>The component automatically applies the following ARIA roles:</p>
+    <h3>Native Semantics</h3>
+    <p>The component preserves native <code>&lt;details&gt;/&lt;summary&gt;</code> semantics. It does <strong>not</strong> override roles with <code>role="tablist"</code>, <code>role="tab"</code>, or <code>role="tabpanel"</code>. Instead, it layers ARIA linkage attributes on top of the native elements:</p>
     <ul>
-      <li><code>role="tablist"</code> on the <code>&lt;tab-set&gt;</code> element</li>
-      <li><code>role="tab"</code> on each <code>&lt;summary&gt;</code> element</li>
-      <li><code>role="tabpanel"</code> on each panel content element</li>
-    </ul>
-
-    <h3>ARIA States</h3>
-    <ul>
-      <li><code>aria-selected</code> indicates the active tab</li>
-      <li><code>aria-controls</code> links tabs to their panels</li>
-      <li><code>aria-labelledby</code> links panels back to their tabs</li>
-      <li><code>tabindex</code> is managed for proper focus order</li>
+      <li><code>aria-controls</code> on each <code>&lt;summary&gt;</code> points to its panel</li>
+      <li><code>aria-labelledby</code> on each panel points back to its summary</li>
+      <li><code>aria-selected</code> reflects which tab is currently active</li>
+      <li><code>tabindex</code> is managed via the roving tabindex pattern (active tab gets <code>0</code>, others get <code>-1</code>)</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>Screen readers will announce the tab interface and allow users to navigate between tabs using the roving tabindex pattern.</p>
+    <p>Screen readers will recognize the native disclosure widgets and allow users to navigate between tabs using the roving tabindex pattern.</p>
 
     <code-block language="html" show-lines label="Accessibility">{{ accessibilityCode | escape }}</code-block>
   </section>

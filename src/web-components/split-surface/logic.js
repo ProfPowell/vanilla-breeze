@@ -33,11 +33,15 @@ class SplitSurface extends HTMLElement {
   }
 
   get #min() {
-    return Number(this.getAttribute('min')) || 10;
+    const attr = this.getAttribute('min');
+    const val = Number(attr);
+    return attr !== null && !isNaN(val) ? val : 10;
   }
 
   get #max() {
-    return Number(this.getAttribute('max')) || 90;
+    const attr = this.getAttribute('max');
+    const val = Number(attr);
+    return attr !== null && !isNaN(val) ? val : 90;
   }
 
   get position() {
@@ -58,22 +62,30 @@ class SplitSurface extends HTMLElement {
   }
 
   reset() {
-    const initial = Number(this.getAttribute('position')) || 50;
+    const attr = this.getAttribute('position');
+    const val = Number(attr);
+    const initial = attr !== null && !isNaN(val) ? val : 50;
     this.#collapsed = false;
     this.#setPosition(initial);
     this.#clearPersist();
   }
 
   connectedCallback() {
-    const children = [...this.children];
-    if (children.length < 2) return;
+    if (this.hasAttribute('data-upgraded')) return;
 
-    this.#first = children[0];
-    this.#second = children[1];
+    // Select panels: exclude any previously-generated divider
+    const panels = [...this.children].filter(el => !el.classList.contains('split-divider'));
+    if (panels.length < 2) return;
 
-    // Read initial position (persisted > attribute > 50)
+    this.#first = panels[0];
+    this.#second = panels[1];
+
+    // Read initial position (authored attribute wins over persisted)
+    const posAttr = this.getAttribute('position');
+    const posVal = Number(posAttr);
+    const authored = posAttr !== null && !isNaN(posVal) ? posVal : null;
     const persisted = this.#readPersist();
-    const initial = persisted ?? (Number(this.getAttribute('position')) || 50);
+    const initial = authored ?? persisted ?? 50;
 
     // Create divider
     this.#divider = document.createElement('div');
@@ -100,12 +112,14 @@ class SplitSurface extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
     if (this.#divider) {
       this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
       this.#divider.removeEventListener('keydown', this.#onKeyDown);
       this.#divider.removeEventListener('dblclick', this.#onDblClick);
+      this.#divider.remove();
+      this.#divider = null;
     }
+    this.removeAttribute('data-upgraded');
   }
 
   #onPointerDown = (e) => {

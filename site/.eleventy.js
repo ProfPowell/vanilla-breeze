@@ -21,6 +21,9 @@ export default function(eleventyConfig) {
   // Doc-specific CSS and demo HTML files
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'demos')]: 'docs' });
 
+  // Demo files at /demos/ path (for component tests)
+  eleventyConfig.addPassthroughCopy({ [join(ROOT, 'demos')]: 'demos' });
+
   // Math font CSS (loaded on demand by math-init.js)
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'src/fonts')]: 'fonts' });
 

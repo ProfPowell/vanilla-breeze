@@ -1,54 +1,162 @@
 /**
  * Tooltip Web Component Behavior Tests
  *
- * Tests hover/focus show/hide behavior and positioning
+ * Tests lifecycle (upgrade, cleanup, reconnect) and title preservation
  * for the tool-tip component.
  */
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/tooltip-basic.html';
+const titleFallbackPage = '/docs/examples/demos/tooltip-title-fallback.html';
+
+/** Wait for tool-tip WC to initialize */
+async function waitForUpgrade(page) {
+  await page.waitForSelector('tool-tip[data-upgraded]', { timeout: 5000 });
+}
 
 test.describe('tool-tip', () => {
 
-  test('renders tooltip triggers', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForLoadState('networkidle');
+  test('renders with data-upgraded attribute', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
 
-    // Demo uses [data-tooltip] or <tool-tip> — check for either
-    const triggers = page.locator('[data-tooltip], tool-tip');
-    const count = await triggers.count();
-    expect(count).toBeGreaterThan(0);
+    const upgraded = await page.evaluate(() => {
+      const tt = document.querySelector('tool-tip');
+      return tt?.hasAttribute('data-upgraded');
+    });
+    expect(upgraded).toBe(true);
+  });
+
+  test('trigger has no title attribute after upgrade', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
+
+    const result = await page.evaluate(() => {
+      const tt = document.querySelector('tool-tip');
+      const trigger = tt?.querySelector(':scope > :not(template):not([popover])');
+      return {
+        hasTitle: trigger?.hasAttribute('title'),
+        tagName: trigger?.tagName,
+      };
+    });
+    expect(result.hasTitle).toBe(false);
+    expect(result.tagName).toBe('BUTTON');
+  });
+
+  test('tooltip popover element is created inside tool-tip', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
+
+    const result = await page.evaluate(() => {
+      const tt = document.querySelector('tool-tip');
+      const popover = tt?.querySelector('[role="tooltip"][popover]');
+      return {
+        exists: !!popover,
+        hasId: !!popover?.id,
+      };
+    });
+    expect(result.exists).toBe(true);
+    expect(result.hasId).toBe(true);
   });
 
   test('tooltip is hidden by default', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForLoadState('networkidle');
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
 
-    // No popover/tooltip content should be visible initially
-    const popover = page.locator('[popover], [role="tooltip"]');
-    const count = await popover.count();
-    if (count > 0) {
-      await expect(popover.first()).not.toBeVisible();
-    }
+    const popover = page.locator('tool-tip [role="tooltip"]');
+    await expect(popover.first()).not.toBeVisible();
   });
 
-  test('tooltip shows on hover', async ({ page }) => {
-    await page.goto(demoPage);
-    await page.waitForLoadState('networkidle');
+  test('reconnect does not duplicate tooltip elements', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
 
-    const trigger = page.locator('[data-tooltip], tool-tip').first();
-    await trigger.hover();
+    const tooltipCount = await page.evaluate(async () => {
+      const tt = document.querySelector('tool-tip');
+      const parent = tt.parentElement;
 
-    // Wait for tooltip to appear
-    await page.waitForTimeout(500);
+      // Disconnect
+      tt.remove();
+      // Allow microtask
+      await new Promise(r => setTimeout(r, 0));
 
-    // Tooltip visibility depends on implementation — just verify no crash
-    const isVisible = await trigger.evaluate(el => {
-      const tip = el.querySelector('[popover], [role="tooltip"]');
-      return tip ? getComputedStyle(tip).display !== 'none' : false;
+      // Reconnect
+      parent.appendChild(tt);
+      // Wait for connectedCallback to fire
+      await new Promise(r => setTimeout(r, 50));
+
+      // Count tooltip popovers inside
+      return tt.querySelectorAll('[role="tooltip"]').length;
     });
-    expect(typeof isVisible).toBe('boolean');
+    expect(tooltipCount).toBe(1);
+  });
+
+  test('reconnect restores original title on the trigger', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
+
+    const result = await page.evaluate(async () => {
+      const tt = document.querySelector('tool-tip');
+      const trigger = tt.querySelector(':scope > button');
+      const parent = tt.parentElement;
+
+      // Verify title is removed after upgrade
+      const titleBeforeDisconnect = trigger.getAttribute('title');
+
+      // Disconnect
+      tt.remove();
+      await new Promise(r => setTimeout(r, 0));
+
+      // Title should be restored after disconnect
+      const titleAfterDisconnect = trigger.getAttribute('title');
+
+      // Reconnect
+      parent.appendChild(tt);
+      await new Promise(r => setTimeout(r, 50));
+
+      // Title should be removed again after re-upgrade
+      const titleAfterReconnect = trigger.getAttribute('title');
+
+      return {
+        titleBeforeDisconnect,
+        titleAfterDisconnect,
+        titleAfterReconnect,
+      };
+    });
+
+    // Before disconnect: title should be removed (moved to tooltip)
+    expect(result.titleBeforeDisconnect).toBeNull();
+    // After disconnect: title should be restored
+    expect(result.titleAfterDisconnect).toBeTruthy();
+    // After reconnect: title should be removed again
+    expect(result.titleAfterReconnect).toBeNull();
+  });
+
+  test('data-upgraded is removed on disconnect', async ({ page }) => {
+    await page.goto(titleFallbackPage);
+    await waitForUpgrade(page);
+
+    const result = await page.evaluate(async () => {
+      const tt = document.querySelector('tool-tip');
+      const parent = tt.parentElement;
+
+      // Disconnect
+      tt.remove();
+      await new Promise(r => setTimeout(r, 0));
+
+      const upgradedAfterDisconnect = tt.hasAttribute('data-upgraded');
+
+      // Reconnect (restore DOM)
+      parent.appendChild(tt);
+      await new Promise(r => setTimeout(r, 50));
+
+      const upgradedAfterReconnect = tt.hasAttribute('data-upgraded');
+
+      return { upgradedAfterDisconnect, upgradedAfterReconnect };
+    });
+
+    expect(result.upgradedAfterDisconnect).toBe(false);
+    expect(result.upgradedAfterReconnect).toBe(true);
   });
 
 });

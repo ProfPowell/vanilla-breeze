@@ -23,28 +23,21 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 
-let _instanceCounter = 0;
-
 class StarRating extends HTMLElement {
   static formAssociated = true;
 
   #internals;
   #initialValue;
-  #setupDone = false;
   #fieldset;
-  #instanceId;
 
   constructor() {
     super();
     this.#internals = this.attachInternals();
-    this.#instanceId = ++_instanceCounter;
   }
 
   connectedCallback() {
-    if (!this.#setupDone) {
-      this.#build();
-      this.#setupDone = true;
-    }
+    if (this.hasAttribute('data-upgraded')) return;
+    this.#build();
     this.setAttribute('data-upgraded', '');
   }
 
@@ -53,6 +46,9 @@ class StarRating extends HTMLElement {
   }
 
   #build() {
+    // Already built (reconnect after disconnect) — skip
+    if (this.querySelector('fieldset')) return;
+
     const value = Number(this.getAttribute('value') || 0);
     this.#initialValue = value;
     const max = Number(this.getAttribute('max') || 5);
@@ -61,8 +57,8 @@ class StarRating extends HTMLElement {
     const isReadonly = this.hasAttribute('readonly');
     const iconName = this.getAttribute('icon');
     // Use a unique internal radio name per instance to prevent cross-talk
-    const name = this.getAttribute('name') || 'rating';
-    const internalName = `_sr_${name}_${this.#instanceId}`;
+    const name = this.getAttribute('name') || `star-rating-${crypto.randomUUID().slice(0, 8)}`;
+    const internalName = `_sr_${name}`;
 
     if (isReadonly) {
       this.#renderReadonly(value, max, label, iconName);

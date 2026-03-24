@@ -4,12 +4,16 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 let tabsVtId = 0;
 
 class TabSet extends HTMLElement {
-  #details;
-  #summaries;
+  #details = [];
+  #summaries = [];
   #vtEnabled = false;
   #previousIndex = 0;
+  #cleanups = [];
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
     this.#details = [...this.querySelectorAll(':scope > details')];
     this.#summaries = this.#details.map(d => d.querySelector('summary'));
 
@@ -22,7 +26,19 @@ class TabSet extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Remove all tracked listeners
+    for (const cleanup of this.#cleanups) cleanup();
+    this.#cleanups = [];
+    this.#details = [];
+    this.#summaries = [];
+    this.#vtEnabled = false;
     this.removeAttribute('data-upgraded');
+  }
+
+  /** Track an event listener for cleanup on disconnect */
+  #listen(target, event, handler, options) {
+    target.addEventListener(event, handler, options);
+    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
   #initVT() {
@@ -82,17 +98,17 @@ class TabSet extends HTMLElement {
       panel.setAttribute('aria-labelledby', tabId);
 
       // VT click interception — intercepts only when VT is active
-      summary.addEventListener('click', (e) => {
+      this.#listen(summary, 'click', (e) => {
         if (!this.#vtEnabled) return;
         e.preventDefault();
         this.#switchTab(i);
       });
 
       // Keyboard navigation
-      summary.addEventListener('keydown', (e) => this.#handleKey(e, i));
+      this.#listen(summary, 'keydown', (e) => this.#handleKey(e, i));
 
       // Sync ARIA state when details toggles
-      detail.addEventListener('toggle', () => this.#handleToggle(i));
+      this.#listen(detail, 'toggle', () => this.#handleToggle(i));
     });
   }
 
