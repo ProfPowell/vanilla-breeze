@@ -70,6 +70,8 @@ class ComboBox extends HTMLElement {
   }
 
   connectedCallback() {
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
     this.#setup();
     this.setAttribute('data-upgraded', '');
   }
@@ -80,8 +82,9 @@ class ComboBox extends HTMLElement {
   }
 
   #setup() {
-    // Find input
-    this.#input = this.querySelector(':scope > input');
+    // Find input (may be direct child or inside .tags-input-area from prior upgrade)
+    this.#input = this.querySelector(':scope > input') ||
+                  this.querySelector(':scope > .tags-input-area > input');
     if (!this.#input) return;
 
     // Find listbox
@@ -180,6 +183,8 @@ class ComboBox extends HTMLElement {
       this.#listbox.removeEventListener('toggle', this.#handlePopoverToggle);
     }
     document.removeEventListener('click', this.#handleOutsideClick);
+    window.removeEventListener('scroll', this.#onReposition, { capture: true });
+    window.removeEventListener('resize', this.#onReposition);
   }
 
   #collectOptions() {
@@ -297,8 +302,13 @@ class ComboBox extends HTMLElement {
 
     // Single mode: clear selection when user types
     if (!this.#isMultiple && this.#selectedValue) {
+      // Clear aria-selected on previously selected option
+      const prev = this.#listbox.querySelector('[aria-selected="true"]');
+      if (prev) prev.setAttribute('aria-selected', 'false');
+
       this.#selectedValue = '';
       this.#selectedLabel = '';
+      this.removeAttribute('value');
       this.#syncFormValue();
       this.#validate();
     }
@@ -541,6 +551,9 @@ class ComboBox extends HTMLElement {
 
   // --- Open / Close ---
 
+  /** Bound handler for scroll/resize repositioning */
+  #onReposition = () => this.#positionListbox();
+
   #open() {
     if (this.#isOpen) return;
 
@@ -552,6 +565,9 @@ class ComboBox extends HTMLElement {
     if (this.#usePopover) {
       this.#positionListbox();
       try { this.#listbox.showPopover(); } catch { /* already open */ }
+      // Keep popup anchored during scroll/resize
+      window.addEventListener('scroll', this.#onReposition, { capture: true, passive: true });
+      window.addEventListener('resize', this.#onReposition, { passive: true });
     }
 
     this.dispatchEvent(new CustomEvent('combo-box:open', { bubbles: true }));
@@ -569,14 +585,23 @@ class ComboBox extends HTMLElement {
 
     if (this.#usePopover) {
       try { this.#listbox.hidePopover(); } catch { /* already closed */ }
+      window.removeEventListener('scroll', this.#onReposition, { capture: true });
+      window.removeEventListener('resize', this.#onReposition);
     }
 
     this.dispatchEvent(new CustomEvent('combo-box:close', { bubbles: true }));
   }
 
+  /** Get the visible anchor element (tags container in multi mode, input in single) */
+  get #anchorElement() {
+    return this.#isMultiple && this.#inputArea ? this.#inputArea : this.#input;
+  }
+
   #positionListbox() {
-    if (!this.#usePopover || !this.#input) return;
-    const rect = this.#input.getBoundingClientRect();
+    if (!this.#usePopover) return;
+    const anchor = this.#anchorElement;
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
     this.#listbox.style.setProperty('--combobox-top', `${rect.bottom + 2}px`);
     this.#listbox.style.setProperty('--combobox-left', `${rect.left}px`);
     this.#listbox.style.setProperty('--combobox-width', `${rect.width}px`);
