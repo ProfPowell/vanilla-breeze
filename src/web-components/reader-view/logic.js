@@ -40,14 +40,19 @@ class ReaderView extends HTMLElement {
 
   connectedCallback() {
     if (!this.#built) {
-      this.#readInitialAttributes();
+      // Persistence fills in where markup is silent; authored attrs win
       this.#restorePersistedState();
+      this.#readInitialAttributes(); // overrides persisted values when explicit
       this.#buildDOM();
       this.#ensureColumnsWrapper();
       this.#bindActions();
-      this.#setupResizeObserver();
-      this.#setupViewportListeners();
       this.#built = true;
+    }
+    // Always re-establish observers/listeners on reconnect
+    this.#setupResizeObserver();
+    this.#setupViewportListeners();
+    if (this.#boundKeydown) {
+      document.addEventListener('keydown', this.#boundKeydown);
     }
     this.#applyMode(this.#mode, false);
     this.setAttribute('upgraded', '');
@@ -476,7 +481,8 @@ class ReaderView extends HTMLElement {
 
   #handleKeydown(e) {
     if (this.#mode !== 'pages') return;
-    if (e.target?.matches?.('input, textarea, select')) return;
+    // Skip all interactive controls — don't hijack buttons, links, editable content
+    if (e.target?.matches?.('input, textarea, select, button, a, [contenteditable]')) return;
 
     switch (e.key) {
       case 'ArrowRight': case 'PageDown': case ' ':
