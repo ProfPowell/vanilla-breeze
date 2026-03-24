@@ -2,13 +2,14 @@
  * qr-code: QR code generator web component
  *
  * Generates a QR code from text content or a URL. Progressive enhancement:
- * the text content is visible before JS loads, then replaced with a QR code.
+ * the text content is visible before JS loads. After upgrade, the QR canvas
+ * is shown alongside a visually-hidden caption preserving the readable baseline.
  *
- * @attr {string} value - The text/URL to encode (or uses textContent)
- * @attr {number} size - Canvas size in pixels (default: 200)
- * @attr {string} color - Foreground color (default: currentColor resolved)
- * @attr {string} background - Background color (default: transparent)
- * @attr {number} error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M)
+ * @attr {string} value - The text/URL to encode (or uses textContent). Reactive.
+ * @attr {number} size - Canvas size in pixels (default: 200). Reactive.
+ * @attr {string} color - Foreground color (default: currentColor). Init-only.
+ * @attr {string} background - Background color (default: transparent). Init-only.
+ * @attr {number} error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only.
  *
  * @example
  * <qr-code value="https://example.com">https://example.com</qr-code>
@@ -18,9 +19,19 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 
 class QrCodeWc extends HTMLElement {
   #canvas;
+  /** @type {string | null} Saved source value (captured once) */
+  #savedValue = null;
 
   connectedCallback() {
-    const value = this.getAttribute('value') || this.textContent.trim();
+    // Guard: don't double-setup on reconnect
+    if (this.hasAttribute('data-upgraded')) return;
+
+    // Capture source value once before clearing DOM
+    if (this.#savedValue === null) {
+      this.#savedValue = this.getAttribute('value') || this.textContent.trim();
+    }
+
+    const value = this.#savedValue;
     if (!value) return;
 
     const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
@@ -44,10 +55,16 @@ class QrCodeWc extends HTMLElement {
     return ['value', 'size'];
   }
 
-  attributeChangedCallback() {
-    if (!this.#canvas) return;
-    const value = this.getAttribute('value') || this.textContent.trim();
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (!this.#canvas || !this.isConnected) return;
+
+    if (name === 'value' && newVal) {
+      this.#savedValue = newVal;
+    }
+
+    const value = this.#savedValue || this.getAttribute('value') || '';
     if (!value) return;
+
     const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
     const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
     this.#canvas.width = size;
@@ -91,9 +108,15 @@ class QrCodeWc extends HTMLElement {
       }
     }
 
-    // Replace content with canvas
+    // Build content: canvas + sr-only caption preserving the readable baseline
     this.textContent = '';
     this.appendChild(this.#canvas);
+
+    // Keep the encoded value accessible as text (visually hidden but available to AT)
+    const caption = document.createElement('span');
+    caption.className = 'sr-only';
+    caption.textContent = text;
+    this.appendChild(caption);
   }
 
   /** Get the QR code as a data URL */
