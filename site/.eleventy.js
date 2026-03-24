@@ -18,11 +18,8 @@ export default function(eleventyConfig) {
   // CDN bundles (for prod mode)
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'dist/cdn')]: 'cdn' });
 
-  // Doc-specific CSS and demo HTML files
+  // Doc-specific CSS and demo HTML files — serves at /docs/ path
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'demos')]: 'docs' });
-
-  // Demo files at /demos/ path (for component tests)
-  eleventyConfig.addPassthroughCopy({ [join(ROOT, 'demos')]: 'demos' });
 
   // Math font CSS (loaded on demand by math-init.js)
   eleventyConfig.addPassthroughCopy({ [join(ROOT, 'src/fonts')]: 'fonts' });
