@@ -25,47 +25,6 @@ carousel-wc:defined {
   position: relative;
 }
 
-/* --- Track --- */
-.carousel-track {
-  grid-area: track;
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  gap: var(--_gap, 0px);
-}
-
-.carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-.carousel-track:focus-visible {
-  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
-  outline-offset: 2px;
-  border-radius: var(--radius-s);
-}
-
-/* --- Slides --- */
-.carousel-track > * {
-  flex: 0 0 100%;
-  scroll-snap-align: start;
-  min-inline-size: 0;
-}
-
-/* Item width: auto */
-carousel-wc[item-width="auto"] .carousel-track > * {
-  flex: 0 0 auto;
-}
-
-/* Item width: custom CSS length via inline style fallback */
-
-/* Snap alignment: center for full-width slides */
-carousel-wc:not([item-width]) .carousel-track > *,
-carousel-wc[item-width="full"] .carousel-track > * {
-  scroll-snap-align: center;
-}
-
 /* --- Gap variants --- */
 carousel-wc[gap="xs"] { --_gap: var(--size-xs); }
 carousel-wc[gap="s"]  { --_gap: var(--size-s); }
@@ -73,128 +32,170 @@ carousel-wc[gap="m"]  { --_gap: var(--size-m); }
 carousel-wc[gap="l"]  { --_gap: var(--size-l); }
 carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
 
-/* --- Prev / Next buttons --- */
-.carousel-prev,
-.carousel-next {
-  grid-area: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 44px;
-  block-size: 44px;
-  min-block-size: 0;
-  min-inline-size: 0;
-  padding: 0;
-  border-radius: var(--radius-full, 50%);
-  border: var(--border-width-thin) solid var(--color-border);
-  background: var(--color-surface, #fff);
-  color: var(--color-text);
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  flex-shrink: 0;
-}
+@scope (carousel-wc) {
+  /* --- Track --- */
+  .carousel-track {
+    grid-area: track;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: var(--_gap, 0px);
+  }
 
-.carousel-prev { grid-area: prev; }
-.carousel-next { grid-area: next; }
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
 
-.carousel-prev:hover:not(:disabled),
-.carousel-next:hover:not(:disabled) {
-  border-color: var(--color-interactive, oklch(55% 0.15 250));
-  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
-}
+  .carousel-track:focus-visible {
+    outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+    outline-offset: 2px;
+    border-radius: var(--radius-s);
+  }
 
-.carousel-prev:disabled,
-.carousel-next:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
+  /* --- Slides --- */
+  .carousel-track > * {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    min-inline-size: 0;
+  }
 
-.carousel-prev:focus-visible,
-.carousel-next:focus-visible {
-  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
-  outline-offset: 2px;
-}
+  /* Item width: auto */
+  :scope[item-width="auto"] .carousel-track > * {
+    flex: 0 0 auto;
+  }
 
-/* --- Dot indicators --- */
-.carousel-indicators {
-  grid-area: dots;
-  display: flex;
-  justify-content: center;
-  gap: var(--size-xs);
-  padding-block-start: var(--size-xs);
-}
+  /* Snap alignment: center for full-width slides */
+  :scope:not([item-width]) .carousel-track > *,
+  :scope[item-width="full"] .carousel-track > * {
+    scroll-snap-align: center;
+  }
 
-.carousel-dot {
-  inline-size: 10px;
-  block-size: 10px;
-  min-block-size: 0;
-  min-inline-size: 0;
-  border-radius: var(--radius-full, 50%);
-  border: none;
-  background: var(--color-border, oklch(80% 0 0));
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
+  /* --- Prev / Next buttons --- */
+  .carousel-prev,
+  .carousel-next {
+    grid-area: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 44px;
+    block-size: 44px;
+    min-block-size: 0;
+    min-inline-size: 0;
+    padding: 0;
+    border-radius: var(--radius-full, 50%);
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-surface, #fff);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+  }
 
-.carousel-dot:hover {
-  background: var(--color-text-muted, oklch(60% 0 0));
-}
+  .carousel-prev { grid-area: prev; }
+  .carousel-next { grid-area: next; }
 
-.carousel-dot[data-active] {
-  background: var(--color-interactive, oklch(55% 0.15 250));
-  transform: scale(1.3);
-}
+  .carousel-prev:hover:not(:disabled),
+  .carousel-next:hover:not(:disabled) {
+    border-color: var(--color-interactive, oklch(55% 0.15 250));
+    box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+  }
 
-.carousel-dot:focus-visible {
-  outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
-  outline-offset: 2px;
-}
+  .carousel-prev:disabled,
+  .carousel-next:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 
-/* --- Live region (visually hidden) --- */
-.carousel-live {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  .carousel-prev:focus-visible,
+  .carousel-next:focus-visible {
+    outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+    outline-offset: 2px;
+  }
+
+  /* --- Dot indicators --- */
+  .carousel-indicators {
+    grid-area: dots;
+    display: flex;
+    justify-content: center;
+    gap: var(--size-xs);
+    padding-block-start: var(--size-xs);
+  }
+
+  .carousel-dot {
+    inline-size: 10px;
+    block-size: 10px;
+    min-block-size: 0;
+    min-inline-size: 0;
+    border-radius: var(--radius-full, 50%);
+    border: none;
+    background: var(--color-border, oklch(80% 0 0));
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .carousel-dot:hover {
+    background: var(--color-text-muted, oklch(60% 0 0));
+  }
+
+  .carousel-dot[data-active] {
+    background: var(--color-interactive, oklch(55% 0.15 250));
+    transform: scale(1.3);
+  }
+
+  .carousel-dot:focus-visible {
+    outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
+    outline-offset: 2px;
+  }
+
+  /* --- Live region (visually hidden) --- */
+  .carousel-live {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* --- View Transition mode: stacked layout --- */
+  :scope[transition]:defined .carousel-track {
+    display: grid;
+    grid-template-areas: "slide";
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  :scope[transition]:defined .carousel-track > [role="group"] {
+    grid-area: slide;
+  }
+
+  :scope[transition]:defined .carousel-track > [hidden] {
+    display: none;
+  }
 }
 
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
-  .carousel-track {
-    scroll-behavior: auto;
+  @scope (carousel-wc) {
+    .carousel-track {
+      scroll-behavior: auto;
+    }
+
+    .carousel-prev,
+    .carousel-next,
+    .carousel-dot {
+      transition-duration: 0s;
+    }
   }
-
-  .carousel-prev,
-  .carousel-next,
-  .carousel-dot {
-    transition-duration: 0s;
-  }
 }
 
-/* --- View Transition mode: stacked layout --- */
-
-carousel-wc[transition]:defined .carousel-track {
-  display: grid;
-  grid-template-areas: "slide";
-  overflow: visible;
-  scroll-snap-type: none;
-}
-
-carousel-wc[transition]:defined .carousel-track > [role="group"] {
-  grid-area: slide;
-}
-
-carousel-wc[transition]:defined .carousel-track > [hidden] {
-  display: none;
-}
-
-/* --- View Transition animations --- */
+/* --- View Transition animations (document-level) --- */
 
 /* Fade (default) */
 ::view-transition-old(*.vt-carousel) {

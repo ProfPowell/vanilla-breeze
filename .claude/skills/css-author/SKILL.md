@@ -781,13 +781,17 @@ product-card img {
 ```
 
 **When to use `@scope`:**
-- Component has many child element rules
+- Component CSS targets **class selectors** (`.toolbar`, `.panel`, `.track`) that could collide with other contexts
+- Component has many child element rules that benefit from grouping
 - Need donut scope to exclude nested content
-- Want to group all component styles in one block
 
 **When element selectors suffice:**
+- Selectors are already anchored to the custom element name (`my-component > summary`, `my-component input`) — these are inherently scoped and gain nothing from `@scope`
 - Simple components with few rules
 - Already using nesting effectively
+
+**Do NOT use `@scope` for style isolation:**
+- VB's `@layer` cascade is designed so tokens, native-element styles, and theme overrides flow into components. Using `all: unset` inside `@scope` to block inheritance would break this. `@scope` limits selector *reach*, not *inheritance* — use it for selector containment, not style isolation.
 
 ### Prelude-less Scope (Inline Styles)
 
@@ -1870,7 +1874,8 @@ When setting up or reviewing CSS:
 - [ ] Nesting limited to 3-4 levels
 - [ ] Responsive styles in `responsive` layer
 - [ ] Design tokens in `_tokens.css`
-- [ ] Consider `@scope` for components with many child rules or donut patterns
+- [ ] Use `@scope` when component CSS targets class selectors (`.foo`); skip when selectors are anchored to the element name
+- [ ] Never use `all: unset` inside `@scope` to isolate from VB's cascade — tokens and themes must flow in
 
 ### Colors
 - [ ] Colors defined in OKLCH format, not hex or RGB

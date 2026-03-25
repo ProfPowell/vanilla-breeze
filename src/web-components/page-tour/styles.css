@@ -82,6 +82,7 @@ page-tour:is(:defined) tour-step {
 
 /* ----------------------------------------------------------
    Layer 3 — <details>/<summary> collapsible guide
+   (class selectors scoped by page-tour:not(:defined) prefix)
    ---------------------------------------------------------- */
 page-tour:not(:defined) .page-tour-guide {
   border: none;
@@ -131,193 +132,197 @@ page-tour:is(:defined) .page-tour-guide {
    Layer 4 — Active tour overlay (JS-generated DOM)
    ---------------------------------------------------------- */
 
-/* Backdrop — semi-transparent overlay behind spotlight */
-.page-tour-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--tour-backdrop-color);
-  z-index: var(--tour-z-index);
-  opacity: 0;
-  transition: opacity var(--tour-transition-duration) var(--ease-out, ease-out);
-  pointer-events: auto;
-}
+@scope (page-tour) {
+  /* Backdrop — semi-transparent overlay behind spotlight */
+  .page-tour-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--tour-backdrop-color);
+    z-index: var(--tour-z-index);
+    opacity: 0;
+    transition: opacity var(--tour-transition-duration) var(--ease-out, ease-out);
+    pointer-events: auto;
+  }
 
-.page-tour-backdrop[data-visible] {
-  opacity: 1;
-}
+  .page-tour-backdrop[data-visible] {
+    opacity: 1;
+  }
 
-/* Spotlight — box-shadow ring that cuts a "hole" in the backdrop */
-.page-tour-spotlight {
-  position: fixed;
-  z-index: calc(var(--tour-z-index) + 1);
-  pointer-events: none;
-  border-radius: var(--tour-spotlight-radius);
-  box-shadow:
-    0 0 0 4px var(--tour-spotlight-ring),
-    0 0 0 9999px var(--tour-backdrop-color);
-  transition:
-    top var(--tour-transition-duration) var(--ease-out, ease-out),
-    left var(--tour-transition-duration) var(--ease-out, ease-out),
-    width var(--tour-transition-duration) var(--ease-out, ease-out),
-    height var(--tour-transition-duration) var(--ease-out, ease-out);
-}
+  /* Spotlight — box-shadow ring that cuts a "hole" in the backdrop */
+  .page-tour-spotlight {
+    position: fixed;
+    z-index: calc(var(--tour-z-index) + 1);
+    pointer-events: none;
+    border-radius: var(--tour-spotlight-radius);
+    box-shadow:
+      0 0 0 4px var(--tour-spotlight-ring),
+      0 0 0 9999px var(--tour-backdrop-color);
+    transition:
+      top var(--tour-transition-duration) var(--ease-out, ease-out),
+      left var(--tour-transition-duration) var(--ease-out, ease-out),
+      width var(--tour-transition-duration) var(--ease-out, ease-out),
+      height var(--tour-transition-duration) var(--ease-out, ease-out);
+  }
 
-/* Popover card — the tour step content panel */
-.page-tour-card {
-  position: fixed;
-  z-index: calc(var(--tour-z-index) + 2);
-  background: var(--color-surface, #fff);
-  color: var(--color-text, #222);
-  border: var(--border-width-thin, 1px) solid var(--color-border, #ccc);
-  border-radius: var(--radius-lg, 12px);
-  padding: var(--size-m, 1rem);
-  box-shadow: var(--shadow-lg, 0 8px 24px oklch(0% 0 0 / 0.15));
-  max-width: var(--tour-card-max-width);
-  min-width: var(--tour-card-min-width);
-}
+  /* Popover card — the tour step content panel */
+  .page-tour-card {
+    position: fixed;
+    z-index: calc(var(--tour-z-index) + 2);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #222);
+    border: var(--border-width-thin, 1px) solid var(--color-border, #ccc);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--size-m, 1rem);
+    box-shadow: var(--shadow-lg, 0 8px 24px oklch(0% 0 0 / 0.15));
+    max-width: var(--tour-card-max-width);
+    min-width: var(--tour-card-min-width);
+  }
 
-.page-tour-card[popover] {
-  margin: 0; /* Reset UA popover margin */
-}
+  .page-tour-card[popover] {
+    margin: 0; /* Reset UA popover margin */
+  }
 
-/* ----------------------------------------------------------
-   Card internals
-   ---------------------------------------------------------- */
+  /* ----------------------------------------------------------
+     Card internals
+     ---------------------------------------------------------- */
 
-/* Progress pips */
-.page-tour-progress {
-  display: flex;
-  gap: var(--size-2xs, 0.375rem);
-  align-items: center;
-  margin-block-end: var(--size-s, 0.75rem);
-}
+  /* Progress pips */
+  .page-tour-progress {
+    display: flex;
+    gap: var(--size-2xs, 0.375rem);
+    align-items: center;
+    margin-block-end: var(--size-s, 0.75rem);
+  }
 
-.page-tour-pip {
-  width: var(--tour-pip-size);
-  height: var(--tour-pip-size);
-  border-radius: var(--radius-full, 9999px);
-  background: var(--color-border, #ccc);
-  transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out),
-              width var(--duration-fast, 150ms) var(--ease-out, ease-out);
-}
+  .page-tour-pip {
+    width: var(--tour-pip-size);
+    height: var(--tour-pip-size);
+    border-radius: var(--radius-full, 9999px);
+    background: var(--color-border, #ccc);
+    transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out),
+                width var(--duration-fast, 150ms) var(--ease-out, ease-out);
+  }
 
-.page-tour-pip[data-active] {
-  background: var(--tour-spotlight-ring);
-  width: var(--tour-pip-active-width);
-}
+  .page-tour-pip[data-active] {
+    background: var(--tour-spotlight-ring);
+    width: var(--tour-pip-active-width);
+  }
 
-.page-tour-pip[data-visited] {
-  background: var(--color-text-muted, #666);
-}
+  .page-tour-pip[data-visited] {
+    background: var(--color-text-muted, #666);
+  }
 
-/* Step meta (counter) */
-.page-tour-meta {
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-muted, #666);
-  margin: 0 0 var(--size-xs, 0.5rem);
-}
+  /* Step meta (counter) */
+  .page-tour-meta {
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-text-muted, #666);
+    margin: 0 0 var(--size-xs, 0.5rem);
+  }
 
-/* Step content area */
-.page-tour-content {
-  margin-block-end: var(--size-m, 1rem);
-}
+  /* Step content area */
+  .page-tour-content {
+    margin-block-end: var(--size-m, 1rem);
+  }
 
-.page-tour-content :first-child {
-  margin-block-start: 0;
-}
+  .page-tour-content :first-child {
+    margin-block-start: 0;
+  }
 
-.page-tour-content :last-child {
-  margin-block-end: 0;
-}
+  .page-tour-content :last-child {
+    margin-block-end: 0;
+  }
 
-/* Action hint — shown while waiting for user action */
-.page-tour-action-hint {
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-muted, #666);
-  margin-block-start: var(--size-xs, 0.5rem);
-  display: flex;
-  align-items: center;
-  gap: var(--size-2xs, 0.375rem);
-}
+  /* Action hint — shown while waiting for user action */
+  .page-tour-action-hint {
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-text-muted, #666);
+    margin-block-start: var(--size-xs, 0.5rem);
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.375rem);
+  }
 
-.page-tour-action-hint::before {
-  content: "\2192"; /* right arrow */
-  color: var(--tour-spotlight-ring);
-}
+  .page-tour-action-hint::before {
+    content: "\2192"; /* right arrow */
+    color: var(--tour-spotlight-ring);
+  }
 
-/* Footer — navigation buttons */
-.page-tour-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--size-s, 0.75rem);
-}
+  /* Footer — navigation buttons */
+  .page-tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--size-s, 0.75rem);
+  }
 
-.page-tour-nav {
-  display: flex;
-  gap: var(--size-xs, 0.5rem);
-  margin-inline-start: auto;
-}
+  .page-tour-nav {
+    display: flex;
+    gap: var(--size-xs, 0.5rem);
+    margin-inline-start: auto;
+  }
 
-/* Button base styles (within tour card) */
-.page-tour-card button {
-  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
-  border-radius: var(--radius-m, 6px);
-  font-size: var(--font-size-sm, 0.875rem);
-  font-weight: var(--font-weight-semibold, 600);
-  cursor: pointer;
-  border: var(--border-width-thin, 1px) solid transparent;
-  transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out);
-}
+  /* Button base styles (within tour card) */
+  .page-tour-card button {
+    padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+    border-radius: var(--radius-m, 6px);
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: var(--font-weight-semibold, 600);
+    cursor: pointer;
+    border: var(--border-width-thin, 1px) solid transparent;
+    transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out);
+  }
 
-.page-tour-next {
-  background: var(--color-primary, oklch(55% 0.2 260));
-  color: var(--color-on-primary, #fff);
-}
+  .page-tour-next {
+    background: var(--color-primary, oklch(55% 0.2 260));
+    color: var(--color-on-primary, #fff);
+  }
 
-.page-tour-next:hover {
-  background: var(--color-primary-hover, oklch(48% 0.2 260));
-}
+  .page-tour-next:hover {
+    background: var(--color-primary-hover, oklch(48% 0.2 260));
+  }
 
-.page-tour-next[data-waiting] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  .page-tour-next[data-waiting] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-.page-tour-prev {
-  background: transparent;
-  color: var(--color-text, #222);
-  border-color: var(--color-border, #ccc);
-}
+  .page-tour-prev {
+    background: transparent;
+    color: var(--color-text, #222);
+    border-color: var(--color-border, #ccc);
+  }
 
-.page-tour-prev:hover {
-  background: var(--color-surface-raised, #f8f8f8);
-}
+  .page-tour-prev:hover {
+    background: var(--color-surface-raised, #f8f8f8);
+  }
 
-.page-tour-skip {
-  background: transparent;
-  color: var(--color-text-muted, #666);
-  border: none;
-  padding-inline: var(--size-xs, 0.5rem);
-}
+  .page-tour-skip {
+    background: transparent;
+    color: var(--color-text-muted, #666);
+    border: none;
+    padding-inline: var(--size-xs, 0.5rem);
+  }
 
-.page-tour-skip:hover {
-  color: var(--color-text, #222);
+  .page-tour-skip:hover {
+    color: var(--color-text, #222);
+  }
 }
 
 /* ----------------------------------------------------------
    Reduced motion
    ---------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .page-tour-spotlight {
-    transition: none;
-  }
+  @scope (page-tour) {
+    .page-tour-spotlight {
+      transition: none;
+    }
 
-  .page-tour-backdrop {
-    transition: none;
-  }
+    .page-tour-backdrop {
+      transition: none;
+    }
 
-  .page-tour-pip {
-    transition: none;
+    .page-tour-pip {
+      transition: none;
+    }
   }
 }

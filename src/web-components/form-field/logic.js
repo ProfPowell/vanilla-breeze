@@ -15,6 +15,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 // ValidityState keys in priority order
 const VALIDITY_KEYS = [
@@ -29,45 +30,30 @@ const VALIDITY_KEYS = [
   'customError',
 ];
 
-class FormField extends HTMLElement {
+class FormField extends VBElement {
   #input = null;
   #output = null;
   #hasBeenInvalid = false;
-  #cleanups = [];
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#input = this.querySelector('input, textarea, select');
     // Target the error output — prefer output.error, fall back to first non-hint output
     this.#output = this.querySelector('output.error')
       ?? this.querySelector('output:not(.hint)');
 
-    if (!this.#input) return;
+    if (!this.#input) return false;
 
-    this.#listen(this.#input, 'blur', () => this.validate());
-    this.#listen(this.#input, 'input', () => {
+    this.listen(this.#input, 'blur', () => this.validate());
+    this.listen(this.#input, 'input', () => {
       // Only re-validate eagerly after the first error has been shown
       if (this.#hasBeenInvalid) this.validate();
     });
-
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    for (const cleanup of this.#cleanups) cleanup();
-    this.#cleanups = [];
+  teardown() {
     this.#input = null;
     this.#output = null;
     this.#hasBeenInvalid = false;
-    this.removeAttribute('data-upgraded');
-  }
-
-  /** Track an event listener for cleanup on disconnect */
-  #listen(target, event, handler, options) {
-    target.addEventListener(event, handler, options);
-    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
   /**
@@ -87,7 +73,9 @@ class FormField extends HTMLElement {
     const valid = input.checkValidity();
 
     if (valid) {
-      this.#setState('valid');
+      // Only show positive "valid" state if the field has a value —
+      // empty optional fields are neutral (no checkmark, no error)
+      this.#setState(input.value ? 'valid' : null);
       input.removeAttribute('aria-invalid');
       if (this.#output) this.#output.textContent = '';
     } else {

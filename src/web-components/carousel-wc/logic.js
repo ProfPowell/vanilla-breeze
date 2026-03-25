@@ -26,11 +26,12 @@
  * </carousel-wc>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { startSwapTransition } from '../../utils/swap-transition.js';
 
 let carouselVtId = 0;
 
-class CarouselWc extends HTMLElement {
+class CarouselWc extends VBElement {
   #track;
   #slides = [];
   #prevBtn;
@@ -43,7 +44,7 @@ class CarouselWc extends HTMLElement {
   #currentIndex = 0;
   #reducedMotion = false;
   #vtMode = false;
-  #cleanups = [];
+  #swipeCleanup = null;
 
   get currentIndex() {
     return this.#currentIndex;
@@ -57,12 +58,9 @@ class CarouselWc extends HTMLElement {
     return this.#autoplayTimer !== null;
   }
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     const children = [...this.children];
-    if (children.length === 0) return;
+    if (children.length === 0) return false;
 
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.#vtMode = this.hasAttribute('transition') && !!document.startViewTransition;
@@ -114,7 +112,7 @@ class CarouselWc extends HTMLElement {
         dot.className = 'carousel-dot';
         dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
         dot.setAttribute('aria-current', i === 0 ? 'true' : 'false');
-        this.#listen(dot, 'click', () => this.goTo(i));
+        this.listen(dot, 'click', () => this.goTo(i));
         this.#indicators.appendChild(dot);
       });
     }
@@ -133,9 +131,9 @@ class CarouselWc extends HTMLElement {
     this.appendChild(this.#liveRegion);
 
     // Events — all tracked for cleanup
-    this.#listen(this.#prevBtn, 'click', () => this.prev());
-    this.#listen(this.#nextBtn, 'click', () => this.next());
-    this.#listen(this.#track, 'keydown', this.#onKeyDown);
+    this.listen(this.#prevBtn, 'click', () => this.prev());
+    this.listen(this.#nextBtn, 'click', () => this.next());
+    this.listen(this.#track, 'keydown', this.#onKeyDown);
 
     // VT mode: assign view-transition-name/class to track
     if (this.#vtMode) {
@@ -149,10 +147,9 @@ class CarouselWc extends HTMLElement {
     // VT mode: add swipe navigation via gesture module
     if (this.#vtMode) {
       import('../../lib/vb-gestures.js').then(({ addSwipeListener }) => {
-        const cleanup = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
-        this.#cleanups.push(cleanup);
-        this.#listen(this.#track, 'swipe-left', () => this.next());
-        this.#listen(this.#track, 'swipe-right', () => this.prev());
+        this.#swipeCleanup = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
+        this.listen(this.#track, 'swipe-left', () => this.next());
+        this.listen(this.#track, 'swipe-right', () => this.prev());
       });
     }
 
@@ -186,27 +183,20 @@ class CarouselWc extends HTMLElement {
     if (this.hasAttribute('autoplay') && !this.#reducedMotion) {
       this.#setupAutoplay();
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.pause();
     if (this.#observer) {
       this.#observer.disconnect();
       this.#observer = null;
     }
-    // Remove all tracked listeners
-    for (const cleanup of this.#cleanups) cleanup();
-    this.#cleanups = [];
+    if (this.#swipeCleanup) {
+      this.#swipeCleanup();
+      this.#swipeCleanup = null;
+    }
     this.#slides = [];
     this.#vtMode = false;
-    this.removeAttribute('data-upgraded');
-  }
-
-  /** Track an event listener for cleanup on disconnect */
-  #listen(target, event, handler, options) {
-    target.addEventListener(event, handler, options);
-    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
   next() {
@@ -356,17 +346,17 @@ class CarouselWc extends HTMLElement {
     this.play();
 
     // Pause on hover/focus/touch — all tracked for cleanup
-    this.#listen(this, 'mouseenter', () => this.pause());
-    this.#listen(this, 'mouseleave', () => {
+    this.listen(this, 'mouseenter', () => this.pause());
+    this.listen(this, 'mouseleave', () => {
       if (this.hasAttribute('autoplay')) this.play();
     });
-    this.#listen(this, 'focusin', () => this.pause());
-    this.#listen(this, 'focusout', (e) => {
+    this.listen(this, 'focusin', () => this.pause());
+    this.listen(this, 'focusout', (e) => {
       if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('autoplay')) {
         this.play();
       }
     });
-    this.#listen(this, 'touchstart', () => this.pause(), { passive: true });
+    this.listen(this, 'touchstart', () => this.pause(), { passive: true });
   }
 
   #readPersist() {

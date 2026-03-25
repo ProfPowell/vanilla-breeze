@@ -29,8 +29,9 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class DragSurface extends HTMLElement {
+class DragSurface extends VBElement {
   /** @type {HTMLDivElement | null} */
   #liveRegion = null;
   /** @type {number | null} */
@@ -38,26 +39,17 @@ class DragSurface extends HTMLElement {
   #reducedMotion = false;
   /** @type {EventTarget | null} */
   #lastPointerTarget = null;
-  #cleanups = [];
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.setAttribute('role', 'list');
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.#createLiveRegion();
     this.#setupDragListeners();
     this.#setupKeyboardListeners();
     this.#ensureChildRoles();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    // Remove all tracked listeners
-    for (const cleanup of this.#cleanups) cleanup();
-    this.#cleanups = [];
-
+  teardown() {
     // Remove live region
     if (this.#liveRegion) {
       this.#liveRegion.remove();
@@ -68,14 +60,6 @@ class DragSurface extends HTMLElement {
     if (DragSurface.#activeDrag?.source === this) {
       DragSurface.#activeDrag = null;
     }
-
-    this.removeAttribute('data-upgraded');
-  }
-
-  /** Track an event listener for cleanup on disconnect */
-  #listen(target, event, handler, options) {
-    target.addEventListener(event, handler, options);
-    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
   // --- Public API ---
@@ -131,12 +115,12 @@ class DragSurface extends HTMLElement {
   // --- Drag Events ---
 
   #setupDragListeners() {
-    this.#listen(this, 'pointerdown', (e) => { this.#lastPointerTarget = e.target; });
-    this.#listen(this, 'dragstart', this.#onDragStart.bind(this));
-    this.#listen(this, 'dragover', this.#onDragOver.bind(this));
-    this.#listen(this, 'dragleave', this.#onDragLeave.bind(this));
-    this.#listen(this, 'drop', this.#onDrop.bind(this));
-    this.#listen(this, 'dragend', this.#onDragEnd.bind(this));
+    this.listen(this, 'pointerdown', (e) => { this.#lastPointerTarget = e.target; });
+    this.listen(this, 'dragstart', this.#onDragStart.bind(this));
+    this.listen(this, 'dragover', this.#onDragOver.bind(this));
+    this.listen(this, 'dragleave', this.#onDragLeave.bind(this));
+    this.listen(this, 'drop', this.#onDrop.bind(this));
+    this.listen(this, 'dragend', this.#onDragEnd.bind(this));
   }
 
   #onDragStart(e) {
@@ -254,7 +238,7 @@ class DragSurface extends HTMLElement {
   // --- Keyboard Reorder ---
 
   #setupKeyboardListeners() {
-    this.#listen(this, 'keydown', this.#onKeyDown.bind(this));
+    this.listen(this, 'keydown', this.#onKeyDown.bind(this));
   }
 
   #onKeyDown(e) {

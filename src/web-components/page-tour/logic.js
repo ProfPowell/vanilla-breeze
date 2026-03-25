@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * page-tour: Progressive-enhancement guided page tour
@@ -47,7 +48,7 @@ class TourStep extends HTMLElement {
   get scrollBehavior() { return this.dataset.scroll ?? 'smooth'; }
 }
 
-class PageTour extends HTMLElement {
+class PageTour extends VBElement {
   #steps = [];
   #currentStep = 0;
   #active = false;
@@ -56,7 +57,6 @@ class PageTour extends HTMLElement {
   #card = null;
   #announcer = null;
   #returnFocus = null;
-  #cleanups = [];
   #resizeObserver = null;
   #actionController = null;
   #rafId = null;
@@ -66,28 +66,22 @@ class PageTour extends HTMLElement {
 
   static observedAttributes = ['data-step'];
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#steps = [...this.querySelectorAll('tour-step')];
-    if (this.#steps.length === 0) return;
+    if (this.#steps.length === 0) return false;
 
     // Wire the Layer 3 start button if present
     const startBtn = this.querySelector('.page-tour-start-btn');
     if (startBtn) {
-      const handler = (e) => { e.preventDefault(); this.start(); };
-      startBtn.addEventListener('click', handler);
-      this.#cleanups.push(() => startBtn.removeEventListener('click', handler));
+      this.listen(startBtn, 'click', (e) => { e.preventDefault(); this.start(); });
     }
 
     // Wire external data-tour="id" buttons
     if (this.id) {
-      const handler = (e) => {
+      this.listen(document, 'click', (e) => {
         const trigger = e.target.closest(`[data-tour="${this.id}"]`);
         if (trigger) { e.preventDefault(); this.start(); }
-      };
-      document.addEventListener('click', handler);
-      this.#cleanups.push(() => document.removeEventListener('click', handler));
+      });
     }
 
     // Auto-trigger
@@ -99,15 +93,10 @@ class PageTour extends HTMLElement {
         setTimeout(() => this.start(saved?.step ?? 0), 400);
       }
     }
-
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     if (this.#active) this.stop();
-    for (const fn of this.#cleanups) fn();
-    this.#cleanups = [];
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback(name, old, next) {
@@ -679,9 +668,7 @@ class PageTour extends HTMLElement {
     this.#resizeObserver.observe(targetEl);
 
     // Scroll listener
-    const scrollHandler = () => this.#scheduleReposition(targetEl);
-    window.addEventListener('scroll', scrollHandler, { passive: true });
-    this.#cleanups.push(() => window.removeEventListener('scroll', scrollHandler));
+    this.listen(window, 'scroll', () => this.#scheduleReposition(targetEl), { passive: true });
   }
 
   #stopLayoutSync() {

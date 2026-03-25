@@ -25,40 +25,32 @@
  */
 import { startSwapTransition } from '../../utils/swap-transition.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 let accordionVtId = 0;
 
-class AccordionWc extends HTMLElement {
+class AccordionWc extends VBElement {
   #details = [];
   #summaries = [];
   #panels = [];
   #vtEnabled = false;
-  #cleanups = [];
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#details = [...this.querySelectorAll(':scope > details')];
     this.#summaries = this.#details.map(d => d.querySelector('summary'));
 
-    if (this.#details.length === 0) return;
+    if (this.#details.length === 0) return false;
 
     this.#ensurePanelWrappers();
     this.#setup();
     this.#initVT();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    // Remove all tracked listeners
-    for (const cleanup of this.#cleanups) cleanup();
-    this.#cleanups = [];
+  teardown() {
     this.#details = [];
     this.#summaries = [];
     this.#panels = [];
     this.#vtEnabled = false;
-    this.removeAttribute('data-upgraded');
   }
 
   /**
@@ -113,12 +105,6 @@ class AccordionWc extends HTMLElement {
     });
   }
 
-  /** Track an event listener for cleanup on disconnect */
-  #listen(target, event, handler, options) {
-    target.addEventListener(event, handler, options);
-    this.#cleanups.push(() => target.removeEventListener(event, handler, options));
-  }
-
   #setup() {
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
@@ -143,17 +129,17 @@ class AccordionWc extends HTMLElement {
       }
 
       // VT click interception
-      this.#listen(summary, 'click', (e) => {
+      this.listen(summary, 'click', (e) => {
         if (!this.#vtEnabled) return;
         e.preventDefault();
         this.#vtToggle(detail);
       });
 
       // Keyboard navigation
-      this.#listen(summary, 'keydown', (e) => this.#handleKey(e, i));
+      this.listen(summary, 'keydown', (e) => this.#handleKey(e, i));
 
       // Handle toggle events for single mode and ARIA updates
-      this.#listen(detail, 'toggle', () => this.#handleToggle(detail, i));
+      this.listen(detail, 'toggle', () => this.#handleToggle(detail, i));
     });
   }
 
