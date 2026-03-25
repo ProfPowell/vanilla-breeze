@@ -33,6 +33,24 @@ class WizardController {
   /** @type {HTMLElement|null} */
   #stepNav = null;
 
+  /** @type {boolean} */
+  #useHistory = false;
+
+  /** @type {string} */
+  #validateMode = 'step';
+
+  /** @type {Storage|null} */
+  #storage = null;
+
+  /** @type {string} */
+  #storageKey = '';
+
+  /** @type {number} */
+  #conditionRafId = 0;
+
+  /** @type {number} */
+  #saveRafId = 0;
+
   /**
    * @param {HTMLFormElement} form - Form element with data-wizard attribute
    */
@@ -59,6 +77,13 @@ class WizardController {
       return;
     }
 
+    // Read configuration attributes
+    this.#useHistory = this.#form.hasAttribute('data-wizard-history');
+    this.#validateMode = this.#form.getAttribute('data-wizard-validate') || 'step';
+
+    // Set up persistence
+    this.#initPersistence();
+
     // Find progress element
     this.#progress = this.#form.querySelector('[data-wizard-progress]');
 
@@ -75,28 +100,184 @@ class WizardController {
     // Bind navigation buttons
     this.#bindNavigation();
 
-    // Bind form field changes for conditional logic
-    this.#form.addEventListener('change', () => this.#evaluateConditions());
+    // Bind form field changes for conditional logic (input + change, debounced)
+    const scheduleConditionEval = () => {
+      cancelAnimationFrame(this.#conditionRafId);
+      this.#conditionRafId = requestAnimationFrame(() => this.#evaluateConditions());
+    };
+    this.#form.addEventListener('change', scheduleConditionEval);
+    this.#form.addEventListener('input', scheduleConditionEval);
 
-    // Check URL hash for initial step
-    const stepFromHash = this.#getStepFromHash();
-    if (stepFromHash !== null && stepFromHash >= 0 && stepFromHash < this.#steps.length) {
-      this.#currentIndex = stepFromHash;
+    // Save state on field changes (debounced)
+    if (this.#storage) {
+      this.#form.addEventListener('change', () => this.#scheduleSave());
+      this.#form.addEventListener('input', () => this.#scheduleSave());
     }
 
-    // Listen for hash changes
-    window.addEventListener('hashchange', () => {
-      const step = this.#getStepFromHash();
-      if (step !== null && step !== this.#currentIndex) {
-        this.goTo(step);
-      }
+    // Handle form submit — fire wizard:complete on last step
+    this.#form.addEventListener('submit', (e) => this.#handleSubmit(e));
+
+    // Handle native form.reset()
+    this.#form.addEventListener('reset', () => {
+      requestAnimationFrame(() => this.reset());
     });
+
+    // Hash sync (opt-in via data-wizard-history)
+    if (this.#useHistory) {
+      const stepFromHash = this.#getStepFromHash();
+      if (stepFromHash !== null && stepFromHash >= 0 && stepFromHash < this.#steps.length) {
+        this.#currentIndex = stepFromHash;
+      }
+
+      window.addEventListener('hashchange', () => {
+        const step = this.#getStepFromHash();
+        if (step !== null && step !== this.#currentIndex) {
+          this.goTo(step);
+        }
+      });
+    }
+
+    // Restore persisted state (before updateVisibility)
+    this.#restoreState();
 
     // Initial evaluation of conditions
     this.#evaluateConditions();
 
     // Show the initial step
     this.#updateVisibility();
+  }
+
+  // ============================================
+  // PERSISTENCE
+  // ============================================
+
+  /**
+   * Initialize persistence storage
+   */
+  #initPersistence() {
+    const persist = this.#form.getAttribute('data-wizard-persist');
+    if (!persist) return;
+
+    if (!this.#form.id) {
+      console.warn('Wizard persistence requires an id on the form element');
+      return;
+    }
+
+    this.#storageKey = `vb-wizard:${this.#form.id}`;
+
+    if (persist === 'local') {
+      this.#storage = localStorage;
+    } else {
+      this.#storage = sessionStorage;
+    }
+  }
+
+  /**
+   * Save current step and form data to storage
+   */
+  #saveState() {
+    if (!this.#storage) return;
+
+    const data = {};
+    const formData = new FormData(this.#form);
+    for (const [key, value] of formData.entries()) {
+      if (data[key] !== undefined) {
+        // Handle multiple values (checkboxes)
+        if (!Array.isArray(data[key])) {
+          data[key] = [data[key]];
+        }
+        data[key].push(value);
+      } else {
+        data[key] = value;
+      }
+    }
+
+    try {
+      this.#storage.setItem(this.#storageKey, JSON.stringify({
+        step: this.#currentIndex,
+        data,
+      }));
+    } catch {
+      // Storage full or unavailable — fail silently
+    }
+  }
+
+  /**
+   * Schedule a debounced save
+   */
+  #scheduleSave() {
+    if (!this.#storage) return;
+    cancelAnimationFrame(this.#saveRafId);
+    this.#saveRafId = requestAnimationFrame(() => this.#saveState());
+  }
+
+  /**
+   * Restore step and form data from storage
+   */
+  #restoreState() {
+    if (!this.#storage) return;
+
+    try {
+      const raw = this.#storage.getItem(this.#storageKey);
+      if (!raw) return;
+
+      const saved = JSON.parse(raw);
+      if (!saved || typeof saved !== 'object') return;
+
+      // Restore form field values
+      if (saved.data && typeof saved.data === 'object') {
+        for (const [name, value] of Object.entries(saved.data)) {
+          const field = this.#form.elements.namedItem(name);
+          if (!field) continue;
+
+          if (field instanceof RadioNodeList) {
+            field.value = /** @type {string} */ (value);
+          } else if (field instanceof HTMLInputElement) {
+            if (field.type === 'checkbox') {
+              const values = Array.isArray(value) ? value : [value];
+              field.checked = values.includes(field.value || 'on');
+            } else if (field.type === 'radio') {
+              field.checked = field.value === value;
+            } else {
+              field.value = /** @type {string} */ (value);
+            }
+          } else if (field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
+            field.value = /** @type {string} */ (value);
+          }
+        }
+      }
+
+      // Restore step index
+      if (typeof saved.step === 'number' && saved.step >= 0 && saved.step < this.#steps.length) {
+        this.#currentIndex = saved.step;
+      }
+    } catch {
+      // Corrupted data — ignore
+    }
+  }
+
+  /**
+   * Clear persisted state
+   */
+  #clearState() {
+    if (!this.#storage) return;
+    this.#storage.removeItem(this.#storageKey);
+  }
+
+  // ============================================
+  // INTERNALS
+  // ============================================
+
+  /**
+   * Handle form submit event
+   * @param {SubmitEvent} _e
+   */
+  #handleSubmit(_e) {
+    const visibleSteps = this.#getVisibleSteps();
+    if (this.#currentIndex === visibleSteps.length - 1) {
+      this.#dispatchEvent('wizard:complete');
+      this.#clearState();
+    }
   }
 
   /**
@@ -156,10 +337,12 @@ class WizardController {
       // Clear previous state
       navItem.removeAttribute('data-completed');
       navItem.removeAttribute('aria-current');
+      navItem.removeAttribute('aria-disabled');
 
       if (visibleIdx < this.#currentIndex) {
-        // Completed
+        // Completed — clickable
         navItem.setAttribute('data-completed', '');
+        this.#bindNavItemClick(navItem, visibleIdx);
         const link = navItem.querySelector('a');
         if (link) {
           const legend = step.querySelector('legend');
@@ -169,10 +352,41 @@ class WizardController {
       } else if (visibleIdx === this.#currentIndex) {
         // Active
         navItem.setAttribute('aria-current', 'step');
+      } else {
+        // Future — not clickable
+        navItem.setAttribute('aria-disabled', 'true');
       }
-      // Future steps: no attributes needed (default state)
 
       navIndex++;
+    }
+  }
+
+  /**
+   * Bind click handler on a nav item for step navigation
+   * @param {HTMLElement} navItem
+   * @param {number} stepIndex
+   */
+  #bindNavItemClick(navItem, stepIndex) {
+    if (navItem.hasAttribute('data-wizard-nav-bound')) return;
+    navItem.setAttribute('data-wizard-nav-bound', '');
+
+    const target = navItem.querySelector('a, button') || navItem;
+
+    target.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.goTo(stepIndex);
+    });
+
+    // Keyboard support if the target isn't natively interactive
+    if (target === navItem && !navItem.getAttribute('tabindex')) {
+      navItem.setAttribute('tabindex', '0');
+      navItem.setAttribute('role', 'button');
+      navItem.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.goTo(stepIndex);
+        }
+      });
     }
   }
 
@@ -247,8 +461,10 @@ class WizardController {
     // Sync nav.steps indicator
     this.#syncStepNav();
 
-    // Update URL hash
-    this.#syncURL();
+    // Update URL hash (opt-in)
+    if (this.#useHistory) {
+      this.#syncURL();
+    }
 
     // Announce step change
     this.#announceStep();
@@ -307,6 +523,9 @@ class WizardController {
    * @returns {boolean}
    */
   #validateCurrentStep() {
+    // Skip validation if mode is 'none'
+    if (this.#validateMode === 'none') return true;
+
     const currentStep = this.#getCurrentStep();
     if (!currentStep) return true;
 
@@ -467,6 +686,8 @@ class WizardController {
       to: index,
     });
 
+    this.#scheduleSave();
+
     return true;
   }
 
@@ -477,11 +698,8 @@ class WizardController {
   next() {
     const visibleSteps = this.#getVisibleSteps();
 
+    // On last step, next() is a no-op (submit handles completion)
     if (this.#currentIndex >= visibleSteps.length - 1) {
-      // On last step, dispatch complete event
-      if (this.#validateCurrentStep()) {
-        this.#dispatchEvent('wizard:complete');
-      }
       return false;
     }
 
@@ -506,6 +724,7 @@ class WizardController {
   reset() {
     this.#currentIndex = 0;
     this.#updateVisibility();
+    this.#clearState();
 
     this.#dispatchEvent('wizard:reset');
   }
@@ -536,35 +755,64 @@ class WizardController {
 }
 
 /**
+ * Enhance a single wizard form
+ * @param {HTMLFormElement} form
+ */
+function enhanceWizardForm(form) {
+  if (form.hasAttribute('data-wizard-enhanced')) return;
+
+  const controller = new WizardController(form);
+
+  // Attach controller to form element for external access
+  /** @type {VBWizardForm} */ (form).wizardController = controller;
+
+  // Add convenience methods directly to form
+  /** @type {VBWizardForm} */ (form).wizardGoTo = (index) => controller.goTo(index);
+  /** @type {VBWizardForm} */ (form).wizardNext = () => controller.next();
+  /** @type {VBWizardForm} */ (form).wizardPrev = () => controller.prev();
+  /** @type {VBWizardForm} */ (form).wizardReset = () => controller.reset();
+}
+
+/**
  * Auto-initialize wizards on DOM ready
  */
 function initWizards() {
-  const wizardForms = document.querySelectorAll('form[data-wizard]');
-
-  wizardForms.forEach((rawForm) => {
-    // Skip if already enhanced
-    if (rawForm.hasAttribute('data-wizard-enhanced')) return;
-
-    const form = /** @type {HTMLFormElement} */ (rawForm);
-    const controller = new WizardController(form);
-
-    // Attach controller to form element for external access
-    /** @type {VBWizardForm} */ (form).wizardController = controller;
-
-    // Add convenience methods directly to form
-    /** @type {VBWizardForm} */ (form).wizardGoTo = (index) => controller.goTo(index);
-    /** @type {VBWizardForm} */ (form).wizardNext = () => controller.next();
-    /** @type {VBWizardForm} */ (form).wizardPrev = () => controller.prev();
-    /** @type {VBWizardForm} */ (form).wizardReset = () => controller.reset();
+  document.querySelectorAll('form[data-wizard]').forEach((form) => {
+    enhanceWizardForm(/** @type {HTMLFormElement} */ (form));
   });
+}
+
+/**
+ * Watch for dynamically added wizard forms
+ */
+function observeNewWizards() {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        const el = /** @type {Element} */ (node);
+        if (el.matches('form[data-wizard]')) {
+          enhanceWizardForm(/** @type {HTMLFormElement} */ (el));
+        }
+        el.querySelectorAll?.('form[data-wizard]:not([data-wizard-enhanced])').forEach((f) => {
+          enhanceWizardForm(/** @type {HTMLFormElement} */ (f));
+        });
+      }
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 // Auto-init when DOM is ready
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initWizards);
+    document.addEventListener('DOMContentLoaded', () => {
+      initWizards();
+      observeNewWizards();
+    });
   } else {
     initWizards();
+    observeNewWizards();
   }
 }
 
