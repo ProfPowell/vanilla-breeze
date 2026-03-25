@@ -25,9 +25,10 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { PLATFORMS, DEFAULT_PLATFORMS } from './platforms.js';
 
-class ShareWc extends HTMLElement {
+class ShareWc extends VBElement {
   /** @type {string | undefined} */
   #url;
   /** @type {string | undefined} */
@@ -67,9 +68,7 @@ class ShareWc extends HTMLElement {
     this.#text = val;
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#resolveMeta();
     this.#detectTier();
 
@@ -84,11 +83,9 @@ class ShareWc extends HTMLElement {
     }
 
     this.setAttribute('data-tier-resolved', this.#tier);
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.removeAttribute('data-tier-resolved');
     if (this.#copyTimer) {
       clearTimeout(this.#copyTimer);

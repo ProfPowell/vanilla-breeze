@@ -23,8 +23,9 @@
  * </slide-accept>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class SlideAccept extends HTMLElement {
+class SlideAccept extends VBElement {
   #handle;
   #label;
   #track;
@@ -45,27 +46,15 @@ class SlideAccept extends HTMLElement {
     return thresholdAttr !== null && !isNaN(val) ? Math.min(100, Math.max(0, val)) : 90;
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     if (!this.#setupDone) {
       this.#build();
       this.#setupDone = true;
     }
 
-    this.#handle.addEventListener('pointerdown', this.#onPointerDown);
-    this.#handle.addEventListener('keydown', this.#onKeyDown);
-    this.#handle.addEventListener('transitionend', this.#onTransitionEnd);
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    if (this.#handle) {
-      this.#handle.removeEventListener('pointerdown', this.#onPointerDown);
-      this.#handle.removeEventListener('keydown', this.#onKeyDown);
-      this.#handle.removeEventListener('transitionend', this.#onTransitionEnd);
-    }
+    this.listen(this.#handle, 'pointerdown', this.#onPointerDown);
+    this.listen(this.#handle, 'keydown', this.#onKeyDown);
+    this.listen(this.#handle, 'transitionend', this.#onTransitionEnd);
   }
 
   #build() {

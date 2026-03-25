@@ -16,23 +16,21 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class QrCodeWc extends HTMLElement {
+class QrCodeWc extends VBElement {
   #canvas;
   /** @type {string | null} Saved source value (captured once) */
   #savedValue = null;
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     // Capture source value once before clearing DOM
     if (this.#savedValue === null) {
       this.#savedValue = this.getAttribute('value') || this.textContent.trim();
     }
 
     const value = this.#savedValue;
-    if (!value) return;
+    if (!value) return false;
 
     const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
     const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
@@ -44,11 +42,6 @@ class QrCodeWc extends HTMLElement {
     this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
 
     this.#render(value, size, ecl);
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   static get observedAttributes() {

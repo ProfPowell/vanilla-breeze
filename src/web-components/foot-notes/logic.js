@@ -14,14 +14,15 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class FootNotes extends HTMLElement {
+class FootNotes extends VBElement {
   static #instanceCount = 0;
   #instanceId;
   #refs = [];
   #backLabel = 'Back to content';
 
-  connectedCallback() {
+  setup() {
     // Generate unique instance ID for scoped element IDs
     this.#instanceId = ++FootNotes.#instanceCount;
 
@@ -38,11 +39,6 @@ class FootNotes extends HTMLElement {
     } else {
       this.#render();
     }
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #collectRefs() {

@@ -28,23 +28,21 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class IncludeFile extends HTMLElement {
+class IncludeFile extends VBElement {
   #observer;
   #abortController;
   /** @type {string | null} Saved original fallback content (captured once) */
   #fallbackHTML = null;
   #hasLoaded = false;
 
-  connectedCallback() {
+  setup() {
     // Guard: don't re-fetch on reconnect if already loaded
-    if (this.#hasLoaded) {
-      this.setAttribute('data-upgraded', '');
-      return;
-    }
+    if (this.#hasLoaded) return;
 
     const src = this.getAttribute('src');
-    if (!src) return;
+    if (!src) return false;
 
     // Capture fallback content once before first load
     if (this.#fallbackHTML === null) {
@@ -56,11 +54,9 @@ class IncludeFile extends HTMLElement {
     } else {
       this.#load(src);
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#observer?.disconnect();
     this.#abortController?.abort();
   }

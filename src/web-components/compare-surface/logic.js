@@ -18,17 +18,15 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class CompareSurface extends HTMLElement {
+class CompareSurface extends VBElement {
   #divider;
   #dragging = false;
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     const children = [...this.children];
-    if (children.length < 2) return;
+    if (children.length < 2) return false;
 
     // Warn if more than two content children
     if (children.length > 2) {
@@ -54,22 +52,16 @@ class CompareSurface extends HTMLElement {
     this.#setPosition(clamped);
 
     // Pointer events on divider
-    this.#divider.addEventListener('pointerdown', this.#onPointerDown);
-    this.#divider.addEventListener('keydown', this.#onKeyDown);
-    this.setAttribute('data-upgraded', '');
+    this.listen(this.#divider, 'pointerdown', this.#onPointerDown);
+    this.listen(this.#divider, 'keydown', this.#onKeyDown);
   }
 
-  disconnectedCallback() {
+  teardown() {
     if (this.#divider) {
-      this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
-      this.#divider.removeEventListener('keydown', this.#onKeyDown);
-      this.#divider.removeEventListener('pointermove', this.#onPointerMove);
-      this.#divider.removeEventListener('pointerup', this.#onPointerUp);
       this.#divider.remove();
       this.#divider = null;
     }
     this.#dragging = false;
-    this.removeAttribute('data-upgraded');
   }
 
   #onPointerDown = (e) => {

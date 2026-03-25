@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * print-page: Print button with optional raw-mode toggle
@@ -17,16 +18,13 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * <print-page raw-toggle>Print this page</print-page>
  */
 
-class PrintPage extends HTMLElement {
+class PrintPage extends VBElement {
   #button;
   #checkbox;
   /** @type {string | null} Saved authored label (captured once) */
   #savedLabel = null;
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     // Capture authored label once before clearing DOM
     if (this.#savedLabel === null) {
       this.#savedLabel = this.getAttribute('label') || this.textContent.trim() || 'Print this page';
@@ -46,7 +44,7 @@ class PrintPage extends HTMLElement {
     this.#button = document.createElement('button');
     this.#button.type = 'button';
     this.#button.textContent = label;
-    this.#button.addEventListener('click', this.#handlePrint);
+    this.listen(this.#button, 'click', this.#handlePrint);
     this.append(this.#button);
 
     // Optional: raw-mode toggle
@@ -59,14 +57,11 @@ class PrintPage extends HTMLElement {
       toggle.append(this.#checkbox, span);
       this.append(toggle);
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    if (this.#button) {
-      this.#button.removeEventListener('click', this.#handlePrint);
-    }
-    this.removeAttribute('data-upgraded');
+  teardown() {
+    this.#button = null;
+    this.#checkbox = null;
   }
 
   #handlePrint = () => {

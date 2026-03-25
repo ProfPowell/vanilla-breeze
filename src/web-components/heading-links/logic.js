@@ -15,22 +15,13 @@
  * </heading-links>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class HeadingLinks extends HTMLElement {
+class HeadingLinks extends VBElement {
   #observer;
   #processedHeadings = new WeakSet();
 
-  connectedCallback() {
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.#cleanup();
-  }
-
-  #setup() {
+  setup() {
     // Process existing headings
     this.#processHeadings();
 
@@ -46,7 +37,7 @@ class HeadingLinks extends HTMLElement {
     this.#observer.observe(this, { childList: true, subtree: true });
   }
 
-  #cleanup() {
+  teardown() {
     this.#observer?.disconnect();
   }
 
