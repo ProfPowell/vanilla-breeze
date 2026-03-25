@@ -14,7 +14,7 @@ import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
-import { initFormValidation } from './lib/form-validation.js';
+import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initAutoloader } from './lib/autoloader.js';
 import './lib/sw-register.js';
@@ -25,8 +25,8 @@ await ThemeManager.init();
 // Sync external components with theme
 initExternalThemeSync();
 
-// Form enhancements
-initFormValidation();
+// Form validation coordinator
+initFormCoordinator();
 initFormFieldEnhancements();
 
 // Lazy-load wizard only when [data-wizard] is present

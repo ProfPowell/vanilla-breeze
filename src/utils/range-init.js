@@ -68,8 +68,14 @@ function enhanceRange(input) {
     bubble.textContent = `${prefix}${input.value}${suffix}`;
     const min = parseFloat(input.min) || 0;
     const max = parseFloat(input.max) || 100;
-    const pct = ((parseFloat(input.value) - min) / (max - min)) * 100;
-    bubble.style.insetInlineStart = `${pct}%`;
+    const pct = (parseFloat(input.value) - min) / (max - min);
+
+    // Compute thumb center in pixels — wrapper may be wider than input
+    const inputWidth = input.offsetWidth;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const thumbSize = 1.25 * rem;
+    const thumbCenter = input.offsetLeft + thumbSize / 2 + pct * (inputWidth - thumbSize);
+    bubble.style.insetInlineStart = `${thumbCenter}px`;
   }
 
   // Tick markers
@@ -96,12 +102,20 @@ function enhanceRange(input) {
       const min = parseFloat(input.min) || 0;
       const max = parseFloat(input.max) || 100;
 
-      Array.from(/** @type {HTMLDataListElement} */ (datalist).options).forEach(option => {
-        const span = document.createElement('span');
-        span.textContent = option.label || option.value;
-        const pct = ((parseFloat(option.value) - min) / (max - min)) * 100;
-        span.style.insetInlineStart = `${pct}%`;
-        labels.appendChild(span);
+      // Defer label positioning until input has layout dimensions
+      requestAnimationFrame(() => {
+        const inputWidth = input.offsetWidth;
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const thumbSize = 1.25 * rem;
+
+        Array.from(/** @type {HTMLDataListElement} */ (datalist).options).forEach(option => {
+          const span = document.createElement('span');
+          span.textContent = option.label || option.value;
+          const pct = (parseFloat(option.value) - min) / (max - min);
+          const pos = input.offsetLeft + thumbSize / 2 + pct * (inputWidth - thumbSize);
+          span.style.insetInlineStart = `${pos}px`;
+          labels.appendChild(span);
+        });
       });
 
       wrapper.appendChild(labels);

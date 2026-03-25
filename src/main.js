@@ -9,7 +9,7 @@ import { initExternalThemeSync } from './utils/external-theme-sync.js';
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 // Lazy-load gestures only when [data-gesture] is present
 if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
-import { initFormValidation } from './lib/form-validation.js';
+import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import './lib/sw-register.js';
 export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
@@ -39,8 +39,8 @@ VB.observe();
 // Sync external components (browser-window, code-block) with theme
 initExternalThemeSync();
 
-// Suppress browser validation bubbles (CSS :user-valid/:user-invalid still work)
-initFormValidation();
+// Form validation coordinator (CSS :user-valid/:user-invalid still work without JS)
+initFormCoordinator();
 
 // Enhance form fields (password toggle, etc.)
 initFormFieldEnhancements();

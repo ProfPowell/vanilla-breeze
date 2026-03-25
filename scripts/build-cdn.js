@@ -385,6 +385,18 @@ async function buildCDN() {
     });
   }
 
+  // Build charts JS bundle (optional, includes SVC engine)
+  const chartsJsPath = join(SRC, 'main-charts.js');
+  if (existsSync(chartsJsPath)) {
+    await esbuild.build({
+      ...JS_DEFAULTS,
+      entryPoints: [chartsJsPath],
+      outfile: join(CDN, 'vanilla-breeze-charts.js'),
+      logLevel: 'info',
+      ignoreAnnotations: true,
+    });
+  }
+
   // Build dev CSS add-on
   const devCssPath = join(SRC, 'dev.css');
   if (existsSync(devCssPath)) {

@@ -16,7 +16,7 @@ import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
-import { initFormValidation } from './lib/form-validation.js';
+import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import './lib/sw-register.js';
 
@@ -26,8 +26,8 @@ await ThemeManager.init();
 // Sync external components (browser-window, code-block) with theme
 initExternalThemeSync();
 
-// Suppress browser validation bubbles (CSS :user-valid/:user-invalid still work)
-initFormValidation();
+// Form validation coordinator (CSS :user-valid/:user-invalid still work without JS)
+initFormCoordinator();
 
 // Enhance form fields (password toggle, etc.)
 initFormFieldEnhancements();
