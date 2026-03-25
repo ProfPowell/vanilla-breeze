@@ -123,9 +123,19 @@ class VBElement extends HTMLElement {
 
 **Feasibility concerns**: VB uses `registerComponent()` not `customElements.define()` — needs a custom analyzer plugin. `compendium.json` has HTML variant snippets CEM can't represent — CEM supplements but doesn't replace.
 
-**Next step**: Install `@custom-elements-manifest/analyzer`, write a minimal plugin for `registerComponent()`, test against 3-5 components. Decide based on output quality.
+**PoC result** (2026-03-25): Installed `@custom-elements-manifest/analyzer` with two custom plugins:
+1. `registerComponentPlugin` — resolves `registerComponent('tag', Class)` to associate tag names
+2. `hoistFileJsdocPlugin` — reads source files to hoist top-of-file `@attr`/`@fires`/description to the class (VB puts JSDoc above imports, not above the class)
 
-**Effort**: 1-2 days for PoC | **Risk**: Low (additive, no code changes)
+Tested against 5 components (tab-set, slide-accept, combo-box, tool-tip, accordion-wc). Output includes tag names, descriptions, typed attributes, and events — all auto-extracted from existing JSDoc.
+
+**CEM supplements but does not replace compendium.json**:
+- CEM adds: attributes with types, events, descriptions, member inventory (auto from JSDoc)
+- CEM cannot produce: HTML variant snippets, category/type classification, CSS file paths
+
+**Verdict**: ADOPT as an additive build artifact. Config at `custom-elements-manifest.config.mjs`. Expand globs to all components when ready. Useful for IDE autocomplete and doc page generation.
+
+**Effort**: 1-2 days for full rollout | **Risk**: Low (additive, no code changes)
 
 ---
 
@@ -145,7 +155,7 @@ class VBElement extends HTMLElement {
 | High | Document @scope decision rule in CSS authoring guide | 2 hours | ADOPT |
 | Medium | Add @scope to 7 gap components (consistency pass) | 1-2 days | ADOPT |
 | Medium | Build thin VBElement base class + incremental migration | 3-5 days | ADOPT |
-| Low | CEM proof-of-concept with `@custom-elements-manifest/analyzer` | 1-2 days | EVALUATE |
+| Low | CEM proof-of-concept with `@custom-elements-manifest/analyzer` | 1-2 days | ADOPT (PoC passed) |
 | — | Mandate @scope everywhere / Layer 2 | — | SKIP |
 | — | Elena's `all: unset` isolation pattern | — | SKIP |
 | — | Mixin composition pattern (revisit for headless lib) | — | SKIP |

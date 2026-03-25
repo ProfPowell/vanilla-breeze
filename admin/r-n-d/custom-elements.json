@@ -1,0 +1,1283 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/tab-set/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "TabSet",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#details",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#summaries",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#vtEnabled",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#previousIndex",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#initVT",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#switchTab",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "newIndex"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#setup",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#ensureOneOpen",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#handleToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#updateAriaStates",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#handleKey",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e"
+                },
+                {
+                  "name": "currentIndex"
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "tab-set:change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "tab-set",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "tab-set",
+          "declaration": {
+            "name": "TabSet",
+            "module": "src/web-components/tab-set/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "TabSet",
+          "declaration": {
+            "name": "TabSet",
+            "module": "src/web-components/tab-set/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/slide-accept/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A draggable handle users slide across a track to confirm an action.\nUses pointer capture for reliable drag, springs back if released early,\nand fires `slide-accept:accept` on activation.\n\nNo-JS fallback: the element's text content is displayed as a readable\nlabel inside a styled pill. JavaScript replaces this with the\ninteractive track + handle.",
+          "name": "SlideAccept",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#handle",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#label",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#track",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#dragging",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#position",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "#startX",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "#startPos",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "#activated",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#setupDone",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "activated",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "#threshold",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "#build",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "reset"
+            },
+            {
+              "kind": "field",
+              "name": "#onPointerDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#onPointerMove",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#onPointerUp",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#onKeyDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#onTransitionEnd",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#activate",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#springBack",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#setPosition",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "percent"
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "slide-accept:reset",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "slide-accept:accept",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "slide-accept",
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Track label text (default: \"Slide to confirm\")",
+              "fieldName": "label"
+            },
+            {
+              "name": "activated-label",
+              "type": {
+                "text": "string"
+              },
+              "description": "Label after activation (default: \"Confirmed!\")",
+              "fieldName": "activated-label"
+            },
+            {
+              "name": "attention",
+              "type": {
+                "text": "string"
+              },
+              "description": "Attention animation: \"shimmer\" | \"pulse\"",
+              "fieldName": "attention"
+            },
+            {
+              "name": "threshold",
+              "type": {
+                "text": "number"
+              },
+              "description": "Activation threshold 0-100 (default: 90)",
+              "fieldName": "threshold"
+            }
+          ],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "slide-accept",
+          "declaration": {
+            "name": "SlideAccept",
+            "module": "src/web-components/slide-accept/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "SlideAccept",
+          "declaration": {
+            "name": "SlideAccept",
+            "module": "src/web-components/slide-accept/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/combo-box/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Light DOM combobox following the W3C ARIA combobox pattern.\nParticipates in native form submission via ElementInternals.\nSupports single-select (default) and multi-select (multiple) modes.",
+          "name": "ComboBox",
+          "members": [
+            {
+              "kind": "field",
+              "name": "formAssociated",
+              "type": {
+                "text": "boolean"
+              },
+              "static": true,
+              "default": "true"
+            },
+            {
+              "kind": "field",
+              "name": "#internals",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#input",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#listbox",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#options",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#filteredOptions",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#activeIndex",
+              "privacy": "private",
+              "type": {
+                "text": "number"
+              },
+              "default": "-1"
+            },
+            {
+              "kind": "field",
+              "name": "#isOpen",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#usePopover",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#selectedValue",
+              "privacy": "private",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "#selectedLabel",
+              "privacy": "private",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "#initialValue",
+              "privacy": "private",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "#inputArea",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#liveRegion",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#selectedTags",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#isMultiple",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#collectOptions",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#addTag",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "label"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#removeTag",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "value"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#getMax",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#announce",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "message"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#handleInput",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleKeyDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleFocus",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleInputClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleOptionClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleOptionPointerDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleOutsideClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#filterOptions",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "query"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#focusOption",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#clearActiveDescendant",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#selectOption",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#selectByValue",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "fireEvent",
+                  "default": "true"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#onReposition",
+              "privacy": "private",
+              "description": "Bound handler for scroll/resize repositioning"
+            },
+            {
+              "kind": "method",
+              "name": "#open",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#close",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#anchorElement",
+              "privacy": "private",
+              "description": "Get the visible anchor element (tags container in multi mode, input in single)",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "#positionListbox",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handlePopoverToggle",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#syncFormValue",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#validate",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#fireChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback"
+            },
+            {
+              "kind": "method",
+              "name": "formStateRestoreCallback",
+              "parameters": [
+                {
+                  "name": "state"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "value"
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "values",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "labels",
+              "readonly": true
+            }
+          ],
+          "events": [
+            {
+              "name": "combo-box:change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "combo-box:open",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "combo-box:close",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "value"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "description": "Form field name",
+              "fieldName": "name"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Makes selection required",
+              "fieldName": "required"
+            },
+            {
+              "name": "filter",
+              "type": {
+                "text": "string"
+              },
+              "description": "Filter mode: \"startsWith\" | \"contains\" (default: \"contains\")",
+              "fieldName": "filter"
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "Input placeholder text",
+              "fieldName": "placeholder"
+            },
+            {
+              "name": "multiple",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enable multi-select tag mode",
+              "fieldName": "multiple"
+            },
+            {
+              "name": "max",
+              "type": {
+                "text": "number"
+              },
+              "description": "Maximum number of tags (multi mode)",
+              "fieldName": "max"
+            },
+            {
+              "name": "custom",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Allow typed entries (multi mode)",
+              "fieldName": "custom"
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "combo-box",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "combo-box",
+          "declaration": {
+            "name": "ComboBox",
+            "module": "src/web-components/combo-box/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ComboBox",
+          "declaration": {
+            "name": "ComboBox",
+            "module": "src/web-components/combo-box/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/tool-tip/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Wraps a trigger element and provides a tooltip on hover/focus.\nPrimary mechanism: sets `interestfor` attribute on trigger, letting\nthe browser (or polyfill) handle hover/focus timing and show/hide.\nFalls back to JS event listeners when interestfor is unavailable.",
+          "name": "ToolTip",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#trigger",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#tooltip",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#showTimer",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#hideTimer",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#useJsPositioning",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "!supportsAnchor"
+            },
+            {
+              "kind": "field",
+              "name": "#isCard",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#useInterestFor",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#savedTitle",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "#setupTooltip",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#setupCard",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "field",
+              "name": "#handleToggle",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#scheduleShow",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#scheduleHide",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#showImmediate",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#hideImmediate",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#cancelHide",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "#handleEscape",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "show"
+            },
+            {
+              "kind": "method",
+              "name": "hide"
+            },
+            {
+              "kind": "method",
+              "name": "#updatePosition",
+              "privacy": "private",
+              "description": "Position the tooltip relative to the trigger using JavaScript.\nUses fixed positioning to work correctly with top-layer popovers."
+            },
+            {
+              "kind": "method",
+              "name": "#positionCard",
+              "privacy": "private",
+              "description": "Position the card variant relative to the trigger.\nCenter-aligned horizontally with top/bottom viewport flip."
+            },
+            {
+              "kind": "field",
+              "name": "isVisible",
+              "readonly": true
+            }
+          ],
+          "events": [
+            {
+              "name": "tool-tip:show",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "tool-tip:hide",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "tool-tip",
+          "attributes": [
+            {
+              "name": "content",
+              "type": {
+                "text": "string"
+              },
+              "description": "Simple text tooltip content",
+              "fieldName": "content"
+            },
+            {
+              "name": "position",
+              "type": {
+                "text": "string"
+              },
+              "description": "Position: 'top' (default), 'bottom', 'left', 'right'",
+              "fieldName": "position"
+            },
+            {
+              "name": "delay",
+              "type": {
+                "text": "number"
+              },
+              "description": "Show delay in ms (default: 200)",
+              "fieldName": "delay"
+            },
+            {
+              "name": "variant",
+              "type": {
+                "text": "string"
+              },
+              "description": "Variant: omit for tooltip (default), 'card' for hover card",
+              "fieldName": "variant"
+            }
+          ],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "tool-tip",
+          "declaration": {
+            "name": "ToolTip",
+            "module": "src/web-components/tool-tip/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ToolTip",
+          "declaration": {
+            "name": "ToolTip",
+            "module": "src/web-components/tool-tip/logic.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/web-components/accordion-wc/logic.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Built on native <details>/<summary> for progressive enhancement.\nUses shared name attribute for single-open mode in supporting browsers.",
+          "name": "AccordionWc",
+          "members": [
+            {
+              "kind": "field",
+              "name": "#details",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#summaries",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#panels",
+              "privacy": "private",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "#vtEnabled",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "setup"
+            },
+            {
+              "kind": "method",
+              "name": "teardown"
+            },
+            {
+              "kind": "method",
+              "name": "#ensurePanelWrappers",
+              "privacy": "private",
+              "description": "Ensure each <details> has a single panel wrapper after <summary>.\nIf there are multiple siblings after summary, wrap them in a <div>.\nThis gives VT and ARIA a stable single target per panel."
+            },
+            {
+              "kind": "method",
+              "name": "#initVT",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#vtToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "detail"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#setup",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "#handleToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "toggledDetail"
+                },
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#handleKey",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "e"
+                },
+                {
+                  "name": "currentIndex"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "open",
+              "parameters": [
+                {
+                  "name": "index",
+                  "description": "Panel index (0-based)",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "Open a specific panel by index"
+            },
+            {
+              "kind": "method",
+              "name": "close",
+              "parameters": [
+                {
+                  "name": "index",
+                  "description": "Panel index (0-based)",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "Close a specific panel by index"
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "parameters": [
+                {
+                  "name": "index",
+                  "description": "Panel index (0-based)",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "Toggle a specific panel by index"
+            },
+            {
+              "kind": "method",
+              "name": "openAll",
+              "description": "Open all panels (only works when not in single mode)"
+            },
+            {
+              "kind": "method",
+              "name": "closeAll",
+              "description": "Close all panels"
+            }
+          ],
+          "events": [
+            {
+              "name": "accordion-wc:toggle",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "VBElement",
+            "module": "/src/lib/vb-element.js"
+          },
+          "tagName": "accordion-wc",
+          "attributes": [
+            {
+              "name": "single",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Only allow one panel open at a time",
+              "fieldName": "single"
+            },
+            {
+              "name": "bordered",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Add borders between items",
+              "fieldName": "bordered"
+            },
+            {
+              "name": "flush",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Remove inline padding",
+              "fieldName": "flush"
+            },
+            {
+              "name": "compact",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Use smaller padding",
+              "fieldName": "compact"
+            },
+            {
+              "name": "indicator",
+              "type": {
+                "text": "string"
+              },
+              "description": "Indicator style: \"plus-minus\", \"none\", \"custom\"",
+              "fieldName": "indicator"
+            },
+            {
+              "name": "transition",
+              "type": {
+                "text": "string"
+              },
+              "description": "View Transition type: \"fade\" (default), \"slide\", \"scale\"",
+              "fieldName": "transition"
+            }
+          ],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "accordion-wc",
+          "declaration": {
+            "name": "AccordionWc",
+            "module": "src/web-components/accordion-wc/logic.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "AccordionWc",
+          "declaration": {
+            "name": "AccordionWc",
+            "module": "src/web-components/accordion-wc/logic.js"
+          }
+        }
+      ]
+    }
+  ]
+}
