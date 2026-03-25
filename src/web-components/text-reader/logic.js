@@ -14,8 +14,9 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class TextReader extends HTMLElement {
+class TextReader extends VBElement {
 
   // ---------- private fields ----------
 
@@ -81,10 +82,10 @@ class TextReader extends HTMLElement {
 
   // ---------- lifecycle ----------
 
-  connectedCallback() {
+  setup() {
     if (!('speechSynthesis' in window)) {
       this.style.display = 'none';
-      return;
+      return false;
     }
 
     this.#render();
@@ -93,15 +94,12 @@ class TextReader extends HTMLElement {
     this.#voicesPromise = this.#loadVoices();
     this.#voicesPromise.then(voices => this.#populateVoiceSelect(voices));
 
-    window.addEventListener('beforeunload', this.#handleBeforeUnload);
-    this.setAttribute('data-upgraded', '');
+    this.listen(window, 'beforeunload', this.#handleBeforeUnload);
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.stop();
     this.#removeHighlightSheet();
-    window.removeEventListener('beforeunload', this.#handleBeforeUnload);
   }
 
   // ---------- public API ----------

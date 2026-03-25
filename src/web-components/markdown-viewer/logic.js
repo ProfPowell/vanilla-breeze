@@ -40,9 +40,10 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { marked as markedLib } from 'marked';
 
-class MarkdownViewer extends HTMLElement {
+class MarkdownViewer extends VBElement {
   /** @type {Function|null} Custom parser override (md string → html string) */
   #parser = null;
   /** @type {AbortController|null} */
@@ -54,15 +55,12 @@ class MarkdownViewer extends HTMLElement {
     return ['src'];
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-    this.setAttribute('data-upgraded', '');
+  setup() {
     this.#render();
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#abortController?.abort();
-    this.removeAttribute('data-upgraded');
     this.removeAttribute('data-rendered');
     this.removeAttribute('data-loading');
   }

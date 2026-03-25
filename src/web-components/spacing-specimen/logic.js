@@ -20,17 +20,13 @@
  * <spacing-specimen tokens="xs,s,m,l,xl" label="Core Scale"></spacing-specimen>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class SpacingSpecimen extends HTMLElement {
+class SpacingSpecimen extends VBElement {
   static observedAttributes = ['tokens', 'prefix', 'show-values', 'label'];
 
-  connectedCallback() {
+  setup() {
     this.#render();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback() {

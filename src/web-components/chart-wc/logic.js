@@ -21,6 +21,7 @@ import {
 } from '@profpowell/svc';
 
 import {registerComponent} from '../../lib/bundle-registry.js';
+import {VBElement} from '../../lib/vb-element.js';
 import {extractTableData, extractTableConfig} from './table-extractor.js';
 import {getVBChartConfig} from './theme-bridge.js';
 
@@ -57,7 +58,7 @@ function mergeDeep(target, source) {
   return target;
 }
 
-class ChartWc extends HTMLElement {
+class ChartWc extends VBElement {
   static get observedAttributes() {
     return [
       'data-type',
@@ -118,15 +119,12 @@ class ChartWc extends HTMLElement {
 
   // -- Lifecycle --
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-    this.setAttribute('data-upgraded', '');
+  setup() {
     this.#queueRender();
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#destroyChart();
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback() {

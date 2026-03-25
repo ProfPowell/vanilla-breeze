@@ -18,8 +18,9 @@
  * </split-surface>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class SplitSurface extends HTMLElement {
+class SplitSurface extends VBElement {
   #divider;
   #first;
   #second;
@@ -70,12 +71,10 @@ class SplitSurface extends HTMLElement {
     this.#clearPersist();
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     // Select panels: exclude any previously-generated divider
     const panels = [...this.children].filter(el => !el.classList.contains('split-divider'));
-    if (panels.length < 2) return;
+    if (panels.length < 2) return false;
 
     this.#first = panels[0];
     this.#second = panels[1];
@@ -102,24 +101,19 @@ class SplitSurface extends HTMLElement {
     this.#setPosition(initial);
 
     // Events
-    this.#divider.addEventListener('pointerdown', this.#onPointerDown);
-    this.#divider.addEventListener('keydown', this.#onKeyDown);
+    this.listen(this.#divider, 'pointerdown', this.#onPointerDown);
+    this.listen(this.#divider, 'keydown', this.#onKeyDown);
 
     if (this.hasAttribute('collapsible')) {
-      this.#divider.addEventListener('dblclick', this.#onDblClick);
+      this.listen(this.#divider, 'dblclick', this.#onDblClick);
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     if (this.#divider) {
-      this.#divider.removeEventListener('pointerdown', this.#onPointerDown);
-      this.#divider.removeEventListener('keydown', this.#onKeyDown);
-      this.#divider.removeEventListener('dblclick', this.#onDblClick);
       this.#divider.remove();
       this.#divider = null;
     }
-    this.removeAttribute('data-upgraded');
   }
 
   #onPointerDown = (e) => {

@@ -52,8 +52,9 @@
 
 import { sanitizeHTML } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class ChatWindow extends HTMLElement {
+class ChatWindow extends VBElement {
   /** @type {HTMLElement} */
   #thread = /** @type {*} */ (null);
   /** @type {HTMLElement} */
@@ -64,23 +65,16 @@ class ChatWindow extends HTMLElement {
   /** @type {HTMLElement | null} */
   #emptyEl = null;
 
-  connectedCallback() {
+  setup() {
     this.#discoverChildren();
     this.#loadParticipants();
     this.#syncModel();
     this.#resolveExistingLabels();
     this.#updateEmptyState();
     this.#bindEvents();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.removeEventListener('chat-input:send', this.#handleSend);
-    if (this.#modelSelect) {
-      this.#modelSelect.removeEventListener('change', this.#handleModelChange);
-    }
-  }
+  teardown() {}
 
   // --- Child discovery ---
 
@@ -140,10 +134,10 @@ class ChatWindow extends HTMLElement {
   // --- Events ---
 
   #bindEvents() {
-    this.addEventListener('chat-input:send', this.#handleSend);
+    this.listen(this, 'chat-input:send', this.#handleSend);
 
     if (this.#modelSelect) {
-      this.#modelSelect.addEventListener('change', this.#handleModelChange);
+      this.listen(this.#modelSelect, 'change', this.#handleModelChange);
     }
   }
 

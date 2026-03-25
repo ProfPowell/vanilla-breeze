@@ -22,8 +22,9 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class StarRating extends HTMLElement {
+class StarRating extends VBElement {
   static formAssociated = true;
 
   #internals;
@@ -35,14 +36,8 @@ class StarRating extends HTMLElement {
     this.#internals = this.attachInternals();
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
+  setup() {
     this.#build();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #build() {

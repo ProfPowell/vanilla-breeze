@@ -35,10 +35,11 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </combo-box>
  */
 
+import { VBElement } from '../../lib/vb-element.js';
 import { setRole } from '../../utils/form-internals.js';
 import { supportsPopover } from '../../utils/popover-support.js';
 
-class ComboBox extends HTMLElement {
+class ComboBox extends VBElement {
   static formAssociated = true;
 
   #internals;
@@ -69,27 +70,15 @@ class ComboBox extends HTMLElement {
     return this.hasAttribute('multiple');
   }
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.#cleanup();
-  }
-
-  #setup() {
+  setup() {
     // Find input (may be direct child or inside .tags-input-area from prior upgrade)
     this.#input = this.querySelector(':scope > input') ||
                   this.querySelector(':scope > .tags-input-area > input');
-    if (!this.#input) return;
+    if (!this.#input) return false;
 
     // Find listbox
     this.#listbox = this.querySelector(':scope > ul, :scope > ol');
-    if (!this.#listbox) return;
+    if (!this.#listbox) return false;
 
     // Progressive enhancement: use Popover API when available
     this.#usePopover = supportsPopover;
@@ -150,16 +139,16 @@ class ComboBox extends HTMLElement {
     }
 
     // Bind events
-    this.#input.addEventListener('input', this.#handleInput);
-    this.#input.addEventListener('keydown', this.#handleKeyDown);
-    this.#input.addEventListener('focus', this.#handleFocus);
-    this.#input.addEventListener('click', this.#handleInputClick);
-    this.#listbox.addEventListener('click', this.#handleOptionClick);
-    this.#listbox.addEventListener('pointerdown', this.#handleOptionPointerDown);
-    document.addEventListener('click', this.#handleOutsideClick);
+    this.listen(this.#input, 'input', this.#handleInput);
+    this.listen(this.#input, 'keydown', this.#handleKeyDown);
+    this.listen(this.#input, 'focus', this.#handleFocus);
+    this.listen(this.#input, 'click', this.#handleInputClick);
+    this.listen(this.#listbox, 'click', this.#handleOptionClick);
+    this.listen(this.#listbox, 'pointerdown', this.#handleOptionPointerDown);
+    this.listen(document, 'click', this.#handleOutsideClick);
 
     if (this.#usePopover) {
-      this.#listbox.addEventListener('toggle', this.#handlePopoverToggle);
+      this.listen(this.#listbox, 'toggle', this.#handlePopoverToggle);
     }
 
     // Initial form sync
@@ -170,19 +159,8 @@ class ComboBox extends HTMLElement {
     this.#close();
   }
 
-  #cleanup() {
-    if (this.#input) {
-      this.#input.removeEventListener('input', this.#handleInput);
-      this.#input.removeEventListener('keydown', this.#handleKeyDown);
-      this.#input.removeEventListener('focus', this.#handleFocus);
-      this.#input.removeEventListener('click', this.#handleInputClick);
-    }
-    if (this.#listbox) {
-      this.#listbox.removeEventListener('click', this.#handleOptionClick);
-      this.#listbox.removeEventListener('pointerdown', this.#handleOptionPointerDown);
-      this.#listbox.removeEventListener('toggle', this.#handlePopoverToggle);
-    }
-    document.removeEventListener('click', this.#handleOutsideClick);
+  teardown() {
+    // Clean up scroll/resize listeners that may be active from #open()
     window.removeEventListener('scroll', this.#onReposition, { capture: true });
     window.removeEventListener('resize', this.#onReposition);
   }

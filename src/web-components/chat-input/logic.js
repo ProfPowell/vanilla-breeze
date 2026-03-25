@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * chat-input: Form-associated chat input with auto-growing textarea
@@ -25,7 +26,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </chat-input>
  */
 
-class ChatInput extends HTMLElement {
+class ChatInput extends VBElement {
   static formAssociated = true;
 
   #internals;
@@ -38,18 +39,18 @@ class ChatInput extends HTMLElement {
     this.#internals = this.attachInternals();
   }
 
-  connectedCallback() {
+  setup() {
     this.#textarea = this.querySelector(':scope > textarea, :scope textarea[data-grow]');
     this.#sendBtn = this.querySelector('[data-send]');
 
-    if (!this.#textarea) return;
+    if (!this.#textarea) return false;
 
     // Bind events
-    this.#textarea.addEventListener('keydown', this.#handleKeyDown);
-    this.#textarea.addEventListener('input', this.#handleInput);
+    this.listen(this.#textarea, 'keydown', this.#handleKeyDown);
+    this.listen(this.#textarea, 'input', this.#handleInput);
 
     if (this.#sendBtn) {
-      this.#sendBtn.addEventListener('click', this.#handleSend);
+      this.listen(this.#sendBtn, 'click', this.#handleSend);
     }
 
     // Sync initial form value
@@ -60,18 +61,9 @@ class ChatInput extends HTMLElement {
     if (this.hasAttribute('autofocus')) {
       requestAnimationFrame(() => this.#textarea.focus());
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    if (this.#textarea) {
-      this.#textarea.removeEventListener('keydown', this.#handleKeyDown);
-      this.#textarea.removeEventListener('input', this.#handleInput);
-    }
-    if (this.#sendBtn) {
-      this.#sendBtn.removeEventListener('click', this.#handleSend);
-    }
+  teardown() {
     clearTimeout(this.#debounceTimer);
   }
 
