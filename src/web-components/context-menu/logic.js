@@ -24,8 +24,9 @@ import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 import { supportsPopover } from '../../utils/popover-support.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class ContextMenuWc extends HTMLElement {
+class ContextMenuWc extends VBElement {
   #trigger;
   #menu;
   #items = [];
@@ -34,20 +35,10 @@ class ContextMenuWc extends HTMLElement {
   #unbindFns = [];
   #usePopover = false;
 
-  connectedCallback() {
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.#cleanup();
-  }
-
-  #setup() {
+  setup() {
     this.#trigger = this.querySelector(':scope > [data-trigger]');
     this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
-    if (!this.#trigger || !this.#menu) return;
+    if (!this.#trigger || !this.#menu) return false;
 
     // Progressive enhancement: use Popover API when available
     this.#usePopover = supportsPopover;
@@ -78,7 +69,7 @@ class ContextMenuWc extends HTMLElement {
       item.setAttribute('tabindex', '-1');
       // Reset theme button styles (border/shadow leak from unlayered theme rules)
       item.style.cssText += ';border:none;box-shadow:none;transform:none;border-radius:0;';
-      item.addEventListener('click', this.#handleItemClick);
+      this.listen(item, 'click', this.#handleItemClick);
 
       // Shortcut badges + real bindings
       const shortcut = item.getAttribute('data-shortcut');
@@ -99,36 +90,22 @@ class ContextMenuWc extends HTMLElement {
     });
 
     // Event listeners
-    this.#trigger.addEventListener('contextmenu', this.#handleContextMenu);
-    this.#menu.addEventListener('keydown', this.#handleMenuKeyDown);
-    window.addEventListener('scroll', this.#handleScroll, true);
+    this.listen(this.#trigger, 'contextmenu', this.#handleContextMenu);
+    this.listen(this.#menu, 'keydown', this.#handleMenuKeyDown);
+    this.listen(window, 'scroll', this.#handleScroll, { capture: true });
 
     if (this.#usePopover) {
-      this.#menu.addEventListener('toggle', this.#handlePopoverToggle);
+      this.listen(this.#menu, 'toggle', this.#handlePopoverToggle);
     } else {
-      document.addEventListener('click', this.#handleOutsideClick);
-      document.addEventListener('contextmenu', this.#handleOutsideContext);
-      document.addEventListener('keydown', this.#handleEscape);
+      this.listen(document, 'click', this.#handleOutsideClick);
+      this.listen(document, 'contextmenu', this.#handleOutsideContext);
+      this.listen(document, 'keydown', this.#handleEscape);
     }
   }
 
-  #cleanup() {
-    if (this.#trigger) {
-      this.#trigger.removeEventListener('contextmenu', this.#handleContextMenu);
-    }
-    if (this.#menu) {
-      this.#menu.removeEventListener('keydown', this.#handleMenuKeyDown);
-      this.#menu.removeEventListener('toggle', this.#handlePopoverToggle);
-    }
-    this.#items.forEach(item => {
-      item.removeEventListener('click', this.#handleItemClick);
-    });
+  teardown() {
     this.#unbindFns.forEach(fn => fn());
     this.#unbindFns = [];
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('contextmenu', this.#handleOutsideContext);
-    document.removeEventListener('keydown', this.#handleEscape);
-    window.removeEventListener('scroll', this.#handleScroll, true);
   }
 
   #handleContextMenu = (e) => {

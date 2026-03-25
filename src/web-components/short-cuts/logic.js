@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * short-cuts: Keyboard shortcuts help overlay
@@ -16,13 +17,12 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 
-class ShortCuts extends HTMLElement {
+class ShortCuts extends VBElement {
   #dialog;
   /** @type {(() => void) | null} */
   #unbindHotkey = null;
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
+  setup() {
     this.#build();
     this.#unbindHotkey = /** @type {() => void} */ (bindHotkey('shift+?', () => {
       if (this.#dialog.open) {
@@ -31,11 +31,9 @@ class ShortCuts extends HTMLElement {
         this.#open();
       }
     }));
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#unbindHotkey?.();
     this.#unbindHotkey = null;
     this.#dialog?.remove();

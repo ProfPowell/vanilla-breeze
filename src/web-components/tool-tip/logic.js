@@ -1,3 +1,4 @@
+import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
 /**
@@ -54,7 +55,7 @@ function canUseInterestFor(trigger) {
   return false;
 }
 
-class ToolTip extends HTMLElement {
+class ToolTip extends VBElement {
   #trigger;
   #tooltip;
   #showTimer;
@@ -64,18 +65,7 @@ class ToolTip extends HTMLElement {
   #useInterestFor = false;
   #savedTitle;
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.#cleanup();
-    this.removeAttribute('data-upgraded');
-  }
-
-  #setup() {
+  setup() {
     this.#isCard = this.getAttribute('variant') === 'card';
 
     if (this.#isCard) {
@@ -153,17 +143,17 @@ class ToolTip extends HTMLElement {
 
       // Position on show for JS fallback positioning
       if (this.#useJsPositioning) {
-        this.#tooltip.addEventListener('toggle', this.#handleToggle);
+        this.listen(this.#tooltip, 'toggle', this.#handleToggle);
       }
     } else {
       // Fallback: JS event listeners
       this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
-      this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
-      this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
-      this.#trigger.addEventListener('focus', this.#showImmediate);
-      this.#trigger.addEventListener('blur', this.#hideImmediate);
-      this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
-      this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
+      this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
+      this.listen(this.#trigger, 'mouseleave', this.#scheduleHide);
+      this.listen(this.#trigger, 'focus', this.#showImmediate);
+      this.listen(this.#trigger, 'blur', this.#hideImmediate);
+      this.listen(this.#tooltip, 'mouseenter', this.#cancelHide);
+      this.listen(this.#tooltip, 'mouseleave', this.#scheduleHide);
     }
   }
 
@@ -193,28 +183,23 @@ class ToolTip extends HTMLElement {
       this.#trigger.setAttribute('interestfor', this.#tooltip.id);
 
       // Position card on show
-      this.#tooltip.addEventListener('toggle', this.#handleToggle);
+      this.listen(this.#tooltip, 'toggle', this.#handleToggle);
     } else {
       // Fallback: JS event listeners
-      this.#trigger.addEventListener('mouseenter', this.#scheduleShow);
-      this.#trigger.addEventListener('mouseleave', this.#scheduleHide);
-      this.#trigger.addEventListener('focus', this.#showImmediate);
-      this.#trigger.addEventListener('blur', this.#scheduleHide);
-      this.#tooltip.addEventListener('mouseenter', this.#cancelHide);
-      this.#tooltip.addEventListener('mouseleave', this.#scheduleHide);
-      document.addEventListener('keydown', this.#handleEscape);
+      this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
+      this.listen(this.#trigger, 'mouseleave', this.#scheduleHide);
+      this.listen(this.#trigger, 'focus', this.#showImmediate);
+      this.listen(this.#trigger, 'blur', this.#scheduleHide);
+      this.listen(this.#tooltip, 'mouseenter', this.#cancelHide);
+      this.listen(this.#tooltip, 'mouseleave', this.#scheduleHide);
+      this.listen(document, 'keydown', this.#handleEscape);
     }
   }
 
-  #cleanup() {
+  teardown() {
     if (this.#trigger) {
       if (this.#useInterestFor) {
         this.#trigger.removeAttribute('interestfor');
-      } else {
-        this.#trigger.removeEventListener('mouseenter', this.#scheduleShow);
-        this.#trigger.removeEventListener('mouseleave', this.#scheduleHide);
-        this.#trigger.removeEventListener('focus', this.#showImmediate);
-        this.#trigger.removeEventListener('blur', this.#hideImmediate);
       }
       // Restore saved title on trigger
       if (this.#savedTitle) {
@@ -223,15 +208,9 @@ class ToolTip extends HTMLElement {
       }
     }
     if (this.#tooltip) {
-      this.#tooltip.removeEventListener('mouseenter', this.#cancelHide);
-      this.#tooltip.removeEventListener('mouseleave', this.#scheduleHide);
-      this.#tooltip.removeEventListener('toggle', this.#handleToggle);
       // Remove generated popover to prevent duplication on reconnect
       this.#tooltip.remove();
       this.#tooltip = null;
-    }
-    if (this.#isCard && !this.#useInterestFor) {
-      document.removeEventListener('keydown', this.#handleEscape);
     }
     clearTimeout(this.#showTimer);
     clearTimeout(this.#hideTimer);

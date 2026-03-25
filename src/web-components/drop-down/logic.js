@@ -34,9 +34,10 @@
  */
 
 import { supportsPopover } from '../../utils/popover-support.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
-class DropDown extends HTMLElement {
+class DropDown extends VBElement {
   #trigger;
   #menu;
   #items = [];
@@ -47,27 +48,17 @@ class DropDown extends HTMLElement {
   #closeTimeout = null;
   #usePopover = false;
 
-  connectedCallback() {
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.#cleanup();
-  }
-
-  #setup() {
+  setup() {
     // Find trigger
     this.#trigger = this.querySelector(':scope > [data-trigger]');
     if (!this.#trigger) {
       this.#trigger = this.querySelector(':scope > button');
     }
-    if (!this.#trigger) return;
+    if (!this.#trigger) return false;
 
     // Find menu
     this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
-    if (!this.#menu) return;
+    if (!this.#menu) return false;
 
     // Check for hover mode
     this.#hoverMode = this.hasAttribute('hover');
@@ -94,45 +85,31 @@ class DropDown extends HTMLElement {
     // Event listeners
     if (this.#hoverMode) {
       // Hover mode: open on hover/focus, click navigates (for link triggers)
-      this.addEventListener('mouseenter', this.#handleMouseEnter);
-      this.addEventListener('mouseleave', this.#handleMouseLeave);
-      this.#trigger.addEventListener('focus', this.#handleTriggerFocus);
-      this.#trigger.addEventListener('blur', this.#handleTriggerBlur);
+      this.listen(this, 'mouseenter', this.#handleMouseEnter);
+      this.listen(this, 'mouseleave', this.#handleMouseLeave);
+      this.listen(this.#trigger, 'focus', this.#handleTriggerFocus);
+      this.listen(this.#trigger, 'blur', this.#handleTriggerBlur);
     } else {
       // Click mode: toggle on click
-      this.#trigger.addEventListener('click', this.#handleTriggerClick);
+      this.listen(this.#trigger, 'click', this.#handleTriggerClick);
     }
-    this.#trigger.addEventListener('keydown', this.#handleTriggerKeyDown);
-    this.#menu.addEventListener('keydown', this.#handleMenuKeyDown);
+    this.listen(this.#trigger, 'keydown', this.#handleTriggerKeyDown);
+    this.listen(this.#menu, 'keydown', this.#handleMenuKeyDown);
 
     if (this.#usePopover) {
       // Sync internal state when popover is dismissed natively (light-dismiss, Escape)
-      this.#menu.addEventListener('toggle', this.#handlePopoverToggle);
+      this.listen(this.#menu, 'toggle', this.#handlePopoverToggle);
     } else {
       // Legacy: manual outside-click and Escape handling
-      document.addEventListener('click', this.#handleOutsideClick);
-      document.addEventListener('keydown', this.#handleEscape);
+      this.listen(document, 'click', this.#handleOutsideClick);
+      this.listen(document, 'keydown', this.#handleEscape);
     }
   }
 
-  #cleanup() {
+  teardown() {
     if (this.#closeTimeout) {
       clearTimeout(this.#closeTimeout);
     }
-    if (this.#trigger) {
-      this.#trigger.removeEventListener('click', this.#handleTriggerClick);
-      this.#trigger.removeEventListener('keydown', this.#handleTriggerKeyDown);
-      this.#trigger.removeEventListener('focus', this.#handleTriggerFocus);
-      this.#trigger.removeEventListener('blur', this.#handleTriggerBlur);
-    }
-    if (this.#menu) {
-      this.#menu.removeEventListener('keydown', this.#handleMenuKeyDown);
-      this.#menu.removeEventListener('toggle', this.#handlePopoverToggle);
-    }
-    this.removeEventListener('mouseenter', this.#handleMouseEnter);
-    this.removeEventListener('mouseleave', this.#handleMouseLeave);
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('keydown', this.#handleEscape);
   }
 
   #collectItems() {

@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * site-index: Interactive site keyword index
@@ -20,7 +21,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </nav>
  * </site-index>
  */
-class SiteIndex extends HTMLElement {
+class SiteIndex extends VBElement {
   /** @type {IntersectionObserver|null} */
   #observer = null;
   /** @type {Element[]} */
@@ -28,7 +29,7 @@ class SiteIndex extends HTMLElement {
   /** @type {HTMLSelectElement|null} */
   #scopeSelect = null;
 
-  connectedCallback() {
+  setup() {
     const src = this.getAttribute('src');
     if (src) {
       this.#loadFromSrc(src).then(() => this.#enhance());
@@ -37,9 +38,8 @@ class SiteIndex extends HTMLElement {
     }
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#observer?.disconnect();
-    this.removeAttribute('data-upgraded');
   }
 
   #enhance() {
@@ -53,7 +53,6 @@ class SiteIndex extends HTMLElement {
     }
 
     this.#applyDisplayLimit();
-    this.setAttribute('data-upgraded', '');
   }
 
   /* ── Section order cache for sort restore ── */

@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * site-map: Interactive HTML sitemap
@@ -16,8 +17,8 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </nav>
  * </site-map>
  */
-class SiteMap extends HTMLElement {
-  connectedCallback() {
+class SiteMap extends VBElement {
+  setup() {
     this.#markCurrentPage();
     this.#autoExpandCurrent();
     this.#addControls();
@@ -25,12 +26,6 @@ class SiteMap extends HTMLElement {
     if (this.getAttribute('src')) {
       this.#loadFromSrc();
     }
-
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #markCurrentPage() {

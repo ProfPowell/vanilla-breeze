@@ -28,6 +28,7 @@
 
 import { startSwapTransition } from '../../utils/swap-transition.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 let swapInstanceId = 0;
 
@@ -176,22 +177,17 @@ function moveFocus(face) {
 /**
  * <content-swap> custom element
  */
-class ContentSwap extends HTMLElement {
+class ContentSwap extends VBElement {
   /** @type {(() => void) | null} */
   #cleanup = null;
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#cleanup = initSwapBehavior(this) ?? null;
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#cleanup?.();
     this.#cleanup = null;
-    this.removeAttribute('data-upgraded');
   }
 
   /** Swap to show the back face */

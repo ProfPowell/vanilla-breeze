@@ -18,9 +18,10 @@
  *   duration: 3000
  * });
  */
+import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
-class ToastMsg extends HTMLElement {
+class ToastMsg extends VBElement {
   #queue = [];
   #visible = [];
 
@@ -28,21 +29,18 @@ class ToastMsg extends HTMLElement {
     return ['position', 'max'];
   }
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
+  setup() {
     this.setAttribute('role', 'region');
     this.setAttribute('aria-label', 'Notifications');
     this.setAttribute('aria-live', 'polite');
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#visible.forEach(toast => {
       if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
     });
     this.#queue = [];
     this.#visible = [];
-    this.removeAttribute('data-upgraded');
   }
 
   /**
