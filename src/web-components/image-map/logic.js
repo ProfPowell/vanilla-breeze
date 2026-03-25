@@ -19,6 +19,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -143,7 +144,7 @@ class MapAreaWc extends HTMLElement {
 
 // --- ImageMapWc ---
 
-class ImageMapWc extends HTMLElement {
+class ImageMapWc extends VBElement {
   /** @type {HTMLImageElement} */
   #img = /** @type {*} */ (null);
   /** @type {SVGSVGElement} */
@@ -161,7 +162,7 @@ class ImageMapWc extends HTMLElement {
   /** @type {object | null} */
   #touchedArea = null;
 
-  connectedCallback() {
+  setup() {
     // Find child <img> or create from src/alt attrs
     this.#img = /** @type {HTMLImageElement} */ (this.querySelector(':scope > img'));
     if (!this.#img) {
@@ -173,7 +174,7 @@ class ImageMapWc extends HTMLElement {
         this.#img.alt = alt || '';
         this.prepend(this.#img);
       } else {
-        return; // Nothing to work with
+        return false; // Nothing to work with
       }
     }
 
@@ -187,20 +188,9 @@ class ImageMapWc extends HTMLElement {
     }
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#resizeObs?.disconnect();
     this.#hideTooltip();
-
-    // Clean up event listeners on SVG shapes
-    for (const data of this.#areaData) {
-      if (data._onEnter) data.svgShape?.removeEventListener('pointerenter', data._onEnter);
-      if (data._onLeave) data.svgShape?.removeEventListener('pointerleave', data._onLeave);
-      if (data._onClick) data.svgShape?.removeEventListener('click', data._onClick);
-      if (data._onTouch) data.svgShape?.removeEventListener('touchstart', data._onTouch);
-      if (data._onFocus) data.anchor?.removeEventListener('focus', data._onFocus);
-      if (data._onBlur) data.anchor?.removeEventListener('blur', data._onBlur);
-    }
 
     // Remove generated DOM
     this.#svg?.remove();
@@ -282,41 +272,29 @@ class ImageMapWc extends HTMLElement {
         svgShape,
         anchor,
         contentHTML,
-        /** @type {EventListener | null} */
-        _onEnter: null,
-        /** @type {EventListener | null} */
-        _onLeave: null,
-        /** @type {EventListener | null} */
-        _onClick: null,
-        /** @type {EventListener | null} */
-        _onTouch: null,
-        /** @type {EventListener | null} */
-        _onFocus: null,
-        /** @type {EventListener | null} */
-        _onBlur: null,
       };
 
       // Pointer events on SVG shape
       if (!mapArea.disabled) {
         const tooltipMode = mapArea.tooltipMode;
 
-        data._onEnter = () => {
+        this.listen(svgShape, 'pointerenter', () => {
           if (tooltipMode === 'hover') {
             this.#showTooltip(data);
           }
           svgShape.setAttribute('data-hover', '');
           this.#dispatch('image-map:area-enter', mapArea);
-        };
+        });
 
-        data._onLeave = () => {
+        this.listen(svgShape, 'pointerleave', () => {
           if (tooltipMode === 'hover') {
             this.#hideTooltip();
           }
           svgShape.removeAttribute('data-hover');
           this.#dispatch('image-map:area-leave', mapArea);
-        };
+        });
 
-        data._onClick = (e) => {
+        this.listen(svgShape, 'click', () => {
           if (tooltipMode === 'click') {
             if (this.#activeArea === data) {
               this.#hideTooltip();
@@ -334,10 +312,10 @@ class ImageMapWc extends HTMLElement {
               window.location.href = mapArea.href;
             }
           }
-        };
+        });
 
         // Touch: two-tap pattern for hover mode
-        data._onTouch = (e) => {
+        this.listen(svgShape, 'touchstart', (e) => {
           if (tooltipMode === 'hover') {
             if (this.#touchedArea !== data) {
               e.preventDefault();
@@ -348,26 +326,18 @@ class ImageMapWc extends HTMLElement {
               this.#touchedArea = null;
             }
           }
-        };
-
-        svgShape.addEventListener('pointerenter', data._onEnter);
-        svgShape.addEventListener('pointerleave', data._onLeave);
-        svgShape.addEventListener('click', data._onClick);
-        svgShape.addEventListener('touchstart', data._onTouch, { passive: false });
+        }, { passive: false });
 
         // Focus/blur on anchor
-        data._onFocus = () => {
+        this.listen(anchor, 'focus', () => {
           this.#showTooltip(data);
           svgShape.setAttribute('data-hover', '');
-        };
+        });
 
-        data._onBlur = () => {
+        this.listen(anchor, 'blur', () => {
           this.#hideTooltip();
           svgShape.removeAttribute('data-hover');
-        };
-
-        anchor.addEventListener('focus', data._onFocus);
-        anchor.addEventListener('blur', data._onBlur);
+        });
       }
 
       this.#svg.appendChild(svgShape);
@@ -383,7 +353,7 @@ class ImageMapWc extends HTMLElement {
     this.appendChild(this.#tooltip);
 
     // Keyboard navigation on host
-    this.addEventListener('keydown', this.#onKeyDown);
+    this.listen(this, 'keydown', this.#onKeyDown);
 
     // ResizeObserver for tooltip repositioning
     this.#resizeObs = new ResizeObserver(() => {

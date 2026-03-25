@@ -44,11 +44,12 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const IDLE_TIMEOUT = 3000
 
-class VideoPlayerElement extends HTMLElement {
+class VideoPlayerElement extends VBElement {
 
   // ─── State ─────────────────────────────────────────────────────────────────
 
@@ -95,9 +96,9 @@ class VideoPlayerElement extends HTMLElement {
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
-  connectedCallback() {
+  setup() {
     this.#video = /** @type {HTMLVideoElement} */ (this.querySelector('video'))
-    if (!this.#video) return
+    if (!this.#video) return false
 
     this.#trackList = this.querySelector('.track-list')
 
@@ -134,7 +135,7 @@ class VideoPlayerElement extends HTMLElement {
         player.style.display = ''
       }
     }
-    window.addEventListener('vb:theme-change', this.#onThemeChange)
+    this.listen(window, 'vb:theme-change', this.#onThemeChange)
 
     // Fullscreen change — may exit from Escape key without our button
     this.#onFullscreenChange = () => {
@@ -143,23 +144,15 @@ class VideoPlayerElement extends HTMLElement {
       this.#fullscreenBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Fullscreen')
       this.#emit('video-player:fullscreen', { active })
     }
-    document.addEventListener('fullscreenchange', this.#onFullscreenChange)
+    this.listen(document, 'fullscreenchange', this.#onFullscreenChange)
 
-    this.setAttribute('data-upgraded', '')
     this.setAttribute('state', 'idle')
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded')
+  teardown() {
     // Restore native controls if component is removed
     if (this.#video) {
       this.#video.setAttribute('controls', '')
-    }
-    if (this.#onThemeChange) {
-      window.removeEventListener('vb:theme-change', this.#onThemeChange)
-    }
-    if (this.#onFullscreenChange) {
-      document.removeEventListener('fullscreenchange', this.#onFullscreenChange)
     }
     if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
   }

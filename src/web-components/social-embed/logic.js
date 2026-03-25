@@ -18,6 +18,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 // ─── Provider registry ──────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ const SR_ONLY_STYLE = 'position:absolute;width:1px;height:1px;padding:0;margin:-
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-class SocialEmbed extends HTMLElement {
+class SocialEmbed extends VBElement {
   /**
    * Register a provider by key.
    * @param {string} name
@@ -104,9 +105,7 @@ class SocialEmbed extends HTMLElement {
   /** @type {((e: MouseEvent) => void) | null} */
   #clickHandler = null;
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     // Capture fallback once, before any live region or other DOM is prepended.
     // On reconnect #fallback is already set — don't recapture.
     if (!this.#fallback) {
@@ -116,7 +115,7 @@ class SocialEmbed extends HTMLElement {
     const url = this.getAttribute('url');
     if (!url) {
       console.warn('social-embed: missing required url attribute');
-      return;
+      return false;
     }
 
     // Resolve provider
@@ -127,14 +126,12 @@ class SocialEmbed extends HTMLElement {
 
     if (!provider) {
       this.setAttribute('state', 'unsupported');
-      this.setAttribute('data-upgraded', '');
       return;
     }
 
     // Providers with delegatesActivation skip the click gate
     if (provider.delegatesActivation) {
       this.#init(provider);
-      this.setAttribute('data-upgraded', '');
       return;
     }
 
@@ -165,12 +162,9 @@ class SocialEmbed extends HTMLElement {
       this.setAttribute('role', 'button');
       this.setAttribute('aria-label', 'Load embed');
     }
-
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#observer?.disconnect();
     if (this.#clickHandler) {
       this.removeEventListener('click', this.#clickHandler);

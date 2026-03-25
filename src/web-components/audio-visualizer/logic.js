@@ -17,6 +17,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 // Page-level AudioContext singleton registry
 const audioContextRegistry = new Map()
@@ -42,7 +43,7 @@ function getMediaSource(audio, ctx) {
   return source
 }
 
-class AudioVisualizerElement extends HTMLElement {
+class AudioVisualizerElement extends VBElement {
 
   /** @type {HTMLCanvasElement} */
   #canvas = /** @type {*} */ (null)
@@ -74,7 +75,7 @@ class AudioVisualizerElement extends HTMLElement {
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────
 
-  connectedCallback() {
+  setup() {
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const firstConnect = !this.shadowRoot
@@ -94,17 +95,12 @@ class AudioVisualizerElement extends HTMLElement {
         canvas.style.display = ''
       }
     }
-    window.addEventListener('vb:theme-change', this.#onThemeChange)
-    this.setAttribute('data-upgraded', '');
+    this.listen(window, 'vb:theme-change', this.#onThemeChange)
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#stopAnimation()
     this.#observer?.disconnect()
-    if (this.#onThemeChange) {
-      window.removeEventListener('vb:theme-change', this.#onThemeChange)
-    }
   }
 
   attributeChangedCallback(name) {

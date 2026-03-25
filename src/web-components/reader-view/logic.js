@@ -6,10 +6,12 @@
  * content renders as a normal scrolling article via layout-columns.
  */
 
+import { VBElement } from '../../lib/vb-element.js';
+
 /** @type {Set<ReaderView>} */
 const activePagedInstances = new Set();
 
-class ReaderView extends HTMLElement {
+class ReaderView extends VBElement {
 
   // ── Private state ─────────────────────────────────────────────
 
@@ -38,7 +40,7 @@ class ReaderView extends HTMLElement {
 
   // ── Lifecycle ─────────────────────────────────────────────────
 
-  connectedCallback() {
+  setup() {
     if (!this.#built) {
       // Persistence fills in where markup is silent; authored attrs win
       this.#restorePersistedState();
@@ -51,25 +53,15 @@ class ReaderView extends HTMLElement {
     // Always re-establish observers/listeners on reconnect
     this.#setupResizeObserver();
     this.#setupViewportListeners();
-    if (this.#boundKeydown) {
-      document.addEventListener('keydown', this.#boundKeydown);
-    }
     this.#applyMode(this.#mode, false);
     this.setAttribute('upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#ro?.disconnect();
     this.#ro = null;
     this.removeAttribute('upgraded');
     clearTimeout(this.#snapTimer);
-    if (this.#boundKeydown) {
-      document.removeEventListener('keydown', this.#boundKeydown);
-    }
-    if (this.#viewportHandler && window.visualViewport) {
-      window.visualViewport.removeEventListener('resize', this.#viewportHandler);
-      window.visualViewport.removeEventListener('scroll', this.#viewportHandler);
-    }
     activePagedInstances.delete(this);
   }
 
@@ -474,7 +466,6 @@ class ReaderView extends HTMLElement {
 
     // Keyboard
     this.#boundKeydown = this.#handleKeydown.bind(this);
-    document.addEventListener('keydown', this.#boundKeydown);
   }
 
   // ── Keyboard ──────────────────────────────────────────────────
@@ -523,14 +514,19 @@ class ReaderView extends HTMLElement {
   // ── Viewport ──────────────────────────────────────────────────
 
   #setupViewportListeners() {
+    // Keyboard (document-level, auto-cleaned by VBElement)
+    if (this.#boundKeydown) {
+      this.listen(document, 'keydown', this.#boundKeydown);
+    }
+
     if (!window.visualViewport) return;
     this.#viewportHandler = () => {
       if (this.#mode === 'pages') {
         requestAnimationFrame(() => this.#recalcPages());
       }
     };
-    window.visualViewport.addEventListener('resize', this.#viewportHandler);
-    window.visualViewport.addEventListener('scroll', this.#viewportHandler);
+    this.listen(window.visualViewport, 'resize', this.#viewportHandler);
+    this.listen(window.visualViewport, 'scroll', this.#viewportHandler);
   }
 
   // ── Persistence ───────────────────────────────────────────────

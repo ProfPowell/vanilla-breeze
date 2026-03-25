@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * audio-player: Platform audio player web component
@@ -41,7 +42,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </audio-player>
  */
 
-class AudioPlayerElement extends HTMLElement {
+class AudioPlayerElement extends VBElement {
 
   // ─── State ─────────────────────────────────────────────────────────────────
 
@@ -71,9 +72,9 @@ class AudioPlayerElement extends HTMLElement {
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
-  connectedCallback() {
+  setup() {
     this.#audio = /** @type {HTMLAudioElement} */ (this.querySelector('audio'))
-    if (!this.#audio) return
+    if (!this.#audio) return false
 
     this.#trackList = this.querySelector('.track-list')
 
@@ -102,18 +103,13 @@ class AudioPlayerElement extends HTMLElement {
         player.style.display = ''
       }
     }
-    window.addEventListener('vb:theme-change', this.#onThemeChange)
-    this.setAttribute('data-upgraded', '');
+    this.listen(window, 'vb:theme-change', this.#onThemeChange)
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     // Restore native controls if component is removed
     if (this.#audio) {
       this.#audio.setAttribute('controls', '')
-    }
-    if (this.#onThemeChange) {
-      window.removeEventListener('vb:theme-change', this.#onThemeChange)
     }
   }
 

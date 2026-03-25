@@ -1,3 +1,4 @@
+import { VBElement } from '../../lib/vb-element.js';
 import { styles } from './styles.js';
 import { latLngToTile, getTileUrl } from './tile-math.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -16,7 +17,7 @@ function markerSvg(color) {
 
 /**
  * @class GeoMap
- * @augments HTMLElement
+ * @augments VBElement
  * @description A zero-dependency map component using OSM tiles.
  * Renders a static tile grid centered on the given coordinates
  * with an optional marker pin and caption slot.
@@ -33,7 +34,7 @@ function markerSvg(color) {
  * @attr {string} marker-color - Pin fill color (default: #e74c3c)
  * @attr {string} provider - Tile source: osm, carto-light, carto-dark
  */
-class GeoMap extends HTMLElement {
+class GeoMap extends VBElement {
     static get observedAttributes() {
         return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'interactive', 'static-only', 'src', 'place'];
     }
@@ -194,11 +195,10 @@ class GeoMap extends HTMLElement {
         return null;
     }
 
-    connectedCallback() {
+    setup() {
         this.render();
         this.loadTiles();
         this.#wireActivation();
-        this.setAttribute('data-upgraded', '');
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -213,8 +213,7 @@ class GeoMap extends HTMLElement {
         }
     }
 
-    disconnectedCallback() {
-        this.removeAttribute('data-upgraded');
+    teardown() {
         if (this.#interaction) {
             this.#interaction.destroy();
             this.#interaction = null;
