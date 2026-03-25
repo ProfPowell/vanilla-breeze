@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * page-meta: Document metadata display with JSON-LD injection
@@ -29,14 +30,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </dl>
  * </page-meta>
  */
-class PageMeta extends HTMLElement {
-  connectedCallback() {
+class PageMeta extends VBElement {
+  setup() {
     this.#injectStructuredData();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #injectStructuredData() {

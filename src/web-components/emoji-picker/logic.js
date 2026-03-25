@@ -26,6 +26,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 // Lazy-loaded: emoji data is only imported when picker is first connected
 let emojiModule = null;
@@ -40,7 +41,7 @@ const COLUMNS = 8;
 const SEARCH_DEBOUNCE = 150;
 const RECENT_KEY = 'vb-emoji-recent';
 
-class EmojiPicker extends HTMLElement {
+class EmojiPicker extends VBElement {
   #trigger;
   #picker;
   #searchInput;
@@ -63,7 +64,7 @@ class EmojiPicker extends HTMLElement {
   /** @type {Range | null} */
   #savedRange = null;
 
-  async connectedCallback() {
+  async setup() {
     this.#emojiData = await loadEmojiModule();
 
     if (!this.#setupDone) {
@@ -72,18 +73,13 @@ class EmojiPicker extends HTMLElement {
     }
 
     // Bind global listeners (removed on disconnect)
-    this.#trigger?.addEventListener('click', this.#handleTriggerClick);
-    document.addEventListener('click', this.#handleOutsideClick);
-    document.addEventListener('keydown', this.#handleGlobalKeyDown);
-    this.setAttribute('data-upgraded', '');
+    if (this.#trigger) this.listen(this.#trigger, 'click', this.#handleTriggerClick);
+    this.listen(document, 'click', this.#handleOutsideClick);
+    this.listen(document, 'keydown', this.#handleGlobalKeyDown);
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     if (this.#searchTimer) clearTimeout(this.#searchTimer);
-    this.#trigger?.removeEventListener('click', this.#handleTriggerClick);
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('keydown', this.#handleGlobalKeyDown);
   }
 
   #build() {

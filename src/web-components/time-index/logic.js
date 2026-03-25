@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { updateRelativeTimes } from '../../lib/time-relative.js';
 
 /**
@@ -17,8 +18,8 @@ import { updateRelativeTimes } from '../../lib/time-relative.js';
  *   <!-- static changelog entries -->
  * </time-index>
  */
-class TimeIndex extends HTMLElement {
-  connectedCallback() {
+class TimeIndex extends VBElement {
+  setup() {
     updateRelativeTimes(this);
     this.#addControls();
 
@@ -26,12 +27,6 @@ class TimeIndex extends HTMLElement {
     if (updatesSrc) {
       this.#loadRecentUpdates(updatesSrc);
     }
-
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #addControls() {

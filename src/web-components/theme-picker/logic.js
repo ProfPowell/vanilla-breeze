@@ -32,6 +32,7 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
 import {
   MODES, COLOR_THEMES, PERSONALITY_THEMES,
@@ -48,7 +49,7 @@ const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 // Accessibility themes storage key
 const A11Y_THEMES_KEY = 'vb-a11y-themes';
 
-class ThemePicker extends HTMLElement {
+class ThemePicker extends VBElement {
   // Delay before auto-dismissing after selection (ms)
   static #AUTO_DISMISS_DELAY = 200;
 
@@ -64,8 +65,7 @@ class ThemePicker extends HTMLElement {
   /** Bound handler for scroll/resize repositioning */
   #onReposition = () => this.#positionPanel();
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
+  setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
     this.#render();
@@ -73,21 +73,16 @@ class ThemePicker extends HTMLElement {
     this.#syncState();
 
     // Listen for external theme changes
-    window.addEventListener('vb:theme-change', this.#handleThemeChange);
+    this.listen(window, 'vb:theme-change', this.#handleThemeChange);
 
     // Apply extension preferences on load
     this.#applyExtensions();
 
     // Apply accessibility themes on load
     this.#applyA11yThemes();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    window.removeEventListener('vb:theme-change', this.#handleThemeChange);
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('keydown', this.#handleEscape);
+  teardown() {
     window.removeEventListener('scroll', this.#onReposition, { capture: true });
     window.removeEventListener('resize', this.#onReposition);
     this.#clearAutoDismiss();
@@ -410,9 +405,9 @@ class ThemePicker extends HTMLElement {
 
     // Popover controls
     if (!this.#isInline) {
-      this.#trigger.addEventListener('click', this.#handleTriggerClick);
-      document.addEventListener('click', this.#handleOutsideClick);
-      document.addEventListener('keydown', this.#handleEscape);
+      this.listen(this.#trigger, 'click', this.#handleTriggerClick);
+      this.listen(document, 'click', this.#handleOutsideClick);
+      this.listen(document, 'keydown', this.#handleEscape);
     }
   }
 

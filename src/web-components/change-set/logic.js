@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * change-set: Interactive change tracking group
@@ -30,16 +31,11 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </p>
  * </change-set>
  */
-class ChangeSet extends HTMLElement {
-  connectedCallback() {
+class ChangeSet extends VBElement {
+  setup() {
     if (!this.querySelector('[data-controls]')) {
       this.#addControls();
     }
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   #addControls() {

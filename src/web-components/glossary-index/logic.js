@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * glossary-index: Interactive glossary with search and scroll-spy
@@ -27,21 +28,19 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </main>
  * </glossary-index>
  */
-class GlossaryIndex extends HTMLElement {
+class GlossaryIndex extends VBElement {
   /** @type {HTMLInputElement|null} */
   #searchInput = null;
   /** @type {IntersectionObserver|null} */
   #observer = null;
 
-  connectedCallback() {
+  setup() {
     this.#addSearch();
     this.#initScrollSpy();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#observer?.disconnect();
-    this.removeAttribute('data-upgraded');
   }
 
   #addSearch() {

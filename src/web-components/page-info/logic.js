@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * page-info: Document provenance disclosure panel
@@ -41,9 +42,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * @example Auto mode
  * <page-info auto></page-info>
  */
-class PageInfo extends HTMLElement {
+class PageInfo extends VBElement {
 
-  connectedCallback() {
+  setup() {
     if (this.hasAttribute('auto')) {
       this.#renderFromMeta();
     }
@@ -51,11 +52,6 @@ class PageInfo extends HTMLElement {
     this.#renderRelativeTimes();
     this.#computeReadingTime();
     this.#assessTrust();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   /* ── Relative time rendering ── */

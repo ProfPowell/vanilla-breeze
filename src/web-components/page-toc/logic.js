@@ -29,8 +29,9 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class PageToc extends HTMLElement {
+class PageToc extends VBElement {
   #observer;
   #headings = [];
   #links = new Map();
@@ -39,18 +40,17 @@ class PageToc extends HTMLElement {
   #resizeTimer;
   #isManualMode = false;
 
-  connectedCallback() {
+  setup() {
     // Delay to ensure headings are processed by heading-links
-    requestAnimationFrame(() => this.#setup());
-    this.setAttribute('data-upgraded', '');
+    requestAnimationFrame(() => this.#init());
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    this.#cleanup();
+  teardown() {
+    this.#observer?.disconnect();
+    clearTimeout(this.#resizeTimer);
   }
 
-  #setup() {
+  #init() {
     // Check for existing manual markup (progressive enhancement mode)
     this.#isManualMode = this.#detectManualMarkup();
 
@@ -112,21 +112,13 @@ class PageToc extends HTMLElement {
     }
   }
 
-  #cleanup() {
-    this.#observer?.disconnect();
-    this.#mediaQuery?.removeEventListener('change', this.#handleMediaChange);
-    window.removeEventListener('resize', this.#handleResize);
-    window.removeEventListener('hashchange', this.#handleHashChange);
-    clearTimeout(this.#resizeTimer);
-  }
-
   /**
    * Handle responsive behavior: details open on wide screens, hash sync on resize
    */
   #setupResponsive() {
     this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-lg */
-    this.#mediaQuery.addEventListener('change', this.#handleMediaChange);
-    window.addEventListener('resize', this.#handleResize);
+    this.listen(this.#mediaQuery, 'change', this.#handleMediaChange);
+    this.listen(window, 'resize', this.#handleResize);
   }
 
   #handleMediaChange = (e) => {
@@ -146,7 +138,7 @@ class PageToc extends HTMLElement {
    * Sync active state with URL hash for reliable state across resizes
    */
   #setupHashSync() {
-    window.addEventListener('hashchange', this.#handleHashChange);
+    this.listen(window, 'hashchange', this.#handleHashChange);
     // Initial sync
     this.#syncFromHash();
   }
@@ -327,7 +319,7 @@ class PageToc extends HTMLElement {
     this.#links.clear();
     this.#headings = [];
     this.#observer?.disconnect();
-    this.#setup();
+    this.#init();
   }
 }
 
