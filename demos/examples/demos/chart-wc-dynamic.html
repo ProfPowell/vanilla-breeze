@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Chart WC — Dynamic &amp; Data Sources</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"/>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+    chart-wc { max-width: 600px; margin-block: var(--size-m); }
+    .controls { display: flex; gap: var(--size-s); margin-block: var(--size-m); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide">
+    <h1>Chart WC — Dynamic &amp; Data Sources</h1>
+
+    <h2>Script Block Data Source</h2>
+    <chart-wc data-type="area" data-title="Traffic Sources" data-legend data-tooltip>
+      <script type="application/json">
+        [
+          {"name": "Organic", "values": {"Jan": 3200, "Feb": 4100, "Mar": 3800, "Apr": 5200}},
+          {"name": "Referral", "values": {"Jan": 1200, "Feb": 1400, "Mar": 1100, "Apr": 1800}}
+        ]
+      </script>
+    </chart-wc>
+
+    <h2>Template Data Source</h2>
+    <chart-wc data-type="bar" data-title="Team Velocity" data-tooltip>
+      <template data-chart-data>
+        [{"name": "Story Points", "values": {"Sprint 1": 21, "Sprint 2": 34, "Sprint 3": 29, "Sprint 4": 42}}]
+      </template>
+    </chart-wc>
+
+    <h2>Dynamic JS Property</h2>
+    <p>Click the buttons to load different data sets into the chart.</p>
+    <nav class="controls">
+      <button type="button" id="btn-sales">Sales Data</button>
+      <button type="button" id="btn-traffic">Traffic Data</button>
+      <button type="button" id="btn-random">Random Data</button>
+    </nav>
+    <chart-wc data-type="column" data-title="Dynamic Chart" data-legend data-tooltip id="dynamic-chart">
+    </chart-wc>
+
+    <h2>Event Listener Demo</h2>
+    <p>Open the console to see <code>chart-wc:render</code> events.</p>
+    <chart-wc
+      data-type="pie"
+      data-title="Allocation"
+      data-legend
+      data-values='{"Engineering": 40, "Design": 20, "Marketing": 25, "Operations": 15}'
+      id="event-chart">
+    </chart-wc>
+
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
+  <script type="module">
+    const chart = document.getElementById('dynamic-chart');
+
+    const salesData = [
+      {name: '2024', values: {Q1: 120, Q2: 180, Q3: 150, Q4: 210}},
+      {name: '2025', values: {Q1: 140, Q2: 200, Q3: 170, Q4: 240}},
+    ];
+
+    const trafficData = [
+      {name: 'Desktop', values: {Q1: 4200, Q2: 3800, Q3: 4100, Q4: 3500}},
+      {name: 'Mobile', values: {Q1: 5800, Q2: 6200, Q3: 5900, Q4: 6500}},
+    ];
+
+    // Load initial data
+    chart.data = salesData;
+
+    document.getElementById('btn-sales').addEventListener('click', () => {
+      chart.data = salesData;
+    });
+
+    document.getElementById('btn-traffic').addEventListener('click', () => {
+      chart.data = trafficData;
+    });
+
+    document.getElementById('btn-random').addEventListener('click', () => {
+      const random = (min, max) => Math.floor(Math.random() * (max - min) + min);
+      chart.data = [
+        {name: 'Series A', values: {Q1: random(10, 100), Q2: random(10, 100), Q3: random(10, 100), Q4: random(10, 100)}},
+        {name: 'Series B', values: {Q1: random(10, 100), Q2: random(10, 100), Q3: random(10, 100), Q4: random(10, 100)}},
+      ];
+    });
+
+    // Event listener demo
+    document.getElementById('event-chart').addEventListener('chart-wc:render', (e) => {
+      console.log('chart-wc:render', e.detail);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+/**
+ * <chart-wc> — SVG chart web component powered by SVC
+ *
+ * Progressive enhancement: semantic table → CSS chart → SVG chart.
+ * Supports five data sources:
+ *   1. JS property (.data)
+ *   2. data-values attribute (JSON)
+ *   3. <script type="application/json"> child
+ *   4. <template data-chart-data> child
+ *   5. Child <table> extraction
+ */
+
+import {
+  LineChart,
+  AreaChart,
+  BarChart,
+  ColumnChart,
+  PieChart,
+  ScatterChart,
+  BubbleChart,
+} from '@profpowell/svc';
+
+import {registerComponent} from '../../lib/bundle-registry.js';
+import {extractTableData, extractTableConfig} from './table-extractor.js';
+import {getVBChartConfig} from './theme-bridge.js';
+
+const CHART_TYPES = {
+  line: LineChart,
+  area: AreaChart,
+  bar: BarChart,
+  column: ColumnChart,
+  pie: PieChart,
+  scatter: ScatterChart,
+  bubble: BubbleChart,
+};
+
+function parseJson(value, fallback = null) {
+  if (value == null) return fallback;
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function mergeDeep(target, source) {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return target;
+  for (const key of Object.keys(source)) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+      mergeDeep(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+
+class ChartWc extends HTMLElement {
+  static get observedAttributes() {
+    return [
+      'data-type',
+      'data-values',
+      'data-config',
+      'data-title',
+      'data-legend',
+      'data-tooltip',
+      'data-palette',
+      'data-label-x',
+      'data-label-y',
+    ];
+  }
+
+  #data = null;
+  #config = null;
+  #chart = null;
+  #renderQueued = false;
+  #svgContainer = null;
+  #shadowWrapper = null;
+
+  // -- Public property API --
+
+  set data(value) {
+    this.#data = value;
+    this.#queueRender();
+  }
+
+  get data() {
+    return this.#data;
+  }
+
+  set config(value) {
+    this.#config = value;
+    this.#queueRender();
+  }
+
+  get config() {
+    return this.#config;
+  }
+
+  // -- Public methods --
+
+  /**
+   * Re-extract table data and re-render the chart.
+   */
+  refresh() {
+    this.#queueRender();
+  }
+
+  /**
+   * Get the current SVG markup.
+   * @returns {string|null}
+   */
+  toSVG() {
+    return this.#svgContainer?.querySelector('svg')?.outerHTML || null;
+  }
+
+  // -- Lifecycle --
+
+  connectedCallback() {
+    if (this.hasAttribute('data-upgraded')) return;
+    this.setAttribute('data-upgraded', '');
+    this.#queueRender();
+  }
+
+  disconnectedCallback() {
+    this.#destroyChart();
+    this.removeAttribute('data-upgraded');
+  }
+
+  attributeChangedCallback() {
+    if (!this.hasAttribute('data-upgraded')) return;
+    this.#queueRender();
+  }
+
+  // -- Private --
+
+  #queueRender() {
+    if (!this.isConnected || this.#renderQueued) return;
+    this.#renderQueued = true;
+    Promise.resolve().then(() => {
+      this.#renderQueued = false;
+      if (this.isConnected) this.#render();
+    });
+  }
+
+  /**
+   * Resolve chart type from data-type attribute (or table's data-type).
+   */
+  #resolveChartType() {
+    let type = (this.dataset.type || '').toLowerCase();
+    if (!type) {
+      const table = this.querySelector('table');
+      type = (table?.dataset.type || 'bar').toLowerCase();
+    }
+    return CHART_TYPES[type] || BarChart;
+  }
+
+  /**
+   * Resolve chart data from the five sources in priority order.
+   * @returns {{data: *, tableConfig: object}|null}
+   */
+  #resolveData() {
+    // 1. JS property
+    if (this.#data != null) {
+      return {data: parseJson(this.#data, null), tableConfig: {}};
+    }
+
+    // 2. data-values attribute
+    const attrVal = this.dataset.values;
+    if (attrVal != null) {
+      return {data: parseJson(attrVal, null), tableConfig: {}};
+    }
+
+    // 3. <script type="application/json"> child
+    const script = this.querySelector('script[type="application/json"]');
+    if (script) {
+      return {data: parseJson(script.textContent, null), tableConfig: {}};
+    }
+
+    // 4. <template data-chart-data> child
+    const template = this.querySelector('template[data-chart-data]');
+    if (template) {
+      const content = template.content?.textContent || template.innerHTML;
+      return {data: parseJson(content, null), tableConfig: {}};
+    }
+
+    // 5. Child <table>
+    const table = this.querySelector('table');
+    if (table) {
+      const type = (this.dataset.type || table.dataset.type || 'bar').toLowerCase();
+      const {data, config: tableDataConfig} = extractTableData(table, type);
+      const tableAttrConfig = extractTableConfig(table);
+      const tableConfig = mergeDeep(mergeDeep({}, tableDataConfig), tableAttrConfig);
+      return {data, tableConfig};
+    }
+
+    return null;
+  }
+
+  /**
+   * Build the merged SVC config object.
+   */
+  #resolveConfig(tableConfig = {}) {
+    // Start with VB theme tokens
+    const themeConfig = getVBChartConfig(this);
+
+    // Merge: theme → table config → property config → attribute config
+    const baseConfig = parseJson(this.#config, {}) || {};
+    const attrConfig = parseJson(this.dataset.config, {}) || {};
+
+    let config = {};
+    config = mergeDeep(config, themeConfig);
+    config = mergeDeep(config, tableConfig);
+    config = mergeDeep(config, baseConfig);
+    config = mergeDeep(config, attrConfig);
+
+    // Axis labels: use data-label-x / data-label-y attributes, fall back to config, or hide
+    const labelX = this.dataset.labelX;
+    const labelY = this.dataset.labelY;
+    config.axis = config.axis || {};
+    config.axis.label = config.axis.label || {};
+    if (labelX != null) {
+      config.axis.label.x = {text: labelX, enabled: true};
+    } else if (!config.axis.label.x?.text) {
+      config.axis.label.x = config.axis.label.x || {};
+      config.axis.label.x.enabled = false;
+    }
+    if (labelY != null) {
+      config.axis.label.y = {text: labelY, enabled: true};
+    } else if (!config.axis.label.y?.text) {
+      config.axis.label.y = config.axis.label.y || {};
+      config.axis.label.y.enabled = false;
+    }
+
+    // Pie chart: use uniform label sizing by default
+    if (!config.plot?.node?.label?.scaleBySize) {
+      config.plot = config.plot || {};
+      config.plot.node = config.plot.node || {};
+      config.plot.node.label = config.plot.node.label || {};
+      config.plot.node.label.scaleBySize = false;
+    }
+
+    // Shorthand attributes override
+    if (this.dataset.title != null) {
+      config.title = {text: this.dataset.title, enabled: true};
+    }
+    if (this.dataset.legend != null) {
+      config.legend = {enabled: true};
+    }
+    if (this.dataset.tooltip != null) {
+      config.tooltip = {enabled: true};
+    }
+    if (this.dataset.palette != null) {
+      const palette = parseJson(this.dataset.palette, null);
+      if (palette) config.palette = palette;
+    }
+
+    return config;
+  }
+
+  /**
+   * Ensure the shadow DOM container exists. Create it if needed.
+   * Shadow DOM isolates SVC's internal HTML/CSS from VB's cascade,
+   * preventing style conflicts. CSS custom properties still inherit through.
+   */
+  #ensureSvgContainer() {
+    if (this.#shadowWrapper && this.contains(this.#shadowWrapper)) return;
+
+    this.#shadowWrapper = document.createElement('div');
+    this.#shadowWrapper.setAttribute('data-chart-svg', '');
+    this.#shadowWrapper.setAttribute('aria-hidden', 'true');
+    this.appendChild(this.#shadowWrapper);
+
+    const shadow = this.#shadowWrapper.attachShadow({mode: 'open'});
+    this.#svgContainer = document.createElement('div');
+    this.#svgContainer.style.cssText = 'width:100%;height:100%;overflow:visible;';
+    shadow.appendChild(this.#svgContainer);
+  }
+
+  /**
+   * Handle the source table: hide it visually but keep it accessible.
+   */
+  #processTable(table) {
+    if (!table) return;
+
+    const mode = this.dataset.chart || table.dataset.chart || 'replace';
+
+    if (mode === 'replace') {
+      table.classList.add('sr-only');
+      table.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  #render() {
+    const ChartType = this.#resolveChartType();
+    const resolved = this.#resolveData();
+
+    if (!resolved || !resolved.data) {
+      this.dispatchEvent(new CustomEvent('chart-wc:error', {
+        detail: {message: 'No chart data found'},
+        bubbles: true,
+      }));
+      return;
+    }
+
+    const {data, tableConfig} = resolved;
+    const config = this.#resolveConfig(tableConfig);
+
+    // Clean up any previous chart
+    this.#destroyChart();
+
+    // Process source table
+    const table = this.querySelector('table');
+    this.#processTable(table);
+
+    // Create SVG container
+    this.#ensureSvgContainer();
+
+    try {
+      this.#chart = new ChartType({config, data});
+      this.#chart.mount(this.#svgContainer);
+
+      this.dispatchEvent(new CustomEvent('chart-wc:render', {
+        detail: {
+          type: this.dataset.type || table?.dataset.type || 'bar',
+          seriesCount: Array.isArray(data) ? data.length : Object.keys(data).length,
+        },
+        bubbles: true,
+      }));
+    } catch (err) {
+      this.dispatchEvent(new CustomEvent('chart-wc:error', {
+        detail: {message: err.message},
+        bubbles: true,
+      }));
+    }
+  }
+
+  #destroyChart() {
+    if (this.#chart) {
+      this.#chart.destroy();
+      this.#chart = null;
+    }
+    // Clean up SVG container contents but keep the element
+    if (this.#svgContainer) {
+      this.#svgContainer.innerHTML = '';
+    }
+  }
+}
+
+registerComponent('chart-wc', ChartWc);
+export {ChartWc};

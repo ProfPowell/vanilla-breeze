@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "chart-wc",
+  "type": "web-component",
+  "description": "SVG chart component powered by SVC. Progressive enhancement: semantic table → CSS chart → SVG chart.",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "data-type",    "kind": "data", "purpose": "config", "type": "enum", "values": ["bar", "column", "line", "area", "pie", "scatter", "bubble"], "description": "Chart type to render" },
+    { "name": "data-values",  "kind": "data", "purpose": "config", "type": "string",  "description": "Chart data as JSON string" },
+    { "name": "data-config",  "kind": "data", "purpose": "config", "type": "string",  "description": "SVC config overrides as JSON string" },
+    { "name": "data-title",   "kind": "data", "purpose": "config", "type": "string",  "description": "Chart title text" },
+    { "name": "data-legend",  "kind": "data", "purpose": "config", "type": "boolean", "description": "Show legend (presence enables)" },
+    { "name": "data-tooltip", "kind": "data", "purpose": "config", "type": "boolean", "description": "Enable tooltips (presence enables)" },
+    { "name": "data-palette", "kind": "data", "purpose": "config", "type": "string",  "description": "Custom color palette as JSON array" },
+    { "name": "data-chart",   "kind": "data", "purpose": "config", "type": "enum", "values": ["replace", "enhance"], "description": "How to handle source table: replace hides table, enhance keeps both" }
+  ],
+  "structure": [
+    { "element": "<table>",   "description": "Optional source table — data is extracted and table becomes screen-reader accessible" },
+    { "element": "<script type='application/json'>", "description": "Optional inline JSON data source" },
+    { "element": "<template data-chart-data>", "description": "Optional template-based JSON data source" }
+  ],
+  "childAttributes": [
+    { "name": "data-chart-series", "on": "th", "type": "boolean", "description": "Mark this column as a data series for chart extraction" },
+    { "name": "data-chart-label",  "on": "th", "type": "boolean", "description": "Mark this column as the label/category axis" },
+    { "name": "data-chart-ignore", "on": "th", "type": "boolean", "description": "Exclude this column from chart data extraction" }
+  ],
+  "events": [
+    { "name": "chart-wc:render", "detail": "{ type, seriesCount }", "description": "Fired after SVG chart renders successfully" },
+    { "name": "chart-wc:error",  "detail": "{ message }",          "description": "Fired when chart rendering fails" }
+  ],
+  "properties": [
+    { "name": "data",   "type": "Array|Object", "description": "Get/set chart data programmatically" },
+    { "name": "config", "type": "Object",       "description": "Get/set SVC config programmatically" }
+  ],
+  "methods": [
+    { "name": "refresh()", "description": "Re-extract table data and re-render" },
+    { "name": "toSVG()",   "returns": "string|null", "description": "Get current SVG markup" }
+  ]
+}
