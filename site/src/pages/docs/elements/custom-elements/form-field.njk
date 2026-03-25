@@ -133,9 +133,9 @@ form-field:has(input:user-invalid) {
     <label for="email">Email</label>
     <input type="email" id="email" name="email"
            required minlength="5"
-           data-message-required="Email is required"
-           data-message-type="Please enter a valid email address"
-           data-message-minlength="Email seems too short"
+           data-message-valuemissing="Email is required"
+           data-message-typemismatch="Please enter a valid email address"
+           data-message-tooshort="Email seems too short"
            aria-describedby="email-error" />
     <output id="email-error" class="error" for="email"
             aria-live="polite"></output>
@@ -148,8 +148,8 @@ form-field:has(input:user-invalid) {
     <label for="password">Password</label>
     <input type="password" id="password" name="password"
            required minlength="8"
-           data-message-required="Password is required"
-           data-message-minlength="At least 8 characters"
+           data-message-valuemissing="Password is required"
+           data-message-tooshort="At least 8 characters"
            autocomplete="new-password"
            aria-describedby="password-error" />
     <output id="password-error" class="error" for="password"
@@ -161,7 +161,7 @@ form-field:has(input:user-invalid) {
     <input type="password" id="confirm" name="confirm"
            required
            data-match="password"
-           data-message-required="Please confirm your password"
+           data-message-valuemissing="Please confirm your password"
            data-message-match="Passwords do not match"
            autocomplete="new-password"
            aria-describedby="confirm-error" />
@@ -190,15 +190,17 @@ form-field:has(input:user-invalid) {
   <button type="submit">Save</button>
 </form>{% endset %}
 
-{% set errorSummaryCode %}<!-- Summary + field-level errors (both) -->
+{% set errorSummaryCode %}<!-- Authored summary pattern (recommended) -->
 <form data-validate>
-  <output class="error-summary" role="alert"
-          aria-live="polite" tabindex="-1"></output>
+  <div data-form-summary role="alert" tabindex="-1" hidden>
+    <h2>There are problems with your submission</h2>
+    <ul data-summary-list></ul>
+  </div>
 
   <form-field>
     <label for="name">Name</label>
     <input id="name" type="text" required
-           data-message-required="Name is required"
+           data-message-valuemissing="Name is required"
            aria-describedby="name-error" />
     <output id="name-error" class="error" for="name"
             aria-live="polite"></output>
@@ -495,7 +497,7 @@ form-field:has(input:user-invalid) {
       shadow>
     </browser-window>
 
-    <h3>JS Validation Attributes</h3>
+    <h3>Form Attributes</h3>
     <table class="props-table">
       <thead>
         <tr>
@@ -511,30 +513,77 @@ form-field:has(input:user-invalid) {
           <td>Opt-in. No value = field-level errors (+ summary if present). <code>"summary"</code> = summary only.</td>
         </tr>
         <tr>
-          <td><code>data-message-required</code></td>
-          <td>input / textarea / select</td>
-          <td>Custom "required" error text</td>
+          <td><code>data-submit</code></td>
+          <td><code>&lt;form&gt;</code></td>
+          <td>Submit mode: <code>"native"</code> (default), <code>"event"</code> (dispatches <code>vb:submit</code>), <code>"fetch"</code> (async with loading/success/error states).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom Error Message Attributes</h3>
+    <p>Attribute names map directly to <code>ValidityState</code> keys. Place these on the input element.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>ValidityState Key</th>
+          <th>When Triggered</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-message-valuemissing</code></td>
+          <td><code>valueMissing</code></td>
+          <td><code>required</code> field is empty</td>
         </tr>
         <tr>
-          <td><code>data-message-type</code></td>
-          <td>input</td>
-          <td>Custom "type mismatch" error text (email, url, etc.)</td>
+          <td><code>data-message-typemismatch</code></td>
+          <td><code>typeMismatch</code></td>
+          <td><code>type="email"</code> / <code>type="url"</code> format wrong</td>
         </tr>
         <tr>
-          <td><code>data-message-minlength</code></td>
-          <td>input / textarea</td>
-          <td>Custom "too short" error text</td>
+          <td><code>data-message-patternmismatch</code></td>
+          <td><code>patternMismatch</code></td>
+          <td><code>pattern</code> regex fails</td>
         </tr>
         <tr>
-          <td><code>data-message-maxlength</code></td>
-          <td>input / textarea</td>
-          <td>Custom "too long" error text</td>
+          <td><code>data-message-tooshort</code></td>
+          <td><code>tooShort</code></td>
+          <td>Below <code>minlength</code></td>
         </tr>
         <tr>
-          <td><code>data-message-pattern</code></td>
-          <td>input</td>
-          <td>Custom "pattern mismatch" error text</td>
+          <td><code>data-message-toolong</code></td>
+          <td><code>tooLong</code></td>
+          <td>Above <code>maxlength</code></td>
         </tr>
+        <tr>
+          <td><code>data-message-rangeunderflow</code></td>
+          <td><code>rangeUnderflow</code></td>
+          <td>Below <code>min</code></td>
+        </tr>
+        <tr>
+          <td><code>data-message-rangeoverflow</code></td>
+          <td><code>rangeOverflow</code></td>
+          <td>Above <code>max</code></td>
+        </tr>
+        <tr>
+          <td><code>data-message-stepmismatch</code></td>
+          <td><code>stepMismatch</code></td>
+          <td>Not on <code>step</code> interval</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Cross-Field and Group Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td><code>data-match</code></td>
           <td>input</td>
@@ -554,6 +603,45 @@ form-field:has(input:user-invalid) {
           <td><code>data-max-checked</code></td>
           <td>fieldset</td>
           <td>Maximum number of checked checkboxes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Web Component API</h3>
+    <p><code>&lt;form-field&gt;</code> upgrades to a web component when JS loads. It provides these methods for programmatic use:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method / Property</th>
+          <th>Returns</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>validate()</code></td>
+          <td><code>boolean</code></td>
+          <td>Validate the field and update visual state. Returns validity.</td>
+        </tr>
+        <tr>
+          <td><code>setError(message)</code></td>
+          <td>-</td>
+          <td>Set a programmatic error (e.g. from server validation).</td>
+        </tr>
+        <tr>
+          <td><code>clearError()</code></td>
+          <td>-</td>
+          <td>Clear a programmatic error and reset state.</td>
+        </tr>
+        <tr>
+          <td><code>fieldName</code></td>
+          <td><code>string</code></td>
+          <td>Human-readable field name from the label.</td>
+        </tr>
+        <tr>
+          <td><code>input</code></td>
+          <td><code>HTMLElement</code></td>
+          <td>The controlled input element.</td>
         </tr>
       </tbody>
     </table>

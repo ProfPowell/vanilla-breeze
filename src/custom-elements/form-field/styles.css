@@ -66,6 +66,40 @@ form-field:has(:user-invalid) {
 }
 
 /* --------------------------------------------------------------------------
+   Programmatic states (set by FormField web component / form coordinator)
+   For server errors, async validation, etc. where pseudo-classes don't apply.
+   -------------------------------------------------------------------------- */
+form-field[data-invalid] {
+  & input,
+  & textarea,
+  & select {
+    border-color: var(--color-error);
+  }
+
+  & output.error {
+    visibility: visible;
+  }
+}
+
+form-field[data-valid] {
+  & input,
+  & textarea,
+  & select {
+    border-color: var(--color-success);
+    background: color-mix(in oklab, var(--color-success) 5%, transparent);
+  }
+
+  & output.hint {
+    display: none;
+  }
+}
+
+form-field[data-pending] {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
    Validation status icons
    Using mask-image for icon display. Opt-out with data-no-icon.
    -------------------------------------------------------------------------- */
@@ -378,4 +412,60 @@ fieldset[data-invalid] > output {
   font-size: var(--font-size-s);
   color: var(--color-error);
   margin-block-start: var(--size-xs);
+}
+
+/* --------------------------------------------------------------------------
+   Error summary — new authored pattern: <div data-form-summary>
+   -------------------------------------------------------------------------- */
+[data-form-summary]:not([hidden]) {
+  display: block;
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-m);
+  padding: var(--size-m);
+  margin-block-end: var(--size-l);
+  background: color-mix(in oklab, var(--color-error) 6%, transparent);
+}
+
+[data-form-summary]:not([hidden]):focus {
+  outline: 3px solid var(--color-error);
+  outline-offset: 2px;
+}
+
+[data-form-summary] h2 {
+  margin-block-start: 0;
+  color: var(--color-error);
+}
+
+[data-form-summary] a {
+  color: var(--color-error);
+}
+
+/* --------------------------------------------------------------------------
+   Form-level states (set by form coordinator)
+   -------------------------------------------------------------------------- */
+
+/* Submit pending */
+form[data-submitting] [type="submit"] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Success: swap form content for success message */
+form[data-success] > :not([data-form-success]) {
+  display: none;
+}
+
+form[data-success] [data-form-success] {
+  display: block;
+}
+
+/* Network error */
+form[data-error="network"]::before {
+  content: "Something went wrong. Please try again.";
+  display: block;
+  color: var(--color-error);
+  padding: var(--size-s);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-s);
+  margin-block-end: var(--size-m);
 }

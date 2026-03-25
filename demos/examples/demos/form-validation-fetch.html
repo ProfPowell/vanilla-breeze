@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Form Validation — Fetch Submission Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+    .info-box {
+      background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+      border-inline-start: 3px solid var(--color-interactive);
+      padding: var(--size-m);
+      margin-block-end: var(--size-xl);
+      border-radius: var(--radius-s);
+    }
+    .info-box p { margin: 0; }
+    code {
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.3em;
+      border-radius: var(--radius-s);
+      font-size: 0.9em;
+    }
+    hr {
+      border: none;
+      border-block-start: 1px solid var(--color-border);
+      margin-block: var(--size-2xl);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="xl">
+      <header>
+        <h1>Fetch Submission</h1>
+        <p>When <code>data-submit="fetch"</code> is set, the form coordinator handles async submission with loading, success, and error states.</p>
+      </header>
+
+      <div class="info-box">
+        <p><strong>Note:</strong> This demo uses a mock endpoint. Open the console to see the simulated server interaction. The form cycles through <code>data-submitting</code> → <code>data-success</code> or <code>data-error</code> states.</p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           FETCH SUBMIT WITH SUCCESS
+           ═══════════════════════════════════════════════════════════ -->
+      <section>
+        <h2>Contact Form (fetch with success)</h2>
+        <layout-card>
+          <form data-validate data-submit="fetch" action="/api/contact" method="post">
+            <div data-form-summary role="alert" tabindex="-1" hidden>
+              <h2>There are problems with your submission</h2>
+              <ul data-summary-list></ul>
+            </div>
+
+            <layout-stack data-layout-gap="l">
+              <form-field>
+                <label for="fc-name">Name</label>
+                <input type="text" id="fc-name" name="name" required
+                       autocomplete="name"
+                       data-message-valuemissing="Please enter your name"
+                       aria-describedby="fc-name-error"/>
+                <output id="fc-name-error" class="error" for="fc-name" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="fc-email">Email</label>
+                <input type="email" id="fc-email" name="email" required
+                       autocomplete="email"
+                       data-message-valuemissing="Please enter your email"
+                       data-message-typemismatch="Please enter a valid email"
+                       aria-describedby="fc-email-error"/>
+                <output id="fc-email-error" class="error" for="fc-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="fc-message">Message</label>
+                <textarea id="fc-message" name="message" required rows="4"
+                          data-message-valuemissing="Please enter a message"
+                          aria-describedby="fc-message-error"></textarea>
+                <output id="fc-message-error" class="error" for="fc-message" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Send Message</button>
+            </layout-stack>
+
+            <div data-form-success hidden>
+              <layout-stack data-layout-gap="m" style="text-align: center; padding: var(--size-xl);">
+                <p style="font-size: var(--font-size-xl);">Thank you!</p>
+                <p>Your message has been sent. We will be in touch shortly.</p>
+              </layout-stack>
+            </div>
+          </form>
+        </layout-card>
+      </section>
+
+      <hr/>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           EVENT-ONLY MODE
+           ═══════════════════════════════════════════════════════════ -->
+      <section>
+        <h2>Event-Only Mode</h2>
+        <div class="info-box">
+          <p><code>data-submit="event"</code> dispatches a cancelable <code>vb:submit</code> event instead of submitting. Use this for SPA forms where you handle submission in JavaScript.</p>
+        </div>
+        <layout-card>
+          <form data-validate data-submit="event" id="event-form">
+            <layout-stack data-layout-gap="l">
+              <form-field>
+                <label for="ev-search">Search Query</label>
+                <input type="text" id="ev-search" name="query" required
+                       data-message-valuemissing="Enter a search term"
+                       aria-describedby="ev-search-error"/>
+                <output id="ev-search-error" class="error" for="ev-search" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Search</button>
+              <output id="event-result" class="block"></output>
+            </layout-stack>
+          </form>
+        </layout-card>
+      </section>
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Mock fetch for the contact form demo
+    const originalFetch = window.fetch;
+    window.fetch = async (url, options) => {
+      if (url === '/api/contact') {
+        console.log('[Mock] POST /api/contact', Object.fromEntries(options.body));
+        await new Promise(r => setTimeout(r, 1500)); // Simulate latency
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return originalFetch(url, options);
+    };
+
+    // Event-only form handler
+    document.getElementById('event-form').addEventListener('vb:submit', (e) => {
+      e.preventDefault();
+      const data = e.detail;
+      const query = data.get('query');
+      document.getElementById('event-result').textContent =
+        `vb:submit fired! Query: "${query}"`;
+    });
+  </script>
+</body>
+</html>

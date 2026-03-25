@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Form Validation — Progressive Enhancement Layers</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+    .info-box {
+      background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+      border-inline-start: 3px solid var(--color-interactive);
+      padding: var(--size-m);
+      margin-block-end: var(--size-xl);
+      border-radius: var(--radius-s);
+    }
+    .info-box p { margin: 0; }
+    code {
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.3em;
+      border-radius: var(--radius-s);
+      font-size: 0.9em;
+    }
+    hr {
+      border: none;
+      border-block-start: 1px solid var(--color-border);
+      margin-block: var(--size-2xl);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="xl">
+      <header>
+        <h1>Progressive Enhancement Layers</h1>
+        <p>This form works at every layer of the PE stack. Disable CSS or JS to see graceful degradation.</p>
+      </header>
+
+      <div class="info-box">
+        <p><strong>Layer 1 — HTML:</strong> Native validation attributes + static <code>&lt;output&gt;</code> hints. Browser shows bubbles.</p>
+        <p><strong>Layer 2 — CSS:</strong> <code>:user-valid</code>/<code>:user-invalid</code> styling after interaction. No JS needed.</p>
+        <p><strong>Layer 3 — Enhanced HTML:</strong> <code>data-message-*</code> attributes authored as the contract for Layer 4.</p>
+        <p><strong>Layer 4 — JS:</strong> <code>&lt;form-field&gt;</code> upgrades, dynamic messages, error summary, native submit.</p>
+      </div>
+
+      <!-- Full 4-layer form -->
+      <section>
+        <h2>Contact Form</h2>
+        <layout-card>
+          <form action="/contact" method="post" data-validate id="pe-form">
+
+            <!-- Error summary slot — Layer 4 populates and un-hides this -->
+            <div id="pe-summary"
+                 data-form-summary
+                 role="alert"
+                 tabindex="-1"
+                 hidden>
+              <h2>There are problems with your submission</h2>
+              <ul data-summary-list></ul>
+            </div>
+
+            <layout-stack data-layout-gap="l">
+              <form-field>
+                <label for="pe-name">Name</label>
+                <input type="text"
+                       id="pe-name"
+                       name="name"
+                       required
+                       minlength="2"
+                       autocomplete="name"
+                       aria-describedby="pe-name-hint pe-name-error"
+                       data-message-valuemissing="Please enter your name"
+                       data-message-tooshort="Name must be at least 2 characters"/>
+                <output id="pe-name-hint" class="hint" for="pe-name">At least 2 characters required</output>
+                <output id="pe-name-error" class="error" for="pe-name" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="pe-email">Email</label>
+                <input type="email"
+                       id="pe-email"
+                       name="email"
+                       required
+                       autocomplete="email"
+                       aria-describedby="pe-email-hint pe-email-error"
+                       data-message-valuemissing="Please enter your email address"
+                       data-message-typemismatch="Please enter a valid email address"/>
+                <output id="pe-email-hint" class="hint" for="pe-email">We will never share your email</output>
+                <output id="pe-email-error" class="error" for="pe-email" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="pe-phone">Phone</label>
+                <input type="tel"
+                       id="pe-phone"
+                       name="phone"
+                       pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                       autocomplete="tel"
+                       aria-describedby="pe-phone-hint pe-phone-error"
+                       data-message-patternmismatch="Use format: 123-456-7890"/>
+                <output id="pe-phone-hint" class="hint" for="pe-phone">Format: 123-456-7890 (optional)</output>
+                <output id="pe-phone-error" class="error" for="pe-phone" aria-live="polite"></output>
+              </form-field>
+
+              <form-field>
+                <label for="pe-message">Message</label>
+                <textarea id="pe-message"
+                          name="message"
+                          required
+                          minlength="10"
+                          rows="4"
+                          aria-describedby="pe-message-error"
+                          data-message-valuemissing="Please enter a message"
+                          data-message-tooshort="Message must be at least 10 characters"></textarea>
+                <output id="pe-message-error" class="error" for="pe-message" aria-live="polite"></output>
+              </form-field>
+
+              <button type="submit">Send</button>
+            </layout-stack>
+
+            <!-- Success message slot — Layer 4 swaps in this -->
+            <div data-form-success hidden>
+              <layout-stack data-layout-gap="m" style="text-align: center; padding: var(--size-xl);">
+                <p style="font-size: var(--font-size-xl);">Thank you!</p>
+                <p>Your message has been sent successfully.</p>
+              </layout-stack>
+            </div>
+          </form>
+        </layout-card>
+      </section>
+    </layout-stack>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
