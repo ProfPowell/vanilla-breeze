@@ -20,17 +20,13 @@
  * <color-palette colors="oklch(50% 0.2 260),oklch(65% 0.18 30)" layout="grid" show-values></color-palette>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class ColorPalette extends HTMLElement {
+class ColorPalette extends VBElement {
   static observedAttributes = ['colors', 'names', 'layout', 'show-values', 'show-names', 'size'];
 
-  connectedCallback() {
+  setup() {
     this.#render();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback() {

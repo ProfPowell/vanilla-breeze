@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * consent-banner: Cookie/privacy consent banner
@@ -49,7 +50,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  *   </dialog>
  * </consent-banner>
  */
-class ConsentBanner extends HTMLElement {
+class ConsentBanner extends VBElement {
   /** @type {HTMLDialogElement} */
   #dialog = /** @type {*} */ (null);
 
@@ -67,12 +68,12 @@ class ConsentBanner extends HTMLElement {
     return val ? parseInt(val, 10) : 365;
   }
 
-  connectedCallback() {
+  setup() {
     this.#dialog = /** @type {HTMLDialogElement} */ (this.querySelector('dialog'));
-    if (!this.#dialog) return;
+    if (!this.#dialog) return false;
 
     if (this.getAttribute('trigger')) {
-      document.addEventListener('click', this.#onTriggerClick);
+      this.listen(document, 'click', this.#onTriggerClick);
     }
 
     const stored = this.#read();
@@ -82,16 +83,10 @@ class ConsentBanner extends HTMLElement {
       } else {
         this.remove();
       }
-      return;
+      return false;
     }
 
     this.#open();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    document.removeEventListener('click', this.#onTriggerClick);
-    this.removeAttribute('data-upgraded');
   }
 
   #open() {

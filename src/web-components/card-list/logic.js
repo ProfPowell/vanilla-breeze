@@ -18,6 +18,7 @@
 
 import { sanitizeHTML } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 // Strict regex for safe property paths only
 // Allows: name, user.email, items[0].title
@@ -67,7 +68,7 @@ function parseAttrMapping(str) {
   }).filter(({ attr, path }) => attr && path);
 }
 
-class CardList extends HTMLElement {
+class CardList extends VBElement {
   /** @type {HTMLTemplateElement | null} */
   #template = null;
   #items = [];
@@ -77,11 +78,11 @@ class CardList extends HTMLElement {
     return ['src', 'data-items', 'data-key'];
   }
 
-  connectedCallback() {
+  setup() {
     this.#template = this.querySelector('template');
     if (!this.#template) {
       console.warn('[card-list] No template found');
-      return;
+      return false;
     }
 
     this.#keyProp = this.getAttribute('data-key') || 'id';
@@ -103,11 +104,6 @@ class CardList extends HTMLElement {
     if (src) {
       this.#fetchData(src);
     }
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

@@ -21,8 +21,9 @@
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class CommandPalette extends HTMLElement {
+class CommandPalette extends VBElement {
   #dialog;
   #input;
   #list;
@@ -33,19 +34,16 @@ class CommandPalette extends HTMLElement {
   #unbindHotkey = null;
   #discoveredHeaders = [];
 
-  connectedCallback() {
+  setup() {
     this.#build();
     this.#registerHotkey();
     if (this.hasAttribute('discover')) {
       this.#listenForRegistryChanges();
     }
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
+  teardown() {
     this.#unbindHotkey?.();
-    document.removeEventListener('vb:command-registry-change', this.#handleRegistryChange);
   }
 
   #build() {
@@ -233,7 +231,7 @@ class CommandPalette extends HTMLElement {
   }
 
   #listenForRegistryChanges() {
-    document.addEventListener('vb:command-registry-change', this.#handleRegistryChange);
+    this.listen(document, 'vb:command-registry-change', this.#handleRegistryChange);
   }
 
   #handleRegistryChange = () => {

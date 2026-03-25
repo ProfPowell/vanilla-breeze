@@ -1,4 +1,5 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
 /**
  * settings-panel: Compact settings panel
@@ -29,34 +30,24 @@ const EXTENSIONS_KEY = 'vb-extensions';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 const A11Y_THEMES_KEY = 'vb-a11y-themes';
 
-class SettingsPanel extends HTMLElement {
+class SettingsPanel extends VBElement {
   /** @type {HTMLElement} */
   #trigger = /** @type {*} */ (null);
   /** @type {HTMLDivElement} */
   #panel = /** @type {*} */ (null);
   #isOpen = false;
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#render();
     this.#bindEvents();
     this.#syncState();
 
-    window.addEventListener('vb:theme-change', this.#handleExternalChange);
-    window.addEventListener('vb:extensions-change', this.#handleExternalChange);
-    window.addEventListener('vb:a11y-themes-change', this.#handleExternalChange);
-    this.setAttribute('data-upgraded', '');
+    this.listen(window, 'vb:theme-change', this.#handleExternalChange);
+    this.listen(window, 'vb:extensions-change', this.#handleExternalChange);
+    this.listen(window, 'vb:a11y-themes-change', this.#handleExternalChange);
   }
 
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
-    window.removeEventListener('vb:theme-change', this.#handleExternalChange);
-    window.removeEventListener('vb:extensions-change', this.#handleExternalChange);
-    window.removeEventListener('vb:a11y-themes-change', this.#handleExternalChange);
-    document.removeEventListener('click', this.#handleOutsideClick);
-    document.removeEventListener('keydown', this.#handleEscape);
-  }
+  teardown() {}
 
   // --- Mapping helpers ---
 
@@ -360,8 +351,8 @@ class SettingsPanel extends HTMLElement {
   #bindEvents() {
     // Trigger
     this.#trigger.addEventListener('click', this.#handleTriggerClick);
-    document.addEventListener('click', this.#handleOutsideClick);
-    document.addEventListener('keydown', this.#handleEscape);
+    this.listen(document, 'click', this.#handleOutsideClick);
+    this.listen(document, 'keydown', this.#handleEscape);
 
     // Close button
     this.#panel.querySelector('.settings-close')?.addEventListener('click', () => this.close());

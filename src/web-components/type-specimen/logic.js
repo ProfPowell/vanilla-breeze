@@ -17,17 +17,13 @@
  * <type-specimen font-family="'Inter', sans-serif" show-scale></type-specimen>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class TypeSpecimen extends HTMLElement {
+class TypeSpecimen extends VBElement {
   static observedAttributes = ['font-family', 'label', 'sample', 'show-scale', 'show-weights', 'show-characters', 'weights'];
 
-  connectedCallback() {
+  setup() {
     this.#render();
-    this.setAttribute('data-upgraded', '');
-  }
-
-  disconnectedCallback() {
-    this.removeAttribute('data-upgraded');
   }
 
   attributeChangedCallback() {

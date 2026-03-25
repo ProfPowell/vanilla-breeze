@@ -30,8 +30,9 @@
 
 import { bindHotkey, getBoundHotkeys } from '../../utils/hotkey-bind.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class SiteSearch extends HTMLElement {
+class SiteSearch extends VBElement {
   static #DEBOUNCE_MS = 150;
   static #MAX_RESULTS = 8;
 
@@ -54,23 +55,19 @@ class SiteSearch extends HTMLElement {
   /** @type {(() => void) | null} */
   #unbindHotkey = null;
 
-  connectedCallback() {
-    if (this.hasAttribute('data-upgraded')) return;
+  setup() {
     this.#render();
     this.#bindEvents();
-    this.setAttribute('data-upgraded', '');
   }
 
-  disconnectedCallback() {
+  teardown() {
     if (this.#isOpen) {
       document.body.style.overflow = '';
       this.removeAttribute('open');
       this.#isOpen = false;
     }
     this.#unbindHotkey?.();
-    document.removeEventListener('keydown', this.#handleEscape);
     this.#clearDebounce();
-    this.removeAttribute('data-upgraded');
   }
 
   #render() {
@@ -156,7 +153,7 @@ class SiteSearch extends HTMLElement {
     }
 
     // Escape to close (not a global hotkey — only when open)
-    document.addEventListener('keydown', this.#handleEscape);
+    this.listen(document, 'keydown', this.#handleEscape);
 
     // Dialog events
     this.#dialog.querySelector('.backdrop')?.addEventListener('click', () => this.close());

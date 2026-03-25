@@ -46,8 +46,9 @@
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
 
-class DataTable extends HTMLElement {
+class DataTable extends VBElement {
   #table;
   #tbody;
   #sortableHeaders = [];
@@ -70,29 +71,24 @@ class DataTable extends HTMLElement {
   /** @type {Element | null} */
   #selectedCountElement = null;
 
-  connectedCallback() {
-    // Guard: don't double-setup on reconnect
-    if (this.hasAttribute('data-upgraded')) return;
-
+  setup() {
     this.#table = this.querySelector(':scope > table');
-    if (!this.#table) return;
+    if (!this.#table) return false;
 
     this.#tbody = this.#table.querySelector('tbody');
-    if (!this.#tbody) return;
+    if (!this.#tbody) return false;
 
-    this.#setup();
-    this.setAttribute('data-upgraded', '');
+    this.#init();
   }
 
-  disconnectedCallback() {
+  teardown() {
     this.#cleanup();
     this.#sortableHeaders = [];
     this.#allRows = [];
     this.#filteredRows = [];
-    this.removeAttribute('data-upgraded');
   }
 
-  #setup() {
+  #init() {
     // Collect data rows only — exclude expansion content rows
     // This ensures sort/filter/pagination treat expandable + content as a group
     this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
@@ -133,19 +129,6 @@ class DataTable extends HTMLElement {
     // Remove dynamically created elements
     this.#filterInput?.parentElement?.remove();
     this.#paginationNav?.remove();
-
-    // Remove event listeners from headers
-    this.#sortableHeaders.forEach(({ th }) => {
-      th.removeEventListener('click', this.#handleHeaderClick);
-      th.removeEventListener('keydown', this.#handleHeaderKeyDown);
-    });
-
-    // Remove expansion listeners
-    this.#table?.removeEventListener('click', this.#handleExpandClick);
-
-    // Remove selection listeners
-    this.#selectAllCheckbox?.removeEventListener('change', this.#handleSelectAllChange);
-    this.#tbody?.removeEventListener('change', this.#handleRowSelectChange);
   }
 
   #setupSorting() {
@@ -169,8 +152,8 @@ class DataTable extends HTMLElement {
       // Store column index on element for event handler
       th.dataset.columnIndex = columnIndex;
 
-      th.addEventListener('click', this.#handleHeaderClick);
-      th.addEventListener('keydown', this.#handleHeaderKeyDown);
+      this.listen(th, 'click', this.#handleHeaderClick);
+      this.listen(th, 'keydown', this.#handleHeaderKeyDown);
     });
   }
 
@@ -326,7 +309,7 @@ class DataTable extends HTMLElement {
     this.#filterInput = filterInput;
 
     // Add event listener with debounce
-    filterInput.addEventListener('input', this.#handleFilterInput);
+    this.listen(filterInput, 'input', this.#handleFilterInput);
   }
 
   #handleFilterInput = (e) => {
@@ -397,7 +380,7 @@ class DataTable extends HTMLElement {
 
   #setupExpansion() {
     // Use event delegation on the table for expand toggles
-    this.#table.addEventListener('click', this.#handleExpandClick);
+    this.listen(this.#table, 'click', this.#handleExpandClick);
   }
 
   #handleExpandClick = (e) => {
@@ -446,11 +429,11 @@ class DataTable extends HTMLElement {
     // Find select-all checkbox in thead
     this.#selectAllCheckbox = this.#table.querySelector('thead [data-action="select-all"]');
     if (this.#selectAllCheckbox) {
-      this.#selectAllCheckbox.addEventListener('change', this.#handleSelectAllChange);
+      this.listen(this.#selectAllCheckbox, 'change', this.#handleSelectAllChange);
     }
 
     // Listen for row selection changes in tbody (event delegation)
-    this.#tbody.addEventListener('change', this.#handleRowSelectChange);
+    this.listen(this.#tbody, 'change', this.#handleRowSelectChange);
 
     // Find selected count element scoped to this component instance
     this.#selectedCountElement = this.querySelector('[data-selected-count]');
