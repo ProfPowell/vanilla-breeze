@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Tour &mdash; Button-Triggered Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-m); max-width: 60rem; margin: 0 auto; }
+    .content-grid { display: grid; grid-template-columns: 1fr 16rem; gap: var(--size-m); }
+    @media (max-width: 48rem) { .content-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav id="toolbar" style="display: flex; gap: var(--size-m); align-items: center; padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-lg); margin-block-end: var(--size-m);">
+    <strong>Editor</strong>
+    <span style="flex: 1;"></span>
+    <tool-tip content="Start the editor walkthrough" position="bottom">
+      <button id="help-btn" data-tour="editor-tour" type="button">Take a Tour</button>
+    </tool-tip>
+  </nav>
+
+  <div class="content-grid">
+    <main id="editor" style="padding: var(--size-xl); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-lg); min-height: 14rem;">
+      <h2>Document Editor</h2>
+      <p>Start writing your content here. The editor supports rich text formatting, headings, and embedded media.</p>
+
+      <accordion-wc id="formatting-help" bordered>
+        <details name="editor-help">
+          <summary>Formatting Tips</summary>
+          <p>Use the toolbar above to apply bold, italic, and heading styles. Keyboard shortcuts like <kbd>Ctrl+B</kbd> also work.</p>
+        </details>
+        <details name="editor-help">
+          <summary>Embedding Media</summary>
+          <p>Drag images directly into the editor or use the insert menu to add videos and files.</p>
+        </details>
+      </accordion-wc>
+    </main>
+
+    <aside id="sidebar" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-lg);">
+      <h3>Properties</h3>
+      <layout-stack data-layout-gap="s">
+        <form-field>
+          <label for="doc-title">Title</label>
+          <input id="doc-title" type="text" value="Untitled Document" />
+        </form-field>
+        <form-field>
+          <label for="doc-status">Status</label>
+          <select id="doc-status">
+            <option>Draft</option>
+            <option>In Review</option>
+            <option>Published</option>
+          </select>
+        </form-field>
+      </layout-stack>
+    </aside>
+  </div>
+
+  <toast-msg id="notifications" position="top-end"></toast-msg>
+
+  <page-tour
+    id="editor-tour"
+    data-title="Editor Tour"
+    data-trigger="button"
+    data-mode="passive"
+    data-persist="session"
+  >
+    <tour-step data-target="#help-btn" data-placement="bottom">
+      <h3>Help Button</h3>
+      <p>Click this button anytime to restart the tour and learn about the editor.</p>
+    </tour-step>
+
+    <tour-step data-target="#editor" data-placement="right">
+      <h3>Document Editor</h3>
+      <p>This is the main editing area. Write and format your content here.</p>
+    </tour-step>
+
+    <tour-step data-target="#formatting-help" data-placement="top">
+      <h3>Formatting Help</h3>
+      <p>Expand these panels for tips on formatting and embedding media.</p>
+    </tour-step>
+
+    <tour-step data-target="#sidebar" data-placement="left">
+      <h3>Properties Sidebar</h3>
+      <p>View and edit document metadata, tags, and publishing settings.</p>
+    </tour-step>
+  </page-tour>
+
+  <script type="module">
+    const tour = document.getElementById('editor-tour');
+    const toasts = document.getElementById('notifications');
+
+    tour.addEventListener('tour:complete', () => {
+      toasts.show({ message: 'Editor tour complete!', variant: 'success', duration: 4000 });
+    });
+
+    tour.addEventListener('tour:skip', () => {
+      toasts.show({ message: 'Tour skipped. Click "Take a Tour" to restart.', variant: 'info', duration: 3000 });
+    });
+  </script>
+
+</body>
+</html>

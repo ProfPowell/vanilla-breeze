@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Tour &mdash; Forced (Compliance) Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-m); max-width: 40rem; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+  <h1>Account Setup</h1>
+
+  <layout-stack data-layout-gap="l">
+
+    <section id="terms-section" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-lg);">
+      <h2>Terms of Service</h2>
+      <p>Please review and accept the updated terms of service to continue using your account.</p>
+      <layout-cluster>
+        <input id="accept-terms" type="checkbox" />
+        <label for="accept-terms">I accept the Terms of Service</label>
+      </layout-cluster>
+    </section>
+
+    <section id="security-section" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-lg);">
+      <h2>Security Review</h2>
+      <p>Review your security settings to ensure your account is protected.</p>
+    </section>
+
+    <button id="confirm-btn" type="button">Confirm Setup</button>
+
+  </layout-stack>
+
+  <toast-msg id="notifications" position="top-end"></toast-msg>
+
+  <page-tour
+    id="compliance-tour"
+    data-title="Required Account Setup"
+    data-trigger="auto"
+    data-mode="forced"
+    data-persist="local"
+  >
+    <tour-step data-target="#terms-section" data-placement="bottom">
+      <h3>Terms of Service</h3>
+      <p>You must review the updated terms before proceeding.</p>
+    </tour-step>
+
+    <tour-step
+      data-target="#accept-terms"
+      data-placement="right"
+      data-action="click"
+      data-action-hint="Check the box to accept the terms"
+    >
+      <h3>Accept Terms</h3>
+      <p>Check this box to confirm you have read and accept the terms.</p>
+    </tour-step>
+
+    <tour-step
+      data-target="#confirm-btn"
+      data-placement="top"
+      data-action="click"
+      data-action-hint="Click Confirm to complete setup"
+    >
+      <h3>Confirm Setup</h3>
+      <p>Click Confirm to finalize your account setup.</p>
+    </tour-step>
+  </page-tour>
+
+  <script type="module">
+    const tour = document.getElementById('compliance-tour');
+    const toasts = document.getElementById('notifications');
+
+    tour.addEventListener('tour:complete', () => {
+      toasts.show({ message: 'Account setup complete! You may now use the app.', variant: 'success', duration: 5000 });
+    });
+  </script>
+
+</body>
+</html>

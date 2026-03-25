@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Tour &mdash; Basic Passive Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-m); max-width: 60rem; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+  <header id="site-header" style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-lg); margin-block-end: var(--size-m);">
+    <nav style="display: flex; gap: var(--size-m); align-items: center;">
+      <strong>My App</strong>
+      <a href="#">Home</a>
+      <a href="#">Docs</a>
+      <a href="#">Blog</a>
+    </nav>
+  </header>
+
+  <layout-cluster style="margin-block-end: var(--size-m);">
+    <form-field>
+      <label for="search-input">Search</label>
+      <input id="search-input" type="search" placeholder="Search everything..." />
+    </form-field>
+    <tool-tip content="Switch between visual themes" position="bottom">
+      <button id="theme-picker" type="button">Theme Picker</button>
+    </tool-tip>
+  </layout-cluster>
+
+  <section id="dashboard" style="padding: var(--size-xl); background: var(--color-surface-raised); border-radius: var(--radius-lg); min-height: 10rem;">
+    <h2>Dashboard</h2>
+    <p>Your main workspace content goes here.</p>
+  </section>
+
+  <layout-cluster style="margin-block: var(--size-m);">
+    <button data-tour="demo-tour" type="button">Start Tour</button>
+  </layout-cluster>
+
+  <toast-msg id="notifications" position="top-end"></toast-msg>
+
+  <page-tour
+    id="demo-tour"
+    data-title="Getting Started"
+    data-trigger="manual"
+    data-mode="passive"
+    data-persist="none"
+  >
+    <details class="page-tour-guide" open>
+      <summary class="page-tour-summary">
+        <span>Getting Started Tour</span>
+        <span class="page-tour-count">4 steps</span>
+      </summary>
+      <ol class="page-tour-list">
+        <li>
+          <tour-step data-target="#site-header">
+            <h3>Header &amp; Navigation</h3>
+            <p>The header contains the main navigation. Use it to move between sections.</p>
+          </tour-step>
+        </li>
+        <li>
+          <tour-step data-target="#search-input" data-placement="bottom">
+            <h3>Search</h3>
+            <p>Search across all content from here. Try typing a query.</p>
+          </tour-step>
+        </li>
+        <li>
+          <tour-step data-target="#theme-picker" data-placement="bottom">
+            <h3>Theme Picker</h3>
+            <p>Click the theme picker to change the visual style of the site.</p>
+          </tour-step>
+        </li>
+        <li>
+          <tour-step data-target="#dashboard">
+            <h3>Dashboard</h3>
+            <p>This is your main workspace. All your content and tools are accessible from here.</p>
+          </tour-step>
+        </li>
+      </ol>
+      <button class="page-tour-start-btn" type="button">Start Tour</button>
+    </details>
+  </page-tour>
+
+  <script type="module">
+    const tour = document.getElementById('demo-tour');
+    const toasts = document.getElementById('notifications');
+
+    tour.addEventListener('tour:complete', () => {
+      toasts.show({ message: 'Tour complete! You are ready to go.', variant: 'success', duration: 4000 });
+    });
+
+    tour.addEventListener('tour:skip', () => {
+      toasts.show({ message: 'Tour skipped. You can restart it anytime.', variant: 'info', duration: 3000 });
+    });
+  </script>
+
+</body>
+</html>

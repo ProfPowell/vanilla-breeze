@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>page-tour / tour-step &mdash; Static Fallback</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: 2rem; font-family: system-ui, sans-serif; }
+    h2 { margin-block-start: 2rem; }
+    /* Fake page landmarks for the tour targets */
+    #site-header { padding: 1rem; background: var(--color-surface-raised, #f0f0f0); border-radius: 8px; margin-block-end: 1rem; }
+    #search-input { padding: 0.5rem 1rem; border: 1px solid var(--color-border, #ccc); border-radius: 6px; }
+    #theme-picker { padding: 0.5rem 1rem; border: 1px solid var(--color-border, #ccc); border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!--
+    page-tour / tour-step — Progressive Enhancement Demo
+
+    This file demonstrates what users see when JavaScript is
+    unavailable. The custom elements are NOT registered here,
+    so they render with :not(:defined) fallback styles.
+
+    Layer 1 (HTML only):
+      An ordered list of steps with headings, descriptions,
+      and anchor links to the target elements.
+
+    Layer 3 (CSS + <details>):
+      The step list collapses behind a disclosure widget.
+      A "Start Tour" button is shown but non-functional.
+
+    What JS adds (Layer 4):
+      - Spotlight overlay highlighting the target element
+      - Popover card with step content and navigation
+      - Focus trap and keyboard navigation
+      - Action gating (require user interaction before advancing)
+      - Progress persistence across page reloads
+      - aria-live announcements for screen readers
+  -->
+
+  <!-- Fake page landmarks -->
+  <header id="site-header">
+    <nav>
+      <strong>Site Header</strong> &mdash; Home | Docs | Blog
+    </nav>
+  </header>
+
+  <label for="search-input">Search: </label>
+  <input id="search-input" type="search" placeholder="Search..." />
+
+  <button id="theme-picker" type="button">Theme Picker</button>
+
+  <hr />
+
+  <!-- ================================================
+       Example 1: Layer 1 — Plain HTML (no <details>)
+       ================================================ -->
+  <h2>Layer 1 &mdash; Plain Step List</h2>
+
+  <page-tour data-title="Getting Started">
+    <tour-step data-target="#site-header">
+      <h3>Header &amp; Navigation</h3>
+      <p>
+        The header contains the main navigation. Use it to move between sections.
+        <a href="#site-header">Jump to header</a>
+      </p>
+    </tour-step>
+
+    <tour-step data-target="#search-input">
+      <h3>Search</h3>
+      <p>
+        Search across all content from here.
+        <a href="#search-input">Jump to search</a>
+      </p>
+    </tour-step>
+
+    <tour-step data-target="#theme-picker">
+      <h3>Theme Picker</h3>
+      <p>
+        Click the theme picker to change the visual style of the site.
+        <a href="#theme-picker">Jump to theme picker</a>
+      </p>
+    </tour-step>
+  </page-tour>
+
+  <!-- ================================================
+       Example 2: Layer 3 — <details>/<summary>
+       ================================================ -->
+  <h2>Layer 3 &mdash; Collapsible Guide</h2>
+
+  <page-tour data-title="Getting Started (Collapsible)">
+    <details class="page-tour-guide" open>
+      <summary class="page-tour-summary">
+        <span>Getting Started Tour</span>
+        <span class="page-tour-count">3 steps</span>
+      </summary>
+      <ol class="page-tour-list">
+        <li>
+          <tour-step data-target="#site-header">
+            <h3>Header &amp; Navigation</h3>
+            <p>The header contains the main navigation. <a href="#site-header">Jump to header</a></p>
+          </tour-step>
+        </li>
+        <li>
+          <tour-step data-target="#search-input">
+            <h3>Search</h3>
+            <p>Search across all content from here. <a href="#search-input">Jump to search</a></p>
+          </tour-step>
+        </li>
+        <li>
+          <tour-step data-target="#theme-picker">
+            <h3>Theme Picker</h3>
+            <p>Click the theme picker to change the style. <a href="#theme-picker">Jump to theme picker</a></p>
+          </tour-step>
+        </li>
+      </ol>
+      <button class="page-tour-start-btn" type="button">Start Tour</button>
+    </details>
+  </page-tour>
+
+</body>
+</html>

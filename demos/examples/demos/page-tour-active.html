@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Tour &mdash; Active (Action-Gated) Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-m); max-width: 40rem; margin: 0 auto; }
+    fieldset { border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-lg); padding: var(--size-m); }
+    legend { font-weight: var(--font-weight-semibold); font-size: var(--font-size-lg); }
+  </style>
+</head>
+<body>
+
+  <h1>Settings</h1>
+
+  <form id="settings-form" novalidate>
+    <layout-stack data-layout-gap="l">
+
+      <fieldset>
+        <legend>Profile</legend>
+        <form-field>
+          <label for="profile-name">Display Name</label>
+          <input id="profile-name" type="text" value="Jane Doe" required
+                 aria-describedby="profile-name-msg"
+                 data-message-valuemissing="Please enter your name" />
+          <output id="profile-name-msg" class="error" for="profile-name" aria-live="polite"></output>
+        </form-field>
+      </fieldset>
+
+      <fieldset>
+        <legend>Notifications</legend>
+        <layout-cluster>
+          <input id="notification-toggle" type="checkbox" />
+          <label for="notification-toggle">Enable email notifications</label>
+        </layout-cluster>
+      </fieldset>
+
+      <button id="save-btn" type="button">Save Settings</button>
+
+    </layout-stack>
+  </form>
+
+  <toast-msg id="notifications" position="top-end"></toast-msg>
+
+  <page-tour
+    id="settings-tour"
+    data-title="Settings Walkthrough"
+    data-trigger="auto"
+    data-mode="active"
+    data-persist="session"
+  >
+    <tour-step
+      data-target="#profile-name"
+      data-placement="bottom"
+      data-action="input"
+      data-action-hint="Type your name in the field to continue"
+    >
+      <h3>Your Display Name</h3>
+      <p>Update your display name here. It appears across the app.</p>
+    </tour-step>
+
+    <tour-step
+      data-target="#notification-toggle"
+      data-placement="bottom"
+      data-action="click"
+      data-action-hint="Toggle the checkbox to continue"
+    >
+      <h3>Notifications</h3>
+      <p>Enable or disable email notifications for important updates.</p>
+    </tour-step>
+
+    <tour-step
+      data-target="#save-btn"
+      data-placement="top"
+      data-action="click"
+      data-action-hint="Click Save to continue"
+    >
+      <h3>Save Your Changes</h3>
+      <p>Click Save when you are ready to apply your settings.</p>
+    </tour-step>
+  </page-tour>
+
+  <script type="module">
+    const tour = document.getElementById('settings-tour');
+    const toasts = document.getElementById('notifications');
+
+    tour.addEventListener('tour:action', (e) => {
+      console.log('tour:action', e.detail);
+    });
+
+    tour.addEventListener('tour:complete', () => {
+      toasts.show({ message: 'Settings walkthrough complete!', variant: 'success', duration: 4000 });
+    });
+
+    tour.addEventListener('tour:skip', () => {
+      toasts.show({ message: 'Walkthrough skipped.', variant: 'info', duration: 3000 });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,323 @@
+/* ============================================================
+   page-tour / tour-step — Guided page orientation
+   ============================================================
+   4-layer progressive enhancement:
+     L1  HTML   — ordered step list with anchor links
+     L2  CSS    — styled guide card, counter-numbered steps
+     L3  Static — <details>/<summary> collapsible guide
+     L4  JS     — spotlight overlay, popover card, focus trap
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   Custom Properties (tokens)
+   ---------------------------------------------------------- */
+:where(page-tour) {
+  --tour-backdrop-color: oklch(0% 0 0 / 0.5);
+  --tour-spotlight-ring: var(--color-primary, oklch(55% 0.2 260));
+  --tour-spotlight-padding: 8px;
+  --tour-spotlight-radius: var(--radius-m, 6px);
+  --tour-card-max-width: 22rem;
+  --tour-card-min-width: 16rem;
+  --tour-card-offset: var(--size-s, 0.75rem);
+  --tour-transition-duration: var(--duration-normal, 250ms);
+  --tour-z-index: var(--z-overlay, 9000);
+  --tour-pip-size: var(--size-2xs, 0.375rem);
+  --tour-pip-active-width: var(--size-s, 0.75rem);
+}
+
+/* ----------------------------------------------------------
+   Layer 1+2 — :not(:defined) fallback
+   Renders as an in-page "Getting Started" guide card
+   ---------------------------------------------------------- */
+page-tour:not(:defined) {
+  display: block;
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ccc);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--size-m, 1rem);
+  background: var(--color-surface-raised, #f8f8f8);
+  max-width: var(--measure-narrow, 38rem);
+  counter-reset: tour-step;
+}
+
+page-tour:not(:defined)::before {
+  content: attr(data-title);
+  display: block;
+  font-size: var(--font-size-lg, 1.25rem);
+  font-weight: var(--font-weight-semibold, 600);
+  margin-block-end: var(--size-s, 0.75rem);
+}
+
+tour-step:not(:defined) {
+  display: block;
+  padding: var(--size-s, 0.75rem);
+  border-block-start: var(--border-width-thin, 1px) solid var(--color-border, #ccc);
+  counter-increment: tour-step;
+}
+
+tour-step:not(:defined)::before {
+  content: counter(tour-step) ". ";
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-primary, oklch(55% 0.2 260));
+}
+
+/* Defined element base styles */
+page-tour {
+  display: block;
+}
+
+tour-step {
+  display: block;
+}
+
+/* Once defined, always hide tour-step content (it renders inside the card) */
+page-tour:is(:defined) tour-step {
+  display: none;
+}
+
+/* Raised target — applied by JS during action-gated steps */
+[data-tour-target] {
+  position: relative;
+  z-index: calc(var(--tour-z-index, 9000) + 1);
+}
+
+/* ----------------------------------------------------------
+   Layer 3 — <details>/<summary> collapsible guide
+   ---------------------------------------------------------- */
+page-tour:not(:defined) .page-tour-guide {
+  border: none;
+}
+
+page-tour:not(:defined) .page-tour-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold, 600);
+  padding: var(--size-xs, 0.5rem) 0;
+}
+
+page-tour:not(:defined) .page-tour-count {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #666);
+  font-weight: var(--font-weight-normal, 400);
+}
+
+page-tour:not(:defined) .page-tour-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+page-tour:not(:defined) .page-tour-start-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  margin-block-start: var(--size-s, 0.75rem);
+  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  background: var(--color-primary, oklch(55% 0.2 260));
+  color: var(--color-on-primary, #fff);
+  border: none;
+  border-radius: var(--radius-m, 6px);
+  font-weight: var(--font-weight-semibold, 600);
+  cursor: pointer;
+}
+
+/* When JS is active, hide the static guide */
+page-tour:is(:defined) .page-tour-guide {
+  display: none;
+}
+
+/* ----------------------------------------------------------
+   Layer 4 — Active tour overlay (JS-generated DOM)
+   ---------------------------------------------------------- */
+
+/* Backdrop — semi-transparent overlay behind spotlight */
+.page-tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--tour-backdrop-color);
+  z-index: var(--tour-z-index);
+  opacity: 0;
+  transition: opacity var(--tour-transition-duration) var(--ease-out, ease-out);
+  pointer-events: auto;
+}
+
+.page-tour-backdrop[data-visible] {
+  opacity: 1;
+}
+
+/* Spotlight — box-shadow ring that cuts a "hole" in the backdrop */
+.page-tour-spotlight {
+  position: fixed;
+  z-index: calc(var(--tour-z-index) + 1);
+  pointer-events: none;
+  border-radius: var(--tour-spotlight-radius);
+  box-shadow:
+    0 0 0 4px var(--tour-spotlight-ring),
+    0 0 0 9999px var(--tour-backdrop-color);
+  transition:
+    top var(--tour-transition-duration) var(--ease-out, ease-out),
+    left var(--tour-transition-duration) var(--ease-out, ease-out),
+    width var(--tour-transition-duration) var(--ease-out, ease-out),
+    height var(--tour-transition-duration) var(--ease-out, ease-out);
+}
+
+/* Popover card — the tour step content panel */
+.page-tour-card {
+  position: fixed;
+  z-index: calc(var(--tour-z-index) + 2);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #222);
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ccc);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--size-m, 1rem);
+  box-shadow: var(--shadow-lg, 0 8px 24px oklch(0% 0 0 / 0.15));
+  max-width: var(--tour-card-max-width);
+  min-width: var(--tour-card-min-width);
+}
+
+.page-tour-card[popover] {
+  margin: 0; /* Reset UA popover margin */
+}
+
+/* ----------------------------------------------------------
+   Card internals
+   ---------------------------------------------------------- */
+
+/* Progress pips */
+.page-tour-progress {
+  display: flex;
+  gap: var(--size-2xs, 0.375rem);
+  align-items: center;
+  margin-block-end: var(--size-s, 0.75rem);
+}
+
+.page-tour-pip {
+  width: var(--tour-pip-size);
+  height: var(--tour-pip-size);
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-border, #ccc);
+  transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out),
+              width var(--duration-fast, 150ms) var(--ease-out, ease-out);
+}
+
+.page-tour-pip[data-active] {
+  background: var(--tour-spotlight-ring);
+  width: var(--tour-pip-active-width);
+}
+
+.page-tour-pip[data-visited] {
+  background: var(--color-text-muted, #666);
+}
+
+/* Step meta (counter) */
+.page-tour-meta {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #666);
+  margin: 0 0 var(--size-xs, 0.5rem);
+}
+
+/* Step content area */
+.page-tour-content {
+  margin-block-end: var(--size-m, 1rem);
+}
+
+.page-tour-content :first-child {
+  margin-block-start: 0;
+}
+
+.page-tour-content :last-child {
+  margin-block-end: 0;
+}
+
+/* Action hint — shown while waiting for user action */
+.page-tour-action-hint {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #666);
+  margin-block-start: var(--size-xs, 0.5rem);
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+}
+
+.page-tour-action-hint::before {
+  content: "\2192"; /* right arrow */
+  color: var(--tour-spotlight-ring);
+}
+
+/* Footer — navigation buttons */
+.page-tour-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--size-s, 0.75rem);
+}
+
+.page-tour-nav {
+  display: flex;
+  gap: var(--size-xs, 0.5rem);
+  margin-inline-start: auto;
+}
+
+/* Button base styles (within tour card) */
+.page-tour-card button {
+  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  border-radius: var(--radius-m, 6px);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-semibold, 600);
+  cursor: pointer;
+  border: var(--border-width-thin, 1px) solid transparent;
+  transition: background var(--duration-fast, 150ms) var(--ease-out, ease-out);
+}
+
+.page-tour-next {
+  background: var(--color-primary, oklch(55% 0.2 260));
+  color: var(--color-on-primary, #fff);
+}
+
+.page-tour-next:hover {
+  background: var(--color-primary-hover, oklch(48% 0.2 260));
+}
+
+.page-tour-next[data-waiting] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-tour-prev {
+  background: transparent;
+  color: var(--color-text, #222);
+  border-color: var(--color-border, #ccc);
+}
+
+.page-tour-prev:hover {
+  background: var(--color-surface-raised, #f8f8f8);
+}
+
+.page-tour-skip {
+  background: transparent;
+  color: var(--color-text-muted, #666);
+  border: none;
+  padding-inline: var(--size-xs, 0.5rem);
+}
+
+.page-tour-skip:hover {
+  color: var(--color-text, #222);
+}
+
+/* ----------------------------------------------------------
+   Reduced motion
+   ---------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .page-tour-spotlight {
+    transition: none;
+  }
+
+  .page-tour-backdrop {
+    transition: none;
+  }
+
+  .page-tour-pip {
+    transition: none;
+  }
+}

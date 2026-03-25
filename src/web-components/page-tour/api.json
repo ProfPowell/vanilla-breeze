@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "page-tour",
+  "type": "web-component",
+  "description": "Progressive-enhancement guided tour. Renders as an in-page step list without JS; enhances to an interactive spotlight overlay with the web component.",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["tour-step", "details", "@flow"]
+  },
+  "attributes": [
+    { "name": "data-title",            "kind": "host-api", "purpose": "config",       "type": "string",  "default": "Tour",    "description": "Tour name for aria-label and heading" },
+    { "name": "data-trigger",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["auto", "manual", "button"], "default": "manual", "description": "How the tour is initiated" },
+    { "name": "data-mode",             "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["passive", "active", "forced"], "default": "passive", "description": "Skip and action-gate behaviour" },
+    { "name": "data-persist",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["none", "session", "local"], "default": "session", "description": "Where to store progress" },
+    { "name": "data-persist-key",      "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Storage key override (defaults to page path)" },
+    { "name": "data-spotlight-padding", "kind": "host-api", "purpose": "config",      "type": "number",  "default": "8",       "description": "Pixel padding around the spotlight rect" },
+    { "name": "data-step",             "kind": "host-api", "purpose": "output-state", "type": "number",  "default": "0",       "description": "Current step index (0-based), reflects state" },
+    { "name": "data-active",           "kind": "host-api", "purpose": "output-state", "type": "boolean", "description": "Present while tour is running" },
+    { "name": "data-complete",         "kind": "host-api", "purpose": "output-state", "type": "boolean", "description": "Present after tour finishes or is skipped" }
+  ],
+  "structure": [
+    { "element": "<tour-step>",                          "description": "Individual tour step — contains heading and description" },
+    { "element": "<details class=\"page-tour-guide\">",  "required": false, "description": "Layer 3 collapsible wrapper (optional)" },
+    { "element": "<button class=\"page-tour-start-btn\">", "required": false, "description": "Start button inside details (optional, auto-wired)" }
+  ],
+  "childAttributes": [
+    { "name": "data-target",      "on": "tour-step", "type": "string", "required": true,  "description": "CSS selector for the element to highlight" },
+    { "name": "data-placement",   "on": "tour-step", "type": "enum",   "values": ["top", "bottom", "left", "right", "auto"], "default": "auto", "description": "Preferred card placement relative to target" },
+    { "name": "data-action",      "on": "tour-step", "type": "enum",   "values": ["none", "click", "focus", "input", "custom"], "default": "none", "description": "Required user action before Next is enabled" },
+    { "name": "data-action-hint", "on": "tour-step", "type": "string", "description": "Instructional text shown while waiting for action" },
+    { "name": "data-skippable",   "on": "tour-step", "type": "enum",   "values": ["true", "false"], "default": "true", "description": "Whether this step can be skipped" },
+    { "name": "data-scroll",      "on": "tour-step", "type": "enum",   "values": ["auto", "smooth", "none"], "default": "smooth", "description": "Scroll-into-view behaviour for target" }
+  ],
+  "events": [
+    { "name": "tour:start",    "detail": "{ step }",                           "description": "Fired once when tour begins" },
+    { "name": "tour:step",     "detail": "{ step, target, direction }",        "description": "Fired on each step change" },
+    { "name": "tour:action",   "detail": "{ step, action }",                   "description": "Fired when a required action completes" },
+    { "name": "tour:complete", "detail": "{ steps }",                          "description": "Fired when last step is finished" },
+    { "name": "tour:skip",     "detail": "{ step }",                           "description": "Fired when user skips the tour" }
+  ]
+}
