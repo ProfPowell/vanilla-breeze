@@ -1,0 +1,222 @@
+---
+layout: layouts/element.njk
+title: "markdown-viewer"
+description: "Render markdown with progressive enhancement. Supports external files, inline content, pluggable parsers, and VB theme integration."
+elementName: markdown-viewer
+category: component
+currentPath: /docs/elements/web-components/markdown-viewer/
+permalink: /docs/elements/web-components/markdown-viewer/
+---
+
+{% set preSlotCode %}<markdown-viewer>
+  <pre>
+# Hello world
+
+This is **inline** markdown with a graceful fallback.
+The raw text is visible if JS is disabled.
+  </pre>
+</markdown-viewer>{% endset %}
+
+{% set scriptSlotCode %}<markdown-viewer>
+  <script type="text/markdown">
+# Hello world
+
+This content is **invisible** without JavaScript.
+  </script>
+</markdown-viewer>{% endset %}
+
+{% set templateSlotCode %}<markdown-viewer>
+  <template data-md>
+# Hello world
+
+| Name  | Role     |
+|-------|----------|
+| Alice | Engineer |
+| Bob   | Designer |
+  </template>
+</markdown-viewer>{% endset %}
+
+{% set srcCode %}<markdown-viewer src="/path/to/document.md"></markdown-viewer>{% endset %}
+
+{% set themeCode %}<!-- Explicit theme -->
+<markdown-viewer data-theme="brutalist">
+  <pre># Themed content</pre>
+</markdown-viewer>
+
+<!-- Inherited from ancestor -->
+<section data-theme="editorial">
+  <markdown-viewer>
+    <pre># Inherits editorial theme</pre>
+  </markdown-viewer>
+</section>{% endset %}
+
+{% set customParserCode %}const viewer = document.querySelector('markdown-viewer');
+viewer.parser = (md) => myCustomRenderer(md);{% endset %}
+
+{% set highlightCode %}<markdown-viewer highlight>
+  <pre>
+# Code Blocks
+
+```javascript
+console.log('hello');
+```
+  </pre>
+</markdown-viewer>
+
+<script type="module">
+  document.addEventListener('markdown-viewer:highlight', ({ detail }) => {
+    // detail.node = the code element
+    // detail.language = e.g. "javascript"
+    hljs.highlightElement(detail.node);
+  });
+</script>{% endset %}
+
+{% set mermaidCode %}document.addEventListener('markdown-viewer:rendered', ({ detail }) => {
+  const diagrams = detail.node.querySelectorAll('code.language-mermaid');
+  if (diagrams.length) {
+    import('mermaid').then(m => m.default.run({ nodes: diagrams }));
+  }
+});{% endset %}
+
+{% set calloutCode %}import { marked } from 'marked';
+import { calloutExtension } from './markdown-viewer/vb-extensions.js';
+marked.use({ extensions: [calloutExtension] });{% endset %}
+
+  <section>
+    <h2>Overview</h2>
+    <p>A platform-native markdown viewer custom element. Renders markdown into light DOM so VB's CSS cascade, themes, and component styles apply automatically. Progressive enhancement via the <code>&lt;pre&gt;</code> slot ensures content is readable without JavaScript.</p>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-basic.html"
+      url="https://vanilla-breeze.dev/markdown-viewer"
+      title="Markdown Viewer &mdash; Content Slots"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Content Slots</h2>
+    <p>The component resolves content using this priority chain:</p>
+
+    <h3>1. <code>&lt;pre&gt;</code> slot (recommended)</h3>
+    <p>Raw markdown is visible as readable text if JS is disabled. Hidden after render.</p>
+    <code-block language="html" show-lines label="Pre slot (progressive enhancement)">{{ preSlotCode | escape }}</code-block>
+
+    <h3>2. <code>&lt;script type=&quot;text/markdown&quot;&gt;</code> slot</h3>
+    <p>Browser does not execute or render it. No fallback without JS.</p>
+    <code-block language="html" show-lines label="Script slot">{{ scriptSlotCode | escape }}</code-block>
+
+    <h3>3. <code>&lt;template data-md&gt;</code> slot</h3>
+    <p>Inert DOM node, framework-friendly. No fallback without JS.</p>
+    <code-block language="html" show-lines label="Template slot">{{ templateSlotCode | escape }}</code-block>
+
+    <h3>4. <code>src</code> attribute</h3>
+    <p>Fetched via <code>fetch()</code>. CORS rules apply.</p>
+    <code-block language="html" show-lines label="External file">{{ srcCode | escape }}</code-block>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-src.html"
+      url="https://vanilla-breeze.dev/markdown-viewer-src"
+      title="Markdown Viewer &mdash; External Source"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Theme Propagation</h2>
+    <p>Set <code>data-theme</code> on the viewer or let it inherit from the nearest ancestor with <code>[data-theme]</code>. The theme propagates to the <code>.md-content</code> container.</p>
+    <code-block language="html" show-lines label="Theme propagation">{{ themeCode | escape }}</code-block>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-theme.html"
+      url="https://vanilla-breeze.dev/markdown-viewer-theme"
+      title="Markdown Viewer &mdash; Themes"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Custom Parser</h2>
+    <p>The default parser is <code>marked</code> with GFM enabled. Override it with any function that accepts a markdown string and returns an HTML string:</p>
+    <code-block language="javascript" show-lines label="Custom parser">{{ customParserCode | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Syntax Highlighting</h2>
+    <p>Add the <code>highlight</code> attribute to fire <code>markdown-viewer:highlight</code> events for each code block. Bring your own highlighter:</p>
+    <code-block language="html" show-lines label="Syntax highlighting hook">{{ highlightCode | escape }}</code-block>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-highlight.html"
+      url="https://vanilla-breeze.dev/markdown-viewer-highlight"
+      title="Markdown Viewer &mdash; Syntax Highlighting"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Mermaid Diagrams</h2>
+    <p>Listen for <code>markdown-viewer:rendered</code> and lazy-load Mermaid only when needed:</p>
+    <code-block language="javascript" show-lines label="Mermaid integration">{{ mermaidCode | escape }}</code-block>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-mermaid.html"
+      url="https://vanilla-breeze.dev/markdown-viewer-mermaid"
+      title="Markdown Viewer &mdash; Mermaid Diagrams"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>VB Callout Extension</h2>
+    <p>Register the optional callout extension with <code>marked</code> for <code>:::type</code> blocks (warning, info, tip, danger, note):</p>
+    <code-block language="javascript" show-lines label="Callout extension">{{ calloutCode | escape }}</code-block>
+
+    <browser-window
+      src="/docs/examples/demos/markdown-viewer-callouts.html"
+      url="https://vanilla-breeze.dev/markdown-viewer-callouts"
+      title="Markdown Viewer &mdash; Callout Blocks"
+      shadow>
+    </browser-window>
+  </section>
+
+  {% from "partials/attribute-table.njk" import attributeTable, eventsTable %}
+  <section>
+    <h2>Attributes</h2>
+    {{ attributeTable("markdown-viewer", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    {{ eventsTable("markdown-viewer", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property / Method</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.parser</code></td><td>Get/set custom parser function (md &rarr; html string). Overrides the default marked parser.</td></tr>
+        <tr><td><code>.render()</code></td><td>Force a re-render from the current content source. Returns a Promise.</td></tr>
+        <tr><td><code>.reload()</code></td><td>Re-fetch the <code>src</code> URL and re-render. Returns a Promise.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The <code>&lt;pre&gt;</code> slot provides the best progressive enhancement:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Slot</th><th>JS disabled</th><th>Crawlable</th><th>Recommended for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>src</code></td><td>Nothing visible</td><td>No</td><td>External files</td></tr>
+        <tr><td><code>&lt;script&gt;</code></td><td>Nothing visible</td><td>No</td><td>Build-time content</td></tr>
+        <tr><td><code>&lt;template&gt;</code></td><td>Nothing visible</td><td>No</td><td>Framework content</td></tr>
+        <tr><td><strong><code>&lt;pre&gt;</code></strong></td><td>Raw text visible</td><td>Yes</td><td><strong>Progressive enhancement</strong></td></tr>
+      </tbody>
+    </table>
+  </section>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>markdown-viewer — External Source Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/markdown-viewer/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+    markdown-viewer { border: 1px solid var(--color-border); padding: var(--size-m); border-radius: var(--radius-m); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>markdown-viewer — External Source</h1>
+
+      <h2>Valid source</h2>
+      <p>Fetched from <code>_sample.md</code>:</p>
+      <markdown-viewer src="/docs/examples/demos/_sample.md"></markdown-viewer>
+
+      <h2>Error handling</h2>
+      <p>This viewer points to a non-existent file. It sets <code>data-error</code> and fires <code>markdown-viewer:error</code>.</p>
+      <markdown-viewer id="error-demo" src="/does-not-exist.md">
+        <pre>Fallback content shown while loading or on error.</pre>
+      </markdown-viewer>
+
+      <output id="error-output" role="status"></output>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const output = document.getElementById('error-output');
+    document.getElementById('error-demo').addEventListener('markdown-viewer:error', (e) => {
+      output.textContent = `Error caught: ${e.detail.error}`;
+    });
+  </script>
+</body>
+</html>

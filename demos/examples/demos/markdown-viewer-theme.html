@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>markdown-viewer — Theme and Highlight Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <!-- Load extreme themes directly for this demo -->
+  <link rel="stylesheet" href="/src/tokens/themes/_extreme-brutalist.css" />
+  <link rel="stylesheet" href="/src/tokens/themes/_extreme-editorial.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/markdown-viewer/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+    markdown-viewer {
+      border: 1px solid var(--color-border);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>markdown-viewer — Theme Propagation</h1>
+
+      <h2>Brutalist theme</h2>
+      <markdown-viewer data-theme="brutalist">
+        <pre>
+# Brutalist Theme
+
+This viewer has `data-theme="brutalist"` — bold, high-contrast styling.
+
+- Monospace typography throughout
+- Hard offset shadows
+- Zero border radii
+        </pre>
+      </markdown-viewer>
+
+      <h2>Editorial theme</h2>
+      <markdown-viewer data-theme="editorial">
+        <pre>
+# Editorial Theme
+
+This viewer uses `data-theme="editorial"` — classic typographic elegance.
+
+- Serif headings and refined spacing
+- Warm-toned palette for long-form reading
+        </pre>
+      </markdown-viewer>
+
+      <h2>Inherits theme from ancestor</h2>
+      <section data-theme="brutalist" style="padding: var(--size-m); background: var(--color-surface); color: var(--color-text); border-radius: var(--radius-m);">
+        <p>This section has <code>data-theme="brutalist"</code>. The viewer inherits it.</p>
+        <markdown-viewer>
+          <pre>
+# Inherited Brutalist Theme
+
+The component reads `data-theme` from the closest ancestor with `[data-theme]`.
+
+No explicit theme attribute needed on the viewer itself.
+          </pre>
+        </markdown-viewer>
+      </section>
+
+      <h2>Highlight events</h2>
+      <markdown-viewer highlight>
+        <pre>
+# Code Block Events
+
+When the `highlight` attribute is set, the component fires `markdown-viewer:highlight` for each code block:
+
+```javascript
+console.log('This block fires a highlight event');
+```
+
+```css
+body { color: var(--color-text); }
+```
+        </pre>
+      </markdown-viewer>
+
+      <output id="highlight-output" role="status"></output>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const output = document.getElementById('highlight-output');
+    const events = [];
+    document.addEventListener('markdown-viewer:highlight', (e) => {
+      events.push(e.detail.language);
+      output.textContent = `Highlight events fired for: ${events.join(', ')}`;
+    });
+  </script>
+</body>
+</html>

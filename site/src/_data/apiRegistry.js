@@ -978,6 +978,158 @@ export default {
       }
     ]
   },
+  "chart-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "chart-wc",
+    "type": "web-component",
+    "description": "SVG chart component powered by SVC. Progressive enhancement: semantic table → CSS chart → SVG chart.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-type",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "bar",
+          "column",
+          "line",
+          "area",
+          "pie",
+          "scatter",
+          "bubble"
+        ],
+        "description": "Chart type to render"
+      },
+      {
+        "name": "data-values",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Chart data as JSON string"
+      },
+      {
+        "name": "data-config",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "SVC config overrides as JSON string"
+      },
+      {
+        "name": "data-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Chart title text"
+      },
+      {
+        "name": "data-legend",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show legend (presence enables)"
+      },
+      {
+        "name": "data-tooltip",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Enable tooltips (presence enables)"
+      },
+      {
+        "name": "data-palette",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Custom color palette as JSON array"
+      },
+      {
+        "name": "data-chart",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "replace",
+          "enhance"
+        ],
+        "description": "How to handle source table: replace hides table, enhance keeps both"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<table>",
+        "description": "Optional source table — data is extracted and table becomes screen-reader accessible"
+      },
+      {
+        "element": "<script type='application/json'>",
+        "description": "Optional inline JSON data source"
+      },
+      {
+        "element": "<template data-chart-data>",
+        "description": "Optional template-based JSON data source"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-chart-series",
+        "on": "th",
+        "type": "boolean",
+        "description": "Mark this column as a data series for chart extraction"
+      },
+      {
+        "name": "data-chart-label",
+        "on": "th",
+        "type": "boolean",
+        "description": "Mark this column as the label/category axis"
+      },
+      {
+        "name": "data-chart-ignore",
+        "on": "th",
+        "type": "boolean",
+        "description": "Exclude this column from chart data extraction"
+      }
+    ],
+    "events": [
+      {
+        "name": "chart-wc:render",
+        "detail": "{ type, seriesCount }",
+        "description": "Fired after SVG chart renders successfully"
+      },
+      {
+        "name": "chart-wc:error",
+        "detail": "{ message }",
+        "description": "Fired when chart rendering fails"
+      }
+    ],
+    "properties": [
+      {
+        "name": "data",
+        "type": "Array|Object",
+        "description": "Get/set chart data programmatically"
+      },
+      {
+        "name": "config",
+        "type": "Object",
+        "description": "Get/set SVC config programmatically"
+      }
+    ],
+    "methods": [
+      {
+        "name": "refresh()",
+        "description": "Re-extract table data and re-render"
+      },
+      {
+        "name": "toSVG()",
+        "returns": "string|null",
+        "description": "Get current SVG markup"
+      }
+    ]
+  },
   "chat-window": {
     "element": "chat-window",
     "type": "web-component",
@@ -1989,6 +2141,131 @@ export default {
       }
     ]
   },
+  "markdown-viewer": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "markdown-viewer",
+    "type": "web-component",
+    "description": "Render markdown content with progressive enhancement. Supports external files, inline content, pluggable parsers, and VB theme integration.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "pre",
+        "script",
+        "template",
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL of external markdown file"
+      },
+      {
+        "name": "loading",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "eager",
+          "lazy"
+        ],
+        "default": "eager",
+        "description": "Defer fetch until element enters viewport (Phase 3)"
+      },
+      {
+        "name": "highlight",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Fire per-block markdown-viewer:highlight events after render"
+      },
+      {
+        "name": "ping",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to ping with render metadata via sendBeacon"
+      },
+      {
+        "name": "data-theme",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Theme name propagated to .md-content container"
+      },
+      {
+        "name": "data-rendered",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": false,
+        "description": "Present after successful render"
+      },
+      {
+        "name": "data-loading",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": false,
+        "description": "Present while fetching external content"
+      },
+      {
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": false,
+        "description": "Present if fetch or parse fails"
+      }
+    ],
+    "events": [
+      {
+        "name": "markdown-viewer:fetch",
+        "detail": "{ src }",
+        "description": "Fired when external fetch begins"
+      },
+      {
+        "name": "markdown-viewer:rendered",
+        "detail": "{ src, node }",
+        "description": "Fired after parse and render complete"
+      },
+      {
+        "name": "markdown-viewer:highlight",
+        "detail": "{ node, language }",
+        "description": "Fired per code block when highlight attribute is set"
+      },
+      {
+        "name": "markdown-viewer:error",
+        "detail": "{ error }",
+        "description": "Fired on fetch or parse failure"
+      }
+    ],
+    "properties": [
+      {
+        "name": "parser",
+        "type": "Function|null",
+        "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser."
+      }
+    ],
+    "methods": [
+      {
+        "name": "render()",
+        "returns": "Promise<void>",
+        "description": "Force a re-render from the current content source"
+      },
+      {
+        "name": "reload()",
+        "returns": "Promise<void>",
+        "description": "Re-fetch the src URL and re-render"
+      }
+    ]
+  },
   "page-toc": {
     "element": "page-toc",
     "type": "web-component",
@@ -2016,6 +2293,215 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string"
+      }
+    ]
+  },
+  "page-tour": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "page-tour",
+    "type": "web-component",
+    "description": "Progressive-enhancement guided tour. Renders as an in-page step list without JS; enhances to an interactive spotlight overlay with the web component.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "tour-step",
+        "details",
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Tour",
+        "description": "Tour name for aria-label and heading"
+      },
+      {
+        "name": "data-trigger",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "manual",
+          "button"
+        ],
+        "default": "manual",
+        "description": "How the tour is initiated"
+      },
+      {
+        "name": "data-mode",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "passive",
+          "active",
+          "forced"
+        ],
+        "default": "passive",
+        "description": "Skip and action-gate behaviour"
+      },
+      {
+        "name": "data-persist",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "session",
+          "local"
+        ],
+        "default": "session",
+        "description": "Where to store progress"
+      },
+      {
+        "name": "data-persist-key",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Storage key override (defaults to page path)"
+      },
+      {
+        "name": "data-spotlight-padding",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "default": "8",
+        "description": "Pixel padding around the spotlight rect"
+      },
+      {
+        "name": "data-step",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "type": "number",
+        "default": "0",
+        "description": "Current step index (0-based), reflects state"
+      },
+      {
+        "name": "data-active",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "type": "boolean",
+        "description": "Present while tour is running"
+      },
+      {
+        "name": "data-complete",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "type": "boolean",
+        "description": "Present after tour finishes or is skipped"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<tour-step>",
+        "description": "Individual tour step — contains heading and description"
+      },
+      {
+        "element": "<details class=\"page-tour-guide\">",
+        "required": false,
+        "description": "Layer 3 collapsible wrapper (optional)"
+      },
+      {
+        "element": "<button class=\"page-tour-start-btn\">",
+        "required": false,
+        "description": "Start button inside details (optional, auto-wired)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-target",
+        "on": "tour-step",
+        "type": "string",
+        "required": true,
+        "description": "CSS selector for the element to highlight"
+      },
+      {
+        "name": "data-placement",
+        "on": "tour-step",
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom",
+          "left",
+          "right",
+          "auto"
+        ],
+        "default": "auto",
+        "description": "Preferred card placement relative to target"
+      },
+      {
+        "name": "data-action",
+        "on": "tour-step",
+        "type": "enum",
+        "values": [
+          "none",
+          "click",
+          "focus",
+          "input",
+          "custom"
+        ],
+        "default": "none",
+        "description": "Required user action before Next is enabled"
+      },
+      {
+        "name": "data-action-hint",
+        "on": "tour-step",
+        "type": "string",
+        "description": "Instructional text shown while waiting for action"
+      },
+      {
+        "name": "data-skippable",
+        "on": "tour-step",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Whether this step can be skipped"
+      },
+      {
+        "name": "data-scroll",
+        "on": "tour-step",
+        "type": "enum",
+        "values": [
+          "auto",
+          "smooth",
+          "none"
+        ],
+        "default": "smooth",
+        "description": "Scroll-into-view behaviour for target"
+      }
+    ],
+    "events": [
+      {
+        "name": "tour:start",
+        "detail": "{ step }",
+        "description": "Fired once when tour begins"
+      },
+      {
+        "name": "tour:step",
+        "detail": "{ step, target, direction }",
+        "description": "Fired on each step change"
+      },
+      {
+        "name": "tour:action",
+        "detail": "{ step, action }",
+        "description": "Fired when a required action completes"
+      },
+      {
+        "name": "tour:complete",
+        "detail": "{ steps }",
+        "description": "Fired when last step is finished"
+      },
+      {
+        "name": "tour:skip",
+        "detail": "{ step }",
+        "description": "Fired when user skips the tour"
       }
     ]
   },

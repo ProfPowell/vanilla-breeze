@@ -134,6 +134,7 @@ const elementsByLetter = {
     { name: 'main', type: 'native', href: '/docs/elements/native/main/' },
     { name: 'map', type: 'native', href: '/docs/elements/native/map/' },
     { name: 'mark', type: 'native', href: '/docs/elements/native/mark/' },
+    { name: 'markdown-viewer', type: 'component', href: '/docs/elements/web-components/markdown-viewer/' },
     { name: 'math', type: 'native', href: '/docs/elements/native/math/' },
     { name: 'menu', type: 'native', href: '/docs/elements/native/menu/' },
     { name: 'meta', type: 'native', href: '/docs/elements/native/meta/' },

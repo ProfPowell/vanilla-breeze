@@ -222,6 +222,21 @@ module.exports = {
     }
   },
 
+  "chart-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-type": { enum: ["bar", "column", "line", "area", "pie", "scatter", "bubble"] },
+      "data-values": {},
+      "data-config": {},
+      "data-title": {},
+      "data-legend": { boolean: true },
+      "data-tooltip": { boolean: true },
+      "data-palette": {},
+      "data-chart": { enum: ["replace", "enhance"] }
+    }
+  },
+
   "chat-window": {
     flow: true,
     permittedContent: ["@flow"],
@@ -418,6 +433,18 @@ module.exports = {
     }
   },
 
+  "markdown-viewer": {
+    flow: true,
+    permittedContent: ["pre", "script", "template", "@flow"],
+    attributes: {
+      "src": {},
+      "loading": { enum: ["eager", "lazy"] },
+      "highlight": { boolean: true },
+      "ping": {},
+      "data-theme": {}
+    }
+  },
+
   "page-toc": {
     flow: true,
     permittedContent: ["@flow"],
@@ -425,6 +452,22 @@ module.exports = {
       "levels": {},
       "scope": {},
       "title": {}
+    }
+  },
+
+  "page-tour": {
+    flow: true,
+    permittedContent: ["tour-step", "details", "@flow"],
+    attributes: {
+      "data-title": {},
+      "data-trigger": { enum: ["auto", "manual", "button"] },
+      "data-mode": { enum: ["passive", "active", "forced"] },
+      "data-persist": { enum: ["none", "session", "local"] },
+      "data-persist-key": {},
+      "data-spotlight-padding": {},
+      "data-step": {},
+      "data-active": { boolean: true },
+      "data-complete": { boolean: true }
     }
   },
 

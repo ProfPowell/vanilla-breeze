@@ -1,0 +1,88 @@
+/* --- Progressive enhancement: no-JS fallback --- */
+markdown-viewer:not(:defined) {
+  display: block;
+}
+
+/* markdown-viewer: Platform-native markdown renderer */
+
+markdown-viewer {
+  display: block;
+}
+
+/* Theme bridge: re-declare inherited properties so that data-theme
+   overrides on the host (or an ancestor) actually recalculate them.
+   Without this, children inherit the *computed* value from body,
+   not the custom-property reference, so theme fonts never switch. */
+markdown-viewer[data-theme],
+[data-theme] > markdown-viewer {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* Pre slot: visible raw markdown before JS renders */
+markdown-viewer > pre {
+  font-family: inherit;
+  white-space: pre-wrap;
+}
+
+/* Hide source slots after render */
+markdown-viewer[data-rendered] > pre,
+markdown-viewer[data-rendered] > script[type="text/markdown"],
+markdown-viewer[data-rendered] > template[data-md] {
+  display: none;
+}
+
+/* Loading state */
+markdown-viewer[data-loading] {
+  min-block-size: 2em;
+}
+
+/* Error fallback message */
+markdown-viewer[data-error]::after {
+  content: "Failed to load markdown";
+  display: block;
+  padding: var(--size-s);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+}
+
+/* Hide error message if element has fallback content */
+markdown-viewer[data-error]:not(:empty)::after {
+  display: none;
+}
+
+/* --- Callout blocks (rendered by VB callout extension) --- */
+
+markdown-viewer .callout {
+  padding: var(--size-s) var(--size-m);
+  border-inline-start: var(--border-width-thick, 3px) solid;
+  border-radius: var(--radius-s);
+  margin-block: var(--size-m);
+}
+
+markdown-viewer .callout[data-kind="warning"] {
+  border-color: var(--color-warning, oklch(80% 0.15 85));
+  background: var(--color-warning-subtle, oklch(95% 0.03 85));
+}
+
+markdown-viewer .callout[data-kind="info"] {
+  border-color: var(--color-info, oklch(60% 0.15 250));
+  background: var(--color-info-subtle, oklch(95% 0.03 250));
+}
+
+markdown-viewer .callout[data-kind="tip"] {
+  border-color: var(--color-success, oklch(65% 0.18 145));
+  background: var(--color-success-subtle, oklch(95% 0.03 145));
+}
+
+markdown-viewer .callout[data-kind="danger"] {
+  border-color: var(--color-danger, oklch(55% 0.22 25));
+  background: var(--color-danger-subtle, oklch(95% 0.03 25));
+}
+
+markdown-viewer .callout[data-kind="note"] {
+  border-color: var(--color-text-muted, oklch(70% 0.02 260));
+  background: var(--color-surface-raised, oklch(96% 0.005 260));
+}

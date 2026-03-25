@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>markdown-viewer — Callout Extension Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <!-- Load main.js for VB layout components, but markdown-viewer is loaded
+       separately below AFTER the callout extension is registered. -->
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // 1. Import marked and the callout extension
+    const [{ marked }, { calloutExtension }] = await Promise.all([
+      import('marked'),
+      import('/src/web-components/markdown-viewer/vb-extensions.js'),
+    ]);
+
+    // 2. Register extension BEFORE defining the component
+    marked.use({ extensions: [calloutExtension] });
+
+    // 3. Now define the component — connectedCallback will use the configured marked
+    await import('/src/web-components/markdown-viewer/logic.js');
+  </script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    markdown-viewer {
+      border: 1px solid var(--color-border);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>VB Callout Extension</h1>
+      <p>Register the callout extension with <code>marked</code> to convert <code>:::type</code> blocks into styled callouts.</p>
+
+      <markdown-viewer>
+        <pre>
+# Callout Blocks
+
+The VB callout extension supports five types:
+
+:::warning
+**Careful!** This action cannot be undone. Make sure you have a backup before proceeding.
+:::
+
+:::info
+The markdown-viewer component loads `marked` as its default parser. GFM is enabled by default.
+:::
+
+:::tip
+Use the `highlight` attribute to fire per-block events for syntax highlighting integration.
+:::
+
+:::danger
+Never use this component with untrusted user-generated markdown without enabling sanitization.
+:::
+
+:::note
+The callout extension is a separate import — it adds zero bytes if you do not use it.
+:::
+
+## Regular Content
+
+Paragraphs, **bold**, *italic*, and `code` still work as expected alongside callouts.
+        </pre>
+      </markdown-viewer>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>

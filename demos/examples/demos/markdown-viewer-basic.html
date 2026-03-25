@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>markdown-viewer — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/markdown-viewer/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+    markdown-viewer { border: 1px solid var(--color-border); padding: var(--size-m); border-radius: var(--radius-m); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>markdown-viewer — Content Slots</h1>
+
+      <h2>1. <code>&lt;pre&gt;</code> slot (recommended)</h2>
+      <p>Progressive enhancement: raw markdown is visible without JS.</p>
+      <markdown-viewer>
+        <pre>
+# Hello from a pre slot
+
+This is **bold** and *italic* text with `inline code`.
+
+- List item one
+- List item two
+- List item three
+        </pre>
+      </markdown-viewer>
+
+      <h2>2. <code>&lt;script type="text/markdown"&gt;</code> slot</h2>
+      <p>Hidden from the browser, parsed by the component.</p>
+      <markdown-viewer>
+        <script type="text/markdown">
+# Hello from a script slot
+
+This content is **invisible** without JavaScript.
+
+> A blockquote inside a script tag.
+        </script>
+      </markdown-viewer>
+
+      <h2>3. <code>&lt;template data-md&gt;</code> slot</h2>
+      <p>Inert DOM node, framework-friendly.</p>
+      <markdown-viewer>
+        <template data-md>
+# Hello from a template slot
+
+A table rendered from an inert template:
+
+| Name | Role |
+|------|------|
+| Alice | Engineer |
+| Bob | Designer |
+        </template>
+      </markdown-viewer>
+
+      <h2>4. <code>src</code> attribute</h2>
+      <p>Fetched from an external file.</p>
+      <markdown-viewer src="/docs/examples/demos/_sample.md"></markdown-viewer>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>

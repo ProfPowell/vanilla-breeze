@@ -28,6 +28,8 @@ import './chat-window/logic.js';
 import './chat-input/logic.js';
 import './image-map/logic.js';
 import './youtube-player/logic.js';
+import './page-tour/logic.js';
+import './markdown-viewer/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';

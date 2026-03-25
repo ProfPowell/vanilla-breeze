@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "markdown-viewer",
+  "type": "web-component",
+  "description": "Render markdown content with progressive enhancement. Supports external files, inline content, pluggable parsers, and VB theme integration.",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["pre", "script", "template", "@flow"]
+  },
+  "attributes": [
+    { "name": "src",            "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL of external markdown file" },
+    { "name": "loading",        "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["eager", "lazy"], "default": "eager", "description": "Defer fetch until element enters viewport (Phase 3)" },
+    { "name": "highlight",      "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Fire per-block markdown-viewer:highlight events after render" },
+    { "name": "ping",           "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL to ping with render metadata via sendBeacon" },
+    { "name": "data-theme",     "kind": "data",     "purpose": "config",       "type": "string",  "description": "Theme name propagated to .md-content container" },
+    { "name": "data-rendered",  "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present after successful render" },
+    { "name": "data-loading",   "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present while fetching external content" },
+    { "name": "data-error",     "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present if fetch or parse fails" }
+  ],
+  "events": [
+    { "name": "markdown-viewer:fetch",     "detail": "{ src }",            "description": "Fired when external fetch begins" },
+    { "name": "markdown-viewer:rendered",  "detail": "{ src, node }",      "description": "Fired after parse and render complete" },
+    { "name": "markdown-viewer:highlight", "detail": "{ node, language }", "description": "Fired per code block when highlight attribute is set" },
+    { "name": "markdown-viewer:error",     "detail": "{ error }",          "description": "Fired on fetch or parse failure" }
+  ],
+  "properties": [
+    { "name": "parser", "type": "Function|null", "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser." }
+  ],
+  "methods": [
+    { "name": "render()",  "returns": "Promise<void>", "description": "Force a re-render from the current content source" },
+    { "name": "reload()",  "returns": "Promise<void>", "description": "Re-fetch the src URL and re-render" }
+  ]
+}

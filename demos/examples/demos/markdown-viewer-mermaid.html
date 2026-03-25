@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>markdown-viewer — Mermaid Diagrams Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+
+  <!-- Register mermaid listener BEFORE component loads -->
+  <script>
+    document.addEventListener('markdown-viewer:rendered', async ({ detail }) => {
+      const diagrams = detail.node.querySelectorAll('code.language-mermaid');
+      if (!diagrams.length) return;
+
+      const mermaid = await import('https://esm.sh/mermaid@11');
+      mermaid.default.initialize({ startOnLoad: false, theme: 'neutral' });
+
+      for (const code of diagrams) {
+        const pre = code.parentElement;
+        const container = document.createElement('div');
+        container.className = 'mermaid';
+        container.textContent = code.textContent;
+        pre.replaceWith(container);
+      }
+
+      await mermaid.default.run({ querySelector: '.mermaid' });
+    });
+  </script>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/markdown-viewer/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    markdown-viewer {
+      border: 1px solid var(--color-border);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>Mermaid Diagrams</h1>
+      <p>Mermaid blocks are rendered as fenced code by <code>marked</code>. A post-render listener lazy-loads Mermaid only when a diagram is present.</p>
+
+      <markdown-viewer>
+        <pre>
+# Project Architecture
+
+A flowchart showing the build pipeline:
+
+```mermaid
+graph TD
+    A[Source Files] --> B[esbuild]
+    B --> C[CDN Bundle]
+    B --> D[Component JS]
+    C --> E[Production Site]
+    D --> E
+    E --> F[Browser]
+```
+
+## Sequence Diagram
+
+How the markdown-viewer renders content:
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Component
+    participant Marked
+
+    Browser->>Component: connectedCallback()
+    Component->>Component: resolveMarkdown()
+    Component->>Marked: parse(md)
+    Marked-->>Component: HTML string
+    Component->>Browser: innerHTML = html
+    Component->>Browser: dispatch rendered event
+```
+
+## Regular Code Block
+
+Standard code blocks are unaffected:
+
+```javascript
+// This stays as a code block, not a diagram
+console.log('Hello from markdown-viewer');
+```
+        </pre>
+      </markdown-viewer>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>
