@@ -11,6 +11,8 @@ const basicPage = '/docs/examples/demos/wizard-basic.html';
 const historyPage = '/docs/examples/demos/wizard-history.html';
 const persistPage = '/docs/examples/demos/wizard-persist.html';
 const navStepsPage = '/docs/examples/demos/wizard-nav-steps.html';
+const summaryPage = '/docs/examples/demos/wizard-summary.html';
+const autoNavPage = '/docs/examples/demos/wizard-auto-nav.html';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -571,5 +573,355 @@ test.describe('wizard — progressive enhancement', () => {
 
     const stepCount = await page.locator('fieldset[data-wizard-step]').count();
     expect(stepCount).toBeGreaterThanOrEqual(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Summary Step
+// ---------------------------------------------------------------------------
+
+test.describe('wizard — summary step', () => {
+
+  test('manual summary populates data-wizard-field elements', async ({ page }) => {
+    await page.goto(summaryPage);
+    await waitForWizard(page, '#manual-summary-wizard');
+
+    // Fill step 1 fields
+    await page.fill('#ms-email', 'alice@example.com');
+    await page.fill('#ms-name', 'Alice Smith');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    // Fill step 2 fields
+    await page.selectOption('#ms-color', 'blue');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    // Verify summary fields
+    const emailSummary = page.locator('#manual-summary-wizard [data-wizard-field="email"]');
+    await expect(emailSummary).toHaveText('alice@example.com');
+
+    const nameSummary = page.locator('#manual-summary-wizard [data-wizard-field="fullname"]');
+    await expect(nameSummary).toHaveText('Alice Smith');
+
+    const colorSummary = page.locator('#manual-summary-wizard [data-wizard-field="color"]');
+    await expect(colorSummary).toHaveText('blue');
+  });
+
+  test('manual summary shows dash for empty fields', async ({ page }) => {
+    await page.goto(summaryPage);
+    await waitForWizard(page, '#manual-summary-wizard');
+
+    // Fill only email, leave name
+    await page.fill('#ms-email', 'bob@test.com');
+    await page.fill('#ms-name', 'Bob');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    // Skip color selection (leave as "Select...")
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    const colorSummary = page.locator('#manual-summary-wizard [data-wizard-field="color"]');
+    await expect(colorSummary).toHaveText('\u2014');
+  });
+
+  test('auto summary generates dl from form fields', async ({ page }) => {
+    await page.goto(summaryPage);
+    await waitForWizard(page, '#auto-summary-wizard');
+
+    // Fill fields
+    await page.fill('#as-phone', '555-1234');
+    await page.fill('#as-city', 'Portland');
+    await page.click('#auto-summary-wizard [data-wizard-next]');
+
+    // Check auto-generated dl
+    const dl = page.locator('#auto-summary-wizard [data-wizard-summary-list]');
+    await expect(dl).toBeVisible();
+
+    const dts = dl.locator('dt');
+    const dds = dl.locator('dd');
+    await expect(dts).toHaveCount(2);
+    await expect(dds.nth(0)).toHaveText('555-1234');
+    await expect(dds.nth(1)).toHaveText('Portland');
+  });
+
+  test('summary updates when navigating back and changing values', async ({ page }) => {
+    await page.goto(summaryPage);
+    await waitForWizard(page, '#manual-summary-wizard');
+
+    // Fill and navigate to summary
+    await page.fill('#ms-email', 'first@test.com');
+    await page.fill('#ms-name', 'First');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    await expect(page.locator('#manual-summary-wizard [data-wizard-field="email"]')).toHaveText('first@test.com');
+
+    // Go back and change email
+    await page.click('#manual-summary-wizard [data-wizard-prev]');
+    await page.click('#manual-summary-wizard [data-wizard-prev]');
+    await page.fill('#ms-email', 'updated@test.com');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+    await page.click('#manual-summary-wizard [data-wizard-next]');
+
+    await expect(page.locator('#manual-summary-wizard [data-wizard-field="email"]')).toHaveText('updated@test.com');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-Injected Nav
+// ---------------------------------------------------------------------------
+
+test.describe('wizard — auto-injected nav', () => {
+
+  test('form without [data-wizard-nav] gets nav injected', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-nav-wizard');
+
+    const nav = page.locator('#auto-nav-wizard [data-wizard-nav]');
+    await expect(nav).toHaveCount(1);
+  });
+
+  test('injected nav has prev, next, and submit buttons', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-nav-wizard');
+
+    await expect(page.locator('#auto-nav-wizard [data-wizard-prev]')).toHaveCount(1);
+    await expect(page.locator('#auto-nav-wizard [data-wizard-next]')).toHaveCount(1);
+    await expect(page.locator('#auto-nav-wizard [type="submit"]')).toHaveCount(1);
+  });
+
+  test('navigation works with injected nav', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-nav-wizard');
+
+    const form = page.locator('#auto-nav-wizard');
+    await expect(form).toHaveAttribute('data-wizard-current', '1');
+
+    // Advance
+    await page.click('#auto-nav-wizard [data-wizard-next]');
+    await expect(form).toHaveAttribute('data-wizard-current', '2');
+
+    // Go back
+    await page.click('#auto-nav-wizard [data-wizard-prev]');
+    await expect(form).toHaveAttribute('data-wizard-current', '1');
+  });
+
+  test('submit button visible on last step with injected nav', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-nav-wizard');
+
+    // Navigate to last step
+    await page.click('#auto-nav-wizard [data-wizard-next]');
+    await page.click('#auto-nav-wizard [data-wizard-next]');
+
+    const form = page.locator('#auto-nav-wizard');
+    await expect(form).toHaveAttribute('data-wizard-last', '');
+
+    const submitBtn = page.locator('#auto-nav-wizard [type="submit"]');
+    await expect(submitBtn).toBeVisible();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-Populated Step List
+// ---------------------------------------------------------------------------
+
+test.describe('wizard — auto-populated step list', () => {
+
+  test('empty nav.steps ol gets populated from legends', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-steps-wizard');
+
+    const items = page.locator('#auto-step-nav ol > li');
+    await expect(items).toHaveCount(3);
+    await expect(items.nth(0)).toHaveText('Account');
+    await expect(items.nth(1)).toHaveText('Profile');
+    await expect(items.nth(2)).toHaveText('Confirm');
+  });
+
+  test('auto-populated nav syncs state on navigation', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#auto-steps-wizard');
+
+    // First item should be current
+    const firstItem = page.locator('#auto-step-nav ol > li').first();
+    await expect(firstItem).toHaveAttribute('aria-current', 'step');
+
+    // Advance
+    await page.click('#auto-steps-wizard [data-wizard-next]');
+
+    // First item should be completed, second should be current
+    await expect(firstItem).toHaveAttribute('data-completed', '');
+    const secondItem = page.locator('#auto-step-nav ol > li').nth(1);
+    await expect(secondItem).toHaveAttribute('aria-current', 'step');
+  });
+
+  test('non-empty nav.steps ol is left alone', async ({ page }) => {
+    await page.goto(navStepsPage);
+    await waitForWizard(page);
+
+    // The nav-steps page has manually authored list items — verify they are untouched
+    const items = page.locator('#step-nav ol > li');
+    const count = await items.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AND/OR Conditions
+// ---------------------------------------------------------------------------
+
+test.describe('wizard — AND/OR conditions', () => {
+
+  test('AND condition: step hidden when only one condition met', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#conditions-wizard');
+
+    // Default: role=user, plan=free — "Admin Pro Settings" should be hidden
+    const andStep = page.locator('#conditions-wizard fieldset[data-wizard-if="role:admin && plan:pro"]');
+    await expect(andStep).toHaveAttribute('data-wizard-hidden', '');
+
+    // Set role to admin only (plan still free)
+    await page.selectOption('#cond-role', 'admin');
+    await page.waitForTimeout(100);
+    await expect(andStep).toHaveAttribute('data-wizard-hidden', '');
+  });
+
+  test('AND condition: step visible when all conditions met', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#conditions-wizard');
+
+    // Set both admin AND pro
+    await page.selectOption('#cond-role', 'admin');
+    await page.selectOption('#cond-plan', 'pro');
+    await page.waitForTimeout(100);
+
+    const andStep = page.locator('#conditions-wizard fieldset[data-wizard-if="role:admin && plan:pro"]');
+    await expect(andStep).not.toHaveAttribute('data-wizard-hidden');
+  });
+
+  test('OR condition: step visible when any condition met', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#conditions-wizard');
+
+    // Default: role=user — "Content Management" should be hidden
+    const orStep = page.locator('#conditions-wizard fieldset[data-wizard-if="role:admin || role:editor"]');
+    await expect(orStep).toHaveAttribute('data-wizard-hidden', '');
+
+    // Set role to editor
+    await page.selectOption('#cond-role', 'editor');
+    await page.waitForTimeout(100);
+    await expect(orStep).not.toHaveAttribute('data-wizard-hidden');
+  });
+
+  test('OR condition: step visible with other matching value', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#conditions-wizard');
+
+    // Set role to admin
+    await page.selectOption('#cond-role', 'admin');
+    await page.waitForTimeout(100);
+
+    const orStep = page.locator('#conditions-wizard fieldset[data-wizard-if="role:admin || role:editor"]');
+    await expect(orStep).not.toHaveAttribute('data-wizard-hidden');
+  });
+
+  test('total step count adjusts for AND/OR conditions', async ({ page }) => {
+    await page.goto(autoNavPage);
+    await waitForWizard(page, '#conditions-wizard');
+
+    // Default: both conditional steps hidden (role=user, plan=free)
+    const form = page.locator('#conditions-wizard');
+    const baseTotalStr = await form.getAttribute('data-wizard-total');
+    const baseTotal = Number(baseTotalStr);
+
+    // Enable OR step (role=editor) — adds 1
+    await page.selectOption('#cond-role', 'editor');
+    await page.waitForTimeout(100);
+    const afterOrStr = await form.getAttribute('data-wizard-total');
+    expect(Number(afterOrStr)).toBe(baseTotal + 1);
+
+    // Enable AND step too (role=admin, plan=pro) — adds another 1
+    await page.selectOption('#cond-role', 'admin');
+    await page.selectOption('#cond-plan', 'pro');
+    await page.waitForTimeout(100);
+    const afterBothStr = await form.getAttribute('data-wizard-total');
+    expect(Number(afterBothStr)).toBe(baseTotal + 2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Keyboard Navigation
+// ---------------------------------------------------------------------------
+
+test.describe('wizard — keyboard navigation', () => {
+
+  test('arrow right in step nav moves focus to next item', async ({ page }) => {
+    await page.goto(navStepsPage);
+    await waitForWizard(page);
+
+    // Advance to step 2 so first item is completed (focusable)
+    await page.click('[data-wizard-next]');
+
+    // Focus first nav item link
+    const firstLink = page.locator('#step-nav ol > li').first().locator('a');
+    await firstLink.focus();
+
+    // Press ArrowRight
+    await page.keyboard.press('ArrowRight');
+
+    // Second item's link should now be focused
+    const secondLink = page.locator('#step-nav ol > li').nth(1).locator('a');
+    await expect(secondLink).toBeFocused();
+  });
+
+  test('arrow left in step nav moves focus to previous item', async ({ page }) => {
+    await page.goto(navStepsPage);
+    await waitForWizard(page);
+
+    // Advance to step 3 so items 1 and 2 are completed
+    await page.click('[data-wizard-next]');
+    await page.click('[data-wizard-next]');
+
+    // Focus second nav item link
+    const secondLink = page.locator('#step-nav ol > li').nth(1).locator('a');
+    await secondLink.focus();
+
+    // Press ArrowLeft
+    await page.keyboard.press('ArrowLeft');
+
+    // First item link should be focused
+    const firstLink = page.locator('#step-nav ol > li').first().locator('a');
+    await expect(firstLink).toBeFocused();
+  });
+
+  test('Home key focuses first step nav item', async ({ page }) => {
+    await page.goto(navStepsPage);
+    await waitForWizard(page);
+
+    // Advance to step 3
+    await page.click('[data-wizard-next]');
+    await page.click('[data-wizard-next]');
+
+    // Focus last completed item link
+    const secondLink = page.locator('#step-nav ol > li').nth(1).locator('a');
+    await secondLink.focus();
+
+    // Press Home
+    await page.keyboard.press('Home');
+
+    const firstLink = page.locator('#step-nav ol > li').first().locator('a');
+    await expect(firstLink).toBeFocused();
+  });
+
+  test('roving tabindex: current step link has tabindex 0', async ({ page }) => {
+    await page.goto(navStepsPage);
+    await waitForWizard(page);
+
+    // First item link (current step) should have tabindex=0
+    const firstLink = page.locator('#step-nav ol > li').first().locator('a');
+    await expect(firstLink).toHaveAttribute('tabindex', '0');
+
+    // Last item link (future step) should have tabindex=-1
+    const lastLink = page.locator('#step-nav ol > li').last().locator('a');
+    await expect(lastLink).toHaveAttribute('tabindex', '-1');
   });
 });

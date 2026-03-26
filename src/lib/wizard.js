@@ -90,6 +90,9 @@ class WizardController {
     // Discover nav.steps element for visual step indicator sync
     this.#discoverStepNav();
 
+    // Auto-populate step nav items from legends if nav is empty
+    this.#autoPopulateStepNav();
+
     // Create status region for screen readers
     this.#createStatusRegion();
 
@@ -97,8 +100,14 @@ class WizardController {
     this.#form.setAttribute('data-wizard-enhanced', '');
     this.#form.setAttribute('data-wizard-total', String(this.#steps.length));
 
+    // Auto-inject navigation if missing
+    this.#injectAutoNav();
+
     // Bind navigation buttons
     this.#bindNavigation();
+
+    // Keyboard navigation in step indicator
+    this.#bindKeyboardNav();
 
     // Bind form field changes for conditional logic (input + change, debounced)
     const scheduleConditionEval = () => {
@@ -308,6 +317,23 @@ class WizardController {
   }
 
   /**
+   * Auto-populate nav.steps from step legends when the list is empty
+   */
+  #autoPopulateStepNav() {
+    if (!this.#stepNav) return;
+
+    const ol = this.#stepNav.querySelector('ol');
+    if (!ol || ol.children.length > 0) return;
+
+    for (const step of this.#steps) {
+      const legend = step.querySelector('legend');
+      const li = document.createElement('li');
+      li.textContent = legend?.textContent || `Step ${this.#steps.indexOf(step) + 1}`;
+      ol.appendChild(li);
+    }
+  }
+
+  /**
    * Sync nav.steps <li> elements with current wizard state
    */
   #syncStepNav() {
@@ -359,6 +385,14 @@ class WizardController {
 
       navIndex++;
     }
+
+    // Roving tabindex: current step item is tab-focusable, others are not
+    for (const item of navItems) {
+      if (item.hasAttribute('hidden')) continue;
+      const focusTarget = item.querySelector('a, button') || item;
+      const isCurrent = item.hasAttribute('aria-current');
+      /** @type {HTMLElement} */ (focusTarget).setAttribute('tabindex', isCurrent ? '0' : '-1');
+    }
   }
 
   /**
@@ -405,6 +439,76 @@ class WizardController {
     nextBtn?.addEventListener('click', (e) => {
       e.preventDefault();
       this.next();
+    });
+  }
+
+  /**
+   * Auto-inject navigation when [data-wizard-nav] is missing
+   */
+  #injectAutoNav() {
+    if (this.#form.querySelector('[data-wizard-nav]')) return;
+
+    const nav = document.createElement('nav');
+    nav.setAttribute('data-wizard-nav', '');
+
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.setAttribute('data-wizard-prev', '');
+    prevBtn.textContent = 'Back';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.setAttribute('data-wizard-next', '');
+    nextBtn.textContent = 'Next';
+
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.textContent = 'Submit';
+
+    nav.append(prevBtn, nextBtn, submitBtn);
+    this.#form.appendChild(nav);
+  }
+
+  /**
+   * Bind arrow-key navigation in the step indicator (roving tabindex)
+   */
+  #bindKeyboardNav() {
+    if (!this.#stepNav) return;
+
+    this.#stepNav.addEventListener('keydown', (e) => {
+      const items = Array.from(this.#stepNav.querySelectorAll('ol > li:not([hidden])'));
+      const current = /** @type {HTMLElement} */ (e.target).closest('li');
+      const currentIdx = items.indexOf(current);
+      if (currentIdx === -1) return;
+
+      let nextIdx;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          nextIdx = Math.min(currentIdx + 1, items.length - 1);
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          nextIdx = Math.max(currentIdx - 1, 0);
+          break;
+        case 'Home':
+          nextIdx = 0;
+          break;
+        case 'End':
+          nextIdx = items.length - 1;
+          break;
+        default:
+          return;
+      }
+
+      e.preventDefault();
+
+      // Update roving tabindex
+      const currentTarget = items[currentIdx].querySelector('a, button') || items[currentIdx];
+      const nextTarget = items[nextIdx].querySelector('a, button') || items[nextIdx];
+      /** @type {HTMLElement} */ (currentTarget).setAttribute('tabindex', '-1');
+      /** @type {HTMLElement} */ (nextTarget).setAttribute('tabindex', '0');
+      /** @type {HTMLElement} */ (nextTarget).focus();
     });
   }
 
@@ -468,6 +572,9 @@ class WizardController {
 
     // Announce step change
     this.#announceStep();
+
+    // Populate summary step if active
+    this.#populateSummary();
   }
 
   /**
@@ -580,12 +687,33 @@ class WizardController {
   }
 
   /**
-   * Evaluate a single condition string
-   * Supports: "fieldName:value", "fieldName:!value", "fieldName", "!fieldName"
+   * Evaluate a condition string with optional AND/OR operators
+   * Supports compound expressions: "a:x && b:y", "a:x || b:y"
+   * AND (&&) has higher precedence than OR (||)
    * @param {string} condition
    * @returns {boolean}
    */
   #evaluateCondition(condition) {
+    // Handle OR groups (lower precedence)
+    if (condition.includes('||')) {
+      return condition.split('||').some(part => this.#evaluateCondition(part.trim()));
+    }
+
+    // Handle AND groups (higher precedence)
+    if (condition.includes('&&')) {
+      return condition.split('&&').every(part => this.#evaluateSingleCondition(part.trim()));
+    }
+
+    return this.#evaluateSingleCondition(condition);
+  }
+
+  /**
+   * Evaluate a single condition token
+   * Supports: "fieldName:value", "fieldName:!value", "fieldName", "!fieldName"
+   * @param {string} condition
+   * @returns {boolean}
+   */
+  #evaluateSingleCondition(condition) {
     // Check for negation
     const isNegated = condition.startsWith('!');
     const cleanCondition = isNegated ? condition.slice(1) : condition;
@@ -637,6 +765,87 @@ class WizardController {
 
     if (field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
       return field.value;
+    }
+
+    return '';
+  }
+
+  /**
+   * Populate a summary step with form field values
+   */
+  #populateSummary() {
+    const currentStep = this.#getCurrentStep();
+    if (!currentStep || !currentStep.hasAttribute('data-wizard-summary')) return;
+
+    // Manual mode: populate elements with data-wizard-field
+    const fieldEls = currentStep.querySelectorAll('[data-wizard-field]');
+    if (fieldEls.length > 0) {
+      for (const el of fieldEls) {
+        const fieldName = el.getAttribute('data-wizard-field');
+        el.textContent = this.#getFieldValue(fieldName) || '\u2014';
+      }
+      return;
+    }
+
+    // Auto mode: generate a <dl> from all visible step fields
+    let dl = currentStep.querySelector('[data-wizard-summary-list]');
+    if (!dl) {
+      dl = document.createElement('dl');
+      dl.setAttribute('data-wizard-summary-list', '');
+      currentStep.appendChild(dl);
+    }
+    dl.innerHTML = '';
+
+    const seen = new Set();
+    for (const step of this.#steps) {
+      if (step === currentStep || step.hasAttribute('data-wizard-hidden')) continue;
+
+      const inputs = step.querySelectorAll('input, select, textarea');
+      for (const input of inputs) {
+        const name = /** @type {HTMLInputElement} */ (input).name;
+        if (!name || seen.has(name)) continue;
+        seen.add(name);
+
+        const value = this.#getFieldValue(name);
+        if (!value) continue;
+
+        const label = this.#findFieldLabel(/** @type {HTMLInputElement} */ (input));
+
+        const dt = document.createElement('dt');
+        dt.textContent = label || name;
+        const dd = document.createElement('dd');
+        dd.textContent = value;
+        dl.append(dt, dd);
+      }
+    }
+  }
+
+  /**
+   * Find the label text for a form field
+   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} input
+   * @returns {string}
+   */
+  #findFieldLabel(input) {
+    // Check for associated label via for attribute
+    if (input.id) {
+      const label = this.#form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+      if (label) return label.textContent.trim();
+    }
+
+    // Check for wrapping label
+    const parentLabel = input.closest('label');
+    if (parentLabel) {
+      const clone = /** @type {HTMLElement} */ (parentLabel.cloneNode(true));
+      clone.querySelectorAll('input, select, textarea').forEach(el => el.remove());
+      const text = clone.textContent.trim();
+      if (text) return text;
+    }
+
+    // Check for form-field custom element with label child
+    const formField = input.closest('form-field');
+    if (formField) {
+      const label = formField.querySelector('label');
+      if (label) return label.textContent.trim();
     }
 
     return '';

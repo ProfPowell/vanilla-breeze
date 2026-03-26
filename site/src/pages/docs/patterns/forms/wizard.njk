@@ -454,13 +454,15 @@ form.addEventListener('wizard:complete', () => {
       <p><strong>Key features:</strong></p>
       <ul>
         <li><code>wizard.js</code> controller — auto-initializes on <code>form[data-wizard]</code>, handles step navigation, validation, and progress</li>
-        <li><code>nav.steps</code> integration — auto-syncs step indicator state as the user navigates</li>
-        <li>Conditional steps (<code>data-wizard-if</code>) — show/hide steps based on user input</li>
+        <li><code>nav.steps</code> integration — auto-syncs step indicator state; auto-populates from legends when empty</li>
+        <li>Conditional steps (<code>data-wizard-if</code>) — show/hide steps based on user input, with AND/OR compound expressions</li>
         <li>Optional steps (<code>data-wizard-optional</code>) — skip without validation</li>
+        <li>Summary/review step (<code>data-wizard-summary</code>) — auto-populate a review step with field values</li>
+        <li>Auto-injected navigation — Back/Next/Submit buttons created automatically when nav is omitted</li>
         <li>Programmatic API — <code>wizardNext()</code>, <code>wizardPrev()</code>, <code>wizardGoTo()</code>, <code>wizardReset()</code></li>
         <li>Custom events — <code>wizard:step-change</code>, <code>wizard:complete</code>, <code>wizard:reset</code></li>
         <li>Visual patterns — numbered step indicators, tab navigation, and progress bars</li>
-        <li>Accessibility — <code>aria-current="step"</code>, live regions, keyboard navigation</li>
+        <li>Accessibility — <code>aria-current="step"</code>, live regions, roving tabindex keyboard navigation</li>
       </ul>
     </layout-text>
   </section>
@@ -608,9 +610,19 @@ form.addEventListener('wizard:complete', () => {
           <td>Step can be skipped without validation</td>
         </tr>
         <tr>
+          <td><code>data-wizard-summary</code></td>
+          <td><code>&lt;fieldset&gt;</code></td>
+          <td>Summary/review step — auto-populated with field values</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-field="name"</code></td>
+          <td>any element</td>
+          <td>Inside summary step, displays the named field's value</td>
+        </tr>
+        <tr>
           <td><code>data-wizard-steps="#id"</code></td>
           <td><code>&lt;form&gt;</code></td>
-          <td>Points to a <code>nav.steps</code> element for auto-sync</td>
+          <td>Points to a <code>nav.steps</code> element for auto-sync (auto-populates from legends if empty)</td>
         </tr>
       </tbody>
     </table>
@@ -643,8 +655,92 @@ form.addEventListener('wizard:complete', () => {
           <td><code>data-wizard-if="!fieldName"</code></td>
           <td>Show when field is falsy (empty / unchecked)</td>
         </tr>
+        <tr>
+          <td><code>data-wizard-if="a:x &amp;&amp; b:y"</code></td>
+          <td>AND — show when all conditions are true</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-if="a:x || a:y"</code></td>
+          <td>OR — show when any condition is true</td>
+        </tr>
       </tbody>
     </table>
+    <layout-text>
+      <p>AND (<code>&amp;&amp;</code>) has higher precedence than OR (<code>||</code>).</p>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Summary / Review Step</h2>
+    <layout-text>
+      <p>Add <code>data-wizard-summary</code> to a step fieldset to create a review step. The wizard populates it with form values each time the step becomes active.</p>
+      <h3>Manual Mode</h3>
+      <p>Place elements with <code>data-wizard-field="fieldName"</code> to control exactly which values appear and where:</p>
+    </layout-text>
+    <code-block language="html" label="Manual summary step">{{ "
+<fieldset data-wizard-step data-wizard-summary>
+  <legend>Review</legend>
+  <dl>
+    <dt>Email</dt>
+    <dd data-wizard-field=\"email\"></dd>
+    <dt>Name</dt>
+    <dd data-wizard-field=\"fullname\"></dd>
+  </dl>
+</fieldset>" | escape }}</code-block>
+
+    <layout-text>
+      <h3>Auto Mode</h3>
+      <p>If no <code>data-wizard-field</code> elements are present, a <code>&lt;dl&gt;</code> is auto-generated from all non-empty fields across visible steps. Labels are detected from <code>&lt;label&gt;</code> associations.</p>
+    </layout-text>
+    <code-block language="html" label="Auto-generated summary">{{ "
+<fieldset data-wizard-step data-wizard-summary>
+  <legend>Review</legend>
+  <!-- dl auto-generated from all form values -->
+</fieldset>" | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Auto-Injected Navigation</h2>
+    <layout-text>
+      <p>If no <code>[data-wizard-nav]</code> element exists in the form, the wizard automatically injects a Back / Next / Submit navigation bar. This allows minimal wizard markup:</p>
+    </layout-text>
+    <code-block language="html" label="Minimal wizard — nav auto-injected">{{ "
+<form data-wizard>
+  <fieldset data-wizard-step><legend>Step 1</legend>...</fieldset>
+  <fieldset data-wizard-step><legend>Step 2</legend>...</fieldset>
+  <!-- nav injected automatically -->
+</form>" | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Auto-Populated Step List</h2>
+    <layout-text>
+      <p>When a <code>nav.steps</code> element contains an empty <code>&lt;ol&gt;</code>, the wizard auto-populates <code>&lt;li&gt;</code> items from each step's <code>&lt;legend&gt;</code> text. This eliminates the need to duplicate step names between fieldset legends and the navigation list.</p>
+    </layout-text>
+    <code-block language="html" label="Auto-populated step list">{{ "
+<form data-wizard>
+  <nav class=\"steps\" aria-label=\"Progress\">
+    <ol><!-- auto-populated from legends --></ol>
+  </nav>
+  <fieldset data-wizard-step><legend>Account</legend>...</fieldset>
+  <fieldset data-wizard-step><legend>Profile</legend>...</fieldset>
+  <fieldset data-wizard-step><legend>Confirm</legend>...</fieldset>
+</form>" | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <layout-text>
+      <p>The step indicator (<code>nav.steps</code>) uses the roving tabindex pattern for keyboard access:</p>
+      <ul>
+        <li><kbd>Arrow Right</kbd> / <kbd>Arrow Down</kbd> — move focus to next step item</li>
+        <li><kbd>Arrow Left</kbd> / <kbd>Arrow Up</kbd> — move focus to previous step item</li>
+        <li><kbd>Home</kbd> — move focus to first step item</li>
+        <li><kbd>End</kbd> — move focus to last step item</li>
+        <li><kbd>Enter</kbd> / <kbd>Space</kbd> — activate completed step items to navigate back</li>
+      </ul>
+      <p>Only the current step item is in the tab order (<code>tabindex="0"</code>). All other items have <code>tabindex="-1"</code> and are reachable only via arrow keys.</p>
+    </layout-text>
   </section>
 
   <section>

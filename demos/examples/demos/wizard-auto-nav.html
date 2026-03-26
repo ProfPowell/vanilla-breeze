@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Wizard Auto-Nav Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-card>
+      <h2>Auto-Injected Nav</h2>
+      <p>This form has no <code>[data-wizard-nav]</code> in markup. The wizard injects Back/Next/Submit automatically.</p>
+      <form id="auto-nav-wizard" data-wizard>
+        <fieldset data-wizard-step>
+          <legend>Step One</legend>
+          <form-field>
+            <label for="an-name">Name</label>
+            <input type="text" id="an-name" name="name"/>
+          </form-field>
+        </fieldset>
+
+        <fieldset data-wizard-step>
+          <legend>Step Two</legend>
+          <form-field>
+            <label for="an-email">Email</label>
+            <input type="email" id="an-email" name="email"/>
+          </form-field>
+        </fieldset>
+
+        <fieldset data-wizard-step>
+          <legend>Step Three</legend>
+          <p>All done!</p>
+        </fieldset>
+      </form>
+    </layout-card>
+
+    <layout-card>
+      <h2>Auto-Populated Step List</h2>
+      <p>The <code>nav.steps ol</code> is empty in markup. Items are generated from fieldset legends.</p>
+      <form id="auto-steps-wizard" data-wizard>
+        <nav class="steps" id="auto-step-nav" aria-label="Progress">
+          <ol>
+            <!-- items auto-populated from legends -->
+          </ol>
+        </nav>
+
+        <progress data-wizard-progress></progress>
+
+        <fieldset data-wizard-step>
+          <legend>Account</legend>
+          <form-field>
+            <label for="asp-user">Username</label>
+            <input type="text" id="asp-user" name="username"/>
+          </form-field>
+        </fieldset>
+
+        <fieldset data-wizard-step>
+          <legend>Profile</legend>
+          <form-field>
+            <label for="asp-bio">Bio</label>
+            <textarea id="asp-bio" name="bio" rows="3"></textarea>
+          </form-field>
+        </fieldset>
+
+        <fieldset data-wizard-step>
+          <legend>Confirm</legend>
+          <p>Ready to submit.</p>
+        </fieldset>
+
+        <nav data-wizard-nav>
+          <button type="button" data-wizard-prev>Back</button>
+          <button type="button" data-wizard-next>Next</button>
+          <button type="submit">Submit</button>
+        </nav>
+      </form>
+    </layout-card>
+
+    <layout-card>
+      <h2>AND/OR Conditions</h2>
+      <form id="conditions-wizard" data-wizard>
+        <fieldset data-wizard-step>
+          <legend>Preferences</legend>
+          <form-field>
+            <label for="cond-role">Role</label>
+            <select id="cond-role" name="role">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="editor">Editor</option>
+            </select>
+          </form-field>
+          <form-field>
+            <label for="cond-plan">Plan</label>
+            <select id="cond-plan" name="plan">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </form-field>
+        </fieldset>
+
+        <!-- AND: shown only when admin AND pro -->
+        <fieldset data-wizard-step data-wizard-if="role:admin && plan:pro">
+          <legend>Admin Pro Settings</legend>
+          <p>Special settings for Admin users on Pro plan.</p>
+        </fieldset>
+
+        <!-- OR: shown when admin OR editor -->
+        <fieldset data-wizard-step data-wizard-if="role:admin || role:editor">
+          <legend>Content Management</legend>
+          <p>Content tools for admins and editors.</p>
+        </fieldset>
+
+        <fieldset data-wizard-step>
+          <legend>Done</legend>
+          <p>Configuration complete.</p>
+        </fieldset>
+
+        <nav data-wizard-nav>
+          <button type="button" data-wizard-prev>Back</button>
+          <button type="button" data-wizard-next>Next</button>
+          <button type="submit">Submit</button>
+        </nav>
+      </form>
+    </layout-card>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

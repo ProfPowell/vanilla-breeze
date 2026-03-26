@@ -164,6 +164,16 @@ form.wizardReset();      // Reset to first step{% endset %}
           <td>Step can be skipped without validation.</td>
         </tr>
         <tr>
+          <td><code>data-wizard-summary</code></td>
+          <td><code>&lt;fieldset&gt;</code></td>
+          <td>Marks a step as a review/summary step. Child elements with <code>data-wizard-field="name"</code> are populated with the named field's value. If no <code>data-wizard-field</code> children exist, a <code>&lt;dl&gt;</code> is auto-generated from all non-empty form values.</td>
+        </tr>
+        <tr>
+          <td><code>data-wizard-field</code></td>
+          <td>any element</td>
+          <td>Inside a summary step, displays the value of the named form field. Element's <code>textContent</code> is replaced with the field value.</td>
+        </tr>
+        <tr>
           <td><code>data-wizard-steps</code></td>
           <td><code>&lt;form&gt;</code></td>
           <td>CSS selector for an external <code>nav.steps</code> element to sync as progress nav.</td>
@@ -222,7 +232,10 @@ form.wizardReset();      // Reset to first step{% endset %}
       <li><code>name:!value</code> &mdash; show when field does not equal value</li>
       <li><code>name</code> &mdash; show when field has any truthy value</li>
       <li><code>!name</code> &mdash; show when field is empty or unchecked</li>
+      <li><code>name:a &amp;&amp; other:b</code> &mdash; AND: show when all conditions are true</li>
+      <li><code>name:a || name:b</code> &mdash; OR: show when any condition is true</li>
     </ul>
+    <p>AND (<code>&amp;&amp;</code>) has higher precedence than OR (<code>||</code>), so <code>a:x &amp;&amp; b:y || c:z</code> means "(a equals x AND b equals y) OR (c equals z)".</p>
 
     <code-block language="html" show-lines label="Conditional step based on field value">{{ conditionalCode | escape }}</code-block>
   </section>
@@ -232,6 +245,45 @@ form.wizardReset();      // Reset to first step{% endset %}
     <p>Use <code>data-wizard-steps</code> on the form with a CSS selector pointing to an external <code>nav.steps</code> element. The wizard synchronizes the nav's list items with the current step, applying <code>aria-current="step"</code> to the active item. The nav can be placed anywhere on the page.</p>
 
     <code-block language="html" show-lines label="External steps navigation">{{ stepsNavCode | escape }}</code-block>
+
+    <h3>Auto-Populated Step List</h3>
+    <p>If the <code>nav.steps ol</code> is empty (no <code>&lt;li&gt;</code> children), the wizard auto-populates it from the <code>&lt;legend&gt;</code> text of each step fieldset. This saves you from duplicating step names.</p>
+  </section>
+
+  <section>
+    <h2>Auto-Injected Navigation</h2>
+    <p>If no <code>[data-wizard-nav]</code> element is found in the form, the wizard automatically injects a navigation bar with Back, Next, and Submit buttons. This lets you create a minimal wizard with just steps:</p>
+    <code-block language="html" show-lines label="Minimal wizard (nav auto-injected)">{{ "
+<form data-wizard>
+  <fieldset data-wizard-step><legend>Step 1</legend>...</fieldset>
+  <fieldset data-wizard-step><legend>Step 2</legend>...</fieldset>
+  <!-- nav is auto-injected with Back / Next / Submit -->
+</form>" | escape }}</code-block>
+  </section>
+
+  <section>
+    <h2>Summary Step</h2>
+    <p>Add <code>data-wizard-summary</code> to a step fieldset to make it a review step. There are two modes:</p>
+    <h3>Manual Mode</h3>
+    <p>Place elements with <code>data-wizard-field="fieldName"</code> inside the summary step. Their text content is replaced with the corresponding field value when the step becomes active.</p>
+    <code-block language="html" show-lines label="Manual summary with data-wizard-field">{{ "
+<fieldset data-wizard-step data-wizard-summary>
+  <legend>Review</legend>
+  <dl>
+    <dt>Email</dt>
+    <dd data-wizard-field=\"email\"></dd>
+    <dt>Name</dt>
+    <dd data-wizard-field=\"fullname\"></dd>
+  </dl>
+</fieldset>" | escape }}</code-block>
+
+    <h3>Auto Mode</h3>
+    <p>If no <code>data-wizard-field</code> elements are found, a <code>&lt;dl&gt;</code> is auto-generated from all non-empty fields across visible steps, using labels as terms and field values as definitions.</p>
+    <code-block language="html" show-lines label="Auto-generated summary">{{ "
+<fieldset data-wizard-step data-wizard-summary>
+  <legend>Review</legend>
+  <!-- dl auto-generated from all form field values -->
+</fieldset>" | escape }}</code-block>
   </section>
 
   <section>
@@ -297,6 +349,7 @@ form.wizardReset();      // Reset to first step{% endset %}
       <li>Per-step validation prevents advancing past incomplete steps with immediate feedback</li>
       <li>The <code>&lt;progress&gt;</code> element provides a native accessible progress indicator</li>
       <li>Back is hidden on the first step; Submit is only visible on the final step</li>
+      <li>Step indicator uses roving tabindex &mdash; Arrow Left/Right, Home/End cycle focus between items</li>
       <li>Without JavaScript, all fieldsets are visible and the form submits as one page</li>
     </ul>
   </section>

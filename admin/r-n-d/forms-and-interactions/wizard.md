@@ -74,66 +74,28 @@ That status file is now outdated in structure/location:
 
 ## Gaps vs `wizard-forms.md` Spec
 
-### Not implemented yet
+All spec gaps have been resolved as of 2026-03-25.
 
-1. Persistence options:
-- `data-wizard-persist="sessionStorage|localStorage"`
+### Resolved (previously not implemented)
 
-2. Summary/review auto-generation:
-- `data-wizard-summary`
-- `data-wizard-field`
+1. **Persistence** — `data-wizard-persist="session|local"` implemented with sessionStorage/localStorage.
+2. **Summary/review step** — `data-wizard-summary` on fieldset, `data-wizard-field="name"` for manual mode, auto-generated `<dl>` for auto mode.
+3. **Config flags** — `data-wizard-validate` ("step" | "none"), `data-wizard-history` (opt-in hash sync).
+4. **Auto-injected nav** — When `[data-wizard-nav]` is missing, Back/Next/Submit buttons are auto-created.
+5. **Auto-populating step lists** — Empty `nav.steps ol` is auto-filled from `<legend>` text.
+6. **AND/OR condition grammar** — `&&` and `||` operators in `data-wizard-if`, with correct precedence.
+7. **Keyboard navigation** — Roving tabindex in step indicator with Arrow, Home, End keys.
 
-3. Config flags from spec:
-- `data-wizard-validate`
-- `data-wizard-history`
-- `data-wizard-auto-nav`
+### Resolved (previously partial/misaligned)
 
-4. Auto-injected default nav when `[data-wizard-nav]` is missing.
+1. **`wizard:complete`** — Now fires on actual form `submit` event, not on `wizardNext()`.
+2. **`form.reset()` sync** — Native reset events trigger `wizardReset()` via RAF.
+3. **Hash opt-in** — Hash sync only when `data-wizard-history` is present (no longer always-on).
+4. **Condition listeners** — Both `change` and `input` events trigger condition re-evaluation (RAF-debounced).
+5. **Demo paths** — Demos exist at `/docs/examples/demos/wizard-*.html` and `/docs/patterns/demos/wizard-*.html`.
+6. **Test coverage** — Comprehensive Playwright test suite in `tests/components/wizard.spec.js` covering all features.
 
-5. Auto-populating step lists from legends (`<ol data-wizard-steps>` pattern).
+## Remaining (optional follow-ups)
 
-6. Advanced condition grammar (AND/OR expressions).
-
-7. Keyboard extras mentioned in spec notes (arrow-key step nav, Escape behavior).
-
-### Partial/misaligned behavior
-
-1. `wizard:complete` event currently fires on `wizardNext()` at the last step, not on actual form submit.
-
-2. Native `form.reset()` does not automatically reset wizard state unless `wizardReset()` is called.
-
-3. Hash behavior is always on and always `#step=N` (no opt-out mode/config), which can conflict with other hash uses.
-
-4. Condition re-evaluation is bound to `change` events (not `input`), so some step visibility updates only after blur/commit.
-
-5. Docs demo path mismatch:
-- Attribute page points to `/docs/examples/demos/wizard-steps.html`
-- Current wizard demo files are under `/docs/patterns/demos/`
-
-6. No dedicated automated tests for wizard behavior were found under `../tests`.
-
-## What Should Be Done Next (Priority Order)
-
-1. Fix correctness gaps first:
-- Fire `wizard:complete` from real submit flow.
-- Handle native `reset` events by syncing wizard state.
-- Add option to disable or scope hash synchronization.
-
-2. Close the most important spec gaps:
-- Implement `data-wizard-auto-nav` (nav injection fallback).
-- Implement persistence (`data-wizard-persist`).
-- Implement summary step helpers (`data-wizard-summary` / `data-wizard-field`).
-
-3. Improve docs accuracy:
-- Add a real runnable `data-wizard` demo in `docs/examples/demos` or update the iframe path.
-- Keep attribute/pattern docs aligned with actual event semantics.
-
-4. Add test coverage:
-- Navigation + validation
-- Conditional/optional steps
-- Hash sync behavior
-- Events (`stepchange`, `complete`, `reset`)
-
-5. Optional performance follow-up:
-- Ensure wizard is truly split into a separate CDN chunk (right now logic is conditionally executed, but still bundled into main CDN JS files).
+1. Performance: consider splitting wizard into a separate CDN chunk (currently conditionally executed but bundled).
 
