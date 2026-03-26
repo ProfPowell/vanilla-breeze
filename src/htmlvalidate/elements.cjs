@@ -433,6 +433,19 @@ module.exports = {
     }
   },
 
+  "markdown-editor": {
+    flow: true,
+    permittedContent: ["textarea", "@flow"],
+    attributes: {
+      "name": {},
+      "placeholder": {},
+      "rows": {},
+      "highlight": { boolean: true },
+      "data-tab-indent": { boolean: true },
+      "data-theme": {}
+    }
+  },
+
   "markdown-viewer": {
     flow: true,
     permittedContent: ["pre", "script", "template", "@flow"],
