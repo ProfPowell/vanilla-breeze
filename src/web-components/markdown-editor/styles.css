@@ -1,0 +1,83 @@
+/* --- Progressive enhancement: textarea usable without JS --- */
+markdown-editor:not(:defined) {
+  display: block;
+}
+
+markdown-editor:not(:defined) textarea {
+  width: 100%;
+  min-height: 12em;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-s);
+  padding: var(--size-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+}
+
+/* markdown-editor: Side-by-side markdown editor with live preview */
+
+markdown-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--size-s);
+  min-height: 20em;
+}
+
+/* Stack vertically on narrow viewports */
+@media (max-width: 40em) {
+  markdown-editor {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+/* Editor pane */
+markdown-editor .md-editor-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+markdown-editor .md-editor-input {
+  flex: 1;
+  resize: vertical;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-s);
+  line-height: var(--line-height-relaxed, 1.6);
+  padding: var(--size-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface-sunken, var(--color-surface));
+  color: var(--color-text);
+  tab-size: 2;
+}
+
+markdown-editor .md-editor-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+}
+
+/* Preview pane */
+markdown-editor .md-preview-pane {
+  overflow-y: auto;
+  min-height: 0;
+  padding: var(--size-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface);
+}
+
+/* Theme bridge for nested data-theme */
+markdown-editor[data-theme],
+[data-theme] > markdown-editor {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* Editing state — subtle visual indicator */
+markdown-editor[data-editing] .md-editor-pane {
+  outline: 2px solid var(--color-primary, oklch(55% 0.2 260));
+  outline-offset: -2px;
+  border-radius: var(--radius-s);
+}

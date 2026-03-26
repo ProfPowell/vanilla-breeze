@@ -30,6 +30,7 @@ import './image-map/logic.js';
 import './youtube-player/logic.js';
 import './page-tour/logic.js';
 import './markdown-viewer/logic.js';
+import './markdown-editor/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';
