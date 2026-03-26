@@ -20,26 +20,48 @@ form-field:has(:required) label::after {
   color: var(--color-error);
 }
 
-/* Hint - always visible */
+/* Hint - always visible, collapses when valid */
 form-field output.hint {
   display: block;
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
   margin-block-start: var(--size-xs);
+  overflow: hidden;
+  max-block-size: 4lh;
+  opacity: 1;
+  transition:
+    max-block-size var(--duration-normal, 200ms) var(--ease-default, ease),
+    opacity var(--duration-normal, 200ms) var(--ease-default, ease),
+    margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
-/* Error - invisible but space-reserving by default */
+/* Error - collapsed by default, reveals on invalid */
 form-field output.error {
   display: block;
-  visibility: hidden;
   font-size: var(--font-size-s);
   color: var(--color-error);
   margin-block-start: var(--size-xs);
-  min-block-size: 1lh;
+  overflow: hidden;
+  max-block-size: 0;
+  opacity: 0;
+  transition:
+    max-block-size var(--duration-normal, 200ms) var(--ease-default, ease),
+    opacity var(--duration-normal, 200ms) var(--ease-default, ease),
+    margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
-/* Valid state - after user interaction */
-form-field:has(:user-valid) {
+@media (prefers-reduced-motion: reduce) {
+  form-field output.hint,
+  form-field output.error {
+    transition: none;
+  }
+}
+
+/* Valid state - after user interaction
+   Only show valid styling on required fields (which must have a value to be valid)
+   or fields that have data-valid set by the web component (which guards for empty) */
+form-field:has(:user-valid:required),
+form-field[data-valid] {
   & input,
   & textarea,
   & select {
@@ -48,7 +70,9 @@ form-field:has(:user-valid) {
   }
 
   & output.hint {
-    display: none;
+    max-block-size: 0;
+    opacity: 0;
+    margin-block-start: 0;
   }
 }
 
@@ -61,7 +85,8 @@ form-field:has(:user-invalid) {
   }
 
   & output.error {
-    visibility: visible;
+    max-block-size: 4lh;
+    opacity: 1;
   }
 }
 
@@ -77,7 +102,8 @@ form-field[data-invalid] {
   }
 
   & output.error {
-    visibility: visible;
+    max-block-size: 4lh;
+    opacity: 1;
   }
 }
 
@@ -90,7 +116,9 @@ form-field[data-valid] {
   }
 
   & output.hint {
-    display: none;
+    max-block-size: 0;
+    opacity: 0;
+    margin-block-start: 0;
   }
 }
 
@@ -109,18 +137,22 @@ form-field:not([data-no-icon]) {
   position: relative;
 }
 
-/* Base icon styles using ::after on input wrapper or input directly */
-form-field:not([data-no-icon]):has(:user-valid) input:not([type="checkbox"]):not([type="radio"]),
-form-field:not([data-no-icon]):has(:user-valid) textarea,
-form-field:not([data-no-icon]):has(:user-valid) select,
+/* Reserve space for validation icons */
+form-field:not([data-no-icon]):has(:user-valid:required) input:not([type="checkbox"]):not([type="radio"]),
+form-field:not([data-no-icon]):has(:user-valid:required) textarea,
+form-field:not([data-no-icon]):has(:user-valid:required) select,
+form-field:not([data-no-icon])[data-valid] input:not([type="checkbox"]):not([type="radio"]),
+form-field:not([data-no-icon])[data-valid] textarea,
+form-field:not([data-no-icon])[data-valid] select,
 form-field:not([data-no-icon]):has(:user-invalid) input:not([type="checkbox"]):not([type="radio"]),
 form-field:not([data-no-icon]):has(:user-invalid) textarea,
 form-field:not([data-no-icon]):has(:user-invalid) select {
   padding-inline-end: 2.5rem;
 }
 
-/* Valid icon (checkmark) */
-form-field:not([data-no-icon]):has(:user-valid)::after {
+/* Valid icon (checkmark) — only for required fields or JS-confirmed valid */
+form-field:not([data-no-icon]):has(:user-valid:required)::after,
+form-field:not([data-no-icon])[data-valid]::after {
   content: '';
   position: absolute;
   inset-inline-end: var(--size-s);
@@ -153,7 +185,8 @@ form-field:not([data-no-icon]):has(:user-invalid)::after {
 }
 
 /* Adjust for password fields with toggle button */
-form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid)::after,
+form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid:required)::after,
+form-field:not([data-no-icon]):has(.password-wrapper)[data-valid]::after,
 form-field:not([data-no-icon]):has(.password-wrapper):has(:user-invalid)::after {
   inset-inline-end: 2.75rem;
 }
@@ -368,17 +401,35 @@ output.error-summary {
   display: block;
   border: 2px solid var(--color-error);
   border-radius: var(--radius-m);
-  padding: var(--size-m);
   background: color-mix(in oklab, var(--color-error) 6%, transparent);
+  overflow: hidden;
+  max-block-size: 0;
+  opacity: 0;
+  padding: 0 var(--size-m);
+  margin-block-end: 0;
+  transition:
+    max-block-size var(--duration-normal, 200ms) var(--ease-default, ease),
+    opacity var(--duration-normal, 200ms) var(--ease-default, ease),
+    padding var(--duration-normal, 200ms) var(--ease-default, ease),
+    margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
-output.error-summary:empty {
-  display: none;
+output.error-summary:not(:empty) {
+  max-block-size: 50vh;
+  opacity: 1;
+  padding: var(--size-m);
+  margin-block-end: var(--size-l);
 }
 
 output.error-summary:focus {
   outline: 3px solid var(--color-error);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  output.error-summary {
+    transition: none;
+  }
 }
 
 output.error-summary p {
@@ -416,19 +467,41 @@ fieldset[data-invalid] > output {
 
 /* --------------------------------------------------------------------------
    Error summary — new authored pattern: <div data-form-summary>
+   Collapses/expands smoothly via max-block-size transition.
    -------------------------------------------------------------------------- */
-[data-form-summary]:not([hidden]) {
+[data-form-summary] {
   display: block;
   border: 2px solid var(--color-error);
   border-radius: var(--radius-m);
-  padding: var(--size-m);
-  margin-block-end: var(--size-l);
   background: color-mix(in oklab, var(--color-error) 6%, transparent);
+  overflow: hidden;
+  max-block-size: 0;
+  opacity: 0;
+  padding: 0 var(--size-m);
+  margin-block-end: 0;
+  transition:
+    max-block-size var(--duration-normal, 200ms) var(--ease-default, ease),
+    opacity var(--duration-normal, 200ms) var(--ease-default, ease),
+    padding var(--duration-normal, 200ms) var(--ease-default, ease),
+    margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
-[data-form-summary]:not([hidden]):focus {
+[data-form-summary][data-visible] {
+  max-block-size: 50vh;
+  opacity: 1;
+  padding: var(--size-m);
+  margin-block-end: var(--size-l);
+}
+
+[data-form-summary]:focus {
   outline: 3px solid var(--color-error);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-form-summary] {
+    transition: none;
+  }
 }
 
 [data-form-summary] h2 {

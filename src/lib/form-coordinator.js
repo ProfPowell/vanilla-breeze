@@ -21,7 +21,8 @@
 
 function getFields(form) {
   return [...form.querySelectorAll('input, select, textarea')]
-    .filter(f => f.type !== 'submit' && f.type !== 'button' && f.type !== 'hidden');
+    .filter(f => f.type !== 'submit' && f.type !== 'button'
+            && f.type !== 'hidden' && !('honeypot' in f.dataset));
 }
 
 function getFormFields(form) {
@@ -148,7 +149,8 @@ function updateSummary(form, summary, { focus = false } = {}) {
         list.appendChild(li);
       }
     }
-    summary.el.hidden = false;
+    summary.el.removeAttribute('hidden');
+    summary.el.dataset.visible = '';
   } else {
     // Legacy innerHTML approach
     const count = errors.length;
@@ -170,9 +172,14 @@ function updateSummary(form, summary, { focus = false } = {}) {
 function clearSummary(summary) {
   if (!summary) return;
   if (summary.type === 'authored') {
+    delete summary.el.dataset.visible;
+    // Clear list content after the collapse transition finishes
     const list = summary.el.querySelector('[data-summary-list]');
-    if (list) list.innerHTML = '';
-    summary.el.hidden = true;
+    if (list) {
+      summary.el.addEventListener('transitionend', () => {
+        if (!summary.el.dataset.visible) list.innerHTML = '';
+      }, { once: true });
+    }
   } else {
     summary.el.innerHTML = '';
   }
@@ -357,6 +364,15 @@ function enhanceForm(form) {
 
     // Valid — clear summary and handle submission
     clearSummary(summary);
+
+    // Bot protection hook — fires before submission
+    const beforeEvent = new CustomEvent('vb:beforesubmit', {
+      bubbles: true,
+      cancelable: true,
+      detail: { form },
+    });
+    form.dispatchEvent(beforeEvent);
+    if (beforeEvent.defaultPrevented) return;
 
     const submitMode = form.dataset.submit ?? 'native';
 

@@ -11,6 +11,7 @@ if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
+import { initBotProtection } from './lib/bot-protection.js';
 import './lib/sw-register.js';
 export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
 
@@ -44,3 +45,6 @@ initFormCoordinator();
 
 // Enhance form fields (password toggle, etc.)
 initFormFieldEnhancements();
+
+// Bot protection (honeypot + behavioural scoring)
+initBotProtection();

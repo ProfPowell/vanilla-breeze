@@ -334,7 +334,7 @@ test.describe('form validation — error summary', () => {
     await page.locator('#pe-form button[type="submit"]').click();
 
     const summary = page.locator('[data-form-summary]');
-    await expect(summary).not.toHaveAttribute('hidden');
+    await expect(summary).toHaveAttribute('data-visible', '');
 
     const list = summary.locator('[data-summary-list] li');
     expect(await list.count()).toBeGreaterThan(0);
@@ -364,7 +364,7 @@ test.describe('form validation — error summary', () => {
     // First trigger summary by submitting empty form
     await page.locator('#pe-form button[type="submit"]').click();
     const summary = page.locator('[data-form-summary]');
-    await expect(summary).not.toHaveAttribute('hidden');
+    await expect(summary).toHaveAttribute('data-visible', '');
 
     // Now fill all required fields
     await page.fill('#pe-name', 'John Doe');
@@ -382,7 +382,7 @@ test.describe('form validation — error summary', () => {
         const origSubmit = form.submit.bind(form);
         form.submit = () => {
           const summary = document.querySelector('[data-form-summary]');
-          resolve(summary.hidden);
+          resolve(!summary.hasAttribute('data-visible'));
           // Don't actually navigate
         };
       });

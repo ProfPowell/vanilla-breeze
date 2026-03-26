@@ -16,6 +16,7 @@ import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
+import { initBotProtection } from './lib/bot-protection.js';
 import { initAutoloader } from './lib/autoloader.js';
 import './lib/sw-register.js';
 
@@ -28,6 +29,7 @@ initExternalThemeSync();
 // Form validation coordinator
 initFormCoordinator();
 initFormFieldEnhancements();
+initBotProtection();
 
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');

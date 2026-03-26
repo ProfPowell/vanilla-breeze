@@ -220,7 +220,7 @@ class PageTour extends VBElement {
     this.#announcer.className = 'sr-only';
     this.#announcer.id = `page-tour-announcer-${crypto.randomUUID().slice(0, 8)}`;
 
-    document.body.append(this.#backdrop, this.#spotlight, this.#card, this.#announcer);
+    this.append(this.#backdrop, this.#spotlight, this.#card, this.#announcer);
     this.#card.showPopover();
 
     // Fade in backdrop on next frame
