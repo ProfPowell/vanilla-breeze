@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data-markdown-editable — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+    .editable-demo {
+      border: 1px solid var(--color-border);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised, var(--color-surface));
+    }
+    .editable-demo p,
+    .editable-demo li { min-height: 1.4em; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>data-markdown-editable</h1>
+      <p>Click any editable element below. Type markdown syntax while focused — on blur, it renders to formatted HTML.</p>
+
+      <h2>Paragraph</h2>
+      <p>Click the text below to edit it:</p>
+      <section class="editable-demo">
+        <p data-markdown-editable>This is **bold**, *italic*, ~~strikethrough~~, and `inline code`.</p>
+      </section>
+
+      <h2>Multiple elements</h2>
+      <p>Each list item is independently editable:</p>
+      <section class="editable-demo">
+        <ul>
+          <li data-markdown-editable>**Task one** — click to edit this item</li>
+          <li data-markdown-editable>*Task two* — supports all inline markdown</li>
+          <li data-markdown-editable>~~Task three~~ — done, struck through</li>
+          <li data-markdown-editable>Check out `code` and [links](https://example.com)</li>
+        </ul>
+      </section>
+
+      <h2>Heading</h2>
+      <section class="editable-demo">
+        <h3 data-markdown-editable>Edit this **heading** with inline markdown</h3>
+      </section>
+
+      <h2>Textarea with preview</h2>
+      <p>The textarea shows raw markdown. A preview renders below on blur.</p>
+      <section class="editable-demo">
+        <textarea data-markdown-editable rows="3" style="width: 100%; font-family: var(--font-mono, monospace); padding: var(--size-s);">Type **bold**, *italic*, and ~~strike~~ here. Preview appears below on blur.</textarea>
+      </section>
+
+      <h2>Event output</h2>
+      <output id="event-output" role="status" style="display: block; padding: var(--size-s); font-size: var(--font-size-s); font-family: var(--font-mono, monospace); white-space: pre-wrap;"></output>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const output = document.getElementById('event-output');
+    document.addEventListener('markdown-editable:change', (e) => {
+      output.textContent = `Change event:\n  value: ${e.detail.value}\n  html:  ${e.detail.html}`;
+    });
+  </script>
+</body>
+</html>

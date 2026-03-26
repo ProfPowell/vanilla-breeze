@@ -9,6 +9,8 @@ import { initExternalThemeSync } from './utils/external-theme-sync.js';
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 // Lazy-load gestures only when [data-gesture] is present
 if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
+// Lazy-load markdown-editable only when [data-markdown-editable] is present
+if (document.querySelector('[data-markdown-editable]')) import('./utils/markdown-editable-init.js');
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';

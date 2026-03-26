@@ -1,0 +1,101 @@
+/* semantic-card: Semantic structure card with header/section/footer grid areas */
+
+semantic-card {
+  display: grid;
+  grid-template:
+    "header" auto
+    "content" 1fr
+    "footer" auto / 1fr;
+  background: var(--color-surface);
+  border-radius: var(--radius-l);
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
+  overflow: hidden;
+
+  /* --- Variant styles --- */
+
+  &[data-variant="elevated"] {
+    box-shadow:
+      0 4px 6px oklch(0% 0 0 / 0.07),
+      0 2px 4px oklch(0% 0 0 / 0.05);
+  }
+
+  &[data-variant="outlined"] {
+    box-shadow: none;
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+
+  &[data-variant="ghost"] {
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+/* --- Grid area assignments for semantic children --- */
+
+semantic-card > :is(header, [slot="header"]) {
+  grid-area: header;
+  padding: var(--size-m) var(--size-l);
+  border-block-end: 1px solid var(--color-border);
+}
+
+semantic-card > :is(section, [slot="content"]) {
+  grid-area: content;
+  padding: var(--size-l);
+}
+
+semantic-card > :is(footer, [slot="footer"]) {
+  grid-area: footer;
+  padding: var(--size-m) var(--size-l);
+  border-block-start: 1px solid var(--color-border);
+}
+
+/* Implicit content area for bare children (non-semantic elements without slots) */
+semantic-card > :not(:is(header, section, footer, [slot])) {
+  grid-area: content;
+  padding: var(--size-l);
+}
+
+/* --- Header styling --- */
+
+semantic-card > :is(header, [slot="header"]) > :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+/* --- Footer actions pattern --- */
+
+semantic-card > :is(footer, [slot="footer"]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-s);
+  justify-content: flex-end;
+}
+
+/* --- Padding variants --- */
+
+semantic-card[data-padding="none"] {
+  > :is(header, [slot="header"]) { padding: 0; border: none; }
+  > :is(section, [slot="content"]) { padding: 0; }
+  > :is(footer, [slot="footer"]) { padding: 0; border: none; }
+  > :not(:is(header, section, footer, [slot])) { padding: 0; }
+}
+
+semantic-card[data-padding="s"] {
+  > :is(header, [slot="header"]) { padding: var(--size-xs) var(--size-s); }
+  > :is(section, [slot="content"]) { padding: var(--size-s); }
+  > :is(footer, [slot="footer"]) { padding: var(--size-xs) var(--size-s); }
+  > :not(:is(header, section, footer, [slot])) { padding: var(--size-s); }
+}
+
+semantic-card[data-padding="l"] {
+  > :is(header, [slot="header"]) { padding: var(--size-l) var(--size-xl); }
+  > :is(section, [slot="content"]) { padding: var(--size-xl); }
+  > :is(footer, [slot="footer"]) { padding: var(--size-l) var(--size-xl); }
+  > :not(:is(header, section, footer, [slot])) { padding: var(--size-xl); }
+}
+
+/* --- Nested card styling --- */
+
+semantic-card semantic-card {
+  background: var(--color-surface-raised);
+}
