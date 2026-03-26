@@ -476,15 +476,13 @@ console.log('Synced elements.json with custom-elements.json');
 
 ## Checklist
 
-When creating a new web component:
+When creating or modifying a web component:
 
-- [ ] Add JSDoc with `@tag` or `@tagname`
-- [ ] Document `@attr` for each observed attribute
-- [ ] Document `@slot` for each slot
-- [ ] Document `@cssprop` for each CSS custom property
-- [ ] Document `@csspart` for each shadow part
-- [ ] Document `@fires` for each custom event
-- [ ] Run `npm run manifest` to regenerate
+- [ ] Add file-level JSDoc with `@attr` for each attribute and `@fires` for each event
+- [ ] Extend `VBElement` (import from `../../lib/vb-element.js`) — not raw HTMLElement
+- [ ] Register via `registerComponent('tag-name', ClassName)` — not `customElements.define()`
+- [ ] Run `npm run build:cem` to regenerate `custom-elements.json`
+- [ ] Verify the manifest includes your component's attributes and events
 - [ ] Update `.claude/schemas/elements.json` if needed for HTML validation
 
 ## Related Skills

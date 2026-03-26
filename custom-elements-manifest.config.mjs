@@ -1,5 +1,8 @@
 /**
- * CEM Analyzer config — Proof of Concept
+ * CEM Analyzer config — Vanilla Breeze
+ *
+ * Generates custom-elements.json from web component JSDoc.
+ * Run: npm run cem
  *
  * Custom plugins:
  * 1. Resolve registerComponent('tag-name', Class) to associate tags
@@ -143,14 +146,8 @@ function registerComponentPlugin() {
 }
 
 export default {
-  globs: [
-    'src/web-components/tab-set/logic.js',
-    'src/web-components/slide-accept/logic.js',
-    'src/web-components/combo-box/logic.js',
-    'src/web-components/tool-tip/logic.js',
-    'src/web-components/accordion-wc/logic.js',
-  ],
+  globs: ['src/web-components/*/logic.js'],
   exclude: ['node_modules', 'dist', 'site'],
-  outdir: 'admin/r-n-d',
+  outdir: '.',
   plugins: [hoistFileJsdocPlugin(), registerComponentPlugin()],
 };

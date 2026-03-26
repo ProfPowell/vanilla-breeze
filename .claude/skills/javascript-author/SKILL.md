@@ -37,19 +37,18 @@ import { styles } from './my-component-styles.js';
 import { translations } from './my-component-i18n.js';
 
 /**
- * @class MyComponent
- * @extends HTMLElement
- * @description Brief description of component purpose
- * @fires my-component-update - Fired when state changes
+ * my-component: Brief description of component purpose
+ *
+ * @attr {string} lang - Language code
+ * @attr {string} value - Current value
+ * @fires my-component:update - Fired when state changes
  */
-class MyComponent extends HTMLElement {
+import { VBElement } from '../../lib/vb-element.js';
+import { registerComponent } from '../../lib/bundle-registry.js';
+
+class MyComponent extends VBElement {
     static get observedAttributes() {
         return ['lang', 'value'];
-    }
-
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
     }
 
     // FUNCTIONAL CORE - Pure getters
@@ -60,30 +59,21 @@ class MyComponent extends HTMLElement {
                'en';
     }
 
-    get translations() {
-        return translations[this.lang] || translations.en;
-    }
-
     // IMPERATIVE SHELL - Side effects
-    render() {
-        this.shadowRoot.innerHTML = `
-            <style>${styles}</style>
-            ${template(this.translations)}
-        `;
+    setup() {
+        // Initialize component, query children, bind listeners
+        // Use this.listen(target, event, handler) for auto-cleanup
+        // Return false to abort upgrade
     }
 
-    connectedCallback() {
-        this.render();
-        // Set up observers and listeners
-    }
-
-    disconnectedCallback() {
-        // Clean up observers and listeners - REQUIRED
+    teardown() {
+        // Component-specific cleanup (clear timers, disconnect observers)
+        // Event listeners registered via this.listen() are auto-cleaned
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue !== newValue) {
-            this.render();
+            // React to attribute changes
         }
     }
 }
@@ -132,7 +122,7 @@ When authoring JavaScript, consider invoking these related skills:
 
 | Code Pattern | Invoke Skill | Why |
 |--------------|--------------|-----|
-| `class X extends HTMLElement` | **custom-elements** | Full Web Component lifecycle, slots, shadow DOM |
+| `class X extends VBElement` | **custom-elements** | Full Web Component lifecycle, VBElement base class |
 | `fetch()` or API calls | **api-client** | Retry logic, error handling, caching patterns |
 | Component state, reactivity | **state-management** | Observable patterns, undo/redo, sync strategies |
 | `localStorage`, `IndexedDB` | **data-storage** | Persistence patterns, offline-first |
@@ -140,7 +130,7 @@ When authoring JavaScript, consider invoking these related skills:
 
 ### When Creating Web Components
 
-If your JavaScript file defines a custom element (`extends HTMLElement`), also invoke:
+If your JavaScript file defines a custom element (`extends VBElement`), also invoke:
 - **custom-elements** - For registration patterns, slots, attribute handling
 - **state-management** - If component manages internal state
 - **accessibility-checker** - For keyboard navigation, ARIA
