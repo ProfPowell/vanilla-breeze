@@ -31,6 +31,8 @@ import './youtube-player/logic.js';
 import './page-tour/logic.js';
 import './markdown-viewer/logic.js';
 import './markdown-editor/logic.js';
+import './token-specimen/logic.js';
+import './component-sampler/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';
