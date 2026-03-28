@@ -1,0 +1,838 @@
+---
+layout: element
+title: "input"
+description: "The most versatile form element, accepting text, numbers, dates, files, and more through the type attribute. Always pair with a label for accessibility."
+elementName: input
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/input/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Input Type Overview</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Types</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Text</td>
+          <td><code>text</code>, <code>email</code>, <code>password</code>, <code>url</code>, <code>tel</code>, <code>search</code></td>
+          <td>Single-line text input</td>
+        </tr>
+        <tr>
+          <td>Numeric</td>
+          <td><code>number</code>, <code>range</code></td>
+          <td>Numeric values with constraints</td>
+        </tr>
+        <tr>
+          <td>Date/Time</td>
+          <td><code>date</code>, <code>time</code>, <code>datetime-local</code>, <code>month</code>, <code>week</code></td>
+          <td>Temporal values with pickers</td>
+        </tr>
+        <tr>
+          <td>Selection</td>
+          <td><code>checkbox</code>, <code>radio</code></td>
+          <td>Boolean or mutually exclusive choices</td>
+        </tr>
+        <tr>
+          <td>Other</td>
+          <td><code>file</code>, <code>color</code>, <code>hidden</code></td>
+          <td>Specialized inputs</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Text Input Types</h2>
+    <p>Single-line text inputs for names, emails, passwords, URLs, phone numbers, and search. Each type triggers the appropriate mobile keyboard and built-in validation.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/input-text-types.html"
+      url="https://vanilla-breeze.dev/input-text"
+      title="Text Input Types"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Text input types" data-escape><input type="text" placeholder="Name" autocomplete="name" />
+<input type="email" placeholder="Email" autocomplete="email" />
+<input type="password" autocomplete="current-password" />
+<input type="url" placeholder="https://" />
+<input type="tel" placeholder="Phone" autocomplete="tel" />
+<input type="search" placeholder="Search..." /></code-block>
+  </section>
+
+  <section>
+    <h2>Numeric Input Types</h2>
+    <p>Use <code>type="number"</code> for values with increment/decrement controls, and <code>type="range"</code> for slider selection. Constrain values with <code>min</code>, <code>max</code>, and <code>step</code>.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/input-numeric-date.html"
+      url="https://vanilla-breeze.dev/input-numeric"
+      title="Numeric and Date Input Types"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Numeric input types" data-escape><input type="number" min="1" max="99" step="1" value="1" />
+<input type="number" min="0" step="0.01" value="9.99" />
+<input type="range" min="0" max="100" value="50" /></code-block>
+  </section>
+
+  <section>
+    <h2>Date and Time Input Types</h2>
+    <p>Native date/time pickers vary by browser. Consider progressive enhancement. Use <code>min</code> and <code>max</code> to constrain date ranges.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/input-numeric-date.html"
+      url="https://vanilla-breeze.dev/input-date-time"
+      title="Date and Time Input Types"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Date and time input types" data-escape><input type="date" />
+<input type="time" />
+<input type="datetime-local" />
+<input type="month" />
+<input type="week" />
+
+<!-- With date constraints -->
+<input type="date" min="2024-01-01" max="2024-12-31" /></code-block>
+  </section>
+
+  <section>
+    <h2>Checkbox and Radio Inputs</h2>
+    <p>Use <code>type="checkbox"</code> for boolean or multi-select choices, and <code>type="radio"</code> for mutually exclusive selections within a group (same <code>name</code>). Always wrap radio groups in a <a href="/docs/elements/native/fieldset/">fieldset</a> for accessibility.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/input-checkbox-radio.html"
+      url="https://vanilla-breeze.dev/input-checkbox-radio"
+      title="Checkbox and Radio Inputs"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Checkbox and radio inputs" data-escape><!-- Checkbox -->
+<label>
+  <input type="checkbox" name="subscribe" /> Subscribe to newsletter
+</label>
+
+<!-- Radio group (wrap in fieldset) -->
+<fieldset>
+  <legend>Select size</legend>
+  <label>
+    <input type="radio" name="size" value="small" /> Small
+  </label>
+  <label>
+    <input type="radio" name="size" value="medium" checked /> Medium
+  </label>
+  <label>
+    <input type="radio" name="size" value="large" /> Large
+  </label>
+</fieldset></code-block>
+  </section>
+
+  <section>
+    <h2>Other Input Types</h2>
+
+    <h3>type="file"</h3>
+    <p>File upload. Use <code>accept</code> to restrict file types and <code>multiple</code> for multiple files. See also the <a href="#file-upload-zone-data-upload">data-upload enhancement</a> below.</p>
+
+    <h3>type="color"</h3>
+    <p>Color picker returning a hex value. See also the <a href="#enhanced-color-input-data-color">data-color enhancement</a> below.</p>
+
+    <h3>type="hidden"</h3>
+    <p>Invisible form data. Used for tokens, IDs, or tracking.</p>
+    <code-block language="html" show-lines label="Hidden input" data-escape><input type="hidden" name="csrf_token" value="abc123" />
+<input type="hidden" name="user_id" value="42" /></code-block>
+
+    <code-block language="html" show-lines label="File, color, and hidden inputs" data-escape><input type="file" accept=".pdf,.doc" />
+<input type="file" accept="image/*" multiple />
+<input type="color" value="#4a90d9" />
+<input type="hidden" name="token" value="..." /></code-block>
+  </section>
+
+  <section>
+    <h2>Input States</h2>
+    <p>Inputs support disabled, readonly, required, and invalid states. Disabled inputs prevent interaction and are not submitted with the form. Readonly inputs allow selection but not editing, and their values are submitted.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/input-states.html"
+      url="https://vanilla-breeze.dev/input-states"
+      title="Input States and Validation"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Input states and validation" data-escape><input type="text" disabled value="Cannot edit" />
+<input type="text" readonly value="Can select but not edit" />
+
+<!-- Required -->
+<input type="text" required />
+
+<!-- Invalid state -->
+<input type="email" aria-invalid="true" value="not-an-email" />
+
+<!-- Pattern validation -->
+<input type="text" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only" /></code-block>
+  </section>
+
+  <section>
+    <h2>Validation Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>required</code></td>
+          <td>Field must have a value</td>
+          <td><code>&lt;input required /&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>minlength</code></td>
+          <td>Minimum character count</td>
+          <td><code>minlength="2"</code></td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>Maximum character count</td>
+          <td><code>maxlength="100"</code></td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>Minimum numeric/date value</td>
+          <td><code>min="0"</code></td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>Maximum numeric/date value</td>
+          <td><code>max="100"</code></td>
+        </tr>
+        <tr>
+          <td><code>step</code></td>
+          <td>Increment for numeric values</td>
+          <td><code>step="0.01"</code></td>
+        </tr>
+        <tr>
+          <td><code>pattern</code></td>
+          <td>Regex pattern for validation</td>
+          <td><code>pattern="[A-Za-z]+"</code></td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>Built-in validation (email, url)</td>
+          <td><code>type="email"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>With Datalist</h2>
+    <p>Add autocomplete suggestions using <a href="/docs/elements/native/datalist/">datalist</a>.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/datalist-basic.html"
+      url="https://vanilla-breeze.dev/datalist"
+      title="Input with Datalist"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Input with datalist" data-escape><input type="text" list="browsers" />
+<datalist id="browsers">
+  <option value="Chrome"></option>
+  <option value="Firefox"></option>
+</datalist></code-block>
+  </section>
+
+  <section>
+    <h2>With form-field</h2>
+    <p>Use the <a href="/docs/elements/custom-elements/form-field/">form-field custom element</a> for CSS-only validation feedback.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/form-field-css-validation.html"
+      url="https://vanilla-breeze.dev/form-field"
+      title="Input with form-field Validation"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Input with form-field" data-escape><form-field>
+  <label for="ff-email">Email</label>
+  <input type="email" id="ff-email" name="email"
+    required autocomplete="email"
+    aria-describedby="ff-email-msg" />
+  <output id="ff-email-msg" for="ff-email" aria-live="polite">
+    Enter a valid email address
+  </output>
+</form-field></code-block>
+  </section>
+
+  <section>
+    <h2>Autocomplete Attribute</h2>
+    <p>Help browsers autofill forms correctly with specific <code>autocomplete</code> values.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Field Type</th>
+          <th>Autocomplete Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Full name</td>
+          <td><code>name</code></td>
+        </tr>
+        <tr>
+          <td>Email</td>
+          <td><code>email</code></td>
+        </tr>
+        <tr>
+          <td>Phone</td>
+          <td><code>tel</code></td>
+        </tr>
+        <tr>
+          <td>Street address</td>
+          <td><code>street-address</code></td>
+        </tr>
+        <tr>
+          <td>City</td>
+          <td><code>address-level2</code></td>
+        </tr>
+        <tr>
+          <td>State/Province</td>
+          <td><code>address-level1</code></td>
+        </tr>
+        <tr>
+          <td>Postal code</td>
+          <td><code>postal-code</code></td>
+        </tr>
+        <tr>
+          <td>Country</td>
+          <td><code>country-name</code></td>
+        </tr>
+        <tr>
+          <td>Credit card number</td>
+          <td><code>cc-number</code></td>
+        </tr>
+        <tr>
+          <td>Current password</td>
+          <td><code>current-password</code></td>
+        </tr>
+        <tr>
+          <td>New password</td>
+          <td><code>new-password</code></td>
+        </tr>
+        <tr>
+          <td>One-time code</td>
+          <td><code>one-time-code</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Autocomplete attributes" data-escape><input type="text" name="name" autocomplete="name" />
+<input type="email" name="email" autocomplete="email" />
+<input type="password" autocomplete="current-password" />
+<input type="password" autocomplete="new-password" /></code-block>
+  </section>
+
+  <section>
+    <h2>Toggle Switch (data-switch)</h2>
+    <p>Add <code>data-switch</code> to a checkbox for on/off toggle switch styling. Uses CSS <code>appearance: none</code> with a sliding knob. JS adds <code>role="switch"</code> for screen readers.</p>
+
+    <browser-window
+      src="/docs/examples/demos/switch-basic.html"
+      url="https://vanilla-breeze.dev/switch"
+      title="Toggle Switch Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Toggle switch sizes" data-escape><!-- Small -->
+<label>
+  <input type="checkbox" data-switch="sm" name="compact">
+  Compact mode
+</label>
+
+<!-- Default -->
+<label>
+  <input type="checkbox" data-switch name="default">
+  Default size
+</label>
+
+<!-- Large -->
+<label>
+  <input type="checkbox" data-switch="lg" name="feature">
+  Large switch
+</label></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-switch</code></td>
+          <td><code>""</code>, <code>"sm"</code>, <code>"lg"</code></td>
+          <td>Enable switch styling with optional size variant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Password Strength (data-strength)</h2>
+    <p>Add <code>data-strength</code> and <code>data-rules</code> to a password input inside <code>&lt;form-field&gt;</code> to show a real-time strength meter and rules checklist. Works alongside the existing password show/hide toggle.</p>
+
+    <browser-window
+      src="/docs/examples/demos/password-strength-basic.html"
+      url="https://vanilla-breeze.dev/password-strength"
+      title="Password Strength Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Password with strength rules" data-escape><form-field>
+  <label for="pw">Password</label>
+  <input type="password" id="pw"
+    data-strength
+    data-rules="length:8,uppercase,lowercase,number,special"
+    placeholder="Create a strong password"
+    autocomplete="new-password" />
+</form-field></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-strength</code></td>
+          <td>Enable strength meter and rules checklist.</td>
+        </tr>
+        <tr>
+          <td><code>data-rules</code></td>
+          <td>Comma-separated rules: <code>length:N</code>, <code>uppercase</code>, <code>lowercase</code>, <code>number</code>, <code>special</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Strength Levels</h3>
+    <ul>
+      <li><strong>Weak</strong> &mdash; Less than 40% of rules met</li>
+      <li><strong>Fair</strong> &mdash; 40&ndash;74% of rules met</li>
+      <li><strong>Good</strong> &mdash; 75&ndash;99% of rules met</li>
+      <li><strong>Strong</strong> &mdash; All rules met</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Range Enhancement (data-range)</h2>
+    <p>Add <code>data-range</code> to a range input for cross-browser styled track and thumb. Add <code>data-bubble</code> for a floating value display. Pair with <code>&lt;datalist&gt;</code> for tick labels.</p>
+
+    <browser-window
+      src="/docs/examples/demos/range-basic.html"
+      url="https://vanilla-breeze.dev/range-slider"
+      title="Range Slider Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Range with datalist labels" data-escape><input type="range" min="0" max="1000" step="100"
+  list="prices" data-range data-bubble data-prefix="$">
+<datalist id="prices">
+  <option value="0" label="$0">
+  <option value="500" label="$500">
+  <option value="1000" label="$1K">
+</datalist></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-range</code></td>
+          <td>Enable cross-browser track/thumb styling and fill.</td>
+        </tr>
+        <tr>
+          <td><code>data-bubble</code></td>
+          <td>Show floating value bubble above the thumb.</td>
+        </tr>
+        <tr>
+          <td><code>data-prefix</code></td>
+          <td>Text before the value (e.g., <code>"$"</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-suffix</code></td>
+          <td>Text after the value (e.g., <code>"%"</code>, <code>"&deg;F"</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>File Upload Zone (data-upload)</h2>
+    <p>Add <code>data-upload</code> to a file input to wrap it in a drag-and-drop zone with file list display.</p>
+
+    <browser-window
+      src="/docs/examples/demos/upload-basic.html"
+      url="https://vanilla-breeze.dev/upload"
+      title="File Upload Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="File upload zone" data-escape><input type="file" data-upload accept=".pdf,.doc" multiple></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-upload</code></td>
+          <td>Enable drop zone enhancement on a file input.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The native <code>accept</code> and <code>multiple</code> attributes work as normal. Without JS, the standard file input is shown.</p>
+  </section>
+
+  <section>
+    <h2>Input Masking (data-mask)</h2>
+    <p>Add <code>data-mask</code> to a text input to format the value as the user types. Preset masks handle common patterns; use <code>data-mask="custom"</code> with <code>data-pattern</code> for arbitrary formats.</p>
+
+    <browser-window
+      src="/docs/examples/demos/mask-basic.html"
+      url="https://vanilla-breeze.dev/input-masking"
+      title="Input Masking Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Input masking" data-escape><!-- Preset masks -->
+<input type="text" data-mask="phone" placeholder="(555) 123-4567">
+<input type="text" data-mask="credit-card" placeholder="1234 5678 9012 3456">
+<input type="text" data-mask="date" placeholder="MM/DD/YYYY">
+<input type="text" data-mask="ssn" placeholder="123-45-6789">
+<input type="text" data-mask="zip" placeholder="12345">
+
+<!-- Custom mask: # = digit, A = letter, * = any -->
+<input type="text" data-mask="custom" data-pattern="AA-####" placeholder="AB-1234"></code-block>
+
+    <h3>Preset Masks</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Value</th><th>Pattern</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>phone</code></td><td><code>(###) ###-####</code></td><td>(555) 123-4567</td></tr>
+        <tr><td><code>credit-card</code></td><td><code>#### #### #### ####</code></td><td>1234 5678 9012 3456</td></tr>
+        <tr><td><code>date</code></td><td><code>##/##/####</code></td><td>01/15/2026</td></tr>
+        <tr><td><code>ssn</code></td><td><code>###-##-####</code></td><td>123-45-6789</td></tr>
+        <tr><td><code>zip</code></td><td><code>#####</code></td><td>90210</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Custom Mask Tokens</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Token</th><th>Accepts</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>#</code></td><td>Any digit (0-9)</td></tr>
+        <tr><td><code>A</code></td><td>Any letter (a-z, A-Z)</td></tr>
+        <tr><td><code>*</code></td><td>Any alphanumeric character</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-mask</code></td><td>Mask type: <code>phone</code>, <code>credit-card</code>, <code>date</code>, <code>ssn</code>, <code>zip</code>, or <code>custom</code>.</td></tr>
+        <tr><td><code>data-pattern</code></td><td>Custom pattern string when <code>data-mask="custom"</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Behavior</h3>
+    <ul>
+      <li>Auto-sets <code>inputmode="numeric"</code> for digit-only masks</li>
+      <li>Auto-sets <code>maxlength</code> from the pattern length</li>
+      <li>Stores the unformatted value in <code>dataset.rawValue</code> for form processing</li>
+      <li>Without JS, the input works as a standard text field</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Range Markers (data-markers)</h2>
+    <p>Add <code>data-markers</code> to a <code>data-range</code> input to display tick marks at each step value. Combines with <code>data-bubble</code> and <code>&lt;datalist&gt;</code> labels.</p>
+
+    <div class="example">
+      <form-field>
+        <label for="demo-markers">Rating (1-5)</label>
+        <input type="range" id="demo-markers" min="1" max="5" step="1" value="3" data-range data-bubble data-markers>
+      </form-field>
+    </div>
+
+    <code-block language="html" show-lines label="Range with tick markers" data-escape><input type="range" min="1" max="5" step="1" value="3"
+  data-range data-bubble data-markers></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-markers</code></td>
+          <td>Show tick marks at each step position along the track.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Toggle Tags (data-toggle-tags)</h2>
+    <p>Wrap checkboxes in a <code>&lt;fieldset data-toggle-tags&gt;</code> for pill-chip styling. Pure CSS &mdash; no JS needed. Add <code>data-max</code> to limit the number of selections.</p>
+
+    <browser-window
+      src="/docs/examples/demos/toggle-tags-basic.html"
+      url="https://vanilla-breeze.dev/toggle-tags"
+      title="Toggle Tags Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Toggle tags" data-escape><fieldset data-toggle-tags>
+  <legend>Favorite Topics</legend>
+  <label><input type="checkbox" name="topics" value="ai"> AI / ML</label>
+  <label><input type="checkbox" name="topics" value="web"> Web Dev</label>
+  <label><input type="checkbox" name="topics" value="mobile"> Mobile</label>
+</fieldset>
+
+<!-- With max selection limit -->
+<fieldset data-toggle-tags data-layout-max="3">
+  <legend>Pick up to 3</legend>
+  <label><input type="checkbox" name="skills" value="js"> JavaScript</label>
+  <label><input type="checkbox" name="skills" value="py"> Python</label>
+  <label><input type="checkbox" name="skills" value="go"> Go</label>
+  <label><input type="checkbox" name="skills" value="rust"> Rust</label>
+</fieldset></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-toggle-tags</code></td>
+          <td>Enable pill-chip styling on a checkbox fieldset.</td>
+        </tr>
+        <tr>
+          <td><code>data-max</code></td>
+          <td>Maximum number of selections. Unchecked boxes are disabled at the limit.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Why CSS-Only</h3>
+    <p>Native checkboxes give you form participation, validation, reset, keyboard navigation, and accessibility for free. The visual transformation uses <code>:has(:checked)</code> to style labels. JS is only loaded when <code>data-max</code> is set.</p>
+  </section>
+
+  <section>
+    <h2>Number Stepper (data-stepper)</h2>
+    <p>Add <code>data-stepper</code> to a number input for custom +/&minus; buttons. Hides native spinners and disables buttons at min/max boundaries.</p>
+
+    <browser-window
+      src="/docs/examples/demos/number-basic.html"
+      url="https://vanilla-breeze.dev/number-stepper"
+      title="Number Stepper Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Number stepper" data-escape><input type="number" min="0" max="50" step="1" value="1" data-stepper>
+
+<!-- Decimal steps -->
+<input type="number" min="0" max="10" step="0.5" value="1.0" data-stepper></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-stepper</code></td>
+          <td>Enable +/&minus; stepper buttons on a number input.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Without JS, the native number input with browser spinners works fine.</p>
+  </section>
+
+  <section>
+    <h2>Enhanced Color Input (data-color)</h2>
+    <p>Add <code>data-color</code> to a color input for a styled swatch circle and hex code display. Clicking opens the native color picker.</p>
+
+    <browser-window
+      src="/docs/examples/demos/color-basic.html"
+      url="https://vanilla-breeze.dev/color-input"
+      title="Enhanced Color Input Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Enhanced color input" data-escape><input type="color" value="#6366f1" data-color></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-color</code></td>
+          <td>Enable swatch + hex display enhancement on a color input.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Without JS, the native color picker renders (functional but unstyled).</p>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Always use labels</strong>: Every input needs an associated <a href="/docs/elements/native/label/">label</a></li>
+      <li><strong>Use autocomplete</strong>: Helps users fill forms faster and more accurately</li>
+      <li><strong>Provide error messages</strong>: Use <code>aria-describedby</code> to link error text to inputs</li>
+      <li><strong>Mark invalid fields</strong>: Use <code>aria-invalid="true"</code> for explicit invalid state</li>
+      <li><strong>Avoid placeholder as label</strong>: Placeholders disappear when typing</li>
+      <li><strong>Visible focus</strong>: Don't remove focus outlines</li>
+      <li><strong>Touch targets</strong>: Minimum 44x44px for checkboxes and radios</li>
+      <li><strong>Fieldsets for radio groups</strong>: Always wrap radio groups in <a href="/docs/elements/native/fieldset/">fieldset</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Input CSS styles" data-escape>/* Form control tokens (defined in src/tokens/forms.css) */
+:root {
+  --input-height:          var(--size-touch-min);
+  --input-padding-inline:  var(--size-s);
+  --input-bg:              var(--color-surface);
+  --input-border:          var(--color-border);
+  --input-border-focus:    var(--color-interactive);
+  --input-radius:          var(--radius-m);
+  --input-text:            inherit;
+  --input-placeholder:     var(--color-text-muted);
+
+  --control-size:            1.125rem;
+  --control-border:          var(--color-border-strong);
+  --control-checked-bg:      var(--color-primary);
+  --control-checked-border:  var(--color-primary);
+  --control-radius-check:    var(--radius-s);
+  --control-radius-radio:    var(--radius-full);
+
+  --select-chevron: url("data:image/svg+xml,...");
+
+  --range-track-h:      0.375rem;
+  --range-track-bg:     var(--color-border);
+  --range-track-fill:   var(--color-primary);
+  --range-thumb-size:   1.25rem;
+  --range-thumb-bg:     var(--color-surface);
+  --range-thumb-border: var(--color-primary);
+}
+
+/* Text inputs, select, textarea — token-driven */
+input:not(:is([type="checkbox"], [type="radio"], [type="range"],
+  [type="file"], [type="color"], [type="submit"],
+  [type="button"], [type="reset"])),
+textarea, select {
+  border: var(--border-width-thin) solid var(--input-border);
+  border-radius: var(--input-radius);
+  background: var(--input-bg);
+  color: var(--input-text);
+  min-block-size: var(--input-height);
+}
+
+/* Checkbox & radio — appearance: none + pseudo-elements */
+input[type="checkbox"]:not([data-switch]),
+input[type="radio"] {
+  appearance: none;
+  width: var(--control-size);
+  height: var(--control-size);
+  border: var(--border-width-medium) solid var(--control-border);
+}
+
+input[type="checkbox"]:not([data-switch]):checked,
+input[type="radio"]:checked {
+  background: var(--control-checked-bg);
+  border-color: var(--control-checked-border);
+}
+
+/* Checkmark via clip-path (zero SVG assets) */
+input[type="checkbox"]:not([data-switch]):checked::after {
+  clip-path: polygon(14% 50%, 8% 60%, 38% 86%, 94% 20%, 86% 12%, 38% 70%);
+}
+
+/* Radio dot */
+input[type="radio"]:checked::after {
+  inset: 3px;
+  border-radius: 50%;
+}
+
+/* Range — token-driven track and thumb */
+input[type="range"] {
+  appearance: none;
+  background: linear-gradient(to right,
+    var(--range-track-fill) var(--_pct, 50%),
+    var(--range-track-bg) var(--_pct, 50%));
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/label/">label</a> - Essential for accessibility</li>
+      <li><a href="/docs/elements/native/form/">form</a> - Container for inputs</li>
+      <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete suggestions</li>
+      <li><a href="/docs/elements/native/fieldset/">fieldset</a> - Group related inputs (especially radios)</li>
+      <li><a href="/docs/elements/native/textarea/">textarea</a> - Multi-line text input</li>
+      <li><a href="/docs/elements/native/select/">select</a> - Dropdown selection</li>
+      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field with validation</li>
+      <li><a href="/docs/elements/custom-elements/combo-box/">combo-box</a> - Searchable dropdown with filtering</li>
+      <li><a href="/docs/elements/custom-elements/data-table/">data-table</a> - Sortable, filterable data with input controls</li>
+      <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms via <code>method="dialog"</code></li>
+    </ul>
+  </section>

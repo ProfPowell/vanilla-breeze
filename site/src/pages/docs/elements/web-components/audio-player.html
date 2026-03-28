@@ -1,0 +1,242 @@
+---
+layout: element
+title: "audio-player"
+description: "Platform audio player that wraps native <audio> with custom controls in shadow DOM. Progressive enhancement — native audio works without JS."
+elementName: audio-player
+category: component
+currentPath: /docs/elements/web-components/audio-player/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>A platform-native audio player that wraps <code>&lt;audio&gt;</code> in light DOM and renders custom controls in shadow DOM. The native player is always the fallback — if JS is unavailable or the component fails, <code>&lt;audio controls&gt;</code> works normally.</p>
+  <p>Pair with <a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> for canvas-based frequency or waveform visualization.</p>
+
+  <browser-window
+    src="/docs/examples/demos/audio-player-basic.html"
+    url="https://vanilla-breeze.dev/audio-player"
+    title="Audio Player"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Single Track</h2>
+  <code-block language="html" show-lines label="Wrapping a single audio element" data-escape><audio-player>
+  <audio controls>
+    <source src="track.ogg" type="audio/ogg">
+    <source src="track.mp3" type="audio/mpeg">
+    <p><a href="track.mp3" download>Download track</a></p>
+  </audio>
+</audio-player></code-block>
+</section>
+
+<section>
+  <h2>Playlist Mode</h2>
+  <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the audio source and plays it.</p>
+  <code-block language="html" show-lines label="Audio player with playlist" data-escape><audio-player>
+  <audio controls>
+    <source src="tracks/01-opening.mp3" type="audio/mpeg">
+    <p><a href="tracks/01-opening.mp3" download>Download track 1</a></p>
+  </audio>
+  <details>
+    <summary>Track Listing</summary>
+    <ol class="track-list">
+      <li data-audio-active>
+        <a href="tracks/01-opening.mp3">01. Opening Theme</a>
+        <span class="track-meta"><time datetime="PT2M14S">2:14</time></span>
+      </li>
+      <li>
+        <a href="tracks/02-main.mp3">02. Main Theme</a>
+        <span class="track-meta"><time datetime="PT3M45S">3:45</time></span>
+      </li>
+      <li data-audio-favorite>
+        <a href="tracks/03-ending.mp3">03. Ending Theme</a>
+        <span class="track-meta"><time datetime="PT4M12S">4:12</time></span>
+      </li>
+    </ol>
+  </details>
+</audio-player></code-block>
+</section>
+
+<section>
+  <h2>Shuffle and Loop</h2>
+  <code-block language="html" show-lines label="Shuffle playlist with loop" data-escape><audio-player shuffle loop>
+  <audio controls>
+    <source src="tracks/01.mp3" type="audio/mpeg">
+  </audio>
+  <details open>
+    <summary>Shuffle Playlist</summary>
+    <ol class="track-list">
+      <li data-audio-active><a href="tracks/01.mp3">Track 1</a></li>
+      <li><a href="tracks/02.mp3">Track 2</a></li>
+      <li><a href="tracks/03.mp3">Track 3</a></li>
+    </ol>
+  </details>
+</audio-player></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playing on load (subject to browser autoplay policy)</td></tr>
+      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop single track or entire playlist</td></tr>
+      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Randomize playlist order on track advance</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Custom Properties</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--audio-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Play button, slider thumbs, and progress fill color</td></tr>
+      <tr><td><code>--audio-player-bg</code></td><td><code>var(--color-surface)</code></td><td>Player background and slider thumb border color</td></tr>
+      <tr><td><code>--audio-player-radius</code></td><td><code>var(--radius-m)</code></td><td>Player border radius</td></tr>
+      <tr><td><code>--audio-player-text</code></td><td><code>var(--color-text)</code></td><td>Track title and controls text color</td></tr>
+      <tr><td><code>--audio-player-border</code></td><td><code>var(--color-border)</code></td><td>Player border and slider track color</td></tr>
+      <tr><td><code>--audio-player-shadow</code></td><td><code>none</code></td><td>Player box shadow (opt-in)</td></tr>
+      <tr><td><code>--audio-player-padding</code></td><td><code>var(--size-xs) var(--size-s)</code></td><td>Controls area padding</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" show-lines label="Custom styling" data-escape>audio-player {
+  --audio-player-accent: oklch(60% 0.2 30);
+  --audio-player-bg: oklch(15% 0.02 260);
+  --audio-player-text: oklch(95% 0 0);
+  --audio-player-border: oklch(30% 0.02 260);
+  --audio-player-shadow: var(--shadow-md);
+  --audio-player-radius: var(--radius-l);
+  --audio-player-padding: var(--size-s) var(--size-m);
+}</code-block>
+</section>
+
+<section>
+  <h2>Dark Mode</h2>
+  <p>The player adapts automatically to light and dark mode via design tokens. All colors resolve through CSS custom properties that respond to theme changes. Wrap any ancestor in <code>data-mode="dark"</code> or let the system preference apply.</p>
+  <code-block language="html" show-lines label="Dark mode wrapper" data-escape><div data-mode="dark">
+  <audio-player>
+    <audio controls>
+      <source src="track.mp3" type="audio/mpeg">
+    </audio>
+  </audio-player>
+</div></code-block>
+</section>
+
+<section>
+  <h2>Elevated Card Style</h2>
+  <p>Opt in to a shadow with <code>--audio-player-shadow</code> for a raised card look.</p>
+  <code-block language="html" show-lines label="Elevated card variant" data-escape><audio-player style="
+  --audio-player-shadow: var(--shadow-md);
+  --audio-player-padding: var(--size-s) var(--size-m);
+">
+  <audio controls>
+    <source src="track.mp3" type="audio/mpeg">
+  </audio>
+</audio-player></code-block>
+</section>
+
+<section>
+  <h2>Shadow Parts</h2>
+  <table>
+    <thead><tr><th>Part</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>player</code></td><td>Outer player container</td></tr>
+      <tr><td><code>controls</code></td><td>Controls row</td></tr>
+      <tr><td><code>play-button</code></td><td>Play/pause button</td></tr>
+      <tr><td><code>timeline</code></td><td>Seek range input</td></tr>
+      <tr><td><code>volume</code></td><td>Volume range input</td></tr>
+      <tr><td><code>track-info</code></td><td>Track title and time display</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table>
+    <thead><tr><th>Event</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>audio-player:play</code></td><td><code>{ currentTime, src }</code></td></tr>
+      <tr><td><code>audio-player:pause</code></td><td><code>{ currentTime }</code></td></tr>
+      <tr><td><code>audio-player:ended</code></td><td><code>{ src }</code></td></tr>
+      <tr><td><code>audio-player:track-change</code></td><td><code>{ src, title }</code></td></tr>
+    </tbody>
+  </table>
+  <code-block language="js" show-lines label="Listening for events" data-escape>const player = document.querySelector('audio-player');
+
+player.addEventListener('audio-player:play', (e) => {
+  console.log('Playing:', e.detail.src);
+});
+
+player.addEventListener('audio-player:track-change', (e) => {
+  console.log('Now playing:', e.detail.title);
+});</code-block>
+</section>
+
+<section>
+  <h2>Keyboard Shortcuts</h2>
+  <table>
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+      <tr><td><kbd>Left Arrow</kbd></td><td>Seek back 10 seconds</td></tr>
+      <tr><td><kbd>Right Arrow</kbd></td><td>Seek forward 10 seconds</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>The <code>&lt;audio&gt;</code> element lives in light DOM. Before JS loads, native <code>controls</code> render. After the component upgrades, native controls are hidden and custom chrome takes over. If the component is removed from the DOM, native controls are restored.</p>
+  <code-block language="html" show-lines label="Fallback behavior" data-escape><!-- Without JS: native <audio> controls render and work.
+     Track list links navigate to the audio file. -->
+<audio-player>
+  <audio controls>
+    <source src="track.mp3" type="audio/mpeg">
+    <p><a href="track.mp3" download>Download track</a></p>
+  </audio>
+</audio-player></code-block>
+</section>
+
+<section>
+  <h2>Track List Data Attributes</h2>
+  <p><code>&lt;li&gt;</code> elements in <code>.track-list</code> use data attributes for state:</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Set by</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-audio-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
+      <tr><td><code>data-audio-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
+      <tr><td><code>data-audio-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>All controls have <code>aria-label</code> attributes</li>
+    <li>Controls group has <code>role="group"</code> with label</li>
+    <li>Keyboard navigable with documented shortcuts</li>
+    <li>Respects <code>prefers-reduced-motion</code></li>
+    <li>Falls back to fully accessible native <code>&lt;audio&gt;</code> without JS</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Companion: audio-visualizer</h2>
+  <p>Pair with <a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> for canvas-based frequency or waveform display. The visualizer is a separate component — it connects to any <code>&lt;audio&gt;</code> via the <code>for</code> attribute.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/audio/"><code>&lt;audio&gt;</code></a> — Native audio element (Layers 1-3)</li>
+    <li><a href="/docs/elements/web-components/audio-visualizer/"><code>&lt;audio-visualizer&gt;</code></a> — Canvas visualization companion</li>
+  </ul>
+</section>

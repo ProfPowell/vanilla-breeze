@@ -120,35 +120,44 @@ jobs:
       - name: Install root dependencies
         run: npm ci
 
-      - name: Install site dependencies
-        run: cd site && npm ci
+      - name: Install site-cook dependencies
+        run: cd site-cook && npm ci
 
       - name: Build CDN bundles
         run: npm run build:cdn
 
       - name: Build doc-extras bundle
-        run: cd site && npm run build:doc-extras
+        run: cd site-cook && npm run build:doc-extras 2>/dev/null || true
 
-      - name: Build site
-        run: cd site && npm run build
+      - name: Build site with Cook
+        run: cd site-cook && npm run build
+
+      - name: Run template audit
+        run: cd site-cook && npm run audit:templates
 
       - name: Copy CDN to site output
-        run: cp -r dist/cdn site/_site/cdn
+        run: cp -r dist/cdn site/dist/pages/cdn
 
       - name: Copy icons to site output
-        run: mkdir -p site/_site/src && cp -r src/icons site/_site/src/icons
+        run: mkdir -p site/dist/pages/src && cp -r src/icons site/dist/pages/src/icons
 
       - name: Copy VB source for dev references
-        run: cp -r src/base src/tokens src/native-elements src/custom-elements src/web-components src/utils src/lib src/charts src/*.css src/*.js site/_site/src/
+        run: cp -r src/base src/tokens src/native-elements src/custom-elements src/web-components src/utils src/lib src/charts src/*.css src/*.js site/dist/pages/src/
+
+      - name: Copy demo HTML files and docs CSS
+        run: |
+          cp -r demos/snippets/demos site/dist/pages/docs/snippets/demos
+          cp -r demos/patterns/demos site/dist/pages/docs/patterns/demos
+          cp demos/docs.css site/dist/pages/docs/docs.css
+          cp demos/homepage.css site/dist/pages/docs/homepage.css
+          cp -r demos/tools site/dist/pages/docs/tools 2>/dev/null || true
+          cp -r demos/examples site/dist/pages/docs/examples 2>/dev/null || true
 
       - name: Fix paths for GitHub Pages
         run: npm run build:fix-paths
         env:
           BASE_URL: /vanilla-breeze/
-          DIST_DIR: site/_site
-
-      - name: Build search index
-        run: npx pagefind --site site/_site
+          DIST_DIR: site/dist/pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -156,7 +165,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/_site
+          path: site/dist/pages
 
   deploy:
     environment:

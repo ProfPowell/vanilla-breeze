@@ -1,0 +1,280 @@
+---
+layout: guide
+title: "Overrides"
+description: "How to override, tweak, and extend Vanilla Breeze without fighting the framework. The cascade layer architecture means your CSS always wins — no !important needed."
+guideGroup: Styling
+currentPath: /docs/overrides/
+toc: true
+---
+
+<!-- Cascade Contract -->
+<section id="cascade-contract">
+  <h2>The Cascade Contract</h2>
+  <p>Vanilla Breeze ships all framework CSS inside <code>@layer</code> blocks:</p>
+
+  <code-block language="css" label="Framework layer order" data-escape>@layer reset, base, theme, components, utilities;</code-block>
+
+  <p>This single architectural decision makes everything else on this page work. Any CSS you write <strong>outside</strong> a layer &mdash; a plain class, an ID rule, anything unlayered &mdash; beats all layered CSS automatically.</p>
+
+  <code-block language="css" label="Unlayered CSS beats @layer" data-escape>/* Framework — inside @layer, always loses to unlayered CSS */
+@layer components {
+  .card { background: var(--color-surface); }
+}
+
+/* Your CSS — unlayered, always wins */
+.card { background: hotpink; }</code-block>
+
+  <p>This is the guarantee. The four levels below all build on it.</p>
+</section>
+
+<!-- Level 1: Theme Switch -->
+<section id="theme-switch">
+  <h2>Level 1: Named Theme Override</h2>
+  <p>Switch to a different theme for any section of the page by setting <code>data-theme</code> on an element. All descendants inherit the new theme&rsquo;s tokens &mdash; colour, type, spacing, shape &mdash; automatically.</p>
+
+  <code-block language="html" label="Theme switching" data-escape><html data-theme="swiss">
+  <!-- This section switches to Cyber -->
+  <section data-theme="cyber">
+    <h1>Cyber Heading</h1>
+    <p>All tokens come from the Cyber theme here.</p>
+  </section>
+
+  <!-- Back to Swiss -->
+  <section>
+    <p>Swiss again.</p>
+  </section>
+</html></code-block>
+
+  <p>Each <code>[data-theme]</code> block redefines CSS custom properties at that element. Because custom properties inherit down the DOM, every child picks up the new values. Nesting works to any depth &mdash; the nearest ancestor <code>data-theme</code> always wins.</p>
+
+  <browser-window src="/docs/snippets/demos/override-theme-switch.html" url="override-theme-switch.html" title="Theme switching demo" shadow>
+  </browser-window>
+
+  <p>Notice how the same card markup produces three distinct results: default tokens, Swiss (red, Helvetica, flat), and Cyber (cyan, monospace, dark). The nested example shows Swiss &rarr; Cyber &rarr; Swiss, each layer inheriting correctly.</p>
+</section>
+
+<!-- Level 2: Token Tweaks -->
+<section id="token-tweaks">
+  <h2>Level 2: Token Tweaks</h2>
+  <p>Stay in a theme but adjust specific token values for a section or element. This is the most surgical option &mdash; you keep all the theme&rsquo;s decisions except the ones you override.</p>
+
+  <code-block language="css" label="Scoped token overrides" data-escape>/* Stay in Swiss, just adjust a few tokens */
+.editorial-section {
+  --color-primary: #555;    /* Swiss red → neutral grey */
+  --line-height-normal: 1.9; /* More breathing room */
+}</code-block>
+
+  <p>Set custom properties on any element. Everything inside that element consumes the adjusted values. Font, spacing, and all other tokens remain untouched.</p>
+
+  <browser-window src="/docs/snippets/demos/override-token-tweak.html" url="override-token-tweak.html" title="Token tweaks demo" shadow>
+  </browser-window>
+
+  <p>The first card shows standard Swiss. The second swaps <code>--color-primary</code> to purple &mdash; only the accent changes. The third overrides primary colour, border radius, and shadow all at once, but the typography and structure remain Swiss.</p>
+</section>
+
+<!-- Level 3: Plain CSS -->
+<section id="plain-css">
+  <h2>Level 3: Plain CSS Overrides</h2>
+  <p>Write CSS. That&rsquo;s it. Because the framework uses <code>@layer</code>, your rules win automatically. This handles cases where token tweaks aren&rsquo;t enough &mdash; you want to change a specific property on a specific element, add a behaviour the theme doesn&rsquo;t model, or just write your own component.</p>
+
+  <code-block language="css" label="Unlayered custom styles" data-escape>/* No @layer, no !important — just CSS */
+.pull-quote {
+  font-size: 1.5rem;
+  font-style: italic;
+  border-left: 4px solid var(--color-primary);
+  padding-left: var(--space-4);
+  color: var(--color-text-muted);
+}</code-block>
+
+  <p>You can still use framework tokens inside your own rules. The token values respond to whatever theme is active at that element&rsquo;s position in the DOM. Your rules add to the system rather than fighting it.</p>
+
+  <browser-window src="/docs/snippets/demos/override-plain-css.html" url="override-plain-css.html" title="Plain CSS overrides demo" shadow>
+  </browser-window>
+
+  <p>The left column shows Swiss defaults. The right column shows identical markup with unlayered classes applied: purple rounded card, italic pull-quote, pill-shaped button. No <code>!important</code> anywhere &mdash; the unlayered rules win by the cascade spec.</p>
+</section>
+
+<!-- Level 4: Utilities -->
+<section id="utilities">
+  <h2>Level 4: Theme-Aware Utilities</h2>
+  <p>Vanilla Breeze ships a <code>@layer utilities</code> with token-connected single-purpose classes. Unlike Tailwind utilities that bake in values at build time, VB utilities reference tokens. They respond to the active theme.</p>
+
+  <code-block language="html" label="Same class, different theme output" data-escape><!-- Swiss context: .bg-primary = red -->
+<section data-theme="swiss">
+  <p class="bg-primary text-inverse p-2">Swiss red</p>
+</section>
+
+<!-- Cyber context: .bg-primary = cyan -->
+<section data-theme="cyber">
+  <p class="bg-primary text-inverse p-2">Cyber cyan</p>
+</section></code-block>
+
+  <p>The same <code>.bg-primary</code> class produces Swiss red in one context and Cyber cyan in another. This is the key difference from static utility frameworks &mdash; your utilities inherit meaning from the theme.</p>
+
+  <browser-window src="/docs/snippets/demos/override-utilities.html" url="override-utilities.html" title="Theme-aware utilities demo" shadow>
+  </browser-window>
+
+  <h3>Overriding a Utility</h3>
+  <p>Utilities are inside <code>@layer utilities</code>. Your unlayered CSS overrides them the same way it overrides any framework style:</p>
+
+  <code-block language="css" label="Override a utility class" data-escape>/* Utilities are in @layer utilities — your CSS wins */
+.custom-highlight {
+  color: oklch(55% 0.2 265);  /* overrides .text-primary */
+}</code-block>
+</section>
+
+<!-- Combined -->
+<section id="combined">
+  <h2>Combining All Four Levels</h2>
+  <p>All four levels compose cleanly on the same page. This demo shows a realistic magazine-style layout that uses every level together:</p>
+
+  <ul>
+    <li><strong>Level 1:</strong> Swiss defaults in the header; Cyber theme switch on the CTA panel</li>
+    <li><strong>Level 2:</strong> Muted <code>--color-primary</code> and wider leading in the editorial section</li>
+    <li><strong>Level 3:</strong> Custom <code>.pull-quote</code> and <code>.author-byline</code> components (unlayered CSS)</li>
+    <li><strong>Level 4:</strong> Utility classes (<code>.font-bold</code>, <code>.text-muted</code>, <code>.text-sm</code>) on the byline</li>
+  </ul>
+
+  <browser-window src="/docs/snippets/demos/override-combined.html" url="override-combined.html" title="All four levels combined" shadow>
+  </browser-window>
+
+  <p>No conflicts. No specificity wars. Each level operates in its own lane because the cascade layer architecture keeps the framework out of your way.</p>
+</section>
+
+<!-- Anti-Patterns -->
+<section id="anti-patterns">
+  <h2>What Not to Do</h2>
+
+  <h3>Do not use <code>!important</code></h3>
+  <p>It is never needed. If your rule isn&rsquo;t winning, check that it is unlayered (not inside <code>@layer</code>). Unlayered CSS always wins.</p>
+  <code-block language="css" label="!important is never needed" data-escape>/* Wrong — never needed */
+.card { background: hotpink !important; }
+
+/* Right — just write the rule */
+.card { background: hotpink; }</code-block>
+
+  <h3>Do not write overrides inside framework layer names</h3>
+  <p>If you declare <code>@layer components</code> in your own stylesheet, rules in it compete with framework component rules by source order &mdash; not a reliable override path.</p>
+  <code-block language="css" label="Stay unlayered" data-escape>/* Wrong — fights the framework by source order */
+@layer components {
+  .card { background: hotpink; }
+}
+
+/* Right — unlayered, always wins */
+.card { background: hotpink; }</code-block>
+
+  <h3>Do not hardcode values when a token exists</h3>
+  <p>If the framework has <code>--color-primary</code>, use it. Hardcoding breaks theme inheritance.</p>
+  <code-block language="css" label="Use tokens, not hardcoded values" data-escape>/* Wrong — breaks when themes change */
+.button { background: #e63312; }
+
+/* Right — responds to the active theme */
+.button { background: var(--color-primary); }</code-block>
+</section>
+
+<!-- Decision Guide -->
+<section id="decision-guide">
+  <h2>Decision Guide</h2>
+  <p>When you need to deviate from defaults, pick the right level:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Situation</th>
+        <th>Approach</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Entire section needs a different visual identity</td>
+        <td><code>data-theme</code> attribute on the section</td>
+      </tr>
+      <tr>
+        <td>Same theme but the accent colour differs here</td>
+        <td>Token override: <code>--color-primary: ...</code></td>
+      </tr>
+      <tr>
+        <td>A specific component behaviour needs to change</td>
+        <td>Unlayered modifier class</td>
+      </tr>
+      <tr>
+        <td>One-off layout or component not in the framework</td>
+        <td>Unlayered CSS class with your own rules</td>
+      </tr>
+      <tr>
+        <td>Repeated one-liner visual adjustment</td>
+        <td>Utility class from <code>@layer utilities</code></td>
+      </tr>
+      <tr>
+        <td>You think you need <code>!important</code></td>
+        <td>Something is wrong &mdash; check layer architecture first</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- How This Differs -->
+<section id="vs-tailwind">
+  <h2>How This Differs from Tailwind</h2>
+  <p>Tailwind starts with a blank slate and builds up every visual property through classes in markup. Vanilla Breeze starts with sensible defaults and steps aside when you need to change something.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tailwind</th>
+        <th>Vanilla Breeze</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>No styles by default</td>
+        <td>Styled by default</td>
+      </tr>
+      <tr>
+        <td>Add classes to build up</td>
+        <td>Override tokens or write CSS to change</td>
+      </tr>
+      <tr>
+        <td>Style lives in HTML</td>
+        <td>Style lives in CSS</td>
+      </tr>
+      <tr>
+        <td>Utility values baked at build time</td>
+        <td>Utility values connected to live tokens</td>
+      </tr>
+      <tr>
+        <td><code>!important</code> for overrides</td>
+        <td>Unlayered CSS wins automatically</td>
+      </tr>
+      <tr>
+        <td>Purge/JIT build step required</td>
+        <td>No build step</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>This is not anti-utility. It&rsquo;s proportional. Most elements on a page should look like the theme. Classes are for exceptions, not construction.</p>
+</section>
+
+<!-- Next Steps -->
+<section>
+  <h2>Next Steps</h2>
+  <layout-grid data-layout-min="200px" data-layout-gap="m">
+    <a href="/docs/themes/" class="section-card">
+      <h3>Themes</h3>
+      <p>Browse available themes and learn the token API.</p>
+    </a>
+    <a href="/docs/principles/" class="section-card">
+      <h3>Principles</h3>
+      <p>The philosophy behind the framework.</p>
+    </a>
+    <a href="/docs/tokens/" class="section-card">
+      <h3>Tokens</h3>
+      <p>The full list of design tokens you can override.</p>
+    </a>
+    <a href="/docs/concepts/architecture-decisions/" class="section-card">
+      <h3>Architecture Decisions</h3>
+      <p>Why each structural choice was made.</p>
+    </a>
+  </layout-grid>
+</section>

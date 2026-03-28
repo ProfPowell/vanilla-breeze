@@ -1,0 +1,453 @@
+---
+layout: element
+title: "form"
+description: "Container for interactive form controls that collects and submits user data. The form element provides structure, validation, and submission handling."
+elementName: form
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/form/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Collecting user input (contact forms, login, registration)</li>
+      <li>Search functionality</li>
+      <li>Any interaction that submits data to a server</li>
+      <li>Client-side form validation with HTML5 attributes</li>
+    </ul>
+
+    <h3>When Not to Use</h3>
+    <ul>
+      <li>For layout or grouping unrelated content (use <code>&lt;section&gt;</code> or <code>&lt;fieldset&gt;</code>)</li>
+      <li>For links styled as buttons (use <code>&lt;a&gt;</code> directly)</li>
+      <li>For toggling UI state without server submission (use JavaScript event handlers)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A minimal form with <code>form.stacked</code> layout, <code>&lt;form-field&gt;</code> wrappers, and a <code>&lt;footer class="actions"&gt;</code> for buttons.</p>
+
+    <browser-window src="/docs/snippets/demos/form-basic.html" url="https://vanilla-breeze.dev/form/basic" title="Basic form" shadow></browser-window>
+    <code-block language="html" show-lines label="Basic form with POST method" data-escape><form action="/api/submit" method="POST" class="stacked">
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required />
+  </form-field>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required />
+  </form-field>
+  <footer class="actions end">
+    <button type="submit">Submit</button>
+  </footer>
+</form></code-block>
+  </section>
+
+  <section>
+    <h2>Layout Variants</h2>
+    <p>VB provides three layout classes on <code>&lt;form&gt;</code> that handle spacing and direction without extra wrappers.</p>
+
+    <browser-window src="/docs/snippets/demos/form-layouts.html" url="https://vanilla-breeze.dev/form/layouts" title="Form layout variants" shadow></browser-window>
+
+    <h3>form.stacked</h3>
+    <p>Fields arranged vertically with consistent spacing. Best for general-purpose forms.</p>
+
+    <h3>form.inline</h3>
+    <p>Fields arranged horizontally with wrapping. Best for search bars and compact forms.</p>
+
+    <h3>form.grid</h3>
+    <p>Labels on the left, inputs on the right in a two-column grid. Best for data entry forms.</p>
+
+    <code-block language="html" show-lines label="Form layout variants" data-escape><!-- Vertical stacked layout -->
+<form class="stacked">
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" />
+  </form-field>
+  <footer class="actions end">
+    <button type="submit">Send</button>
+  </footer>
+</form>
+
+<!-- Horizontal inline layout -->
+<form class="inline">
+  <input type="search" placeholder="Search..." />
+  <button type="submit">Search</button>
+</form>
+
+<!-- Two-column grid layout -->
+<form class="grid">
+  <label for="first">First Name</label>
+  <input type="text" id="first" />
+  <label for="last">Last Name</label>
+  <input type="text" id="last" />
+</form></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Display</th>
+          <th>Best for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>form.stacked</code></td>
+          <td>Vertical flex column</td>
+          <td>General-purpose forms, contact forms</td>
+        </tr>
+        <tr>
+          <td><code>form.inline</code></td>
+          <td>Horizontal flex with wrap</td>
+          <td>Search bars, filters, compact forms</td>
+        </tr>
+        <tr>
+          <td><code>form.grid</code></td>
+          <td>Two-column grid</td>
+          <td>Data entry, settings panels</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Form Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>action</code></td>
+          <td>URL to submit data to</td>
+          <td><code>action="/api/contact"</code></td>
+        </tr>
+        <tr>
+          <td><code>method</code></td>
+          <td>HTTP method (GET or POST)</td>
+          <td><code>method="POST"</code></td>
+        </tr>
+        <tr>
+          <td><code>enctype</code></td>
+          <td>Encoding type for POST data</td>
+          <td><code>enctype="multipart/form-data"</code></td>
+        </tr>
+        <tr>
+          <td><code>novalidate</code></td>
+          <td>Disable browser validation</td>
+          <td><code>novalidate</code></td>
+        </tr>
+        <tr>
+          <td><code>autocomplete</code></td>
+          <td>Enable/disable autofill</td>
+          <td><code>autocomplete="on"</code></td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>Form name for scripting</td>
+          <td><code>name="contact-form"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Using form-field</h2>
+    <p>The <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> web component wraps a label, input, and optional help/error text into a single accessible unit. It handles <code>aria-describedby</code> wiring automatically and adds required indicators.</p>
+
+    <aside class="note">
+      <strong>Prefer <code>&lt;form-field&gt;</code> over <code>.group</code>.</strong> The older <code>&lt;div class="group"&gt;</code> pattern still works but <code>&lt;form-field&gt;</code> provides built-in accessibility wiring, validation states, and required indicators. Use bare <code>&lt;label&gt;</code> for simple optional checkboxes and radios that need no help text or validation.
+    </aside>
+
+    <code-block language="html" show-lines label="form-field with output message" data-escape><form class="stacked">
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" required />
+    <output for="email" aria-live="polite">
+      We'll never share your email.
+    </output>
+  </form-field>
+</form></code-block>
+  </section>
+
+  <section>
+    <h2>Form Actions</h2>
+    <p>Use <code>&lt;footer class="actions"&gt;</code> for the submit/cancel button row at the bottom of a form. The <code>.end</code> modifier right-aligns buttons; <code>.between</code> pushes groups apart.</p>
+
+    <aside class="note">
+      <strong>Prefer <code>&lt;footer class="actions"&gt;</code> over <code>&lt;div class="actions"&gt;</code>.</strong> A <code>&lt;footer&gt;</code> is semantically correct for a form&rsquo;s concluding actions and avoids an unnecessary <code>&lt;div&gt;</code>.
+    </aside>
+
+    <code-block language="html" show-lines label="Form actions patterns" data-escape><!-- End-aligned (most common) -->
+<form class="stacked">
+  ...fields...
+  <footer class="actions end">
+    <button type="button" class="secondary">Cancel</button>
+    <button type="submit">Submit</button>
+  </footer>
+</form>
+
+<!-- Space between (delete + save) -->
+<form class="stacked">
+  ...fields...
+  <footer class="actions between">
+    <button type="button" class="ghost">Delete</button>
+    <span>
+      <button type="button" class="secondary">Cancel</button>
+      <button type="submit">Save</button>
+    </span>
+  </footer>
+</form></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.actions</code></td>
+          <td>Start-aligned (default)</td>
+        </tr>
+        <tr>
+          <td><code>.actions.end</code></td>
+          <td>End-aligned</td>
+        </tr>
+        <tr>
+          <td><code>.actions.between</code></td>
+          <td>Space between groups</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Help and Error Text</h2>
+    <p>Inside a <code>&lt;form-field&gt;</code>, add a <code>&lt;span class="help"&gt;</code> for hints or a <code>&lt;span class="error"&gt;</code> for validation messages. Mark invalid inputs with <code>aria-invalid="true"</code>.</p>
+
+    <code-block language="html" show-lines label="Help and error text patterns" data-escape><form-field>
+  <label for="password">Password</label>
+  <input type="password" id="password" />
+  <span class="help">At least 8 characters.</span>
+</form-field>
+
+<form-field>
+  <label for="email">Email</label>
+  <input type="email" id="email" aria-invalid="true" />
+  <span class="error">Invalid email address.</span>
+</form-field></code-block>
+  </section>
+
+  <section>
+    <h2>Complete Contact Form</h2>
+    <p>A full example combining <code>form.stacked</code>, <code>&lt;form-field&gt;</code>, <code>&lt;fieldset&gt;</code>, and <code>&lt;footer class="actions"&gt;</code>.</p>
+
+    <browser-window src="/docs/snippets/demos/form-contact.html" url="https://vanilla-breeze.dev/form/contact" title="Complete contact form" shadow></browser-window>
+  </section>
+
+  <section>
+    <h2>Conditional Fields (data-show-when)</h2>
+    <p>Use <code>data-show-when</code> or <code>data-hide-when</code> on any element inside a form to conditionally display sections based on another field&rsquo;s value. Hidden elements get <code>hidden</code> and <code>inert</code> attributes, preventing them from blocking validation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/conditional-basic.html"
+      url="https://vanilla-breeze.dev/conditional-fields"
+      title="Conditional Fields Demo"
+      shadow>
+    </browser-window>
+
+    <h3>Show When</h3>
+    <p>Show a section when a field has a specific value.</p>
+    <code-block language="html" show-lines label="Show when select = business" data-escape><select name="account-type">
+  <option value="personal">Personal</option>
+  <option value="business">Business</option>
+</select>
+
+<fieldset data-show-when="account-type=business">
+  <legend>Business Details</legend>
+  <input name="company" placeholder="Company name">
+</fieldset></code-block>
+
+    <h3>Hide When</h3>
+    <p>Hide a section when a condition is met &mdash; the inverse of <code>data-show-when</code>.</p>
+    <code-block language="html" show-lines label="Hide when checkbox checked" data-escape><label>
+  <input type="checkbox" name="gift" value="yes">
+  This is a gift
+</label>
+
+<form-field data-hide-when="gift=yes">
+  <label for="receipt">Send receipt to</label>
+  <input type="email" id="receipt" name="receipt">
+</form-field></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Format</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-show-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Show when the named field equals the value.</td>
+        </tr>
+        <tr>
+          <td><code>data-hide-when</code></td>
+          <td><code>name=value</code></td>
+          <td>Hide when the named field equals the value.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Works with <code>&lt;select&gt;</code>, <code>&lt;input type="radio"&gt;</code>, <code>&lt;input type="checkbox"&gt;</code>, and text inputs. The <code>name</code> refers to the <code>name</code> attribute of the controlling field within the same <code>&lt;form&gt;</code>.</p>
+  </section>
+
+  <section>
+    <h2>Form Autosave (data-autosave)</h2>
+    <p>Add <code>data-autosave="key"</code> to a <code>&lt;form&gt;</code> to automatically save its data to <code>localStorage</code> as the user types. On page reload, the draft is restored and a &ldquo;Draft restored&rdquo; toast appears. Drafts are cleared on submit or reset and expire after 24 hours.</p>
+
+    <browser-window
+      src="/docs/examples/demos/autosave-basic.html"
+      url="https://vanilla-breeze.dev/autosave"
+      title="Form Autosave Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic autosave" data-escape><form data-autosave="contact-form">
+  <input name="name" placeholder="Name">
+  <textarea name="message" placeholder="Message"></textarea>
+  <button type="submit">Send</button>
+</form></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-autosave</code></td>
+          <td>Storage key for this form&rsquo;s draft. Must be unique per form.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Behavior</h3>
+    <ul>
+      <li><strong>Save:</strong> Debounced (500ms) on every <code>input</code> and <code>change</code> event</li>
+      <li><strong>Restore:</strong> On page load if a non-expired draft exists</li>
+      <li><strong>Clear:</strong> On form <code>submit</code> or <code>reset</code></li>
+      <li><strong>Skip:</strong> Password and file inputs are never saved</li>
+      <li><strong>Expire:</strong> Drafts older than 24 hours are discarded</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Label all inputs</strong>: Every form control needs an associated <a href="/docs/elements/native/label/">label</a></li>
+      <li><strong>Use fieldsets</strong>: Group related fields with <a href="/docs/elements/native/fieldset/">fieldset</a> and <a href="/docs/elements/native/legend/">legend</a></li>
+      <li><strong>Error identification</strong>: Use <code>aria-invalid</code> and <code>aria-describedby</code> for errors</li>
+      <li><strong>Autocomplete</strong>: Add appropriate <code>autocomplete</code> attributes for autofill</li>
+      <li><strong>Focus management</strong>: Use <code>autofocus</code> on the first field (one per page)</li>
+      <li><strong>Submit button</strong>: Always include a visible submit button, not just Enter key handling</li>
+      <li><strong>Use form-field</strong>: The <code>&lt;form-field&gt;</code> component handles <code>aria-describedby</code> wiring automatically</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="CSS reference for form styling" data-escape>form {
+  display: block;
+}
+
+/* Vertical stacked layout */
+form.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-m);
+}
+
+/* Horizontal inline layout */
+form.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--size-s);
+}
+
+/* Two-column grid layout */
+form.grid {
+  display: grid;
+  grid-template-columns: minmax(100px, auto) 1fr;
+  gap: var(--size-s) var(--size-m);
+  align-items: center;
+}
+
+/* Legacy group wrapper (prefer <form-field>) */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs);
+}
+
+.group.horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--size-s);
+}
+
+/* Form actions */
+.actions {
+  display: flex;
+  gap: var(--size-s);
+  margin-block-start: var(--size-m);
+}
+
+.actions.end { justify-content: flex-end; }
+.actions.between { justify-content: space-between; }
+
+/* Help and error text */
+.help {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: oklch(55% 0.2 25);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/input/">input</a> - Text inputs, checkboxes, radios, and more</li>
+      <li><a href="/docs/elements/native/button/">button</a> - Form submission and reset buttons</li>
+      <li><a href="/docs/elements/native/select/">select</a> - Dropdown selection menus</li>
+      <li><a href="/docs/elements/native/textarea/">textarea</a> - Multi-line text input</li>
+      <li><a href="/docs/elements/native/fieldset/">fieldset</a> - Group related form fields</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Accessible input labels</li>
+      <li><a href="/docs/elements/native/legend/">legend</a> - Caption for fieldset groups</li>
+      <li><a href="/docs/elements/native/output/">output</a> - Calculation result or action output</li>
+      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper with validation</li>
+      <li><a href="/docs/elements/native/datalist/">datalist</a> - Autocomplete suggestions for inputs</li>
+      <li><a href="/docs/elements/native/dialog/">dialog</a> - Modal forms with <code>method="dialog"</code></li>
+    </ul>
+  </section>

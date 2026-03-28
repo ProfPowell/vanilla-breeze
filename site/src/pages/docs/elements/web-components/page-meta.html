@@ -1,0 +1,149 @@
+---
+layout: element
+title: "page-meta"
+description: "Document metadata display as a styled definition list with automatic JSON-LD structured data injection."
+elementName: page-meta
+category: component
+currentPath: /docs/elements/web-components/page-meta/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;page-meta&gt;</code> component displays document metadata in a structured, styled block. It uses a <code>&lt;dl&gt;</code> (definition list) for semantically correct key-value pairs and automatically generates Schema.org JSON-LD structured data from the visible content.</p>
+  <p>Without JavaScript, the <code>&lt;dl&gt;</code> renders as a readable metadata block. With JS, the component injects a <code>&lt;script type="application/ld+json"&gt;</code> for search engines and tools.</p>
+
+  <browser-window
+    src="/docs/examples/demos/document-provenance.html"
+    url="https://vanilla-breeze.dev/demos/document-provenance"
+    title="Document Provenance Demo"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><page-meta>
+  <dl>
+    <dt>Author</dt>
+    <dd>
+      <address>
+        <a href="/team/tpowell" rel="author">T. Powell</a>
+      </address>
+    </dd>
+    <dt>Published</dt>
+    <dd><time datetime="2026-01-15">January 15, 2026</time></dd>
+    <dt>Updated</dt>
+    <dd><time datetime="2026-02-20">February 20, 2026</time></dd>
+    <dt>Version</dt>
+    <dd>2.1.0</dd>
+    <dt>Trust</dt>
+    <dd data-trust="ai-assisted">AI-Assisted</dd>
+    <dt>Keywords</dt>
+    <dd>
+      <ul>
+        <li>provenance</li>
+        <li>metadata</li>
+        <li>trust</li>
+      </ul>
+    </dd>
+  </dl>
+</page-meta></code-block>
+</section>
+
+<section>
+  <h2>Variants</h2>
+
+  <h3>Compact</h3>
+  <p>The <code>.compact</code> class switches from a grid layout to an inline flow, suitable for use in article headers or footers.</p>
+  <code-block language="html" show-lines label="Compact variant" data-escape><page-meta class="compact">
+  <dl>
+    <dt>Author</dt>
+    <dd>T. Powell</dd>
+    <dt>Updated</dt>
+    <dd><time datetime="2026-02-20">Feb 20, 2026</time></dd>
+    <dt>Version</dt>
+    <dd>2.1.0</dd>
+  </dl>
+</page-meta></code-block>
+
+  <h3>With Version History</h3>
+  <p>Use a <code>&lt;details&gt;</code> element inside a <code>&lt;dd&gt;</code> for collapsible revision history. No JavaScript needed for the toggle.</p>
+  <code-block language="html" show-lines label="Version history" data-escape><page-meta>
+  <dl>
+    <dt>Author</dt>
+    <dd><address>T. Powell</address></dd>
+    <dt>Version</dt>
+    <dd>2.1.0</dd>
+    <dt>History</dt>
+    <dd>
+      <details>
+        <summary>3 revisions</summary>
+        <ol reversed>
+          <li>
+            <time datetime="2026-02-20">Feb 20</time> &mdash;
+            v2.1.0: Updated API examples
+          </li>
+          <li>
+            <time datetime="2026-01-30">Jan 30</time> &mdash;
+            v2.0.0: Rewrote for new architecture
+          </li>
+          <li>
+            <time datetime="2026-01-15">Jan 15</time> &mdash;
+            v1.0.0: Initial publication
+          </li>
+        </ol>
+      </details>
+    </dd>
+  </dl>
+</page-meta></code-block>
+</section>
+
+<section>
+  <h2>JSON-LD Output</h2>
+  <p>On <code>connectedCallback</code>, the component reads the <code>&lt;dl&gt;</code> and maps known keys to Schema.org properties. The following keys are recognized:</p>
+
+  <table class="props-table">
+    <thead>
+      <tr><th><code>&lt;dt&gt;</code> Text</th><th>Schema.org Property</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Author</td><td><code>author</code> (Person)</td></tr>
+      <tr><td>Published</td><td><code>datePublished</code></td></tr>
+      <tr><td>Updated</td><td><code>dateModified</code></td></tr>
+      <tr><td>Version</td><td><code>version</code></td></tr>
+      <tr><td>Keywords</td><td><code>keywords</code> (comma-separated)</td></tr>
+      <tr><td>Trust</td><td><code>creditText</code></td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="json" show-lines label="Generated JSON-LD" data-escape>// The component auto-injects JSON-LD from the <dl> content:
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "author": {
+    "@type": "Person",
+    "name": "T. Powell",
+    "url": "/team/tpowell"
+  },
+  "datePublished": "2026-01-15",
+  "dateModified": "2026-02-20",
+  "version": "2.1.0",
+  "keywords": "provenance, metadata, trust",
+  "creditText": "AI-Assisted"
+}</code-block>
+</section>
+
+<section>
+  <h2>Relationship to <code>&lt;page-info&gt;</code></h2>
+  <p><code>&lt;page-meta&gt;</code> is a composable sub-pattern of the richer <code>&lt;page-info&gt;</code> component. Use <code>&lt;page-meta&gt;</code> standalone for simple metadata display, or embed it within a <code>&lt;page-info&gt;</code> disclosure panel for the full provenance experience.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Uses <code>&lt;dl&gt;</code> for semantic key-value metadata &mdash; screen readers announce "Author: T. Powell" naturally</li>
+    <li>The <code>&lt;address&gt;</code> element wraps author names to provide contact context</li>
+    <li><code>&lt;time&gt;</code> elements include machine-readable <code>datetime</code> attributes</li>
+    <li>JSON-LD injection is invisible to users and assistive technology</li>
+  </ul>
+</section>

@@ -1,0 +1,304 @@
+---
+layout: element
+title: "video-player"
+description: "Platform video player that wraps native <video> with custom overlay controls in shadow DOM. Progressive enhancement — native video works without JS."
+elementName: video-player
+category: component
+currentPath: /docs/elements/web-components/video-player/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>A platform-native video player that wraps <code>&lt;video&gt;</code> in light DOM and renders custom overlay controls in shadow DOM. Controls fade in on interaction and auto-hide during playback. The native player is always the fallback — if JS is unavailable, <code>&lt;video controls&gt;</code> works normally with poster, captions, and fullscreen.</p>
+
+  <browser-window
+    src="/docs/examples/demos/video-player-basic.html"
+    url="https://vanilla-breeze.dev/video-player"
+    title="Video Player"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Single Video</h2>
+  <p>Wrap a native <code>&lt;video&gt;</code> with optional <code>&lt;track&gt;</code> elements for captions.</p>
+  <browser-window
+    src="/docs/snippets/demos/video-player-single.html"
+    url="https://vanilla-breeze.dev/video-player/single"
+    title="Single Video"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Wrapping a single video element" data-escape><video-player>
+  <video controls poster="poster.jpg" width="960" height="540">
+    <source src="video.mp4" type="video/mp4">
+    <track kind="captions" src="en.vtt" srclang="en" label="English" default>
+    <p><a href="video.mp4" download>Download video</a></p>
+  </video>
+</video-player></code-block>
+</section>
+
+<section>
+  <h2>Sizing</h2>
+  <p>Always include <code>width</code> and <code>height</code> attributes on the <code>&lt;video&gt;</code> element. These give the browser intrinsic dimensions <strong>before metadata loads</strong>, preventing layout shift — the same best practice as <code>&lt;img&gt;</code>.</p>
+  <p>For remote or large video files, the browser may not have loaded metadata (and therefore the video's native dimensions) by the time the page renders. Without dimension hints, the player collapses to zero height until the remote file responds.</p>
+  <p>The component also applies <code>aspect-ratio: 16/9</code> as a CSS fallback. Once the video's actual aspect ratio is known from metadata or the poster image, it overrides the CSS default automatically. If your video is not 16:9, the <code>width</code>/<code>height</code> attributes ensure the correct ratio is used from the start.</p>
+  <p>A <code>poster</code> image is strongly recommended — it provides visual content before playback and helps the browser establish dimensions early.</p>
+</section>
+
+<section>
+  <h2>Playlist Mode</h2>
+  <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the video source and plays it. Use <code>data-poster</code> and <code>data-captions</code> on track links for per-video switching.</p>
+  <browser-window
+    src="/docs/snippets/demos/video-player-playlist.html"
+    url="https://vanilla-breeze.dev/video-player/playlist"
+    title="Video Playlist"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Video player with playlist" data-escape><video-player>
+  <video controls poster="ep1.jpg" width="960" height="540">
+    <source src="episodes/01.mp4" type="video/mp4">
+    <track kind="captions" src="captions/01-en.vtt" srclang="en" label="English" default>
+  </video>
+  <details>
+    <summary>Episodes</summary>
+    <ol class="track-list">
+      <li data-video-active>
+        <a href="episodes/01.mp4" data-poster="ep1.jpg" data-captions="captions/01-en.vtt">01. Introduction</a>
+        <span class="track-meta"><time datetime="PT12M30S">12:30</time></span>
+      </li>
+      <li>
+        <a href="episodes/02.mp4" data-poster="ep2.jpg">02. Getting Started</a>
+        <span class="track-meta"><time datetime="PT18M45S">18:45</time></span>
+      </li>
+    </ol>
+  </details>
+</video-player></code-block>
+</section>
+
+<section>
+  <h2>Shuffle and Loop</h2>
+  <code-block language="html" show-lines label="Shuffle playlist with loop" data-escape><video-player shuffle loop>
+  <video controls poster="ep1.jpg" width="960" height="540">
+    <source src="episodes/01.mp4" type="video/mp4">
+  </video>
+  <details open>
+    <summary>Shuffle Playlist</summary>
+    <ol class="track-list">
+      <li data-video-active><a href="episodes/01.mp4">Episode 1</a></li>
+      <li><a href="episodes/02.mp4">Episode 2</a></li>
+      <li><a href="episodes/03.mp4">Episode 3</a></li>
+    </ol>
+  </details>
+</video-player></code-block>
+</section>
+
+<section>
+  <h2>Controls Behavior</h2>
+  <p>Unlike <code>&lt;audio-player&gt;</code> which shows a permanent control bar, video controls are an <strong>overlay</strong> that fades in and out:</p>
+  <ul>
+    <li>Visible for 3 seconds after any interaction (mousemove, focus, keypress)</li>
+    <li>Always visible when paused, before first play, or after ended</li>
+    <li>Touch devices: tap toggles visibility</li>
+    <li>Cursor hides when controls are hidden during playback</li>
+    <li><code>prefers-reduced-motion</code>: controls stay permanently visible</li>
+  </ul>
+  <p>A gradient scrim at the bottom ensures controls are readable over any video content.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playing on load (subject to browser autoplay policy)</td></tr>
+      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop single video or entire playlist</td></tr>
+      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Randomize playlist order on track advance</td></tr>
+      <tr><td><code>muted</code></td><td>Boolean</td><td>Start muted</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Component-Managed Attributes</h3>
+  <table>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>state</code></td><td><code>idle</code>, <code>playing</code>, <code>paused</code>, <code>buffering</code>, <code>ended</code></td><td>Current playback state</td></tr>
+      <tr><td><code>data-upgraded</code></td><td>Present</td><td>Component has initialized</td></tr>
+      <tr><td><code>data-fullscreen</code></td><td>Present</td><td>Player is in fullscreen</td></tr>
+      <tr><td><code>captions</code></td><td>Present</td><td>Captions are currently showing</td></tr>
+      <tr><td><code>controls</code></td><td>Present</td><td>Overlay controls are visible</td></tr>
+      <tr><td><code>muted</code></td><td>Present</td><td>Audio is muted</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Custom Properties</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--video-player-accent</code></td><td><code>var(--color-primary)</code></td><td>Play button, timeline fill, active states</td></tr>
+      <tr><td><code>--video-player-controls-bg</code></td><td><code>oklch(0% 0 0 / 0.75)</code></td><td>Controls bar background (semi-transparent dark)</td></tr>
+      <tr><td><code>--video-player-controls-text</code></td><td><code>#fff</code></td><td>Controls text and icon color</td></tr>
+      <tr><td><code>--video-player-radius</code></td><td><code>var(--radius-m)</code></td><td>Player border radius</td></tr>
+      <tr><td><code>--video-player-border</code></td><td><code>none</code></td><td>Player border (off by default)</td></tr>
+      <tr><td><code>--video-player-shadow</code></td><td><code>none</code></td><td>Player box shadow (opt-in)</td></tr>
+      <tr><td><code>--video-player-controls-padding</code></td><td><code>var(--size-xs) var(--size-s)</code></td><td>Controls area padding</td></tr>
+      <tr><td><code>--video-player-overlay-bg</code></td><td><code>oklch(0% 0 0 / 0.4)</code></td><td>Center play button backdrop</td></tr>
+      <tr><td><code>--video-player-timeline-height</code></td><td><code>4px</code></td><td>Timeline track height</td></tr>
+      <tr><td><code>--video-player-timeline-buffer</code></td><td><code>oklch(100% 0 0 / 0.3)</code></td><td>Buffer progress color</td></tr>
+    </tbody>
+  </table>
+  <p>Video controls overlay the content, so defaults are semi-transparent dark with white text (unlike <code>&lt;audio-player&gt;</code> which uses surface/text tokens).</p>
+  <browser-window
+    src="/docs/snippets/demos/video-player-custom.html"
+    url="https://vanilla-breeze.dev/video-player/custom"
+    title="Custom Styling"
+    shadow>
+  </browser-window>
+  <code-block language="css" show-lines label="Custom styling" data-escape>video-player {
+  --video-player-accent: oklch(60% 0.2 30);
+  --video-player-radius: var(--radius-l);
+  --video-player-shadow: var(--shadow-lg);
+  --video-player-controls-bg: oklch(0% 0 0 / 0.85);
+  --video-player-timeline-height: 6px;
+}</code-block>
+</section>
+
+<section>
+  <h2>Shadow Parts</h2>
+  <table>
+    <thead><tr><th>Part</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>player</code></td><td>Outer player container (position: relative wrapper)</td></tr>
+      <tr><td><code>controls</code></td><td>Controls overlay at bottom</td></tr>
+      <tr><td><code>play-overlay</code></td><td>Big center play button</td></tr>
+      <tr><td><code>play-button</code></td><td>Play/pause button in controls row</td></tr>
+      <tr><td><code>timeline</code></td><td>Seek range input</td></tr>
+      <tr><td><code>volume</code></td><td>Volume range input</td></tr>
+      <tr><td><code>time-display</code></td><td>Current time / duration display</td></tr>
+      <tr><td><code>speed-button</code></td><td>Playback speed cycle button</td></tr>
+      <tr><td><code>captions-button</code></td><td>Captions toggle button</td></tr>
+      <tr><td><code>fullscreen-button</code></td><td>Fullscreen toggle button</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table>
+    <thead><tr><th>Event</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>video-player:play</code></td><td><code>{ currentTime, src }</code></td></tr>
+      <tr><td><code>video-player:pause</code></td><td><code>{ currentTime }</code></td></tr>
+      <tr><td><code>video-player:ended</code></td><td><code>{ src }</code></td></tr>
+      <tr><td><code>video-player:track-change</code></td><td><code>{ src, title }</code></td></tr>
+      <tr><td><code>video-player:fullscreen</code></td><td><code>{ active: boolean }</code></td></tr>
+      <tr><td><code>video-player:speed</code></td><td><code>{ rate: number }</code></td></tr>
+      <tr><td><code>video-player:captions</code></td><td><code>{ active: boolean, label: string }</code></td></tr>
+    </tbody>
+  </table>
+  <code-block language="js" show-lines label="Listening for events" data-escape>const player = document.querySelector('video-player');
+
+player.addEventListener('video-player:play', (e) => {
+  console.log('Playing:', e.detail.src);
+});
+
+player.addEventListener('video-player:track-change', (e) => {
+  console.log('Now playing:', e.detail.title);
+});
+
+player.addEventListener('video-player:fullscreen', (e) => {
+  console.log('Fullscreen:', e.detail.active);
+});
+
+player.addEventListener('video-player:speed', (e) => {
+  console.log('Speed:', e.detail.rate);
+});</code-block>
+</section>
+
+<section>
+  <h2>Keyboard Shortcuts</h2>
+  <table>
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Space</kbd> / <kbd>K</kbd></td><td>Play / Pause</td></tr>
+      <tr><td><kbd>Left Arrow</kbd></td><td>Seek back 10 seconds</td></tr>
+      <tr><td><kbd>Right Arrow</kbd></td><td>Seek forward 10 seconds</td></tr>
+      <tr><td><kbd>Up Arrow</kbd></td><td>Volume up 5%</td></tr>
+      <tr><td><kbd>Down Arrow</kbd></td><td>Volume down 5%</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
+      <tr><td><kbd>C</kbd></td><td>Toggle captions</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Exit fullscreen</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>The <code>&lt;video&gt;</code> element lives in light DOM and is visible via <code>&lt;slot&gt;</code> (not hidden like <code>&lt;audio&gt;</code>). Before JS loads, native <code>controls</code> render with poster and captions. After the component upgrades, native controls are hidden and custom overlay chrome takes over. If the component is removed from the DOM, native controls are restored.</p>
+  <code-block language="html" show-lines label="Fallback behavior" data-escape><!-- Without JS: native <video> controls render and work.
+     Poster, captions, and track list links all function. -->
+<video-player>
+  <video controls poster="poster.jpg" width="960" height="540">
+    <source src="video.mp4" type="video/mp4">
+    <track kind="captions" src="en.vtt" srclang="en" label="English" default>
+    <p><a href="video.mp4" download>Download video</a></p>
+  </video>
+</video-player></code-block>
+</section>
+
+<section>
+  <h2>Track List Data Attributes</h2>
+  <p><code>&lt;li&gt;</code> elements in <code>.track-list</code> use data attributes for state:</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Set by</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-video-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
+      <tr><td><code>data-video-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
+      <tr><td><code>data-video-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
+    </tbody>
+  </table>
+  <p>Track <code>&lt;a&gt;</code> elements support optional attributes for per-track switching:</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-poster</code></td><td>Poster image URL for this track</td></tr>
+      <tr><td><code>data-captions</code></td><td>Captions VTT file URL for this track</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>All controls use native <code>&lt;button&gt;</code> or <code>&lt;input type="range"&gt;</code> with <code>aria-label</code></li>
+    <li>Controls group has <code>role="group"</code> with label</li>
+    <li>Seek slider uses <code>aria-valuetext</code> with verbose time (e.g. "2 minutes 30 seconds")</li>
+    <li>Captions button uses <code>aria-pressed</code> to reflect state</li>
+    <li>Speed button announces rate changes via <code>aria-live="polite"</code></li>
+    <li>Hidden <code>role="status"</code> region announces "Playing", "Paused", "Buffering"</li>
+    <li>Keyboard navigable with documented shortcuts</li>
+    <li>Respects <code>prefers-reduced-motion</code> — no transitions, controls stay visible</li>
+    <li>Falls back to fully accessible native <code>&lt;video&gt;</code> without JS</li>
+    <li>Captions rendered by native <code>&lt;video&gt;</code> — browser handles text overlay positioning</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Fullscreen</h2>
+  <p>Fullscreen is requested on the <strong>host element</strong> (not the <code>&lt;video&gt;</code>), so the custom shadow DOM controls remain visible in fullscreen mode. The <code>&lt;video&gt;</code> fills the host via CSS.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> — Native video element (Layers 1-3)</li>
+    <li><a href="/docs/elements/web-components/audio-player/"><code>&lt;audio-player&gt;</code></a> — Audio equivalent with same architecture</li>
+    <li><a href="/docs/elements/web-components/youtube-player/"><code>&lt;youtube-player&gt;</code></a> — YouTube embed with facade pattern (no <code>&lt;video&gt;</code> element)</li>
+    <li><a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> — Captions, subtitles, and chapter tracks</li>
+  </ul>
+</section>

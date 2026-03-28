@@ -1,0 +1,231 @@
+---
+layout: element
+title: "reader-view"
+description: "Immersive reading shell with scroll and paged modes. Wraps long-form content with a chrome bar, page navigation, font controls, and column picker."
+elementName: reader-view
+category: component
+currentPath: /docs/elements/web-components/reader-view/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<browser-window
+  src="/docs/examples/demos/reader-view.html"
+  url="https://vanilla-breeze.dev/reader"
+  title="Reader View Demo"
+  shadow>
+</browser-window>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mode</code></td>
+        <td><code>scroll</code>, <code>pages</code></td>
+        <td><code>scroll</code></td>
+        <td>Reading mode. Reflected from JS state.</td>
+      </tr>
+      <tr>
+        <td><code>columns</code></td>
+        <td><code>auto</code>, <code>1</code>, <code>2</code>, <code>3</code></td>
+        <td><code>auto</code></td>
+        <td>Column count in pages mode.</td>
+      </tr>
+      <tr>
+        <td><code>persist</code></td>
+        <td><code>true</code>, <code>false</code></td>
+        <td><code>true</code></td>
+        <td>Persist mode, font size, and columns to localStorage.</td>
+      </tr>
+      <tr>
+        <td><code>storage-key</code></td>
+        <td>any string</td>
+        <td><code>vb-reader</code></td>
+        <td>localStorage key. Override for multiple readers per page.</td>
+      </tr>
+      <tr>
+        <td><code>col-controls</code></td>
+        <td><code>true</code>, <code>false</code></td>
+        <td><code>true</code></td>
+        <td>Show/hide column picker in chrome.</td>
+      </tr>
+      <tr>
+        <td><code>font-controls</code></td>
+        <td><code>true</code>, <code>false</code></td>
+        <td><code>true</code></td>
+        <td>Show/hide font size buttons in chrome.</td>
+      </tr>
+      <tr>
+        <td><code>reader-title</code></td>
+        <td>any string</td>
+        <td><em>auto</em></td>
+        <td>Chrome bar title. Falls back to first <code>&lt;h1&gt;</code>, then <code>document.title</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>reader-view degrades gracefully at every layer:</p>
+  <ul>
+    <li><strong>Without JS</strong> — renders as a block element. Content is fully readable as a normal scrolling article.</li>
+    <li><strong>Without CSS</strong> — semantic HTML renders in document order.</li>
+    <li><strong>With CSS only</strong> — layout-columns reading defaults apply. No page controls.</li>
+    <li><strong>With JS</strong> — full paged reading with chrome, font controls, column picker, keyboard navigation, and persistence.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Usage Examples</h2>
+
+  <h3>Minimal</h3>
+  <p>JS automatically wraps content in <code>&lt;layout-columns&gt;</code> and generates the chrome bar:</p>
+  <code-block language="html" show-lines label="Minimal reader-view" data-escape><reader-view>
+  <article data-prose>
+    <h1>Article Title</h1>
+    <p>Content renders in scroll mode by default.
+    Click Pages for paged reading.</p>
+  </article>
+</reader-view></code-block>
+
+  <h3>Explicit Configuration</h3>
+  <p>Pre-configure mode, columns, and provide your own <code>&lt;layout-columns&gt;</code>:</p>
+  <code-block language="html" show-lines label="Explicit configuration" data-escape><reader-view mode="pages" columns="2">
+  <layout-columns data-layout-align="justify">
+    <article data-prose data-drop-cap>
+      <h1>Article Title</h1>
+      <p>Explicit two-column paged layout with justified
+      text and drop cap.</p>
+    </article>
+  </layout-columns>
+</reader-view></code-block>
+
+  <h3>Custom Chrome</h3>
+  <p>Replace the chrome bar entirely via <code>slot="chrome"</code>. Wire buttons with <code>data-reader-action</code> attributes:</p>
+  <code-block language="html" show-lines label="Custom chrome via slot" data-escape><reader-view>
+  <div slot="chrome">
+    <button data-reader-action="set-mode-scroll">Scroll</button>
+    <button data-reader-action="set-mode-pages">Pages</button>
+    <output data-reader-output="page-indicator"
+            aria-live="polite"></output>
+  </div>
+  <article data-prose>
+    <h1>Custom Chrome</h1>
+    <p>The chrome bar is fully replaceable via slot.</p>
+  </article>
+</reader-view></code-block>
+</section>
+
+<section>
+  <h2>Chrome Actions</h2>
+  <p>Any element inside <code>slot="chrome"</code> can trigger behaviour via <code>data-reader-action</code>:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>toggle-mode</code></td><td>Toggle between scroll and pages</td></tr>
+      <tr><td><code>set-mode-scroll</code></td><td>Switch to scroll mode</td></tr>
+      <tr><td><code>set-mode-pages</code></td><td>Switch to pages mode</td></tr>
+      <tr><td><code>font-increase</code></td><td>Increase font size one step</td></tr>
+      <tr><td><code>font-decrease</code></td><td>Decrease font size one step</td></tr>
+      <tr><td><code>set-columns</code></td><td>Set columns from <code>data-reader-value</code></td></tr>
+      <tr><td><code>prev-page</code></td><td>Previous page</td></tr>
+      <tr><td><code>next-page</code></td><td>Next page</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>reader-view:mode</code></td>
+        <td><code>{ mode: 'scroll' | 'pages' }</code></td>
+        <td>Mode toggled</td>
+      </tr>
+      <tr>
+        <td><code>reader-view:page</code></td>
+        <td><code>{ page: number, total: number }</code></td>
+        <td>Page changes</td>
+      </tr>
+      <tr>
+        <td><code>reader-view:font</code></td>
+        <td><code>{ size: string, index: number }</code></td>
+        <td>Font size changes</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Keyboard Shortcuts</h2>
+  <p>Active in pages mode only:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>ArrowRight</kbd> / <kbd>Space</kbd> / <kbd>PageDown</kbd></td><td>Next page</td></tr>
+      <tr><td><kbd>ArrowLeft</kbd> / <kbd>PageUp</kbd></td><td>Previous page</td></tr>
+      <tr><td><kbd>Home</kbd></td><td>First page</td></tr>
+      <tr><td><kbd>End</kbd></td><td>Last page</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Chrome bar uses <code>role="toolbar"</code> with <code>aria-label="Reading controls"</code></li>
+    <li>Mode buttons reflect <code>aria-pressed</code></li>
+    <li>Page indicator is an <code>&lt;output&gt;</code> with <code>aria-live="polite"</code></li>
+    <li>Pager has <code>role="region"</code> and <code>aria-label="Article pages"</code></li>
+    <li>All animations respect <code>prefers-reduced-motion: reduce</code></li>
+    <li>Content remains in source order — screen readers read normally</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Best Practices</h2>
+  <ul>
+    <li><strong>Use <code>data-prose</code> on the article</strong> — this enables hyphenation from the native article styles.</li>
+    <li><strong>Set <code>storage-key</code> for multiple instances</strong> — each reader needs its own localStorage key. Authored attributes (<code>mode</code>, <code>columns</code>) take precedence over persisted state.</li>
+    <li><strong>Prefer auto columns</strong> — let the component resolve the best count for the viewport.</li>
+    <li><strong>Position anchoring works automatically</strong> — switching modes preserves the reader's position in the content.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a> — The column flow surface that reader-view wraps</li>
+    <li><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a> — Vertical rhythm container (simpler, no columns)</li>
+    <li><a href="/docs/elements/web-components/text-reader/"><code>&lt;text-reader&gt;</code></a> — Text-to-speech reader (different use case)</li>
+  </ul>
+</section>

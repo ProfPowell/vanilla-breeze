@@ -1,0 +1,296 @@
+---
+layout: element
+title: "th"
+description: "The th element defines a header cell in a table. Vanilla Breeze styles headers with a raised background and semi-bold weight. Always use scope for accessibility. Supports sort indicators and numeric alignment via data attributes."
+elementName: th
+category: native
+nativeGroup: Tables
+currentPath: /docs/elements/native/th/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;th&gt;</code> (table header) element defines a cell that acts as a header for a group of table cells. Headers can apply to columns, rows, or groups of either.</p>
+    <p>Vanilla Breeze styles header cells with a raised background (<code>var(--color-surface-raised)</code>), semi-bold font weight (<code>600</code>), and a thicker bottom border (<code>var(--border-width-medium)</code>) to visually distinguish them from data cells.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Column headers:</strong> In <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> rows with <code>scope="col"</code></li>
+      <li><strong>Row headers:</strong> First cell of data rows with <code>scope="row"</code></li>
+      <li><strong>Group headers:</strong> Headers spanning multiple columns/rows with <code>scope="colgroup"</code> or <code>scope="rowgroup"</code></li>
+    </ul>
+
+    <h3>When to Use td Instead</h3>
+    <ul>
+      <li><strong>Data cells:</strong> Cells containing actual data values</li>
+      <li><strong>Summary cells:</strong> Totals in <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> (though the label cell may be <code>&lt;th&gt;</code>)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The scope Attribute</h2>
+    <p>The <code>scope</code> attribute is essential for accessibility. It tells assistive technologies which cells the header applies to. Always include it.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Description</th>
+          <th scope="col">Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>col</code></td>
+          <td>Header applies to all cells in the column</td>
+          <td>Column headers in <code>&lt;thead&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>row</code></td>
+          <td>Header applies to all cells in the row</td>
+          <td>Row headers in first cell of <code>&lt;tbody&gt;</code> rows</td>
+        </tr>
+        <tr>
+          <td><code>colgroup</code></td>
+          <td>Header applies to multiple columns</td>
+          <td>Group headers used with <code>colspan</code></td>
+        </tr>
+        <tr>
+          <td><code>rowgroup</code></td>
+          <td>Header applies to multiple rows</td>
+          <td>Section headers spanning all columns</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <h3>Column and Row Headers</h3>
+    <p>This example shows both <code>scope="col"</code> for column headers and <code>scope="row"</code> for row headers. Screen readers use these to announce context when navigating cells.</p>
+    <browser-window src="/docs/snippets/demos/table-scope.html" url="https://vanilla-breeze.dev/table/scope" title="Table with scope attributes" shadow></browser-window>
+    <code-block language="html" show-lines label="Column headers with scope" data-escape><thead>
+  <tr>
+    <th scope="col">Name</th>
+    <th scope="col">Department</th>
+    <th scope="col">Location</th>
+    <th scope="col">Start Date</th>
+  </tr>
+</thead></code-block>
+    <code-block language="html" show-lines label="Row header with scope" data-escape><tr>
+  <th scope="row">Monthly Price</th>
+  <td>$9</td>
+  <td>$29</td>
+  <td>$99</td>
+</tr></code-block>
+
+    <h3>Column Group Headers</h3>
+    <p>Use <code>scope="colgroup"</code> with <code>colspan</code> for headers that span multiple columns, commonly seen in multi-level header rows.</p>
+    <code-block language="html" show-lines label="Column group headers" data-escape><thead>
+  <tr>
+    <th scope="col" rowspan="2">Region</th>
+    <th scope="colgroup" colspan="2">Q1</th>
+    <th scope="colgroup" colspan="2">Q2</th>
+  </tr>
+  <tr>
+    <th scope="col" data-numeric>Revenue</th>
+    <th scope="col" data-numeric>Profit</th>
+    <th scope="col" data-numeric>Revenue</th>
+    <th scope="col" data-numeric>Profit</th>
+  </tr>
+</thead></code-block>
+
+    <h3>Row Group Headers</h3>
+    <p>Use <code>scope="rowgroup"</code> for section headers that apply to multiple rows within a group.</p>
+    <code-block language="html" show-lines label="Row group header" data-escape><tbody>
+  <tr>
+    <th scope="rowgroup" colspan="3">Engineering</th>
+  </tr>
+  <tr>
+    <td>Software</td>
+    <td data-numeric>$25,000</td>
+    <td data-numeric>$23,500</td>
+  </tr>
+  <tr>
+    <td>Hardware</td>
+    <td data-numeric>$50,000</td>
+    <td data-numeric>$48,200</td>
+  </tr>
+</tbody></code-block>
+
+    <h3>Basic Table</h3>
+    <p>A standard table showing headers in context with data rows.</p>
+    <browser-window src="/docs/snippets/demos/table-basic.html" url="https://vanilla-breeze.dev/table/basic" title="Basic table" shadow></browser-window>
+  </section>
+
+  <section>
+    <h2>Sort Indicators</h2>
+    <p>Add <code>data-sort</code> to make a column sortable. Vanilla Breeze appends a sort indicator via <code>::after</code>. The value specifies the data type for sort logic.</p>
+    <ul>
+      <li><code>data-sort="string"</code> - Alphabetical sorting</li>
+      <li><code>data-sort="number"</code> - Numeric sorting</li>
+      <li><code>data-sort="date"</code> - Date sorting</li>
+    </ul>
+    <p>When active, the <a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> component sets <code>aria-sort="ascending"</code> or <code>aria-sort="descending"</code> on the <code>&lt;th&gt;</code>, which triggers the directional arrow icon.</p>
+
+    <code-block language="html" show-lines label="Sortable column headers" data-escape><thead>
+  <tr>
+    <th scope="col" data-sort="string">Name</th>
+    <th scope="col" data-sort="string">Department</th>
+    <th scope="col" data-sort="date">Start Date</th>
+    <th scope="col" data-sort="number" data-numeric>Salary</th>
+  </tr>
+</thead></code-block>
+  </section>
+
+  <section>
+    <h2>Numeric and Alignment Attributes</h2>
+
+    <h3>data-numeric</h3>
+    <p>Use <code>data-numeric</code> on header cells for numeric columns. This right-aligns the header text and applies <code>font-variant-numeric: tabular-nums</code> for proper digit alignment.</p>
+    <code-block language="html" show-lines label="Numeric column headers" data-escape><th scope="col" data-numeric>Quantity</th>
+<th scope="col" data-numeric>Unit Price</th>
+<th scope="col" data-numeric>Total</th></code-block>
+
+    <h3>data-align</h3>
+    <p>Use <code>data-align</code> for explicit text alignment when the default (<code>start</code>) or <code>data-numeric</code> (<code>end</code>) are not appropriate.</p>
+    <code-block language="html" show-lines label="Explicit alignment" data-escape><th scope="col" data-align="start">Name</th>
+<th scope="col" data-align="center">Status</th>
+<th scope="col" data-align="end">Amount</th></code-block>
+  </section>
+
+  <section>
+    <h2>VB Data Attributes</h2>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Values</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-numeric</code></td>
+          <td>Boolean attribute</td>
+          <td>Right-aligns content and uses tabular numerals</td>
+        </tr>
+        <tr>
+          <td><code>data-align</code></td>
+          <td><code>start</code>, <code>center</code>, <code>end</code></td>
+          <td>Explicit text alignment override</td>
+        </tr>
+        <tr>
+          <td><code>data-sort</code></td>
+          <td><code>string</code>, <code>number</code>, <code>date</code></td>
+          <td>Enables sort indicator; value sets sort data type</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Standard HTML Attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Values</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>scope</code></td>
+          <td><code>col</code>, <code>row</code>, <code>colgroup</code>, <code>rowgroup</code></td>
+          <td>Specifies which cells the header applies to (required for a11y)</td>
+        </tr>
+        <tr>
+          <td><code>colspan</code></td>
+          <td>Positive integer</td>
+          <td>Number of columns the header spans</td>
+        </tr>
+        <tr>
+          <td><code>rowspan</code></td>
+          <td>Positive integer</td>
+          <td>Number of rows the header spans</td>
+        </tr>
+        <tr>
+          <td><code>abbr</code></td>
+          <td>String</td>
+          <td>Abbreviated version of header content for screen readers</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="th CSS styles" data-escape>th {
+  padding: var(--size-s) var(--size-m);
+  font-weight: 600;
+  text-align: start;
+  background: var(--color-surface-raised);
+  border-block-end: var(--border-width-medium) solid
+    var(--color-border);
+}
+
+/* Numeric alignment */
+th[data-numeric] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Explicit alignment */
+th[data-align="start"]  { text-align: start; }
+th[data-align="center"] { text-align: center; }
+th[data-align="end"]    { text-align: end; }
+
+/* Sort indicator (unsorted) */
+th[data-sort]::after {
+  content: " \21C5"; /* ⇅ */
+  opacity: 0.4;
+}
+
+/* Sort ascending */
+th[data-sort="asc"]::after,
+th[aria-sort="ascending"]::after {
+  content: " \2191"; /* ↑ */
+  opacity: 1;
+}
+
+/* Sort descending */
+th[data-sort="desc"]::after,
+th[aria-sort="descending"]::after {
+  content: " \2193"; /* ↓ */
+  opacity: 1;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Always use scope:</strong> The <code>scope</code> attribute is essential for screen readers to associate headers with data cells</li>
+      <li><strong>Screen reader announcement:</strong> When navigating to a data cell, the associated headers are announced</li>
+      <li><strong>Complex tables:</strong> For tables with multiple header levels, consider using the <code>headers</code> attribute on <a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> elements</li>
+      <li><strong>Implicit roles:</strong> <code>&lt;th&gt;</code> has an implicit ARIA role of <code>columnheader</code> (with <code>scope="col"</code>) or <code>rowheader</code> (with <code>scope="row"</code>)</li>
+      <li><strong>Sort state:</strong> When a column is sorted, use <code>aria-sort="ascending"</code> or <code>aria-sort="descending"</code> on the <code>&lt;th&gt;</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> - Data cells (th provides headers for)</li>
+      <li><a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> - Table rows containing th cells</li>
+      <li><a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> - Primary location for column headers</li>
+      <li><a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> - Contains row headers with <code>scope="row"</code></li>
+      <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> - The table container</li>
+      <li><a href="/docs/elements/components/data-table/"><code>&lt;data-table&gt;</code></a> - Interactive table component that uses sort attributes on <code>&lt;th&gt;</code></li>
+    </ul>
+  </section>

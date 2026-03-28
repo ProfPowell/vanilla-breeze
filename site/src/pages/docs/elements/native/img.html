@@ -1,0 +1,232 @@
+---
+layout: element
+title: "img"
+description: "The image element embeds responsive images with automatic sizing, lazy loading support, and visual variants for different use cases."
+elementName: img
+category: native
+nativeGroup: Media
+currentPath: /docs/elements/native/img/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;img&gt;</code> element is the primary way to embed images in HTML. Vanilla Breeze styles images to be responsive by default, constraining them to their container width while maintaining aspect ratio. Additional variant classes provide shapes, borders, and aspect ratio control.</p>
+
+    <p>Images are block-level elements with <code>max-inline-size: 100%</code> and <code>block-size: auto</code>, ensuring they never overflow their container while preserving their natural proportions.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Content images</strong> - Photos, illustrations, and graphics that are part of the content</li>
+      <li><strong>Avatars</strong> - User profile pictures using the <code>.circle</code> variant</li>
+      <li><strong>Thumbnails</strong> - Small preview images with borders</li>
+      <li><strong>Hero images</strong> - Large banner images using <code>.full</code> variant</li>
+      <li><strong>Product images</strong> - E-commerce product photos with consistent aspect ratios</li>
+    </ul>
+
+    <h3>When to Use Other Elements</h3>
+    <ul>
+      <li>Use <a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> for art direction or serving different formats</li>
+      <li>Use <a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> to wrap images that need captions</li>
+      <li>Use <a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> for icons and vector graphics</li>
+      <li>Use CSS <code>background-image</code> for decorative images that don't convey content</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Variants and Aspect Ratios</h2>
+    <p>Vanilla Breeze provides variant classes for common image treatments: <code>.rounded</code>, <code>.circle</code>, <code>.thumbnail</code>, <code>.full</code>, and aspect ratio classes like <code>.ratio-square</code>, <code>.ratio-video</code>, <code>.ratio-portrait</code>, and <code>.ratio-landscape</code>.</p>
+
+    <browser-window src="/docs/snippets/demos/img-variants.html" url="img-variants.html" title="Image variants, aspect ratios, and object-fit modes" shadow></browser-window>
+
+    <h3>Variant Classes</h3>
+    <code-block language="html" show-lines label="Basic image" data-escape><img src="photo.jpg" alt="A scenic landscape photograph" /></code-block>
+    <code-block language="html" show-lines label="Rounded image" data-escape><img src="photo.jpg" alt="..." class="rounded" /></code-block>
+    <code-block language="html" show-lines label="Circle avatar image" data-escape><img src="avatar.jpg" alt="User name" class="circle" style="max-inline-size: 96px;" /></code-block>
+    <code-block language="html" show-lines label="Thumbnail image" data-escape><img src="thumb.jpg" alt="..." class="thumbnail" /></code-block>
+    <code-block language="html" show-lines label="Full width image" data-escape><img src="banner.jpg" alt="..." class="full" /></code-block>
+
+    <h3>Aspect Ratio Classes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Aspect Ratio</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.ratio-square</code></td>
+          <td>1:1</td>
+          <td>Profile photos, app icons</td>
+        </tr>
+        <tr>
+          <td><code>.ratio-video</code></td>
+          <td>16:9</td>
+          <td>Video thumbnails, hero images</td>
+        </tr>
+        <tr>
+          <td><code>.ratio-portrait</code></td>
+          <td>3:4</td>
+          <td>Book covers, portraits</td>
+        </tr>
+        <tr>
+          <td><code>.ratio-landscape</code></td>
+          <td>4:3</td>
+          <td>Classic photo format</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Object Fit</h3>
+    <p>Control how images fit within constrained dimensions.</p>
+    <code-block language="html" show-lines label="Object fit examples" data-escape><!-- Contain: letterbox to fit -->
+<img src="tall.jpg" alt="..." class="contain" style="max-block-size: 200px;" />
+
+<!-- Cover: crop to fill -->
+<img src="photo.jpg" alt="..." class="cover" style="block-size: 200px; inline-size: 100%;" /></code-block>
+  </section>
+
+  <section>
+    <h2>Lazy Loading</h2>
+    <p>Native lazy loading defers loading images until they approach the viewport, improving initial page load performance. Lazy-loaded images display a subtle background color while loading.</p>
+
+    <code-block language="html" show-lines label="Lazy loading examples" data-escape><!-- Lazy load images below the fold -->
+<img src="photo.jpg" alt="..." loading="lazy" />
+
+<!-- Eager load critical above-the-fold images -->
+<img src="hero.jpg" alt="..." loading="eager" /></code-block>
+  </section>
+
+  <section>
+    <h2>Image Links</h2>
+    <p>When an <code>&lt;img&gt;</code> is the direct child of an <code>&lt;a&gt;</code>, Vanilla Breeze automatically removes the underline decoration via <code>a:has(&gt; img) { text-decoration: none }</code>. This prevents an unsightly underline bar beneath linked images.</p>
+
+    <code-block language="html" show-lines label="Image inside a link" data-escape><a href="/profile">
+  <img src="avatar.jpg" alt="View your profile" />
+</a></code-block>
+
+    <p>See the <a href="/docs/elements/native/a/"><code>&lt;a&gt;</code> element docs</a> for more on link styling and auto-detected link types.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Alt Text Guidelines</h3>
+    <p>Every image must have an <code>alt</code> attribute. The content depends on the image's purpose:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Image Type</th>
+          <th>Alt Text Approach</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Informative</td>
+          <td>Describe the content and meaning</td>
+          <td><code>alt="Golden retriever playing fetch in a park"</code></td>
+        </tr>
+        <tr>
+          <td>Functional</td>
+          <td>Describe the action or destination</td>
+          <td><code>alt="Submit form"</code></td>
+        </tr>
+        <tr>
+          <td>Decorative</td>
+          <td>Empty alt attribute</td>
+          <td><code>alt=""</code></td>
+        </tr>
+        <tr>
+          <td>Complex</td>
+          <td>Brief summary + detailed description nearby</td>
+          <td><code>alt="Q3 sales chart. Details in table below."</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Keep alt text concise (under 125 characters when possible)</li>
+      <li>Don't start with "Image of" or "Picture of" - screen readers announce this</li>
+      <li>Include relevant text that appears in the image</li>
+      <li>For decorative images, use <code>alt=""</code> (not omitting the attribute)</li>
+      <li>Use <code>role="presentation"</code> for purely decorative images</li>
+    </ul>
+
+    <code-block language="html" show-lines label="Alt text examples" data-escape><!-- Informative image -->
+<img src="team.jpg" alt="The engineering team celebrating the product launch" />
+
+<!-- Decorative image -->
+<img src="divider.png" alt="" role="presentation" />
+
+<!-- Functional image (link) -->
+<a href="/profile">
+  <img src="avatar.jpg" alt="View your profile" />
+</a></code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/picture/"><code>&lt;picture&gt;</code></a> - Art direction and format switching with multiple sources</li>
+      <li><a href="/docs/elements/native/source/"><code>&lt;source&gt;</code></a> - Define image sources within picture element</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> - Semantic wrapper for images with captions</li>
+      <li><a href="/docs/elements/native/figcaption/"><code>&lt;figcaption&gt;</code></a> - Caption text for figures</li>
+      <li><a href="/docs/elements/native/svg/"><code>&lt;svg&gt;</code></a> - Vector graphics and icons</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> - Image links with automatic underline removal</li>
+      <li><a href="/docs/elements/web-components/layout-card/"><code>&lt;layout-card&gt;</code></a> - Cards that commonly contain images</li>
+      <li><a href="/docs/elements/web-components/compare-surface/"><code>&lt;compare-surface&gt;</code></a> - Before/after image comparison slider</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <p>Styles defined in <code>/src/native-elements/image/styles.css</code></p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Selector</th>
+          <th>Properties</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>img</code></td>
+          <td><code>max-inline-size: 100%; block-size: auto; display: block;</code></td>
+        </tr>
+        <tr>
+          <td><code>img.rounded</code></td>
+          <td><code>border-radius: var(--radius-m);</code></td>
+        </tr>
+        <tr>
+          <td><code>img.circle</code></td>
+          <td><code>border-radius: var(--radius-full); aspect-ratio: 1; object-fit: cover;</code></td>
+        </tr>
+        <tr>
+          <td><code>img.thumbnail</code></td>
+          <td><code>padding; background; border; border-radius;</code></td>
+        </tr>
+        <tr>
+          <td><code>img.contain</code></td>
+          <td><code>object-fit: contain;</code></td>
+        </tr>
+        <tr>
+          <td><code>img.cover</code></td>
+          <td><code>object-fit: cover;</code></td>
+        </tr>
+        <tr>
+          <td><code>img[loading="lazy"]</code></td>
+          <td><code>background: var(--color-surface-raised);</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>

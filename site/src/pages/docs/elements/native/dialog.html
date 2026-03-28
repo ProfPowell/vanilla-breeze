@@ -1,0 +1,600 @@
+---
+layout: element
+title: "dialog"
+description: "The native HTML modal dialog element with built-in backdrop, focus trapping, and keyboard handling."
+elementName: dialog
+category: native
+nativeGroup: Interactive
+currentPath: /docs/elements/native/dialog/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;dialog&gt;</code> element provides a native way to create modal dialogs, confirmation prompts, and slide-in drawer panels. It handles complex accessibility requirements automatically: focus trapping, ESC to close, <code>role="dialog"</code>, and inert background.</p>
+
+    <p>There are two ways to open a dialog:</p>
+    <ul>
+      <li><strong>HTML Invokers API</strong> (recommended) &mdash; <code>command="show-modal"</code> / <code>command="close"</code></li>
+      <li><strong>JavaScript</strong> &mdash; <code>showModal()</code> / <code>show()</code> / <code>close()</code></li>
+    </ul>
+
+    <p>In Vanilla Breeze, dialogs also serve as drawer panels via <code>data-position</code>, and are used internally by web components like <a href="/docs/elements/custom-elements/command-palette/"><code>&lt;command-palette&gt;</code></a>, <a href="/docs/elements/custom-elements/short-cuts/"><code>&lt;short-cuts&gt;</code></a>, and <a href="/docs/elements/custom-elements/settings-panel/"><code>&lt;settings-panel&gt;</code></a>.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Confirmation dialogs:</strong> Confirm destructive actions before proceeding</li>
+      <li><strong>Form dialogs:</strong> Collect user input in an overlay</li>
+      <li><strong>Alert messages:</strong> Important information requiring acknowledgment</li>
+      <li><strong>Media lightboxes:</strong> Images or videos in a focused overlay</li>
+      <li><strong>Drawer panels:</strong> Slide-in navigation, settings, or filters (via <code>data-position</code>)</li>
+    </ul>
+
+    <h3>When Not to Use</h3>
+    <ul>
+      <li>For inline expandable content &mdash; use <a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a></li>
+      <li>For tooltips or popovers &mdash; use <a href="/docs/elements/custom-elements/tool-tip/"><code>&lt;tool-tip&gt;</code></a></li>
+      <li>For toast notifications &mdash; use <a href="/docs/elements/custom-elements/toast-msg/"><code>&lt;toast-msg&gt;</code></a></li>
+      <li>For dropdown menus &mdash; use <a href="/docs/elements/custom-elements/drop-down/"><code>&lt;drop-down&gt;</code></a> or <a href="/docs/elements/custom-elements/context-menu/"><code>&lt;context-menu&gt;</code></a></li>
+      <li>For non-blocking information &mdash; avoid interrupting user flow</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Invokers API (Declarative)</h2>
+    <p>The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API">Invokers API</a> lets you open and close dialogs with HTML attributes alone &mdash; no JavaScript required.</p>
+
+    <browser-window src="/docs/snippets/demos/dialog-invokers.html" url="dialog-invokers.html" title="Invokers API" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Invokers API markup" data-escape><!-- Trigger button -->
+<button commandfor="my-dialog" command="show-modal">Open Dialog</button>
+
+<!-- Dialog -->
+<dialog id="my-dialog">
+  <header>
+    <h3>Dialog Title</h3>
+  </header>
+  <p>Content goes here.</p>
+  <footer>
+    <button commandfor="my-dialog" command="close">Close</button>
+  </footer>
+</dialog></code-block>
+
+    <h3>Available Commands</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>show-modal</code></td>
+          <td>Opens dialog as modal (equivalent to <code>showModal()</code>)</td>
+        </tr>
+        <tr>
+          <td><code>close</code></td>
+          <td>Closes the dialog (equivalent to <code>close()</code>)</td>
+        </tr>
+        <tr>
+          <td><code>request-close</code></td>
+          <td>Requests closure (can be cancelled with <code>cancel</code> event)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Browser Support</h3>
+    <p>Invokers API is supported in Chrome 135+, Edge 135+, Safari TP, and Firefox Nightly. Include the polyfill for broader support:</p>
+
+    <code-block language="html" show-lines label="Including polyfill" data-escape><script type="module" src="https://unpkg.com/invokers-polyfill"></script></code-block>
+  </section>
+
+  <section>
+    <h2>showModal() vs show()</h2>
+
+    <browser-window src="/docs/snippets/demos/dialog-modal.html" url="dialog-modal.html" title="Modal vs non-modal" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th><code>showModal()</code></th>
+          <th><code>show()</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Backdrop</td>
+          <td>Yes &mdash; via <code>::backdrop</code></td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td>Focus trap</td>
+          <td>Yes &mdash; focus stays inside</td>
+          <td>No &mdash; focus can leave</td>
+        </tr>
+        <tr>
+          <td>ESC to close</td>
+          <td>Yes &mdash; native behavior</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td>Inert background</td>
+          <td>Yes &mdash; page is non-interactive</td>
+          <td>No &mdash; page remains interactive</td>
+        </tr>
+        <tr>
+          <td>Top layer</td>
+          <td>Yes &mdash; above all content</td>
+          <td>Normal stacking context</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Opening and closing via JS" data-escape>// Open as modal
+document.getElementById('my-dialog').showModal();
+
+// Close
+document.getElementById('my-dialog').close();</code-block>
+  </section>
+
+  <section>
+    <h2>Variants</h2>
+    <p>Basic dialog, confirmation prompt, and form dialog all use the same structure with different content.</p>
+
+    <browser-window src="/docs/snippets/demos/dialog-variants.html" url="dialog-variants.html" title="Dialog variants" shadow></browser-window>
+  </section>
+
+  <section>
+    <h2>Form method="dialog"</h2>
+    <p>Forms inside dialogs can use <code>method="dialog"</code> to close the dialog on submit, passing the submit button's <code>value</code> as <code>dialog.returnValue</code>.</p>
+
+    <browser-window src="/docs/snippets/demos/dialog-form-method.html" url="dialog-form-method.html" title="Form method dialog" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Form with method=dialog" data-escape><dialog id="choice-dialog">
+  <form method="dialog">
+    <header><h3>Choose</h3></header>
+    <p>Select your preference:</p>
+    <footer>
+      <button type="submit" value="cancel">Cancel</button>
+      <button type="submit" value="confirm">Confirm</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+const dialog = document.getElementById('choice-dialog');
+dialog.addEventListener('close', () => {
+  console.log('User chose:', dialog.returnValue);
+  // "cancel" or "confirm"
+});
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Use <code>data-size</code> to control dialog width:</p>
+
+    <browser-window src="/docs/snippets/demos/dialog-sizes.html" url="dialog-sizes.html" title="Size variants" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Width</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-size="s"</code></td>
+          <td>24rem (384px)</td>
+          <td>Simple confirmations, alerts</td>
+        </tr>
+        <tr>
+          <td>default</td>
+          <td>32rem (512px)</td>
+          <td>Standard dialogs, forms</td>
+        </tr>
+        <tr>
+          <td><code>data-size="l"</code></td>
+          <td>48rem (768px)</td>
+          <td>Complex content, tables</td>
+        </tr>
+        <tr>
+          <td><code>data-size="full"</code></td>
+          <td>95vw / 95dvh</td>
+          <td>Full-screen experiences</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Drawer Variants</h2>
+    <p>Use <code>data-position</code> to turn any dialog into a slide-in drawer panel. No additional JavaScript required &mdash; drawers inherit all dialog features: Invokers API, ESC to close, focus trapping, backdrop.</p>
+
+    <browser-window src="/docs/snippets/demos/dialog-drawers.html" url="dialog-drawers.html" title="Drawer variants" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Drawer markup" data-escape><!-- Right drawer -->
+<button commandfor="nav-drawer" command="show-modal">Menu</button>
+
+<dialog id="nav-drawer" data-position="end">
+  <header><h3>Navigation</h3></header>
+  <section>
+    <nav>...</nav>
+  </section>
+  <footer>
+    <button commandfor="nav-drawer" command="close">Close</button>
+  </footer>
+</dialog></code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Position</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position="end"</code></td>
+          <td>Right (in LTR)</td>
+          <td>Navigation, settings panels</td>
+        </tr>
+        <tr>
+          <td><code>data-position="start"</code></td>
+          <td>Left (in LTR)</td>
+          <td>Sidebar, filters</td>
+        </tr>
+        <tr>
+          <td><code>data-position="bottom"</code></td>
+          <td>Bottom</td>
+          <td>Mobile action sheets, share menus</td>
+        </tr>
+        <tr>
+          <td><code>data-position="top"</code></td>
+          <td>Top</td>
+          <td>Banners, announcements</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide animations respect <code>prefers-reduced-motion</code>, falling back to a simple fade.</p>
+  </section>
+
+  <section>
+    <h2>Dialog Structure</h2>
+    <p>For consistent styling, use <code>&lt;header&gt;</code>, content, and <code>&lt;footer&gt;</code>:</p>
+
+    <code-block language="html" show-lines label="Recommended dialog structure" data-escape><dialog>
+  <header>
+    <h3>Dialog Title</h3>
+  </header>
+
+  <!-- Main content -->
+  <p>Dialog content goes here.</p>
+
+  <footer>
+    <button type="button" class="secondary">Cancel</button>
+    <button type="button">Confirm</button>
+  </footer>
+</dialog></code-block>
+
+    <h3>Structural CSS</h3>
+    <code-block language="css" show-lines label="Dialog structural CSS" data-escape>dialog {
+  max-inline-size: min(90vw, 32rem);
+  max-block-size: 85dvh;
+  border: none;
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: /* multi-layer elevation shadow */;
+  overflow: hidden;
+}
+
+dialog > header {
+  padding: var(--size-m) var(--size-l);
+  border-block-end: 1px solid var(--color-border);
+}
+
+dialog > :is(p, section, form) {
+  padding: var(--size-l);
+}
+
+dialog > footer {
+  padding: var(--size-m) var(--size-l);
+  border-block-start: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-s);
+  justify-content: flex-end;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Backdrop Styling</h2>
+    <p>The <code>::backdrop</code> pseudo-element styles the overlay behind modal dialogs. VB defaults to a semi-transparent dark background with a subtle blur.</p>
+
+    <code-block language="css" show-lines label="Backdrop styling" data-escape>dialog::backdrop {
+  background: oklch(0% 0 0 / 0.5);
+  backdrop-filter: blur(2px);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Animation</h2>
+    <p>Dialogs include smooth entry animations using both <code>@starting-style</code> (for supporting browsers) and keyframe fallbacks. Drawer variants use directional slide-in animations. All animations respect <code>prefers-reduced-motion</code>.</p>
+
+    <code-block language="css" show-lines label="Dialog entry animation" data-escape>/* Entry animation with @starting-style */
+dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Fallback keyframe animation */
+dialog[open] {
+  animation: vb-scale-in var(--motion-enter-duration) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] { animation: none; transition: none; }
+}</code-block>
+
+    <h3>Drawer Animations</h3>
+    <code-block language="css" show-lines label="Drawer slide-in animations" data-escape>/* Drawers use directional slide-in animations */
+@keyframes vb-slide-in-end {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes vb-slide-in-bottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Reduced motion: fade instead of slide */
+@media (prefers-reduced-motion: reduce) {
+  dialog[data-position][open] {
+    animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
+  }
+}</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+
+    <h3>Methods</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>showModal()</code></td>
+          <td>Opens dialog as modal with backdrop and focus trap</td>
+        </tr>
+        <tr>
+          <td><code>show()</code></td>
+          <td>Opens dialog as non-modal</td>
+        </tr>
+        <tr>
+          <td><code>close(returnValue?)</code></td>
+          <td>Closes dialog, optionally setting <code>returnValue</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>open</code></td>
+          <td>boolean</td>
+          <td>Whether the dialog is currently open</td>
+        </tr>
+        <tr>
+          <td><code>returnValue</code></td>
+          <td>string</td>
+          <td>Value set by <code>close()</code> or <code>method="dialog"</code> form submission</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>close</code></td>
+          <td>Fired when the dialog is closed</td>
+        </tr>
+        <tr>
+          <td><code>cancel</code></td>
+          <td>Fired when ESC is pressed (can be prevented with <code>event.preventDefault()</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Dialog JavaScript API" data-escape>const dialog = document.querySelector('dialog');
+
+// Open as modal
+dialog.showModal();
+
+// Listen for close
+dialog.addEventListener('close', () => {
+  console.log('Closed with:', dialog.returnValue);
+});
+
+// Prevent ESC from closing
+dialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+});</code-block>
+  </section>
+
+  <section>
+    <h2>Backdrop Click to Close</h2>
+    <p>Native dialogs do <strong>not</strong> close when clicking the backdrop. Add this small script if you want that behavior:</p>
+
+    <code-block language="javascript" show-lines label="Optional backdrop close" data-escape>// Optional: close on backdrop click
+document.querySelectorAll('dialog').forEach(dialog => {
+  dialog.addEventListener('click', e => {
+    if (e.target === dialog) dialog.close();
+  });
+});</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Native Features</h3>
+    <p>The <code>&lt;dialog&gt;</code> element provides these accessibility features automatically:</p>
+    <ul>
+      <li><strong>Focus trapping:</strong> Tab key cycles through focusable elements inside the dialog</li>
+      <li><strong>Focus restoration:</strong> Focus returns to the triggering element when closed</li>
+      <li><strong>Inert background:</strong> Background content is non-interactive when modal is open</li>
+      <li><strong>ESC to close:</strong> Standard keyboard dismissal (can be prevented via <code>cancel</code> event)</li>
+      <li><strong>ARIA semantics:</strong> Automatically has <code>role="dialog"</code></li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Include a visible close button</li>
+      <li>Use a heading in the dialog (<code>&lt;h3&gt;</code> in <code>&lt;header&gt;</code>) for screen reader context</li>
+      <li>Keep dialogs focused &mdash; don't include unrelated content</li>
+      <li>Provide keyboard alternatives for all actions</li>
+      <li>Avoid nesting dialogs inside dialogs</li>
+    </ul>
+
+    <h3>Keyboard Support</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move focus between focusable elements (trapped inside modal)</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift + Tab</kbd></td>
+          <td>Move focus backwards (trapped inside modal)</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close the modal dialog</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Print Behavior</h2>
+    <p>Dialogs are hidden entirely in print stylesheets &mdash; they are transient UI and should not appear on paper.</p>
+    <code-block language="css" show-lines label="Print styles for dialog" data-escape>/* Print: dialogs are hidden entirely */
+@media print {
+  dialog { display: none; }
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Components Using Dialog</h2>
+    <p>Several VB web components use dialog patterns internally:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>How It Uses Dialog</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/custom-elements/command-palette/"><code>&lt;command-palette&gt;</code></a></td>
+          <td>Keyboard-driven command modal with search filtering</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/custom-elements/short-cuts/"><code>&lt;short-cuts&gt;</code></a></td>
+          <td>Keyboard shortcuts reference modal</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/custom-elements/settings-panel/"><code>&lt;settings-panel&gt;</code></a></td>
+          <td>Settings popover with <code>role="dialog"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/details/"><code>&lt;details&gt;</code></a> &mdash; For inline expandable content (not overlays)</li>
+      <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> &mdash; Forms inside dialogs with <code>method="dialog"</code></li>
+      <li><a href="/docs/elements/native/button/"><code>&lt;button&gt;</code></a> &mdash; Trigger buttons for opening dialogs (via Invokers API)</li>
+      <li><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> &mdash; Dialog title area</li>
+      <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> &mdash; Dialog action button area</li>
+      <li><a href="/docs/elements/custom-elements/tool-tip/"><code>&lt;tool-tip&gt;</code></a> &mdash; For non-blocking hints and tips</li>
+      <li><a href="/docs/elements/custom-elements/toast-msg/"><code>&lt;toast-msg&gt;</code></a> &mdash; For transient notifications</li>
+      <li><a href="/docs/elements/custom-elements/drop-down/"><code>&lt;drop-down&gt;</code></a> &mdash; For dropdown menus</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Snippets</h2>
+    <p>Ready-to-use dialog patterns:</p>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/snippets/components/modal-dialog/" class="section-card">
+        <h3>Modal Dialog</h3>
+        <p>Basic, confirmation, form, and scrollable dialog patterns</p>
+      </a>
+      <a href="/docs/snippets/components/drawer-dialog/" class="section-card">
+        <h3>Drawer Dialog</h3>
+        <p>Slide-in panels for navigation, settings, and filters</p>
+      </a>
+    </layout-grid>
+  </section>
+
+  <section>
+    <h2>Browser Support</h2>
+    <p>The <code>&lt;dialog&gt;</code> element is supported in all modern browsers.</p>
+    <ul>
+      <li><strong>Invokers API:</strong> Chrome 135+, Edge 135+, Safari TP, Firefox Nightly. Use the <a href="https://github.com/keithamus/invokers-polyfill">invokers-polyfill</a> for broader support.</li>
+      <li><strong>@starting-style:</strong> Chrome 117+, Safari 17.5+. Other browsers fall back to keyframe animations.</li>
+      <li><strong>backdrop-filter:</strong> All modern browsers. The blur effect on the backdrop degrades gracefully.</li>
+    </ul>
+  </section>

@@ -1,0 +1,304 @@
+---
+layout: element
+title: "page-tour"
+description: "Progressive-enhancement guided tour with spotlight overlay, action gating, and keyboard navigation."
+elementName: page-tour
+category: component
+currentPath: /docs/elements/web-components/page-tour/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+  <section>
+    <h2>Overview</h2>
+    <p>A guided page tour that highlights elements sequentially with a spotlight overlay and popover card. Follows the four-layer progressive enhancement stack &mdash; content is readable without CSS or JS.</p>
+
+    <browser-window
+      src="/docs/examples/demos/page-tour-basic.html"
+      url="https://vanilla-breeze.dev/page-tour"
+      title="Page Tour &mdash; Passive Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>Wrap <code>&lt;tour-step&gt;</code> elements inside <code>&lt;page-tour&gt;</code>. Each step targets a page element via <code>data-target</code> (a CSS selector).</p>
+
+    <h3>Basic Tour with Layer 3 Fallback</h3>
+    <p>When JS is unavailable, the <code>&lt;details&gt;</code> wrapper provides a collapsible guide with anchor links. The "Start Tour" button is auto-wired when the component upgrades.</p>
+    <code-block language="html" show-lines label="Basic passive tour" data-escape><page-tour
+  id="demo-tour"
+  data-title="Getting Started"
+  data-trigger="manual"
+  data-mode="passive"
+  data-persist="none"
+>
+  <details class="page-tour-guide" open>
+    <summary class="page-tour-summary">
+      <span>Getting Started Tour</span>
+      <span class="page-tour-count">3 steps</span>
+    </summary>
+    <ol class="page-tour-list">
+      <li>
+        <tour-step data-target="#site-header">
+          <h3>Header</h3>
+          <p>The main navigation lives here.</p>
+        </tour-step>
+      </li>
+      <li>
+        <tour-step data-target="#search-input" data-placement="bottom">
+          <h3>Search</h3>
+          <p>Search across all content.</p>
+        </tour-step>
+      </li>
+      <li>
+        <tour-step data-target="#theme-picker" data-placement="bottom">
+          <h3>Theme Picker</h3>
+          <p>Change the visual style.</p>
+        </tour-step>
+      </li>
+    </ol>
+    <button class="page-tour-start-btn" type="button">Start Tour</button>
+  </details>
+</page-tour></code-block>
+
+    <h3>Active Tour (Action-Gated)</h3>
+    <p>Set <code>data-mode="active"</code> and <code>data-action</code> on steps to require user interaction before advancing. The Next button stays disabled until the action completes.</p>
+    <browser-window
+      src="/docs/examples/demos/page-tour-active.html"
+      url="https://vanilla-breeze.dev/tour-active"
+      title="Active Tour"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Action-gated tour" data-escape><page-tour
+  data-title="Settings Tour"
+  data-trigger="auto"
+  data-mode="active"
+  data-persist="session"
+>
+  <tour-step
+    data-target="#profile-name"
+    data-action="input"
+    data-action-hint="Type your name to continue"
+  >
+    <h3>Display Name</h3>
+    <p>Update your name here.</p>
+  </tour-step>
+  <tour-step
+    data-target="#save-btn"
+    data-action="click"
+    data-action-hint="Click Save to continue"
+  >
+    <h3>Save Settings</h3>
+    <p>Click to apply your changes.</p>
+  </tour-step>
+</page-tour></code-block>
+
+    <h3>Forced Tour (Compliance)</h3>
+    <p>Set <code>data-mode="forced"</code> to prevent skipping. No Skip button, Escape is disabled, and backdrop clicks are ignored.</p>
+    <code-block language="html" show-lines label="Forced tour" data-escape><page-tour
+  data-title="Required Setup"
+  data-trigger="auto"
+  data-mode="forced"
+  data-persist="local"
+>
+  <tour-step data-target="#terms">
+    <h3>Terms of Service</h3>
+    <p>Review the updated terms.</p>
+  </tour-step>
+  <tour-step
+    data-target="#accept-checkbox"
+    data-action="click"
+    data-action-hint="Check the box to accept"
+  >
+    <h3>Accept Terms</h3>
+    <p>You must accept to continue.</p>
+  </tour-step>
+</page-tour></code-block>
+
+    <h3>Button-Triggered Tour</h3>
+    <p>Use <code>data-trigger="button"</code> and add <code>data-tour="tour-id"</code> to any element to start the tour declaratively.</p>
+    <browser-window
+      src="/docs/examples/demos/page-tour-button.html"
+      url="https://vanilla-breeze.dev/tour-button"
+      title="Button-Triggered Tour"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Button trigger" data-escape><!-- External trigger button -->
+<button data-tour="editor-tour" type="button">
+  Take a Tour
+</button>
+
+<!-- The tour -->
+<page-tour
+  id="editor-tour"
+  data-title="Editor Tour"
+  data-trigger="button"
+  data-mode="passive"
+>
+  <tour-step data-target="#editor">
+    <h3>Editor</h3>
+    <p>Write your content here.</p>
+  </tour-step>
+  <tour-step data-target="#sidebar">
+    <h3>Sidebar</h3>
+    <p>Document properties and settings.</p>
+  </tour-step>
+</page-tour></code-block>
+  </section>
+
+  {% from "partials/attribute-table.njk" import attributeTable, structureTable, eventsTable %}
+  <section>
+    <h2>Attributes</h2>
+    {{ attributeTable("page-tour", apiRegistry) }}
+
+    <h3>Required Structure</h3>
+    {{ structureTable("page-tour", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    {{ eventsTable("page-tour", apiRegistry) }}
+
+    <code-block language="javascript" show-lines label="Event listeners" data-escape>const tour = document.querySelector('page-tour');
+const toasts = document.querySelector('toast-msg');
+
+tour.addEventListener('tour:start', (e) => {
+  console.log('Tour started at step', e.detail.step);
+});
+
+tour.addEventListener('tour:step', (e) => {
+  console.log('Step', e.detail.step, e.detail.direction);
+});
+
+tour.addEventListener('tour:action', (e) => {
+  console.log('Action completed:', e.detail.action);
+});
+
+tour.addEventListener('tour:complete', () => {
+  toasts.show({ message: 'Tour complete!', variant: 'success' });
+});
+
+tour.addEventListener('tour:skip', (e) => {
+  toasts.show({ message: 'Tour skipped.', variant: 'info' });
+});</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Method</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>tour.start(step?)</code></td><td>Start tour, optionally at a given step index</td></tr>
+        <tr><td><code>tour.stop()</code></td><td>Stop tour silently (no event)</td></tr>
+        <tr><td><code>tour.next()</code></td><td>Advance to next step</td></tr>
+        <tr><td><code>tour.prev()</code></td><td>Go to previous step</td></tr>
+        <tr><td><code>tour.goto(index)</code></td><td>Jump to specific step (0-based)</td></tr>
+        <tr><td><code>tour.skip()</code></td><td>Skip tour (fires tour:skip)</td></tr>
+        <tr><td><code>tour.reset()</code></td><td>Clear persistence and reset to step 0</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="JS API" data-escape>const tour = document.querySelector('page-tour');
+
+// Start tour at step 0
+tour.start();
+
+// Navigate
+tour.next();
+tour.prev();
+tour.goto(2);
+
+// End tour
+tour.skip();   // fires tour:skip
+tour.stop();   // silent
+
+// Reset persistence
+tour.reset();
+
+// For custom action gating
+tour.dispatchEvent(
+  new CustomEvent('tour:action', { bubbles: false })
+);</code-block>
+  </section>
+
+  <section>
+    <h2>Tour Modes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Mode</th><th>Skip Allowed</th><th>Action Gate</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>passive</code></td><td>Yes</td><td>Optional</td><td>Informational tours, docs sites</td></tr>
+        <tr><td><code>active</code></td><td>Yes</td><td>Required</td><td>Onboarding that validates user can perform tasks</td></tr>
+        <tr><td><code>forced</code></td><td>No</td><td>Required</td><td>Compliance flows, mandatory training</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard Navigation</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Escape</kbd></td><td>Skip tour (passive/active modes only)</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Cycle focus within the card (focus trap)</td></tr>
+        <tr><td><kbd>ArrowRight</kbd> / <kbd>ArrowDown</kbd></td><td>Next step</td></tr>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowUp</kbd></td><td>Previous step</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>First step</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Last step</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>The component follows a four-layer degradation strategy:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Layer</th><th>Environment</th><th>Experience</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>No CSS, no JS</td><td>Ordered step list with headings and anchor links</td></tr>
+        <tr><td>2</td><td>CSS only</td><td>Styled guide card with step numbering</td></tr>
+        <tr><td>3</td><td>CSS + <code>&lt;details&gt;</code></td><td>Collapsible guide with start button</td></tr>
+        <tr><td>4</td><td>CSS + JS</td><td>Interactive spotlight overlay with popover</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Card uses <code>role="dialog"</code> with <code>aria-modal="true"</code></li>
+      <li>An <code>aria-live="polite"</code> region announces step transitions</li>
+      <li>Focus is trapped within the card (relaxed during action-gated steps)</li>
+      <li>Focus returns to the original element when the tour ends</li>
+      <li><code>prefers-reduced-motion</code> disables all spotlight/card transitions</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--tour-backdrop-color</code></td><td><code>oklch(0% 0 0 / 0.5)</code></td><td>Overlay background</td></tr>
+        <tr><td><code>--tour-spotlight-ring</code></td><td><code>var(--color-primary)</code></td><td>Spotlight outline color</td></tr>
+        <tr><td><code>--tour-spotlight-padding</code></td><td><code>8px</code></td><td>Space around highlighted element</td></tr>
+        <tr><td><code>--tour-spotlight-radius</code></td><td><code>var(--radius-m)</code></td><td>Spotlight corner radius</td></tr>
+        <tr><td><code>--tour-card-max-width</code></td><td><code>22rem</code></td><td>Maximum card width</td></tr>
+        <tr><td><code>--tour-card-min-width</code></td><td><code>16rem</code></td><td>Minimum card width</td></tr>
+        <tr><td><code>--tour-card-offset</code></td><td><code>var(--size-s)</code></td><td>Gap between spotlight and card</td></tr>
+        <tr><td><code>--tour-transition-duration</code></td><td><code>var(--duration-normal)</code></td><td>Spotlight/card animation</td></tr>
+      </tbody>
+    </table>
+  </section>

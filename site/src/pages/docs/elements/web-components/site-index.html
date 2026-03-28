@@ -1,0 +1,226 @@
+---
+layout: element
+title: "site-index"
+description: "Interactive site keyword index with A-Z jump nav, search filtering, entry counts, display limits, sort options, and optional JSON data loading."
+elementName: site-index
+category: component
+currentPath: /docs/elements/web-components/site-index/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;site-index&gt;</code> component enhances a static keyword index with A-Z jump navigation, search filtering with scope control, entry counts, display limits with expand/collapse, and sort options.</p>
+  <p>Without JavaScript, the static markup is a fully functional keyword index with CSS multi-column layout at wider viewports.</p>
+
+  <browser-window
+    src="/docs/examples/demos/site-index.html"
+    url="https://vanilla-breeze.dev/demos/site-index"
+    title="Site Index"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Full-featured usage" data-escape><site-index letters="all" limit="5">
+  <nav aria-label="Site index">
+    <section id="index-a">
+      <h2>A</h2>
+      <ul>
+        <li>
+          <span class="index-term">accessibility</span>
+          <ul class="index-refs">
+            <li><a href="/docs/accessibility">Guide</a></li>
+            <li><a href="/docs/elements/native/input#aria">
+              Input ARIA</a></li>
+          </ul>
+        </li>
+        <li>
+          <span class="index-term">attributes</span>
+          <ul class="index-refs">
+            <li><a href="/docs/attributes/">Reference</a></li>
+            <li><a href="/docs/attributes/data-trust/">
+              data-trust</a></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+  </nav>
+</site-index></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>placeholder</code></td>
+        <td>string</td>
+        <td><code>"Filter index&hellip;"</code></td>
+        <td>Placeholder text for the search input</td>
+      </tr>
+      <tr>
+        <td><code>letters</code></td>
+        <td>string</td>
+        <td><code>"entries"</code></td>
+        <td>Jump nav mode: <code>"entries"</code> (only letters with entries), <code>"all"</code> (full A-Z strip, empty letters disabled), or <code>"none"</code> (hidden).</td>
+      </tr>
+      <tr>
+        <td><code>filter</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Search scope filter mode</td>
+      </tr>
+      <tr>
+        <td><code>sort</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Sort order for letter sections</td>
+      </tr>
+      <tr>
+        <td><code>limit</code></td>
+        <td>number</td>
+        <td>&mdash;</td>
+        <td>Max topics per letter section before a "Show N more" toggle appears.</td>
+      </tr>
+      <tr>
+        <td><code>src</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>URL to load index data from as JSON</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Features</h2>
+
+  <h3>A-Z Jump Navigation</h3>
+  <p>By default, the jump nav shows only letters that have entries. Set <code>letters="all"</code> to show all 26 letters with disabled states for empty ones. Scroll-spy highlights the current letter as the user scrolls.</p>
+  <code-block language="html" show-lines label="All letters mode" data-escape><site-index letters="all">
+  <!-- Full A-Z strip; letters without entries are disabled -->
+</site-index></code-block>
+
+  <h3>Search Scope</h3>
+  <p>The controls bar includes a scope dropdown:</p>
+  <ul>
+    <li><strong>By Topic</strong> (default) &mdash; matches only the topic heading (<code>.index-term</code>)</li>
+    <li><strong>All</strong> &mdash; matches both topic headings and sub-entry link text (<code>.index-refs a</code>)</li>
+  </ul>
+  <p>For example, searching "button" in "All" mode will find topics that have a "Button element" sub-entry even if "button" isn't in the topic name.</p>
+
+  <h3>Entry Counts</h3>
+  <p>The component automatically appends reference counts: <code>(N)</code> after each topic term and in each letter heading. This helps users see at a glance which topics have the most content.</p>
+
+  <h3>Display Limit</h3>
+  <p>When <code>limit</code> is set, letter sections with more topics than the limit show a "Show N more" toggle button. Clicking expands to show all entries; clicking again collapses back.</p>
+  <code-block language="html" show-lines label="Display limit" data-escape><site-index limit="3">
+  <!-- Sections with more than 3 topics show
+       a "Show N more" button -->
+</site-index></code-block>
+
+  <h3>Sort Options</h3>
+  <p>The controls bar includes a sort dropdown:</p>
+  <ul>
+    <li><strong>Alphabetical</strong> (default) &mdash; standard A-Z order</li>
+    <li><strong>Most entries</strong> &mdash; reorders letter sections by total reference count, highest first</li>
+  </ul>
+</section>
+
+<section>
+  <h2>HTML Structure</h2>
+  <p>The static markup uses semantic HTML with specific classes that the component recognizes.</p>
+  <code-block language="html" show-lines label="Markup structure" data-escape><nav aria-label="Site index">
+  <section id="index-a">
+    <h2>A</h2>
+    <ul>
+      <li>
+        <span class="index-term">accessibility</span>
+        <ul class="index-refs">
+          <li><a href="/docs/accessibility">Guide</a></li>
+          <li>
+            <a href="/blog/a11y">A11y tips</a>
+            <small>blog</small>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+</nav></code-block>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Class / Element</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>.index-term</code></td>
+        <td>Topic heading text within a <code>&lt;span&gt;</code></td>
+      </tr>
+      <tr>
+        <td><code>.index-refs</code></td>
+        <td>Nested <code>&lt;ul&gt;</code> of page reference links</td>
+      </tr>
+      <tr>
+        <td><code>&lt;small&gt;</code></td>
+        <td>Optional content-type pill (e.g., "blog", "tutorial")</td>
+      </tr>
+      <tr>
+        <td><code>id="index-X"</code></td>
+        <td>Section ID for jump nav anchors (lowercase letter)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JSON Data Loading</h2>
+  <p>When <code>src</code> is set, the component fetches index data and renders dynamically. Static markup serves as fallback.</p>
+  <code-block language="html" show-lines label="JSON mode" data-escape><site-index
+  src="/api/site-index.json"
+  placeholder="Search index..."
+  letters="all">
+</site-index></code-block>
+  <code-block language="json" show-lines label="Expected JSON format" data-escape>[
+  {
+    "term": "accessibility",
+    "refs": [
+      { "label": "Guide", "href": "/docs/accessibility/" },
+      { "label": "Input ARIA", "href": "/docs/elements/native/input/" }
+    ]
+  },
+  {
+    "term": "attributes",
+    "refs": [
+      { "label": "Reference", "href": "/docs/attributes/" },
+      { "label": "data-trust", "href": "/docs/attributes/data-trust/",
+        "type": "attribute" }
+    ]
+  }
+]</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Jump nav uses <code>aria-label="Jump to letter"</code>; disabled letters have <code>aria-disabled="true"</code></li>
+    <li>Scroll-spy sets <code>aria-current="true"</code> on the active letter link</li>
+    <li>Search input and dropdowns have <code>aria-label</code> attributes</li>
+    <li>Expand/collapse buttons use <code>aria-expanded</code></li>
+    <li>Filtered items use <code>hidden</code> to remove from the accessibility tree</li>
+    <li>Without JavaScript, the full index is visible and navigable</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> &mdash; Glossary with search and scroll-spy</li>
+    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; Changelog/timeline index</li>
+    <li><a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a> &mdash; Interactive HTML sitemap</li>
+  </ul>
+</section>

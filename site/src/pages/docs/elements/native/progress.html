@@ -1,0 +1,242 @@
+---
+layout: element
+title: "progress"
+description: "Displays the completion progress of a task. Use for file uploads, form steps, loading states, or any operation with a known endpoint. For scalar measurements (like disk space), use meter instead."
+elementName: progress
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/progress/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>File upload progress</li>
+      <li>Download progress</li>
+      <li>Multi-step form completion</li>
+      <li>Loading states with known duration</li>
+      <li>Installation or setup progress</li>
+    </ul>
+    <p><strong>Use <a href="/docs/elements/native/meter/">meter</a> instead</strong> for static measurements like disk usage, battery level, or scores.</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A determinate progress bar shows completion percentage.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-basic.html" url="https://vanilla-breeze.dev/progress/basic" title="Basic progress bars" shadow></browser-window>
+    <code-block language="html" show-lines label="Basic progress bar" data-escape><label>Upload Progress</label>
+<progress value="70" max="100">70%</progress>
+
+<label>Step 3 of 5</label>
+<progress value="3" max="5">60%</progress></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>Current progress value</td>
+          <td>Indeterminate if omitted</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>Maximum value (completion)</td>
+          <td>1</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Indeterminate Progress</h2>
+    <p>Omit the <code>value</code> attribute for tasks with unknown duration. Shows an animated loading state.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-indeterminate.html" url="https://vanilla-breeze.dev/progress/indeterminate" title="Indeterminate progress" shadow></browser-window>
+    <code-block language="html" show-lines label="Indeterminate progress" data-escape><!-- No value attribute = indeterminate -->
+<progress>Loading...</progress></code-block>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Different heights for various contexts.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-sizes.html" url="https://vanilla-breeze.dev/progress/sizes" title="Progress size variants" shadow></browser-window>
+    <code-block language="html" show-lines label="Progress size variants" data-escape><progress class="xs" value="60" max="100">60%</progress>
+<progress class="s" value="60" max="100">60%</progress>
+<progress value="60" max="100">60%</progress>  <!-- default -->
+<progress class="l" value="60" max="100">60%</progress></code-block>
+  </section>
+
+  <section>
+    <h2>Color Variants</h2>
+    <p>Semantic colors for different states or contexts.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-colors.html" url="https://vanilla-breeze.dev/progress/colors" title="Progress color variants" shadow></browser-window>
+    <code-block language="html" show-lines label="Progress color variants" data-escape><progress value="100" max="100">Complete</progress>
+<progress class="success" value="100" max="100">Complete</progress>
+<progress class="warning" value="60" max="100">60%</progress>
+<progress class="error" value="30" max="100">30%</progress></code-block>
+  </section>
+
+  <section>
+    <h2>Labeled Progress</h2>
+    <p>Use the <code>.labeled</code> wrapper pattern for progress bars with percentage displays.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-labeled.html" url="https://vanilla-breeze.dev/progress/labeled" title="Labeled progress bars" shadow></browser-window>
+    <code-block language="html" show-lines label="Labeled progress bar" data-escape><section class="labeled">
+  <label>
+    <span>Uploading file.zip</span>
+    <span>45%</span>
+  </label>
+  <progress value="45" max="100">45%</progress>
+</section></code-block>
+  </section>
+
+  <section>
+    <h2>Recipes</h2>
+
+    <h3>Reading Progress Indicator</h3>
+    <p>A fixed-position progress bar at the top of the page that tracks scroll position. Uses a single passive scroll listener and one attribute update.</p>
+
+    <browser-window src="/docs/snippets/demos/progress-reading-indicator.html" url="https://vanilla-breeze.dev/progress/reading-indicator" title="Reading progress indicator" shadow></browser-window>
+    <code-block language="html" show-lines label="Reading progress indicator" data-escape><progress id="reading-progress" max="100" value="0"
+  aria-hidden="true"></progress>
+
+<script>
+  const bar = document.getElementById('reading-progress');
+  document.addEventListener('scroll', () => {
+    const { scrollTop, scrollHeight, clientHeight }
+      = document.documentElement;
+    bar.value = (scrollTop / (scrollHeight - clientHeight)) * 100;
+  }, { passive: true });
+</script></code-block>
+
+    <aside class="note">
+      <strong>Tip:</strong> Use <code>aria-hidden="true"</code> to keep the reading bar decorative — it communicates visually but isn't meaningful for screen readers.
+    </aside>
+
+    <h3>Indeterminate as Skeleton Shimmer</h3>
+    <p>An indeterminate <code>&lt;progress&gt;</code> (no <code>value</code> attribute) triggers the browser's native animation. Override the pseudo-element backgrounds for a shimmer effect — zero JS, zero extra DOM. See the <a href="/docs/patterns/feedback/skeleton/">skeleton loading pattern</a> for the full approach using <code>data-loading="skeleton"</code>.</p>
+  </section>
+
+  <section>
+    <h2>Progress vs Meter</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Use progress</th>
+          <th>Use meter</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tasks in progress</td>
+          <td>Static measurements</td>
+        </tr>
+        <tr>
+          <td>File uploads, downloads</td>
+          <td>Disk space, battery level</td>
+        </tr>
+        <tr>
+          <td>Has determinate/indeterminate states</td>
+          <td>Has optimum value ranges</td>
+        </tr>
+        <tr>
+          <td>Value changes over time</td>
+          <td>Value is a snapshot</td>
+        </tr>
+        <tr>
+          <td>No color change based on value</td>
+          <td>Color changes based on optimum</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Include fallback text</strong>: Content between tags is shown if progress is not supported</li>
+      <li><strong>Use labels</strong>: Always associate a label with the progress element</li>
+      <li><strong>Announce updates</strong>: Consider using <code>aria-live</code> for important progress updates</li>
+      <li><strong>Provide context</strong>: Include percentage or step numbers in visible text</li>
+      <li><strong>Screen reader support</strong>: Progress elements are announced as "X% complete"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Progress CSS styles" data-escape>/* Tokens (defined in src/tokens/forms.css) */
+:root {
+  --progress-h:        var(--size-s);
+  --progress-track-bg: var(--color-surface-raised);
+  --progress-fill:     var(--color-interactive);
+}
+
+progress {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--progress-h);
+  border: none;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--progress-track-bg);
+}
+
+/* WebKit/Blink progress bar */
+progress::-webkit-progress-bar {
+  background: var(--progress-track-bg);
+  border-radius: var(--radius-full);
+}
+
+progress::-webkit-progress-value {
+  background: var(--progress-fill);
+  border-radius: var(--radius-full);
+  transition: inline-size var(--duration-normal) var(--ease-out);
+}
+
+/* Firefox */
+progress::-moz-progress-bar {
+  background: var(--progress-fill);
+  border-radius: var(--radius-full);
+}
+
+/* Size variants */
+progress.xs { block-size: var(--size-3xs); }
+progress.s { block-size: var(--size-2xs); }
+progress.m { block-size: var(--size-s); }
+progress.l { block-size: var(--size-m); }
+
+/* Color variants — now use semantic tokens */
+progress.success::-webkit-progress-value { background: var(--color-success); }
+progress.warning::-webkit-progress-value { background: var(--color-warning); }
+progress.error::-webkit-progress-value { background: var(--color-error); }
+
+/* Indeterminate animation */
+progress:indeterminate {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/meter/">meter</a> - For scalar measurements (not progress)</li>
+      <li><a href="/docs/elements/native/output/">output</a> - Display progress values dynamically</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Label for the progress element</li>
+    </ul>
+  </section>

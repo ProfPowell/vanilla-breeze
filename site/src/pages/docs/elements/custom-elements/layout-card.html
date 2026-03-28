@@ -1,0 +1,322 @@
+---
+layout: element
+title: "layout-card"
+description: "Container component with background, padding, and visual variants. Simple block mode by default; add header/section/footer children to activate structured grid mode."
+elementName: layout-card
+category: custom
+currentPath: /docs/elements/custom-elements/layout-card/
+
+crumbHref: /docs/elements/custom-elements/
+crumbLabel: Custom Elements
+---
+
+<browser-window
+    src="/docs/examples/demos/layout-card-basic.html"
+    url="https://vanilla-breeze.dev/card"
+    title="Card Layout Demo"
+    shadow>
+  </browser-window>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-variant</code></td>
+          <td><code>default</code>, <code>elevated</code>, <code>outlined</code>, <code>ghost</code></td>
+          <td><code>default</code></td>
+          <td>Visual style variant</td>
+        </tr>
+        <tr>
+          <td><code>data-padding</code></td>
+          <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
+          <td><code>m</code></td>
+          <td>Internal padding (applies to children in grid mode)</td>
+        </tr>
+        <tr>
+          <td><code>data-max</code></td>
+          <td><code>narrow</code>, <code>content</code>, <code>wide</code></td>
+          <td>-</td>
+          <td>Max-width constraint for centered card patterns</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Block Mode</h2>
+    <p>By default, <code>layout-card</code> is a simple block container with padding. Use it for any content that just needs a card surface.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-block-variants.html"
+      url="https://vanilla-breeze.dev/layout-card/block-variants"
+      title="Block mode variants"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Card variant examples" data-escape><layout-card>
+  Default card with subtle shadow
+</layout-card>
+
+<layout-card data-variant="elevated">
+  Elevated card with stronger shadow
+</layout-card>
+
+<layout-card data-variant="outlined">
+  Outlined card with border
+</layout-card>
+
+<layout-card data-variant="ghost">
+  Ghost card with no background
+</layout-card></code-block>
+  </section>
+
+  <section>
+    <h2>Grid Mode (Structured Cards)</h2>
+    <p>Add <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, or <code>&lt;footer&gt;</code> children to automatically activate CSS Grid with named areas. No extra attributes needed &mdash; the <code>:has()</code> selector detects semantic children.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-grid-basic.html"
+      url="https://vanilla-breeze.dev/layout-card/grid-basic"
+      title="Structured card with header/section/footer"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Structured card with header/section/footer" data-escape><layout-card>
+  <header><h3>Card Title</h3></header>
+  <section>
+    <p>Content with automatic grid placement.</p>
+  </section>
+  <footer>
+    <button type="button" class="secondary">Cancel</button>
+    <button type="button">Save</button>
+  </footer>
+</layout-card></code-block>
+
+    <h3>How it works</h3>
+    <ul>
+      <li><code>&lt;header&gt;</code> maps to the <code>header</code> grid area with a bottom border</li>
+      <li><code>&lt;section&gt;</code> maps to the <code>content</code> grid area (expands to fill)</li>
+      <li><code>&lt;footer&gt;</code> maps to the <code>footer</code> grid area with a top border and flex layout for actions</li>
+      <li>Non-semantic children without a <code>slot</code> attribute are implicitly placed in the content area</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Grid Mode Variants</h2>
+    <p>All visual variants work in both block and grid modes.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-grid-variants.html"
+      url="https://vanilla-breeze.dev/layout-card/grid-variants"
+      title="Grid mode variants"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Grid Mode Padding Sizes</h2>
+    <p>The <code>data-padding</code> attribute controls spacing in all grid areas.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-grid-padding.html"
+      url="https://vanilla-breeze.dev/layout-card/grid-padding"
+      title="Grid mode padding sizes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Grid mode padding variants" data-escape><!-- Small padding -->
+<layout-card data-padding="s">
+  <header><h3>Compact</h3></header>
+  <section><p>Small padding for dense layouts.</p></section>
+  <footer><button>OK</button></footer>
+</layout-card>
+
+<!-- Large padding -->
+<layout-card data-padding="l">
+  <header><h3>Spacious</h3></header>
+  <section><p>Large padding for prominent content.</p></section>
+  <footer><button>OK</button></footer>
+</layout-card></code-block>
+  </section>
+
+  <section>
+    <h2>Slot Escape Hatch</h2>
+    <p>Use <code>slot="content"</code> for non-semantic elements that should go in the content grid area.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-slot.html"
+      url="https://vanilla-breeze.dev/layout-card/slot"
+      title="Slot-based content placement"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Slot-based content placement" data-escape><layout-card>
+  <header><h3>Quote Card</h3></header>
+  <blockquote slot="content">
+    "The only way to do great work is to love what you do."
+  </blockquote>
+</layout-card></code-block>
+  </section>
+
+  <section>
+    <h2>Padding Variants (Block Mode)</h2>
+    <p>The <code>data-padding</code> attribute controls the internal spacing.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-block-padding.html"
+      url="https://vanilla-breeze.dev/layout-card/block-padding"
+      title="Block mode padding variants"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+
+    <h3>Content Card</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-content.html"
+      url="https://vanilla-breeze.dev/layout-card/content"
+      title="Content card with image"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Content card with image" data-escape><layout-card>
+  <layout-stack data-layout-gap="m">
+    <div data-media data-layout-ratio="16:9" data-radius="s">
+      <img src="image.jpg" alt="Card image" loading="lazy" />
+    </div>
+    <layout-stack data-layout-gap="xs">
+      <h3>Card Title</h3>
+      <p>Brief description of the card content.</p>
+    </layout-stack>
+    <layout-cluster data-layout-gap="s">
+      <button type="button">Primary</button>
+      <button type="button" class="secondary">Secondary</button>
+    </layout-cluster>
+  </layout-stack>
+</layout-card></code-block>
+
+    <h3>Product Card</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-product.html"
+      url="https://vanilla-breeze.dev/layout-card/product"
+      title="Product card with outlined variant"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Product card with outlined variant" data-escape><layout-card data-variant="outlined">
+  <layout-stack data-layout-gap="m">
+    <div data-media data-layout-ratio="1:1" data-radius="s">
+      <img src="product.jpg" alt="Product image" loading="lazy" />
+    </div>
+    <layout-stack data-layout-gap="xs">
+      <small>Category</small>
+      <strong>Product Name</strong>
+      <strong>$49.99</strong>
+    </layout-stack>
+    <button type="button">Add to Cart</button>
+  </layout-stack>
+</layout-card></code-block>
+
+    <h3>Stat Cards</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-stats.html"
+      url="https://vanilla-breeze.dev/layout-card/stats"
+      title="Stat cards with elevated variant"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Stat cards with elevated variant" data-escape><layout-grid data-layout-min="15rem" data-layout-gap="m">
+  <layout-card data-variant="elevated" data-padding="l">
+    <layout-stack data-layout-gap="xs">
+      <small>Total Revenue</small>
+      <strong>$45,231</strong>
+      <small>+12.5% from last month</small>
+    </layout-stack>
+  </layout-card>
+</layout-grid></code-block>
+
+    <h3>Nested Cards</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-nested.html"
+      url="https://vanilla-breeze.dev/layout-card/nested"
+      title="Nested cards with auto background"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Nested cards with auto background" data-escape><layout-card data-padding="l">
+  <layout-stack data-layout-gap="m">
+    <h3>Outer Card</h3>
+    <p>Nested cards get a raised surface color.</p>
+    <layout-card>
+      <strong>Nested Card</strong>
+    </layout-card>
+  </layout-stack>
+</layout-card></code-block>
+
+    <h3>Profile Card</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-card-profile.html"
+      url="https://vanilla-breeze.dev/layout-card/profile"
+      title="Profile card with centered content"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Profile card with centered content" data-escape><layout-card data-variant="outlined">
+  <layout-stack data-layout-gap="m" data-layout-align="center">
+    <user-avatar data-size="xl">
+      <img src="avatar.jpg" alt="Jane Doe" />
+    </user-avatar>
+    <layout-stack data-layout-gap="xs" data-layout-align="center">
+      <strong>Jane Doe</strong>
+      <small>Product Designer</small>
+    </layout-stack>
+    <layout-cluster data-layout-gap="xs">
+      <layout-badge>UX</layout-badge>
+      <layout-badge>UI</layout-badge>
+      <layout-badge>Figma</layout-badge>
+    </layout-cluster>
+  </layout-stack>
+</layout-card></code-block>
+  </section>
+
+  <section>
+    <h2>Container Queries</h2>
+    <p>In grid mode, the card uses <code>container-type: inline-size</code> and automatically adjusts padding and typography when placed in narrow containers (under 300px). Headings shrink and footer actions stack vertically.</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>In grid mode, use semantic HTML elements (<code>header</code>, <code>section</code>, <code>footer</code>) for proper document structure</li>
+      <li>Include headings in the header area for screen reader navigation</li>
+      <li>Footer actions should be keyboard accessible</li>
+      <li>Consider wrapping in <code>article</code> if the card represents standalone content</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
+      <li><a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> — Auto-fit grid layout</li>
+      <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>
+      <li><a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> — Badge/tag component</li>
+      <li><a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code></a> — Avatar display component</li>
+    </ul>
+  </section>

@@ -1,0 +1,402 @@
+---
+layout: element
+title: "details"
+description: "The native HTML disclosure widget for expandable content. Creates an interactive widget that users can open and close without JavaScript."
+elementName: details
+category: native
+nativeGroup: Interactive
+currentPath: /docs/elements/native/details/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Description</h2>
+    <p>The <code>&lt;details&gt;</code> element creates a disclosure widget where the contents are visible only when toggled "open." It must contain a <a href="/docs/elements/native/summary/"><code>&lt;summary&gt;</code></a> element as its first child, which provides the clickable label.</p>
+
+    <p>This is one of the few truly interactive HTML elements that works entirely without JavaScript. In Vanilla Breeze it serves as the <strong>foundation</strong> for several higher-level components: <a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a>, <a href="/docs/elements/web-components/tabs/"><code>&lt;tab-set&gt;</code></a>, and <a href="/docs/elements/native/nav/">tree navigation</a> all build on native details/summary.</p>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>FAQ sections:</strong> Questions with expandable answers</li>
+      <li><strong>Collapsible content:</strong> Hide supplementary information by default</li>
+      <li><strong>Accordion patterns:</strong> Group related collapsible items</li>
+      <li><strong>Progressive disclosure:</strong> Reveal complex forms or options step by step</li>
+      <li><strong>Tree navigation:</strong> Collapsible menu sections (via <code>nav.tree</code>)</li>
+      <li><strong>Code examples:</strong> Optionally viewable source code</li>
+    </ul>
+
+    <h3>When Not to Use</h3>
+    <ul>
+      <li>For modals or overlays &mdash; use <a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a></li>
+      <li>For dropdown menus with positioning &mdash; use <a href="/docs/elements/custom-elements/drop-down/"><code>&lt;drop-down&gt;</code></a> or <a href="/docs/elements/custom-elements/context-menu/"><code>&lt;context-menu&gt;</code></a></li>
+      <li>When content must always be visible &mdash; avoid hiding critical-path information</li>
+      <li>When you need keyboard arrow navigation between panels &mdash; use <a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A single details element with a summary label. Use the <code>open</code> attribute to start expanded.</p>
+
+    <browser-window src="/docs/snippets/demos/details-basic.html" url="details-basic.html" title="Basic details" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Basic details element" data-escape><details>
+  <summary>Click to expand</summary>
+  <p>This content is revealed when the details element is opened.</p>
+</details></code-block>
+    <code-block language="html" show-lines label="Details with open attribute" data-escape><details open>
+  <summary>Already expanded</summary>
+  <p>This details element starts in the open state.</p>
+</details></code-block>
+  </section>
+
+  <section>
+    <h2>Stacked Details (Accordion)</h2>
+    <p>Adjacent <code>&lt;details&gt;</code> elements automatically stack with connected borders &mdash; the border-radius is removed between siblings and the top border overlaps to prevent doubling.</p>
+
+    <browser-window src="/docs/snippets/demos/details-stacked.html" url="details-stacked.html" title="Stacked details" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Stacked details accordion" data-escape><details>
+  <summary>First item</summary>
+  <p>Content for the first panel.</p>
+</details>
+<details>
+  <summary>Second item</summary>
+  <p>Content for the second panel.</p>
+</details>
+<details>
+  <summary>Third item</summary>
+  <p>Content for the third panel.</p>
+</details></code-block>
+
+    <p>For enhanced keyboard navigation (Arrow Up/Down, Home/End) and ARIA attributes, wrap in <a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a>.</p>
+  </section>
+
+  <section>
+    <h2>Exclusive Accordion (name attribute)</h2>
+    <p>The <code>name</code> attribute groups details elements so only one can be open at a time. This is a native browser feature requiring no JavaScript.</p>
+
+    <browser-window src="/docs/snippets/demos/details-exclusive.html" url="details-exclusive.html" title="Exclusive accordion" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Exclusive accordion with name" data-escape><details name="faq-exclusive" open>
+  <summary>First Question</summary>
+  <p>Only one panel can be open at a time...</p>
+</details>
+<details name="faq-exclusive">
+  <summary>Second Question</summary>
+  <p>Opening this will automatically close the first panel.</p>
+</details></code-block>
+
+    <p><strong>Tip:</strong> The <code>&lt;accordion-wc&gt;</code> component also supports exclusive mode via <code>data-single</code>, adding keyboard navigation and View Transitions on top.</p>
+  </section>
+
+  <section>
+    <h2>Rich Content</h2>
+    <p>Details can contain any flow content: lists, definition lists, tables, images, and VB layout primitives.</p>
+
+    <browser-window src="/docs/snippets/demos/details-rich-content.html" url="details-rich-content.html" title="Rich content" shadow></browser-window>
+  </section>
+
+  <section>
+    <h2>As a Foundation for Web Components</h2>
+    <p>In Vanilla Breeze, <code>&lt;details&gt;</code> / <code>&lt;summary&gt;</code> is the progressive enhancement base for two major web components. Both use the same HTML structure but add keyboard navigation, ARIA roles, and optional View Transitions.</p>
+
+    <h3>accordion-wc</h3>
+    <p>Wraps details elements with <a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/">ARIA accordion</a> keyboard navigation (Arrow Up/Down, Home/End) and optional <code>data-single</code> for exclusive mode.</p>
+
+    <browser-window src="/docs/snippets/demos/accordion-basic.html" url="accordion-basic.html" title="Accordion web component" shadow></browser-window>
+
+    <code-block language="html" show-lines label="accordion-wc wrapping details" data-escape><accordion-wc>
+  <details open>
+    <summary>Section One</summary>
+    <p>Content for the first section.</p>
+  </details>
+  <details>
+    <summary>Section Two</summary>
+    <p>Content for the second section.</p>
+  </details>
+</accordion-wc></code-block>
+
+    <h3>tab-set</h3>
+    <p>Transforms details elements into a tabbed interface. Summaries become tab buttons in row 1, content panels display in row 2. Uses CSS <code>display: contents</code> on details for grid participation.</p>
+
+    <browser-window src="/docs/snippets/demos/tabs-basic.html" url="tabs-basic.html" title="Tab set web component" shadow></browser-window>
+
+    <code-block language="html" show-lines label="tab-set wrapping details" data-escape><tab-set>
+  <details open>
+    <summary>Tab One</summary>
+    <p>Panel content for the first tab.</p>
+  </details>
+  <details>
+    <summary>Tab Two</summary>
+    <p>Panel content for the second tab.</p>
+  </details>
+</tab-set></code-block>
+  </section>
+
+  <section>
+    <h2>Tree Navigation</h2>
+    <p>The <code>nav.tree</code> variant uses nested details/summary for collapsible hierarchical menus. The nav context resets details styling and uses a +/&minus; indicator instead of the chevron.</p>
+
+    <browser-window src="/docs/snippets/demos/nav-tree-nested.html" url="nav-tree-nested.html" title="Tree navigation" shadow></browser-window>
+
+    <code-block language="html" show-lines label="Tree navigation with details" data-escape><nav class="tree" aria-label="File browser">
+  <details open>
+    <summary>Documentation</summary>
+    <details>
+      <summary>Elements</summary>
+      <ul>
+        <li><a href="#">Buttons</a></li>
+        <li><a href="#">Forms</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>Layout</summary>
+      <ul>
+        <li><a href="#">Grid</a></li>
+        <li><a href="#">Stack</a></li>
+      </ul>
+    </details>
+  </details>
+</nav></code-block>
+
+    <p>See <a href="/docs/elements/native/nav/">nav</a> for more tree navigation variants.</p>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+
+    <h3>Base Styling</h3>
+    <code-block language="css" show-lines label="Details CSS" data-escape>details {
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+}
+
+/* Adjacent details connect their borders */
+details + details {
+  margin-block-start: calc(var(--border-width-thin) * -1);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+details:has(+ details) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* Content padding */
+details > :not(summary) {
+  padding-inline: var(--size-m);
+  padding-block-end: var(--size-m);
+}</code-block>
+
+    <h3>Open/Close Animation</h3>
+    <p>Vanilla Breeze uses the <code>::details-content</code> pseudo-element for smooth height animation. This is progressive &mdash; browsers that don't support it simply show/hide instantly.</p>
+    <code-block language="css" show-lines label="Smooth animation" data-escape>/* Smooth open/close animation (Chrome 131+, Safari 17.5+) */
+::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size var(--duration-normal) var(--ease-default),
+    content-visibility var(--duration-normal) allow-discrete;
+}
+
+details[open]::details-content {
+  block-size: auto;
+}</code-block>
+
+    <h3>Context Overrides</h3>
+    <p>Several contexts reset or extend the base details styling:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Context</th>
+          <th>What Changes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>nav</code></td>
+          <td>Removes border, border-radius, and content padding. Details used for grouping, not disclosure.</td>
+        </tr>
+        <tr>
+          <td><code>nav.tree</code></td>
+          <td>Replaces chevron with +/&minus; indicator. Adds indentation for nested levels.</td>
+        </tr>
+        <tr>
+          <td><code>accordion-wc</code></td>
+          <td>Sets <code>display: contents</code> on details. Adds ARIA and keyboard navigation.</td>
+        </tr>
+        <tr>
+          <td><code>tab-set</code></td>
+          <td>Sets <code>display: contents</code>. Summary becomes tab button in grid row 1.</td>
+        </tr>
+        <tr>
+          <td><code>@media print</code></td>
+          <td>Forces all details open. Hides chevron markers.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Print Behavior</h2>
+    <p>In print stylesheets, all <code>&lt;details&gt;</code> content is forced visible regardless of the <code>open</code> attribute, so collapsed content is not lost when printing. The chevron indicator is hidden.</p>
+    <code-block language="css" show-lines label="Print styles for details" data-escape>/* Print: force all details open, hide markers */
+@media print {
+  details:not([open]) > *:not(summary) {
+    display: block !important;
+  }
+  summary::after { display: none; }
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>open</code></td>
+          <td>boolean</td>
+          <td>When present, the content is visible. Toggled by user interaction or JavaScript.</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>Groups details elements. Only one with the same name can be open at a time.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The <code>&lt;details&gt;</code> element can be controlled programmatically via the <code>open</code> property and the <code>toggle</code> event.</p>
+
+    <code-block language="javascript" show-lines label="JavaScript API for details" data-escape>const details = document.querySelector('details');
+
+// Check if open
+console.log(details.open); // true or false
+
+// Toggle programmatically
+details.open = !details.open;
+
+// Listen for toggle events
+details.addEventListener('toggle', (event) => {
+  console.log('Now', event.target.open ? 'open' : 'closed');
+});</code-block>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>toggle</code></td>
+          <td>Fired when the open state changes. The <code>open</code> property reflects the new state.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Built-in Accessibility</h3>
+    <ul>
+      <li>The <code>&lt;summary&gt;</code> element receives automatic button-like keyboard behavior</li>
+      <li>Screen readers announce the expanded/collapsed state</li>
+      <li>Enter and Space keys toggle the state when summary is focused</li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Always include a <a href="/docs/elements/native/summary/"><code>&lt;summary&gt;</code></a> as the first child</li>
+      <li>Keep summary text concise and descriptive</li>
+      <li>Avoid nesting interactive elements inside <code>&lt;summary&gt;</code></li>
+      <li>Ensure hidden content is not critical path information</li>
+      <li>For multiple related panels, consider <code>&lt;accordion-wc&gt;</code> for keyboard arrow navigation between summaries</li>
+    </ul>
+
+    <h3>Keyboard Support</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd></td>
+          <td>Toggle open/closed when summary is focused</td>
+        </tr>
+        <tr>
+          <td><kbd>Space</kbd></td>
+          <td>Toggle open/closed when summary is focused</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/summary/"><code>&lt;summary&gt;</code></a> &mdash; Required clickable child that provides the toggle label</li>
+      <li><a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a> &mdash; Enhanced accordion with Arrow/Home/End keyboard navigation and ARIA</li>
+      <li><a href="/docs/elements/web-components/tabs/"><code>&lt;tab-set&gt;</code></a> &mdash; Tab interface built on details/summary with grid layout</li>
+      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> &mdash; Tree navigation variant uses details for collapsible sections</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; For modal overlays rather than inline disclosure</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Patterns Using This Element</h2>
+    <p>The <code>&lt;details&gt;</code> element is used across many patterns:</p>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/patterns/marketing/faq/" class="section-card">
+        <h3>FAQ</h3>
+        <p>Accordion-style questions and answers</p>
+      </a>
+      <a href="/docs/patterns/navigation/sidebar/" class="section-card">
+        <h3>Sidebar</h3>
+        <p>Collapsible navigation sections</p>
+      </a>
+      <a href="/docs/patterns/forms/wizard/" class="section-card">
+        <h3>Wizard</h3>
+        <p>Multi-step form disclosure</p>
+      </a>
+      <a href="/docs/patterns/forms/checkout/" class="section-card">
+        <h3>Checkout</h3>
+        <p>Expandable checkout sections</p>
+      </a>
+      <a href="/docs/patterns/application/shells/" class="section-card">
+        <h3>App Shells</h3>
+        <p>Collapsible application panels</p>
+      </a>
+      <a href="/docs/patterns/data/timeline/" class="section-card">
+        <h3>Timeline</h3>
+        <p>Expandable event details</p>
+      </a>
+    </layout-grid>
+  </section>
+
+  <section>
+    <h2>Browser Support</h2>
+    <p>The <code>&lt;details&gt;</code> element is supported in all modern browsers. The <code>name</code> attribute for exclusive accordions is supported in Chrome 120+, Safari 17.2+, and Firefox 130+. The <code>::details-content</code> animation pseudo-element works in Chrome 131+ and Safari 17.5+; other browsers fall back to instant show/hide.</p>
+  </section>

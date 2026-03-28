@@ -1,0 +1,219 @@
+---
+layout: element
+title: "meter"
+description: "Displays a scalar measurement within a known range, like a gauge. The meter automatically changes color based on whether the value is in the optimum, suboptimum, or poor range."
+elementName: meter
+category: native
+nativeGroup: Forms
+currentPath: /docs/elements/native/meter/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>When to Use</h2>
+    <ul>
+      <li>Displaying disk space usage</li>
+      <li>Password strength indicators</li>
+      <li>Poll results or voting percentages</li>
+      <li>Budget utilization</li>
+      <li>Score or rating displays</li>
+    </ul>
+    <p><strong>Use <a href="/docs/elements/native/progress/">progress</a> instead</strong> for tasks that are in progress (like file uploads or loading states).</p>
+  </section>
+
+  <section>
+    <h2>Basic Usage</h2>
+    <p>A simple meter showing a value within a range.</p>
+
+    <browser-window src="/docs/snippets/demos/meter-basic.html" url="https://vanilla-breeze.dev/meter/basic" title="Basic meter elements" shadow></browser-window>
+    <code-block language="html" show-lines label="Basic meter elements" data-escape><label>Storage Used</label>
+<meter value="0.7" min="0" max="1">70%</meter>
+
+<label>Battery Level</label>
+<meter value="85" min="0" max="100">85%</meter></code-block>
+  </section>
+
+  <section>
+    <h2>Meter Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Purpose</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>Current value (required)</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>Minimum possible value</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>Maximum possible value</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td><code>low</code></td>
+          <td>Upper bound of low range</td>
+          <td>min</td>
+        </tr>
+        <tr>
+          <td><code>high</code></td>
+          <td>Lower bound of high range</td>
+          <td>max</td>
+        </tr>
+        <tr>
+          <td><code>optimum</code></td>
+          <td>Optimal value (affects color)</td>
+          <td>midpoint</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Optimum Range Behavior</h2>
+    <p>The meter's color changes automatically based on where the value falls relative to the <code>optimum</code> attribute. Set <code>optimum</code> low for "less is better" metrics (CPU, disk usage) or high for "more is better" metrics (skills, scores). No classes or JavaScript needed — the browser handles the color logic.</p>
+
+    <browser-window src="/docs/snippets/demos/meter-optimum-ranges.html" url="https://vanilla-breeze.dev/meter/optimum-ranges" title="Meter optimum range behavior" shadow></browser-window>
+    <code-block language="html" show-lines label="Optimum range examples" data-escape><!-- Low optimum (lower is better, like CPU/disk usage) -->
+<meter value="22" min="0" max="100"
+       low="40" high="75" optimum="20">22%</meter>
+
+<!-- High optimum (higher is better, like skills/score) -->
+<meter value="9" min="0" max="10"
+       low="4" high="7" optimum="10">9/10</meter></code-block>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Different heights for various contexts.</p>
+
+    <browser-window src="/docs/snippets/demos/meter-sizes.html" url="https://vanilla-breeze.dev/meter/sizes" title="Meter size variants" shadow></browser-window>
+    <code-block language="html" show-lines label="Meter size variants" data-escape><meter class="xs" value="0.6">60%</meter>
+<meter class="s" value="0.6">60%</meter>
+<meter value="0.6">60%</meter>  <!-- default -->
+<meter class="l" value="0.6">60%</meter></code-block>
+  </section>
+
+  <section>
+    <h2>Labeled Meter</h2>
+    <p>Use the <code>.labeled</code> wrapper pattern for meters with value displays.</p>
+
+    <browser-window src="/docs/snippets/demos/meter-labeled.html" url="https://vanilla-breeze.dev/meter/labeled" title="Labeled meters" shadow></browser-window>
+    <code-block language="html" show-lines label="Labeled meter" data-escape><section class="labeled">
+  <label>
+    <span>Storage</span>
+    <span>14.3 GB / 20 GB</span>
+  </label>
+  <meter value="14.3" min="0" max="20">71.5%</meter>
+</section></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility Notes</h2>
+    <ul>
+      <li><strong>Include fallback text</strong>: Content between tags is shown if meter is not supported</li>
+      <li><strong>Use labels</strong>: Always associate a label with the meter</li>
+      <li><strong>Provide context</strong>: Include units or percentages in visible text</li>
+      <li><strong>Don't rely on color alone</strong>: Accompany color changes with text indicators</li>
+      <li><strong>Screen reader support</strong>: Meters are announced as "X out of Y"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Meter vs Progress</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Use meter</th>
+          <th>Use progress</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Static measurements</td>
+          <td>Tasks in progress</td>
+        </tr>
+        <tr>
+          <td>Disk space, battery level</td>
+          <td>File uploads, loading</td>
+        </tr>
+        <tr>
+          <td>Has optimum value ranges</td>
+          <td>Has determinate/indeterminate states</td>
+        </tr>
+        <tr>
+          <td>Gauge-like display</td>
+          <td>Progress bar display</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+    <code-block language="css" show-lines label="Meter CSS styles" data-escape>/* Tokens (defined in src/tokens/forms.css) */
+:root {
+  --meter-h:           var(--size-s);
+  --progress-track-bg: var(--color-surface-raised);
+}
+
+meter {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--meter-h);
+  border: none;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--progress-track-bg);
+}
+
+/* WebKit/Blink meter styling */
+meter::-webkit-meter-bar {
+  background: var(--progress-track-bg);
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+/* Semantic colors via tokens */
+meter::-webkit-meter-optimum-value      { background: var(--color-success); }
+meter::-webkit-meter-suboptimum-value   { background: var(--color-warning); }
+meter::-webkit-meter-even-less-good-value { background: var(--color-error); }
+
+/* Size variants */
+meter.xs { block-size: var(--size-3xs); }
+meter.s { block-size: var(--size-2xs); }
+meter.m { block-size: var(--size-s); }
+meter.l { block-size: var(--size-m); }
+
+/* Segmented meter */
+meter.segmented {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--progress-track-bg),
+    var(--progress-track-bg) 9%,
+    var(--color-surface) 9%,
+    var(--color-surface) 10%
+  );
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/progress/">progress</a> - For task completion (loading, uploading)</li>
+      <li><a href="/docs/elements/native/output/">output</a> - Display calculated values</li>
+      <li><a href="/docs/elements/native/label/">label</a> - Label for the meter</li>
+    </ul>
+  </section>

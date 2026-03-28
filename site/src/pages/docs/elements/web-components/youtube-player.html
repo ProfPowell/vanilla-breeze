@@ -1,0 +1,197 @@
+---
+layout: element
+title: "youtube-player"
+description: "Privacy-first YouTube embed with facade pattern. Zero iframe bytes until click — renders a thumbnail and play button, then swaps to the real player on interaction."
+elementName: youtube-player
+category: component
+currentPath: /docs/elements/web-components/youtube-player/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>A lightweight YouTube embed that uses the <strong>facade pattern</strong> — renders a thumbnail image with a play button on page load, deferring the ~500 KB YouTube iframe until the user actually clicks play. Uses <code>youtube-nocookie.com</code> for privacy: no cookies are set until the user initiates playback.</p>
+  <p>Light DOM only (no shadow root), so design tokens and utility classes apply naturally.</p>
+
+  <browser-window
+    src="/docs/examples/demos/youtube-player-basic.html"
+    url="https://vanilla-breeze.dev/youtube-player"
+    title="YouTube Player"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Default</h2>
+  <p>Provide a YouTube video ID via <code>video-id</code> and an accessible title via <code>title</code>.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-default.html"
+    url="https://vanilla-breeze.dev/youtube-player/default"
+    title="Default Embed"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Minimal usage" data-escape><youtube-player
+  video-id="dQw4w9WgXcQ"
+  title="Rick Astley — Never Gonna Give You Up">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>Rounded</h2>
+  <p>Apply the <code>rounded</code> class (inherited from the <code>&lt;video&gt;</code> native element vocabulary).</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-rounded.html"
+    url="https://vanilla-breeze.dev/youtube-player/rounded"
+    title="Rounded Embed"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Rounded variant" data-escape><youtube-player
+  class="rounded"
+  video-id="dQw4w9WgXcQ"
+  title="Rick Astley — Never Gonna Give You Up">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>With Caption</h2>
+  <p>Wrap in a <code>&lt;figure&gt;</code> with <code>&lt;figcaption&gt;</code> for a captioned embed.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-caption.html"
+    url="https://vanilla-breeze.dev/youtube-player/caption"
+    title="With Caption"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Captioned embed" data-escape><figure>
+  <youtube-player
+    class="rounded"
+    video-id="dQw4w9WgXcQ"
+    title="Rick Astley — Never Gonna Give You Up">
+  </youtube-player>
+  <figcaption>Never Gonna Give You Up — Rick Astley (1987)</figcaption>
+</figure></code-block>
+</section>
+
+<section>
+  <h2>Playlist</h2>
+  <p>Pass a YouTube playlist ID via <code>list</code>. YouTube manages the playlist UI inside the iframe.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-playlist.html"
+    url="https://vanilla-breeze.dev/youtube-player/playlist"
+    title="Playlist"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Playlist embed" data-escape><youtube-player
+  video-id="dQw4w9WgXcQ"
+  list="PLbpi6ZahtOH6Ar_3GPy3j-g4s4zu4jOeJ"
+  title="Playlist example">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>Start at Timestamp</h2>
+  <p>Use <code>start</code> to begin playback at a specific second.</p>
+  <code-block language="html" show-lines label="Start at 30 seconds" data-escape><youtube-player
+  video-id="dQw4w9WgXcQ"
+  start="30"
+  title="Starts at 30 seconds">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Required</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>video-id</code></td><td>Yes</td><td>string</td><td>—</td><td>YouTube video ID</td></tr>
+      <tr><td><code>title</code></td><td>Recommended</td><td>string</td><td><code>"Play video"</code></td><td>Accessible title for iframe and play button</td></tr>
+      <tr><td><code>start</code></td><td>—</td><td>integer</td><td>—</td><td>Start playback at N seconds</td></tr>
+      <tr><td><code>list</code></td><td>—</td><td>string</td><td>—</td><td>YouTube playlist ID</td></tr>
+      <tr><td><code>params</code></td><td>—</td><td>string</td><td>—</td><td>Raw query string appended to embed URL (escape hatch)</td></tr>
+      <tr><td><code>autoplay</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>Skip facade — load iframe immediately</td></tr>
+      <tr><td><code>thumbnail</code></td><td>—</td><td>string</td><td><code>hq</code></td><td>Thumbnail resolution: <code>hq</code>, <code>mq</code>, <code>sd</code>, <code>maxres</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Component-Managed Attributes</h3>
+  <table>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>state</code></td><td><code>ready</code>, <code>active</code></td><td>Facade showing vs iframe loaded</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Classes</h2>
+  <p>Inherited from the <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> native element vocabulary — no new classes invented.</p>
+  <table>
+    <thead><tr><th>Class</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>widescreen</code></td><td>16:9 aspect ratio (default)</td></tr>
+      <tr><td><code>standard</code></td><td>4:3 aspect ratio</td></tr>
+      <tr><td><code>ultrawide</code></td><td>21:9 aspect ratio</td></tr>
+      <tr><td><code>rounded</code></td><td>Border radius via <code>--radius-m</code> token</td></tr>
+      <tr><td><code>full</code></td><td><code>inline-size: 100%</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>Author an <code>&lt;a&gt;</code> fallback inside the element. Without JavaScript, the link takes the user to YouTube. Once the component upgrades, the facade replaces the link.</p>
+  <code-block language="html" show-lines label="No-JS fallback" data-escape><!-- Without JS: renders as a plain link to YouTube -->
+<youtube-player
+  video-id="dQw4w9WgXcQ"
+  title="Rick Astley — Never Gonna Give You Up">
+  <a href="https://youtu.be/dQw4w9WgXcQ">
+    Watch: Rick Astley — Never Gonna Give You Up
+  </a>
+</youtube-player></code-block>
+  <table>
+    <thead><tr><th>Scenario</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>No JS</td><td>Anchor link to YouTube visible</td></tr>
+      <tr><td>JS loaded</td><td>Facade: thumbnail + play button</td></tr>
+      <tr><td>User clicks</td><td>Iframe replaces facade, video autoplays</td></tr>
+      <tr><td><code>autoplay</code></td><td>Iframe rendered immediately — no facade step</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Thumbnail image has <code>alt=""</code> (decorative — the button has the label)</li>
+    <li>Play button has <code>aria-label="Play {title}"</code></li>
+    <li>Host element gets <code>tabindex="0"</code> and <code>role="button"</code> in facade state for keyboard access</li>
+    <li>Enter and Space activate the embed</li>
+    <li>After activation, focus moves to the iframe</li>
+    <li>Iframe has a descriptive <code>title</code> attribute</li>
+    <li>No-JS fallback is a plain anchor with meaningful text</li>
+    <li>No animations that violate <code>prefers-reduced-motion</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Performance</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>JS size</td><td>&lt; 2 KB</td></tr>
+      <tr><td>CSS size</td><td>&lt; 1 KB</td></tr>
+      <tr><td>Network requests before click</td><td>1 (thumbnail image only)</td></tr>
+      <tr><td>YouTube cookies before click</td><td>None (<code>youtube-nocookie.com</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/video-player/"><code>&lt;video-player&gt;</code></a> — Self-hosted video with custom overlay controls</li>
+    <li><a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> — Native video element (aspect-ratio classes shared with this component)</li>
+    <li><a href="/docs/elements/native/iframe/"><code>&lt;iframe&gt;</code></a> — Native iframe element</li>
+  </ul>
+</section>

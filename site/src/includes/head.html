@@ -1,0 +1,75 @@
+<!-- Global Metadata -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
+<meta name="generator" content="Cook">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<!-- Primary Meta Tags -->
+<title>${title} | ${siteTitle}</title>
+<meta name="title" content="${title} | ${siteTitle}">
+<meta name="description" content="${description}">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="${siteUrl}${currentPath}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="${siteUrl}${currentPath}">
+<meta property="og:title" content="${title} | ${siteTitle}">
+<meta property="og:description" content="${description}">
+<meta property="og:image" content="${siteUrl}/og-image.png">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="${siteUrl}${currentPath}">
+<meta property="twitter:title" content="${title} | ${siteTitle}">
+<meta property="twitter:description" content="${description}">
+<meta property="twitter:image" content="${siteUrl}/og-image.png">
+
+<!-- Theme: prevent flash of wrong theme -->
+<script>
+  try {
+    const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
+    const mode = stored.mode || 'auto';
+    const brand = stored.brand || 'default';
+    if (mode !== 'auto') {
+      document.documentElement.dataset.mode = mode;
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.dataset.mode = 'dark';
+    }
+    const a11y = JSON.parse(localStorage.getItem('vb-a11y-themes') || '[]');
+    const parts = [];
+    if (brand && brand !== 'default') parts.push(brand);
+    parts.push(...a11y);
+    if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
+    if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
+    const effectiveMode = mode !== 'auto' ? mode
+      : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const themeColor = effectiveMode === 'dark' ? '#1a1a1a' : '#ffffff';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+    });
+    document.querySelector('meta[name="theme-color"]').content = themeColor;
+    const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
+    if (ext.motionFx === false) document.documentElement.dataset.motionReduced = '';
+  } catch(e) {}
+</script>
+
+${serviceWorkerMeta}
+
+<!-- Preconnect -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+<!-- Main CSS -->
+<link rel="stylesheet" href="${site.css}">
+<link rel="stylesheet" href="${site.fontsCss}">
+<link rel="stylesheet" href="${site.uiCss}">
+<link rel="stylesheet" href="${site.effectsCss}">
+<link rel="stylesheet" href="${site.prototypeCss}">

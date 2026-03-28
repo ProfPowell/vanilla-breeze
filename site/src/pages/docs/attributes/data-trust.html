@@ -1,0 +1,177 @@
+---
+layout: attribute
+title: "data-trust"
+description: "Content trust indicators for declaring authorship provenance. CSS-only trust badges for human, AI-assisted, AI-generated, editor-reviewed, and draft content."
+attributeName: data-trust
+category: content
+attributeType: data
+currentPath: /docs/attributes/data-trust/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-trust</code> attribute declares content provenance on any block element. It provides CSS-only visual indicators that communicate how content was produced and what review it received.</p>
+  <p>Trust levels can be applied at the page level (on <code>&lt;article&gt;</code>) or scoped to individual sections. Compound values support content that has been both generated and reviewed.</p>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><!-- Whole-page trust level -->
+<article data-trust="ai-assisted">
+  <h1>Migration Guide</h1>
+  <p>This guide was written with AI assistance.</p>
+</article>
+
+<!-- Section-level trust -->
+<article data-trust="ai-assisted">
+  <section data-trust="human">
+    <h2>When to Migrate</h2>
+    <p>Written from direct experience...</p>
+  </section>
+
+  <section data-trust="ai-generated">
+    <h2>API Reference</h2>
+    <p>Auto-generated from the OpenAPI spec...</p>
+  </section>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Trust Tokens</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Meaning</th>
+        <th>Visual Treatment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>human</code></td>
+        <td>Written entirely by a human</td>
+        <td>No indicator (the default assumption)</td>
+      </tr>
+      <tr>
+        <td><code>ai-assisted</code></td>
+        <td>Human-written with AI tooling</td>
+        <td>Subtle border accent</td>
+      </tr>
+      <tr>
+        <td><code>ai-generated</code></td>
+        <td>Primarily AI-generated content</td>
+        <td>Background tint + border accent</td>
+      </tr>
+      <tr>
+        <td><code>editor-reviewed</code></td>
+        <td>Reviewed and approved by editor</td>
+        <td>Green border accent</td>
+      </tr>
+      <tr>
+        <td><code>draft</code></td>
+        <td>Unreviewed work in progress</td>
+        <td>Dashed border + muted opacity</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Labeled Badges</h2>
+  <p>Add the <code>labeled</code> class to show a visible text badge via <code>::before</code>. Without this class, trust indicators are purely structural (border and background only).</p>
+
+  <code-block language="html" show-lines label="Labeled badges" data-escape><!-- Add .labeled to show a visible badge -->
+<section data-trust="ai-assisted" class="labeled">
+  <h2>Getting Started</h2>
+  <p>AI-assisted content with a visible badge.</p>
+</section>
+
+<section data-trust="ai-generated" class="labeled">
+  <h2>API Reference</h2>
+  <p>AI-generated content with a visible badge.</p>
+</section>
+
+<section data-trust="draft" class="labeled">
+  <h2>Roadmap</h2>
+  <p>Unreviewed work in progress.</p>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Compound Values</h2>
+  <p>Space-separated tokens allow composable trust declarations. The <code>~=</code> CSS selector matches individual tokens within the compound value.</p>
+
+  <code-block language="html" show-lines label="Compound values" data-escape><!-- Compound values for content that has been
+     both generated and reviewed -->
+<section data-trust="ai-generated editor-reviewed">
+  <h2>Release Notes</h2>
+  <p>AI-drafted from commit history, reviewed
+     and approved by the release manager.</p>
+</section></code-block>
+</section>
+
+<section>
+  <h2>With Change Tracking</h2>
+  <p>Trust indicators and <code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code> change tracking are complementary. <code>data-trust</code> declares the authorship model; inline edits show specific changes, including when a human corrects an AI suggestion.</p>
+
+  <code-block language="html" show-lines label="Trust + change tracking" data-escape><!-- Trust + change tracking together -->
+<article data-trust="ai-assisted">
+  <p>
+    The migration requires
+    <del datetime="2026-02-15"
+         data-author="claude"
+         data-reason="correction">
+      Node.js 16
+    </del>
+    <ins datetime="2026-02-15"
+         data-author="tpowell"
+         data-reason="review">
+      Node.js 20 LTS
+    </ins>
+    or later.
+  </p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>CSS Tokens</h2>
+  <p>Trust indicator colors are exposed as custom properties that themes can override.</p>
+
+  <code-block language="css" show-lines label="Theme-overridable tokens" data-escape>/* Theme-overridable trust colors */
+[data-trust] {
+  --trust-color-ai-assisted: oklch(65% 0.15 250);
+  --trust-color-ai-generated: oklch(65% 0.18 290);
+  --trust-color-reviewed: oklch(60% 0.18 145);
+  --trust-color-draft: oklch(70% 0.15 75);
+}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>No JavaScript is needed for trust indicators. The <code>data-trust</code> attribute is queryable via standard DOM methods.</p>
+
+  <code-block language="javascript" show-lines label="Querying trust" data-escape>// Find all AI-generated content on the page
+document.querySelectorAll('[data-trust~="ai-generated"]');
+
+// Check trust level of a specific element
+element.dataset.trust; // "ai-generated editor-reviewed"</code-block>
+</section>
+
+<section>
+  <h2>Why <code>data-trust</code> Instead of a Class</h2>
+  <ul>
+    <li><strong>Queryable.</strong> <code>document.querySelectorAll('[data-trust~="ai-generated"]')</code> finds all AI content</li>
+    <li><strong>Composable.</strong> Space-separated tokens matched by the <code>~=</code> selector</li>
+    <li><strong>Semantic.</strong> Data attributes declare <em>what the content is</em>, not <em>how it looks</em></li>
+    <li><strong>Machine-readable.</strong> Crawlers and tools can extract trust signals without understanding CSS classes</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Trust indicators are visual-only decorations; the DOM content and ARIA attributes are unaffected</li>
+    <li>The <code>.labeled</code> badges use <code>::before</code> pseudo-elements. Screen readers may or may not announce pseudo-element content depending on the browser</li>
+    <li>For critical trust disclosure, include the trust level in visible text content (e.g., in a <code>&lt;page-meta&gt;</code> or <code>&lt;page-info&gt;</code> component)</li>
+  </ul>
+</section>

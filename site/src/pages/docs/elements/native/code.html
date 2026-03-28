@@ -1,0 +1,213 @@
+---
+layout: element
+title: "code"
+description: "Elements for displaying code, keyboard input, sample output, and variables in technical documentation."
+elementName: code
+category: native
+nativeGroup: Text Semantics
+currentPath: /docs/elements/native/code/
+
+crumbHref: /docs/elements/native/
+crumbLabel: Native Elements
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>Vanilla Breeze provides coordinated styling for code-related elements. All share <code>var(--font-mono)</code> and are automatically excluded from machine translation via the <a href="/docs/i18n/">i18n system</a>.</p>
+    <ul>
+      <li><code>&lt;code&gt;</code> &mdash; Inline code snippets</li>
+      <li><code>&lt;pre&gt;</code> &mdash; Preformatted text blocks</li>
+      <li><code>&lt;kbd&gt;</code> &mdash; Keyboard input</li>
+      <li><code>&lt;samp&gt;</code> &mdash; Sample output</li>
+      <li><code>&lt;var&gt;</code> &mdash; Variables</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Inline Code</h2>
+    <p>Use <code>&lt;code&gt;</code> for inline code within text. It displays in a monospace font with a subtle background.</p>
+
+    <code-block language="html" label="Inline code" data-escape><p>Use the <code>console.log()</code> function to debug your code.</p></code-block>
+
+    <h3>When to Use Inline Code</h3>
+    <ul>
+      <li>Function and method names</li>
+      <li>Variable and property names</li>
+      <li>CSS property-value pairs</li>
+      <li>File names and paths</li>
+      <li>HTML element and attribute names</li>
+      <li>Command-line commands</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Code Blocks</h2>
+    <p>Wrap <code>&lt;code&gt;</code> inside <code>&lt;pre&gt;</code> for multi-line code blocks. VB distinguishes between <code>&lt;pre&gt;&lt;code&gt;</code> (full code block treatment with background, padding, border-radius) and bare <code>&lt;pre&gt;</code> (lighter treatment for ASCII art, poetry).</p>
+
+    <browser-window src="/docs/snippets/demos/code-inline-block.html" url="code-inline-block.html" title="Code elements" shadow></browser-window>
+
+    <code-block language="html" label="Code block structure" data-escape><pre><code>function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+console.log(greet('World'));</code></pre></code-block>
+  </section>
+
+  <section>
+    <h2>Bold in Code</h2>
+    <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, <a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> and <code>&lt;strong&gt;</code> get a subtle highlight background instead of relying on font weight alone. This is more visible in monospace fonts where weight differences can be subtle.</p>
+
+    <code-block language="html" label="Bold highlighting in code" data-escape><pre><code>const result = <b>calculateTotal</b>(items);
+console.log(<strong>result</strong>);</code></pre></code-block>
+    <code-block language="css" label="Bold-in-code CSS" data-escape>/* Bold in code — highlight instead of just weight */
+:where(code, pre) :where(b, strong) {
+  background-color: oklch(from var(--color-interactive) l c h / 0.12);
+  border-radius: var(--radius-s);
+  padding-inline: var(--size-2xs);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard Input (kbd)</h2>
+    <p>The <code>&lt;kbd&gt;</code> element represents keyboard input. It has a raised appearance like a physical key, with border and box-shadow.</p>
+
+    <code-block language="css" label="kbd CSS" data-escape>kbd {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-surface-raised);
+  padding: var(--size-2xs) var(--size-xs);
+  border-radius: var(--radius-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  box-shadow: 0 1px 0 var(--color-border);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Sample Output (samp) and Variables (var)</h2>
+    <p><code>&lt;samp&gt;</code> represents sample output from a program. <code>&lt;var&gt;</code> represents a variable in a mathematical or programming context &mdash; styled in italic with <code>var(--color-interactive)</code> to distinguish it from general italic text.</p>
+
+    <code-block language="css" label="samp and var CSS" data-escape>samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+var {
+  font-style: italic;
+  color: var(--color-interactive);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Reference</h2>
+
+    <code-block language="css" show-lines label="Code elements CSS" data-escape>code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-surface-raised);
+  padding-inline: var(--size-2xs);
+  border-radius: var(--radius-s);
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Code blocks: pre containing code gets full treatment */
+pre:has(code) {
+  background: var(--color-surface-raised);
+  padding: var(--size-m);
+  border-radius: var(--radius-m);
+  white-space: pre;
+  word-wrap: normal;
+
+  & code {
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+  }
+}</code-block>
+
+    <h3>Key Features</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Monospace font</td>
+          <td>All code elements use <code>var(--font-mono)</code></td>
+        </tr>
+        <tr>
+          <td>Nested code reset</td>
+          <td><code>code</code> inside <code>pre</code> loses background and padding</td>
+        </tr>
+        <tr>
+          <td><code>pre:has(code)</code> vs bare <code>pre</code></td>
+          <td>Code blocks get full treatment; bare pre gets light styling</td>
+        </tr>
+        <tr>
+          <td>Bold highlight</td>
+          <td><code>b</code>/<code>strong</code> in code get background color instead of weight</td>
+        </tr>
+        <tr>
+          <td>Keyboard styling</td>
+          <td><code>kbd</code> has border + shadow for 3D key appearance</td>
+        </tr>
+        <tr>
+          <td>Variable accent</td>
+          <td><code>var</code> uses <code>--color-interactive</code> to distinguish from <code>em</code></td>
+        </tr>
+        <tr>
+          <td>Translation protection</td>
+          <td>All code elements set <code>translate: no</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Translation Protection</h2>
+    <p>VB's <a href="/docs/i18n/">i18n system</a> automatically sets <code>translate: no</code> on all code-family elements, preventing browser or machine translation from breaking code content:</p>
+
+    <code-block language="css" label="Translation protection" data-escape>/* Code elements are never machine-translated */
+code, kbd, samp, pre, var {
+  translate: no;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+
+    <h3>Screen Reader Behavior</h3>
+    <ul>
+      <li><code>&lt;code&gt;</code> &mdash; Read as regular text (monospace is visual only)</li>
+      <li><code>&lt;kbd&gt;</code> &mdash; Some screen readers announce "keyboard" or the key name</li>
+      <li><code>&lt;samp&gt;</code> &mdash; Read as regular text</li>
+      <li><code>&lt;var&gt;</code> &mdash; Read as regular text with italic emphasis</li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li>Use the right element for the content type</li>
+      <li>Introduce code blocks with explanatory text</li>
+      <li>Use <code>class="language-*"</code> to indicate the programming language</li>
+      <li>Add <code>tabindex="0"</code> to scrollable <code>&lt;pre&gt;</code> for keyboard accessibility</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> / <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Bold highlighting inside code blocks</li>
+      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; Machine-readable data values (styled with <code>var(--font-mono)</code>)</li>
+      <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; Abbreviations in code documentation</li>
+      <li><a href="/docs/i18n/">Internationalization</a> &mdash; Translation protection for code elements</li>
+    </ul>
+  </section>

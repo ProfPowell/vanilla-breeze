@@ -1,16 +1,19 @@
 {
-  "name": "vanilla-breeze-docs",
+  "name": "vanilla-breeze-docs-cook",
   "version": "0.1.0",
   "private": true,
+  "description": "Vanilla Breeze documentation site — Cook SSG build",
   "type": "module",
   "scripts": {
-    "dev": "npm run build:doc-extras && ELEVENTY_ENV=development npx @11ty/eleventy --serve --port=4321",
-    "build": "npx @11ty/eleventy",
-    "build:doc-extras": "node scripts/build-doc-extras.js",
-    "preview": "npx @11ty/eleventy --serve --port=4321"
+    "dev": "cook dev",
+    "build": "cook build && pagefind",
+    "build:check": "npm run build && npm run audit:templates",
+    "build:prod": "NODE_ENV=production cook build && pagefind",
+    "audit:templates": "node scripts/audit-unresolved-templates.js",
+    "preview": "npm run build && node scripts/setup-preview.js && npx http-server dist/pages -p 3456 -c-1"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.0.0",
-    "esbuild": "^0.25.0"
+    "cook-ssg": "^2.0.0",
+    "pagefind": "^1.4.0"
   }
 }

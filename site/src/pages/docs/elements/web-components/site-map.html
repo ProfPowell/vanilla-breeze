@@ -1,0 +1,154 @@
+---
+layout: element
+title: "site-map"
+description: "Interactive HTML sitemap with current-page highlighting, auto-expand, and expand/collapse all controls."
+elementName: site-map
+category: component
+currentPath: /docs/elements/web-components/site-map/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;site-map&gt;</code> component enhances a static HTML sitemap with current-page highlighting, auto-expanding the section containing the current page, and expand/collapse all controls. Without JavaScript, the sitemap is a fully functional nested list of links.</p>
+
+  <browser-window
+    src="/docs/examples/demos/sitemap.html"
+    url="https://vanilla-breeze.dev/demos/sitemap"
+    title="Site Map"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><site-map>
+  <nav aria-label="Full site map">
+    <ul>
+      <li>
+        <details>
+          <summary><a href="/docs/">Documentation</a></summary>
+          <ul>
+            <li><a href="/docs/quick-start/">Quick Start</a></li>
+            <li>
+              <details>
+                <summary><a href="/docs/elements/">Elements</a></summary>
+                <ul>
+                  <li><a href="/docs/elements/native/">Native</a></li>
+                  <li><a href="/docs/elements/web-components/">Web Components</a></li>
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </details>
+      </li>
+      <li><a href="/about/">About</a></li>
+      <li><a href="/blog/">Blog</a></li>
+    </ul>
+  </nav>
+</site-map></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>current</code></td>
+        <td>string</td>
+        <td><code>window.location.pathname</code></td>
+        <td>Pathname of the current page to highlight</td>
+      </tr>
+      <tr>
+        <td><code>src</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>URL to load sitemap data from as JSON</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Current Page Highlighting</h2>
+  <p>By default, the component uses <code>window.location.pathname</code> to detect the current page and highlight its link. Use <code>current</code> to override this, for example in server-rendered or testing contexts.</p>
+
+  <code-block language="html" show-lines label="Explicit current page" data-escape><site-map current="/docs/elements/web-components/">
+  <!-- sitemap markup -->
+</site-map></code-block>
+
+  <p>The matching link receives an <code>aria-current="page"</code> attribute and a visual highlight. All ancestor <code>&lt;details&gt;</code> elements are automatically expanded to reveal it.</p>
+</section>
+
+<section>
+  <h2>HTML Structure</h2>
+  <p>The sitemap uses nested <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> elements for collapsible sections, wrapped in a <code>&lt;nav&gt;</code> landmark.</p>
+
+  <code-block language="html" show-lines label="Sitemap structure" data-escape><!-- Nested details/summary for collapsible sections -->
+<nav aria-label="Full site map">
+  <ul>
+    <li>
+      <details>
+        <summary><a href="/section/">Section Title</a></summary>
+        <ul>
+          <li><a href="/section/page/">Page</a></li>
+          <!-- deeper nesting as needed -->
+        </ul>
+      </details>
+    </li>
+    <li><a href="/standalone/">Standalone Page</a></li>
+  </ul>
+</nav></code-block>
+
+  <h3>Structure Rules</h3>
+  <ul>
+    <li>Wrap the entire sitemap in <code>&lt;nav aria-label="Full site map"&gt;</code></li>
+    <li>Use <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> for sections with children</li>
+    <li>Place the section link inside <code>&lt;summary&gt;</code></li>
+    <li>Child pages go in a nested <code>&lt;ul&gt;</code> inside the <code>&lt;details&gt;</code></li>
+    <li>Leaf pages are simple <code>&lt;li&gt;&lt;a&gt;</code> elements</li>
+  </ul>
+</section>
+
+<section>
+  <h2>JSON Data Loading</h2>
+  <p>When <code>src</code> is set, the component fetches sitemap data from the specified URL and renders the tree dynamically. Static markup serves as a fallback.</p>
+
+  <code-block language="html" show-lines label="Loading from JSON" data-escape><site-map
+  src="/api/sitemap.json"
+  current="/docs/quick-start/">
+</site-map></code-block>
+</section>
+
+<section>
+  <h2>Behavior</h2>
+  <ul>
+    <li><strong>Auto-expand:</strong> The section containing the current page is automatically expanded on load.</li>
+    <li><strong>Expand/collapse all:</strong> Control buttons are injected to expand or collapse all <code>&lt;details&gt;</code> sections at once.</li>
+    <li><strong>Current page marking:</strong> The link matching the current pathname receives <code>aria-current="page"</code> and visual styling.</li>
+    <li><strong>Progressive enhancement:</strong> Without JavaScript, the sitemap renders as a navigable nested list. Sections default to collapsed via <code>&lt;details&gt;</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Uses <code>&lt;nav aria-label="Full site map"&gt;</code> for landmark navigation</li>
+    <li>Current page link is marked with <code>aria-current="page"</code></li>
+    <li>Expand/collapse controls have descriptive accessible labels</li>
+    <li><code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> provides native disclosure semantics</li>
+    <li>Keyboard accessible &mdash; tab through links, enter/space to toggle sections</li>
+    <li>Without JavaScript, all content is accessible via native HTML disclosure widgets</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a> &mdash; Keyword index with search filtering</li>
+    <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; Table of contents with scroll-spy</li>
+    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> &mdash; Glossary with live search and letter tracking</li>
+  </ul>
+</section>
