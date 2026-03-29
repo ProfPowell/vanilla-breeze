@@ -6,26 +6,45 @@
  *
  * Hidden at top of page, fades in after scrolling past first viewport.
  * Uses scroll-driven animation where supported, falls back to always-visible.
+ *
+ * Styles are hardened against theme interference — uses !important on
+ * properties that themes commonly override on <a> elements.
  */
 
 [data-back-to-top] {
-  position: fixed;
-  inset-block-end: var(--size-l);
-  inset-inline-end: var(--size-l);
+  /* Position: use physical properties to prevent RTL/theme flipping */
+  position: fixed !important;
+  bottom: var(--size-l);
+  right: var(--size-l);
   z-index: var(--z-sticky, 100);
-  display: inline-flex;
+
+  /* Sizing */
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  inline-size: 2.5rem;
-  block-size: 2.5rem;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  border: var(--border-width-thin) solid var(--color-border);
+  width: 2.75rem;
+  height: 2.75rem;
+
+  /* Appearance: hardened against theme link styles */
+  border-radius: var(--radius-full, 50%);
+  background: oklch(from var(--color-text) l c h / 0.08) !important;
+  color: var(--color-text) !important;
+  border: var(--border-width-thin, 1px) solid var(--color-border) !important;
   box-shadow: var(--shadow-md);
-  text-decoration: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  /* Reset link styles */
+  text-decoration: none !important;
+  text-underline-offset: 0 !important;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0;
+  transform: none !important;
   cursor: pointer;
-  transition: opacity var(--duration-normal) var(--ease-default);
+
+  /* Transition */
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 /* Scroll-driven animation: hidden at top, visible after scrolling */
@@ -50,9 +69,11 @@
 
 /* Hover state */
 [data-back-to-top]:hover {
-  background: var(--color-interactive);
-  color: var(--color-on-interactive, white);
-  border-color: var(--color-interactive);
+  background: oklch(from var(--color-text) l c h / 0.15) !important;
+  border-color: oklch(from var(--color-text) l c h / 0.25) !important;
+  color: var(--color-text) !important;
+  text-decoration: none !important;
+  transform: none !important;
 }
 
 /* Reduced motion */
