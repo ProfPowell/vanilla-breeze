@@ -310,6 +310,16 @@ module.exports = {
     }
   },
 
+  "component-sampler": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "components": {},
+      "label": {},
+      "compact": { boolean: true }
+    }
+  },
+
   "consent-banner": {
     flow: true,
     permittedContent: ["@flow"],
@@ -377,6 +387,20 @@ module.exports = {
     }
   },
 
+  "empathy-map": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "title": {},
+      "persona": {},
+      "persona-id": {},
+      "summary": {},
+      "src": {},
+      "editable": { boolean: true },
+      "compact": { boolean: true }
+    }
+  },
+
   "foot-note": {
     flow: true,
     phrasing: true,
@@ -419,6 +443,16 @@ module.exports = {
       "size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
       "label": {},
       "base-path": {}
+    }
+  },
+
+  "impact-effort": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "src": {},
+      "title": {},
+      "compact": { boolean: true }
     }
   },
 
@@ -577,6 +611,16 @@ module.exports = {
     }
   },
 
+  "story-map": {
+    flow: true,
+    permittedContent: ["section"],
+    attributes: {
+      "src": {},
+      "title": {},
+      "compact": { boolean: true }
+    }
+  },
+
   "tab-set": {
     flow: true,
     permittedContent: ["details"],
@@ -619,6 +663,18 @@ module.exports = {
     }
   },
 
+  "token-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "type": { enum: ["shadow", "radius", "border", "color", "size"] },
+      "tokens": {},
+      "prefix": {},
+      "show-values": { boolean: true },
+      "label": {}
+    }
+  },
+
   "tool-tip": {
     flow: true,
     permittedContent: ["@flow", "template"],
@@ -641,6 +697,54 @@ module.exports = {
       "show-weights": { boolean: true },
       "show-characters": { boolean: true },
       "weights": {}
+    }
+  },
+
+  "user-journey": {
+    flow: true,
+    permittedContent: [],
+    attributes: {
+      "title": {},
+      "persona": {},
+      "persona-id": {},
+      "summary": {},
+      "story-ids": {},
+      "src": {},
+      "compact": { boolean: true }
+    }
+  },
+
+  "user-persona": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "role": {},
+      "age": {},
+      "location": {},
+      "avatar": {},
+      "quote": {},
+      "compact": { boolean: true },
+      "src": {}
+    }
+  },
+
+  "user-story": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "persona": {},
+      "action": {},
+      "benefit": {},
+      "priority": { enum: ["critical", "high", "medium", "low"] },
+      "status": { enum: ["backlog", "to-do", "in-progress", "review", "done"] },
+      "points": {},
+      "epic": {},
+      "story-id": {},
+      "title": {},
+      "compact": { boolean: true },
+      "detail": { enum: ["full", "compact", "minimal"] },
+      "src": {}
     }
   },
 
