@@ -1,0 +1,65 @@
+/**
+ * Back-to-top — scroll-driven show/hide
+ *
+ * Usage:
+ *   <a href="#" data-back-to-top aria-label="Back to top">↑</a>
+ *
+ * Hidden at top of page, fades in after scrolling past first viewport.
+ * Uses scroll-driven animation where supported, falls back to always-visible.
+ */
+
+[data-back-to-top] {
+  position: fixed;
+  inset-block-end: var(--size-l);
+  inset-inline-end: var(--size-l);
+  z-index: var(--z-sticky, 100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  border: var(--border-width-thin) solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+/* Scroll-driven animation: hidden at top, visible after scrolling */
+@supports (animation-timeline: scroll()) {
+  @keyframes back-to-top-show {
+    0%, 5% { opacity: 0; pointer-events: none; }
+    15%, 100% { opacity: 1; pointer-events: auto; }
+  }
+
+  [data-back-to-top] {
+    animation: back-to-top-show linear both;
+    animation-timeline: scroll();
+  }
+}
+
+/* Fallback for browsers without scroll-driven animation */
+@supports not (animation-timeline: scroll()) {
+  [data-back-to-top] {
+    opacity: 1;
+  }
+}
+
+/* Hover state */
+[data-back-to-top]:hover {
+  background: var(--color-interactive);
+  color: var(--color-on-interactive, white);
+  border-color: var(--color-interactive);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-back-to-top] {
+    transition: none;
+    animation: none;
+    opacity: 1;
+  }
+}

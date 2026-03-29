@@ -195,6 +195,68 @@ page-toc {
   }
 }
 
+/* Horizontal variant — inline scrollable bar */
+page-toc[orientation="horizontal"] {
+  position: sticky;
+  inset-block-start: var(--sticky-offset, 0px);
+  z-index: var(--z-sticky, 100);
+  background: var(--color-surface);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+@scope (page-toc[orientation="horizontal"]) {
+  .details {
+    padding: 0;
+  }
+
+  .summary {
+    display: none;
+  }
+
+  .details[open] > .summary {
+    display: none;
+  }
+
+  .nav {
+    padding: var(--size-2xs) var(--size-s);
+  }
+
+  .list {
+    flex-direction: row;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .item {
+    flex-shrink: 0;
+
+    /* Flatten nesting for horizontal layout */
+    &[data-level="1"],
+    &[data-level="2"] {
+      padding-inline-start: 0;
+    }
+  }
+
+  .link {
+    padding: var(--size-xs) var(--size-s);
+    white-space: nowrap;
+    border-inline-start: none;
+    border-block-end: var(--border-width-medium) solid transparent;
+    border-radius: 0;
+
+    &.active,
+    &[aria-current="true"] {
+      border-block-end-color: var(--color-interactive);
+      border-inline-start-color: transparent;
+    }
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   @scope (page-toc) {
