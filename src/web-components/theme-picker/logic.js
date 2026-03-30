@@ -35,7 +35,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
 import {
-  MODES, COLOR_THEMES, PERSONALITY_THEMES,
+  MODES, COLOR_ACCENTS, PERSONALITY_THEMES,
   COMMUNITY_THEMES, FLUID_PRESETS, ACCESSIBILITY_THEMES,
   EXTENSIONS, THEME_GROUPS
 } from '../../lib/theme-data.js';
@@ -152,7 +152,7 @@ class ThemePicker extends VBElement {
   }
 
   #renderFullContent() {
-    const { mode, brand, fluid } = ThemeManager.getState();
+    const { mode, brand, fluid, accent } = ThemeManager.getState();
     const showcaseGroups = THEME_GROUPS.filter(g => g.tier === 'showcase');
 
     return `
@@ -177,9 +177,15 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Colors</legend>
-        <div class="options options--swatch-grid" role="radiogroup" aria-label="Color theme">
-          ${COLOR_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
+        <legend>Color Accent</legend>
+        <div class="options options--accent-dots" role="radiogroup" aria-label="Color accent">
+          ${COLOR_ACCENTS.map(a => `
+            <label class="accent-dot" title="${a.name}">
+              <input type="radio" name="theme-accent" value="${a.id}" ${accent === a.id ? 'checked' : ''} />
+              <span class="accent-dot-visual" style="background: ${a.swatchBg}"></span>
+              <span class="sr-only">${a.name}</span>
+            </label>
+          `).join('')}
         </div>
       </fieldset>
 
@@ -290,7 +296,7 @@ class ThemePicker extends VBElement {
   }
 
   #renderCompactContent() {
-    const { mode, brand, fluid } = ThemeManager.getState();
+    const { mode, brand, fluid, accent } = ThemeManager.getState();
     const a11yThemes = this.#loadA11yThemes();
     const prefs = this.#loadExtensions();
 
@@ -305,6 +311,15 @@ class ThemePicker extends VBElement {
             </label>
           `).join('')}
         </div>
+      </fieldset>
+
+      <fieldset class="section">
+        <legend>Color Accent</legend>
+        <select class="compact-select" name="theme-accent-select" aria-label="Color accent">
+          ${COLOR_ACCENTS.map(a => `
+            <option value="${a.id}" ${accent === a.id ? 'selected' : ''}>${a.name}</option>
+          `).join('')}
+        </select>
       </fieldset>
 
       <fieldset class="section">
@@ -385,6 +400,17 @@ class ThemePicker extends VBElement {
     const fluidSelect = this.#panel.querySelector('select[name="theme-fluid-select"]');
     if (fluidSelect) {
       fluidSelect.addEventListener('change', this.#handleFluidChange);
+    }
+
+    // Accent change — dot radios (full mode)
+    this.#panel.querySelectorAll('input[name="theme-accent"]').forEach(input => {
+      input.addEventListener('change', this.#handleAccentChange);
+    });
+
+    // Accent change — select (compact mode)
+    const accentSelect = this.#panel.querySelector('select[name="theme-accent-select"]');
+    if (accentSelect) {
+      accentSelect.addEventListener('change', this.#handleAccentChange);
     }
 
     // Extension toggles
@@ -471,6 +497,11 @@ class ThemePicker extends VBElement {
 
   #handleFluidChange = (e) => {
     ThemeManager.setFluid(e.target.value);
+    this.#autoDismiss();
+  };
+
+  #handleAccentChange = (e) => {
+    ThemeManager.setAccent(e.target.value);
     this.#autoDismiss();
   };
 
@@ -633,7 +664,7 @@ class ThemePicker extends VBElement {
   };
 
   #syncState() {
-    const { mode, brand, fluid } = ThemeManager.getState();
+    const { mode, brand, fluid, accent } = ThemeManager.getState();
 
     // Update mode radios
     const modeInput = this.#panel.querySelector(`input[name="theme-mode"][value="${mode}"]`);
@@ -654,6 +685,14 @@ class ThemePicker extends VBElement {
     // Update fluid select (compact mode)
     const fluidSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('select[name="theme-fluid-select"]'));
     if (fluidSelect) fluidSelect.value = fluid;
+
+    // Update accent radios (full mode)
+    const accentInput = this.#panel.querySelector(`input[name="theme-accent"][value="${accent || 'default'}"]`);
+    if (accentInput) accentInput.checked = true;
+
+    // Update accent select (compact mode)
+    const accentSelect = this.#panel.querySelector('select[name="theme-accent-select"]');
+    if (accentSelect) accentSelect.value = accent || 'default';
   }
 
   open() {

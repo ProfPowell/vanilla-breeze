@@ -101,8 +101,6 @@ const CORE_THEMES = new Set([
   'a11y-high-contrast',
   'a11y-large-text',
   'a11y-dyslexia',
-  'ocean', 'forest', 'sunset', 'rose', 'lavender',
-  'coral', 'slate', 'emerald', 'amber', 'indigo',
   'modern', 'minimal', 'classic',
 ]);
 

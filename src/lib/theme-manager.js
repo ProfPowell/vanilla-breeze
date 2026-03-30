@@ -17,16 +17,27 @@
  * // Change brand theme (loads CSS if needed)
  * await ThemeManager.setBrand('ocean');
  *
+ * // Change color accent
+ * ThemeManager.setAccent('warm');
+ *
  * // Listen for changes
  * window.addEventListener('vb:theme-change', (e) => {
- *   console.log(e.detail); // { mode: 'dark', brand: 'ocean' }
+ *   console.log(e.detail); // { mode: 'dark', brand: 'ocean', accent: 'warm' }
  * });
  */
 
 import { ensureThemeLoaded } from './theme-loader.js';
+import { COLOR_ACCENTS } from './theme-data.js';
 
 const STORAGE_KEY = 'vb-theme';
-const DEFAULTS = { mode: 'auto', brand: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
+const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
+
+const SEED_PROPERTIES = [
+  '--hue-primary', '--hue-secondary', '--hue-accent',
+  '--lightness-primary', '--chroma-primary',
+  '--lightness-secondary', '--chroma-secondary',
+  '--lightness-accent', '--chroma-accent'
+];
 
 export const ThemeManager = {
   /**
@@ -162,9 +173,13 @@ export const ThemeManager = {
       root.style.removeProperty('--page-bg-gradient');
     }
 
+    // Apply color accent (inline styles on :root for hue/lightness/chroma seeds)
+    const accent = this.load().accent || 'default';
+    this._applyAccent(accent);
+
     // Dispatch event for listeners
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
-      detail: { mode, brand, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, backdropChrome, pageBgType, effectiveMode: this.getEffectiveMode() }
+      detail: { mode, brand, accent, borderStyle: borderPref, iconSet: iconPref, fluid, backdrop, backdropChrome, pageBgType, effectiveMode: this.getEffectiveMode() }
     }));
   },
 
@@ -192,6 +207,19 @@ export const ThemeManager = {
     }
     const updated = this.save({ brand });
     this.apply(updated);
+  },
+
+  /**
+   * Set color accent
+   * @param {string} accentId - Accent ID from COLOR_ACCENTS (e.g., 'warm', 'cool', 'earth')
+   */
+  setAccent(accentId) {
+    const updated = this.save({ accent: accentId });
+    this._applyAccent(accentId);
+    // Dispatch event
+    window.dispatchEvent(new CustomEvent('vb:theme-change', {
+      detail: { ...this.getState() }
+    }));
   },
 
   /**
@@ -263,8 +291,8 @@ export const ThemeManager = {
    * @returns {VBThemeState}
    */
   getState() {
-    const { mode, brand, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = this.load();
-    return { mode, brand, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir, effectiveMode: this.getEffectiveMode() };
+    const { mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = this.load();
+    return { mode, brand, accent, borderStyle, iconSet, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir, effectiveMode: this.getEffectiveMode() };
   },
 
   /**
@@ -289,6 +317,10 @@ export const ThemeManager = {
     const root = document.documentElement;
     root.style.removeProperty('--page-bg-color');
     root.style.removeProperty('--page-bg-gradient');
+    // Clear accent seed inline styles
+    for (const prop of SEED_PROPERTIES) {
+      root.style.removeProperty(prop);
+    }
     this.apply(DEFAULTS);
   },
 
@@ -301,6 +333,36 @@ export const ThemeManager = {
    */
   _readCSSHint(property) {
     return getComputedStyle(document.documentElement).getPropertyValue(property).trim();
+  },
+
+  /**
+   * Apply color accent seeds to :root inline styles
+   * @param {string} accentId - Accent ID from COLOR_ACCENTS
+   * @private
+   */
+  _applyAccent(accentId) {
+    const root = document.documentElement;
+    const entry = COLOR_ACCENTS.find(a => a.id === accentId);
+
+    // Clear all seed inline styles first
+    for (const prop of SEED_PROPERTIES) {
+      root.style.removeProperty(prop);
+    }
+
+    // 'default' or unknown: just clear — let CSS defaults or theme values apply
+    if (!entry || !entry.seeds || Object.keys(entry.seeds).length === 0) return;
+
+    // Apply light mode seeds
+    for (const [prop, value] of Object.entries(entry.seeds)) {
+      root.style.setProperty(prop, String(value));
+    }
+
+    // Apply dark mode overrides if in dark mode
+    if (entry.seedsDark && this.getEffectiveMode() === 'dark') {
+      for (const [prop, value] of Object.entries(entry.seedsDark)) {
+        root.style.setProperty(prop, String(value));
+      }
+    }
   },
 
   /**

@@ -4,7 +4,9 @@
  * Single source of truth for all theme metadata used by
  * theme-picker, settings-panel, and any future consumers.
  *
- * Themes are organized into three tiers:
+ * Color accents and brand themes are separate axes:
+ *   accents   — OKLCH seed overrides (hue, lightness, chroma) applied via
+ *               custom properties; composable with any brand theme
  *   core      — bundled in core CSS, instant switching, zero network requests
  *   showcase  — on-demand loading, prominently featured
  *   community — on-demand loading, available but not prominent
@@ -16,20 +18,113 @@ export const MODES = [
   { id: 'dark', name: 'Dark', icon: 'moon' }
 ];
 
-// Color themes - override hue values only (core tier)
-export const COLOR_THEMES = [
-  { id: 'default', name: 'Default', hue: 260, swatchBg: '#3b82f6', tier: 'core' },
-  { id: 'ocean', name: 'Ocean', hue: 200, swatchBg: '#0891b2', tier: 'core' },
-  { id: 'forest', name: 'Forest', hue: 145, swatchBg: '#059669', tier: 'core' },
-  { id: 'sunset', name: 'Sunset', hue: 25, swatchBg: '#ea580c', tier: 'core' },
-  { id: 'rose', name: 'Rose', hue: 350, swatchBg: '#e11d48', tier: 'core' },
-  { id: 'lavender', name: 'Lavender', hue: 280, swatchBg: '#a855f7', tier: 'core' },
-  { id: 'coral', name: 'Coral', hue: 15, swatchBg: '#f97316', tier: 'core' },
-  { id: 'slate', name: 'Slate', hue: 220, swatchBg: '#64748b', tier: 'core' },
-  { id: 'emerald', name: 'Emerald', hue: 160, swatchBg: '#10b981', tier: 'core' },
-  { id: 'amber', name: 'Amber', hue: 45, swatchBg: '#f59e0b', tier: 'core' },
-  { id: 'indigo', name: 'Indigo', hue: 250, swatchBg: '#6366f1', tier: 'core' }
+// Color accents — OKLCH seed overrides, composable with any brand theme
+export const COLOR_ACCENTS = [
+  { id: 'default', name: 'Default', swatchBg: '#3b82f6', seeds: {} },
+  {
+    id: 'ocean', name: 'Ocean', swatchBg: '#0891b2',
+    seeds: {
+      '--hue-primary': 200, '--hue-secondary': 180, '--hue-accent': 45,
+      '--lightness-primary': '50%', '--chroma-primary': 0.15,
+      '--lightness-secondary': '45%', '--chroma-secondary': 0.10,
+      '--lightness-accent': '70%', '--chroma-accent': 0.15
+    },
+    seedsDark: { '--lightness-primary': '60%', '--chroma-primary': 0.12 }
+  },
+  {
+    id: 'forest', name: 'Forest', swatchBg: '#059669',
+    seeds: {
+      '--hue-primary': 145, '--hue-secondary': 90, '--hue-accent': 30,
+      '--lightness-primary': '45%', '--chroma-primary': 0.15,
+      '--lightness-secondary': '55%', '--chroma-secondary': 0.12,
+      '--lightness-accent': '65%', '--chroma-accent': 0.16
+    },
+    seedsDark: { '--lightness-primary': '55%', '--chroma-primary': 0.12 }
+  },
+  {
+    id: 'sunset', name: 'Sunset', swatchBg: '#ea580c',
+    seeds: {
+      '--hue-primary': 25, '--hue-secondary': 0, '--hue-accent': 280,
+      '--lightness-primary': '60%', '--chroma-primary': 0.20,
+      '--lightness-secondary': '55%', '--chroma-secondary': 0.18,
+      '--lightness-accent': '55%', '--chroma-accent': 0.18
+    },
+    seedsDark: { '--lightness-primary': '65%', '--chroma-primary': 0.16 }
+  },
+  {
+    id: 'rose', name: 'Rose', swatchBg: '#e11d48',
+    seeds: {
+      '--hue-primary': 350, '--hue-secondary': 330, '--hue-accent': 200,
+      '--lightness-primary': '55%', '--chroma-primary': 0.18,
+      '--lightness-secondary': '50%', '--chroma-secondary': 0.14,
+      '--lightness-accent': '60%', '--chroma-accent': 0.12
+    },
+    seedsDark: { '--lightness-primary': '65%', '--chroma-primary': 0.14 }
+  },
+  {
+    id: 'lavender', name: 'Lavender', swatchBg: '#a855f7',
+    seeds: {
+      '--hue-primary': 280, '--hue-secondary': 300, '--hue-accent': 60,
+      '--lightness-primary': '55%', '--chroma-primary': 0.14,
+      '--lightness-secondary': '50%', '--chroma-secondary': 0.12,
+      '--lightness-accent': '70%', '--chroma-accent': 0.14
+    },
+    seedsDark: { '--lightness-primary': '65%', '--chroma-primary': 0.12 }
+  },
+  {
+    id: 'coral', name: 'Coral', swatchBg: '#f97316',
+    seeds: {
+      '--hue-primary': 15, '--hue-secondary': 25, '--hue-accent': 180,
+      '--lightness-primary': '60%', '--chroma-primary': 0.18,
+      '--lightness-secondary': '55%', '--chroma-secondary': 0.15,
+      '--lightness-accent': '55%', '--chroma-accent': 0.12
+    },
+    seedsDark: { '--lightness-primary': '65%', '--chroma-primary': 0.15 }
+  },
+  {
+    id: 'slate', name: 'Slate', swatchBg: '#64748b',
+    seeds: {
+      '--hue-primary': 220, '--hue-secondary': 210, '--hue-accent': 45,
+      '--lightness-primary': '48%', '--chroma-primary': 0.10,
+      '--lightness-secondary': '45%', '--chroma-secondary': 0.06,
+      '--lightness-accent': '68%', '--chroma-accent': 0.15
+    },
+    seedsDark: { '--lightness-primary': '60%', '--chroma-primary': 0.08 }
+  },
+  {
+    id: 'emerald', name: 'Emerald', swatchBg: '#10b981',
+    seeds: {
+      '--hue-primary': 160, '--hue-secondary': 140, '--hue-accent': 30,
+      '--lightness-primary': '50%', '--chroma-primary': 0.15,
+      '--lightness-secondary': '48%', '--chroma-secondary': 0.12,
+      '--lightness-accent': '65%', '--chroma-accent': 0.16
+    },
+    seedsDark: { '--lightness-primary': '60%', '--chroma-primary': 0.12 }
+  },
+  {
+    id: 'amber', name: 'Amber', swatchBg: '#f59e0b',
+    seeds: {
+      '--hue-primary': 45, '--hue-secondary': 30, '--hue-accent': 240,
+      '--lightness-primary': '60%', '--chroma-primary': 0.16,
+      '--lightness-secondary': '55%', '--chroma-secondary': 0.15,
+      '--lightness-accent': '52%', '--chroma-accent': 0.14
+    },
+    seedsDark: { '--lightness-primary': '68%', '--chroma-primary': 0.14 }
+  },
+  {
+    id: 'indigo', name: 'Indigo', swatchBg: '#6366f1',
+    seeds: {
+      '--hue-primary': 250, '--hue-secondary': 270, '--hue-accent': 35,
+      '--lightness-primary': '48%', '--chroma-primary': 0.18,
+      '--lightness-secondary': '45%', '--chroma-secondary': 0.14,
+      '--lightness-accent': '68%', '--chroma-accent': 0.16
+    },
+    seedsDark: { '--lightness-primary': '62%', '--chroma-primary': 0.14 }
+  }
 ];
+
+/** @deprecated Use COLOR_ACCENTS instead */
+export const COLOR_THEMES = COLOR_ACCENTS;
 
 // Personality themes - comprehensive design systems (core tier)
 export const PERSONALITY_THEMES = [
@@ -129,7 +224,6 @@ export const EXTREME_THEMES = [...SHOWCASE_THEMES, ...COMMUNITY_THEMES];
 
 // All brand themes combined
 export const ALL_THEMES = [
-  ...COLOR_THEMES,
   ...PERSONALITY_THEMES,
   ...SHOWCASE_THEMES,
   ...COMMUNITY_THEMES,
@@ -141,7 +235,6 @@ const showcaseByCategory = (cat) => SHOWCASE_THEMES.filter(t => t.category === c
 
 // Grouped structure for <select>/<optgroup> rendering and tiered UI
 export const THEME_GROUPS = [
-  { label: 'Colors', themes: COLOR_THEMES, tier: 'core' },
   { label: 'Style', themes: PERSONALITY_THEMES, tier: 'core' },
   { label: 'Design', themes: showcaseByCategory('Design'), tier: 'showcase' },
   { label: 'Content', themes: showcaseByCategory('Content'), tier: 'showcase' },
