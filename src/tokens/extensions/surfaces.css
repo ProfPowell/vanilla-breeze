@@ -52,13 +52,51 @@
   );
 
   /* ========================================
+   * Opacity Scale
+   * Primitive tokens for alpha transparency.
+   * Used by glass, surface-types, and themes.
+   * ======================================== */
+  --opacity-5: 0.05;
+  --opacity-8: 0.08;
+  --opacity-10: 0.1;
+  --opacity-12: 0.12;
+  --opacity-15: 0.15;
+  --opacity-20: 0.2;
+  --opacity-25: 0.25;
+  --opacity-30: 0.3;
+  --opacity-35: 0.35;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-55: 0.55;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-75: 0.75;
+  --opacity-80: 0.8;
+  --opacity-85: 0.85;
+  --opacity-90: 0.9;
+
+  /* ========================================
    * Glassmorphism
-   * Frosted glass effect tokens
+   * Frosted glass effect tokens.
+   * Themes override the semantic --glass-* tokens.
    * ======================================== */
   --glass-blur: 0px;
-  --glass-opacity: 0.15;
-  --glass-bg: oklch(100% 0 0 / var(--glass-opacity));
-  --glass-border: oklch(100% 0 0 / 0.2);
+  --glass-saturate: 160%;
+
+  /* Semantic glass opacity tokens — themes set these */
+  --glass-surface-opacity: var(--opacity-75);
+  --glass-surface-alt-opacity: var(--opacity-35);
+  --glass-surface-raised-opacity: var(--opacity-70);
+  --glass-surface-sunken-opacity: var(--opacity-20);
+  --glass-border-opacity: var(--opacity-20);
+  --glass-border-strong-opacity: var(--opacity-35);
+  --glass-border-subtle-opacity: var(--opacity-10);
+  --glass-tint-opacity: var(--opacity-10);
+  --glass-inner-glow-opacity: var(--opacity-10);
+
+  /* Composed glass values */
+  --glass-bg: oklch(100% 0 0 / var(--glass-surface-opacity));
+  --glass-border: oklch(100% 0 0 / var(--glass-border-opacity));
 
   /* ========================================
    * Gradient Presets
@@ -80,6 +118,14 @@
                    radial-gradient(at 0% 50%, oklch(90% 0.08 var(--hue-accent, 25)) 0px, transparent 50%);
 
   /* ========================================
+   * Dialog / Overlay
+   * Backdrop and dialog shadow tokens.
+   * Themes can override for branded overlays.
+   * ======================================== */
+  --color-backdrop: oklch(0% 0 0 / 0.5);
+  --backdrop-blur: 2px;
+
+  /* ========================================
    * Page Background
    * Rich body backgrounds for themed pages
    * ======================================== */
@@ -96,13 +142,25 @@
 
 /* Dark mode glass adjustments */
 [data-mode="dark"] {
-  --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
-  --glass-border: oklch(40% 0 0 / 0.3);
+  --glass-bg: oklch(20% 0 0 / var(--glass-surface-opacity));
+  --glass-border: oklch(40% 0 0 / var(--glass-border-opacity));
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-mode="light"]) {
-    --glass-bg: oklch(20% 0 0 / var(--glass-opacity));
-    --glass-border: oklch(40% 0 0 / 0.3);
+    --glass-bg: oklch(20% 0 0 / var(--glass-surface-opacity));
+    --glass-border: oklch(40% 0 0 / var(--glass-border-opacity));
+  }
+}
+
+/* Reduced transparency — solid surfaces, subtle borders */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-surface-opacity: 1;
+    --glass-surface-alt-opacity: 1;
+    --glass-surface-raised-opacity: 1;
+    --glass-surface-sunken-opacity: var(--opacity-90);
+    --glass-border-opacity: var(--opacity-30);
+    --glass-tint-opacity: var(--opacity-5);
   }
 }

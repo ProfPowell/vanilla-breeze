@@ -35,20 +35,30 @@ export const ThemeManager = {
    * Falls back to default on network error.
    * @returns {Promise<VBThemePrefs>}
    */
+  /** @type {Promise<VBThemePrefs>|null} */
+  _initPromise: null,
+
   async init() {
-    const saved = this.load();
+    // Idempotent — second call awaits the first
+    if (this._initPromise) return this._initPromise;
 
-    // Load saved brand CSS before applying
-    try {
-      await ensureThemeLoaded(saved.brand);
-    } catch {
-      // Network error — fall back to default
-      saved.brand = 'default';
-    }
+    this._initPromise = (async () => {
+      const saved = this.load();
 
-    this.apply(saved);
-    this._watchSystemPreference();
-    return saved;
+      // Load saved brand CSS before applying
+      try {
+        await ensureThemeLoaded(saved.brand);
+      } catch {
+        // Network error — fall back to default
+        saved.brand = 'default';
+      }
+
+      this.apply(saved);
+      this._watchSystemPreference();
+      return saved;
+    })();
+
+    return this._initPromise;
   },
 
   /**

@@ -63,9 +63,15 @@ body { padding: var(--size-l); }
 
 <script type="module" src="/src/main.js"></script>
 <script type="module">
-  // Apply URL-param overrides AFTER ThemeManager.init() (which runs in main.js)
+  // Wait for ThemeManager.init() (runs in main.js) to finish,
+  // THEN override with URL params so the stored preference doesn't win.
   import { ThemeManager } from '/src/lib/theme-manager.js';
   import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+
+  // init() is idempotent — if main.js already ran it, this returns immediately;
+  // if not, we wait for it so the stored-preference apply happens first.
+  await ThemeManager.init();
+
   const params = new URLSearchParams(location.search);
   const theme = params.get('theme');
   const mode = params.get('mode');
