@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative, extname, basename } from 'node:path';
 
-const SITE_SRC = resolve(import.meta.dirname, '../../site-11ty/src/pages');
+const SITE_SRC = resolve(import.meta.dirname, '../data/_pages_archive');
 const COOK_SRC = resolve(import.meta.dirname, '../src/pages');
 
 const args = process.argv.slice(2);
