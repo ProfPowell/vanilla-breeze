@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mobile Form Patterns — What Most Sites Do vs What You Should Do</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      max-inline-size: 64rem;
+      margin-inline: auto;
+    }
+
+    .pattern-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-l);
+    }
+
+    @media (width < 48rem) {
+      .pattern-pair {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bad, .good {
+      padding: var(--size-m);
+      border-radius: var(--radius-m, 8px);
+      border: 2px solid;
+    }
+
+    .bad {
+      border-color: var(--color-error);
+      background: var(--color-error-subtle);
+    }
+
+    .good {
+      border-color: var(--color-success);
+      background: var(--color-success-subtle);
+    }
+
+    .bad h3::before { content: "✗ "; color: var(--color-error); }
+    .good h3::before { content: "✓ "; color: var(--color-success); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+
+  <header data-layout="stack" data-layout-gap="s">
+    <h1>Mobile Form Patterns</h1>
+    <p style="color: var(--color-text-muted); max-inline-size: 60ch;">
+      Side-by-side comparisons of what most sites do wrong vs what they should do.
+      Every pattern uses native HTML — no libraries needed.
+    </p>
+  </header>
+
+  <!-- Pattern 1: Input Types -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>1. Phone Number Input</h2>
+    <p style="color: var(--color-text-muted);">The correct <code>type</code> triggers the right keyboard on mobile.</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <label for="phone-bad">Phone</label>
+          <input type="text" id="phone-bad" placeholder="Enter phone number">
+        </form-field>
+        <p><small>Uses <code>type="text"</code> — shows full QWERTY keyboard. User hunts for numbers.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="phone-good">Phone</label>
+          <input type="tel" id="phone-good" autocomplete="tel" enterkeyhint="next" placeholder="(555) 123-4567">
+        </form-field>
+        <p><small>Uses <code>type="tel"</code> — triggers numeric dialpad. <code>autocomplete="tel"</code> enables one-tap autofill.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <!-- Pattern 2: Credit Card Number -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>2. Credit Card Number</h2>
+    <p style="color: var(--color-text-muted);">Never use <code>type="number"</code> for cards — spinners appear and values get truncated.</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <label for="cc-bad">Card Number</label>
+          <input type="number" id="cc-bad" placeholder="Card number">
+        </form-field>
+        <p><small><code>type="number"</code> adds spinner arrows, drops leading zeros, truncates long numbers. No autofill.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="cc-good">Card Number</label>
+          <input type="text" id="cc-good" inputmode="numeric" autocomplete="cc-number"
+                 pattern="[0-9 ]{13,19}" placeholder="4242 4242 4242 4242">
+        </form-field>
+        <p><small><code>inputmode="numeric"</code> shows number pad without spinners. <code>autocomplete="cc-number"</code> triggers card scan on iOS.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <!-- Pattern 3: Email Autocomplete -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>3. Email Autocomplete</h2>
+    <p style="color: var(--color-text-muted);">Proper <code>autocomplete</code> enables one-tap form filling from saved data.</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <label for="email-bad">Email</label>
+          <input type="text" id="email-bad" name="user_email" placeholder="Enter email">
+        </form-field>
+        <p><small>Wrong <code>type</code>, no <code>autocomplete</code>. Browser can't help. User types the full address.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="email-good">Email</label>
+          <input type="email" id="email-good" autocomplete="email"
+                 enterkeyhint="next" placeholder="you@example.com">
+        </form-field>
+        <p><small><code>type="email"</code> shows @ keyboard. <code>autocomplete="email"</code> enables one-tap fill. <code>enterkeyhint="next"</code> shows "Next" key.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <!-- Pattern 4: Validation Timing -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>4. Validation Timing</h2>
+    <p style="color: var(--color-text-muted);">Validate on <code>blur</code> (when user leaves), not on <code>input</code> (while typing).</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <label for="val-bad">Email</label>
+          <input type="email" id="val-bad" required>
+          <output class="error" for="val-bad" hidden></output>
+        </form-field>
+        <p><small>Validates on every keystroke. Shows "invalid email" after typing one letter. Feels aggressive.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="val-good">Email</label>
+          <input type="email" id="val-good" required>
+          <output class="error" for="val-good" hidden></output>
+        </form-field>
+        <p><small>Validates on blur — waits until the user finishes typing and leaves the field. Respectful and clear.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <!-- Pattern 5: Select vs Datalist -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>5. Country Selection</h2>
+    <p style="color: var(--color-text-muted);">For long lists, <code>&lt;datalist&gt;</code> lets users search. <code>&lt;select&gt;</code> is fine for short lists.</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <label for="country-bad">Country</label>
+          <select id="country-bad">
+            <option value="">Select country...</option>
+            <option>Afghanistan</option>
+            <option>Albania</option>
+            <option>Algeria</option>
+            <option>United States</option>
+            <option>Zimbabwe</option>
+          </select>
+        </form-field>
+        <p><small>A <code>&lt;select&gt;</code> with 200+ options. User scrolls endlessly on the native picker. No way to search.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="country-good">Country</label>
+          <input type="text" id="country-good" list="countries"
+                 autocomplete="country-name" placeholder="Start typing...">
+          <datalist id="countries">
+            <option value="United States">
+            <option value="United Kingdom">
+            <option value="Canada">
+            <option value="Australia">
+            <option value="Germany">
+            <option value="France">
+            <option value="Japan">
+          </datalist>
+        </form-field>
+        <p><small><code>&lt;datalist&gt;</code> gives searchable suggestions. User types "Un" and sees United States + United Kingdom. Zero JS.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <!-- Pattern 6: Label Placement -->
+  <section data-layout="stack" data-layout-gap="m">
+    <h2>6. Label Placement</h2>
+    <p style="color: var(--color-text-muted);">Placeholder-as-label disappears when typing. Real labels stay visible.</p>
+    <article class="pattern-pair">
+      <fieldset class="bad" data-layout="stack" data-layout-gap="s">
+        <h3>What most sites do</h3>
+        <form-field>
+          <input type="text" id="name-bad" placeholder="Full Name">
+        </form-field>
+        <p><small>Placeholder disappears on focus. User forgets what the field is for mid-typing. No accessible label.</small></p>
+      </fieldset>
+      <fieldset class="good" data-layout="stack" data-layout-gap="s">
+        <h3>What you should do</h3>
+        <form-field>
+          <label for="name-good">Full Name</label>
+          <input type="text" id="name-good" autocomplete="name"
+                 autocapitalize="words" placeholder="Margaret Lowe">
+        </form-field>
+        <p><small>Real <code>&lt;label&gt;</code> above the field — always visible. Placeholder is a hint, not the label.</small></p>
+      </fieldset>
+    </article>
+  </section>
+
+  <footer style="padding-block: var(--size-xl); text-align: center; color: var(--color-text-muted);">
+    <p>Built with <a href="/">Vanilla Breeze</a> — HTML-first CSS framework</p>
+  </footer>
+
+  <script src="/src/main.js" type="module"></script>
+
+  <script>
+    // Live validation demo: "bad" validates on input, "good" validates on blur
+    const badInput = document.getElementById('val-bad');
+    const goodInput = document.getElementById('val-good');
+
+    badInput?.addEventListener('input', () => {
+      const error = document.querySelector('output[for="val-bad"]');
+      if (!badInput.checkValidity()) {
+        error.textContent = badInput.validationMessage;
+        error.hidden = false;
+        badInput.setAttribute('aria-invalid', 'true');
+      } else {
+        error.hidden = true;
+        badInput.removeAttribute('aria-invalid');
+      }
+    });
+
+    goodInput?.addEventListener('blur', () => {
+      const error = document.querySelector('output[for="val-good"]');
+      if (!goodInput.checkValidity()) {
+        error.textContent = goodInput.validationMessage;
+        error.hidden = false;
+        goodInput.setAttribute('aria-invalid', 'true');
+      } else {
+        error.hidden = true;
+        goodInput.removeAttribute('aria-invalid');
+      }
+    });
+  </script>
+</body>
+</html>

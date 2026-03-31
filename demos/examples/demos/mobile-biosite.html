@@ -7,17 +7,25 @@
   <meta name="description" content="Nuvaris Therapeutics — Mobile biosite demo using Vanilla Breeze" />
   <title>Nuvaris Therapeutics | VB Mobile Demo</title>
   <link rel="stylesheet" href="/src/main.css" />
+  <script>
+    /* Lock to default theme — prevent doc site theme from bleeding into branded demo.
+       MutationObserver re-removes data-theme if ThemeManager re-applies it. */
+    const _html = document.documentElement;
+    _html.removeAttribute('data-theme');
+    new MutationObserver(() => _html.removeAttribute('data-theme'))
+      .observe(_html, { attributes: true, attributeFilter: ['data-theme'] });
+  </script>
   <style>
     /* ============================================================
        BRAND THEME — Override VB tokens for pharma branding
        ============================================================ */
     :root {
-      --color-primary: #0b1e3d;
-      --color-primary-subtle: #162d56;
-      --color-accent: #b8922a;
-      --color-accent-light: #d4a83a;
-      --color-teal: #007d74;
-      --color-teal-light: #009d92;
+      --color-primary: oklch(18% 0.05 260);
+      --color-primary-subtle: oklch(25% 0.07 260);
+      --color-accent: oklch(60% 0.14 70);
+      --color-accent-light: oklch(68% 0.15 70);
+      --color-teal: oklch(50% 0.1 180);
+      --color-teal-light: oklch(58% 0.12 180);
     }
 
     /* ============================================================
@@ -31,20 +39,62 @@
       grid-area: hero;
     }
 
-    /* Bottom nav brand overrides (color only — layout from nav.bottom) */
-    body > nav.bottom {
+    /* Bottom nav — fixed to viewport bottom (mirrors original R&D biosite) */
+    .site-bottom-nav {
+      --_active-color: var(--color-accent);
+      display: flex;
+      position: fixed;
+      inset-block-end: 0;
+      inset-inline: 0;
+      z-index: 90;
       background: var(--color-primary);
-      border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+      border-block-start: 1px solid oklch(100% 0 0 / var(--opacity-10, 0.1));
+      padding-block-end: var(--safe-bottom, 0px);
     }
 
-    body > nav.bottom a {
-      color: rgba(255, 255, 255, 0.45);
+    .site-bottom-nav a,
+    .site-bottom-nav button {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 0.6rem 0.5rem;
+      color: oklch(100% 0 0 / 0.45);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
       transition: color 0.2s;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
 
-    body > nav.bottom a[aria-current="page"],
-    body > nav.bottom a:hover {
+    .site-bottom-nav a.active,
+    .site-bottom-nav a:hover,
+    .site-bottom-nav button:hover {
       color: var(--color-accent);
+    }
+
+    .site-bottom-nav svg {
+      inline-size: 20px;
+      block-size: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Body padding so content doesn't hide behind fixed nav */
+    body { padding-block-end: 4rem; }
+
+    /* Suppress VB default card/article borders in branded demo */
+    article, layout-card {
+      border: none !important;
+      box-shadow: none !important;
     }
 
     /* ============================================================
@@ -300,7 +350,8 @@
        ============================================================ */
     .leader-photo {
       aspect-ratio: 1;
-      background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-primary));
+      overflow: hidden;
+      background: var(--color-primary-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -579,10 +630,7 @@
       </ul>
     </nav>
 
-    <!-- Mobile hamburger (hidden on desktop) -->
-    <button type="button" commandfor="mobile-menu" command="show-modal" class="ghost icon-only" data-visible="mobile" aria-label="Open menu">
-      <icon-wc name="menu"></icon-wc>
-    </button>
+    <!-- Bottom nav "More" handles the menu on mobile; no hamburger needed -->
   </header>
 
   <!-- ============================================================
@@ -660,7 +708,7 @@
     </section>
 
     <!-- PIPELINE — Swipeable card reel -->
-    <section id="pipeline" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Clinical pipeline">
+    <section id="pipeline" class="section-pad" data-layout="stack" data-layout-gap="m" data-animate="fade-up" aria-label="Clinical pipeline">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Clinical Pipeline</p>
         <h2 class="section-heading">Two novel therapies. Measurable lives changed.</h2>
@@ -753,7 +801,7 @@
     </section>
 
     <!-- ABOUT — Split layout -->
-    <section id="about" class="section-pad" data-layout="stack" data-layout-gap="l" aria-label="About Nuvaris">
+    <section id="about" class="section-pad" data-layout="stack" data-layout-gap="l" data-animate="fade-up" aria-label="About Nuvaris">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">About Nuvaris</p>
         <h2 class="section-heading">Science-first. Patient-led. Always.</h2>
@@ -795,7 +843,7 @@
     </section>
 
     <!-- LEADERSHIP — Grid with long-press gesture -->
-    <section id="leadership" class="section-pad alt-bg" data-layout="stack" data-layout-gap="l" aria-label="Leadership team">
+    <section id="leadership" class="section-pad alt-bg" data-layout="stack" data-layout-gap="l" data-animate="fade-up" aria-label="Leadership team">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Leadership Team</p>
         <h2 class="section-heading">Experienced operators. Driven scientists.</h2>
@@ -803,28 +851,28 @@
 
       <section data-layout="grid" data-layout-min="12rem" data-layout-gap="m">
         <layout-card class="leader-card" data-gesture="long-press">
-          <header class="leader-photo"><span class="leader-initials">ML</span></header>
+          <header class="leader-photo"><img data-mock="photo" data-seed="margaret-lowe" width="300" height="300" alt="Margaret Lowe"></header>
           <section class="leader-info">
             <p><strong>Margaret Lowe, Ph.D.</strong></p>
             <p class="leader-title">CEO &amp; Co-Founder</p>
           </section>
         </layout-card>
         <layout-card class="leader-card" data-gesture="long-press">
-          <header class="leader-photo"><span class="leader-initials">RK</span></header>
+          <header class="leader-photo"><img data-mock="photo" data-seed="raj-krishnamurthy" width="300" height="300" alt="Raj Krishnamurthy"></header>
           <section class="leader-info">
             <p><strong>Raj Krishnamurthy, M.D.</strong></p>
             <p class="leader-title">Chief Medical Officer</p>
           </section>
         </layout-card>
         <layout-card class="leader-card" data-gesture="long-press">
-          <header class="leader-photo"><span class="leader-initials">SP</span></header>
+          <header class="leader-photo"><img data-mock="photo" data-seed="sophia-park" width="300" height="300" alt="Sophia Park"></header>
           <section class="leader-info">
             <p><strong>Sophia Park, Ph.D.</strong></p>
             <p class="leader-title">CSO &amp; Co-Founder</p>
           </section>
         </layout-card>
         <layout-card class="leader-card" data-gesture="long-press">
-          <header class="leader-photo"><span class="leader-initials">DW</span></header>
+          <header class="leader-photo"><img data-mock="photo" data-seed="daniel-whitmore" width="300" height="300" alt="Daniel Whitmore"></header>
           <section class="leader-info">
             <p><strong>Daniel Whitmore</strong></p>
             <p class="leader-title">Chief Financial Officer</p>
@@ -834,7 +882,7 @@
     </section>
 
     <!-- NEWSROOM — Card grid -->
-    <section id="newsroom" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Newsroom">
+    <section id="newsroom" class="section-pad" data-layout="stack" data-layout-gap="m" data-animate="fade-up" aria-label="Newsroom">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Newsroom</p>
         <h2 class="section-heading">Latest news &amp; press releases</h2>
@@ -892,7 +940,7 @@
     </section>
 
     <!-- CAREERS — Dark section with job listings -->
-    <section id="careers" class="dark-section section-pad" data-layout="stack" data-layout-gap="m" aria-label="Careers">
+    <section id="careers" class="dark-section section-pad" data-layout="stack" data-layout-gap="m" data-animate="fade-up" aria-label="Careers">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Careers</p>
         <h2 class="section-heading">Join us. The work matters.</h2>
@@ -941,7 +989,7 @@
     </section>
 
     <!-- INVESTORS — Stats grid -->
-    <section id="investors" class="section-pad" data-layout="stack" data-layout-gap="m" aria-label="Investor relations">
+    <section id="investors" class="section-pad" data-layout="stack" data-layout-gap="m" data-animate="fade-up" aria-label="Investor relations">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Investor Relations</p>
         <h2 class="section-heading">NUVR · NASDAQ</h2>
@@ -975,7 +1023,7 @@
     </section>
 
     <!-- CONTACT — Split layout with mobile-optimized form -->
-    <section id="contact" class="contact-section" data-layout="stack" data-layout-gap="l" aria-label="Contact">
+    <section id="contact" class="contact-section" data-layout="stack" data-layout-gap="l" data-animate="fade-up" aria-label="Contact">
       <header data-layout="stack" data-layout-gap="xs">
         <p class="section-label">Contact</p>
         <h2 class="section-heading">Get in touch</h2>
@@ -1124,20 +1172,33 @@
   </footer>
 
   <!-- ============================================================
-       BOTTOM NAV — App-shell navigation (mobile)
+       BOTTOM NAV — Fixed mobile navigation with inline SVGs
        ============================================================ -->
-  <nav class="bottom" data-visible="mobile" aria-label="Quick navigation">
-    <ul>
-      <li><a href="#" aria-current="page"><icon-wc name="home"></icon-wc> Home</a></li>
-      <li><a href="#pipeline"><icon-wc name="flask-conical"></icon-wc> Pipeline</a></li>
-      <li><a href="#newsroom"><icon-wc name="newspaper"></icon-wc> News</a></li>
-      <li><a href="#careers"><icon-wc name="briefcase"></icon-wc> Careers</a></li>
-      <li><a href="#investors"><icon-wc name="trending-up"></icon-wc> Investors</a></li>
-    </ul>
+  <nav class="site-bottom-nav" aria-label="Quick navigation">
+    <a href="#" aria-label="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a href="#pipeline" aria-label="Pipeline">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Pipeline
+    </a>
+    <a href="#newsroom" aria-label="News">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      News
+    </a>
+    <a href="#investors" aria-label="Investors">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Investors
+    </a>
+    <button type="button" commandfor="mobile-menu" command="show-modal" aria-label="More menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      More
+    </button>
   </nav>
 
   <!-- ============================================================
-       BOTTOM SHEET — Mobile menu dialog
+       BOTTOM SHEET — Overflow menu via bottom nav "More" button
        ============================================================ -->
   <dialog id="mobile-menu" data-position="bottom">
     <header data-layout="cluster" data-layout-justify="between" aria-label="Menu dialog header">
@@ -1148,12 +1209,10 @@
     </header>
     <nav aria-label="Menu navigation" class="dialog-pad">
       <ul data-layout="stack" data-layout-gap="xs" class="menu-list">
-        <li><a href="#pipeline" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="flask-conical"></icon-wc> Pipeline</a></li>
         <li><a href="#about" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="building-2"></icon-wc> About</a></li>
         <li><a href="#leadership" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="users"></icon-wc> Leadership</a></li>
         <li><a href="#newsroom" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="newspaper"></icon-wc> Newsroom</a></li>
         <li><a href="#careers" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="briefcase"></icon-wc> Careers</a></li>
-        <li><a href="#investors" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="trending-up"></icon-wc> Investors</a></li>
         <li><a href="#contact" class="menu-link" data-layout="cluster" data-layout-gap="s"><icon-wc name="mail"></icon-wc> Contact</a></li>
       </ul>
     </nav>

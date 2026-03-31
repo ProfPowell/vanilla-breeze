@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Journey - Web Components R&D</title>
+  <style>
+    :root {
+      --bg:      #f8f9fa;
+      --text:    #1a1a1a;
+      --muted:   #666666;
+      --border:  #e0e0e0;
+      --card-bg: #ffffff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #121212;
+        --text:    #e8e8e8;
+        --muted:   #888888;
+        --border:  #333333;
+        --card-bg: #1e1e1e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+    }
+
+    header h1 { margin: 0 0 8px 0; font-size: 32px; font-weight: 700; }
+    header p  { margin: 0; color: var(--muted); font-size: 16px; }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+    section { margin-bottom: 60px; }
+
+    section h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    section h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 2px;
+    }
+
+    section > p { color: var(--muted); margin: 0 0 24px 0; }
+
+    .demo-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .demo-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .demo-row:last-child { margin-bottom: 0; }
+
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    .code-block code { white-space: pre; }
+
+    .relationship {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .rel-node {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 2px solid currentColor;
+    }
+
+    .rel-node--persona { color: #0369a1; background: #e0f2fe; }
+    .rel-node--journey { color: #6366f1; background: #ede9fe; }
+    .rel-node--story   { color: #15803d; background: #dcfce7; }
+
+    @media (prefers-color-scheme: dark) {
+      .rel-node--persona { color: #38bdf8; background: #082f49; }
+      .rel-node--journey { color: #a78bfa; background: #2e1065; }
+      .rel-node--story   { color: #4ade80; background: #052e16; }
+    }
+
+    .rel-arrow { color: var(--muted); font-size: 18px; }
+
+    .attr-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .attr-table th {
+      padding: 8px 12px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .attr-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .attr-table code {
+      font-family: Monaco, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    .emotion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .emotion-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 24px;
+    }
+
+    .back-link:hover { color: #6366f1; }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>User Journey</h1>
+  <p>Visualise multi-phase user journeys with emotion curves and phase breakdowns</p>
+</header>
+
+<main>
+
+  <a class="back-link" href="../index.html">← Web Components R&amp;D</a>
+
+  <p style="font-size:13px;color:var(--muted);background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:24px">
+    ⚠ Requires a local server to load ES modules — run <code>npx serve .</code> or <code>python3 -m http.server</code> from the repo root.
+  </p>
+
+  <!-- Overview -->
+  <section id="overview">
+    <h2>Overview</h2>
+    <p>
+      The <code>&lt;user-journey&gt;</code> component renders a journey map card with an
+      SVG emotion curve and a structured phase grid covering actions, thoughts, touchpoints,
+      pain points, and opportunities. It cross-references <code>&lt;user-persona&gt;</code>
+      and <code>&lt;user-story&gt;</code> via anchor links.
+    </p>
+
+    <div class="relationship">
+      <span class="rel-node rel-node--persona">👤 user-persona</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-node rel-node--journey">🗺 user-journey</span>
+      <span class="rel-arrow">←→</span>
+      <span class="rel-node rel-node--story">📋 user-story</span>
+    </div>
+    <p style="margin-top:0;font-size:14px;color:var(--muted)">
+      <code>persona-id</code> links to a <code>&lt;user-persona id="…"&gt;</code>.
+      Each phase's <code>storyIds</code> array links to <code>&lt;user-story&gt;</code> elements.
+    </p>
+  </section>
+
+  <!-- Full demo -->
+  <section id="full-demo">
+    <h2>User Journey</h2>
+    <p>Five-phase journey for a Senior Developer evaluating an API management platform — from first Google search through steady-state adoption. Each phase captures real actions, internal monologue, touchpoints, pain points, and design opportunities.</p>
+
+    <div class="demo-container">
+      <div class="demo-label">Technical Evaluator — API Platform Evaluation</div>
+
+      <user-journey
+        id="journey-api"
+        title="API Platform Evaluation"
+        persona="Sarah Chen"
+        persona-id="persona-sarah-chen"
+        summary="How a senior developer discovers, evaluates, and adopts the API management platform"
+        story-ids="PROJ-101,PROJ-102">
+      </user-journey>
+
+      <div class="code-block"><code>&lt;user-journey
+  title="API Platform Evaluation"
+  persona="Sarah Chen"
+  persona-id="persona-sarah-chen"
+  summary="How a senior developer discovers, evaluates, and adopts the platform"
+  src="/data/journeys/api-evaluation.json"&gt;
+&lt;/user-journey&gt;</code></div>
+    </div>
+  </section>
+
+  <!-- Compact mode -->
+  <section id="compact">
+    <h2>Compact Mode</h2>
+    <p>Use the <code>compact</code> boolean attribute for tighter layouts.</p>
+
+    <div class="demo-container">
+      <div class="demo-label">Support Incident Journey — 3 Phases, Compact</div>
+
+      <user-journey
+        id="journey-support"
+        title="Support Incident Journey"
+        persona="Sarah Chen"
+        persona-id="persona-sarah-chen"
+        summary="What a developer experiences from first alert to resolved incident"
+        compact>
+      </user-journey>
+
+      <div class="code-block"><code>&lt;user-journey
+  title="Customer Support Journey"
+  persona="End User"
+  src="/data/journeys/support.json"
+  compact&gt;
+&lt;/user-journey&gt;</code></div>
+    </div>
+  </section>
+
+  <!-- JSON schema -->
+  <section id="json-schema">
+    <h2>JSON Schema (<code>src</code> attribute)</h2>
+    <p>Fetch phase data from a JSON file for complex journeys.</p>
+
+    <div class="demo-container">
+      <div class="code-block"><code>{
+  "title": "API Platform Evaluation",
+  "persona": "Sarah Chen",
+  "personaId": "persona-sarah-chen",
+  "summary": "How a developer discovers and adopts the platform",
+  "phases": [
+    {
+      "name": "Awareness",
+      "emotion": "curious",
+      "storyIds": ["PROJ-101"],
+      "actions":       ["Searches for API management solutions"],
+      "thoughts":      ["There must be a simpler way to manage our APIs"],
+      "touchpoints":   ["Google", "Hacker News", "Dev.to"],
+      "painPoints":    ["Hard to compare vendors"],
+      "opportunities": ["Developer-focused landing page"]
+    }
+  ]
+}</code></div>
+    </div>
+  </section>
+
+  <!-- Attributes -->
+  <section id="attributes">
+    <h2>Attributes</h2>
+
+    <div class="demo-container">
+      <table class="attr-table">
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>Journey title displayed in the card header.</td>
+          </tr>
+          <tr>
+            <td><code>persona</code></td>
+            <td>string</td>
+            <td>Persona name shown in the header.</td>
+          </tr>
+          <tr>
+            <td><code>persona-id</code></td>
+            <td>string</td>
+            <td>ID of the <code>&lt;user-persona&gt;</code> on the page — renders as an anchor link.</td>
+          </tr>
+          <tr>
+            <td><code>summary</code></td>
+            <td>string</td>
+            <td>One-line description of the journey scope.</td>
+          </tr>
+          <tr>
+            <td><code>story-ids</code></td>
+            <td>comma-separated</td>
+            <td>IDs of related <code>&lt;user-story&gt;</code> elements — shown as chip links.</td>
+          </tr>
+          <tr>
+            <td><code>src</code></td>
+            <td>URL</td>
+            <td>Fetches all phase data from a JSON file.</td>
+          </tr>
+          <tr>
+            <td><code>compact</code></td>
+            <td>boolean</td>
+            <td>Reduced padding and curve height for tighter layouts.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Emotion values -->
+  <section id="emotions">
+    <h2>Emotion Values</h2>
+    <p>The <code>emotion</code> key in each phase drives the curve y-position and dot colour.</p>
+
+    <div class="demo-container">
+      <div class="emotion-grid">
+        <div class="emotion-item">😄 <code>delighted</code></div>
+        <div class="emotion-item">😊 <code>satisfied</code></div>
+        <div class="emotion-item">🙂 <code>hopeful</code></div>
+        <div class="emotion-item">🤔 <code>curious</code></div>
+        <div class="emotion-item">😐 <code>neutral</code></div>
+        <div class="emotion-item">😕 <code>uncertain</code></div>
+        <div class="emotion-item">😵 <code>confused</code></div>
+        <div class="emotion-item">😤 <code>frustrated</code></div>
+        <div class="emotion-item">😠 <code>angry</code></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Web Components R&D - ProfPowell | <a href="https://github.com/ProfPowell" target="_blank">GitHub</a></p>
+</footer>
+
+<!-- Component + data in one module so execution order is guaranteed -->
+<script type="module">
+  // Import the component definition first, then assign data
+  await import('./user-journey.js');
+
+  document.getElementById('journey-api').phases = [
+    {
+      name: 'Awareness',
+      emotion: 'curious',
+      storyIds: ['PROJ-101'],
+      actions: [
+        'Googles "API management platform" after a painful sprint dealing with rate-limit chaos',
+        'Reads two comparison articles and bookmarks three vendors',
+        'Shares a Dev.to post in the team Slack: "anyone used this?"',
+      ],
+      thoughts: [
+        'Every vendor claims they\'re the easiest — how do I actually compare them?',
+        'My manager wants a decision in two weeks. That\'s not enough time to evaluate properly.',
+      ],
+      touchpoints: [
+        'Google Search', 'Dev.to & Hacker News', 'Team Slack', 'G2 reviews',
+      ],
+      painPoints: [
+        'Marketing copy is identical across vendors — no real differentiation',
+        'Every "pricing" page just says "contact us"',
+      ],
+      opportunities: [
+        'Lead with a technical comparison matrix, not feature marketing',
+        'Show a public pricing page — even a rough tier table builds trust',
+      ],
+    },
+    {
+      name: 'Technical Evaluation',
+      emotion: 'curious',
+      storyIds: ['PROJ-102', 'PROJ-103'],
+      actions: [
+        'Signs up for free trial using work email',
+        'Follows the quickstart guide — has a "hello world" running in 12 minutes',
+        'Digs into SDK docs for the language her team uses (Python)',
+        'Tests rate-limiting, auth token rotation, and error response formats',
+        'Opens three GitHub issues she found while reading — checks if they\'re resolved',
+      ],
+      thoughts: [
+        'The quickstart is actually good. That\'s a good sign.',
+        'The error messages are cryptic — our on-call engineers will hate debugging this at 2am.',
+        'I need to check if SSO is on the free tier or locked behind enterprise.',
+      ],
+      touchpoints: [
+        'Trial dashboard', 'API docs', 'Python SDK on GitHub',
+        'Status page', 'Community Slack',
+      ],
+      painPoints: [
+        'SSO is enterprise-only — buried in a footnote',
+        'Python SDK is two major versions behind the Node SDK',
+        'No way to test webhook retry behaviour in the sandbox',
+      ],
+      opportunities: [
+        'SDK parity across languages is a competitive differentiator — call it out',
+        'A "break things" sandbox mode with full webhook simulation would close deals faster',
+      ],
+    },
+    {
+      name: 'Internal Decision',
+      emotion: 'uncertain',
+      storyIds: ['PROJ-104'],
+      actions: [
+        'Builds a comparison doc with scored criteria and shares with the team',
+        'Schedules a 30-min demo with the vendor sales team',
+        'Raises the SSO gap with her manager — negotiates it into the enterprise trial',
+        'Sends a security questionnaire to the vendor',
+        'Waits two weeks for the security team response',
+      ],
+      thoughts: [
+        'The demo was basically a repeat of the docs. I didn\'t learn anything new.',
+        'Procurement is going to add another month. I should have started this earlier.',
+        'If the security questionnaire comes back with red flags we\'re back to square one.',
+      ],
+      touchpoints: [
+        'Internal Notion doc', 'Sales call (Zoom)', 'Security team email', 'Procurement portal',
+      ],
+      painPoints: [
+        'Sales demo added no value for a technical evaluator',
+        'Security questionnaire took 11 days to get a response',
+        'Procurement requires a vendor contract review that adds 3–4 weeks',
+      ],
+      opportunities: [
+        'Offer a self-serve security & compliance hub (SOC 2, pen test reports, DPA) — eliminates questionnaire delay',
+        'Assign a solutions engineer for technical evaluators — skip the generic sales demo',
+      ],
+    },
+    {
+      name: 'Onboarding',
+      emotion: 'hopeful',
+      actions: [
+        'Receives credentials and starts the structured onboarding checklist',
+        'Migrates the two highest-traffic services in the first sprint',
+        'Runs a team training session using the vendor\'s onboarding guide',
+        'Sets up alerting and a runbook for on-call engineers',
+        'Hits an unexpected rate limit on the import endpoint — opens a support ticket',
+      ],
+      thoughts: [
+        'The migration guide is well written — this is going better than I expected.',
+        'I wish I\'d known about the import rate limit before the sprint planning.',
+        'The team is actually excited about the new dashboard. That rarely happens.',
+      ],
+      touchpoints: [
+        'Onboarding checklist (in-app)', 'Migration guide (docs)', 'Team training call',
+        'Support ticket', 'Vendor Slack community',
+      ],
+      painPoints: [
+        'Import rate limit not documented — discovered mid-sprint',
+        'No bulk migration tooling; had to write custom scripts',
+      ],
+      opportunities: [
+        'Document all rate limits prominently in the migration guide',
+        'Provide a migration toolkit (CLI + validation scripts) to reduce custom scripting',
+        'A "migration sprint" template in the onboarding checklist would save hours of planning',
+      ],
+    },
+    {
+      name: 'Steady State',
+      emotion: 'satisfied',
+      actions: [
+        'All services migrated; team fully using the platform',
+        'Reviews monthly usage dashboard to watch for quota creep',
+        'Submits a feature request for improved audit logging',
+        'Renews contract — negotiates volume pricing',
+      ],
+      thoughts: [
+        'On-call incidents related to API issues are down significantly. Worth it.',
+        'The audit logging gaps are going to be a problem when the compliance audit comes up.',
+      ],
+      touchpoints: [
+        'Usage dashboard', 'Feature request portal', 'Account manager', 'Renewal contract',
+      ],
+      painPoints: [
+        'Audit log export is limited to 90 days — compliance needs 12 months',
+        'No proactive heads-up when approaching quota limits',
+      ],
+      opportunities: [
+        'Configurable quota alerts (email + webhook) would reduce surprise overage bills',
+        'Extended audit log retention as an add-on would unlock regulated-industry customers',
+      ],
+    },
+  ];
+
+  document.getElementById('journey-support').phases = [
+    {
+      name: 'Problem Hits',
+      emotion: 'frustrated',
+      actions: [
+        'Receives an error from a customer — "your integration stopped working"',
+        'Checks the status page — shows all green',
+        'Searches the help centre — finds a 2-year-old article that doesn\'t match her version',
+        'Opens a support ticket with full error logs attached',
+      ],
+      thoughts: [
+        'The status page says everything is fine but clearly something is broken.',
+        'Why does the most recent doc article reference v1 when we\'re on v3?',
+      ],
+      touchpoints: ['Status page', 'Help centre search', 'Support ticket form'],
+      painPoints: [
+        'Status page doesn\'t reflect real incidents until they\'re already severe',
+        'Documentation is version-inconsistent — wastes 20 minutes',
+      ],
+      opportunities: [
+        'Proactive incident communication before customers notice',
+        'Version-tagged documentation with clear "you are on v3" context',
+      ],
+    },
+    {
+      name: 'Waiting & Workaround',
+      emotion: 'uncertain',
+      actions: [
+        'Implements a temporary workaround to unblock the customer',
+        'Follows up on ticket after 6 hours with no response',
+        'Posts in the community Slack — gets a hint from another user',
+      ],
+      thoughts: [
+        'SLA says 4-hour response for my tier — I\'m past that now.',
+        'Another user hit the same thing last week. This is a known issue. Why is it still open?',
+      ],
+      touchpoints: ['Support ticket', 'Community Slack'],
+      painPoints: [
+        'SLA missed without acknowledgement',
+        'Known issue not surfaced in the help centre or at ticket creation',
+      ],
+      opportunities: [
+        'At ticket creation, surface related known issues automatically',
+        'Proactive SLA breach notification to customer before they follow up',
+      ],
+    },
+    {
+      name: 'Resolution',
+      emotion: 'satisfied',
+      actions: [
+        'Support engineer identifies the root cause — a silent config change in a recent deploy',
+        'Fix deployed; customer confirms the integration is working',
+        'Receives a post-mortem summary email',
+      ],
+      thoughts: [
+        'Glad it\'s fixed, but this should not have taken 14 hours.',
+        'The post-mortem is actually detailed and honest — that\'s rare.',
+      ],
+      touchpoints: ['Support ticket reply', 'Post-mortem email'],
+      painPoints: [
+        '14 hours to resolve something caused by the vendor\'s own deploy',
+      ],
+      opportunities: [
+        'Automated regression tests on deploys that catch config regressions before customers do',
+        'A public post-mortem page builds long-term trust even when things go wrong',
+      ],
+    },
+  ];
+</script>
+
+</body>
+</html>

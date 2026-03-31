@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1040">
+  <meta name="description" content="Luminary — SaaS project management mobile site demo using Vanilla Breeze Phase 4 patterns">
+  <title>Luminary | Ship faster. Together.</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script>
+    /* Lock to default theme — prevent doc site theme from bleeding into branded demo.
+       MutationObserver re-removes data-theme if ThemeManager re-applies it. */
+    const _html = document.documentElement;
+    _html.removeAttribute('data-theme');
+    new MutationObserver(() => _html.removeAttribute('data-theme'))
+      .observe(_html, { attributes: true, attributeFilter: ['data-theme'] });
+  </script>
+  <style>
+    /* ============================================================
+       BRAND TOKENS — Luminary SaaS brand palette
+       ============================================================ */
+    :root {
+      --lum-navy: oklch(25% 0.08 280);
+      --lum-indigo: oklch(45% 0.2 280);
+      --lum-violet: oklch(55% 0.22 295);
+      --lum-mint: oklch(75% 0.14 165);
+      --lum-glow: oklch(85% 0.15 90);
+    }
+
+    html { overscroll-behavior-y: none; }
+    body { margin: 0; }
+
+    /* Bottom nav spacing so content isn't hidden behind it */
+    body > main { padding-block-end: 4rem; }
+
+    /* ============================================================
+       HEADER — scroll-hide branded bar
+       ============================================================ */
+    body > header[data-scroll-hide] {
+      background: oklch(from var(--lum-navy) l c h / 0.92);
+      backdrop-filter: blur(12px) saturate(180%);
+      padding: var(--size-s) var(--size-m);
+      padding-block-start: calc(var(--size-s) + var(--safe-top, 0px));
+      border-block-end: 1px solid oklch(100% 0 0 / 0.08);
+    }
+
+    body > header a,
+    body > header strong { color: #fff; text-decoration: none; }
+
+    .brand-logo {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-logo mark {
+      background: none;
+      color: var(--lum-mint);
+    }
+
+    /* ============================================================
+       HERO — dark gradient with cinematic overlay
+       ============================================================ */
+    .hero-cover {
+      background: linear-gradient(145deg, var(--lum-navy) 0%, var(--lum-indigo) 60%, var(--lum-violet) 100%);
+      color: #fff;
+    }
+
+    .hero-cover :is(p, a, small, strong) { color: inherit; }
+
+    .hero-cover h1 {
+      font-size: clamp(2.25rem, 7vw + 0.5rem, 4rem);
+      line-height: 1.1;
+      text-wrap: balance;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-cover p {
+      font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.35rem);
+      opacity: 0.85;
+      max-inline-size: 42ch;
+    }
+
+    .hero-actions button {
+      font-size: var(--font-size-md);
+      padding: var(--size-s) var(--size-l);
+    }
+
+    /* Brand buttons — override VB button color via --btn-color */
+    .btn-mint {
+      --btn-color: var(--lum-mint);
+      color: var(--lum-navy);
+    }
+
+    .btn-ghost-light {
+      --btn-color: oklch(100% 0 0 / var(--opacity-80, 0.8));
+    }
+
+    /* ============================================================
+       STATS REEL — trust metrics strip
+       ============================================================ */
+    .stats-strip {
+      background: var(--color-surface-raised, var(--color-surface));
+      padding: var(--size-l) var(--size-m);
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: var(--size-m) var(--size-l);
+      min-inline-size: 9rem;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: var(--font-size-2xl);
+      color: var(--lum-indigo);
+      line-height: 1.2;
+    }
+
+    .stat-card small {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================================
+       FEATURE CARDS — icon styling
+       ============================================================ */
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      inline-size: 3rem;
+      block-size: 3rem;
+      border-radius: var(--radius-m);
+      background: oklch(from var(--lum-indigo) l c h / 0.12);
+      color: var(--lum-indigo);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       TESTIMONIALS — blockquote cards
+       ============================================================ */
+    .testimonial-card {
+      padding: var(--size-l);
+      min-inline-size: 18rem;
+    }
+
+    .testimonial-card blockquote {
+      font-style: italic;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .testimonial-card cite {
+      font-style: normal;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* ============================================================
+       PRICING — tier cards
+       ============================================================ */
+    .price-amount {
+      font-size: var(--font-size-3xl);
+      font-weight: 800;
+      color: var(--lum-indigo);
+      line-height: 1;
+    }
+
+    .pricing-card { text-align: center; }
+
+    .pricing-card.featured {
+      border: 2px solid var(--lum-indigo);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* ============================================================
+       CTA SECTION — final call to action
+       ============================================================ */
+    .cta-final {
+      background: linear-gradient(135deg, var(--lum-navy), var(--lum-indigo));
+      color: #fff;
+      text-align: center;
+    }
+
+    .cta-final :is(p, strong, small) { color: inherit; }
+
+    /* ============================================================
+       FOOTER — dark branded footer
+       ============================================================ */
+    body > footer {
+      background: var(--lum-navy);
+      color: oklch(100% 0 0 / 0.7);
+      padding: var(--size-xl) var(--size-m);
+    }
+
+    body > footer a { color: oklch(100% 0 0 / 0.7); }
+    body > footer a:hover { color: var(--lum-mint); }
+    body > footer strong { color: #fff; }
+
+    /* ============================================================
+       BOTTOM NAV — frosted glass mobile nav
+       ============================================================ */
+    body > nav.bottom.frosted {
+      --nav-icon-size: 1.25rem;
+      position: fixed;
+      inset-block-end: 0;
+      inset-inline: 0;
+    }
+
+    body > nav.bottom.frosted a[aria-current="page"] {
+      color: var(--lum-indigo);
+    }
+
+    /* Space for fixed bottom nav */
+    body > footer { padding-block-end: 5rem; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Auto-hiding header ─── -->
+  <header data-scroll-hide>
+    <nav data-layout="cluster" data-layout-justify="between">
+      <a href="#">
+        <strong class="brand-logo">Lumi<mark>nary</mark></strong>
+      </a>
+      <menu data-layout="cluster" data-layout-gap="m">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#contact"><button class="small btn-mint">Try Free</button></a></li>
+      </menu>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ─── Hero: full-height cover with cinematic overlay ─── -->
+    <layout-cover class="hero-cover" data-layout-min="100svh" data-layout-centered>
+      <hgroup data-layout-principal data-layout="stack" data-layout-gap="m">
+        <h1>Ship faster.<br>Together.</h1>
+        <p>The project management platform that keeps your team aligned, your deadlines on track, and your ideas flowing.</p>
+        <nav class="hero-actions" data-layout="cluster" data-layout-gap="m" data-layout-justify="center">
+          <a href="#pricing"><button class="btn-mint">Start free trial</button></a>
+          <a href="#features"><button class="secondary btn-ghost-light">See how it works</button></a>
+        </nav>
+      </hgroup>
+    </layout-cover>
+
+    <!-- ─── Stats reel — trust metrics ─── -->
+    <section class="stats-strip" aria-label="Key metrics">
+      <layout-reel data-layout-gap="m">
+        <layout-card class="stat-card">
+          <strong>10K+</strong>
+          <small>Teams worldwide</small>
+        </layout-card>
+        <layout-card class="stat-card">
+          <strong>99.9%</strong>
+          <small>Uptime SLA</small>
+        </layout-card>
+        <layout-card class="stat-card">
+          <strong>4.8/5</strong>
+          <small>G2 rating</small>
+        </layout-card>
+        <layout-card class="stat-card">
+          <strong>2M+</strong>
+          <small>Tasks completed daily</small>
+        </layout-card>
+        <layout-card class="stat-card">
+          <strong>50+</strong>
+          <small>Integrations</small>
+        </layout-card>
+      </layout-reel>
+    </section>
+
+    <!-- ─── Features: responsive grid with scroll animations ─── -->
+    <section id="features" data-animate="fade-up" data-layout="stack" data-layout-gap="xl" style="padding: var(--size-2xl) var(--size-m);">
+      <header style="text-align: center;">
+        <h2>Everything your team needs</h2>
+        <p style="color: var(--color-text-muted); max-inline-size: 50ch; margin-inline: auto;">
+          From sprint planning to launch day, Luminary keeps every moving piece visible.
+        </p>
+      </header>
+      <section data-layout="grid" data-layout-min="15rem" data-layout-gap="l">
+        <layout-card data-layout="stack" data-layout-gap="s" style="padding: var(--size-l);">
+          <span class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </span>
+          <h3>Board views</h3>
+          <p style="color: var(--color-text-muted);">Kanban, list, timeline, and calendar views to match how your team thinks.</p>
+        </layout-card>
+        <layout-card data-layout="stack" data-layout-gap="s" style="padding: var(--size-l);">
+          <span class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <h3>Real-time collaboration</h3>
+          <p style="color: var(--color-text-muted);">See who is editing, comment in context, and never lose a decision in chat.</p>
+        </layout-card>
+        <layout-card data-layout="stack" data-layout-gap="s" style="padding: var(--size-l);">
+          <span class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          <h3>Insights &amp; reporting</h3>
+          <p style="color: var(--color-text-muted);">Velocity charts, burndown reports, and team workload heatmaps in one click.</p>
+        </layout-card>
+      </section>
+    </section>
+
+    <!-- ─── Testimonials reel ─── -->
+    <section data-animate="fade-up" data-layout="stack" data-layout-gap="l" style="padding: var(--size-2xl) var(--size-m); background: var(--color-surface-raised, var(--color-surface));">
+      <header style="text-align: center;">
+        <h2>Trusted by product teams</h2>
+      </header>
+      <layout-reel data-layout-gap="m">
+        <layout-card class="testimonial-card">
+          <blockquote>
+            <p>"Luminary replaced three tools for us. Our sprint velocity went up 40% in the first quarter."</p>
+          </blockquote>
+          <footer data-layout="stack" data-layout-gap="xs">
+            <cite><strong>Ava Chen</strong>, VP Engineering at Stackform</cite>
+          </footer>
+        </layout-card>
+        <layout-card class="testimonial-card">
+          <blockquote>
+            <p>"The real-time views are a game changer. I finally have visibility without chasing people on Slack."</p>
+          </blockquote>
+          <footer data-layout="stack" data-layout-gap="xs">
+            <cite><strong>Marcus Webb</strong>, Product Lead at Cirrus Health</cite>
+          </footer>
+        </layout-card>
+        <layout-card class="testimonial-card">
+          <blockquote>
+            <p>"Setup took 15 minutes. Our team was onboarded and running sprints the same afternoon."</p>
+          </blockquote>
+          <footer data-layout="stack" data-layout-gap="xs">
+            <cite><strong>Priya Nair</strong>, CTO at Leafline</cite>
+          </footer>
+        </layout-card>
+      </layout-reel>
+    </section>
+
+    <!-- ─── Pricing tiers ─── -->
+    <section id="pricing" data-animate="fade-up" data-layout="stack" data-layout-gap="xl" style="padding: var(--size-2xl) var(--size-m);">
+      <header style="text-align: center;">
+        <h2>Simple pricing, no surprises</h2>
+        <p style="color: var(--color-text-muted);">Start free. Upgrade when you are ready.</p>
+      </header>
+      <section data-layout="grid" data-layout-min="15rem" data-layout-gap="l">
+        <layout-card class="pricing-card" data-layout="stack" data-layout-gap="m" style="padding: var(--size-xl);">
+          <h3>Starter</h3>
+          <p><strong class="price-amount">$0</strong><small>/month</small></p>
+          <ul data-layout="stack" data-layout-gap="xs" style="text-align: start;">
+            <li>Up to 5 team members</li>
+            <li>Unlimited projects</li>
+            <li>Basic reporting</li>
+          </ul>
+          <footer>
+            <a href="#contact"><button style="inline-size: 100%;" data-variant="outline">Get started</button></a>
+          </footer>
+        </layout-card>
+        <layout-card class="pricing-card featured" data-layout="stack" data-layout-gap="m" style="padding: var(--size-xl);">
+          <layout-badge data-color="primary" style="align-self: center;">Most popular</layout-badge>
+          <h3>Team</h3>
+          <p><strong class="price-amount">$12</strong><small>/user/mo</small></p>
+          <ul data-layout="stack" data-layout-gap="xs" style="text-align: start;">
+            <li>Unlimited members</li>
+            <li>Advanced analytics</li>
+            <li>Custom workflows</li>
+            <li>Priority support</li>
+          </ul>
+          <footer>
+            <a href="#contact"><button class="btn-mint" style="inline-size: 100%;">Start free trial</button></a>
+          </footer>
+        </layout-card>
+        <layout-card class="pricing-card" data-layout="stack" data-layout-gap="m" style="padding: var(--size-xl);">
+          <h3>Enterprise</h3>
+          <p><strong class="price-amount">Custom</strong></p>
+          <ul data-layout="stack" data-layout-gap="xs" style="text-align: start;">
+            <li>SSO &amp; SAML</li>
+            <li>Dedicated success manager</li>
+            <li>99.99% uptime SLA</li>
+            <li>On-prem deployment option</li>
+          </ul>
+          <footer>
+            <a href="#contact"><button style="inline-size: 100%;" data-variant="outline">Contact sales</button></a>
+          </footer>
+        </layout-card>
+      </section>
+    </section>
+
+    <!-- ─── Final CTA with sticky bar ─── -->
+    <section class="cta-final" data-layout="stack" data-layout-gap="m" style="padding: var(--size-2xl) var(--size-m);">
+      <h2>Ready to ship faster?</h2>
+      <p>Join 10,000+ teams who already trust Luminary to keep their projects on track.</p>
+      <nav data-layout="cluster" data-layout-justify="center" data-layout-gap="m">
+        <a href="#contact"><button class="btn-mint">Start your free trial</button></a>
+      </nav>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ─── -->
+  <footer id="contact">
+    <article data-layout="stack" data-layout-gap="l">
+      <section data-layout="grid" data-layout-min="10rem" data-layout-gap="l">
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Product</strong>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#">Changelog</a>
+          <a href="#">Integrations</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Resources</strong>
+          <a href="#">Documentation</a>
+          <a href="#">API Reference</a>
+          <a href="#">Blog</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Company</strong>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+        </nav>
+        <nav data-layout="stack" data-layout-gap="xs">
+          <strong>Legal</strong>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </nav>
+      </section>
+      <hr style="border-color: oklch(100% 0 0 / 0.1);">
+      <p><small>&copy; 2026 Luminary, Inc. All rights reserved.</small></p>
+    </article>
+  </footer>
+
+  <!-- ─── Mobile bottom navigation: frosted glass ─── -->
+  <nav class="bottom frosted" aria-label="Mobile navigation">
+    <ul>
+      <li>
+        <a href="#" aria-current="page">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Home
+        </a>
+      </li>
+      <li>
+        <a href="#features">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Features
+        </a>
+      </li>
+      <li>
+        <a href="#pricing">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Pricing
+        </a>
+      </li>
+      <li>
+        <a href="#contact">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Contact
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    /* Smooth-scroll for all anchor links */
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        const target = document.querySelector(link.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    /* Highlight active bottom-nav item based on visible section */
+    const sections = document.querySelectorAll('main > section[id], footer[id]');
+    const navLinks = document.querySelectorAll('nav.bottom a');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        navLinks.forEach(a => {
+          const matches = a.getAttribute('href') === `#${id}`;
+          a.toggleAttribute('aria-current', matches);
+          if (matches) a.setAttribute('aria-current', 'page');
+        });
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>

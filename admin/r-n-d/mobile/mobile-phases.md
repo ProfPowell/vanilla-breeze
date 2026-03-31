@@ -4,7 +4,7 @@ Reference: `admin/mobile-strategy.md` for full strategy details.
 
 ---
 
-## Phase 1: Foundation (Current — In Progress)
+## Phase 1: Foundation (Shipped)
 
 CSS infrastructure fixes, guide page, 4 demos.
 
@@ -19,7 +19,7 @@ CSS infrastructure fixes, guide page, 4 demos.
 
 ---
 
-## Phase 2: Gesture Layer
+## Phase 2: Gesture Layer (Shipped)
 
 Strategy Stage 3. New JavaScript module(s) for touch interactions.
 
@@ -71,7 +71,7 @@ Strategy Stage 3. New JavaScript module(s) for touch interactions.
 
 ---
 
-## Phase 3: Advanced Mobile Forms
+## Phase 3: Advanced Mobile Forms (Shipped)
 
 Strategy Stage 4. Enhanced form UX for checkout-grade flows.
 
@@ -111,7 +111,7 @@ Strategy Stage 4. Enhanced form UX for checkout-grade flows.
 
 ---
 
-## Phase 4: Corporate Mobile Site
+## Phase 4: Corporate Mobile Site (Shipped)
 
 Strategy Stage 5. CSS patterns for marketing/corporate pages.
 

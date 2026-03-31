@@ -1,5 +1,5 @@
-var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a=!1;#m=null;#l=null;#x=null;#d=null;#k=null;#w=null;#e=null;#A=null;#E=null;#c=null;#n=null;#b=null;#T=null;#f=null;#s=null;#g=2;#h=null;#u=null;connectedCallback(){this.#t=this.querySelector("video"),this.#t&&(this.#r=this.querySelector(".track-list"),this.#t.removeAttribute("controls"),this.#z(),this.#C(),this.#q(),this.#B(),this.#M(),this.hasAttribute("data-muted")&&(this.#t.muted=!0,this.setAttribute("data-muted","")),this.hasAttribute("data-autoplay")&&this.#t.play().catch(()=>{}),this.#i(),this.#h=()=>{let t=this.shadowRoot?.querySelector(".player");t&&(t.style.display="none",t.offsetHeight,t.style.display="")},window.addEventListener("theme-change",this.#h),this.#u=()=>{let t=!!document.fullscreenElement;this.toggleAttribute("data-fullscreen",t),this.#b.setAttribute("aria-label",t?"Exit fullscreen":"Fullscreen"),this.#o("vb:video:fullscreen",{active:t})},document.addEventListener("fullscreenchange",this.#u),this.setAttribute("data-upgraded",""),this.setAttribute("data-state","idle"))}disconnectedCallback(){this.removeAttribute("data-upgraded"),this.#t&&this.#t.setAttribute("controls",""),this.#h&&window.removeEventListener("theme-change",this.#h),this.#u&&document.removeEventListener("fullscreenchange",this.#u),clearTimeout(this.#s)}#z(){let t=this.attachShadow({mode:"open"});t.innerHTML=`
-      <style>${this.#L()}</style>
+var v=window.matchMedia("(prefers-reduced-motion: reduce)");var d=new Map;function u(o,t,e={}){let s=e.priority??10,r={impl:t,bundle:e.bundle,contract:e.contract,priority:s},i=d.get(o);if(customElements.get(o)){if(!i||i.priority>=s){i&&i.priority===s&&i.impl!==t&&console.warn(`[VB Bundle] Tag <${o}> already registered by "${i.bundle}" (priority ${i.priority}). Skipping "${e.bundle}".`);return}console.warn(`[VB Bundle] Tag <${o}> defined by "${i.bundle}" cannot be replaced (customElements.define is permanent). "${e.bundle}" has higher priority but arrived late.`);return}if(i&&i.priority>=s){i.priority===s&&console.warn(`[VB Bundle] Tag <${o}> already registered by "${i.bundle}". Skipping "${e.bundle}" (first wins at equal priority).`);return}d.set(o,r),customElements.define(o,t)}var l=class extends HTMLElement{#t=[];connectedCallback(){this.hasAttribute("data-upgraded")||this.setup()!==!1&&this.setAttribute("data-upgraded","")}disconnectedCallback(){for(let t of this.#t)t();this.#t=[],this.removeAttribute("data-upgraded"),this.teardown()}listen(t,e,s,r){t.addEventListener(e,s,r),this.#t.push(()=>t.removeEventListener(e,s,r))}setup(){}teardown(){}};var h=[.5,.75,1,1.25,1.5,2],p=3e3,c=class extends l{#t=null;#a=null;#s=!1;#p=null;#l=null;#y=null;#c=null;#g=null;#k=null;#e=null;#x=null;#w=null;#d=null;#n=null;#v=null;#_=null;#f=null;#i=null;#m=2;#E=null;#S=null;setup(){if(this.#t=this.querySelector("video"),!this.#t)return!1;this.#a=this.querySelector(".track-list"),this.#t.removeAttribute("controls");let t=!this.shadowRoot;this.#M(),t&&(this.#C(),this.#L(),this.#$(),this.#q()),this.hasAttribute("muted")&&(this.#t.muted=!0,this.setAttribute("muted","")),this.hasAttribute("autoplay")&&this.#t.play().catch(()=>{}),this.#r(),this.#E=()=>{let e=this.shadowRoot?.querySelector(".player");e&&(e.style.display="none",e.offsetHeight,e.style.display="")},this.listen(window,"vb:theme-change",this.#E),this.#S=()=>{let e=!!document.fullscreenElement;this.toggleAttribute("data-fullscreen",e),this.#v.setAttribute("aria-label",e?"Exit fullscreen":"Fullscreen"),this.#o("video-player:fullscreen",{active:e})},this.listen(document,"fullscreenchange",this.#S),this.setAttribute("state","idle")}teardown(){this.#t&&this.#t.setAttribute("controls",""),this.#i!=null&&clearTimeout(this.#i)}#M(){if(this.shadowRoot)return;let t=this.attachShadow({mode:"open"});t.innerHTML=`
+      <style>${this.#z()}</style>
       <div part="player" class="player">
         <slot></slot>
         <button part="play-overlay" class="play-overlay" type="button" aria-label="Play video">
@@ -82,7 +82,7 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
         </div>
         <div class="sr-status" role="status" aria-live="polite"></div>
       </div>
-    `,this.#m=t.querySelector(".controls"),this.#l=t.querySelector(".play-btn"),this.#x=t.querySelector(".play-overlay"),this.#d=t.querySelector(".timeline"),this.#k=t.querySelector(".timeline-fill"),this.#w=t.querySelector(".timeline-buffer"),this.#e=t.querySelector(".volume"),this.#A=t.querySelector(".current-time"),this.#E=t.querySelector(".duration"),this.#c=t.querySelector(".speed-btn"),this.#n=t.querySelector(".captions-btn"),this.#b=t.querySelector(".fullscreen-btn"),this.#T=t.querySelector(".buffer-indicator"),this.#f=t.querySelector(".sr-status"),this.#t.querySelector('track[kind="captions"], track[kind="subtitles"]')||(this.#n.hidden=!0)}#L(){return`
+    `,this.#p=t.querySelector(".controls"),this.#l=t.querySelector(".play-btn"),this.#y=t.querySelector(".play-overlay"),this.#c=t.querySelector(".timeline"),this.#g=t.querySelector(".timeline-fill"),this.#k=t.querySelector(".timeline-buffer"),this.#e=t.querySelector(".volume"),this.#x=t.querySelector(".current-time"),this.#w=t.querySelector(".duration"),this.#d=t.querySelector(".speed-btn"),this.#n=t.querySelector(".captions-btn"),this.#v=t.querySelector(".fullscreen-btn"),this.#_=t.querySelector(".buffer-indicator"),this.#f=t.querySelector(".sr-status"),this.#t.querySelector('track[kind="captions"], track[kind="subtitles"]')||(this.#n.hidden=!0)}#z(){return`
       :host {
         display: block;
         --_accent: var(--video-player-accent, var(--color-primary, oklch(55% 0.2 260)));
@@ -152,18 +152,18 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
         outline-offset: 4px;
       }
 
-      :host([data-state="playing"]) .play-overlay,
-      :host([data-state="buffering"]) .play-overlay {
+      :host([state="playing"]) .play-overlay,
+      :host([state="buffering"]) .play-overlay {
         opacity: 0;
         pointer-events: none;
       }
 
-      :host([data-state="paused"]) .play-overlay {
+      :host([state="paused"]) .play-overlay {
         opacity: 0;
         pointer-events: none;
       }
 
-      :host([data-state="ended"]) .play-overlay {
+      :host([state="ended"]) .play-overlay {
         opacity: 1;
         pointer-events: auto;
       }
@@ -186,7 +186,7 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
         animation: vp-spin 1s linear infinite;
       }
 
-      :host([data-state="buffering"]) .buffer-indicator {
+      :host([state="buffering"]) .buffer-indicator {
         opacity: 1;
       }
 
@@ -222,13 +222,13 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
       }
 
       /* Controls hidden state */
-      :host([data-state="playing"]:not([data-controls-visible])) .controls,
-      :host([data-state="playing"]:not([data-controls-visible])) .controls-gradient {
+      :host([state="playing"]:not([controls])) .controls,
+      :host([state="playing"]:not([controls])) .controls-gradient {
         opacity: 0;
         visibility: hidden;
       }
 
-      :host([data-state="playing"]:not([data-controls-visible])) {
+      :host([state="playing"]:not([controls])) {
         cursor: none;
       }
 
@@ -355,8 +355,8 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
 
       /* \u2500\u2500 Play button (controls row) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .icon-pause { display: none; }
-      :host([data-state="playing"]) .icon-play { display: none; }
-      :host([data-state="playing"]) .icon-pause { display: block; }
+      :host([state="playing"]) .icon-play { display: none; }
+      :host([state="playing"]) .icon-pause { display: block; }
 
       /* \u2500\u2500 Fullscreen icons \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .icon-fs-exit { display: none; }
@@ -365,8 +365,8 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
 
       /* \u2500\u2500 Mute icons \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .icon-muted { display: none; }
-      :host([data-muted]) .icon-vol { display: none; }
-      :host([data-muted]) .icon-muted { display: block; }
+      :host([muted]) .icon-vol { display: none; }
+      :host([muted]) .icon-muted { display: block; }
 
       /* \u2500\u2500 Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .volume-wrap {
@@ -437,7 +437,7 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
 
       /* \u2500\u2500 Time display \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .time-display {
-        font-size: var(--text-xs, 0.75rem);
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, ui-monospace, monospace);
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
@@ -448,14 +448,14 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
 
       /* \u2500\u2500 Speed button \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
       .speed-btn {
-        font-size: var(--text-xs, 0.75rem);
+        font-size: var(--font-size-xs, 0.75rem);
         font-weight: 600;
         min-width: 2.5rem;
         width: auto !important;
       }
 
       /* \u2500\u2500 Captions button \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-      :host([data-captions-active]) .captions-btn {
+      :host([captions]) .captions-btn {
         background: oklch(100% 0 0 / 0.2);
       }
 
@@ -498,15 +498,15 @@ var n=[.5,.75,1,1.25,1.5,2],d=3e3,o=class extends HTMLElement{#t=null;#r=null;#a
         }
 
         /* Keep controls permanently visible */
-        :host([data-state="playing"]:not([data-controls-visible])) .controls,
-        :host([data-state="playing"]:not([data-controls-visible])) .controls-gradient {
+        :host([state="playing"]:not([controls])) .controls,
+        :host([state="playing"]:not([controls])) .controls-gradient {
           opacity: 1;
           visibility: visible;
         }
 
-        :host([data-state="playing"]:not([data-controls-visible])) {
+        :host([state="playing"]:not([controls])) {
           cursor: auto;
         }
       }
-    `}#C(){this.#t.addEventListener("timeupdate",()=>this.#H()),this.#t.addEventListener("loadedmetadata",()=>this.#$()),this.#t.addEventListener("progress",()=>this.#F()),this.#t.addEventListener("play",()=>{this.#a=!0,this.setAttribute("data-state","playing"),this.#l.setAttribute("aria-label","Pause"),this.#p("Playing"),this.#o("vb:video:play",{currentTime:this.#t.currentTime,src:this.#t.currentSrc})}),this.#t.addEventListener("pause",()=>{this.#a=!1,this.setAttribute("data-state","paused"),this.#l.setAttribute("aria-label","Play"),this.#i(),this.#p("Paused"),this.#o("vb:video:pause",{currentTime:this.#t.currentTime})}),this.#t.addEventListener("ended",()=>{this.#a=!1,this.setAttribute("data-state","ended"),this.#l.setAttribute("aria-label","Play"),this.#i();let t=this.#r?.querySelector("li[data-video-active]");t&&t.setAttribute("data-video-played",""),this.#r&&this.#P(),this.#p("Ended"),this.#o("vb:video:ended",{src:this.#t.currentSrc})}),this.#t.addEventListener("waiting",()=>{this.#a&&(this.setAttribute("data-state","buffering"),this.#p("Buffering"))}),this.#t.addEventListener("playing",()=>{this.getAttribute("data-state")==="buffering"&&this.setAttribute("data-state","playing")})}#q(){this.#x.addEventListener("click",i=>{i.stopPropagation(),this.#t.play().catch(()=>{})}),this.shadowRoot.querySelector(".player").addEventListener("click",i=>{i.target.closest(".controls")||i.target.closest(".play-overlay")||(this.#a?this.#t.pause():this.#t.play().catch(()=>{}))}),this.#l.addEventListener("click",()=>{this.#a?this.#t.pause():this.#t.play().catch(()=>{})}),this.#d.addEventListener("input",()=>{this.#t.duration&&(this.#t.currentTime=this.#d.value/100*this.#t.duration)}),this.shadowRoot.querySelector(".skip-back-btn").addEventListener("click",()=>{this.#t.currentTime=Math.max(0,this.#t.currentTime-10)}),this.shadowRoot.querySelector(".skip-forward-btn").addEventListener("click",()=>{this.#t.currentTime=Math.min(this.#t.duration||0,this.#t.currentTime+10)}),this.#e.addEventListener("input",()=>{this.#t.volume=this.#e.value,this.#t.muted=!1,this.removeAttribute("data-muted"),this.#e.style.setProperty("--_vol",this.#e.value)}),this.shadowRoot.querySelector(".mute-btn").addEventListener("click",()=>{this.#t.muted=!this.#t.muted,this.toggleAttribute("data-muted",this.#t.muted),this.#e.style.setProperty("--_vol",this.#t.muted?"0":this.#e.value)}),this.#c.addEventListener("click",()=>{this.#g=(this.#g+1)%n.length;let i=n[this.#g];this.#t.playbackRate=i,this.#c.querySelector("span").textContent=`${i}x`,this.#c.setAttribute("aria-label",`Playback speed ${i}x`),this.#o("vb:video:speed",{rate:i})}),this.#n.addEventListener("click",()=>{let i=this.#R();if(!i)return;let a=i.mode==="showing";i.mode=a?"hidden":"showing";let r=!a;this.toggleAttribute("data-captions-active",r),this.#n.setAttribute("aria-pressed",String(r)),this.#o("vb:video:captions",{active:r,label:i.label})}),this.#b.addEventListener("click",()=>this.#S()),this.addEventListener("keydown",i=>this.#I(i)),this.hasAttribute("tabindex")||this.setAttribute("tabindex","0")}#M(){let t=this.shadowRoot.querySelector(".player"),e=()=>{this.#i(),clearTimeout(this.#s),this.#a&&(this.#s=setTimeout(()=>this.#y(),d))};t.addEventListener("mousemove",e),t.addEventListener("mouseenter",e),t.addEventListener("mouseleave",()=>{this.#a&&(clearTimeout(this.#s),this.#s=setTimeout(()=>this.#y(),500))}),t.addEventListener("touchstart",()=>{this.hasAttribute("data-controls-visible")?this.#y():e()},{passive:!0}),this.#m.addEventListener("mouseenter",()=>{clearTimeout(this.#s),this.#i()}),this.#m.addEventListener("focusin",()=>{clearTimeout(this.#s),this.#i()})}#i(){this.setAttribute("data-controls-visible","")}#y(){this.removeAttribute("data-controls-visible")}#B(){this.#r&&this.#r.addEventListener("click",t=>{let e=t.target.closest("a[href]");e&&(t.preventDefault(),this.#v(e.href,e.closest("li"),e))})}#v(t,e,i){this.#r.querySelectorAll("li").forEach(l=>l.removeAttribute("data-video-active")),e&&e.setAttribute("data-video-active",""),this.#t.src=t;let r=i?.getAttribute("data-poster");r&&(this.#t.poster=r);let s=i?.getAttribute("data-captions");this.#V(s),this.#t.play().catch(()=>{}),this.#o("vb:video:track-change",{src:t,title:i?.textContent??""})}#V(t){if(this.#t.querySelectorAll("track[data-dynamic]").forEach(a=>a.remove()),t){let a=document.createElement("track");a.kind="captions",a.src=t,a.default=!0,a.setAttribute("data-dynamic",""),this.#t.appendChild(a),this.hasAttribute("data-captions-active")&&(a.track.mode="showing")}let i=this.#t.querySelector('track[kind="captions"], track[kind="subtitles"]');this.#n.hidden=!i}#P(){if(!this.#r)return;let t=[...this.#r.querySelectorAll("li")],e=t.findIndex(a=>a.hasAttribute("data-video-active"));if(this.hasAttribute("data-shuffle")){let a=t.filter((r,s)=>s!==e);if(a.length){let r=a[Math.floor(Math.random()*a.length)],s=r.querySelector("a[href]");s&&this.#v(s.href,r,s)}return}let i=e+1;if(i<t.length){let a=t[i].querySelector("a[href]");a&&this.#v(a.href,t[i],a)}else if(this.hasAttribute("data-loop")){let a=t[0]?.querySelector("a[href]");a&&this.#v(a.href,t[0],a)}}#H(){let t=this.#t.currentTime,e=this.#t.duration||0,i=e?t/e*100:0;this.#A.textContent=this.#_(t),this.#d.value=i,this.#d.setAttribute("aria-valuetext",this.#D(t)),this.#k.style.width=`${i}%`}#$(){let t=this.#t.duration||0;this.#E.textContent=this.#_(t)}#F(){let t=this.#t.buffered,e=this.#t.duration||0;if(t.length>0&&e){let i=t.end(t.length-1);this.#w.style.width=`${i/e*100}%`}}#S(){document.fullscreenElement?document.exitFullscreen():this.requestFullscreen().catch(()=>{this.#t.requestFullscreen?.().catch(()=>{})})}#R(){let t=this.#t.textTracks;for(let e=0;e<t.length;e++)if(t[e].kind==="captions"||t[e].kind==="subtitles")return t[e];return null}#I(t){if(!(t.target.tagName==="INPUT"||t.target.tagName==="TEXTAREA"))switch(t.key){case" ":case"k":case"K":t.preventDefault(),this.#a?this.#t.pause():this.#t.play().catch(()=>{});break;case"ArrowLeft":t.preventDefault(),this.#t.currentTime=Math.max(0,this.#t.currentTime-10),this.#i();break;case"ArrowRight":t.preventDefault(),this.#t.currentTime=Math.min(this.#t.duration||0,this.#t.currentTime+10),this.#i();break;case"ArrowUp":t.preventDefault(),this.#t.volume=Math.min(1,this.#t.volume+.05),this.#e.value=this.#t.volume,this.#e.style.setProperty("--_vol",this.#t.volume),this.#i();break;case"ArrowDown":t.preventDefault(),this.#t.volume=Math.max(0,this.#t.volume-.05),this.#e.value=this.#t.volume,this.#e.style.setProperty("--_vol",this.#t.volume),this.#i();break;case"m":case"M":this.#t.muted=!this.#t.muted,this.toggleAttribute("data-muted",this.#t.muted),this.#e.style.setProperty("--_vol",this.#t.muted?"0":this.#e.value);break;case"f":case"F":this.#S();break;case"c":case"C":this.#n.click();break;case"Escape":document.fullscreenElement&&document.exitFullscreen();break}}#_(t){if(!Number.isFinite(t))return"0:00";let e=Math.floor(t/3600),i=Math.floor(t%3600/60),a=Math.floor(t%60);return e>0?`${e}:${String(i).padStart(2,"0")}:${String(a).padStart(2,"0")}`:`${i}:${String(a).padStart(2,"0")}`}#D(t){if(!Number.isFinite(t))return"0 seconds";let e=Math.floor(t/3600),i=Math.floor(t%3600/60),a=Math.floor(t%60),r=[];return e>0&&r.push(`${e} hour${e!==1?"s":""}`),i>0&&r.push(`${i} minute${i!==1?"s":""}`),r.push(`${a} second${a!==1?"s":""}`),r.join(" ")}#p(t){this.#f&&(this.#f.textContent=t)}#o(t,e){this.dispatchEvent(new CustomEvent(t,{bubbles:!0,composed:!0,detail:e}))}};customElements.define("video-player",o);export{o as VideoPlayerElement};
+    `}#C(){this.#t.addEventListener("timeupdate",()=>this.#F()),this.#t.addEventListener("loadedmetadata",()=>this.#P()),this.#t.addEventListener("progress",()=>this.#H()),this.#t.addEventListener("play",()=>{this.#s=!0,this.setAttribute("state","playing"),this.#l.setAttribute("aria-label","Pause"),this.#h("Playing"),this.#o("video-player:play",{currentTime:this.#t.currentTime,src:this.#t.currentSrc})}),this.#t.addEventListener("pause",()=>{this.#s=!1,this.setAttribute("state","paused"),this.#l.setAttribute("aria-label","Play"),this.#r(),this.#h("Paused"),this.#o("video-player:pause",{currentTime:this.#t.currentTime})}),this.#t.addEventListener("ended",()=>{this.#s=!1,this.setAttribute("state","ended"),this.#l.setAttribute("aria-label","Play"),this.#r();let t=this.#a?.querySelector("li[data-video-active]");t&&t.setAttribute("data-video-played",""),this.#a&&this.#V(),this.#h("Ended"),this.#o("video-player:ended",{src:this.#t.currentSrc})}),this.#t.addEventListener("waiting",()=>{this.#s&&(this.setAttribute("state","buffering"),this.#h("Buffering"))}),this.#t.addEventListener("playing",()=>{this.getAttribute("state")==="buffering"&&this.setAttribute("state","playing")})}#L(){this.#y.addEventListener("click",i=>{i.stopPropagation(),this.#t.play().catch(()=>{})}),(this.shadowRoot?.querySelector(".player")).addEventListener("click",i=>{i.target.closest(".controls")||i.target.closest(".play-overlay")||(this.#s?this.#t.pause():this.#t.play().catch(()=>{}))}),this.#l.addEventListener("click",()=>{this.#s?this.#t.pause():this.#t.play().catch(()=>{})}),this.#c.addEventListener("input",()=>{this.#t.duration&&(this.#t.currentTime=Number(this.#c.value)/100*this.#t.duration)}),(this.shadowRoot?.querySelector(".skip-back-btn")).addEventListener("click",()=>{this.#t.currentTime=Math.max(0,this.#t.currentTime-10)}),(this.shadowRoot?.querySelector(".skip-forward-btn")).addEventListener("click",()=>{this.#t.currentTime=Math.min(this.#t.duration||0,this.#t.currentTime+10)}),this.#e.addEventListener("input",()=>{this.#t.volume=Number(this.#e.value),this.#t.muted=!1,this.removeAttribute("muted"),this.#e.style.setProperty("--_vol",this.#e.value)}),(this.shadowRoot?.querySelector(".mute-btn")).addEventListener("click",()=>{this.#t.muted=!this.#t.muted,this.toggleAttribute("muted",this.#t.muted),this.#e.style.setProperty("--_vol",this.#t.muted?"0":this.#e.value)}),this.#d.addEventListener("click",()=>{this.#m=(this.#m+1)%h.length;let i=h[this.#m];this.#t.playbackRate=i;let a=this.#d.querySelector("span");a.textContent=`${i}x`,this.#d.setAttribute("aria-label",`Playback speed ${i}x`),this.#o("video-player:speed",{rate:i})}),this.#n.addEventListener("click",()=>{let i=this.#N();if(!i)return;let a=i.mode==="showing";i.mode=a?"hidden":"showing";let n=!a;this.toggleAttribute("captions",n),this.#n.setAttribute("aria-pressed",String(n)),this.#o("video-player:captions",{active:n,label:i.label})}),this.#v.addEventListener("click",()=>this.#A()),this.addEventListener("keydown",i=>this.#R(i)),this.hasAttribute("tabindex")||this.setAttribute("tabindex","0")}#q(){let t=this.shadowRoot?.querySelector(".player"),e=()=>{this.#r(),this.#i!=null&&clearTimeout(this.#i),this.#s&&(this.#i=setTimeout(()=>this.#b(),p))};t.addEventListener("mousemove",e),t.addEventListener("mouseenter",e),t.addEventListener("mouseleave",()=>{this.#s&&(this.#i!=null&&clearTimeout(this.#i),this.#i=setTimeout(()=>this.#b(),500))}),t.addEventListener("touchstart",()=>{this.hasAttribute("controls")?this.#b():e()},{passive:!0}),this.#p.addEventListener("mouseenter",()=>{this.#i!=null&&clearTimeout(this.#i),this.#r()}),this.#p.addEventListener("focusin",()=>{this.#i!=null&&clearTimeout(this.#i),this.#r()})}#r(){this.setAttribute("controls","")}#b(){this.removeAttribute("controls")}#$(){this.#a&&this.#a.addEventListener("click",t=>{let e=t.target.closest("a[href]");e&&(t.preventDefault(),this.#u(e.href,e.closest("li"),e))})}#u(t,e,s){this.#a.querySelectorAll("li").forEach(n=>n.removeAttribute("data-video-active")),e&&e.setAttribute("data-video-active",""),this.#t.src=t;let i=s?.getAttribute("data-poster");i&&(this.#t.poster=i);let a=s?.getAttribute("data-captions");this.#B(a),this.#t.play().catch(()=>{}),this.#o("video-player:track-change",{src:t,title:s?.textContent??""})}#B(t){if(this.#t.querySelectorAll("track[data-dynamic]").forEach(r=>r.remove()),t){let r=document.createElement("track");r.kind="captions",r.src=t,r.default=!0,r.setAttribute("data-dynamic",""),this.#t.appendChild(r),this.hasAttribute("captions")&&(r.track.mode="showing")}let s=this.#t.querySelector('track[kind="captions"], track[kind="subtitles"]');this.#n.hidden=!s}#V(){if(!this.#a)return;let t=[...this.#a.querySelectorAll("li")],e=t.findIndex(r=>r.hasAttribute("data-video-active"));if(this.hasAttribute("shuffle")){let r=t.filter((i,a)=>a!==e);if(r.length){let i=r[Math.floor(Math.random()*r.length)],a=i.querySelector("a[href]");a&&this.#u(a.href,i,a)}return}let s=e+1;if(s<t.length){let r=t[s].querySelector("a[href]");r&&this.#u(r.href,t[s],r)}else if(this.hasAttribute("loop")){let r=t[0]?.querySelector("a[href]");r&&this.#u(r.href,t[0],r)}}#F(){let t=this.#t.currentTime,e=this.#t.duration||0,s=e?t/e*100:0;this.#x.textContent=this.#T(t),this.#c.value=String(s),this.#c.setAttribute("aria-valuetext",this.#D(t)),this.#g.style.width=`${s}%`}#P(){let t=this.#t.duration||0;this.#w.textContent=this.#T(t)}#H(){let t=this.#t.buffered,e=this.#t.duration||0;if(t.length>0&&e){let s=t.end(t.length-1);this.#k.style.width=`${s/e*100}%`}}#A(){document.fullscreenElement?document.exitFullscreen():this.requestFullscreen().catch(()=>{this.#t.requestFullscreen?.().catch(()=>{})})}#N(){let t=this.#t.textTracks;for(let e=0;e<t.length;e++)if(t[e].kind==="captions"||t[e].kind==="subtitles")return t[e];return null}#R(t){if(!(t.target.tagName==="INPUT"||t.target.tagName==="TEXTAREA"))switch(t.key){case" ":case"k":case"K":t.preventDefault(),this.#s?this.#t.pause():this.#t.play().catch(()=>{});break;case"ArrowLeft":t.preventDefault(),this.#t.currentTime=Math.max(0,this.#t.currentTime-10),this.#r();break;case"ArrowRight":t.preventDefault(),this.#t.currentTime=Math.min(this.#t.duration||0,this.#t.currentTime+10),this.#r();break;case"ArrowUp":t.preventDefault(),this.#t.volume=Math.min(1,this.#t.volume+.05),this.#e.value=String(this.#t.volume),this.#e.style.setProperty("--_vol",String(this.#t.volume)),this.#r();break;case"ArrowDown":t.preventDefault(),this.#t.volume=Math.max(0,this.#t.volume-.05),this.#e.value=String(this.#t.volume),this.#e.style.setProperty("--_vol",String(this.#t.volume)),this.#r();break;case"m":case"M":this.#t.muted=!this.#t.muted,this.toggleAttribute("muted",this.#t.muted),this.#e.style.setProperty("--_vol",this.#t.muted?"0":this.#e.value);break;case"f":case"F":this.#A();break;case"c":case"C":this.#n.click();break;case"Escape":document.fullscreenElement&&document.exitFullscreen();break}}#T(t){if(!Number.isFinite(t))return"0:00";let e=Math.floor(t/3600),s=Math.floor(t%3600/60),r=Math.floor(t%60);return e>0?`${e}:${String(s).padStart(2,"0")}:${String(r).padStart(2,"0")}`:`${s}:${String(r).padStart(2,"0")}`}#D(t){if(!Number.isFinite(t))return"0 seconds";let e=Math.floor(t/3600),s=Math.floor(t%3600/60),r=Math.floor(t%60),i=[];return e>0&&i.push(`${e} hour${e!==1?"s":""}`),s>0&&i.push(`${s} minute${s!==1?"s":""}`),i.push(`${r} second${r!==1?"s":""}`),i.join(" ")}#h(t){this.#f&&(this.#f.textContent=t)}#o(t,e){this.dispatchEvent(new CustomEvent(t,{bubbles:!0,composed:!0,detail:e}))}};u("video-player",c);export{c as VideoPlayerElement};
 //# sourceMappingURL=video-player.js.map

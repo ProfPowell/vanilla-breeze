@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UX Planning — Connected Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+      max-width: 80rem;
+      margin: 0 auto;
+    }
+    h2 {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--color-text);
+      margin: var(--size-2xl) 0 var(--size-m);
+      padding-block-end: var(--size-xs);
+      border-block-end: 2px solid var(--color-border);
+    }
+    h2:first-of-type { margin-top: 0; }
+    .intro {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-l);
+      max-width: 65ch;
+    }
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+      gap: var(--size-m);
+      margin-block-end: var(--size-l);
+    }
+    scroll-behavior: smooth;
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 1. PERSONA                                         -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>Persona</h2>
+  <p class="intro">The persona anchors everything. The empathy map, journey, and stories all reference Sarah.</p>
+
+  <user-persona
+    id="persona-sarah-chen"
+    name="Sarah Chen"
+    role="Senior Product Manager"
+    age="34"
+    location="San Francisco, CA"
+    quote="I need tools that help me stay organized across multiple projects without context switching.">
+
+    <p slot="bio">Sarah has 8 years of experience in product management, starting at startups and now leading a team at a Series C company. She manages 3 product teams and oversees a roadmap with 50+ features.</p>
+
+    <ul slot="goals">
+      <li>Streamline cross-team communication</li>
+      <li>Reduce time spent in status meetings</li>
+      <li>Have a single source of truth for project progress</li>
+    </ul>
+
+    <ul slot="frustrations">
+      <li>Too many disconnected tools (Jira, Slack, Notion, Figma)</li>
+      <li>Spending 60% of time in meetings instead of strategy</li>
+      <li>Unclear ownership across distributed teams</li>
+    </ul>
+
+    <ul slot="behaviors">
+      <li>Checks Slack 30+ times per day</li>
+      <li>Prefers async communication when possible</li>
+      <li>Reviews metrics dashboard every morning</li>
+    </ul>
+  </user-persona>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 2. EMPATHY MAP                                     -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>Empathy Map</h2>
+  <p class="intro">Click the persona link in the header to scroll back to Sarah's persona card above.</p>
+
+  <empathy-map
+    title="Dashboard Product Discovery"
+    persona="Sarah Chen"
+    persona-id="persona-sarah-chen"
+    summary="Insights from user interviews during Q1 research sprint"
+    editable>
+    <ul slot="says">
+      <li>"I just want to see everything in one place"</li>
+      <li>"Why do I need three tools to get a status update?"</li>
+      <li>"The weekly report takes me half a day to compile"</li>
+    </ul>
+    <ul slot="thinks">
+      <li>There must be a simpler way to track all this</li>
+      <li>If I miss something in Slack, nobody escalates</li>
+      <li>Am I the only PM who struggles with this?</li>
+    </ul>
+    <ul slot="does">
+      <li>Manually copies status from Jira into Notion each week</li>
+      <li>Creates custom Slack channels per initiative</li>
+      <li>Opens 15+ browser tabs to cross-reference project state</li>
+    </ul>
+    <ul slot="feels">
+      <li>Frustrated by tool sprawl</li>
+      <li>Anxious about missing critical updates</li>
+      <li>Curious about better workflows</li>
+    </ul>
+    <ul slot="goals">
+      <li>Single-pane project visibility across all teams</li>
+      <li>Reduce weekly report compilation to under 10 minutes</li>
+    </ul>
+    <ul slot="pain-points">
+      <li>No single source of truth for cross-team project status</li>
+      <li>Manual data aggregation across 4+ tools</li>
+    </ul>
+  </empathy-map>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 3. USER STORIES                                    -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>User Stories</h2>
+  <p class="intro">Each story has an id that matches its story-id. The journey map and story map link back to these.</p>
+
+  <div class="story-grid">
+    <user-story
+      id="PROJ-101" story-id="PROJ-101"
+      title="Unified timeline dashboard"
+      persona="Product Manager"
+      action="see all project timelines in a unified dashboard"
+      benefit="I can identify bottlenecks without switching tools"
+      priority="high" status="in-progress" points="8"
+      epic="Dashboard" detail="compact">
+      <ul slot="acceptance-criteria">
+        <li>Dashboard loads within 2 seconds for up to 50 projects</li>
+        <li>All active projects display with color-coded status</li>
+        <li>Timeline view supports daily to quarterly zoom</li>
+      </ul>
+    </user-story>
+
+    <user-story
+      id="PROJ-102" story-id="PROJ-102"
+      title="Automated status summaries"
+      persona="Product Manager"
+      action="receive automated weekly status summaries"
+      benefit="I can skip manual report compilation"
+      priority="high" status="to-do" points="5"
+      epic="Automation" detail="compact">
+      <ul slot="acceptance-criteria">
+        <li>Summary email sent every Monday at 9am</li>
+        <li>Includes changes since last summary</li>
+      </ul>
+    </user-story>
+
+    <user-story
+      id="PROJ-103" story-id="PROJ-103"
+      title="Custom alert thresholds"
+      persona="Product Manager"
+      action="set custom alert thresholds per project"
+      benefit="I only get notified about things that matter"
+      priority="medium" status="backlog" points="3"
+      epic="Alerts" detail="compact">
+    </user-story>
+
+    <user-story
+      id="PROJ-104" story-id="PROJ-104"
+      title="Stakeholder dashboard sharing"
+      persona="Product Manager"
+      action="share a read-only dashboard with stakeholders"
+      benefit="executives can self-serve instead of asking me"
+      priority="medium" status="backlog" points="5"
+      epic="Sharing" detail="compact">
+    </user-story>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 4. USER JOURNEY                                    -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>User Journey</h2>
+  <p class="intro">The journey references Sarah via persona-id and links to stories via story-ids. Click any chip to scroll to the matching element.</p>
+
+  <user-journey
+    id="journey-dashboard"
+    title="Dashboard Discovery to Adoption"
+    persona="Sarah Chen"
+    persona-id="persona-sarah-chen"
+    summary="How Sarah discovers, evaluates, and adopts the unified dashboard"
+    story-ids="PROJ-101,PROJ-102,PROJ-103,PROJ-104">
+  </user-journey>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 5. STORY MAP                                       -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>Story Map</h2>
+  <p class="intro">Stories dragged between columns update their activity context. These are the same stories referenced above.</p>
+
+  <story-map>
+    <section data-activity="discover" data-activity-label="Discover">
+      <user-story draggable="true" data-id="PROJ-101"
+        story-id="PROJ-101" title="Unified timeline dashboard"
+        persona="Product Manager" action="see all project timelines in a unified dashboard"
+        priority="high" status="in-progress" points="8" detail="minimal">
+      </user-story>
+    </section>
+    <section data-activity="design" data-activity-label="Design">
+      <user-story draggable="true" data-id="PROJ-102"
+        story-id="PROJ-102" title="Automated status summaries"
+        persona="Product Manager" action="receive automated weekly status summaries"
+        priority="high" status="to-do" points="5" detail="minimal">
+      </user-story>
+      <user-story draggable="true" data-id="PROJ-103"
+        story-id="PROJ-103" title="Custom alert thresholds"
+        persona="Product Manager" action="set custom alert thresholds per project"
+        priority="medium" status="backlog" points="3" detail="minimal">
+      </user-story>
+    </section>
+    <section data-activity="build" data-activity-label="Build">
+      <user-story draggable="true" data-id="PROJ-104"
+        story-id="PROJ-104" title="Stakeholder dashboard sharing"
+        persona="Product Manager" action="share a read-only dashboard with stakeholders"
+        priority="medium" status="backlog" points="5" detail="minimal">
+      </user-story>
+    </section>
+    <section data-activity="validate" data-activity-label="Validate">
+    </section>
+  </story-map>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 6. IMPACT / EFFORT MATRIX                          -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2>Impact / Effort Matrix</h2>
+  <p class="intro">Drag story cards between quadrants to reprioritize. Same stories, different lens.</p>
+
+  <impact-effort>
+    <user-story data-quadrant="quick-wins" draggable="true" data-id="PROJ-102"
+      story-id="PROJ-102" title="Automated status summaries"
+      persona="Product Manager" action="receive automated weekly status summaries"
+      priority="high" status="to-do" points="5" detail="minimal">
+    </user-story>
+    <user-story data-quadrant="big-bets" draggable="true" data-id="PROJ-101"
+      story-id="PROJ-101" title="Unified timeline dashboard"
+      persona="Product Manager" action="see all project timelines in a unified dashboard"
+      priority="high" status="in-progress" points="8" detail="minimal">
+    </user-story>
+    <user-story data-quadrant="quick-wins" draggable="true" data-id="PROJ-103"
+      story-id="PROJ-103" title="Custom alert thresholds"
+      persona="Product Manager" action="set custom alert thresholds per project"
+      priority="medium" status="backlog" points="3" detail="minimal">
+    </user-story>
+    <user-story data-quadrant="fill-ins" draggable="true" data-id="PROJ-104"
+      story-id="PROJ-104" title="Stakeholder dashboard sharing"
+      persona="Product Manager" action="share a read-only dashboard with stakeholders"
+      priority="medium" status="backlog" points="5" detail="minimal">
+    </user-story>
+  </impact-effort>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+  <script type="module">
+    // Populate the journey with phase data
+    document.getElementById('journey-dashboard').phases = [
+      {
+        name: 'Problem Recognition',
+        emotion: 'frustrated',
+        storyIds: ['PROJ-101'],
+        actions: [
+          'Spends 4 hours compiling the weekly status report',
+          'Misses a critical deadline because update was buried in Slack',
+        ],
+        thoughts: ['There has to be a better way than copy-pasting from 4 tools'],
+        touchpoints: ['Jira', 'Slack', 'Notion', 'Email'],
+        painPoints: ['No single source of truth', 'Manual data aggregation'],
+        opportunities: ['Unified dashboard with auto-sync'],
+      },
+      {
+        name: 'Discovery',
+        emotion: 'curious',
+        storyIds: ['PROJ-101', 'PROJ-102'],
+        actions: [
+          'Googles "project dashboard for PMs"',
+          'Asks peers in a PM community Slack',
+          'Reads comparison articles',
+        ],
+        thoughts: ['Every tool claims to be "the one platform" — how do I compare?'],
+        touchpoints: ['Google', 'PM community Slack', 'G2 Reviews'],
+        painPoints: ['Marketing copy is identical across vendors'],
+        opportunities: ['Show a live demo, not just screenshots'],
+      },
+      {
+        name: 'Evaluation',
+        emotion: 'hopeful',
+        storyIds: ['PROJ-101', 'PROJ-103'],
+        actions: [
+          'Signs up for a free trial',
+          'Imports two projects to test the timeline view',
+          'Tests alert configuration',
+        ],
+        thoughts: ['The timeline view is exactly what I wanted'],
+        touchpoints: ['Trial dashboard', 'Help docs', 'Support chat'],
+        painPoints: ['Alert thresholds are not customizable in the free tier'],
+        opportunities: ['Offer alert customization in trial'],
+      },
+      {
+        name: 'Adoption',
+        emotion: 'satisfied',
+        storyIds: ['PROJ-102', 'PROJ-104'],
+        actions: [
+          'Migrates all 3 teams to the dashboard',
+          'Sets up automated weekly summaries',
+          'Shares read-only views with executives',
+        ],
+        thoughts: ['Weekly report now takes 5 minutes instead of 4 hours'],
+        touchpoints: ['Dashboard', 'Email summaries', 'Shared links'],
+        painPoints: ['Sharing permissions are confusing'],
+        opportunities: ['Simplified sharing with role-based presets'],
+      },
+    ];
+
+    // Smooth scroll for fragment anchors
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
+      const target = document.getElementById(link.getAttribute('href').slice(1));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.focus({ preventScroll: true });
+      }
+    });
+  </script>
+</body>
+</html>
