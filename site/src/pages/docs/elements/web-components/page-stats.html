@@ -1,0 +1,89 @@
+---
+layout: element
+title: "page-stats"
+description: "Lightweight reading statistics — word count, reading time, and last-modified date. SSR-adoptable."
+elementName: page-stats
+category: component
+currentPath: /docs/elements/web-components/page-stats/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;page-stats&gt;</code> component displays reading statistics for a target content element. It computes word count and estimated reading time, and can show the last-modified date.</p>
+  <p>It is designed for SSR adoption: if the SSG pre-renders stats at build time, the component detects existing markup and adopts it without re-rendering.</p>
+
+  <browser-window url="page-stats" src="/docs/examples/demos/page-stats-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-for</code></td>
+        <td>string</td>
+        <td>—</td>
+        <td>ID of the target content element to analyze</td>
+      </tr>
+      <tr>
+        <td><code>data-wpm</code></td>
+        <td>number</td>
+        <td><code>238</code></td>
+        <td>Words per minute for reading time calculation</td>
+      </tr>
+      <tr>
+        <td><code>data-show</code></td>
+        <td>string</td>
+        <td><code>reading-time</code></td>
+        <td>Comma-separated stats: <code>reading-time</code>, <code>word-count</code>, <code>last-modified</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Usage</h2>
+
+  <h3>CSR — Auto-computed</h3>
+  <p>Point <code>data-for</code> at a content element and the component computes stats on connect:</p>
+  <code-block language="html" data-escape>
+<page-stats data-for="article-content" data-show="reading-time,word-count"></page-stats>
+  </code-block>
+
+  <h3>SSR — Pre-rendered</h3>
+  <p>Render stats at build time. The component adopts existing <code>&lt;dl&gt;</code> markup without re-rendering:</p>
+
+  <browser-window url="page-stats-ssr" src="/docs/examples/demos/page-stats-ssr.html"></browser-window>
+
+  <code-block language="html" data-escape>
+<page-stats>
+  <dl class="page-stats-list">
+    <dl-item>
+      <dt class="sr-only">Reading time</dt>
+      <dd><time datetime="PT5M">5 min read</time></dd>
+    </dl-item>
+  </dl>
+</page-stats>
+  </code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>Without JavaScript, pre-rendered stats are visible and useful. The <code>&lt;time&gt;</code> element with <code>datetime</code> is machine-readable. With JavaScript, the component computes stats dynamically from the target element.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <p>Labels use <code>class="sr-only"</code> to provide screen reader context while keeping the visual display compact. The <code>&lt;dl&gt;</code> structure groups each label-value pair semantically via <code>&lt;dl-item&gt;</code>.</p>
+</section>

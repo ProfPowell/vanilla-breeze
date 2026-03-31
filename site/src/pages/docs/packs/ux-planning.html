@@ -1,0 +1,171 @@
+---
+layout: docs
+title: "UX Planning Pack"
+description: "User personas, stories, and journey maps for Agile UX documentation and sprint planning."
+currentSection: docs
+currentPath: /docs/packs/ux-planning/
+---
+
+<h1><icon-wc name="users" size="sm"></icon-wc> UX Planning Pack</h1>
+<p class="lead">A toolkit for documenting user personas, writing Agile user stories, and mapping user journeys &mdash; all as web components you can drop into any HTML page.</p>
+
+<table>
+  <tbody>
+    <tr><th>Type</th><td>Functional</td></tr>
+    <tr><th>Version</th><td>1.0.0</td></tr>
+    <tr><th>JS</th><td><code>packs/ux-planning.full.js</code></td></tr>
+  </tbody>
+</table>
+
+<section>
+  <h2>What's Included</h2>
+
+  <h3>Components</h3>
+  <ul>
+    <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; visual persona cards with auto-generated avatars, quote blocks, goals, frustrations, and behaviors</li>
+    <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> &mdash; Agile story cards in "As a / I want / so that" format with priority, status, and point badges</li>
+    <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; journey maps with SVG emotion curves and phase detail grids</li>
+    <li><a href="/docs/elements/web-components/empathy-map/"><code>&lt;empathy-map&gt;</code></a> &mdash; four-quadrant empathy maps (Says, Thinks, Does, Feels) with optional flip-to-edit interaction</li>
+    <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; 2&times;2 prioritization matrix with drag-and-drop between Quick Wins, Big Bets, Fill-Ins, and Money Pit quadrants</li>
+    <li><a href="/docs/elements/web-components/story-map/"><code>&lt;story-map&gt;</code></a> &mdash; horizontal user story map with activity columns and drag-and-drop reorder and transfer</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Loading</h2>
+
+  <code-block language="html" label="CDN loading" data-escape><script type="module" src="/cdn/packs/ux-planning.full.js"></script></code-block>
+
+  <code-block language="js" label="Runtime activation" data-escape>import { activateBundle } from '/cdn/vanilla-breeze.js'
+await activateBundle('ux-planning')</code-block>
+
+  <aside class="note">
+    <strong>Cherry-pick individual components.</strong> If you only need one component, load it directly &mdash; for example, <code>/cdn/components/user-persona.js</code> &mdash; without the full pack.
+  </aside>
+</section>
+
+<section>
+  <h2>Component Interaction</h2>
+  <p>The six components are designed to cross-reference each other on the same page. Personas define the "who," empathy maps capture the "why," stories define the "what," journeys map the "how," impact/effort matrices prioritize the "when," and story maps organize the "where."</p>
+
+  <code-block language="text" label="Linking model">
+  user-persona (id="persona-sarah")
+       |
+       |  referenced by persona / persona-id attributes
+       v
+  empathy-map (persona="Sarah Chen", persona-id="persona-sarah")
+       |
+       |  pain points inform prioritization
+       v
+  user-story (story-id="PROJ-142", persona="Sarah Chen")
+       |
+       |  stories placed in quadrants and columns
+       +---> impact-effort (children with data-quadrant)
+       +---> story-map (sections with data-activity)
+       |
+       |  referenced by story-ids attribute
+       v
+  user-journey (persona-id="persona-sarah", story-ids="PROJ-142")
+       |
+       |  per-phase storyIds in JSON data
+       v
+  Phase grid cells link back to individual stories
+  </code-block>
+
+  <p>Set the <code>id</code> attribute on your &lt;user-persona&gt; elements and use matching <code>persona-id</code> values on &lt;user-journey&gt; and &lt;empathy-map&gt; to create navigable anchor links. Story IDs set on &lt;user-story&gt; via <code>story-id</code> are referenced by &lt;user-journey&gt; through the <code>story-ids</code> attribute and per-phase <code>storyIds</code> arrays in the JSON data. Use &lt;user-story&gt; elements as draggable children inside &lt;impact-effort&gt; and &lt;story-map&gt; for rich, interactive planning boards.</p>
+</section>
+
+<section>
+  <h2>Full Planning Page Example</h2>
+  <p>A complete UX planning page using all six components together:</p>
+
+  <code-block language="html" show-lines label="Planning page with all components" data-escape><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sprint Planning &mdash; Project Alpha</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <script type="module" src="/cdn/vanilla-breeze.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Project Alpha &mdash; UX Planning</h1>
+
+    <!-- Persona -->
+    <section>
+      <h2>Target Persona</h2>
+      <user-persona
+        id="persona-sarah"
+        name="Sarah Chen"
+        role="Product Manager"
+        age="34"
+        location="San Francisco, CA"
+        quote="I need tools that help me stay organized.">
+        <ul slot="goals">
+          <li>Streamline team communication</li>
+          <li>Track project progress efficiently</li>
+        </ul>
+        <ul slot="frustrations">
+          <li>Too many disconnected tools</li>
+          <li>Difficulty getting stakeholder buy-in</li>
+        </ul>
+      </user-persona>
+    </section>
+
+    <!-- User Stories -->
+    <section>
+      <h2>Sprint Backlog</h2>
+
+      <user-story
+        story-id="PROJ-142"
+        persona="Sarah Chen"
+        action="view all project timelines in one dashboard"
+        benefit="I can quickly identify bottlenecks"
+        priority="high"
+        status="in-progress"
+        points="5"
+        epic="Dashboard">
+        <ul slot="acceptance-criteria">
+          <li>Dashboard loads within 2 seconds</li>
+          <li>All active projects are displayed</li>
+        </ul>
+      </user-story>
+
+      <user-story
+        story-id="PROJ-156"
+        persona="Sarah Chen"
+        action="export project reports as PDF"
+        benefit="I can share progress with stakeholders offline"
+        priority="medium"
+        status="to-do"
+        points="3"
+        epic="Reporting">
+        <ul slot="acceptance-criteria">
+          <li>PDF includes charts and timeline</li>
+          <li>Export completes in under 5 seconds</li>
+        </ul>
+      </user-story>
+    </section>
+
+    <!-- Journey Map -->
+    <section>
+      <h2>User Journey</h2>
+      <user-journey
+        title="Dashboard Adoption Journey"
+        persona="Sarah Chen"
+        persona-id="persona-sarah"
+        summary="From discovery to daily usage of the project dashboard"
+        story-ids="PROJ-142,PROJ-156"
+        src="/data/journey-dashboard.json">
+      </user-journey>
+    </section>
+  </main>
+</body>
+</html></code-block>
+</section>
+
+<section>
+  <h2>When to Use</h2>
+  <p>Load the UX Planning pack when you are building sprint planning pages, design documentation, stakeholder presentations, or any page that needs structured Agile artifacts. All six components support a <code>compact</code> attribute for dashboard-style layouts where space is limited. For general-purpose sites that do not need UX planning artifacts, skip this pack entirely.</p>
+</section>

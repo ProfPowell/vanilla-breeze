@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "user-story",
+  "type": "web-component",
+  "description": "Displays an Agile user story card with persona, action, benefit, priority, status, and slotted sections",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "persona",  "kind": "host-api", "purpose": "config", "type": "string",  "description": "The 'As a...' role" },
+    { "name": "action",   "kind": "host-api", "purpose": "config", "type": "string",  "description": "The 'I want...' description" },
+    { "name": "benefit",  "kind": "host-api", "purpose": "config", "type": "string",  "description": "The 'so that...' outcome" },
+    { "name": "priority", "kind": "host-api", "purpose": "config", "type": "enum",    "values": ["critical", "high", "medium", "low"], "description": "Story priority level" },
+    { "name": "status",   "kind": "host-api", "purpose": "config", "type": "enum",    "values": ["backlog", "to-do", "in-progress", "review", "done"], "description": "Story workflow status" },
+    { "name": "points",   "kind": "host-api", "purpose": "config", "type": "string",  "description": "Story point estimate" },
+    { "name": "epic",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "Parent epic label" },
+    { "name": "story-id", "kind": "host-api", "purpose": "config", "type": "string",  "description": "Ticket or story identifier" },
+    { "name": "title",    "kind": "host-api", "purpose": "config", "type": "string",  "description": "Short title for the story, used in minimal detail mode. Falls back to truncated action." },
+    { "name": "compact",  "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Reduced spacing variant" },
+    { "name": "detail", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["full", "compact", "minimal"], "description": "Controls how much content is shown: full (all sections), compact (hide empty sections), minimal (ID + title only)" },
+    { "name": "src",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL to JSON file containing story data" }
+  ],
+  "slots": [
+    { "name": "persona",             "description": "The 'As a...' role (slot fallback for attribute)" },
+    { "name": "action",              "description": "The 'I want...' description (slot fallback for attribute)" },
+    { "name": "benefit",             "description": "The 'so that...' outcome (slot fallback for attribute)" },
+    { "name": "acceptance-criteria", "description": "Acceptance criteria checklist" },
+    { "name": "tasks",               "description": "Implementation task list" },
+    { "name": "notes",               "description": "Additional context" }
+  ],
+  "events": [
+    { "name": "story-ready",      "detail": "{ id, persona, action, benefit, priority, status, points }", "description": "Fired after render" },
+    { "name": "status-changed",   "detail": "{ status, storyId }",   "description": "Fired when updateStatus() is called" },
+    { "name": "priority-changed", "detail": "{ priority, storyId }", "description": "Fired when updatePriority() is called" }
+  ]
+}

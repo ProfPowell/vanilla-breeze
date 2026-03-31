@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Tools — Static Fallback</title>
+</head>
+<body>
+  <!--
+    Static fallback for <page-tools>.
+
+    Upgrade relationship:
+    - Without JS: <page-tools> is an undefined custom element. CSS Layer 2
+      styles it as a flex container. Children are visible and functional:
+      pre-rendered page-stats, print link with keyboard shortcut hint.
+    - With JS: <page-tools> adds toolbar semantics (role="toolbar"),
+      resolves auto orientation based on position, and manages responsive
+      collapse to a FAB + popover on small viewports.
+
+    The static form ensures all slotted tools remain accessible and usable
+    when JavaScript is unavailable or the component fails to load.
+  -->
+
+  <main>
+    <layout-sidebar data-layout-side="end" data-layout-sidebar-width="narrow">
+      <aside>
+        <page-tools>
+          <page-stats>
+            <dl class="page-stats-list">
+              <dl-item>
+                <dt class="sr-only">Reading time</dt>
+                <dd><time datetime="PT5M">5 min read</time></dd>
+              </dl-item>
+            </dl>
+          </page-stats>
+          <a href="javascript:window.print()" aria-label="Print page">
+            Print
+          </a>
+        </page-tools>
+      </aside>
+
+      <article id="article-content">
+        <h1>Progressive Enhancement in Practice</h1>
+
+        <p>
+          Start with semantic HTML. Add CSS for presentation. Layer
+          JavaScript for enhanced interactivity. Each layer builds on
+          the last, but none are required for the content to be usable.
+        </p>
+
+        <section>
+          <h2>The Foundation</h2>
+          <p>
+            HTML is the universal baseline. A well-structured document
+            is readable in any browser, on any device, with any
+            assistive technology.
+          </p>
+        </section>
+
+        <section>
+          <h2>Visual Enhancement</h2>
+          <p>
+            CSS transforms the document into a designed experience,
+            but the content remains accessible if styles fail to load.
+          </p>
+        </section>
+
+        <section>
+          <h2>Interactive Enhancement</h2>
+          <p>
+            JavaScript adds interactivity that would be impossible
+            with HTML and CSS alone, but core functionality works
+            without it.
+          </p>
+        </section>
+      </article>
+    </layout-sidebar>
+  </main>
+</body>
+</html>

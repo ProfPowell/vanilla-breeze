@@ -23,7 +23,7 @@ import {
 import {registerComponent} from '../../lib/bundle-registry.js';
 import {VBElement} from '../../lib/vb-element.js';
 import {extractTableData, extractTableConfig} from './table-extractor.js';
-import {getVBChartConfig} from './theme-bridge.js';
+import {getVBChartConfig, createThemePlugin} from './theme-bridge.js';
 
 const CHART_TYPES = {
   line: LineChart,
@@ -65,6 +65,7 @@ class ChartWc extends VBElement {
       'data-values',
       'data-config',
       'data-title',
+      'data-subtitle',
       'data-legend',
       'data-tooltip',
       'data-palette',
@@ -242,7 +243,11 @@ class ChartWc extends VBElement {
 
     // Shorthand attributes override
     if (this.dataset.title != null) {
-      config.title = {text: this.dataset.title, enabled: true};
+      const titleConfig = {text: this.dataset.title, enabled: true};
+      if (this.dataset.subtitle != null) {
+        titleConfig.subtitle = this.dataset.subtitle;
+      }
+      config.title = titleConfig;
     }
     if (this.dataset.legend != null) {
       config.legend = {enabled: true};
@@ -254,6 +259,10 @@ class ChartWc extends VBElement {
       const palette = parseJson(this.dataset.palette, null);
       if (palette) config.palette = palette;
     }
+
+    // Register VB theme plugin for SVC hook system
+    config.plugins = config.plugins || [];
+    config.plugins.push(createThemePlugin(this));
 
     return config;
   }
@@ -317,6 +326,11 @@ class ChartWc extends VBElement {
     this.#ensureSvgContainer();
 
     try {
+      this.dispatchEvent(new CustomEvent('chart-wc:config-resolved', {
+        detail: {type: this.dataset.type || table?.dataset.type || 'bar', config},
+        bubbles: true,
+      }));
+
       this.#chart = new ChartType({config, data});
       this.#chart.mount(this.#svgContainer);
 

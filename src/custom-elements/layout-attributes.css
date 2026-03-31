@@ -1461,6 +1461,75 @@ main, article, section, aside:not(.float):not(.sidenote) {
 
 
 /* ==========================================================================
+   SCROLL-DRIVEN REVEAL ANIMATIONS
+   Opt-in via data-animate on any element within a page layout.
+   Animations fire as elements enter the viewport via animation-timeline: view().
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @keyframes vb-fade-up {
+    from { opacity: 0; transform: translateY(2rem); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes vb-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes vb-slide-left {
+    from { opacity: 0; transform: translateX(2rem); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes vb-scale-up {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  [data-animate="fade-up"] {
+    animation: vb-fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="fade-in"] {
+    animation: vb-fade-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="slide-left"] {
+    animation: vb-slide-left linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="scale-up"] {
+    animation: vb-scale-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
+/* Fallback: elements remain visible in unsupported browsers */
+@supports not (animation-timeline: view()) {
+  [data-animate] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate] {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
    CONTAINER QUERY EXPANSION
    Additional container-based adaptations for page regions.
    ========================================================================== */

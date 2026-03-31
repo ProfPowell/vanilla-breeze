@@ -1,0 +1,138 @@
+---
+layout: element
+title: "page-tools"
+description: "Configurable toolbar for page-level utilities — print, share, stats — with responsive FAB collapse."
+elementName: page-tools
+category: component
+currentPath: /docs/elements/web-components/page-tools/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;page-tools&gt;</code> component aggregates page-level utilities into a cohesive toolbar. It handles positioning and responsive collapse so individual tools do not need to solve these problems independently.</p>
+  <p>Any direct child element is treated as a tool — no registry needed. On small viewports, the toolbar collapses into a floating action button (FAB) that opens a native popover panel.</p>
+
+  <browser-window url="page-tools" src="/docs/examples/demos/page-tools-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-position</code></td>
+        <td>string</td>
+        <td><code>sticky</code></td>
+        <td>Positioning strategy: <code>sticky</code>, <code>fixed</code>, <code>inline</code></td>
+      </tr>
+      <tr>
+        <td><code>data-orientation</code></td>
+        <td>string</td>
+        <td><code>auto</code></td>
+        <td>Tool strip direction: <code>auto</code>, <code>vertical</code>, <code>horizontal</code>. Auto resolves to vertical for sticky/fixed, horizontal for inline.</td>
+      </tr>
+      <tr>
+        <td><code>data-gap</code></td>
+        <td>string</td>
+        <td><code>s</code></td>
+        <td>Gap between tools: <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code></td>
+      </tr>
+      <tr>
+        <td><code>data-fab-icon</code></td>
+        <td>string</td>
+        <td><code>ellipsis-vertical</code></td>
+        <td>Icon name for the mobile FAB button</td>
+      </tr>
+      <tr>
+        <td><code>data-fab-label</code></td>
+        <td>string</td>
+        <td><code>Page tools</code></td>
+        <td>Accessible label for the FAB button</td>
+      </tr>
+      <tr>
+        <td><code>data-breakpoint</code></td>
+        <td>string</td>
+        <td><code>48rem</code></td>
+        <td>Viewport width below which the toolbar collapses to FAB</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Usage</h2>
+
+  <h3>Sticky Sidebar</h3>
+  <p>The most common pattern — placed in a sidebar alongside a table of contents:</p>
+  <code-block language="html" data-escape>
+<aside>
+  <page-toc levels="h2,h3" scope="article"></page-toc>
+  <page-tools data-position="sticky">
+    <print-page></print-page>
+    <share-wc variant="icon" size="s"></share-wc>
+  </page-tools>
+</aside>
+  </code-block>
+
+  <h3>Inline Horizontal</h3>
+  <p>Flows with the document, orientation defaults to horizontal:</p>
+  <code-block language="html" data-escape>
+<page-tools data-position="inline">
+  <page-stats data-for="article-content" data-show="reading-time"></page-stats>
+  <print-page></print-page>
+  <share-wc variant="icon" size="s"></share-wc>
+</page-tools>
+  </code-block>
+
+  <h3>Fixed Viewport Edge</h3>
+  <p>Pinned to the viewport edge, centered vertically:</p>
+  <code-block language="html" data-escape>
+<page-tools data-position="fixed" data-fab-icon="menu">
+  <print-page></print-page>
+  <share-wc variant="icon" size="s"></share-wc>
+  <text-reader for="article-content"></text-reader>
+</page-tools>
+  </code-block>
+</section>
+
+<section>
+  <h2>Mobile FAB Collapse</h2>
+  <p>Below the breakpoint (default 48rem), the toolbar collapses into a floating action button. Tapping the FAB opens a native popover panel containing the tools. Tools are DOM-moved (not cloned) so event listeners are preserved.</p>
+
+  <browser-window url="page-tools-mobile" src="/docs/examples/demos/page-tools-mobile.html"></browser-window>
+</section>
+
+<section>
+  <h2>Custom Tools</h2>
+  <p>Any element works as a tool. Slot in standard VB components, plain links, or custom elements:</p>
+  <code-block language="html" data-escape>
+<page-tools>
+  <print-page></print-page>
+  <a href="/pdf/this-page.pdf" aria-label="Download PDF">
+    <icon-wc name="file-text" size="sm"></icon-wc>
+  </a>
+  <my-bookmark-button></my-bookmark-button>
+</page-tools>
+  </code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>Without JavaScript, <code>&lt;page-tools&gt;</code> is styled as a flex container by CSS alone. Children remain visible and functional. The FAB collapse and toolbar semantics are added only when the component upgrades.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <p>The component sets <code>role="toolbar"</code> and <code>aria-label="Page tools"</code> on upgrade. The FAB button has an accessible label, and focus returns to the FAB when the popover is dismissed. The popover supports light dismiss via Escape key.</p>
+</section>

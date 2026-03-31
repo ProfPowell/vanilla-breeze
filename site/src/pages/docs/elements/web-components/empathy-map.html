@@ -1,0 +1,412 @@
+---
+layout: element
+title: "empathy-map"
+description: "Four-quadrant empathy map visualization (Says, Thinks, Does, Feels) with optional flip-to-edit interaction."
+elementName: empathy-map
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/empathy-map/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that renders a four-quadrant empathy map &mdash; Says, Thinks, Does, and Feels &mdash; with optional Goals and Pain Points summary rows. Supports slotted HTML content, JSON loading via the <code>src</code> attribute, and a flip-to-edit mode for live editing directly in the browser. Designed for design workshops, sprint planning, and stakeholder presentations.</p>
+
+    <browser-window
+      src="/docs/examples/demos/empathy-map-basic.html"
+      url="https://vanilla-breeze.dev/empathy-map"
+      title="Empathy Map"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><empathy-map
+  title="Product Manager Empathy Map"
+  persona="Sarah Chen"
+  persona-id="persona-sarah"
+  summary="Understanding how Sarah experiences our project dashboard">
+
+  <ul slot="says">
+    <li>I need everything in one place</li>
+    <li>Can we simplify this workflow?</li>
+  </ul>
+
+  <ul slot="thinks">
+    <li>There must be a faster way to track progress</li>
+    <li>Why are these tools so disconnected?</li>
+  </ul>
+
+  <ul slot="does">
+    <li>Checks dashboards every morning</li>
+    <li>Exports reports manually as PDF</li>
+  </ul>
+
+  <ul slot="feels">
+    <li>frustrated</li>
+    <li>hopeful</li>
+  </ul>
+
+  <ul slot="goals">
+    <li>Streamline team communication</li>
+    <li>Track project progress efficiently</li>
+  </ul>
+
+  <ul slot="pain-points">
+    <li>Too many disconnected tools</li>
+    <li>Difficulty getting stakeholder buy-in</li>
+  </ul>
+</empathy-map></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td><code>"Empathy Map"</code></td>
+          <td>Map heading displayed in the header</td>
+        </tr>
+        <tr>
+          <td><code>persona</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Persona name displayed in the header</td>
+        </tr>
+        <tr>
+          <td><code>persona-id</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>ID of a <code>&lt;user-persona&gt;</code> element to link to (renders as an anchor)</td>
+        </tr>
+        <tr>
+          <td><code>summary</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Brief description shown below the title</td>
+        </tr>
+        <tr>
+          <td><code>src</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>Path to a JSON file containing quadrant data, goals, and pain points</td>
+        </tr>
+        <tr>
+          <td><code>editable</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Enables flip-to-edit interaction on each quadrant</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reduces padding, font sizes, and icon sizes for denser layouts</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Slots</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Slot</th>
+          <th>Expected Content</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>says</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Quotes and statements the persona makes. Displayed in the top-left quadrant with a blue accent.</td>
+        </tr>
+        <tr>
+          <td><code>thinks</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Internal thoughts and beliefs. Displayed in the top-right quadrant with a purple accent.</td>
+        </tr>
+        <tr>
+          <td><code>does</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Observable actions and behaviors. Displayed in the bottom-left quadrant with an amber accent.</td>
+        </tr>
+        <tr>
+          <td><code>feels</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Emotional states. Items matching EMOTION_META keys get automatic emoji and color treatment. Displayed in the bottom-right quadrant with a red accent.</td>
+        </tr>
+        <tr>
+          <td><code>goals</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Optional goals summary displayed below the quadrant grid</td>
+        </tr>
+        <tr>
+          <td><code>pain-points</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Optional pain points summary displayed below the quadrant grid</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Scalar attributes (<code>title</code>, <code>persona</code>, <code>summary</code>) can also be provided as named slots for SSR-friendly authoring. Attributes take priority when both are present.</p>
+  </section>
+
+  <section>
+    <h2>Editable Mode</h2>
+    <p>Add the <code>editable</code> attribute to enable flip-to-edit on each quadrant. Each quadrant header displays an edit button that flips the card to reveal a textarea. Enter one item per line, then press the "Done" button or hit <kbd>Escape</kbd> to save and flip back.</p>
+
+    <browser-window
+      src="/docs/examples/demos/empathy-map-editable.html"
+      url="https://vanilla-breeze.dev/empathy-map/editable"
+      title="Editable Empathy Map"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Editable empathy map" data-escape><empathy-map
+  title="Workshop Empathy Map"
+  persona="Alex Rivera"
+  editable>
+</empathy-map></code-block>
+
+    <p>When a quadrant is opened for editing, the front face becomes <code>inert</code> and the textarea receives focus. On close, the component updates its internal <code>.quadrants</code> data, re-renders the front face content, and dispatches an <code>empathy-map:update</code> event with the changed quadrant name and items.</p>
+
+    <p>You can also control editing programmatically:</p>
+
+    <code-block language="javascript" show-lines label="Programmatic edit control" data-escape>const map = document.querySelector('empathy-map');
+
+// Open the "thinks" quadrant for editing
+map.editQuadrant('thinks');
+
+// Close and save
+map.closeQuadrant('thinks');</code-block>
+  </section>
+
+  <section>
+    <h2>Data Mode</h2>
+    <p>Load quadrant data from a JSON file via the <code>src</code> attribute, or set the <code>.quadrants</code> property programmatically. The JSON schema supports top-level metadata plus quadrant arrays, goals, and pain points.</p>
+
+    <code-block language="json" show-lines label="JSON schema">{
+  "title": "Product Manager Empathy Map",
+  "persona": "Sarah Chen",
+  "personaId": "persona-sarah",
+  "summary": "Understanding daily workflow frustrations",
+  "quadrants": {
+    "says":   ["I need everything in one place", "Can we simplify this?"],
+    "thinks": ["There must be a faster way", "Why so disconnected?"],
+    "does":   ["Checks dashboards every morning", "Exports reports as PDF"],
+    "feels":  ["frustrated", "hopeful"]
+  },
+  "goals": ["Streamline communication", "Track progress efficiently"],
+  "painPoints": ["Too many tools", "Stakeholder buy-in is hard"]
+}</code-block>
+
+    <code-block language="javascript" show-lines label="Setting quadrants programmatically" data-escape>const map = document.querySelector('empathy-map');
+
+map.quadrants = {
+  says:   ['I need everything in one place'],
+  thinks: ['There must be a better way'],
+  does:   ['Checks dashboards every morning'],
+  feels:  ['frustrated', 'curious'],
+};
+
+map.goals      = ['Streamline communication'];
+map.painPoints = ['Too many disconnected tools'];</code-block>
+  </section>
+
+  <section>
+    <h2>Emotion Recognition</h2>
+    <p>Items in the "feels" quadrant are checked against the EMOTION_META dictionary. When an item's text matches a known emotion key (case-insensitive), it renders as a colored pill with the corresponding emoji. This is the same emotion vocabulary used by <code>&lt;user-journey&gt;</code>.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Emotion Key</th>
+          <th>Emoji</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>delighted</code></td>
+          <td>&#x1F604;</td>
+          <td><code>#16a34a</code></td>
+        </tr>
+        <tr>
+          <td><code>satisfied</code></td>
+          <td>&#x1F60A;</td>
+          <td><code>#22c55e</code></td>
+        </tr>
+        <tr>
+          <td><code>hopeful</code></td>
+          <td>&#x1F642;</td>
+          <td><code>#84cc16</code></td>
+        </tr>
+        <tr>
+          <td><code>curious</code></td>
+          <td>&#x1F914;</td>
+          <td><code>#eab308</code></td>
+        </tr>
+        <tr>
+          <td><code>neutral</code></td>
+          <td>&#x1F610;</td>
+          <td><code>#94a3b8</code></td>
+        </tr>
+        <tr>
+          <td><code>uncertain</code></td>
+          <td>&#x1F615;</td>
+          <td><code>#f97316</code></td>
+        </tr>
+        <tr>
+          <td><code>confused</code></td>
+          <td>&#x1F635;</td>
+          <td><code>#fb923c</code></td>
+        </tr>
+        <tr>
+          <td><code>frustrated</code></td>
+          <td>&#x1F624;</td>
+          <td><code>#ef4444</code></td>
+        </tr>
+        <tr>
+          <td><code>angry</code></td>
+          <td>&#x1F620;</td>
+          <td><code>#dc2626</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Items that do not match a known emotion key render as plain text. You can mix recognized emotions with freeform text in the same quadrant.</p>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--empathy-map-bg</code></td>
+          <td><code>#ffffff</code></td>
+          <td>Background color (used for editor and button backgrounds)</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-text</code></td>
+          <td><code>#1a1a1a</code></td>
+          <td>Primary text color</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-border</code></td>
+          <td><code>#e0e0e0</code></td>
+          <td>Card border and grid gap color</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-muted</code></td>
+          <td><code>#666666</code></td>
+          <td>Secondary/muted text for labels and summary</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-accent</code></td>
+          <td><code>#0066cc</code></td>
+          <td>Accent color for focus rings and interactive elements</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-card</code></td>
+          <td><code>#f8f9fa</code></td>
+          <td>Card and quadrant background color</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-radius</code></td>
+          <td><code>16px</code></td>
+          <td>Outer card border radius</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-says</code></td>
+          <td><code>#3b82f6</code></td>
+          <td>Says quadrant accent color (top border)</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-thinks</code></td>
+          <td><code>#8b5cf6</code></td>
+          <td>Thinks quadrant accent color (top border)</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-does</code></td>
+          <td><code>#f59e0b</code></td>
+          <td>Does quadrant accent color (top border)</td>
+        </tr>
+        <tr>
+          <td><code>--empathy-map-feels</code></td>
+          <td><code>#ef4444</code></td>
+          <td>Feels quadrant accent color (top border)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>empathy-map:ready</code></td>
+          <td><code>{ title, persona }</code></td>
+          <td>Fires after the component finishes rendering (including after JSON load)</td>
+        </tr>
+        <tr>
+          <td><code>empathy-map:update</code></td>
+          <td><code>{ quadrant, items }</code></td>
+          <td>Fires when a quadrant is closed after editing, with the quadrant name and updated items array</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The outer card renders as an <code>&lt;article&gt;</code> element for semantic grouping</li>
+      <li>Each quadrant is a <code>&lt;section&gt;</code> with a visible heading for screen reader navigation</li>
+      <li>Decorative quadrant icons use <code>aria-hidden="true"</code></li>
+      <li>In editable mode, the edit button has an <code>aria-label</code> of "Edit [quadrant name]"</li>
+      <li>When a quadrant flips to edit, the front face becomes <code>inert</code> and focus moves to the textarea</li>
+      <li>The textarea has an <code>aria-label</code> describing its purpose</li>
+      <li>Respects <code>prefers-reduced-motion: reduce</code> by disabling flip transitions</li>
+      <li>Uses <code>container-type: inline-size</code> and stacks to a single column at narrow viewports (&lt;500px)</li>
+      <li>Print styles hide edit buttons and editor faces for clean print output</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; Persona cards linked via <code>persona-id</code></li>
+      <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> &mdash; Agile story cards that complement empathy maps</li>
+      <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; Journey maps using the same emotion vocabulary</li>
+      <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; Prioritization matrix for discovered pain points</li>
+      <li><a href="/docs/elements/web-components/story-map/"><code>&lt;story-map&gt;</code></a> &mdash; Horizontal story mapping for sprint planning</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads all six UX components together</li>
+    </ul>
+  </section>

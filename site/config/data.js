@@ -1,5 +1,5 @@
 /**
- * Cook data config — imports shared data from the 11ty site's _data/ directory.
+ * Cook data config — imports shared data from the site data/ directory.
  * Both sites share the same data source so navigation, elements, etc. stay in sync.
  */
 import { readFileSync } from 'node:fs';
@@ -7,7 +7,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = resolve(__dirname, '../../site-11ty/src/_data');
+const dataDir = resolve(__dirname, '../data');
 
 // Import JSON data
 const navigation = JSON.parse(readFileSync(resolve(dataDir, 'navigation.json'), 'utf-8'));

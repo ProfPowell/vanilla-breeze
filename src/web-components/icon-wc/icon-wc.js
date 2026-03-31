@@ -8,6 +8,12 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 const iconCache = new Map();
 
 /**
+ * In-flight fetch promises to deduplicate parallel requests for the same icon
+ * @type {Map<string, Promise<string>>}
+ */
+const inflight = new Map();
+
+/**
  * @class IconWc
  * @augments HTMLElement
  * @description A lightweight icon component that loads SVG icons from local files
@@ -105,7 +111,7 @@ class IconWc extends HTMLElement {
         // Look for data-icon-path on document or component
         return this.getAttribute('base-path') ||
                document.documentElement.dataset.iconPath ||
-               '/src/icons';
+               '/cdn/icons';
     }
 
     /**
@@ -146,8 +152,7 @@ class IconWc extends HTMLElement {
         }
 
         try {
-            const svgText = await this.#fetchIcon(this.set);
-            iconCache.set(cacheKey, svgText);
+            const svgText = await this.#resolveIcon(this.set, cacheKey);
             this.displayIcon(svgText);
         } catch (error) {
             // Fallback to lucide if the requested set fails
@@ -159,14 +164,33 @@ class IconWc extends HTMLElement {
                     return;
                 }
                 try {
-                    const svgText = await this.#fetchIcon(fallbackSet);
-                    iconCache.set(fallbackKey, svgText);
+                    const svgText = await this.#resolveIcon(fallbackSet, fallbackKey);
                     this.displayIcon(svgText);
                     return;
                 } catch { /* fall through to error */ }
             }
             this.setError(error.message);
         }
+    }
+
+    /**
+     * Single-flight icon resolution — deduplicates parallel fetches for the same icon
+     * @param {string} set - Icon set name
+     * @param {string} cacheKey - Cache key for the icon
+     * @returns {Promise<string>} SVG text
+     */
+    async #resolveIcon(set, cacheKey) {
+        if (!inflight.has(cacheKey)) {
+            inflight.set(cacheKey, this.#fetchIcon(set).then(svg => {
+                iconCache.set(cacheKey, svg);
+                inflight.delete(cacheKey);
+                return svg;
+            }).catch(err => {
+                inflight.delete(cacheKey);
+                throw err;
+            }));
+        }
+        return /** @type {Promise<string>} */ (inflight.get(cacheKey));
     }
 
     /**

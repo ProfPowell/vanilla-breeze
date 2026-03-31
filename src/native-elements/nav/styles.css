@@ -4,13 +4,14 @@
 nav {
   display: block;
 
-  /* Private CSS variables for variant customization */
+  /* Private CSS variables for variant customization.
+     Defaults derive from semantic tokens so themes control all nav states. */
   --_link-padding: var(--size-s) var(--size-m);
   --_link-color: var(--color-text);
   --_hover-bg: transparent;
-  --_hover-color: var(--color-interactive);
-  --_active-bg: transparent;
-  --_active-color: var(--color-interactive);
+  --_hover-color: var(--color-hover-text);
+  --_active-bg: var(--color-active-bg);
+  --_active-color: var(--color-active-text);
   --_gap: var(--size-xs);
 }
 
@@ -50,9 +51,11 @@ nav a:focus-visible {
 
 /* Current page indicator — color uses !important to override theme
    link rules (e.g. Swiss a:not([class]) { color: var(--color-primary) })
-   that would make text invisible on colored pill backgrounds. */
+   that would make text invisible on colored pill backgrounds.
+   Supports both aria-current (semantic) and .active (build-system). */
 nav a[aria-current="page"],
-nav [aria-current="page"] > a {
+nav [aria-current="page"] > a,
+nav a.active {
   background: var(--_active-bg);
   color: var(--_active-color) !important;
   font-weight: 500;
@@ -91,7 +94,7 @@ nav {
 
   /* Pill navigation - override variables for pill styling */
   &.pills {
-    --_hover-bg: var(--color-surface-raised);
+    --_hover-bg: var(--color-hover-bg);
     --_active-bg: var(--color-interactive);
     --_active-color: var(--color-text-on-primary, white);
   }
@@ -134,7 +137,7 @@ nav {
     flex-wrap: wrap;
     align-items: center;
     gap: var(--size-2xs);
-    font-size: var(--font-size-s);
+    font-size: var(--font-size-sm);
   }
 
   &.breadcrumb li {
@@ -235,7 +238,7 @@ nav {
     min-width: 2.25rem;
     height: 2.25rem;
     padding-inline: var(--size-xs);
-    font-size: var(--font-size-s);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     background: transparent;
@@ -287,7 +290,7 @@ nav {
 
   /* Info text (e.g., "Page 1 of 10") */
   &.pagination [data-info] {
-    font-size: var(--font-size-s);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-inline: var(--size-s);
   }
@@ -342,7 +345,7 @@ nav {
   &.pagination[data-size="lg"] button {
     min-width: 2.75rem;
     height: 2.75rem;
-    font-size: var(--font-size-m);
+    font-size: var(--font-size-md);
   }
 
   /* --- Tree Navigation --- */
@@ -350,11 +353,8 @@ nav {
 
   &.tree {
     --_link-color: var(--color-text-muted);
-    --_hover-bg: var(--color-surface-raised);
-    --_hover-color: var(--color-text);
-    /* Left border accent for active state - matches page-toc */
-    --_active-bg: transparent;
-    --_active-color: var(--color-interactive);
+    --_hover-bg: var(--color-hover-bg);
+    --_hover-color: var(--color-hover-text);
     font-size: var(--font-size-sm);
   }
 
@@ -432,7 +432,8 @@ nav {
   }
 
   /* Left border accent for active tree links */
-  &.tree a[aria-current="page"] {
+  &.tree a[aria-current="page"],
+  &.tree a.active {
     border-inline-start-color: var(--color-interactive);
   }
 
@@ -467,7 +468,7 @@ nav {
 nav {
   &.steps {
     --_step-size: 2rem;
-    --_step-font: var(--font-size-s);
+    --_step-font: var(--font-size-sm);
     --_connector-height: 2px;
     --_connector-color: var(--color-border);
     --_connector-completed: var(--color-success);
@@ -497,7 +498,7 @@ nav {
 
   &.steps[data-size="lg"] {
     --_step-size: 2.5rem;
-    --_step-font: var(--font-size-base);
+    --_step-font: var(--font-size-md);
   }
 
   /* Ordered list layout — default horizontal */
@@ -699,6 +700,13 @@ nav {
     color: var(--color-interactive);
     font-weight: var(--font-weight-medium, 500);
   }
+
+  /* Frosted glass variant — iOS-style translucent nav */
+  &.bottom.frosted {
+    background: oklch(from var(--color-surface) l c h / var(--glass-surface-opacity, var(--opacity-85, 0.85)));
+    backdrop-filter: blur(var(--glass-blur, 12px)) saturate(var(--glass-saturate, 180%));
+    border-block-start-color: oklch(from var(--color-border) l c h / var(--opacity-50, 0.5));
+  }
 }
 
 /* --- Pagination Bar Layout --- */
@@ -713,7 +721,7 @@ nav {
 }
 
 .pagination-info {
-  font-size: var(--font-size-s);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 
   & strong {
@@ -727,7 +735,7 @@ nav {
   align-items: center;
   justify-self: end;
   gap: var(--size-xs);
-  font-size: var(--font-size-s);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 
   & label {
@@ -739,7 +747,7 @@ nav {
     display: inline;
     inline-size: auto;
     padding: var(--size-2xs) var(--size-xs);
-    font-size: var(--font-size-s);
+    font-size: var(--font-size-sm);
     min-block-size: auto;
   }
 }
@@ -797,8 +805,10 @@ nav drop-down [data-trigger] {
 }
 
 /* Active section styling for dropdown triggers */
+nav drop-down [data-trigger].active,
 nav drop-down [data-trigger][aria-current="true"] {
-  color: var(--color-interactive);
+  background: var(--_active-bg);
+  color: var(--_active-color) !important;
 }
 
 /* Chevron indicator for dropdown triggers */
@@ -833,8 +843,17 @@ nav drop-down menu a {
   transition: background var(--duration-fast) var(--ease-default);
 
   &:hover {
-    background: var(--color-surface-raised);
-    color: var(--color-interactive);
+    background: var(--color-hover-bg);
+    color: var(--color-hover-text);
+  }
+
+  /* Active item in dropdown — override pill styling which uses
+     filled bg + white text (invisible on white menu background). */
+  &.active,
+  &[aria-current="page"] {
+    background: var(--color-hover-bg);
+    color: var(--color-active-text) !important;
+    font-weight: 500;
   }
 }
 

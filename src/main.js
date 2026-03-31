@@ -11,6 +11,10 @@ if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
 // Lazy-load markdown-editable only when [data-markdown-editable] is present
 if (document.querySelector('[data-markdown-editable]')) import('./utils/markdown-editable-init.js');
+// Lazy-load scroll-hide only when [data-scroll-hide] is present
+if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-init.js');
+// Lazy-load mobile form utilities only when [data-keyboard-aware] is present
+if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';

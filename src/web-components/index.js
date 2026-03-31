@@ -80,6 +80,8 @@ import './reader-view/logic.js';
 import './page-meta/logic.js';
 import './change-set/logic.js';
 import './page-info/logic.js';
+import './page-stats/logic.js';
+import './page-tools/logic.js';
 import './glossary-index/logic.js';
 import './site-index/logic.js';
 import './time-index/logic.js';

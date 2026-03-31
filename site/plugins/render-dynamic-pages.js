@@ -1,6 +1,6 @@
 /**
  * @file render-dynamic-pages.js
- * @description Renders a small set of pages that still depend on genuine 11ty
+ * @description Renders a small set of pages that still depend on genuine Nunjucks
  * control-flow instead of simple string substitution.
  */
 

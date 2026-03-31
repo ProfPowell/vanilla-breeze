@@ -1,0 +1,249 @@
+---
+layout: element
+title: "impact-effort"
+description: "2x2 prioritization matrix with drag-and-drop between quadrants (Quick Wins, Big Bets, Fill-Ins, Money Pit)."
+elementName: impact-effort
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/impact-effort/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that renders a 2&times;2 impact/effort prioritization matrix with four quadrants: Quick Wins, Big Bets, Fill-Ins, and Money Pit. Items can be dragged between quadrants using native drag-and-drop or transferred via keyboard. Built on <code>&lt;drag-surface&gt;</code> for reorder and cross-surface transfer. Ideal for sprint prioritization, feature triage, and design workshops.</p>
+
+    <browser-window
+      src="/docs/examples/demos/impact-effort-basic.html"
+      url="https://vanilla-breeze.dev/impact-effort"
+      title="Impact/Effort Matrix"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><impact-effort>
+  <user-story data-quadrant="quick-wins" draggable="true" data-id="PROJ-101"
+    persona="Sarah Chen"
+    action="add keyboard shortcuts to the dashboard"
+    priority="high" status="to-do" points="2" compact>
+  </user-story>
+
+  <user-story data-quadrant="quick-wins" draggable="true" data-id="PROJ-102"
+    persona="Alex Rivera"
+    action="fix broken pagination on search results"
+    priority="medium" status="backlog" points="1" compact>
+  </user-story>
+
+  <user-story data-quadrant="big-bets" draggable="true" data-id="PROJ-103"
+    persona="Sarah Chen"
+    action="rebuild the reporting engine with real-time data"
+    priority="high" status="in-progress" points="13" compact>
+  </user-story>
+
+  <user-story data-quadrant="fill-ins" draggable="true" data-id="PROJ-104"
+    persona="Alex Rivera"
+    action="update placeholder copy on the settings page"
+    priority="low" status="backlog" points="1" compact>
+  </user-story>
+
+  <user-story data-quadrant="money-pit" draggable="true" data-id="PROJ-105"
+    persona="Sarah Chen"
+    action="migrate legacy reports to new PDF renderer"
+    priority="medium" status="backlog" points="8" compact>
+  </user-story>
+</impact-effort></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>Path to a JSON file containing an array of item objects</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reduces grid height, padding, and label sizes for denser layouts</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Optional heading displayed above the matrix</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Child Attributes</h2>
+    <p>Each direct child of <code>&lt;impact-effort&gt;</code> represents an item in the matrix. These attributes control placement and drag behavior:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-quadrant</code></td>
+          <td>enum</td>
+          <td><code>"quick-wins"</code></td>
+          <td>Target quadrant: <code>quick-wins</code>, <code>big-bets</code>, <code>fill-ins</code>, or <code>money-pit</code></td>
+        </tr>
+        <tr>
+          <td><code>draggable</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Must be set to <code>"true"</code> for drag capability. Auto-applied if missing.</td>
+        </tr>
+        <tr>
+          <td><code>data-id</code></td>
+          <td>string</td>
+          <td>auto-generated</td>
+          <td>Stable identifier for the item, included in event detail. Auto-generated if missing.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Quadrant Descriptions</h2>
+    <p>The matrix maps items along two axes &mdash; Impact (vertical) and Effort (horizontal) &mdash; creating four strategic quadrants:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Quadrant</th>
+          <th>Position</th>
+          <th>Description</th>
+          <th>Typical Items</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>quick-wins</code></td>
+          <td>Top-left</td>
+          <td>High impact &middot; Low effort</td>
+          <td>Easy fixes, quick improvements, low-hanging fruit</td>
+        </tr>
+        <tr>
+          <td><code>big-bets</code></td>
+          <td>Top-right</td>
+          <td>High impact &middot; High effort</td>
+          <td>Major features, platform rewrites, strategic investments</td>
+        </tr>
+        <tr>
+          <td><code>fill-ins</code></td>
+          <td>Bottom-left</td>
+          <td>Low impact &middot; Low effort</td>
+          <td>Nice-to-haves, polish tasks, minor enhancements</td>
+        </tr>
+        <tr>
+          <td><code>money-pit</code></td>
+          <td>Bottom-right</td>
+          <td>Low impact &middot; High effort</td>
+          <td>Expensive features with unclear ROI, legacy migrations</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Axis labels ("Impact" with an up arrow, "Effort" with a right arrow) are rendered alongside the grid for visual context. Each quadrant has a subtle background tint &mdash; green for Quick Wins, amber for Big Bets, blue for Fill-Ins, and red for Money Pit.</p>
+  </section>
+
+  <section>
+    <h2>Drag Interaction</h2>
+    <p>Items move between quadrants via native drag-and-drop. Each quadrant contains a <code>&lt;drag-surface&gt;</code> element sharing the same <code>group</code> identifier, enabling cross-surface transfers.</p>
+    <ul>
+      <li><strong>Drag</strong> &mdash; grab any item and drop it onto a different quadrant. The item's <code>data-quadrant</code> attribute updates automatically.</li>
+      <li><strong>Keyboard</strong> &mdash; <code>&lt;drag-surface&gt;</code> provides keyboard reorder and transfer. Focus an item and use the keyboard shortcuts to move it between surfaces.</li>
+      <li><strong>Live announcement</strong> &mdash; when an item moves between quadrants, a hidden live region announces the change for screen readers (e.g., "Moved PROJ-101 to Big Bets").</li>
+    </ul>
+
+    <code-block language="javascript" show-lines label="Listening for moves" data-escape>const matrix = document.querySelector('impact-effort');
+
+matrix.addEventListener('impact-effort:move', (e) => {
+  console.log(`${e.detail.itemId} moved from ${e.detail.from} to ${e.detail.to}`);
+});</code-block>
+  </section>
+
+  <section>
+    <h2>Data Mode</h2>
+    <p>Load items from a JSON file by setting the <code>src</code> attribute. The file should contain an array of item objects, each with an <code>id</code>, <code>quadrant</code>, and <code>label</code> (or <code>text</code>).</p>
+
+    <code-block language="json" show-lines label="JSON data format">[
+  { "id": "PROJ-101", "quadrant": "quick-wins", "label": "Add keyboard shortcuts" },
+  { "id": "PROJ-102", "quadrant": "big-bets",   "label": "Rebuild reporting engine" },
+  { "id": "PROJ-103", "quadrant": "fill-ins",   "label": "Update placeholder copy" },
+  { "id": "PROJ-104", "quadrant": "money-pit",  "label": "Migrate legacy PDF renderer" }
+]</code-block>
+
+    <code-block language="html" show-lines label="Loading from JSON" data-escape><impact-effort src="/data/prioritization.json"></impact-effort></code-block>
+
+    <p>Each JSON entry creates an <code>&lt;article&gt;</code> element with <code>draggable="true"</code> and the appropriate <code>data-quadrant</code> and <code>data-id</code> attributes. For richer item rendering, use <code>&lt;user-story&gt;</code> children directly in HTML instead of JSON mode.</p>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>impact-effort:move</code></td>
+          <td><code>{ itemId, from, to, item }</code></td>
+          <td>Fires when an item is dragged between quadrants. <code>from</code> and <code>to</code> are quadrant names.</td>
+        </tr>
+        <tr>
+          <td><code>impact-effort:ready</code></td>
+          <td><code>{ quadrantCounts }</code></td>
+          <td>Fires after the component initializes. <code>quadrantCounts</code> is an object mapping each quadrant name to the number of items it contains.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The grid uses <code>role="region"</code> with <code>aria-label="Impact-Effort prioritization matrix"</code></li>
+      <li>Each quadrant section has an <code>aria-label</code> combining the quadrant name and its impact/effort description (e.g., "Quick Wins: High impact &middot; Low effort")</li>
+      <li>Axis labels ("Impact" and "Effort") use <code>aria-hidden="true"</code> since the quadrant labels already convey the meaning</li>
+      <li>A hidden live region with <code>aria-live="polite"</code> announces item moves between quadrants</li>
+      <li>Keyboard transfer is provided by the underlying <code>&lt;drag-surface&gt;</code> components</li>
+      <li>Respects <code>prefers-reduced-motion: reduce</code> by disabling all transitions</li>
+      <li>Uses <code>container-type: inline-size</code> and stacks to a single column at narrow viewports (&lt;30rem)</li>
+      <li>Print styles remove minimum heights, set static cursors, and add visible borders</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> &mdash; Story cards that serve as draggable items in the matrix</li>
+      <li><a href="/docs/elements/web-components/empathy-map/"><code>&lt;empathy-map&gt;</code></a> &mdash; Empathy maps for discovering pain points to prioritize</li>
+      <li><a href="/docs/elements/web-components/story-map/"><code>&lt;story-map&gt;</code></a> &mdash; Horizontal story mapping for sprint planning</li>
+      <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; Persona cards providing context for prioritized items</li>
+      <li><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> &mdash; The underlying drag-and-drop primitive used by each quadrant</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads all six UX components together</li>
+    </ul>
+  </section>

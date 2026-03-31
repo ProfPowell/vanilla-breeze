@@ -30,7 +30,7 @@ crumbLabel: Native Elements
     <h3>Typical Page</h3>
     <p>A typical Vanilla Breeze page sets global config on <code>&lt;html&gt;</code> and page structure on <code>&lt;body&gt;</code>:</p>
     <code-block language="html" label="Typical VB page" data-escape><!DOCTYPE html>
-<html lang="en" data-theme="ocean" data-fluid>
+<html lang="en" data-theme="modern" data-fluid>
   <head>...</head>
   <body data-page-layout="sidebar-start">
     <header>...</header>
@@ -48,9 +48,9 @@ crumbLabel: Native Elements
     <p>VB stores configuration as data attributes on <code>&lt;html&gt;</code>. CSS activates token overrides using <code>:root[data-*]</code> selectors. Theme selectors use the <code>~=</code> operator (word-match) so multiple themes can be space-separated. Mode and fluid selectors use <code>=</code> (exact match) since only one value is valid at a time.</p>
     <code-block language="css" label="Selector patterns" data-escape>/* Theme CSS uses :root[data-theme~="name"] — the ~= operator
    matches individual words in a space-separated list */
-:root[data-theme~="ocean"] {
-  --hue-primary: 200;
-  --hue-secondary: 180;
+:root[data-theme~="modern"] {
+  --radius-s: 0.5rem;
+  --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.08);
 }
 
 /* Mode uses exact match since only one value is valid */
@@ -99,9 +99,9 @@ crumbLabel: Native Elements
 
     <h3>Scoped Overrides</h3>
     <p>Both <code>data-theme</code> and <code>data-mode</code> can be placed on any descendant element to create a scoped region. VB's reset re-applies <code>color: var(--color-text)</code> on scoped elements so custom properties resolve in the element's own context rather than inheriting from the body.</p>
-    <code-block language="html" label="Scoped overrides" data-escape><main data-theme="ocean">
-  <!-- This section gets ocean colors while the rest
-       of the page uses the root theme -->
+    <code-block language="html" label="Scoped overrides" data-escape><main data-theme="modern">
+  <!-- This section gets the modern personality while
+       the rest of the page uses the root theme -->
 </main>
 
 <aside data-mode="dark">
@@ -151,8 +151,8 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
-          <td>Brand</td>
-          <td><code>ocean</code>, <code>forest</code>, <code>sunset</code>, <code>amber</code>, <code>emerald</code>, <code>lavender</code>, <code>indigo</code>, <code>slate</code>, <code>rose</code>, <code>coral</code></td>
+          <td>Accent <em>(via JS)</em></td>
+          <td><code>ocean</code>, <code>forest</code>, <code>sunset</code>, <code>amber</code>, <code>emerald</code>, <code>lavender</code>, <code>indigo</code>, <code>slate</code>, <code>rose</code>, <code>coral</code> &mdash; applied via <code>ThemeManager.setAccent()</code>, not <code>data-theme</code></td>
         </tr>
         <tr>
           <td>Extreme</td>
@@ -172,9 +172,9 @@ crumbLabel: Native Elements
         </tr>
       </tbody>
     </table>
-    <p>Themes can be combined. Accessibility themes layer on top of brand or extreme themes. The <code>[data-theme~="name"]</code> word-match selector enables this stacking &#8212; each token is matched independently, so <code>data-theme="ocean a11y-large-text"</code> activates both rulesets simultaneously.</p>
-    <code-block language="html" label="Single theme" data-escape><html lang="en" data-theme="ocean"></code-block>
-    <code-block language="html" label="Combined themes" data-escape><html lang="en" data-theme="ocean a11y-large-text"></code-block>
+    <p>Themes can be combined. Accessibility themes layer on top of personality or extreme themes. The <code>[data-theme~="name"]</code> word-match selector enables this stacking &#8212; each token is matched independently, so <code>data-theme="modern a11y-large-text"</code> activates both rulesets simultaneously. Color accents (ocean, forest, sunset, etc.) are applied separately via <code>ThemeManager.setAccent()</code>.</p>
+    <code-block language="html" label="Single theme" data-escape><html lang="en" data-theme="modern"></code-block>
+    <code-block language="html" label="Combined themes" data-escape><html lang="en" data-theme="modern a11y-large-text"></code-block>
 
     <h3>data-page</h3>
     <p>Identifies which site section a page belongs to. This is a scoping hook for your own CSS &#8212; VB does not define a fixed enumeration. Values are whatever makes sense for your site (e.g., <code>docs</code>, <code>lab</code>, <code>blog</code>, <code>admin</code>).</p>
@@ -309,7 +309,7 @@ crumbLabel: Native Elements
 
     <h3>Combining Attributes</h3>
     <p>All data attributes can be combined:</p>
-    <code-block language="html" label="Combined attributes" data-escape><html lang="en" data-page="docs" data-theme="forest" data-mode="dark" data-fluid></code-block>
+    <code-block language="html" label="Combined attributes" data-escape><html lang="en" data-page="docs" data-theme="modern" data-mode="dark" data-fluid></code-block>
   </section>
 
   <!-- Developer Utilities Section -->
@@ -355,19 +355,23 @@ ThemeManager.setMode('dark');    // Force dark
 ThemeManager.setMode('light');   // Force light
 ThemeManager.setMode('auto');    // Follow system
 
-// Change brand theme
-ThemeManager.setBrand('ocean');  // Apply ocean theme
-ThemeManager.setBrand('default'); // Reset to default
+// Change brand theme (personality themes like swiss, brutalist, etc.)
+ThemeManager.setBrand('swiss');    // Apply swiss theme
+ThemeManager.setBrand('default');  // Reset to default
+
+// Change color accent
+ThemeManager.setAccent('ocean');   // Apply ocean accent
+ThemeManager.setAccent('default'); // Reset to default
 
 // Toggle between light and dark
 ThemeManager.toggleMode();
 
 // Get current state
-const { mode, brand, effectiveMode } = ThemeManager.getState();
+const { mode, brand, accent, effectiveMode } = ThemeManager.getState();
 
 // Listen for changes
 window.addEventListener('vb:theme-change', (e) => {
-  console.log(e.detail); // { mode, brand, effectiveMode }
+  console.log(e.detail); // { mode, brand, accent, effectiveMode }
 });</code-block>
   </section>
 

@@ -15,14 +15,14 @@
  * ThemeManager.setMode('dark');
  *
  * // Change brand theme (loads CSS if needed)
- * await ThemeManager.setBrand('ocean');
+ * await ThemeManager.setBrand('swiss');
  *
  * // Change color accent
- * ThemeManager.setAccent('warm');
+ * ThemeManager.setAccent('ocean');
  *
  * // Listen for changes
  * window.addEventListener('vb:theme-change', (e) => {
- *   console.log(e.detail); // { mode: 'dark', brand: 'ocean', accent: 'warm' }
+ *   console.log(e.detail); // { mode: 'dark', brand: 'swiss', accent: 'ocean' }
  * });
  */
 
@@ -211,7 +211,7 @@ export const ThemeManager = {
 
   /**
    * Set color accent
-   * @param {string} accentId - Accent ID from COLOR_ACCENTS (e.g., 'warm', 'cool', 'earth')
+   * @param {string} accentId - Accent ID from COLOR_ACCENTS (e.g., 'ocean', 'forest', 'sunset')
    */
   setAccent(accentId) {
     const updated = this.save({ accent: accentId });

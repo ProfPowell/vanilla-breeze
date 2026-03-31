@@ -1,0 +1,169 @@
+/* story-map — Light DOM styles (element selector) */
+
+story-map {
+  display: block;
+  container-type: inline-size;
+}
+
+story-map:not(:defined) {
+  display: block;
+}
+
+/* ── Scroll region ────────────────────────────────────── */
+
+.sm-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Columns container ────────────────────────────────── */
+
+.sm-columns {
+  display: flex;
+  gap: 1px;
+  background: var(--color-border, #e0e0e0);
+  min-inline-size: min-content;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-l, 0.75rem);
+  overflow: hidden;
+}
+
+/* ── Individual column ────────────────────────────────── */
+
+.sm-column {
+  min-inline-size: 14rem;
+  max-inline-size: 22rem;
+  flex: 1 0 14rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #fff);
+}
+
+/* ── Activity header ──────────────────────────────────── */
+
+.sm-activity-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  padding: var(--size-s, 12px) var(--size-m, 16px);
+  background: var(--color-surface-raised, #f8f9fa);
+  border-block-end: 2px solid var(--color-border, #e0e0e0);
+}
+
+.sm-activity-header h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text, #1a1a1a);
+}
+
+/* ── Count badge ──────────────────────────────────────── */
+
+.sm-activity-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+  background: var(--color-border, #e0e0e0);
+  border-radius: var(--radius-full, 9999px);
+  padding: 1px 8px;
+  margin-inline-start: 8px;
+}
+
+/* ── Drag surfaces inside columns ─────────────────────── */
+
+story-map drag-surface {
+  padding: var(--size-s, 12px);
+  min-block-size: 8rem;
+  flex: 1;
+}
+
+story-map drag-surface > * {
+  margin-block-end: var(--size-xs, 8px);
+}
+
+story-map drag-surface > *:last-child {
+  margin-block-end: 0;
+}
+
+/* ── Empty column placeholder ─────────────────────────── */
+
+.sm-empty {
+  color: var(--color-text-muted, #888);
+  font-size: 0.8rem;
+  font-style: italic;
+  padding: var(--size-s, 12px);
+  margin: 0;
+}
+
+/* ── Live region (visually hidden) ────────────────────── */
+
+.sm-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* ── Compact variant ──────────────────────────────────── */
+
+story-map[compact] .sm-column {
+  min-inline-size: 11rem;
+  flex: 1 0 11rem;
+}
+
+story-map[compact] .sm-activity-header {
+  padding: var(--size-xs, 8px) var(--size-s, 12px);
+}
+
+story-map[compact] .sm-activity-header h3 {
+  font-size: 0.75rem;
+}
+
+story-map[compact] drag-surface {
+  padding: var(--size-xs, 8px);
+}
+
+/* ── Container query: single-column stacking ──────────── */
+
+@container (max-width: 30rem) {
+  .sm-columns {
+    flex-direction: column;
+  }
+
+  .sm-column {
+    max-inline-size: none;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-scroll {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Print ────────────────────────────────────────────── */
+
+@media print {
+  .sm-scroll {
+    overflow: visible;
+  }
+
+  .sm-activity-header {
+    position: static;
+  }
+
+  .sm-columns {
+    flex-wrap: wrap;
+  }
+
+  .sm-column {
+    break-inside: avoid;
+  }
+}

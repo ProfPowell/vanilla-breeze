@@ -27,6 +27,9 @@ const SWR_PATTERNS = [
   /\/cdn\/themes\/[^/]+\.css$/,
   /\/cdn\/vanilla-breeze-[^/]+\.(css|js)$/,
   /\/cdn\/components\/[^/]+\.js$/,
+  /\/cdn\/packs\/[^/]+\.(css|js)$/,
+  /\/cdn\/icons\/[^/]+\/[^/]+\.svg$/,
+  /\/cdn\/doc-extras\.js$/,
 ];
 
 self.addEventListener('install', (event) => {

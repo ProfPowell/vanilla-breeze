@@ -154,7 +154,7 @@ toc: true
   </nav>
 </body></code-block>
 
-  <browser-window src="/docs/examples/demos/mobile-app-shell.html" url="https://vanilla-breeze.dev/mobile/app-shell" title="Mobile app shell demo" shadow></browser-window>
+  <browser-window src="/docs/examples/demos/mobile-app-shell.html" url="https://vanilla-breeze.dev/mobile/app-shell" title="Mobile app shell demo" device="iphone-16" device-color="midnight"></browser-window>
 
   <p>See also: <a href="/docs/patterns/application/shells/">Application Shells pattern</a></p>
 </section>
@@ -188,7 +188,7 @@ toc: true
 
   <p>The <code>commandfor</code> / <code>command</code> attributes use the Invokers API to open and close the dialog declaratively. In browsers that don&rsquo;t support Invokers yet, fall back to <code>document.getElementById('my-sheet').showModal()</code>.</p>
 
-  <browser-window src="/docs/examples/demos/mobile-bottom-sheet.html" url="https://vanilla-breeze.dev/mobile/bottom-sheet" title="Bottom sheet demo" shadow></browser-window>
+  <browser-window src="/docs/examples/demos/mobile-bottom-sheet.html" url="https://vanilla-breeze.dev/mobile/bottom-sheet" title="Bottom sheet demo" device="iphone-16-pro-max" device-color="silver"></browser-window>
 
   <p>See also: <a href="/docs/elements/native/dialog/">Dialog element docs</a></p>
 </section>
@@ -270,7 +270,7 @@ toc: true
   <button type="submit" class="full-width">Submit</button>
 </form></code-block>
 
-  <browser-window src="/docs/examples/demos/mobile-form.html" url="https://vanilla-breeze.dev/mobile/form" title="Mobile form demo" shadow></browser-window>
+  <browser-window src="/docs/examples/demos/mobile-form.html" url="https://vanilla-breeze.dev/mobile/form" title="Mobile form demo" device="pixel-9" device-color="white"></browser-window>
 
   <p>See also: <a href="/docs/attributes/autocomplete/">autocomplete reference</a>, <a href="/docs/attributes/inputmode/">inputmode reference</a>, <a href="/docs/attributes/enterkeyhint/">enterkeyhint reference</a></p>
 </section>
@@ -330,7 +330,7 @@ toc: true
   <layout-card>Card 4</layout-card>
 </section></code-block>
 
-  <browser-window src="/docs/examples/demos/mobile-hero.html" url="https://vanilla-breeze.dev/mobile/hero" title="Hero and reel demo" shadow></browser-window>
+  <browser-window src="/docs/examples/demos/mobile-hero.html" url="https://vanilla-breeze.dev/mobile/hero" title="Hero and reel demo" device="iphone-16"></browser-window>
 </section>
 
 <!-- Browser Support -->
@@ -394,6 +394,141 @@ toc: true
   </table>
 
   <p>All core features have 95%+ support on current mobile browsers. The Invokers API is the newest; for broader support, use <code>element.showModal()</code> as a JavaScript fallback.</p>
+</section>
+
+<!-- Scroll Animations -->
+<section id="scroll-animations">
+  <h2>Scroll Animations</h2>
+  <p>Elements can reveal as they enter the viewport using CSS scroll-driven animations. No JavaScript required &mdash; the browser handles timing, throttling, and compositing.</p>
+
+  <code-block language="html" label="Add scroll reveal" data-escape><section data-animate="fade-up">
+  <h2>This fades up as it scrolls into view</h2>
+</section></code-block>
+
+  <h3>Available animations</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>fade-up</code></td><td>Fades in while translating up from 2rem</td></tr>
+      <tr><td><code>fade-in</code></td><td>Opacity fade only</td></tr>
+      <tr><td><code>slide-left</code></td><td>Fades in while translating from 2rem right</td></tr>
+      <tr><td><code>scale-up</code></td><td>Fades in from 95% scale</td></tr>
+    </tbody>
+  </table>
+
+  <p>Uses <code>animation-timeline: view()</code> (Chrome 115+, Safari 18+). Unsupported browsers show elements statically &mdash; no content is hidden. Animations are disabled when <code>prefers-reduced-motion: reduce</code> is active.</p>
+
+  <p>See this in action across the corporate site demo:</p>
+  <browser-window src="/docs/examples/demos/mobile-corporate.html" url="https://vanilla-breeze.dev/mobile/corporate" title="Corporate mobile site" device="iphone-16" device-color="midnight"></browser-window>
+</section>
+
+<!-- Auto-Hiding Header -->
+<section id="scroll-hide">
+  <h2>Auto-Hiding Header</h2>
+  <p>Headers can hide on scroll-down and reappear on scroll-up &mdash; the same pattern as Instagram and Medium.</p>
+
+  <code-block language="html" label="Auto-hiding header" data-escape><header data-scroll-hide>
+  <nav>...</nav>
+</header></code-block>
+
+  <p>The CSS adds a smooth <code>translateY(-100%)</code> transition. The JS (auto-loaded when the attribute is present) toggles a <code>data-hidden</code> attribute based on scroll direction.</p>
+  <p>Contrast with <code>data-scroll-shrink</code>, which shrinks the header but keeps it visible.</p>
+</section>
+
+<!-- Sticky CTA -->
+<section id="sticky-cta">
+  <h2>Sticky CTA</h2>
+  <p>Two patterns for keeping a call-to-action always reachable:</p>
+
+  <h3>Sticky bottom bar</h3>
+  <code-block language="html" label="Sticky CTA bar" data-escape><footer data-sticky-cta>
+  <p>Start free &mdash; no credit card needed</p>
+  <a href="/signup" class="btn primary">Get started</a>
+</footer></code-block>
+
+  <h3>Floating action button</h3>
+  <code-block language="html" label="FAB" data-escape><button class="fab" aria-label="Get started">+</button></code-block>
+
+  <p>Both respect safe-area bottom insets automatically.</p>
+</section>
+
+<!-- Frosted Nav -->
+<section id="frosted-nav">
+  <h2>Frosted Glass Nav</h2>
+  <p>Add the <code>frosted</code> class to <code>nav.bottom</code> for an iOS-style translucent bottom navigation bar:</p>
+
+  <code-block language="html" label="Frosted bottom nav" data-escape><nav class="bottom frosted" aria-label="Primary">
+  <a href="/" aria-current="page">Home</a>
+  <a href="/features">Features</a>
+  <a href="/pricing">Pricing</a>
+</nav></code-block>
+
+  <p>Uses <code>backdrop-filter: blur(12px) saturate(180%)</code> with a semi-transparent background. Falls back gracefully to a solid background in unsupported browsers.</p>
+</section>
+
+<!-- Mobile Forms -->
+<section id="mobile-forms">
+  <h2>Mobile Forms (Advanced)</h2>
+  <p>Phase 3 of the mobile strategy adds keyboard-aware scrolling and optimized form layout for checkout-grade flows.</p>
+
+  <h3>Keyboard-aware scrolling</h3>
+  <p>Add <code>data-keyboard-aware</code> to a form and inputs will auto-scroll into view when the virtual keyboard opens:</p>
+
+  <code-block language="html" label="Keyboard-aware form" data-escape><form class="mobile" data-keyboard-aware novalidate>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="email" enterkeyhint="next">
+  </form-field>
+  <footer class="sticky">
+    <button type="submit">Submit</button>
+  </footer>
+</form></code-block>
+
+  <p>The <code>form.mobile</code> class forces single-column stacking below 48rem and full-width submit buttons on touch devices. The <code>footer.sticky</code> sticks above the virtual keyboard using <code>env(keyboard-inset-height)</code>.</p>
+
+  <h3>Multi-step checkout</h3>
+  <p>Combine <code>form.mobile</code> with <code>data-wizard</code> for step-by-step flows:</p>
+
+  <browser-window src="/docs/examples/demos/mobile-checkout.html" url="https://vanilla-breeze.dev/mobile/checkout" title="Mobile checkout" device="pixel-9" device-color="white"></browser-window>
+
+  <h3>Form patterns</h3>
+  <p>See the side-by-side comparison of common form mistakes vs best practices:</p>
+
+  <browser-window src="/docs/examples/demos/mobile-form-patterns.html" url="https://vanilla-breeze.dev/mobile/form-patterns" title="Form patterns"></browser-window>
+</section>
+
+<!-- Showcase -->
+<section id="showcase">
+  <h2>Device Showcase</h2>
+  <p>Every mobile demo rendered inside realistic device mockups &mdash; iPhone, Pixel, Galaxy, and iPad.</p>
+
+  <section data-layout="grid" data-layout-min="20rem" data-layout-gap="xl">
+    <figure>
+      <browser-window device="iphone-16" device-color="midnight" src="/docs/examples/demos/mobile-corporate.html"></browser-window>
+      <figcaption>Corporate Homepage (iPhone 16)</figcaption>
+    </figure>
+    <figure>
+      <browser-window device="pixel-9" device-color="white" src="/docs/examples/demos/mobile-app-shell.html"></browser-window>
+      <figcaption>App Shell (Pixel 9)</figcaption>
+    </figure>
+    <figure>
+      <browser-window device="galaxy-s24" src="/docs/examples/demos/mobile-checkout.html"></browser-window>
+      <figcaption>Checkout (Galaxy S24)</figcaption>
+    </figure>
+    <figure>
+      <browser-window device="iphone-se" device-color="silver" src="/docs/examples/demos/mobile-form.html" show-safe-areas></browser-window>
+      <figcaption>Mobile Form (iPhone SE, safe areas)</figcaption>
+    </figure>
+    <figure>
+      <browser-window device="iphone-16-pro-max" device-color="silver" src="/docs/examples/demos/mobile-biosite.html"></browser-window>
+      <figcaption>Pharma Biosite (iPhone 16 Pro Max)</figcaption>
+    </figure>
+  </section>
 </section>
 
 <!-- Related -->

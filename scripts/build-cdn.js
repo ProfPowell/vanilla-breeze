@@ -10,6 +10,7 @@
  * - cdn/vanilla-breeze.js (full bundle, backwards compat)
  * - cdn/vanilla-breeze-core.js (slim, core components only)
  * - cdn/vanilla-breeze-extras.js (niche/heavy components)
+ * - cdn/doc-extras.js (docs-only external components)
  * - cdn/vanilla-breeze-dev.js (debug utilities)
  * - cdn/themes/*.css (individual theme files)
  * - cdn/themes/manifest.json (theme metadata)
@@ -169,9 +170,10 @@ async function buildComponents() {
     const logicPath = join(wcDir, dir, 'logic.js');
     if (!existsSync(logicPath)) continue;
 
-    // Read the logic file to extract the tag name from customElements.define()
+    // Read the logic file to extract the tag name from customElements.define() or registerComponent()
     const content = readFileSync(logicPath, 'utf-8');
-    const defineMatch = content.match(/customElements\.define\(\s*['"]([^'"]+)['"]/);
+    const defineMatch = content.match(/customElements\.define\(\s*['"]([^'"]+)['"]/)
+      || content.match(/registerComponent\(\s*['"]([^'"]+)['"]/);
     if (!defineMatch) continue;
 
     const tagName = defineMatch[1];
@@ -441,6 +443,18 @@ async function buildCDN() {
     });
   }
 
+  // Build docs-only external components bundle
+  const docExtrasPath = join(SRC, 'doc-extras.js');
+  if (existsSync(docExtrasPath)) {
+    await esbuild.build({
+      ...JS_DEFAULTS,
+      entryPoints: [docExtrasPath],
+      outfile: join(CDN, 'doc-extras.js'),
+      logLevel: 'info',
+      ignoreAnnotations: true,
+    });
+  }
+
   // Build dev JS add-on
   const devJsPath = join(SRC, 'dev.js');
   if (existsSync(devJsPath)) {
@@ -490,6 +504,7 @@ async function buildCDN() {
   const precacheManifest = [
     '/cdn/vanilla-breeze-core.css',
     '/cdn/vanilla-breeze-core.js',
+    '/cdn/doc-extras.js',
     '/cdn/themes/manifest.json',
   ];
 
@@ -522,6 +537,15 @@ async function buildCDN() {
       logLevel: 'info',
       ignoreAnnotations: true,
     });
+  }
+
+  // --- Copy icons to CDN ---
+  const iconsDir = join(SRC, 'icons');
+  if (existsSync(iconsDir)) {
+    const iconsOut = join(CDN, 'icons');
+    mkdirSync(iconsOut, { recursive: true });
+    cpSync(iconsDir, iconsOut, { recursive: true });
+    console.log('  icons/ → dist/cdn/icons/');
   }
 
   // --- Individual builds ---

@@ -1,0 +1,298 @@
+---
+layout: element
+title: "story-map"
+description: "Horizontal user story map with activity columns and drag-and-drop between columns."
+elementName: story-map
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/story-map/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that renders a horizontal user story map organized by activity columns. Each column contains a <code>&lt;drag-surface&gt;</code> enabling drag-and-drop reorder within a column and transfer between columns. Ideal for sprint planning, backlog grooming, and mapping user activities to deliverable stories.</p>
+
+    <browser-window
+      src="/docs/examples/demos/story-map-basic.html"
+      url="https://vanilla-breeze.dev/story-map"
+      title="Story Map"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><story-map>
+  <section data-activity="discovery" data-activity-label="Discovery">
+    <article draggable="true" data-id="PROJ-201">Interview target users</article>
+    <article draggable="true" data-id="PROJ-202">Competitive analysis</article>
+    <article draggable="true" data-id="PROJ-203">Survey existing customers</article>
+  </section>
+
+  <section data-activity="design" data-activity-label="Design">
+    <article draggable="true" data-id="PROJ-204">Create wireframes</article>
+    <article draggable="true" data-id="PROJ-205">Design component library</article>
+  </section>
+
+  <section data-activity="development" data-activity-label="Development">
+    <article draggable="true" data-id="PROJ-206">Build API endpoints</article>
+    <article draggable="true" data-id="PROJ-207">Implement dashboard UI</article>
+    <article draggable="true" data-id="PROJ-208">Add keyboard shortcuts</article>
+  </section>
+
+  <section data-activity="testing" data-activity-label="Testing">
+    <article draggable="true" data-id="PROJ-209">Write integration tests</article>
+    <article draggable="true" data-id="PROJ-210">User acceptance testing</article>
+  </section>
+</story-map></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>Path to a JSON file containing activity and story data</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reduces column widths, padding, and header font sizes for denser layouts</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Optional heading displayed above the story map</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Child Attributes</h2>
+    <p>The <code>&lt;story-map&gt;</code> component expects direct <code>&lt;section&gt;</code> children, each defining an activity column. Story items go inside each section.</p>
+
+    <h3>Section Attributes (Activity Columns)</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-activity</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Activity column identifier. Used in event details and as the internal key.</td>
+        </tr>
+        <tr>
+          <td><code>data-activity-label</code></td>
+          <td>string</td>
+          <td>Title-cased <code>data-activity</code></td>
+          <td>Display label for the column header. Falls back to a title-cased version of the activity ID.</td>
+        </tr>
+        <tr>
+          <td><code>data-journey-phase</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Optional link to a <code>&lt;user-journey&gt;</code> phase name for cross-referencing</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Item Attributes (Story Cards)</h3>
+    <p>Items inside each section become draggable story cards. Use <code>&lt;article&gt;</code> elements for simple text or <code>&lt;user-story&gt;</code> elements for rich story cards.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>draggable</code></td>
+          <td>boolean</td>
+          <td>Must be set to <code>"true"</code> for drag capability</td>
+        </tr>
+        <tr>
+          <td><code>data-id</code></td>
+          <td>string</td>
+          <td>Stable identifier for the item, included in event details</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Column Structure</h2>
+    <p>Each activity column consists of a sticky header and a drag surface area:</p>
+    <ul>
+      <li><strong>Header</strong> &mdash; displays the activity label in uppercase with a count badge showing the number of stories in that column. The badge updates automatically when items are transferred.</li>
+      <li><strong>Drag surface</strong> &mdash; a <code>&lt;drag-surface&gt;</code> element that holds the story items. All surfaces share the same <code>group</code> identifier, enabling cross-column transfers.</li>
+      <li><strong>Empty state</strong> &mdash; when a column has no stories, an italic "No stories yet" placeholder appears. The placeholder is removed when an item is dropped in, and re-added when the last item is dragged out.</li>
+    </ul>
+    <p>The columns sit inside a horizontally scrollable container. Each column has a minimum width of 14rem (11rem in compact mode) and a maximum of 22rem, using <code>flex: 1 0 14rem</code> to fill available space while allowing horizontal scroll when columns exceed the viewport.</p>
+  </section>
+
+  <section>
+    <h2>Drag Interaction</h2>
+    <p>Items can be reordered within a column and transferred between columns:</p>
+    <ul>
+      <li><strong>Reorder</strong> &mdash; drag an item up or down within the same column. Fires a <code>story-map:reorder</code> event with the old and new indices.</li>
+      <li><strong>Transfer</strong> &mdash; drag an item from one column and drop it onto another. The count badges on both columns update automatically. Fires a <code>story-map:transfer</code> event.</li>
+      <li><strong>Keyboard</strong> &mdash; <code>&lt;drag-surface&gt;</code> provides keyboard reorder and cross-surface transfer using its built-in keyboard shortcuts.</li>
+    </ul>
+
+    <code-block language="javascript" show-lines label="Listening for story movement" data-escape>const map = document.querySelector('story-map');
+
+map.addEventListener('story-map:transfer', (e) => {
+  console.log(`${e.detail.itemId} moved from ${e.detail.fromActivity} to ${e.detail.toActivity}`);
+});
+
+map.addEventListener('story-map:reorder', (e) => {
+  console.log(`${e.detail.itemId} reordered in ${e.detail.activity}: ${e.detail.oldIndex} -> ${e.detail.newIndex}`);
+});</code-block>
+  </section>
+
+  <section>
+    <h2>JSON Loading</h2>
+    <p>Load the entire story map from a JSON file using the <code>src</code> attribute. The component creates activity columns with <code>&lt;user-story&gt;</code> cards automatically.</p>
+
+    <code-block language="html" show-lines label="Loading from JSON" data-escape><story-map src="/data/story-map.json"></story-map></code-block>
+
+    <code-block language="json" show-lines label="JSON schema">{
+  "activities": [
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "journeyPhase": "awareness",
+      "stories": [
+        {
+          "id": "PROJ-101",
+          "title": "User interviews",
+          "persona": "Researcher",
+          "action": "interview 10 target users",
+          "priority": "high",
+          "status": "done",
+          "points": "5"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "label": "Design",
+      "stories": [
+        {
+          "id": "PROJ-201",
+          "title": "Dashboard wireframes",
+          "persona": "Designer",
+          "action": "create wireframes for new dashboard",
+          "priority": "high",
+          "status": "in-progress",
+          "points": "5"
+        }
+      ]
+    }
+  ]
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Using with User Stories</h2>
+    <p>For richer story cards, use <code>&lt;user-story&gt;</code> elements as children instead of plain <code>&lt;article&gt;</code> elements. Add the <code>compact</code> attribute on each story for a tighter layout within the columns.</p>
+
+    <code-block language="html" show-lines label="Rich story cards in columns" data-escape><story-map>
+  <section data-activity="discovery" data-activity-label="Discovery">
+    <user-story draggable="true" data-id="PROJ-201"
+      story-id="PROJ-201"
+      persona="Sarah Chen"
+      action="interview target users about dashboard needs"
+      priority="high" status="in-progress" points="3" compact>
+    </user-story>
+  </section>
+
+  <section data-activity="development" data-activity-label="Development">
+    <user-story draggable="true" data-id="PROJ-206"
+      story-id="PROJ-206"
+      persona="Alex Rivera"
+      action="build API endpoints for timeline data"
+      priority="high" status="to-do" points="8" compact>
+    </user-story>
+  </section>
+</story-map></code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>story-map:reorder</code></td>
+          <td><code>{ itemId, activity, oldIndex, newIndex }</code></td>
+          <td>Fires when an item is reordered within the same activity column</td>
+        </tr>
+        <tr>
+          <td><code>story-map:transfer</code></td>
+          <td><code>{ itemId, fromActivity, toActivity, newIndex }</code></td>
+          <td>Fires when an item is dragged from one activity column to another</td>
+        </tr>
+        <tr>
+          <td><code>story-map:ready</code></td>
+          <td><code>{ activityCount, storyCount }</code></td>
+          <td>Fires after the component initializes with the total number of activity columns and stories</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The scroll container uses <code>role="region"</code> with <code>aria-label="Story map"</code> and is keyboard-focusable via <code>tabindex="0"</code></li>
+      <li>Each <code>&lt;drag-surface&gt;</code> has an <code>aria-label</code> describing the activity column (e.g., "Discovery stories")</li>
+      <li>A hidden live region with <code>aria-live="polite"</code> announces item transfers between columns</li>
+      <li>Keyboard navigation is provided by the underlying <code>&lt;drag-surface&gt;</code> components</li>
+      <li>Column headers are sticky so the activity label remains visible while scrolling down through long columns</li>
+      <li>Respects <code>prefers-reduced-motion: reduce</code> by disabling scroll behavior transitions</li>
+      <li>Uses <code>container-type: inline-size</code> and stacks columns vertically at narrow viewports (&lt;30rem)</li>
+      <li>Print styles remove sticky positioning, enable wrapping columns, and set <code>break-inside: avoid</code> on columns</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> &mdash; Rich story cards that work as draggable items in columns</li>
+      <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; Prioritization matrix for triaging stories</li>
+      <li><a href="/docs/elements/web-components/empathy-map/"><code>&lt;empathy-map&gt;</code></a> &mdash; Empathy maps for user research informing stories</li>
+      <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; Journey maps linked via <code>data-journey-phase</code></li>
+      <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; Persona cards providing context for story owners</li>
+      <li><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> &mdash; The underlying drag-and-drop primitive used by each column</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads all six UX components together</li>
+    </ul>
+  </section>

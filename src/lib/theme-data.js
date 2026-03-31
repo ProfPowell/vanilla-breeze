@@ -123,9 +123,6 @@ export const COLOR_ACCENTS = [
   }
 ];
 
-/** @deprecated Use COLOR_ACCENTS instead */
-export const COLOR_THEMES = COLOR_ACCENTS;
-
 // Personality themes - comprehensive design systems (core tier)
 export const PERSONALITY_THEMES = [
   { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated', swatchBg: '#6366f1', tier: 'core' },

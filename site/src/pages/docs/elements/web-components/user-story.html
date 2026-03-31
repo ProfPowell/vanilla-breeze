@@ -1,0 +1,523 @@
+---
+layout: element
+title: "user-story"
+description: "Displays Agile user stories in the classic 'As a / I want / so that' format with priority, status, and story points."
+elementName: user-story
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/user-story/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that renders user stories in the standard Agile format: "As a [persona], I want [action] so that [benefit]." Includes visual badges for priority, status, and story points, plus slotted sections for acceptance criteria, tasks, and notes. Designed for sprint planning boards, backlog views, and design documentation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/user-story-basic.html"
+      url="https://vanilla-breeze.dev/user-story"
+      title="User Story"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><user-story
+  persona="Product Manager"
+  action="view all project timelines in one dashboard"
+  benefit="I can quickly identify bottlenecks and reallocate resources"
+  priority="high"
+  status="in-progress"
+  points="5"
+  epic="Dashboard"
+  story-id="PROJ-142">
+
+  <ul slot="acceptance-criteria">
+    <li>Dashboard loads within 2 seconds</li>
+    <li>All active projects are displayed</li>
+    <li>Timeline view is zoomable</li>
+  </ul>
+
+  <ul slot="tasks">
+    <li>Design dashboard wireframe</li>
+    <li>Implement timeline API endpoint</li>
+    <li>Build frontend grid layout</li>
+  </ul>
+
+  <p slot="notes">Consider using virtual scrolling for large project lists.</p>
+</user-story></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>persona</code></td>
+          <td>string</td>
+          <td><code>"user"</code></td>
+          <td>The "As a..." role or persona name</td>
+        </tr>
+        <tr>
+          <td><code>action</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>The "I want..." action description</td>
+        </tr>
+        <tr>
+          <td><code>benefit</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>The "so that..." benefit. When omitted, the benefit clause is hidden.</td>
+        </tr>
+        <tr>
+          <td><code>priority</code></td>
+          <td>string</td>
+          <td><code>"medium"</code></td>
+          <td>Priority level: <code>critical</code>, <code>high</code>, <code>medium</code>, or <code>low</code></td>
+        </tr>
+        <tr>
+          <td><code>status</code></td>
+          <td>string</td>
+          <td><code>"backlog"</code></td>
+          <td>Workflow status: <code>backlog</code>, <code>to-do</code>, <code>in-progress</code>, <code>review</code>, or <code>done</code></td>
+        </tr>
+        <tr>
+          <td><code>points</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Story point estimate displayed as a circular badge</td>
+        </tr>
+        <tr>
+          <td><code>epic</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Epic or feature group label shown as a highlighted chip</td>
+        </tr>
+        <tr>
+          <td><code>story-id</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Unique identifier (e.g., "PROJ-142") displayed in monospace in the header</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Short title shown in minimal detail mode. Falls back to truncated action text.</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reduces padding and font size for denser layouts</td>
+        </tr>
+        <tr>
+          <td><code>detail</code></td>
+          <td>string</td>
+          <td><code>"full"</code></td>
+          <td>Controls content density: <code>full</code> (all sections), <code>compact</code> (hide empty sections), <code>minimal</code> (ID + title only, click to expand)</td>
+        </tr>
+        <tr>
+          <td><code>src</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>URL to JSON file containing story data. Loads and populates all attributes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Slots</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Slot</th>
+          <th>Expected Content</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>persona</code></td>
+          <td>text</td>
+          <td>Slot fallback for the <code>persona</code> attribute (SSR friendly)</td>
+        </tr>
+        <tr>
+          <td><code>action</code></td>
+          <td>text</td>
+          <td>Slot fallback for the <code>action</code> attribute</td>
+        </tr>
+        <tr>
+          <td><code>benefit</code></td>
+          <td>text</td>
+          <td>Slot fallback for the <code>benefit</code> attribute</td>
+        </tr>
+        <tr>
+          <td><code>acceptance-criteria</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Definition of done checklist. Displayed with a green accent icon.</td>
+        </tr>
+        <tr>
+          <td><code>tasks</code></td>
+          <td><code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code></td>
+          <td>Implementation tasks. Displayed with a purple accent icon.</td>
+        </tr>
+        <tr>
+          <td><code>notes</code></td>
+          <td><code>&lt;p&gt;</code> or text</td>
+          <td>Additional notes or context. Displayed with an amber accent icon.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Detail Levels</h2>
+    <p>The <code>detail</code> attribute controls how much content the card displays. Three levels support different use cases from dense kanban boards to full documentation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/user-story-variants.html"
+      url="https://vanilla-breeze.dev/user-story/detail-levels"
+      title="Detail Levels"
+      shadow>
+    </browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Shows</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>full</code></td>
+          <td>Header, statement, all sections (with empty fallbacks)</td>
+          <td>Documentation pages, standalone story views</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>Header, statement, sections only if populated</td>
+          <td>Story map columns, backlog lists</td>
+        </tr>
+        <tr>
+          <td><code>minimal</code></td>
+          <td>Story ID + title only. Clickable &mdash; opens full detail in a <code>&lt;dialog&gt;</code>.</td>
+          <td>Kanban boards, impact/effort matrix, dense grids</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Minimal card with title" data-escape><user-story
+  story-id="PROJ-142"
+  title="Dashboard timeline view"
+  persona="Product Manager"
+  action="see all project timelines in a unified dashboard"
+  detail="minimal">
+</user-story></code-block>
+
+    <h3>Click to Expand</h3>
+    <p>Minimal cards are interactive. Clicking or pressing Enter opens a native <code>&lt;dialog&gt;</code> showing the full story. The dialog uses VB&rsquo;s built-in dialog CSS for sizing, backdrop, and animation. You can also call <code>story.showDetail()</code> programmatically.</p>
+
+    <browser-window
+      src="/docs/examples/demos/user-story-expand.html"
+      url="https://vanilla-breeze.dev/user-story/expand"
+      title="Click to Expand"
+      shadow>
+    </browser-window>
+
+    <code-block language="javascript" show-lines label="Programmatic expand" data-escape>const story = document.querySelector('user-story[story-id="PROJ-142"]');
+story.showDetail(); // Opens modal dialog with full detail</code-block>
+  </section>
+
+  <section>
+    <h2>JSON Loading</h2>
+    <p>Load story data from a JSON file using the <code>src</code> attribute. Scalar fields map to attributes; list fields populate the acceptance criteria, tasks, and notes sections.</p>
+
+    <code-block language="html" show-lines label="Loading from JSON" data-escape><user-story src="/api/stories/PROJ-142.json" detail="full"></user-story></code-block>
+
+    <code-block language="json" show-lines label="JSON schema">{
+  "storyId": "PROJ-142",
+  "title": "Dashboard timeline view",
+  "persona": "Product Manager",
+  "action": "see all project timelines in a unified dashboard",
+  "benefit": "I can quickly identify bottlenecks",
+  "priority": "high",
+  "status": "in-progress",
+  "points": "8",
+  "epic": "Dashboard",
+  "acceptanceCriteria": [
+    "Dashboard loads within 2 seconds",
+    "All active projects displayed"
+  ],
+  "tasks": ["Design mockups", "Implement timeline"],
+  "notes": "Consider virtual scrolling for performance."
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Slot-Based Authoring</h2>
+    <p>Scalar values like persona, action, and benefit can also be provided as slotted child elements. This is useful for SSR scenarios where attributes may be harder to set. Attributes take priority when both are provided.</p>
+
+    <code-block language="html" show-lines label="Slot-based scalar values" data-escape><user-story story-id="PROJ-142" priority="high" status="in-progress">
+  <span slot="persona">Product Manager</span>
+  <span slot="action">see all project timelines in a unified dashboard</span>
+  <span slot="benefit">I can quickly identify bottlenecks</span>
+  <ul slot="acceptance-criteria">
+    <li>Dashboard loads within 2 seconds</li>
+  </ul>
+</user-story></code-block>
+  </section>
+
+  <section>
+    <h2>Priority Variants</h2>
+    <p>The <code>priority</code> attribute controls the colored badge in the story header. Here are three stories showing different priority and status combinations in compact mode.</p>
+
+    <browser-window
+      src="/docs/examples/demos/user-story-variants.html"
+      url="https://vanilla-breeze.dev/user-story/variants"
+      title="Story Variants"
+      shadow>
+    </browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Label</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>critical</code></td>
+          <td>Critical</td>
+          <td><code>#dc2626</code> (red)</td>
+        </tr>
+        <tr>
+          <td><code>high</code></td>
+          <td>High</td>
+          <td><code>#ea580c</code> (orange)</td>
+        </tr>
+        <tr>
+          <td><code>medium</code></td>
+          <td>Medium</td>
+          <td><code>#ca8a04</code> (amber)</td>
+        </tr>
+        <tr>
+          <td><code>low</code></td>
+          <td>Low</td>
+          <td><code>#16a34a</code> (green)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Critical priority story" data-escape><user-story
+  persona="Security Engineer"
+  action="receive alerts for authentication failures"
+  benefit="I can respond to potential breaches immediately"
+  priority="critical"
+  status="to-do"
+  story-id="SEC-301">
+</user-story></code-block>
+  </section>
+
+  <section>
+    <h2>Status Variants</h2>
+    <p>The <code>status</code> attribute controls the workflow badge in the story header.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Label</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>backlog</code></td>
+          <td>Backlog</td>
+          <td><code>#6b7280</code> (gray)</td>
+        </tr>
+        <tr>
+          <td><code>to-do</code></td>
+          <td>To Do</td>
+          <td><code>#3b82f6</code> (blue)</td>
+        </tr>
+        <tr>
+          <td><code>in-progress</code></td>
+          <td>In Progress</td>
+          <td><code>#8b5cf6</code> (purple)</td>
+        </tr>
+        <tr>
+          <td><code>review</code></td>
+          <td>Review</td>
+          <td><code>#f59e0b</code> (amber)</td>
+        </tr>
+        <tr>
+          <td><code>done</code></td>
+          <td>Done</td>
+          <td><code>#22c55e</code> (green)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The component exposes two methods for programmatic status and priority updates. Both update the attribute and dispatch a corresponding event.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Argument</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>updateStatus(status)</code></td>
+          <td>One of: <code>backlog</code>, <code>to-do</code>, <code>in-progress</code>, <code>review</code>, <code>done</code></td>
+          <td>Updates the status badge and fires <code>status-changed</code></td>
+        </tr>
+        <tr>
+          <td><code>updatePriority(priority)</code></td>
+          <td>One of: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
+          <td>Updates the priority badge and fires <code>priority-changed</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Programmatic status update" data-escape>const story = document.querySelector('user-story[story-id="PROJ-142"]');
+
+// Move to review
+story.updateStatus('review');
+
+// Escalate priority
+story.updatePriority('critical');
+
+// Listen for changes
+story.addEventListener('status-changed', (e) => {
+  console.log(`${e.detail.storyId} moved to ${e.detail.status}`);
+});</code-block>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--user-story-bg</code></td>
+          <td><code>#ffffff</code> / <code>#1e1e1e</code></td>
+          <td>Card background color</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-text</code></td>
+          <td><code>#1a1a1a</code> / <code>#e8e8e8</code></td>
+          <td>Primary text color</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-muted</code></td>
+          <td><code>#666666</code> / <code>#888888</code></td>
+          <td>Secondary/muted text color</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-border</code></td>
+          <td><code>#e0e0e0</code> / <code>#333333</code></td>
+          <td>Card and section border color</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-accent</code></td>
+          <td><code>#0066cc</code> / <code>#6b9fff</code></td>
+          <td>Accent color for keywords and epic badge</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-card-bg</code></td>
+          <td><code>#f8f9fa</code> / <code>#252525</code></td>
+          <td>Header background color</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-highlight</code></td>
+          <td><code>rgba(0, 102, 204, 0.08)</code> / <code>rgba(107, 159, 255, 0.15)</code></td>
+          <td>Persona text highlight and epic badge background</td>
+        </tr>
+        <tr>
+          <td><code>--user-story-radius</code></td>
+          <td><code>12px</code></td>
+          <td>Outer card border radius</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>story-ready</code></td>
+          <td><code>{ id, persona, action, benefit, priority, status, points }</code></td>
+          <td>Fires after the component finishes rendering</td>
+        </tr>
+        <tr>
+          <td><code>status-changed</code></td>
+          <td><code>{ status, storyId }</code></td>
+          <td>Fires when <code>updateStatus()</code> is called with a valid status</td>
+        </tr>
+        <tr>
+          <td><code>priority-changed</code></td>
+          <td><code>{ priority, storyId }</code></td>
+          <td>Fires when <code>updatePriority()</code> is called with a valid priority</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The outer card uses <code>role="article"</code> with <code>aria-label="User story"</code></li>
+      <li>Priority and status badges use color plus text labels &mdash; never color alone</li>
+      <li>Story points badge has a <code>title</code> attribute reading "Story points"</li>
+      <li>Slot sections include visible headings for screen reader navigation</li>
+      <li>Respects <code>prefers-reduced-motion: reduce</code> by disabling hover transitions</li>
+      <li>Responsive layout stacks header badges vertically at narrow viewports (&lt;480px)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; Persona cards that stories reference</li>
+      <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; Journey maps that link to story IDs</li>
+      <li><a href="/docs/elements/web-components/empathy-map/"><code>&lt;empathy-map&gt;</code></a> &mdash; Empathy maps for understanding user needs</li>
+      <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; Prioritization matrix for draggable story cards</li>
+      <li><a href="/docs/elements/web-components/story-map/"><code>&lt;story-map&gt;</code></a> &mdash; Horizontal story mapping with activity columns</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads all six UX components together</li>
+    </ul>
+  </section>
