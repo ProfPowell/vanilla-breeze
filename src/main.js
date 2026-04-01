@@ -13,6 +13,7 @@ if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
 if (document.querySelector('[data-markdown-editable]')) import('./utils/markdown-editable-init.js');
 // Lazy-load scroll-hide only when [data-scroll-hide] is present
 if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-init.js');
+import { initStickyManager } from './lib/sticky-manager.js';
 // Lazy-load mobile form utilities only when [data-keyboard-aware] is present
 if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
 import { initFormCoordinator } from './lib/form-coordinator.js';
@@ -39,6 +40,9 @@ export { VB } from './lib/vb.js';
 // Initialize theme system early to prevent FOUC
 // init() is async — loads saved theme CSS before applying
 await ThemeManager.init();
+
+// Initialize sticky system if enabled (must run before layout settles)
+if (document.documentElement.hasAttribute('data-sticky')) initStickyManager();
 
 // Boot unified effects observer
 VB.observe();

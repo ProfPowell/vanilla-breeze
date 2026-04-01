@@ -1,0 +1,58 @@
+/**
+ * Smart Sticky System
+ *
+ * Opt-in sticky positioning activated via `data-sticky` on <html>.
+ * Individual elements declare sticky intent with `data-sticky` (header/footer)
+ * or `data-layout-sticky` (sidebar nav/aside), but only activate when the
+ * system toggle is present on the root element.
+ *
+ * Three rules:
+ *   1. Opt-in — baseline is non-sticky, sticky is progressive enhancement
+ *   2. Constrain — sidebars are always capped at remaining viewport height
+ *              with inner scroll when content overflows
+ *   3. Coordination — `--sticky-offset` flows header height to all elements;
+ *              `--sticky-gap` adds breathing room between header and sidebars
+ *
+ * Usage:
+ *   <html data-sticky>
+ *     <header data-sticky>...</header>
+ *     <layout-sidebar>
+ *       <nav data-layout-sticky>...</nav>
+ *       <article>...</article>
+ *     </layout-sidebar>
+ *   </html>
+ *
+ * Toggle via settings panel or JS:
+ *   document.documentElement.toggleAttribute('data-sticky');
+ */
+
+/* System toggle — sets shared offset and scroll padding */
+:root[data-sticky] {
+  --sticky-offset: 0px;
+  --sticky-gap: var(--size-2xs, 0.5rem);
+  scroll-padding-block-start: calc(var(--sticky-offset) + var(--sticky-gap));
+}
+
+/* Coordinated sticky header — must sit above other sticky elements
+   (page-toc, sidebars) so dropdowns and search overlays aren't clipped. */
+:root[data-sticky] header[data-sticky] {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky-header, 200);
+  background: var(--color-surface);
+}
+
+/* Coordinated sticky footer */
+:root[data-sticky] footer[data-sticky] {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: var(--z-sticky, 100);
+  background: var(--color-surface);
+}
+
+/* Mobile: disable sticky header — viewport too constrained */
+@media (width < 48rem) {
+  :root[data-sticky] header[data-sticky] {
+    position: static;
+  }
+}

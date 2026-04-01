@@ -16,6 +16,7 @@ import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
+import { initStickyManager } from './lib/sticky-manager.js';
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';
@@ -23,6 +24,9 @@ import './lib/sw-register.js';
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();
+
+// Initialize sticky system if enabled (must run before layout settles)
+if (document.documentElement.hasAttribute('data-sticky')) initStickyManager();
 
 // Sync external components (browser-window, code-block) with theme
 initExternalThemeSync();

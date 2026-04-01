@@ -124,11 +124,11 @@ page-toc {
   }
 }
 
-/* Wide screens: sticky sidebar, always visible */
+/* Wide screens: sticky sidebar, always visible — only when system is active */
 @media (width >= 64rem) { /* --bp-lg */
-  page-toc {
+  :root[data-sticky] page-toc:not([orientation="horizontal"]) {
     position: sticky;
-    inset-block-start: var(--size-xl);
+    inset-block-start: calc(var(--sticky-offset, var(--size-xl)) + var(--sticky-gap, 0px));
   }
 
   @scope (page-toc) {
@@ -197,11 +197,14 @@ page-toc {
 
 /* Horizontal variant — inline scrollable bar */
 page-toc[orientation="horizontal"] {
+  background: var(--color-surface);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+:root[data-sticky] page-toc[orientation="horizontal"] {
   position: sticky;
   inset-block-start: var(--sticky-offset, 0px);
   z-index: var(--z-sticky, 100);
-  background: var(--color-surface);
-  border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
 @scope (page-toc[orientation="horizontal"]) {

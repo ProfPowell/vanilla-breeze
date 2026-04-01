@@ -27,8 +27,10 @@ crumbLabel: Data Attributes
     <browser-window src="/docs/snippets/demos/header-sticky.html" url="https://vanilla-breeze.dev/sticky-header" title="Sticky header" shadow></browser-window>
 
     <h3>Sticky Footer</h3>
-    <p>Pin a footer to the bottom of the viewport:</p>
+    <p>Pin a footer to the bottom of the viewport. Unlike <code>position: fixed</code>, a sticky footer is part of the normal document flow &mdash; it sticks to the bottom while you scroll but does not overlay content. Ideal for action bars, persistent CTAs, and form submit rows.</p>
     <code-block language="html" label="Sticky footer">{{ '<footer data-sticky>\n  <p>&copy; 2026 Acme Co. All rights reserved.</p>\n</footer>' | escape }}</code-block>
+
+    <browser-window src="/docs/snippets/demos/footer-sticky.html" url="https://vanilla-breeze.dev/sticky-footer" title="Sticky footer" shadow></browser-window>
   </section>
 
   <section>
@@ -63,11 +65,76 @@ crumbLabel: Data Attributes
   </section>
 
   <section>
+    <h2>Smart Sticky System</h2>
+    <p>Vanilla Breeze provides a coordinated sticky system activated by adding <code>data-sticky</code> to the <code>&lt;html&gt;</code> element. This gates all sticky behavior behind a single toggle, following the principle that <strong>sticky is an enhancement, not a default</strong>.</p>
+
+    <h3>Three Rules</h3>
+    <ol>
+      <li><strong>Opt-in:</strong> Baseline is non-sticky. Elements declare sticky <em>intent</em> with <code>data-sticky</code> or <code>data-layout-sticky</code>, but only activate when the system is enabled on <code>&lt;html&gt;</code>.</li>
+      <li><strong>Viewport constraint:</strong> Sidebars are always constrained to the remaining viewport height below the header, with inner scrolling when content overflows.</li>
+      <li><strong>Coordination:</strong> A shared <code>--sticky-offset</code> custom property flows the header height to all subordinate sticky elements automatically.</li>
+    </ol>
+
+    <h3>Enabling the System</h3>
+    <code-block language="html" label="System toggle">{{ '<html data-sticky>\n  <header data-sticky>...</header>\n  <layout-sidebar>\n    <nav data-layout-sticky>...</nav>\n    <article>...</article>\n  </layout-sidebar>\n</html>' | escape }}</code-block>
+    <p>Or toggle via JavaScript:</p>
+    <code-block language="js" label="JS toggle">{{ "document.documentElement.toggleAttribute('data-sticky');" | escape }}</code-block>
+    <p>The VB settings panel includes a <strong>Sticky Navigation</strong> toggle in the Layout section that manages this automatically with localStorage persistence.</p>
+
+    <h3>Offset Coordination</h3>
+    <p>When enabled, the sticky manager measures the header height and sets <code>--sticky-offset</code> on <code>:root</code>. All sticky sidebars and components reference this variable so they stack correctly below the header. The system also sets <code>scroll-padding-block-start</code> so anchor links land below the sticky header.</p>
+
+    <h3>Viewport Constraint</h3>
+    <p>Sidebar elements with <code>data-layout-sticky</code> are always constrained to <code>max-height: calc(100dvh - var(--sticky-offset) - var(--sticky-gap))</code> with <code>overflow-y: auto</code>. This ensures the sidebar fills exactly the remaining viewport below the header and gains inner scrolling when its content overflows. Combined with <code>align-self: start</code>, this is the pattern that keeps sticky positioning reliable regardless of content length.</p>
+  </section>
+
+  <section>
+    <h2>Mobile Behavior</h2>
+    <p>On viewports narrower than <code>48rem</code>, sticky headers are automatically disabled to preserve screen space. Sidebars collapse to drawers or stack layouts on mobile, so their sticky behavior does not apply.</p>
+    <p>A <a href="/docs/utils/back-to-top/">back-to-top</a> button provides quick return-to-top navigation when sticky is off.</p>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sticky-offset</code></td>
+          <td><code>0px</code></td>
+          <td>Set by sticky manager to the header height. Used by all subordinate sticky elements.</td>
+        </tr>
+        <tr>
+          <td><code>--sticky-gap</code></td>
+          <td><code>var(--size-2xs)</code></td>
+          <td>Breathing room between the sticky header and subordinate sticky elements (sidebars, TOC). Override on <code>:root</code> or per-theme.</td>
+        </tr>
+        <tr>
+          <td><code>--z-sticky</code></td>
+          <td><code>100</code></td>
+          <td>Z-index for subordinate sticky elements (sidebars, page-toc, footer).</td>
+        </tr>
+        <tr>
+          <td><code>--z-sticky-header</code></td>
+          <td><code>200</code></td>
+          <td>Z-index for the sticky header. Higher than other sticky elements so dropdowns and overlays render above the page-toc.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
     <ul>
       <li>Sticky headers should not obscure focused content when users navigate with keyboard</li>
       <li>Ensure sufficient contrast between the sticky element and page content scrolling beneath</li>
-      <li>Consider <code>scroll-padding-top</code> on the scroll container to offset anchor links below the sticky header</li>
+      <li>The system automatically sets <code>scroll-padding-block-start</code> to offset anchor links below the sticky header</li>
     </ul>
   </section>
 
@@ -77,6 +144,7 @@ crumbLabel: Data Attributes
       <li><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> — Element that supports data-sticky for top positioning</li>
       <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> — Element that supports data-sticky for bottom positioning</li>
       <li><a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a> — Uses <code>data-sticky="header|column|both"</code> for sticky rows and columns (different attribute)</li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> — Page layouts with <code>data-layout-sticky</code> support</li>
       <li><a href="/docs/patterns/navigation/navbar/">Navbar patterns</a> — Sticky header recipes with backdrop blur</li>
     </ul>
   </section>

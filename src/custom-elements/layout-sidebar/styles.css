@@ -41,12 +41,14 @@ layout-sidebar[data-layout-content-min="40"] { --_content-min: 40%; }
 layout-sidebar[data-layout-content-min="50"] { --_content-min: 50%; }
 layout-sidebar[data-layout-content-min="60"] { --_content-min: 60%; }
 
-/* Sticky sidebar — stays in viewport while main content scrolls */
-layout-sidebar > :is(nav, aside)[data-layout-sticky] {
+/* Sticky sidebar — only active when smart sticky system is enabled on :root.
+   Always constrain to remaining viewport so the sidebar sticks cleanly and
+   gains inner scroll when its content overflows the available space. */
+:root[data-sticky] layout-sidebar > :is(nav, aside)[data-layout-sticky] {
   position: sticky;
-  top: var(--sticky-offset, 0px);
+  top: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
   align-self: start;
-  max-height: calc(100dvh - var(--sticky-offset, 0px));
+  max-height: calc(100dvh - var(--sticky-offset, 0px) - var(--sticky-gap, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
 }

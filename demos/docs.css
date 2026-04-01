@@ -5,14 +5,14 @@
 
 @scope ([data-page="docs"], [data-page="lab"]) {
   :scope {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     min-block-size: 100dvh;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    overflow-x: hidden;
+    overflow-x: clip;
 
     & > * {
       min-inline-size: 0;
@@ -102,7 +102,8 @@
     margin-inline: auto;
     inline-size: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
+    /* Keep horizontal clipping without turning main into a sticky-breaking scroll container. */
+    overflow-x: clip;
 
     /* Reset content headers so they don't interfere with site header dropdowns */
     & header {
@@ -286,7 +287,21 @@
 :root[data-page="lab"][data-backdrop-chrome~="fixed"] > body > header {
   position: sticky;
   inset-block-start: 0;
-  z-index: var(--z-sticky, 100);
+}
+
+/* Smart sticky: override position:relative when sticky system is active */
+:root[data-sticky][data-page="docs"] > body,
+:root[data-sticky][data-page="lab"] > body {
+  overflow-y: auto;
+  max-block-size: 100dvh;
+  scroll-padding-block-start: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
+}
+
+:root[data-sticky][data-page="docs"] > body > header,
+:root[data-sticky][data-page="lab"] > body > header {
+  position: sticky;
+  inset-block-start: 0;
+  background: var(--color-surface);
 }
 
 /* ===========================================
