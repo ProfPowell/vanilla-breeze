@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Matrix Recipe</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .matrix { max-inline-size: 900px; }
+
+    .score-best {
+      color: var(--color-success, #22c55e);
+      font-weight: 700;
+    }
+
+    .weights-form {
+      margin-block-start: var(--size-l);
+      padding: var(--size-m);
+      background: var(--color-surface-sunken, var(--color-surface-raised));
+      border-radius: var(--radius-m);
+    }
+
+    .weights-form fieldset {
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .weights-form legend {
+      font-weight: 600;
+      margin-block-end: var(--size-s);
+    }
+
+    .weight-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-m);
+    }
+
+    .weight-controls label {
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-2xs);
+      font-size: var(--font-size-s, 0.875rem);
+    }
+
+    .weight-controls input[type="number"] {
+      inline-size: 4em;
+      padding: var(--size-2xs) var(--size-xs);
+      border: var(--border-width-thin, 1px) solid var(--color-border);
+      border-radius: var(--radius-s);
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header data-layout="stack" data-layout-gap="xs">
+    <h2>Decision Matrix &mdash; Technology Stack</h2>
+    <p><small>Click column headers to sort. Adjust weights below to recalculate scores.</small></p>
+  </header>
+
+  <section class="matrix">
+    <data-table>
+      <table data-filterable>
+        <caption>Weighted Decision Matrix</caption>
+        <thead>
+          <tr>
+            <th data-sort="string">Option</th>
+            <th data-sort="number" data-criterion="performance">Performance <small>(w:<output data-weight="performance">3</output>)</small></th>
+            <th data-sort="number" data-criterion="cost">Cost <small>(w:<output data-weight="cost">2</output>)</small></th>
+            <th data-sort="number" data-criterion="team">Team Fit <small>(w:<output data-weight="team">2</output>)</small></th>
+            <th data-sort="number" data-criterion="ecosystem">Ecosystem <small>(w:<output data-weight="ecosystem">1</output>)</small></th>
+            <th data-sort="number">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Astro + Islands</td>
+            <td data-raw="5" data-criterion="performance">5</td>
+            <td data-raw="4" data-criterion="cost">4</td>
+            <td data-raw="3" data-criterion="team">3</td>
+            <td data-raw="3" data-criterion="ecosystem">3</td>
+            <td class="total"></td>
+          </tr>
+          <tr>
+            <td>Next.js</td>
+            <td data-raw="4" data-criterion="performance">4</td>
+            <td data-raw="3" data-criterion="cost">3</td>
+            <td data-raw="4" data-criterion="team">4</td>
+            <td data-raw="5" data-criterion="ecosystem">5</td>
+            <td class="total"></td>
+          </tr>
+          <tr>
+            <td>SvelteKit</td>
+            <td data-raw="5" data-criterion="performance">5</td>
+            <td data-raw="4" data-criterion="cost">4</td>
+            <td data-raw="2" data-criterion="team">2</td>
+            <td data-raw="3" data-criterion="ecosystem">3</td>
+            <td class="total"></td>
+          </tr>
+          <tr>
+            <td>Eleventy + WC</td>
+            <td data-raw="5" data-criterion="performance">5</td>
+            <td data-raw="5" data-criterion="cost">5</td>
+            <td data-raw="4" data-criterion="team">4</td>
+            <td data-raw="2" data-criterion="ecosystem">2</td>
+            <td class="total"></td>
+          </tr>
+          <tr>
+            <td>Remix</td>
+            <td data-raw="4" data-criterion="performance">4</td>
+            <td data-raw="3" data-criterion="cost">3</td>
+            <td data-raw="3" data-criterion="team">3</td>
+            <td data-raw="4" data-criterion="ecosystem">4</td>
+            <td class="total"></td>
+          </tr>
+        </tbody>
+      </table>
+    </data-table>
+
+    <form class="weights-form">
+      <fieldset>
+        <legend>Adjust Criteria Weights (1&ndash;5)</legend>
+        <section class="weight-controls">
+          <label>Performance <input type="number" name="performance" value="3" min="1" max="5"></label>
+          <label>Cost <input type="number" name="cost" value="2" min="1" max="5"></label>
+          <label>Team Fit <input type="number" name="team" value="2" min="1" max="5"></label>
+          <label>Ecosystem <input type="number" name="ecosystem" value="1" min="1" max="5"></label>
+        </section>
+      </fieldset>
+    </form>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const criteria = ['performance', 'cost', 'team', 'ecosystem'];
+
+    function getWeights() {
+      const form = document.querySelector('.weights-form');
+      return Object.fromEntries(
+        criteria.map(c => [c, parseInt(form.querySelector(`[name="${c}"]`).value, 10) || 1])
+      );
+    }
+
+    function recalculate() {
+      const weights = getWeights();
+
+      // Update weight displays in header
+      criteria.forEach(c => {
+        const output = document.querySelector(`output[data-weight="${c}"]`);
+        if (output) output.textContent = weights[c];
+      });
+
+      const rows = document.querySelectorAll('tbody tr');
+      let bestScore = 0;
+      let bestRow = null;
+
+      rows.forEach(row => {
+        let total = 0;
+        criteria.forEach(c => {
+          const cell = row.querySelector(`td[data-criterion="${c}"]`);
+          if (!cell) return;
+          const raw = parseInt(cell.dataset.raw, 10) || 0;
+          const weighted = raw * weights[c];
+          cell.textContent = `${raw} (${weighted})`;
+          cell.dataset.sortValue = weighted;
+          total += weighted;
+        });
+
+        const totalCell = row.querySelector('.total');
+        if (totalCell) {
+          totalCell.innerHTML = `<strong>${total}</strong>`;
+          totalCell.dataset.sortValue = total;
+          totalCell.classList.remove('score-best');
+        }
+
+        if (total > bestScore) {
+          bestScore = total;
+          bestRow = row;
+        }
+      });
+
+      if (bestRow) {
+        bestRow.querySelector('.total').classList.add('score-best');
+      }
+
+      // Refresh data-table if it has a refresh method
+      const dt = document.querySelector('data-table');
+      if (dt?.refresh) dt.refresh();
+    }
+
+    document.querySelector('.weights-form').addEventListener('input', recalculate);
+    recalculate();
+  </script>
+</body>
+</html>

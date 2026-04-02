@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SWOT Analysis Recipe</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .swot {
+      max-inline-size: 800px;
+    }
+
+    /* ── Axis labels ──────────────────────────────────────────────────────── */
+
+    .swot-axes {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr;
+      grid-template-rows: auto 1fr 1fr;
+      gap: 1px;
+    }
+
+    .swot-corner {
+      /* empty top-left cell */
+    }
+
+    .swot-col-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--color-text-muted, #666);
+      text-align: center;
+      padding: var(--size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .swot-row-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--color-text-muted, #666);
+      text-align: center;
+      padding: var(--size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Quadrant grid ────────────────────────────────────────────────────── */
+
+    .swot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      grid-column: 2 / -1;
+      grid-row: 2 / -1;
+      gap: 1px;
+      background: var(--color-border, #e0e0e0);
+      border: 1px solid var(--color-border, #e0e0e0);
+      border-radius: var(--radius-l, 0.75rem);
+      overflow: hidden;
+      min-block-size: 24rem;
+    }
+
+    .swot-quadrant {
+      padding: var(--size-m);
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-xs);
+    }
+
+    .swot-quadrant > h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted, #666);
+      margin: 0;
+    }
+
+    .swot-quadrant > ul {
+      margin: 0;
+      padding-inline-start: 1.2em;
+      font-size: var(--font-size-s, 0.875rem);
+      line-height: 1.6;
+    }
+
+    /* ── Quadrant tints ───────────────────────────────────────────────────── */
+
+    .swot-quadrant[data-quadrant="strengths"] {
+      background: color-mix(in oklch, var(--color-success, #22c55e) 6%, var(--color-surface, #fff));
+    }
+
+    .swot-quadrant[data-quadrant="weaknesses"] {
+      background: color-mix(in oklch, var(--color-error, #ef4444) 6%, var(--color-surface, #fff));
+    }
+
+    .swot-quadrant[data-quadrant="opportunities"] {
+      background: color-mix(in oklch, var(--color-interactive, #3b82f6) 6%, var(--color-surface, #fff));
+    }
+
+    .swot-quadrant[data-quadrant="threats"] {
+      background: color-mix(in oklch, var(--color-warning, #f59e0b) 6%, var(--color-surface, #fff));
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+
+    @media (max-width: 30rem) {
+      .swot-axes {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+
+      .swot-grid {
+        grid-column: 1;
+        grid-row: auto;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+
+      .swot-col-label,
+      .swot-row-label,
+      .swot-corner {
+        display: none;
+      }
+    }
+
+    /* ── Print ────────────────────────────────────────────────────────────── */
+
+    @media print {
+      .swot-grid {
+        min-block-size: auto;
+        border: 0.5pt solid #ccc;
+      }
+
+      .swot-quadrant {
+        border: 0.5pt solid #ccc;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>SWOT Analysis &mdash; Project Alpha</h2>
+    <p><small>A strategic planning framework mapping internal and external factors.</small></p>
+  </header>
+
+  <section class="swot" role="region" aria-label="SWOT Analysis">
+    <section class="swot-axes">
+      <span class="swot-corner"></span>
+      <span class="swot-col-label">Internal</span>
+      <span class="swot-col-label">External</span>
+
+      <span class="swot-row-label">Helpful</span>
+      <span class="swot-row-label">Harmful</span>
+
+      <section class="swot-grid">
+        <section class="swot-quadrant" data-quadrant="strengths" aria-label="Strengths: Internal, Helpful">
+          <h3>Strengths</h3>
+          <ul>
+            <li>Experienced cross-functional team with deep domain knowledge</li>
+            <li>Strong existing user base with high retention</li>
+            <li>Modern tech stack with automated CI/CD pipeline</li>
+            <li>Direct customer feedback loop through beta program</li>
+          </ul>
+        </section>
+
+        <section class="swot-quadrant" data-quadrant="opportunities" aria-label="Opportunities: External, Helpful">
+          <h3>Opportunities</h3>
+          <ul>
+            <li>Growing market demand for integrated project management tools</li>
+            <li>Competitor recently deprecated their API, creating migration opportunity</li>
+            <li>Enterprise customers requesting SSO and audit logging</li>
+          </ul>
+        </section>
+
+        <section class="swot-quadrant" data-quadrant="weaknesses" aria-label="Weaknesses: Internal, Harmful">
+          <h3>Weaknesses</h3>
+          <ul>
+            <li>Mobile experience lags behind desktop feature set</li>
+            <li>Onboarding flow has a 35% drop-off rate at step 3</li>
+            <li>Technical debt in legacy auth module slows new feature work</li>
+            <li>Limited automated test coverage for integration scenarios</li>
+          </ul>
+        </section>
+
+        <section class="swot-quadrant" data-quadrant="threats" aria-label="Threats: External, Harmful">
+          <h3>Threats</h3>
+          <ul>
+            <li>Well-funded competitor entering the mid-market segment</li>
+            <li>Upcoming GDPR changes require data residency compliance</li>
+            <li>Key open-source dependency has uncertain long-term maintenance</li>
+          </ul>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

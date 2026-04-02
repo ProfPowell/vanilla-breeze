@@ -166,6 +166,226 @@ await activateBundle('ux-planning')</code-block>
 </section>
 
 <section>
+  <h2>Recipes</h2>
+  <p>These planning surfaces are built entirely from existing VB primitives &mdash; no additional components needed. Copy the markup pattern and adapt it to your project.</p>
+
+  <h3>Kanban Board</h3>
+  <p>A sprint board using <code>&lt;drag-surface&gt;</code> columns with <code>&lt;user-story&gt;</code> cards. Drag stories between Backlog, In Progress, Review, and Done. Column counts update automatically on transfer.</p>
+
+  <browser-window
+    src="/docs/examples/demos/kanban-board-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/kanban-board"
+    title="Kanban Board"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Kanban Board composition pattern" data-escape><section data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+  <section data-layout="stack" data-layout-gap="s">
+    <h3>Backlog <output>3</output></h3>
+    <drag-surface group="sprint" aria-label="Backlog"
+      data-layout="stack" data-layout-gap="xs">
+      <user-story draggable="true" data-id="PROJ-201"
+        story-id="PROJ-201" persona="Sarah Chen"
+        action="view all project timelines in one dashboard"
+        priority="high" status="to-do" points="5"
+        detail="minimal">
+      </user-story>
+    </drag-surface>
+  </section>
+  <!-- repeat for In Progress, Review, Done -->
+</section></code-block>
+
+  <h3>Retrospective Board</h3>
+  <p>A 3-column retro board with color-tinted columns for What Went Well, What Didn't Go Well, and Action Items. Freeform <code>&lt;article&gt;</code> cards with a bottom-of-column form to add new items.</p>
+
+  <browser-window
+    src="/docs/examples/demos/retro-board-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/retro-board"
+    title="Retrospective Board"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Retrospective Board composition pattern" data-escape><section data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+  <section style="background: color-mix(in oklch, var(--color-success) 8%, var(--color-surface))"
+    data-layout="stack" data-layout-gap="s">
+    <h3>What Went Well <output>3</output></h3>
+    <drag-surface group="retro" aria-label="What Went Well"
+      data-layout="stack" data-layout-gap="xs">
+      <article class="retro-card" draggable="true" data-id="good-1">
+        Daily standups kept the team aligned
+      </article>
+    </drag-surface>
+    <form>
+      <input type="text" placeholder="Add item..."
+        aria-label="Add item to What Went Well">
+    </form>
+  </section>
+  <!-- repeat for What Didn't Go Well, Action Items -->
+</section></code-block>
+
+  <h3>SWOT Analysis</h3>
+  <p>A 2&times;2 strategic planning grid mapping Strengths, Weaknesses, Opportunities, and Threats across Internal/External and Helpful/Harmful axes. Pure CSS layout with semantic sections and color-tinted quadrants.</p>
+
+  <browser-window
+    src="/docs/examples/demos/swot-analysis-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/swot-analysis"
+    title="SWOT Analysis"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="SWOT Analysis composition pattern" data-escape><section class="swot-grid" style="display:grid; grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr; gap:1px; overflow:hidden;">
+  <section data-quadrant="strengths"
+    aria-label="Strengths: Internal, Helpful">
+    <h3>Strengths</h3>
+    <ul>
+      <li>Experienced cross-functional team</li>
+      <li>Strong existing user base</li>
+    </ul>
+  </section>
+  <section data-quadrant="opportunities"
+    aria-label="Opportunities: External, Helpful">
+    <h3>Opportunities</h3>
+    <ul>
+      <li>Growing market demand</li>
+    </ul>
+  </section>
+  <section data-quadrant="weaknesses"
+    aria-label="Weaknesses: Internal, Harmful">
+    <h3>Weaknesses</h3>
+    <ul>
+      <li>Mobile experience lags desktop</li>
+    </ul>
+  </section>
+  <section data-quadrant="threats"
+    aria-label="Threats: External, Harmful">
+    <h3>Threats</h3>
+    <ul>
+      <li>Well-funded competitor entering market</li>
+    </ul>
+  </section>
+</section></code-block>
+
+  <h3>Stakeholder Map</h3>
+  <p>A Power/Interest matrix using four <code>&lt;drag-surface&gt;</code> quadrants. Stakeholder cards are plain <code>&lt;article&gt;</code> elements with name and role. You can also use <code>&lt;user-persona compact&gt;</code> as children for richer stakeholder representation.</p>
+
+  <browser-window
+    src="/docs/examples/demos/stakeholder-map-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/stakeholder-map"
+    title="Stakeholder Map"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Stakeholder Map composition pattern" data-escape><section class="sh-grid" style="display:grid; grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr; gap:1px; overflow:hidden;">
+  <section data-quadrant-zone="keep-satisfied">
+    <p>Keep Satisfied <small>High power, Low interest</small></p>
+    <drag-surface group="stakeholders" aria-label="Keep Satisfied"
+      data-layout="stack" data-layout-gap="xs">
+      <article draggable="true" data-id="sh-3">
+        <strong>CFO &mdash; Maria Lopez</strong>
+      </article>
+    </drag-surface>
+  </section>
+  <section data-quadrant-zone="manage-closely">
+    <p>Manage Closely <small>High power, High interest</small></p>
+    <drag-surface group="stakeholders" aria-label="Manage Closely"
+      data-layout="stack" data-layout-gap="xs">
+      <user-persona compact draggable="true" data-id="sh-1"
+        name="Sarah Chen" role="Product Manager">
+      </user-persona>
+    </drag-surface>
+  </section>
+  <!-- repeat for Monitor, Keep Informed -->
+</section></code-block>
+
+  <h3>Decision Matrix</h3>
+  <p>A weighted scoring table built on <code>&lt;data-table&gt;</code>. Criteria columns carry weights; cells show raw and weighted scores. Sort by Total to rank options. Adjust weights interactively with the form below the table.</p>
+
+  <browser-window
+    src="/docs/examples/demos/decision-matrix-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/decision-matrix"
+    title="Decision Matrix"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Decision Matrix composition pattern" data-escape><data-table>
+  <table data-filterable>
+    <caption>Weighted Decision Matrix</caption>
+    <thead>
+      <tr>
+        <th data-sort="string">Option</th>
+        <th data-sort="number">Performance <small>(w:3)</small></th>
+        <th data-sort="number">Cost <small>(w:2)</small></th>
+        <th data-sort="number">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Astro + Islands</td>
+        <td data-sort-value="15">5 (15)</td>
+        <td data-sort-value="8">4 (8)</td>
+        <td data-sort-value="23"><strong>23</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</data-table></code-block>
+
+  <h3>Risk Register</h3>
+  <p>A risk tracking table using <code>&lt;data-table&gt;</code> with expandable rows for mitigation details. Score is computed as Likelihood &times; Impact. Status badges use data attributes for color styling. Sort, filter, and paginate out of the box.</p>
+
+  <browser-window
+    src="/docs/examples/demos/risk-register-recipe.html"
+    url="https://vanilla-breeze.dev/recipes/risk-register"
+    title="Risk Register"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Risk Register composition pattern" data-escape><data-table>
+  <table data-filterable data-paginate="8">
+    <caption>Project Risk Register</caption>
+    <thead>
+      <tr>
+        <th data-sort="string">ID</th>
+        <th data-sort="string">Risk</th>
+        <th data-sort="number">Likelihood</th>
+        <th data-sort="number">Impact</th>
+        <th data-sort="number">Score</th>
+        <th data-sort="string">Owner</th>
+        <th data-sort="string">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-expandable>
+        <td>R-001</td>
+        <td>Key developer leaves mid-sprint</td>
+        <td data-sort-value="3">Medium (3)</td>
+        <td data-sort-value="5">Critical (5)</td>
+        <td data-sort-value="15"><strong>15</strong></td>
+        <td>Sarah Chen</td>
+        <td><mark data-risk-status="active">Active</mark></td>
+      </tr>
+      <tr data-expand-content hidden>
+        <td colspan="7">
+          <dl>
+            <dt>Mitigation</dt>
+            <dd>Cross-train team members on critical modules</dd>
+            <dt>Trigger</dt>
+            <dd>Developer gives notice or absence exceeding 3 days</dd>
+          </dl>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</data-table></code-block>
+</section>
+
+<section>
   <h2>When to Use</h2>
-  <p>Load the UX Planning pack when you are building sprint planning pages, design documentation, stakeholder presentations, or any page that needs structured Agile artifacts. All six components support a <code>compact</code> attribute for dashboard-style layouts where space is limited. For general-purpose sites that do not need UX planning artifacts, skip this pack entirely.</p>
+  <p>Load the UX Planning pack when you are building sprint planning pages, design documentation, stakeholder presentations, or any page that needs structured Agile artifacts. All components support a <code>compact</code> attribute for dashboard-style layouts where space is limited. The recipes above demonstrate how existing VB primitives cover kanban boards, retrospective boards, SWOT analysis, stakeholder mapping, decision matrices, and risk registers without additional components. For general-purpose sites that do not need UX planning artifacts, skip this pack entirely.</p>
+</section>
+
+<section>
+  <h2>Roadmap</h2>
+  <p><strong>Gantt Chart</strong> &mdash; a timeline visualization with range bars, grouped rows, and milestone markers is planned as a future addition. It requires a time-axis rendering system not currently covered by existing primitives and will be built after the recipe patterns above have been validated in production use.</p>
 </section>

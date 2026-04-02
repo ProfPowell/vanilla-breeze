@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrospective Board Recipe</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .retro-board {
+      max-inline-size: 960px;
+    }
+
+    .retro-col {
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .retro-col[data-category="good"] {
+      background: color-mix(in oklch, var(--color-success, #22c55e) 8%, var(--color-surface, #fff));
+    }
+    .retro-col[data-category="bad"] {
+      background: color-mix(in oklch, var(--color-error, #ef4444) 8%, var(--color-surface, #fff));
+    }
+    .retro-col[data-category="actions"] {
+      background: color-mix(in oklch, var(--color-interactive, #3b82f6) 8%, var(--color-surface, #fff));
+    }
+
+    .retro-col > h3 {
+      display: flex;
+      align-items: center;
+      gap: var(--size-xs);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-thin, 1px) solid color-mix(in oklch, currentColor 15%, transparent);
+      margin-block-end: var(--size-xs);
+    }
+
+    .retro-col > h3 output {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--color-text-muted, #666);
+      color: var(--color-surface, #fff);
+      border-radius: var(--radius-pill, 999px);
+      min-inline-size: 1.4em;
+      text-align: center;
+      padding: 0.1em 0.4em;
+      line-height: 1.3;
+    }
+
+    .retro-card {
+      background: var(--color-surface, #fff);
+      border: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
+      border-radius: var(--radius-s);
+      padding: var(--size-s);
+      cursor: grab;
+      font-size: var(--font-size-s, 0.875rem);
+      line-height: 1.4;
+    }
+
+    .retro-card:active { cursor: grabbing; }
+
+    .retro-col form {
+      margin-block-start: var(--size-xs);
+    }
+
+    .retro-col form input {
+      inline-size: 100%;
+      padding: var(--size-xs) var(--size-s);
+      border: var(--border-width-thin, 1px) dashed var(--color-border, #e0e0e0);
+      border-radius: var(--radius-s);
+      background: transparent;
+      font-size: var(--font-size-s, 0.875rem);
+      color: inherit;
+    }
+
+    .retro-col form input::placeholder {
+      color: var(--color-text-muted, #999);
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>Sprint 14 Retrospective</h2>
+    <p><small>Drag items between columns. Type in the input at the bottom of each column to add new items.</small></p>
+  </header>
+
+  <section class="retro-board" data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+
+    <section class="retro-col" data-category="good" data-layout="stack" data-layout-gap="s">
+      <h3>What Went Well <output>3</output></h3>
+      <drag-surface group="retro" aria-label="What Went Well" data-layout="stack" data-layout-gap="xs">
+        <article class="retro-card" draggable="true" data-id="good-1">Daily standups kept the team aligned and surfaced blockers early</article>
+        <article class="retro-card" draggable="true" data-id="good-2">Pair programming on the auth module caught two edge cases before review</article>
+        <article class="retro-card" draggable="true" data-id="good-3">New CI pipeline reduced build times by 40%</article>
+      </drag-surface>
+      <form>
+        <input type="text" placeholder="Add item..." aria-label="Add item to What Went Well">
+      </form>
+    </section>
+
+    <section class="retro-col" data-category="bad" data-layout="stack" data-layout-gap="s">
+      <h3>What Didn't Go Well <output>3</output></h3>
+      <drag-surface group="retro" aria-label="What Didn't Go Well" data-layout="stack" data-layout-gap="xs">
+        <article class="retro-card" draggable="true" data-id="bad-1">Scope creep on the dashboard feature added two unplanned stories</article>
+        <article class="retro-card" draggable="true" data-id="bad-2">Staging environment was down for most of Wednesday</article>
+        <article class="retro-card" draggable="true" data-id="bad-3">Code review turnaround was slow at the end of the sprint</article>
+      </drag-surface>
+      <form>
+        <input type="text" placeholder="Add item..." aria-label="Add item to What Didn't Go Well">
+      </form>
+    </section>
+
+    <section class="retro-col" data-category="actions" data-layout="stack" data-layout-gap="s">
+      <h3>Action Items <output>2</output></h3>
+      <drag-surface group="retro" aria-label="Action Items" data-layout="stack" data-layout-gap="xs">
+        <article class="retro-card" draggable="true" data-id="action-1">Set up staging health-check alerts in PagerDuty</article>
+        <article class="retro-card" draggable="true" data-id="action-2">Add a 24-hour SLA for code reviews to team working agreement</article>
+      </drag-surface>
+      <form>
+        <input type="text" placeholder="Add item..." aria-label="Add item to Action Items">
+      </form>
+    </section>
+
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    let cardCounter = 100;
+
+    function updateCounts() {
+      document.querySelectorAll('.retro-col').forEach(col => {
+        const count = col.querySelectorAll('drag-surface > [draggable]').length;
+        const output = col.querySelector('output');
+        if (output) output.textContent = count;
+      });
+    }
+
+    document.addEventListener('drag-surface:transfer', updateCounts);
+
+    document.querySelectorAll('.retro-col form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = form.querySelector('input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const card = document.createElement('article');
+        card.className = 'retro-card';
+        card.draggable = true;
+        card.dataset.id = `new-${++cardCounter}`;
+        card.textContent = text;
+
+        const surface = form.closest('.retro-col').querySelector('drag-surface');
+        surface.appendChild(card);
+        input.value = '';
+        updateCounts();
+      });
+    });
+  </script>
+</body>
+</html>
