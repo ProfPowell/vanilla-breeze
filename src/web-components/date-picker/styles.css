@@ -1,0 +1,344 @@
+/* date-picker: Calendar date picker with combobox text entry
+   ---------------------------------------------------------------- */
+
+/* No-JS fallback — native input works */
+date-picker:not(:defined) {
+  display: contents;
+}
+
+date-picker {
+  display: inline-block;
+  position: relative;
+
+  /* Open state — animate calendar in */
+  &[open] .calendar {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+      opacity var(--motion-enter-duration, 200ms) var(--ease-out),
+      visibility var(--motion-enter-duration, 200ms) var(--ease-out),
+      transform var(--motion-enter-duration, 200ms) var(--ease-out);
+  }
+}
+
+@scope (date-picker) {
+  /* Trigger container — looks like an input field */
+  .date-trigger {
+    display: inline-flex;
+    align-items: center;
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: var(--radius-m);
+    background: var(--color-surface);
+    min-block-size: var(--input-height, 2.75rem);
+    min-inline-size: 14rem;
+    transition: border-color var(--duration-fast, 150ms),
+                box-shadow var(--duration-fast, 150ms);
+  }
+
+  .date-trigger:hover {
+    border-color: var(--color-interactive);
+  }
+
+  .date-trigger:focus-within {
+    border-color: var(--color-interactive);
+    box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+  }
+
+  /* Text input — combobox */
+  .date-input {
+    all: unset;
+    flex: 1;
+    padding: var(--size-xs) var(--size-s);
+    font: inherit;
+    font-size: var(--font-size-base, 1rem);
+    min-inline-size: 0;
+  }
+
+  .date-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  /* Calendar icon button */
+  .date-trigger-icon {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: var(--size-xs);
+    block-size: 100%;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    border-inline-start: var(--border-width-thin, 1px) solid var(--color-border);
+    transition: color var(--duration-fast, 150ms),
+                background var(--duration-fast, 150ms);
+  }
+
+  .date-trigger-icon:hover {
+    color: var(--color-interactive);
+    background: var(--color-hover-bg);
+  }
+
+  /* Calendar popup */
+  .calendar {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+    margin-block-start: var(--size-3xs, 4px);
+    z-index: 100;
+    background: var(--color-surface);
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m, 0 4px 12px oklch(0% 0 0 / 0.1));
+    padding: var(--size-s);
+    min-inline-size: 20rem;
+
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.25rem);
+    transition:
+      opacity var(--motion-exit-duration, 150ms) var(--ease-out),
+      visibility var(--motion-exit-duration, 150ms) var(--ease-out),
+      transform var(--motion-exit-duration, 150ms) var(--ease-out);
+  }
+
+  /* Header: prev / title / next */
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: var(--size-xs);
+    padding-block-end: var(--size-xs);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
+  .calendar-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.25rem);
+    font-weight: 600;
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  .calendar-year {
+    font: inherit;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: var(--size-3xs, 2px) 0;
+    border-radius: var(--radius-s);
+  }
+
+  .calendar-year:hover {
+    background: var(--color-hover-bg);
+  }
+
+  .calendar-year:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+
+  .calendar-nav {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: background var(--duration-fast, 150ms),
+                color var(--duration-fast, 150ms);
+  }
+
+  .calendar-nav:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-interactive);
+  }
+
+  .calendar-nav:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+
+  /* Grid */
+  table[role="grid"] {
+    border-collapse: collapse;
+    inline-size: 100%;
+  }
+
+  th {
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    padding-block-end: var(--size-2xs);
+    text-align: center;
+  }
+
+  td {
+    padding: var(--size-3xs, 2px);
+    text-align: center;
+  }
+
+  /* Day buttons */
+  td button {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-variant-numeric: tabular-nums;
+    transition: background var(--duration-fast, 150ms),
+                color var(--duration-fast, 150ms);
+  }
+
+  td button:hover:not([disabled]) {
+    background: var(--color-hover-bg);
+  }
+
+  td button:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: -2px;
+  }
+
+  /* Today */
+  td button[aria-current="date"] {
+    font-weight: 700;
+    border: var(--border-width-thin, 1px) solid var(--color-border-strong, var(--color-border));
+    background: var(--color-surface-raised);
+  }
+
+  /* Focused preview (typed but not yet committed) */
+  td button[data-focused] {
+    background: oklch(from var(--color-interactive) l c h / 0.12);
+    outline: var(--border-width-thin, 1px) dashed var(--color-interactive);
+    outline-offset: -1px;
+  }
+
+  /* Selected */
+  td button[aria-selected="true"] {
+    background: var(--color-interactive);
+    color: white;
+  }
+
+  td button[aria-selected="true"]:hover {
+    background: color-mix(in oklab, var(--color-interactive) 85%, black);
+  }
+
+  /* Disabled dates — default */
+  td button[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* Disabled: booked — strikethrough */
+  td button[data-disabled-reason="booked"] {
+    opacity: 0.65;
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    color: var(--color-text-muted, GrayText);
+  }
+
+  /* Disabled: unavailable — diagonal hatching */
+  td button[data-disabled-reason="unavailable"] {
+    opacity: 0.55;
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 3px,
+        var(--color-border, currentColor) 3px,
+        var(--color-border, currentColor) 4px
+      );
+    color: var(--color-text-muted, GrayText);
+  }
+
+  /* Disabled: holiday — accent marker */
+  td button[data-disabled-reason="holiday"] {
+    opacity: 0.75;
+    color: var(--color-warning, #b45309);
+    font-weight: 600;
+  }
+
+  /* Disabled state on the whole picker */
+  :scope[data-disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+/* --- Popover mode (progressive enhancement) --- */
+
+date-picker > .calendar[popover] {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+
+  position: fixed;
+  inset: unset;
+  /* Intentional physical: JS-computed viewport coordinates via custom properties */
+  top: var(--calendar-top, 0);
+  left: var(--calendar-left, 0);
+}
+
+date-picker > .calendar[popover]::backdrop {
+  background: none;
+}
+
+date-picker > .calendar[popover]:popover-open {
+  background: var(--color-surface);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-m, 0 4px 12px oklch(0% 0 0 / 0.1));
+  padding: var(--size-s);
+  min-inline-size: 20rem;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-enter-duration, 200ms) var(--ease-out),
+    transform var(--motion-enter-duration, 200ms) var(--ease-out),
+    display var(--motion-enter-duration, 200ms) allow-discrete,
+    overlay var(--motion-enter-duration, 200ms) allow-discrete;
+}
+
+/* Popover entry animation */
+@starting-style {
+  date-picker > .calendar[popover]:popover-open {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @scope (date-picker) {
+    .date-trigger,
+    .date-trigger-icon,
+    .calendar-nav,
+    .calendar,
+    td button {
+      transition-duration: 0s;
+    }
+    .calendar {
+      transform: none;
+    }
+  }
+
+  date-picker[open] .calendar {
+    transition: none;
+  }
+
+  date-picker > .calendar[popover]:popover-open {
+    transition: none;
+  }
+}
