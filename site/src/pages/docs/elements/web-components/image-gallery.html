@@ -1,0 +1,125 @@
+---
+layout: element
+title: "image-gallery"
+description: "Thumbnail grid with lightbox viewer. Progressively enhances linked thumbnails into a fullscreen gallery with navigation, swipe, keyboard support, and View Transitions."
+elementName: image-gallery
+category: component
+currentPath: /docs/elements/web-components/image-gallery/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A thumbnail grid that opens a fullscreen lightbox viewer on click. Progressive enhancement at every layer: without JS, thumbnails are plain links to full images. With JS, a native <code>&lt;dialog&gt;</code> lightbox adds navigation, swipe, keyboard control, and View Transitions.</p>
+    <p>Uses the Invokers API (<code>commandfor</code>/<code>command</code>) for declarative close, and the Popover API (<code>popovertarget</code>) for caption details.</p>
+
+    <browser-window
+      src="/docs/examples/demos/image-gallery-basic.html"
+      url="https://vanilla-breeze.dev/image-gallery"
+      title="Image Gallery Demo"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+
+    <h3>Image-only</h3>
+    <p>Wrap each thumbnail in an <code>&lt;a&gt;</code> linking to the full image. The <code>href</code> is the full-size source; the <code>&lt;img&gt;</code> is the thumbnail.</p>
+
+    <code-block language="html" show-lines label="Image-only gallery" data-escape><image-gallery>
+  <a href="photos/full-1.jpg">
+    <img src="photos/thumb-1.jpg" alt="Mountain landscape" loading="lazy" />
+  </a>
+  <a href="photos/full-2.jpg">
+    <img src="photos/thumb-2.jpg" alt="Ocean sunset" loading="lazy" />
+  </a>
+</image-gallery></code-block>
+
+    <h3>With Captions</h3>
+    <p>Wrap each item in a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>. Captions support HTML including links, and display in the lightbox via a popover panel.</p>
+
+    <browser-window
+      src="/docs/examples/demos/image-gallery-captions.html"
+      url="https://vanilla-breeze.dev/image-gallery-captions"
+      title="Gallery with Captions"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Gallery with captions" data-escape><image-gallery>
+  <figure>
+    <a href="photos/full-1.jpg">
+      <img src="photos/thumb-1.jpg" alt="Mountain landscape" loading="lazy" />
+    </a>
+    <figcaption>
+      <strong>Sunrise over the Alps</strong>
+      <p>Taken in Zermatt. <a href="/gallery/alps">View series</a></p>
+    </figcaption>
+  </figure>
+</image-gallery></code-block>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>What works</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>HTML only</td><td>Grid of linked images; click navigates to full image</td></tr>
+        <tr><td>HTML + CSS</td><td>Responsive auto-fit grid, aspect-ratio thumbnails, hover zoom</td></tr>
+        <tr><td>+ Invokers</td><td>Dialog close button works declaratively</td></tr>
+        <tr><td>+ JS</td><td>Lightbox opens, navigation, keyboard, swipe, counter</td></tr>
+        <tr><td>+ View Transitions</td><td>Thumbnail morphs into full image</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Grid Configuration</h2>
+    <p>Control the thumbnail grid layout with <code>columns</code>, <code>gap</code>, and <code>ratio</code> attributes.</p>
+
+    <code-block language="html" show-lines label="Configured grid" data-escape><image-gallery columns="150px" gap="xs" ratio="16:9">
+  <a href="wide-1.jpg"><img src="thumb-1.jpg" alt="..." loading="lazy" /></a>
+  <a href="wide-2.jpg"><img src="thumb-2.jpg" alt="..." loading="lazy" /></a>
+</image-gallery></code-block>
+  </section>
+
+  <section>
+    <h2>Lightbox Navigation</h2>
+    <ul>
+      <li><strong>Prev/Next buttons</strong> in the lightbox header</li>
+      <li><strong>Keyboard</strong>: ArrowLeft/Right, Home/End, Escape to close</li>
+      <li><strong>Swipe</strong>: Left/right touch gestures on the image area</li>
+      <li><strong>Loop</strong>: Add <code>loop</code> attribute to wrap at ends</li>
+    </ul>
+    <p>Counter displays "X of Y" and is announced to screen readers via <code>aria-live</code>.</p>
+  </section>
+
+  <section>
+    <h2>Caption Modes</h2>
+    <p>The <code>captions</code> attribute controls how <code>&lt;figcaption&gt;</code> content appears in the lightbox.</p>
+    <table>
+      <thead>
+        <tr><th>Value</th><th>Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>auto</code> (default)</td><td>Info button in header; toggles a popover panel via <code>popovertarget</code></td></tr>
+        <tr><td><code>overlay</code></td><td>Persistent caption bar below the image</td></tr>
+        <tr><td><code>hidden</code></td><td>Captions suppressed in lightbox (still visible in grid)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Native <code>&lt;dialog&gt;</code> provides focus trapping, Escape-to-close, and <code>::backdrop</code></li>
+      <li>Close button uses <code>commandfor</code>/<code>command="close"</code> (Invokers API)</li>
+      <li>Counter uses <code>aria-live="polite"</code> for screen reader announcements</li>
+      <li>Prev/Next buttons have <code>aria-label</code> and <code>disabled</code> state at boundaries</li>
+      <li>All animations respect <code>prefers-reduced-motion</code></li>
+    </ul>
+  </section>

@@ -1,0 +1,352 @@
+/* image-gallery: Thumbnail grid with lightbox viewer */
+
+/* --- No-JS fallback: responsive grid of linked thumbnails --- */
+image-gallery:not(:defined) {
+  display: grid;
+  gap: var(--size-s);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+image-gallery:not(:defined) a > img {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-s);
+}
+
+/* --- Upgraded state --- */
+image-gallery:defined {
+  display: grid;
+  gap: var(--_gap, var(--size-s));
+  grid-template-columns: repeat(auto-fit, minmax(var(--_min, 200px), 1fr));
+}
+
+/* Column-width variants */
+image-gallery[columns="100px"] { --_min: 100px; }
+image-gallery[columns="150px"] { --_min: 150px; }
+image-gallery[columns="200px"] { --_min: 200px; }
+image-gallery[columns="250px"] { --_min: 250px; }
+image-gallery[columns="300px"] { --_min: 300px; }
+
+/* Gap variants */
+image-gallery[gap="none"] { --_gap: 0; }
+image-gallery[gap="xs"]   { --_gap: var(--size-xs); }
+image-gallery[gap="s"]    { --_gap: var(--size-s); }
+image-gallery[gap="m"]    { --_gap: var(--size-m); }
+image-gallery[gap="l"]    { --_gap: var(--size-l); }
+image-gallery[gap="xl"]   { --_gap: var(--size-xl); }
+
+/* --- Thumbnail items --- */
+
+image-gallery > a,
+image-gallery > figure > a {
+  display: block;
+  cursor: zoom-in;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  outline-offset: 2px;
+}
+
+image-gallery > a:focus-visible,
+image-gallery > figure > a:focus-visible {
+  outline: 3px solid var(--color-focus);
+}
+
+image-gallery > a > img,
+image-gallery > figure > a > img {
+  inline-size: 100%;
+  aspect-ratio: var(--_ratio, 1);
+  object-fit: cover;
+  transition: transform var(--motion-enter-duration, 200ms) var(--ease-out);
+}
+
+image-gallery > a:hover > img,
+image-gallery > figure > a:hover > img {
+  transform: scale(1.04);
+}
+
+/* Ratio variants */
+image-gallery[ratio="1"]    { --_ratio: 1; }
+image-gallery[ratio="4:3"]  { --_ratio: 4 / 3; }
+image-gallery[ratio="3:2"]  { --_ratio: 3 / 2; }
+image-gallery[ratio="16:9"] { --_ratio: 16 / 9; }
+image-gallery[ratio="3:4"]  { --_ratio: 3 / 4; }
+image-gallery[ratio="auto"] { --_ratio: auto; }
+
+/* Figure captions in grid */
+image-gallery > figure {
+  margin: 0;
+}
+
+image-gallery > figure > figcaption {
+  padding-block-start: var(--size-2xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Exclude dialog from the thumbnail grid — native dialog:not([open])
+   is display:none already but the author-layer reset may blockify it,
+   same cascade issue as popovers. */
+image-gallery > dialog:not([open]) {
+  display: none;
+}
+
+/* ==========================================================================
+   Lightbox dialog
+   DOM: dialog > header[counter, info?, close] + section.gallery-stage[prev, figure, next]
+   Controls mode set via data-controls on the dialog: "edge", "bar", "minimal"
+   ========================================================================== */
+
+image-gallery .gallery-lightbox {
+  background: oklch(0% 0 0 / 0.95);
+  color: white;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 0;
+}
+
+/* --- Shared button styles --- */
+
+/* Author-layer display overrides UA [hidden] { display: none } —
+   re-assert so hidden attribute works on buttons and footer */
+image-gallery .gallery-lightbox [hidden] {
+  display: none;
+}
+
+image-gallery .gallery-lightbox button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: oklch(100% 0 0 / 0.1);
+  color: white;
+  cursor: pointer;
+  transition: background var(--motion-enter-duration, 200ms) var(--ease-out);
+}
+
+image-gallery .gallery-lightbox button:hover {
+  background: oklch(100% 0 0 / 0.2);
+}
+
+image-gallery .gallery-lightbox button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+image-gallery .gallery-lightbox button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --- Header bar: counter + info + close --- */
+
+image-gallery .gallery-lightbox > header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-s) var(--size-m);
+  border-block-end: none;
+}
+
+image-gallery .gallery-counter {
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+  margin-inline-end: auto;
+}
+
+/* --- Stage: prev + frame + next --- */
+
+image-gallery .gallery-stage {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: var(--size-s);
+  overflow: hidden;
+  min-block-size: 0;
+}
+
+image-gallery .gallery-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  margin: 0;
+}
+
+image-gallery .gallery-frame > img {
+  max-inline-size: 100%;
+  max-block-size: calc(95dvh - 6rem);
+  object-fit: contain;
+  border-radius: var(--radius-s);
+}
+
+/* Caption overlay bar */
+image-gallery .gallery-frame > figcaption {
+  padding: var(--size-s) var(--size-m);
+  font-size: var(--font-size-sm);
+  color: oklch(100% 0 0 / 0.85);
+  text-align: center;
+  max-inline-size: 60ch;
+}
+
+image-gallery .gallery-frame > figcaption a {
+  color: oklch(85% 0.05 250);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+image-gallery .gallery-frame > figcaption a:hover {
+  color: oklch(95% 0.05 250);
+}
+
+image-gallery .gallery-frame > figcaption:empty {
+  display: none;
+}
+
+/* ==========================================================================
+   controls="edge" (default) — prev/next on sides, header floats over image
+   ========================================================================== */
+
+image-gallery .gallery-lightbox[data-controls="edge"] {
+  grid-template-rows: 1fr;
+  position: relative;
+}
+
+image-gallery .gallery-lightbox[data-controls="edge"] > header {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, oklch(0% 0 0 / 0.5), transparent);
+  padding: var(--size-m);
+}
+
+image-gallery .gallery-lightbox[data-controls="edge"] .gallery-prev,
+image-gallery .gallery-lightbox[data-controls="edge"] .gallery-next {
+  inline-size: 3rem;
+  block-size: 3rem;
+  background: oklch(0% 0 0 / 0.4);
+  backdrop-filter: blur(4px);
+}
+
+image-gallery .gallery-lightbox[data-controls="edge"] .gallery-prev:hover,
+image-gallery .gallery-lightbox[data-controls="edge"] .gallery-next:hover {
+  background: oklch(0% 0 0 / 0.6);
+}
+
+/* ==========================================================================
+   controls="bar" — everything in a top bar, stage has no nav buttons
+   ========================================================================== */
+
+image-gallery .gallery-lightbox[data-controls="bar"] .gallery-prev,
+image-gallery .gallery-lightbox[data-controls="bar"] .gallery-next {
+  position: absolute;
+  inset-block-start: 0;
+  z-index: 1;
+}
+
+image-gallery .gallery-lightbox[data-controls="bar"] .gallery-prev {
+  /* Move into the header row visually */
+  inset-block-start: var(--size-s);
+  inset-inline-end: calc(var(--size-m) + 3.25rem + 3.25rem);
+}
+
+image-gallery .gallery-lightbox[data-controls="bar"] .gallery-next {
+  inset-block-start: var(--size-s);
+  inset-inline-end: calc(var(--size-m) + 3.25rem);
+}
+
+image-gallery .gallery-lightbox[data-controls="bar"] .gallery-stage {
+  grid-template-columns: 1fr;
+  place-items: center;
+}
+
+/* ==========================================================================
+   controls="minimal" — close only, no visible nav (swipe + keyboard)
+   ========================================================================== */
+
+image-gallery .gallery-lightbox[data-controls="minimal"] {
+  grid-template-rows: 1fr;
+  position: relative;
+}
+
+image-gallery .gallery-lightbox[data-controls="minimal"] > header {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  z-index: 1;
+  padding: var(--size-m);
+}
+
+image-gallery .gallery-lightbox[data-controls="minimal"] .gallery-counter {
+  display: none;
+}
+
+image-gallery .gallery-lightbox[data-controls="minimal"] .gallery-prev,
+image-gallery .gallery-lightbox[data-controls="minimal"] .gallery-next {
+  display: none;
+}
+
+image-gallery .gallery-lightbox[data-controls="minimal"] .gallery-stage {
+  grid-template-columns: 1fr;
+  place-items: center;
+}
+
+/* ==========================================================================
+   Caption footer (auto mode) — inside the dialog, no popover/top-layer issues
+   ========================================================================== */
+
+image-gallery .gallery-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-s);
+  padding: var(--size-xs) var(--size-m);
+  background: oklch(5% 0 0 / 0.8);
+  color: oklch(100% 0 0 / 0.9);
+  border-block-start: 1px solid oklch(100% 0 0 / 0.1);
+}
+
+/* Info toggle button — pinned to the right, text flows to its left */
+image-gallery .gallery-info-btn {
+  flex-shrink: 0;
+  order: 1;
+  margin-inline-start: auto;
+}
+
+/* Caption text — reserves its height always, visibility toggles content */
+image-gallery .gallery-caption-text {
+  font-size: var(--font-size-sm);
+  padding-block: var(--size-2xs);
+  max-block-size: 25dvh;
+  overflow-y: auto;
+}
+
+image-gallery .gallery-caption-text[hidden] {
+  display: block;
+  visibility: hidden;
+}
+
+image-gallery .gallery-caption-text a {
+  color: oklch(85% 0.05 250);
+  text-decoration: underline;
+}
+
+image-gallery .gallery-caption-text a:hover {
+  color: oklch(95% 0.05 250);
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  image-gallery > a > img,
+  image-gallery > figure > a > img {
+    transition: none;
+  }
+}

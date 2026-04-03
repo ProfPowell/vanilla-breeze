@@ -29,6 +29,7 @@ let _SoundManager = null;
 const EXTENSIONS_KEY = 'vb-extensions';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 const A11Y_THEMES_KEY = 'vb-a11y-themes';
+const STICKY_KEY = 'vb-sticky';
 
 class SettingsPanel extends VBElement {
   /** @type {HTMLElement} */
@@ -69,6 +70,11 @@ class SettingsPanel extends VBElement {
     if (density === 'compact') return 'compact';
     if (density === 'spacious') return 'spacious';
     return 'default';
+  }
+
+  /** Is sticky navigation enabled? */
+  #isStickyOn() {
+    try { return localStorage.getItem(STICKY_KEY) === 'on'; } catch { return false; }
   }
 
   /** Is backdrop enabled? (any non-empty backdrop value) */
@@ -293,6 +299,11 @@ class SettingsPanel extends VBElement {
                 <option value="45deg" ${pageBgGradDir === '45deg' ? 'selected' : ''}>Diagonal ↗</option>
               </select>
             </div>
+
+            <label class="toggle-row">
+              <span>Sticky Navigation</span>
+              <input type="checkbox" name="sticky-nav" data-switch="sm" data-sticky-toggle ${this.#isStickyOn() ? 'checked' : ''} />
+            </label>
           </div>
         </details>
 
@@ -388,6 +399,9 @@ class SettingsPanel extends VBElement {
 
     // Backdrop fixed header toggle
     this.#panel.querySelector('input[data-backdrop-fixed]')?.addEventListener('change', this.#handleBackdropFixed);
+
+    // Sticky navigation toggle
+    this.#panel.querySelector('input[data-sticky-toggle]')?.addEventListener('change', this.#handleStickyToggle);
 
     // Page background type
     this.#panel.querySelector('[name="settings-page-bg"]')?.addEventListener('change', this.#handlePageBgType);
@@ -493,6 +507,25 @@ class SettingsPanel extends VBElement {
     ThemeManager.setBackdropChrome(this.#buildChromeValue(mode, e.target.checked));
   };
 
+  #handleStickyToggle = async (e) => {
+    const on = e.target.checked;
+    try { localStorage.setItem(STICKY_KEY, on ? 'on' : 'off'); } catch { /* ignore */ }
+
+    const header = document.querySelector('header');
+
+    if (on) {
+      document.documentElement.dataset.sticky = '';
+      if (header) header.dataset.sticky = '';
+      const { initStickyManager } = await import('../../lib/sticky-manager.js');
+      initStickyManager();
+    } else {
+      delete document.documentElement.dataset.sticky;
+      if (header) delete header.dataset.sticky;
+      const { destroyStickyManager } = await import('../../lib/sticky-manager.js');
+      destroyStickyManager();
+    }
+  };
+
   #handlePageBgType = (e) => {
     const type = e.target.value;
     this.#updatePageBgVisibility(type);
@@ -564,6 +597,11 @@ class SettingsPanel extends VBElement {
     // Reset extensions
     try { localStorage.removeItem(EXTENSIONS_KEY); } catch { /* ignore */ }
     this.#applyExtensions();
+
+    // Reset sticky navigation
+    try { localStorage.removeItem(STICKY_KEY); } catch { /* ignore */ }
+    delete document.documentElement.dataset.sticky;
+    import('../../lib/sticky-manager.js').then(m => m.destroyStickyManager()).catch(() => {});
 
     // Reset environment
     EnvironmentManager.setSource('timeOfDay', false);
@@ -649,6 +687,10 @@ class SettingsPanel extends VBElement {
       const val = extensions[key];
       input.checked = val ?? EXTENSION_DEFAULTS[key];
     });
+
+    // Sticky navigation toggle
+    const stickyToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-sticky-toggle]'));
+    if (stickyToggle) stickyToggle.checked = this.#isStickyOn();
 
     // Environment toggles
     const envPrefs = this.#loadEnvPrefs();

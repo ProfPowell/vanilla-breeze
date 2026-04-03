@@ -1,0 +1,87 @@
+---
+layout: element
+title: "markdown-editor"
+description: "Side-by-side markdown editor with live preview. Composes a textarea with markdown-viewer."
+elementName: markdown-editor
+category: component
+currentPath: /docs/elements/web-components/markdown-editor/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+  <section>
+    <h2>Overview</h2>
+    <p>A split-pane markdown editor that pairs a <code>&lt;textarea&gt;</code> with a <code>&lt;markdown-viewer&gt;</code> for live preview. Part of the <a href="/docs/packs/extras/">Extras Pack</a>.</p>
+    <p>Progressive enhancement: without JavaScript the <code>&lt;textarea&gt;</code> is fully usable. The preview pane appears only after the component upgrades.</p>
+
+    <browser-window url="markdown-editor" src="/docs/examples/demos/markdown-editor-basic.html"></browser-window>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+
+    <h3>Basic</h3>
+    <p>Wrap a <code>&lt;textarea&gt;</code> with initial content. The editor adopts it and builds the preview pane.</p>
+    <code-block language="html" show-lines label="Basic editor" data-escape><markdown-editor name="content" placeholder="Write markdown here...">
+  <textarea>
+# Hello world
+
+Start editing to see a live preview.
+  </textarea>
+</markdown-editor></code-block>
+
+    <h3>With Syntax Highlighting</h3>
+    <p>Add the <code>highlight</code> attribute to pass through to the preview viewer. Bring your own highlighter via the <code>markdown-viewer:highlight</code> event.</p>
+    <code-block language="html" show-lines label="Syntax highlighting" data-escape><markdown-editor highlight data-tab-indent>
+  <textarea>
+```javascript
+console.log('hello');
+```
+  </textarea>
+</markdown-editor></code-block>
+
+    <h3>Form Integration</h3>
+    <p>The <code>name</code> attribute is reflected to the internal textarea, so it works as a standard form field.</p>
+    <code-block language="html" show-lines label="Form field" data-escape><form>
+  <markdown-editor name="body" rows="8" placeholder="Write your message...">
+    <textarea></textarea>
+  </markdown-editor>
+  <button type="submit">Submit</button>
+</form></code-block>
+
+    <h3>Tab Indentation</h3>
+    <p>Add <code>data-tab-indent</code> to make the Tab key insert two spaces instead of moving focus.</p>
+    <code-block language="html" show-lines label="Tab indent" data-escape><markdown-editor data-tab-indent>
+  <textarea></textarea>
+</markdown-editor></code-block>
+  </section>
+
+  {% from "partials/attribute-table.njk" import attributeTable, eventsTable %}
+  <section>
+    <h2>Attributes</h2>
+    {{ attributeTable("markdown-editor", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    {{ eventsTable("markdown-editor", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.value</code></td><td><code>string</code></td><td>Get or set the current markdown content. Setting updates the preview.</td></tr>
+        <tr><td><code>.textarea</code></td><td><code>HTMLTextAreaElement</code></td><td>Reference to the internal textarea element for direct access.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <p>Before the component upgrades, the <code>&lt;textarea&gt;</code> renders at full width with monospace styling. After upgrade, the split layout appears with the live preview pane. Content is never lost.</p>
+  </section>

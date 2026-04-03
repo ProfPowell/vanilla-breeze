@@ -1,0 +1,184 @@
+---
+layout: element
+title: "color-picker"
+description: "Form-associated color picker with HSL color space, hue slider, hex/RGB inputs, preset swatches, and EyeDropper API."
+elementName: color-picker
+category: component
+currentPath: /docs/elements/web-components/color-picker/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;color-picker&gt;</code> component wraps a native <code>&lt;input type="color"&gt;</code> and replaces the limited browser picker with a full color space UI. It features a saturation/lightness area, hue slider, hex and RGB text inputs, preset swatches from a <code>&lt;datalist&gt;</code>, and EyeDropper API integration.</p>
+
+    <browser-window
+      src="/docs/examples/demos/color-picker-basic.html"
+      url="https://vanilla-breeze.dev/color-picker"
+      title="Color Picker Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic color picker" data-escape><form-field>
+  <label for="brand">Brand color</label>
+  <color-picker name="brand">
+    <input type="color" id="brand" value="#6366f1">
+  </color-picker>
+</form-field></code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="color"&gt;</code> provides an OS-level color picker. The full UI only appears after the component upgrades.
+    </aside>
+
+    <aside class="note">
+      <strong>Coexistence with <code>data-color</code>:</strong> The existing <code>data-color</code> attribute enhancer automatically skips inputs inside a <code>&lt;color-picker&gt;</code> element. Use <code>data-color</code> for simple swatch+hex display; use <code>&lt;color-picker&gt;</code> for the full color space UI.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Form field name for submission.</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Disables the picker.</td>
+        </tr>
+        <tr>
+          <td><code>required</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Marks the field as required for form validation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Preset Swatches</h2>
+    <p>Add a <code>&lt;datalist&gt;</code> child with <code>&lt;option&gt;</code> elements to provide a row of preset color swatches.</p>
+
+    <code-block language="html" show-lines label="With preset swatches" data-escape><color-picker name="accent">
+  <input type="color" value="#3b82f6">
+  <datalist>
+    <option value="#ef4444">Red</option>
+    <option value="#f97316">Orange</option>
+    <option value="#eab308">Yellow</option>
+    <option value="#22c55e">Green</option>
+    <option value="#3b82f6">Blue</option>
+    <option value="#8b5cf6">Purple</option>
+  </datalist>
+</color-picker></code-block>
+  </section>
+
+  <section>
+    <h2>EyeDropper</h2>
+    <p>On supported browsers, a pipette button appears that opens the EyeDropper API to pick any color from the screen. The button is hidden on browsers that don&rsquo;t support the API.</p>
+  </section>
+
+  <section>
+    <h2>Form Integration</h2>
+    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation. The submitted value is always a 7-character hex string (e.g. <code>#6366f1</code>).</p>
+
+    <code-block language="html" show-lines label="With form-field validation" data-escape><form>
+  <form-field>
+    <label for="theme">Theme color</label>
+    <color-picker name="theme" required>
+      <input type="color" id="theme" value="#6366f1">
+    </color-picker>
+    <output class="error" for="theme" aria-live="polite"></output>
+  </form-field>
+  <button type="submit">Save</button>
+</form></code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <h3>Color area (saturation/lightness)</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Adjust saturation by 1% (Shift: 10%).</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td>
+          <td>Adjust lightness by 1% (Shift: 10%).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Hue slider</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Adjust hue by 1&deg; (Shift: 10&deg;).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>color-picker:change</code></td>
+          <td><code>{ hex, rgb, hsl }</code></td>
+          <td>Fired when the color changes. <code>rgb</code> is <code>{ r, g, b }</code> (0&ndash;255). <code>hsl</code> is <code>{ h, s, l }</code> (h: 0&ndash;360, s/l: 0&ndash;100).</td>
+        </tr>
+        <tr>
+          <td><code>color-picker:open</code></td>
+          <td>&mdash;</td>
+          <td>Fired when the panel opens.</td>
+        </tr>
+        <tr>
+          <td><code>color-picker:close</code></td>
+          <td>&mdash;</td>
+          <td>Fired when the panel closes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p>The trigger button uses <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>. The panel is <code>role="dialog"</code> with an accessible label. The color area uses <code>role="slider"</code> with <code>aria-valuetext</code> describing saturation and lightness percentages. The hue strip uses <code>role="slider"</code> with <code>aria-valuenow</code> for the hue degree. Preset swatches use <code>role="listbox"</code> with individual <code>role="option"</code> buttons. Text inputs provide direct numeric entry for users who prefer precision over the visual interface.</p>
+  </section>

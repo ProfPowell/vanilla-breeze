@@ -12,7 +12,7 @@ tags:
 cross-references:
   - BUNDLE-SYSTEM.md
   - overview.md
-  - web-components/tooltip-wc
+  - web-components/tool-tip
   - web-components/page-toc
 ---
 

@@ -1,0 +1,197 @@
+---
+layout: docs
+title: "Bottom Sheet Dialog Snippet"
+description: "Mobile-native bottom sheet using native dialog element. Action menus, share sheets, and option lists that slide up from the bottom."
+currentSection: explore
+currentPath: /docs/snippets/components/bottom-sheet-dialog/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/docs/snippets/">Snippets</a></li>
+      <li><span aria-current="page">Bottom Sheet Dialog</span></li>
+    </ol>
+  </nav>
+
+  <h1>Bottom Sheet Dialog</h1>
+  <p class="lead">Mobile-native bottom sheet using native <code>&lt;dialog&gt;</code> element. Action menus, share sheets, and option lists that slide up from the bottom.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>A bottom sheet is a dialog that slides up from the bottom of the viewport. It uses <code>data-position="bottom"</code> on a native <code>&lt;dialog&gt;</code> to get full-width, rounded-top-corners styling with safe-area padding for mobile devices.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Native <code>&lt;dialog&gt;</code> with focus trapping and escape key</li>
+        <li>Full viewport width, max 85dvh height</li>
+        <li>Rounded top corners with slide-up animation</li>
+        <li>Automatic safe-area padding for home indicators</li>
+        <li>Zero JavaScript with Invokers API</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Action Sheet</h2>
+    <layout-text>
+      <p>A common mobile pattern: tapping an item reveals a list of contextual actions.</p>
+    </layout-text>
+
+    <code-block language="html" label="Action sheet" data-escape><button commandfor="actions" command="show-modal">
+  Options
+</button>
+
+<dialog id="actions" data-position="bottom">
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Photo Options</h2>
+    <button commandfor="actions" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
+    <nav aria-label="Actions">
+      <ul role="list">
+        <li><a href="#"><icon-wc name="share"></icon-wc> Share</a></li>
+        <li><a href="#"><icon-wc name="download"></icon-wc> Save to device</a></li>
+        <li><a href="#"><icon-wc name="copy"></icon-wc> Copy link</a></li>
+        <li><a href="#"><icon-wc name="bookmark"></icon-wc> Add to favorites</a></li>
+        <li><hr></li>
+        <li><a href="#" style="color: var(--color-error);">
+          <icon-wc name="trash-2"></icon-wc> Delete
+        </a></li>
+      </ul>
+    </nav>
+  </section>
+</dialog></code-block>
+  </section>
+
+  <section>
+    <h2>Drag Handle</h2>
+    <layout-text>
+      <p>Add a visual drag handle indicator using a pseudo-element. This signals to mobile users that the sheet can be dismissed.</p>
+    </layout-text>
+
+    <code-block language="css" label="Drag handle indicator" data-escape>/* Visual drag handle at top of bottom sheet */
+dialog[data-position="bottom"]::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 0.25rem;
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+  margin: var(--size-s) auto var(--size-xs);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Share Sheet</h2>
+    <layout-text>
+      <p>A share sheet pattern with a grid of share targets, similar to the native iOS/Android share UI.</p>
+    </layout-text>
+
+    <code-block language="html" label="Share sheet" data-escape><dialog id="share-sheet" data-position="bottom">
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Share</h2>
+    <button commandfor="share-sheet" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
+    <layout-grid data-layout-min="4rem" data-layout-gap="m"
+                 style="text-align: center;">
+      <a href="#">
+        <icon-wc name="message-circle"></icon-wc>
+        <small>Message</small>
+      </a>
+      <a href="#">
+        <icon-wc name="mail"></icon-wc>
+        <small>Email</small>
+      </a>
+      <a href="#">
+        <icon-wc name="copy"></icon-wc>
+        <small>Copy</small>
+      </a>
+      <a href="#">
+        <icon-wc name="bookmark"></icon-wc>
+        <small>Save</small>
+      </a>
+    </layout-grid>
+  </section>
+</dialog></code-block>
+  </section>
+
+  <section>
+    <h2>Drag to Dismiss</h2>
+    <layout-text>
+      <p>Add <code>data-gesture="dismiss-down"</code> to enable swipe-down-to-close. The gesture library tracks the vertical drag, applies opacity falloff, and calls <code>dialog.close('dismiss')</code> when the threshold is reached. Buttons and links remain interactive.</p>
+    </layout-text>
+
+    <code-block language="html" label="Drag-to-dismiss bottom sheet" data-escape><dialog id="actions" data-position="bottom" data-gesture="dismiss-down">
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Options</h2>
+    <button commandfor="actions" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
+    <nav aria-label="Actions">
+      <ul role="list">
+        <li><a href="#">Action 1</a></li>
+        <li><a href="#">Action 2</a></li>
+      </ul>
+    </nav>
+  </section>
+</dialog>
+
+<script>
+  // Detect drag-dismiss vs explicit close
+  document.getElementById('actions')
+    .addEventListener('close', (e) => {
+      if (e.target.returnValue === 'dismiss') {
+        console.log('Dismissed by swipe');
+      }
+    });
+</script></code-block>
+
+    <layout-text>
+      <p>The gesture is lazy-loaded and only ships when <code>[data-gesture]</code> attributes are present. Combine with the drag handle CSS (above) for a complete mobile experience.</p>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Usage Notes</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Invokers API:</strong> Use <code>commandfor</code> + <code>command="show-modal"</code> for declarative control. Fall back to <code>showModal()</code> for older browsers.</li>
+        <li><strong>Safe areas:</strong> Bottom padding is automatic via <code>var(--safe-bottom)</code> for devices with home indicators.</li>
+        <li><strong>Scrolling:</strong> Long content scrolls within the sheet. The <code>overscroll-behavior: contain</code> rule prevents scroll chaining to the page.</li>
+        <li><strong>Backdrop close:</strong> Add a click listener on the dialog for backdrop dismissal (not built-in to native dialog).</li>
+        <li><strong>Animation:</strong> Uses <code>vb-slide-in-bottom</code> keyframes. Respects <code>prefers-reduced-motion</code>.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/native/dialog/" class="section-card">
+        <h3>Dialog Element</h3>
+        <p>Native dialog documentation</p>
+      </a>
+      <a href="/docs/snippets/components/drawer-dialog/" class="section-card">
+        <h3>Drawer Dialog</h3>
+        <p>Side-panel drawer patterns</p>
+      </a>
+      <a href="/docs/snippets/components/modal-dialog/" class="section-card">
+        <h3>Modal Dialog</h3>
+        <p>Centered modal patterns</p>
+      </a>
+      <a href="/docs/mobile/#bottom-sheet" class="section-card">
+        <h3>Mobile Bottom Sheet</h3>
+        <p>Bottom sheet in mobile context</p>
+      </a>
+    </layout-grid>
+  </section>

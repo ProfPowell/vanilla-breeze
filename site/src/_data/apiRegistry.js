@@ -2203,6 +2203,139 @@ export default {
       }
     ]
   },
+  "image-gallery": {
+    "$schema": "../../../.claude/schemas/api.schema.json",
+    "element": "image-gallery",
+    "type": "web-component",
+    "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a fullscreen dialog with navigation, swipe, keyboard, and View Transitions.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "a",
+        "figure"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "columns",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "100px",
+          "150px",
+          "200px",
+          "250px",
+          "300px"
+        ],
+        "default": "200px",
+        "description": "Minimum column width for the thumbnail grid."
+      },
+      {
+        "name": "gap",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "none",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ],
+        "default": "s",
+        "description": "Gap between thumbnails."
+      },
+      {
+        "name": "ratio",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "1",
+          "4:3",
+          "3:2",
+          "16:9",
+          "3:4",
+          "auto"
+        ],
+        "default": "1",
+        "description": "Aspect ratio for thumbnail images."
+      },
+      {
+        "name": "controls",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "edge",
+          "bar",
+          "minimal"
+        ],
+        "default": "edge",
+        "description": "Lightbox control layout. 'edge' puts prev/next on sides with floating header. 'bar' puts all controls in a top bar. 'minimal' shows close only (swipe/keyboard for nav)."
+      },
+      {
+        "name": "loop",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Wrap navigation at first/last image."
+      },
+      {
+        "name": "captions",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "overlay",
+          "hidden"
+        ],
+        "default": "auto",
+        "description": "Caption display in lightbox. 'auto' shows via popover button, 'overlay' shows persistent bar, 'hidden' suppresses."
+      },
+      {
+        "name": "transition",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "morph",
+          "fade",
+          "none"
+        ],
+        "default": "morph",
+        "description": "View Transition type. 'morph' animates thumbnail to full image, 'fade' cross-fades, 'none' disables."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<a href=\"full.jpg\">",
+        "description": "Image-only item: anchor wrapping a thumbnail img."
+      },
+      {
+        "element": "<figure>",
+        "description": "Rich item: figure wrapping an anchor and figcaption."
+      },
+      {
+        "element": "<img>",
+        "description": "Thumbnail image inside anchor. src is the thumbnail, parent anchor href is the full image."
+      },
+      {
+        "element": "<figcaption>",
+        "description": "Optional caption inside figure. Supports HTML including links."
+      }
+    ]
+  },
   "impact-effort": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "impact-effort",
@@ -2360,6 +2493,89 @@ export default {
         "name": "include-file:error",
         "detail": "{ src, error }",
         "description": "Fired if fetch fails"
+      }
+    ]
+  },
+  "kanban-board": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "kanban-board",
+    "type": "web-component",
+    "description": "Columnar drag-and-drop board with user-defined columns, count badges, and optional WIP limits",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "section"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON data for columns and items"
+      },
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading above the board"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing variant"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-column",
+        "on": "section",
+        "type": "string",
+        "description": "Column identifier"
+      },
+      {
+        "name": "data-column-label",
+        "on": "section",
+        "type": "string",
+        "description": "Display label for the column header"
+      },
+      {
+        "name": "data-wip",
+        "on": "section",
+        "type": "number",
+        "description": "Optional WIP limit — visual warning when exceeded"
+      },
+      {
+        "name": "data-column-color",
+        "on": "section",
+        "type": "string",
+        "description": "Color token for column tint (success, warning, error, info)"
+      }
+    ],
+    "events": [
+      {
+        "name": "kanban-board:transfer",
+        "detail": "{ itemId, fromColumn, toColumn, newIndex, item }",
+        "description": "Item moved between columns"
+      },
+      {
+        "name": "kanban-board:reorder",
+        "detail": "{ itemId, column, oldIndex, newIndex }",
+        "description": "Item reordered within a column"
+      },
+      {
+        "name": "kanban-board:ready",
+        "detail": "{ columnCount, itemCount }",
+        "description": "Fired after component initializes"
+      },
+      {
+        "name": "kanban-board:wip-exceeded",
+        "detail": "{ column, limit, count }",
+        "description": "Fired when a column exceeds its WIP limit"
       }
     ]
   },

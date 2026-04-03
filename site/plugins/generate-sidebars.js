@@ -81,14 +81,19 @@ export class GenerateSidebars {
     html += `  </ul>\n`;
     html += `</details>\n`;
 
-    // Web Components (flat list)
+    // Web Components (nested: category > groups > items)
     html += `<details data-sidebar-section="component">\n`;
     html += `  <summary>${elements.component.label}</summary>\n`;
-    html += `  <ul>\n`;
-    for (const item of elements.component.items) {
-      html += `    <li><a href="${item.href}">${item.name}</a></li>\n`;
+    for (const group of elements.component.groups) {
+      html += `  <details data-sidebar-group="${group.label}">\n`;
+      html += `    <summary>${group.label}</summary>\n`;
+      html += `    <ul>\n`;
+      for (const item of group.items) {
+        html += `      <li><a href="${item.href}">${item.name}</a></li>\n`;
+      }
+      html += `    </ul>\n`;
+      html += `  </details>\n`;
     }
-    html += `  </ul>\n`;
     html += `</details>\n`;
 
     writeFileSync(resolve(this.includesDir, 'sidebar-elements.html'), html);

@@ -267,6 +267,53 @@ dialog.addEventListener('close', () => {
     </table>
 
     <p>Slide animations respect <code>prefers-reduced-motion</code>, falling back to a simple fade.</p>
+
+    <h3>Bottom Sheet</h3>
+    <p>The bottom drawer variant (<code>data-position="bottom"</code>) acts as a mobile-native bottom sheet &mdash; ideal for action menus, share sheets, and quick option lists. It automatically includes safe-area padding for devices with home indicators.</p>
+
+    <browser-window src="/docs/examples/demos/mobile-bottom-sheet.html" url="https://vanilla-breeze.dev/mobile/bottom-sheet" title="Bottom sheet" device="iphone-16-pro-max" device-color="silver"></browser-window>
+
+    <code-block language="html" show-lines label="Bottom sheet action menu" data-escape><button commandfor="photo-actions" command="show-modal">
+  Photo Options
+</button>
+
+<dialog id="photo-actions" data-position="bottom">
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Photo Options</h2>
+    <button commandfor="photo-actions" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
+    <nav aria-label="Actions">
+      <ul>
+        <li><a href="#"><icon-wc name="share"></icon-wc> Share</a></li>
+        <li><a href="#"><icon-wc name="bookmark"></icon-wc> Save</a></li>
+        <li><a href="#"><icon-wc name="copy"></icon-wc> Copy link</a></li>
+      </ul>
+    </nav>
+  </section>
+</dialog></code-block>
+
+    <h4>Drag to Dismiss</h4>
+    <p>Add <code>data-gesture="dismiss-down"</code> to let users swipe the bottom sheet downward to close it. VB&rsquo;s gesture library handles the drag tracking, opacity falloff, and snap-back automatically. The dialog closes with <code>returnValue</code> set to <code>"dismiss"</code>.</p>
+
+    <code-block language="html" show-lines label="Bottom sheet with drag-to-dismiss" data-escape><dialog id="my-sheet" data-position="bottom" data-gesture="dismiss-down">
+  <!-- drag handle indicator (CSS pseudo-element) -->
+  <header data-layout="cluster" data-layout-justify="between">
+    <h2>Options</h2>
+    <button commandfor="my-sheet" command="close"
+            class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>...</section>
+</dialog></code-block>
+
+    <p>The gesture is lazy-loaded &mdash; it only ships when <code>[data-gesture]</code> attributes are present on the page. Buttons and links inside the sheet remain interactive; the drag only activates from non-interactive areas.</p>
+
+    <p>See also: <a href="/docs/mobile/#bottom-sheet">Bottom Sheet on the Mobile page</a></p>
   </section>
 
   <section>
@@ -585,6 +632,10 @@ document.querySelectorAll('dialog').forEach(dialog => {
       <a href="/docs/snippets/components/drawer-dialog/" class="section-card">
         <h3>Drawer Dialog</h3>
         <p>Slide-in panels for navigation, settings, and filters</p>
+      </a>
+      <a href="/docs/snippets/components/bottom-sheet-dialog/" class="section-card">
+        <h3>Bottom Sheet</h3>
+        <p>Mobile action menus, share sheets, and option lists</p>
       </a>
     </layout-grid>
   </section>

@@ -14,6 +14,7 @@ const SELECTOR = 'input[type="color"][data-color]';
 
 function enhanceColor(input) {
   if (input.hasAttribute('data-color-init')) return;
+  if (input.closest('color-picker')) return;
   input.setAttribute('data-color-init', '');
 
   const wrapper = document.createElement('div');

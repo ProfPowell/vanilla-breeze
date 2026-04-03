@@ -22,7 +22,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
-class ColorPalette extends VBElement {
+export class ColorPalette extends VBElement {
   static observedAttributes = ['colors', 'names', 'layout', 'show-values', 'show-names', 'size'];
 
   setup() {

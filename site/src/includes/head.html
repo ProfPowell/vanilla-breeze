@@ -34,11 +34,22 @@
 <meta property="twitter:image" content="${siteUrl}/og-image.png">
 
 <!-- Theme: prevent flash of wrong theme -->
-<script>
+<script data-vb-is-dev="${site.isDev}">
   try {
     const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
     const mode = stored.mode || 'auto';
     const brand = stored.brand || 'default';
+    const isDev = document.currentScript?.dataset.vbIsDev === 'true';
+    const coreThemes = new Set([
+      'default',
+      'a11y-high-contrast',
+      'a11y-large-text',
+      'a11y-dyslexia',
+      'modern',
+      'minimal',
+      'classic'
+    ]);
+    const packThemes = new Set(['kawaii', 'retro', 'memphis']);
     if (mode !== 'auto') {
       document.documentElement.dataset.mode = mode;
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -49,6 +60,16 @@
     if (brand && brand !== 'default') parts.push(brand);
     parts.push(...a11y);
     if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
+    const safeBrand = /^[a-z0-9-]+$/.test(brand) ? brand : 'default';
+    if (!isDev && safeBrand && !coreThemes.has(safeBrand) && !document.querySelector(`link[data-vb-theme="${safeBrand}"]`)) {
+      const href = packThemes.has(safeBrand)
+        ? `/cdn/packs/${safeBrand}.full.css`
+        : `/cdn/themes/${safeBrand}.css`;
+      const packAttr = packThemes.has(safeBrand) ? ` data-vb-pack="${safeBrand}"` : '';
+      document.write(
+        `<link rel="stylesheet" href="${href}" data-vb-theme="${safeBrand}" data-vb-theme-state="loading" data-vb-theme-boot=""${packAttr} onload="this.setAttribute('data-vb-theme-state','ready')" onerror="this.setAttribute('data-vb-theme-state','error')">`
+      );
+    }
     if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
     const effectiveMode = mode !== 'auto' ? mode
       : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -59,6 +80,7 @@
     document.querySelector('meta[name="theme-color"]').content = themeColor;
     const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
     if (ext.motionFx === false) document.documentElement.dataset.motionReduced = '';
+    if (localStorage.getItem('vb-sticky') === 'on') document.documentElement.dataset.sticky = '';
   } catch(e) {}
 </script>
 

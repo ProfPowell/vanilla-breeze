@@ -369,6 +369,110 @@ export function addLongPress(element, callback, options = {}) {
 }
 
 /**
+ * Add drag-to-dismiss on a dialog (swipe down to close)
+ *
+ * Tracks vertical downward drag on the dialog element.
+ * When the drag exceeds the threshold, the dialog slides out
+ * and closes via dialog.close(). Snaps back if released early.
+ *
+ * @param {HTMLDialogElement} dialog - Dialog element to make dismissible
+ * @param {object}  [options]       - Configuration
+ * @param {number}  [options.threshold=80] - Distance in px to trigger dismiss
+ * @returns {Function} cleanup
+ */
+export function addDialogDismiss(dialog, options = {}) {
+  const threshold = options.threshold ?? 80;
+
+  let startY = 0;
+  let currentDelta = 0;
+  let dragging = false;
+
+  function onDown(e) {
+    if (!e.isPrimary || !dialog.open) return;
+    // Only start drag from the dialog itself or header, not interactive children
+    const target = /** @type {HTMLElement} */ (e.target);
+    if (target.closest('a, button, input, select, textarea, [contenteditable]') && !target.closest('header')) return;
+
+    dragging = true;
+    startY = e.clientY;
+    currentDelta = 0;
+    dialog.setPointerCapture(e.pointerId);
+    dialog.style.transition = 'none';
+  }
+
+  function onMove(e) {
+    if (!dragging || !e.isPrimary) return;
+    currentDelta = e.clientY - startY;
+
+    // Only allow downward drag
+    if (currentDelta <= 0) {
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+      return;
+    }
+
+    const progress = Math.min(currentDelta / threshold, 1);
+    const opacity = 1 - progress * 0.4;
+    dialog.style.transform = `translateY(${currentDelta}px)`;
+    dialog.style.opacity = String(opacity);
+  }
+
+  function onUp(e) {
+    if (!dragging || !e.isPrimary) return;
+    dragging = false;
+    dialog.releasePointerCapture(e.pointerId);
+
+    if (currentDelta >= threshold) {
+      dismiss();
+    } else {
+      snapBack();
+    }
+  }
+
+  function onCancel(e) {
+    if (!dragging || !e.isPrimary) return;
+    dragging = false;
+    dialog.releasePointerCapture(e.pointerId);
+    snapBack();
+  }
+
+  function dismiss() {
+    dialog.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+    dialog.style.transform = 'translateY(100%)';
+    dialog.style.opacity = '0';
+    haptic.dismiss();
+
+    dialog.addEventListener('transitionend', () => {
+      dialog.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+      dialog.close('dismiss');
+    }, { once: true });
+  }
+
+  function snapBack() {
+    dialog.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
+    dialog.style.transform = '';
+    dialog.style.opacity = '';
+    dialog.addEventListener('transitionend', () => {
+      dialog.style.transition = '';
+    }, { once: true });
+  }
+
+  dialog.addEventListener('pointerdown', onDown);
+  dialog.addEventListener('pointermove', onMove);
+  dialog.addEventListener('pointerup', onUp);
+  dialog.addEventListener('pointercancel', onCancel);
+
+  return () => {
+    dialog.removeEventListener('pointerdown', onDown);
+    dialog.removeEventListener('pointermove', onMove);
+    dialog.removeEventListener('pointerup', onUp);
+    dialog.removeEventListener('pointercancel', onCancel);
+  };
+}
+
+/**
  * Auto-initialize gestures from data-gesture attributes
  *
  * @param {HTMLElement|Document} [root=document] - Root element to scan
@@ -392,6 +496,11 @@ export function initGestures(root = document) {
     cleanups.push(addLongPress(/** @type {HTMLElement} */ (el), () => {
       el.dispatchEvent(new CustomEvent('long-press', { bubbles: true }));
     }));
+  }
+
+  // data-gesture="dismiss-down" (dialog swipe-down to close)
+  for (const el of root.querySelectorAll('dialog[data-gesture="dismiss-down"]')) {
+    cleanups.push(addDialogDismiss(/** @type {HTMLDialogElement} */ (el)));
   }
 
   return () => cleanups.forEach(fn => fn());

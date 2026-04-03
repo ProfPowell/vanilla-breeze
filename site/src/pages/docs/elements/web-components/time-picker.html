@@ -1,0 +1,229 @@
+---
+layout: element
+title: "time-picker"
+description: "Form-associated time input with combobox text entry, spinbutton dropdown, 12h/24h format, and progressive enhancement over native input[type=time]."
+elementName: time-picker
+category: component
+currentPath: /docs/elements/web-components/time-picker/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;time-picker&gt;</code> component wraps a native <code>&lt;input type="time"&gt;</code> and provides a combobox text input with an optional spinbutton dropdown panel. Users can type a time directly (e.g. &ldquo;2:30pm&rdquo;, &ldquo;14:30&rdquo;, &ldquo;3pm&rdquo;) or click the clock icon to adjust via spinbuttons. It supports 12-hour and 24-hour formats, respects <code>min</code>, <code>max</code>, and <code>step</code> constraints from the native input, and participates in form submission via <code>ElementInternals</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/time-picker-basic.html"
+      url="https://vanilla-breeze.dev/time-picker"
+      title="Time Picker Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic time picker" data-escape><form-field>
+  <label for="meeting">Meeting time</label>
+  <time-picker name="meeting">
+    <input type="time" id="meeting" value="14:30">
+  </time-picker>
+</form-field></code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="time"&gt;</code> is fully functional. The spinbutton UI only appears after the component upgrades.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Form field name for submission.</td>
+        </tr>
+        <tr>
+          <td><code>data-format</code></td>
+          <td>string</td>
+          <td><em>locale</em></td>
+          <td>Force <code>12h</code> or <code>24h</code> display. Defaults to the user&rsquo;s locale preference.</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Disables the picker.</td>
+        </tr>
+        <tr>
+          <td><code>required</code></td>
+          <td>boolean</td>
+          <td><code>false</code></td>
+          <td>Marks the field as required for form validation.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Native input attributes</h3>
+    <p>The following attributes are read from the child <code>&lt;input type="time"&gt;</code>:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>Initial time in <code>HH:MM</code> or <code>HH:MM:SS</code> format.</td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>Earliest allowed time (e.g. <code>09:00</code>).</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>Latest allowed time (e.g. <code>17:00</code>).</td>
+        </tr>
+        <tr>
+          <td><code>step</code></td>
+          <td>Step increment in seconds. Use <code>900</code> for 15-minute intervals. Values under 60 show a seconds spinner.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>12-Hour Format</h2>
+    <p>Set <code>data-format="12h"</code> to display an AM/PM toggle alongside the hour and minute spinners.</p>
+
+    <code-block language="html" show-lines label="12-hour format" data-escape><time-picker name="alarm" data-format="12h">
+  <input type="time" value="07:30">
+</time-picker></code-block>
+  </section>
+
+  <section>
+    <h2>Step Intervals</h2>
+    <p>The <code>step</code> attribute on the native input controls minute increments. For example, <code>step="900"</code> restricts minutes to 15-minute intervals (0, 15, 30, 45).</p>
+
+    <code-block language="html" show-lines label="15-minute intervals" data-escape><time-picker name="slot">
+  <input type="time" min="09:00" max="17:00" step="900">
+</time-picker></code-block>
+  </section>
+
+  <section>
+    <h2>Form Integration</h2>
+    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation messaging.</p>
+
+    <code-block language="html" show-lines label="With validation" data-escape><form>
+  <form-field>
+    <label for="appt">Appointment</label>
+    <time-picker name="appt" required>
+      <input type="time" id="appt" min="08:00" max="18:00">
+    </time-picker>
+    <output class="error" for="appt" aria-live="polite"></output>
+  </form-field>
+  <button type="submit">Book</button>
+</form></code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <h3>Text input</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd></td>
+          <td>Parse and commit the typed time value.</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Down</kbd></td>
+          <td>Open the spinbutton panel and focus the first spinner.</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close the panel and revert display to the current value.</td>
+        </tr>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Close the panel and move focus to the next element.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Spinbutton panel</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td>
+          <td>Increment / decrement the focused segment.</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Move focus between segments (hours, minutes, seconds, AM/PM).</td>
+        </tr>
+        <tr>
+          <td><kbd>Page Up</kbd> / <kbd>Page Down</kbd></td>
+          <td>Increment / decrement by a larger step.</td>
+        </tr>
+        <tr>
+          <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          <td>Jump to minimum / maximum value for the segment.</td>
+        </tr>
+        <tr>
+          <td><kbd>0</kbd>&ndash;<kbd>9</kbd></td>
+          <td>Direct number entry into the focused segment.</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close the panel and return focus to the text input.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>time-picker:change</code></td>
+          <td><code>{ value, hours, minutes, seconds }</code></td>
+          <td>Fired when the time value changes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p>The text input uses <code>role="combobox"</code> with <code>aria-expanded</code> and <code>aria-controls</code> linked to the spinbutton panel. Each time segment in the panel uses <code>role="spinbutton"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuetext</code>. The increment/decrement buttons are <code>aria-hidden</code> since keyboard interaction is handled on the spinbutton element itself.</p>
+  </section>

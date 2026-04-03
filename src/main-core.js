@@ -37,7 +37,7 @@ initFormCoordinator();
 // Enhance form fields (password toggle, etc.)
 initFormFieldEnhancements();
 
-// Bot protection (honeypot + behavioural scoring)
+// Bot protection (honeypot + behavioral scoring)
 initBotProtection();
 
 // Lazy-load wizard only when [data-wizard] is present

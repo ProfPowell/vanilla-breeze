@@ -25,6 +25,9 @@
 /** @type {Map<string, Promise<void>>} */
 const loadCache = new Map();
 
+/** @type {Map<string, Promise<void>>} */
+const packScriptCache = new Map();
+
 /** @type {object|null} */
 let manifestCache = null;
 
@@ -106,6 +109,78 @@ const CORE_THEMES = new Set([
 ]);
 
 /**
+ * Pack-backed themes that load from /cdn/packs/*.full.css
+ * These also have optional JS enhancements.
+ */
+const PACK_THEMES = new Set([
+  'kawaii',
+  'retro',
+  'memphis',
+]);
+
+function isPackTheme(themeName) {
+  return PACK_THEMES.has(themeName);
+}
+
+function getThemeHref(themeName, base) {
+  return isPackTheme(themeName)
+    ? `${base}/packs/${themeName}.full.css`
+    : `${base}/themes/${themeName}.css`;
+}
+
+function ensurePackScriptLoaded(packName, base) {
+  if (!isPackTheme(packName)) return Promise.resolve();
+  if (packScriptCache.has(packName)) return packScriptCache.get(packName);
+
+  const promise = import(`${base}/packs/${packName}.full.js`).catch(() => {
+    // JS effects are optional — CSS tokens are enough for the theme
+  });
+
+  packScriptCache.set(packName, promise);
+  return promise;
+}
+
+function waitForExistingThemeLink(link, themeName) {
+  const base = detectBase();
+  const loadPackScript = () => {
+    if (isPackTheme(themeName) || link.hasAttribute('data-vb-pack')) {
+      void ensurePackScriptLoaded(themeName, base);
+    }
+  };
+
+  if (link.getAttribute('data-vb-theme-state') === 'error') {
+    return Promise.reject(new Error(`Failed to load theme: ${themeName}`));
+  }
+
+  if (link.getAttribute('data-vb-theme-state') === 'ready' || link.sheet) {
+    loadPackScript();
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const handleLoad = () => {
+      link.setAttribute('data-vb-theme-state', 'ready');
+      cleanup();
+      loadPackScript();
+      resolve();
+    };
+    const handleError = () => {
+      link.setAttribute('data-vb-theme-state', 'error');
+      loadCache.delete(themeName);
+      cleanup();
+      reject(new Error(`Failed to load theme: ${themeName}`));
+    };
+    const cleanup = () => {
+      link.removeEventListener('load', handleLoad);
+      link.removeEventListener('error', handleError);
+    };
+
+    link.addEventListener('load', handleLoad, { once: true });
+    link.addEventListener('error', handleError, { once: true });
+  });
+}
+
+/**
  * Ensure a theme's CSS is loaded and available
  *
  * Returns immediately for core/cached themes.
@@ -126,12 +201,16 @@ export async function ensureThemeLoaded(themeName) {
   if (typeof document !== 'undefined') {
     const existing = document.querySelector(`link[data-vb-theme="${themeName}"]`);
     if (existing) {
-      loadCache.set(themeName, Promise.resolve());
-      return;
+      const promise = waitForExistingThemeLink(existing, themeName);
+      loadCache.set(themeName, promise);
+      return promise;
     }
   }
 
-  const promise = loadThemeCSS(themeName);
+  const base = detectBase();
+  const promise = isPackTheme(themeName)
+    ? loadPackCSS(themeName, base)
+    : loadThemeCSS(themeName, base);
   loadCache.set(themeName, promise);
   return promise;
 }
@@ -152,7 +231,7 @@ export function preloadTheme(themeName) {
   if (existing) return;
 
   const base = detectBase();
-  const href = `${base}/themes/${themeName}.css`;
+  const href = getThemeHref(themeName, base);
 
   const link = document.createElement('link');
   link.rel = 'preload';
@@ -189,25 +268,12 @@ async function getPackManifest() {
 
 /**
  * Internal: load and inject theme CSS
- * Checks themes/ first, then bundles/ for bundle themes.
  * @param {string} themeName
+ * @param {string} base
  * @returns {Promise<void>}
  */
-async function loadThemeCSS(themeName) {
-  const base = detectBase();
-
-  // Check if this is a pack/bundle theme
-  const packManifest = await getPackManifest();
-  if (packManifest[themeName]) {
-    return loadPackCSS(themeName, base);
-  }
-
-  // Standard theme loading: try manifest first for correct filename, fall back to convention
-  const manifest = await getThemeManifest();
-  const entry = manifest[themeName];
-  const file = entry ? entry.file : `${themeName}.css`;
-  const href = `${base}/themes/${file}`;
-
+async function loadThemeCSS(themeName, base) {
+  const href = getThemeHref(themeName, base);
   return new Promise((resolve, reject) => {
     // Remove any preload hint for this theme
     const preload = document.querySelector(`link[data-vb-theme-preload="${themeName}"]`);
@@ -217,10 +283,15 @@ async function loadThemeCSS(themeName) {
     link.rel = 'stylesheet';
     link.href = href;
     link.setAttribute('data-vb-theme', themeName);
+    link.setAttribute('data-vb-theme-state', 'loading');
 
-    link.onload = () => resolve();
+    link.onload = () => {
+      link.setAttribute('data-vb-theme-state', 'ready');
+      resolve();
+    };
     link.onerror = () => {
       // Remove failed link, clear cache so retry is possible
+      link.setAttribute('data-vb-theme-state', 'error');
       link.remove();
       loadCache.delete(themeName);
       reject(new Error(`Failed to load theme: ${themeName}`));
@@ -238,23 +309,25 @@ async function loadThemeCSS(themeName) {
  */
 function loadPackCSS(packName, base) {
   const cssHref = `${base}/packs/${packName}.full.css`;
-  const jsHref = `${base}/packs/${packName}.full.js`;
 
   return new Promise((resolve, reject) => {
+    const preload = document.querySelector(`link[data-vb-theme-preload="${packName}"]`);
+    if (preload) preload.remove();
+
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = cssHref;
     link.setAttribute('data-vb-theme', packName);
     link.setAttribute('data-vb-pack', packName);
+    link.setAttribute('data-vb-theme-state', 'loading');
 
     link.onload = () => {
-      // Also load pack JS (non-blocking — resolve immediately after CSS)
-      import(jsHref).catch(() => {
-        // JS effects are optional — CSS tokens are enough for the theme
-      });
+      link.setAttribute('data-vb-theme-state', 'ready');
+      void ensurePackScriptLoaded(packName, base);
       resolve();
     };
     link.onerror = () => {
+      link.setAttribute('data-vb-theme-state', 'error');
       link.remove();
       loadCache.delete(packName);
       reject(new Error(`Failed to load pack: ${packName}`));

@@ -446,6 +446,20 @@ module.exports = {
     }
   },
 
+  "image-gallery": {
+    flow: true,
+    permittedContent: ["a", "figure"],
+    attributes: {
+      "columns": { enum: ["100px", "150px", "200px", "250px", "300px"] },
+      "gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
+      "ratio": { enum: ["1", "4:3", "3:2", "16:9", "3:4", "auto"] },
+      "controls": { enum: ["edge", "bar", "minimal"] },
+      "loop": { boolean: true },
+      "captions": { enum: ["auto", "overlay", "hidden"] },
+      "transition": { enum: ["morph", "fade", "none"] }
+    }
+  },
+
   "impact-effort": {
     flow: true,
     permittedContent: ["@flow"],
@@ -464,6 +478,16 @@ module.exports = {
       "mode": { enum: ["replace", "append", "prepend"] },
       "lazy": { boolean: true },
       "allow-scripts": { boolean: true }
+    }
+  },
+
+  "kanban-board": {
+    flow: true,
+    permittedContent: ["section"],
+    attributes: {
+      "src": {},
+      "title": {},
+      "compact": { boolean: true }
     }
   },
 
