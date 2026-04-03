@@ -9,7 +9,8 @@
  * @attr {string}  name              - Form field name
  * @attr {boolean} disabled          - Disables the picker
  * @attr {boolean} required          - Makes selection required
- * @attr {string}  data-disabled-dates - Comma-separated ISO dates to disable (optionally with reason: "2026-04-05:booked")
+ * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable (optionally with reason: "2026-04-05:booked")
+ * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with category: "2026-12-25:holiday")
  *
  * The wrapped <input type="date"> provides min, max, and value.
  *
@@ -187,6 +188,7 @@ class DatePicker extends VBElement {
   #minDate = null;
   #maxDate = null;
   #disabledDates = new Map();
+  #highlightDates = new Map();
   #initialValue;
   #firstDayOfWeek;
 
@@ -210,6 +212,15 @@ class DatePicker extends VBElement {
       disabled.split(',').forEach(entry => {
         const [date, reason] = entry.trim().split(':');
         this.#disabledDates.set(date, reason || null);
+      });
+    }
+
+    // Highlighted dates — supports "YYYY-MM-DD" or "YYYY-MM-DD:category"
+    const highlights = this.getAttribute('data-highlight-dates');
+    if (highlights) {
+      highlights.split(',').forEach(entry => {
+        const [date, category] = entry.trim().split(':');
+        this.#highlightDates.set(date, category || null);
       });
     }
 
@@ -460,6 +471,12 @@ class DatePicker extends VBElement {
         btn.setAttribute('aria-disabled', 'true');
         btn.setAttribute('disabled', '');
         if (status.reason) btn.setAttribute('data-disabled-reason', status.reason);
+      }
+
+      // Highlighted dates
+      if (this.#highlightDates.has(iso)) {
+        const category = this.#highlightDates.get(iso);
+        btn.setAttribute('data-highlight', category || '');
       }
 
       // Focus management — mark the focused date for visual preview

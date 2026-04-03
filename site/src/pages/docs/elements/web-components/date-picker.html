@@ -58,6 +58,12 @@ crumbLabel: Web Components
           <td>Comma-separated ISO dates to disable. Optionally append <code>:reason</code> for visual variants (e.g. <code>2026-04-05:booked,2026-04-06</code>).</td>
         </tr>
         <tr>
+          <td><code>data-highlight-dates</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Comma-separated ISO dates to highlight. Optionally append <code>:category</code> for visual variants (e.g. <code>2026-12-25:holiday,2026-04-15:deadline</code>).</td>
+        </tr>
+        <tr>
           <td><code>disabled</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
@@ -149,6 +155,53 @@ crumbLabel: Web Components
     <code-block language="css" show-lines label="Custom reason styling">td button[data-disabled-reason="maintenance"] {
   opacity: 0.5;
   background: var(--color-warning-subtle);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Highlighted Dates</h2>
+    <p>Use <code>data-highlight-dates</code> to visually mark key dates that remain selectable. Append a <code>:category</code> to each date for distinct styling. Three built-in categories are provided:</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Visual Treatment</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>holiday</code></td>
+          <td>Warm accent background and text</td>
+          <td>Public holidays, observances</td>
+        </tr>
+        <tr>
+          <td><code>deadline</code></td>
+          <td>Red accent background and text</td>
+          <td>Due dates, cutoff dates</td>
+        </tr>
+        <tr>
+          <td><code>event</code></td>
+          <td>Blue accent background and text</td>
+          <td>Meetings, scheduled events</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Dates without a category get a subtle default highlight. All highlighted dates remain fully selectable.</p>
+
+    <code-block language="html" show-lines label="Highlighted key dates" data-escape><date-picker name="schedule"
+  data-highlight-dates="2026-04-10:event,2026-04-15:deadline,2026-04-21:holiday">
+  <input type="date" min="2026-04-01" max="2026-04-30">
+</date-picker></code-block>
+
+    <p>Custom categories are supported. Any value is set as <code>data-highlight</code> on the button:</p>
+
+    <code-block language="css" show-lines label="Custom highlight styling">td button[data-highlight="payday"] {
+  background: oklch(from green l c h / 0.1);
+  border-color: oklch(from green l c h / 0.3);
+  font-weight: 600;
 }</code-block>
   </section>
 
