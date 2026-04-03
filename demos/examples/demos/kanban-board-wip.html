@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board — WIP Limits</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    kanban-board {
+      max-inline-size: 900px;
+    }
+
+    .wip-alert {
+      display: none;
+      padding: var(--size-s);
+      background: color-mix(in oklch, var(--color-error) 10%, var(--color-surface));
+      border: 1px solid var(--color-error);
+      border-radius: var(--radius-m);
+      font-size: var(--font-size-s, 0.875rem);
+      color: var(--color-error);
+    }
+
+    .wip-alert[data-visible] { display: block; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>WIP Limits Demo</h2>
+    <p><small>The "In Progress" column has a WIP limit of 2 and "Review" has a limit of 1. Drag items in to see the visual warning.</small></p>
+  </header>
+
+  <output class="wip-alert" id="wip-alert" role="alert"></output>
+
+  <kanban-board>
+    <section data-column="backlog" data-column-label="Backlog">
+      <article draggable="true" data-id="task-1">Design system audit</article>
+      <article draggable="true" data-id="task-2">Write migration guide</article>
+      <article draggable="true" data-id="task-3">Update API docs</article>
+      <article draggable="true" data-id="task-4">Performance testing</article>
+    </section>
+
+    <section data-column="doing" data-column-label="In Progress" data-wip="2">
+      <article draggable="true" data-id="task-5">Implement dark mode</article>
+      <article draggable="true" data-id="task-6">Refactor auth module</article>
+    </section>
+
+    <section data-column="review" data-column-label="Review" data-wip="1">
+      <article draggable="true" data-id="task-7">Add CSV export</article>
+    </section>
+
+    <section data-column="done" data-column-label="Done" data-column-color="success">
+      <article draggable="true" data-id="task-8">Set up CI pipeline</article>
+    </section>
+  </kanban-board>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+  <script type="module">
+    const alert = document.getElementById('wip-alert');
+
+    document.addEventListener('kanban-board:wip-exceeded', (e) => {
+      const { column, limit, count } = e.detail;
+      alert.textContent = `WIP limit exceeded: "${column}" has ${count} items (limit: ${limit})`;
+      alert.setAttribute('data-visible', '');
+      setTimeout(() => alert.removeAttribute('data-visible'), 4000);
+    });
+  </script>
+</body>
+</html>

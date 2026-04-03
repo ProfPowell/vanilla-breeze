@@ -1,0 +1,222 @@
+---
+layout: element
+title: "kanban-board"
+description: "Columnar drag-and-drop board with user-defined columns, count badges, and optional WIP limits."
+elementName: kanban-board
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/kanban-board/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that renders a columnar drag-and-drop board with user-defined columns. Each column wraps a <code>&lt;drag-surface&gt;</code> for native drag-and-drop and keyboard-accessible reordering and transfer. Supports any draggable content &mdash; user-story cards, plain articles, or custom elements. Includes auto-updating count badges, optional WIP (work-in-progress) limits with visual warnings, and optional column color tinting.</p>
+
+    <browser-window
+      src="/docs/examples/demos/kanban-board-basic.html"
+      url="https://vanilla-breeze.dev/kanban-board"
+      title="Kanban Board"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><kanban-board>
+  <section data-column="backlog" data-column-label="Backlog">
+    <user-story draggable="true" data-id="PROJ-201"
+      story-id="PROJ-201" persona="Sarah Chen"
+      action="view all project timelines in one dashboard"
+      priority="high" status="to-do" points="5"
+      detail="minimal">
+    </user-story>
+  </section>
+
+  <section data-column="in-progress" data-column-label="In Progress">
+    <user-story draggable="true" data-id="PROJ-198"
+      story-id="PROJ-198" persona="Jordan Park"
+      action="filter reports by date range and team"
+      priority="high" status="in-progress" points="5"
+      detail="minimal">
+    </user-story>
+  </section>
+
+  <section data-column="review" data-column-label="Review">
+  </section>
+
+  <section data-column="done" data-column-label="Done"
+    data-column-color="success">
+  </section>
+</kanban-board></code-block>
+</section>
+
+<section>
+    <h2>Attributes</h2>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>src</code></td><td>string</td><td>URL to JSON data for columns and items</td></tr>
+        <tr><td><code>title</code></td><td>string</td><td>Optional heading displayed above the board</td></tr>
+        <tr><td><code>compact</code></td><td>boolean</td><td>Reduced spacing variant for dashboard-style layouts</td></tr>
+      </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Child Attributes</h2>
+    <p>Set these on <code>&lt;section&gt;</code> children to define columns:</p>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-column</code></td><td><code>&lt;section&gt;</code></td><td>string</td><td>Column identifier (e.g. "backlog", "doing", "done")</td></tr>
+        <tr><td><code>data-column-label</code></td><td><code>&lt;section&gt;</code></td><td>string</td><td>Display label for the column header. Falls back to title-cased <code>data-column</code></td></tr>
+        <tr><td><code>data-wip</code></td><td><code>&lt;section&gt;</code></td><td>number</td><td>Optional WIP limit. Visual warning when exceeded</td></tr>
+        <tr><td><code>data-column-color</code></td><td><code>&lt;section&gt;</code></td><td>string</td><td>Color token for column tint: success, warning, error, info</td></tr>
+      </tbody>
+    </table>
+    <p>Set these on draggable children within sections:</p>
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>draggable="true"</code></td><td>boolean</td><td>Required for drag capability (auto-added if missing)</td></tr>
+        <tr><td><code>data-id</code></td><td>string</td><td>Stable identifier for the item (auto-generated if missing)</td></tr>
+      </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>WIP Limits</h2>
+    <p>Add <code>data-wip</code> to any column section to set a work-in-progress limit. When the number of items in a column exceeds the limit, the component adds a <code>data-wip-exceeded</code> attribute to the column and fires a <code>kanban-board:wip-exceeded</code> event. Items are <strong>not blocked</strong> from entering &mdash; this is a visual warning only.</p>
+
+    <browser-window
+      src="/docs/examples/demos/kanban-board-wip.html"
+      url="https://vanilla-breeze.dev/kanban-board/wip"
+      title="WIP Limits"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="WIP limits" data-escape><kanban-board>
+  <section data-column="backlog" data-column-label="Backlog">
+    <article draggable="true" data-id="task-1">Task A</article>
+    <article draggable="true" data-id="task-2">Task B</article>
+  </section>
+
+  <section data-column="doing" data-column-label="In Progress"
+    data-wip="2">
+    <article draggable="true" data-id="task-3">Task C</article>
+    <article draggable="true" data-id="task-4">Task D</article>
+  </section>
+
+  <section data-column="done" data-column-label="Done">
+  </section>
+</kanban-board></code-block>
+</section>
+
+<section>
+    <h2>Generic Content</h2>
+    <p>The board is not limited to sprint planning. Any draggable content works &mdash; blog posts through a publishing pipeline, support tickets, hiring candidates, or content workflows.</p>
+
+    <browser-window
+      src="/docs/examples/demos/kanban-board-generic.html"
+      url="https://vanilla-breeze.dev/kanban-board/pipeline"
+      title="Content Pipeline"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Content pipeline" data-escape><kanban-board>
+  <section data-column="ideas" data-column-label="Ideas"
+    data-column-color="info">
+    <article draggable="true" data-id="post-1">
+      <strong>CSS Container Queries Deep Dive</strong>
+      <small>Tutorial</small>
+    </article>
+  </section>
+  <section data-column="drafting" data-column-label="Drafting"
+    data-wip="2">
+  </section>
+  <section data-column="published" data-column-label="Published"
+    data-column-color="success">
+  </section>
+</kanban-board></code-block>
+</section>
+
+<section>
+    <h2>Events</h2>
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>kanban-board:transfer</code></td><td><code>{ itemId, fromColumn, toColumn, newIndex, item }</code></td><td>Item moved between columns</td></tr>
+        <tr><td><code>kanban-board:reorder</code></td><td><code>{ itemId, column, oldIndex, newIndex }</code></td><td>Item reordered within a column</td></tr>
+        <tr><td><code>kanban-board:ready</code></td><td><code>{ columnCount, itemCount }</code></td><td>Fired after component initializes</td></tr>
+        <tr><td><code>kanban-board:wip-exceeded</code></td><td><code>{ column, limit, count }</code></td><td>Fired when a column exceeds its WIP limit</td></tr>
+      </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>JSON Data Mode</h2>
+    <p>Set the <code>src</code> attribute to load board data from a JSON URL. Items with <code>persona</code>, <code>action</code>, or <code>storyId</code> fields are rendered as <code>&lt;user-story&gt;</code> elements. All other items are rendered as <code>&lt;article&gt;</code> elements.</p>
+
+    <code-block language="json" label="JSON schema">{
+  "columns": [
+    {
+      "id": "backlog",
+      "label": "Backlog",
+      "wip": null,
+      "color": null,
+      "items": [
+        { "id": "task-1", "text": "Design review" },
+        {
+          "id": "PROJ-201",
+          "storyId": "PROJ-201",
+          "persona": "Sarah Chen",
+          "action": "view timelines",
+          "priority": "high",
+          "detail": "minimal"
+        }
+      ]
+    }
+  ]
+}</code-block>
+</section>
+
+<section>
+    <h2>Keyboard Navigation</h2>
+    <p>All keyboard support is provided by the underlying <code>&lt;drag-surface&gt;</code> component:</p>
+    <ul>
+      <li><kbd>Tab</kbd> to focus a column's drag surface</li>
+      <li><kbd>Space</kbd> or <kbd>Enter</kbd> to grab an item</li>
+      <li><kbd>Up</kbd> / <kbd>Down</kbd> to reorder within a column</li>
+      <li><kbd>Left</kbd> / <kbd>Right</kbd> to transfer between columns</li>
+      <li><kbd>Space</kbd> to drop the item</li>
+      <li><kbd>Escape</kbd> to cancel</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The columns container has <code>role="region"</code> with <code>aria-label="Kanban board"</code></li>
+      <li>Each drag-surface has an <code>aria-label</code> matching the column label</li>
+      <li>A visually hidden live region announces all transfers for screen readers</li>
+      <li>Count badges use <code>&lt;output&gt;</code> elements for live value updates</li>
+      <li>Respects <code>prefers-reduced-motion: reduce</code></li>
+    </ul>
+</section>
+
+<section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/drag-surface/"><code>&lt;drag-surface&gt;</code></a> &mdash; the underlying drag-and-drop engine</li>
+      <li><a href="/docs/elements/web-components/story-map/"><code>&lt;story-map&gt;</code></a> &mdash; horizontal story map with activity columns</li>
+      <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; 2&times;2 prioritization matrix</li>
+      <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> &mdash; Agile story cards to use as board items</li>
+    </ul>
+</section>

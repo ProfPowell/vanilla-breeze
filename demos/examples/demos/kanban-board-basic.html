@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board — Basic</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    kanban-board {
+      max-inline-size: 1100px;
+    }
+
+    section output {
+      max-block-size: 10rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h2>Sprint 14 Board</h2>
+    <p><small>Drag story cards between columns or reorder within a column. Keyboard: <kbd>Space</kbd> to grab, arrows to move, <kbd>Space</kbd> to drop.</small></p>
+  </header>
+
+  <kanban-board>
+    <section data-column="backlog" data-column-label="Backlog">
+      <user-story draggable="true" data-id="PROJ-201"
+        story-id="PROJ-201" persona="Sarah Chen"
+        action="view all project timelines in one dashboard"
+        priority="high" status="to-do" points="5" detail="minimal">
+      </user-story>
+      <user-story draggable="true" data-id="PROJ-204"
+        story-id="PROJ-204" persona="Alex Rivera"
+        action="receive daily digest emails of project updates"
+        priority="medium" status="backlog" points="3" detail="minimal">
+      </user-story>
+      <user-story draggable="true" data-id="PROJ-207"
+        story-id="PROJ-207" persona="Sarah Chen"
+        action="set custom notification preferences per project"
+        priority="low" status="backlog" points="2" detail="minimal">
+      </user-story>
+    </section>
+
+    <section data-column="in-progress" data-column-label="In Progress">
+      <user-story draggable="true" data-id="PROJ-198"
+        story-id="PROJ-198" persona="Jordan Park"
+        action="filter reports by date range and team"
+        priority="high" status="in-progress" points="5" detail="minimal">
+      </user-story>
+      <user-story draggable="true" data-id="PROJ-202"
+        story-id="PROJ-202" persona="Alex Rivera"
+        action="export project reports as PDF"
+        priority="medium" status="in-progress" points="3" detail="minimal">
+      </user-story>
+    </section>
+
+    <section data-column="review" data-column-label="Review">
+      <user-story draggable="true" data-id="PROJ-195"
+        story-id="PROJ-195" persona="Jordan Park"
+        action="see loading indicators on all async actions"
+        priority="medium" status="review" points="2" detail="minimal">
+      </user-story>
+    </section>
+
+    <section data-column="done" data-column-label="Done" data-column-color="success">
+      <user-story draggable="true" data-id="PROJ-190"
+        story-id="PROJ-190" persona="Sarah Chen"
+        action="log in with SSO credentials"
+        priority="high" status="done" points="8" detail="minimal">
+      </user-story>
+      <user-story draggable="true" data-id="PROJ-193"
+        story-id="PROJ-193" persona="Alex Rivera"
+        action="view my assigned tasks on a personal dashboard"
+        priority="medium" status="done" points="3" detail="minimal">
+      </user-story>
+    </section>
+  </kanban-board>
+
+  <section>
+    <h3>Event Log</h3>
+    <output id="log" class="block"></output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+
+    document.addEventListener('kanban-board:transfer', (e) => {
+      const { itemId, fromColumn, toColumn } = e.detail;
+      log.textContent = `transferred: ${itemId} from "${fromColumn}" → "${toColumn}"\n` + log.textContent;
+    });
+
+    document.addEventListener('kanban-board:reorder', (e) => {
+      const { itemId, column, oldIndex, newIndex } = e.detail;
+      log.textContent = `reordered in "${column}": ${itemId} (${oldIndex} → ${newIndex})\n` + log.textContent;
+    });
+  </script>
+</body>
+</html>

@@ -14,4 +14,5 @@ import '../../web-components/user-story/logic.js';
 import '../../web-components/user-journey/logic.js';
 import '../../web-components/empathy-map/logic.js';
 import '../../web-components/impact-effort/logic.js';
+import '../../web-components/kanban-board/logic.js';
 import '../../web-components/story-map/logic.js';
