@@ -593,8 +593,8 @@ class DatePicker extends VBElement {
     this.#renderMonth();
 
     if (this.#usePopover) {
-      this.#positionCalendar();
       try { this.#calendar.showPopover(); } catch { /* already open */ }
+      this.#positionCalendar();
       window.addEventListener('scroll', this.#onReposition, { capture: true, passive: true });
       window.addEventListener('resize', this.#onReposition, { passive: true });
     }
@@ -620,9 +620,35 @@ class DatePicker extends VBElement {
 
   #positionCalendar() {
     if (!this.#usePopover) return;
-    const rect = this.#triggerContainer.getBoundingClientRect();
-    this.#calendar.style.setProperty('--calendar-top', `${rect.bottom + 4}px`);
-    this.#calendar.style.setProperty('--calendar-left', `${rect.left}px`);
+    const triggerRect = this.#triggerContainer.getBoundingClientRect();
+    const calRect = this.#calendar.getBoundingClientRect();
+    const gap = 4;
+    const edgeMargin = 8;
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+
+    // Vertical: flip above if not enough space below and more space above
+    const spaceBelow = vh - triggerRect.bottom - edgeMargin;
+    const spaceAbove = triggerRect.top - edgeMargin;
+    let top;
+
+    if (spaceBelow < calRect.height && spaceAbove > spaceBelow) {
+      top = triggerRect.top - calRect.height - gap;
+      this.#calendar.dataset.placement = 'top';
+    } else {
+      top = triggerRect.bottom + gap;
+      delete this.#calendar.dataset.placement;
+    }
+
+    // Horizontal: shift to stay within viewport
+    let left = triggerRect.left;
+    if (left + calRect.width > vw - edgeMargin) {
+      left = vw - calRect.width - edgeMargin;
+    }
+    if (left < edgeMargin) left = edgeMargin;
+
+    this.#calendar.style.setProperty('--calendar-top', `${top}px`);
+    this.#calendar.style.setProperty('--calendar-left', `${left}px`);
   }
 
   #onReposition = () => {
