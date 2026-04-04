@@ -123,9 +123,9 @@ function isPackTheme(themeName) {
 }
 
 function getThemeHref(themeName, base) {
-  return isPackTheme(themeName)
-    ? `${base}/packs/${themeName}.full.css`
-    : `${base}/themes/${themeName}.css`;
+  // Always load from themes/ — unlayered CSS wins the cascade.
+  // Pack JS effects are loaded separately via ensurePackScriptLoaded().
+  return `${base}/themes/${themeName}.css`;
 }
 
 function ensurePackScriptLoaded(packName, base) {
@@ -308,7 +308,7 @@ async function loadThemeCSS(themeName, base) {
  * @returns {Promise<void>}
  */
 function loadPackCSS(packName, base) {
-  const cssHref = `${base}/packs/${packName}.full.css`;
+  const cssHref = `${base}/themes/${packName}.css`;
 
   return new Promise((resolve, reject) => {
     const preload = document.querySelector(`link[data-vb-theme-preload="${packName}"]`);
