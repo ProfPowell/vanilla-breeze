@@ -20,6 +20,7 @@ import './split-surface/logic.js';
 import './qr-code/logic.js';
 import './slide-accept/logic.js';
 import './color-palette/logic.js';
+import './palette-generator/logic.js';
 import './type-specimen/logic.js';
 import './spacing-specimen/logic.js';
 import './consent-banner/logic.js';

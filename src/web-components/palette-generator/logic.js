@@ -26,214 +26,261 @@
  * </palette-generator>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
-import { ColorPalette } from '../color-palette/logic.js';
+import { VBElement } from '../../lib/vb-element.js';
 import { generatePalette } from './_palette-utils.js';
+import { hexToRgb } from '../color-picker/_color-utils.js';
 
-class PaletteGenerator extends ColorPalette {
-  static observedAttributes = [
-    ...ColorPalette.observedAttributes,
-    'seed', 'harmony', 'include-seed', 'show-export',
-  ];
+class PaletteGenerator extends VBElement {
+  static observedAttributes = ['seed', 'harmony', 'include-seed', 'show-export',
+    'layout', 'size', 'show-values', 'show-names'];
 
   /** @type {HTMLElement|null} */
   #pickerEl = null;
   /** @type {string} */
   #currentSeed = '';
+  /** @type {string[]} */
+  #colors = [];
+  /** @type {string[]} */
+  #names = [];
 
   setup() {
-    // Capture child picker before parent render wipes innerHTML
+    // Find child picker — do NOT detach it
     this.#pickerEl = this.querySelector('color-picker') || this.querySelector('input[type="color"]');
-    const pickerMarkup = this.#pickerEl ? this.#pickerEl.outerHTML : '';
 
-    // Resolve seed: child input takes priority over attribute
+    // Resolve seed
     this.#currentSeed = this.#resolveSeed();
     if (!this.#currentSeed) return;
 
-    // Generate palette and set colors/names for parent to render
-    const harmony = this.getAttribute('harmony') || 'complementary';
-    const { colors, names } = generatePalette(this.#currentSeed, harmony);
-    this.setAttribute('colors', colors.join(','));
-    this.setAttribute('names', names.join(','));
-
-    // Let ColorPalette render the swatches
-    super.setup();
-
-    // Prepend picker area if interactive
-    if (pickerMarkup) {
-      const pickerArea = document.createElement('div');
-      pickerArea.className = 'pg-seed-picker';
-      pickerArea.innerHTML = pickerMarkup;
-      this.prepend(pickerArea);
-      this.#wireInteractive(pickerArea);
-    }
-
-    // Append export toolbar if requested
-    if (this.hasAttribute('show-export')) {
-      this.#renderExportToolbar(colors, harmony);
-    }
-
-    this.dispatchEvent(new CustomEvent('palette-generator:generate', {
-      bubbles: true,
-      detail: { colors, harmony, seed: this.#currentSeed },
-    }));
+    this.#render();
+    this.#wireInteractive();
+    this.#emitGenerate();
   }
 
-  attributeChangedCallback(name) {
-    // Only regenerate for our own attributes; parent handles its own
-    if (['seed', 'harmony', 'include-seed', 'show-export'].includes(name) && this.isConnected) {
-      this.#regenerate();
-    } else {
-      super.attributeChangedCallback(name);
+  attributeChangedCallback() {
+    if (this.isConnected && this.hasAttribute('data-upgraded')) {
+      this.#currentSeed = this.#resolveSeed();
+      if (this.#currentSeed) this.#render();
     }
   }
 
-  /** Extract seed hex from child input or attribute */
+  /** Extract seed hex from the picker element or seed attribute */
   #resolveSeed() {
     if (this.#pickerEl) {
       const cp = this.#pickerEl;
       if (cp.tagName === 'COLOR-PICKER') {
-        return cp.value || cp.querySelector('input')?.value || '';
+        // Try upgraded getter first, fall back to inner input
+        const val = cp.value;
+        if (val && val !== '#000000') return val;
+        const input = cp.querySelector('input[type="color"]');
+        return input?.value || val || '';
       }
       return cp.value || '';
     }
     return this.getAttribute('seed') || '';
   }
 
+  /** Render the full component: picker area + swatches + export toolbar */
+  #render() {
+    const harmony = this.getAttribute('harmony') || 'complementary';
+    const layout = this.getAttribute('layout') || 'inline';
+    const size = this.getAttribute('size') || 'md';
+    const showValues = this.hasAttribute('show-values');
+    const showNames = this.hasAttribute('show-names');
+    const showExport = this.hasAttribute('show-export');
+
+    const { colors, names } = generatePalette(this.#currentSeed, harmony);
+    this.#colors = colors;
+    this.#names = names;
+
+    const sizes = { sm: 48, md: 80, lg: 120 };
+    const px = sizes[size] || 80;
+
+    // Build swatch HTML (same rendering as color-palette)
+    let containerStyle = `display:flex;flex-wrap:wrap;gap:var(--size-xs,0.5rem)`;
+    if (layout === 'grid') {
+      containerStyle = `display:grid;grid-template-columns:repeat(auto-fill,minmax(${px}px,1fr));gap:var(--size-xs,0.5rem)`;
+    } else if (layout === 'list') {
+      containerStyle = `display:flex;flex-direction:column;gap:var(--size-xs,0.5rem)`;
+    }
+
+    const swatches = colors.map((color, i) => {
+      const name = names[i] || '';
+      const contrast = this.#contrastColor(color);
+      const wrapStyle = layout === 'list'
+        ? `display:flex;flex-direction:row;align-items:center;gap:0.75rem`
+        : `display:flex;flex-direction:column;align-items:center;gap:0.25rem;max-inline-size:${px}px`;
+      const boxSize = layout === 'list' ? 36 : px;
+      const formatted = color.length > 12 ? color.slice(0, 12) + '\u2026' : color;
+
+      return `<div class="swatch-wrap" role="listitem" style="${wrapStyle}">
+        <button type="button" class="color-box" data-index="${i}"
+          style="background:${color};color:${contrast};width:${boxSize}px;height:${boxSize}px;border:1px solid oklch(0% 0 0/0.15);border-radius:var(--radius-s,0.25rem);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:var(--font-mono,monospace);position:relative;overflow:hidden;flex-shrink:0"
+          title="Click to copy${name ? ': ' + name : ''}"
+          aria-label="${name || 'Color ' + (i + 1)}: ${color}">
+          <span class="color-value" style="font-size:0.625rem;line-height:1.2;opacity:${showValues ? '1' : '0'};text-align:center;padding:2px 4px;word-break:break-all;transition:opacity 0.15s ease">${formatted}</span>
+        </button>
+        ${showNames && name ? `<span style="font-size:var(--font-size-xs,0.75rem);color:var(--color-text-muted,#666);text-align:center;max-inline-size:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    // Build export toolbar HTML
+    let exportHTML = '';
+    if (showExport) {
+      exportHTML = `<div class="pg-export" role="toolbar" aria-label="Export palette" style="display:flex;gap:0.5rem;margin-block-start:var(--size-xs,0.5rem)">
+        <button type="button" class="pg-copy-hex" style="padding:0.25rem 0.75rem;border:1px solid var(--color-border,#ccc);border-radius:var(--radius-s,0.25rem);background:var(--color-surface,#fff);color:var(--color-text,#333);cursor:pointer;font-size:var(--font-size-xs,0.75rem);font-family:inherit">Copy Hex</button>
+        <button type="button" class="pg-copy-css" style="padding:0.25rem 0.75rem;border:1px solid var(--color-border,#ccc);border-radius:var(--radius-s,0.25rem);background:var(--color-surface,#fff);color:var(--color-text,#333);cursor:pointer;font-size:var(--font-size-xs,0.75rem);font-family:inherit">Copy CSS</button>
+      </div>`;
+    }
+
+    // Remove everything except the picker, then insert palette + export
+    const pickerEl = this.#pickerEl;
+    for (const child of [...this.children]) {
+      if (child === pickerEl) continue;
+      if (child.classList?.contains('pg-seed-label')) continue;
+      child.remove();
+    }
+
+    // Add a label before the picker (once only — never move the picker)
+    if (pickerEl && !this.querySelector('.pg-seed-label')) {
+      const label = document.createElement('span');
+      label.className = 'pg-seed-label';
+      label.textContent = 'Seed Color';
+      pickerEl.before(label);
+    }
+
+    // Insert palette after picker (or at start if no picker)
+    const paletteDiv = document.createElement('div');
+    paletteDiv.className = `palette ${layout}`;
+    paletteDiv.setAttribute('role', 'list');
+    paletteDiv.setAttribute('aria-label', 'Color palette');
+    paletteDiv.style.cssText = containerStyle;
+    paletteDiv.innerHTML = swatches;
+
+    if (pickerEl) {
+      pickerEl.after(paletteDiv);
+    } else {
+      this.prepend(paletteDiv);
+    }
+
+    // Insert export toolbar
+    if (exportHTML) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = exportHTML;
+      this.append(tmp.firstElementChild);
+    }
+
+    // Wire swatch interactions
+    this.#wireSwatches(paletteDiv, colors, names, showValues);
+
+    // Wire export buttons
+    if (showExport) {
+      this.#wireExport();
+    }
+  }
+
+  /** Wire click-to-copy and hover on swatches */
+  #wireSwatches(container, colors, names, showValues) {
+    container.querySelectorAll('.color-box').forEach((btn) => {
+      if (!showValues) {
+        btn.addEventListener('pointerenter', () => {
+          const val = btn.querySelector('.color-value');
+          if (val) val.style.opacity = '1';
+        });
+        btn.addEventListener('pointerleave', () => {
+          const val = btn.querySelector('.color-value');
+          if (val) val.style.opacity = '0';
+        });
+      }
+
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.index);
+        const color = colors[idx];
+        const name = names[idx] || '';
+        navigator.clipboard?.writeText(color);
+        this.dispatchEvent(new CustomEvent('color-palette:select', {
+          bubbles: true, detail: { color, name, index: idx },
+        }));
+        btn.style.outline = '3px solid currentColor';
+        btn.style.outlineOffset = '2px';
+        setTimeout(() => { btn.style.outline = ''; btn.style.outlineOffset = ''; }, 600);
+      });
+    });
+  }
+
   /** Wire up interactive picker for live regeneration */
-  #wireInteractive(pickerArea) {
-    const cp = pickerArea.querySelector('color-picker');
-    if (cp) {
+  #wireInteractive() {
+    const cp = this.#pickerEl;
+    if (!cp) return;
+
+    if (cp.tagName === 'COLOR-PICKER') {
       this.listen(cp, 'color-picker:change', (e) => {
         this.#currentSeed = e.detail.hex;
-        this.#regenerate();
+        this.#render();
+        this.#emitGenerate();
       });
-      // Store ref for future seed resolution
-      this.#pickerEl = cp;
     } else {
-      const input = pickerArea.querySelector('input[type="color"]');
-      if (input) {
-        this.listen(input, 'input', () => {
-          this.#currentSeed = input.value;
-          this.#regenerate();
-        });
-        this.#pickerEl = input;
-      }
+      this.listen(cp, 'input', () => {
+        this.#currentSeed = cp.value;
+        this.#render();
+        this.#emitGenerate();
+      });
     }
   }
 
-  /** Regenerate palette from current seed without full teardown */
-  #regenerate() {
-    const seed = this.#pickerEl ? this.#resolveSeed() : (this.getAttribute('seed') || '');
-    if (!seed) return;
-    this.#currentSeed = seed;
+  /** Wire export toolbar buttons */
+  #wireExport() {
+    const hexBtn = this.querySelector('.pg-copy-hex');
+    const cssBtn = this.querySelector('.pg-copy-css');
 
-    const harmony = this.getAttribute('harmony') || 'complementary';
-    const { colors, names } = generatePalette(seed, harmony);
-
-    // Save and restore picker area
-    const pickerArea = this.querySelector('.pg-seed-picker');
-    const pickerMarkup = pickerArea ? pickerArea.outerHTML : '';
-
-    this.setAttribute('colors', colors.join(','));
-    this.setAttribute('names', names.join(','));
-
-    // Find the palette div rendered by parent and re-render just it
-    const paletteDiv = this.querySelector('.palette');
-    if (paletteDiv) {
-      // Trigger parent re-render by calling setup on the palette portion
-      // We need to let the parent re-render, then restore our additions
+    if (hexBtn) {
+      hexBtn.addEventListener('click', () => {
+        navigator.clipboard?.writeText(this.#colors.join(', '));
+        this.#copyFeedback(hexBtn, 'Copy Hex');
+      });
     }
 
-    // Full re-render: remove non-picker children, let parent re-render
-    const children = [...this.children];
-    for (const child of children) {
-      if (!child.classList.contains('pg-seed-picker')) {
-        child.remove();
-      }
+    if (cssBtn) {
+      cssBtn.addEventListener('click', () => {
+        const harmony = this.getAttribute('harmony') || 'complementary';
+        const css = this.#formatCSSExport(harmony);
+        navigator.clipboard?.writeText(css);
+        this.#copyFeedback(cssBtn, 'Copy CSS');
+      });
     }
-
-    // Temporarily remove picker to let parent render clean
-    if (pickerArea) pickerArea.remove();
-
-    // Re-run parent setup to render swatches
-    this.removeAttribute('data-upgraded');
-    super.setup();
-    this.setAttribute('data-upgraded', '');
-
-    // Restore picker
-    if (pickerMarkup) {
-      const restored = document.createElement('div');
-      restored.className = 'pg-seed-picker';
-      restored.innerHTML = pickerMarkup;
-      this.prepend(restored);
-      this.#wireInteractive(restored);
-    }
-
-    // Re-add export toolbar
-    if (this.hasAttribute('show-export')) {
-      this.#renderExportToolbar(colors, harmony);
-    }
-
-    this.dispatchEvent(new CustomEvent('palette-generator:generate', {
-      bubbles: true,
-      detail: { colors, harmony, seed },
-    }));
   }
 
-  /** Render the export toolbar below the palette */
-  #renderExportToolbar(colors, harmony) {
-    const existing = this.querySelector('.pg-export');
-    if (existing) existing.remove();
-
-    const toolbar = document.createElement('div');
-    toolbar.className = 'pg-export';
-    toolbar.setAttribute('role', 'toolbar');
-    toolbar.setAttribute('aria-label', 'Export palette');
-    toolbar.style.cssText = 'display:flex;gap:0.5rem;margin-block-start:var(--size-xs,0.5rem)';
-
-    const btnStyle = 'padding:0.25rem 0.75rem;border:1px solid var(--color-border,#ccc);border-radius:var(--radius-s,0.25rem);background:var(--color-surface,#fff);color:var(--color-text,#333);cursor:pointer;font-size:var(--font-size-xs,0.75rem);font-family:inherit';
-
-    // Copy Hex button
-    const hexBtn = document.createElement('button');
-    hexBtn.type = 'button';
-    hexBtn.textContent = 'Copy Hex';
-    hexBtn.style.cssText = btnStyle;
-    hexBtn.addEventListener('click', () => {
-      navigator.clipboard?.writeText(colors.join(', '));
-      this.#copyFeedback(hexBtn, 'Copy Hex');
-    });
-
-    // Copy CSS button
-    const cssBtn = document.createElement('button');
-    cssBtn.type = 'button';
-    cssBtn.textContent = 'Copy CSS';
-    cssBtn.style.cssText = btnStyle;
-    cssBtn.addEventListener('click', () => {
-      const css = this.#formatCSSExport(colors, harmony);
-      navigator.clipboard?.writeText(css);
-      this.#copyFeedback(cssBtn, 'Copy CSS');
-    });
-
-    toolbar.append(hexBtn, cssBtn);
-    this.append(toolbar);
+  /** Return black or white depending on perceived lightness */
+  #contrastColor(color) {
+    if (color.startsWith('#')) {
+      const { r, g, b } = hexToRgb(color);
+      const lum = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
+      return lum > 0.4 ? '#000' : '#fff';
+    }
+    return '#000';
   }
 
   /** Format colors as CSS custom properties */
-  #formatCSSExport(colors, harmony) {
-    const names = (this.getAttribute('names') || '').split(',').map(n => n.trim());
+  #formatCSSExport(harmony) {
     if (harmony === 'monochromatic') {
-      return colors.map((c, i) => `--color-seed-${names[i] || i + 1}: ${c};`).join('\n');
+      return this.#colors.map((c, i) => `--color-seed-${this.#names[i] || i + 1}: ${c};`).join('\n');
     }
-    return colors.map((c, i) => {
-      const name = names[i] ? names[i].toLowerCase().replace(/\s+/g, '-') : `${i + 1}`;
+    return this.#colors.map((c, i) => {
+      const name = this.#names[i] ? this.#names[i].toLowerCase().replace(/\s+/g, '-') : `${i + 1}`;
       return `--palette-${name}: ${c};`;
     }).join('\n');
   }
 
-  /** Button copy feedback — swap text for 1.5s */
   #copyFeedback(btn, originalText) {
     btn.textContent = 'Copied!';
     setTimeout(() => { btn.textContent = originalText; }, 1500);
+  }
+
+  #emitGenerate() {
+    const harmony = this.getAttribute('harmony') || 'complementary';
+    this.dispatchEvent(new CustomEvent('palette-generator:generate', {
+      bubbles: true,
+      detail: { colors: [...this.#colors], harmony, seed: this.#currentSeed },
+    }));
   }
 }
 
