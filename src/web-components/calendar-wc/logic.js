@@ -167,7 +167,10 @@ class CalendarWc extends VBElement {
       }));
     });
 
-    this.#titleContainer.append(this.#monthLabel, ' ', this.#yearSelect);
+    const yearWrap = document.createElement('span');
+    yearWrap.className = 'calendar-year-wrap';
+    yearWrap.appendChild(this.#yearSelect);
+    this.#titleContainer.append(this.#monthLabel, ' ', yearWrap);
 
     this.#nextBtn = document.createElement('button');
     this.#nextBtn.type = 'button';
