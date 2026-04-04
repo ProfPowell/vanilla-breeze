@@ -73,10 +73,56 @@ crumbLabel: Web Components
           <td><code>data-highlight-dates</code></td>
           <td>string</td>
           <td>&mdash;</td>
-          <td>Comma-separated ISO dates to highlight, optionally with <code>:category</code>.</td>
+          <td>Comma-separated ISO dates to highlight, optionally with <code>:category</code> (holiday, deadline, event).</td>
+        </tr>
+        <tr>
+          <td><code>data-size</code></td>
+          <td>string</td>
+          <td><code>"default"</code></td>
+          <td>Size variant: <code>"compact"</code>, <code>"default"</code>, or <code>"large"</code>.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Three sizes adapt the calendar to different contexts. Large mode uses container queries for responsive square cells and shows event labels instead of dots.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Size</th>
+          <th>Max Width</th>
+          <th>Events</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>compact</code></td>
+          <td>16rem</td>
+          <td>Dot indicators</td>
+          <td>Sidebars, cards, tight spaces</td>
+        </tr>
+        <tr>
+          <td><code>default</code></td>
+          <td>22rem</td>
+          <td>Dot indicators</td>
+          <td>Standard calendar display</td>
+        </tr>
+        <tr>
+          <td><code>large</code></td>
+          <td>56rem</td>
+          <td>Labels with icons</td>
+          <td>Full-page calendars, dashboards</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Large calendar with event labels" data-escape><calendar-wc data-size="large"
+  data-events='{"2026-04-10":[{"label":"Standup","time":"09:00","icon":"users"}]}'>
+</calendar-wc></code-block>
   </section>
 
   <section>
@@ -178,6 +224,116 @@ crumbLabel: Web Components
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Theming</h2>
+    <p>The calendar exposes 27 CSS custom properties for expressive theming &mdash; from paper wall calendars to bold geometric styles. Every token defaults to transparent or the base appearance, so they are fully opt-in. Themes set them via <code>[data-theme~="name"] calendar-wc { ... }</code> selectors.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-themed.html"
+      url="https://vanilla-breeze.dev/calendar-theming"
+      title="Calendar Theming"
+      shadow>
+    </browser-window>
+
+    <h3>Banner</h3>
+    <p>A decorative strip between the header and grid. Set <code>--cal-banner-height</code> to a non-zero value to activate. Use gradients, solid colors, SVG patterns, or photos via the image token.</p>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-banner-height</code></td><td><code>0px</code></td><td>Banner strip height (0 hides it)</td></tr>
+        <tr><td><code>--cal-banner-bg</code></td><td><code>transparent</code></td><td>Background color or gradient</td></tr>
+        <tr><td><code>--cal-banner-image</code></td><td><code>none</code></td><td>Background image (photo, SVG, pattern)</td></tr>
+        <tr><td><code>--cal-banner-size</code></td><td><code>cover</code></td><td>Background-size</td></tr>
+        <tr><td><code>--cal-banner-position</code></td><td><code>center</code></td><td>Background-position</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="css" show-lines label="Landscape banner with image" data-escape>[data-theme~="nature"] calendar-wc {
+  --cal-banner-height: 5rem;
+  --cal-banner-image: url("/images/april-landscape.jpg");
+  --cal-banner-size: cover;
+  --cal-banner-position: center 40%;
+}</code-block>
+
+    <h3>Header and Week Rows</h3>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-header-bg</code></td><td><code>var(--color-surface-raised)</code></td><td>Navigation header background</td></tr>
+        <tr><td><code>--cal-header-color</code></td><td><code>inherit</code></td><td>Navigation header text (arrows, month, year inherit this)</td></tr>
+        <tr><td><code>--cal-week-bg</code></td><td><code>transparent</code></td><td>Week row background</td></tr>
+        <tr><td><code>--cal-week-bg-alt</code></td><td><code>transparent</code></td><td>Alternating even-row tint</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Day Cells</h3>
+    <p>Each day button has a background token and a decoration layer (<code>::after</code> pseudo-element) for sticker or stamp effects. The decoration layer is behind the day number and event text.</p>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-day-bg</code></td><td><code>transparent</code></td><td>Day cell background</td></tr>
+        <tr><td><code>--cal-day-image</code></td><td><code>none</code></td><td>Decoration layer background-image (stickers, stamps)</td></tr>
+        <tr><td><code>--cal-day-image-size</code></td><td><code>contain</code></td><td>Decoration background-size</td></tr>
+        <tr><td><code>--cal-day-image-opacity</code></td><td><code>1</code></td><td>Decoration opacity</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="css" show-lines label="Dot-pattern sticker on holidays" data-escape>/* Memphis-style dot pattern on holiday cells */
+[data-theme~="memphis"] calendar-wc
+  td button[data-highlight="holiday"]::after {
+  content: "";
+  background-image: radial-gradient(
+    circle, oklch(64% 0.24 10) 2px, transparent 2px
+  );
+  background-size: 8px 8px;
+  opacity: 0.3;
+}</code-block>
+
+    <h3>Today, Disabled, and Outside-Month</h3>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-today-bg</code></td><td><code>var(--color-surface-raised)</code></td><td>Today cell background</td></tr>
+        <tr><td><code>--cal-today-border</code></td><td><code>var(--color-border-strong)</code></td><td>Today cell border</td></tr>
+        <tr><td><code>--cal-today-shadow</code></td><td><code>none</code></td><td>Today cell glow or shadow</td></tr>
+        <tr><td><code>--cal-disabled-opacity</code></td><td><code>0.5</code></td><td>Disabled day opacity</td></tr>
+        <tr><td><code>--cal-outside-opacity</code></td><td><code>0.35</code></td><td>Previous/next month day opacity</td></tr>
+        <tr><td><code>--cal-outside-color</code></td><td><code>var(--color-text-muted)</code></td><td>Outside-month day text color</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Watermark (Large Mode)</h3>
+    <p>In large mode, each cell displays a subtle background day number. These tokens control its appearance.</p>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-watermark-opacity</code></td><td><code>0.05</code></td><td>Background number opacity</td></tr>
+        <tr><td><code>--cal-watermark-color</code></td><td><code>var(--color-text)</code></td><td>Background number color</td></tr>
+        <tr><td><code>--cal-watermark-size</code></td><td><code>3rem</code></td><td>Background number font size</td></tr>
+        <tr><td><code>--cal-watermark-weight</code></td><td><code>800</code></td><td>Background number font weight</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Highlight</h3>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-highlight-bg</code></td><td>interactive tint</td><td>Highlighted date background</td></tr>
+        <tr><td><code>--cal-highlight-border</code></td><td>interactive tint</td><td>Highlighted date border</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Month-specific overrides</h3>
+    <p>The component syncs <code>data-month</code> and <code>data-year</code> attributes on the host element during navigation, enabling month-specific theming.</p>
+
+    <code-block language="css" show-lines label="Seasonal banner colors" data-escape>/* Spring pastels */
+[data-theme~="kawaii"] calendar-wc[data-month="3"],
+[data-theme~="kawaii"] calendar-wc[data-month="4"],
+[data-theme~="kawaii"] calendar-wc[data-month="5"] {
+  --cal-banner-bg: linear-gradient(135deg, pink, mint);
+}</code-block>
   </section>
 
   <section>
