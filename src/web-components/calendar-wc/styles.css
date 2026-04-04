@@ -201,20 +201,18 @@
     vertical-align: top;
   }
 
-  /* Large: borders on td, square-ish cells that scale with container */
+  /* Large: fixed-height cells — button is absolute so content can't push row taller */
   :scope[data-size="large"] td {
     padding: 0;
     border: var(--border-width-thin, 1px) solid var(--color-border);
+    position: relative;
+    overflow: hidden;
   }
 
-  /* Use @container to keep cells roughly square — constrain at row level */
+  /* Use @container to keep cells roughly square */
   @container (inline-size > 0px) {
-    :scope[data-size="large"] tbody tr {
-      block-size: 14cqi; /* 100% / 7 columns ≈ 14.28% → square rows */
-    }
-
     :scope[data-size="large"] td {
-      overflow: hidden; /* clip content that exceeds the fixed row height */
+      block-size: 14cqi; /* 100% / 7 columns ≈ 14.28% → square */
     }
   }
 
@@ -262,16 +260,15 @@
     font-size: var(--font-size-xs, 0.75rem);
   }
 
-  /* Large: cells become tall blocks with background day number */
+  /* Large: cells become tall blocks with background day number.
+     Absolute positioning prevents content from pushing row height. */
   :scope[data-size="large"] td button {
-    position: relative;
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    inline-size: 100%;
-    block-size: 100%;
-    min-block-size: clamp(3rem, 14cqi, 6rem);
     padding: clamp(0.2rem, 1.5cqi, 0.5rem);
     border-radius: 0;
     font-size: clamp(0.7rem, 2cqi, 0.875rem);
