@@ -201,12 +201,10 @@
     vertical-align: top;
   }
 
-  /* Large: fixed-height cells — button is absolute so content can't push row taller */
+  /* Large: borders on td, not on button — prevents overlap/doubling */
   :scope[data-size="large"] td {
     padding: 0;
     border: var(--border-width-thin, 1px) solid var(--color-border);
-    position: relative;
-    overflow: hidden;
   }
 
   /* Use @container to keep cells roughly square */
@@ -261,14 +259,16 @@
   }
 
   /* Large: cells become tall blocks with background day number.
-     Absolute positioning prevents content from pushing row height. */
+     Fixed block-size (not min) + overflow:hidden clips excess events
+     so one busy cell can't stretch the entire row. */
   :scope[data-size="large"] td button {
-    position: absolute;
-    inset: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
+    inline-size: 100%;
+    block-size: clamp(3rem, 14cqi, 7rem);
     padding: clamp(0.2rem, 1.5cqi, 0.5rem);
     border-radius: 0;
     font-size: clamp(0.7rem, 2cqi, 0.875rem);
