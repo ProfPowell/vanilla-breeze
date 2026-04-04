@@ -1,0 +1,213 @@
+@scope (calendar-wc) {
+  :scope {
+    display: block;
+    max-inline-size: 22rem;
+    background: var(--color-surface);
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  /* ── Header ────────────────────────────────────────────────────── */
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--size-s) var(--size-m);
+    background: var(--color-surface-raised);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
+  header > span {
+    font-weight: 600;
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  header > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 1.25rem;
+    transition: background var(--duration-fast, 150ms),
+                color var(--duration-fast, 150ms);
+  }
+
+  header > button:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-text);
+  }
+
+  header > button:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: -2px;
+  }
+
+  /* ── Grid ───────────────────────────────────────────────────────── */
+
+  table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  th {
+    padding: var(--size-xs);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  td {
+    padding: var(--size-2xs, 2px);
+    text-align: center;
+    position: relative;
+  }
+
+  /* ── Day buttons ────────────────────────────────────────────────── */
+
+  td button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    padding: 0;
+    margin: 0 auto;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-variant-numeric: tabular-nums;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-round, 50%);
+    cursor: pointer;
+    transition: background var(--duration-fast, 150ms),
+                color var(--duration-fast, 150ms);
+  }
+
+  td button:hover:not([disabled]) {
+    background: var(--color-hover-bg);
+  }
+
+  td button:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: -2px;
+  }
+
+  /* Today */
+  td[data-today] button {
+    font-weight: 700;
+    border: var(--border-width-thin, 1px) solid var(--color-border-strong, var(--color-border));
+    background: var(--color-surface-raised);
+  }
+
+  /* Selected (single) */
+  td[data-selected] button {
+    background: var(--color-interactive);
+    color: white;
+  }
+
+  td[data-selected] button:hover {
+    background: color-mix(in oklab, var(--color-interactive) 85%, black);
+  }
+
+  /* ── Range selection ────────────────────────────────────────────── */
+
+  td[data-in-range] {
+    background: oklch(from var(--color-interactive) l c h / 0.1);
+  }
+
+  td[data-range-start],
+  td[data-range-end] {
+    background: oklch(from var(--color-interactive) l c h / 0.15);
+  }
+
+  td[data-range-start] button,
+  td[data-range-end] button {
+    background: var(--color-interactive);
+    color: white;
+    font-weight: 600;
+  }
+
+  td[data-range-start] {
+    border-radius: var(--radius-s) 0 0 var(--radius-s);
+  }
+
+  td[data-range-end] {
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  }
+
+  /* When start and end are the same day */
+  td[data-range-start][data-range-end] {
+    border-radius: var(--radius-s);
+  }
+
+  /* ── Event dots ─────────────────────────────────────────────────── */
+
+  td[data-events] {
+    position: relative;
+  }
+
+  [data-event-dot] {
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    inline-size: 0.3rem;
+    block-size: 0.3rem;
+    background: var(--event-color, var(--color-interactive));
+    border-radius: var(--radius-round, 50%);
+  }
+
+  /* ── Highlighted dates ──────────────────────────────────────────── */
+
+  td button[data-highlight] {
+    background: oklch(from var(--color-interactive) l c h / 0.08);
+    border: var(--border-width-thin, 1px) solid oklch(from var(--color-interactive) l c h / 0.25);
+  }
+
+  td button[data-highlight="holiday"] {
+    background: oklch(from var(--color-warning, #b45309) l c h / 0.1);
+    border-color: oklch(from var(--color-warning, #b45309) l c h / 0.3);
+    color: var(--color-warning, #b45309);
+    font-weight: 600;
+  }
+
+  td button[data-highlight="deadline"] {
+    background: oklch(from var(--color-danger, #dc2626) l c h / 0.1);
+    border-color: oklch(from var(--color-danger, #dc2626) l c h / 0.3);
+    color: var(--color-danger, #dc2626);
+    font-weight: 600;
+  }
+
+  td button[data-highlight="event"] {
+    background: oklch(from var(--color-interactive) l c h / 0.12);
+    border-color: oklch(from var(--color-interactive) l c h / 0.35);
+    color: var(--color-interactive);
+    font-weight: 600;
+  }
+
+  /* ── Disabled ───────────────────────────────────────────────────── */
+
+  td button[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    td button,
+    header > button {
+      transition: none;
+    }
+  }
+}

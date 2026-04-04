@@ -91,3 +91,4 @@ import './site-map/logic.js';
 import './page-tour/logic.js';
 import '../lib/time-relative.js';
 import '../custom-elements/brand-mark/logic.js';
+import './calendar-wc/logic.js';

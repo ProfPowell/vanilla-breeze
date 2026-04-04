@@ -31,6 +31,7 @@ const elementsByLetter = {
   C: [
     { name: 'canvas', type: 'native', href: '/docs/elements/native/canvas/' },
     { name: 'caption', type: 'native', href: '/docs/elements/native/caption/' },
+    { name: 'calendar-wc', type: 'component', href: '/docs/elements/web-components/calendar-wc/' },
     { name: 'card-list', type: 'component', href: '/docs/elements/web-components/card-list/' },
     { name: 'carousel-wc', type: 'component', href: '/docs/elements/web-components/carousel/' },
     { name: 'change-set', type: 'component', href: '/docs/elements/web-components/change-set/' },

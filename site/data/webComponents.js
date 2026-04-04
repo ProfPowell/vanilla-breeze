@@ -12,6 +12,7 @@ export default [
   { name: 'combo-box', href: '/docs/elements/web-components/combobox/', desc: 'Autocomplete combobox with single-select and multi-select tag modes' },
   { name: 'command-palette', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
   { name: 'compare-surface', href: '/docs/elements/web-components/comparison/', desc: 'Before/after image comparison slider with drag handle and keyboard support' },
+  { name: 'calendar-wc', href: '/docs/elements/web-components/calendar-wc/', desc: 'Calendar display with events, selection, and range highlighting' },
   { name: 'consent-banner', href: '/docs/elements/web-components/consent-banner/', desc: 'Cookie consent banner with accept/decline' },
   { name: 'content-swap', href: '/docs/elements/web-components/content-swap/', desc: 'Two-face content toggle with flip, fade, slide, and scale transitions' },
   { name: 'context-menu', href: '/docs/elements/web-components/context-menu/', desc: 'Right-click context menu with keyboard navigation' },

@@ -1,0 +1,186 @@
+---
+layout: element
+title: "calendar-wc"
+description: "Standalone calendar display component with event dots, date highlighting, single and range selection, and keyboard navigation."
+elementName: calendar-wc
+category: component
+currentPath: /docs/elements/web-components/calendar-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;calendar-wc&gt;</code> component displays a month grid for viewing events, availability, or annotations on dates. Unlike <code>&lt;date-picker&gt;</code> (a form input), this is a display-focused component with optional selection for interactive UIs like booking flows.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-basic.html"
+      url="https://vanilla-breeze.dev/calendar"
+      title="Calendar Component"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic calendar with events" data-escape><calendar-wc
+  data-events='{"2026-04-10":"Sprint review","2026-04-15":"Deadline"}'
+  data-selection="single">
+</calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-month</code></td>
+          <td>number (1-12)</td>
+          <td>current</td>
+          <td>Initial month to display.</td>
+        </tr>
+        <tr>
+          <td><code>data-year</code></td>
+          <td>number</td>
+          <td>current</td>
+          <td>Initial year to display.</td>
+        </tr>
+        <tr>
+          <td><code>data-events</code></td>
+          <td>JSON</td>
+          <td>&mdash;</td>
+          <td>Event data keyed by ISO date. Values can be a string label or <code>{ "label": "...", "color": "..." }</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-selection</code></td>
+          <td>string</td>
+          <td><code>"none"</code></td>
+          <td>Selection mode: <code>"none"</code>, <code>"single"</code>, or <code>"range"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-disabled-dates</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Comma-separated ISO dates to disable.</td>
+        </tr>
+        <tr>
+          <td><code>data-highlight-dates</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Comma-separated ISO dates to highlight, optionally with <code>:category</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Selection Modes</h2>
+
+    <h3>Single selection</h3>
+    <p>Click a date to select it. Fires <code>calendar:select</code> with the selected date.</p>
+    <code-block language="html" show-lines label="Single selection" data-escape><calendar-wc data-selection="single"></calendar-wc></code-block>
+
+    <h3>Range selection</h3>
+    <p>Click two dates to define a range. The range highlights between the start and end dates, with a hover preview as you move the cursor. Fires <code>calendar:select</code> with start and end dates.</p>
+    <code-block language="html" show-lines label="Range selection" data-escape><calendar-wc data-selection="range"
+  data-disabled-dates="2026-04-04,2026-04-05">
+</calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>calendar:select</code></td>
+          <td><code>{ value, date }</code> or <code>{ start, end, startDate, endDate }</code></td>
+          <td>Fired when a date or range is selected.</td>
+        </tr>
+        <tr>
+          <td><code>calendar:navigate</code></td>
+          <td><code>{ year, month }</code></td>
+          <td>Fired on month navigation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Event Dots</h2>
+    <p>Pass event data as JSON to show dot indicators on dates. Each date can have a string label (shown as tooltip) or an object with label and custom color.</p>
+
+    <code-block language="html" show-lines label="Events with custom colors" data-escape><calendar-wc data-events='{
+  "2026-04-10": "Team meeting",
+  "2026-04-15": { "label": "Tax deadline", "color": "var(--color-danger)" },
+  "2026-04-21": "Company holiday"
+}'></calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Move focus one day.</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td>
+          <td>Move focus one week.</td>
+        </tr>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Select the focused date.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Calendar vs Date Picker</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Purpose</th>
+          <th>Form input?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;date-picker&gt;</code></td>
+          <td>Pick a single date for form submission</td>
+          <td>Yes (ElementInternals)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;calendar-wc&gt;</code></td>
+          <td>Display events, availability, ranges</td>
+          <td>No (use JS events)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p>The grid uses <code>role="grid"</code> with individual day buttons. Today is marked with <code>aria-current="date"</code>, selected dates with <code>aria-selected="true"</code>, and disabled dates with <code>aria-disabled="true"</code>. The month header uses <code>aria-live="polite"</code> for navigation announcements. Arrow keys navigate the grid, Enter/Space select.</p>
+  </section>
