@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendar Theming Demo</title>
   <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
-  <link id="theme-css" rel="stylesheet" href="">
+  <!-- Preload both themes — only active when data-theme matches -->
+  <link rel="stylesheet" href="/cdn/themes/kawaii.css">
+  <link rel="stylesheet" href="/cdn/themes/super2026.css">
   <style>
     body {
       padding: var(--size-l);
       background: var(--color-background, var(--color-surface));
+      transition: background 0.3s;
     }
     .theme-controls {
       display: flex;
@@ -31,6 +34,7 @@
       cursor: pointer;
       font: inherit;
       font-size: var(--font-size-sm, 0.875rem);
+      transition: background 0.2s, color 0.2s;
     }
     .theme-controls button[aria-pressed="true"] {
       background: var(--color-interactive, var(--color-primary));
@@ -59,7 +63,7 @@
         <layout-card>
           <h2 style="margin: 0 0 var(--size-m);">Events Calendar</h2>
           <calendar-wc
-            data-events='{"2026-04-03":[{"label":"Team standup","time":"09:00","icon":"users"},{"label":"Sprint review","time":"14:00","icon":"presentation"}],"2026-04-10":"Design sync","2026-04-15":{"label":"Tax deadline","color":"var(--color-danger, #dc2626)"},"2026-04-21":"Company holiday","2026-04-25":"Release day"}'
+            data-events='{"2026-04-03":[{"label":"Team standup","time":"09:00","icon":"users"},{"label":"Sprint review","time":"14:00","icon":"presentation"}],"2026-04-10":"Design sync","2026-04-15":{"label":"Tax deadline","color":"var(--color-danger, #dc2626)"},"2026-04-21":"Company holiday","2026-04-24":"Release day"}'
             data-highlight-dates="2026-04-21:holiday"
             data-selection="single">
           </calendar-wc>
@@ -93,9 +97,9 @@
             "2026-04-07":{"label":"Sprint Planning","time":"09:30","icon":"layout"},
             "2026-04-10":[{"label":"Demo Day","time":"15:00","icon":"monitor"},{"label":"Happy Hour","time":"17:00","icon":"wine"}],
             "2026-04-15":{"label":"Tax Deadline","color":"var(--color-danger, #dc2626)","icon":"alert-triangle"},
-            "2026-04-18":{"label":"Conference","icon":"calendar"},
+            "2026-04-17":{"label":"Conference","icon":"calendar"},
             "2026-04-21":{"label":"Company Holiday","icon":"sun"},
-            "2026-04-25":[{"label":"Release v2.0","time":"10:00","icon":"package"},{"label":"Launch Party","time":"18:00","icon":"party-popper"}],
+            "2026-04-24":[{"label":"Release v2.0","time":"10:00","icon":"package"},{"label":"Launch Party","time":"18:00","icon":"party-popper"}],
             "2026-04-28":{"label":"Retrospective","time":"14:00","icon":"refresh-cw"},
             "2026-04-30":{"label":"Month Close","time":"09:00","icon":"check-circle"}
           }'
@@ -109,13 +113,8 @@
 
   <script type="module" src="/cdn/vanilla-breeze-autoload.js"></script>
   <script type="module">
-    const themeCSS = document.getElementById('theme-css');
-    const themePaths = {
-      '': '',
-      'kawaii': '/cdn/themes/kawaii.css',
-      'super2026': '/cdn/themes/super2026.css'
-    };
-
+    // Theme switching: both CSS files are preloaded.
+    // Only the matching [data-theme~="X"] selectors activate.
     document.querySelector('.theme-controls').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-set-theme]');
       if (!btn) return;
@@ -126,9 +125,12 @@
       document.querySelectorAll('[data-set-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
       btn.setAttribute('aria-pressed', 'true');
 
-      // Apply theme
-      document.body.setAttribute('data-theme', theme);
-      themeCSS.href = themePaths[theme] || '';
+      // Toggle theme — CSS activates via [data-theme~="X"] selector match
+      if (theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
     });
   </script>
 </body>
