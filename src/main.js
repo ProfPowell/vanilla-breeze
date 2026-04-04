@@ -23,6 +23,8 @@ if (document.querySelector('button[data-loading]')) import('./utils/loading-butt
 if (document.querySelector('[data-floating-label]')) import('./utils/floating-label-init.js');
 // Lazy-load hotkey action binding when [data-hotkey] is on non-kbd elements
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
+// Lazy-load progress ring upscale when data-type="ring" is on a progress element
+if (document.querySelector('progress[data-type="ring"]')) import('./utils/progress-ring-init.js');
 import { initStickyManager } from './lib/sticky-manager.js';
 // Lazy-load mobile form utilities only when [data-keyboard-aware] is present
 if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
