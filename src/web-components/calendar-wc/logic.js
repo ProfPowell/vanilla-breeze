@@ -3,18 +3,24 @@
  *
  * Display component for showing events, availability, or annotations on
  * dates. NOT a form input — use date-picker for date selection in forms.
- * Supports single and range selection, event dot indicators, and
- * month/year navigation with keyboard support.
+ * Supports single and range selection, event dots/labels, size variants,
+ * year dropdown, day detail overlay, and keyboard navigation.
  *
- * @attr {string}  data-month          - Initial month (1-12). Defaults to current.
- * @attr {string}  data-year           - Initial year. Defaults to current.
- * @attr {string}  data-events         - JSON: { "YYYY-MM-DD": "label" } or { "YYYY-MM-DD": { "label": "...", "color": "..." } }
- * @attr {string}  data-selection      - Selection mode: "none" (default), "single", "range"
- * @attr {string}  data-disabled-dates - Comma-separated ISO dates to disable
+ * @attr {string}  data-month           - Initial month (1-12). Defaults to current.
+ * @attr {string}  data-year            - Initial year. Defaults to current.
+ * @attr {string}  data-events          - JSON: events keyed by ISO date. Values can be:
+ *   - string: "Team meeting"
+ *   - object: { "label": "...", "color": "...", "icon": "...", "time": "09:00" }
+ *   - array:  [{ "label": "...", "time": "..." }, ...]
+ * @attr {string}  data-selection       - Selection mode: "none" (default), "single", "range"
+ * @attr {string}  data-size            - Size: "compact", "default", "large"
+ * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
  *
  * @example
- * <calendar-wc data-events='{"2026-04-10":"Team meeting","2026-04-15":"Deadline"}'></calendar-wc>
+ * <calendar-wc data-size="large"
+ *   data-events='{"2026-04-10":[{"label":"Standup","time":"09:00","icon":"users"},{"label":"Review","time":"14:00"}]}'>
+ * </calendar-wc>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
@@ -54,8 +60,22 @@ function getFirstDayOfWeek() {
   return 0;
 }
 
+/** Normalize event data to always be an array of event objects */
+function normalizeEvents(data) {
+  if (!data) return [];
+  if (typeof data === 'string') return [{ label: data }];
+  if (Array.isArray(data)) return data;
+  if (typeof data === 'object') return [data];
+  return [];
+}
+
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const HOURS = Array.from({ length: 24 }, (_, i) => {
+  const h = i % 12 || 12;
+  const ampm = i < 12 ? 'AM' : 'PM';
+  return `${h}:00 ${ampm}`;
+});
 
 // ── Component ───────────────────────────────────────────────────────
 
@@ -71,13 +91,17 @@ class CalendarWc extends VBElement {
   #rangeEnd = null;
   #hoverDate = null;
   #selectionMode = 'none';
+  #size = 'default';
 
   // DOM refs
   #header;
-  #title;
+  #titleContainer;
+  #monthLabel;
+  #yearSelect;
   #grid;
   #prevBtn;
   #nextBtn;
+  #detailOverlay = null;
 
   setup() {
     const today = new Date();
@@ -87,6 +111,7 @@ class CalendarWc extends VBElement {
     if (isNaN(this.#viewYear)) this.#viewYear = today.getFullYear();
     this.#firstDayOfWeek = getFirstDayOfWeek();
     this.#selectionMode = this.getAttribute('data-selection') || 'none';
+    this.#size = this.getAttribute('data-size') || 'default';
 
     // Parse events
     const eventsAttr = this.getAttribute('data-events');
@@ -123,8 +148,26 @@ class CalendarWc extends VBElement {
     this.#prevBtn.textContent = '\u2039';
     this.listen(this.#prevBtn, 'click', () => this.#navigate(-1));
 
-    this.#title = document.createElement('span');
-    this.#title.setAttribute('aria-live', 'polite');
+    // Title area: month label + year dropdown
+    this.#titleContainer = document.createElement('span');
+    this.#titleContainer.className = 'calendar-title';
+    this.#titleContainer.setAttribute('aria-live', 'polite');
+
+    this.#monthLabel = document.createElement('span');
+    this.#monthLabel.className = 'calendar-month';
+
+    this.#yearSelect = document.createElement('select');
+    this.#yearSelect.className = 'calendar-year';
+    this.#yearSelect.setAttribute('aria-label', 'Year');
+    this.listen(this.#yearSelect, 'change', () => {
+      this.#viewYear = parseInt(this.#yearSelect.value, 10);
+      this.#renderMonth();
+      this.dispatchEvent(new CustomEvent('calendar:navigate', {
+        bubbles: true, detail: { year: this.#viewYear, month: this.#viewMonth + 1 }
+      }));
+    });
+
+    this.#titleContainer.append(this.#monthLabel, ' ', this.#yearSelect);
 
     this.#nextBtn = document.createElement('button');
     this.#nextBtn.type = 'button';
@@ -132,7 +175,7 @@ class CalendarWc extends VBElement {
     this.#nextBtn.textContent = '\u203A';
     this.listen(this.#nextBtn, 'click', () => this.#navigate(1));
 
-    this.#header.append(this.#prevBtn, this.#title, this.#nextBtn);
+    this.#header.append(this.#prevBtn, this.#titleContainer, this.#nextBtn);
     this.appendChild(this.#header);
 
     // Grid
@@ -157,12 +200,21 @@ class CalendarWc extends VBElement {
     // Keyboard navigation
     this.listen(this.#grid, 'keydown', (e) => this.#handleKey(e));
 
-    // Click delegation
+    // Click delegation — select or open day detail
     this.listen(this.#grid, 'click', (e) => {
-      const btn = e.target.closest('button');
+      const btn = e.target.closest('button[data-date]');
       if (!btn || btn.disabled) return;
       const iso = btn.getAttribute('data-date');
-      if (iso) this.#handleSelect(iso);
+
+      if (this.#selectionMode !== 'none') {
+        this.#handleSelect(iso);
+      }
+
+      // Open day detail if there are events for this date
+      const events = normalizeEvents(this.#events[iso]);
+      if (events.length) {
+        this.#openDayDetail(iso, events);
+      }
     });
 
     // Hover for range preview
@@ -174,6 +226,20 @@ class CalendarWc extends VBElement {
           this.#renderMonth();
         }
       });
+    }
+  }
+
+  #buildYearOptions() {
+    this.#yearSelect.innerHTML = '';
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 10;
+    const maxYear = currentYear + 10;
+    for (let y = minYear; y <= maxYear; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      if (y === this.#viewYear) opt.selected = true;
+      this.#yearSelect.appendChild(opt);
     }
   }
 
@@ -200,14 +266,11 @@ class CalendarWc extends VBElement {
       }));
     } else if (this.#selectionMode === 'range') {
       if (!this.#rangeStart || this.#rangeEnd) {
-        // Start new range
         this.#rangeStart = date;
         this.#rangeEnd = null;
         this.#hoverDate = null;
       } else {
-        // Complete range
         this.#rangeEnd = date;
-        // Ensure start < end
         if (this.#rangeStart > this.#rangeEnd) {
           [this.#rangeStart, this.#rangeEnd] = [this.#rangeEnd, this.#rangeStart];
         }
@@ -215,10 +278,8 @@ class CalendarWc extends VBElement {
         this.dispatchEvent(new CustomEvent('calendar:select', {
           bubbles: true,
           detail: {
-            start: toISO(this.#rangeStart),
-            end: toISO(this.#rangeEnd),
-            startDate: this.#rangeStart,
-            endDate: this.#rangeEnd,
+            start: toISO(this.#rangeStart), end: toISO(this.#rangeEnd),
+            startDate: this.#rangeStart, endDate: this.#rangeEnd,
           }
         }));
       }
@@ -229,17 +290,18 @@ class CalendarWc extends VBElement {
   #renderMonth() {
     const today = new Date();
     const totalDays = daysInMonth(this.#viewYear, this.#viewMonth);
+    const isLarge = this.#size === 'large';
 
     // Update title
     try {
       const titleDate = new Date(this.#viewYear, this.#viewMonth, 1);
-      this.#title.textContent = new Intl.DateTimeFormat(undefined, {
-        month: 'long', year: 'numeric'
-      }).format(titleDate);
-      this.#grid.setAttribute('aria-label', this.#title.textContent);
+      const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(titleDate);
+      this.#monthLabel.textContent = monthName;
+      this.#grid.setAttribute('aria-label', `${monthName} ${this.#viewYear}`);
     } catch {
-      this.#title.textContent = `${this.#viewMonth + 1}/${this.#viewYear}`;
+      this.#monthLabel.textContent = String(this.#viewMonth + 1);
     }
+    this.#buildYearOptions();
 
     // Remove old tbody
     const oldTbody = this.#grid.querySelector('tbody');
@@ -248,16 +310,13 @@ class CalendarWc extends VBElement {
     const tbody = document.createElement('tbody');
     let row = document.createElement('tr');
 
-    // Calculate start offset
     const firstDay = new Date(this.#viewYear, this.#viewMonth, 1).getDay();
     const startOffset = (firstDay - this.#firstDayOfWeek + 7) % 7;
 
-    // Leading empty cells
     for (let i = 0; i < startOffset; i++) {
       row.appendChild(document.createElement('td'));
     }
 
-    // Range boundaries for highlighting
     const rangeA = this.#rangeStart;
     const rangeB = this.#rangeEnd || this.#hoverDate;
 
@@ -268,7 +327,12 @@ class CalendarWc extends VBElement {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.setAttribute('data-date', iso);
-      btn.textContent = String(day);
+
+      // Day number
+      const dayNum = document.createElement('span');
+      dayNum.className = 'day-number';
+      dayNum.textContent = String(day);
+      btn.appendChild(dayNum);
 
       // Today
       if (sameDay(cellDate, today)) {
@@ -276,13 +340,13 @@ class CalendarWc extends VBElement {
         td.setAttribute('data-today', '');
       }
 
-      // Selected (single)
+      // Selected
       if (this.#selectionMode === 'single' && sameDay(cellDate, this.#selectedDate)) {
         btn.setAttribute('aria-selected', 'true');
         td.setAttribute('data-selected', '');
       }
 
-      // Range highlighting
+      // Range
       if (this.#selectionMode === 'range' && rangeA && rangeB) {
         const lo = rangeA < rangeB ? rangeA : rangeB;
         const hi = rangeA < rangeB ? rangeB : rangeA;
@@ -301,23 +365,60 @@ class CalendarWc extends VBElement {
 
       // Highlighted
       if (this.#highlightDates.has(iso)) {
-        const cat = this.#highlightDates.get(iso);
-        btn.setAttribute('data-highlight', cat || '');
+        btn.setAttribute('data-highlight', this.#highlightDates.get(iso) || '');
       }
 
       // Events
-      const eventData = this.#events[iso];
-      if (eventData) {
+      const events = normalizeEvents(this.#events[iso]);
+      if (events.length) {
         td.setAttribute('data-events', '');
-        const dot = document.createElement('span');
-        dot.setAttribute('data-event-dot', '');
-        dot.setAttribute('aria-hidden', 'true');
-        if (typeof eventData === 'object' && eventData.color) {
-          dot.style.setProperty('--event-color', eventData.color);
+        td.setAttribute('data-event-count', String(events.length));
+
+        if (isLarge) {
+          // Large mode: show event labels in cell
+          const eventList = document.createElement('span');
+          eventList.className = 'event-list';
+          const maxShow = 2;
+          events.slice(0, maxShow).forEach(evt => {
+            const item = document.createElement('span');
+            item.className = 'event-item';
+            if (evt.color) item.style.setProperty('--event-color', evt.color);
+            if (evt.icon) {
+              const icon = document.createElement('icon-wc');
+              icon.setAttribute('name', evt.icon);
+              icon.setAttribute('size', 'xs');
+              item.appendChild(icon);
+            }
+            const text = document.createElement('span');
+            text.textContent = evt.time ? `${evt.time} ${evt.label}` : evt.label;
+            item.appendChild(text);
+            eventList.appendChild(item);
+          });
+          if (events.length > maxShow) {
+            const more = document.createElement('span');
+            more.className = 'event-more';
+            more.textContent = `+${events.length - maxShow} more`;
+            eventList.appendChild(more);
+          }
+          btn.appendChild(eventList);
+        } else {
+          // Default/compact: dot indicators
+          const dotContainer = document.createElement('span');
+          dotContainer.className = 'event-dots';
+          dotContainer.setAttribute('aria-hidden', 'true');
+          const dotCount = Math.min(events.length, 3);
+          for (let d = 0; d < dotCount; d++) {
+            const dot = document.createElement('span');
+            dot.setAttribute('data-event-dot', '');
+            if (events[d].color) dot.style.setProperty('--event-color', events[d].color);
+            dotContainer.appendChild(dot);
+          }
+          td.appendChild(dotContainer);
         }
-        const label = typeof eventData === 'string' ? eventData : eventData.label;
-        if (label) btn.setAttribute('title', label);
-        td.appendChild(dot);
+
+        // Tooltip with all event labels
+        const titles = events.map(e => e.time ? `${e.time} — ${e.label}` : e.label);
+        btn.setAttribute('title', titles.join('\n'));
       }
 
       // Focus management
@@ -333,7 +434,6 @@ class CalendarWc extends VBElement {
       }
     }
 
-    // Trailing empty cells
     const remaining = (startOffset + totalDays) % 7;
     if (remaining > 0) {
       for (let i = remaining; i < 7; i++) {
@@ -344,6 +444,161 @@ class CalendarWc extends VBElement {
 
     this.#grid.appendChild(tbody);
   }
+
+  // ── Day detail overlay ────────────────────────────────────────────
+
+  #openDayDetail(iso, events) {
+    this.#closeDayDetail();
+
+    const date = fromISO(iso);
+    const overlay = document.createElement('div');
+    overlay.className = 'day-detail';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', `Events for ${iso}`);
+
+    // Header
+    const header = document.createElement('header');
+    const title = document.createElement('h3');
+    try {
+      title.textContent = new Intl.DateTimeFormat(undefined, {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+      }).format(date);
+    } catch {
+      title.textContent = iso;
+    }
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '\u00D7';
+    closeBtn.addEventListener('click', () => this.#closeDayDetail());
+
+    header.append(title, closeBtn);
+    overlay.appendChild(header);
+
+    // Event list
+    const list = document.createElement('ul');
+    events.forEach(evt => {
+      const li = document.createElement('li');
+      if (evt.color) li.style.setProperty('--event-color', evt.color);
+
+      const dot = document.createElement('span');
+      dot.className = 'detail-dot';
+
+      const content = document.createElement('span');
+      content.className = 'detail-content';
+
+      if (evt.icon) {
+        const icon = document.createElement('icon-wc');
+        icon.setAttribute('name', evt.icon);
+        icon.setAttribute('size', 'sm');
+        content.appendChild(icon);
+      }
+
+      const label = document.createElement('span');
+      label.className = 'detail-label';
+      label.textContent = evt.label || '';
+
+      const time = evt.time ? document.createElement('span') : null;
+      if (time) {
+        time.className = 'detail-time';
+        time.textContent = evt.time;
+      }
+
+      content.append(label);
+      if (time) li.append(time);
+      li.append(dot, content);
+      list.appendChild(li);
+    });
+    overlay.appendChild(list);
+
+    // Hour grid for day view
+    if (events.some(e => e.time)) {
+      const dayView = document.createElement('div');
+      dayView.className = 'day-hours';
+
+      // Build sparse hour grid with only event hours
+      const eventsByHour = new Map();
+      events.forEach(evt => {
+        if (!evt.time) return;
+        const hour = parseInt(evt.time.split(':')[0], 10);
+        if (!eventsByHour.has(hour)) eventsByHour.set(hour, []);
+        eventsByHour.get(hour).push(evt);
+      });
+
+      if (eventsByHour.size > 0) {
+        const hoursSection = document.createElement('div');
+        hoursSection.className = 'hour-grid';
+
+        const sortedHours = [...eventsByHour.keys()].sort((a, b) => a - b);
+        // Show from one hour before first to one hour after last
+        const startH = Math.max(0, sortedHours[0] - 1);
+        const endH = Math.min(23, sortedHours[sortedHours.length - 1] + 1);
+
+        for (let h = startH; h <= endH; h++) {
+          const hourRow = document.createElement('div');
+          hourRow.className = 'hour-row';
+
+          const hourLabel = document.createElement('span');
+          hourLabel.className = 'hour-label';
+          hourLabel.textContent = HOURS[h];
+
+          const hourContent = document.createElement('span');
+          hourContent.className = 'hour-content';
+
+          const hourEvents = eventsByHour.get(h) || [];
+          hourEvents.forEach(evt => {
+            const chip = document.createElement('span');
+            chip.className = 'hour-event';
+            if (evt.color) chip.style.setProperty('--event-color', evt.color);
+            if (evt.icon) {
+              const icon = document.createElement('icon-wc');
+              icon.setAttribute('name', evt.icon);
+              icon.setAttribute('size', 'xs');
+              chip.appendChild(icon);
+            }
+            chip.append(evt.label || '');
+            hourContent.appendChild(chip);
+          });
+
+          hourRow.append(hourLabel, hourContent);
+          hoursSection.appendChild(hourRow);
+        }
+        dayView.appendChild(hoursSection);
+        overlay.appendChild(dayView);
+      }
+    }
+
+    this.appendChild(overlay);
+    this.#detailOverlay = overlay;
+
+    // Close on Escape
+    const onKey = (e) => {
+      if (e.key === 'Escape') { this.#closeDayDetail(); document.removeEventListener('keydown', onKey); }
+    };
+    document.addEventListener('keydown', onKey);
+
+    // Close on outside click
+    requestAnimationFrame(() => {
+      const onClick = (e) => {
+        if (!overlay.contains(e.target)) { this.#closeDayDetail(); document.removeEventListener('click', onClick); }
+      };
+      document.addEventListener('click', onClick);
+    });
+
+    this.dispatchEvent(new CustomEvent('calendar:day-open', {
+      bubbles: true, detail: { date: iso, events }
+    }));
+  }
+
+  #closeDayDetail() {
+    if (this.#detailOverlay) {
+      this.#detailOverlay.remove();
+      this.#detailOverlay = null;
+    }
+  }
+
+  // ── Keyboard navigation ───────────────────────────────────────────
 
   #handleKey(e) {
     const focused = this.#grid.querySelector('button[tabindex="0"]');
@@ -369,14 +624,12 @@ class CalendarWc extends VBElement {
 
     e.preventDefault();
 
-    // Navigate months if needed
     if (newDate.getMonth() !== this.#viewMonth || newDate.getFullYear() !== this.#viewYear) {
       this.#viewMonth = newDate.getMonth();
       this.#viewYear = newDate.getFullYear();
       this.#renderMonth();
     }
 
-    // Move focus
     const newISO = toISO(newDate);
     const newBtn = this.#grid.querySelector(`button[data-date="${newISO}"]`);
     if (newBtn) {

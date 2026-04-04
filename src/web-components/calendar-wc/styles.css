@@ -6,6 +6,17 @@
     border: var(--border-width-thin, 1px) solid var(--color-border);
     border-radius: var(--radius-m);
     overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Size variants ─────────────────────────────────────────────── */
+
+  :scope[data-size="compact"] {
+    max-inline-size: 16rem;
+  }
+
+  :scope[data-size="large"] {
+    max-inline-size: 56rem;
   }
 
   /* ── Header ────────────────────────────────────────────────────── */
@@ -19,9 +30,35 @@
     border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
   }
 
-  header > span {
+  .calendar-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.25rem);
     font-weight: 600;
     font-size: var(--font-size-base, 1rem);
+  }
+
+  .calendar-month {
+    /* Inline, inherits title styling */
+  }
+
+  .calendar-year {
+    all: unset;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-text);
+    padding-inline: var(--size-2xs, 0.25rem);
+    border-radius: var(--radius-s);
+  }
+
+  .calendar-year:hover {
+    background: var(--color-hover-bg);
+  }
+
+  .calendar-year:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: 1px;
   }
 
   header > button {
@@ -69,9 +106,10 @@
     padding: var(--size-2xs, 2px);
     text-align: center;
     position: relative;
+    vertical-align: top;
   }
 
-  /* ── Day buttons ────────────────────────────────────────────────── */
+  /* ── Day buttons — default/compact ─────────────────────────────── */
 
   td button {
     all: unset;
@@ -91,6 +129,31 @@
                 color var(--duration-fast, 150ms);
   }
 
+  /* Compact: smaller cells */
+  :scope[data-size="compact"] td button {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  /* Large: cells become tall blocks, not circles */
+  :scope[data-size="large"] td button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    inline-size: 100%;
+    min-block-size: 5rem;
+    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    border-radius: var(--radius-s);
+    font-size: var(--font-size-sm, 0.875rem);
+    gap: var(--size-2xs, 0.25rem);
+    border: var(--border-width-thin, 1px) solid transparent;
+  }
+
+  :scope[data-size="large"] td button:hover:not([disabled]) {
+    border-color: var(--color-border);
+  }
+
   td button:hover:not([disabled]) {
     background: var(--color-hover-bg);
   }
@@ -98,6 +161,16 @@
   td button:focus-visible {
     outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
     outline-offset: -2px;
+  }
+
+  /* Day number label */
+  .day-number {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :scope[data-size="large"] .day-number {
+    font-weight: 600;
+    font-size: var(--font-size-sm, 0.875rem);
   }
 
   /* Today */
@@ -143,26 +216,58 @@
     border-radius: 0 var(--radius-s) var(--radius-s) 0;
   }
 
-  /* When start and end are the same day */
   td[data-range-start][data-range-end] {
     border-radius: var(--radius-s);
   }
 
-  /* ── Event dots ─────────────────────────────────────────────────── */
+  /* ── Event dots (default/compact) ───────────────────────────────── */
 
-  td[data-events] {
-    position: relative;
+  .event-dots {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline: 0;
   }
 
   [data-event-dot] {
-    position: absolute;
-    inset-block-end: 2px;
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
     inline-size: 0.3rem;
     block-size: 0.3rem;
     background: var(--event-color, var(--color-interactive));
     border-radius: var(--radius-round, 50%);
+  }
+
+  /* ── Event list (large mode) ────────────────────────────────────── */
+
+  .event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    inline-size: 100%;
+    overflow: hidden;
+  }
+
+  .event-item {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.25rem);
+    padding: 1px var(--size-2xs, 0.25rem);
+    font-size: var(--font-size-xs, 0.75rem);
+    line-height: 1.3;
+    color: var(--color-text);
+    background: oklch(from var(--event-color, var(--color-interactive)) l c h / 0.1);
+    border-inline-start: 2px solid var(--event-color, var(--color-interactive));
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .event-more {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted);
+    padding-inline-start: var(--size-2xs, 0.25rem);
   }
 
   /* ── Highlighted dates ──────────────────────────────────────────── */
@@ -198,6 +303,153 @@
   td button[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
+  }
+
+  /* ── Day detail overlay ─────────────────────────────────────────── */
+
+  .day-detail {
+    position: absolute;
+    inset-inline: var(--size-m);
+    inset-block-end: var(--size-m);
+    z-index: 10;
+    background: var(--color-surface);
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m, 0 4px 12px oklch(0% 0 0 / 0.1));
+    padding: var(--size-m);
+    max-block-size: 20rem;
+    overflow-y: auto;
+  }
+
+  .day-detail header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    background: none;
+    border: none;
+    margin-block-end: var(--size-s);
+  }
+
+  .day-detail h3 {
+    margin: 0;
+    font-size: var(--font-size-base, 1rem);
+    font-weight: 600;
+  }
+
+  .day-detail header button {
+    all: unset;
+    cursor: pointer;
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+  }
+
+  .day-detail header button:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-text);
+  }
+
+  .day-detail ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-xs);
+  }
+
+  .day-detail li {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    padding: var(--size-xs);
+    border-radius: var(--radius-s);
+    background: var(--color-surface-alt, var(--color-surface-raised));
+  }
+
+  .detail-dot {
+    flex-shrink: 0;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: var(--radius-round, 50%);
+    background: var(--event-color, var(--color-interactive));
+  }
+
+  .detail-content {
+    display: flex;
+    align-items: center;
+    gap: var(--size-xs);
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .detail-label {
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 500;
+  }
+
+  .detail-time {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ── Hour grid (day view) ───────────────────────────────────────── */
+
+  .day-hours {
+    margin-block-start: var(--size-s);
+    border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+    padding-block-start: var(--size-s);
+  }
+
+  .hour-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hour-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-s);
+    padding-block: var(--size-2xs, 0.25rem);
+    border-block-start: var(--border-width-thin, 1px) solid oklch(from var(--color-border) l c h / 0.4);
+    min-block-size: 1.75rem;
+  }
+
+  .hour-label {
+    flex-shrink: 0;
+    inline-size: 4.5rem;
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    padding-block-start: 1px;
+  }
+
+  .hour-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hour-event {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.25rem);
+    padding: 2px var(--size-xs);
+    font-size: var(--font-size-xs, 0.75rem);
+    background: oklch(from var(--event-color, var(--color-interactive)) l c h / 0.12);
+    border-inline-start: 2px solid var(--event-color, var(--color-interactive));
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+    color: var(--color-text);
   }
 
   /* ── Reduced motion ─────────────────────────────────────────────── */
