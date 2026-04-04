@@ -1,0 +1,156 @@
+---
+layout: attribute
+title: "data-responsive"
+description: "Simplified responsive image API with auto-calculated sizes, srcset shorthand generation, and optional dev overlay showing the selected source."
+attributeName: data-responsive
+category: media
+attributeType: data
+currentPath: /docs/attributes/data-responsive/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-responsive</code> attribute upscales native <code>srcset</code> and <code>sizes</code> with two features developers frequently get wrong: automatic <code>sizes</code> calculation from rendered layout width, and a compact shorthand for generating <code>srcset</code> from a list of widths.</p>
+
+    <browser-window
+      src="/docs/examples/demos/responsive-basic.html"
+      url="https://vanilla-breeze.dev/responsive"
+      title="Responsive Images"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Auto-sizes (srcset already provided)" data-escape><img data-responsive
+     src="hero.jpg"
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     alt="Hero image"></code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, the image loads normally using the native <code>src</code>. The enhancement only adds <code>sizes</code> calculation and performance defaults.
+    </aside>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>The enhancement does three things:</p>
+    <ol>
+      <li><strong>Auto-sizes</strong> &mdash; A <code>ResizeObserver</code> measures the image&rsquo;s rendered CSS pixel width and sets <code>sizes</code> to match. This ensures the browser always picks the closest source for the actual layout.</li>
+      <li><strong>Srcset shorthand</strong> &mdash; If <code>data-responsive</code> has a value (comma-separated widths), it generates <code>srcset</code> from the <code>src</code> by inserting <code>-{width}</code> before the file extension.</li>
+      <li><strong>Performance defaults</strong> &mdash; Sets <code>loading="lazy"</code> and <code>decoding="async"</code> if not already specified.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Srcset Shorthand</h2>
+    <p>Instead of writing verbose <code>srcset</code> attributes, provide the widths and the enhancement generates sources from your <code>src</code> filename:</p>
+
+    <code-block language="html" show-lines label="Shorthand: generate srcset from widths" data-escape><img data-responsive="400,800,1200"
+     src="hero.jpg"
+     alt="Hero image">
+
+<!-- Generates:
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     sizes="[auto-calculated]px"
+     loading="lazy"
+     decoding="async"
+--></code-block>
+
+    <p>The naming convention inserts <code>-{width}</code> before the extension. So <code>photo.jpg</code> with widths <code>400,800</code> produces <code>photo-400.jpg 400w, photo-800.jpg 800w</code>.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-responsive</code></td>
+          <td>empty or widths</td>
+          <td>Enable auto-sizes. Optionally provide comma-separated widths (e.g. <code>"400,800,1200"</code>) to generate <code>srcset</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-responsive-debug</code></td>
+          <td>boolean</td>
+          <td>Show a dev overlay badge on the image displaying the current source filename and natural width.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Dev Overlay</h2>
+    <p>Add <code>data-responsive-debug</code> to see which source the browser selected. The overlay shows the filename and natural pixel width, updating on each load.</p>
+
+    <code-block language="html" show-lines label="Debug overlay" data-escape><img data-responsive data-responsive-debug
+     src="hero.jpg"
+     srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+     alt="Hero image">
+<!-- Shows badge: "hero-800.jpg (800px)" --></code-block>
+
+    <p>Remove the <code>data-responsive-debug</code> attribute for production.</p>
+  </section>
+
+  <section>
+    <h2>Performance Defaults</h2>
+    <p>The enhancement auto-sets these attributes if not already present:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Default</th>
+          <th>Override</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>loading</code></td>
+          <td><code>lazy</code></td>
+          <td>Set <code>loading="eager"</code> for above-the-fold images.</td>
+        </tr>
+        <tr>
+          <td><code>decoding</code></td>
+          <td><code>async</code></td>
+          <td>Set <code>decoding="sync"</code> if you need synchronous decode.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+
+    <h3>Auto-sizes only</h3>
+    <p>When you already have a correct <code>srcset</code> but want auto-calculated <code>sizes</code>:</p>
+    <code-block language="html" show-lines label="Auto-sizes" data-escape><img data-responsive
+     src="photo.jpg"
+     srcset="photo-sm.jpg 480w, photo-md.jpg 960w, photo-lg.jpg 1440w"
+     alt="Photo with auto-calculated sizes"></code-block>
+
+    <h3>Full shorthand</h3>
+    <p>Let the enhancement build everything from a single <code>src</code>:</p>
+    <code-block language="html" show-lines label="Full shorthand" data-escape><img data-responsive="480,960,1440"
+     src="product.jpg"
+     alt="Product photo"></code-block>
+
+    <h3>Above-the-fold hero</h3>
+    <p>Override <code>loading</code> for critical images:</p>
+    <code-block language="html" show-lines label="Eager loading for hero" data-escape><img data-responsive="640,1280,1920"
+     src="hero.jpg"
+     loading="eager"
+     fetchpriority="high"
+     alt="Hero banner"></code-block>
+  </section>
+
+  <section>
+    <h2>How Sizes Auto-Calculation Works</h2>
+    <p>The enhancement uses a <code>ResizeObserver</code> to measure the image&rsquo;s rendered width in CSS pixels. As the layout changes (viewport resize, container queries), the observer updates <code>sizes</code> so the browser can make optimal source selections.</p>
+    <p>This replaces manually-written <code>sizes</code> like <code>(max-width: 600px) 100vw, 50vw</code> with an accurate measurement of the actual layout. The browser&rsquo;s built-in <code>sizes="auto"</code> proposal works similarly but has limited support &mdash; this enhancement provides the same behavior in all modern browsers.</p>
+  </section>
