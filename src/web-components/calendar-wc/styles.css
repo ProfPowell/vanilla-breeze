@@ -258,9 +258,7 @@
     font-size: var(--font-size-xs, 0.75rem);
   }
 
-  /* Large: cells become tall blocks with background day number.
-     Fixed block-size (not min) + overflow:hidden clips excess events
-     so one busy cell can't stretch the entire row. */
+  /* Large: cells become tall blocks with background day number */
   :scope[data-size="large"] td button {
     position: relative;
     display: flex;
@@ -268,7 +266,8 @@
     align-items: flex-start;
     justify-content: flex-start;
     inline-size: 100%;
-    block-size: clamp(3rem, 14cqi, 7rem);
+    block-size: 100%;
+    min-block-size: clamp(3rem, 14cqi, 7rem);
     padding: clamp(0.2rem, 1.5cqi, 0.5rem);
     border-radius: 0;
     font-size: clamp(0.7rem, 2cqi, 0.875rem);
@@ -402,6 +401,9 @@
     overflow: hidden;
     position: relative;
     z-index: 1;
+    /* In large mode flex column: fill remaining space, clip excess events */
+    flex: 1;
+    min-block-size: 0;
   }
 
   .event-item {
@@ -433,11 +435,8 @@
     padding-inline-start: var(--size-2xs, 0.25rem);
   }
 
-  /* Large mode: prevent "+N more" from pushing row height */
+  /* Large mode: scale "+N more" text */
   :scope[data-size="large"] .event-more {
-    position: absolute;
-    inset-block-end: clamp(0.15rem, 0.8cqi, 0.35rem);
-    inset-inline-start: clamp(0.3rem, 1.5cqi, 0.5rem);
     font-size: clamp(0.5rem, 1.4cqi, 0.7rem);
   }
 
