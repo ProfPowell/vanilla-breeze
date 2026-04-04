@@ -21,6 +21,8 @@ if (document.querySelector('img[data-responsive]')) import('./utils/responsive-i
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
 // Lazy-load floating label only when [data-floating-label] is present
 if (document.querySelector('[data-floating-label]')) import('./utils/floating-label-init.js');
+// Lazy-load hotkey action binding when [data-hotkey] is on non-kbd elements
+if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
 import { initStickyManager } from './lib/sticky-manager.js';
 // Lazy-load mobile form utilities only when [data-keyboard-aware] is present
 if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');

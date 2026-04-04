@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-hotkey"
-description: "Platform-aware keyboard shortcut display. Add data-hotkey to any &lt;kbd&gt; element to render platform-appropriate key symbols."
+description: "Platform-aware keyboard shortcut display and declarative action binding. On &lt;kbd&gt; elements renders platform symbols; on other elements binds keyboard shortcuts to actions."
 attributeName: data-hotkey
 category: interaction
 attributeType: data
@@ -237,6 +237,103 @@ kbd.dataset.hotkey = 'meta+n';
 kbd.textContent = 'Ctrl+N';
 document.body.appendChild(kbd);
 // kbd is enhanced automatically — no manual init needed</code-block>
+  </section>
+
+  <section>
+    <h2>Action Binding</h2>
+    <p>When <code>data-hotkey</code> is placed on a non-<code>&lt;kbd&gt;</code> element (button, input, details, etc.), it binds an actual keyboard shortcut that triggers an action on the element. This upscales the native <code>accesskey</code> attribute with cross-platform modifier normalization and conflict detection.</p>
+
+    <browser-window
+      src="/docs/examples/demos/hotkey-action-basic.html"
+      url="https://vanilla-breeze.dev/hotkey-actions"
+      title="Hotkey Actions"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Bind a shortcut to a button" data-escape><button data-hotkey="meta+s" data-hotkey-label="Save document" data-hotkey-global>
+  Save <kbd data-hotkey="meta+s"></kbd>
+</button></code-block>
+
+    <h3>Action binding attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-hotkey-action</code></td>
+          <td>string</td>
+          <td>Action type: <code>"click"</code> (default), <code>"focus"</code>, <code>"submit"</code>, <code>"toggle"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-hotkey-label</code></td>
+          <td>string</td>
+          <td>Description for the shortcuts dialog. Defaults to element text content.</td>
+        </tr>
+        <tr>
+          <td><code>data-hotkey-group</code></td>
+          <td>string</td>
+          <td>Group name in shortcuts dialog. Default: <code>"Page Actions"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-hotkey-global</code></td>
+          <td>boolean</td>
+          <td>If present, fires even when typing in an input field.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Action types</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Behavior</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>click</code></td>
+          <td>Triggers <code>.click()</code></td>
+          <td>Buttons, links</td>
+        </tr>
+        <tr>
+          <td><code>focus</code></td>
+          <td>Moves focus to element</td>
+          <td>Search inputs</td>
+        </tr>
+        <tr>
+          <td><code>submit</code></td>
+          <td>Submits closest form</td>
+          <td>Save shortcuts</td>
+        </tr>
+        <tr>
+          <td><code>toggle</code></td>
+          <td>Toggles <code>open</code> or <code>hidden</code></td>
+          <td>Panels, drawers</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Focus search on /</h3>
+    <code-block language="html" show-lines label="Focus action" data-escape><input type="search" data-hotkey="/"
+       data-hotkey-action="focus"
+       data-hotkey-label="Focus search"></code-block>
+
+    <h3>Toggle a details panel</h3>
+    <code-block language="html" show-lines label="Toggle action" data-escape><details data-hotkey="meta+i" data-hotkey-action="toggle"
+         data-hotkey-label="Toggle info panel">
+  <summary>Info</summary>
+  <p>Panel content.</p>
+</details></code-block>
+
+    <h3>Shortcuts dialog integration</h3>
+    <p>All hotkey-bound elements automatically appear in the <code>&lt;short-cuts&gt;</code> overlay (press <kbd data-hotkey="shift+?">?</kbd> to open). Add <code>&lt;short-cuts&gt;&lt;/short-cuts&gt;</code> once in your page to enable it.</p>
   </section>
 
   <section>

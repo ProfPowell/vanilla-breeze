@@ -81,6 +81,18 @@ class ShortCuts extends VBElement {
       }
     }
 
+    // Also gather from hotkey-action registry
+    const { getHotkeyActions } = window.__hotkeyActionRegistry || {};
+    if (getHotkeyActions) {
+      for (const [groupName, entries] of getHotkeyActions()) {
+        const list = grouped.get(groupName) || [];
+        for (const entry of entries) {
+          list.push({ label: entry.label, shortcut: entry.shortcut });
+        }
+        grouped.set(groupName, list);
+      }
+    }
+
     for (const [groupName, entries] of grouped) {
       const section = document.createElement('div');
       section.className = 'shortcut-group';
