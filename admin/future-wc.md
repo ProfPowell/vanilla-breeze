@@ -29,8 +29,6 @@ Current surface: **67 web components** across 7 categories.
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `image-editor` | New | Basic crop/rotate/filter for uploaded images. |
-
 | `pdf-viewer` | New | Embedded PDF viewer with page nav. |
 | `model-viewer` | New | 3D model viewer. Wraps `<model-viewer>` or Three.js. |
 | `map-viewer` | New | Interactive map beyond static tiles. Zoom, pan, markers. Extends `geo-map`. |
@@ -67,7 +65,7 @@ Current surface: **67 web components** across 7 categories.
 | `accessibility-specimen` | New | A11y checklist and contrast ratio specimen for design system docs. |
 | `animation-specimen` | New | Motion/easing specimen display. |
 | `breakpoint-specimen` | New | Responsive breakpoint visualization. |
-| `palette-generator` | New | Generate color palettes from a seed color. Extends `color-palette`. |
+
 
 ## Planning
 
@@ -88,9 +86,6 @@ These are tracked as beads and enhance native attributes rather than creating ne
 
 | Attribute | Upscales | Bead |
 |-----------|----------|------|
-| `data-loading` | `disabled` | `vanilla-breeze-lws7` |
-| `data-focus-trap` | `autofocus` | `vanilla-breeze-af83` |
-| `data-floating-label` | `placeholder` | `vanilla-breeze-i7e4` |
 | `data-spellcheck` | `spellcheck` | `vanilla-breeze-x0f2` |
 | `data-responsive` | `srcset/sizes` | `vanilla-breeze-uy6h` |
 | `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` |
