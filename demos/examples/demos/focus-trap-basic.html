@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Trap Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+
+    .trap-panel {
+      padding: var(--size-l);
+      border: var(--border-width-thick) solid var(--color-interactive);
+      border-radius: var(--radius-l);
+      background: var(--color-surface-raised);
+    }
+
+    .trap-panel:focus-within {
+      box-shadow: 0 0 0 3px var(--color-interactive-subtle);
+    }
+
+    .toolbar {
+      padding: var(--size-m);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="2xl">
+
+      <header>
+        <h1>data-focus-trap</h1>
+        <p style="color: var(--color-text-muted);">Tab focus stays trapped inside the bordered panel. Press the toggle button to activate or deactivate the trap.</p>
+      </header>
+
+      <section>
+        <h2>Static Trap</h2>
+        <p>This panel traps focus immediately. Tab cycles between the three inputs.</p>
+
+        <div class="trap-panel" data-focus-trap>
+          <layout-stack data-layout-gap="m">
+            <form-field>
+              <label for="name">Name</label>
+              <input type="text" id="name" autofocus>
+            </form-field>
+            <form-field>
+              <label for="email">Email</label>
+              <input type="email" id="email">
+            </form-field>
+            <layout-cluster data-layout-gap="s">
+              <button type="button">Save</button>
+              <button type="button" data-variant="outline">Cancel</button>
+            </layout-cluster>
+          </layout-stack>
+        </div>
+      </section>
+
+      <section>
+        <h2>Dynamic Trap</h2>
+        <p>Click "Show panel" to insert a trapped region. Click "Close" to remove it and restore focus.</p>
+        <button type="button" id="toggle-trap">Show panel</button>
+        <div id="dynamic-target"></div>
+      </section>
+
+      <section>
+        <h2>Inline Toolbar</h2>
+        <p>A toolbar that traps focus when editing. The <code>no-autofocus</code> value prevents focus from jumping on activation.</p>
+        <div class="toolbar" data-focus-trap="no-autofocus">
+          <layout-cluster data-layout-gap="s">
+            <button type="button"><icon-wc name="bold"></icon-wc></button>
+            <button type="button"><icon-wc name="italic"></icon-wc></button>
+            <button type="button"><icon-wc name="underline"></icon-wc></button>
+            <button type="button"><icon-wc name="link"></icon-wc></button>
+          </layout-cluster>
+        </div>
+      </section>
+
+      <p style="color: var(--color-text-muted);">This button is outside all traps. You should not be able to Tab to it while inside a trap.</p>
+      <button type="button" data-variant="outline">Outside button (unreachable from trap)</button>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const toggle = document.getElementById('toggle-trap');
+    const target = document.getElementById('dynamic-target');
+    let panel = null;
+
+    toggle.addEventListener('click', () => {
+      if (panel) {
+        panel.remove();
+        panel = null;
+        toggle.textContent = 'Show panel';
+      } else {
+        panel = document.createElement('div');
+        panel.className = 'trap-panel';
+        panel.setAttribute('data-focus-trap', '');
+        panel.innerHTML = `
+          <layout-stack data-layout-gap="m">
+            <p><strong>Dynamic panel</strong> — focus is trapped here.</p>
+            <form-field>
+              <label for="search">Search</label>
+              <input type="search" id="search" autofocus>
+            </form-field>
+            <button type="button" id="close-panel">Close</button>
+          </layout-stack>
+        `;
+        target.appendChild(panel);
+
+        panel.querySelector('#close-panel').addEventListener('click', () => {
+          panel.remove();
+          panel = null;
+          toggle.textContent = 'Show panel';
+        });
+        toggle.textContent = 'Remove panel';
+      }
+    });
+  </script>
+</body>
+</html>

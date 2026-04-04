@@ -368,3 +368,78 @@ crumbLabel: Web Components
     <h2>Localization</h2>
     <p>The trigger button formats dates using <code>Intl.DateTimeFormat</code> and the user&rsquo;s locale. Month/year headers and first-day-of-week detection are also locale-aware. The submitted form value is always ISO-formatted regardless of display locale.</p>
   </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td>Get or set the selected date as an ISO string (<code>YYYY-MM-DD</code>).</td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>string</td>
+          <td>Get or set the earliest selectable date. Updates the calendar immediately.</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>string</td>
+          <td>Get or set the latest selectable date. Updates the calendar immediately.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recipe: Date Range (Linked Pickers)</h2>
+    <p>Two standard <code>&lt;date-picker&gt;</code> elements can be linked for date range selection. When the start date is picked, it sets <code>min</code> on the end picker. When the end date is picked, it sets <code>max</code> on the start. No custom range component needed.</p>
+
+    <browser-window
+      src="/docs/examples/demos/date-picker-range.html"
+      url="https://vanilla-breeze.dev/date-range"
+      title="Linked Date Pickers"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Linked check-in / check-out" data-escape><form-field>
+  <label for="check-in">Check-in</label>
+  <date-picker id="check-in" name="check_in">
+    <input type="date" id="check-in-input" min="2026-04-01">
+  </date-picker>
+</form-field>
+
+<form-field>
+  <label for="check-out">Check-out</label>
+  <date-picker id="check-out" name="check_out">
+    <input type="date" id="check-out-input" min="2026-04-01">
+  </date-picker>
+</form-field></code-block>
+
+    <code-block language="javascript" show-lines label="Linking script" data-escape>const checkIn  = document.getElementById('check-in');
+const checkOut = document.getElementById('check-out');
+
+// Start date constrains the end picker
+checkIn.addEventListener('date-picker:change', (e) => {
+  checkOut.min = e.detail.value;
+});
+
+// End date constrains the start picker
+checkOut.addEventListener('date-picker:change', (e) => {
+  checkIn.max = e.detail.value;
+});</code-block>
+
+    <p>The <code>min</code> and <code>max</code> properties update the calendar constraints in real time. Dates outside the allowed range are automatically greyed out in the grid.</p>
+
+    <aside class="note">
+      <strong>Need richer visual range selection?</strong> For a full calendar with range highlighting, week selection, or multi-date selection, see the planned <code>&lt;calendar-wc&gt;</code> component.
+    </aside>
+  </section>

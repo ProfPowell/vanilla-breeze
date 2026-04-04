@@ -913,6 +913,26 @@ class DatePicker extends VBElement {
       this.#selectDate(date);
     }
   }
+
+  get min() {
+    return this.#minDate ? toISO(this.#minDate) : '';
+  }
+
+  set min(val) {
+    this.#minDate = val ? fromISO(val) : null;
+    if (this.#input) this.#input.setAttribute('min', val || '');
+    this.#renderMonth();
+  }
+
+  get max() {
+    return this.#maxDate ? toISO(this.#maxDate) : '';
+  }
+
+  set max(val) {
+    this.#maxDate = val ? fromISO(val) : null;
+    if (this.#input) this.#input.setAttribute('max', val || '');
+    this.#renderMonth();
+  }
 }
 
 registerComponent('date-picker', DatePicker);

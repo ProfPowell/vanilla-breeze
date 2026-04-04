@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linked Date Pickers &mdash; Date Range</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+
+    .date-range {
+      display: flex;
+      align-items: end;
+      gap: var(--size-m);
+      flex-wrap: wrap;
+    }
+
+    .date-range form-field {
+      flex: 1;
+      min-inline-size: 10rem;
+    }
+
+    .range-arrow {
+      display: flex;
+      align-items: center;
+      padding-block-end: var(--size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .stay-summary {
+      padding: var(--size-m);
+      background: var(--color-surface-alt);
+      border-radius: var(--radius-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .stay-summary strong {
+      color: var(--color-text);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="2xl">
+
+      <header>
+        <h1>Linked Date Pickers</h1>
+        <p style="color: var(--color-text-muted);">Two standard <code>&lt;date-picker&gt;</code> elements linked for date range selection. No custom range component needed.</p>
+      </header>
+
+      <layout-card>
+        <h2 style="margin: 0 0 var(--size-m);">Hotel Booking</h2>
+        <form id="booking-form">
+          <layout-stack data-layout-gap="l">
+            <div class="date-range">
+              <form-field>
+                <label for="check-in">Check-in</label>
+                <date-picker id="check-in" name="check_in">
+                  <input type="date" id="check-in-input" min="2026-04-01">
+                </date-picker>
+              </form-field>
+
+              <span class="range-arrow" aria-hidden="true">
+                <icon-wc name="arrow-right"></icon-wc>
+              </span>
+
+              <form-field>
+                <label for="check-out">Check-out</label>
+                <date-picker id="check-out" name="check_out">
+                  <input type="date" id="check-out-input" min="2026-04-01">
+                </date-picker>
+              </form-field>
+            </div>
+
+            <output id="stay-info" class="stay-summary" hidden></output>
+
+            <layout-cluster data-layout-gap="s">
+              <button type="submit">Book Now</button>
+              <button type="reset" data-variant="outline">Clear</button>
+            </layout-cluster>
+          </layout-stack>
+        </form>
+        <output id="form-output" style="display:block;margin-block-start:var(--size-m);padding:var(--size-m);background:var(--color-surface-alt);border-radius:var(--radius-m);font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;min-height:2em;">Submit the form to see data here</output>
+      </layout-card>
+
+      <layout-card>
+        <h2 style="margin: 0 0 var(--size-m);">Project Timeline</h2>
+        <form id="timeline-form">
+          <layout-stack data-layout-gap="l">
+            <div class="date-range">
+              <form-field>
+                <label for="start-date">Start date</label>
+                <date-picker id="start-date" name="start_date">
+                  <input type="date" id="start-date-input">
+                </date-picker>
+              </form-field>
+
+              <span class="range-arrow" aria-hidden="true">
+                <icon-wc name="arrow-right"></icon-wc>
+              </span>
+
+              <form-field>
+                <label for="end-date">End date</label>
+                <date-picker id="end-date" name="end_date">
+                  <input type="date" id="end-date-input">
+                </date-picker>
+              </form-field>
+            </div>
+
+            <output id="duration-info" class="stay-summary" hidden></output>
+          </layout-stack>
+        </form>
+      </layout-card>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    /**
+     * Link two date-pickers for range selection.
+     *
+     * When start date is picked → sets min on end picker.
+     * When end date is picked → sets max on start picker.
+     */
+    function linkDatePickers(startPicker, endPicker, { onRangeChange } = {}) {
+      startPicker.addEventListener('date-picker:change', (e) => {
+        endPicker.min = e.detail.value;
+        if (onRangeChange) onRangeChange(startPicker.value, endPicker.value);
+      });
+
+      endPicker.addEventListener('date-picker:change', (e) => {
+        startPicker.max = e.detail.value;
+        if (onRangeChange) onRangeChange(startPicker.value, endPicker.value);
+      });
+    }
+
+    // --- Hotel booking ---
+    const checkIn = document.getElementById('check-in');
+    const checkOut = document.getElementById('check-out');
+    const stayInfo = document.getElementById('stay-info');
+
+    linkDatePickers(checkIn, checkOut, {
+      onRangeChange(start, end) {
+        if (start && end) {
+          const nights = Math.round((new Date(end) - new Date(start)) / 86400000);
+          stayInfo.hidden = false;
+          stayInfo.innerHTML = `<strong>${nights} night${nights !== 1 ? 's' : ''}</strong> &mdash; ${new Date(start).toLocaleDateString()} to ${new Date(end).toLocaleDateString()}`;
+        } else {
+          stayInfo.hidden = true;
+        }
+      },
+    });
+
+    // --- Project timeline ---
+    const startDate = document.getElementById('start-date');
+    const endDate = document.getElementById('end-date');
+    const durationInfo = document.getElementById('duration-info');
+
+    linkDatePickers(startDate, endDate, {
+      onRangeChange(start, end) {
+        if (start && end) {
+          const days = Math.round((new Date(end) - new Date(start)) / 86400000);
+          const weeks = Math.floor(days / 7);
+          const remainDays = days % 7;
+          const parts = [];
+          if (weeks) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
+          if (remainDays) parts.push(`${remainDays} day${remainDays !== 1 ? 's' : ''}`);
+          durationInfo.hidden = false;
+          durationInfo.innerHTML = `Duration: <strong>${parts.join(', ') || '0 days'}</strong>`;
+        } else {
+          durationInfo.hidden = true;
+        }
+      },
+    });
+
+    // Form submit
+    document.getElementById('booking-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      document.getElementById('form-output').textContent = entries || '(no data)';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+---
+layout: attribute
+title: "data-focus-trap"
+description: "Constrain keyboard focus within a container. Tab/Shift+Tab cycle inside the boundary, focus auto-moves in on activation, and restores on deactivation."
+attributeName: data-focus-trap
+category: focus
+attributeType: data
+currentPath: /docs/attributes/data-focus-trap/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-focus-trap</code> attribute constrains keyboard focus within a container. <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd> cycle through focusable children without escaping. When the trap activates, focus moves into the container. When the trap deactivates, focus returns to the previously focused element.</p>
+
+    <p>Designed for non-modal panels, inline editing regions, and dynamically inserted content where the native <code>&lt;dialog&gt;</code> focus trap is not available.</p>
+
+    <browser-window
+      src="/docs/examples/demos/focus-trap-basic.html"
+      url="https://vanilla-breeze.dev/focus-trap"
+      title="Focus Trap"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic focus trap" data-escape><section data-focus-trap>
+  <input type="text" autofocus>
+  <button>Save</button>
+  <button>Cancel</button>
+</section></code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li><strong>Activation:</strong> When a <code>[data-focus-trap]</code> element enters the DOM (or the attribute is added), focus moves to <code>[autofocus]</code> inside the container, or the first focusable child. The previously focused element is saved.</li>
+      <li><strong>Trapping:</strong> Pressing <kbd>Tab</kbd> on the last focusable child wraps to the first. Pressing <kbd>Shift+Tab</kbd> on the first wraps to the last.</li>
+      <li><strong>Deactivation:</strong> When the element is removed from the DOM (or the attribute is removed), focus restores to the saved element.</li>
+    </ol>
+
+    <aside class="note">
+      <strong>Use native <code>&lt;dialog&gt;</code> when possible.</strong> Modal dialogs opened with <code>showModal()</code> already trap focus natively. Use <code>data-focus-trap</code> for non-modal contexts like slide panels, inline forms, and toolbars.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Values</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>""</code> (empty/default)</td>
+          <td>Trap focus and auto-focus <code>[autofocus]</code> or first focusable child on activation.</td>
+        </tr>
+        <tr>
+          <td><code>no-autofocus</code></td>
+          <td>Trap focus but do not move focus on activation. Useful for toolbars or panels that should trap once the user tabs in.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Dynamic Content</h2>
+    <p>The trap watches the DOM with a <code>MutationObserver</code>. Adding a <code>data-focus-trap</code> element dynamically activates it immediately. Removing the element restores focus automatically.</p>
+
+    <code-block language="html" show-lines label="Toggle a trapped panel" data-escape><button id="open-btn">Edit</button>
+<div id="panel-target"></div>
+
+<script>
+  document.getElementById('open-btn').addEventListener('click', () => {
+    const panel = document.createElement('section');
+    panel.setAttribute('data-focus-trap', '');
+    panel.innerHTML = `
+      <input type="text" autofocus>
+      <button id="close-btn">Close</button>
+    `;
+    document.getElementById('panel-target').appendChild(panel);
+
+    panel.querySelector('#close-btn').addEventListener('click', () => {
+      panel.remove();  // focus auto-restores to #open-btn
+    });
+  });
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Toggling via Attribute</h2>
+    <p>You can also activate and deactivate a trap by adding or removing the attribute on an existing element:</p>
+
+    <code-block language="javascript" show-lines label="Attribute toggle">// Activate trap
+panel.setAttribute('data-focus-trap', '');
+
+// Deactivate trap (restores focus)
+panel.removeAttribute('data-focus-trap');</code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>The module exports functions for programmatic control:</p>
+
+    <code-block language="javascript" show-lines label="Programmatic API">import { activateTrap, deactivateTrap } from './utils/focus-trap-init.js';
+
+// Activate on a specific element
+activateTrap(myPanel);
+
+// Deactivate and restore focus
+deactivateTrap(myPanel);</code-block>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Tab</kbd></td>
+          <td>Move to next focusable child. Wraps from last to first.</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift + Tab</kbd></td>
+          <td>Move to previous focusable child. Wraps from first to last.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Focus trapping prevents keyboard users from reaching content behind an active panel.</li>
+      <li>Focus restoration ensures users return to their original context when the panel closes.</li>
+      <li>The <code>[autofocus]</code> integration provides immediate keyboard access to the primary input.</li>
+      <li>Use <code>aria-label</code> or a heading inside the trap to give screen reader context about the trapped region.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>When to Use</h2>
+    <ul>
+      <li><strong>Non-modal slide panels:</strong> Settings or filter panels opened with <code>show()</code> (not <code>showModal()</code>).</li>
+      <li><strong>Inline editing:</strong> Forms that appear in-page and should capture keyboard focus.</li>
+      <li><strong>Toolbars:</strong> Rich text or formatting toolbars with <code>no-autofocus</code>.</li>
+      <li><strong>Dynamic content:</strong> Panels loaded via fetch or template insertion.</li>
+    </ul>
+
+    <h3>When Not to Use</h3>
+    <ul>
+      <li><strong>Modal dialogs:</strong> Use <code>&lt;dialog&gt;</code> with <code>showModal()</code> instead &mdash; it traps focus natively.</li>
+      <li><strong>Popovers:</strong> Popover content typically uses light-dismiss, not focus trapping.</li>
+      <li><strong>Page sections:</strong> Don&rsquo;t trap focus in regular content regions &mdash; users expect free navigation.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/attributes/autofocus/"><code>autofocus</code></a> &mdash; Native one-shot focus on page load.</li>
+      <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> &mdash; Control tab order and focusability.</li>
+      <li><a href="/docs/elements/native/dialog/"><code>&lt;dialog&gt;</code></a> &mdash; Native modal with built-in focus trapping.</li>
+    </ul>
+  </section>
