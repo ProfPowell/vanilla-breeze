@@ -43,17 +43,25 @@
   }
 
   .calendar-year {
-    all: unset;
     font: inherit;
     font-weight: 600;
     cursor: pointer;
     color: var(--color-text);
-    padding-inline: var(--size-2xs, 0.25rem);
+    background: transparent;
+    border: none;
+    padding: var(--size-3xs, 2px) var(--size-xs, 0.5rem) var(--size-3xs, 2px) var(--size-2xs, 0.25rem);
     border-radius: var(--radius-s);
+    /* Triangle affordance — matches date-picker pattern */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='currentColor' opacity='0.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    background-size: 8px 5px;
+    padding-inline-end: var(--size-m, 1rem);
   }
 
   .calendar-year:hover {
-    background: var(--color-hover-bg);
+    background-color: var(--color-hover-bg);
   }
 
   .calendar-year:focus-visible {
@@ -136,22 +144,26 @@
     font-size: var(--font-size-xs, 0.75rem);
   }
 
-  /* Large: cells become tall blocks, not circles */
+  /* Large: cells become tall blocks with background day number */
   :scope[data-size="large"] td button {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     inline-size: 100%;
-    min-block-size: 5rem;
+    min-block-size: 6rem;
     padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+    padding-block-start: var(--size-s, 0.75rem);
     border-radius: var(--radius-s);
     font-size: var(--font-size-sm, 0.875rem);
     gap: var(--size-2xs, 0.25rem);
-    border: var(--border-width-thin, 1px) solid transparent;
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+    overflow: hidden;
   }
 
   :scope[data-size="large"] td button:hover:not([disabled]) {
-    border-color: var(--color-border);
+    border-color: var(--color-border-strong, var(--color-border));
+    background: var(--color-hover-bg);
   }
 
   td button:hover:not([disabled]) {
@@ -171,6 +183,23 @@
   :scope[data-size="large"] .day-number {
     font-weight: 600;
     font-size: var(--font-size-sm, 0.875rem);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Large mode: watermark day number in background */
+  :scope[data-size="large"] td button::before {
+    content: attr(data-day);
+    position: absolute;
+    inset-block-end: -0.15em;
+    inset-inline-end: 0.1em;
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-text);
+    opacity: 0.06;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Today */

@@ -333,6 +333,7 @@ class CalendarWc extends VBElement {
       dayNum.className = 'day-number';
       dayNum.textContent = String(day);
       btn.appendChild(dayNum);
+      btn.setAttribute('data-day', String(day));
 
       // Today
       if (sameDay(cellDate, today)) {
