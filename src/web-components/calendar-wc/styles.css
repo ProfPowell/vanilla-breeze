@@ -117,10 +117,17 @@
     vertical-align: top;
   }
 
+  /* Large: borders on td, not on button — prevents overlap/doubling */
+  :scope[data-size="large"] td {
+    padding: 0;
+    border: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
   /* ── Day buttons — default/compact ─────────────────────────────── */
 
   td button {
     all: unset;
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -133,6 +140,7 @@
     background: transparent;
     border-radius: var(--radius-round, 50%);
     cursor: pointer;
+    outline: none;
     transition: background var(--duration-fast, 150ms),
                 color var(--duration-fast, 150ms);
   }
@@ -150,19 +158,21 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: flex-start;
     inline-size: 100%;
+    block-size: 100%;
     min-block-size: 6rem;
-    padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
-    padding-block-start: var(--size-s, 0.75rem);
-    border-radius: var(--radius-s);
+    padding: var(--size-xs, 0.5rem);
+    border-radius: 0;
     font-size: var(--font-size-sm, 0.875rem);
     gap: var(--size-2xs, 0.25rem);
-    border: var(--border-width-thin, 1px) solid var(--color-border);
+    border: none;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   :scope[data-size="large"] td button:hover:not([disabled]) {
-    border-color: var(--color-border-strong, var(--color-border));
     background: var(--color-hover-bg);
   }
 
@@ -173,6 +183,11 @@
   td button:focus-visible {
     outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
     outline-offset: -2px;
+  }
+
+  :scope[data-size="large"] td button:focus-visible {
+    background: oklch(from var(--color-interactive) l c h / 0.06);
+    outline-offset: -3px;
   }
 
   /* Day number label */
@@ -191,15 +206,20 @@
   :scope[data-size="large"] td button::before {
     content: attr(data-day);
     position: absolute;
-    inset-block-end: -0.15em;
+    inset-block-end: -0.1em;
     inset-inline-end: 0.1em;
     font-size: 3rem;
     font-weight: 800;
     line-height: 1;
     color: var(--color-text);
-    opacity: 0.06;
+    opacity: 0.05;
     pointer-events: none;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Hide watermark on disabled/empty weekend cells */
+  :scope[data-size="large"] td button[disabled]::before {
+    opacity: 0.03;
   }
 
   /* Today */
