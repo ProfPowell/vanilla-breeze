@@ -542,3 +542,73 @@ form[data-error="network"]::before {
   border-radius: var(--radius-s);
   margin-block-end: var(--size-m);
 }
+
+/* ── Floating label ──────────────────────────────────────────────── */
+/* Label starts inside the input, animates above on focus or value.  */
+/* Relies on JS init adding placeholder=" " so :placeholder-shown    */
+/* activates correctly. Uses data-floating-label-ready as gate.      */
+
+form-field[data-floating-label-ready] {
+  position: relative;
+}
+
+/* Remove default label margin — it will overlap the input */
+form-field[data-floating-label-ready] > label {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 0;
+  inset-inline-start: var(--input-padding-inline, var(--size-s));
+  /* Center vertically inside the input */
+  transform: translateY(calc(var(--input-height, 2.75rem) / 2 - 0.6em));
+  transform-origin: left top;
+  margin: 0;
+  padding-inline: 2px;
+  font-weight: 400;
+  color: var(--input-placeholder, var(--color-text-muted));
+  pointer-events: none;
+  transition:
+    transform var(--duration-fast, 150ms) var(--ease-default, ease),
+    font-size var(--duration-fast, 150ms) var(--ease-default, ease),
+    color var(--duration-fast, 150ms) var(--ease-default, ease);
+}
+
+/* Floated state — on focus or when input has a value */
+form-field[data-floating-label-ready]:focus-within > label,
+form-field[data-floating-label-ready]:has(:is(input, textarea):not(:placeholder-shown)) > label {
+  transform: translateY(-0.55em);
+  font-size: var(--font-size-sm, 0.8rem);
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--input-bg, var(--color-surface));
+}
+
+/* Focus color accent */
+form-field[data-floating-label-ready]:focus-within > label {
+  color: var(--input-border-focus, var(--color-interactive));
+}
+
+/* Required indicator inherits positioning */
+form-field[data-floating-label-ready]:has(:required) > label::after {
+  content: " *";
+  color: var(--color-error);
+}
+
+/* Ensure input has top padding to avoid label overlap when floated */
+form-field[data-floating-label-ready] > :is(input, textarea, select) {
+  padding-block-start: calc(var(--input-padding-inline, var(--size-s)) + 0.15rem);
+}
+
+/* Select elements — label should float immediately (always has a value) */
+form-field[data-floating-label-ready]:has(select) > label {
+  transform: translateY(-0.55em);
+  font-size: var(--font-size-sm, 0.8rem);
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--input-bg, var(--color-surface));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  form-field[data-floating-label-ready] > label {
+    transition: none;
+  }
+}

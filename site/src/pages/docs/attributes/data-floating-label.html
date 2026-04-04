@@ -1,0 +1,145 @@
+---
+layout: attribute
+title: "data-floating-label"
+description: "Animated floating label that starts inside the input and moves above on focus or when filled. Material Design pattern that keeps the label always visible."
+attributeName: data-floating-label
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-floating-label/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-floating-label</code> attribute upscales the static <code>&lt;label&gt;</code> into an animated floating label. The label starts inside the input (like a placeholder) and smoothly animates above the border when the field gains focus or has a value. Unlike a <code>placeholder</code>, the label never disappears &mdash; the user always knows what the field is for.</p>
+
+    <browser-window
+      src="/docs/examples/demos/floating-label-basic.html"
+      url="https://vanilla-breeze.dev/floating-label"
+      title="Floating Labels"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Floating label field" data-escape><form-field data-floating-label>
+  <label for="email">Email address</label>
+  <input type="email" id="email">
+</form-field></code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, the label renders in its normal static position above the input. The floating behavior only activates after the init script runs.
+    </aside>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ol>
+      <li><strong>JS init</strong> &mdash; Adds a transparent <code>placeholder=" "</code> to the input (if missing) so the CSS <code>:placeholder-shown</code> selector activates correctly. Marks the field as <code>data-floating-label-ready</code>.</li>
+      <li><strong>CSS drives the animation</strong> &mdash; The label is positioned absolutely over the input. Two CSS selectors handle the transition:
+        <ul>
+          <li><code>:focus-within</code> &mdash; user focuses the field</li>
+          <li><code>:not(:placeholder-shown)</code> &mdash; field has a value</li>
+        </ul>
+      </li>
+      <li><strong>Label floats up</strong> &mdash; transforms to a smaller size above the input border with a background to punch through the border line.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-floating-label</code></td>
+          <td><code>&lt;form-field&gt;</code></td>
+          <td>Enable floating label animation on this field.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Input Types</h2>
+    <p>Works with all standard text-like inputs, textareas, and selects:</p>
+
+    <code-block language="html" show-lines label="Multiple input types" data-escape><form-field data-floating-label>
+  <label for="name">Full name</label>
+  <input type="text" id="name" required>
+</form-field>
+
+<form-field data-floating-label>
+  <label for="msg">Message</label>
+  <textarea id="msg" rows="4"></textarea>
+</form-field>
+
+<form-field data-floating-label>
+  <label for="country">Country</label>
+  <select id="country">
+    <option value="us">United States</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+</form-field></code-block>
+
+    <p>Select elements float the label immediately since they always have a value.</p>
+  </section>
+
+  <section>
+    <h2>With Validation</h2>
+    <p>Floating labels work alongside <code>&lt;form-field&gt;</code> validation. Required indicators, error messages, and valid states all function normally:</p>
+
+    <code-block language="html" show-lines label="With validation" data-escape><form-field data-floating-label>
+  <label for="email">Email</label>
+  <input type="email" id="email" required
+         aria-describedby="email-error">
+  <output id="email-error" class="error"
+          for="email" aria-live="polite"></output>
+</form-field></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The <code>&lt;label&gt;</code> remains a real label with <code>for</code> binding &mdash; screen readers always announce it.</li>
+      <li>The label uses <code>pointer-events: none</code> so clicking the label area focuses the input.</li>
+      <li>The animation respects <code>prefers-reduced-motion</code> &mdash; transitions are disabled.</li>
+      <li>The label never disappears (unlike <code>placeholder</code>), maintaining context at all times.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Comparison</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Label visible when typing?</th>
+          <th>Compact layout?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Standard label</td>
+          <td>Yes (always above)</td>
+          <td>No (takes vertical space)</td>
+        </tr>
+        <tr>
+          <td>Placeholder only</td>
+          <td>No (vanishes)</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Floating label</strong></td>
+          <td><strong>Yes (floats up)</strong></td>
+          <td><strong>Yes (compact when empty)</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
