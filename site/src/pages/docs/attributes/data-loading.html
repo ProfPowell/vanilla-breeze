@@ -1,0 +1,153 @@
+---
+layout: attribute
+title: "data-loading"
+description: "Button loading state with spinner, aria-busy, double-submit prevention, and auto-revert. Upscales the native disabled attribute for async actions."
+attributeName: data-loading
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-loading/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>data-loading</code> attribute on a <code>&lt;button&gt;</code> upscales the native <code>disabled</code> state into a full loading experience: a spinner replaces the button text, <code>aria-busy</code> is set for screen readers, and clicks are blocked to prevent double-submit. For submit buttons inside a form, the loading state activates automatically on form submission.</p>
+
+    <browser-window
+      src="/docs/examples/demos/loading-button-basic.html"
+      url="https://vanilla-breeze.dev/loading-button"
+      title="Loading Button"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Auto-loading submit button" data-escape><form>
+  <button type="submit" data-loading="Saving...">Save Changes</button>
+</form></code-block>
+
+    <aside class="note">
+      <strong>Progressive enhancement:</strong> Without JavaScript, the button works as a normal submit button. The loading enhancement only adds the spinner and double-submit protection.
+    </aside>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <p>When activated, the enhancement:</p>
+    <ol>
+      <li><strong>Preserves layout</strong> &mdash; Locks the button width to prevent shift when content changes.</li>
+      <li><strong>Shows a spinner</strong> &mdash; Replaces button content with an animated spinner and optional loading text.</li>
+      <li><strong>Sets accessibility state</strong> &mdash; Adds <code>aria-busy="true"</code> and <code>disabled</code>.</li>
+      <li><strong>Auto-reverts</strong> &mdash; Restores original content when the action completes or after a safety timeout.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-loading</code></td>
+          <td>empty or text</td>
+          <td>Enable loading enhancement. Optional value is the loading text (e.g. <code>"Saving..."</code>). Empty shows spinner only.</td>
+        </tr>
+        <tr>
+          <td><code>data-loading-timeout</code></td>
+          <td>number</td>
+          <td>Auto-revert after N milliseconds. Default: <code>10000</code> (10 seconds).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Form Integration</h2>
+    <p>Submit buttons inside a <code>&lt;form&gt;</code> automatically activate on form submission. When paired with the form coordinator (<code>data-submit="fetch"</code>), the button auto-reverts when the submission completes.</p>
+
+    <code-block language="html" show-lines label="With form coordinator" data-escape><form action="/api/save" method="post" data-submit="fetch">
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
+  </form-field>
+  <button type="submit" data-loading="Saving...">Save</button>
+</form></code-block>
+
+    <p>For native form submissions (which navigate away), the loading state persists until the page navigates &mdash; which is the correct behavior.</p>
+  </section>
+
+  <section>
+    <h2>Programmatic Control</h2>
+    <p>For buttons outside forms or async actions, control the loading state via the JavaScript API:</p>
+
+    <code-block language="javascript" show-lines label="Manual activation">import { activate, deactivate } from 'vanilla-breeze/utils/loading-button-init.js';
+
+const btn = document.getElementById('my-btn');
+
+// Start loading
+activate(btn);
+
+// After async work completes
+await doAsyncWork();
+deactivate(btn);</code-block>
+
+    <p>You can also toggle via the <code>data-loading-active</code> attribute:</p>
+
+    <code-block language="javascript" show-lines label="Attribute-based toggle">// Start
+btn.dataset.loadingActive = '';
+
+// Stop
+delete btn.dataset.loadingActive;</code-block>
+  </section>
+
+  <section>
+    <h2>Button Variants</h2>
+    <p>The spinner inherits <code>currentColor</code>, so it works with all button variants:</p>
+
+    <code-block language="html" show-lines label="All button styles" data-escape><button type="submit" data-loading>Primary</button>
+<button type="submit" data-loading class="secondary">Secondary</button>
+<button type="submit" data-loading class="ghost">Ghost</button></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <p>During loading:</p>
+    <ul>
+      <li><code>aria-busy="true"</code> tells screen readers the button action is in progress.</li>
+      <li><code>disabled</code> prevents keyboard and pointer activation.</li>
+      <li>The spinner is marked <code>aria-hidden="true"</code> so it doesn&rsquo;t interfere with screen reader output.</li>
+      <li>The spinner animation slows to 1.5s under <code>prefers-reduced-motion</code>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Containers vs Buttons</h2>
+    <p>The <code>data-loading</code> attribute serves two purposes depending on the element:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Visual</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Container (<code>&lt;section&gt;</code>, <code>&lt;div&gt;</code>)</td>
+          <td>Shimmer overlay, skeleton</td>
+          <td>CSS-only, no JS needed</td>
+        </tr>
+        <tr>
+          <td>Button (<code>&lt;button&gt;</code>)</td>
+          <td>Inline spinner, disabled state</td>
+          <td>JS-enhanced with auto-revert</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>

@@ -17,6 +17,8 @@ if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-in
 if (document.querySelector('[data-focus-trap]')) import('./utils/focus-trap-init.js');
 // Lazy-load responsive image enhancement only when [data-responsive] is present
 if (document.querySelector('img[data-responsive]')) import('./utils/responsive-init.js');
+// Lazy-load loading button enhancement only when [data-loading] is on a button
+if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
 import { initStickyManager } from './lib/sticky-manager.js';
 // Lazy-load mobile form utilities only when [data-keyboard-aware] is present
 if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
