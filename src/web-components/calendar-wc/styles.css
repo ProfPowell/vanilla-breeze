@@ -7,6 +7,51 @@
     border-radius: var(--radius-m);
     overflow: hidden;
     position: relative;
+
+    /* ── Theming tokens (all opt-in, defaults match base appearance) ── */
+
+    /* Banner */
+    --cal-banner-height: 0px;
+    --cal-banner-bg: transparent;
+    --cal-banner-image: none;
+    --cal-banner-size: cover;
+    --cal-banner-position: center;
+
+    /* Header */
+    --cal-header-bg: var(--color-surface-raised);
+    --cal-header-color: inherit;
+
+    /* Week rows */
+    --cal-week-bg: transparent;
+    --cal-week-bg-alt: transparent;
+
+    /* Day cells */
+    --cal-day-bg: transparent;
+    --cal-day-image: none;
+    --cal-day-image-size: contain;
+    --cal-day-image-opacity: 1;
+
+    /* Disabled */
+    --cal-disabled-opacity: 0.5;
+
+    /* Outside-month */
+    --cal-outside-opacity: 0.35;
+    --cal-outside-color: var(--color-text-muted);
+
+    /* Today */
+    --cal-today-bg: var(--color-surface-raised);
+    --cal-today-border: var(--color-border-strong, var(--color-border));
+    --cal-today-shadow: none;
+
+    /* Watermark (large mode) */
+    --cal-watermark-opacity: 0.05;
+    --cal-watermark-color: var(--color-text);
+    --cal-watermark-size: 3rem;
+    --cal-watermark-weight: 800;
+
+    /* Highlight */
+    --cal-highlight-bg: oklch(from var(--color-interactive) l c h / 0.08);
+    --cal-highlight-border: oklch(from var(--color-interactive) l c h / 0.25);
   }
 
   /* ── Size variants ─────────────────────────────────────────────── */
@@ -19,6 +64,17 @@
     max-inline-size: 56rem;
   }
 
+  /* ── Banner (decorative month imagery surface) ──────────────────── */
+
+  .calendar-banner {
+    block-size: var(--cal-banner-height);
+    background-color: var(--cal-banner-bg);
+    background-image: var(--cal-banner-image);
+    background-size: var(--cal-banner-size);
+    background-position: var(--cal-banner-position);
+    background-repeat: no-repeat;
+  }
+
   /* ── Header ────────────────────────────────────────────────────── */
 
   header {
@@ -26,7 +82,8 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--size-s) var(--size-m);
-    background: var(--color-surface-raised);
+    background: var(--cal-header-bg);
+    color: var(--cal-header-color);
     border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
   }
 
@@ -110,6 +167,15 @@
     text-align: center;
   }
 
+  /* Week row theming */
+  tbody tr {
+    background: var(--cal-week-bg);
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--cal-week-bg-alt, var(--cal-week-bg));
+  }
+
   td {
     padding: var(--size-2xs, 2px);
     text-align: center;
@@ -137,12 +203,27 @@
     font-size: var(--font-size-sm, 0.875rem);
     font-variant-numeric: tabular-nums;
     color: var(--color-text);
-    background: transparent;
+    background: var(--cal-day-bg);
     border-radius: var(--radius-round, 50%);
     cursor: pointer;
     outline: none;
+    position: relative;
     transition: background var(--duration-fast, 150ms),
                 color var(--duration-fast, 150ms);
+  }
+
+  /* Day decoration layer — themes paint stickers/stamps here */
+  td button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--cal-day-image);
+    background-size: var(--cal-day-image-size);
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: var(--cal-day-image-opacity);
+    pointer-events: none;
+    border-radius: inherit;
   }
 
   /* Compact: smaller cells */
@@ -190,16 +271,16 @@
     outline-offset: -3px;
   }
 
-  /* Day number label */
+  /* Day number label — above decoration layer */
   .day-number {
     font-variant-numeric: tabular-nums;
+    position: relative;
+    z-index: 1;
   }
 
   :scope[data-size="large"] .day-number {
     font-weight: 600;
     font-size: var(--font-size-sm, 0.875rem);
-    position: relative;
-    z-index: 1;
   }
 
   /* Large mode: watermark day number in background */
@@ -208,25 +289,22 @@
     position: absolute;
     inset-block-end: -0.1em;
     inset-inline-end: 0.1em;
-    font-size: 3rem;
-    font-weight: 800;
+    font-size: var(--cal-watermark-size);
+    font-weight: var(--cal-watermark-weight);
     line-height: 1;
-    color: var(--color-text);
-    opacity: 0.05;
+    color: var(--cal-watermark-color);
+    opacity: var(--cal-watermark-opacity);
     pointer-events: none;
     font-variant-numeric: tabular-nums;
-  }
-
-  /* Hide watermark on disabled/empty weekend cells */
-  :scope[data-size="large"] td button[disabled]::before {
-    opacity: 0.03;
+    z-index: 0;
   }
 
   /* Today */
   td[data-today] button {
     font-weight: 700;
-    border: var(--border-width-thin, 1px) solid var(--color-border-strong, var(--color-border));
-    background: var(--color-surface-raised);
+    border: var(--border-width-thin, 1px) solid var(--cal-today-border);
+    background: var(--cal-today-bg);
+    box-shadow: var(--cal-today-shadow);
   }
 
   /* Selected (single) */
@@ -278,6 +356,7 @@
     position: absolute;
     inset-block-end: 2px;
     inset-inline: 0;
+    z-index: 1;
   }
 
   [data-event-dot] {
@@ -295,6 +374,8 @@
     gap: 1px;
     inline-size: 100%;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
   }
 
   .event-item {
@@ -322,8 +403,8 @@
   /* ── Highlighted dates ──────────────────────────────────────────── */
 
   td button[data-highlight] {
-    background: oklch(from var(--color-interactive) l c h / 0.08);
-    border: var(--border-width-thin, 1px) solid oklch(from var(--color-interactive) l c h / 0.25);
+    background: var(--cal-highlight-bg);
+    border: var(--border-width-thin, 1px) solid var(--cal-highlight-border);
   }
 
   td button[data-highlight="holiday"] {
@@ -350,8 +431,15 @@
   /* ── Disabled ───────────────────────────────────────────────────── */
 
   td button[disabled] {
-    opacity: 0.3;
+    opacity: var(--cal-disabled-opacity);
     cursor: not-allowed;
+  }
+
+  /* Outside-month days — lighter than in-month disabled */
+  td[data-outside-month] button {
+    opacity: var(--cal-outside-opacity);
+    color: var(--cal-outside-color);
+    cursor: default;
   }
 
   /* ── Day detail overlay ─────────────────────────────────────────── */

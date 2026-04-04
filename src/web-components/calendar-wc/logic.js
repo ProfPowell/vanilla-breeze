@@ -178,6 +178,12 @@ class CalendarWc extends VBElement {
     this.#header.append(this.#prevBtn, this.#titleContainer, this.#nextBtn);
     this.appendChild(this.#header);
 
+    // Banner — purely decorative surface for theme imagery
+    const banner = document.createElement('div');
+    banner.className = 'calendar-banner';
+    banner.setAttribute('aria-hidden', 'true');
+    this.appendChild(banner);
+
     // Grid
     this.#grid = document.createElement('table');
     this.#grid.setAttribute('role', 'grid');
@@ -200,7 +206,7 @@ class CalendarWc extends VBElement {
     // Keyboard navigation
     this.listen(this.#grid, 'keydown', (e) => this.#handleKey(e));
 
-    // Click delegation — select or open day detail
+    // Click delegation — select or open day detail (not both)
     this.listen(this.#grid, 'click', (e) => {
       const btn = e.target.closest('button[data-date]');
       if (!btn || btn.disabled) return;
@@ -208,22 +214,20 @@ class CalendarWc extends VBElement {
 
       if (this.#selectionMode !== 'none') {
         this.#handleSelect(iso);
-      }
-
-      // Open day detail if there are events for this date
-      const events = normalizeEvents(this.#events[iso]);
-      if (events.length) {
-        this.#openDayDetail(iso, events);
+      } else {
+        // Display-only mode: open day detail if events exist
+        const events = normalizeEvents(this.#events[iso]);
+        if (events.length) this.#openDayDetail(iso, events);
       }
     });
 
-    // Hover for range preview
+    // Hover for range preview — in-place attribute update, no re-render
     if (this.#selectionMode === 'range') {
       this.listen(this.#grid, 'mouseover', (e) => {
         const btn = e.target.closest('button[data-date]');
         if (btn && this.#rangeStart && !this.#rangeEnd) {
           this.#hoverDate = fromISO(btn.getAttribute('data-date'));
-          this.#renderMonth();
+          this.#updateSelectionUI();
         }
       });
     }
@@ -260,7 +264,7 @@ class CalendarWc extends VBElement {
 
     if (this.#selectionMode === 'single') {
       this.#selectedDate = date;
-      this.#renderMonth();
+      this.#updateSelectionUI();
       this.dispatchEvent(new CustomEvent('calendar:select', {
         bubbles: true, detail: { value: iso, date }
       }));
@@ -283,7 +287,50 @@ class CalendarWc extends VBElement {
           }
         }));
       }
-      this.#renderMonth();
+      this.#updateSelectionUI();
+    }
+  }
+
+  /** Update selection/range attributes in-place without rebuilding DOM */
+  #updateSelectionUI() {
+    const tbody = this.#grid.querySelector('tbody');
+    if (!tbody) return;
+
+    const rangeA = this.#rangeStart;
+    const rangeB = this.#rangeEnd || this.#hoverDate;
+
+    for (const td of tbody.querySelectorAll('td')) {
+      const btn = td.querySelector('button[data-date]');
+      if (!btn) continue;
+
+      const iso = btn.getAttribute('data-date');
+      const cellDate = fromISO(iso);
+
+      // Clear old selection attributes
+      td.removeAttribute('data-selected');
+      td.removeAttribute('data-range-start');
+      td.removeAttribute('data-range-end');
+      td.removeAttribute('data-in-range');
+      btn.removeAttribute('aria-selected');
+
+      // Single selection
+      if (this.#selectionMode === 'single' && sameDay(cellDate, this.#selectedDate)) {
+        td.setAttribute('data-selected', '');
+        btn.setAttribute('aria-selected', 'true');
+      }
+
+      // Range selection
+      if (this.#selectionMode === 'range' && rangeA) {
+        if (rangeB) {
+          const lo = rangeA < rangeB ? rangeA : rangeB;
+          const hi = rangeA < rangeB ? rangeB : rangeA;
+          if (sameDay(cellDate, lo)) td.setAttribute('data-range-start', '');
+          if (sameDay(cellDate, hi)) td.setAttribute('data-range-end', '');
+          if (cellDate >= lo && cellDate <= hi) td.setAttribute('data-in-range', '');
+        } else if (sameDay(cellDate, rangeA)) {
+          td.setAttribute('data-range-start', '');
+        }
+      }
     }
   }
 
@@ -303,18 +350,39 @@ class CalendarWc extends VBElement {
     }
     this.#buildYearOptions();
 
+    // Sync host attributes for theme CSS selectors
+    this.setAttribute('data-month', String(this.#viewMonth + 1));
+    this.setAttribute('data-year', String(this.#viewYear));
+
     // Remove old tbody
     const oldTbody = this.#grid.querySelector('tbody');
     if (oldTbody) oldTbody.remove();
 
     const tbody = document.createElement('tbody');
+    let weekIdx = 1;
     let row = document.createElement('tr');
+    row.setAttribute('data-week', String(weekIdx));
 
     const firstDay = new Date(this.#viewYear, this.#viewMonth, 1).getDay();
     const startOffset = (firstDay - this.#firstDayOfWeek + 7) % 7;
 
+    // Leading cells: show previous month's trailing days (paper-calendar style)
+    const prevMonthDays = daysInMonth(this.#viewYear, this.#viewMonth - 1);
     for (let i = 0; i < startOffset; i++) {
-      row.appendChild(document.createElement('td'));
+      const dayNum = prevMonthDays - startOffset + 1 + i;
+      const td = document.createElement('td');
+      td.setAttribute('data-outside-month', '');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.disabled = true;
+      btn.setAttribute('tabindex', '-1');
+      btn.setAttribute('data-day', String(dayNum));
+      const span = document.createElement('span');
+      span.className = 'day-number';
+      span.textContent = String(dayNum);
+      btn.appendChild(span);
+      td.appendChild(btn);
+      row.appendChild(td);
     }
 
     const rangeA = this.#rangeStart;
@@ -431,14 +499,29 @@ class CalendarWc extends VBElement {
 
       if ((startOffset + day) % 7 === 0) {
         tbody.appendChild(row);
+        weekIdx++;
         row = document.createElement('tr');
+        row.setAttribute('data-week', String(weekIdx));
       }
     }
 
+    // Trailing cells: show next month's leading days (paper-calendar style)
     const remaining = (startOffset + totalDays) % 7;
     if (remaining > 0) {
-      for (let i = remaining; i < 7; i++) {
-        row.appendChild(document.createElement('td'));
+      for (let i = 1; i <= 7 - remaining; i++) {
+        const td = document.createElement('td');
+        td.setAttribute('data-outside-month', '');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.disabled = true;
+        btn.setAttribute('tabindex', '-1');
+        btn.setAttribute('data-day', String(i));
+        const span = document.createElement('span');
+        span.className = 'day-number';
+        span.textContent = String(i);
+        btn.appendChild(span);
+        td.appendChild(btn);
+        row.appendChild(td);
       }
       tbody.appendChild(row);
     }
@@ -575,16 +658,23 @@ class CalendarWc extends VBElement {
 
     // Close on Escape
     const onKey = (e) => {
-      if (e.key === 'Escape') { this.#closeDayDetail(); document.removeEventListener('keydown', onKey); }
+      if (e.key === 'Escape') this.#closeDayDetail();
     };
-    document.addEventListener('keydown', onKey);
 
-    // Close on outside click
+    // Close on click outside the overlay
+    const onClick = (e) => {
+      if (!overlay.contains(e.target)) this.#closeDayDetail();
+    };
+
+    this._detailCleanup = () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onClick);
+    };
+
+    document.addEventListener('keydown', onKey);
+    // Use mousedown + rAF to skip the current event that opened the overlay
     requestAnimationFrame(() => {
-      const onClick = (e) => {
-        if (!overlay.contains(e.target)) { this.#closeDayDetail(); document.removeEventListener('click', onClick); }
-      };
-      document.addEventListener('click', onClick);
+      document.addEventListener('mousedown', onClick);
     });
 
     this.dispatchEvent(new CustomEvent('calendar:day-open', {
@@ -594,6 +684,8 @@ class CalendarWc extends VBElement {
 
   #closeDayDetail() {
     if (this.#detailOverlay) {
+      this._detailCleanup?.();
+      this._detailCleanup = null;
       this.#detailOverlay.remove();
       this.#detailOverlay = null;
     }
