@@ -62,6 +62,7 @@
 
   :scope[data-size="large"] {
     max-inline-size: 56rem;
+    container-type: inline-size;
   }
 
   /* ── Banner (decorative month imagery surface) ──────────────────── */
@@ -200,10 +201,17 @@
     vertical-align: top;
   }
 
-  /* Large: borders on td, not on button — prevents overlap/doubling */
+  /* Large: borders on td, square-ish cells that scale with container */
   :scope[data-size="large"] td {
     padding: 0;
     border: var(--border-width-thin, 1px) solid var(--color-border);
+  }
+
+  /* Use @container to keep cells roughly square */
+  @container (inline-size > 0px) {
+    :scope[data-size="large"] td {
+      block-size: 14cqi; /* 100% / 7 columns ≈ 14.28% → square */
+    }
   }
 
   /* ── Day buttons — default/compact ─────────────────────────────── */
@@ -259,11 +267,11 @@
     justify-content: flex-start;
     inline-size: 100%;
     block-size: 100%;
-    min-block-size: 6rem;
-    padding: var(--size-xs, 0.5rem);
+    min-block-size: clamp(3rem, 14cqi, 6rem);
+    padding: clamp(0.2rem, 1.5cqi, 0.5rem);
     border-radius: 0;
-    font-size: var(--font-size-sm, 0.875rem);
-    gap: var(--size-2xs, 0.25rem);
+    font-size: clamp(0.7rem, 2cqi, 0.875rem);
+    gap: clamp(0.1rem, 0.5cqi, 0.25rem);
     border: none;
     overflow: hidden;
     user-select: none;
@@ -297,7 +305,7 @@
 
   :scope[data-size="large"] .day-number {
     font-weight: 600;
-    font-size: var(--font-size-sm, 0.875rem);
+    font-size: clamp(0.7rem, 2cqi, 0.875rem);
   }
 
   /* Large mode: watermark day number in background */
@@ -306,7 +314,7 @@
     position: absolute;
     inset-block-end: -0.1em;
     inset-inline-end: 0.1em;
-    font-size: var(--cal-watermark-size);
+    font-size: clamp(1rem, 6cqi, var(--cal-watermark-size, 3rem));
     font-weight: var(--cal-watermark-weight);
     line-height: 1;
     color: var(--cal-watermark-color);
@@ -409,6 +417,13 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* Large mode: scale event text with container */
+  :scope[data-size="large"] .event-item {
+    font-size: clamp(0.55rem, 1.6cqi, 0.75rem);
+    padding: clamp(0px, 0.3cqi, 1px) clamp(0.1rem, 0.5cqi, 0.25rem);
+    gap: clamp(0.1rem, 0.3cqi, 0.25rem);
   }
 
   .event-more {
