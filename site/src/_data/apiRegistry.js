@@ -611,17 +611,6 @@ export default {
     },
     "attributes": []
   },
-  "form-field": {
-    "element": "form-field",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": []
-  },
   "loading-spinner": {
     "element": "loading-spinner",
     "type": "custom-element",
@@ -841,47 +830,316 @@ export default {
       }
     ]
   },
+  "audio-player": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "audio-player",
+    "type": "web-component",
+    "description": "Platform audio player web component",
+    "attributes": [
+      {
+        "name": "autoplay",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start playing on load (subject to browser autoplay policy)"
+      },
+      {
+        "name": "loop",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Loop single track or entire playlist"
+      },
+      {
+        "name": "shuffle",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Randomize playlist order"
+      },
+      {
+        "name": "controls",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "state",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-audio-played",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "muted",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-audio-active",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "audio-player:play"
+      },
+      {
+        "name": "audio-player:pause"
+      },
+      {
+        "name": "audio-player:ended"
+      },
+      {
+        "name": "audio-player:track-change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "audio-visualizer": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "audio-visualizer",
+    "type": "web-component",
+    "description": "Canvas-based audio visualization companion",
+    "attributes": [
+      {
+        "name": "for",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Required. ID of the target <audio> element"
+      },
+      {
+        "name": "data-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visualization mode: \"bars\" (default), \"waveform\", \"circle\""
+      },
+      {
+        "name": "data-fft-size",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "AnalyserNode FFT size (power of 2, 32-32768). Default: 256"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "calendar-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "calendar-wc",
+    "type": "web-component",
+    "description": "Standalone calendar display with rich cell content",
+    "attributes": [
+      {
+        "name": "data-month",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Initial month (1-12). Defaults to current."
+      },
+      {
+        "name": "data-year",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Initial year. Defaults to current."
+      },
+      {
+        "name": "data-events",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "JSON: events keyed by ISO date. Values can be:"
+      },
+      {
+        "name": "data-selection",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Selection mode: \"none\" (default), \"single\", \"range\""
+      },
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Size: \"compact\", \"default\", \"large\""
+      },
+      {
+        "name": "data-disabled-dates",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ISO dates to disable"
+      },
+      {
+        "name": "data-highlight-dates",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ISO dates to highlight (optionally with :category)"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-date",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-selected",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-range-start",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-range-end",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-in-range",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-week",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-outside-month",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-day",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-today",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-highlight",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-event-count",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-event-dot",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "title",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "calendar:navigate"
+      },
+      {
+        "name": "calendar:select"
+      },
+      {
+        "name": "calendar:day-open"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "card-list": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "card-list",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "template",
-        "@flow"
-      ]
-    },
+    "description": "Template-based list rendering with SAFE data binding",
     "attributes": [
       {
         "name": "src",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string"
+        "kind": "native",
+        "purpose": "config"
       },
       {
         "name": "data-items",
         "kind": "data",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "config"
       },
       {
         "name": "data-key",
         "kind": "data",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "config"
       },
       {
-        "name": "data-layout",
+        "name": "data-loading",
         "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "grid",
-          "stack",
-          "reel"
-        ]
+        "purpose": "config"
+      },
+      {
+        "name": "data-field",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-field-attr",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-field-html",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-field-if",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-field-unless",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "card-list:rendered"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "carousel-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -977,6 +1235,52 @@ export default {
         "description": "Each direct child becomes a slide"
       }
     ]
+  },
+  "change-set": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "change-set",
+    "type": "web-component",
+    "description": "Interactive change tracking group",
+    "attributes": [
+      {
+        "name": "view",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "'final' | 'original' | omitted (tracking)"
+      },
+      {
+        "name": "datetime",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ISO date of the change set"
+      },
+      {
+        "name": "author",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Author of the changes"
+      },
+      {
+        "name": "data-controls",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-pressed",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "change-set:view"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "chart-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1130,93 +1434,294 @@ export default {
       }
     ]
   },
+  "chat-input": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "chat-input",
+    "type": "web-component",
+    "description": "Form-associated chat input with auto-growing textarea",
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name (default: \"message\")"
+      },
+      {
+        "name": "maxlength",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Character limit (default: 4000)"
+      },
+      {
+        "name": "minlength",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Minimum length to send (default: 1)"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disables input and controls"
+      },
+      {
+        "name": "autofocus",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Focus textarea on connect"
+      }
+    ],
+    "events": [
+      {
+        "name": "chat-input:input"
+      },
+      {
+        "name": "chat-input:send"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "chat-window": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "chat-window",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Light DOM orchestrator for chat UI",
     "attributes": [
       {
         "name": "endpoint",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "API endpoint for chat requests (omit for custom transport)"
       },
       {
         "name": "model",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Active model; synced with [data-model-select] (property-driven after connect)"
       },
       {
         "name": "empty-message",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Empty thread placeholder text"
+      },
+      {
+        "name": "data-from",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-from-label",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-status",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-role",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-model",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-chat-empty",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "chat-window:error"
+      },
+      {
+        "name": "chat-window:send"
+      },
+      {
+        "name": "chat-window:model-change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "color-palette": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "color-palette",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Interactive color swatch display",
     "attributes": [
       {
         "name": "colors",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Comma-separated color values (hex, rgb, oklch, etc.)"
       },
       {
         "name": "names",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Comma-separated swatch labels (optional)"
       },
       {
         "name": "layout",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "inline",
-          "grid",
-          "list"
-        ]
+        "type": "string",
+        "description": "Display mode: \"inline\" (default), \"grid\", \"list\""
       },
       {
         "name": "show-values",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Always show color values (otherwise hover-only)"
       },
       {
         "name": "show-names",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Show name labels below swatches (auto-enabled if names attr set)"
       },
       {
         "name": "size",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "sm",
-          "md",
-          "lg"
-        ]
+        "type": "string",
+        "description": "Swatch size: \"sm\", \"md\" (default), \"lg\""
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "color-palette:select"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "color-picker": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "color-picker",
+    "type": "web-component",
+    "description": "Form-associated color picker with HSL color space",
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disables the picker"
+      },
+      {
+        "name": "required",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Makes selection required"
+      },
+      {
+        "name": "data-disabled",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemin",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemax",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "data-color",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-channel",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "maxlength",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "spellcheck",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "autocomplete",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuetext",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuenow",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "open",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "color-picker:change"
+      },
+      {
+        "name": "color-picker:open"
+      },
+      {
+        "name": "color-picker:close"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "combo-box": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1384,52 +1889,113 @@ export default {
     ]
   },
   "command-palette": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "command-palette",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Command palette / Cmd+K launcher",
     "attributes": [
+      {
+        "name": "hotkey",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Global keyboard shortcut to open (default: \"meta+k\")"
+      },
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Search input placeholder text"
+      },
+      {
+        "name": "discover",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "When present, auto-populate from [data-command] registry"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "value",
+        "kind": "native",
+        "purpose": "config"
+      },
       {
         "name": "data-hotkey",
         "kind": "data",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "config"
       },
       {
-        "name": "data-placeholder",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "data-discover",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
+        "name": "name",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "command-palette:select"
+      },
+      {
+        "name": "command-palette:open"
+      },
+      {
+        "name": "command-palette:close"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "compare-surface": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "compare-surface",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Before/after image comparison slider",
     "attributes": [
       {
         "name": "position",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Slider position (0-100), default 50. Reflected on change."
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemin",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemax",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuenow",
+        "kind": "aria",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "compare-surface:change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "component-sampler": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1578,54 +2144,64 @@ export default {
     ]
   },
   "content-swap": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "content-swap",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Two-face content toggle with accessible state management",
     "attributes": [
       {
         "name": "transition",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "flip",
-          "flip-vertical",
-          "fade",
-          "slide-left",
-          "slide-up",
-          "scale"
-        ]
+        "type": "string",
+        "description": "Transition type: \"flip\" (default), \"flip-vertical\", \"fade\", \"slide-left\", \"slide-up\", \"scale\""
       },
       {
         "name": "swapped",
         "kind": "host-api",
-        "purpose": "output-state",
+        "purpose": "config",
         "type": "boolean",
-        "direction": "both"
+        "description": "Reflects swap state"
       },
       {
         "name": "card",
         "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "boolean"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Apply layout-card visual shell"
       },
       {
-        "name": "data-variant",
+        "name": "data-face",
         "kind": "data",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "elevated",
-          "outlined",
-          "ghost"
-        ]
+        "purpose": "config",
+        "type": "string",
+        "description": "\"front\" or \"back\" on child elements"
+      },
+      {
+        "name": "data-swap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Marks an element as a swap trigger (on children),"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-swap-init",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "content-swap:swap"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "context-menu": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1794,6 +2370,127 @@ export default {
       }
     ]
   },
+  "date-picker": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "date-picker",
+    "type": "web-component",
+    "description": "Form-associated calendar date picker with combobox text entry",
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disables the picker"
+      },
+      {
+        "name": "required",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Makes selection required"
+      },
+      {
+        "name": "data-disabled-dates",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ISO dates to disable (optionally with reason: \"2026-04-05:booked\")"
+      },
+      {
+        "name": "data-highlight-dates",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ISO dates to highlight (optionally with category: \"2026-12-25:holiday\")"
+      },
+      {
+        "name": "min",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "max",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-disabled",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "autocomplete",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-date",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-disabled-reason",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-highlight",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-focused",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "open",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "date-picker:change"
+      },
+      {
+        "name": "date-picker:open"
+      },
+      {
+        "name": "date-picker:close"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "dl": {
     "element": "dl",
     "type": "native",
@@ -1810,37 +2507,112 @@ export default {
     "attributes": []
   },
   "drag-surface": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "drag-surface",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Accessible drag-and-drop reorder surface",
     "attributes": [
       {
         "name": "group",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Transfer group; items move between surfaces sharing a group"
       },
       {
         "name": "orientation",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "horizontal"
-        ]
+        "type": "string",
+        "description": "\"horizontal\" switches to Left/Right arrows and clientX"
       },
       {
         "name": "disabled",
         "kind": "native",
-        "purpose": "semantic-state",
-        "type": "boolean"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Temporarily disables all dragging"
+      },
+      {
+        "name": "draggable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "=\"true\" - Marks an element as draggable"
+      },
+      {
+        "name": "data-id",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Stable identifier for the item"
+      },
+      {
+        "name": "data-sort-order",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Numeric position (managed automatically)"
+      },
+      {
+        "name": "data-drag-handle",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "If present on a descendant, only that element initiates drag"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-grabbed",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "data-dragging",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-drag-over",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-reorder-mode",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-just-dropped",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-drop-target",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "drag-surface:reorder-start"
+      },
+      {
+        "name": "drag-surface:reorder"
+      },
+      {
+        "name": "drag-surface:transfer"
+      },
+      {
+        "name": "drag-surface:reorder-end"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "drop-down": {
     "$schema": "../../../schemas/api.schema.json",
@@ -1927,36 +2699,74 @@ export default {
     ]
   },
   "emoji-picker": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "emoji-picker",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Accessible emoji picker with search, categories, and insertion",
     "attributes": [
       {
         "name": "for",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "open",
-        "kind": "host-api",
-        "purpose": "output-state",
-        "type": "boolean",
-        "direction": "output",
-        "description": "Reflected state — set by open()/close()/toggle() methods, not intended as initial markup"
+        "type": "string",
+        "description": "ID of target input/textarea/contenteditable for insertion"
       },
       {
         "name": "recent-limit",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Max recent emoji stored (default: 24)"
+      },
+      {
+        "name": "data-trigger",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-group",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-group-heading",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-shortcode",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "open",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "emoji-picker:select"
+      },
+      {
+        "name": "emoji-picker:open"
+      },
+      {
+        "name": "emoji-picker:close"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "empathy-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2084,124 +2894,288 @@ export default {
     "attributes": []
   },
   "foot-notes": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "foot-notes",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "ol"
-      ]
-    },
+    "description": "Progressive enhancement for footnotes",
     "attributes": [
       {
         "name": "data-back-label",
         "kind": "data",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "config"
+      },
+      {
+        "name": "data-mode",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-enhanced",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-side",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-backref",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "form-field": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "form-field",
+    "type": "web-component",
+    "description": "Accessible form field web component",
+    "attributes": [
+      {
+        "name": "data-valid",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-invalid",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "geo-map": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "geo-map",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "A zero-dependency map component using OSM tiles.",
     "attributes": [
       {
         "name": "lat",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Latitude of map center"
       },
       {
         "name": "lng",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Longitude of map center"
       },
       {
         "name": "zoom",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Tile zoom level 1–19 (default: 15)"
+      },
+      {
+        "name": "marker",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Show pin at center; \"false\" to hide"
+      },
+      {
+        "name": "marker-color",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Pin fill color (default: #e74c3c)"
+      },
+      {
+        "name": "provider",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Tile source: osm, carto-light, carto-dark"
+      },
+      {
+        "name": "interactive",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "static-only",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "place",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "content",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-has-caption",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-interactive-active",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "geo-map:ready"
+      },
+      {
+        "name": "geo-map:activate"
+      },
+      {
+        "name": "geo-map:error"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "glossary-index": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "glossary-index",
+    "type": "web-component",
+    "description": "Interactive glossary with search and scroll-spy",
+    "attributes": [
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Placeholder text for the search input"
+      },
+      {
+        "name": "data-glossary-search",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "href",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "heading-links": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "heading-links",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Add anchor links to headings",
     "attributes": [
       {
         "name": "levels",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Heading levels to process (default: 'h2,h3')"
+      },
+      {
+        "name": "data-toc-ignore",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "heading-links:navigate"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "icon-wc": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "icon-wc",
     "type": "web-component",
+    "description": "Inline icon element using SVG sprite sets with accessible labelling",
     "htmlvalidate": {
       "flow": true,
-      "phrasing": true,
-      "permittedContent": []
+      "phrasing": true
     },
     "attributes": [
       {
         "name": "name",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
         "type": "string",
-        "required": true
+        "description": "Icon name (required, matches filename without .svg)"
       },
       {
         "name": "set",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "lucide",
-          "custom"
-        ]
+        "type": "string",
+        "description": "Icon set directory (default: \"lucide\", or \"custom\")"
       },
       {
         "name": "size",
         "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "xs",
-          "sm",
-          "md",
-          "lg",
-          "xl",
-          "2xl"
-        ]
+        "purpose": "config",
+        "type": "string",
+        "description": "Icon size: xs, sm, md, lg, xl, 2xl (default: md)"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Accessible label for functional icons"
       },
       {
         "name": "base-path",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "config"
+      },
+      {
+        "name": "width",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "height",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "image-gallery": {
     "$schema": "../../../.claude/schemas/api.schema.json",
@@ -2335,6 +3309,137 @@ export default {
         "description": "Optional caption inside figure. Supports HTML including links."
       }
     ]
+  },
+  "image-map": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "image-map",
+    "type": "web-component",
+    "description": "map + map-area: Modern responsive image map with percentage coordinates",
+    "attributes": [
+      {
+        "name": "x",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "y",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "width",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "height",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "cx",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "cy",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "r",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "points",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "shape",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "coords",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "href",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "tooltip",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "alt",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "viewBox",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "preserveAspectRatio",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-disabled",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-hover",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "image-map:area-enter"
+      },
+      {
+        "name": "image-map:area-leave"
+      },
+      {
+        "name": "image-map:area-activate"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "impact-effort": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2795,35 +3900,200 @@ export default {
       }
     ]
   },
+  "page-info": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "page-info",
+    "type": "web-component",
+    "description": "Document provenance disclosure panel",
+    "attributes": [
+      {
+        "name": "auto",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render from <meta> tags instead of light DOM"
+      },
+      {
+        "name": "og-preview",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show Open Graph social preview card"
+      },
+      {
+        "name": "datetime",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-trust",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "page-info:verified"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "page-meta": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "page-meta",
+    "type": "web-component",
+    "description": "Document metadata display with JSON-LD injection",
+    "attributes": [],
+    "childAttributes": [],
+    "structure": []
+  },
+  "page-stats": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "page-stats",
+    "type": "web-component",
+    "description": "Lightweight reading statistics",
+    "attributes": [
+      {
+        "name": "data-for",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of the target content element to analyze"
+      },
+      {
+        "name": "data-wpm",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Words per minute for reading time (default: 238)"
+      },
+      {
+        "name": "data-show",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated stats to display:"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "page-toc": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "page-toc",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Table of contents with scroll-spy",
     "attributes": [
       {
         "name": "levels",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "scope",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Heading levels to include (default: 'h2,h3')"
       },
       {
         "name": "title",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "ToC title (default: 'On this page')"
+      },
+      {
+        "name": "href",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-toc-ignore",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "page-toc:navigate"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "page-tools": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "page-tools",
+    "type": "web-component",
+    "description": "Configurable toolbar for page-level utilities",
+    "attributes": [
+      {
+        "name": "data-position",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Positioning: 'sticky' (default), 'fixed', 'inline'"
+      },
+      {
+        "name": "data-orientation",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Direction: 'auto' (default), 'vertical', 'horizontal'"
+      },
+      {
+        "name": "data-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Gap token: 's' (default)"
+      },
+      {
+        "name": "data-fab-icon",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Icon name for FAB (default: 'ellipsis-vertical')"
+      },
+      {
+        "name": "data-fab-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible label for FAB (default: 'Page tools')"
+      },
+      {
+        "name": "data-breakpoint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Collapse width (default: '48rem')"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-page-tools-internal",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "popovertarget",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-resolved-orientation",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-collapsed",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "page-tour": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3034,100 +4304,499 @@ export default {
       }
     ]
   },
-  "print-page": {
-    "element": "print-page",
+  "palette-generator": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "palette-generator",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Generate color palettes from a seed color",
     "attributes": [
       {
-        "name": "raw-toggle",
+        "name": "seed",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "string",
+        "description": "Hex seed color (e.g. \"#6366f1\"). Overridden by child input if present"
       },
       {
-        "name": "label",
+        "name": "harmony",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
-      }
-    ]
-  },
-  "qr-code": {
-    "element": "qr-code",
-    "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@phrasing"
-      ]
-    },
-    "attributes": [
+        "type": "string",
+        "description": "Algorithm: complementary, analogous, triadic, split-complementary, tetradic, monochromatic"
+      },
       {
-        "name": "value",
+        "name": "include-seed",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "boolean",
+        "description": "Whether the seed appears in the palette (default: true, implicit)"
+      },
+      {
+        "name": "show-export",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show Copy Hex / Copy CSS toolbar below the palette"
+      },
+      {
+        "name": "layout",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Inherited: \"inline\" (default), \"grid\", \"list\""
       },
       {
         "name": "size",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "string",
+        "description": "Inherited: \"sm\", \"md\" (default), \"lg\""
+      },
+      {
+        "name": "show-values",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Inherited: always show hex values on swatches"
+      },
+      {
+        "name": "show-names",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Inherited: show name labels"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "color-palette:select"
+      },
+      {
+        "name": "palette-generator:generate"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "print-page": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "print-page",
+    "type": "web-component",
+    "description": "Print button with optional raw-mode toggle",
+    "attributes": [
+      {
+        "name": "raw-toggle",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "If present, shows a checkbox to disable VB print styles"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Custom button label (default: \"Print this page\")"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-print-raw",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "qr-code": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "qr-code",
+    "type": "web-component",
+    "description": "QR code generator web component",
+    "attributes": [
+      {
+        "name": "value",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "The text/URL to encode (or uses textContent). Reactive."
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Canvas size in pixels (default: 200). Reactive."
       },
       {
         "name": "color",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Foreground color (default: currentColor). Init-only."
       },
       {
         "name": "background",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Background color (default: transparent). Init-only."
       },
       {
         "name": "error-correction",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "number",
+        "description": "Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only."
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "reader-view": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "reader-view",
+    "type": "web-component",
+    "description": "Immersive reading shell with scroll and paged modes.",
+    "attributes": [
+      {
+        "name": "upgraded",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "mode",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "columns",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "font-controls",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "col-controls",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "reader-title",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "persist",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "storage-key",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-reader-state",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-pressed",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "settings-panel": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "settings-panel",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Compact settings panel",
     "attributes": [
       {
         "name": "open",
-        "kind": "host-api",
-        "purpose": "output-state",
+        "kind": "native",
+        "purpose": "config",
         "type": "boolean",
-        "direction": "output",
-        "description": "Reflected state — set by open()/close()/toggle() methods, not intended as initial markup"
+        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup"
+      },
+      {
+        "name": "data-trigger",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "vb:a11y-themes-change"
+      },
+      {
+        "name": "vb:extensions-change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "share-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "share-wc",
+    "type": "web-component",
+    "description": "Social share component with native Web Share API and platform fallbacks",
+    "attributes": [
+      {
+        "name": "url",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to share (default: location.href)"
+      },
+      {
+        "name": "title",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Share title (default: document.title)"
+      },
+      {
+        "name": "text",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Share description (default: meta description)"
+      },
+      {
+        "name": "platforms",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated platform list (default: \"x,linkedin,bluesky,mastodon,whatsapp,email,copy\")"
+      },
+      {
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visual variant: \"icon\", \"label\", \"icon-label\" (default: \"icon-label\")"
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Button size: \"s\", \"m\", \"l\" (default: \"m\")"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Label for native share button (default: \"Share\")"
+      },
+      {
+        "name": "color",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Present = use platform brand colours"
+      },
+      {
+        "name": "mastodon-instance",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Mastodon instance (default: \"mastodon.social\")"
+      },
+      {
+        "name": "tier",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Force tier: \"native\", \"platforms\" (overrides auto-detection)"
+      },
+      {
+        "name": "data-tier-resolved",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "href",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "content",
+        "kind": "host-api",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "share-wc:open"
+      },
+      {
+        "name": "share-wc:success"
+      },
+      {
+        "name": "share-wc:error"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "short-cuts": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "short-cuts",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": []
-    },
-    "attributes": []
+    "description": "Keyboard shortcuts help overlay",
+    "attributes": [],
+    "childAttributes": [],
+    "structure": []
+  },
+  "site-index": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "site-index",
+    "type": "web-component",
+    "description": "Interactive site keyword index",
+    "attributes": [
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Search input placeholder (default \"Filter index…\")"
+      },
+      {
+        "name": "letters",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Jump nav mode: \"entries\" (default) | \"all\" | \"none\""
+      },
+      {
+        "name": "filter",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Search scope: \"topic\" (default) | \"all\""
+      },
+      {
+        "name": "sort",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Sort mode: \"alpha\" (default) | \"count\""
+      },
+      {
+        "name": "limit",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Max entries per letter before \"Show more\" toggle"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to load index data from (optional)"
+      },
+      {
+        "name": "data-index-controls",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-index-search",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "href",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-index-overflow",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-index-expand",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "site-map": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "site-map",
+    "type": "web-component",
+    "description": "Interactive HTML sitemap",
+    "attributes": [
+      {
+        "name": "current",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Pathname of the current page"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to load sitemap data from (optional)"
+      },
+      {
+        "name": "data-sitemap-controls",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3177,105 +4846,182 @@ export default {
     ]
   },
   "slide-accept": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "slide-accept",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@phrasing"
-      ]
-    },
+    "description": "Slide-to-confirm interaction",
     "attributes": [
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Track label text (default: \"Slide to confirm\")"
       },
       {
         "name": "activated-label",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Label after activation (default: \"Confirmed!\")"
       },
       {
         "name": "attention",
         "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "shimmer",
-          "pulse"
-        ]
+        "purpose": "config",
+        "type": "string",
+        "description": "Attention animation: \"shimmer\" | \"pulse\""
       },
       {
         "name": "threshold",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Activation threshold 0-100 (default: 90)"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemin",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemax",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuenow",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "data-activated",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "transitioning",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-dragging",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "slide-accept:reset"
+      },
+      {
+        "name": "slide-accept:accept"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "social-embed": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "social-embed",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
     "attributes": [
       {
         "name": "url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "required": true
+        "description": "URL of content to embed (required)"
       },
       {
         "name": "provider",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Explicit provider key (auto-detected if omitted)"
       },
       {
         "name": "theme",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "light",
-          "dark",
-          "auto"
-        ]
+        "type": "string",
+        "description": "Theme hint: light | dark | auto (default: auto)"
       },
       {
         "name": "activate",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "click",
-          "visible",
-          "eager"
-        ]
+        "type": "string",
+        "description": "Activation trigger: click | visible | eager (default: click)"
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "output-state",
-        "type": "enum",
-        "values": [
-          "idle",
-          "loading",
-          "loaded",
-          "error",
-          "unsupported"
-        ],
-        "direction": "output"
+        "purpose": "config",
+        "type": "string",
+        "description": "Lifecycle state (read-only, set by component)"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-embed-live",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "style",
+        "kind": "host-api",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "spacing-specimen": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "spacing-specimen",
+    "type": "web-component",
+    "description": "Design token spacing scale display",
+    "attributes": [
+      {
+        "name": "tokens",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated token names to display"
+      },
+      {
+        "name": "prefix",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS variable prefix (default: \"--size-\")"
+      },
+      {
+        "name": "show-values",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show computed px values (default: true)"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading label"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "split-surface": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3365,65 +5111,100 @@ export default {
     ]
   },
   "star-rating": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "star-rating",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Form-associated star rating web component",
     "attributes": [
       {
         "name": "name",
         "kind": "native",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Form field name (omit for read-only)"
       },
       {
         "name": "value",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
-        "type": "number",
-        "direction": "both"
+        "type": "string",
+        "description": "Current rating value (default: 0)"
       },
       {
         "name": "max",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
-        "type": "number"
+        "type": "string",
+        "description": "Number of stars (default: 5)"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Legend text (default: \"Rating\")"
       },
       {
         "name": "allow-half",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Enable half-star increments"
       },
       {
         "name": "readonly",
         "kind": "native",
-        "purpose": "semantic-state",
-        "type": "boolean"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Display-only mode"
       },
       {
         "name": "icon",
         "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "string"
+        "purpose": "config",
+        "type": "string",
+        "description": "Lucide icon name for icon-wc (default: star text)"
       },
       {
         "name": "required",
         "kind": "native",
-        "purpose": "semantic-state",
-        "type": "boolean"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Makes rating required for form validation"
+      },
+      {
+        "name": "data-rating",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-rating-half",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-effect",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-half",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-rating-readonly",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "story-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3548,88 +5329,313 @@ export default {
     ]
   },
   "text-reader": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "text-reader",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
     "attributes": [
       {
         "name": "for",
-        "kind": "host-api",
+        "kind": "native",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "ID of the element to read (required)"
       },
       {
         "name": "selectors",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Comma-separated selectors for text extraction (default: \"p,li\")"
       },
       {
         "name": "speed",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Playback rate 0.5–2 (default: 1)"
       },
       {
         "name": "voice",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "voiceURI to pre-select"
       },
       {
         "name": "highlight",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "string",
+        "description": "Set to \"false\" to disable word highlighting"
       },
       {
         "name": "scroll",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "string",
+        "description": "Set to \"false\" to disable auto-scroll"
+      },
+      {
+        "name": "part",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "label-play",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "label-pause",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "label-stop",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-speed-group",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-speed-value",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "slot",
+        "kind": "native",
+        "purpose": "config"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "theme-picker": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "theme-picker",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Theme selection component",
     "attributes": [
       {
         "name": "variant",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "popover",
-          "inline"
-        ]
+        "type": "string",
+        "description": "Display variant: 'popover' (default), 'inline'"
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "boolean"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render theme section as grouped select dropdown"
       },
       {
         "name": "open",
-        "kind": "host-api",
-        "purpose": "output-state",
+        "kind": "native",
+        "purpose": "config",
         "type": "boolean",
-        "direction": "output",
-        "description": "Reflected state — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)"
+        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)"
+      },
+      {
+        "name": "data-trigger",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-busy",
+        "kind": "aria",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "vb:extensions-change"
+      },
+      {
+        "name": "theme-picker:open"
+      },
+      {
+        "name": "theme-picker:close"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "time-index": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "time-index",
+    "type": "web-component",
+    "description": "Interactive changelog/timeline component",
+    "attributes": [
+      {
+        "name": "group",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "'month' (default) or 'version'"
+      },
+      {
+        "name": "view",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "'date' or 'version' — grouping view"
+      },
+      {
+        "name": "versions",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Enable version jump select"
+      },
+      {
+        "name": "updates-src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL for recently updated pages JSON"
+      },
+      {
+        "name": "data-timeline-controls",
+        "kind": "data",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "time-picker": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "time-picker",
+    "type": "web-component",
+    "description": "Form-associated time input with combobox text entry",
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name"
+      },
+      {
+        "name": "data-format",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "\"12h\" or \"24h\" (default: locale-detected)"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disables the picker"
+      },
+      {
+        "name": "required",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Makes selection required"
+      },
+      {
+        "name": "step",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "min",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "max",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-disabled",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-haspopup",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "autocomplete",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemin",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemax",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "data-open",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuenow",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuetext",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "time-picker:change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "toast-msg": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3730,104 +5736,139 @@ export default {
     ]
   },
   "tool-tip": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "tool-tip",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow",
-        "template"
-      ]
-    },
+    "description": "Enhanced tooltip with Popover API + interestfor",
     "attributes": [
-      {
-        "name": "variant",
-        "kind": "host-api",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "card"
-        ]
-      },
       {
         "name": "content",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Simple text tooltip content"
       },
       {
         "name": "position",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "top",
-          "bottom",
-          "left",
-          "right"
-        ]
+        "type": "string",
+        "description": "Position: 'top' (default), 'bottom', 'left', 'right'"
       },
       {
         "name": "delay",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number"
+        "type": "number",
+        "description": "Show delay in ms (default: 200)"
+      },
+      {
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Variant: omit for tooltip (default), 'card' for hover card"
+      },
+      {
+        "name": "data-interest-polyfill",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "title",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      },
+      {
+        "name": "data-anchor",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "interestfor",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-content",
+        "kind": "data",
+        "purpose": "config"
       }
-    ]
+    ],
+    "events": [
+      {
+        "name": "tool-tip:show"
+      },
+      {
+        "name": "tool-tip:hide"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "type-specimen": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "type-specimen",
     "type": "web-component",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
+    "description": "Typography specimen display",
     "attributes": [
       {
         "name": "font-family",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "CSS font-family value"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Display name for the font (optional, falls back to font-family)"
       },
       {
         "name": "sample",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Custom sample text (default: \"The quick brown fox...\")"
       },
       {
         "name": "show-scale",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Show VB type scale (xs–5xl)"
       },
       {
         "name": "show-weights",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Show weight scale (100–900)"
       },
       {
         "name": "show-characters",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Show character grid"
       },
       {
         "name": "weights",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Comma-separated available weights (default: \"400,700\")"
       }
-    ]
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "user-journey": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4184,5 +6225,189 @@ export default {
         "description": "Fired when updatePriority() is called"
       }
     ]
+  },
+  "video-player": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "video-player",
+    "type": "web-component",
+    "description": "Platform video player web component",
+    "attributes": [
+      {
+        "name": "autoplay",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start playing on load (subject to browser autoplay policy)"
+      },
+      {
+        "name": "loop",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Loop single track or entire playlist"
+      },
+      {
+        "name": "muted",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start muted"
+      },
+      {
+        "name": "controls",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-fullscreen",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "state",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "data-video-played",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "captions",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-pressed",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "data-video-active",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-poster",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-captions",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "data-dynamic",
+        "kind": "data",
+        "purpose": "config"
+      },
+      {
+        "name": "shuffle",
+        "kind": "host-api",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuetext",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "video-player:play"
+      },
+      {
+        "name": "video-player:pause"
+      },
+      {
+        "name": "video-player:ended"
+      },
+      {
+        "name": "video-player:track-change"
+      },
+      {
+        "name": "video-player:fullscreen"
+      },
+      {
+        "name": "video-player:speed"
+      },
+      {
+        "name": "video-player:captions"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "youtube-player": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "youtube-player",
+    "type": "web-component",
+    "attributes": [
+      {
+        "name": "video-id",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "YouTube video ID (required)"
+      },
+      {
+        "name": "title",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible title for iframe + play button"
+      },
+      {
+        "name": "start",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Start playback at N seconds"
+      },
+      {
+        "name": "list",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "YouTube playlist ID"
+      },
+      {
+        "name": "params",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Raw query string appended to embed URL"
+      },
+      {
+        "name": "autoplay",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Auto-initialise iframe on load (no facade)"
+      },
+      {
+        "name": "thumbnail",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Thumbnail resolution: hq | mq | sd | maxres"
+      },
+      {
+        "name": "state",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Component-managed: \"ready\" (facade) or \"active\" (iframe)"
+      },
+      {
+        "name": "role",
+        "kind": "native",
+        "purpose": "config"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   }
 };

@@ -134,11 +134,6 @@ module.exports = {
     permittedContent: ["dt", "dd"]
   },
 
-  "form-field": {
-    flow: true,
-    permittedContent: ["@flow"]
-  },
-
   "loading-spinner": {
     flow: true,
     phrasing: true,
@@ -180,6 +175,13 @@ module.exports = {
     permittedContent: ["@script", "dt", "dd", "div", "dl-item"]
   },
 
+  "form-field": {
+    attributes: {
+      "data-valid": {},
+      "data-invalid": {}
+    }
+  },
+
   // ── Web Components ──────────────────────────────────────────────
 
   "accordion-wc": {
@@ -195,14 +197,66 @@ module.exports = {
     }
   },
 
+  "audio-player": {
+    attributes: {
+      "autoplay": { boolean: true },
+      "loop": { boolean: true },
+      "shuffle": { boolean: true },
+      "controls": {},
+      "state": {},
+      "data-audio-played": {},
+      "muted": {},
+      "data-audio-active": {}
+    }
+  },
+
+  "audio-visualizer": {
+    attributes: {
+      "for": {},
+      "data-mode": {},
+      "data-fft-size": {}
+    }
+  },
+
+  "calendar-wc": {
+    attributes: {
+      "data-month": {},
+      "data-year": {},
+      "data-events": {},
+      "data-selection": {},
+      "data-size": {},
+      "data-disabled-dates": {},
+      "data-highlight-dates": {},
+      "role": {},
+      "data-date": {},
+      "data-selected": {},
+      "data-range-start": {},
+      "data-range-end": {},
+      "data-in-range": {},
+      "data-week": {},
+      "data-outside-month": {},
+      "data-day": {},
+      "data-today": {},
+      "data-highlight": {},
+      "data-event-count": {},
+      "name": {},
+      "size": {},
+      "data-event-dot": {},
+      "title": {}
+    }
+  },
+
   "card-list": {
-    flow: true,
-    permittedContent: ["template", "@flow"],
     attributes: {
       "src": {},
       "data-items": {},
       "data-key": {},
-      "data-layout": { enum: ["grid", "stack", "reel"] }
+      "data-loading": {},
+      "data-field": {},
+      "data-field-attr": {},
+      "data-field-html": {},
+      "data-field-if": {},
+      "data-field-unless": {}
     }
   },
 
@@ -222,6 +276,16 @@ module.exports = {
     }
   },
 
+  "change-set": {
+    attributes: {
+      "view": {},
+      "datetime": {},
+      "author": {},
+      "data-controls": {},
+      "aria-pressed": {}
+    }
+  },
+
   "chart-wc": {
     flow: true,
     permittedContent: ["@flow"],
@@ -237,26 +301,59 @@ module.exports = {
     }
   },
 
+  "chat-input": {
+    attributes: {
+      "name": {},
+      "maxlength": {},
+      "minlength": {},
+      "disabled": { boolean: true },
+      "autofocus": { boolean: true }
+    }
+  },
+
   "chat-window": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "endpoint": {},
       "model": {},
-      "empty-message": {}
+      "empty-message": {},
+      "data-from": {},
+      "data-from-label": {},
+      "data-status": {},
+      "data-role": {},
+      "data-model": {},
+      "data-chat-empty": {}
     }
   },
 
   "color-palette": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "colors": {},
       "names": {},
-      "layout": { enum: ["inline", "grid", "list"] },
+      "layout": {},
       "show-values": { boolean: true },
       "show-names": { boolean: true },
-      "size": { enum: ["sm", "md", "lg"] }
+      "size": {}
+    }
+  },
+
+  "color-picker": {
+    attributes: {
+      "name": {},
+      "disabled": { boolean: true },
+      "required": { boolean: true },
+      "data-disabled": {},
+      "aria-haspopup": {},
+      "role": {},
+      "aria-valuemin": {},
+      "aria-valuemax": {},
+      "data-color": {},
+      "data-channel": {},
+      "maxlength": {},
+      "spellcheck": {},
+      "autocomplete": {},
+      "aria-valuetext": {},
+      "aria-valuenow": {},
+      "open": {}
     }
   },
 
@@ -293,20 +390,25 @@ module.exports = {
   },
 
   "command-palette": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
+      "hotkey": {},
+      "placeholder": {},
+      "discover": { boolean: true },
+      "role": {},
+      "label": {},
+      "value": {},
       "data-hotkey": {},
-      "data-placeholder": {},
-      "data-discover": { boolean: true }
+      "name": {}
     }
   },
 
   "compare-surface": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "position": {}
+      "position": {},
+      "role": {},
+      "aria-valuemin": {},
+      "aria-valuemax": {},
+      "aria-valuenow": {}
     }
   },
 
@@ -332,13 +434,14 @@ module.exports = {
   },
 
   "content-swap": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "transition": { enum: ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"] },
+      "transition": {},
       "swapped": { boolean: true },
       "card": { boolean: true },
-      "data-variant": { enum: ["elevated", "outlined", "ghost"] }
+      "data-face": {},
+      "data-swap": { boolean: true },
+      "role": {},
+      "data-swap-init": {}
     }
   },
 
@@ -356,13 +459,45 @@ module.exports = {
     }
   },
 
+  "date-picker": {
+    attributes: {
+      "name": {},
+      "disabled": { boolean: true },
+      "required": { boolean: true },
+      "data-disabled-dates": {},
+      "data-highlight-dates": {},
+      "min": {},
+      "max": {},
+      "data-disabled": {},
+      "role": {},
+      "aria-haspopup": {},
+      "autocomplete": {},
+      "placeholder": {},
+      "size": {},
+      "data-date": {},
+      "data-disabled-reason": {},
+      "data-highlight": {},
+      "data-focused": {},
+      "open": {}
+    }
+  },
+
   "drag-surface": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "group": {},
-      "orientation": { enum: ["horizontal"] },
-      "disabled": { boolean: true }
+      "orientation": {},
+      "disabled": { boolean: true },
+      "draggable": { boolean: true },
+      "data-id": {},
+      "data-sort-order": {},
+      "data-drag-handle": { boolean: true },
+      "role": {},
+      "aria-grabbed": {},
+      "data-dragging": {},
+      "data-drag-over": {},
+      "data-reorder-mode": {},
+      "data-just-dropped": {},
+      "data-drop-target": {}
     }
   },
 
@@ -378,12 +513,16 @@ module.exports = {
   },
 
   "emoji-picker": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "for": {},
-      "open": { boolean: true },
-      "recent-limit": {}
+      "recent-limit": {},
+      "data-trigger": {},
+      "aria-haspopup": {},
+      "role": {},
+      "data-group": {},
+      "data-group-heading": {},
+      "data-shortcode": {},
+      "open": {}
     }
   },
 
@@ -408,41 +547,63 @@ module.exports = {
   },
 
   "foot-notes": {
-    flow: true,
-    permittedContent: ["ol"],
     attributes: {
-      "data-back-label": {}
+      "data-back-label": {},
+      "data-mode": {},
+      "data-enhanced": {},
+      "data-side": {},
+      "role": {},
+      "data-backref": {}
     }
   },
 
   "geo-map": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "lat": {},
       "lng": {},
-      "zoom": {}
+      "zoom": {},
+      "marker": {},
+      "marker-color": {},
+      "provider": {},
+      "interactive": {},
+      "static-only": {},
+      "src": {},
+      "place": {},
+      "content": {},
+      "data-has-caption": {},
+      "data-interactive-active": {},
+      "data-state": {}
+    }
+  },
+
+  "glossary-index": {
+    attributes: {
+      "placeholder": {},
+      "data-glossary-search": {},
+      "href": {}
     }
   },
 
   "heading-links": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "levels": {}
+      "levels": {},
+      "data-toc-ignore": {},
+      "role": {}
     }
   },
 
   "icon-wc": {
     flow: true,
     phrasing: true,
-    permittedContent: [],
     attributes: {
-      "name": { required: true },
-      "set": { enum: ["lucide", "custom"] },
-      "size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
+      "name": {},
+      "set": {},
+      "size": {},
       "label": {},
-      "base-path": {}
+      "base-path": {},
+      "width": {},
+      "height": {},
+      "role": {}
     }
   },
 
@@ -457,6 +618,33 @@ module.exports = {
       "loop": { boolean: true },
       "captions": { enum: ["auto", "overlay", "hidden"] },
       "transition": { enum: ["morph", "fade", "none"] }
+    }
+  },
+
+  "image-map": {
+    attributes: {
+      "x": {},
+      "y": {},
+      "width": {},
+      "height": {},
+      "cx": {},
+      "cy": {},
+      "r": {},
+      "points": {},
+      "shape": {},
+      "coords": {},
+      "label": {},
+      "href": {},
+      "target": {},
+      "tooltip": {},
+      "disabled": {},
+      "src": {},
+      "alt": {},
+      "viewBox": {},
+      "preserveAspectRatio": {},
+      "role": {},
+      "data-disabled": {},
+      "data-hover": {}
     }
   },
 
@@ -516,13 +704,49 @@ module.exports = {
     }
   },
 
+  "page-info": {
+    attributes: {
+      "auto": { boolean: true },
+      "og-preview": { boolean: true },
+      "datetime": {},
+      "data-trust": {}
+    }
+  },
+
+  "page-meta": {
+
+  },
+
+  "page-stats": {
+    attributes: {
+      "data-for": {},
+      "data-wpm": {},
+      "data-show": {}
+    }
+  },
+
   "page-toc": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "levels": {},
-      "scope": {},
-      "title": {}
+      "title": {},
+      "href": {},
+      "data-toc-ignore": {}
+    }
+  },
+
+  "page-tools": {
+    attributes: {
+      "data-position": {},
+      "data-orientation": {},
+      "data-gap": {},
+      "data-fab-icon": {},
+      "data-fab-label": {},
+      "data-breakpoint": {},
+      "role": {},
+      "data-page-tools-internal": {},
+      "popovertarget": {},
+      "data-resolved-orientation": {},
+      "data-collapsed": {}
     }
   },
 
@@ -542,38 +766,110 @@ module.exports = {
     }
   },
 
+  "palette-generator": {
+    attributes: {
+      "seed": {},
+      "harmony": {},
+      "include-seed": { boolean: true },
+      "show-export": { boolean: true },
+      "layout": {},
+      "size": {},
+      "show-values": { boolean: true },
+      "show-names": { boolean: true },
+      "role": {}
+    }
+  },
+
   "print-page": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "raw-toggle": { boolean: true },
-      "label": {}
+      "label": {},
+      "role": {},
+      "data-print-raw": {}
     }
   },
 
   "qr-code": {
-    flow: true,
-    permittedContent: ["@phrasing"],
     attributes: {
       "value": {},
       "size": {},
       "color": {},
       "background": {},
-      "error-correction": {}
+      "error-correction": {},
+      "role": {}
+    }
+  },
+
+  "reader-view": {
+    attributes: {
+      "upgraded": {},
+      "mode": {},
+      "columns": {},
+      "role": {},
+      "font-controls": {},
+      "col-controls": {},
+      "reader-title": {},
+      "disabled": {},
+      "persist": {},
+      "storage-key": {},
+      "data-reader-state": {},
+      "aria-pressed": {}
     }
   },
 
   "settings-panel": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "open": { boolean: true }
+      "open": { boolean: true },
+      "data-trigger": {},
+      "aria-haspopup": {},
+      "role": {}
+    }
+  },
+
+  "share-wc": {
+    attributes: {
+      "url": {},
+      "title": {},
+      "text": {},
+      "platforms": {},
+      "variant": {},
+      "size": {},
+      "label": {},
+      "color": { boolean: true },
+      "mastodon-instance": {},
+      "tier": {},
+      "data-tier-resolved": {},
+      "href": {},
+      "content": {}
     }
   },
 
   "short-cuts": {
-    flow: true,
-    permittedContent: []
+
+  },
+
+  "site-index": {
+    attributes: {
+      "placeholder": {},
+      "letters": {},
+      "filter": {},
+      "sort": {},
+      "limit": {},
+      "src": {},
+      "data-index-controls": {},
+      "data-index-search": {},
+      "href": {},
+      "data-index-overflow": {},
+      "data-index-expand": {}
+    }
+  },
+
+  "site-map": {
+    attributes: {
+      "current": {},
+      "src": {},
+      "data-sitemap-controls": {}
+    }
   },
 
   "site-search": {
@@ -585,25 +881,40 @@ module.exports = {
   },
 
   "slide-accept": {
-    flow: true,
-    permittedContent: ["@phrasing"],
     attributes: {
       "label": {},
       "activated-label": {},
-      "attention": { enum: ["shimmer", "pulse"] },
-      "threshold": {}
+      "attention": {},
+      "threshold": {},
+      "role": {},
+      "aria-valuemin": {},
+      "aria-valuemax": {},
+      "aria-valuenow": {},
+      "data-activated": {},
+      "transitioning": {},
+      "data-dragging": {}
     }
   },
 
   "social-embed": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "url": { required: true },
+      "url": {},
       "provider": {},
-      "theme": { enum: ["light", "dark", "auto"] },
-      "activate": { enum: ["click", "visible", "eager"] },
-      "state": { enum: ["idle", "loading", "loaded", "error", "unsupported"] }
+      "theme": {},
+      "activate": {},
+      "state": {},
+      "role": {},
+      "data-embed-live": {},
+      "style": {}
+    }
+  },
+
+  "spacing-specimen": {
+    attributes: {
+      "tokens": {},
+      "prefix": {},
+      "show-values": { boolean: true },
+      "label": {}
     }
   },
 
@@ -621,8 +932,6 @@ module.exports = {
   },
 
   "star-rating": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "value": {},
@@ -631,7 +940,13 @@ module.exports = {
       "allow-half": { boolean: true },
       "readonly": { boolean: true },
       "icon": {},
-      "required": { boolean: true }
+      "required": { boolean: true },
+      "data-rating": {},
+      "data-rating-half": {},
+      "data-effect": {},
+      "data-half": {},
+      "data-rating-readonly": {},
+      "role": {}
     }
   },
 
@@ -655,25 +970,66 @@ module.exports = {
   },
 
   "text-reader": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "for": {},
       "selectors": {},
       "speed": {},
       "voice": {},
-      "highlight": { boolean: true },
-      "scroll": { boolean: true }
+      "highlight": {},
+      "scroll": {},
+      "part": {},
+      "role": {},
+      "label-play": {},
+      "label-pause": {},
+      "label-stop": {},
+      "data-speed-group": {},
+      "data-speed-value": {},
+      "slot": {}
     }
   },
 
   "theme-picker": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
-      "variant": { enum: ["popover", "inline"] },
+      "variant": {},
       "compact": { boolean: true },
-      "open": { boolean: true }
+      "open": { boolean: true },
+      "data-trigger": {},
+      "aria-haspopup": {},
+      "role": {},
+      "aria-busy": {}
+    }
+  },
+
+  "time-index": {
+    attributes: {
+      "group": {},
+      "view": {},
+      "versions": { boolean: true },
+      "updates-src": {},
+      "data-timeline-controls": {}
+    }
+  },
+
+  "time-picker": {
+    attributes: {
+      "name": {},
+      "data-format": {},
+      "disabled": { boolean: true },
+      "required": { boolean: true },
+      "step": {},
+      "min": {},
+      "max": {},
+      "data-disabled": {},
+      "role": {},
+      "aria-haspopup": {},
+      "autocomplete": {},
+      "placeholder": {},
+      "size": {},
+      "aria-valuemin": {},
+      "aria-valuemax": {},
+      "data-open": {},
+      "aria-valuenow": {},
+      "aria-valuetext": {}
     }
   },
 
@@ -700,19 +1056,21 @@ module.exports = {
   },
 
   "tool-tip": {
-    flow: true,
-    permittedContent: ["@flow", "template"],
     attributes: {
-      "variant": { enum: ["card"] },
       "content": {},
-      "position": { enum: ["top", "bottom", "left", "right"] },
-      "delay": {}
+      "position": {},
+      "delay": {},
+      "variant": {},
+      "data-interest-polyfill": {},
+      "title": {},
+      "role": {},
+      "data-anchor": {},
+      "interestfor": {},
+      "data-content": {}
     }
   },
 
   "type-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
     attributes: {
       "font-family": {},
       "label": {},
@@ -769,6 +1127,40 @@ module.exports = {
       "compact": { boolean: true },
       "detail": { enum: ["full", "compact", "minimal"] },
       "src": {}
+    }
+  },
+
+  "video-player": {
+    attributes: {
+      "autoplay": { boolean: true },
+      "loop": { boolean: true },
+      "muted": { boolean: true },
+      "controls": {},
+      "data-fullscreen": {},
+      "state": {},
+      "data-video-played": {},
+      "captions": {},
+      "aria-pressed": {},
+      "data-video-active": {},
+      "data-poster": {},
+      "data-captions": {},
+      "data-dynamic": {},
+      "shuffle": {},
+      "aria-valuetext": {}
+    }
+  },
+
+  "youtube-player": {
+    attributes: {
+      "video-id": {},
+      "title": {},
+      "start": {},
+      "list": {},
+      "params": {},
+      "autoplay": { boolean: true },
+      "thumbnail": {},
+      "state": {},
+      "role": {}
     }
   },
 
