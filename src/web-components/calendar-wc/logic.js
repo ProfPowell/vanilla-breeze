@@ -150,6 +150,7 @@ class CalendarWc extends VBElement {
   #titleContainer;
   #monthLabel;
   #yearSelect;
+  #yearWrap;
   #grid;
   #monthsWrap;
   #prevBtn;
@@ -237,10 +238,10 @@ class CalendarWc extends VBElement {
       }));
     });
 
-    const yearWrap = document.createElement('span');
-    yearWrap.className = 'calendar-year-wrap';
-    yearWrap.appendChild(this.#yearSelect);
-    this.#titleContainer.append(this.#monthLabel, ' ', yearWrap);
+    this.#yearWrap = document.createElement('span');
+    this.#yearWrap.className = 'calendar-year-wrap';
+    this.#yearWrap.appendChild(this.#yearSelect);
+    this.#titleContainer.append(this.#monthLabel, ' ', this.#yearWrap);
 
     this.#nextBtn = document.createElement('button');
     this.#nextBtn.type = 'button';
@@ -461,7 +462,7 @@ class CalendarWc extends VBElement {
       if (n === 1) {
         this.#monthLabel.textContent = fmtMonth.format(first);
         // Show year dropdown in single-month mode
-        if (this.#yearSelect) this.#yearSelect.style.display = '';
+        if (this.#yearWrap) this.#yearWrap.style.display = '';
       } else {
         // Multi-month: show year(s) in shared header, no dropdown
         const last = this.#offsetMonth(n - 1);
@@ -470,7 +471,7 @@ class CalendarWc extends VBElement {
         } else {
           this.#monthLabel.textContent = `${first.getFullYear()} \u2013 ${last.year}`;
         }
-        if (this.#yearSelect) this.#yearSelect.style.display = 'none';
+        if (this.#yearWrap) this.#yearWrap.style.display = 'none';
       }
     } catch {
       this.#monthLabel.textContent = String(this.#viewMonth + 1);
