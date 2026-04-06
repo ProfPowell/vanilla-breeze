@@ -18,6 +18,7 @@
  * @attr {string}  data-max-date        - Latest selectable/navigable date (ISO string)
  * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
+ * @attr {string}  name                - Form participation name (enables ElementInternals form value)
  *
  * @example
  * <calendar-wc data-size="large"
@@ -110,6 +111,9 @@ function getLocalizedHours(locale) {
 // ── Component ───────────────────────────────────────────────────────
 
 class CalendarWc extends VBElement {
+  static formAssociated = true;
+
+  #internals;
   #locale;
   #viewMonth;
   #viewYear;
@@ -127,6 +131,12 @@ class CalendarWc extends VBElement {
   #selectionMode = 'none';
   #size = 'default';
 
+  /** JS-only callback: (date: Date) => boolean. If it returns true, the date is disabled. */
+  isDateDisallowed = null;
+
+  /** JS-only callback: (date: Date) => string | string[] | null. Return value set as data-day-part on the cell. */
+  getDayParts = null;
+
   // DOM refs
   #header;
   #titleContainer;
@@ -136,6 +146,13 @@ class CalendarWc extends VBElement {
   #prevBtn;
   #nextBtn;
   #detailOverlay = null;
+
+  constructor() {
+    super();
+    if (typeof this.attachInternals === 'function') {
+      this.#internals = this.attachInternals();
+    }
+  }
 
   setup() {
     this.#locale = this.closest('[lang]')?.lang || navigator.language;
@@ -309,6 +326,7 @@ class CalendarWc extends VBElement {
     if (this.#selectionMode === 'single') {
       this.#selectedDate = date;
       this.#updateSelectionUI();
+      this.#syncFormValue();
       this.dispatchEvent(new CustomEvent('calendar:select', {
         bubbles: true, detail: { value: iso, date }
       }));
@@ -317,21 +335,27 @@ class CalendarWc extends VBElement {
         this.#rangeStart = date;
         this.#rangeEnd = null;
         this.#hoverDate = null;
+        this.dataset.tentative = toISO(this.#rangeStart);
       } else {
         this.#rangeEnd = date;
         if (this.#rangeStart > this.#rangeEnd) {
           [this.#rangeStart, this.#rangeEnd] = [this.#rangeEnd, this.#rangeStart];
         }
         this.#hoverDate = null;
+        delete this.dataset.tentative;
+        const startISO = toISO(this.#rangeStart);
+        const endISO = toISO(this.#rangeEnd);
         this.dispatchEvent(new CustomEvent('calendar:select', {
           bubbles: true,
           detail: {
-            start: toISO(this.#rangeStart), end: toISO(this.#rangeEnd),
+            value: `${startISO}/${endISO}`,
+            start: startISO, end: endISO,
             startDate: this.#rangeStart, endDate: this.#rangeEnd,
           }
         }));
       }
       this.#updateSelectionUI();
+      this.#syncFormValue();
     } else if (this.#selectionMode === 'multi') {
       if (this.#selectedDates.has(iso)) {
         this.#selectedDates.delete(iso);
@@ -339,11 +363,19 @@ class CalendarWc extends VBElement {
         this.#selectedDates.add(iso);
       }
       this.#updateSelectionUI();
+      this.#syncFormValue();
       const sorted = [...this.#selectedDates].sort();
       this.dispatchEvent(new CustomEvent('calendar:select', {
         bubbles: true,
         detail: { values: sorted, dates: sorted.map(fromISO) }
       }));
+    }
+  }
+
+  /** Sync form value via ElementInternals when participating in a form */
+  #syncFormValue() {
+    if (this.#internals && this.getAttribute('name')) {
+      this.#internals.setFormValue(this.value);
     }
   }
 
@@ -523,10 +555,11 @@ class CalendarWc extends VBElement {
         td.setAttribute('data-range-start', '');
       }
 
-      // Disabled — explicit list or outside min/max range
+      // Disabled — explicit list, outside min/max range, or isDateDisallowed callback
       const beforeMin = this.#minDate && cellDate < this.#minDate;
       const afterMax = this.#maxDate && cellDate > this.#maxDate;
-      if (this.#disabledDates.has(iso) || beforeMin || afterMax) {
+      const dynamicDisabled = typeof this.isDateDisallowed === 'function' && this.isDateDisallowed(cellDate);
+      if (this.#disabledDates.has(iso) || beforeMin || afterMax || dynamicDisabled) {
         btn.setAttribute('aria-disabled', 'true');
         btn.disabled = true;
       }
@@ -534,6 +567,14 @@ class CalendarWc extends VBElement {
       // Highlighted
       if (this.#highlightDates.has(iso)) {
         btn.setAttribute('data-highlight', this.#highlightDates.get(iso) || '');
+      }
+
+      // Day parts callback
+      if (typeof this.getDayParts === 'function') {
+        const parts = this.getDayParts(cellDate);
+        if (parts != null) {
+          td.dataset.dayPart = Array.isArray(parts) ? parts.join(' ') : parts;
+        }
       }
 
       // Events
@@ -789,6 +830,11 @@ class CalendarWc extends VBElement {
       this.#detailOverlay.remove();
       this.#detailOverlay = null;
     }
+  }
+
+  teardown() {
+    delete this.dataset.tentative;
+    this.#closeDayDetail();
   }
 
   // ── Keyboard navigation ───────────────────────────────────────────
