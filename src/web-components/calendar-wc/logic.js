@@ -12,8 +12,10 @@
  *   - string: "Team meeting"
  *   - object: { "label": "...", "color": "...", "icon": "...", "time": "09:00" }
  *   - array:  [{ "label": "...", "time": "..." }, ...]
- * @attr {string}  data-selection       - Selection mode: "none" (default), "single", "range"
+ * @attr {string}  data-selection       - Selection mode: "none" (default), "single", "range", "multi"
  * @attr {string}  data-size            - Size: "compact", "default", "large"
+ * @attr {string}  data-min-date        - Earliest selectable/navigable date (ISO string)
+ * @attr {string}  data-max-date        - Latest selectable/navigable date (ISO string)
  * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
  *
@@ -69,24 +71,56 @@ function normalizeEvents(data) {
   return [];
 }
 
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const HOURS = Array.from({ length: 24 }, (_, i) => {
-  const h = i % 12 || 12;
-  const ampm = i < 12 ? 'AM' : 'PM';
-  return `${h}:00 ${ampm}`;
-});
+// ── Locale-aware label helpers ──────────────────────────────────────
+
+const _dayCache = new Map();
+const _hourCache = new Map();
+
+/**
+ * Return an array of 7 weekday names (index 0 = Sunday) for the given locale.
+ * @param {string} locale  BCP 47 locale string
+ * @param {'short'|'narrow'|'long'} style  Intl weekday format
+ */
+function getLocalizedDays(locale, style = 'short') {
+  const key = `${locale}:${style}`;
+  if (_dayCache.has(key)) return _dayCache.get(key);
+  const fmt = new Intl.DateTimeFormat(locale, { weekday: style });
+  // Jan 4 2026 is a Sunday — iterate 7 consecutive days
+  const days = Array.from({ length: 7 }, (_, i) =>
+    fmt.format(new Date(2026, 0, 4 + i))
+  );
+  _dayCache.set(key, days);
+  return days;
+}
+
+/**
+ * Return an array of 24 hour labels for the given locale.
+ * @param {string} locale  BCP 47 locale string
+ */
+function getLocalizedHours(locale) {
+  if (_hourCache.has(locale)) return _hourCache.get(locale);
+  const fmt = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    fmt.format(new Date(2026, 0, 4, i))
+  );
+  _hourCache.set(locale, hours);
+  return hours;
+}
 
 // ── Component ───────────────────────────────────────────────────────
 
 class CalendarWc extends VBElement {
+  #locale;
   #viewMonth;
   #viewYear;
   #firstDayOfWeek;
   #events = {};
+  #minDate = null;
+  #maxDate = null;
   #disabledDates = new Set();
   #highlightDates = new Map();
   #selectedDate = null;
+  #selectedDates = new Set();
   #rangeStart = null;
   #rangeEnd = null;
   #hoverDate = null;
@@ -104,6 +138,7 @@ class CalendarWc extends VBElement {
   #detailOverlay = null;
 
   setup() {
+    this.#locale = this.closest('[lang]')?.lang || navigator.language;
     const today = new Date();
     this.#viewMonth = parseInt(this.getAttribute('data-month'), 10) - 1;
     if (isNaN(this.#viewMonth)) this.#viewMonth = today.getMonth();
@@ -118,6 +153,10 @@ class CalendarWc extends VBElement {
     if (eventsAttr) {
       try { this.#events = JSON.parse(eventsAttr); } catch { /* ignore */ }
     }
+
+    // Parse min/max date constraints
+    this.#minDate = fromISO(this.dataset.minDate);
+    this.#maxDate = fromISO(this.dataset.maxDate);
 
     // Parse disabled dates
     const disabled = this.getAttribute('data-disabled-dates');
@@ -194,12 +233,14 @@ class CalendarWc extends VBElement {
     // Weekday headers
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
+    const shortDays = getLocalizedDays(this.#locale, 'short');
+    const longDays = getLocalizedDays(this.#locale, 'long');
     for (let i = 0; i < 7; i++) {
       const dayIdx = (this.#firstDayOfWeek + i) % 7;
       const th = document.createElement('th');
       th.setAttribute('scope', 'col');
-      th.setAttribute('abbr', DAYS_FULL[dayIdx]);
-      th.textContent = DAYS[dayIdx];
+      th.setAttribute('abbr', longDays[dayIdx]);
+      th.textContent = shortDays[dayIdx];
       headerRow.appendChild(th);
     }
     thead.appendChild(headerRow);
@@ -239,8 +280,8 @@ class CalendarWc extends VBElement {
   #buildYearOptions() {
     this.#yearSelect.innerHTML = '';
     const currentYear = new Date().getFullYear();
-    const minYear = currentYear - 10;
-    const maxYear = currentYear + 10;
+    const minYear = this.#minDate ? this.#minDate.getFullYear() : currentYear - 10;
+    const maxYear = this.#maxDate ? this.#maxDate.getFullYear() : currentYear + 10;
     for (let y = minYear; y <= maxYear; y++) {
       const opt = document.createElement('option');
       opt.value = y;
@@ -291,6 +332,37 @@ class CalendarWc extends VBElement {
         }));
       }
       this.#updateSelectionUI();
+    } else if (this.#selectionMode === 'multi') {
+      if (this.#selectedDates.has(iso)) {
+        this.#selectedDates.delete(iso);
+      } else {
+        this.#selectedDates.add(iso);
+      }
+      this.#updateSelectionUI();
+      const sorted = [...this.#selectedDates].sort();
+      this.dispatchEvent(new CustomEvent('calendar:select', {
+        bubbles: true,
+        detail: { values: sorted, dates: sorted.map(fromISO) }
+      }));
+    }
+  }
+
+  /** Return the current selection as a serializable value */
+  get value() {
+    switch (this.#selectionMode) {
+      case 'single':
+        return this.#selectedDate ? toISO(this.#selectedDate) : null;
+      case 'range':
+        if (this.#rangeStart && this.#rangeEnd) {
+          return `${toISO(this.#rangeStart)}/${toISO(this.#rangeEnd)}`;
+        }
+        return this.#rangeStart ? toISO(this.#rangeStart) : null;
+      case 'multi':
+        return this.#selectedDates.size
+          ? [...this.#selectedDates].sort().join(' ')
+          : null;
+      default:
+        return null;
     }
   }
 
@@ -318,6 +390,12 @@ class CalendarWc extends VBElement {
 
       // Single selection
       if (this.#selectionMode === 'single' && sameDay(cellDate, this.#selectedDate)) {
+        td.setAttribute('data-selected', '');
+        btn.setAttribute('aria-selected', 'true');
+      }
+
+      // Multi selection
+      if (this.#selectionMode === 'multi' && this.#selectedDates.has(iso)) {
         td.setAttribute('data-selected', '');
         btn.setAttribute('aria-selected', 'true');
       }
@@ -352,6 +430,16 @@ class CalendarWc extends VBElement {
       this.#monthLabel.textContent = String(this.#viewMonth + 1);
     }
     this.#buildYearOptions();
+
+    // Constrain prev/next navigation at min/max boundaries
+    this.#prevBtn.disabled = !!(this.#minDate && (
+      this.#viewYear < this.#minDate.getFullYear() ||
+      (this.#viewYear === this.#minDate.getFullYear() &&
+       this.#viewMonth <= this.#minDate.getMonth())));
+    this.#nextBtn.disabled = !!(this.#maxDate && (
+      this.#viewYear > this.#maxDate.getFullYear() ||
+      (this.#viewYear === this.#maxDate.getFullYear() &&
+       this.#viewMonth >= this.#maxDate.getMonth())));
 
     // Sync host attributes for theme CSS selectors
     this.setAttribute('data-month', String(this.#viewMonth + 1));
@@ -418,6 +506,12 @@ class CalendarWc extends VBElement {
         td.setAttribute('data-selected', '');
       }
 
+      // Multi selection
+      if (this.#selectionMode === 'multi' && this.#selectedDates.has(iso)) {
+        btn.setAttribute('aria-selected', 'true');
+        td.setAttribute('data-selected', '');
+      }
+
       // Range
       if (this.#selectionMode === 'range' && rangeA && rangeB) {
         const lo = rangeA < rangeB ? rangeA : rangeB;
@@ -429,8 +523,10 @@ class CalendarWc extends VBElement {
         td.setAttribute('data-range-start', '');
       }
 
-      // Disabled
-      if (this.#disabledDates.has(iso)) {
+      // Disabled — explicit list or outside min/max range
+      const beforeMin = this.#minDate && cellDate < this.#minDate;
+      const afterMax = this.#maxDate && cellDate > this.#maxDate;
+      if (this.#disabledDates.has(iso) || beforeMin || afterMax) {
         btn.setAttribute('aria-disabled', 'true');
         btn.disabled = true;
       }
@@ -622,13 +718,14 @@ class CalendarWc extends VBElement {
         const startH = Math.max(0, sortedHours[0] - 1);
         const endH = Math.min(23, sortedHours[sortedHours.length - 1] + 1);
 
+        const localHours = getLocalizedHours(this.#locale);
         for (let h = startH; h <= endH; h++) {
           const hourRow = document.createElement('div');
           hourRow.className = 'hour-row';
 
           const hourLabel = document.createElement('span');
           hourLabel.className = 'hour-label';
-          hourLabel.textContent = HOURS[h];
+          hourLabel.textContent = localHours[h];
 
           const hourContent = document.createElement('span');
           hourContent.className = 'hour-content';
@@ -719,6 +816,10 @@ class CalendarWc extends VBElement {
     }
 
     e.preventDefault();
+
+    // Block keyboard navigation outside min/max bounds
+    if (this.#minDate && newDate < this.#minDate) return;
+    if (this.#maxDate && newDate > this.#maxDate) return;
 
     if (newDate.getMonth() !== this.#viewMonth || newDate.getFullYear() !== this.#viewYear) {
       this.#viewMonth = newDate.getMonth();
