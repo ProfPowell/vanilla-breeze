@@ -134,10 +134,16 @@ class CalendarWc extends VBElement {
   #monthCount = 1;
 
   /** JS-only callback: (date: Date) => boolean. If it returns true, the date is disabled. */
-  isDateDisallowed = null;
+  #isDateDisallowedFn = null;
+  get isDateDisallowed() { return this.#isDateDisallowedFn; }
+  set isDateDisallowed(fn) { this.#isDateDisallowedFn = fn; if (this.#built) this.#renderMonth(); }
 
   /** JS-only callback: (date: Date) => string | string[] | null. Return value set as data-day-part on the cell. */
-  getDayParts = null;
+  #getDayPartsFn = null;
+  get getDayParts() { return this.#getDayPartsFn; }
+  set getDayParts(fn) { this.#getDayPartsFn = fn; if (this.#built) this.#renderMonth(); }
+
+  #built = false;
 
   // DOM refs
   #header;
@@ -196,7 +202,11 @@ class CalendarWc extends VBElement {
 
     this.#build();
     this.#renderMonth();
+    this.#built = true;
   }
+
+  /** Force a re-render of the current view. Useful after setting JS-only properties. */
+  refresh() { if (this.#built) this.#renderMonth(); }
 
   #build() {
     // Header
@@ -442,24 +452,25 @@ class CalendarWc extends VBElement {
 
   #renderMonth() {
     const n = this.#monthCount;
+    const fmtMonth = new Intl.DateTimeFormat(this.#locale, { month: 'long' });
+    const fmtMonthYear = new Intl.DateTimeFormat(this.#locale, { month: 'long', year: 'numeric' });
 
-    // ── Update title ──
+    // ── Update shared header title ──
     try {
       const first = new Date(this.#viewYear, this.#viewMonth, 1);
-      const fmtMonth = new Intl.DateTimeFormat(undefined, { month: 'long' });
       if (n === 1) {
         this.#monthLabel.textContent = fmtMonth.format(first);
+        // Show year dropdown in single-month mode
+        if (this.#yearSelect) this.#yearSelect.style.display = '';
       } else {
+        // Multi-month: show year(s) in shared header, no dropdown
         const last = this.#offsetMonth(n - 1);
-        const lastDate = new Date(last.year, last.month, 1);
-        const firstName = fmtMonth.format(first);
-        const lastName = fmtMonth.format(lastDate);
         if (first.getFullYear() === last.year) {
-          this.#monthLabel.textContent = `${firstName} \u2013 ${lastName}`;
+          this.#monthLabel.textContent = String(this.#viewYear);
         } else {
-          const fmtFull = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
-          this.#monthLabel.textContent = `${fmtFull.format(first)} \u2013 ${fmtFull.format(lastDate)}`;
+          this.#monthLabel.textContent = `${first.getFullYear()} \u2013 ${last.year}`;
         }
+        if (this.#yearSelect) this.#yearSelect.style.display = 'none';
       }
     } catch {
       this.#monthLabel.textContent = String(this.#viewMonth + 1);
@@ -487,8 +498,22 @@ class CalendarWc extends VBElement {
 
     for (let i = 0; i < n; i++) {
       const { year, month } = this.#offsetMonth(i);
-      const table = this.#buildMonthTable(year, month);
-      this.#monthsWrap.appendChild(table);
+
+      if (n > 1) {
+        // Per-month title centered above each grid
+        const monthHeader = document.createElement('div');
+        monthHeader.className = 'cal-month-column';
+        const title = document.createElement('h4');
+        title.className = 'cal-month-title';
+        title.textContent = fmtMonthYear.format(new Date(year, month, 1));
+        monthHeader.appendChild(title);
+        const table = this.#buildMonthTable(year, month);
+        monthHeader.appendChild(table);
+        this.#monthsWrap.appendChild(monthHeader);
+      } else {
+        const table = this.#buildMonthTable(year, month);
+        this.#monthsWrap.appendChild(table);
+      }
     }
 
     // Keep #grid pointing at the first table for keyboard nav compatibility

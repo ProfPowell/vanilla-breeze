@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Theming Demo</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <!-- Theme CSS — only active when data-theme matches -->
+  <link rel="stylesheet" href="/cdn/themes/kawaii.css">
+  <link rel="stylesheet" href="/cdn/themes/super2026.css">
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background, var(--color-surface));
+      transition: background 0.3s;
+    }
+    .theme-controls {
+      display: flex;
+      gap: var(--size-m);
+      align-items: center;
+      margin-block-end: var(--size-xl);
+      flex-wrap: wrap;
+    }
+    .theme-controls label {
+      font-weight: 600;
+      font-size: var(--font-size-sm, 0.875rem);
+    }
+    .theme-controls button {
+      padding: var(--size-xs) var(--size-m);
+      border: var(--border-width-thin, 1px) solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      cursor: pointer;
+      font: inherit;
+      font-size: var(--font-size-sm, 0.875rem);
+      transition: background 0.2s, color 0.2s;
+    }
+    .theme-controls button[aria-pressed="true"] {
+      background: var(--color-interactive, var(--color-primary));
+      color: white;
+      border-color: transparent;
+    }
+
+    /* ────────────────────────────────────────────────
+       Wall Calendar: demonstrates --cal-banner-image,
+       --cal-day-image, --cal-day-bg tokens that themes
+       CAN set but none do by default. Pure CSS showcase.
+       ──────────────────────────────────────────────── */
+    .wall-calendar calendar-wc {
+      /* Banner: nature photo strip across the month */
+      --cal-banner-height: 5rem;
+      --cal-banner-bg: oklch(35% 0.08 200);
+      --cal-banner-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='200'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2387CEEB'/%3E%3Cstop offset='.6' stop-color='%23E0F0FF'/%3E%3Cstop offset='1' stop-color='%2390EE90'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='200' fill='url(%23sky)'/%3E%3Ccircle cx='650' cy='50' r='30' fill='%23FFD700' opacity='.8'/%3E%3Cellipse cx='200' cy='170' rx='120' ry='40' fill='%23228B22' opacity='.6'/%3E%3Cellipse cx='500' cy='180' rx='150' ry='35' fill='%23228B22' opacity='.5'/%3E%3Cellipse cx='100' cy='185' rx='80' ry='25' fill='%23228B22' opacity='.7'/%3E%3Cpath d='M350 100 L370 180 L330 180Z' fill='%23006400' opacity='.5'/%3E%3Cpath d='M380 120 L395 180 L365 180Z' fill='%23006400' opacity='.4'/%3E%3C/svg%3E");
+      --cal-banner-size: cover;
+      --cal-banner-position: center 40%;
+
+      /* Header: warm vintage */
+      --cal-header-bg: oklch(30% 0.03 60);
+      --cal-header-color: oklch(92% 0.02 80);
+
+      /* Week rows: ledger-style alternating */
+      --cal-week-bg: oklch(98% 0.005 80);
+      --cal-week-bg-alt: oklch(95% 0.01 80);
+
+      /* Day cells: warm cream */
+      --cal-day-bg: oklch(97% 0.008 80);
+
+      /* Today: amber glow */
+      --cal-today-bg: oklch(93% 0.04 80);
+      --cal-today-border: oklch(65% 0.15 60);
+      --cal-today-shadow: 0 0 6px oklch(70% 0.12 60 / 0.3);
+
+      /* Watermark: sepia ink */
+      --cal-watermark-color: oklch(40% 0.04 60);
+      --cal-watermark-opacity: 0.06;
+
+      /* Disabled: paper-calendar readability */
+      --cal-disabled-opacity: 0.6;
+      --cal-outside-opacity: 0.3;
+      --cal-outside-color: oklch(55% 0.02 60);
+    }
+
+    /* Day decoration: sticker on holidays */
+    .wall-calendar calendar-wc td button[data-highlight="holiday"]::after {
+      content: "";
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23FFD700' opacity='.25'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-size='20'%3E%E2%98%80%3C/text%3E%3C/svg%3E");
+      background-size: contain;
+      opacity: 0.6;
+    }
+
+    /* Day decoration: star sticker on deadlines */
+    .wall-calendar calendar-wc td button[data-highlight="deadline"]::after {
+      content: "";
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpolygon points='20,4 25,15 37,15 27,23 31,35 20,28 9,35 13,23 3,15 15,15' fill='%23dc2626' opacity='.2'/%3E%3C/svg%3E");
+      background-size: contain;
+      opacity: 0.7;
+    }
+
+    /* ────────────────────────────────────────────────
+       Memphis: geometric patterns on everything
+       ──────────────────────────────────────────────── */
+    .memphis-calendar calendar-wc {
+      --cal-banner-height: 2rem;
+      --cal-banner-bg: repeating-linear-gradient(
+        45deg,
+        oklch(58% 0.24 26) 0px, oklch(58% 0.24 26) 8px,
+        oklch(86% 0.185 96) 8px, oklch(86% 0.185 96) 16px,
+        oklch(48% 0.22 258) 16px, oklch(48% 0.22 258) 24px
+      );
+
+      --cal-header-bg: oklch(12% 0.01 80);
+      --cal-header-color: oklch(96% 0.018 88);
+
+      --cal-week-bg: oklch(99% 0.005 90);
+      --cal-week-bg-alt: oklch(94% 0.08 96);
+
+      --cal-day-bg: oklch(99% 0.005 90);
+
+      --cal-today-bg: oklch(92% 0.07 258);
+      --cal-today-border: oklch(12% 0.01 80);
+      --cal-today-shadow: 3px 3px 0 oklch(12% 0.01 80);
+
+      --cal-watermark-color: oklch(58% 0.24 26);
+      --cal-watermark-opacity: 0.07;
+      --cal-watermark-weight: 900;
+
+      --cal-disabled-opacity: 0.5;
+      --cal-outside-opacity: 0.25;
+      --cal-outside-color: oklch(60% 0.01 0);
+
+      --cal-highlight-bg: oklch(92% 0.06 195);
+      --cal-highlight-border: oklch(12% 0.01 80);
+
+      border-radius: 0;
+      border-width: 3px;
+      border-color: oklch(12% 0.01 80);
+      box-shadow: 6px 6px 0 oklch(12% 0.01 80);
+      font-family: "Outfit", "Century Gothic", sans-serif;
+    }
+
+    /* Memphis: dot pattern on holiday cells */
+    .memphis-calendar calendar-wc td button[data-highlight="holiday"]::after {
+      content: "";
+      background-image: radial-gradient(
+        circle, oklch(64% 0.24 10) 2px, transparent 2px
+      );
+      background-size: 8px 8px;
+      opacity: 0.3;
+    }
+
+    /* Memphis: zigzag on deadlines */
+    .memphis-calendar calendar-wc td button[data-highlight="deadline"]::after {
+      content: "";
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Cpath d='M0 5 L5 0 L10 5 L15 0 L20 5 L15 10 L10 5 L5 10Z' fill='%23dc2626' opacity='.15'/%3E%3C/svg%3E");
+      background-size: 20px 10px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide">
+    <layout-stack data-layout-gap="xl">
+
+      <h1>Calendar Theming</h1>
+      <p>Every visual layer is a CSS token. Themes set banners, week tints, day backgrounds, sticker decorations, watermarks, and today highlights. The tokens are opt-in; the base calendar uses none of them.</p>
+
+      <nav class="theme-controls" aria-label="Theme switcher">
+        <label>Theme:</label>
+        <button type="button" data-set-theme="" aria-pressed="true">Base</button>
+        <button type="button" data-set-theme="kawaii">Kawaii</button>
+        <button type="button" data-set-theme="super2026">Super2026</button>
+        <button type="button" data-set-theme="wall">Wall Calendar</button>
+        <button type="button" data-set-theme="memphis">Memphis</button>
+      </nav>
+
+      <layout-grid data-layout-columns="auto-fit" data-layout-min="20rem" data-layout-gap="xl">
+
+        <layout-card>
+          <h2 style="margin: 0 0 var(--size-m);">Events Calendar</h2>
+          <calendar-wc
+            data-events='{"2026-04-03":[{"label":"Team standup","time":"09:00","icon":"users"},{"label":"Sprint review","time":"14:00","icon":"presentation"}],"2026-04-10":"Design sync","2026-04-15":{"label":"Tax deadline","color":"var(--color-danger, #dc2626)"},"2026-04-21":"Company holiday","2026-04-24":"Release day"}'
+            data-highlight-dates="2026-04-21:holiday"
+            data-selection="single">
+          </calendar-wc>
+        </layout-card>
+
+        <layout-card>
+          <h2 style="margin: 0 0 var(--size-m);">Range with Disabled</h2>
+          <calendar-wc
+            data-selection="range"
+            data-disabled-dates="2026-04-04,2026-04-05,2026-04-11,2026-04-12,2026-04-18,2026-04-19,2026-04-25,2026-04-26">
+          </calendar-wc>
+        </layout-card>
+
+        <layout-card>
+          <h2 style="margin: 0 0 var(--size-m);">Compact</h2>
+          <calendar-wc
+            data-size="compact"
+            data-events='{"2026-04-01":"New Year Q2","2026-04-07":"Sprint start","2026-04-14":"Midpoint","2026-04-21":"Sprint end","2026-04-28":"Retrospective"}'
+            data-highlight-dates="2026-04-15:deadline,2026-04-21:holiday">
+          </calendar-wc>
+        </layout-card>
+
+      </layout-grid>
+
+      <layout-card>
+        <h2 style="margin: 0 0 var(--size-m);">Large View</h2>
+        <calendar-wc data-size="large"
+          data-events='{
+            "2026-04-01":[{"label":"Q2 Kickoff","time":"10:00","icon":"rocket"},{"label":"Team Lunch","time":"12:00","icon":"utensils"}],
+            "2026-04-03":[{"label":"Standup","time":"09:00","icon":"users"},{"label":"Design Review","time":"14:00","icon":"palette"},{"label":"1:1 w/ Manager","time":"16:00","icon":"message-circle"}],
+            "2026-04-07":{"label":"Sprint Planning","time":"09:30","icon":"layout"},
+            "2026-04-10":[{"label":"Demo Day","time":"15:00","icon":"monitor"},{"label":"Happy Hour","time":"17:00","icon":"wine"}],
+            "2026-04-15":{"label":"Tax Deadline","color":"var(--color-danger, #dc2626)","icon":"alert-triangle"},
+            "2026-04-17":{"label":"Conference","icon":"calendar"},
+            "2026-04-21":{"label":"Company Holiday","icon":"sun"},
+            "2026-04-24":[{"label":"Release v2.0","time":"10:00","icon":"package"},{"label":"Launch Party","time":"18:00","icon":"party-popper"}],
+            "2026-04-28":{"label":"Retrospective","time":"14:00","icon":"refresh-cw"},
+            "2026-04-30":{"label":"Month Close","time":"09:00","icon":"check-circle"}
+          }'
+          data-highlight-dates="2026-04-15:deadline,2026-04-21:holiday"
+          data-disabled-dates="2026-04-04,2026-04-05,2026-04-11,2026-04-12,2026-04-18,2026-04-19,2026-04-25,2026-04-26">
+        </calendar-wc>
+      </layout-card>
+
+      <layout-card>
+        <h2 style="margin: 0 0 var(--size-m);">Token Reference</h2>
+        <details>
+          <summary>27 tokens available</summary>
+          <table style="inline-size: 100%; margin-block-start: var(--size-m); font-size: var(--font-size-sm, 0.875rem);">
+            <thead>
+              <tr><th style="text-align: start;">Token</th><th style="text-align: start;">Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>--cal-banner-height</code></td><td>Month banner strip height</td></tr>
+              <tr><td><code>--cal-banner-bg</code></td><td>Banner color or gradient</td></tr>
+              <tr><td><code>--cal-banner-image</code></td><td>Banner background image (photo, SVG, pattern)</td></tr>
+              <tr><td><code>--cal-header-bg</code> / <code>color</code></td><td>Navigation header styling</td></tr>
+              <tr><td><code>--cal-week-bg</code> / <code>bg-alt</code></td><td>Alternating week row tints</td></tr>
+              <tr><td><code>--cal-day-bg</code></td><td>Default day cell background</td></tr>
+              <tr><td><code>--cal-day-image</code></td><td>Day decoration layer (stickers, stamps via ::after)</td></tr>
+              <tr><td><code>--cal-today-bg</code> / <code>border</code> / <code>shadow</code></td><td>Today cell emphasis</td></tr>
+              <tr><td><code>--cal-watermark-*</code></td><td>Large mode background day number (opacity, color, size, weight)</td></tr>
+              <tr><td><code>--cal-disabled-opacity</code></td><td>Disabled day visibility</td></tr>
+              <tr><td><code>--cal-outside-opacity</code> / <code>color</code></td><td>Previous/next month day styling</td></tr>
+              <tr><td><code>--cal-highlight-bg</code> / <code>border</code></td><td>Highlighted date treatment</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </layout-card>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/cdn/vanilla-breeze-autoload.js"></script>
+  <script type="module">
+    const wrappers = {
+      wall: 'wall-calendar',
+      memphis: 'memphis-calendar'
+    };
+
+    document.querySelector('.theme-controls').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-set-theme]');
+      if (!btn) return;
+
+      const theme = btn.getAttribute('data-set-theme');
+
+      // Update button states
+      document.querySelectorAll('[data-set-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+
+      // Clear both: data-theme and wrapper classes
+      document.documentElement.removeAttribute('data-theme');
+      document.body.className = '';
+
+      // Apply theme via data-theme attribute (Kawaii, Super2026)
+      if (theme === 'kawaii' || theme === 'super2026') {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+
+      // Apply demo themes via wrapper class (Wall Calendar, Memphis)
+      if (wrappers[theme]) {
+        document.body.className = wrappers[theme];
+      }
+    });
+  </script>
+</body>
+</html>
