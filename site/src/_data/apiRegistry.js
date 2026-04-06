@@ -938,7 +938,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Selection mode: \"none\" (default), \"single\", \"range\""
+        "description": "Selection mode: \"none\" (default), \"single\", \"range\", \"multi\""
       },
       {
         "name": "data-size",
@@ -946,6 +946,20 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Size: \"compact\", \"default\", \"large\""
+      },
+      {
+        "name": "data-min-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Earliest selectable/navigable date (ISO string, e.g. 2026-01-01)"
+      },
+      {
+        "name": "data-max-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Latest selectable/navigable date (ISO string, e.g. 2026-12-31)"
       },
       {
         "name": "data-disabled-dates",
@@ -960,6 +974,13 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Comma-separated ISO dates to highlight (optionally with :category)"
+      },
+      {
+        "name": "data-months",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Number of adjacent months to display side by side (1-12). Defaults to 1."
       },
       {
         "name": "role",
@@ -1024,7 +1045,9 @@ export default {
       {
         "name": "name",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Form participation name. Enables ElementInternals form value sync on selection."
       },
       {
         "name": "size",
