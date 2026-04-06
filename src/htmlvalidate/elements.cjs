@@ -145,16 +145,6 @@ module.exports = {
     }
   },
 
-  "progress-ring": {
-    flow: true,
-    phrasing: true,
-    permittedContent: ["@phrasing"],
-    attributes: {
-      "data-size": {},
-      "data-indeterminate": { boolean: true }
-    }
-  },
-
   "status-message": {
     flow: true,
     permittedContent: ["@flow"]

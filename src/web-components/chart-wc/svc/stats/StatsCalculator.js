@@ -171,11 +171,12 @@ export function calculateStats(data, config, chartType) {
     keyStats.max = largestSeriesLength;
   }
 
-  Object.assign(valueStats, calculateScale(valueStats));
+  const isScatterLike = chartType === 'scatter' || chartType === 'bubble';
+  Object.assign(valueStats, calculateScale(valueStats, {forceZeroMin: !isScatterLike}));
 
   // SCALE KEY
-  if (chartType === 'scatter' || chartType === 'bubble') {
-    Object.assign(keyStats, calculateScale(keyStats));
+  if (isScatterLike) {
+    Object.assign(keyStats, calculateScale(keyStats, {forceZeroMin: false}));
   } else if (chartType === 'bar' || chartType === 'column') {
     // Try to find the best number of ticks for the dataset length
     if (largestSeriesLength > config.scale.maxItems) {
@@ -214,12 +215,14 @@ export function calculateStats(data, config, chartType) {
  * @param {Object} stats - contains min, max, and number of ticks
  * @return {Object} An object containing information about the scales
  */
-export function calculateScale({max, min, ticks: numTicks}) {
-  // Increase the max/ min by 10% for a buffer area.
-  min = Math.floor(min + (min * SCALE_BUFFER_PERCENT));
-  max = Math.ceil(max + (max * SCALE_BUFFER_PERCENT));
-  // Force a minimum value of 0 if not negative
-  min = (min > 0) ? 0 : min;
+export function calculateScale({max, min, ticks: numTicks}, {forceZeroMin = true} = {}) {
+  // Add buffer: push max up and min down by 10%
+  const range = max - min || 1;
+  min = Math.floor(min - Math.abs(range * SCALE_BUFFER_PERCENT));
+  max = Math.ceil(max + Math.abs(range * SCALE_BUFFER_PERCENT));
+  // Force a minimum value of 0 if not negative (skip for scatter/bubble where
+  // both axes are continuous data dimensions and zero is not a meaningful baseline)
+  if (forceZeroMin) min = (min > 0) ? 0 : min;
 
   // Calculate a nice step size that produces round tick values
   const rawInterval = max - min;

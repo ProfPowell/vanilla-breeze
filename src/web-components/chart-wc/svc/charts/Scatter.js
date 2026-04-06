@@ -190,12 +190,12 @@ class ScatterChart extends Cartesian {
 function createNodeMap(instance) {
   const nodeMap = Array.from(new Array(10)).map(() => Array.from(new Array(10)).map(() => []));
   instance.querySelectorAll('.svc-plot-node').forEach((node) => {
-    const series = node.getAttribute('data-series');
+    const series = parseInt(node.getAttribute('data-series'), 10);
     const x = parseInt(node.getAttribute('cx'));
     const y = parseInt(node.getAttribute('cy'));
-    const xTens = Math.floor(x / 10);
+    const xTens = Math.min(9, Math.floor(x / 10));
     const xOnes = parseInt((x / 10).toFixed(1).split('.')[1]);
-    const yTens = Math.floor(y / 10);
+    const yTens = Math.min(9, Math.floor(y / 10));
     nodeMap[yTens][xTens][xOnes] = nodeMap[yTens][xTens][xOnes] || [];
     nodeMap[yTens][xTens][xOnes][series] = node;
   });

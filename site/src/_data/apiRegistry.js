@@ -649,31 +649,6 @@ export default {
       }
     ]
   },
-  "progress-ring": {
-    "element": "progress-ring",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "phrasing": true,
-      "permittedContent": [
-        "@phrasing"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-size",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "string"
-      },
-      {
-        "name": "data-indeterminate",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      }
-    ]
-  },
   "status-message": {
     "element": "status-message",
     "type": "custom-element",

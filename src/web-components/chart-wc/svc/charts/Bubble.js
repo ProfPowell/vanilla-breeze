@@ -68,10 +68,13 @@ class BubbleChart extends ScatterChart {
         const size = triple[2];
 
         const seriesName = series.name || `Series ${index + 1}`;
+        // Normalize size against the dataset's size range (stats.alt)
+        const sizeRange = stats.alt.max - stats.alt.min || 1;
+        const normalizedSize = (Math.abs(size) - stats.alt.min) / sizeRange;
         const nodeCircle = new VElement('circle', {
           'cx': ((x - stats.x.min) * stats.x.scaleFactor).toFixed(3) + '%',
           'cy': ((stats.y.max - y) * stats.y.scaleFactor).toFixed(3) + '%',
-          'r': (Math.abs(size) / BUBBLE_SIZE_DIVISOR) * this.config.plot.maxSize + '%',
+          'r': (normalizedSize * this.config.plot.maxSize + 0.5) + '%',
           'style': `opacity: ${BUBBLE_DEFAULT_OPACITY}`,
           'class': ['plot-node', `plot-${index}`, `plot-node-${index}`],
           'data-index': nodeindex,
