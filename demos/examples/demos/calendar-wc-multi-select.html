@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar — Multi-Select</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+    output {
+      display: block;
+      margin-block-start: var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <h3>Pick multiple dates</h3>
+  <p>Click dates to toggle selection. Selected dates appear below.</p>
+
+  <calendar-wc
+    id="multi-cal"
+    data-selection="multi"
+    data-disabled-dates="2026-04-04,2026-04-05">
+  </calendar-wc>
+
+  <output id="selected-output">No dates selected</output>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    document.getElementById('multi-cal').addEventListener('calendar:select', (e) => {
+      const dates = e.detail.values;
+      document.getElementById('selected-output').textContent =
+        dates.length ? 'Selected: ' + dates.join(', ') : 'No dates selected';
+    });
+  </script>
+</body>
+</html>

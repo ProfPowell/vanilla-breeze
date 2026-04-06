@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar — getDayParts</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+
+    /* Custom styling via data-day-part */
+    calendar-wc td[data-day-part~="weekend"] button {
+      background: oklch(from var(--color-primary) l c h / 0.08);
+    }
+    calendar-wc td[data-day-part~="payday"] button {
+      border: 2px solid var(--color-success);
+    }
+    calendar-wc td[data-day-part~="holiday"] button {
+      background: oklch(from var(--color-error) l c h / 0.1);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <h3>Custom day styling with getDayParts</h3>
+  <p>The <code>getDayParts</code> callback injects custom <code>data-day-part</code> attributes per cell, enabling pure CSS styling without subclassing. Weekends, paydays (15th, last day), and holidays are styled differently.</p>
+
+  <calendar-wc
+    id="parts-cal"
+    data-month="4"
+    data-year="2026">
+  </calendar-wc>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const holidays = new Set(['2026-04-06', '2026-04-21']);
+
+    document.getElementById('parts-cal').getDayParts = (date) => {
+      const parts = [];
+      const day = date.getDay();
+      if (day === 0 || day === 6) parts.push('weekend');
+      if (date.getDate() === 15) parts.push('payday');
+
+      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      if (date.getDate() === lastDay) parts.push('payday');
+
+      const iso = date.toISOString().slice(0, 10);
+      if (holidays.has(iso)) parts.push('holiday');
+
+      return parts.length ? parts : null;
+    };
+  </script>
+</body>
+</html>

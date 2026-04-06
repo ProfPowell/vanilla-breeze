@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar — Form Integration</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+    output {
+      display: block;
+      margin-block-start: var(--size-m);
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-m);
+      font-size: var(--font-size-sm);
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h3>Calendar in a form</h3>
+  <p>The calendar participates in native form submission via <code>ElementInternals</code>. Select a date and submit.</p>
+
+  <form id="booking-form">
+    <layout-stack data-layout-gap="m">
+      <calendar-wc
+        name="event-date"
+        data-selection="single">
+      </calendar-wc>
+      <button type="submit">Submit</button>
+    </layout-stack>
+  </form>
+
+  <output id="form-output">Submit the form to see the value</output>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    document.getElementById('booking-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => k + ' = ' + v).join('\n');
+      document.getElementById('form-output').textContent = entries || '(no value selected)';
+    });
+  </script>
+</body>
+</html>

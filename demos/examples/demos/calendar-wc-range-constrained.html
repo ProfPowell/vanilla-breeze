@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar — Range with Min/Max</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+    output {
+      display: block;
+      margin-block-start: var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <h3>Book a stay (April 2026)</h3>
+  <p>Select a check-in and check-out date. Navigation and dates are constrained to April 1 &ndash; April 30.</p>
+
+  <calendar-wc
+    id="range-cal"
+    data-selection="range"
+    data-month="4"
+    data-year="2026"
+    data-min-date="2026-04-01"
+    data-max-date="2026-04-30"
+    data-disabled-dates="2026-04-12,2026-04-13">
+  </calendar-wc>
+
+  <output id="range-output">Select check-in date</output>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    const cal = document.getElementById('range-cal');
+    cal.addEventListener('calendar:select', (e) => {
+      document.getElementById('range-output').textContent =
+        'Booking: ' + e.detail.value;
+    });
+  </script>
+</body>
+</html>

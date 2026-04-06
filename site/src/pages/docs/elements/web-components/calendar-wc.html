@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "calendar-wc"
-description: "Standalone calendar display component with event dots, date highlighting, single and range selection, and keyboard navigation."
+description: "Standalone calendar display with events, multi-select, range picking, date constraints, form integration, multi-month view, and expressive theming."
 elementName: calendar-wc
 category: component
 currentPath: /docs/elements/web-components/calendar-wc/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;calendar-wc&gt;</code> component displays a month grid for viewing events, availability, or annotations on dates. Unlike <code>&lt;date-picker&gt;</code> (a form input), this is a display-focused component with optional selection for interactive UIs like booking flows.</p>
+    <p>The <code>&lt;calendar-wc&gt;</code> component displays a month grid for viewing events, availability, or annotations on dates. It supports single, range, and multi-date selection, date constraints, form integration via <code>ElementInternals</code>, multi-month display, and locale-aware rendering.</p>
 
     <browser-window
       src="/docs/examples/demos/calendar-wc-basic.html"
@@ -55,13 +55,13 @@ crumbLabel: Web Components
           <td><code>data-events</code></td>
           <td>JSON</td>
           <td>&mdash;</td>
-          <td>Event data keyed by ISO date. Values can be a string label or <code>{ "label": "...", "color": "..." }</code>.</td>
+          <td>Event data keyed by ISO date. Values: string, object <code>{ label, color, icon, time }</code>, or array.</td>
         </tr>
         <tr>
           <td><code>data-selection</code></td>
           <td>string</td>
           <td><code>"none"</code></td>
-          <td>Selection mode: <code>"none"</code>, <code>"single"</code>, or <code>"range"</code>.</td>
+          <td>Selection mode: <code>"none"</code>, <code>"single"</code>, <code>"range"</code>, or <code>"multi"</code>.</td>
         </tr>
         <tr>
           <td><code>data-disabled-dates</code></td>
@@ -73,7 +73,7 @@ crumbLabel: Web Components
           <td><code>data-highlight-dates</code></td>
           <td>string</td>
           <td>&mdash;</td>
-          <td>Comma-separated ISO dates to highlight, optionally with <code>:category</code> (holiday, deadline, event).</td>
+          <td>Comma-separated ISO dates to highlight, optionally with <code>:category</code>.</td>
         </tr>
         <tr>
           <td><code>data-size</code></td>
@@ -81,62 +81,181 @@ crumbLabel: Web Components
           <td><code>"default"</code></td>
           <td>Size variant: <code>"compact"</code>, <code>"default"</code>, or <code>"large"</code>.</td>
         </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Size Variants</h2>
-    <p>Three sizes adapt the calendar to different contexts. Large mode uses container queries for responsive square cells and shows event labels instead of dots.</p>
-
-    <table class="props-table">
-      <thead>
         <tr>
-          <th>Size</th>
-          <th>Max Width</th>
-          <th>Events</th>
-          <th>Use Case</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>compact</code></td>
-          <td>16rem</td>
-          <td>Dot indicators</td>
-          <td>Sidebars, cards, tight spaces</td>
+          <td><code>data-min-date</code></td>
+          <td>ISO date</td>
+          <td>&mdash;</td>
+          <td>Earliest selectable/navigable date.</td>
         </tr>
         <tr>
-          <td><code>default</code></td>
-          <td>22rem</td>
-          <td>Dot indicators</td>
-          <td>Standard calendar display</td>
+          <td><code>data-max-date</code></td>
+          <td>ISO date</td>
+          <td>&mdash;</td>
+          <td>Latest selectable/navigable date.</td>
         </tr>
         <tr>
-          <td><code>large</code></td>
-          <td>56rem</td>
-          <td>Labels with icons</td>
-          <td>Full-page calendars, dashboards</td>
+          <td><code>data-months</code></td>
+          <td>number (1-12)</td>
+          <td><code>1</code></td>
+          <td>Number of months to display side by side.</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Form field name. When set with a selection mode, the calendar participates in native form submission.</td>
         </tr>
       </tbody>
     </table>
-
-    <code-block language="html" show-lines label="Large calendar with event labels" data-escape><calendar-wc data-size="large"
-  data-events='{"2026-04-10":[{"label":"Standup","time":"09:00","icon":"users"}]}'>
-</calendar-wc></code-block>
   </section>
 
   <section>
     <h2>Selection Modes</h2>
 
     <h3>Single selection</h3>
-    <p>Click a date to select it. Fires <code>calendar:select</code> with the selected date.</p>
+    <p>Click a date to select it. Fires <code>calendar:select</code> with the selected ISO date.</p>
     <code-block language="html" show-lines label="Single selection" data-escape><calendar-wc data-selection="single"></calendar-wc></code-block>
 
     <h3>Range selection</h3>
-    <p>Click two dates to define a range. The range highlights between the start and end dates, with a hover preview as you move the cursor. Fires <code>calendar:select</code> with start and end dates.</p>
-    <code-block language="html" show-lines label="Range selection" data-escape><calendar-wc data-selection="range"
-  data-disabled-dates="2026-04-04,2026-04-05">
+    <p>Click two dates to define a range. A hover preview shows between start and cursor. The value uses ISO 8601 interval format: <code>YYYY-MM-DD/YYYY-MM-DD</code>. During selection, the host element gets a <code>data-tentative</code> attribute with the start date.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-range-constrained.html"
+      url="https://vanilla-breeze.dev/calendar/range"
+      title="Range with Constraints"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Constrained range" data-escape><calendar-wc
+  data-selection="range"
+  data-min-date="2026-04-01"
+  data-max-date="2026-04-30">
 </calendar-wc></code-block>
+
+    <h3>Multi-select</h3>
+    <p>Click dates to toggle them on or off. Selected dates are returned as space-separated ISO strings.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-multi-select.html"
+      url="https://vanilla-breeze.dev/calendar/multi"
+      title="Multi-Select"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Multi-select" data-escape><calendar-wc data-selection="multi"></calendar-wc>
+
+<script>
+  cal.addEventListener('calendar:select', (e) => {
+    console.log(e.detail.values); // ["2026-04-10", "2026-04-15"]
+  });
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Date Constraints</h2>
+    <p>Use <code>data-min-date</code> and <code>data-max-date</code> to constrain navigation and disable out-of-range dates. Navigation buttons and the year dropdown respect these boundaries. Constraints work alongside <code>data-disabled-dates</code> and the <code>isDateDisallowed</code> callback &mdash; all three are additive.</p>
+
+    <code-block language="html" show-lines label="Constrain to Q2 2026" data-escape><calendar-wc
+  data-min-date="2026-04-01"
+  data-max-date="2026-06-30"
+  data-disabled-dates="2026-05-01,2026-05-25">
+</calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Multi-Month Display</h2>
+    <p>Set <code>data-months</code> to show multiple months side by side. Navigation shifts by one month at a time. All features (selection, events, highlights) work across all visible months. On narrow containers, months stack vertically.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-multi-month.html"
+      url="https://vanilla-breeze.dev/calendar/multi-month"
+      title="Multi-Month"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Two-month range picker" data-escape><calendar-wc data-months="2" data-selection="range"></calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Form Integration</h2>
+    <p>When a <code>name</code> attribute is set and a selection mode is active, the calendar participates in native form submission via <code>ElementInternals</code>. No hidden input needed.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-form.html"
+      url="https://vanilla-breeze.dev/calendar/form"
+      title="Form Integration"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Calendar in a form" data-escape><form>
+  <calendar-wc name="event-date" data-selection="single"></calendar-wc>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    console.log(data.get('event-date')); // "2026-04-15"
+  });
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.value</code></td>
+          <td><code>string | null</code></td>
+          <td>Selected value. ISO date (single), ISO interval (range), space-separated ISOs (multi), or null.</td>
+        </tr>
+        <tr>
+          <td><code>.isDateDisallowed</code></td>
+          <td><code>(date: Date) =&gt; boolean</code></td>
+          <td>Callback to dynamically disable dates. Called per cell during render. Additive with attribute-based constraints.</td>
+        </tr>
+        <tr>
+          <td><code>.getDayParts</code></td>
+          <td><code>(date: Date) =&gt; string | string[] | null</code></td>
+          <td>Inject custom <code>data-day-part</code> attributes per cell for CSS targeting.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>isDateDisallowed</h3>
+    <code-block language="javascript" show-lines label="Disable weekends" data-escape>const cal = document.querySelector('calendar-wc');
+cal.isDateDisallowed = (date) => {
+  const day = date.getDay();
+  return day === 0 || day === 6; // Disable Sat/Sun
+};</code-block>
+
+    <h3>getDayParts</h3>
+    <p>Return a string or array of strings to add as <code>data-day-part</code> on the cell's <code>&lt;td&gt;</code>. Style with attribute selectors in CSS.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-day-parts.html"
+      url="https://vanilla-breeze.dev/calendar/day-parts"
+      title="getDayParts"
+      shadow>
+    </browser-window>
+
+    <code-block language="javascript" show-lines label="getDayParts callback" data-escape>cal.getDayParts = (date) => {
+  const parts = [];
+  if (date.getDay() === 0 || date.getDay() === 6) parts.push('weekend');
+  if (date.getDate() === 15) parts.push('payday');
+  return parts.length ? parts : null;
+};</code-block>
+
+    <code-block language="css" show-lines label="Style via data-day-part" data-escape>calendar-wc td[data-day-part~="weekend"] button {
+  background: oklch(from var(--color-primary) l c h / 0.08);
+}
+calendar-wc td[data-day-part~="payday"] button {
+  border: 2px solid var(--color-success);
+}</code-block>
   </section>
 
   <section>
@@ -152,51 +271,70 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>calendar:select</code></td>
-          <td><code>{ value, date }</code> or <code>{ start, end, startDate, endDate }</code></td>
-          <td>Fired when a date or range is selected.</td>
+          <td><code>{ value, date }</code> (single), <code>{ value, start, end }</code> (range), <code>{ values, dates }</code> (multi)</td>
+          <td>Fired when selection changes.</td>
         </tr>
         <tr>
           <td><code>calendar:navigate</code></td>
           <td><code>{ year, month }</code></td>
           <td>Fired on month navigation.</td>
         </tr>
+        <tr>
+          <td><code>calendar:day-open</code></td>
+          <td><code>{ date, events }</code></td>
+          <td>Fired when day detail overlay opens (display-only mode).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Size Variants</h2>
+    <p>Three sizes adapt the calendar to different contexts. Large mode uses container queries for responsive square cells and shows event labels instead of dots.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Size</th><th>Max Width</th><th>Events</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>compact</code></td><td>16rem</td><td>Dot indicators</td><td>Sidebars, cards</td></tr>
+        <tr><td><code>default</code></td><td>22rem</td><td>Dot indicators</td><td>Standard display</td></tr>
+        <tr><td><code>large</code></td><td>56rem</td><td>Labels with icons</td><td>Dashboards, full-page</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>Event Dots</h2>
-    <p>Pass event data as JSON to show dot indicators on dates. Each date can have a string label (shown as tooltip) or an object with label and custom color.</p>
+    <p>Pass event data as JSON to show dot indicators on dates. Each date can have a string, object with label/color/icon/time, or array of those.</p>
 
     <code-block language="html" show-lines label="Events with custom colors" data-escape><calendar-wc data-events='{
   "2026-04-10": "Team meeting",
-  "2026-04-15": { "label": "Tax deadline", "color": "var(--color-danger)" },
-  "2026-04-21": "Company holiday"
+  "2026-04-15": { "label": "Tax deadline", "color": "var(--color-error)" },
+  "2026-04-21": [
+    { "label": "Morning standup", "time": "09:00", "icon": "users" },
+    { "label": "Sprint review", "time": "14:00" }
+  ]
 }'></calendar-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Localization</h2>
+    <p>Weekday headers, month names, and hour labels are rendered via <code>Intl.DateTimeFormat</code>, automatically matching the user's locale. Override by setting <code>lang</code> on the element or an ancestor.</p>
+
+    <code-block language="html" show-lines label="French locale" data-escape><calendar-wc lang="fr"></calendar-wc>
+<!-- Weekdays: lun. mar. mer. jeu. ven. sam. dim. --></code-block>
   </section>
 
   <section>
     <h2>Keyboard</h2>
     <table class="props-table">
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
       <tbody>
-        <tr>
-          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
-          <td>Move focus one day.</td>
-        </tr>
-        <tr>
-          <td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td>
-          <td>Move focus one week.</td>
-        </tr>
-        <tr>
-          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
-          <td>Select the focused date.</td>
-        </tr>
+        <tr><td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td><td>Move focus one day.</td></tr>
+        <tr><td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td><td>Move focus one week.</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select the focused date.</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close day detail overlay.</td></tr>
       </tbody>
     </table>
   </section>
@@ -204,23 +342,17 @@ crumbLabel: Web Components
   <section>
     <h2>Calendar vs Date Picker</h2>
     <table class="props-table">
-      <thead>
-        <tr>
-          <th>Component</th>
-          <th>Purpose</th>
-          <th>Form input?</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Component</th><th>Purpose</th><th>Form input?</th></tr></thead>
       <tbody>
         <tr>
           <td><code>&lt;date-picker&gt;</code></td>
-          <td>Pick a single date for form submission</td>
+          <td>Pick a single date via popover input</td>
           <td>Yes (ElementInternals)</td>
         </tr>
         <tr>
           <td><code>&lt;calendar-wc&gt;</code></td>
-          <td>Display events, availability, ranges</td>
-          <td>No (use JS events)</td>
+          <td>Display events, availability, ranges, multi-select</td>
+          <td>Yes (when <code>name</code> attribute is set)</td>
         </tr>
       </tbody>
     </table>
@@ -230,68 +362,41 @@ crumbLabel: Web Components
     <h2>Theming</h2>
     <p>The calendar exposes 27 CSS custom properties for expressive theming &mdash; from paper wall calendars to bold geometric styles. Every token defaults to transparent or the base appearance, so they are fully opt-in. Themes set them via <code>[data-theme~="name"] calendar-wc { ... }</code> selectors.</p>
 
-    <browser-window
-      src="/docs/examples/demos/calendar-wc-themed.html"
-      url="https://vanilla-breeze.dev/calendar-theming"
-      title="Calendar Theming"
-      shadow>
-    </browser-window>
-
     <h3>Banner</h3>
-    <p>A decorative strip between the header and grid. Set <code>--cal-banner-height</code> to a non-zero value to activate. Use gradients, solid colors, SVG patterns, or photos via the image token.</p>
     <table class="props-table">
       <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><code>--cal-banner-height</code></td><td><code>0px</code></td><td>Banner strip height (0 hides it)</td></tr>
         <tr><td><code>--cal-banner-bg</code></td><td><code>transparent</code></td><td>Background color or gradient</td></tr>
-        <tr><td><code>--cal-banner-image</code></td><td><code>none</code></td><td>Background image (photo, SVG, pattern)</td></tr>
+        <tr><td><code>--cal-banner-image</code></td><td><code>none</code></td><td>Background image</td></tr>
         <tr><td><code>--cal-banner-size</code></td><td><code>cover</code></td><td>Background-size</td></tr>
         <tr><td><code>--cal-banner-position</code></td><td><code>center</code></td><td>Background-position</td></tr>
       </tbody>
     </table>
-
-    <code-block language="css" show-lines label="Landscape banner with image" data-escape>[data-theme~="nature"] calendar-wc {
-  --cal-banner-height: 5rem;
-  --cal-banner-image: url("/images/april-landscape.jpg");
-  --cal-banner-size: cover;
-  --cal-banner-position: center 40%;
-}</code-block>
 
     <h3>Header and Week Rows</h3>
     <table class="props-table">
       <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><code>--cal-header-bg</code></td><td><code>var(--color-surface-raised)</code></td><td>Navigation header background</td></tr>
-        <tr><td><code>--cal-header-color</code></td><td><code>inherit</code></td><td>Navigation header text (arrows, month, year inherit this)</td></tr>
+        <tr><td><code>--cal-header-color</code></td><td><code>inherit</code></td><td>Navigation header text</td></tr>
         <tr><td><code>--cal-week-bg</code></td><td><code>transparent</code></td><td>Week row background</td></tr>
         <tr><td><code>--cal-week-bg-alt</code></td><td><code>transparent</code></td><td>Alternating even-row tint</td></tr>
       </tbody>
     </table>
 
     <h3>Day Cells</h3>
-    <p>Each day button has a background token and a decoration layer (<code>::after</code> pseudo-element) for sticker or stamp effects. The decoration layer is behind the day number and event text.</p>
     <table class="props-table">
       <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><code>--cal-day-bg</code></td><td><code>transparent</code></td><td>Day cell background</td></tr>
-        <tr><td><code>--cal-day-image</code></td><td><code>none</code></td><td>Decoration layer background-image (stickers, stamps)</td></tr>
+        <tr><td><code>--cal-day-image</code></td><td><code>none</code></td><td>Decoration layer image (stickers)</td></tr>
         <tr><td><code>--cal-day-image-size</code></td><td><code>contain</code></td><td>Decoration background-size</td></tr>
         <tr><td><code>--cal-day-image-opacity</code></td><td><code>1</code></td><td>Decoration opacity</td></tr>
       </tbody>
     </table>
 
-    <code-block language="css" show-lines label="Dot-pattern sticker on holidays" data-escape>/* Memphis-style dot pattern on holiday cells */
-[data-theme~="memphis"] calendar-wc
-  td button[data-highlight="holiday"]::after {
-  content: "";
-  background-image: radial-gradient(
-    circle, oklch(64% 0.24 10) 2px, transparent 2px
-  );
-  background-size: 8px 8px;
-  opacity: 0.3;
-}</code-block>
-
-    <h3>Today, Disabled, and Outside-Month</h3>
+    <h3>Today, Disabled, Outside</h3>
     <table class="props-table">
       <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
       <tbody>
@@ -299,13 +404,12 @@ crumbLabel: Web Components
         <tr><td><code>--cal-today-border</code></td><td><code>var(--color-border-strong)</code></td><td>Today cell border</td></tr>
         <tr><td><code>--cal-today-shadow</code></td><td><code>none</code></td><td>Today cell glow or shadow</td></tr>
         <tr><td><code>--cal-disabled-opacity</code></td><td><code>0.5</code></td><td>Disabled day opacity</td></tr>
-        <tr><td><code>--cal-outside-opacity</code></td><td><code>0.35</code></td><td>Previous/next month day opacity</td></tr>
-        <tr><td><code>--cal-outside-color</code></td><td><code>var(--color-text-muted)</code></td><td>Outside-month day text color</td></tr>
+        <tr><td><code>--cal-outside-opacity</code></td><td><code>0.35</code></td><td>Outside-month day opacity</td></tr>
+        <tr><td><code>--cal-outside-color</code></td><td><code>var(--color-text-muted)</code></td><td>Outside-month text color</td></tr>
       </tbody>
     </table>
 
     <h3>Watermark (Large Mode)</h3>
-    <p>In large mode, each cell displays a subtle background day number. These tokens control its appearance.</p>
     <table class="props-table">
       <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
       <tbody>
@@ -324,19 +428,16 @@ crumbLabel: Web Components
         <tr><td><code>--cal-highlight-border</code></td><td>interactive tint</td><td>Highlighted date border</td></tr>
       </tbody>
     </table>
-
-    <h3>Month-specific overrides</h3>
-    <p>The component syncs <code>data-month</code> and <code>data-year</code> attributes on the host element during navigation, enabling month-specific theming.</p>
-
-    <code-block language="css" show-lines label="Seasonal banner colors" data-escape>/* Spring pastels */
-[data-theme~="kawaii"] calendar-wc[data-month="3"],
-[data-theme~="kawaii"] calendar-wc[data-month="4"],
-[data-theme~="kawaii"] calendar-wc[data-month="5"] {
-  --cal-banner-bg: linear-gradient(135deg, pink, mint);
-}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The grid uses <code>role="grid"</code> with individual day buttons. Today is marked with <code>aria-current="date"</code>, selected dates with <code>aria-selected="true"</code>, and disabled dates with <code>aria-disabled="true"</code>. The month header uses <code>aria-live="polite"</code> for navigation announcements. Arrow keys navigate the grid, Enter/Space select.</p>
+    <p>The grid uses <code>role="grid"</code> with individual day buttons. Today is marked with <code>aria-current="date"</code>, selected dates with <code>aria-selected="true"</code>, and disabled dates with <code>aria-disabled="true"</code>. The month header uses <code>aria-live="polite"</code> for navigation announcements. Arrow keys navigate the grid; Enter/Space selects.</p>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a> &mdash; Popover date input for forms</li>
+    </ul>
   </section>
