@@ -1,5 +1,5 @@
 /**
- * <chart-wc> — SVG chart web component powered by SVC
+ * <chart-wc> — SVG chart web component with built-in charting engine
  *
  * Progressive enhancement: semantic table → CSS chart → SVG chart.
  * Supports five data sources:
@@ -18,7 +18,7 @@ import {
   PieChart,
   ScatterChart,
   BubbleChart,
-} from '@profpowell/svc';
+} from './svc/main.js';
 
 import {registerComponent} from '../../lib/bundle-registry.js';
 import {VBElement} from '../../lib/vb-element.js';

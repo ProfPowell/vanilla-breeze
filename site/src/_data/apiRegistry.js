@@ -870,17 +870,17 @@ export default {
       {
         "name": "data-audio-played",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "semantic-state"
       },
       {
         "name": "muted",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "semantic-state"
       },
       {
         "name": "data-audio-active",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "semantic-state"
       }
     ],
     "events": [
@@ -1286,7 +1286,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "chart-wc",
     "type": "web-component",
-    "description": "SVG chart component powered by SVC. Progressive enhancement: semantic table → CSS chart → SVG chart.",
+    "description": "SVG chart component with progressive enhancement: semantic table → CSS chart → SVG chart.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1322,7 +1322,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "SVC config overrides as JSON string"
+        "description": "Chart config overrides as JSON string"
       },
       {
         "name": "data-title",
@@ -1419,7 +1419,7 @@ export default {
       {
         "name": "config",
         "type": "Object",
-        "description": "Get/set SVC config programmatically"
+        "description": "Get/set chart config programmatically"
       }
     ],
     "methods": [
@@ -2942,12 +2942,12 @@ export default {
       {
         "name": "data-valid",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "semantic-state"
       },
       {
         "name": "data-invalid",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "semantic-state"
       }
     ],
     "childAttributes": [],

@@ -254,14 +254,7 @@ async function getPackManifest() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     bundleManifestCache = await res.json();
   } catch {
-    // Fallback to legacy bundles/ path for backwards compat
-    try {
-      const res = await fetch(`${base}/bundles/manifest.json`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      bundleManifestCache = await res.json();
-    } catch {
-      bundleManifestCache = {};
-    }
+    bundleManifestCache = {};
   }
   return bundleManifestCache;
 }
