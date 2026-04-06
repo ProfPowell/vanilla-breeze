@@ -18,6 +18,7 @@
  * @attr {string}  data-max-date        - Latest selectable/navigable date (ISO string)
  * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
+ * @attr {string}  data-months          - Number of adjacent months to show (1-12). Defaults to 1.
  * @attr {string}  name                - Form participation name (enables ElementInternals form value)
  *
  * @example
@@ -130,6 +131,7 @@ class CalendarWc extends VBElement {
   #hoverDate = null;
   #selectionMode = 'none';
   #size = 'default';
+  #monthCount = 1;
 
   /** JS-only callback: (date: Date) => boolean. If it returns true, the date is disabled. */
   isDateDisallowed = null;
@@ -143,6 +145,7 @@ class CalendarWc extends VBElement {
   #monthLabel;
   #yearSelect;
   #grid;
+  #monthsWrap;
   #prevBtn;
   #nextBtn;
   #detailOverlay = null;
@@ -164,6 +167,7 @@ class CalendarWc extends VBElement {
     this.#firstDayOfWeek = getFirstDayOfWeek();
     this.#selectionMode = this.getAttribute('data-selection') || 'none';
     this.#size = this.getAttribute('data-size') || 'default';
+    this.#monthCount = Math.max(1, Math.min(12, parseInt(this.dataset.months, 10) || 1));
 
     // Parse events
     const eventsAttr = this.getAttribute('data-events');
@@ -243,32 +247,13 @@ class CalendarWc extends VBElement {
     banner.setAttribute('aria-hidden', 'true');
     this.appendChild(banner);
 
-    // Grid
-    this.#grid = document.createElement('table');
-    this.#grid.setAttribute('role', 'grid');
-
-    // Weekday headers
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    const shortDays = getLocalizedDays(this.#locale, 'short');
-    const longDays = getLocalizedDays(this.#locale, 'long');
-    for (let i = 0; i < 7; i++) {
-      const dayIdx = (this.#firstDayOfWeek + i) % 7;
-      const th = document.createElement('th');
-      th.setAttribute('scope', 'col');
-      th.setAttribute('abbr', longDays[dayIdx]);
-      th.textContent = shortDays[dayIdx];
-      headerRow.appendChild(th);
-    }
-    thead.appendChild(headerRow);
-    this.#grid.appendChild(thead);
-    this.appendChild(this.#grid);
-
-    // Keyboard navigation
-    this.listen(this.#grid, 'keydown', (e) => this.#handleKey(e));
+    // Months wrapper — holds 1..N month grids side by side
+    this.#monthsWrap = document.createElement('div');
+    this.#monthsWrap.className = 'cal-months';
+    this.appendChild(this.#monthsWrap);
 
     // Click delegation — select or open day detail (not both)
-    this.listen(this.#grid, 'click', (e) => {
+    this.listen(this.#monthsWrap, 'click', (e) => {
       const btn = e.target.closest('button[data-date]');
       if (!btn || btn.disabled) return;
       const iso = btn.getAttribute('data-date');
@@ -282,9 +267,12 @@ class CalendarWc extends VBElement {
       }
     });
 
+    // Keyboard navigation — delegated on the wrapper
+    this.listen(this.#monthsWrap, 'keydown', (e) => this.#handleKey(e));
+
     // Hover for range preview — in-place attribute update, no re-render
     if (this.#selectionMode === 'range') {
-      this.listen(this.#grid, 'mouseover', (e) => {
+      this.listen(this.#monthsWrap, 'mouseover', (e) => {
         const btn = e.target.closest('button[data-date]');
         if (btn && this.#rangeStart && !this.#rangeEnd) {
           this.#hoverDate = fromISO(btn.getAttribute('data-date'));
@@ -400,13 +388,12 @@ class CalendarWc extends VBElement {
 
   /** Update selection/range attributes in-place without rebuilding DOM */
   #updateSelectionUI() {
-    const tbody = this.#grid.querySelector('tbody');
-    if (!tbody) return;
+    if (!this.#monthsWrap) return;
 
     const rangeA = this.#rangeStart;
     const rangeB = this.#rangeEnd || this.#hoverDate;
 
-    for (const td of tbody.querySelectorAll('td')) {
+    for (const td of this.#monthsWrap.querySelectorAll('td')) {
       const btn = td.querySelector('button[data-date]');
       if (!btn) continue;
 
@@ -447,50 +434,108 @@ class CalendarWc extends VBElement {
     }
   }
 
-  #renderMonth() {
-    const today = new Date();
-    const totalDays = daysInMonth(this.#viewYear, this.#viewMonth);
-    const isLarge = this.#size === 'large';
+  /** Compute (year, month) for a given offset from the current view */
+  #offsetMonth(offset) {
+    const d = new Date(this.#viewYear, this.#viewMonth + offset, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  }
 
-    // Update title
+  #renderMonth() {
+    const n = this.#monthCount;
+
+    // ── Update title ──
     try {
-      const titleDate = new Date(this.#viewYear, this.#viewMonth, 1);
-      const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(titleDate);
-      this.#monthLabel.textContent = monthName;
-      this.#grid.setAttribute('aria-label', `${monthName} ${this.#viewYear}`);
+      const first = new Date(this.#viewYear, this.#viewMonth, 1);
+      const fmtMonth = new Intl.DateTimeFormat(undefined, { month: 'long' });
+      if (n === 1) {
+        this.#monthLabel.textContent = fmtMonth.format(first);
+      } else {
+        const last = this.#offsetMonth(n - 1);
+        const lastDate = new Date(last.year, last.month, 1);
+        const firstName = fmtMonth.format(first);
+        const lastName = fmtMonth.format(lastDate);
+        if (first.getFullYear() === last.year) {
+          this.#monthLabel.textContent = `${firstName} \u2013 ${lastName}`;
+        } else {
+          const fmtFull = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
+          this.#monthLabel.textContent = `${fmtFull.format(first)} \u2013 ${fmtFull.format(lastDate)}`;
+        }
+      }
     } catch {
       this.#monthLabel.textContent = String(this.#viewMonth + 1);
     }
     this.#buildYearOptions();
 
-    // Constrain prev/next navigation at min/max boundaries
+    // ── Constrain prev/next navigation at min/max boundaries ──
     this.#prevBtn.disabled = !!(this.#minDate && (
       this.#viewYear < this.#minDate.getFullYear() ||
       (this.#viewYear === this.#minDate.getFullYear() &&
        this.#viewMonth <= this.#minDate.getMonth())));
+
+    const lastVis = this.#offsetMonth(n - 1);
     this.#nextBtn.disabled = !!(this.#maxDate && (
-      this.#viewYear > this.#maxDate.getFullYear() ||
-      (this.#viewYear === this.#maxDate.getFullYear() &&
-       this.#viewMonth >= this.#maxDate.getMonth())));
+      lastVis.year > this.#maxDate.getFullYear() ||
+      (lastVis.year === this.#maxDate.getFullYear() &&
+       lastVis.month >= this.#maxDate.getMonth())));
 
     // Sync host attributes for theme CSS selectors
     this.setAttribute('data-month', String(this.#viewMonth + 1));
     this.setAttribute('data-year', String(this.#viewYear));
 
-    // Remove old tbody
-    const oldTbody = this.#grid.querySelector('tbody');
-    if (oldTbody) oldTbody.remove();
+    // ── Build month grids ──
+    this.#monthsWrap.innerHTML = '';
 
+    for (let i = 0; i < n; i++) {
+      const { year, month } = this.#offsetMonth(i);
+      const table = this.#buildMonthTable(year, month);
+      this.#monthsWrap.appendChild(table);
+    }
+
+    // Keep #grid pointing at the first table for keyboard nav compatibility
+    this.#grid = this.#monthsWrap.querySelector('table');
+  }
+
+  /** Build a complete month table (thead + tbody) for the given year/month */
+  #buildMonthTable(year, month) {
+    const today = new Date();
+    const totalDays = daysInMonth(year, month);
+    const isLarge = this.#size === 'large';
+
+    const table = document.createElement('table');
+    table.setAttribute('role', 'grid');
+    try {
+      const titleDate = new Date(year, month, 1);
+      const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(titleDate);
+      table.setAttribute('aria-label', `${monthName} ${year}`);
+    } catch { /* fallback — no label */ }
+
+    // Weekday headers
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const shortDays = getLocalizedDays(this.#locale, 'short');
+    const longDays = getLocalizedDays(this.#locale, 'long');
+    for (let i = 0; i < 7; i++) {
+      const dayIdx = (this.#firstDayOfWeek + i) % 7;
+      const th = document.createElement('th');
+      th.setAttribute('scope', 'col');
+      th.setAttribute('abbr', longDays[dayIdx]);
+      th.textContent = shortDays[dayIdx];
+      headerRow.appendChild(th);
+    }
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Body
     const tbody = document.createElement('tbody');
     let weekIdx = 1;
     let row = document.createElement('tr');
     row.setAttribute('data-week', String(weekIdx));
 
-    const firstDay = new Date(this.#viewYear, this.#viewMonth, 1).getDay();
+    const firstDay = new Date(year, month, 1).getDay();
     const startOffset = (firstDay - this.#firstDayOfWeek + 7) % 7;
 
-    // Leading cells: show previous month's trailing days (paper-calendar style)
-    const prevMonthDays = daysInMonth(this.#viewYear, this.#viewMonth - 1);
+    // Leading cells: previous month's trailing days
+    const prevMonthDays = daysInMonth(year, month - 1);
     for (let i = 0; i < startOffset; i++) {
       const dayNum = prevMonthDays - startOffset + 1 + i;
       const td = document.createElement('td');
@@ -512,7 +557,7 @@ class CalendarWc extends VBElement {
     const rangeB = this.#rangeEnd || this.#hoverDate;
 
     for (let day = 1; day <= totalDays; day++) {
-      const cellDate = new Date(this.#viewYear, this.#viewMonth, day);
+      const cellDate = new Date(year, month, day);
       const iso = toISO(cellDate);
       const td = document.createElement('td');
       const btn = document.createElement('button');
@@ -645,7 +690,7 @@ class CalendarWc extends VBElement {
       }
     }
 
-    // Trailing cells: show next month's leading days (paper-calendar style)
+    // Trailing cells: next month's leading days
     const remaining = (startOffset + totalDays) % 7;
     if (remaining > 0) {
       for (let i = 1; i <= 7 - remaining; i++) {
@@ -666,7 +711,8 @@ class CalendarWc extends VBElement {
       tbody.appendChild(row);
     }
 
-    this.#grid.appendChild(tbody);
+    table.appendChild(tbody);
+    return table;
   }
 
   // ── Day detail overlay ────────────────────────────────────────────
@@ -840,7 +886,7 @@ class CalendarWc extends VBElement {
   // ── Keyboard navigation ───────────────────────────────────────────
 
   #handleKey(e) {
-    const focused = this.#grid.querySelector('button[tabindex="0"]');
+    const focused = this.#monthsWrap.querySelector('button[tabindex="0"]');
     if (!focused) return;
 
     const iso = focused.getAttribute('data-date');
@@ -867,16 +913,24 @@ class CalendarWc extends VBElement {
     if (this.#minDate && newDate < this.#minDate) return;
     if (this.#maxDate && newDate > this.#maxDate) return;
 
-    if (newDate.getMonth() !== this.#viewMonth || newDate.getFullYear() !== this.#viewYear) {
-      this.#viewMonth = newDate.getMonth();
-      this.#viewYear = newDate.getFullYear();
+    // Check if the new date is within the currently visible months
+    const newM = newDate.getMonth();
+    const newY = newDate.getFullYear();
+    const lastVis = this.#offsetMonth(this.#monthCount - 1);
+    const inView = (newY > this.#viewYear || (newY === this.#viewYear && newM >= this.#viewMonth)) &&
+                   (newY < lastVis.year || (newY === lastVis.year && newM <= lastVis.month));
+
+    if (!inView) {
+      // Shift view so the new date is visible
+      this.#viewMonth = newM;
+      this.#viewYear = newY;
       this.#renderMonth();
     }
 
     const newISO = toISO(newDate);
-    const newBtn = this.#grid.querySelector(`button[data-date="${newISO}"]`);
+    const newBtn = this.#monthsWrap.querySelector(`button[data-date="${newISO}"]`);
     if (newBtn) {
-      this.#grid.querySelectorAll('button[tabindex="0"]').forEach(b => b.setAttribute('tabindex', '-1'));
+      this.#monthsWrap.querySelectorAll('button[tabindex="0"]').forEach(b => b.setAttribute('tabindex', '-1'));
       newBtn.setAttribute('tabindex', '0');
       newBtn.focus();
     }
