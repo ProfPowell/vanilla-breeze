@@ -3,17 +3,14 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Day View — Markup Prototype v2</title>
+  <title>Day View — Markup Prototype v3</title>
+  <link rel="stylesheet" href="/src/main.css"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-
     body {
-      font-family: system-ui, sans-serif;
-      line-height: 1.5;
+      padding: 2rem 1rem;
+      background: var(--color-surface);
       max-inline-size: 50rem;
       margin-inline: auto;
-      padding: 2rem 1rem;
-      color: #333;
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -22,8 +19,8 @@
 
     day-view {
       display: block;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
       overflow: hidden;
     }
 
@@ -32,20 +29,13 @@
     day-view > .all-day-events {
       list-style: none;
       margin: 0;
-      padding: 0.25rem 0.5rem;
+      padding: var(--size-3xs) var(--size-xs);
       display: flex;
-      gap: 0.25rem;
+      gap: var(--size-3xs);
       flex-wrap: wrap;
-      background: #f8f8f8;
-      border-block-end: 1px solid #e0e0e0;
-      font-size: 0.8125rem;
-    }
-
-    day-view > .all-day-events > calendar-event {
-      display: block;
-      padding: 0.125rem 0.5rem;
-      border-radius: 4px;
-      white-space: nowrap;
+      background: var(--color-surface-raised);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+      font-size: var(--font-size-sm);
     }
 
     /* ── Priority quick-links ──────────────────────────────────── */
@@ -53,18 +43,18 @@
     day-view > .priorities {
       list-style: none;
       margin: 0;
-      padding: 0.25rem 0.5rem;
+      padding: var(--size-3xs) var(--size-xs);
       display: flex;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      color: #888;
-      border-block-end: 1px solid #e0e0e0;
+      gap: var(--size-s);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
     }
 
     day-view > .priorities a {
       color: inherit;
       text-decoration: underline;
-      text-decoration-color: #ccc;
+      text-decoration-color: var(--color-border);
     }
 
     /* ── Hour schedule list ─────────────────────────────────────── */
@@ -76,33 +66,33 @@
     }
 
     /*
-      Each hour <li> uses a 2-column × 2-row grid:
+      Each hour <li>: 2-column × 2-row grid
         col 1 = hour label (spans both rows)
-        col 2 = top half-hour | bottom half-hour
+        col 2 = hour-view with top/bottom half-hour
     */
     day-view > ol > li {
       display: grid;
       grid-template-columns: 4rem 1fr;
       grid-template-rows: 1fr 1fr;
       min-block-size: 3rem;
-      border-block-end: 1px solid #efefef;
+      border-block-end: var(--border-width-thin) solid var(--color-border);
     }
 
-    /* Hour label — spans both half-hour rows */
+    /* Hour label */
     day-view > ol > li > time {
       grid-column: 1;
       grid-row: 1 / -1;
-      padding: 0.125rem 0.5rem;
-      font-size: 0.75rem;
-      color: #999;
-      background: #fafafa;
-      border-inline-end: 1px solid #e0e0e0;
+      padding: 0.125rem var(--size-xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      background: var(--color-surface-raised);
+      border-inline-end: var(--border-width-thin) solid var(--color-border);
       text-align: end;
       line-height: 1;
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       HOUR-VIEW: 2-row subgrid inside each hour
+       HOUR-VIEW: subgrid for half-hour placement
        ═══════════════════════════════════════════════════════════════ */
 
     hour-view {
@@ -111,19 +101,26 @@
       display: grid;
       grid-template-rows: subgrid;
       grid-template-columns: 1fr;
-      padding-inline: 0.25rem;
+      padding-inline: var(--size-3xs);
       gap: 1px;
       position: relative;
     }
 
-    /* Half-hour divider — faint line at the midpoint */
+    /* Half-hour divider */
     hour-view::after {
       content: "";
       position: absolute;
-      inset-inline: 0.25rem;
+      inset-inline: var(--size-3xs);
       inset-block-start: 50%;
-      border-block-start: 1px dashed #ebebeb;
+      border-block-start: 1px dashed var(--color-border);
+      opacity: 0.4;
       pointer-events: none;
+    }
+
+    /* Double-booking: when hour-view has multiple events in same half,
+       switch to side-by-side columns */
+    hour-view[data-overlap] {
+      grid-template-columns: 1fr 1fr;
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -131,75 +128,77 @@
        ═══════════════════════════════════════════════════════════════ */
 
     calendar-event {
-      display: block;
-      padding: 0.125rem 0.375rem;
-      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      gap: var(--size-3xs);
+      padding: 2px var(--size-xs);
+      font-size: var(--font-size-sm);
       line-height: 1.3;
-      border-radius: 3px;
-      border-inline-start: 3px solid var(--event-color, oklch(55% 0.2 260));
-      background: oklch(from var(--event-color, oklch(55% 0.2 260)) l c h / 0.1);
+      border-radius: var(--radius-s);
+      border-inline-start: 3px solid var(--event-color, var(--color-primary));
+      background: oklch(from var(--event-color, var(--color-primary)) l c h / 0.1);
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      grid-column: 1 / -1;
+      grid-row: 1;
+      align-self: stretch;
+      z-index: 1;
     }
 
     calendar-event:hover {
-      background: oklch(from var(--event-color, oklch(55% 0.2 260)) l c h / 0.18);
+      background: oklch(from var(--event-color, var(--color-primary)) l c h / 0.18);
     }
 
-    /* ── Grid placement within hour-view ──────────────────────── */
-
-    /* All events span the full width */
-    hour-view > calendar-event {
-      grid-column: 1;
-      grid-row: 1;
-      align-self: start;
-    }
-
-    /* :30 events — bottom half of the hour */
-    hour-view > calendar-event[data-start="30"] {
+    /* :30 events — bottom half */
+    calendar-event[data-start="30"] {
       grid-row: 2;
     }
 
-    /* Multi-hour spanning via explicit row span on the parent hour <li> */
-    /* A 2-hour event: the hour <li> grows to hold it, event fills both halves */
-    calendar-event[data-duration="2h"] {
-      grid-row: 1 / -1;
-      min-block-size: calc(3rem * 2 - 4px);
+    /* Multi-hour: event overflows into subsequent hour rows */
+    calendar-event[data-duration="1h"]   { min-block-size: calc(3rem * 1 - 4px); grid-row: 1 / -1; }
+    calendar-event[data-duration="1h30m"]{ min-block-size: calc(3rem * 1.5 - 4px); grid-row: 1 / -1; }
+    calendar-event[data-duration="2h"]   { min-block-size: calc(3rem * 2 - 4px); grid-row: 1 / -1; }
+    calendar-event[data-duration="3h"]   { min-block-size: calc(3rem * 3 - 4px); grid-row: 1 / -1; }
+
+    /* When overlapping — each event takes one column */
+    hour-view[data-overlap] > calendar-event {
+      grid-column: auto;
     }
 
-    calendar-event[data-duration="1h30m"] {
-      grid-row: 1 / -1;
-      min-block-size: calc(3rem * 1.5 - 4px);
-    }
+    /* ── Time display ─────────────────────────────────────────── */
 
-    /* ── Time display inside events ───────────────────────────── */
-
-    calendar-event > time:first-child {
+    calendar-event > time:first-of-type {
       font-weight: 600;
-      color: #666;
-      margin-inline-end: 0.25rem;
+      color: var(--color-text-muted);
       font-size: 0.9em;
+      flex-shrink: 0;
     }
 
-    /* Hide duration <time> */
     calendar-event > time[datetime^="PT"] {
       display: none;
     }
 
+    /* ── Icons ─────────────────────────────────────────────────── */
+
+    calendar-event > icon-wc {
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
     /* ── Category colors ──────────────────────────────────────── */
 
-    [data-category="meeting"]  { --event-color: oklch(55% 0.2 260); }
-    [data-category="deadline"] { --event-color: oklch(55% 0.2 25); }
-    [data-category="personal"] { --event-color: oklch(55% 0.18 145); }
+    [data-category="meeting"]  { --event-color: var(--color-primary); }
+    [data-category="deadline"] { --event-color: var(--color-error); }
+    [data-category="personal"] { --event-color: var(--color-success); }
     [data-category="focus"]    { --event-color: oklch(55% 0.15 80); }
 
     /* ── Details inside events ────────────────────────────────── */
 
     calendar-event details {
-      font-size: 0.75rem;
-      color: #666;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
       white-space: normal;
     }
 
@@ -219,6 +218,7 @@
   <ul class="all-day-events">
     <li>
       <calendar-event data-category="personal">
+        <icon-wc name="globe" size="sm"></icon-wc>
         Earth Day (all day)
       </calendar-event>
     </li>
@@ -231,7 +231,6 @@
     <li><a href="#ev-report">4:00 Submit report</a></li>
   </ul>
 
-  <!-- The schedule: each <li> is one hour with a 2-row subgrid -->
   <ol>
     <li>
       <time datetime="07:00">7 AM</time>
@@ -242,7 +241,9 @@
       <time datetime="08:00">8 AM</time>
       <hour-view>
         <calendar-event data-category="personal" data-start="30">
-          <time datetime="08:30">8:30</time> Morning coffee
+          <time datetime="08:30">8:30</time>
+          <icon-wc name="coffee" size="sm"></icon-wc>
+          Morning coffee
         </calendar-event>
       </hour-view>
     </li>
@@ -251,7 +252,9 @@
       <time datetime="09:00">9 AM</time>
       <hour-view>
         <calendar-event id="ev-standup" data-category="meeting">
-          <time datetime="09:00">9:00</time> Sprint standup
+          <time datetime="09:00">9:00</time>
+          <icon-wc name="users" size="sm"></icon-wc>
+          Sprint standup
           <details>
             <summary>Details</summary>
             <p>Room B, 30 min. Daily sync.</p>
@@ -266,7 +269,8 @@
         <calendar-event id="ev-review" data-category="meeting" data-duration="2h">
           <time datetime="10:00">10:00</time>
           <time datetime="PT2H">2h</time>
-          Design review
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Design review — Q3 mockups
         </calendar-event>
       </hour-view>
     </li>
@@ -274,7 +278,7 @@
     <li>
       <time datetime="11:00">11 AM</time>
       <hour-view>
-        <!-- Design review continues through this hour -->
+        <!-- Design review continues -->
       </hour-view>
     </li>
 
@@ -282,7 +286,9 @@
       <time datetime="12:00">12 PM</time>
       <hour-view>
         <calendar-event data-category="personal" data-start="30">
-          <time datetime="12:30">12:30</time> Lunch
+          <time datetime="12:30">12:30</time>
+          <icon-wc name="utensils" size="sm"></icon-wc>
+          Lunch
         </calendar-event>
       </hour-view>
     </li>
@@ -292,11 +298,19 @@
       <hour-view></hour-view>
     </li>
 
+    <!-- Double-booking example: two events at the same time -->
     <li>
       <time datetime="14:00">2 PM</time>
-      <hour-view>
+      <hour-view data-overlap>
         <calendar-event data-category="focus">
-          <time datetime="14:00">2:00</time> Code review session
+          <time datetime="14:00">2:00</time>
+          <icon-wc name="code" size="sm"></icon-wc>
+          Code review
+        </calendar-event>
+        <calendar-event data-category="meeting">
+          <time datetime="14:00">2:00</time>
+          <icon-wc name="user" size="sm"></icon-wc>
+          1:1 with Sarah
         </calendar-event>
       </hour-view>
     </li>
@@ -310,23 +324,31 @@
       <time datetime="16:00">4 PM</time>
       <hour-view>
         <calendar-event id="ev-report" data-category="deadline">
-          <time datetime="16:00">4:00</time> Submit quarterly report
+          <time datetime="16:00">4:00</time>
+          <icon-wc name="alert-triangle" size="sm"></icon-wc>
+          Submit quarterly report
         </calendar-event>
       </hour-view>
     </li>
 
+    <!-- Cross-hour event starting at :30 -->
     <li>
       <time datetime="17:00">5 PM</time>
       <hour-view>
-        <calendar-event data-category="personal" data-start="30">
-          <time datetime="17:30">5:30</time> Team happy hour
+        <calendar-event data-category="personal" data-start="30" data-duration="1h30m">
+          <time datetime="17:30">5:30</time>
+          <time datetime="PT1H30M">1.5h</time>
+          <icon-wc name="beer" size="sm"></icon-wc>
+          Team happy hour
         </calendar-event>
       </hour-view>
     </li>
 
     <li>
       <time datetime="18:00">6 PM</time>
-      <hour-view></hour-view>
+      <hour-view>
+        <!-- Happy hour continues -->
+      </hour-view>
     </li>
 
     <li>
@@ -337,5 +359,6 @@
 
 </day-view>
 
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
