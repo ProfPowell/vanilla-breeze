@@ -86,24 +86,17 @@
     container-type: inline-size;
   }
 
-  /* ── Multi-month layout ───────────────────────────────────────────── */
+  /* ── Multi-month grid layout ────────────────────────────────────── */
 
   .cal-months {
-    display: flex;
-    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--size-m);
   }
 
   .cal-months > table,
   .cal-months > .cal-month-column {
-    flex: 1;
     min-inline-size: 0;
-  }
-
-  /* Divider between months */
-  .cal-months > .cal-month-column + .cal-month-column {
-    border-inline-start: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
-    padding-inline-start: var(--size-m);
-    margin-inline-start: var(--size-m);
   }
 
   .cal-month-title {
@@ -114,18 +107,42 @@
     color: var(--color-text);
   }
 
+  /* Column count by month count */
+  :scope[data-months="2"] .cal-months { grid-template-columns: repeat(2, 1fr); }
+  :scope[data-months="3"] .cal-months { grid-template-columns: repeat(3, 1fr); }
+  :scope[data-months="4"] .cal-months { grid-template-columns: repeat(2, 1fr); }
+
+  :scope[data-months="5"] .cal-months,
+  :scope[data-months="6"] .cal-months { grid-template-columns: repeat(3, 1fr); }
+
+  :scope[data-months="7"] .cal-months,
+  :scope[data-months="8"] .cal-months,
+  :scope[data-months="9"] .cal-months { grid-template-columns: repeat(3, 1fr); }
+
+  :scope[data-months="10"] .cal-months,
+  :scope[data-months="11"] .cal-months,
+  :scope[data-months="12"] .cal-months { grid-template-columns: repeat(4, 1fr); }
+
+  /* Responsive: 4-col → 2-col */
+  @container (max-width: 56rem) {
+    :scope[data-months="10"] .cal-months,
+    :scope[data-months="11"] .cal-months,
+    :scope[data-months="12"] .cal-months { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Responsive: 3-col → 2-col, 4-col → 3-col */
+  @container (max-width: 42rem) {
+    :scope[data-months="3"] .cal-months,
+    :scope[data-months="5"] .cal-months,
+    :scope[data-months="6"] .cal-months,
+    :scope[data-months="7"] .cal-months,
+    :scope[data-months="8"] .cal-months,
+    :scope[data-months="9"] .cal-months { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Narrow: everything stacks to single column */
   @container (max-width: 30rem) {
-    .cal-months {
-      flex-direction: column;
-    }
-    .cal-months > .cal-month-column + .cal-month-column {
-      border-inline-start: none;
-      padding-inline-start: 0;
-      margin-inline-start: 0;
-      border-block-start: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
-      padding-block-start: var(--size-m);
-      margin-block-start: var(--size-m);
-    }
+    .cal-months { grid-template-columns: 1fr; }
   }
 
   /* ── Banner (decorative month imagery surface) ──────────────────── */

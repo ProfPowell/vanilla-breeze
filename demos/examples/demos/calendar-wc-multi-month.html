@@ -3,38 +3,71 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calendar — Multi-Month</title>
+  <title>Calendar — Multi-Month Layouts</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
       padding: var(--size-m);
       background: var(--color-surface);
     }
+    section + section {
+      margin-block-start: var(--size-2xl);
+      padding-block-start: var(--size-xl);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+    }
     output {
       display: block;
-      margin-block-start: var(--size-m);
+      margin-block-start: var(--size-s);
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
   </style>
 </head>
 <body>
-  <h3>Two-month range picker</h3>
-  <p>Shows two months side by side for easier range selection. Range highlights span across months.</p>
+  <section>
+    <h3>Two months — range picker</h3>
+    <calendar-wc
+      id="dual-cal"
+      data-months="2"
+      data-selection="range">
+    </calendar-wc>
+    <output id="dual-output">Select a date range</output>
+  </section>
 
-  <calendar-wc
-    id="dual-cal"
-    data-months="2"
-    data-selection="range">
-  </calendar-wc>
+  <section>
+    <h3>Four months — quarter view</h3>
+    <calendar-wc
+      data-months="4"
+      data-month="4"
+      data-year="2026"
+      data-selection="multi">
+    </calendar-wc>
+  </section>
 
-  <output id="dual-output">Select a date range</output>
+  <section>
+    <h3>Six months — half-year</h3>
+    <calendar-wc
+      data-months="6"
+      data-month="1"
+      data-year="2026"
+      data-highlight-dates="2026-01-01:holiday,2026-02-14:holiday,2026-05-25:holiday">
+    </calendar-wc>
+  </section>
+
+  <section>
+    <h3>Twelve months — yearly overview (compact)</h3>
+    <calendar-wc
+      data-months="12"
+      data-month="1"
+      data-year="2026"
+      data-size="compact">
+    </calendar-wc>
+  </section>
 
   <script type="module" src="/src/main.js"></script>
   <script>
     document.getElementById('dual-cal').addEventListener('calendar:select', (e) => {
-      document.getElementById('dual-output').textContent =
-        'Range: ' + e.detail.value;
+      document.getElementById('dual-output').textContent = 'Range: ' + e.detail.value;
     });
   </script>
 </body>
