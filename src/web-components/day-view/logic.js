@@ -145,10 +145,11 @@ class DayView extends VBElement {
           e.li.style.gridRow = `span ${span * 2 - 1}`;
         }
 
-        // Sub-hour offset: position :15/:30/:45 events within their row
+        // Sub-hour offset: :15/:30/:45 events indent within their row
+        // Uses calc against the row height custom property
         if (e.min > 0) {
-          const pct = Math.round((e.min / 60) * 100);
-          e.li.style.marginBlockStart = `${pct}%`;
+          const fraction = (e.min / 60).toFixed(2);
+          e.li.style.marginBlockStart = `calc(var(--_row-h, 2rem) * ${fraction})`;
         }
 
         this.#list.appendChild(e.li);
