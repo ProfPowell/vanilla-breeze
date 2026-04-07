@@ -4,7 +4,11 @@
  * Progressive enhancement over a semantic <ol> with <time> entries.
  * Without JS, renders as a readable ordered event list.
  * With JS, inserts hour-marker <li> elements and positions events
- * into a CSS Grid hour layout. No <div> tags are generated.
+ * into a half-hour CSS Grid. No <div> tags are generated.
+ *
+ * Grid uses half-hour resolution: each hour = 2 grid rows.
+ * Events at :00 start at the first sub-row, :30 at the second.
+ * Duration determines row span (1 hour = 2 rows, 30min = 1 row).
  *
  * @attr {string} data-date       - ISO date for this day (e.g., "2026-04-10")
  * @attr {number} data-start-hour - First visible hour (default: 7)
@@ -60,12 +64,10 @@ class DayView extends VBElement {
   }
 
   teardown() {
-    // Remove generated elements on disconnect
     this.#generatedEls.forEach(el => el.remove());
     this.#generatedEls = [];
   }
 
-  /** Force re-render */
   refresh() {
     this.teardown();
     this.#enhance();
@@ -75,7 +77,10 @@ class DayView extends VBElement {
     const hours = getLocalizedHours(this.#locale);
     const hourCount = this.#endHour - this.#startHour + 1;
 
-    // Collect original event <li> elements and parse their times
+    // Set CSS var for total half-hour rows
+    this.style.setProperty('--_half-hour-rows', String(hourCount * 2));
+
+    // Parse events from the <ol> children
     const eventItems = [...this.#list.querySelectorAll(':scope > li')];
     const events = eventItems.map(li => {
       const timeEl = li.querySelector('time[datetime]');
@@ -84,90 +89,82 @@ class DayView extends VBElement {
       const hour = parseInt(hStr, 10);
       const min = parseInt(mStr, 10) || 0;
 
-      // Duration
       const durEl = li.querySelector('time[datetime^="PT"]');
-      let durHours = 1;
+      let durMinutes = 60; // default 1 hour
       if (durEl) {
         const ddt = durEl.getAttribute('datetime');
         const hm = ddt.match(/(\d+)H/);
         const mm = ddt.match(/(\d+)M/);
-        durHours = (hm ? parseInt(hm[1], 10) : 0) + (mm ? parseInt(mm[1], 10) / 60 : 0);
-        if (durHours === 0) durHours = 1;
+        durMinutes = (hm ? parseInt(hm[1], 10) * 60 : 0) + (mm ? parseInt(mm[1], 10) : 0);
+        if (durMinutes === 0) durMinutes = 60;
       }
 
-      // Category from <data>
       const dataEl = li.querySelector('data[value]');
       if (dataEl) li.dataset.category = dataEl.getAttribute('value');
 
-      return { li, hour, min, durHours, valid: !isNaN(hour) };
+      return { li, hour, min, durMinutes, valid: !isNaN(hour) };
     });
 
-    // Sort events by time
     events.sort((a, b) => (a.hour * 60 + a.min) - (b.hour * 60 + b.min));
 
-    // Clear list and rebuild with hour markers interleaved
+    // Clear and rebuild
     this.#list.innerHTML = '';
 
     let earlyCount = 0;
     let lateCount = 0;
-    const earlyEvents = [];
-    const lateEvents = [];
-    const inRangeEvents = [];
 
-    events.forEach(e => {
-      if (!e.valid) { inRangeEvents.push(e); return; }
-      if (e.hour < this.#startHour) { earlyCount++; earlyEvents.push(e); return; }
-      if (e.hour > this.#endHour) { lateCount++; lateEvents.push(e); return; }
-      inRangeEvents.push(e);
-    });
-
-    // Build the grid: hour markers + events interleaved
-    let eventIdx = 0;
+    // Place hour markers with explicit grid rows
     for (let h = this.#startHour; h <= this.#endHour; h++) {
-      // Create hour marker <li>
       const hourLi = document.createElement('li');
       hourLi.className = 'dv-hour';
       hourLi.setAttribute('aria-hidden', 'true');
+
       const hourTime = document.createElement('time');
       hourTime.setAttribute('datetime', String(h).padStart(2, '0') + ':00');
       hourTime.textContent = hours[h];
       hourLi.appendChild(hourTime);
+
+      // Explicit grid row: hour h maps to row ((h - startHour) * 2 + 1)
+      const gridRow = (h - this.#startHour) * 2 + 1;
+      hourLi.style.gridRow = `${gridRow} / span 2`;
+
       this.#list.appendChild(hourLi);
       this.#generatedEls.push(hourLi);
+    }
 
-      // Insert events that start at this hour
-      while (eventIdx < inRangeEvents.length && inRangeEvents[eventIdx].hour === h) {
-        const e = inRangeEvents[eventIdx];
-        const span = Math.max(1, Math.round(e.durHours));
-
-        // Multi-hour events span across hour slots
-        if (span > 1) {
-          e.li.style.gridRow = `span ${span * 2 - 1}`;
-        }
-
-        // Sub-hour offset: :15/:30/:45 events indent within their row
-        // Uses calc against the row height custom property
-        if (e.min > 0) {
-          const fraction = (e.min / 60).toFixed(2);
-          e.li.style.marginBlockStart = `calc(var(--_row-h, 2rem) * ${fraction})`;
-        }
-
+    // Place events with explicit grid rows
+    events.forEach(e => {
+      if (!e.valid) {
         this.#list.appendChild(e.li);
-        eventIdx++;
+        return;
       }
-    }
+      if (e.hour < this.#startHour || (e.hour === this.#startHour && e.min < 0)) {
+        earlyCount++;
+        return;
+      }
+      if (e.hour > this.#endHour) {
+        lateCount++;
+        return;
+      }
 
-    // Append any remaining events (no valid time, placed at end)
-    while (eventIdx < inRangeEvents.length) {
-      this.#list.appendChild(inRangeEvents[eventIdx].li);
-      eventIdx++;
-    }
+      // Grid row from time: each hour = 2 rows, :30 = +1 row
+      const halfHourOffset = e.min >= 30 ? 1 : 0;
+      const gridRowStart = (e.hour - this.#startHour) * 2 + 1 + halfHourOffset;
+
+      // Span: duration in half-hours, minimum 1
+      const halfHourSpan = Math.max(1, Math.round(e.durMinutes / 30));
+
+      e.li.style.gridRow = `${gridRowStart} / span ${halfHourSpan}`;
+      this.#list.appendChild(e.li);
+    });
 
     // Overflow indicators
     if (earlyCount > 0) {
       const indicator = document.createElement('li');
       indicator.className = 'dv-overflow';
-      indicator.textContent = `↑ ${earlyCount} earlier`;
+      indicator.textContent = `\u2191 ${earlyCount} earlier`;
+      indicator.style.gridRow = '1';
+      indicator.style.gridColumn = '1 / -1';
       this.#list.insertBefore(indicator, this.#list.firstChild);
       this.#generatedEls.push(indicator);
     }
@@ -175,7 +172,8 @@ class DayView extends VBElement {
     if (lateCount > 0) {
       const indicator = document.createElement('li');
       indicator.className = 'dv-overflow';
-      indicator.textContent = `↓ ${lateCount} later`;
+      indicator.textContent = `\u2193 ${lateCount} later`;
+      indicator.style.gridColumn = '1 / -1';
       this.#list.appendChild(indicator);
       this.#generatedEls.push(indicator);
     }
@@ -215,7 +213,6 @@ class DayView extends VBElement {
       }
     });
 
-    // Set initial tabindex
     const firstEvent = this.#list.querySelector(':scope > li:not(.dv-hour):not(.dv-overflow)');
     if (firstEvent) firstEvent.setAttribute('tabindex', '0');
   }
