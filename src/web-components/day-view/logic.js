@@ -90,7 +90,7 @@ class DayView extends VBElement {
       const min = parseInt(mStr, 10) || 0;
 
       const durEl = li.querySelector('time[datetime^="PT"]');
-      let durMinutes = 60; // default 1 hour
+      let durMinutes = 30; // default 30 min (1 half-hour slot)
       if (durEl) {
         const ddt = durEl.getAttribute('datetime');
         const hm = ddt.match(/(\d+)H/);
@@ -115,21 +115,24 @@ class DayView extends VBElement {
 
     // Place hour markers with explicit grid rows
     for (let h = this.#startHour; h <= this.#endHour; h++) {
+      const gridRow = (h - this.#startHour) * 2 + 1;
+
+      // Hour label in column 1
       const hourLi = document.createElement('li');
       hourLi.className = 'dv-hour';
       hourLi.setAttribute('aria-hidden', 'true');
-
-      const hourTime = document.createElement('time');
-      hourTime.setAttribute('datetime', String(h).padStart(2, '0') + ':00');
-      hourTime.textContent = hours[h];
-      hourLi.appendChild(hourTime);
-
-      // Explicit grid row: hour h maps to row ((h - startHour) * 2 + 1)
-      const gridRow = (h - this.#startHour) * 2 + 1;
+      hourLi.textContent = hours[h];
       hourLi.style.gridRow = `${gridRow} / span 2`;
-
       this.#list.appendChild(hourLi);
       this.#generatedEls.push(hourLi);
+
+      // Hour grid line in column 2
+      const lineLi = document.createElement('li');
+      lineLi.className = 'dv-hour-line';
+      lineLi.setAttribute('aria-hidden', 'true');
+      lineLi.style.gridRow = `${gridRow} / span 2`;
+      this.#list.appendChild(lineLi);
+      this.#generatedEls.push(lineLi);
     }
 
     // Place events with explicit grid rows
