@@ -3,12 +3,14 @@
  *
  * Progressive enhancement over a semantic <ol> with <time> entries.
  * Without JS, renders as a readable ordered event list.
- * With JS, positions events into a visual hour grid with localized
- * hour labels, click-to-expand, and keyboard navigation.
+ * With JS, inserts hour-marker <li> elements and positions events
+ * into a CSS Grid hour layout. No <div> tags are generated.
  *
  * @attr {string} data-date       - ISO date for this day (e.g., "2026-04-10")
  * @attr {number} data-start-hour - First visible hour (default: 7)
  * @attr {number} data-end-hour   - Last visible hour (default: 19)
+ * @attr {string} data-size       - Size: "compact", "default", "large"
+ * @attr {string} data-mode       - Mode: "grid" (default), "sparse" (event list only)
  *
  * @example
  * <day-view data-date="2026-04-10">
@@ -22,7 +24,7 @@
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
-// ── Locale-aware hour label cache ──────────────────────────────────
+// ── Locale-aware hour labels ───────────────────────────────────────
 
 const hourCache = new Map();
 
@@ -43,9 +45,8 @@ class DayView extends VBElement {
   #startHour = 7;
   #endHour = 19;
   #locale;
-  #grid;
-  #hourLabelsEl;
   #list;
+  #generatedEls = [];
 
   setup() {
     this.#locale = this.closest('[lang]')?.lang || navigator.language;
@@ -59,103 +60,122 @@ class DayView extends VBElement {
   }
 
   teardown() {
-    // Remove generated hour labels on disconnect
-    if (this.#hourLabelsEl) {
-      this.#hourLabelsEl.remove();
-      this.#hourLabelsEl = null;
-    }
+    // Remove generated elements on disconnect
+    this.#generatedEls.forEach(el => el.remove());
+    this.#generatedEls = [];
+  }
+
+  /** Force re-render */
+  refresh() {
+    this.teardown();
+    this.#enhance();
   }
 
   #enhance() {
     const hours = getLocalizedHours(this.#locale);
     const hourCount = this.#endHour - this.#startHour + 1;
 
-    // Set CSS custom properties for the grid
-    this.style.setProperty('--_start-hour', String(this.#startHour));
-    this.style.setProperty('--_end-hour', String(this.#endHour));
-    this.style.setProperty('--_hour-count', String(hourCount));
-
-    // Generate hour label column
-    this.#hourLabelsEl = document.createElement('div');
-    this.#hourLabelsEl.className = 'dv-hour-labels';
-    this.#hourLabelsEl.setAttribute('aria-hidden', 'true');
-
-    for (let h = this.#startHour; h <= this.#endHour; h++) {
-      const label = document.createElement('span');
-      label.className = 'dv-hour-label';
-      label.textContent = hours[h];
-      this.#hourLabelsEl.appendChild(label);
-    }
-
-    // Insert labels before the list
-    this.insertBefore(this.#hourLabelsEl, this.#list);
-
-    // Position each event in the grid
-    const items = this.#list.querySelectorAll(':scope > li');
-    let earlyCount = 0;
-    let lateCount = 0;
-
-    items.forEach(li => {
+    // Collect original event <li> elements and parse their times
+    const eventItems = [...this.#list.querySelectorAll(':scope > li')];
+    const events = eventItems.map(li => {
       const timeEl = li.querySelector('time[datetime]');
-      if (!timeEl) return;
-
-      const dt = timeEl.getAttribute('datetime');
-      const [hStr, mStr] = (dt || '').split(':');
+      const dt = timeEl?.getAttribute('datetime') || '';
+      const [hStr, mStr] = dt.split(':');
       const hour = parseInt(hStr, 10);
       const min = parseInt(mStr, 10) || 0;
 
-      if (isNaN(hour)) return;
-
-      // Check for duration (PT1H, PT30M, PT1H30M)
-      const durationEl = li.querySelector('time[datetime^="PT"]');
-      let durationHours = 1;
-      if (durationEl) {
-        const ddt = durationEl.getAttribute('datetime');
-        const hMatch = ddt.match(/(\d+)H/);
-        const mMatch = ddt.match(/(\d+)M/);
-        durationHours = (hMatch ? parseInt(hMatch[1], 10) : 0) + (mMatch ? parseInt(mMatch[1], 10) / 60 : 0);
-        if (durationHours === 0) durationHours = 1;
+      // Duration
+      const durEl = li.querySelector('time[datetime^="PT"]');
+      let durHours = 1;
+      if (durEl) {
+        const ddt = durEl.getAttribute('datetime');
+        const hm = ddt.match(/(\d+)H/);
+        const mm = ddt.match(/(\d+)M/);
+        durHours = (hm ? parseInt(hm[1], 10) : 0) + (mm ? parseInt(mm[1], 10) / 60 : 0);
+        if (durHours === 0) durHours = 1;
       }
 
-      // Track out-of-range events
-      if (hour < this.#startHour) { earlyCount++; return; }
-      if (hour > this.#endHour) { lateCount++; return; }
-
-      // Grid row position (1-indexed)
-      const rowStart = hour - this.#startHour + 1;
-      const rowSpan = Math.max(1, Math.round(durationHours));
-      const minuteOffset = min / 60;
-
-      li.style.gridRow = `${rowStart} / span ${rowSpan}`;
-      if (min > 0) {
-        li.style.marginBlockStart = `${minuteOffset * 100}%`;
-      }
-
-      // Read <data> elements for category
+      // Category from <data>
       const dataEl = li.querySelector('data[value]');
-      if (dataEl) {
-        li.dataset.category = dataEl.getAttribute('value');
-      }
+      if (dataEl) li.dataset.category = dataEl.getAttribute('value');
+
+      return { li, hour, min, durHours, valid: !isNaN(hour) };
     });
 
-    // Show overflow indicators
+    // Sort events by time
+    events.sort((a, b) => (a.hour * 60 + a.min) - (b.hour * 60 + b.min));
+
+    // Clear list and rebuild with hour markers interleaved
+    this.#list.innerHTML = '';
+
+    let earlyCount = 0;
+    let lateCount = 0;
+    const earlyEvents = [];
+    const lateEvents = [];
+    const inRangeEvents = [];
+
+    events.forEach(e => {
+      if (!e.valid) { inRangeEvents.push(e); return; }
+      if (e.hour < this.#startHour) { earlyCount++; earlyEvents.push(e); return; }
+      if (e.hour > this.#endHour) { lateCount++; lateEvents.push(e); return; }
+      inRangeEvents.push(e);
+    });
+
+    // Build the grid: hour markers + events interleaved
+    let eventIdx = 0;
+    for (let h = this.#startHour; h <= this.#endHour; h++) {
+      // Create hour marker <li>
+      const hourLi = document.createElement('li');
+      hourLi.className = 'dv-hour';
+      hourLi.setAttribute('aria-hidden', 'true');
+      const hourTime = document.createElement('time');
+      hourTime.setAttribute('datetime', String(h).padStart(2, '0') + ':00');
+      hourTime.textContent = hours[h];
+      hourLi.appendChild(hourTime);
+      // Empty second cell for the grid
+      hourLi.appendChild(document.createElement('span'));
+      this.#list.appendChild(hourLi);
+      this.#generatedEls.push(hourLi);
+
+      // Insert events that start at this hour
+      while (eventIdx < inRangeEvents.length && inRangeEvents[eventIdx].hour === h) {
+        const e = inRangeEvents[eventIdx];
+        const span = Math.max(1, Math.round(e.durHours));
+        // Event occupies grid rows: span across hour slots
+        if (span > 1) {
+          e.li.style.gridRow = `span ${span * 2 - 1}`;
+        }
+        this.#list.appendChild(e.li);
+        eventIdx++;
+      }
+    }
+
+    // Append any remaining events (no valid time, placed at end)
+    while (eventIdx < inRangeEvents.length) {
+      this.#list.appendChild(inRangeEvents[eventIdx].li);
+      eventIdx++;
+    }
+
+    // Overflow indicators
     if (earlyCount > 0) {
-      const indicator = document.createElement('div');
-      indicator.className = 'dv-overflow dv-overflow-early';
-      indicator.textContent = `${earlyCount} earlier`;
-      this.insertBefore(indicator, this.#hourLabelsEl);
+      const indicator = document.createElement('li');
+      indicator.className = 'dv-overflow';
+      indicator.textContent = `↑ ${earlyCount} earlier`;
+      this.#list.insertBefore(indicator, this.#list.firstChild);
+      this.#generatedEls.push(indicator);
     }
 
     if (lateCount > 0) {
-      const indicator = document.createElement('div');
-      indicator.className = 'dv-overflow dv-overflow-late';
-      indicator.textContent = `${lateCount} later`;
-      this.appendChild(indicator);
+      const indicator = document.createElement('li');
+      indicator.className = 'dv-overflow';
+      indicator.textContent = `↓ ${lateCount} later`;
+      this.#list.appendChild(indicator);
+      this.#generatedEls.push(indicator);
     }
 
-    // Click delegation for event dispatch
+    // Click delegation
     this.listen(this.#list, 'click', (e) => {
-      const li = e.target.closest('li');
+      const li = e.target.closest('li:not(.dv-hour):not(.dv-overflow)');
       if (!li) return;
       this.dispatchEvent(new CustomEvent('day-view:event-click', {
         bubbles: true,
@@ -169,10 +189,10 @@ class DayView extends VBElement {
 
     // Keyboard navigation
     this.listen(this.#list, 'keydown', (e) => {
-      const li = e.target.closest('li');
+      const li = e.target.closest('li:not(.dv-hour):not(.dv-overflow)');
       if (!li) return;
 
-      const items = [...this.#list.querySelectorAll(':scope > li')];
+      const items = [...this.#list.querySelectorAll(':scope > li:not(.dv-hour):not(.dv-overflow)')];
       const idx = items.indexOf(li);
       if (idx === -1) return;
 
@@ -188,9 +208,9 @@ class DayView extends VBElement {
       }
     });
 
-    // Set initial tabindex for keyboard navigation
-    const firstItem = this.#list.querySelector(':scope > li');
-    if (firstItem) firstItem.setAttribute('tabindex', '0');
+    // Set initial tabindex
+    const firstEvent = this.#list.querySelector(':scope > li:not(.dv-hour):not(.dv-overflow)');
+    if (firstEvent) firstEvent.setAttribute('tabindex', '0');
   }
 }
 
