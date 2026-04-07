@@ -10,66 +10,61 @@
       padding: var(--size-m);
       background: var(--color-surface);
     }
+    section + section {
+      margin-block-start: var(--size-xl);
+      padding-block-start: var(--size-l);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+    }
     output {
       display: block;
-      margin-block-start: var(--size-m);
+      margin-block-start: var(--size-s);
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
   </style>
 </head>
 <body>
-  <h3>Thursday, April 10</h3>
 
-  <day-view data-date="2026-04-10" id="schedule">
-    <ol>
-      <li>
-        <time datetime="08:30">8:30 AM</time>
-        <data value="personal">Personal</data>
-        Morning coffee and emails
-      </li>
-      <li>
-        <time datetime="09:00">9:00 AM</time>
-        <data value="meeting">Meeting</data>
-        Sprint standup
-        <details>
-          <summary>Details</summary>
-          <p>Room B, 30 min. Daily sync with engineering.</p>
-        </details>
-      </li>
-      <li>
-        <time datetime="10:00">10:00 AM</time>
-        <time datetime="PT2H">2 hours</time>
-        <data value="meeting">Meeting</data>
-        Design review &mdash; Q3 mockups
-        <details>
-          <summary>Details</summary>
-          <p>Conference Room A. Review updated wireframes with Sarah and team.</p>
-        </details>
-      </li>
-      <li>
-        <time datetime="12:30">12:30 PM</time>
-        <data value="personal">Personal</data>
-        Lunch
-      </li>
-      <li>
-        <time datetime="14:00">2:00 PM</time>
-        Code review session
-      </li>
-      <li>
-        <time datetime="16:00">4:00 PM</time>
-        <data value="deadline">Deadline</data>
-        Submit quarterly report
-      </li>
-      <li>
-        <time datetime="17:30">5:30 PM</time>
-        <data value="personal">Personal</data>
-        Team happy hour
-      </li>
-    </ol>
-  </day-view>
+  <section>
+    <h3>Default — Working Hours Grid</h3>
+    <day-view data-date="2026-04-10" id="schedule">
+      <ol>
+        <li><time datetime="08:30">8:30 AM</time> <data value="personal">Personal</data> Morning coffee</li>
+        <li><time datetime="09:00">9:00 AM</time> <data value="meeting">Meeting</data> Sprint standup
+          <details><summary>Details</summary><p>Room B, 30 min</p></details>
+        </li>
+        <li><time datetime="10:00">10:00 AM</time> <time datetime="PT2H">2h</time> <data value="meeting">Meeting</data> Design review</li>
+        <li><time datetime="12:30">12:30 PM</time> <data value="personal">Personal</data> Lunch</li>
+        <li><time datetime="14:00">2:00 PM</time> Code review</li>
+        <li><time datetime="16:00">4:00 PM</time> <data value="deadline">Deadline</data> Submit report</li>
+        <li><time datetime="17:30">5:30 PM</time> <data value="personal">Personal</data> Happy hour</li>
+      </ol>
+    </day-view>
+    <output id="click-output">Click an event to see details</output>
+  </section>
 
-  <output id="click-output">Click an event to see details</output>
+  <section>
+    <h3>Compact — Tight Schedule</h3>
+    <day-view data-date="2026-04-10" data-size="compact" data-start-hour="9" data-end-hour="17">
+      <ol>
+        <li><time datetime="09:00">9 AM</time> <data value="meeting">Meeting</data> Standup</li>
+        <li><time datetime="10:00">10 AM</time> <time datetime="PT2H">2h</time> Workshop</li>
+        <li><time datetime="13:00">1 PM</time> <data value="meeting">Meeting</data> 1-on-1</li>
+        <li><time datetime="14:30">2:30 PM</time> Focus time</li>
+        <li><time datetime="16:00">4 PM</time> <data value="deadline">Deadline</data> Ship v2.0</li>
+      </ol>
+    </day-view>
+  </section>
+
+  <section>
+    <h3>Sparse — Event List (no empty hours)</h3>
+    <day-view data-date="2026-04-18" data-mode="sparse">
+      <ol>
+        <li><time datetime="14:00">2:00 PM</time> <data value="meeting">Meeting</data> Retrospective</li>
+        <li><time datetime="17:00">5:00 PM</time> <data value="personal">Personal</data> Happy hour</li>
+      </ol>
+    </day-view>
+  </section>
 
   <script type="module" src="/src/main.js"></script>
   <script>

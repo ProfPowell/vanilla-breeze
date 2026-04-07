@@ -479,7 +479,9 @@ module.exports = {
     attributes: {
       "data-date": {},
       "data-start-hour": {},
-      "data-end-hour": {}
+      "data-end-hour": {},
+      "data-size": { enum: ["compact", "default", "large"] },
+      "data-mode": { enum: ["grid", "sparse"] }
     }
   },
 

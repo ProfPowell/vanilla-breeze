@@ -2517,6 +2517,29 @@ export default {
         "type": "number",
         "default": 19,
         "description": "Last visible hour (0-23)"
+      },
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "compact",
+          "default",
+          "large"
+        ],
+        "description": "Size variant controlling row height"
+      },
+      {
+        "name": "data-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "grid",
+          "sparse"
+        ],
+        "description": "Display mode: grid (full hour grid) or sparse (event list only)"
       }
     ],
     "events": [
