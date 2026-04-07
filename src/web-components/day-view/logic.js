@@ -132,8 +132,6 @@ class DayView extends VBElement {
       hourTime.setAttribute('datetime', String(h).padStart(2, '0') + ':00');
       hourTime.textContent = hours[h];
       hourLi.appendChild(hourTime);
-      // Empty second cell for the grid
-      hourLi.appendChild(document.createElement('span'));
       this.#list.appendChild(hourLi);
       this.#generatedEls.push(hourLi);
 
@@ -141,10 +139,18 @@ class DayView extends VBElement {
       while (eventIdx < inRangeEvents.length && inRangeEvents[eventIdx].hour === h) {
         const e = inRangeEvents[eventIdx];
         const span = Math.max(1, Math.round(e.durHours));
-        // Event occupies grid rows: span across hour slots
+
+        // Multi-hour events span across hour slots
         if (span > 1) {
           e.li.style.gridRow = `span ${span * 2 - 1}`;
         }
+
+        // Sub-hour offset: position :15/:30/:45 events within their row
+        if (e.min > 0) {
+          const pct = Math.round((e.min / 60) * 100);
+          e.li.style.marginBlockStart = `${pct}%`;
+        }
+
         this.#list.appendChild(e.li);
         eventIdx++;
       }
