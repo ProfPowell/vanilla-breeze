@@ -110,17 +110,20 @@
       grid-row: 1 / -1;
       display: grid;
       grid-template-rows: subgrid;
+      grid-template-columns: 1fr;
       padding-inline: 0.25rem;
       gap: 1px;
+      position: relative;
     }
 
     /* Half-hour divider — faint line at the midpoint */
     hour-view::after {
       content: "";
-      grid-column: 1;
-      grid-row: 2;
-      border-block-start: 1px dashed #f0f0f0;
-      align-self: start;
+      position: absolute;
+      inset-inline: 0.25rem;
+      inset-block-start: 50%;
+      border-block-start: 1px dashed #ebebeb;
+      pointer-events: none;
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -147,16 +150,16 @@
 
     /* ── Grid placement within hour-view ──────────────────────── */
 
-    /* :00 events — top half of the hour */
-    calendar-event {
+    /* All events span the full width */
+    hour-view > calendar-event {
+      grid-column: 1;
       grid-row: 1;
       align-self: start;
     }
 
     /* :30 events — bottom half of the hour */
-    calendar-event[data-start="30"] {
+    hour-view > calendar-event[data-start="30"] {
       grid-row: 2;
-      align-self: start;
     }
 
     /* Multi-hour spanning via explicit row span on the parent hour <li> */
