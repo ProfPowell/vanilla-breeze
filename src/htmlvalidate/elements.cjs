@@ -475,6 +475,14 @@ module.exports = {
     }
   },
 
+  "day-view": {
+    attributes: {
+      "data-date": {},
+      "data-start-hour": {},
+      "data-end-hour": {}
+    }
+  },
+
   "drag-surface": {
     attributes: {
       "group": {},

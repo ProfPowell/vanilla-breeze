@@ -56,6 +56,7 @@ import './type-specimen/logic.js';
 import './spacing-specimen/logic.js';
 import './emoji-picker/logic.js';
 import './settings-panel/logic.js';
+import './day-view/logic.js';
 import '../lib/environment-manager-init.js';
 import '../utils/emoji-init.js';
 import '../utils/mock-init.js';
