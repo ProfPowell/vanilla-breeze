@@ -310,7 +310,7 @@ calendar-wc td[data-day-part~="payday"] button {
 
   <section>
     <h2>Size Variants</h2>
-    <p>Three sizes adapt the calendar to different contexts. Large mode uses container queries for responsive square cells and shows event labels instead of dots.</p>
+    <p>Three sizes adapt the calendar to different contexts.</p>
 
     <table class="props-table">
       <thead>
@@ -319,7 +319,45 @@ calendar-wc td[data-day-part~="payday"] button {
       <tbody>
         <tr><td><code>compact</code></td><td>16rem</td><td>Dot indicators</td><td>Sidebars, cards</td></tr>
         <tr><td><code>default</code></td><td>22rem</td><td>Dot indicators</td><td>Standard display</td></tr>
-        <tr><td><code>large</code></td><td>56rem</td><td>Labels with icons</td><td>Dashboards, full-page</td></tr>
+        <tr><td><code>large</code></td><td>56rem</td><td>Labels with icons</td><td>See <a href="#large-view">Large View</a> below</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="large-view">
+    <h2>Large View</h2>
+    <p>Large mode (<code>data-size="large"</code>) transforms the calendar into a full-page schedule view with rich event display. Instead of dot indicators, events render as labeled chips with icons and times. Container queries drive responsive cell sizing with near-square proportions.</p>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-wc-large.html"
+      url="https://vanilla-breeze.dev/calendar/large"
+      title="Large View Calendar"
+      shadow>
+    </browser-window>
+
+    <h3>Event Labels</h3>
+    <p>In large mode, each cell shows up to 2 event chips inline. Events beyond 2 collapse into a "+N more" overflow indicator. Each chip displays the label, optional time, and optional icon.</p>
+
+    <code-block language="html" show-lines label="Large calendar with rich events" data-escape><calendar-wc data-size="large" data-events='{
+  "2026-04-10": [
+    {"label": "Standup", "time": "09:00", "icon": "users"},
+    {"label": "Demo day", "time": "15:00", "icon": "presentation"},
+    {"label": "Team dinner", "time": "18:30", "icon": "utensils"}
+  ]
+}'></calendar-wc></code-block>
+
+    <h3>Day Detail Overlay</h3>
+    <p>In display-only mode (<code>data-selection="none"</code>), clicking a date with events opens a positioned dialog showing the full event list. If any events have a <code>time</code> property, an hour-grid timeline renders alongside. Close with <kbd>Escape</kbd> or by clicking outside.</p>
+
+    <h3>Watermark Day Numbers</h3>
+    <p>Large cells display a subtle background day number (watermark) via <code>::before</code>. Control its appearance with these tokens:</p>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--cal-watermark-opacity</code></td><td><code>0.05</code></td><td>Background number opacity</td></tr>
+        <tr><td><code>--cal-watermark-color</code></td><td><code>var(--color-text)</code></td><td>Background number color</td></tr>
+        <tr><td><code>--cal-watermark-size</code></td><td><code>3rem</code></td><td>Background number font size</td></tr>
+        <tr><td><code>--cal-watermark-weight</code></td><td><code>800</code></td><td>Background number font weight</td></tr>
       </tbody>
     </table>
   </section>
@@ -433,17 +471,6 @@ calendar-wc td[data-day-part~="payday"] button {
         <tr><td><code>--cal-disabled-opacity</code></td><td><code>0.5</code></td><td>Disabled day opacity</td></tr>
         <tr><td><code>--cal-outside-opacity</code></td><td><code>0.35</code></td><td>Outside-month day opacity</td></tr>
         <tr><td><code>--cal-outside-color</code></td><td><code>var(--color-text-muted)</code></td><td>Outside-month text color</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Watermark (Large Mode)</h3>
-    <table class="props-table">
-      <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
-      <tbody>
-        <tr><td><code>--cal-watermark-opacity</code></td><td><code>0.05</code></td><td>Background number opacity</td></tr>
-        <tr><td><code>--cal-watermark-color</code></td><td><code>var(--color-text)</code></td><td>Background number color</td></tr>
-        <tr><td><code>--cal-watermark-size</code></td><td><code>3rem</code></td><td>Background number font size</td></tr>
-        <tr><td><code>--cal-watermark-weight</code></td><td><code>800</code></td><td>Background number font weight</td></tr>
       </tbody>
     </table>
 
