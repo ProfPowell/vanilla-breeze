@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Day View — Markup Prototype</title>
+  <title>Day View — Markup Prototype v2</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -17,7 +17,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       DAY-VIEW: The outer container
+       DAY-VIEW
        ═══════════════════════════════════════════════════════════════ */
 
     day-view {
@@ -27,7 +27,7 @@
       overflow: hidden;
     }
 
-    /* ── All-day events strip ──────────────────────────────────── */
+    /* ── All-day events ────────────────────────────────────────── */
 
     day-view > .all-day-events {
       list-style: none;
@@ -41,15 +41,14 @@
       font-size: 0.8125rem;
     }
 
-    day-view > .all-day-events > li {
+    day-view > .all-day-events > calendar-event {
+      display: block;
       padding: 0.125rem 0.5rem;
-      background: oklch(55% 0.18 145 / 0.15);
-      border-inline-start: 3px solid oklch(55% 0.18 145);
       border-radius: 4px;
       white-space: nowrap;
     }
 
-    /* ── Priority links strip ─────────────────────────────────── */
+    /* ── Priority quick-links ──────────────────────────────────── */
 
     day-view > .priorities {
       list-style: none;
@@ -62,13 +61,13 @@
       border-block-end: 1px solid #e0e0e0;
     }
 
-    day-view > .priorities > li > a {
+    day-view > .priorities a {
       color: inherit;
       text-decoration: underline;
       text-decoration-color: #ccc;
     }
 
-    /* ── Hour list (the schedule grid) ────────────────────────── */
+    /* ── Hour schedule list ─────────────────────────────────────── */
 
     day-view > ol {
       list-style: none;
@@ -76,44 +75,59 @@
       padding: 0;
     }
 
-    /* Each hour is an <li> containing <time> + <hour-view> */
+    /*
+      Each hour <li> uses a 2-column × 2-row grid:
+        col 1 = hour label (spans both rows)
+        col 2 = top half-hour | bottom half-hour
+    */
     day-view > ol > li {
       display: grid;
       grid-template-columns: 4rem 1fr;
+      grid-template-rows: 1fr 1fr;
       min-block-size: 3rem;
       border-block-end: 1px solid #efefef;
     }
 
-    /* The hour label */
+    /* Hour label — spans both half-hour rows */
     day-view > ol > li > time {
-      padding: 0.25rem 0.5rem;
+      grid-column: 1;
+      grid-row: 1 / -1;
+      padding: 0.125rem 0.5rem;
       font-size: 0.75rem;
       color: #999;
       background: #fafafa;
       border-inline-end: 1px solid #e0e0e0;
       text-align: end;
+      line-height: 1;
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       HOUR-VIEW: Events within a single hour
+       HOUR-VIEW: 2-row subgrid inside each hour
        ═══════════════════════════════════════════════════════════════ */
 
     hour-view {
-      display: flex;
-      flex-direction: column;
+      grid-column: 2;
+      grid-row: 1 / -1;
+      display: grid;
+      grid-template-rows: subgrid;
+      padding-inline: 0.25rem;
       gap: 1px;
-      padding: 1px 0.25rem;
-      min-block-size: 100%;
     }
 
-    /* Empty hour — just shows the grid line */
-    hour-view:empty {
-      min-block-size: 100%;
+    /* Half-hour divider — faint line at the midpoint */
+    hour-view::after {
+      content: "";
+      grid-column: 1;
+      grid-row: 2;
+      border-block-start: 1px dashed #f0f0f0;
+      align-self: start;
     }
 
-    /* Event item inside an hour */
-    hour-view > a,
-    hour-view > span {
+    /* ═══════════════════════════════════════════════════════════════
+       CALENDAR-EVENT
+       ═══════════════════════════════════════════════════════════════ */
+
+    calendar-event {
       display: block;
       padding: 0.125rem 0.375rem;
       font-size: 0.8125rem;
@@ -121,28 +135,58 @@
       border-radius: 3px;
       border-inline-start: 3px solid var(--event-color, oklch(55% 0.2 260));
       background: oklch(from var(--event-color, oklch(55% 0.2 260)) l c h / 0.1);
+      cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
     }
 
-    hour-view > a:hover,
-    hour-view > span:hover {
+    calendar-event:hover {
       background: oklch(from var(--event-color, oklch(55% 0.2 260)) l c h / 0.18);
     }
 
-    /* Multi-hour event spanning — grows taller */
-    hour-view > [data-span="2"] { min-block-size: calc(3rem * 2 - 2px); }
-    hour-view > [data-span="3"] { min-block-size: calc(3rem * 3 - 2px); }
-    hour-view > [data-span="4"] { min-block-size: calc(3rem * 4 - 2px); }
+    /* ── Grid placement within hour-view ──────────────────────── */
 
-    /* :30 start — push down within the hour */
-    hour-view > [data-start="30"] { margin-block-start: 50%; }
+    /* :00 events — top half of the hour */
+    calendar-event {
+      grid-row: 1;
+      align-self: start;
+    }
 
-    /* Category colors */
+    /* :30 events — bottom half of the hour */
+    calendar-event[data-start="30"] {
+      grid-row: 2;
+      align-self: start;
+    }
+
+    /* Multi-hour spanning via explicit row span on the parent hour <li> */
+    /* A 2-hour event: the hour <li> grows to hold it, event fills both halves */
+    calendar-event[data-duration="2h"] {
+      grid-row: 1 / -1;
+      min-block-size: calc(3rem * 2 - 4px);
+    }
+
+    calendar-event[data-duration="1h30m"] {
+      grid-row: 1 / -1;
+      min-block-size: calc(3rem * 1.5 - 4px);
+    }
+
+    /* ── Time display inside events ───────────────────────────── */
+
+    calendar-event > time:first-child {
+      font-weight: 600;
+      color: #666;
+      margin-inline-end: 0.25rem;
+      font-size: 0.9em;
+    }
+
+    /* Hide duration <time> */
+    calendar-event > time[datetime^="PT"] {
+      display: none;
+    }
+
+    /* ── Category colors ──────────────────────────────────────── */
+
     [data-category="meeting"]  { --event-color: oklch(55% 0.2 260); }
     [data-category="deadline"] { --event-color: oklch(55% 0.2 25); }
     [data-category="personal"] { --event-color: oklch(55% 0.18 145); }
@@ -150,13 +194,13 @@
 
     /* ── Details inside events ────────────────────────────────── */
 
-    hour-view details {
+    calendar-event details {
       font-size: 0.75rem;
       color: #666;
       white-space: normal;
     }
 
-    hour-view summary {
+    calendar-event summary {
       cursor: pointer;
       font-weight: 500;
     }
@@ -170,7 +214,11 @@
 
   <!-- All-day events -->
   <ul class="all-day-events">
-    <li data-category="personal">Earth Day (all day)</li>
+    <li>
+      <calendar-event data-category="personal">
+        Earth Day (all day)
+      </calendar-event>
+    </li>
   </ul>
 
   <!-- Quick-jump priorities -->
@@ -180,92 +228,104 @@
     <li><a href="#ev-report">4:00 Submit report</a></li>
   </ul>
 
-  <!-- The schedule: each <li> is one hour -->
+  <!-- The schedule: each <li> is one hour with a 2-row subgrid -->
   <ol>
     <li>
       <time datetime="07:00">7 AM</time>
       <hour-view></hour-view>
     </li>
+
     <li>
       <time datetime="08:00">8 AM</time>
       <hour-view>
-        <span data-category="personal" data-start="30">
+        <calendar-event data-category="personal" data-start="30">
           <time datetime="08:30">8:30</time> Morning coffee
-        </span>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="09:00">9 AM</time>
       <hour-view>
-        <a href="#ev-standup" id="ev-standup" data-category="meeting">
+        <calendar-event id="ev-standup" data-category="meeting">
           <time datetime="09:00">9:00</time> Sprint standup
           <details>
             <summary>Details</summary>
             <p>Room B, 30 min. Daily sync.</p>
           </details>
-        </a>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="10:00">10 AM</time>
       <hour-view>
-        <a href="#ev-review" id="ev-review" data-category="meeting" data-span="2">
+        <calendar-event id="ev-review" data-category="meeting" data-duration="2h">
           <time datetime="10:00">10:00</time>
           <time datetime="PT2H">2h</time>
           Design review
-        </a>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="11:00">11 AM</time>
       <hour-view>
-        <!-- 10 AM design review continues through this hour -->
+        <!-- Design review continues through this hour -->
       </hour-view>
     </li>
+
     <li>
       <time datetime="12:00">12 PM</time>
       <hour-view>
-        <span data-category="personal" data-start="30">
+        <calendar-event data-category="personal" data-start="30">
           <time datetime="12:30">12:30</time> Lunch
-        </span>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="13:00">1 PM</time>
       <hour-view></hour-view>
     </li>
+
     <li>
       <time datetime="14:00">2 PM</time>
       <hour-view>
-        <span data-category="focus">
+        <calendar-event data-category="focus">
           <time datetime="14:00">2:00</time> Code review session
-        </span>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="15:00">3 PM</time>
       <hour-view></hour-view>
     </li>
+
     <li>
       <time datetime="16:00">4 PM</time>
       <hour-view>
-        <a href="#ev-report" id="ev-report" data-category="deadline">
+        <calendar-event id="ev-report" data-category="deadline">
           <time datetime="16:00">4:00</time> Submit quarterly report
-        </a>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="17:00">5 PM</time>
       <hour-view>
-        <span data-category="personal" data-start="30">
+        <calendar-event data-category="personal" data-start="30">
           <time datetime="17:30">5:30</time> Team happy hour
-        </span>
+        </calendar-event>
       </hour-view>
     </li>
+
     <li>
       <time datetime="18:00">6 PM</time>
       <hour-view></hour-view>
     </li>
+
     <li>
       <time datetime="19:00">7 PM</time>
       <hour-view></hour-view>
