@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Day View — Markup Prototype v3</title>
+  <title>Day View — Markup Prototype v4</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
     body {
@@ -13,8 +13,13 @@
       margin-inline: auto;
     }
 
+    /* ── Config ────────────────────────────────────────────────── */
+    :root {
+      --hour-h: 3rem;  /* height of one hour row */
+    }
+
     /* ═══════════════════════════════════════════════════════════════
-       DAY-VIEW
+       DAY-SCHEDULE
        ═══════════════════════════════════════════════════════════════ */
 
     day-schedule {
@@ -57,7 +62,7 @@
       text-decoration-color: var(--color-border);
     }
 
-    /* ── Hour schedule list ─────────────────────────────────────── */
+    /* ── Hour list ─────────────────────────────────────────────── */
 
     day-schedule > ol {
       list-style: none;
@@ -68,14 +73,17 @@
     /*
       Each hour <li>: 2-column × 2-row grid
         col 1 = hour label (spans both rows)
-        col 2 = hour-view with top/bottom half-hour
+        col 2 = hour-view (subgrid, 2 half-hour rows)
+
+      Overflow visible so multi-hour events can extend downward.
     */
     day-schedule > ol > li {
       display: grid;
       grid-template-columns: 4rem 1fr;
       grid-template-rows: 1fr 1fr;
-      min-block-size: 3rem;
+      min-block-size: var(--hour-h);
       border-block-end: var(--border-width-thin) solid var(--color-border);
+      position: relative;
     }
 
     /* Hour label */
@@ -92,7 +100,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       HOUR-VIEW: subgrid for half-hour placement
+       HOUR-VIEW
        ═══════════════════════════════════════════════════════════════ */
 
     hour-view {
@@ -104,6 +112,7 @@
       padding-inline: var(--size-3xs);
       gap: 1px;
       position: relative;
+      overflow: visible;   /* allow multi-hour events to extend */
     }
 
     /* Half-hour divider */
@@ -117,8 +126,7 @@
       pointer-events: none;
     }
 
-    /* Double-booking: when hour-view has multiple events in same half,
-       switch to side-by-side columns */
+    /* Double-booking: side-by-side columns */
     hour-view[data-overlap] {
       grid-template-columns: 1fr 1fr;
     }
@@ -129,7 +137,7 @@
 
     calendar-event {
       display: flex;
-      align-items: center;
+      align-items: start;
       gap: var(--size-3xs);
       padding: 2px var(--size-xs);
       font-size: var(--font-size-sm);
@@ -145,24 +153,53 @@
       grid-row: 1;
       align-self: stretch;
       z-index: 1;
+      position: relative;  /* for z-stacking over subsequent hour borders */
     }
 
     calendar-event:hover {
       background: oklch(from var(--event-color, var(--color-primary)) l c h / 0.18);
     }
 
-    /* :30 events — bottom half */
+    /* :30 start — bottom half of the hour */
     calendar-event[data-start="30"] {
       grid-row: 2;
     }
 
-    /* Multi-hour: event overflows into subsequent hour rows */
-    calendar-event[data-duration="1h"]   { min-block-size: calc(3rem * 1 - 4px); grid-row: 1 / -1; }
-    calendar-event[data-duration="1h30m"]{ min-block-size: calc(3rem * 1.5 - 4px); grid-row: 1 / -1; }
-    calendar-event[data-duration="2h"]   { min-block-size: calc(3rem * 2 - 4px); grid-row: 1 / -1; }
-    calendar-event[data-duration="3h"]   { min-block-size: calc(3rem * 3 - 4px); grid-row: 1 / -1; }
+    /* ── Duration spanning ─────────────────────────────────────── */
+    /* Multi-hour events extend beyond their hour-view via height  */
 
-    /* When overlapping — each event takes one column */
+    calendar-event[data-duration="1h"] {
+      block-size: var(--hour-h);
+      grid-row: 1 / -1;
+    }
+
+    calendar-event[data-duration="1h30m"] {
+      block-size: calc(var(--hour-h) * 1.5);
+      grid-row: 1 / -1;
+    }
+
+    calendar-event[data-duration="2h"] {
+      block-size: calc(var(--hour-h) * 2);
+      grid-row: 1 / -1;
+    }
+
+    calendar-event[data-duration="3h"] {
+      block-size: calc(var(--hour-h) * 3);
+      grid-row: 1 / -1;
+    }
+
+    /* :30 start + duration: shift start to bottom half */
+    calendar-event[data-start="30"][data-duration="1h"] {
+      grid-row: 2;
+      block-size: var(--hour-h);
+    }
+
+    calendar-event[data-start="30"][data-duration="1h30m"] {
+      grid-row: 2;
+      block-size: calc(var(--hour-h) * 1.5);
+    }
+
+    /* Double-booking: each event takes its own column */
     hour-view[data-overlap] > calendar-event {
       grid-column: auto;
     }
@@ -174,10 +211,6 @@
       color: var(--color-text-muted);
       font-size: 0.9em;
       flex-shrink: 0;
-    }
-
-    calendar-event > time[datetime^="PT"] {
-      display: none;
     }
 
     /* ── Icons ─────────────────────────────────────────────────── */
@@ -263,12 +296,12 @@
       </hour-view>
     </li>
 
+    <!-- 2-hour event: extends visually into 11 AM row -->
     <li>
       <time datetime="10:00">10 AM</time>
       <hour-view>
         <calendar-event id="ev-review" data-category="meeting" data-duration="2h">
           <time datetime="10:00">10:00</time>
-          <time datetime="PT2H">2h</time>
           <icon-wc name="palette" size="sm"></icon-wc>
           Design review — Q3 mockups
         </calendar-event>
@@ -278,7 +311,7 @@
     <li>
       <time datetime="11:00">11 AM</time>
       <hour-view>
-        <!-- Design review continues -->
+        <!-- Design review continues visually from above -->
       </hour-view>
     </li>
 
@@ -298,7 +331,7 @@
       <hour-view></hour-view>
     </li>
 
-    <!-- Double-booking example: two events at the same time -->
+    <!-- Double-booking: two events at the same time -->
     <li>
       <time datetime="14:00">2 PM</time>
       <hour-view data-overlap>
@@ -331,13 +364,12 @@
       </hour-view>
     </li>
 
-    <!-- Cross-hour event starting at :30 -->
+    <!-- 1.5 hour event starting at :30 -->
     <li>
       <time datetime="17:00">5 PM</time>
       <hour-view>
         <calendar-event data-category="personal" data-start="30" data-duration="1h30m">
           <time datetime="17:30">5:30</time>
-          <time datetime="PT1H30M">1.5h</time>
           <icon-wc name="beer" size="sm"></icon-wc>
           Team happy hour
         </calendar-event>
