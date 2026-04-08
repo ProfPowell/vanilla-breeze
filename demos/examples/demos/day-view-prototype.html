@@ -168,15 +168,16 @@
 
     /* ── Duration spanning ─────────────────────────────────────── */
     /*
-      Multi-hour events use explicit block-size to extend past their
-      hour-view. The event is position:relative with a high z-index
-      so it paints above subsequent hour rows.
+      Multi-hour events use position:absolute to escape grid track
+      constraints. They're positioned relative to <hour-view> and
+      extend downward via block-size calculated from --hour-h.
     */
 
     calendar-event[data-duration] {
-      position: relative;
+      position: absolute;
       z-index: 10;
-      grid-row: 1 / -1;
+      inset-inline: var(--size-3xs, 2px);
+      inset-block-start: 0;
     }
 
     calendar-event[data-duration="1h"]    { block-size: var(--hour-h); }
@@ -184,9 +185,9 @@
     calendar-event[data-duration="2h"]    { block-size: calc(var(--hour-h) * 2); }
     calendar-event[data-duration="3h"]    { block-size: calc(var(--hour-h) * 3); }
 
-    /* :30 start + duration: shift start to bottom half */
+    /* :30 start + duration: offset to half-hour mark */
     calendar-event[data-start="30"][data-duration] {
-      grid-row: 2;
+      inset-block-start: 50%;
     }
 
     /* Double-booking: each event takes its own column */
