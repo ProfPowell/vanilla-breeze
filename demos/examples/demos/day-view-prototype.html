@@ -83,7 +83,8 @@
       grid-template-rows: 1fr 1fr;
       min-block-size: var(--hour-h);
       border-block-end: var(--border-width-thin) solid var(--color-border);
-      position: relative;
+      /* No position: relative here — let spanning events overflow
+         above subsequent rows without being clipped by z-stacking */
     }
 
     /* Hour label */
@@ -166,37 +167,26 @@
     }
 
     /* ── Duration spanning ─────────────────────────────────────── */
-    /* Multi-hour events extend beyond their hour-view via height  */
+    /*
+      Multi-hour events use explicit block-size to extend past their
+      hour-view. The event is position:relative with a high z-index
+      so it paints above subsequent hour rows.
+    */
 
-    calendar-event[data-duration="1h"] {
-      block-size: var(--hour-h);
+    calendar-event[data-duration] {
+      position: relative;
+      z-index: 10;
       grid-row: 1 / -1;
     }
 
-    calendar-event[data-duration="1h30m"] {
-      block-size: calc(var(--hour-h) * 1.5);
-      grid-row: 1 / -1;
-    }
-
-    calendar-event[data-duration="2h"] {
-      block-size: calc(var(--hour-h) * 2);
-      grid-row: 1 / -1;
-    }
-
-    calendar-event[data-duration="3h"] {
-      block-size: calc(var(--hour-h) * 3);
-      grid-row: 1 / -1;
-    }
+    calendar-event[data-duration="1h"]    { block-size: var(--hour-h); }
+    calendar-event[data-duration="1h30m"] { block-size: calc(var(--hour-h) * 1.5); }
+    calendar-event[data-duration="2h"]    { block-size: calc(var(--hour-h) * 2); }
+    calendar-event[data-duration="3h"]    { block-size: calc(var(--hour-h) * 3); }
 
     /* :30 start + duration: shift start to bottom half */
-    calendar-event[data-start="30"][data-duration="1h"] {
+    calendar-event[data-start="30"][data-duration] {
       grid-row: 2;
-      block-size: var(--hour-h);
-    }
-
-    calendar-event[data-start="30"][data-duration="1h30m"] {
-      grid-row: 2;
-      block-size: calc(var(--hour-h) * 1.5);
     }
 
     /* Double-booking: each event takes its own column */
