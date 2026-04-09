@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "day-view"
-description: "Hour-grid schedule for a single day with progressive enhancement over semantic ol/time markup."
+description: "Hour-grid schedule for a single day using calendar-event and hour-view elements with two-layer rendering for multi-hour spanning."
 elementName: day-view
 category: component
 currentPath: /docs/elements/web-components/day-view/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;day-view&gt;</code> component renders an hour-grid schedule for a single day. It progressively enhances a semantic <code>&lt;ol&gt;</code> with <code>&lt;time&gt;</code> elements &mdash; without JavaScript, the content renders as a plain readable list. With JS, events are positioned into a visual hour grid with localized labels and keyboard navigation.</p>
+    <p>The <code>&lt;day-view&gt;</code> component renders a day schedule as an hour grid. Authors write semantic markup using <code>&lt;ol&gt;</code>, <code>&lt;time&gt;</code>, <code>&lt;hour-view&gt;</code>, and <code>&lt;calendar-event&gt;</code>. The component enhances this with a two-layer rendering system: CSS Grid for the hour layout, and JS absolute positioning for events that span multiple hours.</p>
 
     <browser-window
       src="/docs/examples/demos/day-view-basic.html"
@@ -20,132 +20,137 @@ crumbLabel: Web Components
       title="Day View Schedule"
       shadow>
     </browser-window>
-
-    <code-block language="html" show-lines label="Basic day schedule" data-escape><day-view data-date="2026-04-10">
-  <ol>
-    <li>
-      <time datetime="09:00">9:00 AM</time>
-      Sprint standup
-    </li>
-    <li>
-      <time datetime="14:00">2:00 PM</time>
-      <time datetime="PT2H">2 hours</time>
-      Design review
-    </li>
-  </ol>
-</day-view></code-block>
   </section>
 
   <section>
     <h2>Markup Pattern</h2>
-    <p>The component enhances existing HTML — you write a semantic <code>&lt;ol&gt;</code> and the component positions it.</p>
+    <p>Each hour is an <code>&lt;li&gt;</code> containing a <code>&lt;time&gt;</code> label and an <code>&lt;hour-view&gt;</code> container. Events go inside <code>&lt;hour-view&gt;</code> as <code>&lt;calendar-event&gt;</code> elements.</p>
+
+    <code-block language="html" show-lines label="Day schedule structure" data-escape><day-view data-date="2026-04-10">
+  <ol>
+    <li>
+      <time datetime="09:00">9 AM</time>
+      <hour-view>
+        <calendar-event data-category="meeting">
+          <time datetime="09:00">9:00</time>
+          <icon-wc name="users" size="sm"></icon-wc>
+          Sprint standup
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="10:00">10 AM</time>
+      <hour-view>
+        <calendar-event data-category="meeting" data-duration="2h">
+          <time datetime="10:00">10:00</time>
+          Design review
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="11:00">11 AM</time>
+      <hour-view></hour-view>
+    </li>
+  </ol>
+</day-view></code-block>
 
     <table class="props-table">
       <thead><tr><th>Element</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td><code>&lt;ol&gt;</code></td><td>Ordered list of events (chronological sequence)</td></tr>
-        <tr><td><code>&lt;li&gt;</code></td><td>Individual event item</td></tr>
-        <tr><td><code>&lt;time datetime="HH:MM"&gt;</code></td><td>Event start time (machine-readable)</td></tr>
-        <tr><td><code>&lt;time datetime="PT1H"&gt;</code></td><td>Optional event duration (ISO 8601 format)</td></tr>
-        <tr><td><code>&lt;data value="category"&gt;</code></td><td>Optional metadata (meeting, deadline, personal)</td></tr>
-        <tr><td><code>&lt;details&gt;</code></td><td>Optional expandable event information</td></tr>
+        <tr><td><code>&lt;ol&gt;</code></td><td>Ordered list of hour slots</td></tr>
+        <tr><td><code>&lt;li&gt;</code></td><td>One hour: contains <code>&lt;time&gt;</code> + <code>&lt;hour-view&gt;</code></td></tr>
+        <tr><td><code>&lt;time datetime="HH:00"&gt;</code></td><td>Hour label</td></tr>
+        <tr><td><code>&lt;hour-view&gt;</code></td><td>Subgrid container for events within the hour</td></tr>
+        <tr><td><code>&lt;calendar-event&gt;</code></td><td>Individual event with time, category, duration</td></tr>
       </tbody>
     </table>
-
-    <code-block language="html" show-lines label="Full markup with all features" data-escape><day-view data-date="2026-04-10">
-  <ol>
-    <li>
-      <time datetime="09:00">9:00 AM</time>
-      <data value="meeting">Meeting</data>
-      Sprint standup
-      <details>
-        <summary>Details</summary>
-        <p>Room B, 30 min</p>
-      </details>
-    </li>
-    <li>
-      <time datetime="14:00">2:00 PM</time>
-      <time datetime="PT2H">2 hours</time>
-      <data value="deadline">Deadline</data>
-      Submit report
-    </li>
-  </ol>
-</day-view></code-block>
   </section>
 
   <section>
     <h2>Attributes</h2>
     <table class="props-table">
-      <thead>
-        <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
-      </thead>
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
           <td><code>data-date</code></td>
           <td>ISO date</td>
           <td>&mdash;</td>
-          <td>The date this view represents (e.g., <code>2026-04-10</code>).</td>
+          <td>The date this view represents.</td>
         </tr>
         <tr>
           <td><code>data-start-hour</code></td>
-          <td>number (0-23)</td>
+          <td>number</td>
           <td><code>7</code></td>
-          <td>First visible hour in the grid.</td>
+          <td>First visible hour.</td>
         </tr>
         <tr>
           <td><code>data-end-hour</code></td>
-          <td>number (0-23)</td>
+          <td>number</td>
           <td><code>19</code></td>
-          <td>Last visible hour in the grid.</td>
+          <td>Last visible hour.</td>
         </tr>
       </tbody>
     </table>
+  </section>
 
-    <code-block language="html" show-lines label="Full 24-hour view" data-escape><day-view data-start-hour="0" data-end-hour="23">
+  <section>
+    <h2>Half-Hour Events</h2>
+    <p>Events starting at :30 are placed in the bottom half of their hour row using <code>data-start="30"</code>.</p>
+
+    <code-block language="html" show-lines label="Event at 8:30" data-escape><hour-view>
+  <calendar-event data-category="personal" data-start="30">
+    <time datetime="08:30">8:30</time>
+    <icon-wc name="coffee" size="sm"></icon-wc>
+    Morning coffee
+  </calendar-event>
+</hour-view></code-block>
+  </section>
+
+  <section>
+    <h2>Multi-Hour Events</h2>
+    <p>Add <code>data-duration</code> to span across multiple hour rows. The component positions these events absolutely over the grid using measured coordinates.</p>
+
+    <code-block language="html" show-lines label="2-hour event" data-escape><calendar-event data-category="meeting" data-duration="2h">
+  <time datetime="10:00">10:00</time>
+  <icon-wc name="palette" size="sm"></icon-wc>
+  Design review
+</calendar-event></code-block>
+
+    <p>Supported durations: <code>1h</code>, <code>1h30m</code>, <code>2h</code>, <code>3h</code>.</p>
+    <p>Leave the subsequent hour's <code>&lt;hour-view&gt;</code> empty &mdash; the spanning event overlays it visually.</p>
+  </section>
+
+  <section>
+    <h2>Double-Booking</h2>
+    <p>When two events occupy the same time slot, add <code>data-overlap</code> to the <code>&lt;hour-view&gt;</code> to display them side by side.</p>
+
+    <code-block language="html" show-lines label="Two events at 2 PM" data-escape><hour-view data-overlap>
+  <calendar-event data-category="focus">
+    <time datetime="14:00">2:00</time>
+    Code review
+  </calendar-event>
+  <calendar-event data-category="meeting">
+    <time datetime="14:00">2:00</time>
+    1:1 with Sarah
+  </calendar-event>
+</hour-view></code-block>
+  </section>
+
+  <section>
+    <h2>All-Day Events</h2>
+    <p>Place all-day events in a <code>&lt;ul class="all-day-events"&gt;</code> above the hour list.</p>
+
+    <code-block language="html" show-lines label="All-day event" data-escape><day-view>
+  <ul class="all-day-events">
+    <li>
+      <calendar-event data-category="personal">
+        <icon-wc name="globe" size="sm"></icon-wc>
+        Earth Day (all day)
+      </calendar-event>
+    </li>
+  </ul>
   <ol>...</ol>
 </day-view></code-block>
-  </section>
-
-  <section>
-    <h2>Event Categories</h2>
-    <p>Add a <code>&lt;data value="category"&gt;</code> element inside an event <code>&lt;li&gt;</code> to categorize it. The component reads the value and sets <code>data-category</code> on the <code>&lt;li&gt;</code> for CSS targeting. Built-in categories:</p>
-
-    <table class="props-table">
-      <thead><tr><th>Category</th><th>Color</th></tr></thead>
-      <tbody>
-        <tr><td><code>meeting</code></td><td>Primary (blue/interactive)</td></tr>
-        <tr><td><code>deadline</code></td><td>Error (red)</td></tr>
-        <tr><td><code>personal</code></td><td>Success (green)</td></tr>
-      </tbody>
-    </table>
-
-    <p>Custom categories work via CSS: <code>day-view li[data-category="workshop"] { --event-color: purple; }</code></p>
-  </section>
-
-  <section>
-    <h2>Event Durations</h2>
-    <p>Add a second <code>&lt;time&gt;</code> element with an ISO 8601 duration to span multiple hours:</p>
-
-    <code-block language="html" show-lines label="2-hour event" data-escape><li>
-  <time datetime="14:00">2:00 PM</time>
-  <time datetime="PT2H">2 hours</time>
-  Design review
-</li></code-block>
-
-    <p>Supported formats: <code>PT1H</code> (1 hour), <code>PT30M</code> (30 min), <code>PT1H30M</code> (90 min).</p>
-  </section>
-
-  <section>
-    <h2>Progressive Enhancement</h2>
-    <p>The component works in three layers:</p>
-    <table class="props-table">
-      <thead><tr><th>Layer</th><th>What renders</th></tr></thead>
-      <tbody>
-        <tr><td><strong>HTML only</strong></td><td>Ordered list with times &mdash; readable, semantic, accessible</td></tr>
-        <tr><td><strong>+ CSS</strong></td><td>Styled list with time formatting and category colors</td></tr>
-        <tr><td><strong>+ JS</strong></td><td>Hour grid positioning, localized labels, keyboard nav, click events</td></tr>
-      </tbody>
-    </table>
   </section>
 
   <section>
@@ -155,9 +160,42 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>day-view:event-click</code></td>
-          <td><code>{ time, text, element }</code></td>
-          <td>Fired when an event item is clicked.</td>
+          <td><code>{ time, text, element, category, duration }</code></td>
+          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked.</td>
         </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Two-Layer Rendering</h2>
+    <p>The component uses two rendering layers:</p>
+    <table class="props-table">
+      <thead><tr><th>Layer</th><th>Mechanism</th><th>Handles</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Grid</strong></td>
+          <td>CSS Grid + subgrid</td>
+          <td>Hour rows, half-hour positioning, double-booking columns</td>
+        </tr>
+        <tr>
+          <td><strong>Overlay</strong></td>
+          <td>JS absolute positioning</td>
+          <td>Multi-hour spanning events (measured against grid rows)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Hour dividers use <code>box-shadow</code> instead of <code>border</code> to avoid gaps in the spanning calculations.</p>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <table class="props-table">
+      <thead><tr><th>Layer</th><th>What renders</th></tr></thead>
+      <tbody>
+        <tr><td><strong>HTML only</strong></td><td>Ordered list of hours with events &mdash; readable, semantic</td></tr>
+        <tr><td><strong>+ CSS</strong></td><td>Grid layout, category colors, half-hour positioning</td></tr>
+        <tr><td><strong>+ JS</strong></td><td>Multi-hour spanning, click events, keyboard navigation</td></tr>
       </tbody>
     </table>
   </section>
@@ -174,31 +212,10 @@ crumbLabel: Web Components
   </section>
 
   <section>
-    <h2>Localization</h2>
-    <p>Hour labels are rendered via <code>Intl.DateTimeFormat</code>, matching the user's locale. Override by setting <code>lang</code> on the element or an ancestor.</p>
-
-    <code-block language="html" show-lines label="French locale" data-escape><day-view lang="fr" data-date="2026-04-10">
-  <ol>...</ol>
-</day-view>
-<!-- Hour labels: 7 h, 8 h, 9 h... --></code-block>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>Semantic <code>&lt;ol&gt;</code> preserves list semantics for screen readers</li>
-      <li><code>&lt;time datetime&gt;</code> provides machine-readable times</li>
-      <li><code>&lt;details&gt;</code> elements are natively keyboard-accessible</li>
-      <li>Roving <code>tabindex</code> on event items for arrow key navigation</li>
-      <li>Hour labels are <code>aria-hidden</code> (visual aid, not content)</li>
-      <li>Focus ring visible on focused event</li>
-    </ul>
-  </section>
-
-  <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a> &mdash; Month grid with events and selection</li>
-      <li><a href="/docs/elements/web-components/time-picker/"><code>&lt;time-picker&gt;</code></a> &mdash; Time input for forms</li>
+      <li><a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a> &mdash; Event block element</li>
+      <li><a href="/docs/elements/custom-elements/hour-view/"><code>&lt;hour-view&gt;</code></a> &mdash; Hour container element</li>
+      <li><a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a> &mdash; Month calendar with events</li>
     </ul>
   </section>

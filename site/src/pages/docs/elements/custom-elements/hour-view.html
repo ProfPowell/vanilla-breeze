@@ -1,0 +1,88 @@
+---
+layout: element
+title: "hour-view"
+description: "CSS subgrid container for calendar events within a single hour slot. Provides half-hour positioning and double-booking layout."
+elementName: hour-view
+category: custom
+currentPath: /docs/elements/custom-elements/hour-view/
+
+crumbHref: /docs/elements/custom-elements/
+crumbLabel: Custom Elements
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;hour-view&gt;</code> element is a CSS-only container that holds <code>&lt;calendar-event&gt;</code> elements within a single hour slot. It uses CSS subgrid to inherit its parent's two-row half-hour grid, allowing events to be placed at the top (:00) or bottom (:30) of the hour.</p>
+
+    <code-block language="html" show-lines label="Hour with event" data-escape><li>
+  <time datetime="09:00">9 AM</time>
+  <hour-view>
+    <calendar-event data-category="meeting">
+      <time datetime="09:00">9:00</time>
+      Sprint standup
+    </calendar-event>
+  </hour-view>
+</li></code-block>
+  </section>
+
+  <section>
+    <h2>Half-Hour Positioning</h2>
+    <p>Each <code>&lt;hour-view&gt;</code> provides two subgrid rows (top half and bottom half of the hour). Events at :00 go in row 1; events with <code>data-start="30"</code> go in row 2.</p>
+
+    <code-block language="html" show-lines label="Event at :30" data-escape><hour-view>
+  <calendar-event data-category="personal" data-start="30">
+    <time datetime="12:30">12:30</time>
+    Lunch
+  </calendar-event>
+</hour-view></code-block>
+  </section>
+
+  <section>
+    <h2>Double-Booking</h2>
+    <p>Add <code>data-overlap</code> to display multiple events side by side when two events occupy the same time slot.</p>
+
+    <code-block language="html" show-lines label="Two events at 2 PM" data-escape><hour-view data-overlap>
+  <calendar-event data-category="focus">
+    <time datetime="14:00">2:00</time>
+    Code review
+  </calendar-event>
+  <calendar-event data-category="meeting">
+    <time datetime="14:00">2:00</time>
+    1:1 with Sarah
+  </calendar-event>
+</hour-view></code-block>
+
+    <p>Without <code>data-overlap</code>, events stack vertically. With it, the grid switches to <code>1fr 1fr</code> columns.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>data-overlap</code></td>
+          <td>boolean</td>
+          <td>Enable side-by-side layout for double-booked events.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Empty Hours</h2>
+    <p>Empty <code>&lt;hour-view&gt;</code> elements render as blank rows in the grid &mdash; this is correct behavior showing available time slots.</p>
+
+    <code-block language="html" show-lines label="Empty hour slot" data-escape><li>
+  <time datetime="15:00">3 PM</time>
+  <hour-view></hour-view>
+</li></code-block>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a> &mdash; Event block placed inside hour-view</li>
+      <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> &mdash; Full day schedule containing hour-views</li>
+    </ul>
+  </section>
