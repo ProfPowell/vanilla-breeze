@@ -9,11 +9,8 @@
     body {
       padding: var(--size-m);
       background: var(--color-surface);
-    }
-    section + section {
-      margin-block-start: var(--size-xl);
-      padding-block-start: var(--size-l);
-      border-block-start: var(--border-width-thin) solid var(--color-border);
+      max-inline-size: 50rem;
+      margin-inline: auto;
     }
     output {
       display: block;
@@ -25,53 +22,134 @@
 </head>
 <body>
 
-  <section>
-    <h3>Default — Working Hours Grid</h3>
-    <day-view data-date="2026-04-10" id="schedule">
-      <ol>
-        <li><time datetime="08:30">8:30 AM</time> <data value="personal">Personal</data> Morning coffee</li>
-        <li><time datetime="09:00">9:00 AM</time> <data value="meeting">Meeting</data> Sprint standup
-          <details><summary>Details</summary><p>Room B, 30 min</p></details>
-        </li>
-        <li><time datetime="10:00">10:00 AM</time> <time datetime="PT2H">2h</time> <data value="meeting">Meeting</data> Design review</li>
-        <li><time datetime="12:30">12:30 PM</time> <data value="personal">Personal</data> Lunch</li>
-        <li><time datetime="14:00">2:00 PM</time> Code review</li>
-        <li><time datetime="16:00">4:00 PM</time> <data value="deadline">Deadline</data> Submit report</li>
-        <li><time datetime="17:30">5:30 PM</time> <data value="personal">Personal</data> Happy hour</li>
-      </ol>
-    </day-view>
-    <output id="click-output">Click an event to see details</output>
-  </section>
+<h3>Thursday, April 10, 2026</h3>
 
-  <section>
-    <h3>Compact — Tight Schedule</h3>
-    <day-view data-date="2026-04-10" data-size="compact" data-start-hour="9" data-end-hour="17">
-      <ol>
-        <li><time datetime="09:00">9 AM</time> <data value="meeting">Meeting</data> Standup</li>
-        <li><time datetime="10:00">10 AM</time> <time datetime="PT2H">2h</time> Workshop</li>
-        <li><time datetime="13:00">1 PM</time> <data value="meeting">Meeting</data> 1-on-1</li>
-        <li><time datetime="14:30">2:30 PM</time> Focus time</li>
-        <li><time datetime="16:00">4 PM</time> <data value="deadline">Deadline</data> Ship v2.0</li>
-      </ol>
-    </day-view>
-  </section>
+<day-view data-date="2026-04-10" id="schedule">
 
-  <section>
-    <h3>Sparse — Event List (no empty hours)</h3>
-    <day-view data-date="2026-04-18" data-mode="sparse">
-      <ol>
-        <li><time datetime="14:00">2:00 PM</time> <data value="meeting">Meeting</data> Retrospective</li>
-        <li><time datetime="17:00">5:00 PM</time> <data value="personal">Personal</data> Happy hour</li>
-      </ol>
-    </day-view>
-  </section>
+  <ul class="all-day-events">
+    <li>
+      <calendar-event data-category="personal">
+        <icon-wc name="globe" size="sm"></icon-wc>
+        Earth Day (all day)
+      </calendar-event>
+    </li>
+  </ul>
 
-  <script type="module" src="/src/main.js"></script>
-  <script>
-    document.getElementById('schedule').addEventListener('day-view:event-click', (e) => {
-      document.getElementById('click-output').textContent =
-        'Clicked: ' + e.detail.time + ' — ' + e.detail.text.split('\n')[0].trim();
-    });
-  </script>
+  <ol>
+    <li>
+      <time datetime="07:00">7 AM</time>
+      <hour-view></hour-view>
+    </li>
+    <li>
+      <time datetime="08:00">8 AM</time>
+      <hour-view>
+        <calendar-event data-category="personal" data-start="30">
+          <time datetime="08:30">8:30</time>
+          <icon-wc name="coffee" size="sm"></icon-wc>
+          Morning coffee
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="09:00">9 AM</time>
+      <hour-view>
+        <calendar-event data-category="meeting">
+          <time datetime="09:00">9:00</time>
+          <icon-wc name="users" size="sm"></icon-wc>
+          Sprint standup
+          <details>
+            <summary>Details</summary>
+            <p>Room B, 30 min. Daily sync.</p>
+          </details>
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="10:00">10 AM</time>
+      <hour-view>
+        <calendar-event data-category="meeting" data-duration="2h">
+          <time datetime="10:00">10:00</time>
+          <icon-wc name="palette" size="sm"></icon-wc>
+          Design review — Q3 mockups
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="11:00">11 AM</time>
+      <hour-view></hour-view>
+    </li>
+    <li>
+      <time datetime="12:00">12 PM</time>
+      <hour-view>
+        <calendar-event data-category="personal" data-start="30">
+          <time datetime="12:30">12:30</time>
+          <icon-wc name="utensils" size="sm"></icon-wc>
+          Lunch
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="13:00">1 PM</time>
+      <hour-view></hour-view>
+    </li>
+    <li>
+      <time datetime="14:00">2 PM</time>
+      <hour-view data-overlap>
+        <calendar-event data-category="focus">
+          <time datetime="14:00">2:00</time>
+          <icon-wc name="code" size="sm"></icon-wc>
+          Code review
+        </calendar-event>
+        <calendar-event data-category="meeting">
+          <time datetime="14:00">2:00</time>
+          <icon-wc name="user" size="sm"></icon-wc>
+          1:1 with Sarah
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="15:00">3 PM</time>
+      <hour-view></hour-view>
+    </li>
+    <li>
+      <time datetime="16:00">4 PM</time>
+      <hour-view>
+        <calendar-event data-category="deadline">
+          <time datetime="16:00">4:00</time>
+          <icon-wc name="alert-triangle" size="sm"></icon-wc>
+          Submit quarterly report
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="17:00">5 PM</time>
+      <hour-view>
+        <calendar-event data-category="personal" data-start="30" data-duration="1h30m">
+          <time datetime="17:30">5:30</time>
+          <icon-wc name="beer" size="sm"></icon-wc>
+          Team happy hour
+        </calendar-event>
+      </hour-view>
+    </li>
+    <li>
+      <time datetime="18:00">6 PM</time>
+      <hour-view></hour-view>
+    </li>
+    <li>
+      <time datetime="19:00">7 PM</time>
+      <hour-view></hour-view>
+    </li>
+  </ol>
+</day-view>
+
+<output id="click-output">Click an event to see details</output>
+
+<script type="module" src="/src/main.js"></script>
+<script>
+  document.getElementById('schedule').addEventListener('day-view:event-click', (e) => {
+    document.getElementById('click-output').textContent =
+      'Clicked: ' + e.detail.time + ' — ' + e.detail.text.split('\n')[0].trim();
+  });
+</script>
 </body>
 </html>

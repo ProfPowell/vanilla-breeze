@@ -2493,7 +2493,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "day-view",
     "type": "web-component",
-    "description": "Hour-grid schedule for a single day with progressive enhancement over semantic ol/time markup",
+    "description": "Hour-grid schedule for a single day, using hour-view and calendar-event children",
     "attributes": [
       {
         "name": "data-date",
@@ -2517,49 +2517,35 @@ export default {
         "type": "number",
         "default": 19,
         "description": "Last visible hour (0-23)"
-      },
-      {
-        "name": "data-size",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "compact",
-          "default",
-          "large"
-        ],
-        "description": "Size variant controlling row height"
-      },
-      {
-        "name": "data-mode",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "grid",
-          "sparse"
-        ],
-        "description": "Display mode: grid (full hour grid) or sparse (event list only)"
       }
     ],
     "events": [
       {
         "name": "day-view:event-click",
-        "description": "Fired when an event item is clicked"
+        "description": "Fired when a calendar-event is clicked",
+        "detail": "{ time, text, element, category, duration }"
       }
     ],
     "structure": [
       {
         "element": "ol",
-        "description": "Ordered list containing event items"
+        "description": "Ordered list of hour slots"
       },
       {
         "element": "li",
-        "description": "Individual event with time child for scheduling"
+        "description": "Single hour slot containing time label + hour-view"
       },
       {
         "element": "time",
-        "description": "Machine-readable event time (datetime=HH:MM or duration PT1H)"
+        "description": "Hour label with datetime='HH:00'"
+      },
+      {
+        "element": "hour-view",
+        "description": "Container for calendar-event elements within the hour"
+      },
+      {
+        "element": "calendar-event",
+        "description": "Individual event with time, category, and optional duration"
       }
     ]
   },

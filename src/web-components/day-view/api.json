@@ -2,20 +2,20 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "day-view",
   "type": "web-component",
-  "description": "Hour-grid schedule for a single day with progressive enhancement over semantic ol/time markup",
+  "description": "Hour-grid schedule for a single day, using hour-view and calendar-event children",
   "attributes": [
     { "name": "data-date", "kind": "data", "purpose": "config", "type": "string", "description": "ISO date for this day view (e.g., 2026-04-10)" },
     { "name": "data-start-hour", "kind": "data", "purpose": "config", "type": "number", "default": 7, "description": "First visible hour (0-23)" },
-    { "name": "data-end-hour", "kind": "data", "purpose": "config", "type": "number", "default": 19, "description": "Last visible hour (0-23)" },
-    { "name": "data-size", "kind": "data", "purpose": "visual-variant", "type": "enum", "values": ["compact", "default", "large"], "description": "Size variant controlling row height" },
-    { "name": "data-mode", "kind": "data", "purpose": "config", "type": "enum", "values": ["grid", "sparse"], "description": "Display mode: grid (full hour grid) or sparse (event list only)" }
+    { "name": "data-end-hour", "kind": "data", "purpose": "config", "type": "number", "default": 19, "description": "Last visible hour (0-23)" }
   ],
   "events": [
-    { "name": "day-view:event-click", "description": "Fired when an event item is clicked" }
+    { "name": "day-view:event-click", "description": "Fired when a calendar-event is clicked", "detail": "{ time, text, element, category, duration }" }
   ],
   "structure": [
-    { "element": "ol", "description": "Ordered list containing event items" },
-    { "element": "li", "description": "Individual event with time child for scheduling" },
-    { "element": "time", "description": "Machine-readable event time (datetime=HH:MM or duration PT1H)" }
+    { "element": "ol", "description": "Ordered list of hour slots" },
+    { "element": "li", "description": "Single hour slot containing time label + hour-view" },
+    { "element": "time", "description": "Hour label with datetime='HH:00'" },
+    { "element": "hour-view", "description": "Container for calendar-event elements within the hour" },
+    { "element": "calendar-event", "description": "Individual event with time, category, and optional duration" }
   ]
 }

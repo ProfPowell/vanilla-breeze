@@ -1,26 +1,30 @@
 /**
  * day-view: Hour-grid schedule for a single day
  *
- * Progressive enhancement over a semantic <ol> with <time> entries.
- * Without JS, renders as a readable ordered event list.
- * With JS, inserts hour-marker <li> elements and positions events
- * into a half-hour CSS Grid. No <div> tags are generated.
+ * Enhances semantic markup: <ol> with <li> per hour, each containing
+ * <time> for the hour label and <hour-view> for event content.
+ * Events are <calendar-event> elements inside <hour-view>.
  *
- * Grid uses half-hour resolution: each hour = 2 grid rows.
- * Events at :00 start at the first sub-row, :30 at the second.
- * Duration determines row span (1 hour = 2 rows, 30min = 1 row).
+ * Two-layer rendering:
+ *   Layer 1 (CSS): Hour grid rows with subgrid half-hour positioning
+ *   Layer 2 (JS):  Spanning events positioned absolutely over the grid
  *
- * @attr {string} data-date       - ISO date for this day (e.g., "2026-04-10")
+ * @attr {string} data-date       - ISO date (e.g., "2026-04-10")
  * @attr {number} data-start-hour - First visible hour (default: 7)
  * @attr {number} data-end-hour   - Last visible hour (default: 19)
- * @attr {string} data-size       - Size: "compact", "default", "large"
- * @attr {string} data-mode       - Mode: "grid" (default), "sparse" (event list only)
  *
  * @example
  * <day-view data-date="2026-04-10">
  *   <ol>
- *     <li><time datetime="09:00">9:00 AM</time> Sprint standup</li>
- *     <li><time datetime="14:00">2:00 PM</time> Design review</li>
+ *     <li>
+ *       <time datetime="09:00">9 AM</time>
+ *       <hour-view>
+ *         <calendar-event data-category="meeting">
+ *           <time datetime="09:00">9:00</time>
+ *           Sprint standup
+ *         </calendar-event>
+ *       </hour-view>
+ *     </li>
  *   </ol>
  * </day-view>
  */
@@ -28,195 +32,138 @@
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
-// ── Locale-aware hour labels ───────────────────────────────────────
-
-const hourCache = new Map();
-
-function getLocalizedHours(locale) {
-  if (hourCache.has(locale)) return hourCache.get(locale);
-  const hours = [];
-  const fmt = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
-  for (let h = 0; h < 24; h++) {
-    hours.push(fmt.format(new Date(2026, 0, 1, h)));
-  }
-  hourCache.set(locale, hours);
-  return hours;
-}
-
-// ── Component ──────────────────────────────────────────────────────
-
 class DayView extends VBElement {
-  #startHour = 7;
-  #endHour = 19;
-  #locale;
-  #list;
-  #generatedEls = [];
+  #ol;
 
   setup() {
-    this.#locale = this.closest('[lang]')?.lang || navigator.language;
-    this.#startHour = parseInt(this.dataset.startHour, 10) || 7;
-    this.#endHour = parseInt(this.dataset.endHour, 10) || 19;
+    this.#ol = this.querySelector('ol');
+    if (!this.#ol) return false;
 
-    this.#list = this.querySelector('ol');
-    if (!this.#list) return false;
-
-    this.#enhance();
+    // Position spanning events after layout settles
+    this.#positionSpanningEvents();
   }
 
   teardown() {
-    this.#generatedEls.forEach(el => el.remove());
-    this.#generatedEls = [];
+    // Remove absolute positioning from events on disconnect
+    this.querySelectorAll('calendar-event.dv-spanning').forEach(el => {
+      el.style.cssText = '';
+      el.classList.remove('dv-spanning');
+    });
   }
 
+  /** Re-measure and re-position spanning events */
   refresh() {
     this.teardown();
-    this.#enhance();
+    this.#positionSpanningEvents();
   }
 
-  #enhance() {
-    const hours = getLocalizedHours(this.#locale);
-    const hourCount = this.#endHour - this.#startHour + 1;
+  #positionSpanningEvents() {
+    const ol = this.#ol;
+    const spanningEvents = ol.querySelectorAll('calendar-event[data-duration]');
+    if (spanningEvents.length === 0) return;
 
-    // Set CSS var for total half-hour rows
-    this.style.setProperty('--_half-hour-rows', String(hourCount * 2));
+    // Wait for layout to settle (fonts, icons, etc.)
+    requestAnimationFrame(() => {
+      // Phase 1: Measure all hour rows
+      const olRect = ol.getBoundingClientRect();
+      const hourRows = new Map();
+      let labelWidth = 64;
 
-    // Parse events from the <ol> children
-    const eventItems = [...this.#list.querySelectorAll(':scope > li')];
-    const events = eventItems.map(li => {
-      const timeEl = li.querySelector('time[datetime]');
-      const dt = timeEl?.getAttribute('datetime') || '';
-      const [hStr, mStr] = dt.split(':');
-      const hour = parseInt(hStr, 10);
-      const min = parseInt(mStr, 10) || 0;
+      ol.querySelectorAll(':scope > li').forEach(li => {
+        const timeEl = li.querySelector(':scope > time');
+        if (!timeEl) return;
+        const dt = timeEl.getAttribute('datetime');
+        if (!dt) return;
+        const hour = parseInt(dt.split(':')[0], 10);
+        const rect = li.getBoundingClientRect();
+        hourRows.set(hour, {
+          top: rect.top - olRect.top,
+          height: rect.height,
+        });
+        labelWidth = timeEl.getBoundingClientRect().width;
+      });
 
-      const durEl = li.querySelector('time[datetime^="PT"]');
-      let durMinutes = 30; // default 30 min (1 half-hour slot)
-      if (durEl) {
-        const ddt = durEl.getAttribute('datetime');
-        const hm = ddt.match(/(\d+)H/);
-        const mm = ddt.match(/(\d+)M/);
-        durMinutes = (hm ? parseInt(hm[1], 10) * 60 : 0) + (mm ? parseInt(mm[1], 10) : 0);
-        if (durMinutes === 0) durMinutes = 60;
-      }
+      // Phase 2: Compute positions
+      const placements = [];
 
-      const dataEl = li.querySelector('data[value]');
-      if (dataEl) li.dataset.category = dataEl.getAttribute('value');
+      spanningEvents.forEach(event => {
+        const li = event.closest('ol > li');
+        if (!li) return;
 
-      return { li, hour, min, durMinutes, valid: !isNaN(hour) };
+        const timeEl = li.querySelector(':scope > time');
+        const startHour = parseInt(timeEl?.getAttribute('datetime')?.split(':')[0], 10);
+        const startMin = parseInt(event.dataset.start || '0', 10);
+
+        // Parse duration
+        const dur = event.dataset.duration;
+        let durationMinutes = 60;
+        const hMatch = dur.match(/(\d+)h/);
+        const mMatch = dur.match(/(\d+)m/);
+        if (hMatch || mMatch) {
+          durationMinutes = (hMatch ? parseInt(hMatch[1], 10) * 60 : 0)
+                          + (mMatch ? parseInt(mMatch[1], 10) : 0);
+        }
+
+        const row = hourRows.get(startHour);
+        if (!row) return;
+
+        const minuteFraction = startMin / 60;
+        const top = row.top + (row.height * minuteFraction);
+        const height = row.height * (durationMinutes / 60);
+
+        placements.push({ event, top, height });
+      });
+
+      // Phase 3: Apply all positions
+      placements.forEach(({ event, top, height }) => {
+        event.style.position = 'absolute';
+        event.style.top = top + 'px';
+        event.style.height = height + 'px';
+        event.style.left = (labelWidth + 4) + 'px';
+        event.style.right = '4px';
+        event.classList.add('dv-spanning');
+      });
     });
 
-    events.sort((a, b) => (a.hour * 60 + a.min) - (b.hour * 60 + b.min));
-
-    // Clear and rebuild
-    this.#list.innerHTML = '';
-
-    let earlyCount = 0;
-    let lateCount = 0;
-
-    // Place hour markers with explicit grid rows
-    for (let h = this.#startHour; h <= this.#endHour; h++) {
-      const gridRow = (h - this.#startHour) * 2 + 1;
-
-      // Hour label in column 1
-      const hourLi = document.createElement('li');
-      hourLi.className = 'dv-hour';
-      hourLi.setAttribute('aria-hidden', 'true');
-      hourLi.textContent = hours[h];
-      hourLi.style.gridRow = `${gridRow} / span 2`;
-      this.#list.appendChild(hourLi);
-      this.#generatedEls.push(hourLi);
-
-      // Hour grid line in column 2
-      const lineLi = document.createElement('li');
-      lineLi.className = 'dv-hour-line';
-      lineLi.setAttribute('aria-hidden', 'true');
-      lineLi.style.gridRow = `${gridRow} / span 2`;
-      this.#list.appendChild(lineLi);
-      this.#generatedEls.push(lineLi);
-    }
-
-    // Place events with explicit grid rows
-    events.forEach(e => {
-      if (!e.valid) {
-        this.#list.appendChild(e.li);
-        return;
-      }
-      if (e.hour < this.#startHour || (e.hour === this.#startHour && e.min < 0)) {
-        earlyCount++;
-        return;
-      }
-      if (e.hour > this.#endHour) {
-        lateCount++;
-        return;
-      }
-
-      // Grid row from time: each hour = 2 rows, :30 = +1 row
-      const halfHourOffset = e.min >= 30 ? 1 : 0;
-      const gridRowStart = (e.hour - this.#startHour) * 2 + 1 + halfHourOffset;
-
-      // Span: duration in half-hours, minimum 1
-      const halfHourSpan = Math.max(1, Math.round(e.durMinutes / 30));
-
-      e.li.style.gridRow = `${gridRowStart} / span ${halfHourSpan}`;
-      this.#list.appendChild(e.li);
-    });
-
-    // Overflow indicators
-    if (earlyCount > 0) {
-      const indicator = document.createElement('li');
-      indicator.className = 'dv-overflow';
-      indicator.textContent = `\u2191 ${earlyCount} earlier`;
-      indicator.style.gridRow = '1';
-      indicator.style.gridColumn = '1 / -1';
-      this.#list.insertBefore(indicator, this.#list.firstChild);
-      this.#generatedEls.push(indicator);
-    }
-
-    if (lateCount > 0) {
-      const indicator = document.createElement('li');
-      indicator.className = 'dv-overflow';
-      indicator.textContent = `\u2193 ${lateCount} later`;
-      indicator.style.gridColumn = '1 / -1';
-      this.#list.appendChild(indicator);
-      this.#generatedEls.push(indicator);
-    }
-
-    // Click delegation
-    this.listen(this.#list, 'click', (e) => {
-      const li = e.target.closest('li:not(.dv-hour):not(.dv-overflow)');
-      if (!li) return;
+    // Click delegation for all events
+    this.listen(this.#ol, 'click', (e) => {
+      const event = e.target.closest('calendar-event');
+      if (!event) return;
       this.dispatchEvent(new CustomEvent('day-view:event-click', {
         bubbles: true,
         detail: {
-          time: li.querySelector('time[datetime]')?.getAttribute('datetime'),
-          text: li.textContent.trim(),
-          element: li,
+          time: event.querySelector('time[datetime]')?.getAttribute('datetime'),
+          text: event.textContent.trim(),
+          element: event,
+          category: event.dataset.category,
+          duration: event.dataset.duration,
         }
       }));
     });
 
-    // Keyboard navigation
-    this.listen(this.#list, 'keydown', (e) => {
-      const li = e.target.closest('li:not(.dv-hour):not(.dv-overflow)');
-      if (!li) return;
+    // Keyboard navigation between events
+    this.listen(this.#ol, 'keydown', (e) => {
+      const event = e.target.closest('calendar-event');
+      if (!event) return;
 
-      const items = [...this.#list.querySelectorAll(':scope > li:not(.dv-hour):not(.dv-overflow)')];
-      const idx = items.indexOf(li);
+      const events = [...this.#ol.querySelectorAll('calendar-event')];
+      const idx = events.indexOf(event);
       if (idx === -1) return;
 
       let next;
-      if (e.key === 'ArrowDown' && idx < items.length - 1) next = items[idx + 1];
-      if (e.key === 'ArrowUp' && idx > 0) next = items[idx - 1];
+      if (e.key === 'ArrowDown' && idx < events.length - 1) next = events[idx + 1];
+      if (e.key === 'ArrowUp' && idx > 0) next = events[idx - 1];
 
       if (next) {
         e.preventDefault();
         next.setAttribute('tabindex', '0');
-        li.setAttribute('tabindex', '-1');
+        event.setAttribute('tabindex', '-1');
         next.focus();
       }
     });
 
-    const firstEvent = this.#list.querySelector(':scope > li:not(.dv-hour):not(.dv-overflow)');
+    // Set initial tabindex
+    const firstEvent = this.#ol.querySelector('calendar-event');
     if (firstEvent) firstEvent.setAttribute('tabindex', '0');
   }
 }
