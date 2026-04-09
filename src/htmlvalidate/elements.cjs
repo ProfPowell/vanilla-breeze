@@ -479,7 +479,8 @@ module.exports = {
     attributes: {
       "data-date": {},
       "data-start-hour": {},
-      "data-end-hour": {}
+      "data-end-hour": {},
+      "data-compact": { boolean: true }
     }
   },
 
@@ -555,6 +556,20 @@ module.exports = {
       "data-side": {},
       "role": {},
       "data-backref": {}
+    }
+  },
+
+  "gantt-chart": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "title": {},
+      "src": {},
+      "view": {},
+      "show-today": { boolean: true },
+      "show-progress": { boolean: true },
+      "show-dependencies": { boolean: true },
+      "compact": { boolean: true }
     }
   },
 
@@ -815,6 +830,22 @@ module.exports = {
       "storage-key": {},
       "data-reader-state": {},
       "aria-pressed": {}
+    }
+  },
+
+  "review-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "src": {},
+      "editable": { boolean: true },
+      "adapter": {},
+      "endpoint": {},
+      "storage-key": {},
+      "author": {},
+      "compact": { boolean: true },
+      "show-resolved": { boolean: true },
+      "pin-count": {}
     }
   },
 
@@ -1117,6 +1148,7 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "persona": {},
+      "persona-id": {},
       "action": {},
       "benefit": {},
       "priority": { enum: ["critical", "high", "medium", "low"] },
@@ -1148,6 +1180,33 @@ module.exports = {
       "data-dynamic": {},
       "shuffle": {},
       "aria-valuetext": {}
+    }
+  },
+
+  "week-view": {
+    attributes: {
+      "data-start-date": {},
+      "data-days": {},
+      "data-start-hour": {},
+      "data-end-hour": {}
+    }
+  },
+
+  "work-item": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "item-id": {},
+      "title": {},
+      "type": {},
+      "priority": {},
+      "status": {},
+      "estimate": {},
+      "assignee": {},
+      "story-ids": {},
+      "detail": {},
+      "compact": { boolean: true },
+      "src": {}
     }
   },
 

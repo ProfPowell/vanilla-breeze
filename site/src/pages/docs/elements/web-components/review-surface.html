@@ -1,0 +1,355 @@
+---
+layout: element
+title: "review-surface"
+description: "Pin-based annotation overlay for collaborative design review — wraps any content and adds interactive comment pins with pluggable persistence."
+elementName: review-surface
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/review-surface/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that wraps any HTML content and adds a transparent overlay for placing review comment pins. Click anywhere in annotate mode to drop a numbered pin, then add a comment and replies. Supports pluggable persistence via memory, localStorage, or REST adapters. Designed for design reviews, sprint demos, and stakeholder presentations.</p>
+
+    <browser-window
+      src="/docs/examples/demos/review-surface-basic.html"
+      url="https://vanilla-breeze.dev/review-surface"
+      title="Review Surface"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><review-surface editable adapter="local" storage-key="my-review" author="Sarah Chen">
+  <img src="/comps/landing-v3.png"
+       alt="Landing page design comp" />
+</review-surface></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>Path to a JSON file containing pin data</td>
+        </tr>
+        <tr>
+          <td><code>editable</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Enables the annotate toolbar, pin creation, and reply input</td>
+        </tr>
+        <tr>
+          <td><code>adapter</code></td>
+          <td>string</td>
+          <td><code>"memory"</code></td>
+          <td>Persistence backend: <code>memory</code>, <code>local</code>, or <code>rest</code></td>
+        </tr>
+        <tr>
+          <td><code>endpoint</code></td>
+          <td>string (URL)</td>
+          <td>&mdash;</td>
+          <td>REST endpoint URL (required when <code>adapter="rest"</code>)</td>
+        </tr>
+        <tr>
+          <td><code>storage-key</code></td>
+          <td>string</td>
+          <td><code>"review-surface"</code></td>
+          <td>localStorage key (when <code>adapter="local"</code>)</td>
+        </tr>
+        <tr>
+          <td><code>author</code></td>
+          <td>string</td>
+          <td><code>"Anonymous"</code></td>
+          <td>Default author name for new pins and replies</td>
+        </tr>
+        <tr>
+          <td><code>compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Reduces pin size, popover width, and toolbar spacing</td>
+        </tr>
+        <tr>
+          <td><code>show-resolved</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Display resolved pins (hidden by default)</td>
+        </tr>
+        <tr>
+          <td><code>pin-count</code></td>
+          <td>number</td>
+          <td><code>0</code></td>
+          <td>Reflected count of visible pins (read-only)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Annotate Mode</h2>
+    <p>Add the <code>editable</code> attribute to show the review toolbar. Click the <strong>Annotate</strong> button to enter annotate mode &mdash; the cursor changes to a crosshair and clicking the content area places a new pin. The pin's popover opens immediately so you can type your comment.</p>
+
+    <browser-window
+      src="/docs/examples/demos/review-surface-empathy.html"
+      url="https://vanilla-breeze.dev/review-surface/empathy"
+      title="Review Surface &mdash; Empathy Map Composition"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Annotating an empathy map" data-escape><review-surface editable adapter="local" storage-key="sprint-4-empathy" author="Design Lead">
+  <empathy-map
+    title="Developer Onboarding"
+    persona="Sarah Chen"
+    summary="Q1 research insights">
+    <ul slot="says"><li>"I just want it to work"</li></ul>
+    <ul slot="thinks"><li>There must be a simpler way</li></ul>
+    <ul slot="does"><li>Searches Stack Overflow first</li></ul>
+    <ul slot="feels"><li>frustrated</li></ul>
+  </empathy-map>
+</review-surface></code-block>
+
+    <p>Press <kbd>Escape</kbd> to exit annotate mode or close an open popover. Pins are always clickable in both view and annotate modes.</p>
+  </section>
+
+  <section>
+    <h2>Data Mode</h2>
+    <p>Load pin data from a JSON file via the <code>src</code> attribute, or set the <code>.pins</code> property programmatically.</p>
+
+    <code-block language="json" show-lines label="JSON schema">{
+  "pins": [
+    {
+      "id": "pin-1",
+      "x": 42.5,
+      "y": 67.3,
+      "text": "Fix alignment on the header",
+      "author": "Sarah Chen",
+      "createdAt": "2026-04-06T14:30:00Z",
+      "resolved": false,
+      "replies": [
+        {
+          "id": "reply-1",
+          "text": "Agreed, padding needs 8px",
+          "author": "Tom Rivera",
+          "createdAt": "2026-04-06T14:45:00Z"
+        }
+      ]
+    }
+  ]
+}</code-block>
+
+    <code-block language="javascript" show-lines label="Programmatic API" data-escape>const surface = document.querySelector('review-surface');
+
+// Add a pin
+const pin = await surface.addPin({
+  x: 42, y: 67,
+  text: 'Fix alignment here',
+  author: 'Sarah'
+});
+
+// Resolve it
+await surface.resolvePin(pin.id);
+
+// Export all pins as JSON
+const data = surface.exportPins();
+console.log(JSON.stringify(data, null, 2));</code-block>
+  </section>
+
+  <section>
+    <h2>Adapters</h2>
+    <p>Adapters control how pins are persisted. Three built-in adapters are available, or provide a custom one via the <code>.adapter</code> property.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Adapter</th>
+          <th>Persistence</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>memory</code></td>
+          <td>Ephemeral (lost on page refresh)</td>
+          <td>Demos, throwaway reviews</td>
+        </tr>
+        <tr>
+          <td><code>local</code></td>
+          <td>Browser localStorage</td>
+          <td>Solo dev review, prototyping</td>
+        </tr>
+        <tr>
+          <td><code>rest</code></td>
+          <td>Server via REST API</td>
+          <td>Team collaboration, persistent reviews</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="REST adapter" data-escape><review-surface editable adapter="rest" endpoint="/api/reviews/landing-page">
+  <img src="/comps/landing.png" alt="Landing page" />
+</review-surface></code-block>
+
+    <p>The REST adapter expects standard REST endpoints: <code>GET /</code> to list, <code>POST /</code> to create, <code>PATCH /:id</code> to update, and <code>DELETE /:id</code> to remove.</p>
+
+    <code-block language="javascript" show-lines label="Custom adapter" data-escape>const surface = document.querySelector('review-surface');
+
+surface.adapter = {
+  async load() { /* return Pin[] */ },
+  async save(pin) { /* persist and return pin with id */ },
+  async update(id, changes) { /* merge changes, return updated pin */ },
+  async remove(id) { /* delete pin */ },
+};</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>review-surface:ready</code></td>
+          <td><code>{ pinCount }</code></td>
+          <td>After the component finishes rendering</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:add</code></td>
+          <td><code>{ pin }</code></td>
+          <td>A pin is created (via click or <code>addPin()</code>)</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:update</code></td>
+          <td><code>{ pin, changes }</code></td>
+          <td>A pin is modified (reply added, text changed, un-resolved)</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:remove</code></td>
+          <td><code>{ pin }</code></td>
+          <td>A pin is deleted</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:resolve</code></td>
+          <td><code>{ pin }</code></td>
+          <td>A pin is marked as resolved</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:select</code></td>
+          <td><code>{ pin }</code></td>
+          <td>A pin's popover is opened</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:mode</code></td>
+          <td><code>{ mode }</code></td>
+          <td>View/annotate mode is toggled (<code>"view"</code> or <code>"annotate"</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CSS Custom Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--review-surface-bg</code></td>
+          <td><code>#ffffff</code></td>
+          <td>Popover and input background</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-card</code></td>
+          <td><code>#f8f9fa</code></td>
+          <td>Toolbar and input area background</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-text</code></td>
+          <td><code>#1a1a1a</code></td>
+          <td>Primary text color</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-muted</code></td>
+          <td><code>#666666</code></td>
+          <td>Secondary text (timestamps, pin count)</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-border</code></td>
+          <td><code>#e0e0e0</code></td>
+          <td>Popover, toolbar, and input borders</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-accent</code></td>
+          <td><code>#0066cc</code></td>
+          <td>Focus rings, submit button, annotate mode toggle</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-pin-bg</code></td>
+          <td><code>#0066cc</code></td>
+          <td>Pin marker background color</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-pin-text</code></td>
+          <td><code>#ffffff</code></td>
+          <td>Pin marker text/number color</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-pin-size</code></td>
+          <td><code>28px</code></td>
+          <td>Pin marker diameter</td>
+        </tr>
+        <tr>
+          <td><code>--review-surface-resolved</code></td>
+          <td><code>#16a34a</code></td>
+          <td>Resolved pin and badge color</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Pin markers are <code>&lt;button&gt;</code> elements with <code>aria-label</code>, <code>aria-expanded</code>, and <code>aria-haspopup="dialog"</code></li>
+      <li>Comment popovers use <code>role="dialog"</code> with <code>aria-labelledby</code></li>
+      <li>Toolbar uses <code>role="toolbar"</code> with <code>aria-label</code></li>
+      <li>Annotate toggle uses <code>aria-pressed</code> to communicate state</li>
+      <li>An <code>aria-live="polite"</code> region announces pin creation, deletion, and resolution</li>
+      <li>Keyboard: <kbd>Tab</kbd> navigates pins, <kbd>Enter</kbd>/<kbd>Space</kbd> opens popover, <kbd>Escape</kbd> closes popover or exits annotate mode</li>
+      <li>All transitions respect <code>prefers-reduced-motion: reduce</code></li>
+      <li>Print styles hide pins, overlay, and toolbar &mdash; only the wrapped content prints</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/empathy-map/"><code>&lt;empathy-map&gt;</code></a> &mdash; Frequently wrapped for design review sessions</li>
+      <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; Journey maps wrapped for annotation</li>
+      <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a> &mdash; Persona cards that pair with review surfaces</li>
+      <li><a href="/docs/elements/web-components/impact-effort/"><code>&lt;impact-effort&gt;</code></a> &mdash; Prioritize feedback from review sessions</li>
+      <li><a href="/docs/elements/web-components/kanban-board/"><code>&lt;kanban-board&gt;</code></a> &mdash; Track review feedback as cards</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; Loads all UX planning components together</li>
+    </ul>
+  </section>

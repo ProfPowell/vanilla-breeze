@@ -8,8 +8,9 @@
  * tasks, and notes. Priority and status badges use semantic colors
  * set inline from static lookup maps.
  *
- * @attr {string}  persona  - The "As a..." role
- * @attr {string}  action   - The "I want..." description
+ * @attr {string}  persona    - The "As a..." role
+ * @attr {string}  persona-id - Links to a user-persona element by id
+ * @attr {string}  action     - The "I want..." description
  * @attr {string}  benefit  - The "so that..." outcome
  * @attr {enum}    priority - critical | high | medium | low
  * @attr {enum}    status   - backlog | to-do | in-progress | review | done
@@ -40,12 +41,12 @@
 
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
-import { esc } from '../_ux-base.js';
+import { esc, lucideSvg, UX_ICONS } from '../_ux-base.js';
 
 class UserStory extends HTMLElement {
   static get observedAttributes() {
     return [
-      'persona', 'action', 'benefit', 'priority', 'points',
+      'persona', 'persona-id', 'action', 'benefit', 'priority', 'points',
       'status', 'epic', 'story-id', 'title', 'compact', 'detail', 'src'
     ];
   }
@@ -92,7 +93,7 @@ class UserStory extends HTMLElement {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       for (const [jsonKey, attr] of [
-        ['storyId', 'story-id'], ['persona', 'persona'], ['action', 'action'],
+        ['storyId', 'story-id'], ['persona', 'persona'], ['personaId', 'persona-id'], ['action', 'action'],
         ['benefit', 'benefit'], ['priority', 'priority'], ['status', 'status'],
         ['points', 'points'], ['epic', 'epic'], ['title', 'title'], ['detail', 'detail']
       ]) {
@@ -136,6 +137,10 @@ class UserStory extends HTMLElement {
 
   get persona() {
     return this._resolve('persona') || 'user';
+  }
+
+  get personaId() {
+    return this._resolve('persona-id') || '';
   }
 
   get action() {
@@ -324,7 +329,9 @@ class UserStory extends HTMLElement {
           <div class="story-body" part="body">
             <p class="story-statement" part="statement">
               <span class="keyword">As a</span>
-              <span class="persona-text">${esc(this.persona)}</span>,
+              ${this.personaId
+                ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} ${esc(this.persona)}</a>`
+                : `<span class="persona-text">${esc(this.persona)}</span>`},
               <span class="keyword">I want</span>
               <span class="action-text">${esc(this.action || '[describe the action]')}</span>${this.benefit ? `
               <span class="keyword">so that</span>

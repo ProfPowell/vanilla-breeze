@@ -140,6 +140,24 @@ const styles = `
   font-weight: 500;
 }
 
+.persona-text--link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--_accent);
+  text-decoration: none;
+}
+
+.persona-text--link svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.persona-text--link:hover {
+  text-decoration: underline;
+}
+
 .action-text {
   font-weight: 500;
 }

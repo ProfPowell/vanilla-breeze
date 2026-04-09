@@ -93,3 +93,7 @@ import './page-tour/logic.js';
 import '../lib/time-relative.js';
 import '../custom-elements/brand-mark/logic.js';
 import './calendar-wc/logic.js';
+import './week-view/logic.js';
+import './review-surface/logic.js';
+import './gantt-chart/logic.js';
+import './work-item/logic.js';

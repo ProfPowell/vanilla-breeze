@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "review-surface",
+  "type": "web-component",
+  "description": "Pin-based annotation overlay for design review — wraps any content and adds interactive comment pins with pluggable persistence",
+  "htmlvalidate": { "flow": true, "permittedContent": ["@flow"] },
+  "attributes": [
+    { "name": "src",           "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL to JSON file containing pin data" },
+    { "name": "editable",      "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Enables annotate mode toolbar and pin creation" },
+    { "name": "adapter",       "kind": "host-api", "purpose": "config", "type": "string",  "description": "Persistence backend: memory | local | rest" },
+    { "name": "endpoint",      "kind": "host-api", "purpose": "config", "type": "string",  "description": "REST endpoint URL (when adapter=rest)" },
+    { "name": "storage-key",   "kind": "host-api", "purpose": "config", "type": "string",  "description": "localStorage key (when adapter=local)" },
+    { "name": "author",        "kind": "host-api", "purpose": "config", "type": "string",  "description": "Default author name for new pins" },
+    { "name": "compact",       "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Reduced spacing variant" },
+    { "name": "show-resolved", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Display resolved pins (hidden by default)" },
+    { "name": "pin-count",     "kind": "host-api", "purpose": "config", "type": "number",  "description": "Reflected count of visible pins (read-only)" }
+  ],
+  "slots": [
+    { "name": "(default)", "description": "The content to annotate (any HTML)" }
+  ],
+  "events": [
+    { "name": "review-surface:ready",   "detail": "{ pinCount }",      "description": "Fired after initial render" },
+    { "name": "review-surface:add",     "detail": "{ pin }",           "description": "Fired when a pin is created" },
+    { "name": "review-surface:update",  "detail": "{ pin, changes }",  "description": "Fired when a pin is modified" },
+    { "name": "review-surface:remove",  "detail": "{ pin }",           "description": "Fired when a pin is deleted" },
+    { "name": "review-surface:resolve", "detail": "{ pin }",           "description": "Fired when a pin is marked resolved" },
+    { "name": "review-surface:select",  "detail": "{ pin }",           "description": "Fired when a pin popover is opened" },
+    { "name": "review-surface:mode",    "detail": "{ mode }",          "description": "Fired when view/annotate mode toggles" }
+  ]
+}
