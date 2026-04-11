@@ -79,18 +79,45 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>data-start-hour</code></td>
-          <td>number</td>
+          <td>number | <code>"auto"</code></td>
           <td><code>7</code></td>
-          <td>First visible hour.</td>
+          <td>First visible hour, or <code>"auto"</code> to scan events and compute sparse range.</td>
         </tr>
         <tr>
           <td><code>data-end-hour</code></td>
           <td>number</td>
           <td><code>19</code></td>
-          <td>Last visible hour.</td>
+          <td>Last visible hour. Ignored when <code>data-start-hour="auto"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-compact</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Compact presentation for embedding in dialogs or overlays.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Auto Mode</h2>
+    <p>Set <code>data-start-hour="auto"</code> and place <code>&lt;calendar-event&gt;</code> children directly inside <code>&lt;day-view&gt;</code> (no <code>&lt;ol&gt;</code>). The component scans event times, computes a sparse hour range (first event hour &minus; 1 to last event hour + 1), and builds the hour grid automatically. Untimed events are placed in an all-day section.</p>
+
+    <code-block language="html" show-lines label="Auto mode" data-escape><day-view data-date="2026-04-10" data-start-hour="auto">
+  <calendar-event>
+    <time datetime="09:00">9:00 AM</time>
+    Sprint standup
+  </calendar-event>
+  <calendar-event>
+    <time datetime="14:00">2:00 PM</time>
+    Code review
+  </calendar-event>
+  <calendar-event>
+    Team lunch (all day)
+  </calendar-event>
+</day-view></code-block>
+
+    <p>This is used by <code>&lt;calendar-wc&gt;</code> to render day detail overlays from event data.</p>
   </section>
 
   <section>

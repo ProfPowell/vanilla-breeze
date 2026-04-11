@@ -1,0 +1,161 @@
+---
+layout: element
+title: "week-view"
+description: "7-day time grid composing day-view-style columns in a semantic table with auto mode, spanning events, and keyboard navigation."
+elementName: week-view
+category: component
+currentPath: /docs/elements/web-components/week-view/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;week-view&gt;</code> component renders a weekly schedule as a semantic <code>&lt;table&gt;</code> styled with CSS Grid and subgrid. Each column represents a day; each row an hour. Events are <code>&lt;calendar-event&gt;</code> elements placed in the correct cell, with support for multi-hour spanning and double-booking.</p>
+
+    <browser-window
+      src="/docs/examples/demos/week-view-basic.html"
+      url="https://vanilla-breeze.dev/week-view"
+      title="Week View Schedule"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Auto Mode</h2>
+    <p>Place <code>&lt;calendar-event&gt;</code> children with <code>data-date</code> attributes directly inside <code>&lt;week-view&gt;</code>. The component scans event dates and times, computes the hour range, and builds the table automatically.</p>
+
+    <code-block language="html" show-lines label="Auto mode" data-escape><week-view data-start-date="2026-04-06">
+  <calendar-event data-date="2026-04-06" data-category="meeting">
+    <time datetime="09:00">9:00 AM</time>
+    Sprint standup
+  </calendar-event>
+  <calendar-event data-date="2026-04-07" data-category="focus" data-duration="2h">
+    <time datetime="10:00">10:00 AM</time>
+    Design review
+  </calendar-event>
+  <calendar-event data-date="2026-04-09" data-category="deadline">
+    <time datetime="16:00">4:00 PM</time>
+    Sprint deadline
+  </calendar-event>
+</week-view></code-block>
+
+    <p>Each <code>&lt;calendar-event&gt;</code> must have <code>data-date="YYYY-MM-DD"</code> to assign it to a day column, and a <code>&lt;time datetime="HH:MM"&gt;</code> for the hour slot.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>data-start-date</code></td>
+          <td>ISO date</td>
+          <td>&mdash;</td>
+          <td>First day of the week (e.g., <code>2026-04-06</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-days</code></td>
+          <td>number</td>
+          <td><code>7</code></td>
+          <td>Number of day columns. Use <code>5</code> for a workweek.</td>
+        </tr>
+        <tr>
+          <td><code>data-start-hour</code></td>
+          <td>number | <code>"auto"</code></td>
+          <td><code>"auto"</code></td>
+          <td>First visible hour, or <code>"auto"</code> to compute from events.</td>
+        </tr>
+        <tr>
+          <td><code>data-end-hour</code></td>
+          <td>number</td>
+          <td><code>19</code></td>
+          <td>Last visible hour. Ignored when <code>data-start-hour="auto"</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Workweek</h2>
+    <p>Set <code>data-days="5"</code> to show Monday through Friday only.</p>
+
+    <code-block language="html" show-lines label="5-day workweek" data-escape><week-view data-start-date="2026-04-06" data-days="5">
+  ...events...
+</week-view></code-block>
+  </section>
+
+  <section>
+    <h2>Multi-Hour Events</h2>
+    <p>Add <code>data-duration</code> to span across hour rows, matching the <code>&lt;day-view&gt;</code> pattern.</p>
+
+    <code-block language="html" show-lines label="2-hour event" data-escape><calendar-event data-date="2026-04-07" data-category="meeting" data-duration="2h">
+  <time datetime="10:00">10:00 AM</time>
+  Design review
+</calendar-event></code-block>
+  </section>
+
+  <section>
+    <h2>Table Structure</h2>
+    <p>The generated table uses semantic elements for accessibility: <code>&lt;th scope="col"&gt;</code> for day headers and <code>&lt;th scope="row"&gt;</code> for hour labels. CSS Grid with subgrid provides the visual layout.</p>
+
+    <table class="props-table">
+      <thead><tr><th>Element</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;table&gt;</code></td><td>Grid container for the hours &times; days layout</td></tr>
+        <tr><td><code>&lt;thead&gt; &lt;th&gt;</code></td><td>Day column headers with <code>&lt;time&gt;</code> elements</td></tr>
+        <tr><td><code>&lt;tbody&gt; &lt;th&gt;</code></td><td>Hour row headers with <code>&lt;time datetime="HH:00"&gt;</code></td></tr>
+        <tr><td><code>&lt;td&gt;</code></td><td>Day/hour cell containing <code>&lt;hour-view&gt;</code> + events</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead><tr><th>Event</th><th>Detail</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>week-view:event-click</code></td>
+          <td><code>{ date, time, text, element, category, duration }</code></td>
+          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Keyboard</h2>
+    <table class="props-table">
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Arrow Down</kbd></td><td>Next event in same day column</td></tr>
+        <tr><td><kbd>Arrow Up</kbd></td><td>Previous event in same day column</td></tr>
+        <tr><td><kbd>Arrow Right</kbd></td><td>Next event in same hour row</td></tr>
+        <tr><td><kbd>Arrow Left</kbd></td><td>Previous event in same hour row</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Progressive Enhancement</h2>
+    <table class="props-table">
+      <thead><tr><th>Layer</th><th>What renders</th></tr></thead>
+      <tbody>
+        <tr><td><strong>HTML only</strong></td><td>Calendar events render as a flat list (readable without JS)</td></tr>
+        <tr><td><strong>+ CSS</strong></td><td>Grid table layout with day columns and hour rows</td></tr>
+        <tr><td><strong>+ JS</strong></td><td>Auto table generation, spanning events, click handling, keyboard nav</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> &mdash; Single-day hour grid</li>
+      <li><a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a> &mdash; Event block element</li>
+      <li><a href="/docs/elements/custom-elements/hour-view/"><code>&lt;hour-view&gt;</code></a> &mdash; Hour container element</li>
+      <li><a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a> &mdash; Month calendar with events</li>
+    </ul>
+  </section>

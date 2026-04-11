@@ -772,98 +772,78 @@ class CalendarWc extends VBElement {
     header.append(title, closeBtn);
     overlay.appendChild(header);
 
-    // Event list
-    const list = document.createElement('ul');
-    events.forEach(evt => {
-      const li = document.createElement('li');
-      if (evt.color) li.style.setProperty('--event-color', evt.color);
+    // Build day-view with calendar-event children
+    const hasTimed = events.some(e => e.time);
 
-      const dot = document.createElement('span');
-      dot.className = 'detail-dot';
+    if (hasTimed) {
+      const dayView = document.createElement('day-view');
+      dayView.dataset.date = iso;
+      dayView.dataset.startHour = 'auto';
+      dayView.dataset.compact = '';
 
-      const content = document.createElement('span');
-      content.className = 'detail-content';
-
-      if (evt.icon) {
-        const icon = document.createElement('icon-wc');
-        icon.setAttribute('name', evt.icon);
-        icon.setAttribute('size', 'sm');
-        content.appendChild(icon);
-      }
-
-      const label = document.createElement('span');
-      label.className = 'detail-label';
-      label.textContent = evt.label || '';
-
-      const time = evt.time ? document.createElement('span') : null;
-      if (time) {
-        time.className = 'detail-time';
-        time.textContent = evt.time;
-      }
-
-      content.append(label);
-      if (time) li.append(time);
-      li.append(dot, content);
-      list.appendChild(li);
-    });
-    overlay.appendChild(list);
-
-    // Hour grid for day view
-    if (events.some(e => e.time)) {
-      const dayView = document.createElement('div');
-      dayView.className = 'day-hours';
-
-      // Build sparse hour grid with only event hours
-      const eventsByHour = new Map();
-      events.forEach(evt => {
-        if (!evt.time) return;
-        const hour = parseInt(evt.time.split(':')[0], 10);
-        if (!eventsByHour.has(hour)) eventsByHour.set(hour, []);
-        eventsByHour.get(hour).push(evt);
+      const timeFmt = new Intl.DateTimeFormat(this.#locale, {
+        hour: 'numeric', minute: '2-digit',
       });
 
-      if (eventsByHour.size > 0) {
-        const hoursSection = document.createElement('div');
-        hoursSection.className = 'hour-grid';
+      events.forEach(evt => {
+        const ce = document.createElement('calendar-event');
+        if (evt.color) ce.style.setProperty('--event-color', evt.color);
 
-        const sortedHours = [...eventsByHour.keys()].sort((a, b) => a - b);
-        // Show from one hour before first to one hour after last
-        const startH = Math.max(0, sortedHours[0] - 1);
-        const endH = Math.min(23, sortedHours[sortedHours.length - 1] + 1);
-
-        const localHours = getLocalizedHours(this.#locale);
-        for (let h = startH; h <= endH; h++) {
-          const hourRow = document.createElement('div');
-          hourRow.className = 'hour-row';
-
-          const hourLabel = document.createElement('span');
-          hourLabel.className = 'hour-label';
-          hourLabel.textContent = localHours[h];
-
-          const hourContent = document.createElement('span');
-          hourContent.className = 'hour-content';
-
-          const hourEvents = eventsByHour.get(h) || [];
-          hourEvents.forEach(evt => {
-            const chip = document.createElement('span');
-            chip.className = 'hour-event';
-            if (evt.color) chip.style.setProperty('--event-color', evt.color);
-            if (evt.icon) {
-              const icon = document.createElement('icon-wc');
-              icon.setAttribute('name', evt.icon);
-              icon.setAttribute('size', 'xs');
-              chip.appendChild(icon);
-            }
-            chip.append(evt.label || '');
-            hourContent.appendChild(chip);
-          });
-
-          hourRow.append(hourLabel, hourContent);
-          hoursSection.appendChild(hourRow);
+        if (evt.icon) {
+          const icon = document.createElement('icon-wc');
+          icon.setAttribute('name', evt.icon);
+          icon.setAttribute('size', 'sm');
+          ce.appendChild(icon);
         }
-        dayView.appendChild(hoursSection);
-        overlay.appendChild(dayView);
-      }
+
+        if (evt.time) {
+          const time = document.createElement('time');
+          time.setAttribute('datetime', evt.time);
+          try {
+            const [h, m] = evt.time.split(':');
+            const d = new Date(2026, 0, 1, parseInt(h, 10), parseInt(m, 10));
+            time.textContent = timeFmt.format(d);
+          } catch {
+            time.textContent = evt.time;
+          }
+          ce.appendChild(time);
+        }
+
+        ce.append(evt.label || '');
+        dayView.appendChild(ce);
+      });
+
+      overlay.appendChild(dayView);
+    } else {
+      // Untimed-only: simple event list
+      const list = document.createElement('ul');
+      list.className = 'detail-list';
+      events.forEach(evt => {
+        const li = document.createElement('li');
+        if (evt.color) li.style.setProperty('--event-color', evt.color);
+
+        const dot = document.createElement('span');
+        dot.className = 'detail-dot';
+
+        const content = document.createElement('span');
+        content.className = 'detail-content';
+
+        if (evt.icon) {
+          const icon = document.createElement('icon-wc');
+          icon.setAttribute('name', evt.icon);
+          icon.setAttribute('size', 'sm');
+          content.appendChild(icon);
+        }
+
+        const label = document.createElement('span');
+        label.className = 'detail-label';
+        label.textContent = evt.label || '';
+
+        content.append(label);
+        li.append(dot, content);
+        list.appendChild(li);
+      });
+      overlay.appendChild(list);
     }
 
     this.appendChild(overlay);

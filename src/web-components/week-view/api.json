@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "week-view",
+  "type": "web-component",
+  "description": "7-day time grid composing day-view-style columns in a semantic table",
+  "attributes": [
+    { "name": "data-start-date", "kind": "data", "purpose": "config", "type": "string", "description": "ISO date for the first day of the week (e.g., 2026-04-06)" },
+    { "name": "data-days", "kind": "data", "purpose": "config", "type": "number", "default": 7, "description": "Number of day columns (e.g., 5 for workweek)" },
+    { "name": "data-start-hour", "kind": "data", "purpose": "config", "type": "string", "default": "auto", "description": "First visible hour (0-23), or 'auto' to scan events" },
+    { "name": "data-end-hour", "kind": "data", "purpose": "config", "type": "number", "default": 19, "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'." }
+  ],
+  "events": [
+    { "name": "week-view:event-click", "description": "Fired when a calendar-event is clicked", "detail": "{ date, time, text, element, category, duration }" }
+  ],
+  "structure": [
+    { "element": "table", "description": "Semantic table: hours (rows) × days (columns)" },
+    { "element": "thead > tr > th", "description": "Day column headers with <time> elements" },
+    { "element": "tbody > tr > th", "description": "Hour row headers with <time datetime='HH:00'>" },
+    { "element": "tbody > tr > td", "description": "Day/hour cell containing hour-view and calendar-event elements" },
+    { "element": "hour-view", "description": "Subgrid container for events within a cell" },
+    { "element": "calendar-event", "description": "Individual event with time, category, and optional duration" }
+  ],
+  "childAttributes": [
+    { "name": "data-date", "on": "calendar-event", "type": "string", "description": "ISO date assigning this event to a day column (auto mode)" }
+  ]
+}
