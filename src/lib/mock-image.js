@@ -53,7 +53,9 @@ function imageUrl(options = {}) {
   return `https://picsum.photos/${width}/${height}`;
 }
 
-const mock = { imageUrl };
+import { portraitUrl, portraitByIndex } from './portrait-url.js';
+
+const mock = { imageUrl, portraitUrl, portraitByIndex };
 
 // Expose on VanillaBreeze namespace
 if (typeof window !== 'undefined') {
@@ -61,4 +63,4 @@ if (typeof window !== 'undefined') {
   window.VanillaBreeze.mock = mock;
 }
 
-export { mock, imageUrl };
+export { mock, imageUrl, portraitUrl, portraitByIndex };

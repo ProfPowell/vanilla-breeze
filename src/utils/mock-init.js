@@ -18,7 +18,10 @@
  * <img data-mock="photo" width="400" height="300" alt="Product shot">
  */
 
+import { portraitUrl } from '../lib/portrait-url.js';
+
 const SELECTOR = ':is(img, video, iframe, canvas)[data-mock]';
+let portraitCounter = 0;
 
 const PRESETS = {
   hero:      { w: 1200, h: 400 },
@@ -29,6 +32,9 @@ const PRESETS = {
   logo:      { w: 200,  h: 50 },
   og:        { w: 1200, h: 630 },
   banner:    { w: 728,  h: 90 },
+  portrait:  { w: 128,  h: 128 },
+  profile:   { w: 128,  h: 128 },
+  headshot:  { w: 256,  h: 256 },
 };
 
 /**
@@ -105,6 +111,13 @@ function enhanceMock(el) {
         const text = el.getAttribute('alt') || '';
         const params = text ? `?text=${encodeURIComponent(text)}` : '';
         el.setAttribute('src', `https://placehold.co/${w}x${h}${params}`);
+        el.setAttribute('loading', 'lazy');
+      }
+    } else if (variant === 'portrait' || variant === 'profile' || variant === 'headshot' || variant === 'avatar') {
+      // Person portrait from faker-js CDN
+      if (!el.getAttribute('src')) {
+        const seed = el.dataset.seed || el.getAttribute('alt') || String(portraitCounter++);
+        el.setAttribute('src', portraitUrl(seed, Math.max(w, h)));
         el.setAttribute('loading', 'lazy');
       }
     } else {

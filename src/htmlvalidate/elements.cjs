@@ -187,6 +187,20 @@ module.exports = {
     }
   },
 
+  "adr-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "adr-id": {},
+      "status": {},
+      "supersedes": {},
+      "superseded-by": {},
+      "detail": {},
+      "compact": { boolean: true },
+      "src": {}
+    }
+  },
+
   "audio-player": {
     attributes: {
       "autoplay": { boolean: true },
@@ -542,6 +556,17 @@ module.exports = {
     }
   },
 
+  "flow-diagram": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "title": {},
+      "src": {},
+      "data-direction": {},
+      "compact": { boolean: true }
+    }
+  },
+
   "foot-note": {
     flow: true,
     phrasing: true,
@@ -597,6 +622,17 @@ module.exports = {
       "placeholder": {},
       "data-glossary-search": {},
       "href": {}
+    }
+  },
+
+  "glossary-wc": {
+    flow: true,
+    permittedContent: ["dl", "@flow"],
+    attributes: {
+      "title": {},
+      "src": {},
+      "searchable": { boolean: true },
+      "compact": { boolean: true }
     }
   },
 
@@ -904,6 +940,17 @@ module.exports = {
     }
   },
 
+  "site-map-wc": {
+    flow: true,
+    permittedContent: ["nav"],
+    attributes: {
+      "title": {},
+      "src": {},
+      "collapsed": { boolean: true },
+      "compact": { boolean: true }
+    }
+  },
+
   "site-search": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1147,18 +1194,14 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "persona": {},
       "persona-id": {},
-      "action": {},
-      "benefit": {},
       "priority": { enum: ["critical", "high", "medium", "low"] },
       "status": { enum: ["backlog", "to-do", "in-progress", "review", "done"] },
       "points": {},
       "epic": {},
       "story-id": {},
-      "title": {},
-      "compact": { boolean: true },
       "detail": { enum: ["full", "compact", "minimal"] },
+      "compact": { boolean: true },
       "src": {}
     }
   },
@@ -1197,7 +1240,6 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "item-id": {},
-      "title": {},
       "type": {},
       "priority": {},
       "status": {},

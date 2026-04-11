@@ -52,7 +52,7 @@ crumbLabel: Data Attributes
       <tr>
         <td><code>data-seed</code></td>
         <td>string</td>
-        <td>Reproducible seed for the <code>photo</code> preset (picsum.photos). Same seed always returns the same image.</td>
+        <td>Reproducible seed for <code>photo</code> (picsum) and <code>portrait</code>/<code>avatar</code>/<code>headshot</code> presets. Same seed always returns the same image.</td>
       </tr>
       <tr>
         <td><code>data-mock-init</code></td>
@@ -74,7 +74,10 @@ crumbLabel: Data Attributes
     <tbody>
       <tr><td><code>hero</code></td><td>3:1</td><td>100%</td><td>Hero banners</td></tr>
       <tr><td><code>card</code></td><td>16:9</td><td>400px</td><td>Blog/article cards</td></tr>
-      <tr><td><code>avatar</code></td><td>1:1</td><td>48px</td><td>User avatars (rounded)</td></tr>
+      <tr><td><code>avatar</code></td><td>1:1</td><td>48px</td><td>User avatars &mdash; uses portrait photo</td></tr>
+      <tr><td><code>portrait</code></td><td>1:1</td><td>128px</td><td>Person portrait photo</td></tr>
+      <tr><td><code>profile</code></td><td>1:1</td><td>128px</td><td>Profile photo (alias for portrait)</td></tr>
+      <tr><td><code>headshot</code></td><td>1:1</td><td>256px</td><td>Larger portrait for bios, team pages</td></tr>
       <tr><td><code>product</code></td><td>1:1</td><td>400px</td><td>Product images</td></tr>
       <tr><td><code>thumbnail</code></td><td>1:1</td><td>150px</td><td>Grid thumbnails</td></tr>
       <tr><td><code>logo</code></td><td>4:1</td><td>200px</td><td>Brand logos</td></tr>
@@ -114,6 +117,51 @@ crumbLabel: Data Attributes
   <h3>Placehold.co</h3>
   <p>Use <code>data-mock="placehold"</code> for labeled placeholder images from <a href="https://placehold.co">placehold.co</a>. The <code>alt</code> text is used as the label.</p>
   <code-block language="html" show-lines label="Placehold.co integration" data-escape><img data-mock="placehold" width="400" height="300" alt="Labeled placeholder"></code-block>
+</section>
+
+<section>
+  <h2>Person Portraits</h2>
+  <p>The <code>portrait</code>, <code>avatar</code>, <code>profile</code>, and <code>headshot</code> presets generate realistic AI-generated face photos from the <a href="https://github.com/faker-js/assets-person-portrait">faker-js portrait</a> CDN (CC0 licensed). The face is deterministic &mdash; the same <code>data-seed</code> or <code>alt</code> text always produces the same person.</p>
+
+  <section class="example" style="display:flex;gap:var(--size-m);align-items:end;flex-wrap:wrap">
+    <figure>
+      <img data-mock="avatar" alt="Alice Morgan">
+      <figcaption>avatar</figcaption>
+    </figure>
+    <figure>
+      <img data-mock="portrait" alt="Ben Torres">
+      <figcaption>portrait</figcaption>
+    </figure>
+    <figure>
+      <img data-mock="headshot" alt="Chloe Park">
+      <figcaption>headshot</figcaption>
+    </figure>
+  </section>
+
+  <code-block language="html" show-lines label="Portrait presets" data-escape><!-- Small avatar (48px) -->
+<img data-mock="avatar" alt="Alice Morgan">
+
+<!-- Standard portrait (128px) -->
+<img data-mock="portrait" alt="Ben Torres">
+
+<!-- Large headshot (256px) -->
+<img data-mock="headshot" alt="Chloe Park">
+
+<!-- Deterministic via data-seed -->
+<img data-mock="portrait" data-seed="user-42"></code-block>
+
+  <h3>Programmatic API</h3>
+  <p>Use the <code>VanillaBreeze.mock.portraitUrl()</code> function for dynamic scenarios.</p>
+  <code-block language="javascript" show-lines label="Portrait URL utility" data-escape>// Deterministic portrait URL from any seed string
+VanillaBreeze.mock.portraitUrl('Sarah Chen');
+// → 'https://cdn.jsdelivr.net/.../female/128/37.jpg'
+
+VanillaBreeze.mock.portraitUrl('Sarah Chen', 256);
+// → same person, larger size
+
+// By explicit index (0–199)
+VanillaBreeze.mock.portraitByIndex(42, 512);
+// → 'https://cdn.jsdelivr.net/.../female/512/42.jpg'</code-block>
 </section>
 
 <section>

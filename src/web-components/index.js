@@ -96,4 +96,8 @@ import './calendar-wc/logic.js';
 import './week-view/logic.js';
 import './review-surface/logic.js';
 import './gantt-chart/logic.js';
+import './glossary-wc/logic.js';
 import './work-item/logic.js';
+import './site-map-wc/logic.js';
+import './adr-wc/logic.js';
+import './flow-diagram/logic.js';

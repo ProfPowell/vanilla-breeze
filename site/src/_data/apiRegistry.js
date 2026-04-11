@@ -805,6 +805,98 @@ export default {
       }
     ]
   },
+  "adr-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "adr-wc",
+    "type": "web-component",
+    "description": "MADR-format Architectural Decision Record card with status, context, decision, consequences, and cross-referencing via supersedes chains",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "adr-id",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ADR identifier (e.g., ADR-001), auto-sets HTML id"
+      },
+      {
+        "name": "status",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Status: proposed | accepted | deprecated | superseded"
+      },
+      {
+        "name": "supersedes",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ADR IDs this supersedes"
+      },
+      {
+        "name": "superseded-by",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated ADR IDs that supersede this"
+      },
+      {
+        "name": "detail",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Detail level: full | compact | minimal"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Alias for detail=compact"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON data"
+      }
+    ],
+    "slots": [
+      {
+        "name": "title",
+        "description": "Decision heading (e.g., <h2>)"
+      },
+      {
+        "name": "date",
+        "description": "Decision date (e.g., <time datetime=\"...\">)"
+      },
+      {
+        "name": "context",
+        "description": "Why the decision was needed"
+      },
+      {
+        "name": "decision",
+        "description": "What was decided"
+      },
+      {
+        "name": "consequences",
+        "description": "Outcomes (positive and negative)"
+      }
+    ],
+    "events": [
+      {
+        "name": "adr-wc:ready",
+        "detail": "{ adrId, title, status }",
+        "description": "Fired after render"
+      }
+    ]
+  },
   "audio-player": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "audio-player",
@@ -2506,9 +2598,9 @@ export default {
         "name": "data-start-hour",
         "kind": "data",
         "purpose": "config",
-        "type": "number",
-        "default": 7,
-        "description": "First visible hour (0-23)"
+        "type": "string",
+        "default": "7",
+        "description": "First visible hour (0-23), or 'auto' to scan calendar-event children and compute sparse range"
       },
       {
         "name": "data-end-hour",
@@ -2516,7 +2608,14 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": 19,
-        "description": "Last visible hour (0-23)"
+        "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+      },
+      {
+        "name": "data-compact",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Compact presentation for dialog or overlay embedding"
       }
     ],
     "events": [
@@ -2939,6 +3038,60 @@ export default {
       }
     ]
   },
+  "flow-diagram": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "flow-diagram",
+    "type": "web-component",
+    "description": "User flow and sequence visualization — progressively enhances an ol into a connected node graph with actions, decisions, and branches",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Diagram heading"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON flow data"
+      },
+      {
+        "name": "data-direction",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Layout: vertical (default) or horizontal"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing"
+      }
+    ],
+    "events": [
+      {
+        "name": "flow-diagram:ready",
+        "detail": "{ nodeCount }",
+        "description": "After setup"
+      },
+      {
+        "name": "flow-diagram:select",
+        "detail": "{ type, text }",
+        "description": "Node clicked"
+      }
+    ]
+  },
   "foot-note": {
     "element": "foot-note",
     "type": "web-component",
@@ -3010,6 +3163,81 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "gantt-chart": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "gantt-chart",
+    "type": "web-component",
+    "description": "HTML-first Gantt chart using native table, progress, and time elements with progressive enhancement to an interactive timeline",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Chart heading"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON task data"
+      },
+      {
+        "name": "view",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Timeline granularity: auto | day | week | month | quarter"
+      },
+      {
+        "name": "show-today",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show vertical today marker line"
+      },
+      {
+        "name": "show-progress",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show progress fill inside bars"
+      },
+      {
+        "name": "show-dependencies",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Draw dependency arrows between tasks"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing variant"
+      }
+    ],
+    "events": [
+      {
+        "name": "gantt-chart:ready",
+        "detail": "{ taskCount, dateRange }",
+        "description": "Fired after initial render"
+      },
+      {
+        "name": "gantt-chart:task-click",
+        "detail": "{ task }",
+        "description": "Fired when a task bar is clicked"
+      }
+    ]
   },
   "geo-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3140,6 +3368,75 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "glossary-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "glossary-wc",
+    "type": "web-component",
+    "description": "Searchable, categorized, cross-linked glossary that progressively enhances a definition list",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "dl",
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Glossary heading"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON term data"
+      },
+      {
+        "name": "searchable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Enables search input"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing variant"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-category",
+        "on": "div",
+        "type": "string",
+        "description": "Category label for grouping terms"
+      },
+      {
+        "name": "data-term-id",
+        "on": "div",
+        "type": "string",
+        "description": "Unique term identifier, used as fragment anchor"
+      }
+    ],
+    "events": [
+      {
+        "name": "glossary-wc:ready",
+        "detail": "{ termCount, categories }",
+        "description": "After setup completes"
+      },
+      {
+        "name": "glossary-wc:search",
+        "detail": "{ query, matchCount }",
+        "description": "On search input"
+      }
+    ]
   },
   "heading-links": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4595,6 +4892,126 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "review-surface": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "review-surface",
+    "type": "web-component",
+    "description": "Pin-based annotation overlay for design review — wraps any content and adds interactive comment pins with pluggable persistence",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON file containing pin data"
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Enables annotate mode toolbar and pin creation"
+      },
+      {
+        "name": "adapter",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Persistence backend: memory | local | rest"
+      },
+      {
+        "name": "endpoint",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "REST endpoint URL (when adapter=rest)"
+      },
+      {
+        "name": "storage-key",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "localStorage key (when adapter=local)"
+      },
+      {
+        "name": "author",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Default author name for new pins"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing variant"
+      },
+      {
+        "name": "show-resolved",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Display resolved pins (hidden by default)"
+      },
+      {
+        "name": "pin-count",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Reflected count of visible pins (read-only)"
+      }
+    ],
+    "slots": [
+      {
+        "name": "(default)",
+        "description": "The content to annotate (any HTML)"
+      }
+    ],
+    "events": [
+      {
+        "name": "review-surface:ready",
+        "detail": "{ pinCount }",
+        "description": "Fired after initial render"
+      },
+      {
+        "name": "review-surface:add",
+        "detail": "{ pin }",
+        "description": "Fired when a pin is created"
+      },
+      {
+        "name": "review-surface:update",
+        "detail": "{ pin, changes }",
+        "description": "Fired when a pin is modified"
+      },
+      {
+        "name": "review-surface:remove",
+        "detail": "{ pin }",
+        "description": "Fired when a pin is deleted"
+      },
+      {
+        "name": "review-surface:resolve",
+        "detail": "{ pin }",
+        "description": "Fired when a pin is marked resolved"
+      },
+      {
+        "name": "review-surface:select",
+        "detail": "{ pin }",
+        "description": "Fired when a pin popover is opened"
+      },
+      {
+        "name": "review-surface:mode",
+        "detail": "{ mode }",
+        "description": "Fired when view/annotate mode toggles"
+      }
+    ]
+  },
   "settings-panel": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "settings-panel",
@@ -4855,6 +5272,80 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "site-map-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "site-map-wc",
+    "type": "web-component",
+    "description": "Information architecture tree with page-type badges, expand/collapse, and visual hierarchy",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "nav"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Site map heading"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON data for the site tree"
+      },
+      {
+        "name": "collapsed",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start all nodes collapsed"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reduced spacing variant"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-page-type",
+        "on": "li",
+        "type": "string",
+        "description": "Page type: layout | section | dashboard | page | modal | redirect"
+      },
+      {
+        "name": "data-template",
+        "on": "li",
+        "type": "string",
+        "description": "Template or view name shown as a badge"
+      },
+      {
+        "name": "data-status",
+        "on": "li",
+        "type": "string",
+        "description": "Page status: draft | ready | live | deprecated"
+      }
+    ],
+    "events": [
+      {
+        "name": "site-map-wc:ready",
+        "detail": "{ nodeCount, depth }",
+        "description": "Fired after component initializes"
+      },
+      {
+        "name": "site-map-wc:select",
+        "detail": "{ href, pageType, template }",
+        "description": "Node clicked — dispatched with page details"
+      }
+    ]
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6129,7 +6620,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "user-story",
     "type": "web-component",
-    "description": "Displays an Agile user story card with persona, action, benefit, priority, status, and slotted sections",
+    "description": "Agile user story card — 'As a [persona], I want [action] so that [benefit]' with slotted content and state attributes",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6138,25 +6629,11 @@ export default {
     },
     "attributes": [
       {
-        "name": "persona",
+        "name": "persona-id",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "The 'As a...' role"
-      },
-      {
-        "name": "action",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "The 'I want...' description"
-      },
-      {
-        "name": "benefit",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "The 'so that...' outcome"
+        "description": "Links to a user-persona element by id"
       },
       {
         "name": "priority",
@@ -6183,7 +6660,7 @@ export default {
           "review",
           "done"
         ],
-        "description": "Story workflow status"
+        "description": "Workflow status"
       },
       {
         "name": "points",
@@ -6204,21 +6681,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Ticket or story identifier"
-      },
-      {
-        "name": "title",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Short title for the story, used in minimal detail mode. Falls back to truncated action."
-      },
-      {
-        "name": "compact",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Reduced spacing variant"
+        "description": "Ticket or story identifier, auto-sets HTML id"
       },
       {
         "name": "detail",
@@ -6230,40 +6693,51 @@ export default {
           "compact",
           "minimal"
         ],
-        "description": "Controls how much content is shown: full (all sections), compact (hide empty sections), minimal (ID + title only)"
+        "description": "Detail level"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Alias for detail=compact"
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON file containing story data"
+        "description": "URL to JSON data"
       }
     ],
     "slots": [
       {
         "name": "persona",
-        "description": "The 'As a...' role (slot fallback for attribute)"
+        "description": "The 'As a...' role (e.g., <span>)"
       },
       {
         "name": "action",
-        "description": "The 'I want...' description (slot fallback for attribute)"
+        "description": "The 'I want...' description (e.g., <span>)"
       },
       {
         "name": "benefit",
-        "description": "The 'so that...' outcome (slot fallback for attribute)"
+        "description": "The 'so that...' outcome (e.g., <span>)"
+      },
+      {
+        "name": "title",
+        "description": "Short label for minimal mode (e.g., <h3>)"
       },
       {
         "name": "acceptance-criteria",
-        "description": "Acceptance criteria checklist"
+        "description": "Acceptance criteria checklist (e.g., <ul>)"
       },
       {
         "name": "tasks",
-        "description": "Implementation task list"
+        "description": "Implementation task list (e.g., <ul>)"
       },
       {
         "name": "notes",
-        "description": "Additional context"
+        "description": "Additional context (e.g., <p>)"
       }
     ],
     "events": [
@@ -6397,6 +6871,205 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "week-view": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "week-view",
+    "type": "web-component",
+    "description": "7-day time grid composing day-view-style columns in a semantic table",
+    "attributes": [
+      {
+        "name": "data-start-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ISO date for the first day of the week (e.g., 2026-04-06)"
+      },
+      {
+        "name": "data-days",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 7,
+        "description": "Number of day columns (e.g., 5 for workweek)"
+      },
+      {
+        "name": "data-start-hour",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "auto",
+        "description": "First visible hour (0-23), or 'auto' to scan events"
+      },
+      {
+        "name": "data-end-hour",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 19,
+        "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+      }
+    ],
+    "events": [
+      {
+        "name": "week-view:event-click",
+        "description": "Fired when a calendar-event is clicked",
+        "detail": "{ date, time, text, element, category, duration }"
+      }
+    ],
+    "structure": [
+      {
+        "element": "table",
+        "description": "Semantic table: hours (rows) × days (columns)"
+      },
+      {
+        "element": "thead > tr > th",
+        "description": "Day column headers with <time> elements"
+      },
+      {
+        "element": "tbody > tr > th",
+        "description": "Hour row headers with <time datetime='HH:00'>"
+      },
+      {
+        "element": "tbody > tr > td",
+        "description": "Day/hour cell containing hour-view and calendar-event elements"
+      },
+      {
+        "element": "hour-view",
+        "description": "Subgrid container for events within a cell"
+      },
+      {
+        "element": "calendar-event",
+        "description": "Individual event with time, category, and optional duration"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-date",
+        "on": "calendar-event",
+        "type": "string",
+        "description": "ISO date assigning this event to a day column (auto mode)"
+      }
+    ]
+  },
+  "work-item": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "work-item",
+    "type": "web-component",
+    "description": "General-purpose work unit card — tasks, bugs, chores, spikes, and features with slotted title, status, priority, assignee, and linked stories",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "item-id",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Unique work item identifier, auto-sets HTML id"
+      },
+      {
+        "name": "type",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Item type: task | bug | chore | spike | feature"
+      },
+      {
+        "name": "priority",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Priority: critical | high | medium | low"
+      },
+      {
+        "name": "status",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Status: backlog | to-do | in-progress | review | done | blocked"
+      },
+      {
+        "name": "estimate",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Effort estimate (points, hours, t-shirt size)"
+      },
+      {
+        "name": "assignee",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Assignee name"
+      },
+      {
+        "name": "story-ids",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated linked user-story IDs"
+      },
+      {
+        "name": "detail",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Detail level: full | compact | minimal"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Alias for detail=compact"
+      },
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON data"
+      }
+    ],
+    "slots": [
+      {
+        "name": "title",
+        "description": "Work item heading (e.g., <h3>)"
+      },
+      {
+        "name": "description",
+        "description": "Work item description (e.g., <p>)"
+      },
+      {
+        "name": "checklist",
+        "description": "Checklist or subtasks (e.g., <ul>)"
+      },
+      {
+        "name": "notes",
+        "description": "Additional notes (e.g., <p>)"
+      }
+    ],
+    "events": [
+      {
+        "name": "work-item:ready",
+        "detail": "{ itemId, title, type, priority, status }",
+        "description": "Fired after render"
+      },
+      {
+        "name": "work-item:status",
+        "detail": "{ status, itemId }",
+        "description": "Fired when status changes"
+      },
+      {
+        "name": "work-item:priority",
+        "detail": "{ priority, itemId }",
+        "description": "Fired when priority changes"
+      }
+    ]
   },
   "youtube-player": {
     "$schema": "../../../schemas/api.schema.json",
