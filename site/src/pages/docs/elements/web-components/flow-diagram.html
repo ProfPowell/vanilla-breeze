@@ -1,0 +1,157 @@
+---
+layout: element
+title: "flow-diagram"
+description: "User flow and sequence visualization — progressively enhances an ol into a connected node graph with actions, decisions, and branching paths."
+elementName: flow-diagram
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/flow-diagram/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that progressively enhances an <code>&lt;ol&gt;</code> of steps into a connected node graph with typed shapes. Without JavaScript, the ordered list renders normally. With JavaScript, each step becomes a node with connectors, and decisions branch into parallel paths.</p>
+
+    <browser-window
+      src="/docs/examples/demos/flow-diagram-basic.html"
+      url="https://vanilla-breeze.dev/flow-diagram"
+      title="Flow Diagram"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><flow-diagram title="Login Flow">
+  <ol>
+    <li data-type="start">User visits login page</li>
+    <li data-type="action">Enter credentials</li>
+    <li data-type="decision">Valid credentials?
+      <ol>
+        <li data-branch="Yes">
+          <ol>
+            <li data-type="action">Create session</li>
+            <li data-type="end">Redirect to dashboard</li>
+          </ol>
+        </li>
+        <li data-branch="No">
+          <ol>
+            <li data-type="action">Show error</li>
+            <li data-type="end">Return to login</li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</flow-diagram></code-block>
+  </section>
+
+  <section>
+    <h2>Node Types</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Type</th><th>Shape</th><th>Color</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>start</code></td><td>Pill</td><td>Green</td><td>Entry point of the flow</td></tr>
+        <tr><td><code>action</code></td><td>Rounded rect</td><td>Blue</td><td>User or system action (default)</td></tr>
+        <tr><td><code>decision</code></td><td>Rect</td><td>Amber</td><td>Yes/no branch point</td></tr>
+        <tr><td><code>process</code></td><td>Rect</td><td>Purple</td><td>Background or automated process</td></tr>
+        <tr><td><code>wait</code></td><td>Dashed rect</td><td>Gray</td><td>Delay, timeout, or pause</td></tr>
+        <tr><td><code>end</code></td><td>Pill</td><td>Red</td><td>Terminal state</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>title</code></td><td>string</td><td>&mdash;</td><td>Diagram heading</td></tr>
+        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL</td></tr>
+        <tr><td><code>data-direction</code></td><td>string</td><td><code>"vertical"</code></td><td><code>vertical</code> or <code>horizontal</code></td></tr>
+        <tr><td><code>compact</code></td><td>boolean</td><td>&mdash;</td><td>Reduced spacing and node sizes</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Step Attributes</h2>
+    <p>Each <code>&lt;li&gt;</code> in the ordered list carries these data attributes:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-type</code></td><td><code>&lt;li&gt;</code></td><td>Node type: <code>start</code>, <code>action</code>, <code>decision</code>, <code>process</code>, <code>wait</code>, <code>end</code></td></tr>
+        <tr><td><code>data-annotation</code></td><td><code>&lt;li&gt;</code></td><td>Note text displayed below the node</td></tr>
+        <tr><td><code>data-branch</code></td><td><code>&lt;li&gt;</code></td><td>Branch label on decision children (e.g., "Yes", "No")</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Decision Branching</h2>
+    <p>To create branches from a decision node, nest an <code>&lt;ol&gt;</code> inside the decision <code>&lt;li&gt;</code>. Each branch is a <code>&lt;li data-branch="..."&gt;</code> containing its own <code>&lt;ol&gt;</code> of steps. Branches can contain further decisions for nested branching.</p>
+
+    <code-block language="html" show-lines label="Nested decisions" data-escape><li data-type="decision">Valid credentials?
+  <ol>
+    <li data-branch="Yes">
+      <ol>
+        <li data-type="action">Create session</li>
+        <li data-type="end">Dashboard</li>
+      </ol>
+    </li>
+    <li data-branch="No">
+      <ol>
+        <li data-type="decision">3+ failed attempts?
+          <ol>
+            <li data-branch="Yes">
+              <ol><li data-type="end">Lock account</li></ol>
+            </li>
+            <li data-branch="No">
+              <ol><li data-type="end">Show error</li></ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</li></code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>flow-diagram:ready</code></td><td><code>{ nodeCount }</code></td><td>After setup</td></tr>
+        <tr><td><code>flow-diagram:select</code></td><td><code>{ type, text }</code></td><td>Node clicked</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The original <code>&lt;ol&gt;</code> stays in the DOM (hidden) for screen reader access</li>
+      <li>Each node has <code>role="img"</code> and descriptive <code>aria-label</code></li>
+      <li>Nodes are focusable via <code>tabindex="0"</code></li>
+      <li>Connectors are <code>aria-hidden="true"</code></li>
+      <li>An <code>aria-live="polite"</code> region announces node selection</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/user-journey/"><code>&lt;user-journey&gt;</code></a> &mdash; Journey maps showing emotional arc across phases</li>
+      <li><a href="/docs/elements/web-components/site-map-wc/"><code>&lt;site-map-wc&gt;</code></a> &mdash; IA tree showing page hierarchy</li>
+      <li><a href="/docs/elements/web-components/gantt-chart/"><code>&lt;gantt-chart&gt;</code></a> &mdash; Timeline view of tasks</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a></li>
+    </ul>
+  </section>

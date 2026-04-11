@@ -1,0 +1,130 @@
+---
+layout: element
+title: "glossary-wc"
+description: "Searchable, categorized glossary for ubiquitous language and project taxonomy — progressively enhances a dl definition list."
+elementName: glossary-wc
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/glossary-wc/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>A web component that progressively enhances a <code>&lt;dl&gt;</code> definition list into a searchable, categorized glossary with alphabet navigation and cross-linking. Without JavaScript, the definition list renders normally. With JavaScript, terms are grouped by category, searchable, and navigable via an A&ndash;Z jump bar.</p>
+
+    <browser-window
+      src="/docs/examples/demos/glossary-wc-basic.html"
+      url="https://vanilla-breeze.dev/glossary-wc"
+      title="Glossary"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><glossary-wc title="Project Glossary" searchable>
+  <dl>
+    <div data-category="Domain" data-term-id="velocity">
+      <dt>Velocity</dt>
+      <dd>The amount of work a team can complete in a sprint,
+        measured in story points.</dd>
+    </div>
+    <div data-category="Domain" data-term-id="epic">
+      <dt>Epic</dt>
+      <dd>A large body of work broken down into stories.
+        See also: <a href="#velocity">velocity</a>.</dd>
+    </div>
+    <div data-category="Technical" data-term-id="api-gateway">
+      <dt>API Gateway</dt>
+      <dd>Single entry point for all client requests.</dd>
+    </div>
+  </dl>
+</glossary-wc></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>title</code></td><td>string</td><td>&mdash;</td><td>Glossary heading</td></tr>
+        <tr><td><code>src</code></td><td>string (URL)</td><td>&mdash;</td><td>JSON data URL</td></tr>
+        <tr><td><code>searchable</code></td><td>boolean</td><td>&mdash;</td><td>Enables search input that filters terms</td></tr>
+        <tr><td><code>compact</code></td><td>boolean</td><td>&mdash;</td><td>Reduced spacing</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Term Attributes</h2>
+    <p>Each term is wrapped in a <code>&lt;div&gt;</code> inside the <code>&lt;dl&gt;</code> with these data attributes:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-category</code></td><td><code>&lt;div&gt;</code></td><td>Category label for grouping (e.g., "Domain", "Technical")</td></tr>
+        <tr><td><code>data-term-id</code></td><td><code>&lt;div&gt;</code></td><td>Unique ID, auto-set as HTML <code>id</code> for fragment anchors</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Enhanced Features</h2>
+    <ul>
+      <li><strong>Search</strong> &mdash; when <code>searchable</code> is set, a search input filters terms by name and definition text</li>
+      <li><strong>Categories</strong> &mdash; terms grouped under collapsible category headers</li>
+      <li><strong>Alphabet jump bar</strong> &mdash; A&ndash;Z navigation for quick scrolling</li>
+      <li><strong>Cross-linking</strong> &mdash; use standard <code>&lt;a href="#term-id"&gt;</code> inside definitions to link between terms</li>
+      <li><strong>Term count</strong> &mdash; badge showing total and filtered counts</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Data Mode</h2>
+    <code-block language="json" show-lines label="JSON schema">{
+  "title": "Project Glossary",
+  "terms": [
+    {
+      "id": "velocity",
+      "term": "Velocity",
+      "definition": "Work completed per sprint in story points.",
+      "category": "Domain",
+      "seeAlso": ["epic", "sprint"]
+    }
+  ]
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>glossary-wc:ready</code></td><td><code>{ termCount, categories }</code></td><td>After setup</td></tr>
+        <tr><td><code>glossary-wc:search</code></td><td><code>{ query, matchCount }</code></td><td>On search input</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The <code>&lt;dl&gt;</code> provides native definition list semantics before and after upgrade</li>
+      <li>Search input has <code>aria-label</code> and <code>role="search"</code></li>
+      <li>Category groups are collapsible with <code>aria-expanded</code></li>
+      <li>Term IDs enable fragment anchor navigation</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/web-components/adr-record/"><code>&lt;adr-record&gt;</code></a> &mdash; ADRs that reference glossary terms</li>
+      <li><a href="/docs/elements/web-components/site-map-wc/"><code>&lt;site-map-wc&gt;</code></a> &mdash; IA tree that organizes content described in the glossary</li>
+      <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a></li>
+    </ul>
+  </section>

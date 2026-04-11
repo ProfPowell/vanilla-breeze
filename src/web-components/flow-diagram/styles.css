@@ -1,0 +1,336 @@
+/**
+ * Light DOM styles for <flow-diagram>
+ *
+ * Renders a user flow / sequence visualization.
+ * Before JS: renders as a normal ordered list.
+ * After JS: connected node graph with typed shapes.
+ */
+
+/* ── Host ──────────────────────────────────────────── */
+flow-diagram {
+  display: block;
+  container-type: inline-size;
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: var(--color-text, #1a1a1a);
+}
+
+/* Before upgrade, the list is visible normally */
+flow-diagram:not([data-upgraded]) > ol {
+  padding-inline-start: 1.5em;
+}
+
+/* ── Title ─────────────────────────────────────────── */
+.fd-title {
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: 700;
+  margin-block-end: var(--size-s, 0.75rem);
+}
+
+/* ── Container ─────────────────────────────────────── */
+.fd-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: var(--size-m, 1rem);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-m, 0.5rem);
+  overflow-x: auto;
+}
+
+/* Horizontal layout */
+flow-diagram[data-direction="horizontal"] .fd-container {
+  flex-direction: row;
+}
+
+/* ── Nodes ─────────────────────────────────────────── */
+.fd-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-2xs, 0.25rem);
+  position: relative;
+}
+
+.fd-node-shape {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  line-height: 1.4;
+  min-width: 120px;
+  max-width: 220px;
+  cursor: default;
+  transition: box-shadow 150ms ease;
+  border: 2px solid;
+}
+
+.fd-node-shape:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fd-node-shape:focus-visible {
+  outline: 2px solid var(--color-interactive, #0066cc);
+  outline-offset: 2px;
+}
+
+/* ── Node types ────────────────────────────────────── */
+
+/* Start: rounded pill, green */
+.fd-node[data-type="start"] .fd-node-shape {
+  border-radius: 9999px;
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+/* End: rounded pill, red */
+.fd-node[data-type="end"] .fd-node-shape {
+  border-radius: 9999px;
+  background: rgba(220, 38, 38, 0.1);
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
+/* Action: rounded rect, blue */
+.fd-node[data-type="action"] .fd-node-shape {
+  border-radius: var(--radius-m, 0.5rem);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+/* Decision: diamond shape via clip-path, amber */
+.fd-node[data-type="decision"] .fd-node-shape {
+  border-radius: var(--radius-s, 0.25rem);
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+  color: #b45309;
+  min-width: 140px;
+  padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+}
+
+.fd-node[data-type="decision"]::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: #f59e0b;
+  border-radius: 2px;
+}
+
+/* Process: rect, purple */
+.fd-node[data-type="process"] .fd-node-shape {
+  border-radius: var(--radius-s, 0.25rem);
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8b5cf6;
+  color: #6d28d9;
+}
+
+/* Wait: dashed border, gray */
+.fd-node[data-type="wait"] .fd-node-shape {
+  border-radius: var(--radius-m, 0.5rem);
+  background: rgba(107, 114, 128, 0.05);
+  border-color: #6b7280;
+  border-style: dashed;
+  color: #4b5563;
+}
+
+/* ── Annotations ───────────────────────────────────── */
+.fd-annotation {
+  font-size: 11px;
+  color: var(--color-text-muted, #666);
+  font-style: italic;
+  max-width: 180px;
+  text-align: center;
+}
+
+/* ── Connectors ────────────────────────────────────── */
+.fd-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--color-border, #e0e0e0);
+  flex-shrink: 0;
+}
+
+.fd-connector-line {
+  width: 2px;
+  height: 24px;
+  background: var(--color-border, #e0e0e0);
+}
+
+flow-diagram[data-direction="horizontal"] .fd-connector-line {
+  width: 24px;
+  height: 2px;
+}
+
+.fd-connector-arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--color-border, #e0e0e0);
+}
+
+flow-diagram[data-direction="horizontal"] .fd-connector-arrow {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--color-border, #e0e0e0);
+  border-right: none;
+}
+
+/* Connector label (for decision branches) */
+.fd-connector-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+  padding: 1px 6px;
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-s, 0.25rem);
+  border: 1px solid var(--color-border, #e0e0e0);
+}
+
+/* ── Branch container ──────────────────────────────── */
+.fd-branches {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Vertical drop from decision to split line — rendered by JS as .fd-split-line */
+.fd-split-line {
+  width: 2px;
+  height: 12px;
+  background: var(--color-border, #e0e0e0);
+}
+
+/* Branch columns row with horizontal bar connecting centers */
+.fd-branch-columns {
+  display: flex;
+  gap: var(--size-l, 1.5rem);
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+/*
+ * Horizontal bar spanning from first branch center to last branch center.
+ * Each branch is flex:1 so the first center is at (0.5 / N * 100%) and
+ * the last center is at ((N - 0.5) / N * 100%). With equal columns and
+ * the gap, we approximate by insetting 50%/N from each side.
+ * The data-branch-count attribute drives the calculation.
+ */
+/* Horizontal bar: positioned by JS via inline --fd-inset custom property */
+.fd-branch-columns::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--fd-inset, 25%);
+  right: var(--fd-inset, 25%);
+  height: 2px;
+  background: var(--color-border, #e0e0e0);
+  pointer-events: none;
+}
+
+.fd-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: 140px;
+  flex: 1;
+}
+
+.fd-branch-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 9999px);
+  margin-block-end: var(--size-2xs, 0.25rem);
+}
+
+.fd-branch-label[data-branch="yes"] {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.fd-branch-label[data-branch="no"] {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* ── Node count summary ────────────────────────────── */
+.fd-summary {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #666);
+  margin-block-start: var(--size-xs, 0.5rem);
+  text-align: center;
+}
+
+/* ── Live region ───────────────────────────────────── */
+.fd-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* ── Compact ───────────────────────────────────────── */
+flow-diagram[compact] .fd-node-shape {
+  min-width: 100px;
+  max-width: 180px;
+  padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+  font-size: 12px;
+}
+
+flow-diagram[compact] .fd-connector-line {
+  height: 16px;
+}
+
+flow-diagram[compact][data-direction="horizontal"] .fd-connector-line {
+  width: 16px;
+  height: 2px;
+}
+
+/* ── Responsive ────────────────────────────────────── */
+@container (max-width: 30rem) {
+  .fd-branch-columns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fd-split-line {
+    display: none;
+  }
+}
+
+/* ── Motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .fd-node-shape {
+    transition: none;
+  }
+}
+
+/* ── Print ─────────────────────────────────────────── */
+@media print {
+  flow-diagram[data-upgraded] .fd-container {
+    border-color: #ccc;
+    box-shadow: none;
+  }
+}

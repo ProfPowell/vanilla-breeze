@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADR Component Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--size-m); }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <adr-wc
+      adr-id="ADR-001"
+      status="superseded"
+      superseded-by="ADR-002">
+      <h2 slot="title">Use PostgreSQL for persistence</h2>
+      <time slot="date" datetime="2026-01-15">January 15, 2026</time>
+      <p slot="context">We need a relational database that supports complex queries and full-text search. The team has strong SQL experience and needs ACID guarantees for financial transactions.</p>
+      <p slot="decision">Use PostgreSQL 16 as the primary data store with pg_trgm for full-text search.</p>
+      <ul slot="consequences">
+        <li>Good: Mature ecosystem with excellent tooling</li>
+        <li>Good: Strong ACID compliance for financial data</li>
+        <li>Bad: Vertical scaling limits at high write volumes</li>
+        <li>Bad: Full-text search less capable than dedicated engines</li>
+      </ul>
+    </adr-wc>
+
+    <adr-wc
+      adr-id="ADR-002"
+      status="accepted"
+      supersedes="ADR-001">
+      <h2 slot="title">Add Elasticsearch for search</h2>
+      <time slot="date" datetime="2026-02-20">February 20, 2026</time>
+      <p slot="context">PostgreSQL pg_trgm full-text search does not meet latency requirements for the product catalog search feature. Users expect sub-100ms results with typo tolerance and faceted filtering.</p>
+      <p slot="decision">Add Elasticsearch 8 as a read-optimized search index alongside PostgreSQL. PostgreSQL remains the system of record; Elasticsearch is populated via CDC (Change Data Capture).</p>
+      <ul slot="consequences">
+        <li>Good: Sub-50ms search with typo tolerance and facets</li>
+        <li>Good: PostgreSQL remains source of truth for writes</li>
+        <li>Bad: Added operational complexity (two data stores)</li>
+        <li>Bad: CDC pipeline introduces eventual consistency window</li>
+      </ul>
+    </adr-wc>
+
+    <adr-wc
+      adr-id="ADR-003"
+      status="proposed">
+      <h2 slot="title">Adopt event sourcing for audit trail</h2>
+      <time slot="date" datetime="2026-03-10">March 10, 2026</time>
+      <p slot="context">Regulatory requirements mandate a complete audit trail of all financial transactions. The current approach of database triggers is fragile and does not capture intent.</p>
+      <p slot="decision">Implement event sourcing for the payments domain using Apache Kafka as the event store, with PostgreSQL projections for query models.</p>
+      <ul slot="consequences">
+        <li>Good: Complete audit trail with business intent captured</li>
+        <li>Good: Enables temporal queries and replay for debugging</li>
+        <li>Bad: Significant learning curve for the team</li>
+        <li>Bad: Increased infrastructure costs for Kafka cluster</li>
+      </ul>
+    </adr-wc>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+</body>
+</html>
