@@ -1,23 +1,28 @@
 /**
- * user-story: Agile user story card web component
+ * <user-story> — Agile user story card web component
  *
  * Displays user stories in the classic Agile format:
  * "As a [persona], I want [action] so that [benefit]"
  *
- * Shadow DOM component with slotted sections for acceptance criteria,
- * tasks, and notes. Priority and status badges use semantic colors
- * set inline from static lookup maps.
+ * Content slots (text the user reads):
+ * @slot persona             - The "As a..." role (e.g., <span>)
+ * @slot action              - The "I want..." description (e.g., <span>)
+ * @slot benefit             - The "so that..." outcome (e.g., <span>)
+ * @slot title               - Short label for minimal mode (e.g., <h3>)
+ * @slot acceptance-criteria - Checklist (e.g., <ul>)
+ * @slot tasks               - Implementation tasks (e.g., <ul>)
+ * @slot notes               - Additional context (e.g., <p>)
  *
- * @attr {string}  persona    - The "As a..." role
+ * State/config attributes:
  * @attr {string}  persona-id - Links to a user-persona element by id
- * @attr {string}  action     - The "I want..." description
- * @attr {string}  benefit  - The "so that..." outcome
- * @attr {enum}    priority - critical | high | medium | low
- * @attr {enum}    status   - backlog | to-do | in-progress | review | done
- * @attr {string}  points   - Story point estimate
- * @attr {string}  epic     - Parent epic label
- * @attr {string}  story-id - Ticket or story identifier
- * @attr {boolean} compact  - Reduced spacing variant
+ * @attr {enum}    priority   - critical | high | medium | low
+ * @attr {enum}    status     - backlog | to-do | in-progress | review | done
+ * @attr {string}  points     - Story point estimate
+ * @attr {string}  epic       - Parent epic label
+ * @attr {string}  story-id   - Ticket or story identifier
+ * @attr {string}  detail     - full | compact | minimal
+ * @attr {boolean} compact    - Alias for detail="compact"
+ * @attr {string}  src        - URL to JSON data
  *
  * @fires story-ready      - Fired after render
  * @fires status-changed   - Fired when updateStatus() is called
@@ -25,14 +30,15 @@
  *
  * @example
  * <user-story
- *   persona="Product Manager"
- *   action="view all project timelines in one dashboard"
- *   benefit="I can quickly identify bottlenecks"
+ *   persona-id="persona-sarah"
  *   priority="high"
  *   status="to-do"
  *   points="5"
  *   epic="Dashboard"
  *   story-id="PROJ-142">
+ *   <span slot="persona">Product Manager</span>
+ *   <span slot="action">view all project timelines in one dashboard</span>
+ *   <span slot="benefit">I can quickly identify bottlenecks</span>
  *   <ul slot="acceptance-criteria">
  *     <li>Dashboard loads within 2 seconds</li>
  *   </ul>
@@ -46,8 +52,8 @@ import { esc, lucideSvg, UX_ICONS } from '../_ux-base.js';
 class UserStory extends HTMLElement {
   static get observedAttributes() {
     return [
-      'persona', 'persona-id', 'action', 'benefit', 'priority', 'points',
-      'status', 'epic', 'story-id', 'title', 'compact', 'detail', 'src'
+      'persona-id', 'priority', 'points',
+      'status', 'epic', 'story-id', 'compact', 'detail', 'src'
     ];
   }
 
@@ -76,7 +82,7 @@ class UserStory extends HTMLElement {
   #cacheSlotValues() {
     for (const child of [...this.children]) {
       const slotName = child.getAttribute('slot');
-      if (slotName && !this.getAttribute(slotName)) {
+      if (slotName) {
         this.#slotCache.set(slotName, child.textContent.trim());
       }
     }
@@ -92,16 +98,62 @@ class UserStory extends HTMLElement {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+
+      // State attributes
       for (const [jsonKey, attr] of [
-        ['storyId', 'story-id'], ['persona', 'persona'], ['personaId', 'persona-id'], ['action', 'action'],
-        ['benefit', 'benefit'], ['priority', 'priority'], ['status', 'status'],
-        ['points', 'points'], ['epic', 'epic'], ['title', 'title'], ['detail', 'detail']
+        ['storyId', 'story-id'], ['personaId', 'persona-id'], ['priority', 'priority'],
+        ['status', 'status'], ['points', 'points'], ['epic', 'epic'], ['detail', 'detail']
       ]) {
         if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
       }
-      for (const key of ['acceptanceCriteria', 'tasks', 'notes']) {
-        if (data[key]) this.#slotCache.set(key === 'acceptanceCriteria' ? 'acceptance-criteria' : key, data[key]);
+
+      // Content → slotted elements
+      if (data.persona && !this.querySelector('[slot="persona"]')) {
+        const el = document.createElement('span');
+        el.slot = 'persona';
+        el.textContent = data.persona;
+        this.appendChild(el);
       }
+      if (data.action && !this.querySelector('[slot="action"]')) {
+        const el = document.createElement('span');
+        el.slot = 'action';
+        el.textContent = data.action;
+        this.appendChild(el);
+      }
+      if (data.benefit && !this.querySelector('[slot="benefit"]')) {
+        const el = document.createElement('span');
+        el.slot = 'benefit';
+        el.textContent = data.benefit;
+        this.appendChild(el);
+      }
+      if (data.title && !this.querySelector('[slot="title"]')) {
+        const el = document.createElement('h3');
+        el.slot = 'title';
+        el.textContent = data.title;
+        this.appendChild(el);
+      }
+      for (const key of ['acceptance-criteria', 'tasks', 'notes']) {
+        const jsonKey = key === 'acceptance-criteria' ? 'acceptanceCriteria' : key;
+        if (data[jsonKey] && !this.querySelector(`[slot="${key}"]`)) {
+          if (Array.isArray(data[jsonKey])) {
+            const ul = document.createElement('ul');
+            ul.slot = key;
+            for (const item of data[jsonKey]) {
+              const li = document.createElement('li');
+              li.textContent = item;
+              ul.appendChild(li);
+            }
+            this.appendChild(ul);
+          } else {
+            const p = document.createElement('p');
+            p.slot = key;
+            p.textContent = data[jsonKey];
+            this.appendChild(p);
+          }
+        }
+      }
+
+      this.#cacheSlotValues();
       this.#render();
     } catch (err) {
       console.warn(`[user-story] Failed to load src="${url}":`, err);
@@ -110,7 +162,6 @@ class UserStory extends HTMLElement {
 
   connectedCallback() {
     this.#cacheSlotValues();
-    // Auto-set id from story-id for fragment anchor cross-referencing
     if (this.storyId && !this.id) this.id = this.storyId;
     if (this.hasAttribute('src')) {
       this._loadSrc(this.getAttribute('src'));
@@ -133,22 +184,28 @@ class UserStory extends HTMLElement {
     }
   }
 
-  // ── Attribute getters ────────────────────────────────────────────
+  // ── Getters ────────────────────────────────────────────────────────
 
+  /** Read persona from slotted element or cache */
   get persona() {
-    return this._resolve('persona') || 'user';
+    const slotted = this.querySelector('[slot="persona"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('persona') || 'user';
   }
 
   get personaId() {
-    return this._resolve('persona-id') || '';
+    return this.getAttribute('persona-id') || '';
   }
 
+  /** Read action from slotted element or cache */
   get action() {
-    return this._resolve('action') || '';
+    const slotted = this.querySelector('[slot="action"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('action') || '';
   }
 
+  /** Read benefit from slotted element or cache */
   get benefit() {
-    return this._resolve('benefit') || '';
+    const slotted = this.querySelector('[slot="benefit"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('benefit') || '';
   }
 
   get priority() {
@@ -164,15 +221,17 @@ class UserStory extends HTMLElement {
   }
 
   get epic() {
-    return this._resolve('epic') || '';
+    return this.getAttribute('epic') || '';
   }
 
   get storyId() {
-    return this._resolve('story-id') || '';
+    return this.getAttribute('story-id') || '';
   }
 
+  /** Read title from slotted heading or cache */
   get storyTitle() {
-    return this._resolve('title') || '';
+    const slotted = this.querySelector('[slot="title"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('title') || '';
   }
 
   /** Label for minimal mode: title if set, otherwise truncated action */
@@ -194,10 +253,6 @@ class UserStory extends HTMLElement {
 
   // ── Public API ───────────────────────────────────────────────────
 
-  /**
-   * Programmatically update the story status.
-   * @param {string} newStatus - One of: backlog, to-do, in-progress, review, done
-   */
   updateStatus(newStatus) {
     if (UserStory.STATUSES[newStatus]) {
       this.setAttribute('status', newStatus);
@@ -209,10 +264,6 @@ class UserStory extends HTMLElement {
     }
   }
 
-  /**
-   * Programmatically update the story priority.
-   * @param {string} newPriority - One of: critical, high, medium, low
-   */
   updatePriority(newPriority) {
     if (UserStory.PRIORITIES[newPriority]) {
       this.setAttribute('priority', newPriority);
@@ -224,12 +275,7 @@ class UserStory extends HTMLElement {
     }
   }
 
-  /**
-   * Open a modal dialog showing the full story detail.
-   * Useful when the story is rendered in minimal or compact mode.
-   */
   showDetail() {
-    // Dialog must live in document.body (not inside this Shadow DOM element)
     const dialogId = `story-dialog-${this.storyId || this.id || 'detail'}`;
     let dialog = document.getElementById(dialogId);
     if (!dialog) {
@@ -239,7 +285,6 @@ class UserStory extends HTMLElement {
       document.body.appendChild(dialog);
     }
 
-    // VB dialog structure: form method="dialog" wraps everything for native close
     const form = document.createElement('form');
     form.method = 'dialog';
     const header = document.createElement('header');
@@ -248,22 +293,19 @@ class UserStory extends HTMLElement {
     const closeBtn = document.createElement('button');
     closeBtn.type = 'submit';
     closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.textContent = '\u00d7'; // ×
+    closeBtn.textContent = '\u00d7';
     header.appendChild(title);
     header.appendChild(closeBtn);
 
-    // Build a full-detail story card inside the dialog
     const section = document.createElement('section');
     const full = document.createElement('user-story');
     for (const attr of this.getAttributeNames()) {
       if (attr === 'detail' || attr === 'compact' || attr === 'data-upgraded' || attr === 'draggable' || attr === 'data-id' || attr === 'data-quadrant') continue;
       full.setAttribute(attr, this.getAttribute(attr));
     }
-    // Use compact to hide empty sections; slotted content will still show
     const hasSlottedContent = [...this.children].some(c => c.getAttribute('slot') && c.tagName !== 'DIALOG');
     full.setAttribute('detail', hasSlottedContent ? 'full' : 'compact');
     full.removeAttribute('id');
-    // Copy slotted children
     for (const child of [...this.children]) {
       if (child.tagName === 'DIALOG') continue;
       full.appendChild(child.cloneNode(true));
@@ -278,7 +320,7 @@ class UserStory extends HTMLElement {
     dialog.showModal();
   }
 
-  // ── Private ─────────────────────────────────────────────���────────
+  // ── Private ──────────────────────────────────────────────────────
 
   #render() {
     const priorityInfo = UserStory.PRIORITIES[this.priority] || UserStory.PRIORITIES.medium;
@@ -292,14 +334,15 @@ class UserStory extends HTMLElement {
       this.shadowRoot.innerHTML = `
         <style>${styles}</style>
         <article class="story-card story-card--minimal" role="article" aria-label="${ariaLabel}"
-          tabindex="0" title="Click to view full story">
+          tabindex="0">
           <div class="story-body">
             ${this.storyId ? `<span class="story-id">${esc(this.storyId)}</span>` : ''}
-            <p class="story-statement story-statement--minimal">${esc(this._minimalLabel || '[describe the action]')}</p>
+            <div class="story-title-wrap">
+              <slot name="title"><span class="story-title-fallback">${esc(this._minimalLabel || '[describe the action]')}</span></slot>
+            </div>
           </div>
         </article>
       `;
-      // Click/Enter to open full detail dialog
       const card = this.shadowRoot.querySelector('.story-card--minimal');
       card.addEventListener('click', () => this.showDetail());
       card.addEventListener('keydown', (e) => {
@@ -322,7 +365,7 @@ class UserStory extends HTMLElement {
               <span class="status-badge" part="status"
                 style="color: ${statusInfo.color}; background: ${statusInfo.bg};"
               >${esc(statusInfo.label)}</span>
-              ${this.points ? `<span class="points-badge" part="points" title="Story points">${esc(this.points)}</span>` : ''}
+              ${this.points ? `<span class="points-badge" part="points">${esc(this.points)}</span>` : ''}
             </div>
           </header>
 
@@ -330,12 +373,12 @@ class UserStory extends HTMLElement {
             <p class="story-statement" part="statement">
               <span class="keyword">As a</span>
               ${this.personaId
-                ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} ${esc(this.persona)}</a>`
-                : `<span class="persona-text">${esc(this.persona)}</span>`},
+                ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} <slot name="persona"><span>user</span></slot></a>`
+                : `<span class="persona-text"><slot name="persona"><span>user</span></slot></span>`},
               <span class="keyword">I want</span>
-              <span class="action-text">${esc(this.action || '[describe the action]')}</span>${this.benefit ? `
+              <span class="action-text"><slot name="action"><span>[describe the action]</span></slot></span>${this.benefit || this.querySelector('[slot="benefit"]') ? `
               <span class="keyword">so that</span>
-              <span class="benefit-text">${esc(this.benefit)}</span>` : ''}
+              <span class="benefit-text"><slot name="benefit"></slot></span>` : ''}
             </p>
           </div>
 
@@ -385,7 +428,6 @@ class UserStory extends HTMLElement {
         </article>
       `;
 
-      // Compact mode: mark sections whose slots have no assigned content
       if (level === 'compact') {
         const sections = this.shadowRoot.querySelectorAll('.section');
         sections.forEach(section => {

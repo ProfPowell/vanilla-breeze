@@ -261,6 +261,24 @@ const styles = `
   }
 }
 
+/* ── Slotted title (minimal mode heading) ──────────── */
+.story-title-wrap {
+  margin: 0;
+}
+
+::slotted([slot="title"]) {
+  font-size: var(--_font-sm) !important;
+  font-weight: 600 !important;
+  color: var(--_text) !important;
+  margin: 0 !important;
+}
+
+.story-title-fallback {
+  font-size: var(--_font-sm);
+  font-weight: 600;
+  color: var(--_text);
+}
+
 /* Minimal detail level */
 :host([detail="minimal"]) .story-card {
   padding: var(--_space-xs);
@@ -289,11 +307,6 @@ const styles = `
 :host([detail="minimal"]) .story-card:focus-visible {
   outline: 2px solid var(--_accent);
   outline-offset: 2px;
-}
-
-:host([detail="minimal"]) .story-statement {
-  font-size: var(--_font-sm);
-  margin: 0;
 }
 
 :host([detail="minimal"]) .story-id {

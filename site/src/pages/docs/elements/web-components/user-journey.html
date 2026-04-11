@@ -23,12 +23,12 @@ crumbLabel: Web Components
     </browser-window>
 
     <code-block language="html" show-lines label="Basic usage with JSON source" data-escape><user-journey
-  title="API Platform Evaluation"
   persona="Sarah Chen"
   persona-id="persona-sarah-chen"
-  summary="How a developer discovers, evaluates, and adopts our platform"
   story-ids="PROJ-142,PROJ-156"
   src="/data/journey-api-evaluation.json">
+  <h2 slot="title">API Platform Evaluation</h2>
+  <p slot="summary">How a developer discovers, evaluates, and adopts our platform</p>
 </user-journey></code-block>
   </section>
 
@@ -45,12 +45,6 @@ crumbLabel: Web Components
       </thead>
       <tbody>
         <tr>
-          <td><code>title</code></td>
-          <td>string</td>
-          <td><code>"User Journey"</code></td>
-          <td>Journey map heading</td>
-        </tr>
-        <tr>
           <td><code>persona</code></td>
           <td>string</td>
           <td>&mdash;</td>
@@ -61,12 +55,6 @@ crumbLabel: Web Components
           <td>string</td>
           <td>&mdash;</td>
           <td>ID of a <code>&lt;user-persona&gt;</code> element to link to (renders as an anchor)</td>
-        </tr>
-        <tr>
-          <td><code>summary</code></td>
-          <td>string</td>
-          <td>&mdash;</td>
-          <td>Brief description shown below the title</td>
         </tr>
         <tr>
           <td><code>story-ids</code></td>
@@ -91,13 +79,34 @@ crumbLabel: Web Components
   </section>
 
   <section>
-    <h2>Slot-Based Metadata</h2>
-    <p>Scalar metadata (<code>title</code>, <code>persona</code>, <code>summary</code>) can also be provided as named slots instead of attributes. This is useful for server-rendered pages where inline content is preferred over attributes. Attributes take priority when both exist.</p>
+    <h2>Slots</h2>
+    <p>Content values &mdash; title and summary &mdash; are provided as named slots. State attributes like <code>persona</code>, <code>persona-id</code>, and <code>story-ids</code> remain on the element.</p>
 
-    <code-block language="html" show-lines label="Slot-based metadata" data-escape><user-journey persona-id="persona-sarah-chen" src="/data/journey.json">
-  <span slot="title">API Platform Evaluation</span>
-  <span slot="persona">Sarah Chen</span>
-  <span slot="summary">How a developer discovers, evaluates, and adopts our platform</span>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Slot</th>
+          <th>Expected Content</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>title</code></td>
+          <td><code>&lt;h2&gt;</code> or text</td>
+          <td>Journey map heading. Defaults to "User Journey" when omitted.</td>
+        </tr>
+        <tr>
+          <td><code>summary</code></td>
+          <td><code>&lt;p&gt;</code> or text</td>
+          <td>Brief description shown below the title.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Slot-based metadata" data-escape><user-journey persona="Sarah Chen" persona-id="persona-sarah-chen" src="/data/journey.json">
+  <h2 slot="title">API Platform Evaluation</h2>
+  <p slot="summary">How a developer discovers, evaluates, and adopts our platform</p>
 </user-journey></code-block>
   </section>
 
@@ -272,10 +281,10 @@ crumbLabel: Web Components
     </browser-window>
 
     <code-block language="html" show-lines label="Compact journey map" data-escape><user-journey
-  title="Support Incident Journey"
   persona="Sarah Chen"
-  summary="From first alert to resolved incident"
   compact>
+  <h2 slot="title">Support Incident Journey</h2>
+  <p slot="summary">From first alert to resolved incident</p>
 </user-journey></code-block>
   </section>
 
@@ -324,22 +333,23 @@ journey.phases = [
       <li><strong>Story linking</strong> &mdash; set <code>story-ids</code> to a comma-separated list of story IDs. Each ID renders as a chip link. Per-phase <code>storyIds</code> in the JSON data also render as chips in the phase header row.</li>
     </ul>
 
-    <code-block language="html" show-lines label="Cross-referencing on a planning page" data-escape><user-persona id="persona-sarah-chen" name="Sarah Chen" role="Product Manager">
+    <code-block language="html" show-lines label="Cross-referencing on a planning page" data-escape><user-persona id="persona-sarah-chen" role="Product Manager">
+  <h2 slot="name">Sarah Chen</h2>
   <p slot="bio">Experienced PM focused on developer tools.</p>
 </user-persona>
 
 <user-story story-id="PROJ-142"
-  persona="Sarah Chen"
-  action="view project timelines in one dashboard"
   priority="high" status="in-progress" points="5">
+  <span slot="persona">Sarah Chen</span>
+  <span slot="action">view project timelines in one dashboard</span>
 </user-story>
 
 <user-journey
-  title="Platform Evaluation"
   persona="Sarah Chen"
   persona-id="persona-sarah-chen"
   story-ids="PROJ-142"
   src="/data/journey.json">
+  <h2 slot="title">Platform Evaluation</h2>
 </user-journey></code-block>
   </section>
 

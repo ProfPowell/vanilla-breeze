@@ -43,7 +43,7 @@ const ROWS = [
 
 class UserJourney extends HTMLElement {
   static get observedAttributes() {
-    return ['src', 'title', 'persona', 'persona-id', 'summary', 'story-ids', 'compact'];
+    return ['src', 'persona', 'persona-id', 'story-ids', 'compact'];
   }
 
   #slotCache = new Map();
@@ -111,10 +111,20 @@ class UserJourney extends HTMLElement {
       const res = await fetch(src);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (data.title)     this.setAttribute('title',      data.title);
       if (data.persona)   this.setAttribute('persona',    data.persona);
       if (data.personaId) this.setAttribute('persona-id', data.personaId);
-      if (data.summary)   this.setAttribute('summary',    data.summary);
+      if (data.title && !this.querySelector('[slot="title"]')) {
+        const el = document.createElement('h2');
+        el.slot = 'title';
+        el.textContent = data.title;
+        this.appendChild(el);
+      }
+      if (data.summary && !this.querySelector('[slot="summary"]')) {
+        const el = document.createElement('p');
+        el.slot = 'summary';
+        el.textContent = data.summary;
+        this.appendChild(el);
+      }
       this.__phases = data.phases || [];
       this._render();
     } catch (err) {
@@ -126,14 +136,13 @@ class UserJourney extends HTMLElement {
   /* ── Render ────────────────────────────────── */
 
   _render() {
-    const title     = this._resolve('title')      || 'User Journey';
     const persona   = this._resolve('persona')    || '';
     const personaId = this._resolve('persona-id') || '';
-    const summary   = this._resolve('summary')    || '';
-    const storyIds  = (this._resolve('story-ids') || '')
+    const storyIds  = (this.getAttribute('story-ids') || '')
       .split(',').map(s => s.trim()).filter(Boolean);
     const compact   = this.hasAttribute('compact');
     const phases    = this.__phases;
+    const hasSummary = !!this.querySelector('[slot="summary"]') || this.#slotCache.has('summary');
 
     this.shadowRoot.innerHTML = `<style>${styles}</style>
       <article class="journey${compact ? ' journey--compact' : ''}">
@@ -153,8 +162,10 @@ class UserJourney extends HTMLElement {
                   : `<span class="persona-ref">${lucideSvg(UX_ICONS.user)} ${esc(persona)}</span>`}
               </div>` : ''}
           </div>
-          <h2 class="journey__title">${esc(title)}</h2>
-          ${summary ? `<p class="journey__summary">${esc(summary)}</p>` : ''}
+          <div class="journey__title-wrap">
+            <slot name="title"><h2 class="journey__title">User Journey</h2></slot>
+          </div>
+          ${hasSummary ? `<div class="journey__summary-wrap"><slot name="summary"></slot></div>` : ''}
         </header>
 
         ${phases && phases.length

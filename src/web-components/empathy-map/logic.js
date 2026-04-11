@@ -34,7 +34,7 @@ const QUADRANT_KEYS = ['says', 'thinks', 'does', 'feels'];
 
 class EmpathyMap extends HTMLElement {
   static get observedAttributes() {
-    return ['title', 'persona', 'persona-id', 'summary', 'src', 'editable', 'compact'];
+    return ['persona', 'persona-id', 'src', 'editable', 'compact'];
   }
 
   #slotCache = new Map();
@@ -150,10 +150,21 @@ class EmpathyMap extends HTMLElement {
       const res = await fetch(src);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (data.title)     this.setAttribute('title',      data.title);
       if (data.persona)   this.setAttribute('persona',    data.persona);
       if (data.personaId) this.setAttribute('persona-id', data.personaId);
-      if (data.summary)   this.setAttribute('summary',    data.summary);
+      // Content → slotted elements
+      if (data.title && !this.querySelector('[slot="title"]')) {
+        const el = document.createElement('h2');
+        el.slot = 'title';
+        el.textContent = data.title;
+        this.appendChild(el);
+      }
+      if (data.summary && !this.querySelector('[slot="summary"]')) {
+        const el = document.createElement('p');
+        el.slot = 'summary';
+        el.textContent = data.summary;
+        this.appendChild(el);
+      }
       this.__quadrants  = data.quadrants || null;
       this.__goals      = data.goals || null;
       this.__painPoints = data.painPoints || null;
@@ -167,12 +178,12 @@ class EmpathyMap extends HTMLElement {
   /* ── Render ────────────────────────────────────── */
 
   _render() {
-    const title     = this._resolve('title')      || 'Empathy Map';
     const persona   = this._resolve('persona')    || '';
     const personaId = this._resolve('persona-id') || '';
-    const summary   = this._resolve('summary')    || '';
     const compact   = this.hasAttribute('compact');
     const editable  = this.hasAttribute('editable');
+    const hasTitle  = !!this.querySelector('[slot="title"]') || this.#slotCache.has('title');
+    const hasSummary = !!this.querySelector('[slot="summary"]') || this.#slotCache.has('summary');
 
     const hasGoals = this.__goals?.length || this.querySelector('[slot="goals"]');
     const hasPains = this.__painPoints?.length || this.querySelector('[slot="pain-points"]');
@@ -192,8 +203,10 @@ class EmpathyMap extends HTMLElement {
                   : `<span class="persona-ref">${lucideSvg(UX_ICONS.user)} ${esc(persona)}</span>`}
               </div>` : ''}
           </div>
-          <h2 class="empathy-map__title">${esc(title)}</h2>
-          ${summary ? `<p class="empathy-map__summary">${esc(summary)}</p>` : ''}
+          <div class="empathy-map__title-wrap">
+            <slot name="title"><h2 class="empathy-map__title">Empathy Map</h2></slot>
+          </div>
+          ${hasSummary ? `<div class="empathy-map__summary-wrap"><slot name="summary"></slot></div>` : ''}
         </header>
 
         <div class="empathy-map__grid">
@@ -217,7 +230,7 @@ class EmpathyMap extends HTMLElement {
     this.dispatchEvent(new CustomEvent('empathy-map:ready', {
       bubbles: true,
       composed: true,
-      detail: { title, persona },
+      detail: { title: this.querySelector('[slot="title"]')?.textContent?.trim() || 'Empathy Map', persona },
     }));
   }
 

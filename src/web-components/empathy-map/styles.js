@@ -129,18 +129,33 @@ const styles = `
 
   a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
 
-  /* ── Title & summary ──────────────────────────────── */
+  /* ── Title & summary (slotted content) ────────────── */
+  .empathy-map__title-wrap {
+    margin-block-end: var(--_space-2xs);
+  }
+
   .empathy-map__title {
     font-size: var(--_font-xl);
     font-weight: 700;
     color: var(--_text);
-    margin-block-end: var(--_space-2xs);
+    margin: 0;
   }
 
-  .empathy-map__summary {
-    font-size: var(--_font-sm);
-    color: var(--_muted);
+  ::slotted([slot="title"]) {
+    font-size: var(--_font-xl) !important;
+    font-weight: 700 !important;
+    color: var(--_text) !important;
+    margin: 0 !important;
+  }
+
+  .empathy-map__summary-wrap {
     max-width: 72ch;
+  }
+
+  ::slotted([slot="summary"]) {
+    font-size: var(--_font-sm) !important;
+    color: var(--_muted) !important;
+    margin: 0 !important;
   }
 
   /* ── Grid ──────────────────────────────────────────── */

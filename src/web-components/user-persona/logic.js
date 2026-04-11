@@ -28,10 +28,63 @@
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { esc, initials, hashColor } from '../_ux-base.js';
+import { portraitUrl } from '../../lib/portrait-url.js';
+
+/** Simple string hash → integer (same algorithm as portrait-url.js). */
+function hash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return h;
+}
+
+// ── Mock persona corpus (~1 KB) ───────────────────────────────────────
+const MOCK_NAMES = [
+  'Sarah Chen', 'Marcus Johnson', 'Aisha Patel', 'James O\'Brien',
+  'Yuki Tanaka', 'Elena Rodriguez', 'David Kim', 'Fatima Al-Hassan',
+  'Lucas Silva', 'Priya Sharma', 'Noah Williams', 'Mei Lin',
+  'Carlos Mendez', 'Amara Osei', 'Henrik Larsson', 'Zara Ahmed',
+];
+const MOCK_ROLES = [
+  'Product Manager', 'UX Designer', 'Frontend Developer', 'Data Analyst',
+  'Marketing Lead', 'QA Engineer', 'DevOps Lead', 'Content Strategist',
+  'Startup Founder', 'IT Director', 'Customer Success Lead', 'Research Scientist',
+];
+const MOCK_LOCATIONS = [
+  'San Francisco, CA', 'Austin, TX', 'London, UK', 'Toronto, CA',
+  'Berlin, DE', 'Tokyo, JP', 'Sydney, AU', 'S\u00e3o Paulo, BR',
+];
+const MOCK_QUOTES = [
+  'I need tools that help me stay organized without slowing me down.',
+  'The dashboard is where I live \u2014 it has to be fast and reliable.',
+  'I want to understand the data, not fight the interface.',
+  'If it takes more than two clicks, I\u2019ll find another way.',
+  'Collaboration shouldn\u2019t mean endless notification noise.',
+  'I just want it to work the way I expect it to.',
+  'Give me the big picture first, then let me drill into details.',
+  'Accessibility isn\u2019t a nice-to-have \u2014 it\u2019s how I use the web.',
+];
+const MOCK_GOALS = [
+  'Streamline daily workflows', 'Reduce context-switching',
+  'Stay aligned with the team', 'Make data-driven decisions quickly',
+  'Ship features on a predictable cadence', 'Automate repetitive tasks',
+  'Improve onboarding experience', 'Keep documentation up to date',
+];
+const MOCK_FRUSTRATIONS = [
+  'Too many disconnected tools', 'Slow page loads break focus',
+  'Unclear ownership of tasks', 'Settings that reset unexpectedly',
+  'Notifications that bury important updates', 'Poor mobile experience',
+  'Inconsistent design across features', 'No offline support',
+];
+const MOCK_BEHAVIORS = [
+  'Checks dashboards every morning', 'Prefers keyboard shortcuts over mouse',
+  'Skims docs, reads deeply only when stuck', 'Shares screenshots in Slack',
+  'Batches email to twice a day', 'Tests features in incognito first',
+  'Bookmarks frequently used reports', 'Uses dark mode exclusively',
+];
 
 class UserPersona extends HTMLElement {
   static get observedAttributes() {
-    return ['name', 'role', 'age', 'location', 'avatar', 'quote', 'compact', 'src'];
+    return ['role', 'age', 'location', 'avatar', 'compact', 'src'];
   }
 
   #slotCache = new Map();
@@ -60,9 +113,22 @@ class UserPersona extends HTMLElement {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      // Map JSON fields to attributes
-      for (const key of ['name', 'role', 'age', 'location', 'avatar', 'quote']) {
+      // State attributes
+      for (const key of ['role', 'age', 'location', 'avatar']) {
         if (data[key]) this.setAttribute(key, data[key]);
+      }
+      // Content → slotted elements
+      if (data.name && !this.querySelector('[slot="name"]')) {
+        const el = document.createElement('h2');
+        el.slot = 'name';
+        el.textContent = data.name;
+        this.appendChild(el);
+      }
+      if (data.quote && !this.querySelector('[slot="quote"]')) {
+        const el = document.createElement('p');
+        el.slot = 'quote';
+        el.textContent = data.quote;
+        this.appendChild(el);
       }
       // For list fields, store as JSON in slot cache (render will handle)
       for (const key of ['bio', 'goals', 'frustrations', 'behaviors']) {
@@ -82,7 +148,9 @@ class UserPersona extends HTMLElement {
 
   connectedCallback() {
     this.#cacheSlotValues();
-    if (this.hasAttribute('src')) {
+    if (this.hasAttribute('data-mock')) {
+      this.#applyMock();
+    } else if (this.hasAttribute('src')) {
       this._loadSrc(this.getAttribute('src'));
     }
     this.#render();
@@ -110,32 +178,87 @@ class UserPersona extends HTMLElement {
 
   // ── Attribute getters ──────────────────────────────────────────────
 
+  /** Read name from slotted heading or cache */
   get personaName() {
-    return this._resolve('name') || 'Unnamed Persona';
+    const slotted = this.querySelector('[slot="name"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('name') || 'Unnamed Persona';
   }
 
   get personaRole() {
-    return this._resolve('role') || '';
+    return this.getAttribute('role') || '';
   }
 
   get age() {
-    return this._resolve('age') || '';
+    return this.getAttribute('age') || '';
   }
 
   get location() {
-    return this._resolve('location') || '';
+    return this.getAttribute('location') || '';
   }
 
   get avatar() {
-    return this._resolve('avatar') || '';
+    return this.getAttribute('avatar') || '';
   }
 
+  /** Read quote from slotted element or cache */
   get quote() {
-    return this._resolve('quote') || '';
+    const slotted = this.querySelector('[slot="quote"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('quote') || '';
   }
 
   get compact() {
     return this.hasAttribute('compact');
+  }
+
+  // ── Mock data ──────────────────────────────────────────────────────
+
+  #applyMock() {
+    const seed = this.dataset.seed || this.dataset.mock || String(Date.now());
+    const pick = (arr) => arr[((hash(seed + arr.length) % arr.length) + arr.length) % arr.length];
+    const pickN = (arr, n) => {
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        out.push(arr[((hash(seed + i + arr.length) % arr.length) + arr.length) % arr.length]);
+      }
+      return [...new Set(out)];
+    };
+
+    // Name and quote are slotted content, not attributes
+    if (!this.querySelector('[slot="name"]')) {
+      const h2 = document.createElement('h2');
+      h2.slot = 'name';
+      h2.textContent = pick(MOCK_NAMES);
+      this.appendChild(h2);
+    }
+    if (!this.getAttribute('role'))     this.setAttribute('role', pick(MOCK_ROLES));
+    if (!this.getAttribute('age'))      this.setAttribute('age', String(25 + ((hash(seed) % 30) + 30) % 30));
+    if (!this.getAttribute('location')) this.setAttribute('location', pick(MOCK_LOCATIONS));
+    if (!this.getAttribute('avatar')) {
+      const name = this.querySelector('[slot="name"]')?.textContent?.trim() || 'Persona';
+      this.setAttribute('avatar', portraitUrl(name, 256));
+    }
+    if (!this.querySelector('[slot="quote"]')) {
+      const p = document.createElement('p');
+      p.slot = 'quote';
+      p.textContent = pick(MOCK_QUOTES);
+      this.appendChild(p);
+    }
+
+    // Inject slotted sections as light DOM so native <slot> picks them up
+    const injectList = (slotName, items) => {
+      if (this.querySelector(`[slot="${slotName}"]`)) return;
+      const ul = document.createElement('ul');
+      ul.setAttribute('slot', slotName);
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      }
+      this.appendChild(ul);
+    };
+    injectList('goals', pickN(MOCK_GOALS, 3));
+    injectList('frustrations', pickN(MOCK_FRUSTRATIONS, 3));
+    injectList('behaviors', pickN(MOCK_BEHAVIORS, 3));
   }
 
   // ── Render ─────────────────────────────────────────────────────────
@@ -165,7 +288,9 @@ class UserPersona extends HTMLElement {
             ${!avatarUrl ? esc(initials(name)) : ''}
           </div>
           <div class="header-info">
-            <h2 class="persona-name" part="name">${esc(name)}</h2>
+            <div class="persona-name-wrap" part="name">
+              <slot name="name"><h2 class="persona-name-fallback">${esc(name)}</h2></slot>
+            </div>
             ${role ? `<p class="persona-role" part="role">${esc(role)}</p>` : ''}
             <div class="persona-meta" part="meta">
               ${age ? `
@@ -184,10 +309,10 @@ class UserPersona extends HTMLElement {
           </div>
         </header>
 
-        ${quote ? `
+        ${quote || this.querySelector('[slot="quote"]') ? `
           <div class="persona-quote" part="quote">
             <span class="quote-mark" aria-hidden="true">&ldquo;</span>
-            <p class="quote-text">${esc(quote)}</p>
+            <div class="quote-text-wrap"><slot name="quote"><p class="quote-text">${esc(quote)}</p></slot></div>
           </div>
         ` : ''}
 

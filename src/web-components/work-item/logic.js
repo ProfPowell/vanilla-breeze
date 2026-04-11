@@ -6,8 +6,14 @@
  * a user story. Can live in kanban-board, gantt-chart, story-map,
  * or standalone.
  *
+ * Content slots:
+ * @slot title       - Work item heading (e.g., <h3>)
+ * @slot description - Work item description (e.g., <p>)
+ * @slot checklist   - Subtasks or checklist (e.g., <ul>)
+ * @slot notes       - Additional notes (e.g., <p>)
+ *
+ * State/config attributes:
  * @attr {string}  item-id   - Unique identifier (e.g., "PROJ-42")
- * @attr {string}  title     - Work item title
  * @attr {enum}    type      - task | bug | chore | spike | feature
  * @attr {enum}    priority  - critical | high | medium | low
  * @attr {enum}    status    - backlog | to-do | in-progress | review | done | blocked
@@ -78,7 +84,7 @@ const STATUSES = {
 class WorkItem extends HTMLElement {
   static get observedAttributes() {
     return [
-      'item-id', 'title', 'type', 'priority', 'status',
+      'item-id', 'type', 'priority', 'status',
       'estimate', 'assignee', 'story-ids', 'detail', 'compact', 'src',
     ];
   }
@@ -95,7 +101,7 @@ class WorkItem extends HTMLElement {
   #cacheSlotValues() {
     for (const child of [...this.children]) {
       const slotName = child.getAttribute('slot');
-      if (slotName && !this.getAttribute(slotName)) {
+      if (slotName) {
         this.#slotCache.set(slotName, child.textContent.trim());
       }
     }
@@ -133,13 +139,16 @@ class WorkItem extends HTMLElement {
 
   /* ── Getters ───────────────────────────────────── */
 
-  get itemId()    { return this._resolve('item-id') || ''; }
-  get itemTitle() { return this._resolve('title') || ''; }
+  get itemId()    { return this.getAttribute('item-id') || ''; }
+  get itemTitle() {
+    const slotted = this.querySelector('[slot="title"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('title') || '';
+  }
   get itemType()  { return this.getAttribute('type') || 'task'; }
   get priority()  { return this.getAttribute('priority') || 'medium'; }
   get status()    { return this.getAttribute('status') || 'backlog'; }
   get estimate()  { return this.getAttribute('estimate') || ''; }
-  get assignee()  { return this._resolve('assignee') || ''; }
+  get assignee()  { return this.getAttribute('assignee') || ''; }
 
   get storyIds() {
     const raw = this.getAttribute('story-ids') || '';
@@ -187,18 +196,43 @@ class WorkItem extends HTMLElement {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      // State attributes
       for (const [jsonKey, attr] of [
-        ['itemId', 'item-id'], ['title', 'title'], ['type', 'type'],
-        ['priority', 'priority'], ['status', 'status'], ['estimate', 'estimate'],
-        ['assignee', 'assignee'], ['detail', 'detail'],
+        ['itemId', 'item-id'], ['type', 'type'], ['priority', 'priority'],
+        ['status', 'status'], ['estimate', 'estimate'], ['assignee', 'assignee'],
+        ['detail', 'detail'],
       ]) {
         if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
       }
       if (data.storyIds) {
         this.setAttribute('story-ids', Array.isArray(data.storyIds) ? data.storyIds.join(',') : data.storyIds);
       }
-      for (const key of ['description', 'checklist', 'notes']) {
-        if (data[key]) this.#slotCache.set(key, data[key]);
+
+      // Content → slotted elements
+      if (data.title && !this.querySelector('[slot="title"]')) {
+        const el = document.createElement('h3');
+        el.slot = 'title';
+        el.textContent = data.title;
+        this.appendChild(el);
+      }
+      for (const key of ['description', 'notes']) {
+        if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
+          const el = document.createElement('p');
+          el.slot = key;
+          el.textContent = data[key];
+          this.appendChild(el);
+        }
+      }
+      if (data.checklist && !this.querySelector('[slot="checklist"]')) {
+        const ul = document.createElement('ul');
+        ul.slot = 'checklist';
+        const items = Array.isArray(data.checklist) ? data.checklist : [data.checklist];
+        for (const item of items) {
+          const li = document.createElement('li');
+          li.textContent = item;
+          ul.appendChild(li);
+        }
+        this.appendChild(ul);
       }
       this.#render();
     } catch (err) {
@@ -226,7 +260,9 @@ class WorkItem extends HTMLElement {
               ${this.itemId ? `<span class="wi-id">${esc(this.itemId)}</span>` : ''}
               <span class="wi-type" data-type="${esc(type)}">${lucideSvg(typeIcon)} ${esc(type)}</span>
             </div>
-            <p class="wi-title">${esc(this._minimalLabel)}</p>
+            <div class="wi-title-wrap">
+              <slot name="title"><span class="wi-title-fallback">${esc(this._minimalLabel)}</span></slot>
+            </div>
           </div>
         </article>`;
       return;
@@ -248,7 +284,9 @@ class WorkItem extends HTMLElement {
         </header>
 
         <div class="wi-body">
-          <h3 class="wi-title">${esc(this.itemTitle || '[Untitled work item]')}</h3>
+          <div class="wi-title-wrap">
+            <slot name="title"><span class="wi-title-fallback">[Untitled work item]</span></slot>
+          </div>
 
           ${this.assignee ? `
             <div class="wi-assignee">

@@ -126,20 +126,36 @@ const styles = `
   .persona-ref svg { width: 14px; height: 14px; flex-shrink: 0; }
   a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
 
-  /* Title & summary */
+  /* Title & summary (slotted content) */
+  .journey__title-wrap {
+    margin-block-end: var(--_space-2xs);
+  }
+
   .journey__title {
     font-size: var(--_font-xl);
     font-weight: 700;
     color: var(--_text);
-    margin-block-end: var(--_space-2xs);
+    margin: 0;
   }
 
-  .journey--compact .journey__title { font-size: var(--_font-md); }
+  ::slotted([slot="title"]) {
+    font-size: var(--_font-xl) !important;
+    font-weight: 700 !important;
+    color: var(--_text) !important;
+    margin: 0 !important;
+  }
 
-  .journey__summary {
-    font-size: var(--_font-sm);
-    color: var(--_muted);
+  .journey--compact .journey__title,
+  .journey--compact ::slotted([slot="title"]) { font-size: var(--_font-md) !important; }
+
+  .journey__summary-wrap {
     max-width: 72ch;
+  }
+
+  ::slotted([slot="summary"]) {
+    font-size: var(--_font-sm) !important;
+    color: var(--_muted) !important;
+    margin: 0 !important;
   }
 
   /* Emotion curve */
