@@ -154,11 +154,11 @@ export const SHOWCASE_THEMES = [
   // Signature
   { id: 'alpha1999', name: 'Alpha1999', icon: 'orbit', character: 'Space retro-fi', swatchBg: '#0a0a14', swatchFg: '#d4880f', tier: 'showcase', category: 'Signature' },
   { id: 'super2026', name: 'Super2026', icon: 'triangle', character: 'Supergraphic bold', swatchBg: '#f5f0e6', swatchFg: '#c23616', tier: 'showcase', category: 'Signature' },
+  { id: 'magna', name: 'Magna', icon: 'orbit', character: 'Odyssey 2 retro', swatchBg: '#0d0b14', swatchFg: '#f97316', tier: 'showcase', category: 'Signature' },
   // OS Styles
   { id: 'win9x', name: 'Win9x', icon: 'monitor', character: 'Classic desktop', swatchBg: '#008080', swatchFg: '#c0c0c0', tier: 'showcase', category: 'OS Styles' },
   { id: 'nes', name: 'NES', icon: 'joystick', character: 'Console pixels', swatchBg: '#bcbcbc', swatchFg: '#e40521', tier: 'showcase', category: 'OS Styles' },
   { id: '8bit', name: '8-Bit', icon: 'gamepad-2', character: 'Retro pixel art', swatchBg: '#000080', swatchFg: '#ffff00', tier: 'showcase', category: 'OS Styles' },
-  { id: 'magna', name: 'Magna', icon: 'orbit', character: 'Odyssey 2 retro', swatchBg: '#0d0b14', swatchFg: '#f97316', tier: 'showcase', category: 'OS Styles' },
 ];
 
 // Community themes — available, not prominent
