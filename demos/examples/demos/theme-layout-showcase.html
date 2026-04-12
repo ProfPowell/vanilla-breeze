@@ -11,153 +11,11 @@
        Uses :checked pseudo-class for state — no JavaScript required.
        ========================================================================== */
 
-    /* Hide radio/checkbox inputs visually but keep accessible */
-    body > input[type="radio"],
-    body > input[type="checkbox"] {
+    /* Hide radio inputs visually but keep accessible */
+    body > input[type="radio"] {
       position: absolute;
       opacity: 0;
       pointer-events: none;
-    }
-
-    /* ==========================================================================
-       CONTROL PANEL — Collapsible sidebar
-       ========================================================================== */
-
-    .controls {
-      position: fixed;
-      inset-block-start: var(--size-m);
-      inset-inline-start: var(--size-m);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      gap: var(--size-s);
-      max-block-size: calc(100dvh - var(--size-l));
-      overflow-y: auto;
-      container-type: normal; /* override VB's section container-type which collapses fixed-position width */
-    }
-
-    .controls-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--size-xs);
-      padding: var(--size-xs) var(--size-s);
-      background: var(--color-surface-raised);
-      border: var(--border-width-thin, 1px) solid var(--color-border);
-      border-radius: var(--radius-m);
-      box-shadow: var(--shadow-m);
-      cursor: pointer;
-      font-size: var(--font-size-sm);
-      font-weight: 600;
-      color: var(--color-text);
-    }
-
-    .controls-toggle:hover {
-      background: var(--color-surface-alt);
-    }
-
-    .controls-toggle-icon {
-      transition: transform 0.2s ease;
-    }
-
-    /* Expanded (default — checkbox unchecked) */
-    #controls-collapsed:not(:checked) ~ .controls .controls-content {
-      display: flex;
-    }
-
-    #controls-collapsed:not(:checked) ~ .page-layout {
-      margin-inline-start: 13rem;
-    }
-
-    /* Collapsed (checkbox checked) */
-    #controls-collapsed:checked ~ .controls .controls-content {
-      display: none;
-    }
-
-    #controls-collapsed:checked ~ .controls .controls-toggle-icon {
-      transform: rotate(180deg);
-    }
-
-    #controls-collapsed:checked ~ .page-layout {
-      margin-inline-start: 0;
-    }
-
-    .controls-content {
-      display: flex;
-      flex-direction: column;
-      gap: var(--size-s);
-    }
-
-    .control-panel {
-      padding: var(--size-s);
-      background: var(--color-surface-raised);
-      border: var(--border-width-thin, 1px) solid var(--color-border);
-      border-radius: var(--radius-m);
-      box-shadow: var(--shadow-m);
-      min-inline-size: 11rem;
-    }
-
-    .control-panel h3 {
-      margin: 0 0 var(--size-xs) 0;
-      font-size: var(--font-size-xs);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--color-text-muted);
-    }
-
-    .control-panel label:not(.controls-toggle) {
-      display: flex;
-      align-items: center;
-      gap: var(--size-xs);
-      padding: var(--size-2xs) var(--size-xs);
-      border-radius: var(--radius-s);
-      cursor: pointer;
-      font-size: var(--font-size-sm);
-    }
-
-    .control-panel label:not(.controls-toggle):hover {
-      background: var(--color-surface-alt);
-    }
-
-    /* Radio indicator */
-    .control-panel label:not(.controls-toggle)::before {
-      content: "";
-      inline-size: 0.5rem;
-      block-size: 0.5rem;
-      border: 2px solid var(--color-border-strong, var(--color-border));
-      border-radius: var(--radius-round, 50%);
-      flex-shrink: 0;
-    }
-
-    /* Active layout indicator */
-    #layout-stack:checked ~ .controls label[for="layout-stack"]::before,
-    #layout-sidebar:checked ~ .controls label[for="layout-sidebar"]::before,
-    #layout-holy-grail:checked ~ .controls label[for="layout-holy-grail"]::before {
-      background: var(--color-primary);
-      border-color: var(--color-primary);
-    }
-
-    #layout-stack:checked ~ .controls label[for="layout-stack"],
-    #layout-sidebar:checked ~ .controls label[for="layout-sidebar"],
-    #layout-holy-grail:checked ~ .controls label[for="layout-holy-grail"] {
-      background: var(--color-primary-subtle, oklch(from var(--color-primary) 95% 0.03 h));
-      font-weight: 500;
-    }
-
-    /* Embedded theme-picker overrides */
-    .control-panel theme-picker { display: block; }
-    .control-panel theme-picker .panel {
-      position: static; opacity: 1; visibility: visible;
-      transform: none; box-shadow: none; border: none;
-      padding: 0; background: transparent; min-inline-size: 0;
-    }
-    .control-panel theme-picker .options { gap: var(--size-2xs); }
-    .control-panel theme-picker .option-content {
-      padding: var(--size-2xs); font-size: var(--font-size-xs);
-    }
-    .control-panel theme-picker .swatch {
-      inline-size: 1.25rem; block-size: 1.25rem;
     }
 
     /* ==========================================================================
@@ -168,8 +26,7 @@
       display: grid;
       min-height: 100dvh;
       gap: 0;
-      transition: margin 0.2s ease;
-      container-type: normal; /* override VB's section container-type */
+      container-type: normal;
     }
 
     .page-layout > header  { grid-area: header; }
@@ -183,9 +40,7 @@
     #layout-stack:checked ~ .page-layout {
       grid-template:
         "header" auto
-        "nav"    auto
         "main"   1fr
-        "aside"  auto
         "footer" auto
         / 1fr;
     }
@@ -213,6 +68,40 @@
         "nav    main   aside"  1fr
         "footer footer footer" auto
         / 200px 1fr 200px;
+    }
+
+    /* ── Layout switcher toolbar ────────────────────────────────── */
+
+    .layout-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    .layout-toolbar label {
+      padding: var(--size-2xs) var(--size-xs);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      color: var(--color-text-muted);
+      border: var(--border-width-thin, 1px) solid transparent;
+    }
+
+    .layout-toolbar label:hover {
+      background: var(--color-surface-alt);
+      color: var(--color-text);
+    }
+
+    /* Active layout indicator */
+    #layout-stack:checked ~ .page-layout .layout-toolbar label[for="layout-stack"],
+    #layout-sidebar:checked ~ .page-layout .layout-toolbar label[for="layout-sidebar"],
+    #layout-holy-grail:checked ~ .page-layout .layout-toolbar label[for="layout-holy-grail"] {
+      background: var(--color-primary-subtle, oklch(from var(--color-primary) 95% 0.03 h));
+      color: var(--color-primary);
+      border-color: var(--color-primary);
     }
 
     /* ── Page sections ──────────────────────────────────────────── */
@@ -319,21 +208,6 @@
     /* ── Responsive ─────────────────────────────────────────────── */
 
     @media (max-width: 48rem) {
-      .controls {
-        position: static;
-        max-block-size: none;
-        padding: var(--size-s);
-        background: var(--color-surface-alt);
-        border-block-end: var(--border-width-thin, 1px) solid var(--color-border);
-      }
-
-      #controls-collapsed:not(:checked) ~ .page-layout,
-      #controls-collapsed:checked ~ .page-layout {
-        margin-inline-start: 0;
-      }
-
-      .control-panel { min-inline-size: auto; }
-
       /* All layouts stack on mobile */
       #layout-sidebar:checked ~ .page-layout,
       #layout-holy-grail:checked ~ .page-layout {
@@ -354,41 +228,22 @@
   </style>
 </head>
 <body>
-  <!-- Hidden inputs for pure CSS state -->
+  <!-- Hidden inputs for pure CSS layout state -->
   <input type="radio" name="layout" id="layout-stack"/>
   <input type="radio" name="layout" id="layout-sidebar" checked/>
   <input type="radio" name="layout" id="layout-holy-grail"/>
-  <input type="checkbox" id="controls-collapsed"/>
-
-  <!-- Control panel -->
-  <section class="controls" aria-label="Demo controls">
-    <label class="controls-toggle" for="controls-collapsed">
-      <span>Controls</span>
-      <span class="controls-toggle-icon">&#9660;</span>
-    </label>
-
-    <nav class="controls-content" aria-label="Demo controls">
-      <section class="control-panel">
-        <h3>Layout</h3>
-        <label for="layout-stack">Stack</label>
-        <label for="layout-sidebar">Sidebar</label>
-        <label for="layout-holy-grail">Holy Grail</label>
-      </section>
-
-      <section class="control-panel">
-        <h3>Theme</h3>
-        <theme-picker variant="inline"></theme-picker>
-      </section>
-    </nav>
-  </section>
 
   <!-- Page layout container -->
   <section class="page-layout">
     <header>
       <h1>Theme Showcase</h1>
-      <nav aria-label="Header links">
-        <a href="/docs/examples/">Back to Examples</a>
-        <a href="/docs/themes/">Theme Docs</a>
+
+      <nav aria-label="Layout and settings" class="layout-toolbar">
+        <span>Layout:</span>
+        <label for="layout-stack">Stack</label>
+        <label for="layout-sidebar">Sidebar</label>
+        <label for="layout-holy-grail">Holy Grail</label>
+        <settings-panel></settings-panel>
       </nav>
     </header>
 
@@ -406,7 +261,7 @@
       <article data-layout="stack" data-layout-gap="l">
         <section>
           <h2>Dramatic Theme Transformations</h2>
-          <p class="lead">Switch between themes using the picker on the left. Try the <strong>Extreme Themes</strong> section for dramatic visual changes.</p>
+          <p class="lead">Use the <icon-wc name="settings" size="sm"></icon-wc> gear icon to open the settings panel. Try different themes, color modes, and accessibility options. Switch layouts with the toolbar above.</p>
           <p>Vanilla Breeze themes go beyond simple color changes. The <em>Extreme Themes</em> transform typography, shadows, border radii, and even add unique visual effects like scanlines and glows.</p>
         </section>
 
