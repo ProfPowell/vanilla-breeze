@@ -125,7 +125,7 @@ export const COLOR_ACCENTS = [
 
 // Personality themes - comprehensive design systems (core tier)
 export const PERSONALITY_THEMES = [
-  { id: 'default', name: 'Vanilla Breeze', hue: 210, shape: 'balanced', character: 'The default', swatchBg: '#3b82f6', tier: 'core' },
+  { id: 'default', name: 'Default', hue: 210, shape: 'balanced', character: 'The default', swatchBg: '#3b82f6', tier: 'core' },
   { id: 'modern', name: 'Modern', hue: 270, shape: 'rounded', character: 'Vibrant & elevated', swatchBg: '#6366f1', tier: 'core' },
   { id: 'minimal', name: 'Minimal', hue: 240, shape: 'sharp', character: 'Clean & flat', swatchBg: '#71717a', tier: 'core' },
   { id: 'classic', name: 'Classic', hue: 220, shape: 'subtle', character: 'Serif & elegant', swatchBg: '#92400e', tier: 'core' }
