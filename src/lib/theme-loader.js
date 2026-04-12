@@ -300,7 +300,8 @@ async function loadThemeCSS(themeName, base) {
  * @returns {Promise<void>}
  */
 function loadPackCSS(packName, base) {
-  const cssHref = `${base}/themes/${packName}.css`;
+  const themeHref = `${base}/packs/${packName}.theme.css`;
+  const effectsHref = `${base}/packs/${packName}.effects.css`;
 
   return new Promise((resolve, reject) => {
     const preload = document.querySelector(`link[data-vb-theme-preload="${packName}"]`);
@@ -308,13 +309,19 @@ function loadPackCSS(packName, base) {
 
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = cssHref;
+    link.href = themeHref;
     link.setAttribute('data-vb-theme', packName);
     link.setAttribute('data-vb-pack', packName);
     link.setAttribute('data-vb-theme-state', 'loading');
 
     link.onload = () => {
       link.setAttribute('data-vb-theme-state', 'ready');
+      // Load effects CSS (optional — no error if missing)
+      const effectsLink = document.createElement('link');
+      effectsLink.rel = 'stylesheet';
+      effectsLink.href = effectsHref;
+      effectsLink.setAttribute('data-vb-pack-effects', packName);
+      document.head.appendChild(effectsLink);
       void ensurePackScriptLoaded(packName, base);
       resolve();
     };
