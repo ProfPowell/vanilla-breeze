@@ -21,6 +21,20 @@ import { initBotProtection } from './lib/bot-protection.js';
 import { initAutoloader } from './lib/autoloader.js';
 import './lib/sw-register.js';
 
+// VB effects system — unified data-effect API
+import { VB } from './lib/vb.js';
+import './lib/vb-triggers.js';
+import './lib/vb-transitions.js';
+import './effects/glitch.js';
+import './effects/reveal.js';
+import './effects/blur-reveal.js';
+import './effects/highlight.js';
+import './effects/typewriter.js';
+import './effects/scramble.js';
+import './effects/ticker.js';
+import './effects/animate-image.js';
+import './effects/rating.js';
+
 // Initialize theme system
 await ThemeManager.init();
 
@@ -34,6 +48,9 @@ initBotProtection();
 
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
+
+// Boot unified effects observer
+VB.observe();
 
 // Initialize autoloader for extras (geo-map, emoji-picker, etc.)
 await initAutoloader();
