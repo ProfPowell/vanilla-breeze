@@ -191,7 +191,6 @@ export const COMMUNITY_THEMES = [
 // Pack themes - loaded on demand from /cdn/packs/ (showcase tier)
 export const BUNDLE_THEMES = [
   { id: 'kawaii', name: 'Kawaii', icon: 'heart', character: 'Cute aesthetic', swatchBg: '#ffb7c5', swatchFg: '#ff69b4', tier: 'showcase', category: 'Packs' },
-  { id: 'retro', name: 'Retro', icon: 'tv', character: 'CRT terminal', swatchBg: '#0a0a14', swatchFg: '#00ff66', tier: 'showcase', category: 'Packs' },
   { id: 'memphis', name: 'Memphis', icon: 'star', character: 'Bold patterns', swatchBg: '#FFF8F0', swatchFg: '#d03040', tier: 'showcase', category: 'Packs' },
 ];
 

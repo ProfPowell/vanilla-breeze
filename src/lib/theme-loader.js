@@ -114,7 +114,6 @@ const CORE_THEMES = new Set([
  */
 const PACK_THEMES = new Set([
   'kawaii',
-  'retro',
   'memphis',
 ]);
 
