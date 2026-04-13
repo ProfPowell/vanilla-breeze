@@ -448,20 +448,5 @@ ${renderThemeLabIconRows()}
         );
     }
 
-    if (path.includes('lab/experiments/theme-composer')) {
-      this.file.src = this.file.src
-        .replace(
-          /\s*\{% for theme in themeRegistry %\}[\s\S]*?\{% endfor %\}\s*/,
-          `\n${renderThemeComposerOptions(this.data.themeRegistry)}\n`,
-        )
-        .replace(
-          /\s*\{% for bs in borderStyles %\}[\s\S]*?\{% endfor %\}\s*/,
-          `\n${renderThemeComposerPreset(BORDER_STYLES.map((style) => style.name), 'border-style', 'clean')}\n`,
-        )
-        .replace(
-          /\s*\{% for is in iconSets %\}[\s\S]*?\{% endfor %\}\s*/,
-          `\n${renderThemeComposerPreset(ICON_SETS, 'icon-set', 'lucide')}\n`,
-        );
-    }
   }
 }
