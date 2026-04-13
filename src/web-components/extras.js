@@ -38,8 +38,9 @@ import './page-tools/logic.js';
 import './print-page/logic.js';
 import './share-wc/logic.js';
 
-// Annotation & highlight inits
+// Annotation & highlight
 import '../utils/highlights-init.js';
+import './highlight-wc/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';

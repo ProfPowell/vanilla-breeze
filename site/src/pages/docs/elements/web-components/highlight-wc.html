@@ -1,0 +1,133 @@
+---
+layout: element
+title: "highlight-wc"
+description: "Medium-style text highlighting and annotation component with color swatches, private notes, and localStorage persistence."
+elementName: highlight-wc
+category: component
+currentPath: /docs/elements/web-components/highlight-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;highlight-wc&gt;</code> component enables Medium-style text selection highlighting on any content. Users can select text, choose a highlight color, add private notes, and all annotations persist in localStorage.</p>
+  <p>It wraps the <a href="/docs/attributes/data-highlights/"><code>data-highlights</code></a> attribute system in a convenient web component interface.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>for</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>ID of an external element to annotate. When set, the component is invisible and targets the referenced element.</td>
+      </tr>
+      <tr>
+        <td><code>colors</code></td>
+        <td>comma-separated</td>
+        <td><code>yellow,green,blue,pink</code></td>
+        <td>Available highlight colors</td>
+      </tr>
+      <tr>
+        <td><code>readonly</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Render stored highlights but disable creating new ones</td>
+      </tr>
+      <tr>
+        <td><code>storage-key</code></td>
+        <td>string</td>
+        <td>pathname</td>
+        <td>Custom localStorage key suffix</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Wrapping Content</h2>
+  <p>Wrap any content to enable highlighting on the first child element.</p>
+
+<code-block language="html" label="Wrap content" data-escape><highlight-wc>
+  <article>
+    <h2>My Article</h2>
+    <p>Select any text to highlight it. Your highlights
+       are saved automatically.</p>
+  </article>
+</highlight-wc></code-block>
+</section>
+
+<section>
+  <h2>Targeting by ID</h2>
+  <p>Use <code>for</code> to annotate an element elsewhere on the page. The component itself renders as invisible.</p>
+
+<code-block language="html" label="Target external element" data-escape><highlight-wc for="my-article" colors="yellow,pink"></highlight-wc>
+
+<article id="my-article">
+  <p>This article can be highlighted with yellow and pink.</p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Custom Colors</h2>
+
+<code-block language="html" label="Custom palette" data-escape><highlight-wc colors="yellow,blue">
+  <article>
+    <p>Only yellow and blue swatches available.</p>
+  </article>
+</highlight-wc></code-block>
+
+  <p>Define color values with CSS custom properties on <code>:root</code>:</p>
+
+<code-block language="css" label="Color tokens">:root {
+  --highlight-yellow: #fef08a;
+  --highlight-blue: #bfdbfe;
+}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>The component exposes methods that delegate to the internal <code>HighlightController</code>:</p>
+
+<code-block language="javascript" label="Component API">const hw = document.querySelector('highlight-wc');
+
+// Get all highlights
+hw.getHighlights();
+
+// Remove one
+hw.removeHighlight('hn-abc123');
+
+// Clear all
+hw.clearAll();
+
+// Export/import
+const json = hw.exportHighlights();
+hw.importHighlights(json);</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Toolbar uses <code>role="toolbar"</code> with arrow-key navigation</li>
+    <li>Screen reader announcements for highlight add/remove actions</li>
+    <li><kbd>Escape</kbd> closes toolbar, <kbd>Ctrl+Enter</kbd> saves notes</li>
+    <li>Note panel uses <code>role="dialog"</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-highlights/">data-highlights</a> &mdash; Underlying attribute-based API</li>
+    <li><a href="/docs/elements/web-components/text-reader/">text-reader</a> &mdash; Text-to-speech with word highlighting</li>
+    <li><a href="/docs/elements/web-components/review-surface/">review-surface</a> &mdash; Pin-based design annotation</li>
+    <li><a href="/docs/elements/native/mark/">mark</a> &mdash; Native highlight element</li>
+  </ul>
+</section>

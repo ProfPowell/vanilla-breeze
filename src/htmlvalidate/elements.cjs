@@ -667,6 +667,17 @@ module.exports = {
     }
   },
 
+  "highlight-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {},
+      "colors": {},
+      "readonly": { boolean: true },
+      "storage-key": {}
+    }
+  },
+
   "icon-wc": {
     flow: true,
     phrasing: true,
