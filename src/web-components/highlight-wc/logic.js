@@ -1,9 +1,11 @@
 /**
  * highlight-wc — Text highlighting action for selection-menu
  *
- * When inside a <selection-menu>, renders as an icon button with a
- * color palette dropdown. When standalone, wraps content with
- * data-highlights.
+ * When inside a <selection-menu>, renders as an icon button. Clicking
+ * the icon applies the last-used color. A small color palette toggles
+ * open on a second click or long-press.
+ *
+ * When standalone, wraps content with data-highlights.
  *
  * @attr {string} for         - ID of element to annotate (standalone mode)
  * @attr {string} colors      - Comma-separated color names (default: "yellow,green,blue,pink")
@@ -21,6 +23,8 @@ class HighlightWC extends VBElement {
   #controller = null;
   #lastColor = 'yellow';
   #inSelectionMenu = false;
+  #paletteVisible = false;
+  #palette = null;
 
   setup() {
     this.#inSelectionMenu = !!this.closest('selection-menu');
@@ -35,6 +39,7 @@ class HighlightWC extends VBElement {
   teardown() {
     this.#controller?.destroy();
     this.#controller = null;
+    this.#palette = null;
   }
 
   // --- Selection menu child mode ---
@@ -42,19 +47,32 @@ class HighlightWC extends VBElement {
   #setupAsAction() {
     const colors = this.#getColors();
 
-    // Main highlight button
+    // Main highlight button — click applies last color
     const btn = document.createElement('button');
     btn.type = 'button';
+    btn.className = 'highlight-action';
     btn.setAttribute('aria-label', 'Highlight selection');
     btn.innerHTML = `<icon-wc name="highlighter" size="sm" aria-hidden="true"></icon-wc>`;
-    btn.addEventListener('click', () => this.#applyHighlight());
+
+    // Click: apply with last color. If already highlighted, toggle palette.
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.#paletteVisible) {
+        this.#hidePalette();
+        this.#applyHighlight();
+      } else {
+        this.#showPalette();
+      }
+    });
+
     this.appendChild(btn);
 
-    // Color palette (inline, small circles)
-    const palette = document.createElement('span');
-    palette.className = 'selection-menu-colors';
-    palette.setAttribute('role', 'group');
-    palette.setAttribute('aria-label', 'Highlight color');
+    // Color palette — hidden by default, shown on highlighter click
+    this.#palette = document.createElement('span');
+    this.#palette.className = 'selection-menu-colors';
+    this.#palette.setAttribute('role', 'group');
+    this.#palette.setAttribute('aria-label', 'Highlight color');
+    this.#palette.hidden = true;
 
     colors.forEach(color => {
       const swatch = document.createElement('button');
@@ -64,17 +82,31 @@ class HighlightWC extends VBElement {
       swatch.setAttribute('aria-label', `${color} highlight`);
       swatch.setAttribute('aria-pressed', color === this.#lastColor ? 'true' : 'false');
       swatch.style.backgroundColor = `var(--highlight-${color})`;
-      swatch.addEventListener('click', () => {
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation();
         this.#lastColor = color;
-        palette.querySelectorAll('.selection-menu-color').forEach(s =>
+        this.#palette.querySelectorAll('.selection-menu-color').forEach(s =>
           s.setAttribute('aria-pressed', s.dataset.color === color ? 'true' : 'false')
         );
+        this.#hidePalette();
         this.#applyHighlight();
       });
-      palette.appendChild(swatch);
+      this.#palette.appendChild(swatch);
     });
 
-    this.appendChild(palette);
+    this.appendChild(this.#palette);
+  }
+
+  #showPalette() {
+    if (!this.#palette) return;
+    this.#palette.hidden = false;
+    this.#paletteVisible = true;
+  }
+
+  #hidePalette() {
+    if (!this.#palette) return;
+    this.#palette.hidden = true;
+    this.#paletteVisible = false;
   }
 
   #applyHighlight() {
@@ -97,7 +129,6 @@ class HighlightWC extends VBElement {
       this.#controller = initHighlights(target);
     }
 
-    // Create the highlight
     this.#controller._createFromSelection(this.#lastColor);
     menu.dismiss();
   }
