@@ -145,6 +145,11 @@ module.exports = {
     }
   },
 
+  "site-tools": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "status-message": {
     flow: true,
     permittedContent: ["@flow"]

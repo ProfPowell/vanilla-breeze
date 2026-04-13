@@ -649,6 +649,36 @@ export default {
       }
     ]
   },
+  "site-tools": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "site-tools",
+    "type": "custom-element",
+    "description": "Site-wide utility container for header and footer actions like search, theme picker, and settings",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [],
+    "structure": [
+      {
+        "element": "<site-search>",
+        "description": "Search trigger and dialog"
+      },
+      {
+        "element": "<theme-picker>",
+        "description": "Theme selection panel"
+      },
+      {
+        "element": "<settings-panel>",
+        "description": "Full settings panel"
+      }
+    ],
+    "css": {
+      "tokens": []
+    }
+  },
   "status-message": {
     "element": "status-message",
     "type": "custom-element",

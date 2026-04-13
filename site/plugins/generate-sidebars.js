@@ -180,8 +180,8 @@ export class GenerateSidebars {
     const header = this.nav.header;
     let html = '';
 
-    html += `<header data-vt="header">\n`;
-    html += `  <a href="${header.logo.href}" class="logo">${header.logo.text}</a>\n`;
+    html += `<header class="site" data-sticky data-vt="header">\n`;
+    html += `  <a href="${header.logo.href}"><brand-mark>${header.logo.text}</brand-mark></a>\n`;
     html += `  <nav class="horizontal pills" aria-label="Main navigation">\n`;
     html += `    <ul>\n`;
 
@@ -204,7 +204,7 @@ export class GenerateSidebars {
 
     html += `    </ul>\n`;
     html += `  </nav>\n`;
-    html += `  <div class="header-actions">\n`;
+    html += `  <site-tools>\n`;
     html += `    <site-search>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;
     html += `        <icon-wc name="search" size="sm"></icon-wc>\n`;
@@ -217,7 +217,7 @@ export class GenerateSidebars {
     html += `        Theme\n`;
     html += `      </button>\n`;
     html += `    </theme-picker>\n`;
-    html += `  </div>\n`;
+    html += `  </site-tools>\n`;
     html += `  <button type="button" class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">\n`;
     html += `    <icon-wc name="menu"></icon-wc>\n`;
     html += `  </button>\n`;
