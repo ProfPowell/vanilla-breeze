@@ -71,14 +71,19 @@ export class GenerateSidebars {
     }
     html += `</details>\n`;
 
-    // Custom Elements (flat list)
+    // Custom Elements (grouped)
     html += `<details data-sidebar-section="custom">\n`;
     html += `  <summary>${elements.custom.label}</summary>\n`;
-    html += `  <ul>\n`;
-    for (const item of elements.custom.items) {
-      html += `    <li><a href="${item.href}">${item.name}</a></li>\n`;
+    for (const group of elements.custom.groups) {
+      html += `  <details data-sidebar-group="${group.label}">\n`;
+      html += `    <summary>${group.label}</summary>\n`;
+      html += `    <ul>\n`;
+      for (const item of group.items) {
+        html += `      <li><a href="${item.href}">${item.name}</a></li>\n`;
+      }
+      html += `    </ul>\n`;
+      html += `  </details>\n`;
     }
-    html += `  </ul>\n`;
     html += `</details>\n`;
 
     // Web Components (nested: category > groups > items)
