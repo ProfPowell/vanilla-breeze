@@ -1,0 +1,107 @@
+---
+layout: element
+title: "selection-menu"
+description: "Floating toolbar that appears on text selection. Composes action components for highlighting, sharing, notes, and comments."
+elementName: selection-menu
+category: component
+currentPath: /docs/elements/web-components/selection-menu/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;selection-menu&gt;</code> component provides a Medium-style floating toolbar that appears when text is selected. It composes action components as children: <code>&lt;highlight-wc&gt;</code> for color highlighting, <code>&lt;share-wc&gt;</code> for sharing quotes, <code>&lt;note-wc&gt;</code> for private notes, and <code>&lt;comment-wc&gt;</code> for collaborative comments.</p>
+  <p>The element itself IS the toolbar — no DOM reparenting. It starts hidden and positions itself above the selection using fixed positioning with viewport clamping.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>for</code></td><td>string</td><td>&mdash;</td><td>ID of a single target element to watch for text selection</td></tr>
+      <tr><td><code>id</code></td><td>string</td><td>&mdash;</td><td>When set, elements with <code>data-selection-menu="id"</code> become targets</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>Select any text in the article below to see the toolbar.</p>
+  <browser-window src="/docs/snippets/demos/selection-menu-basic.html" url="https://vanilla-breeze.dev/selection-menu" title="Selection menu demo" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Single Target</h2>
+<code-block language="html" label="for= attribute" data-escape><selection-menu for="my-article">
+  <highlight-wc></highlight-wc>
+  <share-wc></share-wc>
+  <note-wc></note-wc>
+  <comment-wc></comment-wc>
+</selection-menu>
+
+<article id="my-article">
+  <p>Select text here to see the toolbar.</p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Many-to-One (Decoupled)</h2>
+  <p>Define the menu once and let multiple elements reference it by ID via <code>data-selection-menu</code>.</p>
+<code-block language="html" label="data-selection-menu attribute" data-escape><selection-menu id="reader-tools">
+  <highlight-wc></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu>
+
+<article data-selection-menu="reader-tools">
+  <p>First article...</p>
+</article>
+
+<article data-selection-menu="reader-tools">
+  <p>Second article, same toolbar.</p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+<code-block language="javascript" label="API">const menu = document.querySelector('selection-menu');
+
+// Get current selection state
+menu.getSelection(); // { range, text, target }
+
+// Dismiss the toolbar
+menu.dismiss();</code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>selection-menu:select</code></td><td><code>{ range, text, target }</code></td><td>Text selected, toolbar shown</td></tr>
+      <tr><td><code>selection-menu:dismiss</code></td><td>&mdash;</td><td>Toolbar hidden</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Toolbar uses <code>role="toolbar"</code></li>
+    <li><kbd>Escape</kbd> dismisses the toolbar</li>
+    <li>Clicking outside the toolbar dismisses it</li>
+    <li>Each child action has its own <code>aria-label</code></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/highlight-wc/">highlight-wc</a> &mdash; Text highlighting with color palette</li>
+    <li><a href="/docs/elements/web-components/note-wc/">note-wc</a> &mdash; Private reader notes</li>
+    <li><a href="/docs/elements/web-components/comment-wc/">comment-wc</a> &mdash; Collaborative comments via review-surface</li>
+    <li><a href="/docs/attributes/data-highlights/">data-highlights</a> &mdash; Attribute-based highlighting API</li>
+  </ul>
+</section>
