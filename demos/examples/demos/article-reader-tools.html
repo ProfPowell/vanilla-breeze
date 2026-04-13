@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Article Reader Tools — Vanilla Breeze Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+      max-inline-size: 75ch;
+      margin-inline: auto;
+    }
+
+    /* Article header toolbar (Medium-style) */
+    .article-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      padding-block: var(--size-s);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+      margin-block-end: var(--size-l);
+    }
+
+    .article-toolbar .spacer {
+      flex: 1;
+    }
+
+    .article-toolbar button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--size-2xs);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-s);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      min-block-size: 0;
+      min-inline-size: 0;
+    }
+
+    .article-toolbar button:hover {
+      color: var(--color-interactive);
+    }
+
+    /* Byline */
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .byline time { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+
+  <!-- Selection menu for contextual text actions -->
+  <selection-menu for="demo-article">
+    <highlight-wc></highlight-wc>
+    <share-wc></share-wc>
+    <note-wc></note-wc>
+  </selection-menu>
+
+  <article id="demo-article" data-highlights>
+    <hgroup>
+      <p class="eyebrow" style="text-transform: uppercase; letter-spacing: 0.1em; font-size: var(--font-size-xs); color: var(--color-text-muted);">Web Development</p>
+      <h1>The Future of CSS Architecture</h1>
+      <p class="lead">How native CSS features are replacing the tooling we thought we needed.</p>
+    </hgroup>
+
+    <div class="byline">
+      <span>Thomas Powell</span>
+      <span>&middot;</span>
+      <time datetime="2026-04-13">Apr 13, 2026</time>
+      <span>&middot;</span>
+      <span>8 min read</span>
+    </div>
+
+    <!-- Page-level article toolbar (Medium-style) -->
+    <nav class="article-toolbar" aria-label="Article tools">
+      <share-wc variant="icon" size="s"></share-wc>
+      <print-page></print-page>
+      <span class="spacer"></span>
+      <text-reader for="demo-article" data-no-print></text-reader>
+    </nav>
+
+    <p>For years, CSS architecture meant choosing between methodologies: BEM, SMACSS, OOCSS, ITCSS, Atomic CSS. Each offered structure where the language itself provided none. We adopted preprocessors like Sass for variables, nesting, and mixins. We built design systems on utility-first frameworks. We accepted the complexity as necessary.</p>
+
+    <p>But CSS has changed. Native features now cover most of what we once needed tools for. Custom Properties replaced variables. Native nesting arrived. <code>@layer</code> gave us explicit cascade control. Container queries freed us from viewport-only responsive design. <code>:has()</code> eliminated the need for parent selectors. <code>:where()</code> and <code>:is()</code> simplified specificity management.</p>
+
+    <h2>The Readability Triad</h2>
+
+    <p>Good typography rests on three legs: measure (line length), text size, and line spacing. Change one and you must adjust the others. The web gives us tools for all three — <code>max-inline-size</code> for measure, <code>rem</code> for size, and unitless <code>line-height</code> for spacing.</p>
+
+    <p>The key insight is using <code>em</code> for local sizing within components and <code>rem</code> for global page-level sizing. This prevents the classic nested-list shrinking problem while keeping components self-contained.</p>
+
+    <blockquote>
+      <p>Good web typography does not require ornamental excess. It requires making dozens of small decisions that together let the text carry less friction.</p>
+    </blockquote>
+
+    <h2>Layer Architecture</h2>
+
+    <p>CSS <code>@layer</code> provides the cascade control that methodologies tried to enforce through naming conventions. By declaring layers explicitly — tokens, reset, elements, components, utilities — you get deterministic specificity without fighting the cascade.</p>
+
+    <p>This is especially powerful for theme systems. A theme layer can override any base style without specificity hacks, and utility classes can always win regardless of source order.</p>
+
+    <h2>Progressive Enhancement in Practice</h2>
+
+    <p>The modern approach is platform-first: use native HTML elements and CSS features as the foundation, enhance with JavaScript only where the platform falls short. This isn't a limitation — it's a strength. Native elements give you accessibility, keyboard navigation, and form participation for free.</p>
+
+    <p>Custom elements extend HTML's vocabulary without replacing it. A <code>&lt;brand-mark&gt;</code> element is still an inline element that works without JavaScript. A <code>&lt;selection-menu&gt;</code> enhances text selection without preventing it.</p>
+  </article>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
