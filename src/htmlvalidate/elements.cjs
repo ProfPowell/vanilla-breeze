@@ -145,6 +145,11 @@ module.exports = {
     }
   },
 
+  "site-legal": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "site-tools": {
     flow: true,
     permittedContent: ["@flow"]

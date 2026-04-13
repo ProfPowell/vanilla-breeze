@@ -649,6 +649,32 @@ export default {
       }
     ]
   },
+  "site-legal": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "site-legal",
+    "type": "custom-element",
+    "description": "Legal and compliance content container for copyright, license, privacy, and terms links",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [],
+    "structure": [
+      {
+        "element": "<span>",
+        "description": "Copyright or license text"
+      },
+      {
+        "element": "<a>",
+        "description": "Legal page link (privacy, terms)"
+      }
+    ],
+    "css": {
+      "tokens": []
+    }
+  },
   "site-tools": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-tools",
