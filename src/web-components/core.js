@@ -31,7 +31,7 @@ import './include-file/logic.js';
 import './settings-panel/logic.js';
 
 // Core custom elements with JS
-import '../custom-elements/brand-mark/logic.js';
+import './brand-mark/logic.js';
 import '../custom-elements/mobile-menu/logic.js';
 
 // Core utility inits
