@@ -46,7 +46,6 @@ export class GenerateSidebars {
     this.generateGuideSidebar();
     this.generatePatternsSidebar();
     this.generateHeader();
-    this.generateMobileMenu();
 
     console.log('  ✓ Generated sidebar includes');
   }
@@ -227,53 +226,54 @@ export class GenerateSidebars {
     html += `    <button type="button" data-trigger popovertarget="mobile-menu" aria-label="Menu">\n`;
     html += `      <icon-wc name="menu"></icon-wc>\n`;
     html += `    </button>\n`;
+    html += this.#generateMobileMenuPanel();
     html += `  </mobile-menu>\n`;
     html += `</header>\n`;
 
     writeFileSync(resolve(this.includesDir, 'header.html'), html);
   }
 
-  // --- MOBILE MENU ---
-  generateMobileMenu() {
+  // --- MOBILE MENU PANEL (embedded in header) ---
+  #generateMobileMenuPanel() {
     const header = this.nav.header;
     let html = '';
 
-    html += `<nav popover id="mobile-menu" class="mobile-menu-panel">\n`;
-    html += `  <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">\n`;
-    html += `    <icon-wc name="x"></icon-wc>\n`;
-    html += `  </button>\n`;
-    html += `  <div class="mobile-menu-search">\n`;
-    html += `    <site-search>\n`;
-    html += `      <button type="button" data-trigger class="ghost" style="inline-size: 100%">\n`;
-    html += `        <icon-wc name="search" size="sm"></icon-wc>\n`;
-    html += `        Search\n`;
+    html += `    <nav popover id="mobile-menu" class="mobile-menu-panel">\n`;
+    html += `      <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">\n`;
+    html += `        <icon-wc name="x"></icon-wc>\n`;
     html += `      </button>\n`;
-    html += `    </site-search>\n`;
-    html += `  </div>\n`;
-    html += `  <ul>\n`;
+    html += `      <div class="mobile-menu-search">\n`;
+    html += `        <site-search>\n`;
+    html += `          <button type="button" data-trigger class="ghost" style="inline-size: 100%">\n`;
+    html += `            <icon-wc name="search" size="sm"></icon-wc>\n`;
+    html += `            Search\n`;
+    html += `          </button>\n`;
+    html += `        </site-search>\n`;
+    html += `      </div>\n`;
+    html += `      <ul>\n`;
 
     for (const item of header.nav) {
       if (item.children) {
-        html += `    <li class="mobile-section">\n`;
-        html += `      <strong class="mobile-section-title">${item.label}</strong>\n`;
-        html += `      <ul>\n`;
+        html += `        <li class="mobile-section">\n`;
+        html += `          <strong class="mobile-section-title">${item.label}</strong>\n`;
+        html += `          <ul>\n`;
         for (const child of item.children) {
-          html += `        <li><a href="${child.href}">${child.label}</a></li>\n`;
+          html += `            <li><a href="${child.href}">${child.label}</a></li>\n`;
         }
-        html += `      </ul>\n`;
-        html += `    </li>\n`;
+        html += `          </ul>\n`;
+        html += `        </li>\n`;
       } else {
-        html += `    <li><a href="${item.href}">${item.label}</a></li>\n`;
+        html += `        <li><a href="${item.href}">${item.label}</a></li>\n`;
       }
     }
 
-    html += `  </ul>\n`;
-    html += `  <div class="mobile-menu-theme">\n`;
-    html += `    <strong class="mobile-section-title">Theme</strong>\n`;
-    html += `    <theme-picker variant="inline" compact></theme-picker>\n`;
-    html += `  </div>\n`;
-    html += `</nav>\n`;
+    html += `      </ul>\n`;
+    html += `      <div class="mobile-menu-theme">\n`;
+    html += `        <strong class="mobile-section-title">Theme</strong>\n`;
+    html += `        <theme-picker variant="inline" compact></theme-picker>\n`;
+    html += `      </div>\n`;
+    html += `    </nav>\n`;
 
-    writeFileSync(resolve(this.includesDir, 'mobile-menu.html'), html);
+    return html;
   }
 }
