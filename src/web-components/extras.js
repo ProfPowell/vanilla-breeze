@@ -34,6 +34,9 @@ import './markdown-viewer/logic.js';
 import './markdown-editor/logic.js';
 import './token-specimen/logic.js';
 import './component-sampler/logic.js';
+import './page-tools/logic.js';
+import './print-page/logic.js';
+import './share-wc/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';
