@@ -611,6 +611,45 @@ export default {
     },
     "attributes": []
   },
+  "fab-stack": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "fab-stack",
+    "type": "custom-element",
+    "description": "Fixed action button stack positioned in the bottom-right corner. Stacks multiple floating buttons vertically.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [],
+    "structure": [
+      {
+        "element": "<settings-panel>",
+        "description": "Site settings trigger (primary action)"
+      },
+      {
+        "element": "<a data-back-to-top>",
+        "description": "Scroll-to-top button (secondary action)"
+      }
+    ],
+    "css": {
+      "tokens": [
+        {
+          "name": "--fab-stack-bottom",
+          "description": "Bottom offset (default: var(--size-l))"
+        },
+        {
+          "name": "--fab-stack-end",
+          "description": "Inline-end offset (default: var(--size-l))"
+        },
+        {
+          "name": "--fab-stack-gap",
+          "description": "Gap between stacked buttons (default: var(--size-s))"
+        }
+      ]
+    }
+  },
   "loading-spinner": {
     "element": "loading-spinner",
     "type": "custom-element",

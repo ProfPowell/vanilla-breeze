@@ -1,0 +1,42 @@
+/**
+ * fab-stack — Fixed action button stack
+ *
+ * Positions a vertical stack of floating action buttons in the
+ * bottom-right corner. Uses column-reverse so the first child
+ * (primary action) is at the bottom and secondary actions stack above.
+ *
+ * Usage:
+ *   <fab-stack>
+ *     <settings-panel></settings-panel>
+ *     <a href="#" data-back-to-top aria-label="Back to top">&uarr;</a>
+ *   </fab-stack>
+ *
+ * Theming:
+ *   --fab-stack-bottom: Bottom offset (default: var(--size-l))
+ *   --fab-stack-end:    Inline-end offset (default: var(--size-l))
+ *   --fab-stack-gap:    Gap between stacked buttons (default: var(--size-s))
+ */
+
+fab-stack {
+  position: fixed;
+  inset-block-end: calc(var(--fab-stack-bottom, var(--size-l)) + var(--safe-bottom, 0px));
+  inset-inline-end: var(--fab-stack-end, var(--size-l));
+  z-index: var(--z-sticky, 100);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--fab-stack-gap, var(--size-s));
+  pointer-events: none;
+}
+
+/* All children receive pointer events */
+fab-stack > * {
+  pointer-events: auto;
+}
+
+/* Back-to-top inside fab-stack: override its own fixed positioning */
+fab-stack [data-back-to-top] {
+  position: static !important;
+  inset: unset !important;
+  margin: 0 !important;
+}

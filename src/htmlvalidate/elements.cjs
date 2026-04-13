@@ -134,6 +134,11 @@ module.exports = {
     permittedContent: ["dt", "dd"]
   },
 
+  "fab-stack": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "loading-spinner": {
     flow: true,
     phrasing: true,

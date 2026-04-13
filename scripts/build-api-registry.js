@@ -231,7 +231,7 @@ function generateElementsCjs(manifests) {
   for (const m of manifests) {
     const name = m.element;
     if (name.startsWith('layout-') || ['brand-mark', 'dl', 'dl-item', 'form-field',
-      'loading-spinner', 'mobile-menu', 'progress-ring', 'site-legal', 'site-tools', 'status-message', 'text-divider',
+      'fab-stack', 'loading-spinner', 'mobile-menu', 'progress-ring', 'site-legal', 'site-tools', 'status-message', 'text-divider',
       'user-avatar', 'token-swatch', 'layout-badge'].includes(name)) {
       if (name.startsWith('layout-')) customElements.unshift(m);
       else customElements.push(m);
