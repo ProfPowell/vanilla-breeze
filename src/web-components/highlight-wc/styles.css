@@ -1,17 +1,59 @@
-/* highlight-wc: Display as block container when wrapping content */
+/* highlight-wc: standalone mode */
 
 highlight-wc {
   display: block;
 }
 
-/* When using for="" to target external element, collapse to nothing */
 highlight-wc[for] {
   display: none;
 }
 
-/* Inside selection-menu: inline with palette toggle */
-.selection-menu-panel highlight-wc {
+/* Inside selection-menu: inline with relative positioning for dropdown */
+selection-menu highlight-wc {
   display: inline-flex;
-  align-items: center;
-  gap: 2px;
+  position: relative;
+}
+
+/* --- Color dropdown (absolute, drops below the toolbar) --- */
+
+.highlight-color-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--color-surface-overlay, var(--color-surface));
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+.highlight-color-dropdown[hidden] {
+  display: none;
+}
+
+.highlight-color-swatch {
+  inline-size: 18px;
+  block-size: 18px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-full, 50%);
+  cursor: pointer;
+  padding: 0;
+  min-block-size: 0;
+  min-inline-size: 0;
+  transition: border-color var(--duration-fast);
+}
+
+.highlight-color-swatch:hover,
+.highlight-color-swatch:focus-visible {
+  border-color: var(--color-text);
+}
+
+.highlight-color-swatch[aria-pressed="true"] {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 1px var(--color-interactive);
 }
