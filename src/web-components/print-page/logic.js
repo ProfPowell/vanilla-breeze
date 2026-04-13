@@ -42,7 +42,7 @@ class PrintPage extends VBElement {
     }
 
     // Print button
-    const variant = this.getAttribute('variant') || 'icon-label';
+    const variant = this.getAttribute('variant') || 'icon';
     this.#button = document.createElement('button');
     this.#button.type = 'button';
     this.#button.setAttribute('aria-label', label);
