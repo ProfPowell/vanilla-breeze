@@ -45,6 +45,7 @@ class PrintPage extends VBElement {
     const variant = this.getAttribute('variant') || 'icon';
     this.#button = document.createElement('button');
     this.#button.type = 'button';
+    this.#button.className = 'print-trigger';
     this.#button.setAttribute('aria-label', label);
 
     const showIcon = variant !== 'label';
