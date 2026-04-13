@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "brand-mark"
-description: "Inert custom element for brand/logo display. Use in headers, footers, and anywhere you need consistent brand representation."
+description: "Web component for brand/logo display with automatic dark/light logo switching. Use in headers, footers, and anywhere you need consistent brand representation."
 elementName: brand-mark
 category: component
 currentPath: /docs/elements/web-components/brand-mark/
@@ -12,7 +12,8 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;brand-mark&gt;</code> element provides a consistent way to display your brand name and logo. It handles typography, spacing, and link styling automatically.</p>
+    <p>The <code>&lt;brand-mark&gt;</code> element provides a consistent way to display your brand name and logo. It handles typography, spacing, link styling, and automatic dark/light logo switching.</p>
+    <p>Progressive enhancement: without JavaScript, text content always renders. With JavaScript, the component injects images from the <code>src</code> attribute and observes color mode changes to swap between light and dark logos.</p>
   </section>
 
   <section>
@@ -31,7 +32,19 @@ crumbLabel: Web Components
           <td><code>src</code></td>
           <td>URL</td>
           <td>-</td>
-          <td>Path to logo image (SVG preferred). JS enhancement injects an <code>&lt;img&gt;</code> element.</td>
+          <td>Path to logo image (SVG preferred). Used in light mode or as the default when no <code>src-dark</code> is provided.</td>
+        </tr>
+        <tr>
+          <td><code>src-dark</code></td>
+          <td>URL</td>
+          <td>-</td>
+          <td>Path to dark-mode logo. Auto-switches based on <code>prefers-color-scheme</code> and <code>data-mode</code> attribute.</td>
+        </tr>
+        <tr>
+          <td><code>src-compact</code></td>
+          <td>URL</td>
+          <td>-</td>
+          <td>Path to compact/icon logo for narrow contexts (e.g., mobile headers).</td>
         </tr>
         <tr>
           <td><code>alt</code></td>
@@ -108,6 +121,33 @@ crumbLabel: Web Components
     <code-block language="html" show-lines label="Custom height" data-escape><brand-mark src="/logo.svg" wordmark height="40">
   Acme Inc
 </brand-mark></code-block>
+  </section>
+
+  <section>
+    <h2>Dark/Light Logo Switching</h2>
+    <p>Use <code>src-dark</code> to provide an alternate logo for dark mode. The component automatically switches between logos based on the system <code>prefers-color-scheme</code> preference and the VB <code>data-mode</code> attribute on <code>&lt;html&gt;</code>.</p>
+
+<code-block language="html" show-lines label="Auto dark/light switching" data-escape><brand-mark
+  src="/logo-light.svg"
+  src-dark="/logo-dark.svg"
+  wordmark>
+  Acme Inc
+</brand-mark></code-block>
+
+    <p>The switching happens reactively &mdash; toggling the color mode in the settings panel or changing the system preference immediately updates the displayed logo with no page reload.</p>
+    <p>If only <code>src</code> is provided without <code>src-dark</code>, that logo is used in both modes.</p>
+  </section>
+
+  <section>
+    <h2>Tagline</h2>
+    <p>Nest an <code>&lt;em&gt;</code> or <code>&lt;small&gt;</code> inside <code>&lt;brand-mark&gt;</code> to display a tagline or subtitle. Combine with <code>data-stack</code> for vertical layouts commonly used in footers.</p>
+
+<code-block language="html" show-lines label="Brand mark with tagline" data-escape><brand-mark data-stack>
+  Acme Inc
+  <em>Making things better</em>
+</brand-mark></code-block>
+
+    <p>The tagline renders in a smaller, muted font with italic style. It works in both inline and stacked layouts.</p>
   </section>
 
   <section>
@@ -226,8 +266,10 @@ crumbLabel: Web Components
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/elements/custom-elements/site-tools/">site-tools</a> — Site-wide utility container</li>
+      <li><a href="/docs/elements/custom-elements/site-legal/">site-legal</a> — Legal content container</li>
+      <li><a href="/docs/elements/web-components/color-palette/">color-palette</a> — Design system color documentation</li>
+      <li><a href="/docs/elements/web-components/token-specimen/">token-specimen</a> — Design token visualization</li>
       <li><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> — Sectioning element for page headers</li>
-      <li><a href="/docs/elements/native/nav/"><code>&lt;nav&gt;</code></a> — Navigation container</li>
-      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> — Anchor element for links</li>
     </ul>
   </section>
