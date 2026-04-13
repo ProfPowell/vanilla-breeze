@@ -1,0 +1,128 @@
+---
+layout: element
+title: "mobile-menu"
+description: "Responsive mobile navigation menu with hamburger toggle and popover panel."
+elementName: mobile-menu
+category: custom
+currentPath: /docs/elements/custom-elements/mobile-menu/
+
+crumbHref: /docs/elements/custom-elements/
+crumbLabel: Custom Elements
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>The <code>&lt;mobile-menu&gt;</code> element provides responsive navigation that activates at a configurable viewport breakpoint. Below the breakpoint, it shows a hamburger toggle and hides sibling <code>&lt;nav&gt;</code> and <code>&lt;site-tools&gt;</code> elements in the parent header. Above the breakpoint, it hides itself completely.</p>
+    <p>The menu panel uses the native HTML <code>popover</code> API for the overlay, with backdrop support and keyboard accessibility built in.</p>
+</section>
+
+<section>
+    <h2>Attributes</h2>
+    <table>
+        <thead>
+            <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>breakpoint</code></td>
+                <td>CSS length</td>
+                <td><code>52rem</code></td>
+                <td>Viewport width below which mobile mode activates</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Basic Usage</h2>
+    <p>Place <code>&lt;mobile-menu&gt;</code> inside a <code>&lt;header&gt;</code> alongside the desktop navigation. The trigger button must have <code>data-trigger</code> and <code>popovertarget</code> pointing to the panel.</p>
+
+<code-block language="html" label="Header with mobile menu">
+<header class="site" data-sticky>
+  <a href="/"><brand-mark>Acme Inc</brand-mark></a>
+
+  <nav class="horizontal pills" aria-label="Main navigation">
+    <ul>
+      <li><a href="/about">About</a></li>
+      <li><a href="/docs">Docs</a></li>
+      <li><a href="/blog">Blog</a></li>
+    </ul>
+  </nav>
+
+  <site-tools>
+    <site-search>
+      <button type="button" data-trigger class="ghost">Search</button>
+    </site-search>
+  </site-tools>
+
+  <mobile-menu breakpoint="52rem">
+    <button type="button" data-trigger
+            popovertarget="main-menu" aria-label="Menu">
+      <icon-wc name="menu"></icon-wc>
+    </button>
+  </mobile-menu>
+</header>
+
+<!-- Panel lives outside the header -->
+<nav popover id="main-menu" class="mobile-menu-panel">
+  <button type="button" class="mobile-menu-close"
+          popovertarget="main-menu"
+          popovertargetaction="hide" aria-label="Close">
+    <icon-wc name="x"></icon-wc>
+  </button>
+  <ul>
+    <li><a href="/about">About</a></li>
+    <li><a href="/docs">Docs</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+</nav>
+</code-block>
+</section>
+
+<section>
+    <h2>CSS Tokens</h2>
+    <p>Theme the panel appearance with these custom properties:</p>
+    <table>
+        <thead>
+            <tr><th>Token</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>--mobile-menu-bg</code></td><td><code>var(--color-surface)</code></td><td>Panel background</td></tr>
+            <tr><td><code>--mobile-menu-radius</code></td><td><code>var(--radius-m)</code></td><td>Panel border radius</td></tr>
+            <tr><td><code>--mobile-menu-shadow</code></td><td>Subtle shadow</td><td>Panel box shadow</td></tr>
+            <tr><td><code>--mobile-menu-padding</code></td><td><code>var(--size-l)</code></td><td>Panel padding</td></tr>
+            <tr><td><code>--mobile-menu-max-width</code></td><td><code>280px</code></td><td>Panel maximum width</td></tr>
+            <tr><td><code>--mobile-menu-backdrop</code></td><td>Semi-transparent black</td><td>Backdrop overlay color</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>How It Works</h2>
+    <ol>
+        <li>On <code>connectedCallback</code>, the component creates a <code>matchMedia</code> observer for the configured breakpoint.</li>
+        <li>When the viewport crosses the breakpoint, it sets or removes <code>[data-mobile]</code> on itself.</li>
+        <li>In mobile mode, the component hides sibling <code>&lt;nav&gt;</code> and <code>&lt;site-tools&gt;</code> elements in the parent header.</li>
+        <li>When switching back to desktop, it restores sibling visibility and closes any open popover.</li>
+    </ol>
+    <p>Without JavaScript, the element stays hidden (<code>display: none</code> by default). This is progressive enhancement &mdash; the desktop nav remains functional.</p>
+</section>
+
+<section>
+    <h2>Accessibility</h2>
+    <ul>
+        <li>The trigger button should have <code>aria-label="Menu"</code> for screen readers.</li>
+        <li>The popover panel uses the native <code>popover</code> API which provides focus trapping and <kbd>Esc</kbd> to close.</li>
+        <li>Include a close button inside the panel with <code>popovertargetaction="hide"</code>.</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Related</h2>
+    <ul>
+        <li><a href="/docs/elements/custom-elements/site-tools/">site-tools</a> &mdash; Site-wide utility container</li>
+        <li><a href="/docs/elements/custom-elements/brand-mark/">brand-mark</a> &mdash; Brand logo display</li>
+        <li><a href="/docs/elements/web-components/drop-down/">drop-down</a> &mdash; Desktop dropdown menus</li>
+        <li><a href="/docs/patterns/navigation/navbar/">Navbar pattern</a> &mdash; Complete navigation patterns</li>
+    </ul>
+</section>
