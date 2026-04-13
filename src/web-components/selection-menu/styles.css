@@ -1,15 +1,8 @@
-/* selection-menu: Floating toolbar on text selection */
+/* selection-menu: The element IS the floating toolbar */
 
 selection-menu {
-  display: none;
-}
-
-/* --- Floating panel --- */
-
-.selection-menu-panel {
   position: fixed;
   inset: unset;
-  margin: 0;
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -22,17 +15,13 @@ selection-menu {
   white-space: nowrap;
 }
 
-.selection-menu-panel:popover-open {
-  display: flex;
+selection-menu[hidden] {
+  display: none !important;
 }
 
-.selection-menu-panel[hidden] {
-  display: none;
-}
+/* --- Child action buttons (from highlight-wc, share-wc, note-wc, etc.) --- */
 
-/* --- Child action buttons --- */
-
-.selection-menu-panel button {
+selection-menu button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -47,27 +36,17 @@ selection-menu {
   transition: background var(--duration-fast), color var(--duration-fast);
 }
 
-.selection-menu-panel button:hover {
+selection-menu button:hover {
   background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
   color: var(--color-interactive);
 }
 
-.selection-menu-panel button:focus-visible {
+selection-menu button:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
-/* --- Separator between action groups --- */
-
-.selection-menu-separator {
-  display: block;
-  inline-size: 1px;
-  block-size: 1.25em;
-  background: var(--color-border);
-  flex-shrink: 0;
-}
-
-/* --- Color palette dropdown (used by highlight-wc) --- */
+/* --- Color palette (used by highlight-wc) --- */
 
 .selection-menu-colors {
   display: flex;
@@ -95,10 +74,19 @@ selection-menu {
   box-shadow: 0 0 0 1px var(--color-interactive);
 }
 
+/* --- Separator --- */
+
+.selection-menu-separator {
+  display: block;
+  inline-size: 1px;
+  block-size: 1.25em;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .selection-menu-panel,
-  .selection-menu-panel button,
+  selection-menu button,
   .selection-menu-color {
     transition: none;
   }

@@ -73,7 +73,7 @@ class ShareWc extends VBElement {
     this.#detectTier();
 
     // Inside selection-menu: render minimal icon button
-    if (this.closest('selection-menu') || this.closest('.selection-menu-panel')) {
+    if (this.closest('selection-menu')) {
       this.#renderSelectionAction();
       this.setAttribute('data-tier-resolved', 'selection');
       return;
@@ -165,8 +165,7 @@ class ShareWc extends VBElement {
     btn.appendChild(icon);
     btn.addEventListener('click', () => {
       // Get selection from parent selection-menu
-      const menu = this.closest('selection-menu') ||
-                   this.closest('.selection-menu-panel')?.parentElement;
+      const menu = this.closest('selection-menu');
       const sel = menu?.getSelection?.();
       const text = sel?.text || window.getSelection()?.toString() || '';
       if (text && navigator.share) {
