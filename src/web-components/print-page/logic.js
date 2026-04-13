@@ -9,6 +9,7 @@ import { VBElement } from '../../lib/vb-element.js';
  *
  * @attr {boolean} raw-toggle - If present, shows a checkbox to disable VB print styles
  * @attr {string} label - Custom button label (default: "Print this page")
+ * @attr {string} variant - Visual variant: "icon" (icon only), "label" (text only), "icon-label" (default)
  *
  * @example
  * <print-page>Print this page</print-page>
@@ -41,9 +42,28 @@ class PrintPage extends VBElement {
     }
 
     // Print button
+    const variant = this.getAttribute('variant') || 'icon-label';
     this.#button = document.createElement('button');
     this.#button.type = 'button';
-    this.#button.textContent = label;
+    this.#button.setAttribute('aria-label', label);
+
+    const showIcon = variant !== 'label';
+    const showLabel = variant !== 'icon';
+
+    if (showIcon) {
+      const icon = document.createElement('icon-wc');
+      icon.setAttribute('name', 'printer');
+      icon.setAttribute('size', 'sm');
+      icon.setAttribute('aria-hidden', 'true');
+      this.#button.appendChild(icon);
+    }
+
+    if (showLabel) {
+      const span = document.createElement('span');
+      span.textContent = label;
+      this.#button.appendChild(span);
+    }
+
     this.listen(this.#button, 'click', this.#handlePrint);
     this.append(this.#button);
 
