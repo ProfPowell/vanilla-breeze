@@ -1,0 +1,105 @@
+/* selection-menu: Floating toolbar on text selection */
+
+selection-menu {
+  display: none;
+}
+
+/* --- Floating panel --- */
+
+.selection-menu-panel {
+  position: fixed;
+  inset: unset;
+  margin: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs);
+  padding: var(--size-2xs) var(--size-xs);
+  background: var(--color-surface-overlay, var(--color-surface));
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-m);
+  white-space: nowrap;
+}
+
+.selection-menu-panel:popover-open {
+  display: flex;
+}
+
+.selection-menu-panel[hidden] {
+  display: none;
+}
+
+/* --- Child action buttons --- */
+
+.selection-menu-panel button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-2xs);
+  min-block-size: 0;
+  min-inline-size: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.selection-menu-panel button:hover {
+  background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+  color: var(--color-interactive);
+}
+
+.selection-menu-panel button:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+/* --- Separator between action groups --- */
+
+.selection-menu-separator {
+  display: block;
+  inline-size: 1px;
+  block-size: 1.25em;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* --- Color palette dropdown (used by highlight-wc) --- */
+
+.selection-menu-colors {
+  display: flex;
+  gap: 3px;
+  padding: 2px;
+}
+
+.selection-menu-color {
+  inline-size: 16px;
+  block-size: 16px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-full, 50%);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color var(--duration-fast);
+}
+
+.selection-menu-color:hover,
+.selection-menu-color:focus-visible {
+  border-color: var(--color-text);
+}
+
+.selection-menu-color[aria-pressed="true"] {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 1px var(--color-interactive);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .selection-menu-panel,
+  .selection-menu-panel button,
+  .selection-menu-color {
+    transition: none;
+  }
+}

@@ -2199,6 +2199,23 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "comment-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "comment-wc",
+    "type": "web-component",
+    "description": "Inline comment action button for use inside selection-menu (stub — future feature)",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [],
+    "structure": [],
+    "css": {
+      "tokens": []
+    }
+  },
   "compare-surface": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "compare-surface",
@@ -4477,6 +4494,23 @@ export default {
       }
     ]
   },
+  "note-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "note-wc",
+    "type": "web-component",
+    "description": "Private note action button for use inside selection-menu",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [],
+    "structure": [],
+    "css": {
+      "tokens": []
+    }
+  },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "page-info",
@@ -5233,6 +5267,48 @@ export default {
         "description": "Fired when view/annotate mode toggles"
       }
     ]
+  },
+  "selection-menu": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "selection-menu",
+    "type": "web-component",
+    "description": "Floating toolbar that appears on text selection. Composes action components like highlight-wc, share-wc, note-wc.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "for",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a single target element to watch for text selection"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<highlight-wc>",
+        "description": "Text highlighting with color palette"
+      },
+      {
+        "element": "<share-wc variant=\"selection\">",
+        "description": "Share selected text quote"
+      },
+      {
+        "element": "<note-wc>",
+        "description": "Private note on highlight"
+      },
+      {
+        "element": "<comment-wc>",
+        "description": "Inline comment (future)"
+      }
+    ],
+    "css": {
+      "tokens": []
+    }
   },
   "settings-panel": {
     "$schema": "../../../schemas/api.schema.json",

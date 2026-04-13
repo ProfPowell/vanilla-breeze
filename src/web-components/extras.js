@@ -41,6 +41,9 @@ import './share-wc/logic.js';
 // Annotation & highlight
 import '../utils/highlights-init.js';
 import './highlight-wc/logic.js';
+import './selection-menu/logic.js';
+import './note-wc/logic.js';
+import './comment-wc/logic.js';
 
 // Specialty utility inits
 import '../utils/chapter-list-init.js';

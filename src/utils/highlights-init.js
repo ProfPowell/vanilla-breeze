@@ -563,6 +563,9 @@ class HighlightController {
     requestAnimationFrame(() => {
       if (this.#destroyed) return;
 
+      // Skip own toolbar if a selection-menu manages this element
+      if (this.#element.hasAttribute('data-selection-menu')) return;
+
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
 

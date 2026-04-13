@@ -432,6 +432,11 @@ module.exports = {
     }
   },
 
+  "comment-wc": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "compare-surface": {
     attributes: {
       "position": {},
@@ -790,6 +795,11 @@ module.exports = {
     }
   },
 
+  "note-wc": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
   "page-info": {
     attributes: {
       "auto": { boolean: true },
@@ -916,6 +926,14 @@ module.exports = {
       "compact": { boolean: true },
       "show-resolved": { boolean: true },
       "pin-count": {}
+    }
+  },
+
+  "selection-menu": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {}
     }
   },
 
