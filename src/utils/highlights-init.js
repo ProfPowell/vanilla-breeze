@@ -579,6 +579,9 @@ class HighlightController {
   }
 
   #onClick(e) {
+    // Skip own toolbar if a selection-menu manages this element
+    if (this.#element.hasAttribute('data-selection-menu')) return;
+
     // Check if click is on a margin annotation
     const annot = e.target.closest?.('.hn-margin-annotation');
     if (annot) {
@@ -892,4 +895,4 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
-export { initHighlights, HighlightController };
+export { initHighlights, HighlightController, showNotePanel, hideNotePanel };
