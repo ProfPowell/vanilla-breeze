@@ -1,0 +1,151 @@
+/**
+ * mobile-menu — Responsive mobile navigation menu
+ *
+ * Renders a hamburger toggle button that opens a popover navigation
+ * panel at mobile viewport widths. Hidden on desktop where the
+ * primary nav is visible.
+ *
+ * The trigger is hidden by default and shown via the [data-mobile]
+ * attribute which is set by the component's JS when the viewport
+ * crosses the breakpoint (default 52rem).
+ *
+ * Usage:
+ *   <mobile-menu breakpoint="52rem">
+ *     <nav aria-label="Mobile navigation">
+ *       <ul>
+ *         <li><a href="/about">About</a></li>
+ *       </ul>
+ *     </nav>
+ *   </mobile-menu>
+ *
+ * Themes can override via --mobile-menu-* tokens.
+ */
+
+/* --- Trigger button --- */
+mobile-menu {
+  display: none;
+}
+
+mobile-menu[data-mobile] {
+  display: contents;
+}
+
+mobile-menu [data-trigger] {
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  margin-inline-start: auto;
+}
+
+/* --- Panel --- */
+.mobile-menu-panel {
+  position: fixed;
+  inset-block-start: 0;
+  inset-block-end: auto;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  margin: 0;
+  padding: var(--mobile-menu-padding, var(--size-l));
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--mobile-menu-radius, var(--radius-m));
+  background: var(--mobile-menu-bg, var(--color-surface));
+  box-shadow: var(--mobile-menu-shadow, 0 4px 24px oklch(0% 0 0 / 0.15));
+  min-inline-size: 200px;
+  max-inline-size: var(--mobile-menu-max-width, 280px);
+  max-block-size: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+nav.mobile-menu-panel:not(:popover-open) {
+  display: none;
+}
+
+.mobile-menu-panel::backdrop {
+  background: var(--mobile-menu-backdrop, oklch(0% 0 0 / 0.3));
+}
+
+/* --- Close button --- */
+.mobile-menu-panel .mobile-menu-close {
+  position: absolute;
+  inset-block-start: var(--size-s);
+  inset-inline-end: var(--size-s);
+  padding: var(--size-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-s);
+}
+
+.mobile-menu-panel .mobile-menu-close:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+/* --- Navigation links --- */
+mobile-menu ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+mobile-menu a {
+  display: block;
+  padding: var(--size-s) var(--size-m);
+  border-radius: var(--radius-s);
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+mobile-menu a:hover {
+  background: var(--color-surface-raised);
+}
+
+mobile-menu a[aria-current="page"] {
+  background: var(--color-interactive);
+  color: white;
+}
+
+/* --- Sections --- */
+mobile-menu .mobile-section-title {
+  display: block;
+  padding: var(--size-xs) var(--size-m);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+mobile-menu .mobile-section a {
+  padding-inline-start: var(--size-l);
+  font-size: var(--font-size-sm);
+}
+
+/* --- Utility sections (search, theme) --- */
+mobile-menu .mobile-menu-search {
+  margin-block-end: var(--size-m);
+  padding-block-end: var(--size-m);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+mobile-menu .mobile-menu-search site-search {
+  display: block;
+}
+
+mobile-menu .mobile-menu-search button {
+  justify-content: center;
+}
+
+mobile-menu .mobile-menu-theme {
+  margin-block-start: var(--size-m);
+  padding-block-start: var(--size-m);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}

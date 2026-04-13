@@ -145,6 +145,14 @@ module.exports = {
     }
   },
 
+  "mobile-menu": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "breakpoint": {}
+    }
+  },
+
   "site-legal": {
     flow: true,
     permittedContent: ["@flow"]

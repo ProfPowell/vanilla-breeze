@@ -649,6 +649,65 @@ export default {
       }
     ]
   },
+  "mobile-menu": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "mobile-menu",
+    "type": "custom-element",
+    "description": "Responsive mobile navigation menu with hamburger toggle and popover panel",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "breakpoint",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS length at which mobile mode activates (default: 52rem)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<button data-trigger>",
+        "description": "Hamburger toggle button (auto-generated or slotted)"
+      },
+      {
+        "element": "<nav popover>",
+        "description": "Popover panel containing mobile navigation"
+      }
+    ],
+    "css": {
+      "tokens": [
+        {
+          "name": "--mobile-menu-bg",
+          "description": "Panel background color"
+        },
+        {
+          "name": "--mobile-menu-radius",
+          "description": "Panel border radius"
+        },
+        {
+          "name": "--mobile-menu-shadow",
+          "description": "Panel box shadow"
+        },
+        {
+          "name": "--mobile-menu-padding",
+          "description": "Panel padding"
+        },
+        {
+          "name": "--mobile-menu-max-width",
+          "description": "Panel maximum width"
+        },
+        {
+          "name": "--mobile-menu-backdrop",
+          "description": "Backdrop overlay color"
+        }
+      ]
+    }
+  },
   "site-legal": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-legal",

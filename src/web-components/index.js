@@ -92,6 +92,7 @@ import './site-map/logic.js';
 import './page-tour/logic.js';
 import '../lib/time-relative.js';
 import '../custom-elements/brand-mark/logic.js';
+import '../custom-elements/mobile-menu/logic.js';
 import './calendar-wc/logic.js';
 import './week-view/logic.js';
 import './review-surface/logic.js';

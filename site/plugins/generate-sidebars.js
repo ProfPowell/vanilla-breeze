@@ -218,9 +218,11 @@ export class GenerateSidebars {
     html += `      </button>\n`;
     html += `    </theme-picker>\n`;
     html += `  </site-tools>\n`;
-    html += `  <button type="button" class="mobile-menu-toggle" popovertarget="mobile-menu" aria-label="Menu">\n`;
-    html += `    <icon-wc name="menu"></icon-wc>\n`;
-    html += `  </button>\n`;
+    html += `  <mobile-menu breakpoint="52rem">\n`;
+    html += `    <button type="button" data-trigger popovertarget="mobile-menu" aria-label="Menu">\n`;
+    html += `      <icon-wc name="menu"></icon-wc>\n`;
+    html += `    </button>\n`;
+    html += `  </mobile-menu>\n`;
     html += `</header>\n`;
 
     writeFileSync(resolve(this.includesDir, 'header.html'), html);
@@ -231,7 +233,7 @@ export class GenerateSidebars {
     const header = this.nav.header;
     let html = '';
 
-    html += `<nav popover id="mobile-menu" class="mobile-menu">\n`;
+    html += `<nav popover id="mobile-menu" class="mobile-menu-panel">\n`;
     html += `  <button type="button" class="mobile-menu-close" popovertarget="mobile-menu" popovertargetaction="hide" aria-label="Close menu">\n`;
     html += `    <icon-wc name="x"></icon-wc>\n`;
     html += `  </button>\n`;
