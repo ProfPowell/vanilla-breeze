@@ -72,6 +72,13 @@ class ShareWc extends VBElement {
     this.#resolveMeta();
     this.#detectTier();
 
+    // Inside selection-menu: render minimal icon button
+    if (this.closest('selection-menu') || this.closest('.selection-menu-panel')) {
+      this.#renderSelectionAction();
+      this.setAttribute('data-tier-resolved', 'selection');
+      return;
+    }
+
     if (this.#tier === 'native') {
       this.#renderNative();
     } else if (this.#tier === 'hidden') {
@@ -145,6 +152,31 @@ class ShareWc extends VBElement {
     }
 
     this.#tier = typeof navigator.share === 'function' ? 'native' : 'platforms';
+  }
+
+  #renderSelectionAction() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Share selection');
+    const icon = document.createElement('icon-wc');
+    icon.setAttribute('name', 'share-2');
+    icon.setAttribute('size', 'sm');
+    icon.setAttribute('aria-hidden', 'true');
+    btn.appendChild(icon);
+    btn.addEventListener('click', () => {
+      // Get selection from parent selection-menu
+      const menu = this.closest('selection-menu') ||
+                   this.closest('.selection-menu-panel')?.parentElement;
+      const sel = menu?.getSelection?.();
+      const text = sel?.text || window.getSelection()?.toString() || '';
+      if (text && navigator.share) {
+        navigator.share({ text: `"${text}" — ${location.href}` }).catch(() => {});
+      } else if (text) {
+        navigator.clipboard?.writeText(`"${text}" — ${location.href}`).catch(() => {});
+      }
+      menu?.dismiss?.();
+    });
+    this.appendChild(btn);
   }
 
   #renderNative() {

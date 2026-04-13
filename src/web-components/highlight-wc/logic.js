@@ -52,7 +52,11 @@ class HighlightWC extends VBElement {
     btn.type = 'button';
     btn.className = 'highlight-action';
     btn.setAttribute('aria-label', 'Highlight selection');
-    btn.innerHTML = `<icon-wc name="highlighter" size="sm" aria-hidden="true"></icon-wc>`;
+    const icon = document.createElement('icon-wc');
+    icon.setAttribute('name', 'highlighter');
+    icon.setAttribute('size', 'sm');
+    icon.setAttribute('aria-hidden', 'true');
+    btn.appendChild(icon);
 
     // Click: apply with last color. If already highlighted, toggle palette.
     btn.addEventListener('click', (e) => {
