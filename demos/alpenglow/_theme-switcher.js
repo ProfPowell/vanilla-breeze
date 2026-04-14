@@ -194,6 +194,9 @@
   if (document.body) mount();
   else document.addEventListener('DOMContentLoaded', mount);
 
+  /* ── Active brand override — defends against ThemeManager ── */
+  var activeBrandOverride = null;
+
   /* ── Core mode logic ── */
   function applyMode(mode) {
     var isVB = mode !== 'raw';
@@ -208,8 +211,10 @@
 
     if (isBrand) {
       document.documentElement.dataset.theme = mode;
+      activeBrandOverride = mode;
     } else {
       delete document.documentElement.dataset.theme;
+      activeBrandOverride = null;
     }
 
     /* Update brand-mark logos */
@@ -217,6 +222,35 @@
 
     if (isVB) loadJS();
   }
+
+  /* Prevent ThemeManager from overriding the brand theme.
+     When VB main.js loads, ThemeManager reads localStorage and re-applies
+     the doc site's saved theme (e.g. Brutalist), clobbering our brand.
+     This listener re-asserts the brand theme on every vb:theme-change. */
+  document.addEventListener('vb:theme-change', function () {
+    if (activeBrandOverride) {
+      document.documentElement.dataset.theme = activeBrandOverride;
+      /* Re-enable only the active brand CSS, disable any theme CSS ThemeManager loaded */
+      BRAND_THEMES.forEach(function (name) {
+        var link = document.getElementById('theme-' + name);
+        if (link) link.disabled = name !== activeBrandOverride;
+      });
+    }
+  });
+
+  /* Also watch for ThemeManager init which sets data-theme via MutationObserver */
+  var themeGuard = new MutationObserver(function (mutations) {
+    if (!activeBrandOverride) return;
+    for (var i = 0; i < mutations.length; i++) {
+      if (mutations[i].attributeName === 'data-theme') {
+        var current = document.documentElement.dataset.theme;
+        if (current !== activeBrandOverride) {
+          document.documentElement.dataset.theme = activeBrandOverride;
+        }
+      }
+    }
+  });
+  themeGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   function updateBrandMarks(brandName) {
     var marks = document.querySelectorAll('brand-mark');
