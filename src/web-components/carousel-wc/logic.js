@@ -65,6 +65,12 @@ class CarouselWc extends VBElement {
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.#vtMode = this.hasAttribute('transition') && !!document.startViewTransition;
 
+    // If transition requested but VT API unavailable, remove attribute
+    // so CSS falls back to scroll layout instead of broken stacked grid
+    if (this.hasAttribute('transition') && !this.#vtMode) {
+      this.removeAttribute('transition');
+    }
+
     // Region ARIA
     this.setAttribute('role', 'region');
     this.setAttribute('aria-roledescription', 'carousel');
