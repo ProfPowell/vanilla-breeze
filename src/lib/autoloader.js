@@ -17,6 +17,7 @@ let componentMap = null;
 /** @type {Map<string, Promise<void>>} tag-name → loading promise */
 const loadingPromises = new Map();
 
+
 /** @type {MutationObserver|null} */
 let observer = null;
 
@@ -121,6 +122,7 @@ function scanForComponents(root) {
   for (const tag of tagsToLoad) {
     loadComponent(tag);
   }
+
 }
 
 /**
