@@ -224,12 +224,34 @@
     if (isVB) loadJS();
   }
 
-  /* Guard: when ThemeManager fires changes, re-assert brand override */
+  /* ── MutationObserver: defend data-theme against ThemeManager.apply() ──
+     ThemeManager.apply({brand:"default"}) deletes data-theme entirely,
+     wiping out the Alpenglow brand. The observer re-asserts it in the
+     same microtask — before the next paint frame, preventing FOUC.
+     Uses re-entry guard per the VB MutationObserver research. */
+  var guardProcessing = false;
+  var themeGuard = new MutationObserver(function (records) {
+    if (guardProcessing || !activeBrandOverride) return;
+    guardProcessing = true;
+    var root = document.documentElement;
+    var current = root.getAttribute('data-theme');
+    if (current !== activeBrandOverride) {
+      root.setAttribute('data-theme', activeBrandOverride);
+    }
+    guardProcessing = false;
+  });
+  themeGuard.observe(document.documentElement, {
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: ['data-theme']
+  });
+
+  /* Also catch vb:theme-change events (settings-panel interactions, etc.) */
   document.addEventListener('vb:theme-change', function () {
     if (!activeBrandOverride) return;
     var root = document.documentElement;
-    if (root.dataset.theme !== activeBrandOverride) {
-      root.dataset.theme = activeBrandOverride;
+    if (root.getAttribute('data-theme') !== activeBrandOverride) {
+      root.setAttribute('data-theme', activeBrandOverride);
     }
   });
 
