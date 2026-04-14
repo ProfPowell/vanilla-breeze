@@ -51,10 +51,26 @@ function generateNativeIndex(data) {
   return html;
 }
 
-// --- Web Components list ---
+// --- Web Components list (categorized object or flat array) ---
 function generateWebComponentsIndex(data) {
   const items = data.webComponents;
   if (!items) return null;
+
+  // Support categorized object: { 'Category': [...], ... }
+  if (!Array.isArray(items) && typeof items === 'object') {
+    let html = '';
+    for (const [category, entries] of Object.entries(items)) {
+      html += `<h3>${esc(category)} <small style="font-weight:400;color:var(--color-text-muted,#666)">(${entries.length})</small></h3>\n`;
+      html += `<layout-grid data-layout-min="250px" data-layout-gap="s" style="margin-block-end:var(--size-l,1.5rem)">\n`;
+      for (const item of entries) {
+        html += `<a href="${item.href}" class="section-card"><h4><code>&lt;${esc(item.name)}&gt;</code></h4><p>${esc(item.desc)}</p></a>\n`;
+      }
+      html += `</layout-grid>\n`;
+    }
+    return html;
+  }
+
+  // Fallback: flat array
   let html = '';
   for (const item of items) {
     html += `<a href="${item.href}" class="section-card"><h3><code>&lt;${esc(item.name)}&gt;</code></h3><p>${esc(item.desc)}</p></a>\n`;
