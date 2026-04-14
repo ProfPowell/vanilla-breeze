@@ -13,6 +13,94 @@
       .nav-desktop { display: none; }
       .nav-mobile { display: block; }
     }
+
+    /* Hero background image */
+    .hero-bg {
+      background-image: url("images/hero-light.jpg");
+      background-size: cover;
+      background-position: center 40%;
+      position: relative;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .hero-bg { background-image: url("images/hero-dark.jpg"); }
+    }
+
+    .hero-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        oklch(0% 0 0 / 0.3) 0%,
+        oklch(0% 0 0 / 0.55) 50%,
+        oklch(0% 0 0 / 0.7) 100%);
+    }
+
+    .hero-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-bg h1,
+    .hero-bg p {
+      color: white;
+      text-shadow: 0 2px 12px oklch(0% 0 0 / 0.5);
+    }
+
+    /* CTA buttons */
+    .cta-primary,
+    .cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.75rem;
+      font-weight: 600;
+      font-size: var(--font-size-sm, 0.875rem);
+      text-decoration: none;
+      border-radius: var(--radius-m, 0.5rem);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cta-primary {
+      background: var(--color-interactive, oklch(55% 0.2 260));
+      color: white;
+      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px oklch(0% 0 0 / 0.4);
+    }
+
+    .cta-secondary {
+      background: oklch(100% 0 0 / 0.15);
+      color: white;
+      border: 1px solid oklch(100% 0 0 / 0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .cta-secondary:hover {
+      background: oklch(100% 0 0 / 0.25);
+      transform: translateY(-2px);
+    }
+
+    /* Product images */
+    .product-img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: var(--radius-m, 0.5rem) var(--radius-m, 0.5rem) 0 0;
+    }
+
+    /* Section spacing */
+    main > section,
+    main > layout-center {
+      padding-block: var(--size-2xl, 3rem);
+    }
+
+    main > layout-center + layout-center {
+      border-block-start: 1px solid var(--color-border, #ddd);
+    }
   </style>
 </head>
 <body>
@@ -20,9 +108,7 @@
   <!-- Skip link -->
   <a href="#main" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10001;" onfocus="this.style.position='static';this.style.width='auto';this.style.height='auto';" onblur="this.style.position='absolute';this.style.left='-9999px';this.style.width='1px';this.style.height='1px';">Skip to content</a>
 
-  <!-- ═══════════════════════════════════════════
-       SITE HEADER
-       ═══════════════════════════════════════════ -->
+  <!-- SITE HEADER -->
   <header class="site">
     <a href="/docs/alpenglow/">
       <brand-mark>Alpenglow Gear</brand-mark>
@@ -58,129 +144,118 @@
     </nav>
   </header>
 
-  <!-- ═══════════════════════════════════════════
-       MAIN CONTENT
-       ═══════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
   <main id="main">
 
-    <!-- ──── Hero ──── -->
-    <layout-cover data-layout-min="70vh" style="text-align: center;">
+    <!-- Hero -->
+    <layout-cover data-layout-min="70vh" class="hero-bg" style="text-align: center;">
       <hgroup data-layout-principal class="centered">
         <h1>Gear That Goes the Distance</h1>
         <p>From alpine ridgelines to forest trails — equipment engineered for real adventures.</p>
       </hgroup>
       <layout-cluster data-layout-justify="center" data-layout-gap="m">
-        <a href="/docs/alpenglow/products/">Shop All Gear</a>
-        <a href="/docs/alpenglow/about/">Our Story</a>
+        <a href="/docs/alpenglow/products/" class="cta-primary">Shop All Gear</a>
+        <a href="/docs/alpenglow/about/" class="cta-secondary">Our Story</a>
       </layout-cluster>
     </layout-cover>
 
-    <!-- ──── Features Strip ──── -->
+    <!-- Features Strip -->
     <layout-center>
       <section>
-        <h2>Why Alpenglow?</h2>
-        <layout-grid data-layout-min="15rem">
+        <layout-stack data-layout-gap="l">
+          <h2>Why Alpenglow?</h2>
+          <layout-grid data-layout-min="15rem">
 
-          <article>
-            <h3>Trail-Tested Durability</h3>
-            <p>Every product survives 500+ miles of field testing before it earns our name.</p>
-          </article>
+            <article>
+              <h3>Trail-Tested Durability</h3>
+              <p>Every product survives 500+ miles of field testing before it earns our name.</p>
+            </article>
 
-          <article>
-            <h3>Ultralight Engineering</h3>
-            <p>Shave ounces without sacrificing strength. Our designs use aerospace-grade materials.</p>
-          </article>
+            <article>
+              <h3>Ultralight Engineering</h3>
+              <p>Shave ounces without sacrificing strength. Our designs use aerospace-grade materials.</p>
+            </article>
 
-          <article>
-            <h3>Lifetime Repair Promise</h3>
-            <p>If it breaks, we fix it. Free repairs for the life of every Alpenglow product.</p>
-          </article>
+            <article>
+              <h3>Lifetime Repair Promise</h3>
+              <p>If it breaks, we fix it. Free repairs for the life of every Alpenglow product.</p>
+            </article>
 
-        </layout-grid>
+          </layout-grid>
+        </layout-stack>
       </section>
     </layout-center>
 
-    <!-- ──── Product Spotlights ──── -->
+    <!-- Product Spotlights -->
     <layout-center>
       <section>
-        <h2>Featured Gear</h2>
-        <layout-grid data-layout-min="18rem">
+        <layout-stack data-layout-gap="l">
+          <h2>Featured Gear</h2>
+          <layout-grid data-layout-min="18rem">
 
-          <!-- Product 1: Trail Runner Pack 32L -->
-          <layout-card>
-            <article>
-              <figure>
-                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Backpack illustration">
-                  <rect x="35" y="15" width="50" height="55" rx="6"/>
-                  <path d="M45 15 V8 a15 15 0 0 1 30 0 V15"/>
-                  <line x1="35" y1="35" x2="85" y2="35"/>
-                  <rect x="48" y="42" width="24" height="18" rx="3"/>
-                  <line x1="45" y1="70" x2="45" y2="75"/>
-                  <line x1="75" y1="70" x2="75" y2="75"/>
-                </svg>
-                <figcaption>Trail Runner Pack 32L</figcaption>
-              </figure>
-              <h3>Trail Runner Pack 32L</h3>
-              <p><data value="189">$189</data></p>
-              <p>32 liters of waterproof, hydration-compatible carrying capacity at just 680 grams.</p>
-              <footer>
-                <a href="/docs/alpenglow/products/trail-runner-pack/">View Details</a>
-              </footer>
-            </article>
-          </layout-card>
+            <!-- Product 1: Trail Runner Pack 32L -->
+            <layout-card>
+              <article>
+                <img src="images/product-pack.jpg"
+                     alt="Green hiking backpack resting against granite boulders by a river"
+                     class="product-img"
+                     width="800" height="600"
+                     loading="lazy">
+                <div style="padding: var(--size-m, 1rem);">
+                  <h3>Trail Runner Pack 32L</h3>
+                  <p><data value="189">$189</data></p>
+                  <p>32 liters of waterproof, hydration-compatible carrying capacity at just 680 grams.</p>
+                  <footer style="margin-block-start: var(--size-s);">
+                    <a href="/docs/alpenglow/products/trail-runner-pack/">View Details</a>
+                  </footer>
+                </div>
+              </article>
+            </layout-card>
 
-          <!-- Product 2: Summit Shelter 3P Tent -->
-          <layout-card>
-            <article>
-              <figure>
-                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Tent illustration">
-                  <polygon points="60,10 15,65 105,65"/>
-                  <line x1="60" y1="10" x2="60" y2="65"/>
-                  <rect x="50" y="40" width="20" height="25" rx="2"/>
-                  <line x1="10" y1="65" x2="110" y2="65"/>
-                </svg>
-                <figcaption>Summit Shelter 3P Tent</figcaption>
-              </figure>
-              <h3>Summit Shelter 3P Tent</h3>
-              <p><data value="449">$449</data></p>
-              <p>Freestanding 4-season shelter for 3. Sets up in under 4 minutes.</p>
-              <footer>
-                <a href="/docs/alpenglow/products/summit-shelter/">View Details</a>
-              </footer>
-            </article>
-          </layout-card>
+            <!-- Product 2: Summit Shelter 3P Tent -->
+            <layout-card>
+              <article>
+                <img src="images/product-tent.jpg"
+                     alt="Yellow and gray dome tent pitched in a mountain clearing at golden hour"
+                     class="product-img"
+                     width="800" height="600"
+                     loading="lazy">
+                <div style="padding: var(--size-m, 1rem);">
+                  <h3>Summit Shelter 3P Tent</h3>
+                  <p><data value="449">$449</data></p>
+                  <p>Freestanding 4-season shelter for 3. Sets up in under 4 minutes.</p>
+                  <footer style="margin-block-start: var(--size-s);">
+                    <a href="/docs/alpenglow/products/summit-shelter/">View Details</a>
+                  </footer>
+                </div>
+              </article>
+            </layout-card>
 
-          <!-- Product 3: Beacon Pro Headlamp 700L -->
-          <layout-card>
-            <article>
-              <figure>
-                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Headlamp illustration">
-                  <ellipse cx="60" cy="42" rx="22" ry="18"/>
-                  <circle cx="60" cy="42" r="10"/>
-                  <path d="M38 42 Q20 42 15 35"/>
-                  <path d="M82 42 Q100 42 105 35"/>
-                  <line x1="60" y1="14" x2="60" y2="8"/>
-                  <line x1="42" y1="20" x2="38" y2="14"/>
-                  <line x1="78" y1="20" x2="82" y2="14"/>
-                  <path d="M48 60 L55 72"/>
-                  <path d="M72 60 L65 72"/>
-                </svg>
-                <figcaption>Beacon Pro Headlamp 700L</figcaption>
-              </figure>
-              <h3>Beacon Pro Headlamp 700L</h3>
-              <p><data value="89">$89</data></p>
-              <p>700 lumens of USB-C rechargeable light with 45-hour runtime and red night mode.</p>
-              <footer>
-                <a href="/docs/alpenglow/products/beacon-headlamp/">View Details</a>
-              </footer>
-            </article>
-          </layout-card>
+            <!-- Product 3: Beacon Pro Headlamp 700L -->
+            <layout-card>
+              <article>
+                <img src="images/product-headlamp.jpg"
+                     alt="Hiker wearing a headlamp at sunset with mountain peaks in the background"
+                     class="product-img"
+                     width="800" height="600"
+                     loading="lazy">
+                <div style="padding: var(--size-m, 1rem);">
+                  <h3>Beacon Pro Headlamp 700L</h3>
+                  <p><data value="89">$89</data></p>
+                  <p>700 lumens of USB-C rechargeable light with 45-hour runtime and red night mode.</p>
+                  <footer style="margin-block-start: var(--size-s);">
+                    <a href="/docs/alpenglow/products/beacon-headlamp/">View Details</a>
+                  </footer>
+                </div>
+              </article>
+            </layout-card>
 
-        </layout-grid>
+          </layout-grid>
+        </layout-stack>
       </section>
     </layout-center>
 
-    <!-- ──── Editorial Callout ──── -->
+    <!-- Editorial Callout -->
     <layout-center>
       <section>
         <blockquote>
@@ -190,61 +265,63 @@
       </section>
     </layout-center>
 
-    <!-- ──── Testimonials ──── -->
+    <!-- Testimonials -->
     <layout-center>
       <section>
-        <h2>What Our Customers Say</h2>
-        <layout-grid data-layout-min="18rem">
+        <layout-stack data-layout-gap="l">
+          <h2>What Our Customers Say</h2>
+          <layout-grid data-layout-min="18rem">
 
-          <layout-card>
-            <article>
-              <blockquote>
-                <p>"Carried my Trail Runner through 200 miles of the PCT. Not a single seam failure."</p>
-                <footer>— <cite>Morgan R., Thru-Hiker</cite></footer>
-              </blockquote>
-            </article>
-          </layout-card>
+            <layout-card>
+              <article>
+                <blockquote>
+                  <p>"Carried my Trail Runner through 200 miles of the PCT. Not a single seam failure."</p>
+                  <footer>— <cite>Morgan R., Thru-Hiker</cite></footer>
+                </blockquote>
+              </article>
+            </layout-card>
 
-          <layout-card>
-            <article>
-              <blockquote>
-                <p>"The Summit Shelter handled a surprise snowstorm at 12,000 feet. I slept warm and dry."</p>
-                <footer>— <cite>Alex T., Mountaineer</cite></footer>
-              </blockquote>
-            </article>
-          </layout-card>
+            <layout-card>
+              <article>
+                <blockquote>
+                  <p>"The Summit Shelter handled a surprise snowstorm at 12,000 feet. I slept warm and dry."</p>
+                  <footer>— <cite>Alex T., Mountaineer</cite></footer>
+                </blockquote>
+              </article>
+            </layout-card>
 
-          <layout-card>
-            <article>
-              <blockquote>
-                <p>"Best headlamp I've owned. The red mode saved my night vision on a 3am summit push."</p>
-                <footer>— <cite>Sam K., Alpine Climber</cite></footer>
-              </blockquote>
-            </article>
-          </layout-card>
+            <layout-card>
+              <article>
+                <blockquote>
+                  <p>"Best headlamp I've owned. The red mode saved my night vision on a 3am summit push."</p>
+                  <footer>— <cite>Sam K., Alpine Climber</cite></footer>
+                </blockquote>
+              </article>
+            </layout-card>
 
-        </layout-grid>
+          </layout-grid>
+        </layout-stack>
       </section>
     </layout-center>
 
-    <!-- ──── Newsletter CTA ──── -->
+    <!-- Newsletter CTA -->
     <layout-center>
       <section>
-        <h2>Stay on the Trail</h2>
-        <p>Sign up for gear reviews, trail reports, and early access to new products.</p>
-        <form class="inline" action="#" method="post">
-          <label for="newsletter-email">Email address</label>
-          <input id="newsletter-email" type="email" name="email" placeholder="you@example.com" required autocomplete="email">
-          <button type="submit">Subscribe</button>
-        </form>
+        <layout-stack data-layout-gap="m">
+          <h2>Stay on the Trail</h2>
+          <p>Sign up for gear reviews, trail reports, and early access to new products.</p>
+          <form class="inline" action="#" method="post">
+            <label for="newsletter-email">Email address</label>
+            <input id="newsletter-email" type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+            <button type="submit">Subscribe</button>
+          </form>
+        </layout-stack>
       </section>
     </layout-center>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════
-       SITE FOOTER
-       ═══════════════════════════════════════════ -->
+  <!-- SITE FOOTER -->
   <footer class="site">
     <layout-grid data-layout-min="12rem">
 
