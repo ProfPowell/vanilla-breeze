@@ -78,6 +78,9 @@ export class ColorPalette extends VBElement {
 
     this.innerHTML = `<div class="palette ${layout}" role="list" aria-label="Color palette" style="${containerStyle}">${swatches}</div>`;
 
+    // Resolve var() references to computed values
+    this.#resolveVarColors(colors, names);
+
     // Hover effect for value reveal + copy handler
     this.querySelectorAll('.color-box').forEach((/** @type {HTMLElement} */ btn) => {
       // Hover: show value
@@ -108,6 +111,36 @@ export class ColorPalette extends VBElement {
         setTimeout(() => { btn.style.outline = ''; btn.style.outlineOffset = ''; }, 600);
       });
     });
+  }
+
+  /** Resolve var() references to computed hex after swatches are in the DOM */
+  #resolveVarColors(colors, names) {
+    this.querySelectorAll('.color-box').forEach((/** @type {HTMLElement} */ btn) => {
+      const idx = Number(btn.dataset.index);
+      const raw = colors[idx];
+      if (!raw || !raw.includes('var(')) return;
+
+      const computed = getComputedStyle(btn).backgroundColor;
+      const hex = this.#rgbToHex(computed) || computed;
+      colors[idx] = hex;
+
+      const val = btn.querySelector('.color-value');
+      if (val) val.textContent = hex;
+
+      btn.style.color = this.#contrastColor(hex);
+      const name = names[idx] || '';
+      btn.title = `Click to copy${name ? ': ' + name : ''} (${hex})`;
+      btn.setAttribute('aria-label', `${name || 'Color ' + (idx + 1)}: ${hex}`);
+    });
+  }
+
+  /** Convert rgb(r, g, b) to hex string */
+  #rgbToHex(rgb) {
+    const m = rgb.match(/rgba?\(\s*([\d.]+),?\s*([\d.]+),?\s*([\d.]+)/);
+    if (!m) return null;
+    const [, r, g, b] = m;
+    const toHex = (n) => Math.round(Number(n)).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
 
   /** Shorten oklch values for display */
