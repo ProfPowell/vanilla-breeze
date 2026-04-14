@@ -52,6 +52,8 @@ import './drag-surface/logic.js';
 import './geo-map/logic.js';
 import './color-palette/logic.js';
 import './palette-generator/logic.js';
+import './gradient-builder/logic.js';
+import './font-pairer/logic.js';
 import './type-specimen/logic.js';
 import './spacing-specimen/logic.js';
 import './emoji-picker/logic.js';

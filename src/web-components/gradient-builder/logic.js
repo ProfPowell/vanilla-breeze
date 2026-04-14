@@ -1,0 +1,258 @@
+/**
+ * gradient-builder — Interactive CSS gradient tool
+ *
+ * Visual gradient preview with color stop management, angle/type controls,
+ * color space selection, and CSS export. Companion to palette-generator.
+ *
+ * @attr {string}  colors        - Comma-separated initial stop colors
+ * @attr {string}  type          - "linear" (default) or "radial"
+ * @attr {number}  angle         - Gradient angle in degrees (default: 90)
+ * @attr {string}  interpolation - Color space: "oklab" (default), "oklch", "srgb"
+ * @attr {boolean} show-export   - Show Copy CSS toolbar
+ * @attr {boolean} show-controls - Show type/angle/space controls (default: true)
+ *
+ * @fires gradient-builder:change - { css, stops, type, angle, interpolation }
+ *
+ * @example
+ * <gradient-builder colors="#6366f1,#ec4899" show-export></gradient-builder>
+ */
+
+import { registerComponent } from '../../lib/bundle-registry.js';
+import { VBElement } from '../../lib/vb-element.js';
+import { buildGradientCSS, parseColorStops, defaultStops } from './_gradient-utils.js';
+
+class GradientBuilder extends VBElement {
+  static observedAttributes = ['colors', 'type', 'angle', 'interpolation', 'show-export', 'show-controls'];
+
+  /** @type {import('./_gradient-utils.js').GradientStop[]} */
+  #stops = [];
+  #type = 'linear';
+  #angle = 90;
+  #interpolation = 'oklab';
+
+  setup() {
+    this.#stops = parseColorStops(this.getAttribute('colors'));
+    this.#type = this.getAttribute('type') || 'linear';
+    this.#angle = Number(this.getAttribute('angle')) || 90;
+    this.#interpolation = this.getAttribute('interpolation') || 'oklab';
+    this.#render();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal === newVal || !this.isConnected) return;
+    if (name === 'colors') this.#stops = parseColorStops(newVal);
+    if (name === 'type') this.#type = newVal || 'linear';
+    if (name === 'angle') this.#angle = Number(newVal) || 90;
+    if (name === 'interpolation') this.#interpolation = newVal || 'oklab';
+    this.#render();
+  }
+
+  get css() {
+    return buildGradientCSS(this.#stops, {
+      type: this.#type,
+      angle: this.#angle,
+      interpolation: this.#interpolation,
+    });
+  }
+
+  #render() {
+    const showExport = this.hasAttribute('show-export');
+    const showControls = this.getAttribute('show-controls') !== 'false';
+    const css = this.css;
+
+    const gap = 'var(--size-m, 1rem)';
+    const smGap = 'var(--size-s, 0.75rem)';
+    const xsGap = 'var(--size-xs, 0.5rem)';
+    const radius = 'var(--radius-m, 0.5rem)';
+    const border = 'var(--color-border, #ddd)';
+    const surface = 'var(--color-surface, #fff)';
+    const muted = 'var(--color-text-muted, #666)';
+    const mono = 'var(--font-mono, monospace)';
+    const smFont = 'var(--font-size-sm, 0.875rem)';
+    const xsFont = 'var(--font-size-xs, 0.75rem)';
+
+    // Preview strip
+    const preview = `<div class="gb-preview" style="height:4rem;border-radius:${radius};background:${css};border:1px solid ${border}"></div>`;
+
+    // Controls bar
+    let controls = '';
+    if (showControls) {
+      controls = `<div style="display:flex;flex-wrap:wrap;gap:${smGap};align-items:center;font-size:${smFont}">
+        <label style="display:flex;align-items:center;gap:${xsGap}">
+          Type
+          <select class="gb-type" style="font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}">
+            <option value="linear"${this.#type === 'linear' ? ' selected' : ''}>Linear</option>
+            <option value="radial"${this.#type === 'radial' ? ' selected' : ''}>Radial</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:${xsGap}${this.#type === 'radial' ? ';opacity:0.4;pointer-events:none' : ''}">
+          Angle
+          <input type="range" class="gb-angle" min="0" max="360" value="${this.#angle}" style="width:5rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
+          <span class="gb-angle-value" style="min-width:2.5em;font-family:${mono};font-size:${xsFont}">${this.#angle}°</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:${xsGap}">
+          Space
+          <select class="gb-space" style="font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}">
+            <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>
+            <option value="oklch"${this.#interpolation === 'oklch' ? ' selected' : ''}>oklch</option>
+            <option value="srgb"${this.#interpolation === 'srgb' ? ' selected' : ''}>sRGB</option>
+          </select>
+        </label>
+      </div>`;
+    }
+
+    // Stop editors
+    const stopRows = this.#stops.map((stop, i) => `
+      <div style="display:flex;align-items:center;gap:${xsGap}" data-stop="${i}">
+        <input type="color" value="${stop.color}" class="gb-stop-color" data-i="${i}"
+          style="width:2rem;height:2rem;padding:0;border:1px solid ${border};border-radius:4px;cursor:pointer">
+        <input type="number" value="${stop.position}" min="0" max="100" class="gb-stop-pos" data-i="${i}"
+          style="width:3.5rem;font:inherit;font-size:${xsFont};font-family:${mono};padding:0.2rem 0.4rem;border:1px solid ${border};border-radius:4px;text-align:right">
+        <span style="font-size:${xsFont};color:${muted}">%</span>
+        ${this.#stops.length > 2 ? `<button type="button" class="gb-remove" data-i="${i}"
+          style="all:unset;cursor:pointer;font-size:1rem;color:${muted};padding:0 0.25rem" title="Remove stop">&times;</button>` : ''}
+      </div>
+    `).join('');
+
+    const addBtn = `<button type="button" class="gb-add"
+      style="all:unset;cursor:pointer;font-size:${smFont};color:var(--color-interactive,oklch(55% .2 260));font-weight:600">+ Add Stop</button>`;
+
+    // CSS preview
+    const cssPreview = `<div style="font-family:${mono};font-size:${xsFont};padding:${smGap};background:var(--color-surface-raised,#f5f5f5);border-radius:${radius};word-break:break-all;color:var(--color-text,#222)">${css}</div>`;
+
+    // Export toolbar
+    let exportBar = '';
+    if (showExport) {
+      exportBar = `<div style="display:flex;gap:${xsGap}">
+        <button type="button" class="gb-copy"
+          style="all:unset;cursor:pointer;font-size:${xsFont};padding:0.35rem 0.75rem;border:1px solid ${border};border-radius:4px;background:${surface}">Copy CSS</button>
+      </div>`;
+    }
+
+    this.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:${gap}">
+        ${preview}
+        ${controls}
+        <div style="display:flex;flex-direction:column;gap:${xsGap}">
+          <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.05em">Color Stops</span>
+          ${stopRows}
+          ${addBtn}
+        </div>
+        ${cssPreview}
+        ${exportBar}
+      </div>
+    `;
+
+    this.#wire();
+  }
+
+  #wire() {
+    // Type select
+    this.querySelector('.gb-type')?.addEventListener('change', (e) => {
+      this.#type = e.target.value;
+      this.#render();
+      this.#emit();
+    });
+
+    // Angle slider
+    const angleInput = this.querySelector('.gb-angle');
+    const angleValue = this.querySelector('.gb-angle-value');
+    angleInput?.addEventListener('input', (e) => {
+      this.#angle = Number(e.target.value);
+      if (angleValue) angleValue.textContent = `${this.#angle}°`;
+      // Live update preview without full re-render
+      const preview = this.querySelector('.gb-preview');
+      if (preview) preview.style.background = this.css;
+      this.#emit();
+    });
+
+    // Interpolation select
+    this.querySelector('.gb-space')?.addEventListener('change', (e) => {
+      this.#interpolation = e.target.value;
+      this.#render();
+      this.#emit();
+    });
+
+    // Stop color inputs
+    this.querySelectorAll('.gb-stop-color').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const i = Number(e.target.dataset.i);
+        this.#stops[i].color = e.target.value;
+        this.#updatePreview();
+        this.#emit();
+      });
+    });
+
+    // Stop position inputs
+    this.querySelectorAll('.gb-stop-pos').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const i = Number(e.target.dataset.i);
+        this.#stops[i].position = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+        this.#updatePreview();
+        this.#emit();
+      });
+    });
+
+    // Remove stop buttons
+    this.querySelectorAll('.gb-remove').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const i = Number(e.target.dataset.i);
+        this.#stops.splice(i, 1);
+        this.#render();
+        this.#emit();
+      });
+    });
+
+    // Add stop button
+    this.querySelector('.gb-add')?.addEventListener('click', () => {
+      // Insert a new stop at the midpoint between the last two stops
+      const last = this.#stops[this.#stops.length - 1];
+      const prev = this.#stops[this.#stops.length - 2];
+      const pos = Math.round((prev.position + last.position) / 2);
+      this.#stops.splice(this.#stops.length - 1, 0, { color: '#888888', position: pos });
+      this.#render();
+      this.#emit();
+    });
+
+    // Copy CSS button
+    this.querySelector('.gb-copy')?.addEventListener('click', (e) => {
+      navigator.clipboard?.writeText(this.css);
+      const btn = e.target;
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    });
+  }
+
+  #updatePreview() {
+    const css = this.css;
+    const preview = this.querySelector('.gb-preview');
+    if (preview) preview.style.background = css;
+    // Update CSS text display
+    const cssDisplay = this.querySelector('div[style*="font-family"]');
+    // Find the CSS preview div (the one showing the gradient CSS text)
+    const allDivs = this.querySelectorAll('div');
+    for (const div of allDivs) {
+      if (div.style.fontFamily && div.textContent.includes('gradient')) {
+        div.textContent = css;
+        break;
+      }
+    }
+  }
+
+  #emit() {
+    this.dispatchEvent(new CustomEvent('gradient-builder:change', {
+      bubbles: true,
+      detail: {
+        css: this.css,
+        stops: [...this.#stops],
+        type: this.#type,
+        angle: this.#angle,
+        interpolation: this.#interpolation,
+      },
+    }));
+  }
+}
+
+registerComponent('gradient-builder', GradientBuilder);
+export { GradientBuilder };
