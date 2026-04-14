@@ -317,6 +317,7 @@ currentPath: /docs/tools/theme-lab/
     </select>
   </label>
   <button type="button" data-action="reset">Reset All</button>
+  <button type="button" data-action="export-ds-page">Export as Design System Page</button>
   <p class="theme-character" id="lab-theme-character">The VB default theme</p>
 </form>
 
@@ -578,6 +579,107 @@ currentPath: /docs/tools/theme-lab/
       localStorage.setItem('vb-composer-load-theme', themeId);
       window.location.href = '/docs/tools/theme-composer/';
     });
+  });
+
+  // ========================================
+  // Export as Design System Page
+  // ========================================
+
+  document.querySelector('[data-action="export-ds-page"]')?.addEventListener('click', () => {
+    const themeSelect = document.querySelector('[name="theme"]');
+    const themeName = themeSelect?.selectedOptions[0]?.textContent?.trim() || 'My Brand';
+    const themeId = themeSelect?.value || '';
+    const themeLink = themeId ? `\n  <link rel="stylesheet" href="/cdn/themes/${themeId}.css"/>` : '';
+    const themeAttr = themeId ? ` data-theme="${themeId}"` : '';
+
+    const html = `<!doctype html>
+<html lang="en"${themeAttr}>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>${themeName} — Design System</title>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css"/>
+  <link rel="stylesheet" href="/cdn/packs/design-system.full.css"/>${themeLink}
+  <script type="module" src="/cdn/vanilla-breeze.js"><\/script>
+  <script type="module" src="/cdn/packs/design-system.full.js"><\/script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: var(--color-background); color: var(--color-text); }
+    main > section {
+      padding-block: var(--size-2xl);
+      border-block-end: 1px solid var(--color-border);
+    }
+    main > section:last-child { border-block-end: none; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide">
+    <main>
+
+      <header style="text-align: center; padding-block: var(--size-3xl);">
+        <h1>${themeName}</h1>
+        <p class="lead">Design System Reference</p>
+      </header>
+
+      <section data-layout="stack" data-layout-gap="l">
+        <h2>Color System</h2>
+        <h3>Brand Palette</h3>
+        <color-palette colors="
+          Primary: var(--color-primary),
+          Secondary: var(--color-secondary),
+          Accent: var(--color-accent)
+        " show-values></color-palette>
+        <h3>Semantic Colors</h3>
+        <color-palette colors="
+          Surface: var(--color-surface),
+          Text: var(--color-text),
+          Border: var(--color-border),
+          Interactive: var(--color-interactive)
+        " show-values></color-palette>
+        <h3>Status Colors</h3>
+        <color-palette colors="
+          Success: var(--color-success),
+          Warning: var(--color-warning),
+          Error: var(--color-error),
+          Info: var(--color-info)
+        " show-values></color-palette>
+      </section>
+
+      <section data-layout="stack" data-layout-gap="l">
+        <h2>Typography</h2>
+        <type-specimen font="var(--font-sans)" label="Body Font" show-scale></type-specimen>
+        <type-specimen font="var(--font-mono)" label="Monospace Font"></type-specimen>
+      </section>
+
+      <section data-layout="stack" data-layout-gap="l">
+        <h2>Spacing</h2>
+        <spacing-specimen></spacing-specimen>
+      </section>
+
+      <section data-layout="stack" data-layout-gap="l">
+        <h2>Shape and Elevation</h2>
+        <token-specimen type="radius" label="Border Radius"></token-specimen>
+        <token-specimen type="shadow" label="Shadow Scale"></token-specimen>
+        <token-specimen type="border" label="Border Widths"></token-specimen>
+      </section>
+
+      <section data-layout="stack" data-layout-gap="l">
+        <h2>Component Showcase</h2>
+        <component-sampler></component-sampler>
+      </section>
+
+    </main>
+  </layout-center>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(themeId || 'design-system').replace(/[^a-z0-9-]/g, '-')}-design-system.html`;
+    a.click();
+    URL.revokeObjectURL(url);
   });
 
   // ========================================
