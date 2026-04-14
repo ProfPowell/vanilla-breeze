@@ -644,11 +644,11 @@ svg {
           <input type="range" class="gb-angle" min="0" max="360" value="${this.#s}" style="flex:1;max-width:12rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
           <span class="gb-angle-value" style="min-width:2.5em;font-family:${h};font-size:${p}">${this.#s}\xB0</span>
         </label>
-      </div>`);let w=[...this.#t].map((A,T)=>({...A,origIndex:T})).sort((A,T)=>A.position-T.position).map(A=>{let T=A.origIndex;return`<div style="display:flex;align-items:center;gap:${a}" data-stop="${T}">
+      </div>`);let w=[...this.#t].map((A,T)=>({...A,origIndex:T})).sort((A,T)=>A.position-T.position).map(A=>{let T=A.origIndex;return`<div style="display:flex;align-items:center;gap:0.375rem" data-stop="${T}">
         <input type="color" value="${A.color}" class="gb-stop-color" data-i="${T}"
-          style="width:2rem;height:2rem;padding:0;border:1px solid ${l};border-radius:4px;cursor:pointer">
+          style="width:1.75rem;height:1.75rem;padding:0;border:1px solid ${l};border-radius:4px;cursor:pointer;flex-shrink:0">
         <input type="range" min="0" max="100" value="${A.position}" class="gb-stop-pos-range" data-i="${T}"
-          style="width:4rem;accent-color:${A.color}">
+          style="flex:1;min-width:3rem;max-width:8rem;accent-color:${A.color}">
         <span style="font-family:${h};font-size:${p};min-width:2.5em;text-align:right" class="gb-stop-pos-label" data-i="${T}">${A.position}%</span>
         ${this.#t.length>2?`<button type="button" class="gb-remove" data-i="${T}"
           style="all:unset;cursor:pointer;font-size:1rem;color:${d};padding:0 0.25rem" title="Remove stop">&times;</button>`:""}

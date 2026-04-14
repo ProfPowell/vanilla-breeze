@@ -110,11 +110,11 @@ class GradientBuilder extends VBElement {
     // Stop editors — horizontal wrapping row
     const stopRows = sorted.map((stop) => {
       const i = stop.origIndex;
-      return `<div style="display:flex;align-items:center;gap:${xsGap}" data-stop="${i}">
+      return `<div style="display:flex;align-items:center;gap:0.375rem" data-stop="${i}">
         <input type="color" value="${stop.color}" class="gb-stop-color" data-i="${i}"
-          style="width:2rem;height:2rem;padding:0;border:1px solid ${border};border-radius:4px;cursor:pointer">
+          style="width:1.75rem;height:1.75rem;padding:0;border:1px solid ${border};border-radius:4px;cursor:pointer;flex-shrink:0">
         <input type="range" min="0" max="100" value="${stop.position}" class="gb-stop-pos-range" data-i="${i}"
-          style="width:4rem;accent-color:${stop.color}">
+          style="flex:1;min-width:3rem;max-width:8rem;accent-color:${stop.color}">
         <span style="font-family:${mono};font-size:${xsFont};min-width:2.5em;text-align:right" class="gb-stop-pos-label" data-i="${i}">${stop.position}%</span>
         ${this.#stops.length > 2 ? `<button type="button" class="gb-remove" data-i="${i}"
           style="all:unset;cursor:pointer;font-size:1rem;color:${muted};padding:0 0.25rem" title="Remove stop">&times;</button>` : ''}
